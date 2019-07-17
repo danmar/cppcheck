@@ -66,7 +66,7 @@ private:
 
         // Check char variable usage..
         CheckExceptionSafety checkExceptionSafety(&tokenizer, &settings, this);
-        checkExceptionSafety.runSimplifiedChecks(&tokenizer, &settings, this);
+        checkExceptionSafety.runChecks(&tokenizer, &settings, this);
     }
 
     void destructors() {

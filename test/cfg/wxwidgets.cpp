@@ -60,20 +60,23 @@ void nullPointer(const wxString &str)
     double *doublePtr = NULL;
     // cppcheck-suppress nullPointer
     (void)str.ToDouble(doublePtr);
+    double *doublePtr1 = NULL;
     // cppcheck-suppress nullPointer
-    (void)str.ToCDouble(doublePtr);
+    (void)str.ToCDouble(doublePtr1);
 
     long * longPtr = NULL;
     // cppcheck-suppress nullPointer
     (void)str.ToLong(longPtr);
+    long * longPtr1 = NULL;
     // cppcheck-suppress nullPointer
-    (void)str.ToCLong(longPtr);
+    (void)str.ToCLong(longPtr1);
 
     unsigned long * ulongPtr = NULL;
     // cppcheck-suppress nullPointer
     (void)str.ToULong(ulongPtr);
+    unsigned long * ulongPtr1 = NULL;
     // cppcheck-suppress nullPointer
-    (void)str.ToCULong(ulongPtr);
+    (void)str.ToCULong(ulongPtr1);
 
     long long * longLongPtr = NULL;
     // cppcheck-suppress nullPointer
@@ -95,13 +98,13 @@ void nullPointer_wxSizer_Add(wxSizer &sizer, wxWindow *w)
 
 void uninitvar_wxSizer_Add(wxSizer &sizer, wxWindow *w,wxObject* userData)
 {
-    int uninit;
+    int uninit1, uninit2, uninit3;
     // cppcheck-suppress uninitvar
-    sizer.Add(w,uninit);
+    sizer.Add(w,uninit1);
     // cppcheck-suppress uninitvar
-    sizer.Add(w,4,uninit);
+    sizer.Add(w,4,uninit2);
     // cppcheck-suppress uninitvar
-    sizer.Add(w,4,2,uninit,userData);
+    sizer.Add(w,4,2,uninit3,userData);
 }
 
 void ignoredReturnValue(const wxString &s)
@@ -162,25 +165,30 @@ void uninitvar_wxStaticText(wxStaticText &s)
 
 void uninitvar_wxString_NumberConversion(const wxString &str, const int numberBase)
 {
-    int uninitInteger;
+    int uninitInteger1;
+    int uninitInteger2;
+    int uninitInteger3;
+    int uninitInteger4;
+    int uninitInteger5;
+    int uninitInteger6;
     long l;
     long long ll;
     unsigned long ul;
     unsigned long long ull;
 
     // cppcheck-suppress uninitvar
-    (void)str.ToLong(&l, uninitInteger);
+    (void)str.ToLong(&l, uninitInteger1);
     // cppcheck-suppress uninitvar
-    (void)str.ToLongLong(&ll, uninitInteger);
+    (void)str.ToLongLong(&ll, uninitInteger2);
     // cppcheck-suppress uninitvar
-    (void)str.ToULong(&ul, uninitInteger);
+    (void)str.ToULong(&ul, uninitInteger3);
     // cppcheck-suppress uninitvar
-    (void)str.ToULongLong(&ull, uninitInteger);
+    (void)str.ToULongLong(&ull, uninitInteger4);
 
     // cppcheck-suppress uninitvar
-    (void)str.ToCLong(&l, uninitInteger);
+    (void)str.ToCLong(&l, uninitInteger5);
     // cppcheck-suppress uninitvar
-    (void)str.ToCULong(&ul, uninitInteger);
+    (void)str.ToCULong(&ul, uninitInteger6);
 }
 
 void uninitvar_SetMenuBar(wxFrame * const framePtr, wxMenuBar * const menuBarPtr)

@@ -24,6 +24,7 @@
 #include "config.h"
 #include "library.h"
 #include "mathlib.h"
+#include "platform.h"
 #include "token.h"
 
 #include <cstddef>
@@ -51,10 +52,9 @@ enum AccessControl { Public, Protected, Private, Global, Namespace, Argument, Lo
  * @brief Array dimension information.
  */
 struct Dimension {
-    Dimension() : start(nullptr), end(nullptr), num(0), known(true) { }
+    Dimension() : tok(nullptr), num(0), known(true) { }
 
-    const Token *start;  ///< size start token
-    const Token *end;    ///< size end token
+    const Token *tok;    ///< size token
     MathLib::bigint num; ///< (assumed) dimension length when size is a number, 0 if not known
     bool known;          ///< Known size
 };
@@ -177,20 +177,21 @@ public:
 class CPPCHECKLIB Variable {
     /** @brief flags mask used to access specific bit. */
     enum {
-        fIsMutable   = (1 << 0), /** @brief mutable variable */
-        fIsStatic    = (1 << 1), /** @brief static variable */
-        fIsConst     = (1 << 2), /** @brief const variable */
-        fIsExtern    = (1 << 3), /** @brief extern variable */
-        fIsClass     = (1 << 4), /** @brief user defined type */
-        fIsArray     = (1 << 5), /** @brief array variable */
-        fIsPointer   = (1 << 6), /** @brief pointer variable */
-        fIsReference = (1 << 7), /** @brief reference variable */
-        fIsRValueRef = (1 << 8), /** @brief rvalue reference variable */
-        fHasDefault  = (1 << 9), /** @brief function argument with default value */
-        fIsStlType   = (1 << 10), /** @brief STL type ('std::') */
-        fIsStlString = (1 << 11), /** @brief std::string|wstring|basic_string&lt;T&gt;|u16string|u32string */
-        fIsFloatType = (1 << 12), /** @brief Floating point type */
-        fIsVolatile  = (1 << 13)  /** @brief volatile */
+        fIsMutable    = (1 << 0),   /** @brief mutable variable */
+        fIsStatic     = (1 << 1),   /** @brief static variable */
+        fIsConst      = (1 << 2),   /** @brief const variable */
+        fIsExtern     = (1 << 3),   /** @brief extern variable */
+        fIsClass      = (1 << 4),   /** @brief user defined type */
+        fIsArray      = (1 << 5),   /** @brief array variable */
+        fIsPointer    = (1 << 6),   /** @brief pointer variable */
+        fIsReference  = (1 << 7),   /** @brief reference variable */
+        fIsRValueRef  = (1 << 8),   /** @brief rvalue reference variable */
+        fHasDefault   = (1 << 9),   /** @brief function argument with default value */
+        fIsStlType    = (1 << 10),  /** @brief STL type ('std::') */
+        fIsStlString  = (1 << 11),  /** @brief std::string|wstring|basic_string&lt;T&gt;|u16string|u32string */
+        fIsFloatType  = (1 << 12),  /** @brief Floating point type */
+        fIsVolatile   = (1 << 13),  /** @brief volatile */
+        fIsSmartPointer = (1 << 14)   /** @brief std::shared_ptr|unique_ptr */
     };
 
     /**
@@ -213,10 +214,10 @@ class CPPCHECKLIB Variable {
 
     /**
      * @brief parse and save array dimension information
-     * @param lib Library instance
+     * @param settings Platform settings and library
      * @return true if array, false if not
      */
-    bool arrayDimensions(const Library* lib);
+    bool arrayDimensions(const Settings* settings);
 
 public:
     Variable(const Token *name_, const Token *start_, const Token *end_,
@@ -555,6 +556,12 @@ public:
         return getFlag(fIsStlString);
     }
 
+    bool isSmartPointer() const {
+        return getFlag(fIsSmartPointer);
+    }
+
+    const Type *smartPointerType() const;
+
     /**
      * Checks if the variable is of any of the STL types passed as arguments ('std::')
      * E.g.:
@@ -660,7 +667,7 @@ class CPPCHECKLIB Function {
         fHasBody               = (1 << 0),  ///< @brief has implementation
         fIsInline              = (1 << 1),  ///< @brief implementation in class definition
         fIsConst               = (1 << 2),  ///< @brief is const
-        fIsVirtual             = (1 << 3),  ///< @brief is virtual
+        fHasVirtualSpecifier   = (1 << 3),  ///< @brief does declaration contain 'virtual' specifier
         fIsPure                = (1 << 4),  ///< @brief is pure virtual
         fIsStatic              = (1 << 5),  ///< @brief is static
         fIsStaticLocal         = (1 << 6),  ///< @brief is static local
@@ -700,7 +707,7 @@ class CPPCHECKLIB Function {
     }
 
 public:
-    enum Type { eConstructor, eCopyConstructor, eMoveConstructor, eOperatorEqual, eDestructor, eFunction };
+    enum Type { eConstructor, eCopyConstructor, eMoveConstructor, eOperatorEqual, eDestructor, eFunction, eLambda };
 
     Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *scope, const Token *tokDef, const Token *tokArgDef);
 
@@ -725,6 +732,10 @@ public:
 
     /** @brief get function in base class that is overridden */
     const Function *getOverriddenFunction(bool *foundAllBaseClasses = nullptr) const;
+
+    bool isLambda() const {
+        return type==eLambda;
+    }
 
     bool isConstructor() const {
         return type==eConstructor ||
@@ -766,8 +777,8 @@ public:
     bool isConst() const {
         return getFlag(fIsConst);
     }
-    bool isVirtual() const {
-        return getFlag(fIsVirtual);
+    bool hasVirtualSpecifier() const {
+        return getFlag(fHasVirtualSpecifier);
     }
     bool isPure() const {
         return getFlag(fIsPure);
@@ -828,6 +839,8 @@ public:
         setFlag(fHasBody, state);
     }
 
+    bool isSafe(const Settings *settings) const;
+
     const Token *tokenDef;            ///< function name token in class definition
     const Token *argDef;              ///< function argument start '(' in class definition
     const Token *token;               ///< function name token in implementation
@@ -847,6 +860,14 @@ public:
 
     static bool returnsReference(const Function *function);
 
+    const Token* returnDefEnd() const {
+        if (this->hasTrailingReturnType()) {
+            return Token::findsimplematch(retDef, "{");
+        } else {
+            return tokenDef;
+        }
+    }
+
     /**
      * @return token to ":" if the function is a constructor
      * and it contains member initialization otherwise a nullptr is returned
@@ -865,8 +886,8 @@ private:
     void isConst(bool state) {
         setFlag(fIsConst, state);
     }
-    void isVirtual(bool state) {
-        setFlag(fIsVirtual, state);
+    void hasVirtualSpecifier(bool state) {
+        setFlag(fHasVirtualSpecifier, state);
     }
     void isPure(bool state) {
         setFlag(fIsPure, state);
@@ -1094,20 +1115,21 @@ private:
 class CPPCHECKLIB ValueType {
 public:
     enum Sign { UNKNOWN_SIGN, SIGNED, UNSIGNED } sign;
-    enum Type { UNKNOWN_TYPE, NONSTD, RECORD, CONTAINER, ITERATOR, VOID, BOOL, CHAR, SHORT, INT, LONG, LONGLONG, UNKNOWN_INT, FLOAT, DOUBLE, LONGDOUBLE } type;
+    enum Type { UNKNOWN_TYPE, NONSTD, RECORD, CONTAINER, ITERATOR, VOID, BOOL, CHAR, SHORT, WCHAR_T, INT, LONG, LONGLONG, UNKNOWN_INT, FLOAT, DOUBLE, LONGDOUBLE } type;
     unsigned int bits;                    ///< bitfield bitcount
     unsigned int pointer;                 ///< 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
     unsigned int constness;               ///< bit 0=data, bit 1=*, bit 2=**
     const Scope *typeScope;               ///< if the type definition is seen this point out the type scope
+    const ::Type *smartPointerType;       ///< Smart pointer type
     const Library::Container *container;  ///< If the type is a container defined in a cfg file, this is the used container
     const Token *containerTypeToken;      ///< The container type token. the template argument token that defines the container element type.
     std::string originalTypeName;         ///< original type name as written in the source code. eg. this might be "uint8_t" when type is CHAR.
 
-    ValueType() : sign(UNKNOWN_SIGN), type(UNKNOWN_TYPE), bits(0), pointer(0U), constness(0U), typeScope(nullptr), container(nullptr), containerTypeToken(nullptr) {}
-    ValueType(const ValueType &vt) : sign(vt.sign), type(vt.type), bits(vt.bits), pointer(vt.pointer), constness(vt.constness), typeScope(vt.typeScope), container(vt.container), containerTypeToken(vt.containerTypeToken), originalTypeName(vt.originalTypeName) {}
-    ValueType(enum Sign s, enum Type t, unsigned int p) : sign(s), type(t), bits(0), pointer(p), constness(0U), typeScope(nullptr), container(nullptr), containerTypeToken(nullptr) {}
-    ValueType(enum Sign s, enum Type t, unsigned int p, unsigned int c) : sign(s), type(t), bits(0), pointer(p), constness(c), typeScope(nullptr), container(nullptr), containerTypeToken(nullptr) {}
-    ValueType(enum Sign s, enum Type t, unsigned int p, unsigned int c, const std::string &otn) : sign(s), type(t), bits(0), pointer(p), constness(c), typeScope(nullptr), container(nullptr), containerTypeToken(nullptr), originalTypeName(otn) {}
+    ValueType() : sign(UNKNOWN_SIGN), type(UNKNOWN_TYPE), bits(0), pointer(0U), constness(0U), typeScope(nullptr), smartPointerType(nullptr), container(nullptr), containerTypeToken(nullptr) {}
+    ValueType(const ValueType &vt) : sign(vt.sign), type(vt.type), bits(vt.bits), pointer(vt.pointer), constness(vt.constness), typeScope(vt.typeScope), smartPointerType(vt.smartPointerType), container(vt.container), containerTypeToken(vt.containerTypeToken), originalTypeName(vt.originalTypeName) {}
+    ValueType(enum Sign s, enum Type t, unsigned int p) : sign(s), type(t), bits(0), pointer(p), constness(0U), typeScope(nullptr), smartPointerType(nullptr), container(nullptr), containerTypeToken(nullptr) {}
+    ValueType(enum Sign s, enum Type t, unsigned int p, unsigned int c) : sign(s), type(t), bits(0), pointer(p), constness(c), typeScope(nullptr), smartPointerType(nullptr), container(nullptr), containerTypeToken(nullptr) {}
+    ValueType(enum Sign s, enum Type t, unsigned int p, unsigned int c, const std::string &otn) : sign(s), type(t), bits(0), pointer(p), constness(c), typeScope(nullptr), smartPointerType(nullptr), container(nullptr), containerTypeToken(nullptr), originalTypeName(otn) {}
     ValueType &operator=(const ValueType &other) = delete;
 
     static ValueType parseDecl(const Token *type, const Settings *settings);
@@ -1127,6 +1149,8 @@ public:
     bool isEnum() const {
         return typeScope && typeScope->type == Scope::eEnum;
     }
+
+    MathLib::bigint typeSize(const cppcheck::Platform &platform) const;
 
     std::string str() const;
     std::string dump() const;
@@ -1218,6 +1242,9 @@ public:
      */
     unsigned int sizeOfType(const Token *type) const;
 
+    /** Set array dimensions when valueflow analysis is completed */
+    void setArrayDimensionsUsingValueFlow();
+
 private:
     friend class Scope;
     friend class Function;
@@ -1237,7 +1264,6 @@ private:
     void createSymbolDatabaseSetVariablePointers();
     void createSymbolDatabaseSetTypePointers();
     void createSymbolDatabaseEnums();
-    void createSymbolDatabaseUnknownArrayDimensions();
 
     void addClassFunction(Scope **scope, const Token **tok, const Token *argStart);
     Function *addGlobalFunctionDecl(Scope*& scope, const Token* tok, const Token *argStart, const Token* funcStart);

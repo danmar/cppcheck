@@ -19,7 +19,7 @@
 #                          "uint32_t": "ui32"}
 # }
 #
-# RE_VARNAME, RE_PRIVATE_MEMBER_VARIABE and RE_FUNCTIONNAME are regular expressions to cover the basic names
+# RE_VARNAME, RE_PRIVATE_MEMBER_VARIABLE and RE_FUNCTIONNAME are regular expressions to cover the basic names
 # In var_prefixes and function_prefixes there are the variable-type/prefix pairs
 
 import cppcheckdata
@@ -215,7 +215,7 @@ if __name__ == "__main__":
     parser.add_argument("--configfile", type=str, default="naming.json",
                         help="Naming check config file")
     parser.add_argument("--verify", action="store_true", default=False,
-                        help="verify this script. Bust be executed in test folder !")
+                        help="verify this script. Must be executed in test folder !")
 
     args = parser.parse_args()
     errors = process(args.dumpfiles, args.configfile, args.debugprint)

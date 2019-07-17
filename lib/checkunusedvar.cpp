@@ -1122,8 +1122,37 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             if ((!tok->isAssignmentOp() || !tok->astOperand1()) && !(Token::Match(tok, "%var% (") && tok->variable() && tok->variable()->nameToken() == tok))
                 continue;
             if (tok->isName()) {
-                if (!tok->valueType() || !tok->valueType()->isIntegral())
-                    continue;
+                if (mTokenizer->isCPP()) {
+                    // do not check RAII/scope_lock objects
+                    if (!tok->valueType())
+                        continue;
+                    bool check = false;
+                    switch (tok->valueType()->type) {
+                    case ValueType::Type::UNKNOWN_TYPE:
+                    case ValueType::Type::NONSTD:
+                    case ValueType::Type::RECORD:
+                        check = tok->valueType()->typeScope && !tok->valueType()->typeScope->getDestructor();
+                        break;
+                    case ValueType::Type::CONTAINER:
+                    case ValueType::Type::ITERATOR:
+                    case ValueType::Type::VOID:
+                    case ValueType::Type::BOOL:
+                    case ValueType::Type::CHAR:
+                    case ValueType::Type::SHORT:
+                    case ValueType::Type::WCHAR_T:
+                    case ValueType::Type::INT:
+                    case ValueType::Type::LONG:
+                    case ValueType::Type::LONGLONG:
+                    case ValueType::Type::UNKNOWN_INT:
+                    case ValueType::Type::FLOAT:
+                    case ValueType::Type::DOUBLE:
+                    case ValueType::Type::LONGDOUBLE:
+                        check = true;
+                        break;
+                    };
+                    if (!check)
+                        continue;
+                }
                 tok = tok->next();
             }
             if (tok->astParent() && tok->str() != "(") {
@@ -1252,6 +1281,10 @@ void CheckUnusedVar::checkStructMemberUsage()
 
         // Bail out if struct/union contains any functions
         if (!scope.functionList.empty())
+            continue;
+
+        // Bail out for template struct, members might be used in non-matching instantiations
+        if (scope.className.find("<") != std::string::npos)
             continue;
 
         // bail out if struct is inherited

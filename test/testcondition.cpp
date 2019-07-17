@@ -57,7 +57,8 @@ private:
         TEST_CASE(mismatchingBitAnd);  // overlapping bitmasks
         TEST_CASE(comparison);         // CheckCondition::comparison test cases
         TEST_CASE(multicompare);       // mismatching comparisons
-        TEST_CASE(duplicateIf);        // duplicate conditions in if and else-if
+        TEST_CASE(overlappingElseIfCondition);  // overlapping conditions in if and else-if
+        TEST_CASE(oppositeElseIfCondition); // opposite conditions in if and else-if
 
         TEST_CASE(checkBadBitmaskCheck);
 
@@ -114,6 +115,7 @@ private:
         TEST_CASE(checkConditionIsAlwaysTrueOrFalseInsideIfWhile);
         TEST_CASE(alwaysTrueFalseInLogicalOperators);
         TEST_CASE(pointerAdditionResultNotNull);
+        TEST_CASE(duplicateConditionalAssign);
     }
 
     void check(const char code[], const char* filename = "test.cpp", bool inconclusive = false) {
@@ -140,8 +142,6 @@ private:
         // Run checks..
         CheckCondition checkCondition;
         checkCondition.runChecks(&tokenizer, &settings0, this);
-        tokenizer.simplifyTokenList2();
-        checkCondition.runSimplifiedChecks(&tokenizer, &settings0, this);
     }
 
     void assignAndCompare() {
@@ -517,11 +517,9 @@ private:
 
         CheckCondition checkCondition;
         checkCondition.runChecks(&tokenizer, &settings1, this);
-        tokenizer.simplifyTokenList2();
-        checkCondition.runSimplifiedChecks(&tokenizer, &settings1, this);
     }
 
-    void duplicateIf() {
+    void overlappingElseIfCondition() {
         check("void f(int a, int &b) {\n"
               "    if (a) { b = 1; }\n"
               "    else { if (a) { b = 2; } }\n"
@@ -693,6 +691,28 @@ private:
               "    else if ( value & (int)Value2 ) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void oppositeElseIfCondition() {
+        setMultiline();
+
+        check("void f(int x) {\n"
+              "    if (x) {}\n"
+              "    else if (!x) {}\n"
+              "}");
+        ASSERT_EQUALS("test.cpp:3:style:Expression is always true because 'else if' condition is opposite to previous condition at line 2.\n"
+                      "test.cpp:2:note:first condition\n"
+                      "test.cpp:3:note:else if condition is opposite to first condition\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    int y = x;\n"
+              "    if (x) {}\n"
+              "    else if (!y) {}\n"
+              "}");
+        ASSERT_EQUALS("test.cpp:4:style:Expression is always true because 'else if' condition is opposite to previous condition at line 3.\n"
+                      "test.cpp:2:note:'y' is assigned value 'x' here.\n"
+                      "test.cpp:3:note:first condition\n"
+                      "test.cpp:4:note:else if condition is opposite to first condition\n", errout.str());
     }
 
     void checkBadBitmaskCheck() {
@@ -2963,6 +2983,26 @@ private:
               "    if(x == 1) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #8996
+        check("void g(int** v);\n"
+              "void f() {\n"
+              "  int a = 0;\n"
+              "  int b = 0;\n"
+              "  int* d[] = {&a, &b};\n"
+              "  g(d);\n"
+              "  if (a) {}\n"
+              "  if (b) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #8993
+        check("void f(const std::string& x) {\n"
+              "  auto y = x;\n"
+              "  if (x.empty()) y = \"1\";\n"
+              "  if (y.empty()) return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkInvalidTestForOverflow() {
@@ -3059,6 +3099,59 @@ private:
               "  if (ptr + 1 != 0);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison is wrong. Result of 'ptr+1' can't be 0 unless there is pointer overflow, and pointer overflow is undefined behaviour.\n", errout.str());
+    }
+
+    void duplicateConditionalAssign() {
+        setMultiline();
+
+        check("void f(int& x, int y) {\n"
+              "    if (x == y)\n"
+              "        x = y;\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:3:style:Assignment 'x=y' is redundant with condition 'x==y'.\n"
+                      "test.cpp:2:note:Condition 'x==y'\n"
+                      "test.cpp:3:note:Assignment 'x=y' is redundant\n", errout.str());
+
+        check("void f(int& x, int y) {\n"
+              "    if (x != y)\n"
+              "        x = y;\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:2:style:The statement 'if (x!=y) x=y' is logically equivalent to 'x=y'.\n"
+                      "test.cpp:3:note:Assignment 'x=y'\n"
+                      "test.cpp:2:note:Condition 'x!=y' is redundant\n", errout.str());
+
+        check("void f(int& x, int y) {\n"
+              "    if (x == y)\n"
+              "        x = y;\n"
+              "    else\n"
+              "        x = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:3:style:Assignment 'x=y' is redundant with condition 'x==y'.\n"
+                      "test.cpp:2:note:Condition 'x==y'\n"
+                      "test.cpp:3:note:Assignment 'x=y' is redundant\n", errout.str());
+
+        check("void f(int& x, int y) {\n"
+              "    if (x != y)\n"
+              "        x = y;\n"
+              "    else\n"
+              "        x = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int& x, int y) {\n"
+              "    if (x == y)\n"
+              "        x = y + 1;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g();\n"
+              "void f(int& x, int y) {\n"
+              "    if (x == y) {\n"
+              "        x = y;\n"
+              "        g();\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

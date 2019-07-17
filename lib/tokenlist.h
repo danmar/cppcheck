@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -69,10 +69,10 @@ public:
      */
     static void deleteTokens(Token *tok);
 
-    void addtoken(std::string str, const unsigned int lineno, const unsigned int fileno, bool split = false);
-    void addtoken(const Token *tok, const unsigned int lineno, const unsigned int fileno);
+    void addtoken(std::string str, const nonneg int lineno, const nonneg int fileno, bool split = false);
+    void addtoken(const Token *tok, const nonneg int lineno, const nonneg int fileno);
 
-    static void insertTokens(Token *dest, const Token *src, unsigned int n);
+    static void insertTokens(Token *dest, const Token *src, nonneg int n);
 
     /**
      * Copy tokens.
@@ -101,7 +101,7 @@ public:
     void deallocateTokens();
 
     /** append file name if seen the first time; return its index in any case */
-    unsigned int appendFileIfNew(const std::string &fileName);
+    int appendFileIfNew(const std::string &fileName);
 
     /** get first token of list */
     const Token *front() const {

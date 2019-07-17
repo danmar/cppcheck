@@ -24,6 +24,11 @@ typedef unsigned long long u64;
 
 extern int misra_5_1_extern_var_hides_var_x;
 extern int misra_5_1_extern_var_hides_var_y; //5.1
+int misra_5_1_var_hides_var________a;
+int misra_5_1_var_hides_var________b; int misra_5_1_var_hides_var________b1; int misra_5_1_var_hides_var________b2; //5.1
+int misra_5_1_var_hides_var________c; //5.1
+int misra_5_1_var_hides_var________d; //5.1
+int misra_5_1_var_hides_var________e; //5.1
 
 extern const uint8_t misra_5_2_var1;
 const uint8_t        misra_5_2_var1 = 3; // no warning
@@ -63,6 +68,8 @@ int misra_5_2_field_hides_field1_31y;//5.2
 };
 const char *s41_1 = "\x41g"; // 4.1
 const char *s41_2 = "\x41\x42";
+int c41_3         = '\141t'; // 4.1
+int c41_4         = '\141\t';
 
 extern int misra_5_3_var_hides_var______31x;
 void misra_5_3_var_hides_function_31x (void) {}
@@ -145,6 +152,7 @@ extern int a811[]; // 8.11
 enum misra_8_12_a { misra_a1 = 1, misra_a2 = 2, misra_a3, misra_a4 = 3 }; //8.12
 enum misra_8_12_b { misra_b1, misra_b2, misra_b3 = 3, misra_b4 = 3 }; // no-warning
 enum misra_8_12_c { misra_c1 = misra_a1, misra_c2 = 1 }; // no-warning
+enum misra_8_12_d { misra_d1 = 1, misra_d2 = 2, misra_d3 = misra_d1 }; // no-warning
 
 void misra_8_14(char * restrict str) {} // 8.14
 
@@ -216,8 +224,9 @@ void misra_11_7(int *p, float f) {
   y = ( int * ) f; //11.7
 }
 
+char * misra_11_8_const(const char *str) {  }
 char * misra_11_8(const char *str) {
-  misra_11_8(str); // no-warning
+  (void)misra_11_8_const(str); // no-warning
   return (char *)str; // 11.8
 }
 
@@ -266,6 +275,18 @@ void misra_13_1(int *p) {
 void misra_13_3() {
   x = y++; // 13.3
 }
+
+#define STRING_DEF_13_4    "This is a string"
+
+typedef struct
+{
+    char string[sizeof(STRING_DEF_13_4)];
+} s13_4_t;
+
+static s13_4_t s13_4 =
+{
+    .string = STRING_DEF_13_4 // no-warning
+};
 
 void misra_13_4() {
   if (x != (y = z)) {} // 13.4
@@ -475,15 +496,80 @@ void misra_17_1() {
   va_copy(); // 17.1
 }
 
+void misra_17_2_ok_1(void) { ; }
+void misra_17_2_ok_2(void) {
+    misra_17_2_ok_1(); // no-warning
+}
+void misra_17_2_1(void) {
+  misra_17_2_ok_1(); // no-warning
+  misra_17_2_1(); // 17.2
+  misra_17_2_ok_2(); // no-warning
+  misra_17_2_1(); // 17.2
+}
+void misra_17_2_2(void) {
+  misra_17_2_3(); // 17.2
+}
+void misra_17_2_3(void) {
+  misra_17_2_4(); // 17.2
+}
+void misra_17_2_4(void) {
+  misra_17_2_2(); // 17.2
+  misra_17_2_3(); // 17.2
+}
+
+void misra_17_2_5(void) {
+  misra_17_2_ok_1(); // no-warning
+  misra_17_2_5(); // 17.2
+  misra_17_2_1(); // no-warning
+}
+
 void misra_17_6(int x[static 20]) {} // 17.6
+
+int calculation(int x) { return x + 1; }
+void misra_17_7(void) {
+  calculation(123); // 17.7
+}
 
 void misra_17_8(int x) {
   x = 3; // 17.8
 }
 
+void misra_18_4()
+{
+  int b = 42;
+  int *bp = &b;
+  bp += 1; // 18.4
+  bp -= 2; // 18.4
+  int *p = bp - 2; // 18.4
+  int *ab = &b + 1; // 18.4
+  p = bp + p; // 18.4
+  bp = 1 + p + 1; // 18.4
+  b += 19; // no-warning
+  b = b + 9; // no-warning
+}
+
 void misra_18_5() {
   int *** p;  // 18.5
 }
+
+struct {
+  uint16_t len;
+  struct {
+    uint8_t data_1[]; // 18.7
+  } nested_1;
+  struct named {
+    struct {
+      uint8_t len_1;
+      uint32_t data_2[]; // 18.7
+    } nested_2;
+    uint8_t data_3[]; // 18.7
+  } nested_3;
+} _18_7_struct;
+struct {
+  uint16_t len;
+  uint8_t data_1[ 19 ];
+  uint8_t data_2[   ]; // 18.7
+} _18_7_struct;
 
 void misra_18_8(int x) {
   int buf1[10];
@@ -498,7 +584,21 @@ union misra_19_2 { }; // 19.2
 #define int short // 20.4
 #undef X  // 20.5
 
+#define M_20_7_1(A)  (A+1) // 20.7
+#define M_20_7_2(A,B)  (1+AB+2) // no warning
+#define M_20_7_3(A)  ((A)+A) // 20.7
+
+#define STRINGIFY(a) (#a) // 20.7 20.10
+
 #else1 // 20.13
+
+#ifdef A>1
+# define somethingis 5 // no warning
+# define func_20_13(v) (v) // no warning
+#else
+# definesomethingis 6 // 20.13
+# def fun_2013(v) () // 20.13
+#endif
 
 void misra_21_3() {
   p1=malloc(10); // 21.3
@@ -508,20 +608,20 @@ void misra_21_3() {
 }
 
 void misra_21_7() {
-  atof(str); // 21.7
-  atoi(str); // 21.7
-  atol(str); // 21.7
-  atoll(str); // 21.7
+  (void)atof(str); // 21.7
+  (void)atoi(str); // 21.7
+  (void)atol(str); // 21.7
+  (void)atoll(str); // 21.7
 }
 
 void misra_21_8() {
   abort(); // 21.8
-  getenv("foo"); // 21.8
-  system(""); // 21.8
+  (void)getenv("foo"); // 21.8
+  (void)system(""); // 21.8
   exit(-1); // 21.8
 }
 
 void misra_21_9() {
-  bsearch(key,base,num,size,cmp); // 21.9
+  (void)bsearch(key,base,num,size,cmp); // 21.9
   qsort(base,num,size,cmp); // 21.9
 }

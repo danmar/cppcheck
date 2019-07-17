@@ -46,6 +46,7 @@ private:
             "    <alloc init=\"false\">malloc</alloc>\n"
             "    <dealloc>free</dealloc>\n"
             "  </memory>\n"
+            "  <smart-pointer class-name=\"std::shared_ptr\"/>\n"
             "</def>";
             tinyxml2::XMLDocument doc;
             doc.Parse(xmldata, sizeof(xmldata));
@@ -173,6 +174,7 @@ private:
         TEST_CASE(const64); // ticket #6268
         TEST_CASE(const65); // ticket #8693
         TEST_CASE(const66); // ticket #7714
+        TEST_CASE(const67); // ticket #9193
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -430,6 +432,11 @@ private:
                                   "    B(const B&) {}\n"
                                   "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkExplicitConstructors("struct A{"
+                                  "    A(int, int y=2) {}"
+                                  "};");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Struct 'A' has a constructor with 1 argument that is not explicit.\n", errout.str());
     }
 
     void checkDuplInheritedMembers(const char code[]) {
@@ -587,7 +594,7 @@ private:
                              "   F&operator=(const F&);\n"
                              "   ~F();\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Value of pointer 'p', which points to allocated memory, is copied in copy constructor instead of allocating new memory.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Value of pointer 'p', which points to allocated memory, is copied in copy constructor instead of allocating new memory.\n", errout.str());
 
         checkCopyConstructor("class F {\n"
                              "   char *p;\n"
@@ -600,9 +607,9 @@ private:
                              "   ~F();\n"
                              "   F& operator=(const F&f);\n"
                              "};");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (style) Value of pointer 'p', which points to allocated memory, is copied in copy constructor instead of allocating new memory.\n"
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (warning) Value of pointer 'p', which points to allocated memory, is copied in copy constructor instead of allocating new memory.\n"
                            "[test.cpp:3] -> [test.cpp:7]: (warning) Copy constructor does not allocate memory for member 'p' although memory has been allocated in other constructors.\n",
-                           "[test.cpp:4]: (style) Value of pointer 'p', which points to allocated memory, is copied in copy constructor instead of allocating new memory.\n"
+                           "[test.cpp:4]: (warning) Value of pointer 'p', which points to allocated memory, is copied in copy constructor instead of allocating new memory.\n"
                            , errout.str());
 
         checkCopyConstructor("class F\n"
@@ -620,9 +627,9 @@ private:
                              "   ~F();\n"
                              "   F& operator=(const F&f);\n"
                              "};");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Value of pointer 'p', which points to allocated memory, is copied in copy constructor instead of allocating new memory.\n"
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (warning) Value of pointer 'p', which points to allocated memory, is copied in copy constructor instead of allocating new memory.\n"
                            "[test.cpp:5] -> [test.cpp:10]: (warning) Copy constructor does not allocate memory for member 'p' although memory has been allocated in other constructors.\n",
-                           "[test.cpp:5]: (style) Value of pointer 'p', which points to allocated memory, is copied in copy constructor instead of allocating new memory.\n"
+                           "[test.cpp:5]: (warning) Value of pointer 'p', which points to allocated memory, is copied in copy constructor instead of allocating new memory.\n"
                            , errout.str());
 
         checkCopyConstructor("class kalci\n"
@@ -718,7 +725,7 @@ private:
                              "   ~F();\n"
                              "   F& operator=(const F&f);\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:8]: (style) Class 'F' does not have a copy constructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (warning) Class 'F' does not have a copy constructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
 
         checkCopyConstructor("class F\n"
                              "{\n"
@@ -776,7 +783,7 @@ private:
                              "   ~F();\n"
                              "   F& operator=(const F&f);\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Class 'F' does not have a copy constructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Class 'F' does not have a copy constructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
 
         checkCopyConstructor("class F {\n"
                              "   char *p;\n"
@@ -795,7 +802,7 @@ private:
                              "   ~F();\n"
                              "   F& operator=(const F&f);\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Class 'F' does not have a copy constructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Class 'F' does not have a copy constructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
 
         // #7198
         checkCopyConstructor("struct F {\n"
@@ -841,7 +848,7 @@ private:
                              "   F&operator=(const F &f);\n"
                              "   ~F();\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Struct 'F' has dynamic memory/resource allocation(s). The copy constructor is explicitly defaulted but the default copy constructor does not work well. It is recommended to define or delete the copy constructor.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Struct 'F' has dynamic memory/resource allocation(s). The copy constructor is explicitly defaulted but the default copy constructor does not work well. It is recommended to define or delete the copy constructor.\n", errout.str());
     }
 
     void copyConstructor4() {
@@ -874,7 +881,7 @@ private:
                              "   F(const F &f);\n"
                              "   ~F();\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Struct 'F' does not have a operator= which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Struct 'F' does not have a operator= which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
 
         // defaulted operator=
         checkCopyConstructor("struct F {\n"
@@ -884,7 +891,7 @@ private:
                              "   F &operator=(const F &f) = default;\n"
                              "   ~F();\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Struct 'F' has dynamic memory/resource allocation(s). The operator= is explicitly defaulted but the default operator= does not work well. It is recommended to define or delete the operator=.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Struct 'F' has dynamic memory/resource allocation(s). The operator= is explicitly defaulted but the default operator= does not work well. It is recommended to define or delete the operator=.\n", errout.str());
 
         // deleted operator=
         checkCopyConstructor("struct F {\n"
@@ -913,7 +920,7 @@ private:
                              "   F(const F &f);\n"
                              "   F&operator=(const F&);"
                              "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Struct 'F' does not have a destructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Struct 'F' does not have a destructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
 
         checkCopyConstructor("struct F {\n"
                              "   C* c;\n"
@@ -930,7 +937,7 @@ private:
                              "   F(const F &f);\n"
                              "   F&operator=(const F&);"
                              "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Struct 'F' does not have a destructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Struct 'F' does not have a destructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
 
         // defaulted destructor
         checkCopyConstructor("struct F {\n"
@@ -940,7 +947,7 @@ private:
                              "   F &operator=(const F &f);\n"
                              "   ~F() = default;\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Struct 'F' has dynamic memory/resource allocation(s). The destructor is explicitly defaulted but the default destructor does not work well. It is recommended to define the destructor.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Struct 'F' has dynamic memory/resource allocation(s). The destructor is explicitly defaulted but the default destructor does not work well. It is recommended to define the destructor.\n", errout.str());
 
         // deleted destructor
         checkCopyConstructor("struct F {\n"
@@ -1472,6 +1479,18 @@ private:
             "};\n"
             "A &A::operator =(int *other) { return (*this); };\n"
             "A &A::operator =(long *other) { return this->operator = (*(int *)other); };");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqRetRefThis( // #9045
+            "class V {\n"
+            "public:\n"
+            "    V& operator=(const V& r) {\n"
+            "        if (this == &r) {\n"
+            "            return ( *this );\n"
+            "        }\n"
+            "        return *this;\n"
+            "    }\n"
+            "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3144,7 +3163,8 @@ private:
         Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
-                               "  <podtype name=\"uint8_t\" sign=\"u\" size=\"1\"/>\n"
+                               "  <podtype name=\"std::uint8_t\" sign=\"u\" size=\"1\"/>\n"
+                               "  <podtype name=\"std::atomic_bool\"/>\n"
                                "</def>";
         tinyxml2::XMLDocument doc;
         doc.Parse(xmldata, sizeof(xmldata));
@@ -3161,8 +3181,7 @@ private:
 
         checkNoMemset("struct st {\n"
                       "  std::uint8_t a;\n"
-                      "  std::uint8_t b;\n"
-                      "  std::uint8_t c;\n"
+                      "  std::atomic_bool b;\n"
                       "};\n"
                       "\n"
                       "void f() {\n"
@@ -3302,7 +3321,7 @@ private:
                       "[test.cpp:3]: (warning) Suspicious pointer subtraction. Did you intend to write '->'?\n", errout.str());
     }
 
-    void checkConst(const char code[], Settings *s = 0, bool inconclusive = true) {
+    void checkConst(const char code[], Settings *s = nullptr, bool inconclusive = true) {
         // Clear the error log
         errout.str("");
 
@@ -5534,7 +5553,7 @@ private:
                    "  void set(const Key& key) {\n"
                    "      inherited::set(inherited::Key(key));\n"
                    "  }\n"
-                   "};\n", 0, false);
+                   "};\n", nullptr, false);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5641,6 +5660,20 @@ private:
                    "    int n;\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void const67() { // #9193
+        checkConst("template <class VALUE_T, class LIST_T = std::list<VALUE_T> >\n"
+                   "class TestList {\n"
+                   "public:\n"
+                   "    LIST_T m_list;\n"
+                   "};\n"
+                   "class Test {\n"
+                   "public:\n"
+                   "    const std::list<std::shared_ptr<int>>& get() { return m_test.m_list; }\n"
+                   "    TestList<std::shared_ptr<int>> m_test;\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:8]: (style, inconclusive) Technically the member function 'Test::get' can be const.\n", errout.str());
     }
 
     void const_handleDefaultParameters() {
@@ -6756,7 +6789,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkVirtualFunctionCall(const char code[], Settings *s = 0, bool inconclusive = true) {
+    void checkVirtualFunctionCall(const char code[], Settings *s = nullptr, bool inconclusive = true) {
         // Clear the error log
         errout.str("");
 
@@ -6794,6 +6827,23 @@ private:
                                  "};\n"
                                  "int A::f() { return 1; }\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Virtual function 'f' is called from constructor 'A()' at line 3. Dynamic binding is not used.\n", errout.str());
+
+        checkVirtualFunctionCall("class A : B {\n"
+                                 "    int f() override;\n"
+                                 "    A() {f();}\n"
+                                 "};\n"
+                                 "int A::f() { return 1; }\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Virtual function 'f' is called from constructor 'A()' at line 3. Dynamic binding is not used.\n", errout.str());
+
+        checkVirtualFunctionCall("class B {\n"
+                                 "    virtual int f() = 0;\n"
+                                 "};\n"
+                                 "class A : B {\n"
+                                 "    int f();\n"
+                                 "    A() {f();}\n"
+                                 "};\n"
+                                 "int A::f() { return 1; }\n");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:5]: (warning) Virtual function 'f' is called from constructor 'A()' at line 6. Dynamic binding is not used.\n", errout.str());
 
         checkVirtualFunctionCall("class A\n"
                                  "{\n"

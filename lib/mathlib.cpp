@@ -370,7 +370,7 @@ MathLib::bigint MathLib::characterLiteralToLongNumber(const std::string& str)
 
     // '\123'
     if (str.size() == 4 && str[0] == '\\' && isoctal(str[1]) && isoctal(str[2]) && isoctal(str[3])) {
-        return (char)std::strtoul(str.substr(1).c_str(), NULL, 8);
+        return (char)std::strtoul(str.substr(1).c_str(), nullptr, 8);
     }
 
     // C99 6.4.4.4
@@ -643,87 +643,87 @@ bool MathLib::isDecimalFloat(const std::string &str)
 {
     if (str.empty())
         return false;
-    enum State {
+    enum class State {
         START, BASE_DIGITS1, LEADING_DECIMAL, TRAILING_DECIMAL, BASE_DIGITS2, E, MANTISSA_PLUSMINUS, MANTISSA_DIGITS, SUFFIX_F, SUFFIX_L
-    } state = START;
+    } state = State::START;
     std::string::const_iterator it = str.begin();
     if ('+' == *it || '-' == *it)
         ++it;
     for (; it != str.end(); ++it) {
         switch (state) {
-        case START:
+        case State::START:
             if (*it=='.')
-                state=LEADING_DECIMAL;
+                state = State::LEADING_DECIMAL;
             else if (std::isdigit(static_cast<unsigned char>(*it)))
-                state=BASE_DIGITS1;
+                state = State::BASE_DIGITS1;
             else
                 return false;
             break;
-        case LEADING_DECIMAL:
+        case State::LEADING_DECIMAL:
             if (std::isdigit(static_cast<unsigned char>(*it)))
-                state=BASE_DIGITS2;
+                state = State::BASE_DIGITS2;
             else
                 return false;
             break;
-        case BASE_DIGITS1:
+        case State::BASE_DIGITS1:
             if (*it=='e' || *it=='E')
-                state=E;
+                state = State::E;
             else if (*it=='.')
-                state=TRAILING_DECIMAL;
+                state = State::TRAILING_DECIMAL;
             else if (!std::isdigit(static_cast<unsigned char>(*it)))
                 return false;
             break;
-        case TRAILING_DECIMAL:
+        case State::TRAILING_DECIMAL:
             if (*it=='e' || *it=='E')
-                state=E;
+                state = State::E;
             else if (*it=='f' || *it=='F')
-                state=SUFFIX_F;
+                state = State::SUFFIX_F;
             else if (*it=='l' || *it=='L')
-                state=SUFFIX_L;
+                state = State::SUFFIX_L;
             else if (std::isdigit(static_cast<unsigned char>(*it)))
-                state=BASE_DIGITS2;
+                state = State::BASE_DIGITS2;
             else
                 return false;
             break;
-        case BASE_DIGITS2:
+        case State::BASE_DIGITS2:
             if (*it=='e' || *it=='E')
-                state=E;
+                state = State::E;
             else if (*it=='f' || *it=='F')
-                state=SUFFIX_F;
+                state = State::SUFFIX_F;
             else if (*it=='l' || *it=='L')
-                state=SUFFIX_L;
+                state = State::SUFFIX_L;
             else if (!std::isdigit(static_cast<unsigned char>(*it)))
                 return false;
             break;
-        case E:
+        case State::E:
             if (*it=='+' || *it=='-')
-                state=MANTISSA_PLUSMINUS;
+                state = State::MANTISSA_PLUSMINUS;
             else if (std::isdigit(static_cast<unsigned char>(*it)))
-                state=MANTISSA_DIGITS;
+                state = State::MANTISSA_DIGITS;
             else
                 return false;
             break;
-        case MANTISSA_PLUSMINUS:
+        case State::MANTISSA_PLUSMINUS:
             if (!std::isdigit(static_cast<unsigned char>(*it)))
                 return false;
             else
-                state=MANTISSA_DIGITS;
+                state = State::MANTISSA_DIGITS;
             break;
-        case MANTISSA_DIGITS:
+        case State::MANTISSA_DIGITS:
             if (*it=='f' || *it=='F')
-                state=SUFFIX_F;
+                state = State::SUFFIX_F;
             else if (*it=='l' || *it=='L')
-                state=SUFFIX_L;
+                state = State::SUFFIX_L;
             else if (!std::isdigit(static_cast<unsigned char>(*it)))
                 return false;
             break;
-        case SUFFIX_F:
+        case State::SUFFIX_F:
             return false;
-        case SUFFIX_L:
+        case State::SUFFIX_L:
             return false;
         }
     }
-    return (state==BASE_DIGITS2 || state==MANTISSA_DIGITS || state==TRAILING_DECIMAL || state==SUFFIX_F || state==SUFFIX_L);
+    return (state==State::BASE_DIGITS2 || state==State::MANTISSA_DIGITS || state==State::TRAILING_DECIMAL || state==State::SUFFIX_F || state==State::SUFFIX_L);
 }
 
 bool MathLib::isNegative(const std::string &str)
@@ -842,9 +842,9 @@ bool MathLib::isValidIntegerSuffix(const std::string& str, bool supportMicrosoft
  **/
 bool MathLib::isOct(const std::string& str)
 {
-    enum Status {
+    enum class Status {
         START, OCTAL_PREFIX, DIGITS
-    } state = START;
+    } state = Status::START;
     if (str.empty())
         return false;
     std::string::const_iterator it = str.begin();
@@ -852,27 +852,27 @@ bool MathLib::isOct(const std::string& str)
         ++it;
     for (; it != str.end(); ++it) {
         switch (state) {
-        case START:
+        case Status::START:
             if (*it == '0')
-                state = OCTAL_PREFIX;
+                state = Status::OCTAL_PREFIX;
             else
                 return false;
             break;
-        case OCTAL_PREFIX:
+        case Status::OCTAL_PREFIX:
             if (isOctalDigit(static_cast<unsigned char>(*it)))
-                state = DIGITS;
+                state = Status::DIGITS;
             else
                 return false;
             break;
-        case DIGITS:
+        case Status::DIGITS:
             if (isOctalDigit(static_cast<unsigned char>(*it)))
-                state = DIGITS;
+                state = Status::DIGITS;
             else
                 return _isValidIntegerSuffix(it,str.end());
             break;
         }
     }
-    return state == DIGITS;
+    return state == Status::DIGITS;
 }
 
 bool MathLib::isIntHex(const std::string& str)
@@ -1335,7 +1335,7 @@ bool MathLib::isLessEqual(const std::string &first, const std::string &second)
  **/
 bool MathLib::isNullValue(const std::string &str)
 {
-    if (str.empty() || (!std::isdigit(static_cast<unsigned char>(str[0])) && (str.size() < 1 || (str[0] != '.' && str[0] != '-' && str[0] != '+'))))
+    if (str.empty() || (!std::isdigit(static_cast<unsigned char>(str[0])) && (str[0] != '.' && str[0] != '-' && str[0] != '+')))
         return false; // Has to be a number
 
     for (size_t i = 0; i < str.size(); i++) {

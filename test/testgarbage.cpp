@@ -234,6 +234,8 @@ private:
         TEST_CASE(garbageCode201); // #8873
         TEST_CASE(garbageCode202); // #8907
         TEST_CASE(garbageCode203); // #8972
+        TEST_CASE(garbageCode204);
+        TEST_CASE(garbageCode205);
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -244,6 +246,8 @@ private:
         TEST_CASE(syntaxErrorFirstToken); // Make sure syntax errors are detected and reported
         TEST_CASE(syntaxErrorLastToken); // Make sure syntax errors are detected and reported
         TEST_CASE(syntaxErrorCase);
+        TEST_CASE(syntaxErrorFuzzerCliType1);
+        TEST_CASE(cliCode);
         TEST_CASE(enumTrailingComma);
 
         TEST_CASE(nonGarbageCode1); // #8346
@@ -277,12 +281,8 @@ private:
         }
 
         tokenizer.simplifyTokenList2();
-        // call all "runSimplifiedChecks" in all registered Check classes
-        for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
-            (*it)->runSimplifiedChecks(&tokenizer, &settings, this);
-        }
 
-        return tokenizer.tokens()->stringifyList(false, false, false, true, false, 0, 0);
+        return tokenizer.tokens()->stringifyList(false, false, false, true, false, nullptr, nullptr);
     }
 
     std::string getSyntaxError(const char code[]) {
@@ -343,8 +343,8 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
             assertThrowFail(__FILE__, __LINE__);
         } catch (InternalError& e) {
-            ASSERT_EQUALS("Analysis failed. If the code is valid then please report this failure.", e.errorMessage);
-            ASSERT_EQUALS("cppcheckError", e.id);
+            ASSERT_EQUALS("syntax error", e.errorMessage);
+            ASSERT_EQUALS("syntaxError", e.id);
             ASSERT_EQUALS(4, e.token->linenr());
         }
     }
@@ -437,7 +437,7 @@ private:
     }
 
     void garbageCode7() {
-        checkCode("1 (int j) { return return (c) * sizeof } y[1];");
+        ASSERT_THROW(checkCode("1 (int j) { return return (c) * sizeof } y[1];"), InternalError);
         ASSERT_THROW(checkCode("foo(Args&&...) fn void = { } auto template<typename... bar(Args&&...)"), InternalError);
     }
 
@@ -682,7 +682,7 @@ private:
     }
 
     void garbageCode58() { // #6732, #6762
-        checkCode("{ }> {= ~A()^{} }P { }");
+        ASSERT_THROW(checkCode("{ }> {= ~A()^{} }P { }"), InternalError);
         ASSERT_THROW(checkCode("{= ~A()^{} }P { } { }> is"), InternalError);
     }
 
@@ -842,9 +842,9 @@ private:
 
     void garbageCode101() { // #6835
         // Reported case
-        checkCode("template < class , =( , int) X = 1 > struct A { } ( ) { = } [ { } ] ( ) { A < void > 0 }");
+        ASSERT_THROW(checkCode("template < class , =( , int) X = 1 > struct A { } ( ) { = } [ { } ] ( ) { A < void > 0 }"), InternalError);
         // Reduced case
-        checkCode("template < class =( , ) X = 1> struct A {}; A<void> a;");
+        ASSERT_THROW(checkCode("template < class =( , ) X = 1> struct A {}; A<void> a;"), InternalError);
     }
 
     void garbageCode102() { // #6846
@@ -1156,19 +1156,19 @@ private:
     }
 
     void garbageCode147() { // #7082
-        checkCode("free(3();\n"
-                  "$  vWrongAllocp1) test1<int, -!>() ^ {\n"
-                  "    int *p<ynew int[n];\n"
-                  "    delete[]p;\n"
-                  "    int *p1 = (int*)malloc(n*sizeof(int));\n"
-                  "    free(p1);\n"
-                  "}\n"
-                  "void est2() {\n"
-                  "    for (int ui = 0; ui < 1z; ui++)\n"
-                  "        ;\n"
-                  "}");
+        ASSERT_THROW(checkCode("free(3();\n"
+                               "$  vWrongAllocp1) test1<int, -!>() ^ {\n"
+                               "    int *p<ynew int[n];\n"
+                               "    delete[]p;\n"
+                               "    int *p1 = (int*)malloc(n*sizeof(int));\n"
+                               "    free(p1);\n"
+                               "}\n"
+                               "void est2() {\n"
+                               "    for (int ui = 0; ui < 1z; ui++)\n"
+                               "        ;\n"
+                               "}"), InternalError);
 
-        checkCode("; void f ^ { return } int main ( ) { }"); // #4941
+        ASSERT_THROW(checkCode("; void f ^ { return } int main ( ) { }"), InternalError); // #4941
     }
 
     void garbageCode148() { // #7090
@@ -1417,7 +1417,7 @@ private:
 
     void garbageCode170() {
         // 7255
-        checkCode("d i(){{f*s=typeid(()0,)}}", false);
+        ASSERT_THROW(checkCode("d i(){{f*s=typeid(()0,)}}", false), InternalError);
     }
 
     void garbageCode171() {
@@ -1595,6 +1595,29 @@ private:
         ASSERT_THROW(checkCode("{ template <a> class b { } template <> template <c> c() b<a>::e() { } template b<d>; }"), InternalError);
     }
 
+    void garbageCode204() {
+        ASSERT_THROW(checkCode("template <a, = b<>()> c; template <a> a as() {} as<c<>>();"), InternalError);
+    }
+
+    void garbageCode205() {
+        checkCode("class CodeSnippetsEvent : public wxCommandEvent {\n"
+                  "public :\n"
+                  "    CodeSnippetsEvent ( wxEventType commandType =  wxEventType , int id = 0 ) ;\n"
+                  "    CodeSnippetsEvent ( const CodeSnippetsEvent & event ) ;\n"
+                  "virtual wxEvent * Clone ( ) const { return new CodeSnippetsEvent ( * this ) ; }\n"
+                  "private :\n"
+                  "    int m_SnippetID ;\n"
+                  "} ;\n"
+                  "const  wxEventType wxEVT_CODESNIPPETS_GETFILELINKS  =  wxNewEventType  (  )\n"
+                  "CodeSnippetsEvent :: CodeSnippetsEvent ( wxEventType commandType , int id )\n"
+                  ": wxCommandEvent ( commandType , id ) {\n"
+                  "}\n"
+                  "CodeSnippetsEvent :: CodeSnippetsEvent ( const CodeSnippetsEvent & Event )\n"
+                  ": wxCommandEvent ( Event )\n"
+                  ", m_SnippetID ( 0 ) {\n"
+                  "}"); // don't crash
+    }
+
     void syntaxErrorFirstToken() {
         ASSERT_THROW(checkCode("&operator(){[]};"), InternalError); // #7818
         ASSERT_THROW(checkCode("*(*const<> (size_t); foo) { } *(*const (size_t)() ; foo) { }"), InternalError); // #6858
@@ -1641,6 +1664,7 @@ private:
         ASSERT_THROW(checkCode("int"), InternalError);
         ASSERT_THROW(checkCode("struct A :\n"), InternalError); // #2591
         ASSERT_THROW(checkCode("{} const const\n"), InternalError); // #2637
+        ASSERT_THROW(checkCode("re2c: error: line 14, column 4: can only difference char sets"), InternalError);
 
         // ASSERT_THROW(  , InternalError)
     }
@@ -1653,6 +1677,27 @@ private:
         ASSERT_THROW(checkCode("void f() { true 0; }"), InternalError);
         ASSERT_THROW(checkCode("void f() { 'a' 0; }"), InternalError);
         ASSERT_THROW(checkCode("void f() { 1 \"\"; }"), InternalError);
+    }
+
+    void syntaxErrorFuzzerCliType1() {
+        ASSERT_THROW(checkCode("void f(){x=0,return return''[]()}"), InternalError);
+        ASSERT_THROW(checkCode("void f(){x='0'++'0'(return)[];}"), InternalError); // #9063
+        checkCode("void f(){*(int *)42=0;}"); // no syntax error
+        ASSERT_THROW(checkCode("void f() { x= 'x' > typedef name5 | ( , ;){ } (); }"), InternalError); // #9067
+        ASSERT_THROW(checkCode("void f() { x= {}( ) ( 'x')[ ] (); }"), InternalError); // #9068
+        ASSERT_THROW(checkCode("void f() { x= y{ } name5 y[ ] + y ^ name5 ^ name5 for ( ( y y y && y y y && name5 ++ int )); }"), InternalError); // #9069
+    }
+
+    void cliCode() {
+        // #8913
+        /*
+        ASSERT_THROW(checkCode("public ref class LibCecSharp : public CecCallbackMethods {\n"
+                               "array<CecAdapter ^> ^ FindAdapters(String ^ path) {} \n"
+                               "bool GetDeviceInformation(String ^ port, LibCECConfiguration ^configuration, uint32_t timeoutMs) {\n"
+                               "bool bReturn(false);\n"
+                               "}\n"
+                               "};\n"), InternalError);
+                               */
     }
 
     void enumTrailingComma() {

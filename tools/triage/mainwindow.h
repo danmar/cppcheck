@@ -22,7 +22,9 @@ public:
 public slots:
     void loadFile();
     void loadFromClipboard();
+    void filter(QString filter);
     void showResult(QListWidgetItem *item);
+    void refreshResults();
 
 private:
     Ui::MainWindow *ui;
@@ -31,6 +33,8 @@ private:
     bool runProcess(const QString &programName, const QStringList & arguments);
     bool wget(const QString &url);
     bool unpackArchive(const QString &archiveName);
+
+    QStringList mAllErrors;
 };
 
 #endif // MAINWINDOW_H

@@ -102,25 +102,17 @@ public:
      * @param varid variable id
      * @return type of deallocation
      */
-    AllocType getDeallocationType(const Token *tok, unsigned int varid) const;
+    AllocType getDeallocationType(const Token *tok, nonneg int varid) const;
 
     /**
      * @brief Get type of allocation at given position
      */
-    AllocType getAllocationType(const Token *tok2, unsigned int varid, std::list<const Function*> *callstack = nullptr) const;
+    AllocType getAllocationType(const Token *tok2, nonneg int varid, std::list<const Function*> *callstack = nullptr) const;
 
     /**
      * @brief Get type of reallocation at given position
      */
-    static AllocType getReallocationType(const Token *tok2, unsigned int varid);
-
-    /**
-     * @brief Is a typename the name of a class?
-     * @param tok type token
-     * @param varid variable id
-     * @return true if the type name is the name of a class
-     */
-    bool isclass(const Token *tok, unsigned int varid) const;
+    static AllocType getReallocationType(const Token *tok2, nonneg int varid);
 
     /**
      * Report that there is a memory leak (new/malloc/etc)
@@ -151,7 +143,7 @@ public:
     AllocType functionReturnType(const Function* func, std::list<const Function*> *callstack = nullptr) const;
 
     /** Function allocates pointed-to argument (a la asprintf)? */
-    const char *functionArgAlloc(const Function *func, unsigned int targetpar, AllocType &allocType) const;
+    const char *functionArgAlloc(const Function *func, nonneg int targetpar, AllocType &allocType) const;
 };
 
 /// @}
@@ -183,8 +175,7 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger, settings) {
     }
 
-    /** @brief run all simplified checks */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         CheckMemoryLeakInFunction checkMemoryLeak(tokenizer, settings, errorLogger);
         checkMemoryLeak.checkReallocUsage();
     }
@@ -245,7 +236,7 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger, settings) {
     }
 
-    void runSimplifiedChecks(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog) OVERRIDE {
+    void runChecks(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog) OVERRIDE {
         if (!tokenizr->isCPP())
             return;
 
@@ -292,7 +283,7 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger, settings) {
     }
 
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         CheckMemoryLeakStructMember checkMemoryLeak(tokenizer, settings, errorLogger);
         checkMemoryLeak.check();
     }
@@ -331,7 +322,7 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger, settings) {
     }
 
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         CheckMemoryLeakNoVar checkMemoryLeak(tokenizer, settings, errorLogger);
         checkMemoryLeak.check();
     }

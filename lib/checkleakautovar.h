@@ -52,10 +52,10 @@ public:
             return status < 0;
         }
     };
-    std::map<unsigned int, AllocInfo> alloctype;
-    std::map<unsigned int, std::string> possibleUsage;
-    std::set<unsigned int> conditionalAlloc;
-    std::set<unsigned int> referenced;
+    std::map<int, AllocInfo> alloctype;
+    std::map<int, std::string> possibleUsage;
+    std::set<int> conditionalAlloc;
+    std::set<int> referenced;
 
     void clear() {
         alloctype.clear();
@@ -64,7 +64,7 @@ public:
         referenced.clear();
     }
 
-    void erase(unsigned int varid) {
+    void erase(nonneg int varid) {
         alloctype.erase(varid);
         possibleUsage.erase(varid);
         conditionalAlloc.erase(varid);
@@ -103,8 +103,7 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
-    /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         CheckLeakAutoVar checkLeakAutoVar(tokenizer, settings, errorLogger);
         checkLeakAutoVar.check();
     }
@@ -117,7 +116,8 @@ private:
     /** check for leaks in a function scope */
     void checkScope(const Token * const startToken,
                     VarInfo *varInfo,
-                    std::set<unsigned int> notzero);
+                    std::set<int> notzero,
+                    nonneg int recursiveCount);
 
     /** Check token inside expression.
     * @param tok token inside expression.
@@ -131,6 +131,9 @@ private:
 
     /** parse changes in allocation status */
     void changeAllocStatus(VarInfo *varInfo, const VarInfo::AllocInfo& allocation, const Token* tok, const Token* arg);
+
+    /** update allocation status if reallocation function */
+    void changeAllocStatusIfRealloc(std::map<int, VarInfo::AllocInfo> &alloctype, const Token *fTok, const Token *retTok);
 
     /** return. either "return" or end of variable scope is seen */
     void ret(const Token *tok, const VarInfo &varInfo);

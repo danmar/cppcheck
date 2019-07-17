@@ -35,8 +35,10 @@ def wget(filepath):
 
 def getpackages():
     if not wget('ls-lR.gz'):
-        return []
+        sys.exit(1)
     subprocess.call(['nice', 'gunzip', 'ls-lR.gz'])
+    if not os.path.isfile('ls-lR'):
+        sys.exit(1)
     f = open('ls-lR', 'rt')
     lines = f.readlines()
     f.close()
@@ -88,7 +90,7 @@ def getpackages():
             filename = None
         elif line.startswith('./pool/main/'):
             path = line[2:-1]
-        elif path and line.endswith('.orig.tar.gz'):
+        elif path and line.endswith(('.orig.tar.gz', '.orig.tar.bz2')):
             filename = line[1 + line.rfind(' '):]
 
     return archives

@@ -32,6 +32,24 @@
               <optional>
                 <attribute name="arg"><ref name="ARGNO"/></attribute>
               </optional>
+              <optional>
+                <attribute name="buffer-size"><ref name="DATA-BUFFER-SIZE"/></attribute>
+              </optional>
+              <ref name="DATA-NAME"/>
+            </element>
+            <element name="realloc">
+              <optional>
+                <attribute name="init"><ref name="DATA-BOOL"/></attribute>
+              </optional>
+              <optional>
+                <attribute name="arg"><ref name="ARGNO"/></attribute>
+              </optional>
+              <optional>
+                <attribute name="buffer-size"><ref name="DATA-BUFFER-SIZE"/></attribute>
+              </optional>
+              <optional>
+                <attribute name="realloc-arg"><ref name="ARGNO"/></attribute>
+              </optional>
               <ref name="DATA-NAME"/>
             </element>
             <element name="use"><ref name="DATA-EXTNAME"/></element>
@@ -56,6 +74,18 @@
               </optional>
               <optional>
                 <attribute name="arg"><ref name="ARGNO"/></attribute>
+              </optional>
+              <ref name="DATA-NAME"/>
+            </element>
+            <element name="realloc">
+              <optional>
+                <attribute name="init"><ref name="DATA-BOOL"/></attribute>
+              </optional>
+              <optional>
+                <attribute name="arg"><ref name="ARGNO"/></attribute>
+              </optional>
+              <optional>
+                <attribute name="realloc-arg"><ref name="ARGNO"/></attribute>
               </optional>
               <ref name="DATA-NAME"/>
             </element>
@@ -100,6 +130,13 @@
               <optional>
                 <attribute name="container">
                   <data type="positiveInteger"/>
+                </attribute>
+              </optional>
+              <optional>
+                <attribute name="unknownValues">
+                  <data type="string">
+                    <param name="pattern">all|([0-9]*:[0-9]*)</param>
+                  </data>
                 </attribute>
               </optional>
               <text/>
@@ -163,6 +200,11 @@
                   <text/>
                 </attribute>
               </optional>
+              <optional>
+                <attribute name="direction">
+                  <ref name="ARG-DIRECTION"/>
+                </attribute>
+              </optional>
 
               <interleave>
                 <optional>
@@ -188,24 +230,36 @@
                   </element>
                 </optional>
                 <zeroOrMore>
-                  <element name="minsize">
-                    <attribute name="type">
-                      <choice>
-                        <value>strlen</value>
-                        <value>argvalue</value>
-                        <value>sizeof</value>
-                        <value>mul</value>
-                      </choice>
-                    </attribute>
-                    <attribute name="arg">
-                      <ref name="ARGNO"/>
-                    </attribute>
-                    <optional>
-                      <attribute name="arg2">
+                  <choice>
+                    <element name="minsize">
+                      <attribute name="type">
+                        <choice>
+                          <value>strlen</value>
+                          <value>argvalue</value>
+                          <value>sizeof</value>
+                          <value>mul</value>
+                        </choice>
+                      </attribute>
+                      <attribute name="arg">
                         <ref name="ARGNO"/>
                       </attribute>
-                    </optional>
-                  </element>
+                      <optional>
+                        <attribute name="arg2">
+                          <ref name="ARGNO"/>
+                        </attribute>
+                      </optional>
+                    </element>
+                    <element name="minsize">
+                      <attribute name="type">
+                        <choice>
+                          <value>value</value>
+                        </choice>
+                      </attribute>
+                      <attribute name="value">
+                        <ref name="MINSIZE-VALUE"/>
+                      </attribute>
+                    </element>
+                  </choice>
                 </zeroOrMore>
                 <optional>
                   <element name="iterator">
@@ -317,12 +371,19 @@
         <zeroOrMore>
           <choice>
             <element name="type">
-              <choice>
+              <optional>
                 <attribute name="templateParameter"><data type="integer"/></attribute>
+              </optional>
+              <optional>
                 <attribute name="string">
                   <value>std-like</value>
                 </attribute>
-              </choice>
+              </optional>
+              <optional>
+                <attribute name="associative">
+                  <value>std-like</value>
+                </attribute>
+              </optional>
               <empty/>
             </element>
             <element name="size">
@@ -332,14 +393,16 @@
               <zeroOrMore>
                 <element name="function">
                   <attribute name="name"><ref name="DATA-NAME"/></attribute>
-                  <choice>
+                  <optional>
                     <attribute name="action">
                       <ref name="CONTAINER-ACTION"/>
                     </attribute>
+                  </optional>
+                  <optional>
                     <attribute name="yields">
                       <ref name="CONTAINER-YIELDS"/>
                     </attribute>
-                  </choice>
+                  </optional>
                   <empty/>
                 </element>
               </zeroOrMore>
@@ -371,6 +434,10 @@
             </element>
           </choice>
         </zeroOrMore>
+      </element>
+
+      <element name="smart-pointer">
+        <attribute name="class-name"><ref name="DATA-EXTNAME"/></attribute>
       </element>
 
       <element name="podtype">
@@ -425,6 +492,14 @@
       <param name="maxInclusive">20</param>
     </data>
   </define>
+  
+  <define name="ARG-DIRECTION">
+    <choice>
+      <value>in</value>
+      <value>out</value>
+      <value>inout</value>
+    </choice>
+  </define>
 
   <define name="DATA-BOOL">
     <choice>
@@ -442,6 +517,12 @@
   <define name="DATA-EXTNAME">
     <data type="string">
       <param name="pattern">[a-zA-Z_][a-zA-Z_0-9:,]*</param>
+    </data>
+  </define>
+
+  <define name="DATA-BUFFER-SIZE">
+    <data type="string">
+      <param name="pattern">malloc(:[1-5])?|calloc(:[1-5],[1-5])?|strdup(:[1-5])?</param>
     </data>
   </define>
 
@@ -472,5 +553,12 @@
       <value>size</value>
       <value>empty</value>
     </choice>
+  </define>
+  
+  <define name="MINSIZE-VALUE">
+    <data type="unsignedLong">
+      <param name="minInclusive">1</param>
+      <param name="maxInclusive">9223372036854775807</param>
+    </data>
   </define>
 </grammar>

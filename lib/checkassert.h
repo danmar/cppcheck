@@ -49,9 +49,10 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
-    virtual void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        CheckAssert check(tokenizer, settings, errorLogger);
-        check.assertWithSideEffects();
+    /** run checks, the token list is not simplified */
+    virtual void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+        CheckAssert checkAssert(tokenizer, settings, errorLogger);
+        checkAssert.assertWithSideEffects();
     }
 
     void assertWithSideEffects();

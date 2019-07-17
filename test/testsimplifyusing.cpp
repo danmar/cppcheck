@@ -62,6 +62,9 @@ private:
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
         TEST_CASE(simplifyUsing8976);
+        TEST_CASE(simplifyUsing9040);
+        TEST_CASE(simplifyUsing9042);
+        TEST_CASE(simplifyUsing9191);
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
@@ -78,7 +81,7 @@ private:
         if (simplify)
             tokenizer.simplifyTokenList2();
 
-        return tokenizer.tokens()->stringifyList(0, !simplify);
+        return tokenizer.tokens()->stringifyList(nullptr, !simplify);
     }
 
     void simplifyUsing1() {
@@ -459,6 +462,66 @@ private:
         const char exp[] = ";";
 
         ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void simplifyUsing9040() {
+        const char code[] = "using BOOL = unsigned; int i;";
+
+        const char exp[] = "int i ;";
+
+        ASSERT_EQUALS(exp, tok(code, true, Settings::Unix32));
+        ASSERT_EQUALS(exp, tok(code, true, Settings::Unix64));
+        ASSERT_EQUALS(exp, tok(code, true, Settings::Win32A));
+        ASSERT_EQUALS(exp, tok(code, true, Settings::Win32W));
+        ASSERT_EQUALS(exp, tok(code, true, Settings::Win64));
+    }
+
+    void simplifyUsing9042() {
+        const char code[] = "template <class T>\n"
+                            "class c {\n"
+                            "    int i = 0;\n"
+                            "    c() { i--; }\n"
+                            "};\n"
+                            "template <class T>\n"
+                            "class s {};\n"
+                            "using BOOL = char;";
+
+        const char exp[] = "template < class T > "
+                           "class c { "
+                           "int i ; i = 0 ; "
+                           "c ( ) { i -- ; } "
+                           "} ;";
+
+        ASSERT_EQUALS(exp, tok(code, true, Settings::Win64));
+    }
+
+    void simplifyUsing9191() {
+        const char code[] = "namespace NS1 {\n"
+                            "  namespace NS2 {\n"
+                            "    using _LONG = signed long long;\n"
+                            "  }\n"
+                            "}\n"
+                            "void f1() {\n"
+                            "  using namespace NS1;\n"
+                            "  NS2::_LONG A;\n"
+                            "}\n"
+                            "void f2() {\n"
+                            "  using namespace NS1::NS2;\n"
+                            "  _LONG A;\n"
+                            "}";
+
+        const char exp[] = "namespace NS1 { "
+                           "} "
+                           "void f1 ( ) { "
+                           "using namespace NS1 ; "
+                           "signed long long A ; "
+                           "} "
+                           "void f2 ( ) { "
+                           "using namespace NS1 :: NS2 ; "
+                           "signed long long A ; "
+                           "}";
+
+        ASSERT_EQUALS(exp, tok(code, false));
     }
 
 };

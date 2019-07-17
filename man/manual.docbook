@@ -3,7 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <book>
   <bookinfo>
-    <title>Cppcheck 1.87</title>
+    <title>Cppcheck 1.89 dev</title>
 
     <date>2018-04-23</date>
   </bookinfo>
@@ -1183,7 +1183,7 @@ Checking test.c...
       functions do not affect the allocation at all.</para>
 
       <section>
-        <title>alloc and dealloc</title>
+        <title>alloc, realloc and dealloc</title>
 
         <para>Here is an example program:</para>
 
@@ -1214,6 +1214,17 @@ Checking pen1.c...
   &lt;resource&gt;
     &lt;alloc&gt;CreatePen&lt;/alloc&gt;
     &lt;dealloc&gt;DeleteObject&lt;/dealloc&gt;
+  &lt;/resource&gt;
+&lt;/def&gt;</programlisting>
+
+        <para>Functions that reallocate memory can be configured using a realloc tag. The input argument which points to the memory that shall be reallocated can also be configured (the default is the first argument). As an example, here is a configuration file for the fopen, freopen and fclose functions from the c standard library:
+
+        <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;resource&gt;
+    &lt;alloc&gt;fopen&lt;/alloc&gt;
+    &lt;realloc realloc-arg="3"&gt;freopen&lt;/realloc&gt;
+    &lt;dealloc&gt;fclose&lt;/dealloc&gt;
   &lt;/resource&gt;
 &lt;/def&gt;</programlisting>
 
@@ -1875,7 +1886,7 @@ Checking unusedvar.cpp...
 
     <para>You can define custom rules using regular expressions.</para>
 
-    <para>These rules can not perform sophisticated analysis of the code. But
+    <para>These rules cannot perform sophisticated analysis of the code. But
     they give you an easy way to check for various simple patterns in the
     code.</para>
 

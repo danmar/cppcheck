@@ -22,6 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "utils.h"
 
 #include <climits>
 #include <string>
@@ -63,24 +64,24 @@ namespace cppcheck {
             return value >= min_value(long_bit) && value <= max_value(long_bit);
         }
 
-        unsigned int char_bit;       /// bits in char
-        unsigned int short_bit;      /// bits in short
-        unsigned int int_bit;        /// bits in int
-        unsigned int long_bit;       /// bits in long
-        unsigned int long_long_bit;  /// bits in long long
+        nonneg int char_bit;       /// bits in char
+        nonneg int short_bit;      /// bits in short
+        nonneg int int_bit;        /// bits in int
+        nonneg int long_bit;       /// bits in long
+        nonneg int long_long_bit;  /// bits in long long
 
         /** size of standard types */
-        unsigned int sizeof_bool;
-        unsigned int sizeof_short;
-        unsigned int sizeof_int;
-        unsigned int sizeof_long;
-        unsigned int sizeof_long_long;
-        unsigned int sizeof_float;
-        unsigned int sizeof_double;
-        unsigned int sizeof_long_double;
-        unsigned int sizeof_wchar_t;
-        unsigned int sizeof_size_t;
-        unsigned int sizeof_pointer;
+        nonneg int sizeof_bool;
+        nonneg int sizeof_short;
+        nonneg int sizeof_int;
+        nonneg int sizeof_long;
+        nonneg int sizeof_long_long;
+        nonneg int sizeof_float;
+        nonneg int sizeof_double;
+        nonneg int sizeof_long_double;
+        nonneg int sizeof_wchar_t;
+        nonneg int sizeof_size_t;
+        nonneg int sizeof_pointer;
 
         char defaultSign;  // unsigned:'u', signed:'s', unknown:'\0'
 

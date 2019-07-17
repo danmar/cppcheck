@@ -1,5 +1,5 @@
 // Cppcheck - A tool for static C/C++ code analysis
-// Copyright (C) 2007-2017 Cppcheck team.
+// Copyright (C) 2007-2019 Cppcheck team.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,23 +18,34 @@
 
 #include <iterator>
 
-options::options(int argc, const char* argv[])
-    :_options(argv + 1, argv + argc)
-    ,_which_test("")
-    ,_quiet(_options.count("-q") != 0)
+options::options(int argc, const char* const argv[])
+    :mWhichTests(argv + 1, argv + argc)
+    ,mQuiet(mWhichTests.count("-q") != 0)
+    ,mHelp(mWhichTests.count("-h") != 0 || mWhichTests.count("--help"))
 {
-    _options.erase("-q");
-    if (! _options.empty()) {
-        _which_test = *_options.rbegin();
+    for (std::set<std::string>::const_iterator it = mWhichTests.begin(); it != mWhichTests.end();) {
+        if (!(*it).empty() && (((*it)[0] == '-') || ((*it).find("::") != std::string::npos && mWhichTests.count((*it).substr(0, (*it).find("::"))))))
+            it = mWhichTests.erase(it);
+        else
+            ++it;
+    }
+
+    if (mWhichTests.empty()) {
+        mWhichTests.insert("");
     }
 }
 
 bool options::quiet() const
 {
-    return _quiet;
+    return mQuiet;
 }
 
-const std::string& options::which_test() const
+bool options::help() const
 {
-    return _which_test;
+    return mHelp;
+}
+
+const std::set<std::string>& options::which_test() const
+{
+    return mWhichTests;
 }

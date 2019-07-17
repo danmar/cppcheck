@@ -63,7 +63,7 @@ bool CheckCondition::diag(const Token* tok, bool insert)
     return true;
 }
 
-bool CheckCondition::isAliased(const std::set<unsigned int> &vars) const
+bool CheckCondition::isAliased(const std::set<int> &vars) const
 {
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "= & %var% ;") && vars.find(tok->tokAt(2)->varId()) != vars.end())
@@ -119,7 +119,7 @@ void CheckCondition::assignIf()
 static bool isParameterChanged(const Token *partok)
 {
     bool addressOf = Token::Match(partok, "[(,] &");
-    unsigned int argumentNumber = 0;
+    int argumentNumber = 0;
     const Token *ftok;
     for (ftok = partok; ftok && ftok->str() != "("; ftok = ftok->previous()) {
         if (ftok->str() == ")")
@@ -145,7 +145,7 @@ static bool isParameterChanged(const Token *partok)
 /** parse scopes recursively */
 bool CheckCondition::assignIfParseScope(const Token * const assignTok,
                                         const Token * const startTok,
-                                        const unsigned int varid,
+                                        const nonneg int varid,
                                         const bool islocal,
                                         const char bitop,
                                         const MathLib::bigint num)
@@ -160,6 +160,11 @@ bool CheckCondition::assignIfParseScope(const Token * const assignTok,
         }
         if (Token::Match(tok2, "%varid% =", varid)) {
             return true;
+        }
+        if (bitop == '&' && Token::Match(tok2, "%varid% &= %num% ;", varid)) {
+            const MathLib::bigint num2 = MathLib::toLongNumber(tok2->strAt(2));
+            if (0 == (num & num2))
+                mismatchingBitAndError(assignTok, num, tok2, num2);
         }
         if (Token::Match(tok2, "++|-- %varid%", varid) || Token::Match(tok2, "%varid% ++|--", varid))
             return true;
@@ -485,8 +490,12 @@ void CheckCondition::multiCondition()
             continue;
 
         const Token * const cond1 = scope.classDef->next()->astOperand2();
+        if (!cond1)
+            continue;
 
         const Token * tok2 = scope.classDef->next();
+
+        // Check each 'else if'
         for (;;) {
             tok2 = tok2->link();
             if (!Token::simpleMatch(tok2, ") {"))
@@ -496,23 +505,38 @@ void CheckCondition::multiCondition()
                 break;
             tok2 = tok2->tokAt(4);
 
-            if (cond1 &&
-                tok2->astOperand2() &&
+            if (tok2->astOperand2() &&
                 !cond1->hasKnownIntValue() &&
-                !tok2->astOperand2()->hasKnownIntValue() &&
-                isOverlappingCond(cond1, tok2->astOperand2(), true))
-                multiConditionError(tok2, cond1->linenr());
+                !tok2->astOperand2()->hasKnownIntValue()) {
+                ErrorPath errorPath;
+                if (isOverlappingCond(cond1, tok2->astOperand2(), true))
+                    overlappingElseIfConditionError(tok2, cond1->linenr());
+                else if (isOppositeCond(true, mTokenizer->isCPP(), cond1, tok2->astOperand2(), mSettings->library, true, true, &errorPath))
+                    oppositeElseIfConditionError(cond1, tok2, errorPath);
+            }
         }
     }
 }
 
-void CheckCondition::multiConditionError(const Token *tok, unsigned int line1)
+void CheckCondition::overlappingElseIfConditionError(const Token *tok, nonneg int line1)
 {
     std::ostringstream errmsg;
     errmsg << "Expression is always false because 'else if' condition matches previous condition at line "
            << line1 << ".";
 
     reportError(tok, Severity::style, "multiCondition", errmsg.str(), CWE398, false);
+}
+
+void CheckCondition::oppositeElseIfConditionError(const Token *ifCond, const Token *elseIfCond, ErrorPath errorPath)
+{
+    std::ostringstream errmsg;
+    errmsg << "Expression is always true because 'else if' condition is opposite to previous condition at line "
+           << ifCond->linenr() << ".";
+
+    errorPath.emplace_back(ifCond, "first condition");
+    errorPath.emplace_back(elseIfCond, "else if condition is opposite to first condition");
+
+    reportError(errorPath, Severity::style, "multiCondition", errmsg.str(), CWE398, false);
 }
 
 //---------------------------------------------------------------------------
@@ -566,7 +590,7 @@ void CheckCondition::multiCondition2()
 
         bool nonConstFunctionCall = false;
         bool nonlocal = false; // nonlocal variable used in condition
-        std::set<unsigned int> vars; // variables used in condition
+        std::set<int> vars; // variables used in condition
         visitAstNodes(condTok,
         [&](const Token *cond) {
             if (Token::Match(cond, "%name% (")) {
@@ -706,7 +730,7 @@ void CheckCondition::multiCondition2()
                         break;
                     }
                     bool changed = false;
-                    for (unsigned int varid : vars) {
+                    for (int varid : vars) {
                         if (isVariableChanged(tok1, tok2, varid, nonlocal, mSettings, mTokenizer->isCPP())) {
                             changed = true;
                             break;
@@ -1531,4 +1555,60 @@ void CheckCondition::pointerAdditionResultNotNullError(const Token *tok, const T
 {
     const std::string s = calc ? calc->expressionString() : "ptr+1";
     reportError(tok, Severity::warning, "pointerAdditionResultNotNull", "Comparison is wrong. Result of '" + s + "' can't be 0 unless there is pointer overflow, and pointer overflow is undefined behaviour.");
+}
+
+void CheckCondition::checkDuplicateConditionalAssign()
+{
+    if (!mSettings->isEnabled(Settings::STYLE))
+        return;
+
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope *scope : symbolDatabase->functionScopes) {
+        for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+            if (!Token::simpleMatch(tok, "if ("))
+                continue;
+            if (!Token::simpleMatch(tok->next()->link(), ") {"))
+                continue;
+            const Token *blockTok = tok->next()->link()->next();
+            const Token *condTok = tok->next()->astOperand2();
+            if (!Token::Match(condTok, "==|!="))
+                continue;
+            if (condTok->str() == "!=" && Token::simpleMatch(blockTok->link(), "} else {"))
+                continue;
+            if (!blockTok->next())
+                continue;
+            const Token *assignTok = blockTok->next()->astTop();
+            if (!Token::simpleMatch(assignTok, "="))
+                continue;
+            if (nextAfterAstRightmostLeaf(assignTok) != blockTok->link()->previous())
+                continue;
+            if (!isSameExpression(
+                    mTokenizer->isCPP(), true, condTok->astOperand1(), assignTok->astOperand1(), mSettings->library, true, true))
+                continue;
+            if (!isSameExpression(
+                    mTokenizer->isCPP(), true, condTok->astOperand2(), assignTok->astOperand2(), mSettings->library, true, true))
+                continue;
+            duplicateConditionalAssignError(condTok, assignTok);
+        }
+    }
+}
+
+void CheckCondition::duplicateConditionalAssignError(const Token *condTok, const Token* assignTok)
+{
+    ErrorPath errors;
+    std::string msg = "Duplicate expression for the condition and assignment.";
+    if (condTok && assignTok) {
+        if (condTok->str() == "==") {
+            msg = "Assignment '" + assignTok->expressionString() + "' is redundant with condition '" + condTok->expressionString() + "'.";
+            errors.emplace_back(condTok, "Condition '" + condTok->expressionString() + "'");
+            errors.emplace_back(assignTok, "Assignment '" + assignTok->expressionString() + "' is redundant");
+        } else {
+            msg = "The statement 'if (" + condTok->expressionString() + ") " + assignTok->expressionString() + "' is logically equivalent to '" + assignTok->expressionString() + "'.";
+            errors.emplace_back(assignTok, "Assignment '" + assignTok->expressionString() + "'");
+            errors.emplace_back(condTok, "Condition '" + condTok->expressionString() + "' is redundant");
+        }
+    }
+
+    reportError(
+        errors, Severity::style, "duplicateConditionalAssign", msg, CWE398, false);
 }

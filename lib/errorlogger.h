@@ -54,7 +54,7 @@ namespace tinyxml2 {
 
 /** @brief Simple container to be thrown when internal error is detected. */
 struct InternalError {
-    enum Type {AST, SYNTAX, UNKNOWN_MACRO, INTERNAL};
+    enum Type {AST, SYNTAX, UNKNOWN_MACRO, INTERNAL, LIMIT, INSTANTIATION};
     InternalError(const Token *tok, const std::string &errorMsg, Type type = INTERNAL);
     const Token *token;
     std::string errorMessage;
@@ -138,7 +138,7 @@ public:
             return "information";
         case debug:
             return "debug";
-        };
+        }
         throw InternalError(nullptr, "Unknown severity");
     }
     static SeverityType fromString(const std::string &severity) {
@@ -193,12 +193,12 @@ public:
                 : fileIndex(0), line(0), col(0) {
             }
 
-            FileLocation(const std::string &file, unsigned int aline)
-                : fileIndex(0), line(aline), col(0), mOrigFileName(file), mFileName(file) {
+            FileLocation(const std::string &file, int line)
+                : fileIndex(0), line(line), col(0), mOrigFileName(file), mFileName(file) {
             }
 
-            FileLocation(const std::string &file, const std::string &info, unsigned int aline)
-                : fileIndex(0), line(aline), col(0), mOrigFileName(file), mFileName(file), mInfo(info) {
+            FileLocation(const std::string &file, const std::string &info, int line)
+                : fileIndex(0), line(line), col(0), mOrigFileName(file), mFileName(file), mInfo(info) {
             }
 
             FileLocation(const Token* tok, const TokenList* tokenList);
@@ -241,11 +241,38 @@ public:
             std::string mInfo;
         };
 
-        ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file1, Severity::SeverityType severity, const std::string &msg, const std::string &id, bool inconclusive);
-        ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file1, Severity::SeverityType severity, const std::string &msg, const std::string &id, const CWE &cwe, bool inconclusive);
-        ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive);
-        ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, const CWE &cwe, bool inconclusive);
-        ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenList, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, bool inconclusive);
+        ErrorMessage(const std::list<FileLocation> &callStack,
+                     const std::string& file1,
+                     Severity::SeverityType severity,
+                     const std::string &msg,
+                     const std::string &id, bool inconclusive);
+        ErrorMessage(const std::list<FileLocation> &callStack,
+                     const std::string& file1,
+                     Severity::SeverityType severity,
+                     const std::string &msg,
+                     const std::string &id,
+                     const CWE &cwe,
+                     bool inconclusive);
+        ErrorMessage(const std::list<const Token*>& callstack,
+                     const TokenList* list,
+                     Severity::SeverityType severity,
+                     const std::string& id,
+                     const std::string& msg,
+                     bool inconclusive);
+        ErrorMessage(const std::list<const Token*>& callstack,
+                     const TokenList* list,
+                     Severity::SeverityType severity,
+                     const std::string& id,
+                     const std::string& msg,
+                     const CWE &cwe,
+                     bool inconclusive);
+        ErrorMessage(const ErrorPath &errorPath,
+                     const TokenList *tokenList,
+                     Severity::SeverityType severity,
+                     const char id[],
+                     const std::string &msg,
+                     const CWE &cwe,
+                     bool inconclusive);
         ErrorMessage();
         explicit ErrorMessage(const tinyxml2::XMLElement * const errmsg);
 
@@ -266,7 +293,9 @@ public:
          * or template to be used. E.g. "{file}:{line},{info}"
         * @return formatted string
          */
-        std::string toString(bool verbose, const std::string &templateFormat = emptyString, const std::string &templateLocation = emptyString) const;
+        std::string toString(bool verbose,
+                             const std::string &templateFormat = emptyString,
+                             const std::string &templateLocation = emptyString) const;
 
         std::string serialize() const;
         bool deserialize(const std::string &data);

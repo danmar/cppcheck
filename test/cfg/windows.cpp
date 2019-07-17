@@ -8,6 +8,19 @@
 //
 
 #include <windows.h>
+#include <direct.h>
+#include <stdlib.h>
+
+void invalidFunctionArg__getcwd(char * buffer)
+{
+    // Passing NULL as the buffer forces getcwd to allocate
+    // memory for the path, which allows the code to support file paths
+    // longer than _MAX_PATH, which are supported by NTFS.
+    if ((buffer = _getcwd(NULL, 0)) == NULL) {
+        return;
+    }
+    free(buffer);
+}
 
 void validCode()
 {
@@ -174,6 +187,9 @@ void validCode()
     __noop(1, "test", NULL);
     __nop();
 
+    void * pAlloc1 = _aligned_malloc(100, 2);
+    _aligned_free(pAlloc1);
+
     // Valid Library usage, no leaks, valid arguments
     HINSTANCE hInstLib = LoadLibrary(L"My.dll");
     FreeLibrary(hInstLib);
@@ -232,6 +248,23 @@ void bufferAccessOutOfBounds()
     RtlFillMemory(byteBuf, sizeof(byteBuf)+1, 0x01);
     // cppcheck-suppress bufferAccessOutOfBounds
     FillMemory(byteBuf, sizeof(byteBuf)+1, 0x01);
+
+    char * pAlloc1 = _malloca(32);
+    memset(pAlloc1, 0, 32);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    memset(pAlloc1, 0, 33);
+    _freea(pAlloc1);
+}
+
+void mismatchAllocDealloc()
+{
+    char * pChar = _aligned_malloc(100, 2);
+    // cppcheck-suppress mismatchAllocDealloc
+    free(pChar);
+
+    pChar = _malloca(32);
+    // cppcheck-suppress mismatchAllocDealloc
+    _aligned_free(pChar);
 }
 
 void nullPointer()
@@ -472,6 +505,7 @@ void ignoredReturnValue()
     // cppcheck-suppress leakReturnValNotUsed
     CreateEventEx(NULL, L"test", CREATE_EVENT_INITIAL_SET, EVENT_MODIFY_STATE);
 
+    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     _malloca(10);
     // cppcheck-suppress ignoredReturnValue
@@ -482,8 +516,10 @@ void ignoredReturnValue()
 
     // cppcheck-suppress ignoredReturnValue
     GetProcessHeap()
+    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     HeapAlloc(GetProcessHeap(), 0, 10);
+    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     HeapReAlloc(GetProcessHeap(), 0, 1, 0);
 
@@ -554,11 +590,11 @@ void uninitvar()
     // cppcheck-suppress uninitvar
     lstrcat(buf, buf2);
 
-    HANDLE hMutex;
+    HANDLE hMutex1, hMutex2;
     // cppcheck-suppress uninitvar
-    ReleaseMutex(hMutex);
+    ReleaseMutex(hMutex1);
     // cppcheck-suppress uninitvar
-    CloseHandle(hMutex);
+    CloseHandle(hMutex2);
 
     HANDLE hEvent;
     // cppcheck-suppress uninitvar
@@ -570,13 +606,14 @@ void uninitvar()
     // cppcheck-suppress uninitvar
     CloseHandle(hEvent);
 
-    char buf_uninit[10];
+    char buf_uninit1[10];
+    char buf_uninit2[10];
     // cppcheck-suppress strlwrCalled
     // cppcheck-suppress uninitvar
-    strlwr(buf_uninit);
+    strlwr(buf_uninit1);
     // cppcheck-suppress struprCalled
     // cppcheck-suppress uninitvar
-    strupr(buf_uninit);
+    strupr(buf_uninit2);
 
     DWORD dwordUninit;
     // cppcheck-suppress uninitvar
@@ -679,20 +716,20 @@ void allocDealloc_GetModuleHandleEx()
 
 void uninitvar_tolower(_locale_t l)
 {
-    int c;
+    int c1, c2;
     // cppcheck-suppress uninitvar
-    (void)_tolower(c);
+    (void)_tolower(c1);
     // cppcheck-suppress uninitvar
-    (void)_tolower_l(c, l);
+    (void)_tolower_l(c2, l);
 }
 
 void uninitvar_toupper(_locale_t l)
 {
-    int c;
+    int c1, c2;
     // cppcheck-suppress uninitvar
-    (void)_toupper(c);
+    (void)_toupper(c1);
     // cppcheck-suppress uninitvar
-    (void)_toupper_l(c, l);
+    (void)_toupper_l(c2, l);
 }
 
 void uninitvar_towlower(_locale_t l)

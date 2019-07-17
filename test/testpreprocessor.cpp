@@ -46,7 +46,7 @@ public:
     class OurPreprocessor : public Preprocessor {
     public:
 
-        static std::string expandMacros(const char code[], ErrorLogger *errorLogger = 0) {
+        static std::string expandMacros(const char code[], ErrorLogger *errorLogger = nullptr) {
             std::istringstream istr(code);
             simplecpp::OutputList outputList;
             std::vector<std::string> files;
@@ -246,8 +246,6 @@ private:
         TEST_CASE(testDirectiveIncludeTypes);
         TEST_CASE(testDirectiveIncludeLocations);
         TEST_CASE(testDirectiveIncludeComments);
-
-        TEST_CASE(testSameLine);  // #7912
     }
 
     void preprocess(const char* code, std::map<std::string, std::string>& actual, const char filename[] = "file.c") {
@@ -271,7 +269,7 @@ private:
         }
     }
 
-    std::string getConfigsStr(const char filedata[], const char *arg=NULL) {
+    std::string getConfigsStr(const char filedata[], const char *arg = nullptr) {
         Settings settings;
         if (arg && std::strncmp(arg,"-D",2)==0)
             settings.userDefines = arg + 2;
@@ -492,7 +490,7 @@ private:
         preprocess(filedata, actual);
 
         // Expected configurations: "" and "ABC"
-        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS(2, actual.size());
         ASSERT_EQUALS("\n\n\nint main ( ) { }", actual[""]);
         ASSERT_EQUALS("\n#line 1 \"abc.h\"\nclass A { } ;\n#line 4 \"file.c\"\n int main ( ) { }", actual["ABC"]);
     }
@@ -1147,7 +1145,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS(1, actual.size());
         ASSERT_EQUALS("int main ( ) { const char * a = \"#define A\" ; }", actual[""]);
     }
 
@@ -1250,7 +1248,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS(1, actual.size());
         ASSERT_EQUALS("int main ( )\n{\nconst char * a = \"#include <string>\" ;\nreturn 0 ;\n}", actual[""]);
     }
 
@@ -1314,7 +1312,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS(1, actual.size());
         ASSERT_EQUALS("\nint main ( )\n{\nif ( $'ABCD' == 0 ) ;\nreturn 0 ;\n}", actual[""]);
     }
 
@@ -1378,7 +1376,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS(1, actual.size());
         ASSERT_EQUALS("\nvoid f ( )\n{\n}", actual[""]);
     }
 
@@ -1397,7 +1395,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS(1, actual.size());
         ASSERT_EQUALS("asm ( )\n;\n\naaa\nasm ( ) ;\n\n\nbbb", actual[""]);
     }
 
@@ -1412,7 +1410,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS(1, actual.size());
         ASSERT_EQUALS("asm ( )\n;\n\nbbb", actual[""]);
     }
 
@@ -1427,7 +1425,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS(2, actual.size());
         const std::string expected("void f ( ) {\n\n\n}");
         ASSERT_EQUALS(expected, actual[""]);
         ASSERT_EQUALS(expected, actual["A"]);
@@ -1538,7 +1536,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS(1, actual.size());
         ASSERT_EQUALS("\nvoid f ( ) {\n$g $( ) ;\n}", actual[""]);
         ASSERT_EQUALS("", errout.str());
     }
@@ -1556,7 +1554,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS(2, actual.size());
         ASSERT_EQUALS("\n\n\n\n\n$20", actual[""]);
         ASSERT_EQUALS("\n\n\n\n\n$10", actual["A"]);
         ASSERT_EQUALS("", errout.str());
@@ -1577,7 +1575,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS(1, actual.size());
         ASSERT_EQUALS("", actual[""]);
         ASSERT_EQUALS("[file.c:6]: (error) failed to expand 'BC', Wrong number of parameters for macro 'BC'.\n", errout.str());
     }
@@ -1594,7 +1592,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS(1, actual.size());
         ASSERT_EQUALS("\nvoid f ( )\n{\n$printf $( \"\\n\" $) ;\n}", actual[""]);
         ASSERT_EQUALS("", errout.str());
     }
@@ -1614,7 +1612,7 @@ private:
         // Compare results..
         ASSERT_EQUALS("", actual[""]);
         ASSERT_EQUALS("\nA\n\n\nA", actual["ABC"]);
-        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS(2, actual.size());
     }
 
     void define_if1() {
@@ -2372,20 +2370,6 @@ private:
         preprocessor.dump(ostr);
         ASSERT_EQUALS(dumpdata, ostr.str());
     }
-
-    void testSameLine() { // Ticket #7912
-        const char code[] = "#line 1 \"bench/btl/libs/BLAS/blas_interface_impl.hh\" \n"
-                            "template < > class blas_interface < float > : public c_interface_base < float > \n"
-                            "{ } ;\n"
-                            "#line 1 \"bench/btl/libs/BLAS/blas_interface_impl.hh\" \n"
-                            "template < > class blas_interface < double > : public c_interface_base < double > \n"
-                            "{ } ;";
-        const char exp[]  = "template < > class blas_interface < float > : public c_interface_base < float >\n"
-                            "{ } ; template < > class blas_interface < double > : public c_interface_base < double > { } ;";
-        Preprocessor preprocessor(settings0, this);
-        ASSERT_EQUALS(exp, preprocessor.getcode(code, "", "test.cpp"));
-    }
-
 };
 
 REGISTER_TEST(TestPreprocessor)

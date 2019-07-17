@@ -53,12 +53,6 @@ static bool isPtrArg(const Token *tok)
     return (var && var->isArgument() && var->isPointer());
 }
 
-static bool isGlobalPtr(const Token *tok)
-{
-    const Variable *var = tok->variable();
-    return (var && var->isGlobal() && var->isPointer());
-}
-
 static bool isArrayArg(const Token *tok)
 {
     const Variable *var = tok->variable();
@@ -167,19 +161,21 @@ static bool checkRvalueExpression(const Token * const vartok)
     return ((next->str() != "." || (!var->isPointer() && (!var->isClass() || var->type()))) && next->strAt(2) != ".");
 }
 
-static bool isAddressOfLocalVariableRecursive(const Token *expr)
+static bool isAddressOfLocalVariable(const Token *expr)
 {
     if (!expr)
         return false;
     if (Token::Match(expr, "+|-"))
-        return isAddressOfLocalVariableRecursive(expr->astOperand1()) || isAddressOfLocalVariableRecursive(expr->astOperand2());
-    if (expr->str() == "(" && !expr->astOperand2())
-        return isAddressOfLocalVariableRecursive(expr->astOperand1());
-    if (expr->str() == "&" && !expr->astOperand2()) {
+        return isAddressOfLocalVariable(expr->astOperand1()) || isAddressOfLocalVariable(expr->astOperand2());
+    if (expr->isCast())
+        return isAddressOfLocalVariable(expr->astOperand2() ? expr->astOperand2() : expr->astOperand1());
+    if (expr->isUnaryOp("&")) {
         const Token *op = expr->astOperand1();
         bool deref = false;
         while (Token::Match(op, ".|[")) {
-            if (op->str() == "[" || op->originalName() == "->")
+            if (op->originalName() == "->")
+                return false;
+            if (op->str() == "[")
                 deref = true;
             op = op->astOperand1();
         }
@@ -188,14 +184,7 @@ static bool isAddressOfLocalVariableRecursive(const Token *expr)
     return false;
 }
 
-static bool isAddressOfLocalVariable(const Token *expr)
-{
-    if (!expr || !expr->valueType() || expr->valueType()->pointer == 0)
-        return false;
-    return isAddressOfLocalVariableRecursive(expr);
-}
-
-static bool variableIsUsedInScope(const Token* start, unsigned int varId, const Scope *scope)
+static bool variableIsUsedInScope(const Token* start, nonneg int varId, const Scope *scope)
 {
     if (!start) // Ticket #5024
         return false;
@@ -241,17 +230,6 @@ void CheckAutoVariables::assignFunctionArg()
     }
 }
 
-static bool reassignedGlobalPointer(const Token *vartok, unsigned int pointerVarId, const Settings *settings, bool cpp)
-{
-    return isVariableChanged(vartok,
-                             vartok->variable()->scope()->bodyEnd,
-                             pointerVarId,
-                             true,
-                             settings,
-                             cpp);
-}
-
-
 void CheckAutoVariables::autoVariables()
 {
     const bool printInconclusive = mSettings->inconclusive;
@@ -269,25 +247,8 @@ void CheckAutoVariables::autoVariables()
                     errorAutoVariableAssignment(tok->next(), false);
             } else if (Token::Match(tok, "[;{}] * %var% =") && isPtrArg(tok->tokAt(2)) && isAddressOfLocalVariable(tok->tokAt(3)->astOperand2())) {
                 errorAutoVariableAssignment(tok->next(), false);
-            } else if (mSettings->isEnabled(Settings::WARNING) && Token::Match(tok, "[;{}] %var% = &| %var% ;") && isGlobalPtr(tok->next())) {
-                const Token * const pointer = tok->next();
-                if (isAutoVarArray(tok->tokAt(3))) {
-                    const Token * const array = tok->tokAt(3);
-                    if (!reassignedGlobalPointer(array, pointer->varId(), mSettings, mTokenizer->isCPP()))
-                        errorAssignAddressOfLocalArrayToGlobalPointer(pointer, array);
-                } else if (isAutoVar(tok->tokAt(4))) {
-                    const Token * const variable = tok->tokAt(4);
-                    if (!reassignedGlobalPointer(variable, pointer->varId(), mSettings, mTokenizer->isCPP()))
-                        errorAssignAddressOfLocalVariableToGlobalPointer(pointer, variable);
-                }
-            } else if (Token::Match(tok, "[;{}] %var% . %var% = & %var%")) {
-                // TODO: check if the parameter is only changed temporarily (#2969)
-                if (printInconclusive && isPtrArg(tok->next())) {
-                    const Token * const var2tok = tok->tokAt(6);
-                    if (isAutoVar(var2tok) && checkRvalueExpression(var2tok))
-                        errorAutoVariableAssignment(tok->next(), true);
-                }
-                tok = tok->tokAt(6);
+            } else if (Token::Match(tok, "[;{}] %var% . %var% =") && isPtrArg(tok->next()) && isAddressOfLocalVariable(tok->tokAt(4)->astOperand2())) {
+                errorAutoVariableAssignment(tok->next(), false);
             } else if (Token::Match(tok, "[;{}] %var% . %var% = %var% ;")) {
                 // TODO: check if the parameter is only changed temporarily (#2969)
                 if (printInconclusive && isPtrArg(tok->next())) {
@@ -302,14 +263,12 @@ void CheckAutoVariables::autoVariables()
                         errorAutoVariableAssignment(tok->next(), false);
                 }
                 tok = tok->tokAt(4);
-            } else if (Token::Match(tok, "[;{}] %var% [") && Token::Match(tok->linkAt(2), "] = & %var%") &&
-                       (isPtrArg(tok->next()) || isArrayArg(tok->next())) && isAutoVar(tok->linkAt(2)->tokAt(3))) {
-                const Token* const varTok = tok->linkAt(2)->tokAt(3);
-                if (checkRvalueExpression(varTok))
-                    errorAutoVariableAssignment(tok->next(), false);
+            } else if (Token::Match(tok, "[;{}] %var% [") && Token::simpleMatch(tok->linkAt(2), "] =") &&
+                       (isPtrArg(tok->next()) || isArrayArg(tok->next())) && isAddressOfLocalVariable(tok->linkAt(2)->next()->astOperand2())) {
+                errorAutoVariableAssignment(tok->next(), false);
             }
             // Invalid pointer deallocation
-            else if ((Token::Match(tok, "%name% ( %var% ) ;") && mSettings->library.dealloc(tok)) ||
+            else if ((Token::Match(tok, "%name% ( %var% ) ;") && mSettings->library.getDeallocFuncInfo(tok)) ||
                      (mTokenizer->isCPP() && Token::Match(tok, "delete [| ]| (| %var% !!["))) {
                 tok = Token::findmatch(tok->next(), "%var%");
                 if (isArrayVar(tok))
@@ -322,7 +281,7 @@ void CheckAutoVariables::autoVariables()
                         }
                     }
                 }
-            } else if ((Token::Match(tok, "%name% ( & %var% ) ;") && mSettings->library.dealloc(tok)) ||
+            } else if ((Token::Match(tok, "%name% ( & %var% ) ;") && mSettings->library.getDeallocFuncInfo(tok)) ||
                        (mTokenizer->isCPP() && Token::Match(tok, "delete [| ]| (| & %var% !!["))) {
                 tok = Token::findmatch(tok->next(), "%var%");
                 if (isAutoVar(tok))
@@ -368,22 +327,6 @@ void CheckAutoVariables::errorAutoVariableAssignment(const Token *tok, bool inco
                     CWE562,
                     true);
     }
-}
-
-void CheckAutoVariables::errorAssignAddressOfLocalArrayToGlobalPointer(const Token *pointer, const Token *array)
-{
-    const std::string pointerName = pointer ? pointer->str() : std::string("pointer");
-    const std::string arrayName   = array ? array->str() : std::string("array");
-    reportError(pointer, Severity::warning, "autoVariablesAssignGlobalPointer",
-                "$symbol:" + arrayName + "\nAddress of local array $symbol is assigned to global pointer " + pointerName +" and not reassigned before $symbol goes out of scope.", CWE562, false);
-}
-
-void CheckAutoVariables::errorAssignAddressOfLocalVariableToGlobalPointer(const Token *pointer, const Token *variable)
-{
-    const std::string pointerName = pointer ? pointer->str() : std::string("pointer");
-    const std::string variableName = variable ? variable->str() : std::string("variable");
-    reportError(pointer, Severity::warning, "autoVariablesAssignGlobalPointer",
-                "$symbol:" + variableName + "\nAddress of local variable $symbol is assigned to global pointer " + pointerName +" and not reassigned before $symbol goes out of scope.", CWE562, false);
 }
 
 void CheckAutoVariables::errorReturnAddressOfFunctionParameter(const Token *tok, const std::string &varname)
@@ -603,7 +546,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
         return;
     bool returnRef = Function::returnsReference(scope->function);
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
-        // Return reference form function
+        // Return reference from function
         if (returnRef && Token::simpleMatch(tok->astParent(), "return")) {
             ErrorPath errorPath;
             const Variable *var = getLifetimeVariable(tok, errorPath);
@@ -613,8 +556,9 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                 continue;
             }
             // Assign reference to non-local variable
-        } else if (Token::Match(tok->astParent(), "&|&&") && Token::simpleMatch(tok->astParent()->astParent(), "=") &&
-                   tok->variable() && tok->variable()->declarationId() == tok->varId() && tok->variable()->isStatic() &&
+        } else if (Token::Match(tok->previous(), "&|&& %var% =") && tok->astParent() == tok->next() &&
+                   tok->variable() && tok->variable()->nameToken() == tok &&
+                   tok->variable()->declarationId() == tok->varId() && tok->variable()->isStatic() &&
                    !tok->variable()->isArgument()) {
             ErrorPath errorPath;
             const Variable *var = getLifetimeVariable(tok, errorPath);
@@ -631,8 +575,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
             if (Token::Match(tok->astParent(), "return|throw")) {
                 if (getPointerDepth(tok) < getPointerDepth(val.tokvalue))
                     continue;
-                if (tok->astParent()->str() == "return" && !astIsContainer(tok) && scope->function &&
-                    mSettings->library.detectContainer(scope->function->retDef))
+                if (!isLifetimeBorrowed(tok, mSettings))
                     continue;
                 if (isInScope(val.tokvalue->variable()->nameToken(), scope)) {
                     errorReturnDanglingLifetime(tok, &val);
@@ -641,11 +584,21 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
             } else if (isDeadScope(val.tokvalue->variable()->nameToken(), tok->scope())) {
                 errorInvalidLifetime(tok, &val);
                 break;
-            } else if (tok->variable() && tok->variable()->declarationId() == tok->varId() &&
-                       !tok->variable()->isLocal() && !tok->variable()->isArgument() &&
-                       isInScope(val.tokvalue, tok->scope())) {
-                errorDanglngLifetime(tok, &val);
-                break;
+            } else if (isInScope(val.tokvalue->variable()->nameToken(), tok->scope())) {
+                const Variable * var = nullptr;
+                const Token * tok2 = tok;
+                if (Token::simpleMatch(tok->astParent(), "=")) {
+                    if (tok->astParent()->astOperand2() == tok) {
+                        var = getLHSVariable(tok->astParent());
+                        tok2 = tok->astParent()->astOperand1();
+                    }
+                } else if (tok->variable() && tok->variable()->declarationId() == tok->varId()) {
+                    var = tok->variable();
+                }
+                if (var && !var->isLocal() && !var->isArgument() && !isVariableChanged(tok->next(), tok->scope()->bodyEnd, var->declarationId(), var->isGlobal(), mSettings, mTokenizer->isCPP())) {
+                    errorDanglngLifetime(tok2, &val);
+                    break;
+                }
             }
         }
         const Token *lambdaEndToken = findLambdaEndToken(tok);
@@ -690,16 +643,17 @@ static std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val
         const Variable * var = vartok->variable();
         if (var) {
             switch (val->lifetimeKind) {
-            case ValueFlow::Value::Object:
+            case ValueFlow::Value::LifetimeKind::Object:
+            case ValueFlow::Value::LifetimeKind::Address:
                 if (type == "pointer")
                     msg += " to local variable";
                 else
                     msg += " that points to local variable";
                 break;
-            case ValueFlow::Value::Lambda:
+            case ValueFlow::Value::LifetimeKind::Lambda:
                 msg += " that captures local variable";
                 break;
-            case ValueFlow::Value::Iterator:
+            case ValueFlow::Value::LifetimeKind::Iterator:
                 msg += " to local container";
                 break;
             }
@@ -728,7 +682,7 @@ void CheckAutoVariables::errorInvalidLifetime(const Token *tok, const ValueFlow:
 void CheckAutoVariables::errorDanglngLifetime(const Token *tok, const ValueFlow::Value *val)
 {
     ErrorPath errorPath = val ? val->errorPath : ErrorPath();
-    std::string tokName = tok ? tok->str() : "x";
+    std::string tokName = tok ? tok->expressionString() : "x";
     std::string msg = "Non-local variable '" + tokName + "' will use " + lifetimeMessage(tok, val, errorPath);
     errorPath.emplace_back(tok, "");
     reportError(errorPath, Severity::error, "danglingLifetime", msg + ".", CWE562, false);

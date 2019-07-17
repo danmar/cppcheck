@@ -83,18 +83,14 @@ private:
         c.unusedFunctionError(errorLogger, emptyString, 0, "funcName");
     }
 
+    void runChecks(const Tokenizer * /*tokenizer*/, const Settings * /*settings*/, ErrorLogger * /*errorLogger*/) OVERRIDE {}
+
     /**
      * Dummy implementation, just to provide error for --errorlist
      */
     static void unusedFunctionError(ErrorLogger * const errorLogger,
                                     const std::string &filename, unsigned int lineNumber,
                                     const std::string &funcname);
-
-    /**
-     * Dummy implementation, just to provide error for --errorlist
-     */
-    void runSimplifiedChecks(const Tokenizer* /*tokenizer*/, const Settings* /*settings*/, ErrorLogger* /*errorLogger*/) OVERRIDE {
-    }
 
     static std::string myName() {
         return "Unused functions";

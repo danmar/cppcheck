@@ -62,7 +62,7 @@
      <x>0</x>
      <y>0</y>
      <width>640</width>
-     <height>25</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="mMenuFile">
@@ -137,6 +137,8 @@
      <addaction name="mActionCpp03"/>
      <addaction name="mActionCpp11"/>
      <addaction name="mActionCpp14"/>
+     <addaction name="mActionCpp17"/>
+     <addaction name="mActionCpp20"/>
     </widget>
     <widget class="QMenu" name="menuC_standard">
      <property name="title">
@@ -156,7 +158,6 @@
     <addaction name="separator"/>
     <addaction name="menuC_standard"/>
     <addaction name="menuCpp_standard"/>
-    <addaction name="mActionPosix"/>
     <addaction name="separator"/>
     <addaction name="mActionAutoDetectLanguage"/>
     <addaction name="mActionEnforceCpp"/>
@@ -789,7 +790,7 @@
     <bool>true</bool>
    </property>
    <property name="checked">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="text">
     <string>C++14</string>
@@ -809,6 +810,25 @@
    </property>
    <property name="text">
     <string>Check configuration (defines, includes)</string>
+   </property>
+  </action>
+  <action name="mActionCpp17">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>C++17</string>
+   </property>
+  </action>
+  <action name="mActionCpp20">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>C++20</string>
    </property>
   </action>
  </widget>

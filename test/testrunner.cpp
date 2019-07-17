@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,8 +35,12 @@ int main(int argc, char *argv[])
 #endif
         Preprocessor::macroChar = '$'; // While macroChar is char(1) per default outside test suite, we require it to be a human-readable character here.
 
-        options args(argc, const_cast<const char**>(argv));
+        options args(argc, argv);
 
+        if (args.help()) {
+            TestFixture::printHelp();
+            return EXIT_SUCCESS;
+        }
         const std::size_t failedTestsCount = TestFixture::runTests(args);
         return (failedTestsCount == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 #ifdef NDEBUG

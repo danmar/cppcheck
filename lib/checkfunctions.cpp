@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -105,7 +105,7 @@ void CheckFunctions::invalidFunctionUsage()
                 continue;
             const Token * const functionToken = tok;
             const std::vector<const Token *> arguments = getArguments(tok);
-            for (unsigned int argnr = 1; argnr <= arguments.size(); ++argnr) {
+            for (int argnr = 1; argnr <= arguments.size(); ++argnr) {
                 const Token * const argtok = arguments[argnr-1];
 
                 // check <valid>...</valid>
@@ -178,7 +178,7 @@ void CheckFunctions::invalidFunctionArgBoolError(const Token *tok, const std::st
     reportError(tok, Severity::error, "invalidFunctionArgBool", errmsg.str(), CWE628, false);
 }
 
-void CheckFunctions::invalidFunctionArgStrError(const Token *tok, const std::string &functionName, unsigned int argnr)
+void CheckFunctions::invalidFunctionArgStrError(const Token *tok, const std::string &functionName, nonneg int argnr)
 {
     std::ostringstream errmsg;
     errmsg << "$symbol:" << functionName << '\n';
@@ -198,7 +198,7 @@ void CheckFunctions::checkIgnoredReturnValue()
     for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             // skip c++11 initialization, ({...})
-            if (Token::Match(tok, "%var%|(|, {"))
+            if (Token::Match(tok, "%var%|(|,|return {"))
                 tok = tok->linkAt(1);
             else if (Token::Match(tok, "[(<]") && tok->link())
                 tok = tok->link();
@@ -289,7 +289,7 @@ void CheckFunctions::checkMathFunctions()
     }
 }
 
-void CheckFunctions::mathfunctionCallWarning(const Token *tok, const unsigned int numParam)
+void CheckFunctions::mathfunctionCallWarning(const Token *tok, const nonneg int numParam)
 {
     if (tok) {
         if (numParam == 1)

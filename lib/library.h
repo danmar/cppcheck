@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -73,27 +73,38 @@ public:
     struct AllocFunc {
         int groupId;
         int arg;
+        enum class BufferSize {none,malloc,calloc,strdup};
+        BufferSize bufferSize;
+        int bufferSizeArg1;
+        int bufferSizeArg2;
+        int reallocArg;
     };
 
     /** get allocation info for function */
-    const AllocFunc* alloc(const Token *tok) const;
+    const AllocFunc* getAllocFuncInfo(const Token *tok) const;
 
     /** get deallocation info for function */
-    const AllocFunc* dealloc(const Token *tok) const;
+    const AllocFunc* getDeallocFuncInfo(const Token *tok) const;
+
+    /** get reallocation info for function */
+    const AllocFunc* getReallocFuncInfo(const Token *tok) const;
 
     /** get allocation id for function */
-    int alloc(const Token *tok, int arg) const;
+    int getAllocId(const Token *tok, int arg) const;
 
     /** get deallocation id for function */
-    int dealloc(const Token *tok, int arg) const;
+    int getDeallocId(const Token *tok, int arg) const;
+
+    /** get reallocation id for function */
+    int getReallocId(const Token *tok, int arg) const;
 
     /** get allocation info for function by name (deprecated, use other alloc) */
-    const AllocFunc* alloc(const char name[]) const {
+    const AllocFunc* getAllocFuncInfo(const char name[]) const {
         return getAllocDealloc(mAlloc, name);
     }
 
     /** get deallocation info for function by name (deprecated, use other alloc) */
-    const AllocFunc* dealloc(const char name[]) const {
+    const AllocFunc* getDeallocFuncInfo(const char name[]) const {
         return getAllocDealloc(mDealloc, name);
     }
 
@@ -118,6 +129,12 @@ public:
     void setdealloc(const std::string &functionname, int id, int arg) {
         mDealloc[functionname].groupId = id;
         mDealloc[functionname].arg = arg;
+    }
+
+    void setrealloc(const std::string &functionname, int id, int arg, int reallocArg = 1) {
+        mRealloc[functionname].groupId = id;
+        mRealloc[functionname].arg = arg;
+        mRealloc[functionname].reallocArg = reallocArg;
     }
 
     /** add noreturn function setting */
@@ -164,6 +181,7 @@ public:
     const std::string& returnValue(const Token *ftok) const;
     const std::string& returnValueType(const Token *ftok) const;
     int returnValueContainer(const Token *ftok) const;
+    std::vector<MathLib::bigint> unknownReturnValues(const Token *ftok) const;
 
     bool isnoreturn(const Token *ftok) const;
     bool isnotnoreturn(const Token *ftok) const;
@@ -177,14 +195,15 @@ public:
             size_templateArgNo(-1),
             arrayLike_indexOp(false),
             stdStringLike(false),
+            stdAssociativeLike(false),
             opLessAllowed(true) {
         }
 
-        enum Action {
+        enum class Action {
             RESIZE, CLEAR, PUSH, POP, FIND, INSERT, ERASE, CHANGE_CONTENT, CHANGE, CHANGE_INTERNAL,
             NO_ACTION
         };
-        enum Yield {
+        enum class Yield {
             AT_INDEX, ITEM, BUFFER, BUFFER_NT, START_ITERATOR, END_ITERATOR, ITERATOR, SIZE, EMPTY,
             NO_YIELD
         };
@@ -192,26 +211,27 @@ public:
             Action action;
             Yield yield;
         };
-        std::string startPattern, endPattern, itEndPattern;
+        std::string startPattern, startPattern2, endPattern, itEndPattern;
         std::map<std::string, Function> functions;
         int type_templateArgNo;
         int size_templateArgNo;
         bool arrayLike_indexOp;
         bool stdStringLike;
+        bool stdAssociativeLike;
         bool opLessAllowed;
 
         Action getAction(const std::string& function) const {
             const std::map<std::string, Function>::const_iterator i = functions.find(function);
             if (i != functions.end())
                 return i->second.action;
-            return NO_ACTION;
+            return Action::NO_ACTION;
         }
 
         Yield getYield(const std::string& function) const {
             const std::map<std::string, Function>::const_iterator i = functions.find(function);
             if (i != functions.end())
                 return i->second.yield;
-            return NO_YIELD;
+            return Yield::NO_YIELD;
         }
     };
     std::map<std::string, Container> containers;
@@ -227,7 +247,8 @@ public:
             strz(false),
             optional(false),
             variadic(false),
-            iteratorInfo() {
+            iteratorInfo(),
+            direction(DIR_UNKNOWN) {
         }
 
         bool         notbool;
@@ -252,13 +273,22 @@ public:
 
         class MinSize {
         public:
-            enum Type { NONE, STRLEN, ARGVALUE, SIZEOF, MUL };
-            MinSize(Type t, int a) : type(t), arg(a), arg2(0) {}
+            enum Type { NONE, STRLEN, ARGVALUE, SIZEOF, MUL, VALUE };
+            MinSize(Type t, int a) : type(t), arg(a), arg2(0), value(0) {}
             Type type;
             int arg;
             int arg2;
+            long long value;
         };
         std::vector<MinSize> minsizes;
+
+        enum Direction {
+            DIR_IN,     ///< Input to called function. Data is treated as read-only.
+            DIR_OUT,    ///< Output to caller. Data is passed by reference or address and is potentially written.
+            DIR_INOUT,  ///< Input to called function, and output to caller. Data is passed by reference or address and is potentially modified.
+            DIR_UNKNOWN ///< direction not known / specified
+        };
+        Direction direction;
     };
 
 
@@ -313,11 +343,16 @@ public:
         return arg && arg->iteratorInfo.it ? &arg->iteratorInfo : nullptr;
     }
 
-    bool hasminsize(const std::string &functionName) const;
+    bool hasminsize(const Token *ftok) const;
 
     const std::vector<ArgumentChecks::MinSize> *argminsizes(const Token *ftok, int argnr) const {
         const ArgumentChecks *arg = getarg(ftok, argnr);
         return arg ? &arg->minsizes : nullptr;
+    }
+
+    ArgumentChecks::Direction getArgDirection(const Token *ftok, int argnr) const {
+        const ArgumentChecks *arg = getarg(ftok, argnr);
+        return arg ? arg->direction : ArgumentChecks::Direction::DIR_UNKNOWN;
     }
 
     bool markupFile(const std::string &path) const;
@@ -370,6 +405,9 @@ public:
 
     std::set<std::string> returnuninitdata;
     std::vector<std::string> defines; // to provide some library defines
+
+    std::set<std::string> smartPointers;
+    bool isSmartPointer(const Token *tok) const;
 
     struct PodType {
         unsigned int   size;
@@ -499,10 +537,12 @@ private:
     std::set<std::string> mFiles;
     std::map<std::string, AllocFunc> mAlloc; // allocation functions
     std::map<std::string, AllocFunc> mDealloc; // deallocation functions
+    std::map<std::string, AllocFunc> mRealloc; // reallocation functions
     std::map<std::string, bool> mNoReturn; // is function noreturn?
     std::map<std::string, std::string> mReturnValue;
     std::map<std::string, std::string> mReturnValueType;
     std::map<std::string, int> mReturnValueContainer;
+    std::map<std::string, std::vector<MathLib::bigint>> mUnknownReturnValues;
     std::map<std::string, bool> mReportErrors;
     std::map<std::string, bool> mProcessAfterCode;
     std::set<std::string> mMarkupExtensions; // file extensions of markup files

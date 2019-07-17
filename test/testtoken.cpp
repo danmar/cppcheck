@@ -58,6 +58,7 @@ private:
         TEST_CASE(multiCompare5);
         TEST_CASE(getStrLength);
         TEST_CASE(getStrSize);
+        TEST_CASE(getCharAt);
         TEST_CASE(strValue);
 
         TEST_CASE(deleteLast);
@@ -267,20 +268,35 @@ private:
         Token tok;
 
         tok.str("\"\"");
-        ASSERT_EQUALS(0, (int)Token::getStrLength(&tok));
+        ASSERT_EQUALS(0, Token::getStrLength(&tok));
 
         tok.str("\"test\"");
-        ASSERT_EQUALS(4, (int)Token::getStrLength(&tok));
+        ASSERT_EQUALS(4, Token::getStrLength(&tok));
 
         tok.str("\"test \\\\test\"");
-        ASSERT_EQUALS(10, (int)Token::getStrLength(&tok));
+        ASSERT_EQUALS(10, Token::getStrLength(&tok));
 
         tok.str("\"a\\0\"");
-        ASSERT_EQUALS(1, (int)Token::getStrLength(&tok));
+        ASSERT_EQUALS(1, Token::getStrLength(&tok));
+
+        tok.str("L\"\"");
+        ASSERT_EQUALS(0, Token::getStrLength(&tok));
+
+        tok.str("u8\"test\"");
+        ASSERT_EQUALS(4, Token::getStrLength(&tok));
+
+        tok.str("U\"test \\\\test\"");
+        ASSERT_EQUALS(10, Token::getStrLength(&tok));
+
+        tok.str("u\"a\\0\"");
+        ASSERT_EQUALS(1, Token::getStrLength(&tok));
     }
 
     void getStrSize() const {
         Token tok;
+
+        tok.str("\"\"");
+        ASSERT_EQUALS(sizeof(""), Token::getStrSize(&tok));
 
         tok.str("\"abc\"");
         ASSERT_EQUALS(sizeof("abc"), Token::getStrSize(&tok));
@@ -290,6 +306,28 @@ private:
 
         tok.str("\"\\\\\"");
         ASSERT_EQUALS(sizeof("\\"), Token::getStrSize(&tok));
+    }
+
+    void getCharAt() const {
+        Token tok;
+
+        tok.str("\"asdf\"");
+        ASSERT_EQUALS("a", Token::getCharAt(&tok, 0));
+        ASSERT_EQUALS("s", Token::getCharAt(&tok, 1));
+
+        tok.str("\"a\\ts\"");
+        ASSERT_EQUALS("\\t", Token::getCharAt(&tok, 1));
+
+        tok.str("\"\"");
+        ASSERT_EQUALS("\\0", Token::getCharAt(&tok, 0));
+
+        tok.str("L\"a\\ts\"");
+        ASSERT_EQUALS("a", Token::getCharAt(&tok, 0));
+        ASSERT_EQUALS("\\t", Token::getCharAt(&tok, 1));
+
+        tok.str("u\"a\\ts\"");
+        ASSERT_EQUALS("\\t", Token::getCharAt(&tok, 1));
+        ASSERT_EQUALS("s", Token::getCharAt(&tok, 2));
     }
 
     void strValue() const {
@@ -316,11 +354,16 @@ private:
         tok.str("\"a\\0\"");
         ASSERT_EQUALS("a", tok.strValue());
 
+        tok.str("L\"a\\t\"");
+        ASSERT_EQUALS("a\t", tok.strValue());
+
+        tok.str("U\"a\\0\"");
+        ASSERT_EQUALS("a", tok.strValue());
     }
 
 
     void deleteLast() const {
-        TokensFrontBack listEnds{ 0 };
+        TokensFrontBack listEnds{ nullptr };
         Token ** const tokensBack = &(listEnds.back);
         Token tok(&listEnds);
         tok.insertToken("aba");
@@ -330,7 +373,7 @@ private:
     }
 
     void deleteFirst() const {
-        TokensFrontBack listEnds{ 0 };
+        TokensFrontBack listEnds{ nullptr };
         Token ** const tokensFront = &(listEnds.front);
         Token tok(&listEnds);
 
@@ -347,7 +390,7 @@ private:
         ASSERT_EQUALS(true, Token::simpleMatch(example1.tokens()->tokAt(4)->nextArgument(), "3 , 4"));
 
         givenACodeSampleToTokenize example2("foo();");
-        ASSERT_EQUALS(true, example2.tokens()->tokAt(2)->nextArgument() == 0);
+        ASSERT_EQUALS(true, example2.tokens()->tokAt(2)->nextArgument() == nullptr);
 
         givenACodeSampleToTokenize example3("foo(bar(a, b), 2, 3);");
         ASSERT_EQUALS(true, Token::simpleMatch(example3.tokens()->tokAt(2)->nextArgument(), "2 , 3"));
@@ -359,7 +402,7 @@ private:
     void eraseTokens() const {
         givenACodeSampleToTokenize code("begin ; { this code will be removed } end", true);
         Token::eraseTokens(code.tokens()->next(), code.tokens()->tokAt(9));
-        ASSERT_EQUALS("begin ; end", code.tokens()->stringifyList(0, false));
+        ASSERT_EQUALS("begin ; end", code.tokens()->stringifyList(nullptr, false));
     }
 
 
@@ -893,7 +936,7 @@ private:
     void canFindMatchingBracketsInnerPair() const {
         givenACodeSampleToTokenize var("std::deque<std::set<int> > intsets;");
 
-        const Token * const t = const_cast<Token*>(var.tokens()->tokAt(7))->findClosingBracket();
+        const Token * const t = var.tokens()->tokAt(7)->findClosingBracket();
         ASSERT_EQUALS(">", t->str());
         ASSERT(var.tokens()->tokAt(9) == t);
     }
@@ -942,6 +985,9 @@ private:
 
         givenACodeSampleToTokenize data3("return (t){1,2};");
         ASSERT_EQUALS("return(t){1,2}", data3.tokens()->expressionString());
+
+        givenACodeSampleToTokenize data4("return L\"a\";");
+        ASSERT_EQUALS("returnL\"a\"", data4.tokens()->expressionString());
     }
 };
 

@@ -61,11 +61,7 @@ public:
         checkCondition.alwaysTrueFalse();
         checkCondition.duplicateCondition();
         checkCondition.checkPointerAdditionResultNotNull();
-    }
-
-    /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        CheckCondition checkCondition(tokenizer, settings, errorLogger);
+        checkCondition.checkDuplicateConditionalAssign();
         checkCondition.assignIf();
         checkCondition.checkBadBitmaskCheck();
         checkCondition.comparison();
@@ -78,7 +74,7 @@ public:
     /** parse scopes recursively */
     bool assignIfParseScope(const Token * const assignTok,
                             const Token * const startTok,
-                            const unsigned int varid,
+                            const nonneg int varid,
                             const bool islocal,
                             const char bitop,
                             const MathLib::bigint num);
@@ -120,11 +116,13 @@ public:
     /** @brief Check if pointer addition result is NULL '(ptr + 1) == NULL' */
     void checkPointerAdditionResultNotNull();
 
+    void checkDuplicateConditionalAssign();
+
 private:
     // The conditions that have been diagnosed
     std::set<const Token*> mCondDiags;
     bool diag(const Token* tok, bool insert=true);
-    bool isAliased(const std::set<unsigned int> &vars) const;
+    bool isAliased(const std::set<int> &vars) const;
     bool isOverlappingCond(const Token * const cond1, const Token * const cond2, bool pure) const;
     void assignIfError(const Token *tok1, const Token *tok2, const std::string &condition, bool result);
     void mismatchingBitAndError(const Token *tok1, const MathLib::bigint num1, const Token *tok2, const MathLib::bigint num2);
@@ -136,7 +134,8 @@ private:
                          MathLib::bigint value2,
                          bool result);
     void duplicateConditionError(const Token *tok1, const Token *tok2, ErrorPath errorPath);
-    void multiConditionError(const Token *tok, unsigned int line1);
+    void overlappingElseIfConditionError(const Token *tok, nonneg int line1);
+    void oppositeElseIfConditionError(const Token *ifCond, const Token *elseIfCond, ErrorPath errorPath);
 
     void oppositeInnerConditionError(const Token *tok1, const Token* tok2, ErrorPath errorPath);
 
@@ -156,6 +155,8 @@ private:
     void invalidTestForOverflow(const Token* tok, bool result);
     void pointerAdditionResultNotNullError(const Token *tok, const Token *calc);
 
+    void duplicateConditionalAssignError(const Token *condTok, const Token* assignTok);
+
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckCondition c(nullptr, settings, errorLogger);
 
@@ -165,7 +166,7 @@ private:
         c.badBitmaskCheckError(nullptr);
         c.comparisonError(nullptr, "&", 6, "==", 1, false);
         c.duplicateConditionError(nullptr, nullptr, errorPath);
-        c.multiConditionError(nullptr,1);
+        c.overlappingElseIfConditionError(nullptr, 1);
         c.mismatchingBitAndError(nullptr, 0xf0, nullptr, 1);
         c.oppositeInnerConditionError(nullptr, nullptr, errorPath);
         c.identicalInnerConditionError(nullptr, nullptr, errorPath);
@@ -177,6 +178,7 @@ private:
         c.alwaysTrueFalseError(nullptr, nullptr);
         c.invalidTestForOverflow(nullptr, false);
         c.pointerAdditionResultNotNullError(nullptr, nullptr);
+        c.duplicateConditionalAssignError(nullptr, nullptr);
     }
 
     static std::string myName() {
@@ -188,6 +190,7 @@ private:
                "- Mismatching assignment and comparison => comparison is always true/false\n"
                "- Mismatching lhs and rhs in comparison => comparison is always true/false\n"
                "- Detect usage of | where & should be used\n"
+               "- Duplicate condition and assignment\n"
                "- Detect matching 'if' and 'else if' conditions\n"
                "- Mismatching bitand (a &= 0xf0; a &= 1; => a = 0)\n"
                "- Opposite inner condition is always false\n"

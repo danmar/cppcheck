@@ -40,6 +40,7 @@ private:
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(uninitvar1);
+        TEST_CASE(uninitvar_warn_once); // only write 1 warning at a time
         TEST_CASE(uninitvar_decl);      // handling various types in C and C++ files
         TEST_CASE(uninitvar_bitop);     // using uninitialized operand in bit operation
         TEST_CASE(uninitvar_alloc);     // data is allocated but not initialized
@@ -667,6 +668,15 @@ private:
                        "  return (*sink)[0];\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitvar_warn_once() {
+        checkUninitVar("void f() {\n"
+                       "  int x;\n"
+                       "  a = x;\n"
+                       "  b = x;\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
     }
 
     // Handling of unknown types. Assume they are POD in C.
@@ -1503,16 +1513,7 @@ private:
                        "        vertices[i][1][3] = 5.0;\n"
                        "    }\n"
                        "}\n");
-        // kind of regression test - there are more lines which access vertices!?
-        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: vertices\n"
-                      "[test.cpp:5]: (error) Uninitialized variable: vertices\n"
-                      "[test.cpp:6]: (error) Uninitialized variable: vertices\n"
-                      "[test.cpp:7]: (error) Uninitialized variable: vertices\n"
-                      "[test.cpp:8]: (error) Uninitialized variable: vertices\n"
-                      "[test.cpp:9]: (error) Uninitialized variable: vertices\n"
-                      "[test.cpp:10]: (error) Uninitialized variable: vertices\n"
-                      "[test.cpp:11]: (error) Uninitialized variable: vertices\n"
-                      "[test.cpp:18]: (error) Uninitialized variable: vertices\n",
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: vertices\n",
                       errout.str());
     }
 
@@ -3094,6 +3095,14 @@ private:
                        "}\n", "test.c");
         ASSERT_EQUALS("[test.c:5]: (error) Uninitialized struct member: ab.b\n", errout.str());
 
+        checkUninitVar("void f(void) {\n"
+                       "    struct AB ab;\n"
+                       "    int x;\n"
+                       "    ab.a = (addr)&x;\n"
+                       "    dostuff(&ab,0);\n"
+                       "}\n", "test.c");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar("class Element {\n"
                        "    static void f() { }\n"
                        "};\n"
@@ -3165,6 +3174,36 @@ private:
                        "}\n", "test.c");
         ASSERT_EQUALS("", errout.str());
 
+        {
+            const char argDirectionsTestXmlData[] = "<?xml version=\"1.0\"?>\n"
+                                                    "<def>\n"
+                                                    "  <function name=\"uninitvar_funcArgInTest\">\n"
+                                                    "    <arg nr=\"1\" direction=\"in\"/>\n"
+                                                    "  </function>\n"
+                                                    "  <function name=\"uninitvar_funcArgOutTest\">\n"
+                                                    "    <arg nr=\"1\" direction=\"out\"/>\n"
+                                                    "  </function>\n"
+                                                    "</def>";
+
+            ASSERT_EQUALS(true, settings.library.loadxmldata(argDirectionsTestXmlData, sizeof(argDirectionsTestXmlData) / sizeof(argDirectionsTestXmlData[0])));
+
+            checkUninitVar("struct AB { int a; };\n"
+                           "void f(void) {\n"
+                           "    struct AB ab;\n"
+                           "    uninitvar_funcArgInTest(&ab);\n"
+                           "    x = ab;\n"
+                           "}\n", "test.c");
+            ASSERT_EQUALS("[test.c:5]: (error) Uninitialized struct member: ab.a\n", errout.str());
+
+            checkUninitVar("struct AB { int a; };\n"
+                           "void f(void) {\n"
+                           "    struct AB ab;\n"
+                           "    uninitvar_funcArgOutTest(&ab);\n"
+                           "    x = ab;\n"
+                           "}\n", "test.c");
+            ASSERT_EQUALS("", errout.str());
+        }
+
         checkUninitVar("struct AB { int a; int b; };\n"
                        "void do_something(const struct AB ab);\n"
                        "void f(void) {\n"
@@ -3183,19 +3222,26 @@ private:
                            "}\n", "test.c");
             ASSERT_EQUALS("", errout.str());
 
+            checkUninitVar("struct AB { unsigned char a[10]; };\n" // #8999 - cast
+                           "void f(void) {\n"
+                           "    struct AB ab;\n"
+                           "    strcpy((char *)ab.a, STR);\n"
+                           "}\n", "test.c");
+            ASSERT_EQUALS("", errout.str());
+
             checkUninitVar("struct AB { char a[10]; };\n"
                            "void f(void) {\n"
                            "    struct AB ab;\n"
                            "    strcpy(x, ab.a);\n"
                            "}\n", "test.c");
-            TODO_ASSERT_EQUALS("error", "", errout.str());
+            TODO_ASSERT_EQUALS("[test.c:4]: (error) Uninitialized variable: ab.a\n", "", errout.str());
 
             checkUninitVar("struct AB { int a; };\n"
                            "void f(void) {\n"
                            "    struct AB ab;\n"
                            "    dosomething(ab.a);\n"
                            "}\n", "test.c");
-            TODO_ASSERT_EQUALS("error","", errout.str());
+            ASSERT_EQUALS("", errout.str());
         }
 
         checkUninitVar("struct AB { int a; int b; };\n"
@@ -3310,8 +3356,14 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized struct member: abc.a\n"
                       "[test.cpp:5]: (error) Uninitialized struct member: abc.b\n"
-                      "[test.cpp:6]: (error) Uninitialized struct member: abc.b\n"
                       "[test.cpp:5]: (error) Uninitialized struct member: abc.c\n", errout.str());
+
+        checkUninitVar("struct ABC { int a; int b; int c; };\n"
+                       "void foo() {\n"
+                       "  struct ABC abc;\n"
+                       "  dostuff((uint32_t *)&abc.a);\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
 
         // return
         checkUninitVar("struct AB { int a; int b; };\n"
@@ -3575,8 +3627,7 @@ private:
                        "       do_something(a);\n"
                        "   }\n"
                        "}\n", "test.c");
-        ASSERT_EQUALS("[test.c:5]: (error) Uninitialized variable: ab\n"
-                      "[test.c:5]: (error) Uninitialized struct member: ab.a\n", errout.str());
+        ASSERT_EQUALS("[test.c:5]: (error) Uninitialized struct member: ab.a\n", errout.str());
 
         checkUninitVar("void f(int i) {\n" // #4569 fp
                        "    float *buffer;\n"

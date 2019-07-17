@@ -82,10 +82,14 @@ public:
     };
     std::list<FileSettings> fileSettings;
 
+    void selectOneVsConfig(cppcheck::Platform::PlatformType platform);
+
     // Cppcheck GUI output
     struct {
+        std::string analyzeAllVsConfigs;
         std::vector<std::string> pathNames;
         std::list<std::string> libraries;
+        std::list<std::string> excludedPaths;
         std::string projectFile;
         std::string platform;
     } guiProject;
@@ -102,6 +106,8 @@ private:
     void importSln(std::istream &istr, const std::string &path);
     void importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories);
     void importBcb6Prj(const std::string &projectFilename);
+
+    std::string mPath;
 };
 
 /// @}

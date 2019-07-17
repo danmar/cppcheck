@@ -59,13 +59,6 @@ public:
         checkType.checkFloatToIntegerOverflow();
     }
 
-    /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        (void)tokenizer;
-        (void)settings;
-        (void)errorLogger;
-    }
-
     /** @brief %Check for bitwise shift with too big right operand */
     void checkTooBigBitwiseShift();
 
@@ -100,7 +93,7 @@ private:
         c.longCastAssignError(nullptr);
         c.longCastReturnError(nullptr);
         ValueFlow::Value f;
-        f.valueType = ValueFlow::Value::FLOAT;
+        f.valueType = ValueFlow::Value::ValueType::FLOAT;
         f.floatValue = 1E100;
         c.floatToIntegerOverflowError(nullptr, f);
     }

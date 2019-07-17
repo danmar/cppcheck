@@ -1,4 +1,5 @@
-INCLUDEPATH += $${PWD}/simplecpp \
+INCLUDEPATH += $${PWD} \
+               $${PWD}/simplecpp \
                $${PWD}/tinyxml
 
 HEADERS += $${PWD}/simplecpp/simplecpp.h \

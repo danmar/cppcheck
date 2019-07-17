@@ -70,8 +70,30 @@ private:
 public:
     Settings();
 
+    std::list<std::string> addons;
+
+    /** @brief Paths used as base for conversion to relative paths. */
+    std::vector<std::string> basePaths;
+
     /** @brief --cppcheck-build-dir */
     std::string buildDir;
+
+    /** Is the 'configuration checking' wanted? */
+    bool checkConfiguration;
+
+    /** Check for incomplete info in library files? */
+    bool checkLibrary;
+
+    /**
+     * Check code in the headers, this is on by default but can
+     * be turned off to save CPU */
+    bool checkHeaders;
+
+    /** Check unused templates */
+    bool checkUnusedTemplates;
+
+    /** @brief include paths excluded from checking the configuration */
+    std::set<std::string> configExcludePaths;
 
     /** @brief Is --debug-simplified given? */
     bool debugSimplified;
@@ -85,23 +107,26 @@ public:
     /** @brief Is --debug-template given? */
     bool debugtemplate;
 
-    /** @brief --max-ctu-depth */
-    int maxCtuDepth;
-
     /** @brief Is --dump given? */
     bool dump;
     std::string dumpFile;
 
+    enum Language {
+        None, C, CPP
+    };
+
+    /** @brief Name of the language that is enforced. Empty per default. */
+    Language enforcedLang;
+
     /** @brief Is --exception-handling given */
     bool exceptionHandling;
 
-    /** @brief Inconclusive checks */
-    bool inconclusive;
+    // argv[0]
+    std::string exename;
 
-    /** @brief Collect unmatched suppressions in one run.
-      * This delays the reporting until all files are checked.
-      * It is needed by checks that analyse the whole code base. */
-    bool jointSuppressionReport;
+    /** @brief If errors are found, this value is returned from main().
+        Default value is 0. */
+    int exitCode;
 
     /**
      * When this flag is false (default) then experimental
@@ -111,38 +136,55 @@ public:
      */
     bool experimental;
 
-    /** Experimental "fast" checking. We skip slow simplifications. The
-     * goal is that there will not be significant effect on the results
-     * and that we can remove the slow simplifications. */
-    bool experimentalFast;
+    /** @brief Force checking the files with "too many" configurations (--force). */
+    bool force;
 
-    /** @brief Is --quiet given? */
-    bool quiet;
+    /** @brief List of include paths, e.g. "my/includes/" which should be used
+        for finding include files inside source files. (-I) */
+    std::list<std::string> includePaths;
+
+    /** @brief Inconclusive checks */
+    bool inconclusive;
+
+    /** @brief Experimental flag that says all functions are "safe" */
+    bool allFunctionsAreSafe;
+
+    /** @brief check unknown function return values */
+    std::set<std::string> checkUnknownFunctionReturn;
 
     /** @brief Is --inline-suppr given? */
     bool inlineSuppressions;
 
-    /** @brief Is --verbose given? */
-    bool verbose;
+    /** @brief How many processes/threads should do checking at the same
+        time. Default is 1. (-j N) */
+    unsigned int jobs;
 
-    /** @brief Request termination of checking */
-    static void terminate(bool t = true) {
-        Settings::mTerminated = t;
-    }
+    /** @brief Collect unmatched suppressions in one run.
+      * This delays the reporting until all files are checked.
+      * It is needed by checks that analyse the whole code base. */
+    bool jointSuppressionReport;
 
-    /** @brief termination requested? */
-    static bool terminated() {
-        return Settings::mTerminated;
-    }
+    /** @brief --library= */
+    std::list<std::string> libraries;
 
-    /** @brief Force checking the files with "too many" configurations (--force). */
-    bool force;
+    /** Library */
+    Library library;
 
-    /** @brief Use relative paths in output. */
-    bool relativePaths;
+    /** @brief Load average value */
+    unsigned int loadAverage;
 
-    /** @brief Paths used as base for conversion to relative paths. */
-    std::vector<std::string> basePaths;
+    /** @brief Maximum number of configurations to check before bailing.
+        Default is 12. (--max-configs=N) */
+    unsigned int maxConfigs;
+
+    /** @brief --max-ctu-depth */
+    int maxCtuDepth;
+
+    /** @brief suppress exitcode */
+    Suppressions nofail;
+
+    /** @brief suppress message (--suppressions) */
+    Suppressions nomsg;
 
     /** @brief write results (--output-file=&lt;file&gt;) */
     std::string outputFile;
@@ -150,22 +192,46 @@ public:
     /** @brief plist output (--plist-output=&lt;dir&gt;) */
     std::string plistOutput;
 
-    /** @brief write XML results (--xml) */
-    bool xml;
+    /** @brief Using -E for debugging purposes */
+    bool preprocessOnly;
 
-    /** @brief XML version (--xml-version=..) */
-    int xml_version;
+    ImportProject project;
 
-    /** @brief How many processes/threads should do checking at the same
-        time. Default is 1. (-j N) */
-    unsigned int jobs;
+    /** @brief Is --quiet given? */
+    bool quiet;
 
-    /** @brief Load average value */
-    unsigned int loadAverage;
+    /** @brief Use relative paths in output. */
+    bool relativePaths;
 
-    /** @brief If errors are found, this value is returned from main().
-        Default value is 0. */
-    int exitCode;
+    /** @brief --report-progress */
+    bool reportProgress;
+
+    /** Rule */
+    class CPPCHECKLIB Rule {
+    public:
+        Rule()
+            : tokenlist("simple")         // use simple tokenlist
+            , id("rule")                  // default id
+            , severity(Severity::style) { // default severity
+        }
+
+        std::string tokenlist;
+        std::string pattern;
+        std::string id;
+        std::string summary;
+        Severity::SeverityType severity;
+    };
+
+    /**
+     * @brief Extra rules
+     */
+    std::list<Rule> rules;
+
+    /** @brief show timing information (--showtime=file|summary|top5) */
+    SHOWTIME_MODES showtime;
+
+    /** Struct contains standards settings */
+    Standards standards;
 
     /** @brief The output format in which the errors are printed in text mode,
         e.g. "{severity} {file}:{line} {message} {id}" */
@@ -175,19 +241,51 @@ public:
      *  text mode, e.g. "{file}:{line} {info}" */
     std::string templateLocation;
 
-    /** @brief show timing information (--showtime=file|summary|top5) */
-    SHOWTIME_MODES showtime;
+    /** @brief defines given by the user */
+    std::string userDefines;
 
-    /** @brief Using -E for debugging purposes */
-    bool preprocessOnly;
+    /** @brief undefines given by the user */
+    std::set<std::string> userUndefs;
 
-    /** @brief List of include paths, e.g. "my/includes/" which should be used
-        for finding include files inside source files. (-I) */
-    std::list<std::string> includePaths;
+    /** @brief forced includes given by the user */
+    std::list<std::string> userIncludes;
 
-    /** @brief Maximum number of configurations to check before bailing.
-        Default is 12. (--max-configs=N) */
-    unsigned int maxConfigs;
+    /** @brief Is --verbose given? */
+    bool verbose;
+
+    /** @brief write XML results (--xml) */
+    bool xml;
+
+    /** @brief XML version (--xml-version=..) */
+    int xml_version;
+
+    /**
+     * @brief return true if a included file is to be excluded in Preprocessor::getConfigs
+     * @return true for the file to be excluded.
+     */
+    bool configurationExcluded(const std::string &file) const {
+        for (std::set<std::string>::const_iterator i=configExcludePaths.begin(); i!=configExcludePaths.end(); ++i) {
+            if (file.length()>=i->length() && file.compare(0,i->length(),*i)==0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @brief Enable extra checks by id. See isEnabled()
+     * @param str single id or list of id values to be enabled
+     * or empty string to enable all. e.g. "style,possibleError"
+     * @return error message. empty upon success
+     */
+    std::string addEnabled(const std::string &str);
+
+    /**
+     * @brief Disables all severities, except from error.
+     */
+    void clearEnabled() {
+        mEnabled = 0;
+    }
 
     /**
      * @brief Returns true if given id is in the list of
@@ -211,96 +309,19 @@ public:
     */
     bool isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck=false) const;
 
-    /**
-     * @brief Enable extra checks by id. See isEnabled()
-     * @param str single id or list of id values to be enabled
-     * or empty string to enable all. e.g. "style,possibleError"
-     * @return error message. empty upon success
-     */
-    std::string addEnabled(const std::string &str);
-
-    /**
-     * @brief Disables all severities, except from error.
-     */
-    void clearEnabled() {
-        mEnabled = 0;
+    /** Is posix library specified? */
+    bool posix() const {
+        return std::find(libraries.begin(), libraries.end(), "posix") != libraries.end();
     }
 
-    enum Language {
-        None, C, CPP
-    };
+    /** @brief Request termination of checking */
+    static void terminate(bool t = true) {
+        Settings::mTerminated = t;
+    }
 
-    /** @brief Name of the language that is enforced. Empty per default. */
-    Language enforcedLang;
-
-    /** @brief suppress message (--suppressions) */
-    Suppressions nomsg;
-
-    /** @brief suppress exitcode */
-    Suppressions nofail;
-
-    /** @brief defines given by the user */
-    std::string userDefines;
-
-    /** @brief undefines given by the user */
-    std::set<std::string> userUndefs;
-
-    /** @brief forced includes given by the user */
-    std::list<std::string> userIncludes;
-
-    /** @brief include paths excluded from checking the configuration */
-    std::set<std::string> configExcludePaths;
-
-
-    /** @brief --report-progress */
-    bool reportProgress;
-
-    /** Library (--library) */
-    Library library;
-
-    /** Rule */
-    class CPPCHECKLIB Rule {
-    public:
-        Rule()
-            : tokenlist("simple")         // use simple tokenlist
-            , id("rule")                  // default id
-            , severity(Severity::style) { // default severity
-        }
-
-        std::string tokenlist;
-        std::string pattern;
-        std::string id;
-        std::string summary;
-        Severity::SeverityType severity;
-    };
-
-    /**
-     * @brief Extra rules
-     */
-    std::list<Rule> rules;
-
-    /** Is the 'configuration checking' wanted? */
-    bool checkConfiguration;
-
-    /** Check for incomplete info in library files? */
-    bool checkLibrary;
-
-    /** Struct contains standards settings */
-    Standards standards;
-
-    ImportProject project;
-
-    /**
-     * @brief return true if a included file is to be excluded in Preprocessor::getConfigs
-     * @return true for the file to be excluded.
-     */
-    bool configurationExcluded(const std::string &file) const {
-        for (std::set<std::string>::const_iterator i=configExcludePaths.begin(); i!=configExcludePaths.end(); ++i) {
-            if (file.length()>=i->length() && file.compare(0,i->length(),*i)==0) {
-                return true;
-            }
-        }
-        return false;
+    /** @brief termination requested? */
+    static bool terminated() {
+        return Settings::mTerminated;
     }
 };
 

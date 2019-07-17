@@ -63,13 +63,6 @@ public:
         checkString.checkAlwaysTrueOrFalseStringCompare();
     }
 
-    /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        (void)tokenizer;
-        (void)settings;
-        (void)errorLogger;
-    }
-
     /** @brief undefined behaviour, writing string literal */
     void stringLiteralWrite();
 
@@ -93,13 +86,13 @@ public:
 
 private:
     void stringLiteralWriteError(const Token *tok, const Token *strValue);
-    void sprintfOverlappingDataError(const Token *tok, const std::string &varname);
+    void sprintfOverlappingDataError(const Token *funcTok, const Token *tok, const std::string &varname);
     void strPlusCharError(const Token *tok);
     void incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string);
     void incorrectStringBooleanError(const Token *tok, const std::string& string);
     void alwaysTrueFalseStringCompareError(const Token *tok, const std::string& str1, const std::string& str2);
     void alwaysTrueStringVariableCompareError(const Token *tok, const std::string& str1, const std::string& str2);
-    void suspiciousStringCompareError(const Token* tok, const std::string& var);
+    void suspiciousStringCompareError(const Token* tok, const std::string& var, bool isLong);
     void suspiciousStringCompareError_char(const Token* tok, const std::string& var);
     void overlappingStrcmpError(const Token* eq0, const Token *ne0);
 
@@ -107,10 +100,10 @@ private:
         CheckString c(nullptr, settings, errorLogger);
 
         c.stringLiteralWriteError(nullptr, nullptr);
-        c.sprintfOverlappingDataError(nullptr, "varname");
+        c.sprintfOverlappingDataError(nullptr, nullptr, "varname");
         c.strPlusCharError(nullptr);
         c.incorrectStringCompareError(nullptr, "substr", "\"Hello World\"");
-        c.suspiciousStringCompareError(nullptr, "foo");
+        c.suspiciousStringCompareError(nullptr, "foo", false);
         c.suspiciousStringCompareError_char(nullptr, "foo");
         c.incorrectStringBooleanError(nullptr, "\"Hello World\"");
         c.incorrectStringBooleanError(nullptr, "\'x\'");

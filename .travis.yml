@@ -1,5 +1,5 @@
 language: cpp
-dist: trusty
+dist: xenial
 
 compiler:
   - gcc
@@ -7,18 +7,19 @@ compiler:
 
 env:
   global:
-    - ORIGINAL_CXXFLAGS="-pedantic -Wall -Wextra -Wabi -Wcast-qual -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wshadow -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare -Wno-multichar -D_GLIBCXX_DEBUG -g "
+    - ORIGINAL_CXXFLAGS="-pedantic -Wall -Wextra -Wabi -Wcast-qual -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wno-shadow -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare -Wno-multichar -D_GLIBCXX_DEBUG -g "
 #   unfortunately we need this to stay within 50min timelimit given by travis.
     - CXXFLAGS="${ORIGINAL_CXXFLAGS} -O2 -march=native -Wstrict-aliasing=2 -Werror=strict-aliasing"
     - CPPCHECK=${TRAVIS_BUILD_DIR}/cppcheck
   matrix:
     - CXXFLAGS="${CXXFLAGS} -DCHECK_INTERNAL"
-    - CXXFLAGS="${CXXFLAGS} -DCHECK_INTERNAL" MAKEFLAGS="HAVE_RULES=yes" SRCDIR=build VERIFY=1
+    - CXXFLAGS="${CXXFLAGS} -DCHECK_INTERNAL" MAKEFLAGS="HAVE_RULES=yes" MATCHCOMPILER=yes VERIFY=1
 
 before_install:
 # install needed deps
- - sudo apt-get update -qq
- - sudo apt-get install -qq python-pygments qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet
+ - travis_retry sudo apt-get update -qq
+ - travis_retry sudo apt-get install -qq python-pygments qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet
+ - travis_retry sudo python2 -m pip install --upgrade pytest==4.6.4
 
 matrix:
 # do notify immediately about it when a job of a build fails.
@@ -28,6 +29,16 @@ matrix:
       compiler: clang
 # defined extra jobs that run besides what is configured in the build matrix
   include:
+# -fsanitize=undefined
+    - name: "undefined behaviour sanitizers"
+      compiler: gcc
+      script:
+        - CXXFLAGS="-fsanitize=undefined -fno-sanitize-recover=all -Og -g3" make cppcheck test checkcfg -j 2
+# -fsanitize=address
+    - name: "address sanitizers"
+      compiler: gcc
+      script:
+         - CXXFLAGS="-fsanitize=address -Og -g3" make cppcheck test checkcfg -j 2
 # check a lot of stuff that only needs to be checked in a single configuration
     - name: "misc"
       compiler: clang
@@ -57,15 +68,12 @@ matrix:
         - git clean -dfx
 # check what happens if we want to install it to some other dir,
         - echo $CXXFLAGS
-        - make -s SRCDIR=build CFGDIR=/usr/share/cppcheck/cfg -j 2
-        - sudo make SRCDIR=build CFGDIR=/usr/share/cppcheck/cfg install
+        - make -s MATCHCOMPILER=yes CFGDIR=/usr/share/cppcheck/cfg -j 2
+        - sudo make MATCHCOMPILER=yes CFGDIR=/usr/share/cppcheck/cfg install
         - sudo mkdir -p /usr/share/cppcheck/cfg
         - sudo install -D ./cfg/* -t /usr/share/cppcheck/cfg
 # check if it actually works:
         - /usr/bin/cppcheck ./cli
-# check if reduce tool compiles
-        - echo $CXXFLAGS
-        - make -s reduce -j 2
 # check if showtime=top5 works
         - ./tools/test_showtimetop5.sh
 # check matchcompiler
@@ -80,15 +88,21 @@ matrix:
         - python -m py_compile ./tools/donate-cpu.py
         - python3 -m py_compile ./tools/donate-cpu.py
         - python -m py_compile ./tools/donate-cpu-server.py
-        # donate-cpu-server.py is currently not Python 3 compatible
-# check addons/misra.py
+        - python3 -m py_compile ./tools/donate-cpu-server.py
+# check addons/misc.py
         - cd addons/test
         - ${CPPCHECK} --dump misc-test.cpp
         - python3 ../misc.py -verify misc-test.cpp.dump
+        - cd ../../
+# check addons/cert.py
+        - cd addons/test
         - ${CPPCHECK} --dump cert-test.c
         - python3 ../cert.py -verify cert-test.c.dump
         - ${CPPCHECK} --dump cert-test.cpp
         - python3 ../cert.py -verify cert-test.cpp.dump
+        - cd ../../
+# check addons/misra.py
+        - cd addons/test
         - ${CPPCHECK} --dump misra-test.c
         - python3 ../misra.py -verify misra-test.c.dump
         - ${CPPCHECK} --dump misra-test.cpp
@@ -100,6 +114,11 @@ matrix:
         - python ../misra.py --rule-texts=misra2012_rules_dummy_windows1250.txt -verify misra-test.cpp.dump
         - python3 ../misra.py --rule-texts=misra2012_rules_dummy_windows1250.txt -verify misra-test.cpp.dump
         - cd ../../
+# check addons/naming.py
+        - cd addons/test
+        - ${CPPCHECK} --dump naming_test.c
+        - python3 ../naming.py --var='[a-z].*' --function='[a-z].*' naming_test.c.dump
+        - cd ../..
 # check addons/namingng.py
         - cd addons/test
         - ${CPPCHECK} --dump namingng_test.c
@@ -115,7 +134,7 @@ matrix:
     - name: "check clang sources with cppcheck"
       compiler: clang
       script:
-        - wget "https://github.com/llvm-mirror/clang/archive/a1f8bd3778cc5a53236a53500c6ab184e945eefa.zip" & SRCDIR=build VERIFY=1 make -j 2 & wait
+        - wget "https://github.com/llvm-mirror/clang/archive/a1f8bd3778cc5a53236a53500c6ab184e945eefa.zip" & MATCHCOMPILER=yes VERIFY=1 make -j 2 & wait
         - unzip a1f8bd3778cc5a53236a53500c6ab184e945eefa.zip > /dev/null
         - touch /tmp/clang.cppcheck
         - cd ./clang-a1f8bd3778cc5a53236a53500c6ab184e945eefa
@@ -128,7 +147,7 @@ matrix:
     - name: "check llvm sources with cppcheck"
       compiler: clang
       script:
-        - wget "https://github.com/llvm-mirror/llvm/archive/6fa6453210fa34c1c28bd73a431d04734549f0d6.zip"  & SRCDIR=build VERIFY=1 make -j 2 & wait
+        - wget "https://github.com/llvm-mirror/llvm/archive/6fa6453210fa34c1c28bd73a431d04734549f0d6.zip"  & MATCHCOMPILER=yes VERIFY=1 make -j 2 & wait
         - unzip 6fa6453210fa34c1c28bd73a431d04734549f0d6.zip > /dev/null
         - touch /tmp/llvm.cppcheck
         - cd ./llvm-6fa6453210fa34c1c28bd73a431d04734549f0d6
@@ -153,8 +172,19 @@ matrix:
       compiler: gcc
       dist: precise
       before_install:
-        - sudo apt-get update -qq
-        - sudo apt-get install libxml2-utils libpcre3
+        - travis_retry sudo apt-get update -qq
+        - travis_retry sudo apt-get install libxml2-utils libpcre3
+      script:
+        - CXX=g++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck testrunner -j 2
+        - make clean
+        - CXX=clang++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck testrunner -j 2
+# check if cppcheck builds on trusty
+    - name: "make ubuntu 14.04 trusty"
+      compiler: gcc
+      dist: trusty
+      before_install:
+        - travis_retry sudo apt-get update -qq
+        - travis_retry sudo apt-get install libxml2-utils libpcre3
       script:
         - CXX=g++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck testrunner -j 2
         - make clean
@@ -179,6 +209,8 @@ script:
   - echo $CXXFLAGS
   - make -s test -j2 CPPFLAGS=-DTEST_MATHLIB_VALUE
   - touch lib/mathlib.cpp test/testmathlib.cpp
+# syntax checking of cppcheck source code with -DNONNEG
+  - ls lib/*.cpp | xargs -n 1 -P 2 g++ -fsyntax-only -std=c++0x -Ilib -Iexternals -Iexternals/simplecpp -Iexternals/tinyxml -DNONNEG
 # compile cppcheck, default build
   - echo $CXXFLAGS
   - make -s test -j2
@@ -189,15 +221,14 @@ script:
   - make -s -j2
 # building gui generates some more files that cppcheck can check, so check the repo *after* building gui
   - cd ../
-# use same hack as for clang to work around cppchecks broken exit status with -j 2 ; create file, tee everything to the file and stdout, grep for errors in the file
-  - touch /tmp/cppcheck.cppcheck
-  - ${CPPCHECK} -D__CPPCHECK__ -f --error-exitcode=1 --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --enable=style,performance,portability,warning,internal --exception-handling --inline-suppr --suppressions-list=.travis_suppressions -itest/synthetic -iaddons  -igui . -j 2 |& tee /tmp/cppcheck.cppcheck
+# self check lib/cli
+  - mkdir b1
+  - ${CPPCHECK} -j2 --template=gcc --cppcheck-build-dir=b1 -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --inconclusive --enable=style,performance,portability,warning,internal --exception-handling cli lib
 # check gui with qt settings
-  - ${CPPCHECK} --library=qt  --error-exitcode=1  -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --enable=style,performance,portability,warning,internal  --exception-handling -j 2 gui --suppressions-list=.travis_suppressions -igui/test |& tee --append /tmp/cppcheck.cppcheck
-  - sh -c "! grep '^\[' /tmp/cppcheck.cppcheck"
-# check naming conventions
-  - ${CPPCHECK} -i gui/test -j 2 --dump -q gui lib
-  - find lib gui -maxdepth 1 -name "*.dump" | xargs -n 1 -P 4 python addons/naming.py --private-member-variable='m[A-Z].*'
+  - mkdir b2
+  - ${CPPCHECK} -j2 --template=gcc --cppcheck-build-dir=b2 -D__CPPCHECK__ -DQT_VERSION=0x050000 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=qt --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ --enable=style,performance,portability,warning,internal --exception-handling gui/*.cpp
+# self check test and tools
+  - ${CPPCHECK} -j2 --template=gcc -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --inconclusive --enable=style,performance,portability,warning,internal --exception-handling test/*.cpp tools
 # Build gui
   - cd ./gui
 # clean rebuild
@@ -207,12 +238,23 @@ script:
   - echo $CXXFLAGS
   - make -s -j2
   - cd ../
+# Build gui/test
+  - cd gui/test/projectfile
+  - qmake && make && ./test-projectfile
+  - cd -
 # Build triage
   - cd ./tools/triage
   - git clean -dfx .
   - qmake
   - make -s -j2
   - cd ../../
+# Testing cli
+  - cp -R . ../cppcheck\ 2
+  - cd ../cppcheck\ 2/test/cli # path with space
+  - python -m pytest test-*.py
+  - cd -
+# Testing addons
+  - python -m pytest addons/test/test-*.py
 
 notifications:
   irc:

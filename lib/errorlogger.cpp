@@ -49,6 +49,12 @@ InternalError::InternalError(const Token *tok, const std::string &errorMsg, Type
     case INTERNAL:
         id = "cppcheckError";
         break;
+    case LIMIT:
+        id = "cppcheckLimit";
+        break;
+    case INSTANTIATION:
+        id = "instantiationError";
+        break;
     }
 }
 
@@ -732,7 +738,7 @@ std::string ErrorLogger::plistData(const ErrorLogger::ErrorMessage &msg)
               << "     <key>depth</key><integer>0</integer>\r\n"
               << "     <key>extended_message</key>\r\n"
               << "     <string>" << ErrorLogger::toxml(message) << "</string>\r\n"
-              << "     <key>message</key>\r"
+              << "     <key>message</key>\r\n"
               << "     <string>" << ErrorLogger::toxml(message) << "</string>\r\n"
               << "    </dict>\r\n";
     }

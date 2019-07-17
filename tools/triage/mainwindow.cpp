@@ -8,9 +8,12 @@
 #include <QFileInfo>
 #include <QFileDialog>
 #include <ctime>
+#include <cstdlib>
 
 const QString WORK_FOLDER(QDir::homePath() + "/triage");
 const QString DACA2_PACKAGES(QDir::homePath() + "/daca2-packages");
+
+const int MAX_ERRORS = 100;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -53,8 +56,8 @@ void MainWindow::load(QTextStream &textStream)
 {
     QString url;
     QString errorMessage;
-    QStringList allErrors;
-    ui->results->clear();
+    QStringList versions;
+    mAllErrors.clear();
     while (true) {
         QString line = textStream.readLine();
         if (line.isNull())
@@ -62,31 +65,68 @@ void MainWindow::load(QTextStream &textStream)
         if (line.startsWith("ftp://")) {
             url = line;
             if (!errorMessage.isEmpty())
-                allErrors << errorMessage;
+                mAllErrors << errorMessage;
             errorMessage.clear();
         } else if (!url.isEmpty() && QRegExp(".*: (error|warning|style|note):.*").exactMatch(line)) {
-            if (QRegExp("^(head|1.[0-9][0-9]) .*").exactMatch(line))
-                line = line.mid(5);
+            if (QRegExp("^(head|1.[0-9][0-9]) .*").exactMatch(line)) {
+                const QString version = line.mid(0,4);
+                if (versions.indexOf(version) < 0)
+                    versions << version;
+            }
             if (line.indexOf(": note:") > 0)
                 errorMessage += '\n' + line;
             else if (errorMessage.isEmpty()) {
                 errorMessage = url + '\n' + line;
             } else {
-                allErrors << errorMessage;
+                mAllErrors << errorMessage;
                 errorMessage = url + '\n' + line;
             }
         }
     }
     if (!errorMessage.isEmpty())
-        allErrors << errorMessage;
-    if (allErrors.size() > 100) {
+        mAllErrors << errorMessage;
+
+    ui->version->clear();
+    if (versions.size() > 1)
+        ui->version->addItem("");
+    ui->version->addItems(versions);
+
+    filter("");
+}
+
+void MainWindow::refreshResults()
+{
+    filter(ui->version->currentText());
+}
+
+void MainWindow::filter(QString filter)
+{
+    QStringList allErrors;
+
+    for (const QString &errorItem : mAllErrors) {
+        if (filter.isEmpty()) {
+            allErrors << errorItem;
+            continue;
+        }
+
+        const QStringList lines = errorItem.split("\n");
+        if (lines.size() < 2)
+            continue;
+
+        if (lines[1].startsWith(filter))
+            allErrors << errorItem;
+    }
+
+    ui->results->clear();
+
+    if (ui->random100->isChecked() && allErrors.size() > MAX_ERRORS) {
         // remove items in /test/
-        for (int i = allErrors.size()-1; i >= 0 && allErrors.size() > 100; --i) {
+        for (int i = allErrors.size() - 1; i >= 0 && allErrors.size() > MAX_ERRORS; --i) {
             if (allErrors[i].indexOf("test") > 0)
                 allErrors.removeAt(i);
         }
         std::random_shuffle(allErrors.begin(), allErrors.end());
-        ui->results->addItems(allErrors.mid(0,100));
+        ui->results->addItems(allErrors.mid(0,MAX_ERRORS));
         ui->results->sortItems();
     } else {
         ui->results->addItems(allErrors);

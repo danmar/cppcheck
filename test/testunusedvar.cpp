@@ -33,6 +33,7 @@ private:
 
     void run() OVERRIDE {
         settings.addEnabled("style");
+        LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(emptyclass);  // #5355 - False positive: Variable is not assigned a value.
         TEST_CASE(emptystruct);  // #5355 - False positive: Variable is not assigned a value.
@@ -143,10 +144,12 @@ private:
         TEST_CASE(localvarstring2); // ticket #2929
         TEST_CASE(localvarconst1);
         TEST_CASE(localvarconst2);
+        TEST_CASE(localvarreturn); // ticket #9167
 
         TEST_CASE(localvarthrow); // ticket #3687
 
         TEST_CASE(localVarStd);
+        TEST_CASE(localVarClass);
 
         // Don't give false positives for variables in structs/unions
         TEST_CASE(localvarStruct1);
@@ -197,6 +200,7 @@ private:
         TEST_CASE(bracesInitCpp11);// #7895 - "int var{123}" initialization
 
         TEST_CASE(argument);
+        TEST_CASE(escapeAlias); // #9150
     }
 
     void checkStructMemberUsage(const char code[]) {
@@ -4084,6 +4088,21 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void localvarreturn() { // ticket #9167
+        functionVariableUsage("void foo() {\n"
+                              "    const int MyInt = 1;\n"
+                              "    class bar {\n"
+                              "      public:\n"
+                              "        bool operator()(const int &uIndexA, const int &uIndexB) const {\n"
+                              "            return true;\n"
+                              "        }\n"
+                              "        bar() {}\n"
+                              "    };\n"
+                              "    return MyInt;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void localvarthrow() { // ticket #3687
         functionVariableUsage("void foo() {\n"
                               "    try {}"
@@ -4106,17 +4125,12 @@ private:
         functionVariableUsage("void f() {\n"
                               "    std::vector<int> x(100);\n"
                               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'x' is assigned a value that is never used.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
 
         functionVariableUsage("void f() {\n"
                               "    std::vector<MyClass> x;\n"
                               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: x\n", errout.str());
-
-        functionVariableUsage("void f() {\n"
-                              "    std::vector<MyClass> x(100);\n" // Might have a side-effect
-                              "}");
-        ASSERT_EQUALS("", errout.str());
 
         functionVariableUsage("void f() {\n"
                               "    std::lock_guard<MyClass> lock(mutex_);\n" // Has a side-effect #4385
@@ -4131,6 +4145,25 @@ private:
         functionVariableUsage("void f() {\n"
                               "    std::mutex m;\n"
                               "    std::unique_lock<std::mutex> lock(m);\n" // #4624
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localVarClass() {
+        functionVariableUsage("void f() {\n"
+                              "    Fred f;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("class C { int x; };\n"
+                              "void f() {\n"
+                              "    C c;\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: c\n", errout.str());
+
+        functionVariableUsage("class C { public: C(int); ~C(); };\n"
+                              "void f() {\n"
+                              "    C c(12);\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }
@@ -4537,6 +4570,22 @@ private:
             "}"
         );
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'foo.x' is assigned a value that is never used.\n", errout.str());
+    }
+
+    void escapeAlias() {
+        functionVariableUsage(
+            "struct A {\n"
+            "    std::map<int, int> m;\n"
+            "    void f(int key, int number) {\n"
+            "        auto pos = m.find(key);\n"
+            "        if (pos == m.end())\n"
+            "            m.insert(std::map<int, int>::value_type(key, number));\n"
+            "        else\n"
+            "            (*pos).second = number;\n"
+            "    }\n"
+            "};\n"
+        );
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

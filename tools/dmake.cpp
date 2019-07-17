@@ -31,7 +31,7 @@
 static std::string builddir(std::string filename)
 {
     if (filename.compare(0,4,"lib/") == 0)
-        filename = "$(SRCDIR)" + filename.substr(3);
+        filename = "$(libcppdir)" + filename.substr(3);
     return filename;
 }
 
@@ -200,15 +200,21 @@ int main(int argc, char **argv)
     fout << "# To compile with rules, use 'make HAVE_RULES=yes'\n";
     makeConditionalVariable(fout, "HAVE_RULES", "no");
 
-    // compiled patterns..
-    fout << "# folder where lib/*.cpp files are located\n";
-    makeConditionalVariable(fout, "SRCDIR", "lib");
+    // use match compiler..
+    fout << "# use match compiler\n";
     fout << "ifeq ($(SRCDIR),build)\n"
+         << "    $(warning Usage of SRCDIR to acticate match compiler is deprecated. Use MATCHCOMPILER=yes instead.)\n"
+         << "    MATCHCOMPILER:=yes\n"
+         << "endif\n";
+    fout << "ifeq ($(MATCHCOMPILER),yes)\n"
          << "    ifdef VERIFY\n"
          << "        matchcompiler_S := $(shell python tools/matchcompiler.py --verify)\n"
          << "    else\n"
          << "        matchcompiler_S := $(shell python tools/matchcompiler.py)\n"
          << "    endif\n"
+         << "    libcppdir:=build\n"
+         << "else\n"
+         << "    libcppdir:=lib\n"
          << "endif\n\n";
 
     // explicit cfg dir..
@@ -290,9 +296,9 @@ int main(int argc, char **argv)
                                 "-pedantic "
                                 "-Wall "
                                 "-Wextra "
-                                "-Wabi "
                                 "-Wcast-qual "
 //                                "-Wconversion "  // danmar: gives fp. for instance: unsigned int sizeof_pointer = sizeof(void *);
+                                "-Wno-deprecated-declarations "
                                 "-Wfloat-equal "
 //                                "-Wlogical-op "
                                 "-Wmissing-declarations "
@@ -301,6 +307,7 @@ int main(int argc, char **argv)
 //                                "-Woverloaded-virtual "  // danmar: we get fp when overloading analyseWholeProgram()
                                 "-Wpacked "
                                 "-Wredundant-decls "
+                                "-Wundef "
                                 "-Wno-shadow "
 //                                "-Wsign-conversion "
 //                                "-Wsign-promo "
@@ -312,6 +319,16 @@ int main(int argc, char **argv)
                                 "$(CPPCHK_GLIBCXX_DEBUG) "
                                 "-g");
     }
+
+    fout << "# Increase stack size for Cygwin builds to avoid segmentation fault in limited recursive tests.\n"
+         << "ifdef COMSPEC\n"
+         << "    uname_S := $(shell uname -s)\n"
+         << "\n"
+         << "    ifneq (,$(findstring CYGWIN,$(uname_S)))\n"
+         << "        CXXFLAGS+=-Wl,--stack,8388608\n"
+         << "    endif # CYGWIN\n"
+         << "endif # COMSPEC\n"
+         << "\n";
 
     fout << "ifeq (g++, $(findstring g++,$(CXX)))\n"
          << "    override CXXFLAGS += -std=c++0x\n"
@@ -334,9 +351,9 @@ int main(int argc, char **argv)
          << "endif\n\n";
 
     makeConditionalVariable(fout, "PREFIX", "/usr");
-    makeConditionalVariable(fout, "INCLUDE_FOR_LIB", "-Ilib -Iexternals/simplecpp -Iexternals/tinyxml");
-    makeConditionalVariable(fout, "INCLUDE_FOR_CLI", "-Ilib -Iexternals/simplecpp -Iexternals/tinyxml");
-    makeConditionalVariable(fout, "INCLUDE_FOR_TEST", "-Ilib -Icli -Iexternals/simplecpp -Iexternals/tinyxml");
+    makeConditionalVariable(fout, "INCLUDE_FOR_LIB", "-Ilib -isystem externals -isystem externals/simplecpp -isystem externals/tinyxml");
+    makeConditionalVariable(fout, "INCLUDE_FOR_CLI", "-Ilib -isystem externals/simplecpp -isystem externals/tinyxml");
+    makeConditionalVariable(fout, "INCLUDE_FOR_TEST", "-Ilib -Icli -isystem externals/simplecpp -isystem externals/tinyxml");
 
     fout << "BIN=$(DESTDIR)$(PREFIX)/bin\n\n";
     fout << "# For 'make man': sudo apt-get install xsltproc docbook-xsl docbook-xml on Linux\n";
@@ -375,16 +392,14 @@ int main(int argc, char **argv)
     fout << "\t./testrunner -q\n\n";
     fout << "checkcfg:\tcppcheck validateCFG\n";
     fout << "\t./test/cfg/runtests.sh\n\n";
-    fout << "dmake:\ttools/dmake.o cli/filelister.o $(SRCDIR)/pathmatch.o $(SRCDIR)/path.o externals/simplecpp/simplecpp.o\n";
+    fout << "dmake:\ttools/dmake.o cli/filelister.o $(libcppdir)/pathmatch.o $(libcppdir)/path.o externals/simplecpp/simplecpp.o\n";
     fout << "\t$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)\n\n";
     fout << "run-dmake: dmake\n";
     fout << "\t./dmake\n\n";
     fout << "generate_cfg_tests: tools/generate_cfg_tests.o $(EXTOBJ)\n";
-    fout << "\tg++ -Iexternals/tinyxml -o generate_cfg_tests tools/generate_cfg_tests.o $(EXTOBJ)\n";
-    fout << "reduce:\ttools/reduce.o $(LIBOBJ) $(EXTOBJ)\n";
-    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)\n\n";
+    fout << "\tg++ -isystem externals/tinyxml -o generate_cfg_tests tools/generate_cfg_tests.o $(EXTOBJ)\n";
     fout << "clean:\n";
-    fout << "\trm -f build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner reduce dmake cppcheck cppcheck.1\n\n";
+    fout << "\trm -f build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner dmake cppcheck cppcheck.exe cppcheck.1\n\n";
     fout << "man:\tman/cppcheck.1\n\n";
     fout << "man/cppcheck.1:\t$(MAN_SOURCE)\n\n";
     fout << "\t$(XP) $(DB2MAN) $(MAN_SOURCE)\n\n";

@@ -39,8 +39,8 @@ class ProjectFile : public QObject {
     Q_OBJECT
 
 public:
-    explicit ProjectFile(QObject *parent = 0);
-    ProjectFile(const QString &filename, QObject *parent = 0);
+    explicit ProjectFile(QObject *parent = nullptr);
+    explicit ProjectFile(const QString &filename, QObject *parent = nullptr);
 
     /**
      * @brief Read the project file.
@@ -66,6 +66,22 @@ public:
 
     bool getAnalyzeAllVsConfigs() const {
         return mAnalyzeAllVsConfigs;
+    }
+
+    bool getCheckHeaders() const {
+        return mCheckHeaders;
+    }
+
+    void setCheckHeaders(bool b) {
+        mCheckHeaders = b;
+    }
+
+    bool getCheckUnusedTemplates() const {
+        return mCheckUnusedTemplates;
+    }
+
+    void setCheckUnusedTemplates(bool b) {
+        mCheckUnusedTemplates = b;
     }
 
     /**
@@ -125,12 +141,18 @@ public:
     }
 
     /**
-    * @brief Get list suppressions.
+    * @brief Get "raw" suppressions.
     * @return list of suppressions.
     */
     QList<Suppressions::Suppression> getSuppressions() const {
         return mSuppressions;
     }
+
+    /**
+    * @brief Get "check" suppressions.
+    * @return list of suppressions.
+    */
+    QList<Suppressions::Suppression> getCheckSuppressions() const;
 
     /**
     * @brief Get list addons.
@@ -164,6 +186,14 @@ public:
 
     QStringList getTags() const {
         return mTags;
+    }
+
+    int getMaxCtuDepth() const {
+        return mMaxCtuDepth;
+    }
+
+    void setMaxCtuDepth(int maxCtuDepth) {
+        mMaxCtuDepth = maxCtuDepth;
     }
 
     /**
@@ -270,6 +300,22 @@ public:
         mFilename = filename;
     }
 
+    /** Experimental: checking all function parameter values */
+    bool getCheckAllFunctionParameterValues() const {
+        return mCheckAllFunctionParameterValues;
+    }
+    void setCheckAllFunctionParameterValues(bool b) {
+        mCheckAllFunctionParameterValues = b;
+    }
+
+    /** Check unknown function return values */
+    QStringList getCheckUnknownFunctionReturn() const {
+        return mCheckUnknownFunctionReturn;
+    }
+    void setCheckUnknownFunctionReturn(const QStringList &s) {
+        mCheckUnknownFunctionReturn = s;
+    }
+
 protected:
 
     /**
@@ -286,7 +332,9 @@ protected:
      */
     void readImportProject(QXmlStreamReader &reader);
 
-    void readAnalyzeAllVsConfigs(QXmlStreamReader &reader);
+    bool readBool(QXmlStreamReader &reader);
+
+    int readInt(QXmlStreamReader &reader, int defaultValue);
 
     /**
      * @brief Read list of include directories from XML.
@@ -376,6 +424,12 @@ private:
      */
     bool mAnalyzeAllVsConfigs;
 
+    /** Check code in headers */
+    bool mCheckHeaders;
+
+    /** Check code in unused templates */
+    bool mCheckUnusedTemplates;
+
     /**
      * @brief List of include directories used to search include files.
      */
@@ -431,6 +485,14 @@ private:
      * @brief Warning tags
      */
     QStringList mTags;
+
+    /** Max CTU depth */
+    int mMaxCtuDepth;
+
+    bool mCheckAllFunctionParameterValues;
+
+    QStringList mCheckUnknownFunctionReturn;
+
 };
 /// @}
 #endif  // PROJECT_FILE_H

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,10 +46,6 @@ static const CWE CWE704(704U);  // Incorrect Type Conversion or Cast
 static bool isBool(const Variable* var)
 {
     return (var && Token::Match(var->typeEndToken(), "bool|_Bool"));
-}
-static bool isNonBoolStdType(const Variable* var)
-{
-    return (var && var->typeEndToken()->isStandardType() && !Token::Match(var->typeEndToken(), "bool|_Bool"));
 }
 
 //---------------------------------------------------------------------------
@@ -293,15 +289,16 @@ void CheckBool::checkAssignBoolToPointer()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
-            if (tok->str() == "=" && astIsBool(tok->astOperand2())) {
-                const Token *lhs = tok->astOperand1();
-                while (lhs && (lhs->str() == "." || lhs->str() == "::"))
-                    lhs = lhs->astOperand2();
-                if (!lhs || !lhs->variable() || !lhs->variable()->isPointer())
-                    continue;
+            if (tok->str() != "=")
+                continue;
+            const ValueType *lhsType = tok->astOperand1() ? tok->astOperand1()->valueType() : nullptr;
+            if (!lhsType || lhsType->pointer == 0)
+                continue;
+            const ValueType *rhsType = tok->astOperand2() ? tok->astOperand2()->valueType() : nullptr;
+            if (!rhsType || rhsType->pointer > 0 || rhsType->type != ValueType::Type::BOOL)
+                continue;
 
-                assignBoolToPointerError(tok);
-            }
+            assignBoolToPointerError(tok);
         }
     }
 }
@@ -349,6 +346,9 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
                 // but it is probably written this way by design.
                 continue;
 
+            if (astIsBool(numTok))
+                continue;
+
             if (numTok->isNumber()) {
                 const MathLib::bigint num = MathLib::toLongNumber(numTok->str());
                 if (num==0 &&
@@ -360,7 +360,7 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
                      : Token::Match(tok, ">|==|!=")))
                     continue;
                 comparisonOfBoolExpressionWithIntError(tok, true);
-            } else if (isNonBoolStdType(numTok->variable()) && mTokenizer->isCPP())
+            } else if (astIsIntegral(numTok, false) && mTokenizer->isCPP())
                 comparisonOfBoolExpressionWithIntError(tok, false);
         }
     }
@@ -472,8 +472,11 @@ void CheckBool::returnValueOfFunctionReturningBool(void)
             const Token* tok2 = findLambdaEndToken(tok);
             if (tok2)
                 tok = tok2;
+            else if (tok->scope() && tok->scope()->isClassOrStruct())
+                tok = tok->scope()->bodyEnd;
             else if (Token::simpleMatch(tok, "return") && tok->astOperand1() &&
-                     (tok->astOperand1()->getValueGE(2, mSettings) || tok->astOperand1()->getValueLE(-1, mSettings)))
+                     (tok->astOperand1()->getValueGE(2, mSettings) || tok->astOperand1()->getValueLE(-1, mSettings)) &&
+                     !(tok->astOperand1()->astOperand1() && Token::Match(tok->astOperand1(), "&|%or%")))
                 returnValueBoolError(tok);
         }
     }

@@ -46,7 +46,9 @@ class Settings;
 class ThreadExecutor : public ErrorLogger {
 public:
     ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger);
+    ThreadExecutor(const ThreadExecutor &) = delete;
     virtual ~ThreadExecutor();
+    void operator=(const ThreadExecutor &) = delete;
     unsigned int check();
 
     virtual void reportOut(const std::string &outmsg) OVERRIDE;
@@ -63,15 +65,15 @@ public:
     void addFileContent(const std::string &path, const std::string &content);
 
 private:
-    const std::map<std::string, std::size_t> &_files;
-    Settings &_settings;
-    ErrorLogger &_errorLogger;
-    unsigned int _fileCount;
+    const std::map<std::string, std::size_t> &mFiles;
+    Settings &mSettings;
+    ErrorLogger &mErrorLogger;
+    unsigned int mFileCount;
 
 #if defined(THREADING_MODEL_FORK)
 
     /** @brief Key is file name, and value is the content of the file */
-    std::map<std::string, std::string> _fileContents;
+    std::map<std::string, std::string> mFileContents;
 private:
     enum PipeSignal {REPORT_OUT='1',REPORT_ERROR='2', REPORT_INFO='3', CHILD_END='4'};
 
@@ -87,8 +89,8 @@ private:
      * Write end of status pipe, different for each child.
      * Not used in master process.
      */
-    std::list<std::string> _errorList;
-    int _wpipe;
+    std::list<std::string> mErrorList;
+    int mWpipe;
 
     /**
      * @brief Check load average condition
@@ -110,19 +112,19 @@ public:
 private:
     enum MessageType {REPORT_ERROR, REPORT_INFO};
 
-    std::map<std::string, std::string> _fileContents;
-    std::map<std::string, std::size_t>::const_iterator _itNextFile;
-    std::list<ImportProject::FileSettings>::const_iterator _itNextFileSettings;
-    std::size_t _processedFiles;
-    std::size_t _totalFiles;
-    std::size_t _processedSize;
-    std::size_t _totalFileSize;
-    CRITICAL_SECTION _fileSync;
+    std::map<std::string, std::string> mFileContents;
+    std::map<std::string, std::size_t>::const_iterator mItNextFile;
+    std::list<ImportProject::FileSettings>::const_iterator mItNextFileSettings;
+    std::size_t mProcessedFiles;
+    std::size_t mTotalFiles;
+    std::size_t mProcessedSize;
+    std::size_t mTotalFileSize;
+    CRITICAL_SECTION mFileSync;
 
-    std::list<std::string> _errorList;
-    CRITICAL_SECTION _errorSync;
+    std::list<std::string> mErrorList;
+    CRITICAL_SECTION mErrorSync;
 
-    CRITICAL_SECTION _reportSync;
+    CRITICAL_SECTION mReportSync;
 
     void report(const ErrorLogger::ErrorMessage &msg, MessageType msgType);
 
@@ -144,13 +146,6 @@ public:
         return false;
     }
 #endif
-
-private:
-    /** disabled copy constructor */
-    ThreadExecutor(const ThreadExecutor &);
-
-    /** disabled assignment operator */
-    void operator=(const ThreadExecutor &);
 };
 
 /// @}
