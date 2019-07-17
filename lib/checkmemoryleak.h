@@ -115,14 +115,6 @@ public:
     static AllocType getReallocationType(const Token *tok2, unsigned int varid);
 
     /**
-     * @brief Is a typename the name of a class?
-     * @param tok type token
-     * @param varid variable id
-     * @return true if the type name is the name of a class
-     */
-    bool isclass(const Token *tok, unsigned int varid) const;
-
-    /**
      * Report that there is a memory leak (new/malloc/etc)
      * @param tok token where memory is leaked
      * @param varname name of variable

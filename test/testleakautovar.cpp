@@ -68,6 +68,8 @@ private:
         TEST_CASE(assign18);
         TEST_CASE(assign19);
 
+        TEST_CASE(isAutoDealloc);
+
         TEST_CASE(realloc1);
         TEST_CASE(realloc2);
         TEST_CASE(realloc3);
@@ -92,7 +94,6 @@ private:
         TEST_CASE(doublefree7);
         TEST_CASE(doublefree8);
         TEST_CASE(doublefree9);
-
 
         // exit
         TEST_CASE(exit1);
@@ -397,6 +398,23 @@ private:
               "    free((void*)p);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void isAutoDealloc() {
+        check("void f() {\n"
+              "    char *p = new char[100];"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:2]: (error) Memory leak: p\n", errout.str());
+
+        check("void f() {\n"
+              "    Fred *fred = new Fred;"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    std::string *str = new std::string;"
+              "}", true);
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (error) Memory leak: str\n", "", errout.str());
     }
 
     void realloc1() {
