@@ -5439,10 +5439,14 @@ static void valueFlowSafeFunctions(TokenList *tokenlist, SymbolDatabase *symbold
             }
 
             std::list<ValueFlow::Value> argValues;
-            if (isLow)
+            if (isLow) {
                 argValues.emplace_back(low);
-            if (isHigh)
+                argValues.back().errorPath.emplace_back(arg.nameToken(), "Assuming argument has value " + MathLib::toString(low));
+            }
+            if (isHigh) {
                 argValues.emplace_back(high);
+                argValues.back().errorPath.emplace_back(arg.nameToken(), "Assuming argument has value " + MathLib::toString(high));
+            }
 
             if (!argValues.empty())
                 valueFlowForward(const_cast<Token *>(functionScope->bodyStart->next()),
