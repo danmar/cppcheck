@@ -188,20 +188,20 @@ struct PathAnalysis
         bool known;
     };
 
-    void Forward(const std::function<Progress(const Info&)>& f) const;
+    void forward(const std::function<Progress(const Info&)>& f) const;
     template<class F>
-    void ForwardAll(F f)
+    void forwardAll(F f)
     {
-        Forward([&](const Info& info) {
+        forward([&](const Info& info) {
             f(info);
             return Progress::Continue;
         });
     }
     template<class Predicate>
-    Info ForwardFind(Predicate pred)
+    Info forwardFind(Predicate pred)
     {
         Info result{};
-        Forward([&](const Info& info) {
+        forward([&](const Info& info) {
             if (pred(info)) {
                 result = info;
                 return Progress::Break;
@@ -212,8 +212,8 @@ struct PathAnalysis
     }
 private:
 
-    Progress ForwardRecursive(const Token* tok, Info info, const std::function<PathAnalysis::Progress(const Info&)>& f) const;
-    Progress ForwardRange(const Token* startToken, const Token* endToken, Info info, const std::function<Progress(const Info&)>& f) const;
+    Progress forwardRecursive(const Token* tok, Info info, const std::function<PathAnalysis::Progress(const Info&)>& f) const;
+    Progress forwardRange(const Token* startToken, const Token* endToken, Info info, const std::function<Progress(const Info&)>& f) const;
 
     static const Scope* findOuterScope(const Scope * scope);
 

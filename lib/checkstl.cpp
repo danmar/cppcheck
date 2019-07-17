@@ -815,7 +815,7 @@ void CheckStl::invalidContainer()
                 endToken = tok->next();
             const ValueFlow::Value* v = nullptr;
             ErrorPath errorPath;
-            PathAnalysis::Info info = PathAnalysis{endToken, library}.ForwardFind([&](const PathAnalysis::Info& info) {
+            PathAnalysis::Info info = PathAnalysis{endToken, library}.forwardFind([&](const PathAnalysis::Info& info) {
                 if (!info.tok->variable())
                     return false;
                 if (info.tok->varId() == skipVarId)
