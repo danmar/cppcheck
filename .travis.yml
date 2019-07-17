@@ -19,7 +19,8 @@ before_install:
 # install needed deps
  - travis_retry sudo apt-get update -qq
  - travis_retry sudo apt-get install -qq python-pygments qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet
- - travis_retry sudo python2 -m pip install --upgrade pytest==4.6.4 pylint
+ - travis_retry sudo python2 -m pip install --upgrade pytest==4.6.4
+ - travis_retry python2 -m pip install pylint
 
 matrix:
 # do notify immediately about it when a job of a build fails.
@@ -84,6 +85,10 @@ matrix:
 # check python syntax by compiling all addon scripts
         - python -m compileall ./addons
         - python3 -m compileall ./addons
+# run pylint
+        - cd addons
+        - pylint *.py y2038/*.py
+        - cd ..
 # check python syntax by compiling some selected scripts
         - python -m py_compile ./tools/donate-cpu.py
         - python3 -m py_compile ./tools/donate-cpu.py
