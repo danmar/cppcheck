@@ -53,6 +53,29 @@ static const CWE CWE415(415U);
 static const int NEW_ARRAY = -2;
 static const int NEW = -1;
 
+
+/**
+ * @brief Is variable type some class with automatic deallocation?
+ * @param vartok variable token
+ * @return true unless it can be seen there is no automatic deallocation
+ */
+static bool isAutoDealloc(const Variable *var)
+{
+    if (var->valueType() && var->valueType()->type != ValueType::Type::RECORD && var->valueType()->type != ValueType::Type::UNKNOWN_TYPE)
+        return false;
+
+    // return false if the type is a simple record type without side effects
+    // a type that has no side effects (no constructors and no members with constructors)
+    /** @todo false negative: check base class for side effects */
+    /** @todo false negative: check constructors for side effects */
+    if (var->typeScope() && var->typeScope()->numConstructors == 0 &&
+        (var->typeScope()->varlist.empty() || var->type()->needInitialization == Type::True) &&
+        var->type()->derivedFrom.empty())
+        return false;
+
+    return true;
+}
+
 //---------------------------------------------------------------------------
 
 void VarInfo::print()
@@ -206,6 +229,30 @@ static bool isPointerReleased(const Token *startToken, const Token *endToken, no
     return false;
 }
 
+static bool checkVariable(const Token *varTok, const bool isCpp)
+{
+    // not a local variable nor argument?
+    const Variable *var = varTok->variable();
+    if (var && !var->isArgument() && (!var->isLocal() || var->isStatic()))
+        return false;
+
+    // Don't check reference variables
+    if (var && var->isReference())
+        return false;
+
+    // non-pod variable
+    if (isCpp) {
+        if (!var)
+            return false;
+        // Possibly automatically deallocated memory
+        if (isAutoDealloc(var) && Token::Match(varTok, "%var% = new"))
+            return false;
+        if (!var->isPointer() && !var->typeStartToken()->isStandardType())
+            return false;
+    }
+    return true;
+}
+
 /** checks if nameToken is a name of a function in a function call:
 *     func(arg)
 * or
@@ -318,25 +365,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 leakIfAllocated(varTok, *varInfo);
             varInfo->erase(varTok->varId());
 
-            // not a local variable nor argument?
-            const Variable *var = varTok->variable();
-            if (var && !var->isArgument() && (!var->isLocal() || var->isStatic()))
+            if (!checkVariable(varTok, mTokenizer->isCPP()))
                 continue;
-
-            // Don't check reference variables
-            if (var && var->isReference())
-                continue;
-
-            // non-pod variable
-            if (mTokenizer->isCPP()) {
-                if (!var)
-                    continue;
-                // Possibly automatically deallocated memory
-                if (!var->typeStartToken()->isStandardType() && Token::Match(varTok, "%var% = new"))
-                    continue;
-                if (!var->isPointer() && !var->typeStartToken()->isStandardType())
-                    continue;
-            }
 
             // allocation?
             const Token *const fTok = tokRightAstOperand ? tokRightAstOperand->previous() : nullptr;
@@ -374,6 +404,9 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             const Token * closingParenthesis = tok->linkAt(1);
             for (const Token *innerTok = tok->tokAt(2); innerTok && innerTok != closingParenthesis; innerTok = innerTok->next()) {
                 // TODO: replace with checkTokenInsideExpression()
+
+                if (!checkVariable(innerTok, mTokenizer->isCPP()))
+                    continue;
 
                 if (Token::Match(innerTok, "%var% =") && innerTok->astParent() == innerTok->next()) {
                     // allocation?

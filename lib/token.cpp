@@ -1083,31 +1083,31 @@ std::string Token::stringifyList(bool varid, bool attributes, bool linenumbers, 
     std::ostringstream ret;
 
     unsigned int lineNumber = mImpl->mLineNumber - (linenumbers ? 1U : 0U);
-    unsigned int fileInd = files ? ~0U : mImpl->mFileIndex;
+    unsigned int fileIndex = files ? ~0U : mImpl->mFileIndex;
     std::map<int, unsigned int> lineNumbers;
     for (const Token *tok = this; tok != end; tok = tok->next()) {
         bool fileChange = false;
-        if (tok->mImpl->mFileIndex != fileInd) {
-            if (fileInd != ~0U) {
-                lineNumbers[fileInd] = tok->mImpl->mFileIndex;
+        if (tok->mImpl->mFileIndex != fileIndex) {
+            if (fileIndex != ~0U) {
+                lineNumbers[fileIndex] = tok->mImpl->mFileIndex;
             }
 
-            fileInd = tok->mImpl->mFileIndex;
+            fileIndex = tok->mImpl->mFileIndex;
             if (files) {
                 ret << "\n\n##file ";
                 if (fileNames && fileNames->size() > tok->mImpl->mFileIndex)
                     ret << fileNames->at(tok->mImpl->mFileIndex);
                 else
-                    ret << fileInd;
+                    ret << fileIndex;
                 ret << '\n';
             }
 
-            lineNumber = lineNumbers[fileInd];
+            lineNumber = lineNumbers[fileIndex];
             fileChange = true;
         }
 
         if (linebreaks && (lineNumber != tok->linenr() || fileChange)) {
-            if (lineNumber+4 < tok->linenr() && fileInd == tok->mImpl->mFileIndex) {
+            if (lineNumber+4 < tok->linenr() && fileIndex == tok->mImpl->mFileIndex) {
                 ret << '\n' << lineNumber+1 << ":\n|\n";
                 ret << tok->linenr()-1 << ":\n";
                 ret << tok->linenr() << ": ";

@@ -821,7 +821,7 @@ void CheckStl::stlOutOfBounds()
             const Library::Container* container = containerToken->valueType() ? containerToken->valueType()->container : nullptr;
             if (!container)
                 continue;
-            if (container->getYield(containerToken->strAt(2)) != Library::Container::SIZE)
+            if (container->getYield(containerToken->strAt(2)) != Library::Container::Yield::SIZE)
                 continue;
 
             // variable id for loop variable.
@@ -835,13 +835,13 @@ void CheckStl::stlOutOfBounds()
                 if (tok3->varId() == declarationId) {
                     tok3 = tok3->next();
                     if (Token::Match(tok3, ". %name% ( )")) {
-                        if (container->getYield(tok3->strAt(1)) == Library::Container::SIZE)
+                        if (container->getYield(tok3->strAt(1)) == Library::Container::Yield::SIZE)
                             break;
                     } else if (container->arrayLike_indexOp && Token::Match(tok3, "[ %varid% ]", numId))
                         stlOutOfBoundsError(tok3, tok3->strAt(1), containerName, false);
                     else if (Token::Match(tok3, ". %name% ( %varid% )", numId)) {
                         const Library::Container::Yield yield = container->getYield(tok3->strAt(1));
-                        if (yield == Library::Container::AT_INDEX)
+                        if (yield == Library::Container::Yield::AT_INDEX)
                             stlOutOfBoundsError(tok3, tok3->strAt(3), containerName, true);
                     }
                 }
@@ -1205,11 +1205,11 @@ void CheckStl::if_find()
                 }
             }
 
-            if (container && container->getAction(funcTok->str()) == Library::Container::FIND) {
+            if (container && container->getAction(funcTok->str()) == Library::Container::Action::FIND) {
                 if (if_findCompare(funcTok->next()))
                     continue;
 
-                if (printWarning && container->getYield(funcTok->str()) == Library::Container::ITERATOR)
+                if (printWarning && container->getYield(funcTok->str()) == Library::Container::Yield::ITERATOR)
                     if_findError(tok, false);
                 else if (printPerformance && container->stdStringLike && funcTok->str() == "find")
                     if_findError(tok, true);
@@ -1228,7 +1228,7 @@ void CheckStl::if_findError(const Token *tok, bool str)
 {
     if (str && mSettings->standards.cpp >= Standards::CPP20)
         reportError(tok, Severity::performance, "stlIfStrFind",
-                    "Inefficient usage of string::find() in condition; string::starts_with() would be faster.\n"
+                    "Inefficient usage of string::find() in condition; string::starts_with() could be faster.\n"
                     "Either inefficient or wrong usage of string::find(). string::starts_with() will be faster if "
                     "string::find's result is compared with 0, because it will not scan the whole "
                     "string. If your intention is to check that there are no findings in the string, "
