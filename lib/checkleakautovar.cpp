@@ -233,17 +233,17 @@ static bool checkVariable(const Token *varTok, const bool isCpp)
 {
     // not a local variable nor argument?
     const Variable *var = varTok->variable();
-    if (var && !var->isArgument() && (!var->isLocal() || var->isStatic()))
+    if (!var)
+        return true;
+    if (!var->isArgument() && (!var->isLocal() || var->isStatic()))
         return false;
 
     // Don't check reference variables
-    if (var && var->isReference())
+    if (var->isReference())
         return false;
 
     // non-pod variable
     if (isCpp) {
-        if (!var)
-            return false;
         // Possibly automatically deallocated memory
         if (isAutoDealloc(var) && Token::Match(varTok, "%var% = new"))
             return false;
