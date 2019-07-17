@@ -2511,7 +2511,7 @@ void CheckClass::duplInheritedMembersError(const Token *tok1, const Token* tok2,
 // Check that copy constructor and operator defined together
 //---------------------------------------------------------------------------
 
-enum CtorType {
+enum class CtorType {
     NO,
     WITHOUT_BODY,
     WITH_BODY
