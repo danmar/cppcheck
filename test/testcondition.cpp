@@ -2269,7 +2269,7 @@ private:
               "  if (x > 100) {}\n"
               "}");
         // TODO: we should probably throw unknownMacro InternalError. Complain that the macro X must be defined. We can't check the code well without the definition.
-        TODO_ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Condition 'x>100' is always false\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Condition 'x>100' is always false\n", errout.str());
 
         check("void f(const int *i) {\n"
               "  if (!i) return;\n"
@@ -2331,6 +2331,17 @@ private:
               "  in >> ch;\n"
               "  if (ch != '|') {}\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #8924
+        check("struct A {\n"
+              "    void f() {\n"
+              "        if (this->FileIndex >= 0) return;\n"
+              "        this->FileIndex = 1 ;\n"
+              "        if (this->FileIndex < 0) return;\n"
+              "    }\n"
+              "    int FileIndex;  \n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
