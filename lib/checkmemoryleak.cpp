@@ -94,26 +94,6 @@ static const std::set<std::string> call_func_white_list = {
 
 //---------------------------------------------------------------------------
 
-bool CheckMemoryLeak::isclass(const Token *tok, unsigned int varid) const
-{
-    if (tok->isStandardType())
-        return false;
-
-    const Variable * var = mTokenizer_->getSymbolDatabase()->getVariableFromVarId(varid);
-
-    // return false if the type is a simple record type without side effects
-    // a type that has no side effects (no constructors and no members with constructors)
-    /** @todo false negative: check base class for side effects */
-    /** @todo false negative: check constructors for side effects */
-    if (var && var->typeScope() && var->typeScope()->numConstructors == 0 &&
-        (var->typeScope()->varlist.empty() || var->type()->needInitialization == Type::True) &&
-        var->type()->derivedFrom.empty())
-        return false;
-
-    return true;
-}
-//---------------------------------------------------------------------------
-
 CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2, unsigned int varid, std::list<const Function*> *callstack) const
 {
     // What we may have...
