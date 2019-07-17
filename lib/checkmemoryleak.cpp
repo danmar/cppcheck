@@ -52,23 +52,6 @@ static const CWE CWE401(401U);  // Improper Release of Memory Before Removing La
 static const CWE CWE771(771U);  // Missing Reference to Active Allocated Resource
 static const CWE CWE772(772U);  // Missing Release of Resource after Effective Lifetime
 
-/**
- * Count function parameters
- * \param tok Function name token before the '('
- */
-static unsigned int countParameters(const Token *tok)
-{
-    tok = tok->tokAt(2);
-    if (tok->str() == ")")
-        return 0;
-
-    unsigned int numpar = 1;
-    while (nullptr != (tok = tok->nextArgument()))
-        numpar++;
-
-    return numpar;
-}
-
 
 /** List of functions that can be ignored when searching for memory leaks.
  * These functions don't take the address of the given pointer
@@ -137,7 +120,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
             if (Token::Match(tok2, "open|openat|creat|mkstemp|mkostemp|socket (")) {
                 // simple sanity check of function parameters..
                 // TODO: Make such check for all these functions
-                const unsigned int num = countParameters(tok2);
+                const int num = numberOfArguments(tok2);
                 if (tok2->str() == "open" && num != 2 && num != 3)
                     return No;
 
