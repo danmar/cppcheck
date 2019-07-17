@@ -1480,7 +1480,7 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool check
     // file's location directory as root path
     if (rootpath.isEmpty() || rootpath == ".")
         mCurrentDirectory = inf.canonicalPath();
-    else if (rootpath.startsWith("."))
+    else if (rootpath.startsWith("./"))
         mCurrentDirectory = inf.canonicalPath() + rootpath.mid(1);
     else
         mCurrentDirectory = rootpath;
@@ -1488,7 +1488,7 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool check
     if (!projectFile->getBuildDir().isEmpty()) {
         QString buildDir = projectFile->getBuildDir();
         if (!QDir::isAbsolutePath(buildDir))
-            buildDir = mCurrentDirectory + '/' + buildDir;
+            buildDir = inf.canonicalPath() + '/' + buildDir;
         if (!QDir(buildDir).exists()) {
             QMessageBox msg(QMessageBox::Critical,
                             tr("Cppcheck"),
