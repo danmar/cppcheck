@@ -885,7 +885,7 @@ def server(server_address_port, packages, packageIndex, resultPath):
                               line)
                         print('Ignoring data.')
                         old_version_wrong = True
-                        break
+                    break
             if not versions_found:
                 print('Cppcheck versions missing in result data. Ignoring data.')
                 continue
