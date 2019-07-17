@@ -2391,35 +2391,35 @@ private:
               "{\n"
               "    if (s.find(\"abc\")) { }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (performance) Inefficient usage of string::find() in condition; string::starts_with() would be faster.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Inefficient usage of string::find() in condition; string::starts_with() could be faster.\n", errout.str());
 
         // error (pointer)
         check("void f(const std::string *s)\n"
               "{\n"
               "    if ((*s).find(\"abc\")) { }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (performance) Inefficient usage of string::find() in condition; string::starts_with() would be faster.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Inefficient usage of string::find() in condition; string::starts_with() could be faster.\n", errout.str());
 
         // error (pointer)
         check("void f(const std::string *s)\n"
               "{\n"
               "    if (s->find(\"abc\")) { }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (performance) Inefficient usage of string::find() in condition; string::starts_with() would be faster.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Inefficient usage of string::find() in condition; string::starts_with() could be faster.\n", errout.str());
 
         // error (vector)
         check("void f(const std::vector<std::string> &s)\n"
               "{\n"
               "    if (s[0].find(\"abc\")) { }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (performance) Inefficient usage of string::find() in condition; string::starts_with() would be faster.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Inefficient usage of string::find() in condition; string::starts_with() could be faster.\n", errout.str());
 
         // #3162
         check("void f(const std::string& s1, const std::string& s2)\n"
               "{\n"
               "    if ((!s1.empty()) && (0 == s1.find(s2))) { }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (performance) Inefficient usage of string::find() in condition; string::starts_with() would be faster.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Inefficient usage of string::find() in condition; string::starts_with() could be faster.\n", errout.str());
 
         // #4102
         check("void f(const std::string &define) {\n"
