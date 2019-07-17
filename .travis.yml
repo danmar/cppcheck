@@ -20,7 +20,7 @@ before_install:
  - travis_retry sudo apt-get update -qq
  - travis_retry sudo apt-get install -qq python-pygments qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet
  - travis_retry sudo python2 -m pip install --upgrade pytest==4.6.4
- - travis_retry python2 -m pip install pylint
+ - travis_retry python2 -m pip install --user pylint
 
 matrix:
 # do notify immediately about it when a job of a build fails.
