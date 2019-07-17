@@ -420,55 +420,55 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                             return Error(MISSING_ATTRIBUTE, "name");
 
                         const char* const action_ptr = functionNode->Attribute("action");
-                        Container::Action action = Container::NO_ACTION;
+                        Container::Action action = Container::Action::NO_ACTION;
                         if (action_ptr) {
                             std::string actionName = action_ptr;
                             if (actionName == "resize")
-                                action = Container::RESIZE;
+                                action = Container::Action::RESIZE;
                             else if (actionName == "clear")
-                                action = Container::CLEAR;
+                                action = Container::Action::CLEAR;
                             else if (actionName == "push")
-                                action = Container::PUSH;
+                                action = Container::Action::PUSH;
                             else if (actionName == "pop")
-                                action = Container::POP;
+                                action = Container::Action::POP;
                             else if (actionName == "find")
-                                action = Container::FIND;
+                                action = Container::Action::FIND;
                             else if (actionName == "insert")
-                                action = Container::INSERT;
+                                action = Container::Action::INSERT;
                             else if (actionName == "erase")
-                                action = Container::ERASE;
+                                action = Container::Action::ERASE;
                             else if (actionName == "change-content")
-                                action = Container::CHANGE_CONTENT;
+                                action = Container::Action::CHANGE_CONTENT;
                             else if (actionName == "change-internal")
-                                action = Container::CHANGE_INTERNAL;
+                                action = Container::Action::CHANGE_INTERNAL;
                             else if (actionName == "change")
-                                action = Container::CHANGE;
+                                action = Container::Action::CHANGE;
                             else
                                 return Error(BAD_ATTRIBUTE_VALUE, actionName);
                         }
 
                         const char* const yield_ptr = functionNode->Attribute("yields");
-                        Container::Yield yield = Container::NO_YIELD;
+                        Container::Yield yield = Container::Yield::NO_YIELD;
                         if (yield_ptr) {
                             std::string yieldName = yield_ptr;
                             if (yieldName == "at_index")
-                                yield = Container::AT_INDEX;
+                                yield = Container::Yield::AT_INDEX;
                             else if (yieldName == "item")
-                                yield = Container::ITEM;
+                                yield = Container::Yield::ITEM;
                             else if (yieldName == "buffer")
-                                yield = Container::BUFFER;
+                                yield = Container::Yield::BUFFER;
                             else if (yieldName == "buffer-nt")
-                                yield = Container::BUFFER_NT;
+                                yield = Container::Yield::BUFFER_NT;
                             else if (yieldName == "start-iterator")
-                                yield = Container::START_ITERATOR;
+                                yield = Container::Yield::START_ITERATOR;
                             else if (yieldName == "end-iterator")
-                                yield = Container::END_ITERATOR;
+                                yield = Container::Yield::END_ITERATOR;
                             else if (yieldName == "iterator")
-                                yield = Container::ITERATOR;
+                                yield = Container::Yield::ITERATOR;
                             else if (yieldName == "size")
-                                yield = Container::SIZE;
+                                yield = Container::Yield::SIZE;
                             else if (yieldName == "empty")
-                                yield = Container::EMPTY;
+                                yield = Container::Yield::EMPTY;
                             else
                                 return Error(BAD_ATTRIBUTE_VALUE, yieldName);
                         }
