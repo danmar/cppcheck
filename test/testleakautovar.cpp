@@ -121,6 +121,7 @@ private:
         TEST_CASE(ifelse12); // #8340 - if ((*p = malloc(4)) == NULL)
         TEST_CASE(ifelse13); // #8392
         TEST_CASE(ifelse14); // #9130 - if (x == (char*)NULL)
+        TEST_CASE(ifelse15); // #9206 - if (global_ptr = malloc(1))
 
         // switch
         TEST_CASE(switch1);
@@ -1360,6 +1361,23 @@ private:
               "    if (buf == (char*)NULL)\n"
               "        return NULL;\n"
               "    return buf;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void ifelse15() { // #9206
+        check("struct SSS { int a; };\n"
+              "SSS* global_ptr;\n"
+              "void test_alloc() {\n"
+              "   if ( global_ptr = new SSS()) {}\n"
+              "   return;\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("FILE* hFile;\n"
+              "int openFile( void ) {\n"
+              "   if ((hFile = fopen(\"1.txt\", \"wb\" )) == NULL) return 0;\n"
+              "   return 1;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
