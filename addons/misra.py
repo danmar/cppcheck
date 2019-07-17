@@ -543,30 +543,6 @@ def generateTable():
             print(num[:8] + s)
 
 
-def remove_file_prefix(file_path, prefix):
-    """
-    Remove a file path prefix from a give path.  leftover
-    directory separators at the beginning of a file
-    after the removal are also stripped.
-
-    Example:
-        '/remove/this/path/file.c'
-    with a prefix of:
-        '/remove/this/path'
-    becomes:
-        file.c
-    """
-    result = None
-    if file_path.startswith(prefix):
-        result = file_path[len(prefix):]
-        # Remove any leftover directory separators at the
-        # beginning
-        result = result.lstrip('\\/')
-    else:
-        result = file_path
-    return result
-
-
 class Rule(object):
     """Class to keep rule text and metadata"""
 
@@ -659,9 +635,6 @@ class MisraChecker:
 
         # List of suppression extracted from the dumpfile
         self.dumpfileSuppressions = None
-
-        # Prefix to ignore when matching suppression files.
-        self.filePrefix = None
 
         # Statistics of all violations suppressed per rule
         self.suppressionStats   = dict()
@@ -1580,6 +1553,54 @@ class MisraChecker:
             elif token.str == 'va_list':
                 self.reportError(token, 17, 1)
 
+    def misra_17_2(self, data):
+        # find recursions..
+        def find_recursive_call(search_for_function, direct_call, calls_map, visited=set()):
+            if direct_call == search_for_function:
+                return True
+            for indirect_call in calls_map.get(direct_call, []):
+                if indirect_call == search_for_function:
+                    return True
+                if indirect_call in visited:
+                    # This has already been handled
+                    continue
+                visited.add(indirect_call)
+                if find_recursive_call(search_for_function, indirect_call, calls_map, visited):
+                    return True
+            return False
+
+        # List functions called in each function
+        function_calls = {}
+        for scope in data.scopes:
+            if scope.type != 'Function':
+                continue
+            calls = []
+            tok = scope.bodyStart
+            while tok != scope.bodyEnd:
+                tok = tok.next
+                if not isFunctionCall(tok):
+                    continue
+                f = tok.astOperand1.function
+                if f is not None and f not in calls:
+                    calls.append(f)
+            function_calls[scope.function] = calls
+
+        # Report warnings for all recursions..
+        for func in function_calls:
+            for call in function_calls[func]:
+                if not find_recursive_call(func, call, function_calls):
+                    # Function call is not recursive
+                    continue
+                # Warn about all functions calls..
+                for scope in data.scopes:
+                    if scope.type != 'Function' or scope.function != func:
+                        continue
+                    tok = scope.bodyStart
+                    while tok != scope.bodyEnd:
+                        if tok.function and tok.function == call:
+                            self.reportError(tok, 17, 2)
+                        tok = tok.next
+
 
     def misra_17_6(self, rawTokens):
         for token in rawTokens:
@@ -1989,10 +2010,7 @@ class MisraChecker:
         # Remove any prefix listed in command arguments from the filename.
         filename = None
         if location.file is not None:
-            if self.filePrefix is not None:
-                filename = remove_file_prefix(location.file, self.filePrefix)
-            else:
-                filename = location.file
+            filename = os.path.basename(location.file)
 
         if ruleNum in self.suppressedRules:
             fileDict = self.suppressedRules[ruleNum]
@@ -2042,8 +2060,10 @@ class MisraChecker:
             if res:
                 num1 = int(res.group(2)) * 100
                 ruleNum = num1 + int(res.group(3))
-                self.addSuppressedRule(ruleNum, each.fileName,
-                                       each.lineNumber, each.symbolName)
+                linenr = None
+                if each.lineNumber:
+                    linenr = int(each.lineNumber)
+                self.addSuppressedRule(ruleNum, each.fileName, linenr, each.symbolName)
 
 
     def showSuppressedRules(self):
@@ -2069,14 +2089,6 @@ class MisraChecker:
 
             for line in sorted(outlist, reverse=True):
                 print("  %s" % line)
-
-
-    def setFilePrefix(self, prefix):
-        """
-        Set the file prefix to ignnore from files when matching
-        suppression files
-        """
-        self.filePrefix = prefix
 
 
     def setSuppressionList(self, suppressionlist):
@@ -2313,6 +2325,7 @@ class MisraChecker:
             self.misra_16_6(cfg)
             self.misra_16_7(cfg)
             self.misra_17_1(cfg)
+            self.misra_17_2(cfg)
             if cfgNumber == 1:
                 self.misra_17_6(data.rawTokens)
             self.misra_17_7(cfg)
@@ -2391,7 +2404,6 @@ def get_args():
     parser.add_argument("-generate-table", help=argparse.SUPPRESS, action="store_true")
     parser.add_argument("dumpfile", nargs='*', help="Path of dump file from cppcheck")
     parser.add_argument("--show-suppressed-rules", help="Print rule suppression list", action="store_true")
-    parser.add_argument("-P", "--file-prefix", type=str, help="Prefix to strip when matching suppression file rules")
     parser.add_argument("--cli", help="Addon is executed from Cppcheck", action="store_true")
     return parser.parse_args()
 
@@ -2422,9 +2434,6 @@ def main():
 
     if args.suppress_rules:
         checker.setSuppressionList(args.suppress_rules)
-
-    if args.file_prefix:
-        checker.setFilePrefix(args.file_prefix)
 
     if args.dumpfile:
         exitCode = 0

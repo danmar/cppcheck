@@ -469,6 +469,8 @@ private:
         TEST_CASE(checkConfiguration);
 
         TEST_CASE(unknownType); // #8952
+
+        TEST_CASE(unknownMacroBeforeReturn);
     }
 
     std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Native, const char* filename = "test.cpp", bool cpp11 = true) {
@@ -7114,6 +7116,8 @@ private:
 
         ASSERT_EQUALS("void f ( ) { switch ( x ) { case 'a' : case 'b' : case 'c' : ; } }", tokenizeAndStringify("void f() { switch(x) { case 'a' ... 'c': } }"));
         ASSERT_EQUALS("void f ( ) { switch ( x ) { case 'c' . . . 'a' : ; } }", tokenizeAndStringify("void f() { switch(x) { case 'c' ... 'a': } }"));
+
+        ASSERT_EQUALS("void f ( ) { switch ( x ) { case '[' : case '\\\\' : case ']' : ; } }", tokenizeAndStringify("void f() { switch(x) { case '[' ... ']': } }"));
     }
 
     void prepareTernaryOpForAST() {
@@ -7690,6 +7694,8 @@ private:
 
         // after (expr)
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { switch (a) int b; }"));
+
+        ASSERT_NO_THROW(tokenizeAndStringify("S s = { .x=2, .y[0]=3 };"));
     }
 
 
@@ -7911,6 +7917,10 @@ private:
         tokenizer.printUnknownTypes();
 
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void unknownMacroBeforeReturn() {
+        ASSERT_THROW(tokenizeAndStringify("int f() { X return 0; }"), InternalError);
     }
 };
 

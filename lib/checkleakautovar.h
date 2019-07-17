@@ -52,10 +52,10 @@ public:
             return status < 0;
         }
     };
-    std::map<unsigned int, AllocInfo> alloctype;
-    std::map<unsigned int, std::string> possibleUsage;
-    std::set<unsigned int> conditionalAlloc;
-    std::set<unsigned int> referenced;
+    std::map<int, AllocInfo> alloctype;
+    std::map<int, std::string> possibleUsage;
+    std::set<int> conditionalAlloc;
+    std::set<int> referenced;
 
     void clear() {
         alloctype.clear();
@@ -64,7 +64,7 @@ public:
         referenced.clear();
     }
 
-    void erase(unsigned int varid) {
+    void erase(nonneg int varid) {
         alloctype.erase(varid);
         possibleUsage.erase(varid);
         conditionalAlloc.erase(varid);
@@ -95,12 +95,12 @@ public:
 class CPPCHECKLIB CheckLeakAutoVar : public Check {
 public:
     /** This constructor is used when registering the CheckLeakAutoVar */
-    CheckLeakAutoVar() : Check(myName()), recursiveCount(0) {
+    CheckLeakAutoVar() : Check(myName()) {
     }
 
     /** This constructor is used when running checks. */
     CheckLeakAutoVar(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger), recursiveCount(0) {
+        : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
@@ -116,7 +116,8 @@ private:
     /** check for leaks in a function scope */
     void checkScope(const Token * const startToken,
                     VarInfo *varInfo,
-                    std::set<unsigned int> notzero);
+                    std::set<int> notzero,
+                    nonneg int recursiveCount);
 
     /** Check token inside expression.
     * @param tok token inside expression.
@@ -132,7 +133,7 @@ private:
     void changeAllocStatus(VarInfo *varInfo, const VarInfo::AllocInfo& allocation, const Token* tok, const Token* arg);
 
     /** update allocation status if reallocation function */
-    void changeAllocStatusIfRealloc(std::map<unsigned int, VarInfo::AllocInfo> &alloctype, const Token *fTok, const Token *retTok);
+    void changeAllocStatusIfRealloc(std::map<int, VarInfo::AllocInfo> &alloctype, const Token *fTok, const Token *retTok);
 
     /** return. either "return" or end of variable scope is seen */
     void ret(const Token *tok, const VarInfo &varInfo);
@@ -163,8 +164,6 @@ private:
     std::string classInfo() const OVERRIDE {
         return "Detect when a auto variable is allocated but not deallocated or deallocated twice.\n";
     }
-
-    unsigned int recursiveCount;
 };
 /// @}
 //---------------------------------------------------------------------------

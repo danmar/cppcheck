@@ -15,6 +15,11 @@
 #include <sys/epoll.h>
 #endif
 
+// Declaration necessary because there is no specific / portable header.
+extern void *xcalloc(size_t nmemb, size_t size);
+extern void *xmalloc(size_t size);
+extern void *xrealloc(void *block, size_t newsize);
+
 void resourceLeak_mkostemps(char *template, int suffixlen, int flags)
 {
     // cppcheck-suppress unreadVariable
@@ -117,13 +122,23 @@ void bufferAccessOutOfBounds()
     // cppcheck-suppress bufferAccessOutOfBounds
     sethostname(buf, 4);
 
-    // Declaration necessary because there is no specific / portable header containing xcalloc.
-    extern void *xcalloc(size_t nmemb, size_t size);
     char * pAlloc1 = xcalloc(2, 4);
     memset(pAlloc1, 0, 8);
     // cppcheck-suppress bufferAccessOutOfBounds
     memset(pAlloc1, 0, 9);
     free(pAlloc1);
+
+    char * pAlloc2 = xmalloc(4);
+    memset(pAlloc2, 0, 4);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    memset(pAlloc2, 0, 5);
+
+    pAlloc2 = xrealloc(pAlloc2, 10);
+    memset(pAlloc2, 0, 10);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    memset(pAlloc2, 0, 11);
+
+    free(pAlloc2);
 }
 
 void leakReturnValNotUsed()

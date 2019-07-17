@@ -2918,7 +2918,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo(int x) {\n"
+        check("void foo(int arg) {\n"
               "    printf(\"%i\", ({int x = do_something(); x == 0;}));\n"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -2970,6 +2970,13 @@ private:
               "    a1->b = a1->b;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of 'a1->b' to itself.\n", errout.str());
+
+        check("int x;\n"
+              "void f()\n"
+              "{\n"
+              "    x = x = 3;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Redundant assignment of 'x' to itself.\n", errout.str());
 
         // #4073 (segmentation fault)
         check("void Foo::myFunc( int a )\n"
@@ -7566,6 +7573,9 @@ private:
               "  auto f = [](){ int x; }"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) { int x; }");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Local variable 'x' shadows outer argument\n", errout.str());
     }
 
     void constArgument() {

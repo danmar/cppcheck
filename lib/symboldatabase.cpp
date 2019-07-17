@@ -4952,7 +4952,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
     }
 
     if (vt1 && vt1->smartPointerType && Token::Match(parent, ". %name% (") && parent->originalName() == "->" && !parent->next()->function()) {
-        const Scope *scope = valuetype.smartPointerType->classScope;
+        const Scope *scope = vt1->smartPointerType->classScope;
         const Function *f = scope ? scope->findFunction(parent->next(), false) : nullptr;
         if (f)
             parent->next()->function(f);

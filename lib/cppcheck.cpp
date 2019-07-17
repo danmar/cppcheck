@@ -634,13 +634,13 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
                     picojson::object obj = res.get<picojson::object>();
 
-                    const std::string filename = obj["file"].get<std::string>();
+                    const std::string fileName = obj["file"].get<std::string>();
                     const int64_t lineNumber = obj["linenr"].get<int64_t>();
                     const int64_t column = obj["col"].get<int64_t>();
 
                     ErrorLogger::ErrorMessage errmsg;
 
-                    errmsg._callStack.emplace_back(ErrorLogger::ErrorMessage::FileLocation(filename, lineNumber));
+                    errmsg._callStack.emplace_back(ErrorLogger::ErrorMessage::FileLocation(fileName, lineNumber));
                     errmsg._callStack.back().col = column;
 
                     errmsg._id = obj["errorId"].get<std::string>();
@@ -650,7 +650,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     errmsg._severity = Severity::fromString(severity);
                     if (errmsg._severity == Severity::SeverityType::none)
                         continue;
-                    errmsg.file0 = filename;
+                    errmsg.file0 = fileName;
 
                     reportErr(errmsg);
                 }
