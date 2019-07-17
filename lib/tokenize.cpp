@@ -9272,11 +9272,12 @@ void Tokenizer::findGarbageCode() const
         if (Token::simpleMatch(tok, ".") &&
             !Token::simpleMatch(tok->previous(), ".") &&
             !Token::simpleMatch(tok->next(), ".") &&
-            !Token::Match(tok->previous(), "{|, . %name% =")) {
+            !Token::Match(tok->previous(), "{|, . %name% =") &&
+            !Token::Match(tok->previous(), ", . %name%")) {
             if (!Token::Match(tok->previous(), ")|]|>|}|%name%"))
-                syntaxError(tok);
+                syntaxError(tok, tok->strAt(-1) + " " + tok->str() + " " + tok->strAt(1));
             if (!Token::Match(tok->next(), "template|operator|*|~|%name%"))
-                syntaxError(tok);
+                syntaxError(tok, tok->strAt(-1) + " " + tok->str() + " " + tok->strAt(1));
         }
     }
 
