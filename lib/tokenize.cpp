@@ -350,7 +350,7 @@ void Tokenizer::unsupportedTypedef(const Token *tok) const
 
     std::ostringstream str;
     const Token *tok1 = tok;
-    unsigned int level = 0;
+    int level = 0;
     while (tok) {
         if (level == 0 && tok->str() == ";")
             break;
@@ -1017,12 +1017,12 @@ void Tokenizer::simplifyTypedef()
 
         while (!done) {
             std::string pattern = typeName->str();
-            unsigned int scope = 0;
+            int scope = 0;
             bool simplifyType = false;
             bool inMemberFunc = false;
             int memberScope = 0;
             bool globalScope = false;
-            std::size_t classLevel = spaceInfo.size();
+            int classLevel = spaceInfo.size();
 
             for (Token *tok2 = tok; tok2; tok2 = tok2->next()) {
                 if (mSettings->terminated())
@@ -1042,7 +1042,7 @@ void Tokenizer::simplifyTypedef()
                             --classLevel;
                             pattern.clear();
 
-                            for (std::size_t i = classLevel; i < spaceInfo.size(); ++i)
+                            for (int i = classLevel; i < spaceInfo.size(); ++i)
                                 pattern += (spaceInfo[i].className + " :: ");
 
                             pattern += typeName->str();
@@ -1094,8 +1094,8 @@ void Tokenizer::simplifyTypedef()
                                 spaceInfo[classLevel].bodyEnd = tok2->link();
                                 ++classLevel;
                                 pattern.clear();
-                                for (std::size_t i = classLevel; i < spaceInfo.size(); ++i)
-                                    pattern += (spaceInfo[i].className + " :: ");
+                                for (int i = classLevel; i < spaceInfo.size(); ++i)
+                                    pattern += spaceInfo[i].className + " :: ";
 
                                 pattern += typeName->str();
                             }
@@ -1136,8 +1136,8 @@ void Tokenizer::simplifyTypedef()
                     // member function class variables don't need qualification
                     if (!(inMemberFunc && tok2->str() == typeName->str()) && pattern.find("::") != std::string::npos) { // has a "something ::"
                         Token *start = tok2;
-                        std::size_t count = 0;
-                        int back = int(classLevel) - 1;
+                        int count = 0;
+                        int back = classLevel - 1;
                         bool good = true;
                         // check for extra qualification
                         while (back >= 0) {
@@ -1171,14 +1171,14 @@ void Tokenizer::simplifyTypedef()
                             }
 
                             // remove qualification if present
-                            for (std::size_t i = classLevel; i < spaceInfo.size(); ++i) {
+                            for (int i = classLevel; i < spaceInfo.size(); ++i) {
                                 tok2->deleteNext(2);
                             }
                             simplifyType = true;
                         }
                     } else {
                         if (tok2->strAt(-1) == "::") {
-                            std::size_t relativeSpaceInfoSize = spaceInfo.size();
+                            int relativeSpaceInfoSize = spaceInfo.size();
                             Token * tokBeforeType = tok2->previous();
                             while (relativeSpaceInfoSize != 0 &&
                                    tokBeforeType && tokBeforeType->str() == "::" &&
@@ -1289,7 +1289,7 @@ void Tokenizer::simplifyTypedef()
                             tok2 = tok2->next();
                         }
 
-                        for (std::size_t i = classLevel; i < spaceInfo.size(); ++i) {
+                        for (int i = classLevel; i < spaceInfo.size(); ++i) {
                             tok2->insertToken(spaceInfo[i].className);
                             tok2 = tok2->next();
                             tok2->insertToken("::");
@@ -1758,7 +1758,7 @@ namespace {
 
     Token *findSemicolon(Token *tok)
     {
-        unsigned int level = 0;
+        int level = 0;
 
         for (; tok && (level > 0 || tok->str() != ";"); tok = tok->next()) {
             if (tok->str() == "{")
@@ -2202,7 +2202,7 @@ void Tokenizer::simplifyMulAndParens()
         if (!tok->isName())
             continue;
         //fix ticket #2784 - improved by ticket #3184
-        unsigned int closedPars = 0;
+        int closedPars = 0;
         Token *tokend = tok->next();
         Token *tokbegin = tok->previous();
         while (tokend && tokend->str() == ")") {
@@ -2233,7 +2233,7 @@ void Tokenizer::simplifyMulAndParens()
                     break;
 
                 //find consecutive opening parentheses
-                unsigned int openPars = 0;
+                int openPars = 0;
                 while (tokbegin && tokbegin->str() == "(" && openPars <= closedPars) {
                     ++openPars;
                     tokbegin = tokbegin->previous();
@@ -2647,7 +2647,7 @@ void Tokenizer::arraySize()
 
         if (addlength || Token::Match(tok, "%var% [ ] = %str% ;")) {
             tok = tok->next();
-            const std::size_t sz = Token::getStrSize(tok->tokAt(3));
+            const int sz = Token::getStrSize(tok->tokAt(3));
             tok->insertToken(MathLib::toString(sz));
             tok = tok->tokAt(5);
         }
@@ -3974,7 +3974,7 @@ bool Tokenizer::simplifySizeof()
                     const MathLib::bigint num = MathLib::toLongNumber(tok2->strAt(1));
                     if (num<0)
                         break;
-                    size *= (unsigned)num;
+                    size *= num;
                     tok2 = tok2->tokAt(3);
                 } while (Token::Match(tok2, "[ %num% ]"));
                 if (Token::Match(tok2, "[;=]")) {
@@ -6656,7 +6656,7 @@ void Tokenizer::simplifyStaticConst()
     // move 'static' before all other qualifiers and types, ...
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         bool continue2 = false;
-        for (size_t i = 0; i < sizeof(qualifiers)/sizeof(qualifiers[0]); i++) {
+        for (int i = 0; i < sizeof(qualifiers)/sizeof(qualifiers[0]); i++) {
 
             // Keep searching for a qualifier
             if (!tok->next() || tok->next()->str() != qualifiers[i])
@@ -6666,7 +6666,7 @@ void Tokenizer::simplifyStaticConst()
             Token* leftTok = tok;
             bool behindOther = false;
             for (; leftTok; leftTok = leftTok->previous()) {
-                for (size_t j = 0; j <= i; j++) {
+                for (int j = 0; j <= i; j++) {
                     if (leftTok->str() == qualifiers[j]) {
                         behindOther = true;
                         break;
@@ -8945,7 +8945,7 @@ void Tokenizer::simplifyComma()
             if (!startFrom)
                 // to be very sure...
                 return;
-            std::size_t commaCounter = 0;
+            int commaCounter = 0;
             for (Token *tok2 = startFrom->next(); tok2; tok2 = tok2->next()) {
                 if (tok2->str() == ";") {
                     endAt = tok2;
@@ -10817,7 +10817,7 @@ void Tokenizer::simplifyReturnStrncat()
             Token *tok2 = tok->tokAt(3);
 
             //check if there are at least three arguments
-            for (unsigned char i = 0; i < 2; ++i) {
+            for (int i = 0; i < 2; ++i) {
                 tok2 = tok2->nextArgument();
                 if (!tok2) {
                     tok = tok->linkAt(2)->next();
@@ -10912,7 +10912,7 @@ void Tokenizer::printUnknownTypes() const
 
     if (!unknowns.empty()) {
         std::string last;
-        size_t count = 0;
+        int count = 0;
 
         for (std::multimap<std::string, const Token *>::const_iterator it = unknowns.begin(); it != unknowns.end(); ++it) {
             // skip types is std namespace because they are not interesting
