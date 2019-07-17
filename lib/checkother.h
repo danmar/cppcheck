@@ -259,7 +259,7 @@ private:
     void accessMovedError(const Token *tok, const std::string &varname, const ValueFlow::Value *value, bool inconclusive);
     void funcArgNamesDifferent(const std::string & functionName, nonneg int index, const Token* declaration, const Token* definition);
     void funcArgOrderDifferent(const std::string & functionName, const Token * declaration, const Token * definition, const std::vector<const Token*> & declarations, const std::vector<const Token*> & definitions);
-    void shadowError(const Token *var, const Token *shadowed, bool shadowVar);
+    void shadowError(const Token *var, const Token *shadowed, std::string type);
     void constArgumentError(const Token *tok, const Token *ftok, const ValueFlow::Value *value);
     void comparePointersError(const Token *tok, const ValueFlow::Value *v1, const ValueFlow::Value *v2);
 
@@ -323,8 +323,9 @@ private:
         c.accessMovedError(nullptr, "v", nullptr, false);
         c.funcArgNamesDifferent("function", 1, nullptr, nullptr);
         c.redundantBitwiseOperationInSwitchError(nullptr, "varname");
-        c.shadowError(nullptr, nullptr, false);
-        c.shadowError(nullptr, nullptr, true);
+        c.shadowError(nullptr, nullptr, "variable");
+        c.shadowError(nullptr, nullptr, "function");
+        c.shadowError(nullptr, nullptr, "argument");
         c.constArgumentError(nullptr, nullptr, nullptr);
         c.comparePointersError(nullptr, nullptr, nullptr);
 

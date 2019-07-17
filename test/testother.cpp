@@ -2918,7 +2918,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo(int x) {\n"
+        check("void foo(int arg) {\n"
               "    printf(\"%i\", ({int x = do_something(); x == 0;}));\n"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -7573,6 +7573,9 @@ private:
               "  auto f = [](){ int x; }"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) { int x; }");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Local variable 'x' shadows outer argument\n", errout.str());
     }
 
     void constArgument() {
