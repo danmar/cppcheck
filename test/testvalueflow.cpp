@@ -3531,7 +3531,7 @@ private:
                "    if (i == j) return;\n"
                "    if(i != j) {}\n"
                "}\n";
-        TODO_ASSERT_EQUALS(true, false, valueOfTok(code, "!=").intvalue == 1);
+        ASSERT_EQUALS(true, valueOfTok(code, "!=").intvalue == 1);
 
         code = "void f(int i, int j) {\n"
                "    if (i == j) return;\n"
@@ -3560,7 +3560,7 @@ private:
                "    bool x = (i != j);\n"
                "    bool b = x;\n"
                "}\n";
-        TODO_ASSERT_EQUALS(true, false, testValueOfXKnown(code, 4U, 0));
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
 
         code = "void f(int i, int j) {\n"
                "    if (i != j) return;\n"

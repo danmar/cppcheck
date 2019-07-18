@@ -1221,13 +1221,35 @@ static void valueFlowSameExpressions(TokenList *tokenlist)
     }
 }
 
+static bool isIncompleteVar(const Token* tok)
+{
+    if (!Token::Match(tok, "%name%"))
+        return false;
+    if (tok->tokType() != Token::eName)
+        return false;
+    if (tok->flags() != (1 << 20))
+        return false;
+    if (Token::Match(tok, "audit|axiom|alignas|alignof|asm|auto|catch|char|class|concept|const|consteval|constexpr|co_await|co_return|co_yield|decltype|default|do|enum|explicit|export|extern|friend|inline|mutable|namespace|new|noexcept|private|protected|public|reflexpr|register|requires|sizeof|static|static_assert|struct|synchronized|template|this|thread_local|throw|try|typedef|typeid|typename|union|using|virtual|void|volatile|override|final"))
+        return false;
+    if (Token::Match(tok, "%var%"))
+        return false;
+    if (Token::Match(tok->next(), "::|.|("))
+        return false;
+    return true;
+}
+
 static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* symboldatabase, const Settings *settings)
 {
     const bool cpp = symboldatabase->isCPP();
     typedef std::pair<const Token*, const Scope*> Condition;
     for (const Scope * scope : symboldatabase->functionScopes) {
+        bool skipFunction = false;
         std::vector<Condition> conds;
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+            if (isIncompleteVar(tok)) {
+                skipFunction = true;
+                break;
+            }
             if (!Token::simpleMatch(tok, "if ("))
                 continue;
             // Skip known values
@@ -1277,8 +1299,9 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
                 }
             }
             conds.emplace_back(condTok->astOperand2(), condScope);
-
         }
+        if (skipFunction)
+            break;
         for (Condition cond:conds) {
             if (!cond.first)
                 continue;
