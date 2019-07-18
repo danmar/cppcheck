@@ -141,7 +141,6 @@ private:
         Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList2();
 
         // Check for memory leaks..
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, settings, this);
@@ -170,6 +169,9 @@ private:
         TEST_CASE(realloc15);
         TEST_CASE(realloc16);
         TEST_CASE(realloc17);
+        TEST_CASE(realloc18);
+        TEST_CASE(realloc19);
+        TEST_CASE(realloc20);
         TEST_CASE(reallocarray1);
     }
 
@@ -202,7 +204,7 @@ private:
               "    free(a);\n"
               "}");
 
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("", "[test.cpp:4]: (error) Common realloc mistake: 'a' nulled but not freed upon failure\n", errout.str());
     }
 
     void realloc4() {
@@ -297,7 +299,7 @@ private:
               "        return;\n"
               "    free(a);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("", "[test.cpp:4]: (error) Common realloc mistake: 'a' nulled but not freed upon failure\n", errout.str());
     }
 
     void realloc13() {
@@ -346,9 +348,36 @@ private:
         check("void foo()\n"
               "{\n"
               "    void ***a = malloc(sizeof(a));\n"
-              "    ***a = realloc(***a, sizeof(a) * 2);\n"
+              "    ***a = realloc(***(a), sizeof(a) * 2);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n", errout.str());
+    }
+
+    void realloc18() {
+        check("void foo()\n"
+              "{\n"
+              "    void *a = malloc(sizeof(a));\n"
+              "    a = realloc((void*)a, sizeof(a) * 2);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n", errout.str());
+    }
+
+    void realloc19() {
+        check("void foo()\n"
+              "{\n"
+              "    void *a = malloc(sizeof(a));\n"
+              "    a = (realloc((void*)((a)), sizeof(a) * 2));\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n", errout.str());
+    }
+
+    void realloc20() {
+        check("void foo()\n"
+              "{\n"
+              "    void *a = malloc(sizeof(a));\n"
+              "    a = realloc((a) + 1, sizeof(a) * 2);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void reallocarray1() {

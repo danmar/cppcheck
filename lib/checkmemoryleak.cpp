@@ -185,8 +185,10 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getReallocationType(const Token *tok
     if (!(f && f->reallocArg > 0 && f->reallocArg <= numberOfArguments(tok2)))
         return No;
     const Token* arg = getArguments(tok2).at(f->reallocArg - 1);
-    while (Token::simpleMatch(arg, "*"))
-        arg = arg->next();
+    while (arg && arg->isCast())
+        arg = arg->astOperand1();
+    while (arg->isUnaryOp("*"))
+        arg = arg->astOperand1();
     if (varid > 0 && !Token::Match(arg, "%varid% [,)]", varid))
         return No;
 
@@ -501,22 +503,30 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
         // Search for the "var = realloc(var, 100" pattern within this function
         for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->varId() > 0 && Token::Match(tok, "%name% =")) {
-                const Token* reallocTok = tok->tokAt(2);
-                if (reallocTok && reallocTok->str() == "(") {
-                    reallocTok = reallocTok->link();
-                    reallocTok = reallocTok ? reallocTok->next() : nullptr;
-                }
+                // Get the parenthesis in "realloc("
+                const Token* parTok = tok->next()->astOperand2();
+                // Skip casts
+                while (parTok && parTok->isCast())
+                    parTok = parTok->astOperand1();
+                if (!parTok)
+                    continue;
+
+                const Token *const reallocTok = parTok->astOperand1();
+                if (!reallocTok)
+                    continue;
                 const Library::AllocFunc* f = mSettings->library.getReallocFuncInfo(reallocTok);
-                if (!(f && f->arg == -1 && f->reallocArg > 0 && f->reallocArg <= numberOfArguments(reallocTok) && mSettings->library.isnotnoreturn(reallocTok)))
+                if (!(f && f->arg == -1 && mSettings->library.isnotnoreturn(reallocTok)))
                     continue;
 
                 const AllocType allocType = getReallocationType(reallocTok, tok->varId());
                 if (!((allocType == Malloc || allocType == OtherMem)))
                     continue;
                 const Token* arg = getArguments(reallocTok).at(f->reallocArg - 1);
+                while (arg && arg->isCast())
+                    arg = arg->astOperand1();
                 const Token* tok2 = tok;
-                while (Token::simpleMatch(arg, "*") && Token::simpleMatch(tok2->previous(), "*")) {
-                    arg = arg->next();
+                while (arg && arg->isUnaryOp("*") && Token::simpleMatch(tok2->astParent(), "*")) {
+                    arg = arg->astOperand1();
                     tok2 = tok2->previous();
                 }
 
