@@ -1767,18 +1767,26 @@ private:
     }
 
     void configuration3() {
-        check("void f() {\n"
-              "    char *p = malloc(10);\n"
-              "    if (set_data(p)) { }\n"
-              "}");
+        const char * code = "void f() {\n"
+                            "    char *p = malloc(10);\n"
+                            "    if (set_data(p)) { }\n"
+                            "}";
+        check(code);
         ASSERT_EQUALS("[test.c:4]: (information) --check-library: Function set_data() should have <use>/<leak-ignore> configuration\n", errout.str());
+        check(code, true);
+        ASSERT_EQUALS("[test.cpp:4]: (information) --check-library: Function set_data() should have <use>/<leak-ignore> configuration\n", errout.str());
 
-        check("void f() {\n"
-              "    char *p = malloc(10);\n"
-              "    if (set_data(p)) { return; }\n"
-              "}");
+        code = "void f() {\n"
+               "    char *p = malloc(10);\n"
+               "    if (set_data(p)) { return; }\n"
+               "}";
+        check(code);
         ASSERT_EQUALS("[test.c:3]: (information) --check-library: Function set_data() should have <use>/<leak-ignore> configuration\n"
                       "[test.c:4]: (information) --check-library: Function set_data() should have <use>/<leak-ignore> configuration\n"
+                      , errout.str());
+        check(code, true);
+        ASSERT_EQUALS("[test.cpp:3]: (information) --check-library: Function set_data() should have <use>/<leak-ignore> configuration\n"
+                      "[test.cpp:4]: (information) --check-library: Function set_data() should have <use>/<leak-ignore> configuration\n"
                       , errout.str());
     }
 
