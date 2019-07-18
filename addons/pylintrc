@@ -1,0 +1,5 @@
+# Just the severe stuff...
+[MESSAGES CONTROL]
+disable=C,R,W
+[REPORTS]
+reports=no
