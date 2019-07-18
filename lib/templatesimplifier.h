@@ -286,7 +286,7 @@ public:
      * @return true if modifications to token-list are done.
      *         false if no modifications are done.
      */
-    static bool simplifyNumericCalculations(Token *tok);
+    static bool simplifyNumericCalculations(Token *tok, bool isTemplate = true);
 
     /**
      * Simplify constant calculations such as "1+2" => "3".
@@ -294,7 +294,7 @@ public:
      * @return true if modifications to token-list are done.
      *         false if no modifications are done.
      */
-    bool simplifyCalculations(Token* frontToken = nullptr, Token *backToken = nullptr);
+    bool simplifyCalculations(Token* frontToken = nullptr, Token *backToken = nullptr, bool isTemplate = true);
 
     /** Simplify template instantiation arguments.
      * @param start first token of arguments
