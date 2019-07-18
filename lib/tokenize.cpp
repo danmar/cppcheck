@@ -8059,7 +8059,7 @@ void Tokenizer::simplifyReference()
 
 bool Tokenizer::simplifyCalculations()
 {
-    return mTemplateSimplifier->simplifyCalculations();
+    return mTemplateSimplifier->simplifyCalculations(nullptr, nullptr, false);
 }
 
 void Tokenizer::simplifyOffsetPointerDereference()
