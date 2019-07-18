@@ -320,6 +320,16 @@ int main(int argc, char **argv)
                                 "-g");
     }
 
+    fout << "# Increase stack size for Cygwin builds to avoid segmentation fault in limited recursive tests.\n"
+         << "ifdef COMSPEC\n"
+         << "    uname_S := $(shell uname -s)\n"
+         << "\n"
+         << "    ifneq (,$(findstring CYGWIN,$(uname_S)))\n"
+         << "        CXXFLAGS+=-Wl,--stack,8388608\n"
+         << "    endif # CYGWIN\n"
+         << "endif # COMSPEC\n"
+         << "\n";
+
     fout << "ifeq (g++, $(findstring g++,$(CXX)))\n"
          << "    override CXXFLAGS += -std=c++0x\n"
          << "else ifeq (clang++, $(findstring clang++,$(CXX)))\n"

@@ -199,11 +199,11 @@ public:
             opLessAllowed(true) {
         }
 
-        enum Action {
+        enum class Action {
             RESIZE, CLEAR, PUSH, POP, FIND, INSERT, ERASE, CHANGE_CONTENT, CHANGE, CHANGE_INTERNAL,
             NO_ACTION
         };
-        enum Yield {
+        enum class Yield {
             AT_INDEX, ITEM, BUFFER, BUFFER_NT, START_ITERATOR, END_ITERATOR, ITERATOR, SIZE, EMPTY,
             NO_YIELD
         };
@@ -224,14 +224,14 @@ public:
             const std::map<std::string, Function>::const_iterator i = functions.find(function);
             if (i != functions.end())
                 return i->second.action;
-            return NO_ACTION;
+            return Action::NO_ACTION;
         }
 
         Yield getYield(const std::string& function) const {
             const std::map<std::string, Function>::const_iterator i = functions.find(function);
             if (i != functions.end())
                 return i->second.yield;
-            return NO_YIELD;
+            return Yield::NO_YIELD;
         }
     };
     std::map<std::string, Container> containers;

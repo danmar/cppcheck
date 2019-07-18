@@ -631,38 +631,6 @@ void CheckAutoVariables::checkVarLifetime()
     }
 }
 
-static std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, ErrorPath &errorPath)
-{
-    const Token *tokvalue = val ? val->tokvalue : nullptr;
-    const Variable *tokvar = tokvalue ? tokvalue->variable() : nullptr;
-    const Token *vartok = tokvar ? tokvar->nameToken() : nullptr;
-    std::string type = lifetimeType(tok, val);
-    std::string msg = type;
-    if (vartok) {
-        errorPath.emplace_back(vartok, "Variable created here.");
-        const Variable * var = vartok->variable();
-        if (var) {
-            switch (val->lifetimeKind) {
-            case ValueFlow::Value::Object:
-            case ValueFlow::Value::Address:
-                if (type == "pointer")
-                    msg += " to local variable";
-                else
-                    msg += " that points to local variable";
-                break;
-            case ValueFlow::Value::Lambda:
-                msg += " that captures local variable";
-                break;
-            case ValueFlow::Value::Iterator:
-                msg += " to local container";
-                break;
-            }
-            msg += " '" + var->name() + "'";
-        }
-    }
-    return msg;
-}
-
 void CheckAutoVariables::errorReturnDanglingLifetime(const Token *tok, const ValueFlow::Value *val)
 {
     ErrorPath errorPath = val ? val->errorPath : ErrorPath();

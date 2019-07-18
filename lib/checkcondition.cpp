@@ -63,7 +63,7 @@ bool CheckCondition::diag(const Token* tok, bool insert)
     return true;
 }
 
-bool CheckCondition::isAliased(const std::set<unsigned int> &vars) const
+bool CheckCondition::isAliased(const std::set<int> &vars) const
 {
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "= & %var% ;") && vars.find(tok->tokAt(2)->varId()) != vars.end())
@@ -119,7 +119,7 @@ void CheckCondition::assignIf()
 static bool isParameterChanged(const Token *partok)
 {
     bool addressOf = Token::Match(partok, "[(,] &");
-    unsigned int argumentNumber = 0;
+    int argumentNumber = 0;
     const Token *ftok;
     for (ftok = partok; ftok && ftok->str() != "("; ftok = ftok->previous()) {
         if (ftok->str() == ")")
@@ -145,7 +145,7 @@ static bool isParameterChanged(const Token *partok)
 /** parse scopes recursively */
 bool CheckCondition::assignIfParseScope(const Token * const assignTok,
                                         const Token * const startTok,
-                                        const unsigned int varid,
+                                        const nonneg int varid,
                                         const bool islocal,
                                         const char bitop,
                                         const MathLib::bigint num)
@@ -518,7 +518,7 @@ void CheckCondition::multiCondition()
     }
 }
 
-void CheckCondition::overlappingElseIfConditionError(const Token *tok, unsigned int line1)
+void CheckCondition::overlappingElseIfConditionError(const Token *tok, nonneg int line1)
 {
     std::ostringstream errmsg;
     errmsg << "Expression is always false because 'else if' condition matches previous condition at line "
@@ -590,7 +590,7 @@ void CheckCondition::multiCondition2()
 
         bool nonConstFunctionCall = false;
         bool nonlocal = false; // nonlocal variable used in condition
-        std::set<unsigned int> vars; // variables used in condition
+        std::set<int> vars; // variables used in condition
         visitAstNodes(condTok,
         [&](const Token *cond) {
             if (Token::Match(cond, "%name% (")) {
@@ -730,7 +730,7 @@ void CheckCondition::multiCondition2()
                         break;
                     }
                     bool changed = false;
-                    for (unsigned int varid : vars) {
+                    for (int varid : vars) {
                         if (isVariableChanged(tok1, tok2, varid, nonlocal, mSettings, mTokenizer->isCPP())) {
                             changed = true;
                             break;

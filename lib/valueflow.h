@@ -52,8 +52,8 @@ namespace ValueFlow {
               varId(0U),
               conditional(false),
               defaultArg(false),
-              lifetimeKind(Object),
-              lifetimeScope(Local),
+              lifetimeKind(LifetimeKind::Object),
+              lifetimeScope(LifetimeScope::Local),
               valueKind(ValueKind::Possible)
         {}
         Value(const Token *c, long long val);
@@ -131,11 +131,11 @@ namespace ValueFlow {
         }
 
         bool isLocalLifetimeValue() const {
-            return valueType == ValueType::LIFETIME && lifetimeScope == Local;
+            return valueType == ValueType::LIFETIME && lifetimeScope == LifetimeScope::Local;
         }
 
         bool isArgumentLifetimeValue() const {
-            return valueType == ValueType::LIFETIME && lifetimeScope == Argument;
+            return valueType == ValueType::LIFETIME && lifetimeScope == LifetimeScope::Argument;
         }
 
         /** int value */
@@ -167,9 +167,9 @@ namespace ValueFlow {
         /** Is this value passed as default parameter to the function? */
         bool defaultArg;
 
-        enum LifetimeKind {Object, Lambda, Iterator, Address} lifetimeKind;
+        enum class LifetimeKind {Object, Lambda, Iterator, Address} lifetimeKind;
 
-        enum LifetimeScope { Local, Argument } lifetimeScope;
+        enum class LifetimeScope { Local, Argument } lifetimeScope;
 
         static const char * toString(MoveKind moveKind) {
             switch (moveKind) {
@@ -242,6 +242,8 @@ const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPat
 bool isLifetimeBorrowed(const Token *tok, const Settings *settings);
 
 std::string lifetimeType(const Token *tok, const ValueFlow::Value *val);
+
+std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, ValueFlow::Value::ErrorPath &errorPath);
 
 ValueFlow::Value getLifetimeObjValue(const Token *tok);
 

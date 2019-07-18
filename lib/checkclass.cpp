@@ -325,7 +325,7 @@ void CheckClass::copyconstructors()
         return;
 
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
-        std::map<unsigned int, const Token*> allocatedVars;
+        std::map<int, const Token*> allocatedVars;
 
         for (const Function &func : scope->functionList) {
             if (func.type != Function::eConstructor || !func.functionScope)
@@ -373,7 +373,7 @@ void CheckClass::copyconstructors()
             }
             if (!funcDestructor || funcDestructor->isDefault()) {
                 const Token * mustDealloc = nullptr;
-                for (std::map<unsigned int, const Token*>::const_iterator it = allocatedVars.begin(); it != allocatedVars.end(); ++it) {
+                for (std::map<int, const Token*>::const_iterator it = allocatedVars.begin(); it != allocatedVars.end(); ++it) {
                     if (!Token::Match(it->second, "%var% [(=] new %type%")) {
                         mustDealloc = it->second;
                         break;
@@ -428,7 +428,7 @@ void CheckClass::copyconstructors()
                 copyConstructorShallowCopyError(cv, cv->str());
             // throw error if count mismatch
             /* FIXME: This doesn't work. See #4154
-            for (std::map<unsigned int, const Token*>::const_iterator i = allocatedVars.begin(); i != allocatedVars.end(); ++i) {
+            for (std::map<int, const Token*>::const_iterator i = allocatedVars.begin(); i != allocatedVars.end(); ++i) {
                 copyConstructorMallocError(copyCtor, i->second, i->second->str());
             }
             */
@@ -537,9 +537,9 @@ bool CheckClass::canNotMove(const Scope *scope)
     return constructor && !(publicAssign || publicCopy || publicMove);
 }
 
-void CheckClass::assignVar(unsigned int varid, const Scope *scope, std::vector<Usage> &usage)
+void CheckClass::assignVar(nonneg int varid, const Scope *scope, std::vector<Usage> &usage)
 {
-    unsigned int count = 0;
+    int count = 0;
 
     for (std::list<Variable>::const_iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var, ++count) {
         if (var->declarationId() == varid) {
@@ -549,9 +549,9 @@ void CheckClass::assignVar(unsigned int varid, const Scope *scope, std::vector<U
     }
 }
 
-void CheckClass::initVar(unsigned int varid, const Scope *scope, std::vector<Usage> &usage)
+void CheckClass::initVar(nonneg int varid, const Scope *scope, std::vector<Usage> &usage)
 {
-    unsigned int count = 0;
+    int count = 0;
 
     for (std::list<Variable>::const_iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var, ++count) {
         if (var->declarationId() == varid) {
@@ -563,13 +563,13 @@ void CheckClass::initVar(unsigned int varid, const Scope *scope, std::vector<Usa
 
 void CheckClass::assignAllVar(std::vector<Usage> &usage)
 {
-    for (std::size_t i = 0; i < usage.size(); ++i)
+    for (int i = 0; i < usage.size(); ++i)
         usage[i].assign = true;
 }
 
 void CheckClass::clearAllVar(std::vector<Usage> &usage)
 {
-    for (std::size_t i = 0; i < usage.size(); ++i) {
+    for (int i = 0; i < usage.size(); ++i) {
         usage[i].assign = false;
         usage[i].init = false;
     }
@@ -578,7 +578,7 @@ void CheckClass::clearAllVar(std::vector<Usage> &usage)
 bool CheckClass::isBaseClassFunc(const Token *tok, const Scope *scope)
 {
     // Iterate through each base class...
-    for (std::size_t i = 0; i < scope->definedType->derivedFrom.size(); ++i) {
+    for (int i = 0; i < scope->definedType->derivedFrom.size(); ++i) {
         const Type *derivedFrom = scope->definedType->derivedFrom[i].type;
 
         // Check if base class exists in database
@@ -1099,7 +1099,7 @@ void CheckClass::privateFunctions()
             bool used = checkFunctionUsage(privateFuncs.front(), scope); // Usage in this class
             // Check in friend classes
             const std::vector<Type::FriendInfo>& friendList = scope->definedType->friendList;
-            for (size_t i = 0; i < friendList.size() && !used; i++) {
+            for (int i = 0; i < friendList.size() && !used; i++) {
                 if (friendList[i].type)
                     used = checkFunctionUsage(privateFuncs.front(), friendList[i].type->classScope);
                 else
@@ -1222,7 +1222,7 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
     const bool printPortability = mSettings->isEnabled(Settings::PORTABILITY);
 
     // recursively check all parent classes
-    for (std::size_t i = 0; i < type->definedType->derivedFrom.size(); i++) {
+    for (int i = 0; i < type->definedType->derivedFrom.size(); i++) {
         const Type* derivedFrom = type->definedType->derivedFrom[i].type;
         if (derivedFrom && derivedFrom->classScope)
             checkMemsetType(start, tok, derivedFrom->classScope, allocation, parsedTypes);
@@ -1680,7 +1680,7 @@ void CheckClass::virtualDestructor()
         const Token *derivedClass = derived->next();
 
         // Iterate through each base class...
-        for (std::size_t j = 0; j < scope->definedType->derivedFrom.size(); ++j) {
+        for (int j = 0; j < scope->definedType->derivedFrom.size(); ++j) {
             // Check if base class is public and exists in database
             if (scope->definedType->derivedFrom[j].access != Private && scope->definedType->derivedFrom[j].type) {
                 const Type *derivedFrom = scope->definedType->derivedFrom[j].type;
@@ -1695,7 +1695,7 @@ void CheckClass::virtualDestructor()
                 // If this pattern is not seen then bailout the checking of these base/derived classes
                 {
                     // pointer variables of type 'Base *'
-                    std::set<unsigned int> baseClassPointers;
+                    std::set<int> baseClassPointers;
 
                     for (const Variable* var : mSymbolDatabase->variableList()) {
                         if (var && var->isPointer() && var->type() == derivedFrom)
@@ -1703,7 +1703,7 @@ void CheckClass::virtualDestructor()
                     }
 
                     // pointer variables of type 'Base *' that should not be deleted
-                    std::set<unsigned int> dontDelete;
+                    std::set<int> dontDelete;
 
                     // No deletion of derived class instance through base class pointer found => the code is ok
                     bool ok = true;
@@ -1937,7 +1937,7 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
     // not found in this class
     if (!scope->definedType->derivedFrom.empty()) {
         // check each base class
-        for (std::size_t i = 0; i < scope->definedType->derivedFrom.size(); ++i) {
+        for (int i = 0; i < scope->definedType->derivedFrom.size(); ++i) {
             // find the base class
             const Type *derivedFrom = scope->definedType->derivedFrom[i].type;
 
@@ -1958,7 +1958,7 @@ bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok) const
         for (const Function &func : scope->functionList) {
             if (func.name() == tok->str()) {
                 const Token* tok2 = tok->tokAt(2);
-                size_t argsPassed = tok2->str() == ")" ? 0 : 1;
+                int argsPassed = tok2->str() == ")" ? 0 : 1;
                 for (;;) {
                     tok2 = tok2->nextArgument();
                     if (tok2)
@@ -1976,7 +1976,7 @@ bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok) const
     // not found in this class
     if (!scope->definedType->derivedFrom.empty()) {
         // check each base class
-        for (std::size_t i = 0; i < scope->definedType->derivedFrom.size(); ++i) {
+        for (int i = 0; i < scope->definedType->derivedFrom.size(); ++i) {
             // find the base class
             const Type *derivedFrom = scope->definedType->derivedFrom[i].type;
 
@@ -2001,7 +2001,7 @@ bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok) const
     // not found in this class
     if (!scope->definedType->derivedFrom.empty()) {
         // check each base class
-        for (std::size_t i = 0; i < scope->definedType->derivedFrom.size(); ++i) {
+        for (int i = 0; i < scope->definedType->derivedFrom.size(); ++i) {
             // find the base class
             const Type *derivedFrom = scope->definedType->derivedFrom[i].type;
 
@@ -2245,7 +2245,7 @@ void CheckClass::initializerListOrder()
                     }
 
                     // need at least 2 members to have out of order initialization
-                    for (std::size_t j = 1; j < vars.size(); j++) {
+                    for (int j = 1; j < vars.size(); j++) {
                         // check for out of order initialization
                         if (vars[j].var->index() < vars[j - 1].var->index())
                             initializerListError(vars[j].tok,vars[j].var->nameToken(), scope->className, vars[j].var->name());
@@ -2511,7 +2511,7 @@ void CheckClass::duplInheritedMembersError(const Token *tok1, const Token* tok2,
 // Check that copy constructor and operator defined together
 //---------------------------------------------------------------------------
 
-enum CtorType {
+enum class CtorType {
     NO,
     WITHOUT_BODY,
     WITH_BODY
