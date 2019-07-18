@@ -229,7 +229,7 @@ static bool isPointerReleased(const Token *startToken, const Token *endToken, no
     return false;
 }
 
-static bool checkVariable(const Token *varTok, const bool isCpp)
+static bool isLocalVarNoAutoDealloc(const Token *varTok, const bool isCpp)
 {
     // not a local variable nor argument?
     const Variable *var = varTok->variable();
@@ -365,7 +365,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 leakIfAllocated(varTok, *varInfo);
             varInfo->erase(varTok->varId());
 
-            if (!checkVariable(varTok, mTokenizer->isCPP()))
+            if (!isLocalVarNoAutoDealloc(varTok, mTokenizer->isCPP()))
                 continue;
 
             // allocation?
@@ -405,7 +405,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             for (const Token *innerTok = tok->tokAt(2); innerTok && innerTok != closingParenthesis; innerTok = innerTok->next()) {
                 // TODO: replace with checkTokenInsideExpression()
 
-                if (!checkVariable(innerTok, mTokenizer->isCPP()))
+                if (!isLocalVarNoAutoDealloc(innerTok, mTokenizer->isCPP()))
                     continue;
 
                 if (Token::Match(innerTok, "%var% =") && innerTok->astParent() == innerTok->next()) {
