@@ -725,8 +725,8 @@ void SymbolDatabase::createSymbolDatabaseClassInfo()
 
     // fill in friend info
     for (std::list<Type>::iterator it = typeList.begin(); it != typeList.end(); ++it) {
-        for (std::vector<Type::FriendInfo>::iterator i = it->friendList.begin(); i != it->friendList.end(); ++i) {
-            i->type = findType(i->nameStart, it->enclosingScope);
+        for (Type::FriendInfo &friendInfo : it->friendList) {
+            friendInfo.type = findType(friendInfo.nameStart, it->enclosingScope);
         }
     }
 }
