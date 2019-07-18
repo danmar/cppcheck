@@ -1221,7 +1221,7 @@ static void valueFlowSameExpressions(TokenList *tokenlist)
     }
 }
 
-static bool isIncompleteVar(const Token* tok)
+static bool isIncompleteVar(const Token *tok)
 {
     if (!Token::Match(tok, "%name%"))
         return false;
@@ -1229,7 +1229,9 @@ static bool isIncompleteVar(const Token* tok)
         return false;
     if (tok->flags() != (1 << 20))
         return false;
-    if (Token::Match(tok, "audit|axiom|alignas|alignof|asm|auto|catch|char|class|concept|const|consteval|constexpr|co_await|co_return|co_yield|decltype|default|do|enum|explicit|export|extern|friend|inline|mutable|namespace|new|noexcept|private|protected|public|reflexpr|register|requires|sizeof|static|static_assert|struct|synchronized|template|this|thread_local|throw|try|typedef|typeid|typename|union|using|virtual|void|volatile|override|final"))
+    if (Token::Match(
+            tok,
+            "audit|axiom|alignas|alignof|asm|auto|catch|char|class|concept|const|consteval|constexpr|co_await|co_return|co_yield|decltype|default|do|enum|explicit|export|extern|friend|inline|mutable|namespace|new|noexcept|private|protected|public|reflexpr|register|requires|sizeof|static|static_assert|struct|synchronized|template|this|thread_local|throw|try|typedef|typeid|typename|union|using|virtual|void|volatile|override|final"))
         return false;
     if (Token::Match(tok, "%var%"))
         return false;
@@ -1342,7 +1344,6 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
             }
         }
     }
-    
 }
 
 static bool getExpressionRange(const Token *expr, MathLib::bigint *minvalue, MathLib::bigint *maxvalue)
