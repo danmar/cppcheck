@@ -1235,7 +1235,7 @@ static bool isIncompleteVar(const Token *tok)
         return false;
     if (Token::Match(tok, "%var%"))
         return false;
-    if (Token::Match(tok->next(), "::|.|("))
+    if (Token::Match(tok->next(), "::|.|(|<"))
         return false;
     return true;
 }
