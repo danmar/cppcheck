@@ -91,7 +91,7 @@ matrix:
         - pylint *.py
         - cd ..
         - cd tools
-        - pylint donate-cpu.py
+        - pylint --rcfile=pylintrc_travis donate-cpu.py
         - cd ..
 # check python syntax by compiling some selected scripts
         - python -m py_compile ./tools/donate-cpu.py
