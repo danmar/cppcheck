@@ -2785,29 +2785,32 @@ static const Token *getLifetimeToken(const Token *tok, ValueFlow::Value::ErrorPa
         }
     } else if (Token::Match(tok->previous(), "%name% (")) {
         const Function *f = tok->previous()->function();
-        if (!f)
-            return tok;
-        if (!Function::returnsReference(f))
-            return tok;
-        const Token *returnTok = findSimpleReturn(f);
-        if (!returnTok)
-            return tok;
-        if (returnTok == tok)
-            return tok;
-        const Token *argvarTok = getLifetimeToken(returnTok, errorPath, depth - 1);
-        if (!argvarTok)
-            return tok;
-        const Variable *argvar = argvarTok->variable();
-        if (!argvar)
-            return tok;
-        if (argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
-            int n = getArgumentPos(argvar, f);
-            if (n < 0)
-                return nullptr;
-            const Token *argTok = getArguments(tok->previous()).at(n);
-            errorPath.emplace_back(returnTok, "Return reference.");
-            errorPath.emplace_back(tok->previous(), "Called function passing '" + argTok->str() + "'.");
-            return getLifetimeToken(argTok, errorPath, depth - 1);
+        if (f) {
+            if (!Function::returnsReference(f))
+                return tok;
+            const Token *returnTok = findSimpleReturn(f);
+            if (!returnTok)
+                return tok;
+            if (returnTok == tok)
+                return tok;
+            const Token *argvarTok = getLifetimeToken(returnTok, errorPath, depth - 1);
+            if (!argvarTok)
+                return tok;
+            const Variable *argvar = argvarTok->variable();
+            if (!argvar)
+                return tok;
+            if (argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
+                int n = getArgumentPos(argvar, f);
+                if (n < 0)
+                    return nullptr;
+                const Token *argTok = getArguments(tok->previous()).at(n);
+                errorPath.emplace_back(returnTok, "Return reference.");
+                errorPath.emplace_back(tok->previous(), "Called function passing '" + argTok->str() + "'.");
+                return getLifetimeToken(argTok, errorPath, depth - 1);
+            }
+        } else if (Token::Match(tok->tokAt(-2), ". at (") && astIsContainer(tok->tokAt(-3))) {
+            errorPath.emplace_back(tok->previous(), "Accessing container.");
+            return getLifetimeToken(tok->tokAt(-3), errorPath, depth - 1);
         }
     } else if (Token::Match(tok, ".|::|[")) {
         const Token *vartok = tok;
@@ -3407,23 +3410,37 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
         // Check variables
         else if (tok->variable()) {
             ErrorPath errorPath;
-            const Variable * var = getLifetimeVariable(tok, errorPath);
-            if (!var)
-                continue;
-            if (var->nameToken() == tok)
-                continue;
-            if (var->isArray() && !var->isStlType() && !var->isArgument() && isDecayedPointer(tok, settings)) {
-                errorPath.emplace_back(tok, "Array decayed to pointer here.");
+            if (tok->variable()->isReference()) {
+                const Token * lifeTok = getLifetimeToken(tok, errorPath);
+                if (!lifeTok)
+                    continue;
 
                 ValueFlow::Value value;
                 value.valueType = ValueFlow::Value::ValueType::LIFETIME;
                 value.lifetimeScope = ValueFlow::Value::LifetimeScope::Local;
-                value.tokvalue = var->nameToken();
+                value.tokvalue = lifeTok;
                 value.errorPath = errorPath;
                 setTokenValue(tok, value, tokenlist->getSettings());
+            } else {
+                const Variable * var = getLifetimeVariable(tok, errorPath);
+                if (!var)
+                    continue;
+                if (var->nameToken() == tok)
+                    continue;
+                if (var->isArray() && !var->isStlType() && !var->isArgument() && isDecayedPointer(tok, settings)) {
+                    errorPath.emplace_back(tok, "Array decayed to pointer here.");
 
-                valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
+                    ValueFlow::Value value;
+                    value.valueType = ValueFlow::Value::ValueType::LIFETIME;
+                    value.lifetimeScope = ValueFlow::Value::LifetimeScope::Local;
+                    value.tokvalue = var->nameToken();
+                    value.errorPath = errorPath;
+                    setTokenValue(tok, value, tokenlist->getSettings());
+
+                    valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
+                }
             }
+
         }
     }
 }
