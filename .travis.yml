@@ -90,6 +90,9 @@ matrix:
 #        - pylint *.py y2038/*.py ! First resolve https://trac.cppcheck.net/ticket/9210 "y2038 addon no longer working"
         - pylint *.py
         - cd ..
+        - cd tools
+        - pylint donate-cpu.py
+        - cd ..
 # check python syntax by compiling some selected scripts
         - python -m py_compile ./tools/donate-cpu.py
         - python3 -m py_compile ./tools/donate-cpu.py
