@@ -3410,37 +3410,23 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
         // Check variables
         else if (tok->variable()) {
             ErrorPath errorPath;
-            if (tok->variable()->isReference()) {
-                const Token * lifeTok = getLifetimeToken(tok, errorPath);
-                if (!lifeTok)
-                    continue;
+            const Variable * var = getLifetimeVariable(tok, errorPath);
+            if (!var)
+                continue;
+            if (var->nameToken() == tok)
+                continue;
+            if (var->isArray() && !var->isStlType() && !var->isArgument() && isDecayedPointer(tok, settings)) {
+                errorPath.emplace_back(tok, "Array decayed to pointer here.");
 
                 ValueFlow::Value value;
                 value.valueType = ValueFlow::Value::ValueType::LIFETIME;
                 value.lifetimeScope = ValueFlow::Value::LifetimeScope::Local;
-                value.tokvalue = lifeTok;
+                value.tokvalue = var->nameToken();
                 value.errorPath = errorPath;
                 setTokenValue(tok, value, tokenlist->getSettings());
-            } else {
-                const Variable * var = getLifetimeVariable(tok, errorPath);
-                if (!var)
-                    continue;
-                if (var->nameToken() == tok)
-                    continue;
-                if (var->isArray() && !var->isStlType() && !var->isArgument() && isDecayedPointer(tok, settings)) {
-                    errorPath.emplace_back(tok, "Array decayed to pointer here.");
 
-                    ValueFlow::Value value;
-                    value.valueType = ValueFlow::Value::ValueType::LIFETIME;
-                    value.lifetimeScope = ValueFlow::Value::LifetimeScope::Local;
-                    value.tokvalue = var->nameToken();
-                    value.errorPath = errorPath;
-                    setTokenValue(tok, value, tokenlist->getSettings());
-
-                    valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
-                }
+                valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
             }
-
         }
     }
 }

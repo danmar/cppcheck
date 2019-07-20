@@ -820,6 +820,15 @@ void CheckStl::invalidContainer()
                     return false;
                 if (info.tok->varId() == skipVarId)
                     return false;
+                if (info.tok->variable()->isReference()) {
+                    ErrorPath ep;
+                    const Variable *var = getLifetimeVariable(tok, ep);
+                    // Check the reference is created before the change
+                    if (var && !var->isReference() && !var->isRValueReference() && var->nameToken() != tok && reaches(var->nameToken(), tok, library, &ep)) {
+                        errorPath = ep;
+                        return true;
+                    }
+                }
                 for (const ValueFlow::Value& val:info.tok->values()) {
                     if (!val.isLocalLifetimeValue())
                         continue;
@@ -840,10 +849,14 @@ void CheckStl::invalidContainer()
                 }
                 return false;
             });
-            if (!info.tok || !v)
+            if (!info.tok)
                 continue;
             errorPath.insert(errorPath.end(), info.errorPath.begin(), info.errorPath.end());
-            invalidContainerError(info.tok, tok, v, errorPath);
+            if (v) {
+                invalidContainerError(info.tok, tok, v, errorPath);
+            } else {
+                invalidContainerReferenceError(info.tok, tok, errorPath);
+            }
         }
     }
 }
@@ -857,6 +870,16 @@ void CheckStl::invalidContainerError(const Token *tok, const Token * contTok, co
     std::string msg = "Using " + lifetimeMessage(tok, val, errorPath);
     errorPath.emplace_back(tok, "");
     reportError(errorPath, Severity::error, "invalidContainer", msg + " that may be invalid.", CWE664, false);
+}
+
+void CheckStl::invalidContainerReferenceError(const Token *tok, const Token * contTok, ErrorPath errorPath)
+{
+    std::string method = contTok ? contTok->strAt(2) : "erase";
+    std::string name = contTok ? contTok->expressionString() : "x";
+    errorPath.emplace_back(contTok, "After calling '" + method + "', iterators or references to the container's data may be invalid .");
+    std::string msg = "Reference to " + name;
+    errorPath.emplace_back(tok, "");
+    reportError(errorPath, Severity::error, "invalidContainerReference", msg + " that may be invalid.", CWE664, false);
 }
 
 void CheckStl::stlOutOfBounds()
