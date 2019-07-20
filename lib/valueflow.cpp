@@ -2808,7 +2808,7 @@ static const Token *getLifetimeToken(const Token *tok, ValueFlow::Value::ErrorPa
                 errorPath.emplace_back(tok->previous(), "Called function passing '" + argTok->str() + "'.");
                 return getLifetimeToken(argTok, errorPath, depth - 1);
             }
-        } else if (Token::Match(tok->tokAt(-2), ". at (") && astIsContainer(tok->tokAt(-3))) {
+        } else if (Token::Match(tok->tokAt(-2), ". at|front|back (") && astIsContainer(tok->tokAt(-3))) {
             errorPath.emplace_back(tok->previous(), "Accessing container.");
             return getLifetimeToken(tok->tokAt(-3), errorPath, depth - 1);
         }
