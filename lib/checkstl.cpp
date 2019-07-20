@@ -822,7 +822,7 @@ void CheckStl::invalidContainer()
                     return false;
                 if (info.tok->variable()->isReference()) {
                     ErrorPath ep;
-                    const Variable *var = getLifetimeVariable(tok, ep);
+                    const Variable *var = getLifetimeVariable(info.tok, ep);
                     // Check the reference is created before the change
                     if (var && !var->isReference() && !var->isRValueReference() && var->nameToken() != tok && reaches(var->nameToken(), tok, library, &ep)) {
                         errorPath = ep;
