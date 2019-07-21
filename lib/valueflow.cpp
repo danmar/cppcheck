@@ -1288,9 +1288,11 @@ static bool isIncompleteVar(const Token *tok)
         return false;
     if (tok->type())
         return false;
-    if (Token::Match(tok->next(), "::|.|("))
+    if (Token::Match(tok->next(), "::|.|(|:"))
         return false;
     if (Token::simpleMatch(tok->next(), "<") && tok->next()->link())
+        return false;
+    if (Token::simpleMatch(tok->previous(), "goto"))
         return false;
     if (keywords.count(tok->str()) > 0)
         return false;
