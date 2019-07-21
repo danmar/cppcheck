@@ -2706,6 +2706,38 @@ std::string lifetimeType(const Token *tok, const ValueFlow::Value *val)
     return result;
 }
 
+std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, ErrorPath &errorPath)
+{
+    const Token *tokvalue = val ? val->tokvalue : nullptr;
+    const Variable *tokvar = tokvalue ? tokvalue->variable() : nullptr;
+    const Token *vartok = tokvar ? tokvar->nameToken() : nullptr;
+    std::string type = lifetimeType(tok, val);
+    std::string msg = type;
+    if (vartok) {
+        errorPath.emplace_back(vartok, "Variable created here.");
+        const Variable * var = vartok->variable();
+        if (var) {
+            switch (val->lifetimeKind) {
+            case ValueFlow::Value::LifetimeKind::Object:
+            case ValueFlow::Value::LifetimeKind::Address:
+                if (type == "pointer")
+                    msg += " to local variable";
+                else
+                    msg += " that points to local variable";
+                break;
+            case ValueFlow::Value::LifetimeKind::Lambda:
+                msg += " that captures local variable";
+                break;
+            case ValueFlow::Value::LifetimeKind::Iterator:
+                msg += " to local container";
+                break;
+            }
+            msg += " '" + var->name() + "'";
+        }
+    }
+    return msg;
+}
+
 ValueFlow::Value getLifetimeObjValue(const Token *tok)
 {
     ValueFlow::Value result;
@@ -3339,7 +3371,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
         }
         // container lifetimes
-        else if (tok->variable() && Token::Match(tok, "%var% . begin|cbegin|rbegin|crbegin|end|cend|rend|crend|data|c_str|find (")) {
+        else if (tok->variable() && Token::Match(tok, "%var% . begin|cbegin|rbegin|crbegin|end|cend|rend|crend|data|c_str|find|insert (")) {
             if (Token::simpleMatch(tok->tokAt(2), "find") && !astIsIterator(tok->tokAt(3)))
                 continue;
             ErrorPath errorPath;
@@ -5439,10 +5471,14 @@ static void valueFlowSafeFunctions(TokenList *tokenlist, SymbolDatabase *symbold
             }
 
             std::list<ValueFlow::Value> argValues;
-            if (isLow)
+            if (isLow) {
                 argValues.emplace_back(low);
-            if (isHigh)
+                argValues.back().errorPath.emplace_back(arg.nameToken(), "Assuming argument has value " + MathLib::toString(low));
+            }
+            if (isHigh) {
                 argValues.emplace_back(high);
+                argValues.back().errorPath.emplace_back(arg.nameToken(), "Assuming argument has value " + MathLib::toString(high));
+            }
 
             if (!argValues.empty())
                 valueFlowForward(const_cast<Token *>(functionScope->bodyStart->next()),

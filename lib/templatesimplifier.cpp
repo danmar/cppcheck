@@ -2153,7 +2153,7 @@ static bool isLowerEqualThanMulDiv(const Token* lower)
 }
 
 
-bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
+bool TemplateSimplifier::simplifyNumericCalculations(Token *tok, bool isTemplate)
 {
     bool ret = false;
     // (1-2)
@@ -2179,8 +2179,10 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
             break;
 
         // Don't simplify "%num% / 0"
-        if (Token::Match(op, "[/%] 0"))
-            throw InternalError(op, "Instantiation error: Divide by zero in template instantiation.", InternalError::INSTANTIATION);
+        if (Token::Match(op, "[/%] 0")) {
+            if (isTemplate) throw InternalError(op, "Instantiation error: Divide by zero in template instantiation.", InternalError::INSTANTIATION);
+            else return ret;
+        }
 
         // Integer operations
         if (Token::Match(op, ">>|<<|&|^|%or%")) {
@@ -2430,7 +2432,7 @@ static bool validTokenEnd(bool bounded, const Token *tok, const Token *backToken
 
 // TODO: This is not the correct class for simplifyCalculations(), so it
 // should be moved away.
-bool TemplateSimplifier::simplifyCalculations(Token* frontToken, Token *backToken)
+bool TemplateSimplifier::simplifyCalculations(Token* frontToken, Token *backToken, bool isTemplate)
 {
     bool ret = false;
     const bool bounded = frontToken || backToken;
@@ -2489,11 +2491,11 @@ bool TemplateSimplifier::simplifyCalculations(Token* frontToken, Token *backToke
 
         if (tok && tok->isNumber()) {
             if (validTokenEnd(bounded, tok, backToken, 2) &&
-                simplifyNumericCalculations(tok)) {
+                simplifyNumericCalculations(tok, isTemplate)) {
                 ret = true;
                 Token *prev = tok->tokAt(-2);
                 while (validTokenStart(bounded, tok, frontToken, -2) &&
-                       prev && simplifyNumericCalculations(prev)) {
+                       prev && simplifyNumericCalculations(prev, isTemplate)) {
                     tok = prev;
                     prev = prev->tokAt(-2);
                 }

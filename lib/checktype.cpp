@@ -250,9 +250,9 @@ void CheckType::signConversionError(const Token *tok, const bool constvalue)
     if (tok && tok->isName())
         msg << "$symbol:" << expr << "\n";
     if (constvalue)
-        msg << "Suspicious code: sign conversion of '" << expr << "' in calculation because '" << expr << "' has a negative value";
+        msg << "Expression '" << expr << "' has a negative value. That is converted to an unsigned value and used in an unsigned calculation.";
     else
-        msg << "Suspicious code: sign conversion of '" << expr << "' in calculation, even though '" << expr << "' can have a negative value";
+        msg << "Expression '" << expr << "' can have a negative value. That is converted to an unsigned value and used in an unsigned calculation.";
 
     reportError(tok, Severity::warning, "signConversion", msg.str(), CWE195, false);
 }
