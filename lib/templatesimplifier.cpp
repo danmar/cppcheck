@@ -1317,8 +1317,9 @@ void TemplateSimplifier::simplifyTemplateAliases()
                     const unsigned int argnr = aliasParameterNames[tok1->str()];
                     const Token * const fromStart = args[argnr].first;
                     const Token * const fromEnd   = args[argnr].second->previous();
-                    TokenList::copyTokens(tok1, fromStart, fromEnd, true);
+                    Token *temp = TokenList::copyTokens(tok1, fromStart, fromEnd, true);
                     tok1->deleteThis();
+                    tok1 = temp; // skip over inserted parameters
                 } else if (tok1->str() == "typename")
                     tok1->deleteThis();
             }
