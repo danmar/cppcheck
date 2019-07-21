@@ -187,7 +187,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getReallocationType(const Token *tok
     const Token* arg = getArguments(tok2).at(f->reallocArg - 1);
     while (arg && arg->isCast())
         arg = arg->astOperand1();
-    while (arg->isUnaryOp("*"))
+    while (arg && arg->isUnaryOp("*"))
         arg = arg->astOperand1();
     if (varid > 0 && !Token::Match(arg, "%varid% [,)]", varid))
         return No;
@@ -525,10 +525,13 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
                 while (arg && arg->isCast())
                     arg = arg->astOperand1();
                 const Token* tok2 = tok;
-                while (arg && arg->isUnaryOp("*") && Token::simpleMatch(tok2->astParent(), "*")) {
+                while (arg && arg->isUnaryOp("*") && tok2 && tok2->astParent() && tok2->astParent()->isUnaryOp("*")) {
                     arg = arg->astOperand1();
-                    tok2 = tok2->previous();
+                    tok2 = tok2->astParent();
                 }
+
+		if (!arg || !tok2)
+                    continue;
 
                 if (!((tok->varId() == arg->varId()) && isNoArgument(symbolDatabase, tok->varId())))
                     continue;
