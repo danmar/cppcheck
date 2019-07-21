@@ -358,6 +358,9 @@ public:
     bool isName() const {
         return getFlag(fIsName);
     }
+    bool isNameOnly() const {
+        return mFlags == fIsName && mTokType == eName;
+    }
     bool isUpperCaseName() const;
     bool isLiteral() const {
         return getFlag(fIsLiteral);

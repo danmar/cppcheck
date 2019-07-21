@@ -1223,24 +1223,81 @@ static void valueFlowSameExpressions(TokenList *tokenlist)
 
 static bool isIncompleteVar(const Token *tok)
 {
+    static const std::set<std::string> keywords = {
+        "alignas",
+        "alignof",
+        "asm",
+        "audit",
+        "auto",
+        "axiom",
+        "catch",
+        "char",
+        "class",
+        "co_await",
+        "co_return",
+        "co_yield",
+        "concept",
+        "const",
+        "consteval",
+        "constexpr",
+        "decltype",
+        "default",
+        "do",
+        "enum",
+        "explicit",
+        "export",
+        "extern",
+        "final",
+        "friend",
+        "inline",
+        "mutable",
+        "namespace",
+        "new",
+        "noexcept",
+        "override",
+        "private",
+        "protected",
+        "public",
+        "reflexpr",
+        "register",
+        "requires",
+        "sizeof",
+        "static",
+        "static_assert",
+        "struct",
+        "synchronized",
+        "template",
+        "this",
+        "thread_local",
+        "throw",
+        "try",
+        "typedef",
+        "typeid",
+        "typename",
+        "union",
+        "using",
+        "virtual",
+        "void",
+        "volatile",
+    };
     if (!Token::Match(tok, "%name%"))
         return false;
-    if (tok->tokType() != Token::eName)
-        return false;
-    if (tok->flags() != (1 << 20))
-        return false;
-    if (Token::Match(
-            tok,
-            "audit|axiom|alignas|alignof|asm|auto|catch|char|class|concept|const|consteval|constexpr|co_await|co_return|co_yield|decltype|default|do|enum|explicit|export|extern|friend|inline|mutable|namespace|new|noexcept|private|protected|public|reflexpr|register|requires|sizeof|static|static_assert|struct|synchronized|template|this|thread_local|throw|try|typedef|typeid|typename|union|using|virtual|void|volatile|override|final"))
+    if (!tok->isNameOnly())
         return false;
     if (Token::Match(tok, "%var%"))
         return false;
-    if (Token::Match(tok->next(), "::|.|(|<"))
+    if (tok->type())
+        return false;
+    if (Token::Match(tok->next(), "::|.|("))
+        return false;
+    if (Token::simpleMatch(tok->next(), "<") && tok->next()->link())
+        return false;
+    if (keywords.count(tok->str()) > 0)
         return false;
     return true;
 }
 
-static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* symboldatabase, const Settings *settings)
+static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
     const bool cpp = symboldatabase->isCPP();
     typedef std::pair<const Token*, const Scope*> Condition;
@@ -1249,6 +1306,8 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
         std::vector<Condition> conds;
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (isIncompleteVar(tok)) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok, "Skipping function due to incomplete variable " + tok->str());
                 skipFunction = true;
                 break;
             }
@@ -5594,7 +5653,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
         valueFlowArrayBool(tokenlist);
         valueFlowRightShift(tokenlist, settings);
         valueFlowOppositeCondition(symboldatabase, settings);
-        valueFlowTerminatingCondition(tokenlist, symboldatabase, settings);
+        valueFlowTerminatingCondition(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowBeforeCondition(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowAfterMove(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings);
