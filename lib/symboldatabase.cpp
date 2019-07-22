@@ -1280,7 +1280,7 @@ void SymbolDatabase::createSymbolDatabaseEnums()
     }
 }
 
-static bool isIncompleteVar(const Token *tok)
+void SymbolDatabase::createSymbolDatabaseIncompleteVars()
 {
     static const std::set<std::string> keywords = {
         "alignas",
@@ -1339,48 +1339,40 @@ static bool isIncompleteVar(const Token *tok)
         "void",
         "volatile",
     };
-    if (!Token::Match(tok, "%name%"))
-        return false;
-    if (!tok->isNameOnly())
-        return false;
-    if (Token::Match(tok, "%var%"))
-        return false;
-    if (tok->type())
-        return false;
-    if (Token::Match(tok->next(), "::|.|(|:|%var%"))
-        return false;
-    if (Token::Match(tok->next(), "&|&&|* )|%var%"))
-        return false;
-    if (Token::simpleMatch(tok->next(), ")") && Token::simpleMatch(tok->next()->link()->previous(), "catch ("))
-        return false;
-    // Very likely a typelist
-    if (Token::Match(tok->tokAt(-2), "%type% ,"))
-        return false;
-    // Inside template brackets
-    if (Token::Match(tok->next(), "<|>") && tok->next()->link())
-        return false;
-    if (Token::simpleMatch(tok->previous(), "<") && tok->previous()->link())
-        return false;
-    // Skip goto labels
-    if (Token::simpleMatch(tok->previous(), "goto"))
-        return false;
-    if (keywords.count(tok->str()) > 0)
-        return false;
-    return true;
-}
-
-void SymbolDatabase::createSymbolDatabaseIncompleteVars()
-{
-
-    // Set type pointers
     for (const Token* tok = mTokenizer->list.front(); tok != mTokenizer->list.back(); tok = tok->next()) {
         const Scope * scope = tok->scope();
         if (!scope)
             continue;
         if (!scope->isExecutable())
             continue;
-        if (isIncompleteVar(tok))
-            const_cast<Token *>(tok)->isIncompleteVar(true);
+        if (!Token::Match(tok, "%name%"))
+            continue;
+        if (!tok->isNameOnly())
+            continue;
+        if (Token::Match(tok, "%var%"))
+            continue;
+        if (tok->type())
+            continue;
+        if (Token::Match(tok->next(), "::|.|(|:|%var%"))
+            continue;
+        if (Token::Match(tok->next(), "&|&&|* )|%var%"))
+            continue;
+        if (Token::simpleMatch(tok->next(), ")") && Token::simpleMatch(tok->next()->link()->previous(), "catch ("))
+            continue;
+        // Very likely a typelist
+        if (Token::Match(tok->tokAt(-2), "%type% ,"))
+            continue;
+        // Inside template brackets
+        if (Token::Match(tok->next(), "<|>") && tok->next()->link())
+            continue;
+        if (Token::simpleMatch(tok->previous(), "<") && tok->previous()->link())
+            continue;
+        // Skip goto labels
+        if (Token::simpleMatch(tok->previous(), "goto"))
+            continue;
+        if (keywords.count(tok->str()) > 0)
+            continue;        
+        const_cast<Token *>(tok)->isIncompleteVar(true);
     }
 }
 
