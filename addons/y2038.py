@@ -9,53 +9,17 @@
 # 3. Any Y2038-unsafe symbol when _USE_TIME_BITS64 is not defined.
 #
 # Example usage:
-# $ cppcheck --dump path-to-src/
-# $ y2038.py path-to-src/
+# $ cppcheck --dump path-to-src/test.c
+# $ y2038.py path-to-src/test.c.dump
 #
 # y2038.py will walk the source tree for .dump files.
+from __future__ import print_function
 
 import cppcheckdata
 import sys
 import os
 import re
 
-# --------------
-# Error handling
-# --------------
-
-diagnostics = {}
-
-
-def reportDiagnostic(template, configuration, file, line, severity, message):
-    # collect diagnostics by configuration
-    if configuration not in diagnostics:
-        diagnostics[configuration] = []
-    # add error to this configuration
-    diagnostics[configuration].append(
-        cppcheckdata.reportError(template, [[file, line]], severity, message))
-
-
-def printDiagnostics():
-    for cfg in diagnostics:
-        sys.stderr.write('# Configuration "' + cfg + '":\n')
-        for diag in diagnostics[cfg]:
-            sys.stderr.write(diag + '\n')
-
-
-def reportDirDiag(template, cfg, filename, linenr, directive, severity, msg):
-    reportDiagnostic(template, cfg.name,
-                     directive.file, directive.linenr,
-                     severity, msg)
-    if (filename != directive.file) or (linenr != directive.linenr):
-        reportDiagnostic(template, cfg.name,
-                         filename, linenr, 'information',
-                         directive.file + ' was included from here')
-
-
-def reportTokDiag(template, cfg, token, severity, msg):
-    reportDiagnostic(template, cfg.name,
-                     token.file, token.linenr,
-                     severity, msg)
 
 # --------------------------------------------
 # #define/#undef detection regular expressions
@@ -186,44 +150,7 @@ id_Y2038 = {
 }
 
 
-# return all files ending in .dump among or under the given paths
-def find_dump_files(paths):
-    dumpfiles = []
-    for path in paths:
-        if path.endswith('.dump'):
-            if path not in dumpfiles:
-                dumpfiles.append(path)
-        else:
-            for (top, subdirs, files) in os.walk(path):
-                for file in files:
-                    if file.endswith('.dump'):
-                        f = top + '/' + file
-                        if f not in dumpfiles:
-                            dumpfiles.append(f)
-    dumpfiles.sort()
-    return dumpfiles
-
-# -----------------
-# Let's get to work
-# -----------------
-
-# extend cppcheck parser with our own options
-parser = cppcheckdata.ArgumentParser()
-parser.add_argument('-q', '--quiet', action='store_true',
-                    help='do not print "Checking ..." lines')
-parser.add_argument('paths', nargs='+', metavar='path',
-                    help='path to dump file or directory')
-
-
-# parse command line
-args = parser.parse_args()
-
-# now operate on each file in turn
-dumpfiles = find_dump_files(args.paths)
-
-for dumpfile in dumpfiles:
-    if not args.quiet:
-        print('Checking ' + dumpfile + '...')
+def check_y2038_safe(dumpfile, quiet=False):
     srcfile = dumpfile.rstrip('.dump')
     # at the start of the check, we don't know if code is Y2038 safe
     y2038safe = False
@@ -231,12 +158,13 @@ for dumpfile in dumpfiles:
     data = cppcheckdata.parsedump(dumpfile)
     # go through each configuration
     for cfg in data.configurations:
-        if not args.quiet:
+        if not quiet:
             print('Checking ' + dumpfile + ', config "' + cfg.name + '"...')
         safe_ranges = []
         safe = -1
         time_bits_defined = False
         srclinenr = '0'
+
         for directive in cfg.directives:
             # track source line number
             if directive.file == srcfile:
@@ -245,10 +173,12 @@ for dumpfile in dumpfiles:
             if re_define_time_bits_64.match(directive.str):
                 time_bits_defined = True
             elif re_define_time_bits.match(directive.str):
-                reportDirDiag(args.template, cfg, srcfile, srclinenr,
-                              directive, 'error',
-                              '_TIME_BITS must be defined equal to 64')
+                cppcheckdata.reportError(directive, 'error',
+                                         '_TIME_BITS must be defined equal to 64',
+                                         'y2038',
+                                         'type-bits-not-64')
                 time_bits_defined = False
+                y2038safe = False
             elif re_undef_time_bits.match(directive.str):
                 time_bits_defined = False
             # check for _USE_TIME_BITS64 (un)definition
@@ -256,27 +186,62 @@ for dumpfile in dumpfiles:
                 safe = int(srclinenr)
                 # warn about _TIME_BITS not being defined
                 if not time_bits_defined:
-                    reportDirDiag(args.template,
-                                  cfg, srcfile, srclinenr, directive, 'warning',
-                                  '_USE_TIME_BITS64 is defined but _TIME_BITS was not')
+                    cppcheckdata.reportError(directive, 'warning',
+                                             '_USE_TIME_BITS64 is defined but _TIME_BITS was not',
+                                             'y2038',
+                                             'type-bits-undef')
             elif re_undef_use_time_bits64.match(directive.str):
                 unsafe = int(srclinenr)
                 # do we have a safe..unsafe area?
                 if unsafe > safe > 0:
                     safe_ranges.append((safe, unsafe))
                     safe = -1
+
         # check end of source beyond last directive
         if len(cfg.tokenlist) > 0:
             unsafe = int(cfg.tokenlist[-1].linenr)
             if unsafe > safe > 0:
                 safe_ranges.append((safe, unsafe))
+
         # go through all tokens
         for token in cfg.tokenlist:
             if token.str in id_Y2038:
                 if not any(lower <= int(token.linenr) <= upper
                            for (lower, upper) in safe_ranges):
-                    reportTokDiag(args.template, cfg, token, 'warning',
-                                  token.str + ' is Y2038-unsafe')
+                    cppcheckdata.reportError(token, 'warning',
+                                             token.str + ' is Y2038-unsafe',
+                                             'y2038',
+                                             'unsafe-call')
+                    y2038safe = False
             token = token.next
 
-printDiagnostics()
+    return y2038safe
+
+
+if __name__ == '__main__':
+    parser = cppcheckdata.ArgumentParser()
+    parser.add_argument("dumpfile", nargs='*', help="Path of dump file from cppcheck")
+    parser.add_argument('-q', '--quiet', action='store_true',
+                        help='do not print "Checking ..." lines')
+    parser.add_argument('--cli', help='Addon is executed from Cppcheck', action='store_true')
+    args = parser.parse_args()
+
+    exit_code = 0
+    quiet = not any((args.quiet, args.cli))
+
+    if args.dumpfile:
+        for dumpfile in args.dumpfile:
+            if not os.path.isfile(dumpfile):
+                print("Error: File not found: %s" % dumpfile)
+                sys.exit(127)
+            if not os.access(dumpfile, os.R_OK):
+                print("Error: Permission denied: %s" % dumpfile)
+                sys.exit(13)
+            if not args.quiet:
+                print('Checking ' + dumpfile + '...')
+
+            y2038safe = check_y2038_safe(dumpfile, quiet)
+            if not y2038safe and exit_code == 0:
+                exit_code = 1
+
+    sys.exit(exit_code)
