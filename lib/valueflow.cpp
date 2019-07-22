@@ -1221,95 +1221,6 @@ static void valueFlowSameExpressions(TokenList *tokenlist)
     }
 }
 
-static bool isIncompleteVar(const Token *tok)
-{
-    static const std::set<std::string> keywords = {
-        "alignas",
-        "alignof",
-        "asm",
-        "audit",
-        "auto",
-        "axiom",
-        "catch",
-        "char",
-        "class",
-        "co_await",
-        "co_return",
-        "co_yield",
-        "concept",
-        "const",
-        "consteval",
-        "constexpr",
-        "decltype",
-        "default",
-        "do",
-        "enum",
-        "explicit",
-        "export",
-        "extern",
-        "final",
-        "friend",
-        "inline",
-        "mutable",
-        "namespace",
-        "new",
-        "noexcept",
-        "override",
-        "private",
-        "protected",
-        "public",
-        "reflexpr",
-        "register",
-        "requires",
-        "sizeof",
-        "static",
-        "static_assert",
-        "struct",
-        "synchronized",
-        "template",
-        "this",
-        "thread_local",
-        "throw",
-        "try",
-        "typedef",
-        "typeid",
-        "typename",
-        "union",
-        "using",
-        "virtual",
-        "void",
-        "volatile",
-    };
-    if (!Token::Match(tok, "%name%"))
-        return false;
-    if (!tok->isNameOnly())
-        return false;
-    if (Token::Match(tok, "%var%"))
-        return false;
-    if (tok->type())
-        return false;
-    if (Token::Match(tok->next(), "::|.|(|:|%var%"))
-        return false;
-    if (Token::Match(tok->next(), "&|&&|* )|%var%"))
-        return false;
-    if (Token::simpleMatch(tok->next(), ")") && Token::simpleMatch(tok->next()->link()->previous(), "catch ("))
-        return false;
-    // Very likely a typelist
-    if (Token::Match(tok->tokAt(-2), "%type% ,"))
-        return false;
-    // Inside template brackets
-    if (Token::Match(tok->next(), "<|>") && tok->next()->link())
-        return false;
-    if (Token::simpleMatch(tok->previous(), "<") && tok->previous()->link())
-        return false;
-    // Skip goto labels
-    if (Token::simpleMatch(tok->previous(), "goto"))
-        return false;
-    if (keywords.count(tok->str()) > 0)
-        return false;
-    return true;
-}
-
 static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
     const bool cpp = symboldatabase->isCPP();
@@ -1318,7 +1229,7 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
         bool skipFunction = false;
         std::vector<Condition> conds;
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
-            if (isIncompleteVar(tok)) {
+            if (tok->isIncompleteVar()) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok, "Skipping function due to incomplete variable " + tok->str());
                 skipFunction = true;

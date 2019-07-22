@@ -1264,6 +1264,7 @@ private:
     void createSymbolDatabaseSetVariablePointers();
     void createSymbolDatabaseSetTypePointers();
     void createSymbolDatabaseEnums();
+    void createSymbolDatabaseIncompleteVars();
 
     void addClassFunction(Scope **scope, const Token **tok, const Token *argStart);
     Function *addGlobalFunctionDecl(Scope*& scope, const Token* tok, const Token *argStart, const Token* funcStart);
