@@ -338,10 +338,10 @@ void SettingsDialog::setCodeEditorStyleDefault()
 // Slot to edit custom style
 void SettingsDialog::editCodeEditorStyle()
 {
-    StyleEditDialog pDlg(*mCurrentStyle, this);
-    int nResult = pDlg.exec();
+    StyleEditDialog dlg(*mCurrentStyle, this);
+    int nResult = dlg.exec();
     if (nResult == QDialog::Accepted) {
-        *mCurrentStyle = pDlg.getStyle();
+        *mCurrentStyle = dlg.getStyle();
         manageStyleControls();
     }
 }
