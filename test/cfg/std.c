@@ -125,7 +125,7 @@ void arrayIndexOutOfBounds()
     pAlloc3[5] = 'a';
     // cppcheck-suppress arrayIndexOutOfBounds
     pAlloc3[6] = 1;
-    // TODO cppcheck-suppress memleakOnRealloc
+    // cppcheck-suppress memleakOnRealloc
     pAlloc3 = reallocarray(pAlloc3, 3,3);
     pAlloc3[8] = 'a';
     // cppcheck-suppress arrayIndexOutOfBounds

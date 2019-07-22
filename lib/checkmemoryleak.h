@@ -112,7 +112,7 @@ public:
     /**
      * @brief Get type of reallocation at given position
      */
-    static AllocType getReallocationType(const Token *tok2, nonneg int varid);
+    AllocType getReallocationType(const Token *tok2, nonneg int varid) const;
 
     /**
      * Report that there is a memory leak (new/malloc/etc)
@@ -137,7 +137,7 @@ public:
     void deallocuseError(const Token *tok, const std::string &varname) const;
     void mismatchSizeError(const Token *tok, const std::string &sz) const;
     void mismatchAllocDealloc(const std::list<const Token *> &callstack, const std::string &varname) const;
-    void memleakUponReallocFailureError(const Token *tok, const std::string &varname) const;
+    void memleakUponReallocFailureError(const Token *tok, const std::string &reallocfunction, const std::string &varname) const;
 
     /** What type of allocated memory does the given function return? */
     AllocType functionReturnType(const Function* func, std::list<const Function*> *callstack = nullptr) const;
@@ -201,7 +201,7 @@ private:
         c.mismatchSizeError(nullptr, "sz");
         const std::list<const Token *> callstack;
         c.mismatchAllocDealloc(callstack, "varname");
-        c.memleakUponReallocFailureError(nullptr, "varname");
+        c.memleakUponReallocFailureError(nullptr, "realloc", "varname");
     }
 
     /**
