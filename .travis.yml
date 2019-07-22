@@ -87,7 +87,6 @@ matrix:
         - python3 -m compileall ./addons
 # run pylint
         - cd addons
-#        - pylint *.py y2038/*.py ! First resolve https://trac.cppcheck.net/ticket/9210 "y2038 addon no longer working"
         - pylint *.py
         - cd ..
 # check python syntax by compiling some selected scripts
