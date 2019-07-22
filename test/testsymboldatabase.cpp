@@ -2522,7 +2522,8 @@ private:
         // ticket #2991 - segmentation fault
         check("::y(){x}");
 
-        ASSERT_EQUALS("[test.cpp:1]: (debug) Executable scope 'y' with unknown function.\n", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:1]: (debug) Executable scope 'y' with unknown function.\n"
+                                          "[test.cpp:1]: (debug) valueflow.cpp:1321:valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable x\n", errout.str());
     }
 
     void symboldatabase20() {

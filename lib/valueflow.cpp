@@ -1288,10 +1288,21 @@ static bool isIncompleteVar(const Token *tok)
         return false;
     if (tok->type())
         return false;
-    if (Token::Match(tok->next(), "::|.|(|:"))
+    if (Token::Match(tok->next(), "::|.|(|:|%var%"))
         return false;
-    if (Token::simpleMatch(tok->next(), "<") && tok->next()->link())
+    if (Token::Match(tok->next(), "&|&&|* )|%var%"))
         return false;
+    if (Token::simpleMatch(tok->next(), ")") && Token::simpleMatch(tok->next()->link()->previous(), "catch ("))
+        return false;
+    // Very likely a typelist
+    if (Token::Match(tok->tokAt(-2), "%type% ,"))
+        return false;
+    // Inside template brackets
+    if (Token::Match(tok->next(), "<|>") && tok->next()->link())
+        return false;
+    if (Token::simpleMatch(tok->previous(), "<") && tok->previous()->link())
+        return false;
+    // Skip goto labels
     if (Token::simpleMatch(tok->previous(), "goto"))
         return false;
     if (keywords.count(tok->str()) > 0)

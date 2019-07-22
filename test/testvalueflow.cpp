@@ -1235,7 +1235,8 @@ private:
         bailout("void f(int x) {\n"
                 "    y = ((x<0) ? x : ((x==2)?3:4));\n"
                 "}");
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:2]: (debug) valueflow.cpp:1113:valueFlowReverse bailout: no simplification of x within ?: expression\n", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:2]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable y\n" 
+                                          "[test.cpp:2]: (debug) valueflow.cpp:1113:valueFlowReverse bailout: no simplification of x within ?: expression\n", errout.str());
 
         bailout("int f(int x) {\n"
                 "  int r = x ? 1 / x : 0;\n"
@@ -1299,7 +1300,8 @@ private:
                 "    if (x != 123) { b = x; }\n"
                 "    if (x == 123) {}\n"
                 "}");
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:2]: (debug) valueflow.cpp:1144:valueFlowReverse bailout: variable x stopping on }\n", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:2]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable b\n"
+                                          "[test.cpp:2]: (debug) valueflow.cpp:1144:valueFlowReverse bailout: variable x stopping on }\n", errout.str());
 
         code = "void f(int x) {\n"
                "  a = x;\n"
@@ -1339,7 +1341,8 @@ private:
                 "    case 2: if (x==5) {} break;\n"
                 "    };\n"
                 "}");
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:3]: (debug) valueflow.cpp:1180:valueFlowReverse bailout: variable x stopping on break\n", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
+                                          "[test.cpp:3]: (debug) valueflow.cpp:1180:valueFlowReverse bailout: variable x stopping on break\n", errout.str());
 
         bailout("void f(int x, int y) {\n"
                 "    switch (y) {\n"
@@ -1347,7 +1350,8 @@ private:
                 "    case 2: if (x==5) {} break;\n"
                 "    };\n"
                 "}");
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:3]: (debug) valueflow.cpp:1180:valueFlowReverse bailout: variable x stopping on return\n", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
+                                          "[test.cpp:3]: (debug) valueflow.cpp:1180:valueFlowReverse bailout: variable x stopping on return\n", errout.str());
     }
 
     void valueFlowBeforeConditionMacro() {
@@ -1357,7 +1361,8 @@ private:
                 "    a = x;\n"
                 "    M;\n"
                 "}");
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:4]: (debug) valueflow.cpp:1260:valueFlowBeforeCondition bailout: variable x, condition is defined in macro\n", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
+                                          "[test.cpp:4]: (debug) valueflow.cpp:1260:valueFlowBeforeCondition bailout: variable x, condition is defined in macro\n", errout.str());
     }
 
     void valueFlowBeforeConditionGoto() {
