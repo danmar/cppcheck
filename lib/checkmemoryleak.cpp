@@ -530,7 +530,7 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
                     tok2 = tok2->astParent();
                 }
 
-		if (!arg || !tok2)
+                if (!arg || !tok2)
                     continue;
 
                 if (!((tok->varId() == arg->varId()) && isNoArgument(symbolDatabase, tok->varId())))
