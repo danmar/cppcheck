@@ -118,7 +118,7 @@ StyleEditDialog::StyleEditDialog(const CodeEditorStyle& newStyle,
     mSampleEditor = new CodeEditor(this);
     QFont sampleFont("Monospace");
     QFontMetrics fm(sampleFont);
-    mSampleEditor->setMinimumWidth(fm.width(QString(40, 'W')));
+    mSampleEditor->setMinimumWidth(fm.horizontalAdvance(QString(40, 'W')));
     // designate highlight, errors, and symbols
     mSampleEditor->setError(mSampleDocument, mErrLineNum, mErrSymbolsList);
     // End Controls
