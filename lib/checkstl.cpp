@@ -823,12 +823,11 @@ void CheckStl::invalidContainer()
                 for (const ValueFlow::Value& val:info.tok->values()) {
                     if (!val.isLocalLifetimeValue())
                         continue;
+                    if (val.lifetimeKind == ValueFlow::Value::LifetimeKind::Address)
+                        continue;
                     if (!val.tokvalue->variable())
                         continue;
                     if (val.tokvalue->varId() != tok->varId())
-                        continue;
-                    // Skip possible temporaries
-                    if (val.tokvalue == tok)
                         continue;
                     ErrorPath ep;
                     // Check the iterator is created before the change
