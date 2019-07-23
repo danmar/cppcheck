@@ -1757,6 +1757,13 @@ private:
               "    return y.find(x);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("std::string* f();\n"
+              "const char* g() {\n"
+              "    std::string* var = f();\n"
+              "    return var->c_str();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetime() {
