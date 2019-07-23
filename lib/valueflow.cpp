@@ -5090,7 +5090,7 @@ static void valueFlowSmartPointer(TokenList *tokenlist, ErrorLogger * errorLogge
                 values.push_back(v);
                 valueFlowForwardAssign(tok, var, values, false, true, tokenlist, errorLogger, settings);
             }
-        } else if (Token::Match(tok, "%var% . reset (")) {
+        } else if (Token::Match(tok, "%var% . reset (") && tok->next()->originalName() != "->") {
             if (Token::simpleMatch(tok->tokAt(3), "( )")) {
                 std::list<ValueFlow::Value> values;
                 ValueFlow::Value v(0);
@@ -5106,7 +5106,7 @@ static void valueFlowSmartPointer(TokenList *tokenlist, ErrorLogger * errorLogge
                 const bool constValue = inTok->isNumber();
                 valueFlowForwardAssign(inTok, var, values, constValue, false, tokenlist, errorLogger, settings);
             }
-        } else if (Token::Match(tok, "%var% . release ( )")) {
+        } else if (Token::Match(tok, "%var% . release ( )") && tok->next()->originalName() != "->") {
             std::list<ValueFlow::Value> values;
             ValueFlow::Value v(0);
             v.setKnown();

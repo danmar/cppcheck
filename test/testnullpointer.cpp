@@ -2339,6 +2339,17 @@ private:
               "    p.reset(new const A*[n]);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9216
+        check("struct A {\n"
+              "    void reset();\n"
+              "    void f();\n"
+              "};\n"
+              "void g(std::unique_ptr<A> var) {\n"
+              "    var->reset();\n"
+              "    var->f();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void functioncall() {    // #3443 - function calls
