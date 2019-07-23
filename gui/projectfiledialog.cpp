@@ -283,7 +283,10 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
         const bool unknownValues = projectFile->getCheckUnknownFunctionReturn().contains(item->text());
         item->setCheckState(unknownValues ? Qt::Checked : Qt::Unchecked); // AND initialize check state
     }
-    mUI.mAllFunctionsAreSafe->setChecked(projectFile->getCheckAllFunctionParameterValues());
+    mUI.mCheckSafeClasses->setChecked(projectFile->getSafeChecks().classes);
+    mUI.mCheckSafeExternalFunctions->setChecked(projectFile->getSafeChecks().externalFunctions);
+    mUI.mCheckSafeInternalFunctions->setChecked(projectFile->getSafeChecks().internalFunctions);
+    mUI.mCheckSafeExternalVariables->setChecked(projectFile->getSafeChecks().externalVariables);
 
     // Addons..
     QSettings settings;
@@ -346,7 +349,12 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
             unknownReturnValues << item->text();
     }
     projectFile->setCheckUnknownFunctionReturn(unknownReturnValues);
-    projectFile->setCheckAllFunctionParameterValues(mUI.mAllFunctionsAreSafe->isChecked());
+    ProjectFile::SafeChecks safeChecks;
+    safeChecks.classes = mUI.mCheckSafeClasses->isChecked();
+    safeChecks.externalFunctions = mUI.mCheckSafeExternalFunctions->isChecked();
+    safeChecks.internalFunctions = mUI.mCheckSafeInternalFunctions->isChecked();
+    safeChecks.externalVariables = mUI.mCheckSafeExternalVariables->isChecked();
+    projectFile->setSafeChecks(safeChecks);
     // Addons
     QStringList list;
     if (mUI.mAddonThreadSafety->isChecked())

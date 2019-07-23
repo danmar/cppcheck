@@ -26,6 +26,7 @@
 #include "common.h"
 
 #include "path.h"
+#include "settings.h"
 
 static const char ProjectElementName[] = "project";
 static const char ProjectVersionAttrib[] = "version";
@@ -67,7 +68,6 @@ static const char CheckHeadersElementName[] = "check-headers";
 static const char CheckUnusedTemplatesElementName[] = "check-unused-templates";
 static const char MaxCtuDepthElementName[] = "max-ctu-depth";
 static const char CheckUnknownFunctionReturn[] = "check-unknown-function-return-values";
-static const char CheckAllFunctionParameterValues[] = "check-all-function-parameter-values";
 static const char Name[] = "name";
 
 ProjectFile::ProjectFile(QObject *parent) :
@@ -104,8 +104,8 @@ void ProjectFile::clear()
     mCheckHeaders = true;
     mCheckUnusedTemplates = false;
     mMaxCtuDepth = 10;
-    mCheckAllFunctionParameterValues = false;
     mCheckUnknownFunctionReturn.clear();
+    mSafeChecks.clear();
 }
 
 bool ProjectFile::read(const QString &filename)
@@ -128,77 +128,81 @@ bool ProjectFile::read(const QString &filename)
             if (xmlReader.name() == ProjectElementName) {
                 insideProject = true;
                 projectTagFound = true;
+                break;
             }
+            if (!insideProject)
+                break;
+
             // Read root path from inside project element
-            if (insideProject && xmlReader.name() == RootPathName)
+            if (xmlReader.name() == RootPathName)
                 readRootPath(xmlReader);
 
             // Read root path from inside project element
-            if (insideProject && xmlReader.name() == BuildDirElementName)
+            if (xmlReader.name() == BuildDirElementName)
                 readBuildDir(xmlReader);
 
             // Find paths to check from inside project element
-            if (insideProject && xmlReader.name() == PathsElementName)
+            if (xmlReader.name() == PathsElementName)
                 readCheckPaths(xmlReader);
 
-            if (insideProject && xmlReader.name() == ImportProjectElementName)
+            if (xmlReader.name() == ImportProjectElementName)
                 readImportProject(xmlReader);
 
-            if (insideProject && xmlReader.name() == AnalyzeAllVsConfigsElementName)
+            if (xmlReader.name() == AnalyzeAllVsConfigsElementName)
                 mAnalyzeAllVsConfigs = readBool(xmlReader);
 
-            if (insideProject && xmlReader.name() == CheckHeadersElementName)
+            if (xmlReader.name() == CheckHeadersElementName)
                 mCheckHeaders = readBool(xmlReader);
 
-            if (insideProject && xmlReader.name() == CheckUnusedTemplatesElementName)
+            if (xmlReader.name() == CheckUnusedTemplatesElementName)
                 mCheckUnusedTemplates = readBool(xmlReader);
 
             // Find include directory from inside project element
-            if (insideProject && xmlReader.name() == IncludeDirElementName)
+            if (xmlReader.name() == IncludeDirElementName)
                 readIncludeDirs(xmlReader);
 
             // Find preprocessor define from inside project element
-            if (insideProject && xmlReader.name() == DefinesElementName)
+            if (xmlReader.name() == DefinesElementName)
                 readDefines(xmlReader);
 
             // Find preprocessor define from inside project element
-            if (insideProject && xmlReader.name() == UndefinesElementName)
+            if (xmlReader.name() == UndefinesElementName)
                 readStringList(mUndefines, xmlReader, UndefineName);
 
             // Find exclude list from inside project element
-            if (insideProject && xmlReader.name() == ExcludeElementName)
+            if (xmlReader.name() == ExcludeElementName)
                 readExcludes(xmlReader);
 
             // Find ignore list from inside project element
             // These are read for compatibility
-            if (insideProject && xmlReader.name() == IgnoreElementName)
+            if (xmlReader.name() == IgnoreElementName)
                 readExcludes(xmlReader);
 
             // Find libraries list from inside project element
-            if (insideProject && xmlReader.name() == LibrariesElementName)
+            if (xmlReader.name() == LibrariesElementName)
                 readStringList(mLibraries, xmlReader,LibraryElementName);
 
-            if (insideProject && xmlReader.name() == PlatformElementName)
+            if (xmlReader.name() == PlatformElementName)
                 readPlatform(xmlReader);
 
             // Find suppressions list from inside project element
-            if (insideProject && xmlReader.name() == SuppressionsElementName)
+            if (xmlReader.name() == SuppressionsElementName)
                 readSuppressions(xmlReader);
 
             // Unknown function return values
-            if (insideProject && xmlReader.name() == CheckUnknownFunctionReturn)
+            if (xmlReader.name() == CheckUnknownFunctionReturn)
                 readStringList(mCheckUnknownFunctionReturn, xmlReader, Name);
 
             // check all function parameter values
-            if (insideProject && xmlReader.name() == CheckAllFunctionParameterValues)
-                mCheckAllFunctionParameterValues = true;
+            if (xmlReader.name() == Settings::SafeChecks::XmlRootName)
+                mSafeChecks.loadFromXml(xmlReader);
 
             // Addons
-            if (insideProject && xmlReader.name() == AddonsElementName)
+            if (xmlReader.name() == AddonsElementName)
                 readStringList(mAddons, xmlReader, AddonElementName);
 
             // Tools
-            if (insideProject && xmlReader.name() == ToolsElementName) {
+            if (xmlReader.name() == ToolsElementName) {
                 QStringList tools;
                 readStringList(tools, xmlReader, ToolElementName);
                 mClangAnalyzer = tools.contains(CLANG_ANALYZER);
@@ -796,10 +800,7 @@ bool ProjectFile::write(const QString &filename)
                     CheckUnknownFunctionReturn,
                     Name);
 
-    if (mCheckAllFunctionParameterValues) {
-        xmlWriter.writeStartElement(CheckAllFunctionParameterValues);
-        xmlWriter.writeEndElement();
-    }
+    mSafeChecks.saveToXml(xmlWriter);
 
     writeStringList(xmlWriter,
                     mAddons,
@@ -853,4 +854,68 @@ QStringList ProjectFile::getAddonsAndTools() const
     if (mClangTidy)
         ret << CLANG_TIDY;
     return ret;
+}
+
+void ProjectFile::SafeChecks::loadFromXml(QXmlStreamReader &xmlReader)
+{
+    classes = externalFunctions = internalFunctions = externalVariables = false;
+
+    int level = 0;
+
+    do {
+        const QXmlStreamReader::TokenType type = xmlReader.readNext();
+        switch (type) {
+        case QXmlStreamReader::StartElement:
+            ++level;
+            if (xmlReader.name() == Settings::SafeChecks::XmlClasses)
+                classes = true;
+            else if (xmlReader.name() == Settings::SafeChecks::XmlExternalFunctions)
+                externalFunctions = true;
+            else if (xmlReader.name() == Settings::SafeChecks::XmlInternalFunctions)
+                internalFunctions = true;
+            else if (xmlReader.name() == Settings::SafeChecks::XmlExternalVariables)
+                externalVariables = true;
+            break;
+        case QXmlStreamReader::EndElement:
+            if (level <= 0)
+                return;
+            level--;
+            break;
+        // Not handled
+        case QXmlStreamReader::Characters:
+        case QXmlStreamReader::NoToken:
+        case QXmlStreamReader::Invalid:
+        case QXmlStreamReader::StartDocument:
+        case QXmlStreamReader::EndDocument:
+        case QXmlStreamReader::Comment:
+        case QXmlStreamReader::DTD:
+        case QXmlStreamReader::EntityReference:
+        case QXmlStreamReader::ProcessingInstruction:
+            break;
+        }
+    } while (1);
+}
+
+void ProjectFile::SafeChecks::saveToXml(QXmlStreamWriter &xmlWriter) const
+{
+    if (!classes && !externalFunctions && !internalFunctions && !externalVariables)
+        return;
+    xmlWriter.writeStartElement(Settings::SafeChecks::XmlRootName);
+    if (classes) {
+        xmlWriter.writeStartElement(Settings::SafeChecks::XmlClasses);
+        xmlWriter.writeEndElement();
+    }
+    if (externalFunctions) {
+        xmlWriter.writeStartElement(Settings::SafeChecks::XmlExternalFunctions);
+        xmlWriter.writeEndElement();
+    }
+    if (internalFunctions) {
+        xmlWriter.writeStartElement(Settings::SafeChecks::XmlInternalFunctions);
+        xmlWriter.writeEndElement();
+    }
+    if (externalVariables) {
+        xmlWriter.writeStartElement(Settings::SafeChecks::XmlExternalVariables);
+        xmlWriter.writeEndElement();
+    }
+    xmlWriter.writeEndElement();
 }

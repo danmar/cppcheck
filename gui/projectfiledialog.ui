@@ -417,9 +417,105 @@
      </widget>
      <widget class="QWidget" name="mTabHumanKnownledge">
       <attribute name="title">
-       <string>Human knowledge</string>
+       <string>Extended checks</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_19">
+       <item>
+        <widget class="QGroupBox" name="groupBox_10">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="title">
+          <string>&quot;Safe&quot; interface: Cppcheck does not only check how it is actually used, but analyze any possible usage.</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_16">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QScrollArea" name="scrollArea">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>200</height>
+             </size>
+            </property>
+            <property name="horizontalScrollBarPolicy">
+             <enum>Qt::ScrollBarAlwaysOff</enum>
+            </property>
+            <property name="widgetResizable">
+             <bool>true</bool>
+            </property>
+            <widget class="QWidget" name="scrollAreaWidgetContents">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>0</y>
+               <width>840</width>
+               <height>273</height>
+              </rect>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_17">
+              <item>
+               <widget class="QCheckBox" name="mCheckSafeClasses">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="text">
+                 <string>Classes - Public interface
+ - public function parameters can have any value
+ - public functions can be called in any order
+ - public variables can have any value</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="mCheckSafeExternalFunctions">
+                <property name="text">
+                 <string>External functions
+ - External functions can be called in any order
+ - Function parameters can have any value</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="mCheckSafeExternalVariables">
+                <property name="text">
+                 <string>External variables
+ - Variable can have any value</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="mCheckSafeInternalFunctions">
+                <property name="text">
+                 <string>Internal/private functions
+ - Function parameters can have any value</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
        <item>
         <widget class="QGroupBox" name="groupBox_13">
          <property name="title">
@@ -467,48 +563,6 @@
           </item>
          </layout>
         </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="groupBox_11">
-         <property name="title">
-          <string>Possible values of function parameters</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_18">
-          <item>
-           <widget class="QCheckBox" name="mAllFunctionsAreSafe">
-            <property name="text">
-             <string>Experimental: All function parameters can have arbitrary values</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="checkBox">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="text">
-          <string>All classes must have a &quot;safe&quot; public interface</string>
-         </property>
-         <property name="checked">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="verticalSpacer_11">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
        </item>
       </layout>
      </widget>

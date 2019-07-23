@@ -1068,6 +1068,20 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
             temp.checkUnusedTemplates = (strcmp(node->GetText(), "true") == 0);
         else if (strcmp(node->Name(), MaxCtuDepthElementName) == 0)
             temp.maxCtuDepth = std::atoi(node->GetText());
+        else if (strcmp(node->Name(), Settings::SafeChecks::XmlRootName) == 0) {
+            for (const tinyxml2::XMLElement *child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
+                if (strcmp(child->Name(), Settings::SafeChecks::XmlClasses) == 0)
+                    temp.safeChecks.classes = true;
+                else if (strcmp(child->Name(), Settings::SafeChecks::XmlExternalFunctions) == 0)
+                    temp.safeChecks.externalFunctions = true;
+                else if (strcmp(child->Name(), Settings::SafeChecks::XmlInternalFunctions) == 0)
+                    temp.safeChecks.internalFunctions = false; // This is not available in CLI
+                else if (strcmp(child->Name(), Settings::SafeChecks::XmlExternalVariables) == 0)
+                    temp.safeChecks.externalVariables = true;
+                else
+                    return false;
+            }
+        }
         else
             return false;
     }
