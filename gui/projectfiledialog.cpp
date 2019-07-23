@@ -139,7 +139,7 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
                 libs << library;
         }
     }
-    qSort(libs);
+    libs.sort();
     mUI.mLibraries->clear();
     for (const QString &lib : libs) {
         QListWidgetItem* item = new QListWidgetItem(lib, mUI.mLibraries);
@@ -170,7 +170,7 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
                 platformFiles << platformFile;
         }
     }
-    qSort(platformFiles);
+    platformFiles.sort();
     mUI.mComboBoxPlatform->addItems(platformFiles);
 
     mUI.mEditTags->setValidator(new QRegExpValidator(QRegExp("[a-zA-Z0-9 ;]*"),this));
