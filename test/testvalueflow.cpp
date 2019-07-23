@@ -3910,7 +3910,7 @@ private:
         const char *code;
         std::list<ValueFlow::Value> values;
         Settings s;
-        s.allFunctionsAreSafe = true;
+        s.safeChecks.classes = s.safeChecks.externalFunctions = s.safeChecks.internalFunctions = true;
 
         code = "short f(short x) {\n"
                "  return x + 0;\n"
