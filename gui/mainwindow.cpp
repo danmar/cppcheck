@@ -895,7 +895,10 @@ Settings MainWindow::getCppcheckSettings()
         result.maxCtuDepth = mProjectFile->getMaxCtuDepth();
         result.checkHeaders = mProjectFile->getCheckHeaders();
         result.checkUnusedTemplates = mProjectFile->getCheckUnusedTemplates();
-        result.allFunctionsAreSafe = mProjectFile->getCheckAllFunctionParameterValues();
+        result.safeChecks.classes = mProjectFile->getSafeChecks().classes;
+        result.safeChecks.externalFunctions = mProjectFile->getSafeChecks().externalFunctions;
+        result.safeChecks.internalFunctions = mProjectFile->getSafeChecks().internalFunctions;
+        result.safeChecks.externalVariables = mProjectFile->getSafeChecks().externalVariables;
         foreach (QString s, mProjectFile->getCheckUnknownFunctionReturn())
             result.checkUnknownFunctionReturn.insert(s.toStdString());
     }
