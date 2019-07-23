@@ -2404,6 +2404,7 @@ def get_args():
     parser.add_argument("-generate-table", help=argparse.SUPPRESS, action="store_true")
     parser.add_argument("dumpfile", nargs='*', help="Path of dump file from cppcheck")
     parser.add_argument("--show-suppressed-rules", help="Print rule suppression list", action="store_true")
+    parser.add_argument("-P", "--file-prefix", type=str, help="Prefix to strip when matching suppression file rules")
     parser.add_argument("--cli", help="Addon is executed from Cppcheck", action="store_true")
     return parser.parse_args()
 
