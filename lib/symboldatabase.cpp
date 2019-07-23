@@ -2081,7 +2081,20 @@ const Token * Function::constructorMemberInitialization() const
 
 bool Function::isSafe(const Settings *settings) const
 {
-    return settings->allFunctionsAreSafe;
+    switch (access) {
+    case AccessControl::Local:
+    case AccessControl::Private:
+    case AccessControl::Protected:
+        return settings->safeChecks.internalFunctions;
+    case AccessControl::Public:
+        return settings->safeChecks.classes;
+    case AccessControl::Namespace:
+    case AccessControl::Global:
+        return settings->safeChecks.externalFunctions;
+    case AccessControl::Throw:
+        return false;
+    };
+    return false;
 }
 
 Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart)
