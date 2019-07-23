@@ -46,7 +46,7 @@ class ValueType;
 /**
  * @brief Access control enumerations.
  */
-enum AccessControl { Public, Protected, Private, Global, Namespace, Argument, Local, Throw };
+enum class AccessControl { Public, Protected, Private, Global, Namespace, Argument, Local, Throw };
 
 /**
  * @brief Array dimension information.
@@ -72,7 +72,7 @@ public:
     class BaseInfo {
     public:
         BaseInfo() :
-            type(nullptr), nameTok(nullptr), access(Public), isVirtual(false) {
+            type(nullptr), nameTok(nullptr), access(AccessControl::Public), isVirtual(false) {
         }
 
         std::string name;
@@ -315,7 +315,7 @@ public:
      * @return true if public, false if not
      */
     bool isPublic() const {
-        return mAccess == Public;
+        return mAccess == AccessControl::Public;
     }
 
     /**
@@ -323,7 +323,7 @@ public:
      * @return true if protected, false if not
      */
     bool isProtected() const {
-        return mAccess == Protected;
+        return mAccess == AccessControl::Protected;
     }
 
     /**
@@ -331,7 +331,7 @@ public:
      * @return true if private, false if not
      */
     bool isPrivate() const {
-        return mAccess == Private;
+        return mAccess == AccessControl::Private;
     }
 
     /**
@@ -339,7 +339,7 @@ public:
      * @return true if global, false if not
      */
     bool isGlobal() const {
-        return mAccess == Global;
+        return mAccess == AccessControl::Global;
     }
 
     /**
@@ -347,7 +347,7 @@ public:
      * @return true if in a namespace, false if not
      */
     bool isNamespace() const {
-        return mAccess == Namespace;
+        return mAccess == AccessControl::Namespace;
     }
 
     /**
@@ -355,7 +355,7 @@ public:
      * @return true if a function argument, false if not
      */
     bool isArgument() const {
-        return mAccess == Argument;
+        return mAccess == AccessControl::Argument;
     }
 
     /**
@@ -363,7 +363,7 @@ public:
      * @return true if local, false if not
      */
     bool isLocal() const {
-        return (mAccess == Local) && !isExtern();
+        return (mAccess == AccessControl::Local) && !isExtern();
     }
 
     /**
@@ -411,7 +411,7 @@ public:
      * @return true if throw type, false if not
      */
     bool isThrow() const {
-        return mAccess == Throw;
+        return mAccess == AccessControl::Throw;
     }
 
     /**
