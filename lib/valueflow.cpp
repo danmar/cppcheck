@@ -3371,7 +3371,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
         }
         // container lifetimes
-        else if (tok->variable() && Token::Match(tok, "%var% . begin|cbegin|rbegin|crbegin|end|cend|rend|crend|data|c_str|find|insert (")) {
+        else if (tok->variable() && Token::Match(tok, "%var% . begin|cbegin|rbegin|crbegin|end|cend|rend|crend|data|c_str|find|insert (") && tok->next()->originalName() != "->") {
             if (Token::simpleMatch(tok->tokAt(2), "find") && !astIsIterator(tok->tokAt(3)))
                 continue;
             ErrorPath errorPath;
