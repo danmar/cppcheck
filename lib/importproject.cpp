@@ -1075,7 +1075,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
                 else if (strcmp(child->Name(), Settings::SafeChecks::XmlExternalFunctions) == 0)
                     temp.safeChecks.externalFunctions = true;
                 else if (strcmp(child->Name(), Settings::SafeChecks::XmlInternalFunctions) == 0)
-                    temp.safeChecks.internalFunctions = false; // This is not available in CLI
+                    temp.safeChecks.internalFunctions = true;
                 else if (strcmp(child->Name(), Settings::SafeChecks::XmlExternalVariables) == 0)
                     temp.safeChecks.externalVariables = true;
                 else
@@ -1099,6 +1099,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     settings->checkHeaders = temp.checkHeaders;
     settings->checkUnusedTemplates = temp.checkUnusedTemplates;
     settings->maxCtuDepth = temp.maxCtuDepth;
+    settings->safeChecks = temp.safeChecks;
     return true;
 }
 
