@@ -2083,8 +2083,7 @@ private:
               "    void* v = &i->foo;\n"
               "    return v;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1] -> [test.cpp:5] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:6]: (error) Using pointer to local variable 'bars' that may be invalid.\n"
-                      "[test.cpp:4] -> [test.cpp:1] -> [test.cpp:5] -> [test.cpp:4] -> [test.cpp:1] -> [test.cpp:6]: (error) Using pointer to local variable 'bars' that may be invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1] -> [test.cpp:5] -> [test.cpp:4] -> [test.cpp:1] -> [test.cpp:6]: (error) Using pointer to local variable 'bars' that may be invalid.\n", errout.str());
     }
 
     void insert2() {
@@ -3864,6 +3863,22 @@ private:
               "    std::string::const_iterator d = f.begin();\n"
               "    if (d != f.end()) {}\n"
               "  }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::vector<int> &v) {\n"
+              "    int *v0 = &v[0];\n"
+              "    v.push_back(123);\n"
+              "    std::cout << (*v0)[0] << std::endl;\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:4]: (error) Using pointer to local variable 'v' that may be invalid.\n", errout.str());
+
+        check("void f(std::vector<int> &v) {\n"
+              "    std::vector<int> *v0 = &v;\n"
+              "    v.push_back(123);\n"
+              "    std::cout << (*v0)[0] << std::endl;\n"
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());

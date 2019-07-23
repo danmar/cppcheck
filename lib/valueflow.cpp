@@ -2771,7 +2771,7 @@ static const Token *getLifetimeToken(const Token *tok, ValueFlow::Value::ErrorPa
                 return tok;
             if (var->isArgument()) {
                 errorPath.emplace_back(var->declEndToken(), "Passed to reference.");
-                return var->nameToken();
+                return tok;
             } else if (Token::simpleMatch(var->declEndToken(), "=")) {
                 errorPath.emplace_back(var->declEndToken(), "Assigned to reference.");
                 const Token *vartok = var->declEndToken()->astOperand2();
