@@ -163,6 +163,7 @@ private:
         TEST_CASE(template123); // #9183
         TEST_CASE(template124); // #9197
         TEST_CASE(template125);
+        TEST_CASE(template126); // #9217
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -2933,6 +2934,13 @@ private:
                          "int main() {\n"
                          "  GCD< 1, 0 >::val;\n"
                          "}"), InternalError);
+    }
+
+    void template126() { // #9217
+        const char code[] = "template <typename b> using d = a<b>;\n"
+                            "static_assert(i<d<l<b>>>{}, \"\");";
+        const char exp[] = "static_assert ( i < a < l < b > > > { } , \"\" ) ;";
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
