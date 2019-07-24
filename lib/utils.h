@@ -72,4 +72,18 @@ inline static int caseInsensitiveStringCompare(const std::string &lhs, const std
 #define nonneg
 #endif
 
+#if defined(__has_feature)
+#if __has_feature(address_sanitizer)
+#define ASAN 1
+#endif
+#endif
+
+#ifndef ASAN
+#ifdef  __SANITIZE_ADDRESS__
+#define ASAN 1
+#else
+#define ASAN 0
+#endif
+#endif
+
 #endif
