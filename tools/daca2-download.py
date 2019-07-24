@@ -84,6 +84,7 @@ def removeAll():
                     shutil.rmtree(filename, onerror=handleRemoveReadonly)
                 else:
                     os.remove(filename)
+        # pylint: disable=undefined-variable
         except WindowsError as err:
             time.sleep(30)
             if count == 0:

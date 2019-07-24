@@ -1,0 +1,8 @@
+# Just the severe stuff...
+[MESSAGES CONTROL]
+disable=C,R,W
+[REPORTS]
+reports=no
+[TYPECHECK]
+# See https://stackoverflow.com/questions/10300082/how-to-prevent-python-pylint-complaining-about-socket-class-sendall-method
+ignored-classes=SQLObject,_socketobject
