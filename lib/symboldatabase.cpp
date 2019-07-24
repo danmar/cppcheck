@@ -2081,6 +2081,16 @@ const Token * Function::constructorMemberInitialization() const
 
 bool Function::isSafe(const Settings *settings) const
 {
+    if (nestedIn->type == Scope::ScopeType::eGlobal) {
+        if (token->fileIndex() == 0 && isStatic())
+            return settings->safeChecks.internalFunctions;
+        return settings->safeChecks.externalFunctions;
+    }
+
+    if (nestedIn->type == Scope::ScopeType::eNamespace) {
+        return token->fileIndex() == 0;
+    }
+
     switch (access) {
     case AccessControl::Local:
     case AccessControl::Private:
