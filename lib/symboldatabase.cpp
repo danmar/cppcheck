@@ -1282,22 +1282,26 @@ void SymbolDatabase::createSymbolDatabaseEnums()
 
 void SymbolDatabase::createSymbolDatabaseIncompleteVars()
 {
-    static const std::set<std::string> keywords = {
+    const std::set<std::string> cpp20keywords = {
         "alignas",
         "alignof",
-        "asm",
         "audit",
+        "co_await",
+        "co_return",
+        "co_yield",
+        "concept",
+        "synchronized",
+        "consteval",
+        "reflexpr",
+    };
+    const std::set<std::string> cppkeywords = {
+        "asm",
         "auto",
         "axiom",
         "catch",
         "char",
         "class",
-        "co_await",
-        "co_return",
-        "co_yield",
-        "concept",
         "const",
-        "consteval",
         "constexpr",
         "decltype",
         "default",
@@ -1317,14 +1321,12 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
         "private",
         "protected",
         "public",
-        "reflexpr",
         "register",
         "requires",
         "sizeof",
         "static",
         "static_assert",
         "struct",
-        "synchronized",
         "template",
         "this",
         "thread_local",
@@ -1370,7 +1372,9 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
         // Skip goto labels
         if (Token::simpleMatch(tok->previous(), "goto"))
             continue;
-        if (keywords.count(tok->str()) > 0)
+        if (cppkeywords.count(tok->str()) > 0)
+            continue;        
+        if (mSettings->standards.cpp >= Standards::CPP20 && cpp20keywords.count(tok->str()) > 0)
             continue;        
         const_cast<Token *>(tok)->isIncompleteVar(true);
     }
