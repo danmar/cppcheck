@@ -5491,7 +5491,7 @@ static void valueFlowSafeFunctions(TokenList *tokenlist, SymbolDatabase *symbold
                     argValues.back().valueType = ValueFlow::Value::ValueType::FLOAT;
                     argValues.back().floatValue = isLow ? low : -1E25f;
                     argValues.back().errorPath.emplace_back(arg.nameToken(), "Assuming argument has value " + MathLib::toString(argValues.back().floatValue));
-                    argValues.emplace_back(1);
+                    argValues.emplace_back(0);
                     argValues.back().valueType = ValueFlow::Value::ValueType::FLOAT;
                     argValues.back().floatValue = isHigh ? high : 1E25f;
                     argValues.back().errorPath.emplace_back(arg.nameToken(), "Assuming argument has value " + MathLib::toString(argValues.back().floatValue));
