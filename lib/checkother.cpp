@@ -1271,6 +1271,32 @@ static bool isUnusedVariable(const Variable *var)
     return !Token::findmatch(start->next(), "%varid%", var->scope()->bodyEnd, var->declarationId());
 }
 
+static bool isVariableMutableInInitializer(const Token* start, const Token * end, nonneg int varid)
+{
+    if (!start)
+        return false;
+    if (!end)
+        return false;
+    for (const Token *tok = start; tok != end; tok = tok->next()) {
+        if (tok->varId() != varid)
+            continue;
+        if (tok->astParent()) {
+            const Token * memberTok = tok->astParent()->previous();
+            if (Token::Match(memberTok, "%var% (") && memberTok->variable()) {
+                const Variable * memberVar = memberTok->variable();
+                if (!memberVar->isReference())
+                    continue;
+                if (memberVar->isConst())
+                    continue;
+            }
+            return true;
+        } else {
+            return true;
+        }
+    }
+    return false;
+}
+
 void CheckOther::checkConstVariable()
 {
     if (!mSettings->isEnabled(Settings::STYLE) || mTokenizer->isC())
@@ -1298,8 +1324,7 @@ void CheckOther::checkConstVariable()
                 continue;
             if (isUnusedVariable(var))
                 continue;
-            const Token * memberTok = Token::findmatch(function->constructorMemberInitialization(), "%var% ( %varid% )", scope->bodyStart, var->declarationId());
-            if (memberTok && memberTok->variable() && memberTok->variable()->isReference())
+            if (function->isConstructor() && isVariableMutableInInitializer(function->constructorMemberInitialization(), scope->bodyStart, var->declarationId()))
                 continue;
         }
         if (var->isGlobal())

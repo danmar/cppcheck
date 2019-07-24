@@ -1892,6 +1892,15 @@ private:
               "};\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("struct A {\n"
+              "    A(int& x);\n"
+              "};\n"
+              "struct B : A {\n"
+              "    B(int& x) : A(x)\n"
+              "    {}\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void e();\n"
               "void g(void);\n"
               "void h(void);\n"
