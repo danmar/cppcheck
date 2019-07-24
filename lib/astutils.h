@@ -137,8 +137,6 @@ bool isVariableChanged(const Token *start, const Token *end, const nonneg int va
 
 bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp);
 
-bool isAliased(const Token *startTok, const Token *endTok, unsigned int varid);
-
 bool isAliased(const Variable *var);
 
 /** Determines the number of arguments - if token is a function call or macro
