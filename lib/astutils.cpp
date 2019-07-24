@@ -176,7 +176,7 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
     return ret;
 }
 
-bool isFunctionCall(const Token* tok)
+static bool isFunctionCall(const Token* tok)
 {
     if (Token::Match(tok, "%name% ("))
         return true;
@@ -238,7 +238,7 @@ bool precedes(const Token * tok1, const Token * tok2)
     return tok1->index() < tok2->index();
 }
 
-bool isAliased(const Token *startTok, const Token *endTok, nonneg int varid)
+static bool isAliased(const Token *startTok, const Token *endTok, nonneg int varid)
 {
     if (!precedes(startTok, endTok))
         return false;
