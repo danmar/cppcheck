@@ -1592,7 +1592,6 @@ private:
     void garbageCode203() { // #8972
         checkCode("{ > () {} }");
         checkCode("template <> a > ::b();");
-        ASSERT_THROW(checkCode("{ template <a> class b { } template <> template <c> c() b<a>::e() { } template b<d>; }"), InternalError);
     }
 
     void garbageCode204() {
