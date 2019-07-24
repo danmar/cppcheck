@@ -1293,10 +1293,15 @@ void CheckOther::checkConstVariable()
         if (!scope->function)
             continue;
         Function *function = scope->function;
-        if (var->isArgument() && (function->isImplicitlyVirtual() || function->templateDef))
-            continue;
-        if (var->isArgument() && isUnusedVariable(var))
-            continue;
+        if (var->isArgument()) {
+            if (function->isImplicitlyVirtual() || function->templateDef)
+                continue;
+            if (isUnusedVariable(var))
+                continue;
+            const Token * memberTok = Token::findmatch(function->constructorMemberInitialization(), "%var% ( %varid% )", scope->bodyStart, var->declarationId());
+            if (memberTok && memberTok->variable() && memberTok->variable()->isReference())
+                continue;
+        }
         if (var->isGlobal())
             continue;
         if (var->isStatic())
