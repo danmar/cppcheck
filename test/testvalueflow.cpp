@@ -3929,6 +3929,14 @@ private:
         ASSERT_EQUALS(0, values.front().intvalue);
         ASSERT_EQUALS(1000000, values.back().intvalue);
 
+        code = "int f(float x) {\n"
+               "  return x;\n"
+               "}";
+        values = tokenValues(code, "x ;", &s);
+        ASSERT_EQUALS(2, values.size());
+        ASSERT(values.front().floatValue < -1E20);
+        ASSERT(values.back().floatValue > 1E20);
+
         code = "short f(__cppcheck_in_range__(0,100) short x) {\n"
                "  return x + 0;\n"
                "}";

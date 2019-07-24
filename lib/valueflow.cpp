@@ -5452,10 +5452,10 @@ static void valueFlowSafeFunctions(TokenList *tokenlist, SymbolDatabase *symbold
         const bool all = safe && settings->platformType != cppcheck::Platform::PlatformType::Unspecified;
 
         for (const Variable &arg : function->argumentList) {
-            if (!arg.nameToken())
+            if (!arg.nameToken() || !arg.valueType())
                 continue;
 
-            if (arg.valueType() && arg.valueType()->type == ValueType::Type::CONTAINER) {
+            if (arg.valueType()->type == ValueType::Type::CONTAINER) {
                 if (!safe)
                     continue;
                 std::list<ValueFlow::Value> argValues;
@@ -5485,6 +5485,27 @@ static void valueFlowSafeFunctions(TokenList *tokenlist, SymbolDatabase *symbold
                     if (!isHigh)
                         high = maxValue;
                     isLow = isHigh = true;
+                } else if (arg.valueType()->type == ValueType::Type::FLOAT || arg.valueType()->type == ValueType::Type::DOUBLE || arg.valueType()->type == ValueType::Type::LONGDOUBLE) {
+                    std::list<ValueFlow::Value> argValues;
+                    argValues.emplace_back(0);
+                    argValues.back().valueType = ValueFlow::Value::ValueType::FLOAT;
+                    argValues.back().floatValue = isLow ? low : -1E25f;
+                    argValues.back().errorPath.emplace_back(arg.nameToken(), "Assuming argument has value " + MathLib::toString(argValues.back().floatValue));
+                    argValues.emplace_back(1);
+                    argValues.back().valueType = ValueFlow::Value::ValueType::FLOAT;
+                    argValues.back().floatValue = isHigh ? high : 1E25f;
+                    argValues.back().errorPath.emplace_back(arg.nameToken(), "Assuming argument has value " + MathLib::toString(argValues.back().floatValue));
+                    valueFlowForward(const_cast<Token *>(functionScope->bodyStart->next()),
+                                     functionScope->bodyEnd,
+                                     &arg,
+                                     arg.declarationId(),
+                                     argValues,
+                                     false,
+                                     false,
+                                     tokenlist,
+                                     errorLogger,
+                                     settings);
+                    continue;
                 }
             }
 
