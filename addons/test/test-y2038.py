@@ -58,14 +58,14 @@ def test_2_no_time_bits(capsys):
 
 
 def test_3_no_use_time_bits(capsys):
-    check_y2038_safe('./addons/test/y2038/y2038-test-2-no-time-bits.c.dump', quiet=True)
+    check_y2038_safe('./addons/test/y2038/y2038-test-3-no-use-time-bits.c.dump', quiet=True)
     captured = capsys.readouterr()
     captured = captured.out.splitlines()
     json_output = convert_json_output(captured)
 
     # Included bad _USE_TIME_BITS64 definition must trigger the errors.
     unsafe_calls = json_output['unsafe-call']
-    assert(len(unsafe_calls) == 1)
+    assert(len(unsafe_calls) == 2)
 
 
 def test_4_good(capsys):
