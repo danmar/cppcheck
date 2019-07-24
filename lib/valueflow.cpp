@@ -5455,7 +5455,7 @@ static void valueFlowSafeFunctions(TokenList *tokenlist, SymbolDatabase *symbold
             if (!arg.nameToken())
                 continue;
 
-            if (arg.nameToken()->valueType() && arg.nameToken()->valueType()->type == ValueType::Type::CONTAINER) {
+            if (arg.valueType() && arg.valueType()->type == ValueType::Type::CONTAINER) {
                 if (!safe)
                     continue;
                 std::list<ValueFlow::Value> argValues;
