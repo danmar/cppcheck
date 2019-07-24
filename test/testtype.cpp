@@ -318,6 +318,11 @@ private:
               "  char c = 1234.5;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
+
+        check("char f(void) {\n"
+              "  return 1234.5;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
     }
 };
 

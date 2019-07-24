@@ -2771,7 +2771,7 @@ static const Token *getLifetimeToken(const Token *tok, ValueFlow::Value::ErrorPa
                 return tok;
             if (var->isArgument()) {
                 errorPath.emplace_back(var->declEndToken(), "Passed to reference.");
-                return var->nameToken();
+                return tok;
             } else if (Token::simpleMatch(var->declEndToken(), "=")) {
                 errorPath.emplace_back(var->declEndToken(), "Assigned to reference.");
                 const Token *vartok = var->declEndToken()->astOperand2();
@@ -3371,7 +3371,9 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
         }
         // container lifetimes
-        else if (tok->variable() && Token::Match(tok, "%var% . begin|cbegin|rbegin|crbegin|end|cend|rend|crend|data|c_str|find|insert (")) {
+        else if (tok->variable() &&
+                 Token::Match(tok, "%var% . begin|cbegin|rbegin|crbegin|end|cend|rend|crend|data|c_str|find|insert (") &&
+                 tok->next()->originalName() != "->") {
             if (Token::simpleMatch(tok->tokAt(2), "find") && !astIsIterator(tok->tokAt(3)))
                 continue;
             ErrorPath errorPath;
@@ -5088,7 +5090,7 @@ static void valueFlowSmartPointer(TokenList *tokenlist, ErrorLogger * errorLogge
                 values.push_back(v);
                 valueFlowForwardAssign(tok, var, values, false, true, tokenlist, errorLogger, settings);
             }
-        } else if (Token::Match(tok, "%var% . reset (")) {
+        } else if (Token::Match(tok, "%var% . reset (") && tok->next()->originalName() != "->") {
             if (Token::simpleMatch(tok->tokAt(3), "( )")) {
                 std::list<ValueFlow::Value> values;
                 ValueFlow::Value v(0);
@@ -5104,7 +5106,7 @@ static void valueFlowSmartPointer(TokenList *tokenlist, ErrorLogger * errorLogge
                 const bool constValue = inTok->isNumber();
                 valueFlowForwardAssign(inTok, var, values, constValue, false, tokenlist, errorLogger, settings);
             }
-        } else if (Token::Match(tok, "%var% . release ( )")) {
+        } else if (Token::Match(tok, "%var% . release ( )") && tok->next()->originalName() != "->") {
             std::list<ValueFlow::Value> values;
             ValueFlow::Value v(0);
             v.setKnown();
@@ -5446,11 +5448,27 @@ static void valueFlowSafeFunctions(TokenList *tokenlist, SymbolDatabase *symbold
         if (!function)
             continue;
 
-        const bool all = function->isSafe(settings) && settings->platformType != cppcheck::Platform::PlatformType::Unspecified;
+        const bool safe = function->isSafe(settings);
+        const bool all = safe && settings->platformType != cppcheck::Platform::PlatformType::Unspecified;
 
         for (const Variable &arg : function->argumentList) {
-            if (!arg.nameToken())
+            if (!arg.nameToken() || !arg.valueType())
                 continue;
+
+            if (arg.valueType()->type == ValueType::Type::CONTAINER) {
+                if (!safe)
+                    continue;
+                std::list<ValueFlow::Value> argValues;
+                argValues.emplace_back(0);
+                argValues.back().valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
+                argValues.back().errorPath.emplace_back(arg.nameToken(), "Assuming " + arg.name() + " is empty");
+                argValues.emplace_back(1000000);
+                argValues.back().valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
+                argValues.back().errorPath.emplace_back(arg.nameToken(), "Assuming " + arg.name() + " size is 1000000");
+                for (const ValueFlow::Value &value : argValues)
+                    valueFlowContainerForward(const_cast<Token*>(functionScope->bodyStart), arg.declarationId(), value, settings, tokenlist->isCPP());
+                continue;
+            }
 
             MathLib::bigint low, high;
             bool isLow = arg.nameToken()->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW, &low);
@@ -5467,6 +5485,27 @@ static void valueFlowSafeFunctions(TokenList *tokenlist, SymbolDatabase *symbold
                     if (!isHigh)
                         high = maxValue;
                     isLow = isHigh = true;
+                } else if (arg.valueType()->type == ValueType::Type::FLOAT || arg.valueType()->type == ValueType::Type::DOUBLE || arg.valueType()->type == ValueType::Type::LONGDOUBLE) {
+                    std::list<ValueFlow::Value> argValues;
+                    argValues.emplace_back(0);
+                    argValues.back().valueType = ValueFlow::Value::ValueType::FLOAT;
+                    argValues.back().floatValue = isLow ? low : -1E25f;
+                    argValues.back().errorPath.emplace_back(arg.nameToken(), "Assuming argument has value " + MathLib::toString(argValues.back().floatValue));
+                    argValues.emplace_back(0);
+                    argValues.back().valueType = ValueFlow::Value::ValueType::FLOAT;
+                    argValues.back().floatValue = isHigh ? high : 1E25f;
+                    argValues.back().errorPath.emplace_back(arg.nameToken(), "Assuming argument has value " + MathLib::toString(argValues.back().floatValue));
+                    valueFlowForward(const_cast<Token *>(functionScope->bodyStart->next()),
+                                     functionScope->bodyEnd,
+                                     &arg,
+                                     arg.declarationId(),
+                                     argValues,
+                                     false,
+                                     false,
+                                     tokenlist,
+                                     errorLogger,
+                                     settings);
+                    continue;
                 }
             }
 

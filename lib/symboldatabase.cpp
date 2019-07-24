@@ -214,10 +214,10 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
                 // definition may be different than declaration
                 if (mTokenizer->isCPP() && tok->str() == "class") {
-                    access[new_scope] = Private;
+                    access[new_scope] = AccessControl::Private;
                     new_scope->type = Scope::eClass;
                 } else if (tok->str() == "struct") {
-                    access[new_scope] = Public;
+                    access[new_scope] = AccessControl::Public;
                     new_scope->type = Scope::eStruct;
                 }
 
@@ -235,9 +235,9 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 new_scope = &scopeList.back();
 
                 if (tok->str() == "class")
-                    access[new_scope] = Private;
+                    access[new_scope] = AccessControl::Private;
                 else if (tok->str() == "struct" || tok->str() == "union")
-                    access[new_scope] = Public;
+                    access[new_scope] = AccessControl::Public;
 
                 // fill typeList...
                 if (new_scope->isClassOrStructOrUnion() || new_scope->type == Scope::eEnum) {
@@ -297,7 +297,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             scopeList.emplace_back(this, tok, scope);
 
             Scope *new_scope = &scopeList.back();
-            access[new_scope] = Public;
+            access[new_scope] = AccessControl::Public;
 
             const Token *tok2 = tok->linkAt(3)->next();
 
@@ -370,7 +370,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             scopeList.emplace_back(this, tok, scope);
 
             Scope *new_scope = &scopeList.back();
-            access[new_scope] = Public;
+            access[new_scope] = AccessControl::Public;
 
             const Token* varNameTok = tok->next()->link()->next();
             if (varNameTok->str() == "*") {
@@ -413,7 +413,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             scopeList.emplace_back(this, tok, scope);
 
             Scope *new_scope = &scopeList.back();
-            access[new_scope] = Public;
+            access[new_scope] = AccessControl::Public;
 
             const Token *tok2 = tok->next();
 
@@ -463,18 +463,18 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
             // What section are we in..
             if (tok->str() == "private:")
-                access[scope] = Private;
+                access[scope] = AccessControl::Private;
             else if (tok->str() == "protected:")
-                access[scope] = Protected;
+                access[scope] = AccessControl::Protected;
             else if (tok->str() == "public:" || tok->str() == "__published:")
-                access[scope] = Public;
+                access[scope] = AccessControl::Public;
             else if (Token::Match(tok, "public|protected|private %name% :")) {
                 if (tok->str() == "private")
-                    access[scope] = Private;
+                    access[scope] = AccessControl::Private;
                 else if (tok->str() == "protected")
-                    access[scope] = Protected;
+                    access[scope] = AccessControl::Protected;
                 else
-                    access[scope] = Public;
+                    access[scope] = AccessControl::Public;
 
                 tok = tok->tokAt(2);
             }
@@ -658,9 +658,9 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 scope->nestedList.push_back(&scopeList.back());
                 scope = &scopeList.back();
                 if (scope->type == Scope::eFor)
-                    scope->checkVariable(tok->tokAt(2), Local, mSettings); // check for variable declaration and add it to new scope if found
+                    scope->checkVariable(tok->tokAt(2), AccessControl::Local, mSettings); // check for variable declaration and add it to new scope if found
                 else if (scope->type == Scope::eCatch)
-                    scope->checkVariable(tok->tokAt(2), Throw, mSettings); // check for variable declaration and add it to new scope if found
+                    scope->checkVariable(tok->tokAt(2), AccessControl::Throw, mSettings); // check for variable declaration and add it to new scope if found
                 tok = scopeStartTok;
             } else if (Token::Match(tok, "%var% {")) {
                 tok = tok->linkAt(1);
@@ -1667,7 +1667,7 @@ void Variable::evaluate(const Settings* settings)
         setFlag(fIsStlString, isStlType() && (Token::Match(mTypeStartToken->tokAt(2), "string|wstring|u16string|u32string !!::") || (Token::simpleMatch(mTypeStartToken->tokAt(2), "basic_string <") && !Token::simpleMatch(mTypeStartToken->linkAt(3), "> ::"))));
         setFlag(fIsSmartPointer, lib->isSmartPointer(mTypeStartToken));
     }
-    if (mAccess == Argument) {
+    if (mAccess == AccessControl::Argument) {
         tok = mNameToken;
         if (!tok) {
             // Argument without name
@@ -1731,7 +1731,11 @@ const Type *Variable::smartPointerType() const
     return nullptr;
 }
 
-Function::Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *scope, const Token *tokDef, const Token *tokArgDef)
+Function::Function(const Tokenizer *mTokenizer,
+                   const Token *tok,
+                   const Scope *scope,
+                   const Token *tokDef,
+                   const Token *tokArgDef)
     : tokenDef(tokDef),
       argDef(tokArgDef),
       token(nullptr),
@@ -1742,9 +1746,10 @@ Function::Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *s
       nestedIn(scope),
       initArgCount(0),
       type(eFunction),
-      access(Public),
+      access(AccessControl::Public),
       noexceptArg(nullptr),
       throwArg(nullptr),
+      templateDef(nullptr),
       mFlags(0)
 {
     // operator function
@@ -1801,8 +1806,10 @@ Function::Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *s
         }
 
         // Function template
-        else if (tok1->link() && tok1->str() == ">" && Token::simpleMatch(tok1->link()->previous(), "template <"))
+        else if (tok1->link() && tok1->str() == ">" && Token::simpleMatch(tok1->link()->previous(), "template <")) {
+            templateDef = tok1->link()->previous();
             break;
+        }
     }
 
     // find the return type
@@ -2081,6 +2088,16 @@ const Token * Function::constructorMemberInitialization() const
 
 bool Function::isSafe(const Settings *settings) const
 {
+    if (nestedIn->type == Scope::ScopeType::eGlobal) {
+        if (token->fileIndex() == 0 && isStatic())
+            return settings->safeChecks.internalFunctions;
+        return settings->safeChecks.externalFunctions;
+    }
+
+    if (nestedIn->type == Scope::ScopeType::eNamespace) {
+        return token->fileIndex() == 0;
+    }
+
     switch (access) {
     case AccessControl::Local:
     case AccessControl::Private:
@@ -2092,6 +2109,7 @@ bool Function::isSafe(const Settings *settings) const
     case AccessControl::Global:
         return settings->safeChecks.externalFunctions;
     case AccessControl::Throw:
+    case AccessControl::Argument:
         return false;
     };
     return false;
@@ -2357,19 +2375,19 @@ const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
             }
 
             if (tok2->str() == "public") {
-                base.access = Public;
+                base.access = AccessControl::Public;
                 tok2 = tok2->next();
             } else if (tok2->str() == "protected") {
-                base.access = Protected;
+                base.access = AccessControl::Protected;
                 tok2 = tok2->next();
             } else if (tok2->str() == "private") {
-                base.access = Private;
+                base.access = AccessControl::Private;
                 tok2 = tok2->next();
             } else {
                 if (tok->str() == "class")
-                    base.access = Private;
+                    base.access = AccessControl::Private;
                 else if (tok->str() == "struct")
-                    base.access = Public;
+                    base.access = AccessControl::Public;
             }
             if (!tok2)
                 return nullptr;
@@ -2588,21 +2606,21 @@ static std::ostream & operator << (std::ostream & s, Scope::ScopeType type)
 static std::string accessControlToString(const AccessControl& access)
 {
     switch (access) {
-    case Public:
+    case AccessControl::Public:
         return "Public";
-    case Protected:
+    case AccessControl::Protected:
         return "Protected";
-    case Private:
+    case AccessControl::Private:
         return "Private";
-    case Global:
+    case AccessControl::Global:
         return "Global";
-    case Namespace:
+    case AccessControl::Namespace:
         return "Namespace";
-    case Argument:
+    case AccessControl::Argument:
         return "Argument";
-    case Local:
+    case AccessControl::Local:
         return "Local";
-    case Throw:
+    case AccessControl::Throw:
         return "Throw";
     }
     return "Unknown";
@@ -2918,9 +2936,9 @@ void SymbolDatabase::printOut(const char *title) const
             if (type->derivedFrom[i].isVirtual)
                 std::cout << "Virtual ";
 
-            std::cout << (type->derivedFrom[i].access == Public    ? " Public" :
-                          type->derivedFrom[i].access == Protected ? " Protected" :
-                          type->derivedFrom[i].access == Private   ? " Private" :
+            std::cout << (type->derivedFrom[i].access == AccessControl::Public    ? " Public" :
+                          type->derivedFrom[i].access == AccessControl::Protected ? " Protected" :
+                          type->derivedFrom[i].access == AccessControl::Private   ? " Private" :
                           " Unknown");
 
             if (type->derivedFrom[i].type)
@@ -3177,7 +3195,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
         while (Token::Match(startTok, "enum|struct|const|volatile"))
             startTok = startTok->next();
 
-        argumentList.emplace_back(nameTok, startTok, endTok, count++, Argument, argType, functionScope, symbolDatabase->mSettings);
+        argumentList.emplace_back(nameTok, startTok, endTok, count++, AccessControl::Argument, argType, functionScope, symbolDatabase->mSettings);
 
         if (tok->str() == ")") {
             // check for a variadic function
@@ -3377,17 +3395,17 @@ AccessControl Scope::defaultAccess() const
 {
     switch (type) {
     case eGlobal:
-        return Global;
+        return AccessControl::Global;
     case eClass:
-        return Private;
+        return AccessControl::Private;
     case eStruct:
-        return Public;
+        return AccessControl::Public;
     case eUnion:
-        return Public;
+        return AccessControl::Public;
     case eNamespace:
-        return Namespace;
+        return AccessControl::Namespace;
     default:
-        return Local;
+        return AccessControl::Local;
     }
 }
 
@@ -3457,13 +3475,13 @@ void Scope::getVariableList(const Settings* settings)
 
         // "private:" "public:" "protected:" etc
         else if (tok->str() == "public:") {
-            varaccess = Public;
+            varaccess = AccessControl::Public;
             continue;
         } else if (tok->str() == "protected:") {
-            varaccess = Protected;
+            varaccess = AccessControl::Protected;
             continue;
         } else if (tok->str() == "private:") {
-            varaccess = Private;
+            varaccess = AccessControl::Private;
             continue;
         }
 
