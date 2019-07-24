@@ -38,7 +38,7 @@ def test_1_bad_time_bits(capsys):
     # There are 2 unsafe calls in test source and 3 in y2038-in.h
     unsafe_calls = json_output['unsafe-call']
     assert(len([c for c in unsafe_calls if c['file'].endswith('h')]) == 3)
-    assert(len([c for c in unsafe_calls if c['file'].endswith('c')]) == 2)
+    assert(len([c for c in unsafe_calls if c['file'].endswith('c')]) == 0)
 
 
 def test_2_no_time_bits(capsys):
