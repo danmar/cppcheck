@@ -226,13 +226,17 @@ def check_y2038_safe(dumpfile, quiet=False):
     return y2038safe
 
 
-if __name__ == '__main__':
+def get_args():
     parser = cppcheckdata.ArgumentParser()
     parser.add_argument("dumpfile", nargs='*', help="Path of dump file from cppcheck")
     parser.add_argument('-q', '--quiet', action='store_true',
                         help='do not print "Checking ..." lines')
     parser.add_argument('--cli', help='Addon is executed from Cppcheck', action='store_true')
-    args = parser.parse_args()
+    return parser.parse_args()
+
+
+if __name__ == '__main__':
+    args = get_args()
 
     exit_code = 0
     quiet = not any((args.quiet, args.cli))

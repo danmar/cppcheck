@@ -78,3 +78,27 @@ def test_4_good(capsys):
     # There are no warnings from C sources.
     unsafe_calls = json_output['unsafe-call']
     assert(len([c for c in unsafe_calls if c['file'].endswith('.c')]) == 0)
+
+
+def test_arguments_regression():
+    args_ok = ["-t=foo", "--template=foo",
+               "-q", "--quiet",
+               "--cli"]
+    # Arguments with expected SystemExit
+    args_exit = ["--non-exists", "--non-exists-param=42", "-h", "--help"]
+
+    from addons.y2038 import get_args
+
+    for arg in args_exit:
+        sys.argv.append(arg)
+        with pytest.raises(SystemExit):
+            get_args()
+        sys.argv.remove(arg)
+
+    for arg in args_ok:
+        sys.argv.append(arg)
+        try:
+            get_args()
+        except SystemExit:
+            pytest.fail("Unexpected SystemExit with '%s'" % arg)
+        sys.argv.remove(arg)
