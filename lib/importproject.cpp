@@ -1081,8 +1081,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
                 else
                     return false;
             }
-        }
-        else
+        } else
             return false;
     }
     settings->basePaths = temp.basePaths;
