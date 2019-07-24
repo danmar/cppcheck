@@ -11,6 +11,26 @@ struct PackedStruct {
     short b;
 };
 
+void api01()
+{
+    const size_t String_Size = 20;
+    struct bad_node_s
+    {
+        char name[String_Size];
+        struct bad_node_s* next;      // cert-API01-C
+    }
+    struct good_node_s
+    {
+        struct good_node_s* next;      
+        char name[String_Size];
+    }
+    struct also_good_node_s
+    {
+        struct also_good_node_s* next;      
+        char *name;
+    }
+}
+
 void dostuff(int *data);
 
 void exp05()

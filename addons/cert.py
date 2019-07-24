@@ -335,6 +335,25 @@ def str11(data):
         if valueToken.isNumber and int(valueToken.str)==strlen:
             reportError(valueToken, 'style', 'Do not specify the bound of a character array initialized with a string literal', 'STR11-C')
 
+# API01-C
+# Avoid laying out strings in memory directly before sensitive data
+def api01(data):
+    for scope in data.scopes:
+        if scope.type!='Struct':
+            continue
+        token = scope.bodyStart
+        arrayFound=False
+        # loop through the complete struct
+        while token != scope.bodyEnd:
+            if token.isName and token.variable:
+                if token.variable.isArray:
+                    arrayFound=True
+                elif arrayFound and not token.variable.isArray and not token.variable.isConst:
+                    reportError(token, 'style', 'Avoid laying out strings in memory directly before sensitive data', 'API01-C')
+                    # reset flags to report other positions in the same struct
+                    arrayFound=False
+            token = token.next
+
 for arg in sys.argv[1:]:
     if arg == '-verify':
         VERIFY = True
@@ -367,6 +386,7 @@ for arg in sys.argv[1:]:
         str11(cfg)
         msc24(cfg)
         msc30(cfg)
+        api01(cfg)
 
     if VERIFY:
         for expected in VERIFY_EXPECTED:
