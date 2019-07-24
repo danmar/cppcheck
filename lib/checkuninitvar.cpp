@@ -150,7 +150,13 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
         if (var.isArray()) {
             Alloc alloc = ARRAY;
             const std::map<int, VariableValue> variableValue;
-            checkScopeForVariable(tok, var, nullptr, nullptr, &alloc, emptyString, variableValue);
+            bool init = false;
+            for (const Token *parent = var.nameToken(); parent; parent = parent->astParent()) {
+                if (parent->str() == "=")
+                    init = true;
+            }
+            if (!init)
+                checkScopeForVariable(tok, var, nullptr, nullptr, &alloc, emptyString, variableValue);
             continue;
         }
         if (stdtype || var.isPointer()) {
