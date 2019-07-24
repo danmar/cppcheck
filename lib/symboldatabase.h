@@ -855,6 +855,7 @@ public:
     AccessControl access;             ///< public/protected/private
     const Token *noexceptArg;         ///< noexcept token
     const Token *throwArg;            ///< throw token
+    const Token *templateDef;         ///< points to 'template <' before function
 
     static bool argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, nonneg int path_length);
 

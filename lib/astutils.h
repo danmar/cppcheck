@@ -137,6 +137,10 @@ bool isVariableChanged(const Token *start, const Token *end, const nonneg int va
 
 bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp);
 
+bool isAliased(const Token *startTok, const Token *endTok, unsigned int varid);
+
+bool isAliased(const Variable *var);
+
 /** Determines the number of arguments - if token is a function call or macro
  * @param start token which is supposed to be the function/macro name.
  * \return Number of arguments
@@ -156,6 +160,8 @@ const Token *findLambdaStartToken(const Token *last);
  * \return nullptr or the }
  */
 const Token *findLambdaEndToken(const Token *first);
+
+bool isLikelyStream(bool cpp, const Token *stream);
 
 /**
  * do we see a likely write of rhs through overloaded operator
