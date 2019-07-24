@@ -119,6 +119,9 @@ private:
         TEST_CASE(valueFlowContainerSize);
 
         TEST_CASE(valueFlowDynamicBufferSize);
+
+        TEST_CASE(valueFlowAllFunctionParameterValues);
+        TEST_CASE(valueFlowUnknownFunctionReturn);
     }
 
     static bool isNotTokValue(const ValueFlow::Value &val) {
@@ -295,8 +298,8 @@ private:
         settings.debugwarnings = false;
     }
 
-    std::list<ValueFlow::Value> tokenValues(const char code[], const char tokstr[]) {
-        Tokenizer tokenizer(&settings, this);
+    std::list<ValueFlow::Value> tokenValues(const char code[], const char tokstr[], const Settings *s = nullptr) {
+        Tokenizer tokenizer(s ? s : &settings, this);
         std::istringstream istr(code);
         errout.str("");
         tokenizer.tokenize(istr, "test.cpp");
@@ -458,28 +461,28 @@ private:
                "   g(std::move(x));\n"
                "   y=x;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 4U, ValueFlow::Value::MovedVariable));
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, ValueFlow::Value::MoveKind::MovedVariable));
 
         code = "void f() {\n"
                "   X x;\n"
                "   g(std::forward<X>(x));\n"
                "   y=x;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 4U, ValueFlow::Value::ForwardedVariable));
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, ValueFlow::Value::MoveKind::ForwardedVariable));
 
         code = "void f() {\n"
                "   X x;\n"
                "   g(std::move(x).getA());\n"   // Only parts of x might be moved out
                "   y=x;\n"
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 4U, ValueFlow::Value::MovedVariable));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, ValueFlow::Value::MoveKind::MovedVariable));
 
         code = "void f() {\n"
                "   X x;\n"
                "   g(std::forward<X>(x).getA());\n" // Only parts of x might be moved out
                "   y=x;\n"
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 4U, ValueFlow::Value::ForwardedVariable));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, ValueFlow::Value::MoveKind::ForwardedVariable));
 
         code = "void f() {\n"
                "   X x;\n"
@@ -487,7 +490,7 @@ private:
                "   x.clear();\n"
                "   y=x;\n"
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 5U, ValueFlow::Value::MovedVariable));
+        ASSERT_EQUALS(false, testValueOfX(code, 5U, ValueFlow::Value::MoveKind::MovedVariable));
 
         code = "void f() {\n"
                "   X x;\n"
@@ -495,28 +498,28 @@ private:
                "   y=x->y;\n"
                "   z=x->z;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 5U, ValueFlow::Value::MovedVariable));
+        ASSERT_EQUALS(true, testValueOfX(code, 5U, ValueFlow::Value::MoveKind::MovedVariable));
 
         code = "void f(int i) {\n"
                "    X x;\n"
                "    z = g(std::move(x));\n"
                "    y = x;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 4U, ValueFlow::Value::MovedVariable));
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, ValueFlow::Value::MoveKind::MovedVariable));
 
         code = "void f(int i) {\n"
                "    X x;\n"
                "    y = g(std::move(x), \n"
                "          x.size());\n"
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 4U, ValueFlow::Value::MovedVariable));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, ValueFlow::Value::MoveKind::MovedVariable));
 
         code = "void f(int i) {\n"
                "    X x;\n"
                "    x = g(std::move(x));\n"
                "    y = x;\n"
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 4U, ValueFlow::Value::MovedVariable));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, ValueFlow::Value::MoveKind::MovedVariable));
 
         code = "A f(int i) {\n"
                "    X x;\n"
@@ -524,7 +527,7 @@ private:
                "        return g(std::move(x));\n"
                "    return h(std::move(x));\n"
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 5U, ValueFlow::Value::MovedVariable));
+        ASSERT_EQUALS(false, testValueOfX(code, 5U, ValueFlow::Value::MoveKind::MovedVariable));
 
         code = "struct X {\n"
                "};\n"
@@ -538,7 +541,7 @@ private:
                "   g(std::move(x)).foo([=](int value) mutable {;});\n"
                "   X y=x;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 11U, ValueFlow::Value::MovedVariable));
+        ASSERT_EQUALS(true, testValueOfX(code, 11U, ValueFlow::Value::MoveKind::MovedVariable));
     }
 
     void valueFlowCalculations() {
@@ -2901,7 +2904,7 @@ private:
                "    g(x);\n"
                "    return 0;\n"
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 4U, ValueFlow::Value::MovedVariable));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, ValueFlow::Value::MoveKind::MovedVariable));
 
         code = "class A\n"
                "{\n"
@@ -3887,6 +3890,66 @@ private:
                "  return x;\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 5,  ValueFlow::Value::BUFFER_SIZE));
+
+        code = "void* f() {\n"
+               "  void* y = malloc(10);\n"
+               "  void* x = realloc(y, 20);\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 20,  ValueFlow::Value::BUFFER_SIZE));
+
+        code = "void* f() {\n"
+               "  void* y = calloc(10, 4);\n"
+               "  void* x = reallocarray(y, 20, 5);\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 100,  ValueFlow::Value::BUFFER_SIZE));
+    }
+
+    void valueFlowAllFunctionParameterValues() {
+        const char *code;
+        std::list<ValueFlow::Value> values;
+        Settings s;
+        s.safeChecks.classes = s.safeChecks.externalFunctions = s.safeChecks.internalFunctions = true;
+
+        code = "short f(short x) {\n"
+               "  return x + 0;\n"
+               "}";
+        values = tokenValues(code, "+", &s);
+        ASSERT_EQUALS(2, values.size());
+        ASSERT_EQUALS(-0x8000, values.front().intvalue);
+        ASSERT_EQUALS(0x7fff, values.back().intvalue);
+
+        code = "short f(__cppcheck_in_range__(0,100) short x) {\n"
+               "  return x + 0;\n"
+               "}";
+        values = tokenValues(code, "+", &s);
+        ASSERT_EQUALS(2, values.size());
+        ASSERT_EQUALS(0, values.front().intvalue);
+        ASSERT_EQUALS(100, values.back().intvalue);
+
+        code = "unsigned short f(unsigned short x) [[expects: x <= 100]] {\n"
+               "  return x + 0;\n"
+               "}";
+        values = tokenValues(code, "+", &s);
+        ASSERT_EQUALS(2, values.size());
+        ASSERT_EQUALS(0, values.front().intvalue);
+        ASSERT_EQUALS(100, values.back().intvalue);
+    }
+
+
+    void valueFlowUnknownFunctionReturn() {
+        const char *code;
+        std::list<ValueFlow::Value> values;
+        Settings s;
+        LOAD_LIB_2(s.library, "std.cfg");
+        s.checkUnknownFunctionReturn.insert("rand");
+
+        code = "x = rand();";
+        values = tokenValues(code, "(", &s);
+        ASSERT_EQUALS(2, values.size());
+        ASSERT_EQUALS(INT_MIN, values.front().intvalue);
+        ASSERT_EQUALS(INT_MAX, values.back().intvalue);
     }
 };
 

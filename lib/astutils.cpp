@@ -238,7 +238,7 @@ bool precedes(const Token * tok1, const Token * tok2)
     return tok1->index() < tok2->index();
 }
 
-bool isAliased(const Token *startTok, const Token *endTok, unsigned int varid)
+bool isAliased(const Token *startTok, const Token *endTok, nonneg int varid)
 {
     if (!precedes(startTok, endTok))
         return false;
@@ -273,7 +273,7 @@ bool isAliased(const Variable *var)
     return isAliased(start, var->scope()->bodyEnd, var->declarationId());
 }
 
-static bool exprDependsOnThis(const Token *expr, unsigned int depth)
+static bool exprDependsOnThis(const Token *expr, nonneg int depth)
 {
     if (!expr)
         return false;
@@ -596,14 +596,14 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
                 return isDifferentKnownValues(cond1->astOperand1(), cond2->astOperand1());
         }
         // TODO: Handle reverse conditions
-        if (Library::isContainerYield(cond1, Library::Container::EMPTY, "empty") &&
-            Library::isContainerYield(cond2->astOperand1(), Library::Container::SIZE, "size") &&
+        if (Library::isContainerYield(cond1, Library::Container::Yield::EMPTY, "empty") &&
+            Library::isContainerYield(cond2->astOperand1(), Library::Container::Yield::SIZE, "size") &&
             cond1->astOperand1()->astOperand1()->varId() == cond2->astOperand1()->astOperand1()->astOperand1()->varId()) {
             return !isZeroBoundCond(cond2);
         }
 
-        if (Library::isContainerYield(cond2, Library::Container::EMPTY, "empty") &&
-            Library::isContainerYield(cond1->astOperand1(), Library::Container::SIZE, "size") &&
+        if (Library::isContainerYield(cond2, Library::Container::Yield::EMPTY, "empty") &&
+            Library::isContainerYield(cond1->astOperand1(), Library::Container::Yield::SIZE, "size") &&
             cond2->astOperand1()->astOperand1()->varId() == cond1->astOperand1()->astOperand1()->astOperand1()->varId()) {
             return !isZeroBoundCond(cond1);
         }
@@ -829,7 +829,7 @@ bool isReturnScope(const Token * const endToken)
     return false;
 }
 
-bool isVariableChangedByFunctionCall(const Token *tok, unsigned int varid, const Settings *settings, bool *inconclusive)
+bool isVariableChangedByFunctionCall(const Token *tok, nonneg int varid, const Settings *settings, bool *inconclusive)
 {
     if (!tok)
         return false;
@@ -884,7 +884,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
     }
 
     // goto start of function call and get argnr
-    unsigned int argnr = 0;
+    int argnr = 0;
     while (tok && !Token::simpleMatch(tok, ";") && !isScopeBracket(tok)) {
         if (tok->str() == ",")
             ++argnr;
@@ -908,7 +908,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
     // Constructor call
     if (tok->variable() && tok->variable()->nameToken() == tok) {
         // Find constructor..
-        const unsigned int argCount = numberOfArguments(tok);
+        const int argCount = numberOfArguments(tok);
         const Scope *typeScope = tok->variable()->typeScope();
         if (typeScope) {
             for (const Function &function : typeScope->functionList) {
@@ -968,7 +968,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
     return arg && !arg->isConst() && arg->isReference();
 }
 
-bool isVariableChanged(const Token *start, const Token *end, const unsigned int varid, bool globalvar, const Settings *settings, bool cpp)
+bool isVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp)
 {
     if (!precedes(start, end))
         return false;
@@ -1086,7 +1086,7 @@ int numberOfArguments(const Token *start)
     return arguments;
 }
 
-static void getArgumentsRecursive(const Token *tok, std::vector<const Token *> *arguments, unsigned int depth)
+static void getArgumentsRecursive(const Token *tok, std::vector<const Token *> *arguments, nonneg int depth)
 {
     ++depth;
     if (!tok || depth >= 100)
@@ -1222,17 +1222,14 @@ static const Variable *getLHSVariableRecursive(const Token *tok)
     if (!tok)
         return nullptr;
     if (Token::Match(tok, "*|&|&&|[")) {
-        const Variable *var1 = getLHSVariableRecursive(tok->astOperand1());
-        if (var1 || Token::simpleMatch(tok, "["))
-            return var1;
-        const Variable *var2 = getLHSVariableRecursive(tok->astOperand2());
-        return var2;
+        const Variable *var = getLHSVariableRecursive(tok->astOperand1());
+        if (var || Token::simpleMatch(tok, "["))
+            return var;
+        return getLHSVariableRecursive(tok->astOperand2());
     }
-    if (!tok->variable())
-        return nullptr;
-    if (tok->variable()->nameToken() == tok)
-        return tok->variable();
-    return nullptr;
+    if (Token::Match(tok->previous(), "this . %var%"))
+        return tok->next()->variable();
+    return tok->variable();
 }
 
 const Variable *getLHSVariable(const Token *tok)
@@ -1261,7 +1258,166 @@ static bool hasFunctionCall(const Token *tok)
     return hasFunctionCall(tok->astOperand1()) || hasFunctionCall(tok->astOperand2());
 }
 
-struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<unsigned int> &exprVarIds, bool local, bool inInnerClass)
+const Scope* PathAnalysis::findOuterScope(const Scope * scope)
+{
+    if (!scope)
+        return nullptr;
+    if (scope->isLocal() && scope->type != Scope::eSwitch)
+        return findOuterScope(scope->nestedIn);
+    return scope;
+}
+
+static const Token* getCondTok(const Token* tok)
+{
+    if (!tok)
+        return nullptr;
+    if (Token::simpleMatch(tok, "("))
+        return getCondTok(tok->previous());
+    if (Token::simpleMatch(tok, "for") && Token::simpleMatch(tok->next()->astOperand2(), ";") && tok->next()->astOperand2()->astOperand2())
+        return tok->next()->astOperand2()->astOperand2()->astOperand1();
+    if (Token::simpleMatch(tok->next()->astOperand2(), ";"))
+        return tok->next()->astOperand2()->astOperand1();
+    return tok->next()->astOperand2();
+}
+
+std::pair<bool, bool> PathAnalysis::checkCond(const Token * tok, bool& known)
+{
+    if (tok->hasKnownIntValue()) {
+        known = true;
+        return std::make_pair(tok->values().front().intvalue, !tok->values().front().intvalue);
+    }
+    auto it = std::find_if(tok->values().begin(), tok->values().end(), [](const ValueFlow::Value& v) {
+        return v.isIntValue();
+    });
+    // If all possible values are the same, then assume all paths have the same value
+    if (it != tok->values().end() && std::all_of(it, tok->values().end(), [&](const ValueFlow::Value& v) {
+    if (v.isIntValue())
+            return v.intvalue == it->intvalue;
+        return true;
+    })) {
+        known = false;
+        return std::make_pair(it->intvalue, !it->intvalue);
+    }
+    return std::make_pair(true, true);
+}
+
+PathAnalysis::Progress PathAnalysis::forwardRecursive(const Token* tok, Info info, const std::function<PathAnalysis::Progress(const Info&)>& f) const
+{
+    if (!tok)
+        return Progress::Continue;
+    if (tok->astOperand1() && forwardRecursive(tok->astOperand1(), info, f) == Progress::Break)
+        return Progress::Break;
+    info.tok = tok;
+    if (f(info) == Progress::Break)
+        return Progress::Break;
+    if (tok->astOperand2() && forwardRecursive(tok->astOperand2(), info, f) == Progress::Break)
+        return Progress::Break;
+    return Progress::Continue;
+}
+
+PathAnalysis::Progress PathAnalysis::forwardRange(const Token* startToken, const Token* endToken, Info info, const std::function<PathAnalysis::Progress(const Info&)>& f) const
+{
+    for (const Token *tok = startToken; tok && tok != endToken; tok = tok->next()) {
+        if (Token::Match(tok, "asm|goto|break|continue"))
+            return Progress::Break;
+        if (Token::Match(tok, "return|throw")) {
+            forwardRecursive(tok, info, f);
+            return Progress::Break;
+        }
+        if (Token::simpleMatch(tok, "}") && Token::simpleMatch(tok->link()->previous(), ") {") && Token::Match(tok->link()->linkAt(-1)->previous(), "if|while|for (")) {
+            const Token * blockStart = tok->link()->linkAt(-1)->previous();
+            const Token * condTok = getCondTok(blockStart);
+            if (!condTok)
+                continue;
+            info.errorPath.emplace_back(condTok, "Assuming condition is true.");
+            // Traverse a loop a second time
+            if (Token::Match(blockStart, "for|while (")) {
+                const Token* endCond = blockStart->linkAt(1);
+                bool traverseLoop = true;
+                // Only traverse simple for loops
+                if (Token::simpleMatch(blockStart, "for") && !Token::Match(endCond->tokAt(-3), "; ++|--|%var% %var%|++|-- ) {"))
+                    traverseLoop = false;
+                // Traverse loop a second time
+                if (traverseLoop) {
+                    // Traverse condition
+                    if (forwardRecursive(condTok, info, f) == Progress::Break)
+                        return Progress::Break;
+                    // TODO: Should we traverse the body: forwardRange(tok->link(), tok, info, f)?
+                }
+            }
+        }
+        if (Token::Match(tok, "if|while|for (") && Token::simpleMatch(tok->next()->link(), ") {")) {
+            const Token * endCond = tok->next()->link();
+            const Token * endBlock = endCond->next()->link();
+            const Token * condTok = getCondTok(tok);
+            if (!condTok)
+                continue;
+            // Traverse condition
+            if (forwardRange(tok->next(), tok->next()->link(), info, f) == Progress::Break)
+                return Progress::Break;
+            Info i = info;
+            i.known = false;
+            i.errorPath.emplace_back(condTok, "Assuming condition is true.");
+
+            // Check if condition is true or false
+            bool checkThen = false;
+            bool checkElse = false;
+            std::tie(checkThen, checkElse) = checkCond(condTok, i.known);
+
+            // Traverse then block
+            if (checkThen) {
+                if (forwardRange(endCond->next(), endBlock, i, f) == Progress::Break)
+                    return Progress::Break;
+            }
+            // Traverse else block
+            if (Token::simpleMatch(endBlock, "} else {")) {
+                if (checkElse) {
+                    i.errorPath.back().second = "Assuming condition is false.";
+                    Progress result = forwardRange(endCond->next(), endBlock, i, f);
+                    if (result == Progress::Break)
+                        return Progress::Break;
+                }
+                tok = endBlock->linkAt(2);
+            } else {
+                tok = endBlock;
+            }
+        } else if (Token::simpleMatch(tok, "} else {")) {
+            tok = tok->linkAt(2);
+        } else {
+            info.tok = tok;
+            if (f(info) == Progress::Break)
+                return Progress::Break;
+        }
+        // Prevent inifinite recursion
+        if (tok->next() == start)
+            break;
+    }
+    return Progress::Continue;
+}
+
+void PathAnalysis::forward(const std::function<Progress(const Info&)>& f) const
+{
+    const Scope * endScope = findOuterScope(start->scope());
+    if (!endScope)
+        return;
+    const Token * endToken = endScope->bodyEnd;
+    Info info{start, ErrorPath{}, true};
+    forwardRange(start, endToken, info, f);
+}
+
+bool reaches(const Token * start, const Token * dest, const Library& library, ErrorPath* errorPath)
+{
+    PathAnalysis::Info info = PathAnalysis{start, library} .forwardFind([&](const PathAnalysis::Info& i) {
+        return (i.tok == dest);
+    });
+    if (!info.tok)
+        return false;
+    if (errorPath)
+        errorPath->insert(errorPath->end(), info.errorPath.begin(), info.errorPath.end());
+    return true;
+}
+
+struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<int> &exprVarIds, bool local, bool inInnerClass)
 {
     // Parse the given tokens
     for (const Token *tok = startToken; tok != endToken; tok = tok->next()) {
@@ -1518,7 +1674,7 @@ bool FwdAnalysis::isGlobalData(const Token *expr) const
 FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToken, const Token *endToken)
 {
     // all variable ids in expr.
-    std::set<unsigned int> exprVarIds;
+    std::set<int> exprVarIds;
     bool local = true;
     bool unknownVarId = false;
     visitAstNodes(expr,
@@ -1615,7 +1771,7 @@ bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) co
         if (Token::Match(tok, "%name% (") && !Token::Match(tok, "if|while|for")) {
             // Is argument passed by reference?
             const std::vector<const Token*> args = getArguments(tok);
-            for (unsigned int argnr = 0; argnr < args.size(); ++argnr) {
+            for (int argnr = 0; argnr < args.size(); ++argnr) {
                 if (!Token::Match(args[argnr], "%name%|.|::"))
                     continue;
                 if (tok->function() && tok->function()->getArgumentVar(argnr) && !tok->function()->getArgumentVar(argnr)->isReference() && !tok->function()->isConst())

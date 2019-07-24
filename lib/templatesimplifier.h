@@ -223,6 +223,14 @@ public:
     };
 
     /**
+     * Find last token of a template declaration.
+     * @param tok start token of declaration "template" or token after "template < ... >"
+     * @return last token of declaration or nullptr if syntax error
+     */
+    static Token *findTemplateDeclarationEnd(Token *tok);
+    static const Token *findTemplateDeclarationEnd(const Token *tok);
+
+    /**
      * Match template declaration/instantiation
      * @param instance template instantiation
      * @param numberOfArguments number of template arguments
@@ -278,7 +286,7 @@ public:
      * @return true if modifications to token-list are done.
      *         false if no modifications are done.
      */
-    static bool simplifyNumericCalculations(Token *tok);
+    static bool simplifyNumericCalculations(Token *tok, bool isTemplate = true);
 
     /**
      * Simplify constant calculations such as "1+2" => "3".
@@ -286,7 +294,7 @@ public:
      * @return true if modifications to token-list are done.
      *         false if no modifications are done.
      */
-    bool simplifyCalculations(Token* frontToken = nullptr, Token *backToken = nullptr);
+    bool simplifyCalculations(Token* frontToken = nullptr, Token *backToken = nullptr, bool isTemplate = true);
 
     /** Simplify template instantiation arguments.
      * @param start first token of arguments

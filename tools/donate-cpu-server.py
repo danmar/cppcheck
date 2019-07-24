@@ -18,7 +18,7 @@ import operator
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.1.3"
+SERVER_VERSION = "1.1.4"
 
 OLD_VERSION = '1.88'
 
@@ -885,7 +885,7 @@ def server(server_address_port, packages, packageIndex, resultPath):
                               line)
                         print('Ignoring data.')
                         old_version_wrong = True
-                        break
+                    break
             if not versions_found:
                 print('Cppcheck versions missing in result data. Ignoring data.')
                 continue

@@ -34,7 +34,7 @@
 // How many compileExpression recursions are allowed?
 // For practical code this could be endless. But in some special torture test
 // there needs to be a limit.
-static const unsigned int AST_MAX_DEPTH = 50U;
+static const int AST_MAX_DEPTH = 50;
 
 
 TokenList::TokenList(const Settings* settings) :
@@ -71,12 +71,12 @@ void TokenList::deallocateTokens()
     mFiles.clear();
 }
 
-unsigned int TokenList::appendFileIfNew(const std::string &fileName)
+int TokenList::appendFileIfNew(const std::string &fileName)
 {
     // Has this file been tokenized already?
-    for (std::size_t i = 0; i < mFiles.size(); ++i)
+    for (int i = 0; i < mFiles.size(); ++i)
         if (Path::sameFileName(mFiles[i], fileName))
-            return (unsigned int)i;
+            return i;
 
     // The "mFiles" vector remembers what files have been tokenized..
     mFiles.push_back(fileName);
@@ -91,7 +91,7 @@ unsigned int TokenList::appendFileIfNew(const std::string &fileName)
             mIsCpp = mSettings->enforcedLang == Settings::CPP || (mSettings->enforcedLang == Settings::None && Path::isCPP(getSourceFilePath()));
         }
     }
-    return mFiles.size() - 1U;
+    return mFiles.size() - 1;
 }
 
 void TokenList::deleteTokens(Token *tok)
@@ -107,7 +107,7 @@ void TokenList::deleteTokens(Token *tok)
 // add a token.
 //---------------------------------------------------------------------------
 
-void TokenList::addtoken(std::string str, const unsigned int lineno, const unsigned int fileno, bool split)
+void TokenList::addtoken(std::string str, const nonneg int lineno, const nonneg int fileno, bool split)
 {
     if (str.empty())
         return;
@@ -155,7 +155,7 @@ void TokenList::addtoken(std::string str, const unsigned int lineno, const unsig
     mTokensFrontBack.back->fileIndex(fileno);
 }
 
-void TokenList::addtoken(const Token * tok, const unsigned int lineno, const unsigned int fileno)
+void TokenList::addtoken(const Token * tok, const nonneg int lineno, const nonneg int fileno)
 {
     if (tok == nullptr)
         return;
@@ -184,13 +184,13 @@ Token *TokenList::copyTokens(Token *dest, const Token *first, const Token *last,
 {
     std::stack<Token *> links;
     Token *tok2 = dest;
-    unsigned int linenrs = dest->linenr();
-    const unsigned int commonFileIndex = dest->fileIndex();
+    int linenr = dest->linenr();
+    const int commonFileIndex = dest->fileIndex();
     for (const Token *tok = first; tok != last->next(); tok = tok->next()) {
         tok2->insertToken(tok->str());
         tok2 = tok2->next();
         tok2->fileIndex(commonFileIndex);
-        tok2->linenr(linenrs);
+        tok2->linenr(linenr);
         tok2->tokType(tok->tokType());
         tok2->flags(tok->flags());
         tok2->varId(tok->varId());
@@ -210,7 +210,7 @@ Token *TokenList::copyTokens(Token *dest, const Token *first, const Token *last,
             links.pop();
         }
         if (!one_line && tok->next())
-            linenrs += tok->next()->linenr() - tok->linenr();
+            linenr += tok->next()->linenr() - tok->linenr();
     }
     return tok2;
 }
@@ -219,7 +219,7 @@ Token *TokenList::copyTokens(Token *dest, const Token *first, const Token *last,
 // InsertTokens - Copy and insert tokens
 //---------------------------------------------------------------------------
 
-void TokenList::insertTokens(Token *dest, const Token *src, unsigned int n)
+void TokenList::insertTokens(Token *dest, const Token *src, nonneg int n)
 {
     std::stack<Token *> link;
 
@@ -358,12 +358,12 @@ unsigned long long TokenList::calculateChecksum() const
 
 struct AST_state {
     std::stack<Token*> op;
-    unsigned int depth;
-    unsigned int inArrayAssignment;
+    int depth;
+    int inArrayAssignment;
     bool cpp;
-    unsigned int assign;
+    int assign;
     bool inCase; // true from case to :
-    explicit AST_state(bool cpp) : depth(0), inArrayAssignment(0), cpp(cpp), assign(0U), inCase(false) {}
+    explicit AST_state(bool cpp) : depth(0), inArrayAssignment(0), cpp(cpp), assign(0), inCase(false) {}
 };
 
 static Token * skipDecl(Token *tok)
@@ -589,8 +589,8 @@ static void compileTerm(Token *&tok, AST_state& state)
             if (tok->str() == "<")
                 tok = tok->link()->next();
             if (Token::Match(tok, "{ . %name% =")) {
-                const bool inArrayAssignment = state.inArrayAssignment;
-                state.inArrayAssignment = true;
+                const int inArrayAssignment = state.inArrayAssignment;
+                state.inArrayAssignment = 1;
                 compileBinOp(tok, state, compileExpression);
                 state.inArrayAssignment = inArrayAssignment;
             }
@@ -629,7 +629,7 @@ static void compileTerm(Token *&tok, AST_state& state)
             if (tok->link() != tok->next()) {
                 state.inArrayAssignment++;
                 compileUnaryOp(tok, state, compileExpression);
-                while (Token::Match(tok, "} [,};]") && state.inArrayAssignment > 0U) {
+                while (Token::Match(tok, "} [,};]") && state.inArrayAssignment > 0) {
                     tok = tok->next();
                     state.inArrayAssignment--;
                 }
@@ -965,7 +965,7 @@ static void compileAssignTernary(Token *&tok, AST_state& state)
         if (tok->isAssignmentOp()) {
             state.assign++;
             compileBinOp(tok, state, compileAssignTernary);
-            if (state.assign > 0U)
+            if (state.assign > 0)
                 state.assign--;
         } else if (tok->str() == "?") {
             // http://en.cppreference.com/w/cpp/language/operator_precedence says about ternary operator:
@@ -974,8 +974,8 @@ static void compileAssignTernary(Token *&tok, AST_state& state)
             if (tok->strAt(1) == ":") {
                 state.op.push(nullptr);
             }
-            const unsigned int assign = state.assign;
-            state.assign = 0U;
+            const int assign = state.assign;
+            state.assign = 0;
             compileBinOp(tok, state, compileAssignTernary);
             state.assign = assign;
         } else if (tok->str() == ":") {
@@ -984,7 +984,7 @@ static void compileAssignTernary(Token *&tok, AST_state& state)
                 tok = tok->next();
                 break;
             }
-            if (state.assign > 0U)
+            if (state.assign > 0)
                 break;
             compileBinOp(tok, state, compileAssignTernary);
         } else break;
@@ -1456,7 +1456,7 @@ void TokenList::simplifyStdType()
             bool isSigned = false;
             bool isUnsigned = false;
             bool isComplex = false;
-            unsigned int countLong = 0;
+            int countLong = 0;
             Token* typeSpec = nullptr;
 
             Token* tok2 = tok;

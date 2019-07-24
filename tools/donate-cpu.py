@@ -40,7 +40,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.23"
+CLIENT_VERSION = "1.1.25"
 
 
 def check_requirements():
@@ -262,11 +262,12 @@ def scan_package(work_path, cppcheck_path, jobs):
                        'motif': ['<X11/', '<Xm/'],
                        'nspr': ['<prtypes.h>', '"prtypes.h"'],
                        'opengl': ['<GL/gl.h>', '<GL/glu.h>', '<GL/glut.h>'],
+                       # 'openmp': ['<omp.h>'], <= enable after release of version 1.89
                        'python': ['<Python.h>', '"Python.h"'],
                        'qt': ['<QApplication>', '<QString>', '<QWidget>', '<QtWidgets>', '<QtGui'],
                        'ruby': ['<ruby.h>', '<ruby/'],
                        'sdl': ['<SDL.h>'],
-                       'sqlite3': ['<sqlite3.h>'],
+                       'sqlite3': ['<sqlite3.h>', '"sqlite3.h"'],
                        'tinyxml2': ['<tinyxml2', '"tinyxml2'],
                        'wxwidgets': ['<wx/', '"wx/'],
                        'zlib': ['<zlib.h>'],
@@ -280,14 +281,21 @@ def scan_package(work_path, cppcheck_path, jobs):
     cppcheck_cmd = cppcheck_path + '/cppcheck' + ' ' + options
     cmd = 'nice ' + cppcheck_cmd
     returncode, stdout, stderr, elapsed_time = run_command(cmd)
-    print('cppcheck finished with ' + str(returncode))
-    if returncode == -11 or stderr.find('Internal error: Child process crashed with signal 11 [cppcheckError]') > 0:
+    sig_num = -1
+    sig_msg = 'Internal error: Child process crashed with signal '
+    sig_pos = stderr.find(sig_msg)
+    if sig_pos != -1:
+        sig_start_pos = sig_pos + len(sig_msg)
+        sig_num = int(stderr[sig_start_pos:stderr.find(' ', sig_start_pos)])
+    print('cppcheck finished with ' + str(returncode) + ('' if sig_num == -1 else ' (signal ' + str(sig_num) + ')'))
+    # generate stack trace for SIGSEGV, SIGABRT, SIGILL, SIGFPE, SIGBUS
+    if returncode in (-11,-6,-4,-8,-7) or sig_num in (11,6,4,8,7):
         print('Crash!')
         stacktrace = ''
         if cppcheck_path == 'cppcheck':
             # re-run within gdb to get a stacktrace
             cmd = 'gdb --batch --eval-command=run --eval-command=bt --return-child-result --args ' + cppcheck_cmd + " -j1"
-            returncode, stdout, stderr, elapsed_time = run_command(cmd)
+            dummy, stdout, stderr, elapsed_time = run_command(cmd)
             gdb_pos = stdout.find(" received signal")
             if not gdb_pos == -1:
                 last_check_pos = stdout.rfind('Checking ', 0, gdb_pos)
@@ -295,7 +303,7 @@ def scan_package(work_path, cppcheck_path, jobs):
                     stacktrace = stdout[gdb_pos:]
                 else:
                     stacktrace = stdout[last_check_pos:]
-        return -11, stacktrace, '', -11, options
+        return returncode, stacktrace, '', returncode, options
     if returncode != 0:
         print('Error!')
         if returncode > 0:

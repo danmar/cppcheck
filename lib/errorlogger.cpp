@@ -49,6 +49,12 @@ InternalError::InternalError(const Token *tok, const std::string &errorMsg, Type
     case INTERNAL:
         id = "cppcheckError";
         break;
+    case LIMIT:
+        id = "cppcheckLimit";
+        break;
+    case INSTANTIATION:
+        id = "instantiationError";
+        break;
     }
 }
 

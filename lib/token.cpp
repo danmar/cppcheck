@@ -220,9 +220,9 @@ std::string Token::strValue() const
     return ret;
 }
 
-void Token::deleteNext(unsigned long index)
+void Token::deleteNext(nonneg int count)
 {
-    while (mNext && index) {
+    while (mNext && count > 0) {
         Token *n = mNext;
 
         // #8154 we are about to be unknown -> destroy the link to us
@@ -231,7 +231,7 @@ void Token::deleteNext(unsigned long index)
 
         mNext = n->next();
         delete n;
-        --index;
+        --count;
     }
 
     if (mNext)
@@ -240,9 +240,9 @@ void Token::deleteNext(unsigned long index)
         mTokensFrontBack->back = this;
 }
 
-void Token::deletePrevious(unsigned long index)
+void Token::deletePrevious(nonneg int count)
 {
-    while (mPrevious && index) {
+    while (mPrevious && count > 0) {
         Token *p = mPrevious;
 
         // #8154 we are about to be unknown -> destroy the link to us
@@ -251,7 +251,7 @@ void Token::deletePrevious(unsigned long index)
 
         mPrevious = p->previous();
         delete p;
-        --index;
+        --count;
     }
 
     if (mPrevious)
@@ -381,7 +381,7 @@ const std::string &Token::strAt(int index) const
     return tok ? tok->mStr : emptyString;
 }
 
-static int multiComparePercent(const Token *tok, const char*& haystack, unsigned int varid)
+static int multiComparePercent(const Token *tok, const char*& haystack, nonneg int varid)
 {
     ++haystack;
     // Compare only the first character of the string for optimization reasons
@@ -521,7 +521,7 @@ static int multiComparePercent(const Token *tok, const char*& haystack, unsigned
     return 0xFFFF;
 }
 
-int Token::multiCompare(const Token *tok, const char *haystack, unsigned int varid)
+int Token::multiCompare(const Token *tok, const char *haystack, nonneg int varid)
 {
     const char *needle = tok->str().c_str();
     const char *needlePointer = needle;
@@ -626,7 +626,7 @@ const char *Token::chrInFirstWord(const char *str, char c)
     }
 }
 
-bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
+bool Token::Match(const Token *tok, const char pattern[], nonneg int varid)
 {
     const char *p = pattern;
     while (*p) {
@@ -655,7 +655,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
 
             const char *temp = p+1;
             bool chrFound = false;
-            unsigned int count = 0;
+            int count = 0;
             while (*temp && *temp != ' ') {
                 if (*temp == ']') {
                     ++count;
@@ -713,12 +713,12 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
     return true;
 }
 
-std::size_t Token::getStrLength(const Token *tok)
+nonneg int Token::getStrLength(const Token *tok)
 {
     assert(tok != nullptr);
     assert(tok->mTokType == eString);
 
-    std::size_t len = 0;
+    int len = 0;
     std::string::const_iterator it = tok->str().begin() + 1U;
     const std::string::const_iterator end = tok->str().end() - 1U;
 
@@ -741,13 +741,13 @@ std::size_t Token::getStrLength(const Token *tok)
     return len;
 }
 
-std::size_t Token::getStrSize(const Token *tok)
+nonneg int Token::getStrSize(const Token *tok)
 {
     assert(tok != nullptr);
     assert(tok->tokType() == eString);
     const std::string &str = tok->str();
-    unsigned int sizeofstring = 1U;
-    for (unsigned int i = 1U; i < str.size() - 1U; i++) {
+    int sizeofstring = 1;
+    for (int i = 1; i < (int)str.size() - 1; i++) {
         if (str[i] == '\\')
             ++i;
         ++sizeofstring;
@@ -755,7 +755,7 @@ std::size_t Token::getStrSize(const Token *tok)
     return sizeofstring;
 }
 
-std::string Token::getCharAt(const Token *tok, std::size_t index)
+std::string Token::getCharAt(const Token *tok, MathLib::bigint index)
 {
     assert(tok != nullptr);
 
@@ -937,7 +937,7 @@ const Token *Token::findsimplematch(const Token * const startTok, const char pat
     return nullptr;
 }
 
-const Token *Token::findmatch(const Token * const startTok, const char pattern[], const unsigned int varId)
+const Token *Token::findmatch(const Token * const startTok, const char pattern[], const nonneg int varId)
 {
     for (const Token* tok = startTok; tok; tok = tok->next()) {
         if (Token::Match(tok, pattern, varId))
@@ -946,13 +946,25 @@ const Token *Token::findmatch(const Token * const startTok, const char pattern[]
     return nullptr;
 }
 
-const Token *Token::findmatch(const Token * const startTok, const char pattern[], const Token * const end, const unsigned int varId)
+const Token *Token::findmatch(const Token * const startTok, const char pattern[], const Token * const end, const nonneg int varId)
 {
     for (const Token* tok = startTok; tok && tok != end; tok = tok->next()) {
         if (Token::Match(tok, pattern, varId))
             return tok;
     }
     return nullptr;
+}
+
+void Token::function(const Function *f)
+{
+    mImpl->mFunction = f;
+    if (f) {
+        if (f->isLambda())
+            tokType(eLambda);
+        else
+            tokType(eFunction);
+    } else if (mTokType == eFunction)
+        tokType(eName);
 }
 
 void Token::insertToken(const std::string &tokenStr, const std::string &originalNameStr, bool prepend)
@@ -1071,31 +1083,31 @@ std::string Token::stringifyList(bool varid, bool attributes, bool linenumbers, 
     std::ostringstream ret;
 
     unsigned int lineNumber = mImpl->mLineNumber - (linenumbers ? 1U : 0U);
-    unsigned int fileInd = files ? ~0U : mImpl->mFileIndex;
+    unsigned int fileIndex = files ? ~0U : mImpl->mFileIndex;
     std::map<int, unsigned int> lineNumbers;
     for (const Token *tok = this; tok != end; tok = tok->next()) {
         bool fileChange = false;
-        if (tok->mImpl->mFileIndex != fileInd) {
-            if (fileInd != ~0U) {
-                lineNumbers[fileInd] = tok->mImpl->mFileIndex;
+        if (tok->mImpl->mFileIndex != fileIndex) {
+            if (fileIndex != ~0U) {
+                lineNumbers[fileIndex] = tok->mImpl->mFileIndex;
             }
 
-            fileInd = tok->mImpl->mFileIndex;
+            fileIndex = tok->mImpl->mFileIndex;
             if (files) {
                 ret << "\n\n##file ";
                 if (fileNames && fileNames->size() > tok->mImpl->mFileIndex)
                     ret << fileNames->at(tok->mImpl->mFileIndex);
                 else
-                    ret << fileInd;
+                    ret << fileIndex;
                 ret << '\n';
             }
 
-            lineNumber = lineNumbers[fileInd];
+            lineNumber = lineNumbers[fileIndex];
             fileChange = true;
         }
 
         if (linebreaks && (lineNumber != tok->linenr() || fileChange)) {
-            if (lineNumber+4 < tok->linenr() && fileInd == tok->mImpl->mFileIndex) {
+            if (lineNumber+4 < tok->linenr() && fileIndex == tok->mImpl->mFileIndex) {
                 ret << '\n' << lineNumber+1 << ":\n|\n";
                 ret << tok->linenr()-1 << ":\n";
                 ret << tok->linenr() << ": ";
@@ -1321,7 +1333,7 @@ std::string Token::expressionString() const
     return stringFromTokenRange(tokens.first, tokens.second);
 }
 
-static void astStringXml(const Token *tok, std::size_t indent, std::ostream &out)
+static void astStringXml(const Token *tok, nonneg int indent, std::ostream &out)
 {
     const std::string strindent(indent, ' ');
 
@@ -1375,15 +1387,15 @@ void Token::printAst(bool verbose, bool xml, std::ostream &out) const
     }
 }
 
-static void indent(std::string &str, const unsigned int indent1, const unsigned int indent2)
+static void indent(std::string &str, const nonneg int indent1, const nonneg int indent2)
 {
-    for (unsigned int i = 0; i < indent1; ++i)
+    for (int i = 0; i < indent1; ++i)
         str += ' ';
-    for (unsigned int i = indent1; i < indent2; i += 2)
+    for (int i = indent1; i < indent2; i += 2)
         str += "| ";
 }
 
-void Token::astStringVerboseRecursive(std::string& ret, const unsigned int indent1, const unsigned int indent2) const
+void Token::astStringVerboseRecursive(std::string& ret, const nonneg int indent1, const nonneg int indent2) const
 {
     if (isExpandedMacro())
         ret += '$';
@@ -1393,7 +1405,7 @@ void Token::astStringVerboseRecursive(std::string& ret, const unsigned int inden
     ret += '\n';
 
     if (mImpl->mAstOperand1) {
-        unsigned int i1 = indent1, i2 = indent2 + 2;
+        int i1 = indent1, i2 = indent2 + 2;
         if (indent1 == indent2 && !mImpl->mAstOperand2)
             i1 += 2;
         indent(ret, indent1, indent2);
@@ -1401,7 +1413,7 @@ void Token::astStringVerboseRecursive(std::string& ret, const unsigned int inden
         mImpl->mAstOperand1->astStringVerboseRecursive(ret, i1, i2);
     }
     if (mImpl->mAstOperand2) {
-        unsigned int i1 = indent1, i2 = indent2 + 2;
+        int i1 = indent1, i2 = indent2 + 2;
         if (indent1 == indent2)
             i1 += 2;
         indent(ret, indent1, indent2);
@@ -1420,7 +1432,7 @@ std::string Token::astStringVerbose() const
 
 void Token::printValueFlow(bool xml, std::ostream &out) const
 {
-    unsigned int line = 0;
+    int line = 0;
     if (xml)
         out << "  <valueflow>" << std::endl;
     else
@@ -1570,7 +1582,7 @@ const ValueFlow::Value * Token::getValueGE(const MathLib::bigint val, const Sett
     return ret;
 }
 
-const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, unsigned int argnr, const Settings *settings) const
+const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, nonneg int argnr, const Settings *settings) const
 {
     if (!mImpl->mValues || !settings)
         return nullptr;
@@ -1599,11 +1611,11 @@ const Token *Token::getValueTokenMinStrSize() const
     if (!mImpl->mValues)
         return nullptr;
     const Token *ret = nullptr;
-    std::size_t minsize = ~0U;
+    int minsize = INT_MAX;
     std::list<ValueFlow::Value>::const_iterator it;
     for (it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
         if (it->isTokValue() && it->tokvalue && it->tokvalue->tokType() == Token::eString) {
-            const std::size_t size = getStrSize(it->tokvalue);
+            const int size = getStrSize(it->tokvalue);
             if (!ret || size < minsize) {
                 minsize = size;
                 ret = it->tokvalue;
@@ -1618,11 +1630,11 @@ const Token *Token::getValueTokenMaxStrLength() const
     if (!mImpl->mValues)
         return nullptr;
     const Token *ret = nullptr;
-    std::size_t maxlength = 0U;
+    int maxlength = 0;
     std::list<ValueFlow::Value>::const_iterator it;
     for (it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
         if (it->isTokValue() && it->tokvalue && it->tokvalue->tokType() == Token::eString) {
-            const std::size_t length = getStrLength(it->tokvalue);
+            const int length = getStrLength(it->tokvalue);
             if (!ret || length > maxlength) {
                 maxlength = length;
                 ret = it->tokvalue;
@@ -1734,17 +1746,17 @@ bool Token::addValue(const ValueFlow::Value &value)
 
 void Token::assignProgressValues(Token *tok)
 {
-    unsigned int total_count = 0;
+    int total_count = 0;
     for (Token *tok2 = tok; tok2; tok2 = tok2->next())
         ++total_count;
-    unsigned int count = 0;
+    int count = 0;
     for (Token *tok2 = tok; tok2; tok2 = tok2->next())
         tok2->mImpl->mProgressValue = count++ * 100 / total_count;
 }
 
 void Token::assignIndexes()
 {
-    unsigned int index = (mPrevious ? mPrevious->mImpl->mIndex : 0) + 1;
+    int index = (mPrevious ? mPrevious->mImpl->mIndex : 0) + 1;
     for (Token *tok = this; tok; tok = tok->next())
         tok->mImpl->mIndex = index++;
 }
@@ -1855,4 +1867,36 @@ TokenImpl::~TokenImpl()
     for (auto templateSimplifierPointer : mTemplateSimplifierPointers) {
         templateSimplifierPointer->token = nullptr;
     }
+
+    while (mCppcheckAttributes) {
+        struct CppcheckAttributes *c = mCppcheckAttributes;
+        mCppcheckAttributes = mCppcheckAttributes->next;
+        delete c;
+    }
+}
+
+void TokenImpl::setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint value)
+{
+    struct CppcheckAttributes *attr = mCppcheckAttributes;
+    while (attr && attr->type != type)
+        attr = attr->next;
+    if (attr)
+        attr->value = value;
+    else {
+        attr = new CppcheckAttributes;
+        attr->type = type;
+        attr->value = value;
+        attr->next = mCppcheckAttributes;
+        mCppcheckAttributes = attr;
+    }
+}
+
+bool TokenImpl::getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint *value) const
+{
+    struct CppcheckAttributes *attr = mCppcheckAttributes;
+    while (attr && attr->type != type)
+        attr = attr->next;
+    if (attr)
+        *value = attr->value;
+    return attr != nullptr;
 }

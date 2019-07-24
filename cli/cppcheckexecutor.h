@@ -94,7 +94,7 @@ public:
     /**
      * @param exception_output Output file
      */
-    static void setExceptionOutput(FILE* exception_output);
+    static void setExceptionOutput(FILE* exceptionOutput);
     /**
     * @return file name to be used for output from exception handler. Has to be either "stdout" or "stderr".
     */
@@ -160,37 +160,37 @@ private:
     /**
      * Pointer to current settings; set while check() is running.
      */
-    const Settings* _settings;
+    const Settings* mSettings;
 
     /**
      * Used to filter out duplicate error messages.
      */
-    std::set<std::string> _errorList;
+    std::set<std::string> mShownErrors;
 
     /**
      * Filename associated with size of file
      */
-    std::map<std::string, std::size_t> _files;
+    std::map<std::string, std::size_t> mFiles;
 
     /**
      * Report progress time
      */
-    std::time_t latestProgressOutputTime;
+    std::time_t mLatestProgressOutputTime;
 
     /**
      * Output file name for exception handler
      */
-    static FILE* exceptionOutput;
+    static FILE* mExceptionOutput;
 
     /**
      * Error output
      */
-    std::ofstream *errorOutput;
+    std::ofstream *mErrorOutput;
 
     /**
      * Has --errorlist been given?
      */
-    bool errorlist;
+    bool mShowAllErrors;
 };
 
 #endif // CPPCHECKEXECUTOR_H

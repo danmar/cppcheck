@@ -41,7 +41,6 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList2();
 
         // Check class constructors..
         CheckClass checkClass(&tokenizer, &settings, this);

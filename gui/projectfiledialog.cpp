@@ -139,7 +139,7 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
                 libs << library;
         }
     }
-    qSort(libs);
+    libs.sort();
     mUI.mLibraries->clear();
     for (const QString &lib : libs) {
         QListWidgetItem* item = new QListWidgetItem(lib, mUI.mLibraries);
@@ -170,7 +170,7 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
                 platformFiles << platformFile;
         }
     }
-    qSort(platformFiles);
+    platformFiles.sort();
     mUI.mComboBoxPlatform->addItems(platformFiles);
 
     mUI.mEditTags->setValidator(new QRegExpValidator(QRegExp("[a-zA-Z0-9 ;]*"),this));
@@ -274,6 +274,21 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     mUI.mComboBoxPlatform->setCurrentText(projectFile->getPlatform());
     setSuppressions(projectFile->getSuppressions());
 
+    // Human knowledge..
+    mUI.mListUnknownFunctionReturn->clear();
+    mUI.mListUnknownFunctionReturn->addItem("rand()");
+    for (int row = 0; row < mUI.mListUnknownFunctionReturn->count(); ++row) {
+        QListWidgetItem *item = mUI.mListUnknownFunctionReturn->item(row);
+        item->setFlags(item->flags() | Qt::ItemIsUserCheckable); // set checkable flag
+        const bool unknownValues = projectFile->getCheckUnknownFunctionReturn().contains(item->text());
+        item->setCheckState(unknownValues ? Qt::Checked : Qt::Unchecked); // AND initialize check state
+    }
+    mUI.mCheckSafeClasses->setChecked(projectFile->getSafeChecks().classes);
+    mUI.mCheckSafeExternalFunctions->setChecked(projectFile->getSafeChecks().externalFunctions);
+    mUI.mCheckSafeInternalFunctions->setChecked(projectFile->getSafeChecks().internalFunctions);
+    mUI.mCheckSafeExternalVariables->setChecked(projectFile->getSafeChecks().externalVariables);
+
+    // Addons..
     QSettings settings;
     const QString dataDir = settings.value("DATADIR", QString()).toString();
     updateAddonCheckBox(mUI.mAddonThreadSafety, projectFile, dataDir, "threadsafety");
@@ -326,6 +341,21 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
             projectFile->setPlatform(QString());
     }
     projectFile->setSuppressions(getSuppressions());
+    // Human knowledge
+    QStringList unknownReturnValues;
+    for (int row = 0; row < mUI.mListUnknownFunctionReturn->count(); ++row) {
+        QListWidgetItem *item = mUI.mListUnknownFunctionReturn->item(row);
+        if (item->checkState() == Qt::Checked)
+            unknownReturnValues << item->text();
+    }
+    projectFile->setCheckUnknownFunctionReturn(unknownReturnValues);
+    ProjectFile::SafeChecks safeChecks;
+    safeChecks.classes = mUI.mCheckSafeClasses->isChecked();
+    safeChecks.externalFunctions = mUI.mCheckSafeExternalFunctions->isChecked();
+    safeChecks.internalFunctions = mUI.mCheckSafeInternalFunctions->isChecked();
+    safeChecks.externalVariables = mUI.mCheckSafeExternalVariables->isChecked();
+    projectFile->setSafeChecks(safeChecks);
+    // Addons
     QStringList list;
     if (mUI.mAddonThreadSafety->isChecked())
         list << "threadsafety";
