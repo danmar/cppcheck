@@ -5448,11 +5448,27 @@ static void valueFlowSafeFunctions(TokenList *tokenlist, SymbolDatabase *symbold
         if (!function)
             continue;
 
-        const bool all = function->isSafe(settings) && settings->platformType != cppcheck::Platform::PlatformType::Unspecified;
+        const bool safe = function->isSafe(settings);
+        const bool all = safe && settings->platformType != cppcheck::Platform::PlatformType::Unspecified;
 
         for (const Variable &arg : function->argumentList) {
             if (!arg.nameToken())
                 continue;
+
+            if (arg.nameToken()->valueType() && arg.nameToken()->valueType()->type == ValueType::Type::CONTAINER) {
+                if (!safe)
+                    continue;
+                std::list<ValueFlow::Value> argValues;
+                argValues.emplace_back(0);
+                argValues.back().valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
+                argValues.back().errorPath.emplace_back(arg.nameToken(), "Assuming " + arg.name() + " is empty");
+                argValues.emplace_back(1000000);
+                argValues.back().valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
+                argValues.back().errorPath.emplace_back(arg.nameToken(), "Assuming " + arg.name() + " size is 1000000");
+                for (const ValueFlow::Value &value : argValues)
+                    valueFlowContainerForward(const_cast<Token*>(functionScope->bodyStart), arg.declarationId(), value, settings, tokenlist->isCPP());
+                continue;
+            }
 
             MathLib::bigint low, high;
             bool isLow = arg.nameToken()->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW, &low);
