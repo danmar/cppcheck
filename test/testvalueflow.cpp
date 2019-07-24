@@ -3937,7 +3937,7 @@ private:
         ASSERT(values.front().floatValue < -1E20);
         ASSERT(values.back().floatValue > 1E20);
 
-        code = "short f(__cppcheck_in_range__(0,100) short x) {\n"
+        code = "short f(__cppcheck_low__(0) __cppcheck_high__(100) short x) {\n"
                "  return x + 0;\n"
                "}";
         values = tokenValues(code, "+", &s);
