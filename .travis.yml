@@ -21,6 +21,8 @@ before_install:
  - travis_retry sudo apt-get install -qq python-pygments qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet
  - travis_retry sudo python2 -m pip install --upgrade pytest==4.6.4
  - travis_retry python2 -m pip install --user pylint
+ - travis_retry python2 -m pip install --user unittest2
+ - travis_retry python2 -m pip install --user pexpect
 
 matrix:
 # do notify immediately about it when a job of a build fails.
@@ -86,10 +88,10 @@ matrix:
         - python -m compileall ./addons
         - python3 -m compileall ./addons
 # run pylint
-        - cd addons
-#        - pylint *.py y2038/*.py ! First resolve https://trac.cppcheck.net/ticket/9210 "y2038 addon no longer working"
-        - pylint *.py
-        - cd ..
+#        - pylint --rcfile=pylintrc_travis addons/y2038/*.py ! First resolve https://trac.cppcheck.net/ticket/9210 "y2038 addon no longer working"
+        - pylint --rcfile=pylintrc_travis addons/*.py
+        - pylint --rcfile=pylintrc_travis htmlreport/*.py
+        - pylint --rcfile=pylintrc_travis tools/*.py
 # check python syntax by compiling some selected scripts
         - python -m py_compile ./tools/donate-cpu.py
         - python3 -m py_compile ./tools/donate-cpu.py
