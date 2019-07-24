@@ -81,7 +81,7 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *tok, const std::string &s,
         isSpecialization(Token::simpleMatch(token, "template < >"));
 
         if (!isSpecialization()) {
-            if (Token::Match(token->next()->findClosingBracket(), "> template <")) {
+            if (Token::simpleMatch(token->next()->findClosingBracket(), "> template <")) {
                 const Token * temp = nameToken->tokAt(-2);
                 while (Token::Match(temp, ">|%name% ::")) {
                     if (temp->str() == ">")
