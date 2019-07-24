@@ -120,7 +120,7 @@ private:
 
         TEST_CASE(valueFlowDynamicBufferSize);
 
-        TEST_CASE(valueFlowAllFunctionParameterValues);
+        TEST_CASE(valueFlowSafeFunctionParameterValues);
         TEST_CASE(valueFlowUnknownFunctionReturn);
     }
 
@@ -3906,7 +3906,7 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 100,  ValueFlow::Value::BUFFER_SIZE));
     }
 
-    void valueFlowAllFunctionParameterValues() {
+    void valueFlowSafeFunctionParameterValues() {
         const char *code;
         std::list<ValueFlow::Value> values;
         Settings s;
