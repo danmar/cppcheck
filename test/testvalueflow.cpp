@@ -3910,6 +3910,7 @@ private:
         const char *code;
         std::list<ValueFlow::Value> values;
         Settings s;
+        LOAD_LIB_2(s.library, "std.cfg");
         s.safeChecks.classes = s.safeChecks.externalFunctions = s.safeChecks.internalFunctions = true;
 
         code = "short f(short x) {\n"
@@ -3919,6 +3920,14 @@ private:
         ASSERT_EQUALS(2, values.size());
         ASSERT_EQUALS(-0x8000, values.front().intvalue);
         ASSERT_EQUALS(0x7fff, values.back().intvalue);
+
+        code = "short f(std::string x) {\n"
+               "  return x[10];\n"
+               "}";
+        values = tokenValues(code, "x [", &s);
+        ASSERT_EQUALS(2, values.size());
+        ASSERT_EQUALS(0, values.front().intvalue);
+        ASSERT_EQUALS(1000000, values.back().intvalue);
 
         code = "short f(__cppcheck_in_range__(0,100) short x) {\n"
                "  return x + 0;\n"
