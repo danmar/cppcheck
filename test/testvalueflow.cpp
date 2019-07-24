@@ -2585,6 +2585,16 @@ private:
         values = tokenValues(code, ">");
         ASSERT_EQUALS(true, values.empty());
 
+        code = "void foo() {\n"
+               "    struct ISO_PVD_s pvd;\n"
+               "    pvd.descr_type = 0xff;\n"
+               "    do {\n"
+               "        if (pvd.descr_type == 0xff) {}\n"
+               "        dostuff(&pvd);\n"
+               "    } while (condition)\n"
+               "}";
+        values = tokenValues(code, "==");
+        ASSERT_EQUALS(true, values.empty());
     }
 
     void valueFlowSwitchVariable() {
