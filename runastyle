@@ -43,6 +43,14 @@ function formatXML {
   fi
 }
 
+#
+# Function to format python code
+#
+function formatPython() {
+  autopep8 --in-place --aggressive -r "$1"
+}
+
+
 formatCplusplus "cli/*.cpp"
 formatCplusplus "cli/*.h"
 formatCplusplus "democlient/*.cpp"
@@ -76,3 +84,9 @@ done
 
 formatXML man/cppcheck.1.xml
 formatXML cppcheck-errors.rng
+
+# If not available get autopep8 from pip
+if ! command -v $1 ; then
+  pip install --user --upgrade autopep8
+fi
+formatPython .
