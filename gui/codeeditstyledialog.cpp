@@ -245,97 +245,97 @@ void StyleEditDialog::setStyleDefaultDark()
     updateStyle();
 }
 
-void StyleEditDialog::colorChangedWidgetFG(QColor& newColor)
+void StyleEditDialog::colorChangedWidgetFG(const QColor& newColor)
 {
     mStyleOutgoing.widgetFGColor = newColor;
     updateStyle();
 }
 
-void StyleEditDialog::colorChangedWidgetBG(QColor& newColor)
+void StyleEditDialog::colorChangedWidgetBG(const QColor& newColor)
 {
     mStyleOutgoing.widgetBGColor = newColor;
     updateStyle();
 }
 
-void StyleEditDialog::colorChangedHighlightBG(QColor& newColor)
+void StyleEditDialog::colorChangedHighlightBG(const QColor& newColor)
 {
     mStyleOutgoing.highlightBGColor = newColor;
     updateStyle();
 }
 
-void StyleEditDialog::colorChangedLineNumFG(QColor& newColor)
+void StyleEditDialog::colorChangedLineNumFG(const QColor& newColor)
 {
     mStyleOutgoing.lineNumFGColor = newColor;
     updateStyle();
 }
 
-void StyleEditDialog::colorChangedLineNumBG(QColor& newColor)
+void StyleEditDialog::colorChangedLineNumBG(const QColor& newColor)
 {
     mStyleOutgoing.lineNumBGColor = newColor;
     updateStyle();
 }
 
-void StyleEditDialog::colorChangedKeywordFG(QColor& newColor)
+void StyleEditDialog::colorChangedKeywordFG(const QColor& newColor)
 {
     mStyleOutgoing.keywordColor = newColor;
     updateStyle();
 }
 
-void StyleEditDialog::weightChangedKeyword(QFont::Weight& newWeight)
+void StyleEditDialog::weightChangedKeyword(const QFont::Weight& newWeight)
 {
     mStyleOutgoing.keywordWeight = newWeight;
     updateStyle();
 }
 
-void StyleEditDialog::colorChangedClassFG(QColor& newColor)
+void StyleEditDialog::colorChangedClassFG(const QColor& newColor)
 {
     mStyleOutgoing.classColor = newColor;
     updateStyle();
 }
 
-void StyleEditDialog::weightChangedClass(QFont::Weight& newWeight)
+void StyleEditDialog::weightChangedClass(const QFont::Weight& newWeight)
 {
     mStyleOutgoing.classWeight = newWeight;
     updateStyle();
 }
 
-void StyleEditDialog::colorChangedQuoteFG(QColor& newColor)
+void StyleEditDialog::colorChangedQuoteFG(const QColor& newColor)
 {
     mStyleOutgoing.quoteColor = newColor;
     updateStyle();
 }
 
-void StyleEditDialog::weightChangedQuote(QFont::Weight& newWeight)
+void StyleEditDialog::weightChangedQuote(const QFont::Weight& newWeight)
 {
     mStyleOutgoing.quoteWeight = newWeight;
     updateStyle();
 }
 
-void StyleEditDialog::colorChangedCommentFG(QColor& newColor)
+void StyleEditDialog::colorChangedCommentFG(const QColor& newColor)
 {
     mStyleOutgoing.commentColor = newColor;
     updateStyle();
 }
 
-void StyleEditDialog::weightChangedComment(QFont::Weight& newWeight)
+void StyleEditDialog::weightChangedComment(const QFont::Weight& newWeight)
 {
     mStyleOutgoing.commentWeight = newWeight;
     updateStyle();
 }
 
-void StyleEditDialog::colorChangedSymbolFG(QColor& newColor)
+void StyleEditDialog::colorChangedSymbolFG(const QColor& newColor)
 {
     mStyleOutgoing.symbolFGColor = newColor;
     updateStyle();
 }
 
-void StyleEditDialog::colorChangedSymbolBG(QColor& newColor)
+void StyleEditDialog::colorChangedSymbolBG(const QColor& newColor)
 {
     mStyleOutgoing.symbolBGColor = newColor;
     updateStyle();
 }
 
-void StyleEditDialog::weightChangedSymbol(QFont::Weight& newWeight)
+void StyleEditDialog::weightChangedSymbol(const QFont::Weight& newWeight)
 {
     mStyleOutgoing.symbolWeight = newWeight;
     updateStyle();
