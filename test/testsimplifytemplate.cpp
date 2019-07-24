@@ -163,6 +163,8 @@ private:
         TEST_CASE(template123); // #9183
         TEST_CASE(template124); // #9197
         TEST_CASE(template125);
+        TEST_CASE(template126); // #9217
+        TEST_CASE(template127); // #9225
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -2933,6 +2935,103 @@ private:
                          "int main() {\n"
                          "  GCD< 1, 0 >::val;\n"
                          "}"), InternalError);
+    }
+
+    void template126() { // #9217
+        const char code[] = "template <typename b> using d = a<b>;\n"
+                            "static_assert(i<d<l<b>>>{}, \"\");";
+        const char exp[] = "static_assert ( i < a < l < b > > > { } , \"\" ) ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template127() { // #9225
+        {
+            const char code[] = "template <typename> struct a {\n"
+                                "  template <typename b> constexpr decltype(auto) operator()(b &&) const;\n"
+                                "};\n"
+                                "a<int> c;\n"
+                                "template <typename d>\n"
+                                "template <typename b>\n"
+                                "constexpr decltype(auto) a<d>::operator()(b &&) const {}";
+            const char exp[] = "struct a<int> ; "
+                               "a<int> c ; "
+                               "template < typename d > "
+                               "template < typename b > "
+                               "const decltype ( auto ) a < d > :: operator() ( b & & ) const { } "
+                               "struct a<int> { "
+                               "template < typename b > const decltype ( auto ) operator() ( b & & ) const ; "
+                               "} ;";
+            const char act[] = "struct a<int> ; "
+                               "a<int> c ; "
+                               "template < typename d > "
+                               "template < typename b > "
+                               "const decltype ( auto ) a < d > :: operator() ( b & & ) const { } "
+                               "struct a<int> { "
+                               "template < typename b > const decltype ( auto ) operator() ( b & & ) const ; "
+                               "} ; "
+                               "const decltype ( auto ) a<int> :: operator() ( b & & ) const { }";
+            TODO_ASSERT_EQUALS(exp, act, tok(code));
+        }
+        {
+            const char code[] = "template <typename> struct a {\n"
+                                "  template <typename b> static void foo();\n"
+                                "};\n"
+                                "a<int> c;\n"
+                                "template <typename d>\n"
+                                "template <typename b>\n"
+                                "void a<d>::foo() {}\n"
+                                "void bar() { a<int>::foo<char>(); }";
+            const char exp[] = "struct a<int> ; "
+                               "a<int> c ; "
+                               "template < typename d > "
+                               "template < typename b > "
+                               "void a < d > :: foo ( ) { } "
+                               "void bar ( ) { a<int> :: foo < char > ( ) ; } "
+                               "struct a<int> { "
+                               "template < typename b > static void foo ( ) ; "
+                               "static void foo<char> ( ) ; "
+                               "} ; "
+                               "void a<int> :: foo<char> ( ) { }";
+            const char act[] = "struct a<int> ; "
+                               "a<int> c ; "
+                               "template < typename d > "
+                               "template < typename b > "
+                               "void a < d > :: foo ( ) { } "
+                               "void bar ( ) { a<int> :: foo < char > ( ) ; } "
+                               "struct a<int> { "
+                               "template < typename b > static void foo ( ) ; "
+                               "} ; "
+                               "void a<int> :: foo ( ) { }";
+            TODO_ASSERT_EQUALS(exp, act, tok(code));
+        }
+        {
+            const char code[] = "template <typename> struct a {\n"
+                                "  template <typename b> static void foo();\n"
+                                "};\n"
+                                "template <typename d>\n"
+                                "template <typename b>\n"
+                                "void a<d>::foo() {}\n"
+                                "void bar() { a<int>::foo<char>(); }";
+            const char exp[] = "struct a<int> ; "
+                               "template < typename d > "
+                               "template < typename b > "
+                               "void a < d > :: foo ( ) { } "
+                               "void bar ( ) { a<int> :: foo < char > ( ) ; } "
+                               "struct a<int> { "
+                               "static void foo<char> ( ) ; "
+                               "} ; "
+                               "void a<int> :: foo<char> ( ) { }";
+            const char act[] = "struct a<int> ; "
+                               "template < typename d > "
+                               "template < typename b > "
+                               "void a < d > :: foo ( ) { } "
+                               "void bar ( ) { a<int> :: foo < char > ( ) ; } "
+                               "struct a<int> { "
+                               "template < typename b > static void foo ( ) ; "
+                               "} ; "
+                               "void a<int> :: foo ( ) { }";
+            TODO_ASSERT_EQUALS(exp, act, tok(code));
+        }
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};

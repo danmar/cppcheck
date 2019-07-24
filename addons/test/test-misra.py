@@ -103,3 +103,34 @@ def test_rules_suppression(checker, capsys):
         found = re.search(re_suppressed, captured)
         assert(found is None)
         dump_remove(src)
+
+
+def test_arguments_regression():
+    args_ok = ["-generate-table",
+               "--rule-texts=./addons/test/assets/misra_rules_multiple_lines.txt",
+               "--verify-rule-texts",
+               "-t=foo", "--template=foo",
+               "--suppress-rules=15.1",
+               "--quiet",
+               "--cli",
+               "--no-summary",
+               "--show-suppressed-rules",
+               "-P=src/", "--file-prefix=src/"]
+    # Arguments with expected SystemExit
+    args_exit = ["--non-exists", "--non-exists-param=42", "-h", "--help"]
+
+    from addons.misra import get_args
+
+    for arg in args_exit:
+        sys.argv.append(arg)
+        with pytest.raises(SystemExit):
+            get_args()
+        sys.argv.remove(arg)
+
+    for arg in args_ok:
+        sys.argv.append(arg)
+        try:
+            get_args()
+        except SystemExit:
+            pytest.fail("Unexpected SystemExit with '%s'" % arg)
+        sys.argv.remove(arg)

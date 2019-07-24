@@ -111,7 +111,7 @@ const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &end
             tok = tok->linkAt(1)->next();
         if (Token::Match(tok, "%name% (") && tok->isUpperCaseName())
             tok = tok->linkAt(1)->next();
-        if (tok && tok->str() == ".") { // trailing return type
+        if (tok && tok->originalName() == "->") { // trailing return type
             for (tok = tok->next(); tok && !Token::Match(tok, ";|{|override|final"); tok = tok->next())
                 if (tok->link() && Token::Match(tok, "<|[|("))
                     tok = tok->link();
@@ -9815,20 +9815,29 @@ void Tokenizer::simplifyCppcheckAttribute()
         if (attr.compare(attr.size()-2, 2, "__") != 0) // TODO: ends_with("__")
             continue;
 
-        if (attr == "__cppcheck_in_range__") {
-            Token *vartok = tok->link();
-            while (Token::Match(vartok->next(), "%name%|*|&|::"))
-                vartok = vartok->next();
-            if (vartok->isName() && Token::Match(tok, "( %num% , %num% )")) {
+        Token *vartok = tok->link();
+        while (Token::Match(vartok->next(), "%name%|*|&|::")) {
+            vartok = vartok->next();
+            if (Token::Match(vartok, "%name% (") && vartok->str().compare(0,11,"__cppcheck_") == 0)
+                vartok = vartok->linkAt(1);
+        }
+
+        if (vartok->isName()) {
+            if (Token::Match(tok->previous(), "__cppcheck_low__ ( %num% )"))
                 vartok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW, MathLib::toLongNumber(tok->next()->str()));
-                vartok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH, MathLib::toLongNumber(tok->strAt(3)));
-            }
+            else if (Token::Match(tok->previous(), "__cppcheck_high__ ( %num% )"))
+                vartok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH, MathLib::toLongNumber(tok->next()->str()));
         }
 
         // Delete cppcheck attribute..
-        tok = tok->previous();
-        Token::eraseTokens(tok, tok->linkAt(1)->next());
-        tok->deleteThis();
+        if (tok->tokAt(-2)) {
+            tok = tok->tokAt(-2);
+            Token::eraseTokens(tok, tok->linkAt(2)->next());
+        } else {
+            tok = tok->previous();
+            Token::eraseTokens(tok, tok->linkAt(1)->next());
+            tok->str(";");
+        }
     }
 }
 

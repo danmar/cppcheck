@@ -4003,6 +4003,12 @@ private:
                        "  dostuff(*a);\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f() {\n"
+                       "    void (*fp[1]) (void) = {function1};\n"
+                       "    (*fp[0])();\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void deadPointer() {
