@@ -543,6 +543,30 @@ def generateTable():
             print(num[:8] + s)
 
 
+def remove_file_prefix(file_path, prefix):
+    """
+    Remove a file path prefix from a give path.  leftover
+    directory separators at the beginning of a file
+    after the removal are also stripped.
+
+    Example:
+        '/remove/this/path/file.c'
+    with a prefix of:
+        '/remove/this/path'
+    becomes:
+        file.c
+    """
+    result = None
+    if file_path.startswith(prefix):
+        result = file_path[len(prefix):]
+        # Remove any leftover directory separators at the
+        # beginning
+        result = result.lstrip('\\/')
+    else:
+        result = file_path
+    return result
+
+
 class Rule(object):
     """Class to keep rule text and metadata"""
 
@@ -635,6 +659,9 @@ class MisraChecker:
 
         # List of suppression extracted from the dumpfile
         self.dumpfileSuppressions = None
+
+        # Prefix to ignore when matching suppression files.
+        self.filePrefix = None
 
         # Statistics of all violations suppressed per rule
         self.suppressionStats   = dict()
@@ -2010,7 +2037,10 @@ class MisraChecker:
         # Remove any prefix listed in command arguments from the filename.
         filename = None
         if location.file is not None:
-            filename = os.path.basename(location.file)
+            if self.filePrefix is not None:
+                filename = remove_file_prefix(location.file, self.filePrefix)
+            else:
+                filename = os.path.basename(location.file)
 
         if ruleNum in self.suppressedRules:
             fileDict = self.suppressedRules[ruleNum]
@@ -2090,6 +2120,12 @@ class MisraChecker:
             for line in sorted(outlist, reverse=True):
                 print("  %s" % line)
 
+    def setFilePrefix(self, prefix):
+        """
+        Set the file prefix to ignnore from files when matching
+        suppression files
+        """
+        self.filePrefix = prefix
 
     def setSuppressionList(self, suppressionlist):
         num1 = 0
@@ -2404,6 +2440,7 @@ def get_args():
     parser.add_argument("-generate-table", help=argparse.SUPPRESS, action="store_true")
     parser.add_argument("dumpfile", nargs='*', help="Path of dump file from cppcheck")
     parser.add_argument("--show-suppressed-rules", help="Print rule suppression list", action="store_true")
+    parser.add_argument("-P", "--file-prefix", type=str, help="Prefix to strip when matching suppression file rules")
     parser.add_argument("--cli", help="Addon is executed from Cppcheck", action="store_true")
     return parser.parse_args()
 
@@ -2434,6 +2471,9 @@ def main():
 
     if args.suppress_rules:
         checker.setSuppressionList(args.suppress_rules)
+
+    if args.file_prefix:
+        checker.setFilePrefix(args.file_prefix)
 
     if args.dumpfile:
         exitCode = 0
