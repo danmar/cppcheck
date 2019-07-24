@@ -15,6 +15,7 @@ VERIFY = ('-verify' in sys.argv)
 VERIFY_EXPECTED = []
 VERIFY_ACTUAL = []
 
+
 def reportError(token, severity, msg, id):
     if id == 'debug' and DEBUG == False:
         return
@@ -22,6 +23,7 @@ def reportError(token, severity, msg, id):
         VERIFY_ACTUAL.append(str(token.linenr) + ':' + id)
     else:
         cppcheckdata.reportError(token, severity, msg, 'misc', id)
+
 
 def simpleMatch(token, pattern):
     for p in pattern.split(' '):
@@ -31,6 +33,8 @@ def simpleMatch(token, pattern):
     return True
 
 # Get function arguments
+
+
 def getArgumentsRecursive(tok, arguments):
     if tok is None:
         return
@@ -40,15 +44,19 @@ def getArgumentsRecursive(tok, arguments):
     else:
         arguments.append(tok)
 
+
 def getArguments(ftok):
     arguments = []
     getArgumentsRecursive(ftok.astOperand2, arguments)
     return arguments
 
+
 def isStringLiteral(tokenString):
     return tokenString.startswith('"')
 
 # check data
+
+
 def stringConcatInArrayInit(configurations, rawTokens):
     # Get all string macros
     stringMacros = []
@@ -65,9 +73,9 @@ def stringConcatInArrayInit(configurations, rawTokens):
     for i in range(len(rawTokens)):
         if i < 2:
             continue
-        tok1 = rawTokens[i-2].str
-        tok2 = rawTokens[i-1].str
-        tok3 = rawTokens[i-0].str
+        tok1 = rawTokens[i - 2].str
+        tok2 = rawTokens[i - 1].str
+        tok3 = rawTokens[i - 0].str
         if tok3 == '}':
             arrayInit = False
         elif tok1 == ']' and tok2 == '=' and tok3 == '{':
@@ -76,7 +84,11 @@ def stringConcatInArrayInit(configurations, rawTokens):
             isString2 = (isStringLiteral(tok2) or (tok2 in stringMacros))
             isString3 = (isStringLiteral(tok3) or (tok3 in stringMacros))
             if isString2 and isString3:
-                reportError(rawTokens[i], 'style', 'String concatenation in array initialization, missing comma?', 'stringConcatInArrayInit')
+                reportError(
+                    rawTokens[i],
+                    'style',
+                    'String concatenation in array initialization, missing comma?',
+                    'stringConcatInArrayInit')
 
 
 def implicitlyVirtual(data):
@@ -86,7 +98,14 @@ def implicitlyVirtual(data):
                 continue
             if not function.isImplicitlyVirtual:
                 continue
-            reportError(function.tokenDef, 'style', 'Function \'' + function.name + '\' overrides base class function but is not marked with \'virtual\' keyword.', 'implicitlyVirtual')
+            reportError(
+                function.tokenDef,
+                'style',
+                'Function \'' +
+                function.name +
+                '\' overrides base class function but is not marked with \'virtual\' keyword.',
+                'implicitlyVirtual')
+
 
 def ellipsisStructArg(data):
     for cfg in data.configurations:
@@ -107,7 +126,7 @@ def ellipsisStructArg(data):
                 if not simpleMatch(argvar.typeStartToken, '. . .'):
                     continue
                 callArgs = getArguments(tok)
-                for i in range(argnr-1, len(callArgs)):
+                for i in range(argnr - 1, len(callArgs)):
                     valueType = callArgs[i].valueType
                     if valueType is None:
                         argStart = callArgs[i].previous
@@ -125,14 +144,27 @@ def ellipsisStructArg(data):
                         while argStart != argEnd:
                             expression = expression + argStart.str
                             argStart = argStart.next
-                        reportError(tok, 'debug', 'Bailout, unknown argument type for argument \'' + expression + '\'.', 'debug')
+                        reportError(
+                            tok,
+                            'debug',
+                            'Bailout, unknown argument type for argument \'' +
+                            expression +
+                            '\'.',
+                            'debug')
                         continue
                     if valueType.pointer > 0:
                         continue
                     if valueType.type != 'record' and valueType.type != 'container':
                         continue
-                    reportError(tok, 'style', 'Passing record to ellipsis function \'' + tok.astOperand1.function.name + '\'.', 'ellipsisStructArg')
+                    reportError(
+                        tok,
+                        'style',
+                        'Passing record to ellipsis function \'' +
+                        tok.astOperand1.function.name +
+                        '\'.',
+                        'ellipsisStructArg')
                 break
+
 
 for arg in sys.argv[1:]:
     if arg in ['-debug', '-verify', '--cli']:
@@ -146,7 +178,8 @@ for arg in sys.argv[1:]:
         for tok in data.rawTokens:
             if tok.str.startswith('//'):
                 for word in tok.str[2:].split(' '):
-                    if word in ['stringConcatInArrayInit', 'implicitlyVirtual', 'ellipsisStructArg']:
+                    if word in ['stringConcatInArrayInit',
+                                'implicitlyVirtual', 'ellipsisStructArg']:
                         VERIFY_EXPECTED.append(str(tok.linenr) + ':' + word)
 
     stringConcatInArrayInit(data.configurations, data.rawTokens)

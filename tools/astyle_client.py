@@ -3,6 +3,7 @@ import socket
 import sys
 import time
 
+
 def receive_data(conn):
     data = ''
     for t in range(1000):
@@ -26,6 +27,7 @@ def astyle(server_address, code):
     sock.close()
     return None
 
+
 if __name__ == "__main__":
     server_address = ('cppcheck.osuosl.org', 18000)
 
@@ -46,4 +48,3 @@ if __name__ == "__main__":
             f.close()
         else:
             print('Unchanged: ' + filename)
-

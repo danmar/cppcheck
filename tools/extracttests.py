@@ -72,7 +72,7 @@ class Extract:
                 continue
 
             # check
-            res = re.match('\s+check.*\(' + string, line)
+            res = re.match(r'\s+check.*\(' + string, line)
             if res is not None:
                 code = res.group(1)
 
@@ -98,7 +98,8 @@ class Extract:
 
 def strtoxml(s):
     """Convert string to xml/html format"""
-    return s.replace('&', '&amp;').replace('"', '&quot;').replace('<', '&lt;').replace('>', '&gt;')
+    return s.replace('&', '&amp;').replace(
+        '"', '&quot;').replace('<', '&lt;').replace('>', '&gt;')
 
 
 def trimname(name):

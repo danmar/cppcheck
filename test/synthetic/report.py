@@ -29,7 +29,8 @@ def parsefile(filename):
             s = s[:15] + str(linenr) + spaces
             s = s[:20] + functionName + spaces
             s = s[:50]
-            if hasresult('cppcheck.txt', '[' + filename + ':' + str(linenr) + ']'):
+            if hasresult('cppcheck.txt',
+                         '[' + filename + ':' + str(linenr) + ']'):
                 s = s + '      X'
             else:
                 s = s + '       '
@@ -47,6 +48,7 @@ def parsefile(filename):
                 s = s + '       '
             ret.append(s)
     return ret
+
 
 bugs = []
 bugs.extend(parsefile('controlflow.c'))

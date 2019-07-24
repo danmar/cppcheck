@@ -154,12 +154,16 @@ class MatchCompilerTest(unittest.TestCase):
         # str() ==
         input = 'if (tok2->str() == "abc") {'
         output = self.mc._replaceCStrings(input)
-        self.assertEqual('if (tok2->str() == MatchCompiler::makeConstString("abc")) {', output)
+        self.assertEqual(
+            'if (tok2->str() == MatchCompiler::makeConstString("abc")) {',
+            output)
 
         # str() !=
         input = 'if (tok2->str() != "xyz") {'
         output = self.mc._replaceCStrings(input)
-        self.assertEqual('if (tok2->str() != MatchCompiler::makeConstString("xyz")) {', output)
+        self.assertEqual(
+            'if (tok2->str() != MatchCompiler::makeConstString("xyz")) {',
+            output)
 
         # strAt()
         input = 'if (match16(parent->tokAt(-3)) && tok->strAt(1) == ")")'
@@ -167,6 +171,7 @@ class MatchCompilerTest(unittest.TestCase):
         self.assertEqual(
             'if (match16(parent->tokAt(-3)) && tok->strAt(1) == MatchCompiler::makeConstString(")"))',
             output)
+
 
 if __name__ == '__main__':
     unittest.main()

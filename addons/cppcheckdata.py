@@ -79,7 +79,8 @@ class ValueType:
         self.typeScope = IdMap[self.typeScopeId]
 
     def isIntegral(self):
-        return self.type in {'bool', 'char', 'short', 'int', 'long', 'long long'}
+        return self.type in {'bool', 'char',
+                             'short', 'int', 'long', 'long long'}
 
     def isFloat(self):
         return self.type in {'float', 'double', 'long double'}
@@ -317,7 +318,19 @@ class Scope:
         self.nestedInId = element.get('nestedIn')
         self.nestedIn = None
         self.type = element.get('type')
-        self.isExecutable = (self.type in ('Function', 'If', 'Else', 'For', 'While', 'Do', 'Switch', 'Try', 'Catch', 'Unconditional', 'Lambda'))
+        self.isExecutable = (
+            self.type in (
+                'Function',
+                'If',
+                'Else',
+                'For',
+                'While',
+                'Do',
+                'Switch',
+                'Try',
+                'Catch',
+                'Unconditional',
+                'Lambda'))
 
     def setId(self, IdMap):
         self.bodyStart = IdMap[self.bodyStartId]
@@ -357,7 +370,8 @@ class Function:
         isVirtual = element.get('isVirtual')
         self.isVirtual = (isVirtual and isVirtual == 'true')
         isImplicitlyVirtual = element.get('isImplicitlyVirtual')
-        self.isImplicitlyVirtual = (isImplicitlyVirtual and isImplicitlyVirtual == 'true')
+        self.isImplicitlyVirtual = (
+            isImplicitlyVirtual and isImplicitlyVirtual == 'true')
 
         self.argument = {}
         self.argumentId = {}
@@ -515,6 +529,7 @@ class ValueFlow:
         for value in element:
             self.values.append(ValueFlow.Value(value))
 
+
 class Suppression:
     """
     Suppression class
@@ -541,11 +556,12 @@ class Suppression:
     def isMatch(self, file, line, message, errorId):
         if ((self.fileName is None or fnmatch(file, self.fileName))
             and (self.lineNumber is None or line == self.lineNumber)
-            and (self.symbolName is None or fnmatch(message, '*'+self.symbolName+'*'))
-            and fnmatch(errorId, self.errorId)):
+            and (self.symbolName is None or fnmatch(message, '*' + self.symbolName + '*'))
+                and fnmatch(errorId, self.errorId)):
             return True
         else:
             return False
+
 
 class Configuration:
     """
@@ -618,7 +634,11 @@ class Configuration:
                 for values in element:
                     self.valueflow.append(ValueFlow(values))
 
-        IdMap = {None: None, '0': None, '00000000': None, '0000000000000000': None}
+        IdMap = {
+            None: None,
+            '0': None,
+            '00000000': None,
+            '0000000000000000': None}
         for token in self.tokenlist:
             IdMap[token.Id] = token
         for scope in self.scopes:
@@ -676,6 +696,7 @@ class Platform:
         self.long_long_bit = int(platformnode.get('long_long_bit'))
         self.pointer_bit = int(platformnode.get('pointer_bit'))
 
+
 class Standards:
     """
     Standards class
@@ -690,7 +711,8 @@ class Standards:
     def __init__(self, standardsnode):
         self.c = standardsnode.find("c").get("version")
         self.cpp = standardsnode.find("cpp").get("version")
-        self.posix = standardsnode.find("posix") != None
+        self.posix = standardsnode.find("posix") is not None
+
 
 class CppcheckData:
     """
@@ -757,12 +779,10 @@ class CppcheckData:
                 self.rawTokens[i + 1].previous = self.rawTokens[i]
                 self.rawTokens[i].next = self.rawTokens[i + 1]
 
-
         for suppressionsNode in data.getroot():
             if suppressionsNode.tag == "suppressions":
                 for suppression in suppressionsNode:
                     self.suppressions.append(Suppression(suppression))
-
 
         # root is 'dumps' node, each config has its own 'dump' subnode.
         for cfgnode in data.getroot():
@@ -829,6 +849,7 @@ class CppCheckFormatter(argparse.HelpFormatter):
     """
     Properly formats multiline argument helps
     """
+
     def _split_lines(self, text, width):
         # this is the RawTextHelpFormatter._split_lines
         if text.startswith('R|'):
@@ -862,17 +883,19 @@ def simpleMatch(token, pattern):
 
 def reportError(location, severity, message, addon, errorId, extra=''):
     if '--cli' in sys.argv:
-        msg = { 'file': location.file,
-                'linenr': location.linenr,
-                'col': location.col,
-                'severity': severity,
-                'message': message,
-                'addon': addon,
-                'errorId': errorId,
-                'extra': extra}
+        msg = {'file': location.file,
+               'linenr': location.linenr,
+               'col': location.col,
+               'severity': severity,
+               'message': message,
+               'addon': addon,
+               'errorId': errorId,
+               'extra': extra}
         sys.stdout.write(json.dumps(msg) + '\n')
     else:
         loc = '[%s:%i]' % (location.file, location.linenr)
         if len(extra) > 0:
             message += ' (' + extra + ')'
-        sys.stderr.write('%s (%s) %s [%s-%s]\n' % (loc, severity, message, addon, errorId))
+        sys.stderr.write(
+            '%s (%s) %s [%s-%s]\n' %
+            (loc, severity, message, addon, errorId))

@@ -228,11 +228,11 @@ HTML_HEAD = """
       }
       function toggle_all(){
         var elts = document.getElementsByTagName("input");
-        for (var i = 1; i < elts.length; i++) {           
+        for (var i = 1; i < elts.length; i++) {
           var el = elts[i];
           el.checked ? el.checked=false : el.checked=true;
-          toggle_class_visibility(el.id);        
-        }            
+          toggle_class_visibility(el.id);
+        }
       }
 
     </script>
@@ -297,15 +297,21 @@ class AnnotateCodeFormatter(HtmlFormatter):
                             if error['inconclusive'] == 'true':
                                 # only print verbose msg if it really differs
                                 # from actual message
-                                if error.get('verbose') and (error['verbose'] != error['msg']):
+                                if error.get('verbose') and (
+                                        error['verbose'] != error['msg']):
                                     index = t.rfind('\n')
-                                    t = t[:index] + HTML_EXPANDABLE_INCONCLUSIVE % (error['msg'], html_escape(error['verbose'].replace("\\012", '\n'))) + t[index + 1:]
+                                    t = t[:index] + HTML_EXPANDABLE_INCONCLUSIVE % (error['msg'], html_escape(
+                                        error['verbose'].replace("\\012", '\n'))) + t[index + 1:]
                                 else:
-                                    t = t.replace('\n', HTML_INCONCLUSIVE % error['msg'])
+                                    t = t.replace(
+                                        '\n', HTML_INCONCLUSIVE %
+                                        error['msg'])
                         except KeyError:
-                            if error.get('verbose') and (error['verbose'] != error['msg']):
+                            if error.get('verbose') and (
+                                    error['verbose'] != error['msg']):
                                 index = t.rfind('\n')
-                                t = t[:index] + HTML_EXPANDABLE_ERROR % (error['msg'], html_escape(error['verbose'].replace("\\012", '\n'))) + t[index + 1:]
+                                t = t[:index] + HTML_EXPANDABLE_ERROR % (error['msg'], html_escape(
+                                    error['verbose'].replace("\\012", '\n'))) + t[index + 1:]
                             else:
                                 t = t.replace('\n', HTML_ERROR % error['msg'])
 
@@ -382,6 +388,7 @@ class CppCheckHandler(XmlContentHandler):
                 'line': line,
                 'info': attributes.get('info')
             })
+
 
 if __name__ == '__main__':
     # Configure all the options this little utility is using.
@@ -499,7 +506,8 @@ if __name__ == '__main__':
         except UnicodeDecodeError:
             sys.stderr.write("WARNING: Unicode decode error in '%s'.\n" %
                              source_filename)
-            decode_errors.append(source_filename[2:])  # "[2:]" gets rid of "./" at beginning
+            # "[2:]" gets rid of "./" at beginning
+            decode_errors.append(source_filename[2:])
             continue
 
         htmlFormatter = AnnotateCodeFormatter(linenos=True,
@@ -518,15 +526,22 @@ if __name__ == '__main__':
                                filename.split('/')[-1]))
 
             for error in sorted(errors, key=lambda k: k['line']):
-                output_file.write("<a href='%s#line-%d'> %s %s</a>" % (data['htmlfile'], error['line'], error['id'],   error['line']))
+                output_file.write(
+                    "<a href='%s#line-%d'> %s %s</a>" %
+                    (data['htmlfile'], error['line'], error['id'], error['line']))
 
             output_file.write(HTML_HEAD_END)
             try:
                 lexer = guess_lexer_for_filename(source_filename, '')
-            except:
-                sys.stderr.write("ERROR: Couldn't determine lexer for the file' " + source_filename + " '. Won't be able to syntax highlight this file.")
-                output_file.write("\n <tr><td colspan='5'> Could not generated content because pygments failed to retrieve the determine code type.</td></tr>")
-                output_file.write("\n <tr><td colspan='5'> Sorry about this.</td></tr>")
+            except BaseException:
+                sys.stderr.write(
+                    "ERROR: Couldn't determine lexer for the file' " +
+                    source_filename +
+                    " '. Won't be able to syntax highlight this file.")
+                output_file.write(
+                    "\n <tr><td colspan='5'> Could not generated content because pygments failed to retrieve the determine code type.</td></tr>")
+                output_file.write(
+                    "\n <tr><td colspan='5'> Sorry about this.</td></tr>")
                 continue
 
             if options.source_encoding:
@@ -558,7 +573,8 @@ if __name__ == '__main__':
 
         stat_html = []
         # the following lines sort the stat primary by value (occurrences),
-        # but if two IDs occur equally often, then we sort them alphabetically by warning ID
+        # but if two IDs occur equally often, then we sort them alphabetically
+        # by warning ID
         try:
             cnt_max = counter.most_common()[0][1]
         except IndexError:
@@ -571,15 +587,28 @@ if __name__ == '__main__':
 
         stat_fmt = "            <tr><td><input type='checkbox' onclick='toggle_class_visibility(this.id)' id='{}' name='{}' checked></td><td>{}</td><td>{}</td></tr>"
         for occurrences in reversed(range(cnt_min, cnt_max + 1)):
-            for _id in [k for k, v in sorted(counter.items()) if v == occurrences]:
-                stat_html.append(stat_fmt.format(_id, _id, dict(counter.most_common())[_id], _id))
+            for _id in [k for k, v in sorted(
+                    counter.items()) if v == occurrences]:
+                stat_html.append(
+                    stat_fmt.format(
+                        _id, _id, dict(
+                            counter.most_common())[_id], _id))
 
-        output_file.write(HTML_HEAD.replace('id="menu" dir="rtl"', 'id="menu_index"', 1).replace("Defects:", "Defect summary;", 1) % (options.title, '', options.title, '', ''))
+        output_file.write(
+            HTML_HEAD.replace(
+                'id="menu" dir="rtl"', 'id="menu_index"', 1).replace(
+                "Defects:", "Defect summary;", 1) %
+            (options.title, '', options.title, '', ''))
         output_file.write('       <table>')
-        output_file.write('           <tr><th>Show</th><th>#</th><th>Defect ID</th></tr>')
-        output_file.write('<label><input type="checkbox" onclick="toggle_all()" checked/> Toggle all</label>')
+        output_file.write(
+            '           <tr><th>Show</th><th>#</th><th>Defect ID</th></tr>')
+        output_file.write(
+            '<label><input type="checkbox" onclick="toggle_all()" checked/> Toggle all</label>')
         output_file.write(''.join(stat_html))
-        output_file.write('           <tr><td></td><td>' + str(stats_count) + '</td><td>total</td></tr>')
+        output_file.write(
+            '           <tr><td></td><td>' +
+            str(stats_count) +
+            '</td><td>total</td></tr>')
         output_file.write('       </table>')
         output_file.write('       <a href="stats.html">Statistics</a></p>')
         output_file.write(HTML_HEAD_END.replace("content", "content_index", 1))
@@ -589,8 +618,11 @@ if __name__ == '__main__':
             '       <tr><th>Line</th><th>Id</th><th>CWE</th><th>Severity</th><th>Message</th></tr>')
         for filename, data in sorted(files.items()):
             if filename in decode_errors:  # don't print a link but a note
-                output_file.write("\n       <tr><td colspan='5'>%s</td></tr>" % (filename))
-                output_file.write("\n       <tr><td colspan='5'> Could not generated due to UnicodeDecodeError</td></tr>")
+                output_file.write(
+                    "\n       <tr><td colspan='5'>%s</td></tr>" %
+                    (filename))
+                output_file.write(
+                    "\n       <tr><td colspan='5'> Could not generated due to UnicodeDecodeError</td></tr>")
             else:
                 if filename.endswith('*'):  # assume unmatched suppression
                     output_file.write(
@@ -612,7 +644,9 @@ if __name__ == '__main__':
 
                     try:
                         if error['cwe']:
-                            cwe_url = "<a href='https://cwe.mitre.org/data/definitions/" + error['cwe'] + ".html'>" + error['cwe'] + "</a>"
+                            cwe_url = "<a href='https://cwe.mitre.org/data/definitions/" + \
+                                error['cwe'] + ".html'>" + \
+                                error['cwe'] + "</a>"
                     except KeyError:
                         cwe_url = ""
 
@@ -638,8 +672,11 @@ if __name__ == '__main__':
         output_file.write(HTML_FOOTER % contentHandler.versionCppcheck)
 
     if (decode_errors):
-        sys.stderr.write("\nGenerating html failed for the following files: " + ' '.join(decode_errors))
-        sys.stderr.write("\nConsider changing source-encoding (for example: \"htmlreport ... --source-encoding=\"iso8859-1\"\"\n")
+        sys.stderr.write(
+            "\nGenerating html failed for the following files: " +
+            ' '.join(decode_errors))
+        sys.stderr.write(
+            "\nConsider changing source-encoding (for example: \"htmlreport ... --source-encoding=\"iso8859-1\"\"\n")
 
     print('Creating style.css file')
     with io.open(os.path.join(options.report_dir, 'style.css'),
@@ -663,7 +700,11 @@ if __name__ == '__main__':
 
     with io.open(os.path.join(options.report_dir, 'stats.html'), 'w') as stats_file:
 
-        stats_file.write(HTML_HEAD.replace('id="menu" dir="rtl"', 'id="menu_index"', 1).replace("Defects:", "Back to summary", 1) % (options.title, '', options.title, 'Statistics', ''))
+        stats_file.write(
+            HTML_HEAD.replace(
+                'id="menu" dir="rtl"', 'id="menu_index"', 1).replace(
+                "Defects:", "Back to summary", 1) %
+            (options.title, '', options.title, 'Statistics', ''))
         stats_file.write(HTML_HEAD_END.replace("content", "content_index", 1))
 
         for sev in SEVERITIES:
@@ -676,7 +717,8 @@ if __name__ == '__main__':
                 for filename in stats_countlist:
                     try:  # also bail out if we have a file with no sev-results
                         _sum += stats_countlist[filename][sev]
-                        stats_templist[filename] = (int)(stats_countlist[filename][sev])  # file : amount,
+                        stats_templist[filename] = (int)(
+                            stats_countlist[filename][sev])  # file : amount,
                     except KeyError:
                         continue
                 # don't print "0 style" etc, if no style warnings were found
@@ -684,10 +726,17 @@ if __name__ == '__main__':
                     break
             except KeyError:
                 continue
-            stats_file.write("<p>Top 10 files for " + sev + " severity, total findings: " + str(_sum) + "</br>\n")
+            stats_file.write(
+                "<p>Top 10 files for " +
+                sev +
+                " severity, total findings: " +
+                str(_sum) +
+                "</br>\n")
 
             # sort, so that the file with the most severities per type is first
-            stats_list_sorted = sorted(stats_templist.items(), key=operator.itemgetter(1, 0), reverse=True)
+            stats_list_sorted = sorted(
+                stats_templist.items(), key=operator.itemgetter(
+                    1, 0), reverse=True)
             it = 0
             LENGTH = 0
 
@@ -695,9 +744,21 @@ if __name__ == '__main__':
                 # for aesthetics: if it's the first iteration of the loop, get
                 # the max length of the number string
                 if (it == 0):
-                    LENGTH = len(str(i[1]))  # <- length of longest number, now get the difference and try to  make other numbers align to it
+                    # <- length of longest number, now get the difference and try to  make other numbers align to it
+                    LENGTH = len(str(i[1]))
 
-                stats_file.write("&#160;" * 3 + str(i[1]) + "&#160;" * (1 + LENGTH - len(str(i[1]))) + "<a href=\"" + files[i[0]]['htmlfile'] + "\">  " + i[0] + "</a></br>\n")
+                stats_file.write("&#160;" *
+                                 3 +
+                                 str(i[1]) +
+                                 "&#160;" *
+                                 (1 +
+                                  LENGTH -
+                                  len(str(i[1]))) +
+                                 "<a href=\"" +
+                                 files[i[0]]['htmlfile'] +
+                                 "\">  " +
+                                 i[0] +
+                                 "</a></br>\n")
                 it += 1
                 if (it == 10):  # print only the top 10
                     break

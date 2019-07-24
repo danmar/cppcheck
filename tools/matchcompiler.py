@@ -155,7 +155,8 @@ class MatchCompiler:
 
             # [abc]
             if (len(tok) > 2) and (tok[0] == '[') and (tok[-1] == ']'):
-                ret += '    if (!tok || tok->str().size()!=1U || !strchr("' + tok[1:-1] + '", tok->str()[0]))\n'
+                ret += '    if (!tok || tok->str().size()!=1U || !strchr("' + \
+                    tok[1:-1] + '", tok->str()[0]))\n'
                 ret += '        ' + returnStatement
 
             # a|b|c
@@ -184,14 +185,16 @@ class MatchCompiler:
 
             # !!a
             elif tok[0:2] == "!!":
-                ret += '    if (tok && tok->str() == MatchCompiler::makeConstString("' + tok[2:] + '"))\n'
+                ret += '    if (tok && tok->str() == MatchCompiler::makeConstString("' + \
+                    tok[2:] + '"))\n'
                 ret += '        ' + returnStatement
                 gotoNextToken = '    tok = tok ? tok->next() : NULL;\n'
 
             else:
                 negatedTok = "!" + self._compileCmd(tok)
                 # fold !true => false ; !false => true
-                # this avoids cppcheck warnings about condition always being true/false
+                # this avoids cppcheck warnings about condition always being
+                # true/false
                 if negatedTok == "!false":
                     negatedTok = "true"
                 elif negatedTok == "!true":
@@ -406,7 +409,12 @@ class MatchCompiler:
             res = re.match(r'\s*"((?:.|\\")*?)"\s*$', raw_pattern)
             if res is None:
                 if self._showSkipped:
-                    print(filename + ":" + str(linenr) + " skipping match pattern:" + raw_pattern)
+                    print(
+                        filename +
+                        ":" +
+                        str(linenr) +
+                        " skipping match pattern:" +
+                        raw_pattern)
                 break  # Non-const pattern - bailout
 
             pattern = res.group(1)
@@ -528,7 +536,8 @@ class MatchCompiler:
             if res is None:
                 break
 
-            # assert that Token::find(simple)match has either 2, 3 or 4 arguments
+            # assert that Token::find(simple)match has either 2, 3 or 4
+            # arguments
             assert(len(res) >= 3 or len(res) < 6)
 
             g0 = res[0]
@@ -552,14 +561,19 @@ class MatchCompiler:
             # Token *end, int varId = 0);
             endToken = None
             if ((is_findsimplematch and len(res) == 4) or
-               (not is_findsimplematch and varId and (len(res) == 5)) or
-               (not is_findsimplematch and varId is None and len(res) == 4)):
+                (not is_findsimplematch and varId and (len(res) == 5)) or
+                    (not is_findsimplematch and varId is None and len(res) == 4)):
                 endToken = res[3]
 
             res = re.match(r'\s*"((?:.|\\")*?)"\s*$', pattern)
             if res is None:
                 if self._showSkipped:
-                    print(filename + ":" + str(linenr) + " skipping findmatch pattern:" + pattern)
+                    print(
+                        filename +
+                        ":" +
+                        str(linenr) +
+                        " skipping findmatch pattern:" +
+                        pattern)
                 break  # Non-const pattern - bailout
 
             pattern = res.group(1)
@@ -593,7 +607,9 @@ class MatchCompiler:
             text = line[startPos + 1:endPos - 1]
             line = line[:startPos] + 'MatchCompiler::makeConstStringBegin' +\
                 text + 'MatchCompiler::makeConstStringEnd' + line[endPos:]
-        line = line.replace('MatchCompiler::makeConstStringBegin', 'MatchCompiler::makeConstString("')
+        line = line.replace(
+            'MatchCompiler::makeConstStringBegin',
+            'MatchCompiler::makeConstString("')
         line = line.replace('MatchCompiler::makeConstStringEnd', '")')
         return line
 
@@ -700,6 +716,7 @@ def main():
         po = build_dir + '/' + fo
         print(pi + ' => ' + po)
         mc.convertFile(pi, po, line_directive)
+
 
 if __name__ == '__main__':
     main()

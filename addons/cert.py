@@ -17,11 +17,13 @@ VERIFY = ('-verify' in sys.argv)
 VERIFY_EXPECTED = []
 VERIFY_ACTUAL = []
 
+
 def reportError(token, severity, msg, id):
     if VERIFY:
         VERIFY_ACTUAL.append(str(token.linenr) + ':cert-' + id)
     else:
         cppcheckdata.reportError(token, severity, msg, 'cert', id)
+
 
 def simpleMatch(token, pattern):
     for p in pattern.split(' '):
@@ -29,6 +31,7 @@ def simpleMatch(token, pattern):
             return False
         token = token.next
     return True
+
 
 def isUnpackedStruct(token):
     if token.valueType is None:
@@ -52,7 +55,8 @@ def isUnpackedStruct(token):
 def isLocalUnpackedStruct(arg):
     if arg and arg.str == '&' and not arg.astOperand2:
         arg = arg.astOperand1
-    return arg and arg.variable and (arg.variable.isLocal or arg.variable.isArgument) and isUnpackedStruct(arg)
+    return arg and arg.variable and (
+        arg.variable.isLocal or arg.variable.isArgument) and isUnpackedStruct(arg)
 
 
 def isBitwiseOp(token):
@@ -62,12 +66,14 @@ def isBitwiseOp(token):
 def isComparisonOp(token):
     return token and (token.str in {'==', '!=', '>', '>=', '<', '<='})
 
+
 def isCast(expr):
     if not expr or expr.str != '(' or not expr.astOperand1 or expr.astOperand2:
         return False
     if simpleMatch(expr, '( )'):
         return False
     return True
+
 
 def isStandardFunction(token):
     if token.function:
@@ -83,6 +89,8 @@ def isStandardFunction(token):
     return True
 
 # Is this a function call
+
+
 def isFunctionCall(token, function_names, number_of_arguments=None):
     if not token.isName:
         return False
@@ -113,7 +121,11 @@ def exp05(data):
             const1 = token.valueType.constness
             const2 = token.astOperand1.valueType.constness
             if (const1 % 2) < (const2 % 2):
-                reportError(token, 'style', "Attempt to cast away const", 'EXP05-C')
+                reportError(
+                    token,
+                    'style',
+                    "Attempt to cast away const",
+                    'EXP05-C')
 
         elif token.str == '(' and token.astOperand1 and token.astOperand2 and token.astOperand1.function:
             function = token.astOperand1.function
@@ -123,7 +135,7 @@ def exp05(data):
                     continue
                 if not argvar.isPointer:
                     continue
-                if (argvar.constness % 2) == 1: # data is const
+                if (argvar.constness % 2) == 1:  # data is const
                     continue
                 argtok = arguments[argnr - 1]
                 if not argtok.valueType:
@@ -132,7 +144,11 @@ def exp05(data):
                     continue
                 const2 = arguments[argnr - 1].valueType.constness
                 if (const2 % 2) == 1:
-                    reportError(token, 'style', "Attempt to cast away const", 'EXP05-C')
+                    reportError(
+                        token,
+                        'style',
+                        "Attempt to cast away const",
+                        'EXP05-C')
 
 
 # EXP42-C
@@ -156,12 +172,18 @@ def exp42(data):
 
 # EXP15-C
 # Do not place a semicolon on the same line as an if, for or while statement
+
+
 def exp15(data):
     for scope in data.scopes:
         if scope.type in ('If', 'For', 'While'):
-            token = scope.bodyStart.next 
-            if token.str==';' and token.linenr==scope.bodyStart.linenr:
-                reportError(token, 'style', 'Do not place a semicolon on the same line as an IF, FOR or WHILE', 'EXP15-C')
+            token = scope.bodyStart.next
+            if token.str == ';' and token.linenr == scope.bodyStart.linenr:
+                reportError(
+                    token,
+                    'style',
+                    'Do not place a semicolon on the same line as an IF, FOR or WHILE',
+                    'EXP15-C')
 
 
 # EXP46-C
@@ -169,12 +191,15 @@ def exp15(data):
 #   int x = (a == b) & c;
 def exp46(data):
     for token in data.tokenlist:
-        if isBitwiseOp(token) and (isComparisonOp(token.astOperand1) or isComparisonOp(token.astOperand2)):
+        if isBitwiseOp(token) and (isComparisonOp(
+                token.astOperand1) or isComparisonOp(token.astOperand2)):
             reportError(
                 token, 'style', 'Bitwise operator is used with a Boolean-like operand', 'EXP46-c')
 
 # INT31-C
 # Ensure that integer conversions do not result in lost or misinterpreted data
+
+
 def int31(data, platform):
     if not platform:
         return
@@ -204,7 +229,8 @@ def int31(data, platform):
                     reportError(
                         token,
                         'style',
-                        'Ensure that integer conversions do not result in lost or misinterpreted data (casting ' + str(value.intvalue) + ' to unsigned ' + token.valueType.type + ')',
+                        'Ensure that integer conversions do not result in lost or misinterpreted data (casting ' + str(
+                            value.intvalue) + ' to unsigned ' + token.valueType.type + ')',
                         'INT31-c')
                 break
             if found:
@@ -220,7 +246,8 @@ def int31(data, platform):
             minval = 0
             maxval = ((1 << bits) - 1)
         for value in token.astOperand1.values:
-            if value.intvalue and (value.intvalue < minval or value.intvalue > maxval):
+            if value.intvalue and (
+                    value.intvalue < minval or value.intvalue > maxval):
                 destType = ''
                 if token.valueType.sign:
                     destType = token.valueType.sign + ' ' + token.valueType.type
@@ -229,55 +256,112 @@ def int31(data, platform):
                 reportError(
                     token,
                     'style',
-                    'Ensure that integer conversions do not result in lost or misinterpreted data (casting ' + str(value.intvalue) + ' to ' + destType + ')',
+                    'Ensure that integer conversions do not result in lost or misinterpreted data (casting ' + str(
+                        value.intvalue) + ' to ' + destType + ')',
                     'INT31-c')
-                break                
+                break
 # MSC24-C
 # Do not use deprecated or obsolescent functions
+
+
 def msc24(data):
     for token in data.tokenlist:
         if isFunctionCall(token, ('asctime',), 1):
-            reportError(token,'style','Do no use asctime() better use asctime_s()', 'MSC24-C')
+            reportError(
+                token,
+                'style',
+                'Do no use asctime() better use asctime_s()',
+                'MSC24-C')
         elif isFunctionCall(token, ('atof',), 1):
-            reportError(token,'style','Do no use atof() better use strtod()', 'MSC24-C')
+            reportError(
+                token,
+                'style',
+                'Do no use atof() better use strtod()',
+                'MSC24-C')
         elif isFunctionCall(token, ('atoi',), 1):
-            reportError(token,'style','Do no use atoi() better use strtol()', 'MSC24-C')
+            reportError(
+                token,
+                'style',
+                'Do no use atoi() better use strtol()',
+                'MSC24-C')
         elif isFunctionCall(token, ('atol',), 1):
-            reportError(token,'style','Do no use atol() better use strtol()', 'MSC24-C')
+            reportError(
+                token,
+                'style',
+                'Do no use atol() better use strtol()',
+                'MSC24-C')
         elif isFunctionCall(token, ('atoll',), 1):
-            reportError(token,'style','Do no use atoll() better use strtoll()', 'MSC24-C')
+            reportError(
+                token,
+                'style',
+                'Do no use atoll() better use strtoll()',
+                'MSC24-C')
         elif isFunctionCall(token, ('ctime',), 1):
-            reportError(token,'style','Do no use ctime() better use ctime_s()', 'MSC24-C')
+            reportError(
+                token,
+                'style',
+                'Do no use ctime() better use ctime_s()',
+                'MSC24-C')
         elif isFunctionCall(token, ('fopen',), 2):
-            reportError(token,'style','Do no use fopen() better use fopen_s()', 'MSC24-C')
+            reportError(
+                token,
+                'style',
+                'Do no use fopen() better use fopen_s()',
+                'MSC24-C')
         elif isFunctionCall(token, ('freopen',), 3):
-            reportError(token,'style','Do no use freopen() better use freopen_s()', 'MSC24-C')
+            reportError(
+                token,
+                'style',
+                'Do no use freopen() better use freopen_s()',
+                'MSC24-C')
         elif isFunctionCall(token, ('rewind',), 1):
-            reportError(token,'style','Do no use rewind() better use fseek()', 'MSC24-C')
+            reportError(
+                token,
+                'style',
+                'Do no use rewind() better use fseek()',
+                'MSC24-C')
         elif isFunctionCall(token, ('setbuf',), 2):
-            reportError(token,'style','Do no use setbuf() better use setvbuf()', 'MSC24-C')
+            reportError(
+                token,
+                'style',
+                'Do no use setbuf() better use setvbuf()',
+                'MSC24-C')
 
 # MSC30-C
 # Do not use the rand() function for generating pseudorandom numbers
+
+
 def msc30(data):
     for token in data.tokenlist:
         if simpleMatch(token, "rand ( )") and isStandardFunction(token):
-            reportError(token, 'style', 'Do not use the rand() function for generating pseudorandom numbers', 'MSC30-c')
+            reportError(
+                token,
+                'style',
+                'Do not use the rand() function for generating pseudorandom numbers',
+                'MSC30-c')
 
 # STR03-C
 # Do not inadvertently truncate a string
+
+
 def str03(data):
     for token in data.tokenlist:
         if not isFunctionCall(token, 'strncpy'):
             continue
         arguments = cppcheckdata.getArguments(token)
-        if len(arguments)!=3:
+        if len(arguments) != 3:
             continue
-        if arguments[2].str=='(' and arguments[2].astOperand1.str=='sizeof':
-            reportError(token, 'style', 'Do not inadvertently truncate a string', 'STR03-C')
+        if arguments[2].str == '(' and arguments[2].astOperand1.str == 'sizeof':
+            reportError(
+                token,
+                'style',
+                'Do not inadvertently truncate a string',
+                'STR03-C')
 
 # STR05-C
 # Use pointers to const when referring to string literals
+
+
 def str05(data):
     for token in data.tokenlist:
         if token.isString:
@@ -286,24 +370,39 @@ def str05(data):
                 continue
             parentOp1 = parent.astOperand1
             if parent.isAssignmentOp and parentOp1.valueType:
-                if (parentOp1.valueType.type in ('char', 'wchar_t')) and parentOp1.valueType.pointer and not parentOp1.valueType.constness:
-                    reportError(parentOp1, 'style', 'Use pointers to const when referring to string literals', 'STR05-C')
+                if (parentOp1.valueType.type in ('char', 'wchar_t')
+                        ) and parentOp1.valueType.pointer and not parentOp1.valueType.constness:
+                    reportError(
+                        parentOp1,
+                        'style',
+                        'Use pointers to const when referring to string literals',
+                        'STR05-C')
 
 # STR07-C
 # Use the bounds-checking interfaces for string manipulation
+
+
 def str07(data):
     for token in data.tokenlist:
         if not isFunctionCall(token, ('strcpy', 'strcat')):
             continue
         args = cppcheckdata.getArguments(token)
-        if len(args)!=2:
+        if len(args) != 2:
             continue
         if args[1].isString:
             continue
-        reportError(token, 'style', 'Use the bounds-checking interfaces %s_s()' % (token.str), 'STR07-C')
+        reportError(
+            token,
+            'style',
+            'Use the bounds-checking interfaces %s_s()' %
+            (token.str),
+            'STR07-C')
 
 # STR11-C
-# Do not specify the bound of a character array initialized with a string literal
+# Do not specify the bound of a character array initialized with a string
+# literal
+
+
 def str11(data):
     for token in data.tokenlist:
         if not token.isString:
@@ -315,12 +414,12 @@ def str11(data):
         if parent is None:
             continue
         parentOp1 = parent.astOperand1
-        if parentOp1 is None or parentOp1.str!='[':
+        if parentOp1 is None or parentOp1.str != '[':
             continue
 
         if not parent.isAssignmentOp:
             continue
-            
+
         varToken = parentOp1.astOperand1
         if varToken is None or not varToken.isName:
             continue
@@ -331,28 +430,39 @@ def str11(data):
         valueToken = parentOp1.astOperand2
         if valueToken is None:
             continue
-            
-        if valueToken.isNumber and int(valueToken.str)==strlen:
-            reportError(valueToken, 'style', 'Do not specify the bound of a character array initialized with a string literal', 'STR11-C')
+
+        if valueToken.isNumber and int(valueToken.str) == strlen:
+            reportError(
+                valueToken,
+                'style',
+                'Do not specify the bound of a character array initialized with a string literal',
+                'STR11-C')
 
 # API01-C
 # Avoid laying out strings in memory directly before sensitive data
+
+
 def api01(data):
     for scope in data.scopes:
-        if scope.type!='Struct':
+        if scope.type != 'Struct':
             continue
         token = scope.bodyStart
-        arrayFound=False
+        arrayFound = False
         # loop through the complete struct
         while token != scope.bodyEnd:
             if token.isName and token.variable:
                 if token.variable.isArray:
-                    arrayFound=True
+                    arrayFound = True
                 elif arrayFound and not token.variable.isArray and not token.variable.isConst:
-                    reportError(token, 'style', 'Avoid laying out strings in memory directly before sensitive data', 'API01-C')
+                    reportError(
+                        token,
+                        'style',
+                        'Avoid laying out strings in memory directly before sensitive data',
+                        'API01-C')
                     # reset flags to report other positions in the same struct
-                    arrayFound=False
+                    arrayFound = False
             token = token.next
+
 
 for arg in sys.argv[1:]:
     if arg == '-verify':
@@ -369,7 +479,7 @@ for arg in sys.argv[1:]:
         for tok in data.rawTokens:
             if tok.str.startswith('//') and 'TODO' not in tok.str:
                 for word in tok.str[2:].split(' '):
-                    if re.match(r'cert-[A-Z][A-Z][A-Z][0-9][0-9].*',word):
+                    if re.match(r'cert-[A-Z][A-Z][A-Z][0-9][0-9].*', word):
                         VERIFY_EXPECTED.append(str(tok.linenr) + ':' + word)
 
     for cfg in data.configurations:

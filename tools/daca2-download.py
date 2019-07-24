@@ -144,8 +144,10 @@ def downloadpackage(filepath, outpath):
 
     for g in glob.glob('[#_A-Za-z0-9]*'):
         if os.path.isdir(g):
-            subprocess.call(['tar', '-cJvf', outpath + filename[:filename.rfind('.')] + '.xz', g])
+            subprocess.call(['tar', '-cJvf', outpath +
+                             filename[:filename.rfind('.')] + '.xz', g])
             break
+
 
 workdir = os.path.expanduser('~/daca2-packages/tmp/')
 if not os.path.isdir(workdir):

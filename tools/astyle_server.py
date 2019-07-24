@@ -41,4 +41,3 @@ def server(port):
 
 if __name__ == "__main__":
     server(port=18000)
-

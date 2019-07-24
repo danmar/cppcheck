@@ -34,7 +34,8 @@ logfile = sys.path[0]
 if logfile:
     logfile += '/'
 logfile += 'donate-cpu-server.log'
-handler_file = logging.handlers.RotatingFileHandler(filename=logfile, maxBytes=100*1024, backupCount=1)
+handler_file = logging.handlers.RotatingFileHandler(
+    filename=logfile, maxBytes=100 * 1024, backupCount=1)
 handler_file.setLevel(logging.ERROR)
 logger.addHandler(handler_file)
 
@@ -45,7 +46,12 @@ def handle_uncaught_exception(exc_type, exc_value, exc_traceback):
         sys.__excepthook__(exc_type, exc_value, exc_traceback)
         return
 
-    logging.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+    logging.error(
+        "Uncaught exception",
+        exc_info=(
+            exc_type,
+            exc_value,
+            exc_traceback))
 
 
 sys.excepthook = handle_uncaught_exception
@@ -57,6 +63,7 @@ def strDateTime():
 
 def dateTimeFromStr(datestr):
     return datetime.datetime.strptime(datestr, '%Y-%m-%d %H:%M')
+
 
 def overviewReport():
     html = '<html><head><title>daca@home</title></head><body>\n'
@@ -102,13 +109,17 @@ def fmt(a, b, c, d, e):
 def latestReport(latestResults):
     html = '<html><head><title>Latest daca@home results</title></head><body>\n'
     html += '<h1>Latest daca@home results</h1>\n'
-    html += '<pre>\n<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', 'Diff') + '</b>\n'
+    html += '<pre>\n<b>' + fmt('Package',
+                               'Date       Time',
+                               OLD_VERSION,
+                               'Head',
+                               'Diff') + '</b>\n'
 
     # Write report for latest results
     for filename in latestResults:
         if not os.path.isfile(filename):
             continue
-        package = filename[filename.rfind('/')+1:]
+        package = filename[filename.rfind('/') + 1:]
         current_year = datetime.date.today().year
 
         datestr = ''
@@ -117,9 +128,10 @@ def latestReport(latestResults):
         added = 0
         for line in open(filename, 'rt'):
             line = line.strip()
-            if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
+            if line.startswith(
+                    str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                 datestr = line
-            #elif line.startswith('cppcheck:'):
+            # elif line.startswith('cppcheck:'):
             #    cppcheck = line[9:]
             elif line.startswith('count: '):
                 count = line.split(' ')[1:]
@@ -142,9 +154,11 @@ def crashReport():
     html = '<html><head><title>Crash report</title></head><body>\n'
     html += '<h1>Crash report</h1>\n'
     html += '<pre>\n'
-    html += '<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', None) + '</b>\n'
+    html += '<b>' + fmt('Package', 'Date       Time',
+                        OLD_VERSION, 'Head', None) + '</b>\n'
     current_year = datetime.date.today().year
-    for filename in sorted(glob.glob(os.path.expanduser('~/daca@home/donated-results/*'))):
+    for filename in sorted(
+            glob.glob(os.path.expanduser('~/daca@home/donated-results/*'))):
         if not os.path.isfile(filename):
             continue
         datestr = ''
@@ -157,13 +171,14 @@ def crashReport():
                 else:
                     # Current package, parse on
                     continue
-            if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
+            if line.startswith(
+                    str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                 datestr = line
             if not line.startswith('count:'):
                 continue
             if line.find('Crash') < 0:
                 break
-            package = filename[filename.rfind('/')+1:]
+            package = filename[filename.rfind('/') + 1:]
             counts = line.strip().split(' ')
             c2 = ''
             if counts[2] == 'Crash!':
@@ -183,14 +198,17 @@ def staleReport():
     html = '<html><head><title>Stale report</title></head><body>\n'
     html += '<h1>Stale report</h1>\n'
     html += '<pre>\n'
-    html += '<b>' + fmt('Package', 'Date       Time', None, None, None) + '</b>\n'
+    html += '<b>' + fmt('Package', 'Date       Time',
+                        None, None, None) + '</b>\n'
     current_year = datetime.date.today().year
-    for filename in sorted(glob.glob(os.path.expanduser('~/daca@home/donated-results/*'))):
+    for filename in sorted(
+            glob.glob(os.path.expanduser('~/daca@home/donated-results/*'))):
         if not os.path.isfile(filename):
             continue
         for line in open(filename, 'rt'):
             line = line.strip()
-            if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
+            if line.startswith(
+                    str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                 datestr = line
             else:
                 continue
@@ -198,7 +216,7 @@ def staleReport():
             diff = datetime.datetime.now() - dt
             if diff.days < 30:
                 continue
-            package = filename[filename.rfind('/')+1:]
+            package = filename[filename.rfind('/') + 1:]
             html += fmt(package, datestr, None, None, None) + '\n'
             break
     html += '</pre>\n'
@@ -227,7 +245,8 @@ def diffReportFromDict(out, today):
             while len(line) < 48 - len(c):
                 line += ' '
             line += c
-        line = '<a href="diff' + today + '-' + messageId + '">' + messageId + '</a>' + line[line.find(' '):]
+        line = '<a href="diff' + today + '-' + messageId + \
+            '">' + messageId + '</a>' + line[line.find(' '):]
         html += line + '\n'
 
     # Sum
@@ -301,14 +320,14 @@ def generate_package_diff_statistics(filename):
         else:
             continue
 
-        messageId = line[line.rfind('[')+1:len(line)-1]
+        messageId = line[line.rfind('[') + 1:len(line) - 1]
 
         if messageId not in sums:
-            sums[messageId] = { OLD_VERSION: 0, 'head': 0 }
+            sums[messageId] = {OLD_VERSION: 0, 'head': 0}
 
         sums[messageId][version] += 1
 
-    output = { 'date': strDateTime()[:10], 'sums': sums }
+    output = {'date': strDateTime()[:10], 'sums': sums}
 
     filename_diff = filename + '.diff'
     if sums:
@@ -325,9 +344,9 @@ def diffMessageIdReport(resultPath, messageId):
         if not os.path.isfile(filename):
             continue
         with open(filename, 'rt') as f:
-          diff_stats = f.read()
+            diff_stats = f.read()
         if not messageId in diff_stats:
-          continue
+            continue
         url = None
         diff = False
         for line in open(filename[:-5], 'rt'):
@@ -353,11 +372,11 @@ def diffMessageIdTodayReport(resultPath, messageId):
         if not os.path.isfile(filename):
             continue
         with open(filename, 'rt') as f:
-          diff_stats = f.read()
+            diff_stats = f.read()
         if not messageId in diff_stats:
-          continue
+            continue
         if not today in diff_stats:
-          continue
+            continue
         url = None
         diff = False
         firstLine = True
@@ -393,7 +412,8 @@ def headReportFromDict(out, today):
             while len(line) < 48 - len(c):
                 line += ' '
             line += c + ' '
-        line = '<a href="head' + today + '-' + messageId + '">' + messageId + '</a>' + line[line.find(' '):]
+        line = '<a href="head' + today + '-' + messageId + \
+            '">' + messageId + '</a>' + line[line.find(' '):]
         html += line + '\n'
 
     # Sum
@@ -444,12 +464,13 @@ def headReport(resultsPath):
             if not line.endswith(']'):
                 continue
             if ': note: ' in line:
-                # notes normally do not contain message ids but can end with ']'
+                # notes normally do not contain message ids but can end with
+                # ']'
                 continue
             message_id_start_pos = line.rfind('[')
             if message_id_start_pos <= 0:
                 continue
-            messageId = line[message_id_start_pos+1:len(line)-1]
+            messageId = line[message_id_start_pos + 1:len(line) - 1]
             if ' ' in messageId:
                 # skip invalid messageIds
                 continue
@@ -564,16 +585,16 @@ def timeReport(resultPath):
             total_time_base += time_base
             total_time_head += time_head
             suspicious_time_difference = False
-            if time_base > 1 and time_base*2 < time_head:
+            if time_base > 1 and time_base * 2 < time_head:
                 suspicious_time_difference = True
-            elif time_head > 1 and time_head*2 < time_base:
+            elif time_head > 1 and time_head * 2 < time_base:
                 suspicious_time_difference = True
             if suspicious_time_difference:
                 if time_base > 0.0:
                     time_factor = time_head / time_base
                 else:
                     time_factor = 0.0
-                html += filename[len(resultPath)+1:].ljust(column_widths[0]) + ' ' + \
+                html += filename[len(resultPath) + 1:].ljust(column_widths[0]) + ' ' + \
                     split_line[2].rjust(column_widths[1]) + ' ' + \
                     split_line[1].rjust(column_widths[2]) + ' ' + \
                     '{:.2f}'.format(time_factor).rjust(column_widths[3]) + '\n'
@@ -598,7 +619,8 @@ def timeReport(resultPath):
 
 
 def check_library_report(result_path, message_id):
-    if message_id not in ('checkLibraryNoReturn', 'checkLibraryFunction', 'checkLibraryUseIgnore'):
+    if message_id not in ('checkLibraryNoReturn',
+                          'checkLibraryFunction', 'checkLibraryUseIgnore'):
         error_message = 'Invalid value ' + message_id + ' for message_id parameter.'
         print(error_message)
         return error_message
@@ -633,17 +655,21 @@ def check_library_report(result_path, message_id):
                 continue
             if line.endswith('[' + message_id + ']\n'):
                 if message_id is 'checkLibraryFunction':
-                    function_name = line[(line.find('for function ') + len('for function ')):line.rfind('[') - 1]
+                    function_name = line[(
+                        line.find('for function ') + len('for function ')):line.rfind('[') - 1]
                 else:
-                    function_name = line[(line.find(': Function ') + len(': Function ')):line.rfind('should have') - 1]
-                function_counts[function_name] = function_counts.setdefault(function_name, 0) + 1
+                    function_name = line[(
+                        line.find(': Function ') + len(': Function ')):line.rfind('should have') - 1]
+                function_counts[function_name] = function_counts.setdefault(
+                    function_name, 0) + 1
 
     function_details_list = []
-    for function_name, count in sorted(function_counts.items(), key=operator.itemgetter(1), reverse=True):
+    for function_name, count in sorted(
+            function_counts.items(), key=operator.itemgetter(1), reverse=True):
         if len(function_details_list) >= functions_shown_max:
             break
         function_details_list.append(str(count).rjust(column_widths[0]) + ' ' +
-                '<a href="check_library-' + urllib.quote_plus(function_name) + '">' + function_name + '</a>\n')
+                                     '<a href="check_library-' + urllib.quote_plus(function_name) + '">' + function_name + '</a>\n')
 
     html += ''.join(function_details_list)
     html += '</pre>\n'
@@ -758,18 +784,25 @@ class HttpClientThread(Thread):
                 text = timeReport(self.resultPath)
                 httpGetResponse(self.connection, text, 'text/html')
             elif url == 'check_library_function_report.html':
-                text = check_library_report(self.resultPath + '/' + 'info_output', message_id='checkLibraryFunction')
+                text = check_library_report(
+                    self.resultPath + '/' + 'info_output',
+                    message_id='checkLibraryFunction')
                 httpGetResponse(self.connection, text, 'text/html')
             elif url == 'check_library_noreturn_report.html':
-                text = check_library_report(self.resultPath + '/' + 'info_output', message_id='checkLibraryNoReturn')
+                text = check_library_report(
+                    self.resultPath + '/' + 'info_output',
+                    message_id='checkLibraryNoReturn')
                 httpGetResponse(self.connection, text, 'text/html')
             elif url == 'check_library_use_ignore_report.html':
-                text = check_library_report(self.resultPath + '/' + 'info_output', message_id='checkLibraryUseIgnore')
+                text = check_library_report(
+                    self.resultPath + '/' + 'info_output',
+                    message_id='checkLibraryUseIgnore')
                 httpGetResponse(self.connection, text, 'text/html')
             elif url.startswith('check_library-'):
                 print('check library function !')
                 function_name = url[len('check_library-'):]
-                text = check_library_function_name(self.resultPath + '/' + 'info_output', function_name)
+                text = check_library_function_name(
+                    self.resultPath + '/' + 'info_output', function_name)
                 httpGetResponse(self.connection, text, 'text/plain')
             else:
                 filename = resultPath + '/' + url
@@ -801,7 +834,11 @@ def server(server_address_port, packages, packageIndex, resultPath):
             latestResults = f.read().strip().split(' ')
 
     print('[' + strDateTime() + '] version ' + SERVER_VERSION)
-    print('[' + strDateTime() + '] listening on port ' + str(server_address_port))
+    print(
+        '[' +
+        strDateTime() +
+        '] listening on port ' +
+        str(server_address_port))
 
     while True:
         # wait for a connection
@@ -819,7 +856,8 @@ def server(server_address_port, packages, packageIndex, resultPath):
             connection.close()
             continue
         if cmd.startswith('GET /'):
-            newThread = HttpClientThread(connection, cmd, resultPath, latestResults)
+            newThread = HttpClientThread(
+                connection, cmd, resultPath, latestResults)
             newThread.start()
         elif cmd == 'GetCppcheckVersions\n':
             reply = 'head ' + OLD_VERSION
@@ -846,7 +884,8 @@ def server(server_address_port, packages, packageIndex, resultPath):
             try:
                 t = 0
                 max_data_size = 2 * 1024 * 1024
-                while (len(data) < max_data_size) and (not data.endswith('\nDONE')) and (t < 10):
+                while (len(data) < max_data_size) and (
+                        not data.endswith('\nDONE')) and (t < 10):
                     d = connection.recv(1024)
                     if d:
                         t = 0
@@ -865,7 +904,8 @@ def server(server_address_port, packages, packageIndex, resultPath):
             print('[' + strDateTime() + '] write:' + url)
 
             # save data
-            res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.(gz|bz2)', url)
+            res = re.match(
+                r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.(gz|bz2)', url)
             if res is None:
                 print('results not written. res is None.')
                 continue
@@ -909,7 +949,8 @@ def server(server_address_port, packages, packageIndex, resultPath):
             try:
                 t = 0
                 max_data_size = 1024 * 1024
-                while (len(data) < max_data_size) and (not data.endswith('\nDONE')) and (t < 10):
+                while (len(data) < max_data_size) and (
+                        not data.endswith('\nDONE')) and (t < 10):
                     d = connection.recv(1024)
                     if d:
                         t = 0
@@ -928,7 +969,8 @@ def server(server_address_port, packages, packageIndex, resultPath):
             print('[' + strDateTime() + '] write_info:' + url)
 
             # save data
-            res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.(gz|bz2)', url)
+            res = re.match(
+                r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.(gz|bz2)', url)
             if res is None:
                 print('info output not written. res is None.')
                 continue
@@ -980,4 +1022,3 @@ if __name__ == "__main__":
         server(server_address_port, packages, packageIndex, resultPath)
     except socket.timeout:
         print('Timeout!')
-

@@ -4,7 +4,10 @@ import os
 import subprocess
 
 # Create Cppcheck project file
-def create_gui_project_file(project_file, root_path=None, import_project=None, paths=None, exclude_paths=None, suppressions=None, addon=None):
+
+
+def create_gui_project_file(project_file, root_path=None, import_project=None,
+                            paths=None, exclude_paths=None, suppressions=None, addon=None):
     cppcheck_xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
                     '<project version="1">\n')
     if root_path:
@@ -53,9 +56,19 @@ def cppcheck(args):
         exe = '../../../cppcheck'
 
     logging.info(exe + ' ' + ' '.join(args))
-    p = subprocess.Popen([exe] + args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(
+        [exe] + args,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
     comm = p.communicate()
-    stdout = comm[0].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
-    stderr = comm[1].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
+    stdout = comm[0].decode(
+        encoding='utf-8',
+        errors='ignore').replace(
+        '\r\n',
+        '\n')
+    stderr = comm[1].decode(
+        encoding='utf-8',
+        errors='ignore').replace(
+        '\r\n',
+        '\n')
     return p.returncode, stdout, stderr
-

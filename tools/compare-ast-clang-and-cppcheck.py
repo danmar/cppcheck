@@ -11,20 +11,22 @@
 # - <Function...>
 # Then that means there is a missing function in the Cppcheck SymbolDatabase
 #
+import cppcheckdata
 import subprocess
 import sys
 sys.path.insert(0, '../addons')
-import cppcheckdata
 
 CLANG_AST = './clang-ast'
 CPPCHECK = '../cppcheck'
 
+
 def clang_ast(sourcefile):
-    p = subprocess.Popen([CLANG_AST,sourcefile], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen([CLANG_AST, sourcefile],
+                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     comm = p.communicate()
     ret = []
     for line in comm[0].split('\n'):
-        while len(line)>1 and line[-1] in ' \r\n':
+        while len(line) > 1 and line[-1] in ' \r\n':
             line = line[:-1]
         if line.find('/usr/') > 0:
             continue
@@ -65,12 +67,13 @@ def cppcheck_ast(sourcefile):
     ret.sort()
     return ret
 
+
 print('Clang AST...')
 ast1 = clang_ast(sys.argv[1])
 print('Cppcheck AST...')
 ast2 = cppcheck_ast(sys.argv[1])
 
-#for func in ast2:
+# for func in ast2:
 #    print(func)
 
 print('Compare...')
@@ -85,4 +88,5 @@ for func in ast2:
         numberOfExtra = numberOfExtra + 1
         print('Extra Function ' + func)
 print('Number of missing functions: ' + str(numberOfMissing))
-print('Number of extra functions: ' + str(numberOfExtra) + ' (clang AST currently only contains FunctionDecl and CXXMethod)')
+print('Number of extra functions: ' + str(numberOfExtra) +
+      ' (clang AST currently only contains FunctionDecl and CXXMethod)')

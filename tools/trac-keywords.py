@@ -7,7 +7,10 @@ TRACDB = 'trac.db'
 
 def readdb():
     global TRACDB
-    cmds = ['sqlite3', TRACDB, 'SELECT id,keywords FROM ticket WHERE status<>"closed";']
+    cmds = [
+        'sqlite3',
+        TRACDB,
+        'SELECT id,keywords FROM ticket WHERE status<>"closed";']
     p = subprocess.Popen(cmds, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     comm = p.communicate()
     data = comm[0]
@@ -24,6 +27,7 @@ def readdb():
                 ret[kw] = []
             ret[kw].append(nr)
     return ret
+
 
 for arg in sys.argv[1:]:
     if arg.endswith('/trac.db'):

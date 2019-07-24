@@ -58,7 +58,8 @@ def test_loadRuleTexts_empty_lines(checker):
 
 
 def test_loadRuleTexts_mutiple_lines(checker):
-    checker.loadRuleTexts("./addons/test/assets/misra_rules_multiple_lines.txt")
+    checker.loadRuleTexts(
+        "./addons/test/assets/misra_rules_multiple_lines.txt")
     assert(checker.ruleTexts[101].text == "Multiple lines text.")
     assert(checker.ruleTexts[102].text == "Multiple lines text.")
     assert(checker.ruleTexts[103].text == "Multiple lines text.")
@@ -116,7 +117,7 @@ def test_rules_suppression(checker, capsys):
                     "addons/test/misra-suppressions2-test.c"]
 
     for src in test_sources:
-        re_suppressed= r"\[%s\:[0-9]+\]" % src
+        re_suppressed = r"\[%s\:[0-9]+\]" % src
         dump_remove(src)
         dump_create(src, "--suppressions-list=addons/test/suppressions.txt")
         checker.parseDump(src + ".dump")

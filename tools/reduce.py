@@ -2,13 +2,16 @@
 import subprocess
 import sys
 
+
 def show_syntax():
     print('Syntax:')
-    print('  reduce.py --cmd=<full command> --expected=<expected text output> --file=<source file> [--segfault]')
+    print(
+        '  reduce.py --cmd=<full command> --expected=<expected text output> --file=<source file> [--segfault]')
     print('')
     print("Example. source file = foo/bar.c")
     print("  reduce.py --cmd='./cppcheck --enable=style foo/bar.c' --expected=\"Variable 'x' is reassigned\" --file=foo/bar.c")
     sys.exit(1)
+
 
 if len(sys.argv) == 1:
     show_syntax()
@@ -50,7 +53,10 @@ print('FILE=' + FILE)
 
 
 def runtool():
-    p = subprocess.Popen(CMD.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(
+        CMD.split(),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
     comm = p.communicate()
     if SEGFAULT:
         if p.returncode != 0:
@@ -119,7 +125,8 @@ def removecomments(filedata):
     for i in range(len(filedata)):
         line = filedata[i]
         if '//' in line:
-            replaceandrun('remove comment', filedata, i, line[:line.find('//')].rstrip())
+            replaceandrun('remove comment', filedata, i,
+                          line[:line.find('//')].rstrip())
 
 
 def checkpar(line):
@@ -159,7 +166,8 @@ def combinelines(filedata):
 
             filedata2 = list(filedata)
             for line in lines[i1:i2]:
-                filedata2[line] = filedata2[line].rstrip() + filedata2[line + 1].lstrip()
+                filedata2[line] = filedata2[line].rstrip() + \
+                    filedata2[line + 1].lstrip()
                 filedata2[line + 1] = ''
 
             if replaceandrun('combine lines', filedata2, lines[i1] + 1, ''):
@@ -231,7 +239,8 @@ def removeline(filedata):
         if len(strippedline) == 0:
             continue
 
-        if stmt and strippedline[-1] == ';' and checkpar(line) and '{' not in line and '}' not in line:
+        if stmt and strippedline[-1] == ';' and checkpar(
+                line) and '{' not in line and '}' not in line:
             replaceandrun('remove line', filedata, i, '')
 
         elif stmt and '{' in strippedline and strippedline.find('}') == len(strippedline) - 1:

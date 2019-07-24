@@ -38,4 +38,9 @@ for arg in sys.argv[1:]:
             if typetok.str == 'void':
                 continue
 
-            cppcheckdata.reportError(token, 'information', 'found a cast', 'findcasts', 'cast')
+            cppcheckdata.reportError(
+                token,
+                'information',
+                'found a cast',
+                'findcasts',
+                'cast')

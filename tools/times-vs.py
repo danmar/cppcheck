@@ -43,11 +43,13 @@ f.write('\n')
 f.close()
 
 for rev in range(rev1, rev2):
-    subprocess.call(['svn', 'revert', '-R',  '.'])
+    subprocess.call(['svn', 'revert', '-R', '.'])
     subprocess.call(['svn', 'up', '-r' + str(rev)])
     for vcxproj in glob.glob('*/*.vcxproj'):
-        subprocess.call([r'c:\cygwin64\bin\sed.exe', '-i', 's/140/120/', vcxproj])
-    subprocess.call('msbuild cppcheck.sln /t:build /p:configuration=Release,platform=x64'.split())
+        subprocess.call([r'c:\cygwin64\bin\sed.exe',
+                         '-i', 's/140/120/', vcxproj])
+    subprocess.call(
+        'msbuild cppcheck.sln /t:build /p:configuration=Release,platform=x64'.split())
     print('Revision:' + str(rev))
     p = subprocess.Popen(r'bin\cppcheck.exe src -q --showtime=summary'.split(),
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)

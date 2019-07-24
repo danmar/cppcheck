@@ -61,6 +61,7 @@ def reportTokDiag(template, cfg, token, severity, msg):
 # #define/#undef detection regular expressions
 # --------------------------------------------
 
+
 # test for '#define _TIME_BITS 64'
 re_define_time_bits_64 = re.compile(r'^\s*#\s*define\s+_TIME_BITS\s+64\s*$')
 
@@ -71,7 +72,8 @@ re_define_time_bits = re.compile(r'^\s*#\s*define\s+_TIME_BITS\s+.*$')
 re_undef_time_bits = re.compile(r'^\s*#\s*undef\s+_TIME_BITS\s*$')
 
 # test for '#define _USE_TIME_BITS64'
-re_define_use_time_bits64 = re.compile(r'^\s*#\s*define\s+_USE_TIME_BITS64\s*$')
+re_define_use_time_bits64 = re.compile(
+    r'^\s*#\s*define\s+_USE_TIME_BITS64\s*$')
 
 # test for '#undef _USE_TIME_BITS64' (if it ever happens)
 re_undef_use_time_bits64 = re.compile(r'^\s*#\s*undef\s+_USE_TIME_BITS64\s*$')
@@ -206,6 +208,7 @@ def find_dump_files(paths):
 # -----------------
 # Let's get to work
 # -----------------
+
 
 # extend cppcheck parser with our own options
 parser = cppcheckdata.ArgumentParser()
