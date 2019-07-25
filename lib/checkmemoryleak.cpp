@@ -1006,6 +1006,15 @@ void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
         if (tok != tok->next()->astOperand1())
             continue;
 
+        if (getReallocationType(tok, 0) == File) {
+            const Library::AllocFunc *f = mSettings->library.getReallocFuncInfo(tok);
+            if (f && f->reallocArg > 0 && f->reallocArg <= numberOfArguments(tok)) {
+                const Token* arg = getArguments(tok).at(f->reallocArg - 1);
+                if (Token::Match(arg, "stdin|stdout|stderr"))
+                    continue;
+            }
+        }
+
         // get ast parent, skip casts
         const Token *parent = tok->next()->astParent();
         while (parent && parent->str() == "(" && !parent->astOperand2())

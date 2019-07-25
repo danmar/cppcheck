@@ -2329,6 +2329,11 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function 'freopen' is not stored.\n", errout.str());
 
+        check("void foo() {\n"
+              "  freopen(\"file.txt\", \"r\", stdin);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("struct Holder {\n"
               "  Holder(FILE* f) : file(f) {}\n"
               "  ~Holder() { fclose(file); }\n"
