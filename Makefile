@@ -357,6 +357,7 @@ validateXML: createXMLExamples
 
 checkCWEEntries: /tmp/errorlist.xml
 	./tools/listErrorsWithoutCWE.py -F /tmp/errorlist.xml
+
 ###### Build
 
 $(libcppdir)/analyzerinfo.o: lib/analyzerinfo.cpp lib/analyzerinfo.h lib/config.h lib/errorlogger.h lib/suppressions.h lib/importproject.h lib/platform.h lib/utils.h lib/path.h
