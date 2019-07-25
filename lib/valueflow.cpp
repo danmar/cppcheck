@@ -374,6 +374,7 @@ static void combineValueProperties(const ValueFlow::Value &value1, const ValueFl
     result->varId = (value1.varId != 0U) ? value1.varId : value2.varId;
     result->varvalue = (result->varId == value1.varId) ? value1.varvalue : value2.varvalue;
     result->errorPath = (value1.errorPath.empty() ? value2 : value1).errorPath;
+    result->safe = value1.safe || value2.safe;
 }
 
 
@@ -5462,9 +5463,11 @@ static void valueFlowSafeFunctions(TokenList *tokenlist, SymbolDatabase *symbold
                 argValues.emplace_back(0);
                 argValues.back().valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
                 argValues.back().errorPath.emplace_back(arg.nameToken(), "Assuming " + arg.name() + " is empty");
+                argValues.back().safe = true;
                 argValues.emplace_back(1000000);
                 argValues.back().valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
                 argValues.back().errorPath.emplace_back(arg.nameToken(), "Assuming " + arg.name() + " size is 1000000");
+                argValues.back().safe = true;
                 for (const ValueFlow::Value &value : argValues)
                     valueFlowContainerForward(const_cast<Token*>(functionScope->bodyStart), arg.declarationId(), value, settings, tokenlist->isCPP());
                 continue;
@@ -5476,6 +5479,9 @@ static void valueFlowSafeFunctions(TokenList *tokenlist, SymbolDatabase *symbold
 
             if (!isLow && !isHigh && !all)
                 continue;
+
+            const bool safeLow = !isLow;
+            const bool safeHigh = !isHigh;
 
             if ((!isLow || !isHigh) && all) {
                 MathLib::bigint minValue, maxValue;
@@ -5490,11 +5496,13 @@ static void valueFlowSafeFunctions(TokenList *tokenlist, SymbolDatabase *symbold
                     argValues.emplace_back(0);
                     argValues.back().valueType = ValueFlow::Value::ValueType::FLOAT;
                     argValues.back().floatValue = isLow ? low : -1E25f;
-                    argValues.back().errorPath.emplace_back(arg.nameToken(), "Assuming argument has value " + MathLib::toString(argValues.back().floatValue));
+                    argValues.back().errorPath.emplace_back(arg.nameToken(), "Safe checks: Assuming argument has value " + MathLib::toString(argValues.back().floatValue));
+                    argValues.back().safe = true;
                     argValues.emplace_back(0);
                     argValues.back().valueType = ValueFlow::Value::ValueType::FLOAT;
                     argValues.back().floatValue = isHigh ? high : 1E25f;
-                    argValues.back().errorPath.emplace_back(arg.nameToken(), "Assuming argument has value " + MathLib::toString(argValues.back().floatValue));
+                    argValues.back().errorPath.emplace_back(arg.nameToken(), "Safe checks: Assuming argument has value " + MathLib::toString(argValues.back().floatValue));
+                    argValues.back().safe = true;
                     valueFlowForward(const_cast<Token *>(functionScope->bodyStart->next()),
                                      functionScope->bodyEnd,
                                      &arg,
@@ -5512,11 +5520,13 @@ static void valueFlowSafeFunctions(TokenList *tokenlist, SymbolDatabase *symbold
             std::list<ValueFlow::Value> argValues;
             if (isLow) {
                 argValues.emplace_back(low);
-                argValues.back().errorPath.emplace_back(arg.nameToken(), "Assuming argument has value " + MathLib::toString(low));
+                argValues.back().errorPath.emplace_back(arg.nameToken(), std::string(safeLow ? "Safe checks: " : "") + "Assuming argument has value " + MathLib::toString(low));
+                argValues.back().safe = safeLow;
             }
             if (isHigh) {
                 argValues.emplace_back(high);
-                argValues.back().errorPath.emplace_back(arg.nameToken(), "Assuming argument has value " + MathLib::toString(high));
+                argValues.back().errorPath.emplace_back(arg.nameToken(), std::string(safeHigh ? "Safe checks: " : "") + "Assuming argument has value " + MathLib::toString(high));
+                argValues.back().safe = safeHigh;
             }
 
             if (!argValues.empty())
@@ -5574,6 +5584,7 @@ ValueFlow::Value::Value(const Token *c, long long val)
       varvalue(val),
       condition(c),
       varId(0U),
+      safe(false),
       conditional(false),
       defaultArg(false),
       lifetimeKind(LifetimeKind::Object),

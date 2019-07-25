@@ -200,9 +200,12 @@ void CheckType::integerOverflowError(const Token *tok, const ValueFlow::Value &v
     else
         msg = "Signed integer overflow for expression '" + expr + "'.";
 
+    if (value.safe)
+        msg = "Safe checks: " + msg;
+
     reportError(getErrorPath(tok, &value, "Integer overflow"),
                 value.errorSeverity() ? Severity::error : Severity::warning,
-                (value.condition == nullptr) ? "integerOverflow" : "integerOverflowCond",
+                getMessageId(value, "integerOverflow").c_str(),
                 msg,
                 CWE190,
                 value.isInconclusive());

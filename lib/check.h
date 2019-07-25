@@ -118,6 +118,8 @@ public:
         return false;
     }
 
+    static std::string getMessageId(const ValueFlow::Value &value, const char id[]);
+
 protected:
     const Tokenizer * const mTokenizer;
     const Settings * const mSettings;
