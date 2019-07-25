@@ -134,8 +134,7 @@ int main(int argc, char **argv)
     getCppFiles(libfiles, "lib/", false);
 
     std::vector<std::string> extfiles;
-    extfiles.push_back("externals/simplecpp/simplecpp.cpp");
-    extfiles.push_back("externals/tinyxml/tinyxml2.cpp");
+    getCppFiles(extfiles, "externals/", true);
 
     std::vector<std::string> clifiles;
     getCppFiles(clifiles, "cli/", false);
