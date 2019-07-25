@@ -73,6 +73,8 @@ public:
 
     /** @brief %Check for float to integer overflow */
     void checkFloatToIntegerOverflow();
+    void checkFloatToIntegerOverflow(const Token *tok, const ValueType *vtint, const ValueType *vtfloat, const std::list<ValueFlow::Value> *floatValues);
+
 private:
 
     // Error messages..
@@ -93,7 +95,7 @@ private:
         c.longCastAssignError(nullptr);
         c.longCastReturnError(nullptr);
         ValueFlow::Value f;
-        f.valueType = ValueFlow::Value::FLOAT;
+        f.valueType = ValueFlow::Value::ValueType::FLOAT;
         f.floatValue = 1E100;
         c.floatToIntegerOverflowError(nullptr, f);
     }

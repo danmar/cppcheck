@@ -18,7 +18,11 @@ env:
 before_install:
 # install needed deps
  - travis_retry sudo apt-get update -qq
- - travis_retry sudo apt-get install -qq python-pygments python-pytest qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet
+ - travis_retry sudo apt-get install -qq python-pygments qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet
+ - travis_retry sudo python2 -m pip install --upgrade pytest==4.6.4
+ - travis_retry python2 -m pip install --user pylint
+ - travis_retry python2 -m pip install --user unittest2
+ - travis_retry python2 -m pip install --user pexpect
 
 matrix:
 # do notify immediately about it when a job of a build fails.
@@ -83,6 +87,11 @@ matrix:
 # check python syntax by compiling all addon scripts
         - python -m compileall ./addons
         - python3 -m compileall ./addons
+# run pylint
+#        - pylint --rcfile=pylintrc_travis addons/y2038/*.py ! First resolve https://trac.cppcheck.net/ticket/9210 "y2038 addon no longer working"
+        - pylint --rcfile=pylintrc_travis addons/*.py
+        - pylint --rcfile=pylintrc_travis htmlreport/*.py
+        - pylint --rcfile=pylintrc_travis tools/*.py
 # check python syntax by compiling some selected scripts
         - python -m py_compile ./tools/donate-cpu.py
         - python3 -m py_compile ./tools/donate-cpu.py
@@ -208,6 +217,8 @@ script:
   - echo $CXXFLAGS
   - make -s test -j2 CPPFLAGS=-DTEST_MATHLIB_VALUE
   - touch lib/mathlib.cpp test/testmathlib.cpp
+# syntax checking of cppcheck source code with -DNONNEG
+  - ls lib/*.cpp | xargs -n 1 -P 2 g++ -fsyntax-only -std=c++0x -Ilib -Iexternals -Iexternals/simplecpp -Iexternals/tinyxml -DNONNEG
 # compile cppcheck, default build
   - echo $CXXFLAGS
   - make -s test -j2
@@ -218,13 +229,14 @@ script:
   - make -s -j2
 # building gui generates some more files that cppcheck can check, so check the repo *after* building gui
   - cd ../
-# self check
-  - ${CPPCHECK} --template=gcc -D__CPPCHECK__ -f --error-exitcode=1 --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --inconclusive --enable=style,performance,portability,warning,internal --exception-handling --inline-suppr --suppressions-list=.travis_suppressions -itest/cli -itest/synthetic -itest/testsuites -iaddons  -igui cli lib gui test tools -j 2
+# self check lib/cli
+  - mkdir b1
+  - ${CPPCHECK} -j2 --template=gcc --cppcheck-build-dir=b1 -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --inconclusive --enable=style,performance,portability,warning,internal --exception-handling cli lib
 # check gui with qt settings
-  - ${CPPCHECK} --template=gcc --library=qt  --error-exitcode=1  -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --enable=style,performance,portability,warning,internal  --exception-handling -j 2 gui --suppressions-list=.travis_suppressions -igui/test
-# check naming conventions
-  - ${CPPCHECK} -i gui/test -j 2 --dump -q gui lib
-  - find lib gui -maxdepth 1 -name "*.dump" | xargs -n 1 -P 4 python addons/naming.py --private-member-variable='m[A-Z].*'
+  - mkdir b2
+  - ${CPPCHECK} -j2 --template=gcc --cppcheck-build-dir=b2 -D__CPPCHECK__ -DQT_VERSION=0x050000 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=qt --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ --enable=style,performance,portability,warning,internal --exception-handling gui/*.cpp
+# self check test and tools
+  - ${CPPCHECK} -j2 --template=gcc -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --inconclusive --enable=style,performance,portability,warning,internal --exception-handling test/*.cpp tools
 # Build gui
   - cd ./gui
 # clean rebuild

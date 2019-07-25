@@ -89,6 +89,7 @@ public:
         checkOther.checkRedundantCopy();
         checkOther.clarifyCalculation();
         checkOther.checkPassByReference();
+        checkOther.checkConstVariable();
         checkOther.checkComparisonFunctionIsAlwaysTrueOrFalse();
         checkOther.checkInvalidFree();
         checkOther.clarifyStatement();
@@ -118,6 +119,8 @@ public:
 
     /** @brief %Check for function parameters that should be passed by reference */
     void checkPassByReference();
+
+    void checkConstVariable();
 
     /** @brief Using char variable as array index / as operand in bit operation */
     void checkCharVariable();
@@ -218,6 +221,7 @@ private:
     void cstyleCastError(const Token *tok);
     void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive);
     void passedByValueError(const Token *tok, const std::string &parname, bool inconclusive);
+    void constVariableError(const Variable *var);
     void constStatementError(const Token *tok, const std::string &type, bool inconclusive);
     void signedCharArrayIndexError(const Token *tok);
     void unknownSignCharArrayIndexError(const Token *tok);
@@ -257,9 +261,9 @@ private:
     void unknownEvaluationOrder(const Token* tok);
     static bool isMovedParameterAllowedForInconclusiveFunction(const Token * tok);
     void accessMovedError(const Token *tok, const std::string &varname, const ValueFlow::Value *value, bool inconclusive);
-    void funcArgNamesDifferent(const std::string & functionName, size_t index, const Token* declaration, const Token* definition);
+    void funcArgNamesDifferent(const std::string & functionName, nonneg int index, const Token* declaration, const Token* definition);
     void funcArgOrderDifferent(const std::string & functionName, const Token * declaration, const Token * definition, const std::vector<const Token*> & declarations, const std::vector<const Token*> & definitions);
-    void shadowError(const Token *var, const Token *shadowed, bool shadowVar);
+    void shadowError(const Token *var, const Token *shadowed, std::string type);
     void constArgumentError(const Token *tok, const Token *ftok, const ValueFlow::Value *value);
     void comparePointersError(const Token *tok, const ValueFlow::Value *v1, const ValueFlow::Value *v2);
 
@@ -288,6 +292,7 @@ private:
         c.checkCastIntToCharAndBackError(nullptr, "func_name");
         c.cstyleCastError(nullptr);
         c.passedByValueError(nullptr, "parametername", false);
+        c.constVariableError(nullptr);
         c.constStatementError(nullptr, "type", false);
         c.signedCharArrayIndexError(nullptr);
         c.unknownSignCharArrayIndexError(nullptr);
@@ -323,8 +328,9 @@ private:
         c.accessMovedError(nullptr, "v", nullptr, false);
         c.funcArgNamesDifferent("function", 1, nullptr, nullptr);
         c.redundantBitwiseOperationInSwitchError(nullptr, "varname");
-        c.shadowError(nullptr, nullptr, false);
-        c.shadowError(nullptr, nullptr, true);
+        c.shadowError(nullptr, nullptr, "variable");
+        c.shadowError(nullptr, nullptr, "function");
+        c.shadowError(nullptr, nullptr, "argument");
         c.constArgumentError(nullptr, nullptr, nullptr);
         c.comparePointersError(nullptr, nullptr, nullptr);
 
@@ -389,7 +395,8 @@ private:
                "- find unused 'goto' labels.\n"
                "- function declaration and definition argument names different.\n"
                "- function declaration and definition argument order different.\n"
-               "- shadow variable.\n";
+               "- shadow variable.\n"
+               "- variable can be declared const.\n";
     }
 };
 /// @}

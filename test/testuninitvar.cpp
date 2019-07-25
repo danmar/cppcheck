@@ -3933,7 +3933,6 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList2();
 
         // Check code..
         CheckUninitVar check(&tokenizer, &settings, this);
@@ -3951,8 +3950,6 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-
-        tokenizer.simplifyTokenList2();
 
         // Check for redundant code..
         CheckUninitVar checkuninitvar(&tokenizer, &settings, this);
@@ -4004,6 +4001,12 @@ private:
         checkUninitVar("void f() {\n"
                        "  int a[10][10];\n"
                        "  dostuff(*a);\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f() {\n"
+                       "    void (*fp[1]) (void) = {function1};\n"
+                       "    (*fp[0])();\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
     }

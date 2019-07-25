@@ -84,10 +84,11 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
 
     connect(mUI.mBtnBrowsePythonPath, &QPushButton::clicked, this, &SettingsDialog::browsePythonPath);
     connect(mUI.mBtnBrowseMisraFile, &QPushButton::clicked, this, &SettingsDialog::browseMisraFile);
-    connect(mUI.btnEditCustom, SIGNAL(clicked()), this, SLOT(editCodeEditorStyle()));
-    connect(mUI.choiceLight, SIGNAL(released()), this, SLOT(setCodeEditorStyleDefault()));
-    connect(mUI.choiceDark, SIGNAL(released()), this, SLOT(setCodeEditorStyleDefault()));
-    connect(mUI.choiceCustom, SIGNAL(toggled(bool)), mUI.btnEditCustom, SLOT(setEnabled(bool)));
+    connect(mUI.mBtnEditTheme, SIGNAL(clicked()), this, SLOT(editCodeEditorStyle()));
+    connect(mUI.mThemeSystem, SIGNAL(released()), this, SLOT(setCodeEditorStyleDefault()));
+    connect(mUI.mThemeDark, SIGNAL(released()), this, SLOT(setCodeEditorStyleDefault()));
+    connect(mUI.mThemeLight, SIGNAL(released()), this, SLOT(setCodeEditorStyleDefault()));
+    connect(mUI.mThemeCustom, SIGNAL(toggled(bool)), mUI.mBtnEditTheme, SLOT(setEnabled(bool)));
 
     mUI.mListWidget->setSortingEnabled(false);
     populateApplicationList();
@@ -185,7 +186,6 @@ void SettingsDialog::saveSettingValues() const
         settings.setValue(SETTINGS_LANGUAGE, langcode);
     }
     CodeEditorStyle::saveSettings(&settings, *mCurrentStyle);
-
 }
 
 void SettingsDialog::saveCheckboxValue(QSettings *settings, QCheckBox *box,
@@ -330,18 +330,22 @@ void SettingsDialog::browseMisraFile()
 // Slot to set default light style
 void SettingsDialog::setCodeEditorStyleDefault()
 {
-    if (mUI.choiceLight->isChecked()) *mCurrentStyle = defaultStyleLight;
-    if (mUI.choiceDark->isChecked()) *mCurrentStyle = defaultStyleDark;
+    if (mUI.mThemeSystem->isChecked())
+        *mCurrentStyle = CodeEditorStyle::getSystemTheme();
+    if (mUI.mThemeLight->isChecked())
+        *mCurrentStyle = defaultStyleLight;
+    if (mUI.mThemeDark->isChecked())
+        *mCurrentStyle = defaultStyleDark;
     manageStyleControls();
 }
 
 // Slot to edit custom style
 void SettingsDialog::editCodeEditorStyle()
 {
-    StyleEditDialog pDlg(*mCurrentStyle, this);
-    int nResult = pDlg.exec();
+    StyleEditDialog dlg(*mCurrentStyle, this);
+    int nResult = dlg.exec();
     if (nResult == QDialog::Accepted) {
-        *mCurrentStyle = pDlg.getStyle();
+        *mCurrentStyle = dlg.getStyle();
         manageStyleControls();
     }
 }
@@ -359,11 +363,13 @@ void SettingsDialog::browseClangPath()
 
 void SettingsDialog::manageStyleControls()
 {
-    bool isDefaultLight = *mCurrentStyle == defaultStyleLight;
-    bool isDefaultDark =  *mCurrentStyle == defaultStyleDark;
-    mUI.choiceLight->setChecked(isDefaultLight && !isDefaultDark);
-    mUI.choiceDark->setChecked(!isDefaultLight && isDefaultDark);
-    mUI.choiceCustom->setChecked(!isDefaultLight && !isDefaultDark);
-    mUI.btnEditCustom->setEnabled(!isDefaultLight && !isDefaultDark);
+    bool isSystemTheme = mCurrentStyle->isSystemTheme();
+    bool isDefaultLight = !isSystemTheme && *mCurrentStyle == defaultStyleLight;
+    bool isDefaultDark =  !isSystemTheme && *mCurrentStyle == defaultStyleDark;
+    mUI.mThemeSystem->setChecked(isSystemTheme);
+    mUI.mThemeLight->setChecked(isDefaultLight && !isDefaultDark);
+    mUI.mThemeDark->setChecked(!isDefaultLight && isDefaultDark);
+    mUI.mThemeCustom->setChecked(!isSystemTheme && !isDefaultLight && !isDefaultDark);
+    mUI.mBtnEditTheme->setEnabled(!isSystemTheme && !isDefaultLight && !isDefaultDark);
 }
 

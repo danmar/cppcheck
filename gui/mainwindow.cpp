@@ -33,6 +33,7 @@
 
 #include "applicationlist.h"
 #include "aboutdialog.h"
+#include "codeeditorstyle.h"
 #include "common.h"
 #include "threadhandler.h"
 #include "fileviewdialog.h"
@@ -153,6 +154,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI.mActionHelpContents, &QAction::triggered, this, &MainWindow::openHelpContents);
 
     loadSettings();
+
+    updateStyleSetting();
 
     mThread->initialize(mUI.mResults);
     if (mProjectFile)
@@ -396,6 +399,16 @@ void MainWindow::saveSettings() const
     mSettings->setValue(SETTINGS_OPEN_PROJECT, mProjectFile ? mProjectFile->getFilename() : QString());
 
     mUI.mResults->saveSettings(mSettings);
+}
+
+void MainWindow::updateStyleSetting()
+{
+    mUI.mResults->updateStyleSetting(mSettings);
+    QString styleSheet = CodeEditorStyle::loadSettings(mSettings).generateStyleString();
+    mUI.mToolBarMain->setStyleSheet(styleSheet);
+    mUI.mToolBarView->setStyleSheet(styleSheet);
+    mUI.mToolBarFilter->setStyleSheet(styleSheet);
+    this->setStyleSheet(styleSheet);
 }
 
 void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, const bool checkConfiguration)
@@ -882,6 +895,12 @@ Settings MainWindow::getCppcheckSettings()
         result.maxCtuDepth = mProjectFile->getMaxCtuDepth();
         result.checkHeaders = mProjectFile->getCheckHeaders();
         result.checkUnusedTemplates = mProjectFile->getCheckUnusedTemplates();
+        result.safeChecks.classes = mProjectFile->getSafeChecks().classes;
+        result.safeChecks.externalFunctions = mProjectFile->getSafeChecks().externalFunctions;
+        result.safeChecks.internalFunctions = mProjectFile->getSafeChecks().internalFunctions;
+        result.safeChecks.externalVariables = mProjectFile->getSafeChecks().externalVariables;
+        foreach (QString s, mProjectFile->getCheckUnknownFunctionReturn())
+            result.checkUnknownFunctionReturn.insert(s.toStdString());
     }
 
     // Include directories (and files) are searched in listed order.
@@ -1007,7 +1026,7 @@ void MainWindow::programSettings()
                                      dialog.showNoErrorsMessage(),
                                      dialog.showErrorId(),
                                      dialog.showInconclusive());
-        mUI.mResults->updateStyleSetting(mSettings);
+        this->updateStyleSetting();
         const QString newLang = mSettings->value(SETTINGS_LANGUAGE, "en").toString();
         setLanguage(newLang);
     }
@@ -1104,7 +1123,7 @@ void MainWindow::openResults()
         QMessageBox msgBox(this);
         msgBox.setWindowTitle(tr("Cppcheck"));
         const QString msg(tr("Current results will be cleared.\n\n"
-                             "Opening a new XML file will clear current results."
+                             "Opening a new XML file will clear current results.\n"
                              "Do you want to proceed?"));
         msgBox.setText(msg);
         msgBox.setIcon(QMessageBox::Warning);
@@ -1477,7 +1496,7 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool check
     // file's location directory as root path
     if (rootpath.isEmpty() || rootpath == ".")
         mCurrentDirectory = inf.canonicalPath();
-    else if (rootpath.startsWith("."))
+    else if (rootpath.startsWith("./"))
         mCurrentDirectory = inf.canonicalPath() + rootpath.mid(1);
     else
         mCurrentDirectory = rootpath;
@@ -1485,7 +1504,7 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool check
     if (!projectFile->getBuildDir().isEmpty()) {
         QString buildDir = projectFile->getBuildDir();
         if (!QDir::isAbsolutePath(buildDir))
-            buildDir = mCurrentDirectory + '/' + buildDir;
+            buildDir = inf.canonicalPath() + '/' + buildDir;
         if (!QDir(buildDir).exists()) {
             QMessageBox msg(QMessageBox::Critical,
                             tr("Cppcheck"),

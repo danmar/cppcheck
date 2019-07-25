@@ -227,6 +227,9 @@ protected slots:
 
 private:
 
+    /** Set widget themes */
+    void updateStyleSetting();
+
     /** Get filename for last results */
     QString getLastResults() const;
 

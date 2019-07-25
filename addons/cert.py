@@ -231,7 +231,31 @@ def int31(data, platform):
                     'style',
                     'Ensure that integer conversions do not result in lost or misinterpreted data (casting ' + str(value.intvalue) + ' to ' + destType + ')',
                     'INT31-c')
-                break
+                break                
+# MSC24-C
+# Do not use deprecated or obsolescent functions
+def msc24(data):
+    for token in data.tokenlist:
+        if isFunctionCall(token, ('asctime',), 1):
+            reportError(token,'style','Do no use asctime() better use asctime_s()', 'MSC24-C')
+        elif isFunctionCall(token, ('atof',), 1):
+            reportError(token,'style','Do no use atof() better use strtod()', 'MSC24-C')
+        elif isFunctionCall(token, ('atoi',), 1):
+            reportError(token,'style','Do no use atoi() better use strtol()', 'MSC24-C')
+        elif isFunctionCall(token, ('atol',), 1):
+            reportError(token,'style','Do no use atol() better use strtol()', 'MSC24-C')
+        elif isFunctionCall(token, ('atoll',), 1):
+            reportError(token,'style','Do no use atoll() better use strtoll()', 'MSC24-C')
+        elif isFunctionCall(token, ('ctime',), 1):
+            reportError(token,'style','Do no use ctime() better use ctime_s()', 'MSC24-C')
+        elif isFunctionCall(token, ('fopen',), 2):
+            reportError(token,'style','Do no use fopen() better use fopen_s()', 'MSC24-C')
+        elif isFunctionCall(token, ('freopen',), 3):
+            reportError(token,'style','Do no use freopen() better use freopen_s()', 'MSC24-C')
+        elif isFunctionCall(token, ('rewind',), 1):
+            reportError(token,'style','Do no use rewind() better use fseek()', 'MSC24-C')
+        elif isFunctionCall(token, ('setbuf',), 2):
+            reportError(token,'style','Do no use setbuf() better use setvbuf()', 'MSC24-C')
 
 # MSC30-C
 # Do not use the rand() function for generating pseudorandom numbers
@@ -311,6 +335,25 @@ def str11(data):
         if valueToken.isNumber and int(valueToken.str)==strlen:
             reportError(valueToken, 'style', 'Do not specify the bound of a character array initialized with a string literal', 'STR11-C')
 
+# API01-C
+# Avoid laying out strings in memory directly before sensitive data
+def api01(data):
+    for scope in data.scopes:
+        if scope.type!='Struct':
+            continue
+        token = scope.bodyStart
+        arrayFound=False
+        # loop through the complete struct
+        while token != scope.bodyEnd:
+            if token.isName and token.variable:
+                if token.variable.isArray:
+                    arrayFound=True
+                elif arrayFound and not token.variable.isArray and not token.variable.isConst:
+                    reportError(token, 'style', 'Avoid laying out strings in memory directly before sensitive data', 'API01-C')
+                    # reset flags to report other positions in the same struct
+                    arrayFound=False
+            token = token.next
+
 for arg in sys.argv[1:]:
     if arg == '-verify':
         VERIFY = True
@@ -341,7 +384,9 @@ for arg in sys.argv[1:]:
         str05(cfg)
         str07(cfg)
         str11(cfg)
+        msc24(cfg)
         msc30(cfg)
+        api01(cfg)
 
     if VERIFY:
         for expected in VERIFY_EXPECTED:

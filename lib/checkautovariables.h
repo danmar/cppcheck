@@ -80,8 +80,6 @@ private:
 
     void errorReturnAddressToAutoVariable(const Token *tok);
     void errorReturnAddressToAutoVariable(const Token *tok, const ValueFlow::Value *value);
-    void errorAssignAddressOfLocalArrayToGlobalPointer(const Token *pointer, const Token *array);
-    void errorAssignAddressOfLocalVariableToGlobalPointer(const Token *pointer, const Token *variable);
     void errorReturnPointerToLocalArray(const Token *tok);
     void errorAutoVariableAssignment(const Token *tok, bool inconclusive);
     void errorReturnDanglingLifetime(const Token *tok, const ValueFlow::Value* val);
@@ -100,7 +98,6 @@ private:
         CheckAutoVariables c(nullptr,settings,errorLogger);
         c.errorAutoVariableAssignment(nullptr, false);
         c.errorReturnAddressToAutoVariable(nullptr);
-        c.errorAssignAddressOfLocalArrayToGlobalPointer(nullptr, nullptr);
         c.errorReturnPointerToLocalArray(nullptr);
         c.errorReturnReference(nullptr, errorPath);
         c.errorDanglingReference(nullptr, nullptr, errorPath);

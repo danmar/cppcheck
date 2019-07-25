@@ -43,7 +43,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     endif ()
 
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wcast-qual")                # Cast for removing type qualifiers
-    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wconversion")               # Implicit conversions that may alter a value
+    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-conversion")            # Implicit conversions that may alter a value
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wfloat-equal")              # Floating values used in equality comparisons
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Winline")                   # If a inline declared function couldn't be inlined
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wmissing-declarations")     # If a global function is defined without a previous declaration
@@ -52,7 +52,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wpacked")                   # 
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wredundant-decls")          # if anything is declared more than once in the same scope
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-shadow")                # whenever a local variable or type declaration shadows another one
-    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wsign-promo")               # 
+    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-sign-promo")            #
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-missing-field-initializers")
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-missing-braces")
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-sign-compare")
@@ -119,6 +119,10 @@ if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux" AND
     "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -U_GLIBCXX_DEBUG")
+endif()
+
+if (MSVC)
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /STACK:8000000")
 endif()
 
 include(cmake/dynamic_analyzer_options.cmake    REQUIRED)

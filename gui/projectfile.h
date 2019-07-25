@@ -300,6 +300,62 @@ public:
         mFilename = filename;
     }
 
+    /** Do not only check how interface is used. Also check that interface is safe. */
+    class SafeChecks {
+    public:
+        SafeChecks() : classes(false), externalFunctions(false), internalFunctions(false), externalVariables(false) {}
+
+        void clear() {
+            classes = externalFunctions = internalFunctions = externalVariables = false;
+        }
+
+        void loadFromXml(QXmlStreamReader &xmlReader);
+        void saveToXml(QXmlStreamWriter &xmlWriter) const;
+
+        /**
+         * Public interface of classes
+         * - public function parameters can have any value
+         * - public functions can be called in any order
+         * - public variables can have any value
+         */
+        bool classes;
+
+        /**
+         * External functions
+         * - external functions can be called in any order
+         * - function parameters can have any values
+         */
+        bool externalFunctions;
+
+        /**
+         * Experimental: assume that internal functions can be used in any way
+         * This is only available in the GUI.
+         */
+        bool internalFunctions;
+
+        /**
+         * Global variables that can be modified outside the TU.
+         * - Such variable can have "any" value
+         */
+        bool externalVariables;
+    };
+
+    /** Safe checks */
+    SafeChecks getSafeChecks() const {
+        return mSafeChecks;
+    }
+    void setSafeChecks(SafeChecks safeChecks) {
+        mSafeChecks = safeChecks;
+    }
+
+    /** Check unknown function return values */
+    QStringList getCheckUnknownFunctionReturn() const {
+        return mCheckUnknownFunctionReturn;
+    }
+    void setCheckUnknownFunctionReturn(const QStringList &s) {
+        mCheckUnknownFunctionReturn = s;
+    }
+
 protected:
 
     /**
@@ -472,6 +528,11 @@ private:
 
     /** Max CTU depth */
     int mMaxCtuDepth;
+
+    SafeChecks mSafeChecks;
+
+    QStringList mCheckUnknownFunctionReturn;
+
 };
 /// @}
 #endif  // PROJECT_FILE_H

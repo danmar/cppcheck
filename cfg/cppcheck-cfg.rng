@@ -37,6 +37,21 @@
               </optional>
               <ref name="DATA-NAME"/>
             </element>
+            <element name="realloc">
+              <optional>
+                <attribute name="init"><ref name="DATA-BOOL"/></attribute>
+              </optional>
+              <optional>
+                <attribute name="arg"><ref name="ARGNO"/></attribute>
+              </optional>
+              <optional>
+                <attribute name="buffer-size"><ref name="DATA-BUFFER-SIZE"/></attribute>
+              </optional>
+              <optional>
+                <attribute name="realloc-arg"><ref name="ARGNO"/></attribute>
+              </optional>
+              <ref name="DATA-NAME"/>
+            </element>
             <element name="use"><ref name="DATA-EXTNAME"/></element>
           </choice>
         </zeroOrMore>
@@ -59,6 +74,18 @@
               </optional>
               <optional>
                 <attribute name="arg"><ref name="ARGNO"/></attribute>
+              </optional>
+              <ref name="DATA-NAME"/>
+            </element>
+            <element name="realloc">
+              <optional>
+                <attribute name="init"><ref name="DATA-BOOL"/></attribute>
+              </optional>
+              <optional>
+                <attribute name="arg"><ref name="ARGNO"/></attribute>
+              </optional>
+              <optional>
+                <attribute name="realloc-arg"><ref name="ARGNO"/></attribute>
               </optional>
               <ref name="DATA-NAME"/>
             </element>
@@ -103,6 +130,13 @@
               <optional>
                 <attribute name="container">
                   <data type="positiveInteger"/>
+                </attribute>
+              </optional>
+              <optional>
+                <attribute name="unknownValues">
+                  <data type="string">
+                    <param name="pattern">all|([0-9]*:[0-9]*)</param>
+                  </data>
                 </attribute>
               </optional>
               <text/>
