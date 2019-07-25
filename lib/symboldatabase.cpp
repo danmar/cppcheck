@@ -2088,30 +2088,20 @@ const Token * Function::constructorMemberInitialization() const
 
 bool Function::isSafe(const Settings *settings) const
 {
-    if (nestedIn->type == Scope::ScopeType::eGlobal) {
-        if (token->fileIndex() == 0 && isStatic())
-            return settings->safeChecks.internalFunctions;
-        return settings->safeChecks.externalFunctions;
+    if (settings->safeChecks.externalFunctions) {
+        if (nestedIn->type == Scope::ScopeType::eGlobal || nestedIn->type == Scope::ScopeType::eNamespace)
+            return (token->fileIndex() != 0 || !isStatic());
     }
 
-    if (nestedIn->type == Scope::ScopeType::eNamespace) {
-        return token->fileIndex() == 0;
+    if (settings->safeChecks.internalFunctions) {
+        if (nestedIn->type == Scope::ScopeType::eGlobal || nestedIn->type == Scope::ScopeType::eNamespace)
+            return (token->fileIndex() == 0 && isStatic());
     }
 
-    switch (access) {
-    case AccessControl::Local:
-    case AccessControl::Private:
-    case AccessControl::Protected:
-        return settings->safeChecks.internalFunctions;
-    case AccessControl::Public:
-        return settings->safeChecks.classes;
-    case AccessControl::Namespace:
-    case AccessControl::Global:
-        return settings->safeChecks.externalFunctions;
-    case AccessControl::Throw:
-    case AccessControl::Argument:
-        return false;
-    };
+    if (settings->safeChecks.classes && access == AccessControl::Public) {
+        return true;
+    }
+
     return false;
 }
 
