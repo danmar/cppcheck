@@ -2089,13 +2089,19 @@ const Token * Function::constructorMemberInitialization() const
 bool Function::isSafe(const Settings *settings) const
 {
     if (settings->safeChecks.externalFunctions) {
-        if (nestedIn->type == Scope::ScopeType::eGlobal || nestedIn->type == Scope::ScopeType::eNamespace)
-            return (token->fileIndex() != 0 || !isStatic());
+        if (nestedIn->type == Scope::ScopeType::eGlobal || nestedIn->type == Scope::ScopeType::eNamespace) {
+            if (token->fileIndex() != 0 || !isStatic()) {
+                return true;
+            }
+        }
     }
 
     if (settings->safeChecks.internalFunctions) {
-        if (nestedIn->type == Scope::ScopeType::eGlobal || nestedIn->type == Scope::ScopeType::eNamespace)
-            return (token->fileIndex() == 0 && isStatic());
+        if (nestedIn->type == Scope::ScopeType::eGlobal || nestedIn->type == Scope::ScopeType::eNamespace) {
+            if (token->fileIndex() == 0 && isStatic()) {
+                return true;
+            }
+        }
     }
 
     if (settings->safeChecks.classes && access == AccessControl::Public) {
