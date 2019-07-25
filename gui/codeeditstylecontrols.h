@@ -37,7 +37,7 @@ public:
     const QColor& getColor();
 
 signals:
-    void colorChanged(QColor& newColor);
+    void colorChanged(const QColor& newColor);
 
 public slots:
     void updateColor();
@@ -58,7 +58,7 @@ public:
     const QFont::Weight& getWeight();
 
 signals:
-    void weightChanged(QFont::Weight& newWeight);
+    void weightChanged(const QFont::Weight& newWeight);
 
 public slots:
     void updateWeight();
