@@ -1,6 +1,7 @@
 # python -m pytest addons/test/test-y2038.py
 
 import sys
+import pytest
 
 from addons.y2038 import check_y2038_safe
 

@@ -113,7 +113,7 @@ matrix:
         - cd addons/test
         - ${CPPCHECK} --dump misra/misra-test.c
         - python3 ../misra.py -verify misra/misra-test.c.dump
-        - ${CPPCHECK} --dump /misra/misra-test.cpp
+        - ${CPPCHECK} --dump misra/misra-test.cpp
         - python3 ../misra.py -verify misra/misra-test.cpp.dump
         - python ../misra.py --rule-texts=misra/misra2012_rules_dummy_ascii.txt -verify misra/misra-test.cpp.dump
         - python3 ../misra.py --rule-texts=misra/misra2012_rules_dummy_ascii.txt -verify misra/misra-test.cpp.dump
