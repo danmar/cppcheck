@@ -158,15 +158,15 @@ int main(int argc, char **argv)
             fout1 << "include($$PWD/pcrerules.pri)\n";
             fout1 << "include($$PWD/../externals/externals.pri)\n";
             fout1 << "INCLUDEPATH += $$PWD\n";
-            fout1 << "HEADERS += $${PWD}/check.h \\\n";
+            fout1 << "HEADERS += ";
             for (const std::string &libfile : libfiles) {
                 std::string fname(libfile.substr(4));
                 if (fname.find(".cpp") == std::string::npos)
                     continue;   // shouldn't happen
                 fname.erase(fname.find(".cpp"));
-                fout1 << std::string(11, ' ') << "$${PWD}/" << fname << ".h";
+                fout1 << "$${PWD}/" << fname << ".h";
                 if (libfile != libfiles.back())
-                    fout1 << " \\\n";
+                    fout1 << " \\\n" << std::string(11, ' ');
             }
             fout1 << "\n\nSOURCES += ";
             for (const std::string &libfile : libfiles) {
