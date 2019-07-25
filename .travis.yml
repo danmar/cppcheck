@@ -175,17 +175,6 @@ matrix:
         - make -s dmake -j2
         - make -s run-dmake
         - git diff --exit-code
-# check if cppcheck builds on precise
-    - name: "make ubuntu 12.04 precise"
-      compiler: gcc
-      dist: precise
-      before_install:
-        - travis_retry sudo apt-get update -qq
-        - travis_retry sudo apt-get install libxml2-utils libpcre3
-      script:
-        - CXX=g++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck testrunner -j 2
-        - make clean
-        - CXX=clang++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck testrunner -j 2
 # check if cppcheck builds on trusty
     - name: "make ubuntu 14.04 trusty"
       compiler: gcc
