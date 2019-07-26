@@ -388,7 +388,7 @@ if __name__ == '__main__':
 
         for cfg in data.configurations:
             if (len(data.configurations) > 1) and (not args.quiet):
-                print('Checking %s, config %s...' % (arg, cfg.name))
+                print('Checking %s, config %s...' % (dumpfile, cfg.name))
             exp05(cfg)
             exp42(cfg)
             exp46(cfg)
