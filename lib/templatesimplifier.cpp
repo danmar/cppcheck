@@ -2872,6 +2872,10 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
                 continue;
         }
 
+        // A global function can't be called through a pointer.
+        if (templateDeclaration.isFunction() && templateDeclaration.scope.empty() && instantiation.token->strAt(-1) == ".")
+            continue;
+
         if (!matchSpecialization(templateDeclaration.nameToken, instantiation.token, specializations))
             continue;
 
