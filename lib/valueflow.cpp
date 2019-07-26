@@ -3063,8 +3063,8 @@ struct LifetimeStore {
                         " arguments are available.");
             return LifetimeStore{};
         }
-        const Token *argtok = args[n];
-        return LifetimeStore{argtok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::LifetimeKind::Object};
+        const Token *argtok2 = args[n];
+        return LifetimeStore{argtok2, "Passed to '" + tok->str() + "'.", ValueFlow::Value::LifetimeKind::Object};
     }
 
     template <class Predicate>
