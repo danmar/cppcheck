@@ -9,6 +9,7 @@
 # cppcheck --dump main.cpp
 # python cert.py main.cpp.dump
 
+import argparse
 import cppcheckdata
 import sys
 import re
@@ -354,46 +355,59 @@ def api01(data):
                     arrayFound=False
             token = token.next
 
-for arg in sys.argv[1:]:
-    if arg == '-verify':
+
+def get_args():
+    parser = cppcheckdata.ArgumentParser()
+    parser.add_argument("dumpfile", nargs='*', help="Path of dump files from cppcheck")
+    parser.add_argument('-q', '--quiet', action='store_true',
+                        help='do not print "Checking ..." lines')
+    parser.add_argument('--cli', help='Addon is executed from Cppcheck', action='store_true')
+    parser.add_argument("-verify", help=argparse.SUPPRESS, action="store_true")
+    return parser.parse_args()
+
+if __name__ == '__main__':
+    args = get_args()
+
+    if args.verify:
         VERIFY = True
-        continue
-    if arg == '--cli':
-        continue
-    print('Checking ' + arg + '...')
-    data = cppcheckdata.parsedump(arg)
 
-    if VERIFY:
-        VERIFY_ACTUAL = []
-        VERIFY_EXPECTED = []
-        for tok in data.rawTokens:
-            if tok.str.startswith('//') and 'TODO' not in tok.str:
-                for word in tok.str[2:].split(' '):
-                    if re.match(r'cert-[A-Z][A-Z][A-Z][0-9][0-9].*',word):
-                        VERIFY_EXPECTED.append(str(tok.linenr) + ':' + word)
+    for dumpfile in args.dumpfile:
+        if not args.quiet:
+            print('Checking %s...' % dumpfile)
 
-    for cfg in data.configurations:
-        if len(data.configurations) > 1:
-            print('Checking ' + arg + ', config "' + cfg.name + '"...')
-        exp05(cfg)
-        exp42(cfg)
-        exp46(cfg)
-        exp15(cfg)
-        int31(cfg, data.platform)
-        str03(cfg)
-        str05(cfg)
-        str07(cfg)
-        str11(cfg)
-        msc24(cfg)
-        msc30(cfg)
-        api01(cfg)
+        data = cppcheckdata.parsedump(dumpfile)
 
-    if VERIFY:
-        for expected in VERIFY_EXPECTED:
-            if expected not in VERIFY_ACTUAL:
-                print('Expected but not seen: ' + expected)
-                sys.exit(1)
-        for actual in VERIFY_ACTUAL:
-            if actual not in VERIFY_EXPECTED:
-                print('Not expected: ' + actual)
-                sys.exit(1)
+        if VERIFY:
+            VERIFY_ACTUAL = []
+            VERIFY_EXPECTED = []
+            for tok in data.rawTokens:
+                if tok.str.startswith('//') and 'TODO' not in tok.str:
+                    for word in tok.str[2:].split(' '):
+                        if re.match(r'cert-[A-Z][A-Z][A-Z][0-9][0-9].*',word):
+                            VERIFY_EXPECTED.append(str(tok.linenr) + ':' + word)
+
+        for cfg in data.configurations:
+            if (len(data.configurations) > 1) and (not args.quiet):
+                print('Checking %s, config %s...' % (arg, cfg.name))
+            exp05(cfg)
+            exp42(cfg)
+            exp46(cfg)
+            exp15(cfg)
+            int31(cfg, data.platform)
+            str03(cfg)
+            str05(cfg)
+            str07(cfg)
+            str11(cfg)
+            msc24(cfg)
+            msc30(cfg)
+            api01(cfg)
+
+        if VERIFY:
+            for expected in VERIFY_EXPECTED:
+                if expected not in VERIFY_ACTUAL:
+                    print('Expected but not seen: ' + expected)
+                    sys.exit(1)
+            for actual in VERIFY_ACTUAL:
+                if actual not in VERIFY_EXPECTED:
+                    print('Not expected: ' + actual)
+                    sys.exit(1)
