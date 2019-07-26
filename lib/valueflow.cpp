@@ -3034,14 +3034,43 @@ struct LifetimeStore {
     ValueFlow::Value::LifetimeKind type;
     ErrorPath errorPath;
 
+    LifetimeStore()
+        : argtok(nullptr), message(), type(), errorPath()
+    {}
+
     LifetimeStore(const Token *argtok,
                   const std::string &message,
                   ValueFlow::Value::LifetimeKind type = ValueFlow::Value::LifetimeKind::Object)
         : argtok(argtok), message(message), type(type), errorPath()
     {}
 
+    static LifetimeStore fromFunctionArg(const Function * f, Token *tok, const Variable *var, TokenList *tokenlist, ErrorLogger *errorLogger) {
+        if (!var)
+            return LifetimeStore{};
+        if (!var->isArgument())
+            return LifetimeStore{};
+        int n = getArgumentPos(var, f);
+        if (n < 0)
+            return LifetimeStore{};
+        std::vector<const Token *> args = getArguments(tok);
+        if (n >= args.size()) {
+            if (tokenlist->getSettings()->debugwarnings)
+                bailout(tokenlist,
+                        errorLogger,
+                        tok,
+                        "Argument mismatch: Function '" + tok->str() + "' returning lifetime from argument index " +
+                        std::to_string(n) + " but only " + std::to_string(args.size()) +
+                        " arguments are available.");
+            return LifetimeStore{};
+        }
+        const Token *argtok2 = args[n];
+        return LifetimeStore{argtok2, "Passed to '" + tok->str() + "'.", ValueFlow::Value::LifetimeKind::Object};
+    }
+
     template <class Predicate>
     void byRef(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings, Predicate pred) const {
+        if (!argtok)
+            return;
         ErrorPath er = errorPath;
         const Token *lifeTok = getLifetimeToken(argtok, er);
         if (!lifeTok)
@@ -3071,6 +3100,8 @@ struct LifetimeStore {
 
     template <class Predicate>
     void byVal(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings, Predicate pred) const {
+        if (!argtok)
+            return;
         if (argtok->values().empty()) {
             ErrorPath er;
             er.emplace_back(argtok, message);
@@ -3124,6 +3155,8 @@ struct LifetimeStore {
 
     template <class Predicate>
     void byDerefCopy(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings, Predicate pred) const {
+        if (!argtok)
+            return;
         for (const ValueFlow::Value &v : argtok->values()) {
             if (!v.isLifetimeValue())
                 continue;
@@ -3184,32 +3217,20 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
         const Token *returnTok = findSimpleReturn(f);
         if (!returnTok)
             return;
+        const Variable *returnVar = returnTok->variable();
+        if (returnVar && returnVar->isArgument() && (returnVar->isConst() || !isVariableChanged(returnVar, settings, tokenlist->isCPP()))) {
+            LifetimeStore ls = LifetimeStore::fromFunctionArg(f, tok, returnVar, tokenlist, errorLogger);
+            ls.byVal(tok->next(), tokenlist, errorLogger, settings);
+        }
         for (const ValueFlow::Value &v : returnTok->values()) {
             if (!v.isLifetimeValue())
                 continue;
             if (!v.tokvalue)
                 continue;
             const Variable *var = v.tokvalue->variable();
-            if (!var)
+            LifetimeStore ls = LifetimeStore::fromFunctionArg(f, tok, var, tokenlist, errorLogger);
+            if (!ls.argtok)
                 continue;
-            if (!var->isArgument())
-                continue;
-            int n = getArgumentPos(var, f);
-            if (n < 0)
-                continue;
-            std::vector<const Token *> args = getArguments(tok);
-            if (n >= args.size()) {
-                if (tokenlist->getSettings()->debugwarnings)
-                    bailout(tokenlist,
-                            errorLogger,
-                            tok,
-                            "Argument mismatch: Function '" + tok->str() + "' returning lifetime from argument index " +
-                            std::to_string(n) + " but only " + std::to_string(args.size()) +
-                            " arguments are available.");
-                continue;
-            }
-            const Token *argtok = args[n];
-            LifetimeStore ls{argtok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::LifetimeKind::Object};
             ls.errorPath = v.errorPath;
             ls.errorPath.emplace_front(returnTok, "Return " + lifetimeType(returnTok, &v) + ".");
             if (var->isReference() || var->isRValueReference()) {
