@@ -968,10 +968,12 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
     return arg && !arg->isConst() && arg->isReference();
 }
 
-bool isVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp)
+bool isVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth)
 {
     if (!precedes(start, end))
         return false;
+    if (depth < 0)
+        return true;
     for (const Token *tok = start; tok != end; tok = tok->next()) {
         if (tok->varId() != varid) {
             if (globalvar && Token::Match(tok, "%name% ("))
@@ -994,7 +996,7 @@ bool isVariableChanged(const Token *start, const Token *end, const nonneg int va
             // Check if assigning to a non-const lvalue
             const Variable * var = getLHSVariable(tok2->astParent());
             if (var && var->isReference() && !var->isConst() && var->nameToken() && var->nameToken()->next() == tok2->astParent()) {
-                if (!var->isLocal() || isVariableChanged(var, settings, cpp))
+                if (!var->isLocal() || isVariableChanged(var, settings, cpp, depth - 1))
                     return true;
             }
         }
@@ -1050,7 +1052,7 @@ bool isVariableChanged(const Token *start, const Token *end, const nonneg int va
             const Variable * loopVar = varTok->variable();
             if (!loopVar)
                 continue;
-            if (!loopVar->isConst() && loopVar->isReference() && isVariableChanged(loopVar, settings, cpp))
+            if (!loopVar->isConst() && loopVar->isReference() && isVariableChanged(loopVar, settings, cpp, depth - 1))
                 return true;
             continue;
         }
@@ -1058,7 +1060,7 @@ bool isVariableChanged(const Token *start, const Token *end, const nonneg int va
     return false;
 }
 
-bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp)
+bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp, int depth)
 {
     if (!var)
         return false;
@@ -1069,7 +1071,7 @@ bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp)
         return false;
     if (Token::Match(start, "; %varid% =", var->declarationId()))
         start = start->tokAt(2);
-    return isVariableChanged(start->next(), var->scope()->bodyEnd, var->declarationId(), var->isGlobal(), settings, cpp);
+    return isVariableChanged(start->next(), var->scope()->bodyEnd, var->declarationId(), var->isGlobal(), settings, cpp, depth);
 }
 
 int numberOfArguments(const Token *start)
