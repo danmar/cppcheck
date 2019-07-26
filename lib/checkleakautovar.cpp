@@ -932,11 +932,11 @@ void CheckLeakAutoVar::ret(const Token *tok, const VarInfo &varInfo)
             for (const Token *tok2 = tok; tok2; tok2 = tok2->next()) {
                 if (tok2->str() == ";")
                     break;
-                if (Token::Match(tok2, "return|(|, %varid% [);,]", varid)) {
+                if (Token::Match(tok2, "return|(|{|, %varid% [});,]", varid)) {
                     used = true;
                     break;
                 }
-                if (Token::Match(tok2, "return|(|, & %varid% . %name% [);,]", varid)) {
+                if (Token::Match(tok2, "return|(|{|, & %varid% . %name% [});,]", varid)) {
                     used = true;
                     break;
                 }
