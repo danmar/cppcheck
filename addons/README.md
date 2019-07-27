@@ -32,6 +32,6 @@ This allows you to add additional parameters when calling the script (for exampl
 
 ### GUI
 
-When using the graphical interface `cppcheck-gui`, the selection and configuration of add-ons is carried out on the tab `Addons and tools` in the project settings (`Edit Project File`):
+When using the graphical interface `cppcheck-gui`, the selection and configuration of addons is carried out on the tab `Addons and tools` in the project settings (`Edit Project File`):
 
-[](https://github.com/danmar/cppcheck/blob/master/addons/doc/cppcheck-gui-addons/cppcheck-gui-addons.png)
+[](https://raw.githubusercontent.com/danmar/cppcheck/master/addons/doc/img/cppcheck-gui-addons.png)
