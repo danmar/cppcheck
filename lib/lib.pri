@@ -50,8 +50,7 @@ HEADERS += $${PWD}/check.h \
            $${PWD}/token.h \
            $${PWD}/tokenize.h \
            $${PWD}/tokenlist.h \
-           $${PWD}/valueflow.h \
-
+           $${PWD}/valueflow.h
 
 SOURCES += $${PWD}/analyzerinfo.cpp \
            $${PWD}/astutils.cpp \
