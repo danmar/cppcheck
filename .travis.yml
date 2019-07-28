@@ -151,19 +151,6 @@ matrix:
         - echo "CLANG"
         - grep "process crashed with signal\|Internal error\. compiled" /tmp/clang.cppcheck || true
         - grep -qv "process crashed with signal\|Internal error\. compiled" /tmp/clang.cppcheck
-# check llvm sources with cppcheck and look for crashes
-    - name: "check llvm sources with cppcheck"
-      compiler: clang
-      script:
-        - wget "https://github.com/llvm-mirror/llvm/archive/6fa6453210fa34c1c28bd73a431d04734549f0d6.zip"  & MATCHCOMPILER=yes VERIFY=1 make -j 2 & wait
-        - unzip 6fa6453210fa34c1c28bd73a431d04734549f0d6.zip > /dev/null
-        - touch /tmp/llvm.cppcheck
-        - cd ./llvm-6fa6453210fa34c1c28bd73a431d04734549f0d6
-        - ${CPPCHECK} . --max-configs=1 --enable=all --inconclusive --exception-handling --template="{callstack} ({severity}) {message} [{id}]" --suppressions-list=../.travis_llvmcheck_suppressions -j 2 |& grep -v ".* files checked.*done" |& tee /tmp/llvm.cppcheck
-        - cd ../
-        - echo "LLVM"
-        - grep "process crashed with signal\|Internal error\. compiled" /tmp/llvm.cppcheck || true
-        - grep -qv "process crashed with signal\|Internal error\. compiled" /tmp/llvm.cppcheck
 # check if dmake needs to be rerun (this job may fail)
     - name: "rerun dmake?"
       compiler: clang
