@@ -5884,10 +5884,10 @@ bool Tokenizer::simplifyConstTernaryOp()
 
             int ternaryOplevel = 0;
             for (const Token *endTok = colon; endTok; endTok = endTok->next()) {
-                if (Token::Match(endTok, "(|[|{")) {
+                if (Token::Match(endTok, "(|[|{"))
                     endTok = endTok->link();
-                }
-
+                else if (endTok->str() == "<" && (endTok->strAt(1) == ">" || mTemplateSimplifier->templateParameters(endTok)))
+                    endTok = endTok->findClosingBracket();
                 else if (endTok->str() == "?")
                     ++ternaryOplevel;
                 else if (Token::Match(endTok, ")|}|]|;|,|:|>")) {
@@ -5904,7 +5904,6 @@ bool Tokenizer::simplifyConstTernaryOp()
             }
         }
     }
-
     return ret;
 }
 

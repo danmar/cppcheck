@@ -2378,7 +2378,9 @@ void TemplateSimplifier::simplifyTemplateArgs(Token *start, Token *end)
             again = true;
 
         for (Token *tok = first->next(); tok && tok != end; tok = tok->next()) {
-            if (tok->str() == "?" && (tok->previous()->isNumber() || tok->previous()->isBoolean())) {
+            if (tok->str() == "?" &&
+                ((tok->previous()->isNumber() || tok->previous()->isBoolean()) ||
+                 Token::Match(tok->tokAt(-3), "( %bool%|%num% )"))) {
                 const int offset = (tok->previous()->str() == ")") ? 2 : 1;
 
                 // Find the token ":" then go to the next token
@@ -2415,10 +2417,10 @@ void TemplateSimplifier::simplifyTemplateArgs(Token *start, Token *end)
 
                     unsigned int ternaryOplevel = 0;
                     for (const Token *endTok = colon; endTok; endTok = endTok->next()) {
-                        if (Token::Match(endTok, "(|[|{")) {
+                        if (Token::Match(endTok, "(|[|{"))
                             endTok = endTok->link();
-                        }
-
+                        else if (endTok->str() == "<" && (endTok->strAt(1) == ">" || templateParameters(endTok)))
+                            endTok = endTok->findClosingBracket();
                         else if (endTok->str() == "?")
                             ++ternaryOplevel;
                         else if (Token::Match(endTok, ")|}|]|;|,|:|>")) {
@@ -2525,6 +2527,37 @@ bool TemplateSimplifier::simplifyCalculations(Token* frontToken, Token *backToke
             tok->deleteThis();
             tok->deleteNext();
             tok->deleteNext();
+            tok->deleteNext();
+            ret = true;
+        }
+
+        if (validTokenEnd(bounded, tok, backToken, 3) &&
+            Token::Match(tok, "decltype ( %bool%|%num% )")) {
+            tok->deleteThis();
+            tok->deleteThis();
+            if (tok->isBoolean())
+                tok->str("bool");
+            else if (MathLib::isFloat(tok->str())) {
+                // MathLib::getSuffix doesn't work for floating point numbers
+                char suffix = tok->str().back();
+                if (suffix == 'f' || suffix == 'F')
+                    tok->str("float");
+                else if (suffix == 'l' || suffix == 'L') {
+                    tok->str("double");
+                    tok->isLong(true);
+                } else
+                    tok->str("double");
+            } else if (MathLib::isInt(tok->str())) {
+                std::string suffix = MathLib::getSuffix(tok->str());
+                if (suffix.find("LL") != std::string::npos) {
+                    tok->str("long");
+                    tok->isLong(true);
+                } else if (suffix.find('L') != std::string::npos)
+                    tok->str("long");
+                else
+                    tok->str("int");
+                tok->isUnsigned(suffix.find('U') != std::string::npos);
+            }
             tok->deleteNext();
             ret = true;
         }

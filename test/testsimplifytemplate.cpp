@@ -222,6 +222,8 @@ private:
         TEST_CASE(template_variable_2);
         TEST_CASE(template_variable_3);
         TEST_CASE(template_variable_4);
+
+        TEST_CASE(simplifyDecltype);
     }
 
     std::string tok(const char code[], bool debugwarnings = false, Settings::PlatformType type = Settings::Native) {
@@ -4379,6 +4381,51 @@ private:
                                 "decltype ( test<int> ) * foo<int> = & ( test<int> ) ; "
                                 "void bar ( ) { foo<int> ( ) ; } "
                                 "void test<int> ( ) { }";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void simplifyDecltype() {
+        const char code[] = "template<typename T> class type { };\n"
+                            "type<decltype(true)> b;\n"
+                            "type<decltype(0)> i;\n"
+                            "type<decltype(0U)> ui;\n"
+                            "type<decltype(0L)> l;\n"
+                            "type<decltype(0UL)> ul;\n"
+                            "type<decltype(0LL)> ll;\n"
+                            "type<decltype(0ULL)> ull;\n"
+                            "type<decltype(0.0)> d;\n"
+                            "type<decltype(0.0F)> f;\n"
+                            "type<decltype(0.0L)> ld;";
+        const char expected[] = "class type<bool> ; "
+                                "class type<int> ; "
+                                "class type<unsignedint> ; "
+                                "class type<long> ; "
+                                "class type<unsignedlong> ; "
+                                "class type<longlong> ; "
+                                "class type<unsignedlonglong> ; "
+                                "class type<double> ; "
+                                "class type<float> ; "
+                                "class type<longdouble> ; "
+                                "type<bool> b ; "
+                                "type<int> i ; "
+                                "type<unsignedint> ui ; "
+                                "type<long> l ; "
+                                "type<unsignedlong> ul ; "
+                                "type<longlong> ll ; "
+                                "type<unsignedlonglong> ull ; "
+                                "type<double> d ; "
+                                "type<float> f ; "
+                                "type<longdouble> ld ; "
+                                "class type<bool> { } ; "
+                                "class type<int> { } ; "
+                                "class type<unsignedint> { } ; "
+                                "class type<long> { } ; "
+                                "class type<unsignedlong> { } ; "
+                                "class type<longlong> { } ; "
+                                "class type<unsignedlonglong> { } ; "
+                                "class type<double> { } ; "
+                                "class type<float> { } ; "
+                                "class type<longdouble> { } ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 };
