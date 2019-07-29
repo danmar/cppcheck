@@ -1552,6 +1552,9 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                     bodyStart = conditionStart->link()->next();
             }
 
+            if (!bodyStart || !conditionStart)
+                return Result(Result::Type::BAILOUT);
+
             // Is expr changed in condition?
             if (!isUnchanged(conditionStart, conditionStart->link(), exprVarIds, local))
                 return Result(Result::Type::BAILOUT);
