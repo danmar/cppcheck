@@ -46,11 +46,27 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
     // Is the dependency already included?
     if (std::find(depfiles.begin(), depfiles.end(), filename) != depfiles.end())
         return;
-
     std::ifstream f(filename.c_str());
-    if (! f.is_open()) {
-        if (filename.compare(0, 4, "cli/") == 0 || filename.compare(0, 5, "test/") == 0)
+    if (! f.is_open()) { 
+        if (filename.compare(0, 4, "lib/") == 0) {
+            getDeps("externals" + filename.substr(filename.find('/')), depfiles);
+            getDeps("externals/simplecpp" + filename.substr(filename.find('/')), depfiles);
+            getDeps("externals/tinyxml" + filename.substr(filename.find('/')), depfiles);
+        } else if (filename.compare(0, 6, "tools/") == 0) {
             getDeps("lib" + filename.substr(filename.find('/')), depfiles);
+            getDeps("externals" + filename.substr(filename.find('/')), depfiles);
+            getDeps("externals/simplecpp" + filename.substr(filename.find('/')), depfiles);
+            getDeps("externals/tinyxml" + filename.substr(filename.find('/')), depfiles);
+        } else if (filename.compare(0, 4, "cli/") == 0 ) {
+            getDeps("lib" + filename.substr(filename.find('/')), depfiles);
+            getDeps("externals/simplecpp" + filename.substr(filename.find('/')), depfiles);
+            getDeps("externals/tinyxml" + filename.substr(filename.find('/')), depfiles);
+        } else if (filename.compare(0, 5, "test/") == 0) {
+            getDeps("lib" + filename.substr(filename.find('/')), depfiles);
+            getDeps("cli" + filename.substr(filename.find('/')), depfiles);
+            getDeps("externals/simplecpp" + filename.substr(filename.find('/')), depfiles);
+            getDeps("externals/tinyxml" + filename.substr(filename.find('/')), depfiles);
+        }
         return;
     }
     if (filename.find(".c") == std::string::npos)
@@ -63,11 +79,18 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
     std::string line;
     while (std::getline(f, line)) {
         std::string::size_type pos1 = line.find("#include \"");
-        if (pos1 == std::string::npos)
-            continue;
+        if (pos1 == std::string::npos){
+            pos1 = line.find("#include <");
+            if (pos1 == std::string::npos){
+              continue;
+            }
+        }
         pos1 += 10;
 
         std::string::size_type pos2 = line.find('\"', pos1);
+        if (pos2 == std::string::npos){
+              pos2 = line.find('>', pos1);
+        }
         std::string hfile(path + line.substr(pos1, pos2 - pos1));
         if (hfile.find("/../") != std::string::npos)    // TODO: Ugly fix
             hfile.erase(0, 4 + hfile.find("/../"));
