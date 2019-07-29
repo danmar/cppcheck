@@ -4300,10 +4300,13 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
 
             // check for a match with a boolean literal
             else if (!funcarg->isArrayOrPointer() && Token::Match(arguments[j], "%bool% ,|)")) {
-                if (Token::Match(funcarg->typeStartToken(), "bool|_Bool"))
-                    same++;
-                else if (Token::Match(funcarg->typeStartToken(), "wchar_t|char|short|int|long"))
-                    fallback1++;
+                ValueType::MatchResult res = ValueType::matchParameter(arguments[j]->valueType(), funcarg->valueType());
+                if (res == ValueType::MatchResult::SAME)
+                    ++same;
+                else if (res == ValueType::MatchResult::FALLBACK1)
+                    ++fallback1;
+                else if (res == ValueType::MatchResult::FALLBACK2)
+                    ++fallback2;
             }
 
             // check for a match with nullptr
