@@ -513,10 +513,10 @@ void ThreadExecutor::report(const ErrorLogger::ErrorMessage &msg, MessageType ms
         EnterCriticalSection(&mReportSync);
 
         switch (msgType) {
-		case MessageType::REPORT_ERROR:
+        case MessageType::REPORT_ERROR:
             mErrorLogger.reportErr(msg);
             break;
-		case MessageType::REPORT_INFO:
+        case MessageType::REPORT_INFO:
             mErrorLogger.reportInfo(msg);
             break;
         }
