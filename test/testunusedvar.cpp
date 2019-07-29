@@ -61,7 +61,6 @@ private:
         TEST_CASE(localvar4);
         TEST_CASE(localvar5);
         TEST_CASE(localvar6);
-        TEST_CASE(localvar7);
         TEST_CASE(localvar8);
         TEST_CASE(localvar9); // ticket #1605
         TEST_CASE(localvar10);
@@ -111,6 +110,7 @@ private:
         TEST_CASE(localvar54); // ast, {}
         TEST_CASE(localvar55);
         TEST_CASE(localvar56);
+        TEST_CASE(localvar57); // #8974 - increment
         TEST_CASE(localvarloops); // loops
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
@@ -1162,33 +1162,6 @@ private:
         // TODO ASSERT_EQUALS("[test.cpp:6]: (style) Variable 'b' is assigned a value that is never used.\n", errout.str());
     }
 
-    void localvar7() { // ticket 1253
-        functionVariableUsage("void foo()\n"
-                              "{\n"
-                              "    int i;\n"
-                              "    i--;\n"
-                              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is not assigned a value.\n", errout.str());
-
-        functionVariableUsage("void foo()\n"
-                              "{\n"
-                              "    int i;\n"
-                              "    int &ii(i);\n"
-                              "    ii--;\n"
-                              "}");
-        // TODO ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is not assigned a value.\n"
-        // TODO               "[test.cpp:5]: (style) Variable 'ii' is modified but its new value is never used.\n", errout.str());
-
-        functionVariableUsage("void foo()\n"
-                              "{\n"
-                              "    int i;\n"
-                              "    int &ii=i;\n"
-                              "    ii--;\n"
-                              "}");
-        // TODO ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is not assigned a value.\n"
-        // TODO               "[test.cpp:5]: (style) Variable 'ii' is modified but its new value is never used.\n", errout.str());
-    }
-
     void localvar8() {
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -2156,6 +2129,15 @@ private:
                               "    mask[x] |= 123;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvar57() {
+        functionVariableUsage("void f()\n"
+                              "{\n"
+                              "    int x = 0;\n"
+                              "    x++;\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvarloops() {
