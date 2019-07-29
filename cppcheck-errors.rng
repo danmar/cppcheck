@@ -15,7 +15,9 @@
           <element name="error">
             <optional>
               <attribute name="cwe">
-                <data type="integer"/>
+                <data type="integer">
+                  <param name="minExclusive">0</param>
+                </data>
               </attribute>
             </optional>
             <attribute name="id">
@@ -46,7 +48,9 @@
                   <data type="string"/>
                 </attribute>
                 <attribute name="line">
-                  <data type="integer"/>
+                  <data type="integer">
+                    <param name="minInclusive">0</param>
+                  </data>
                 </attribute>
                 <optional>
                   <attribute name="info">
