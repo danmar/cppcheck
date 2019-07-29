@@ -59,6 +59,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     createSymbolDatabaseVariableSymbolTable();
     createSymbolDatabaseSetScopePointers();
     createSymbolDatabaseSetVariablePointers();
+    setValueTypeInTokenList();
     createSymbolDatabaseSetFunctionPointers(true);
     createSymbolDatabaseSetTypePointers();
     createSymbolDatabaseEnums();
@@ -4265,32 +4266,13 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                             fallback2++;
                     }
                 } else if (!funcarg->isPointer()) {
-                    bool exactMatch = false;
-                    if (arguments[j]->str().find('f') != std::string::npos ||
-                        arguments[j]->str().find('F') != std::string::npos) {
-                        if (funcarg->typeStartToken()->str() == "float") {
-                            exactMatch = true;
-                        }
-                    } else if (arguments[j]->str().find('l') != std::string::npos ||
-                               arguments[j]->str().find('L') != std::string::npos) {
-                        if (funcarg->typeStartToken()->isLong() &&
-                            funcarg->typeStartToken()->str() == "double")  {
-                            exactMatch = true;
-                        }
-                    } else {
-                        if (!funcarg->typeStartToken()->isLong() &&
-                            funcarg->typeStartToken()->str() == "double") {
-                            exactMatch = true;
-                        }
-                    }
-                    if (exactMatch)
-                        same++;
-                    else {
-                        if (Token::Match(funcarg->typeStartToken(), "float|double"))
-                            fallback1++;
-                        else if (Token::Match(funcarg->typeStartToken(), "wchar_t|char|short|int|long"))
-                            fallback2++;
-                    }
+                    ValueType::MatchResult res = ValueType::matchParameter(arguments[j]->valueType(), funcarg->valueType());
+                    if (res == ValueType::MatchResult::SAME)
+                        ++same;
+                    else if (res == ValueType::MatchResult::FALLBACK1)
+                        ++fallback1;
+                    else if (res == ValueType::MatchResult::FALLBACK2)
+                        ++fallback2;
                 }
             }
 
@@ -5902,12 +5884,23 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
         return ValueType::MatchResult::UNKNOWN; // TODO
     if ((call->constness | func->constness) != func->constness)
         return ValueType::MatchResult::UNKNOWN;
-    if (call->sign != func->sign)
+    if (call->type != func->type) {
+        if (call->isIntegral() && func->isIntegral())
+            return ValueType::MatchResult::FALLBACK1;
+        else if (call->isFloat() && func->isFloat())
+            return ValueType::MatchResult::FALLBACK1;
+        else if (call->isIntegral() && func->isFloat())
+            return ValueType::MatchResult::FALLBACK2;
+        else if (call->isFloat() && func->isIntegral())
+            return ValueType::MatchResult::FALLBACK2;
         return ValueType::MatchResult::UNKNOWN; // TODO
-    if (call->type != func->type)
-        return ValueType::MatchResult::UNKNOWN; // TODO
+    }
+
     if (func->type < ValueType::Type::VOID || func->type == ValueType::Type::UNKNOWN_INT)
         return ValueType::MatchResult::UNKNOWN;
+
+    if (call->isIntegral() && func->isIntegral() && call->sign != func->sign)
+        return ValueType::MatchResult::UNKNOWN; // TODO
 
     return ValueType::MatchResult::SAME;
 }
