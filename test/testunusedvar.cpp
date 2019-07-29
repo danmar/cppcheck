@@ -2120,7 +2120,7 @@ private:
                               "  }\n"
                               "  return x;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvar54() {
