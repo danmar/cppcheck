@@ -5903,15 +5903,15 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
 {
     if (!call || !func)
         return ValueType::MatchResult::UNKNOWN;
-    if (call->pointer == 0 || call->pointer != func->pointer)
+    if (call->pointer != func->pointer)
         return ValueType::MatchResult::UNKNOWN; // TODO
     if ((call->constness | func->constness) != func->constness)
         return ValueType::MatchResult::UNKNOWN;
-    if (func->sign != func->sign)
+    if (call->sign != func->sign)
         return ValueType::MatchResult::UNKNOWN; // TODO
     if (call->type != func->type)
         return ValueType::MatchResult::UNKNOWN; // TODO
-    if (func->type < ValueType::Type::VOID)
+    if (func->type < ValueType::Type::VOID || func->type == ValueType::Type::UNKNOWN_INT)
         return ValueType::MatchResult::UNKNOWN;
 
     return ValueType::MatchResult::SAME;
