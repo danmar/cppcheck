@@ -4098,12 +4098,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
     if (!end)
         return nullptr;
 
-    std::vector<const Token *> arguments;
-
-    // find all the arguments for this function call
-    for (const Token *arg = tok->tokAt(2); arg && arg != end; arg = arg->nextArgument()) {
-        arguments.push_back(arg);
-    }
+    const std::vector<const Token *> arguments = getArguments(tok);
 
     std::vector<const Function *> matches;
 
