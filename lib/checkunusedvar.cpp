@@ -1171,15 +1171,19 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             if (FwdAnalysis::isNullOperand(tok->astOperand2()))
                 continue;
 
-            if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isReference() && tok->astOperand1()->variable()->nameToken() != tok->astOperand1())
+            if (!tok->astOperand1())
+                continue;
+
+            const Variable *op1Var = tok->astOperand1() ? tok->astOperand1()->variable() : nullptr;
+            if (op1Var && op1Var->isReference() && op1Var->nameToken() != tok->astOperand1())
                 // todo: check references
                 continue;
 
-            if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isStatic())
+            if (op1Var && op1Var->isStatic())
                 // todo: check static variables
                 continue;
 
-            if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->nameToken()->isAttributeUnused())
+            if (op1Var && op1Var->nameToken()->isAttributeUnused())
                 continue;
 
             // Is there a redundant assignment?
