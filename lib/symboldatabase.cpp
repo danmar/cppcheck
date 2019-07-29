@@ -4041,6 +4041,12 @@ void Scope::findFunctionInBase(const std::string & name, nonneg int args, std::v
 static void checkVariableCallMatch(const Variable* callarg, const Variable* funcarg, size_t& same, size_t& fallback1, size_t& fallback2)
 {
     if (callarg) {
+        ValueType::MatchResult res = ValueType::matchParameter(callarg->valueType(), funcarg->valueType());
+        if (res == ValueType::MatchResult::SAME) {
+            same++;
+            return;
+        }
+
         bool ptrequals = callarg->isArrayOrPointer() == funcarg->isArrayOrPointer();
         bool constEquals = !callarg->isArrayOrPointer() || ((callarg->typeStartToken()->strAt(-1) == "const") == (funcarg->typeStartToken()->strAt(-1) == "const"));
         if (ptrequals && constEquals &&
@@ -5891,4 +5897,22 @@ std::string ValueType::str() const
             ret += " const";
     }
     return ret.empty() ? ret : ret.substr(1);
+}
+
+ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const ValueType *func)
+{
+    if (!call || !func)
+        return ValueType::MatchResult::UNKNOWN;
+    if (call->pointer == 0 || call->pointer != func->pointer)
+        return ValueType::MatchResult::UNKNOWN; // TODO
+    if ((call->constness | func->constness) != func->constness)
+        return ValueType::MatchResult::UNKNOWN;
+    if (func->sign != func->sign)
+        return ValueType::MatchResult::UNKNOWN; // TODO
+    if (call->type != func->type)
+        return ValueType::MatchResult::UNKNOWN; // TODO
+    if (func->type < ValueType::Type::VOID)
+        return ValueType::MatchResult::UNKNOWN;
+
+    return ValueType::MatchResult::SAME;
 }
