@@ -2568,6 +2568,19 @@ private:
         ASSERT_EQUALS(true, values.empty());
 
         code = "void f() {\n"
+               "  S s;\n"
+               "  s.x = 37;\n"
+               "  int y = 10;\n"
+               "  while (s.x < y)\n" // s.x has a known value
+               "    y--;\n"
+               "}";
+        values = tokenValues(code, ". x <");
+        ASSERT(values.size() == 1 &&
+               values.front().isKnown() &&
+               values.front().isIntValue() &&
+               values.front().intvalue == 37);
+
+        code = "void f() {\n"
                "  Hints hints;\n"
                "  hints.x = 1;\n"
                "  if (foo)\n"
