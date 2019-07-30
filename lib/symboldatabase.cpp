@@ -4073,25 +4073,6 @@ static void checkVariableCallMatch(const Variable* callarg, const Variable* func
     }
 }
 
-static bool valueTypeMatch(const ValueType * valuetype, const Token * type)
-{
-    if (valuetype->typeScope && type->type() && type->type()->classScope == valuetype->typeScope)
-        return true;
-
-    return ((((type->str() == "bool" && valuetype->type == ValueType::BOOL) ||
-              (type->str() == "char" && valuetype->type == ValueType::CHAR) ||
-              (type->str() == "short" && valuetype->type == ValueType::SHORT) ||
-              (type->str() == "wchar_t" && valuetype->type == ValueType::WCHAR_T) ||
-              (type->str() == "int" && valuetype->type == ValueType::INT) ||
-              ((type->str() == "long" && type->isLong()) && valuetype->type == ValueType::LONGLONG) ||
-              (type->str() == "long" && valuetype->type == ValueType::LONG) ||
-              (type->str() == "float" && valuetype->type == ValueType::FLOAT) ||
-              ((type->str() == "double" && type->isLong()) && valuetype->type == ValueType::LONGDOUBLE) ||
-              (type->str() == "double" && valuetype->type == ValueType::DOUBLE)) &&
-             (type->isUnsigned() == (valuetype->sign == ValueType::UNSIGNED))) ||
-            (valuetype->isEnum() && type->isEnumType() && valuetype->typeScope->className == type->str()));
-}
-
 const Function* Scope::findFunction(const Token *tok, bool requireConst) const
 {
     // make sure this is a function call
@@ -4324,43 +4305,13 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
 
             // Try to evaluate the apparently more complex expression
             else {
-                const Token* argtok = arguments[j];
-                while (argtok->astParent() && argtok->astParent() != tok->next() && argtok->astParent()->str() != ",") {
-                    argtok = argtok->astParent();
-                }
-                if (argtok && argtok->valueType()) {
-                    const ValueType* valuetype = argtok->valueType();
-                    const bool isArrayOrPointer = valuetype->pointer;
-                    const bool ptrequals = isArrayOrPointer == funcarg->isArrayOrPointer();
-                    const bool constEquals = !isArrayOrPointer ||
-                                             ((valuetype->constness > 0) == (funcarg->typeStartToken()->strAt(-1) == "const"));
-                    if (ptrequals && constEquals && valueTypeMatch(valuetype, funcarg->typeStartToken())) {
-                        same++;
-                    } else if (isArrayOrPointer) {
-                        if (ptrequals && constEquals && valuetype->type == ValueType::VOID)
-                            fallback1++;
-                        else if (constEquals && funcarg->isStlStringType() && valuetype->type == ValueType::CHAR)
-                            fallback2++;
-                    } else if (ptrequals) {
-                        const bool takesInt = Token::Match(funcarg->typeStartToken(), "bool|char|short|int|long") ||
-                                              funcarg->typeStartToken()->isEnumType();
-                        const bool takesFloat = Token::Match(funcarg->typeStartToken(), "float|double");
-                        const bool passesInt = valuetype->isIntegral() || valuetype->isEnum();
-                        const bool passesFloat = valuetype->isFloat();
-                        if ((takesInt && passesInt) || (takesFloat && passesFloat))
-                            fallback1++;
-                        else if ((takesInt && passesFloat) || (takesFloat && passesInt))
-                            fallback2++;
-                    }
-                } else {
-                    while (Token::Match(argtok, ".|::"))
-                        argtok = argtok->astOperand2();
-
-                    if (argtok) {
-                        const Variable * callarg = check->getVariableFromVarId(argtok->varId());
-                        checkVariableCallMatch(callarg, funcarg, same, fallback1, fallback2);
-                    }
-                }
+                ValueType::MatchResult res = ValueType::matchParameter(arguments[j]->valueType(), funcarg->valueType());
+                if (res == ValueType::MatchResult::SAME)
+                    ++same;
+                else if (res == ValueType::MatchResult::FALLBACK1)
+                    ++fallback1;
+                else if (res == ValueType::MatchResult::FALLBACK2)
+                    ++fallback2;
             }
         }
 
@@ -5887,6 +5838,10 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
         return ValueType::MatchResult::UNKNOWN; // TODO
     if ((call->constness | func->constness) != func->constness)
         return ValueType::MatchResult::UNKNOWN;
+
+    if (call->typeScope && call->typeScope == func->typeScope)
+        return ValueType::MatchResult::SAME;
+
     if (call->type != func->type) {
         if (call->isIntegral() && func->isIntegral())
             return ValueType::MatchResult::FALLBACK1;
