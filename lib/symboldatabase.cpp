@@ -4205,7 +4205,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
             }
 
             // check for a match with a numeric literal
-            else if (Token::Match(arguments[j], "%num% ,|)")) {
+            else if (Token::Match(arguments[j], "%num%")) {
                 const Token *calltok = arguments[j];
                 if (funcarg->isPointer() && MathLib::isNullValue(calltok->str())) {
                     fallback1++;
@@ -4221,7 +4221,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
             }
 
             // check for a match with a string literal
-            else if (Token::Match(arguments[j], "%str% ,|)")) {
+            else if (Token::Match(arguments[j], "%str%")) {
                 ValueType::MatchResult res = ValueType::matchParameter(arguments[j]->valueType(), funcarg->valueType());
                 if (res == ValueType::MatchResult::SAME)
                     ++same;
@@ -4230,7 +4230,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                 else if (res == ValueType::MatchResult::FALLBACK2)
                     ++fallback2;
                 else if (funcarg->isStlStringType())
-                    fallback2++;
+                    fallback1++;
             }
 
             // check for a match with a char literal

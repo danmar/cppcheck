@@ -5138,7 +5138,7 @@ private:
         ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 5);
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo ( \"\" ) ;");
-        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 5);
+        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 1);
     }
 
     void findFunction14() {
