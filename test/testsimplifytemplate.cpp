@@ -166,6 +166,7 @@ private:
         TEST_CASE(template126); // #9217
         TEST_CASE(template127); // #9225
         TEST_CASE(template128); // #9224
+        TEST_CASE(template129);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -3046,6 +3047,26 @@ private:
                            "void foo ( ) { h<int> ( ) ; } "
                            "void h<int> ( ) { k . h < a<int> > ; } "
                            "struct a<int> { } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template129() {
+        const char code[] = "class LuaContext {\n"
+                            "public:\n"
+                            "  template <typename TFunctionType, typename TType>\n"
+                            "  void registerFunction(TType fn) { }\n"
+                            "};\n"
+                            "void setupLuaBindingsDNSQuestion() {\n"
+                            "  g_lua.registerFunction<void (DNSQuestion ::*)(std ::string, std ::string)>();\n"
+                            "}";
+        const char exp[] = "class LuaContext { "
+                           "public: "
+                           "template < typename TFunctionType , typename TType > "
+                           "void registerFunction ( TType fn ) { } "
+                           "} ; "
+                           "void setupLuaBindingsDNSQuestion ( ) { "
+                           "g_lua . registerFunction < void ( DNSQuestion :: * ) ( std :: string , std :: string ) > ( ) ; "
+                           "}";
         ASSERT_EQUALS(exp, tok(code));
     }
 
