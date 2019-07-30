@@ -4222,12 +4222,13 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
 
             // check for a match with a string literal
             else if (Token::Match(arguments[j], "%str% ,|)")) {
-                if (funcarg->typeStartToken() != funcarg->typeEndToken() &&
-                    ((!arguments[j]->isLong() && Token::simpleMatch(funcarg->typeStartToken(), "char *")) ||
-                     (arguments[j]->isLong() && Token::simpleMatch(funcarg->typeStartToken(), "wchar_t *"))))
-                    same++;
-                else if (Token::simpleMatch(funcarg->typeStartToken(), "void *"))
-                    fallback1++;
+                ValueType::MatchResult res = ValueType::matchParameter(arguments[j]->valueType(), funcarg->valueType());
+                if (res == ValueType::MatchResult::SAME)
+                    ++same;
+                else if (res == ValueType::MatchResult::FALLBACK1)
+                    ++fallback1;
+                else if (res == ValueType::MatchResult::FALLBACK2)
+                    ++fallback2;
                 else if (funcarg->isStlStringType())
                     fallback2++;
             }
@@ -5829,9 +5830,11 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
         return ValueType::MatchResult::UNKNOWN;
     if (call->pointer != func->pointer)
         return ValueType::MatchResult::UNKNOWN; // TODO
-    if (call->pointer > 0 && ((call->constness | func->constness) != func->constness))
+    if (call->pointer > 0 && func->type != ValueType::Type::VOID && ((call->constness | func->constness) != func->constness))
         return ValueType::MatchResult::UNKNOWN;
     if (call->type != func->type) {
+        if (func->type == ValueType::Type::VOID)
+            return ValueType::MatchResult::FALLBACK1;
         if (call->isIntegral() && func->isIntegral())
             return call->type < func->type ?
                    ValueType::MatchResult::FALLBACK1 :
@@ -5848,7 +5851,7 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
     if (func->type < ValueType::Type::VOID || func->type == ValueType::Type::UNKNOWN_INT)
         return ValueType::MatchResult::UNKNOWN;
 
-    if (call->isIntegral() && func->isIntegral() && call->sign != func->sign)
+    if (call->isIntegral() && func->isIntegral() && call->sign != ValueType::Sign::UNKNOWN_SIGN && func->sign != ValueType::Sign::UNKNOWN_SIGN && call->sign != func->sign)
         return ValueType::MatchResult::UNKNOWN; // TODO
 
     return ValueType::MatchResult::SAME;
