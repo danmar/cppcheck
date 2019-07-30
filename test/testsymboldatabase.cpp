@@ -344,6 +344,8 @@ private:
         TEST_CASE(findFunction25); // std::vector<std::shared_ptr<Fred>>
         TEST_CASE(findFunction26); // #8668 - pointer parameter in function call, const pointer function argument
 
+        TEST_CASE(valueTypeMatchParameter); // ValueType::matchParameter
+
         TEST_CASE(noexceptFunction1);
         TEST_CASE(noexceptFunction2);
         TEST_CASE(noexceptFunction3);
@@ -5527,6 +5529,21 @@ private:
         ASSERT(dostuff1->function());
         ASSERT(dostuff1->function() && dostuff1->function()->token);
         ASSERT(dostuff1->function() && dostuff1->function()->token && dostuff1->function()->token->linenr() == 1);
+    }
+
+    void valueTypeMatchParameter() {
+        ValueType vt_int;
+        vt_int.type = ValueType::Type::INT;
+        vt_int.sign = ValueType::Sign::SIGNED;
+
+        ValueType vt_const_int;
+        vt_const_int.type = ValueType::Type::INT;
+        vt_const_int.sign = ValueType::Sign::SIGNED;
+        vt_const_int.constness = 1;
+
+        ASSERT_EQUALS((int)ValueType::MatchResult::SAME, (int)ValueType::matchParameter(&vt_int, &vt_int));
+        ASSERT_EQUALS((int)ValueType::MatchResult::SAME, (int)ValueType::matchParameter(&vt_const_int, &vt_int));
+        ASSERT_EQUALS((int)ValueType::MatchResult::SAME, (int)ValueType::matchParameter(&vt_int, &vt_const_int));
     }
 
 #define FUNC(x) const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
