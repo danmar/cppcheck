@@ -4187,66 +4187,10 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
 
             // check for a match with a numeric literal
             else if (Token::Match(arguments[j], "%num% ,|)")) {
-                if (MathLib::isInt(arguments[j]->str()) && (!funcarg->isPointer() || MathLib::isNullValue(arguments[j]->str()))) {
-                    bool exactMatch = false;
-                    if (arguments[j]->str().find("ll") != std::string::npos ||
-                        arguments[j]->str().find("LL") != std::string::npos) {
-                        if (arguments[j]->str().find('u') != std::string::npos ||
-                            arguments[j]->str().find('U') != std::string::npos) {
-                            if (funcarg->typeStartToken()->isLong() &&
-                                funcarg->typeStartToken()->isUnsigned() &&
-                                funcarg->typeStartToken()->str() == "long") {
-                                exactMatch = true;
-                            }
-                        } else {
-                            if (funcarg->typeStartToken()->isLong() &&
-                                !funcarg->typeStartToken()->isUnsigned() &&
-                                funcarg->typeStartToken()->str() == "long") {
-                                exactMatch = true;
-                            }
-                        }
-                    } else if (arguments[j]->str().find('l') != std::string::npos ||
-                               arguments[j]->str().find('L') != std::string::npos) {
-                        if (arguments[j]->str().find('u') != std::string::npos ||
-                            arguments[j]->str().find('U') != std::string::npos) {
-                            if (!funcarg->typeStartToken()->isLong() &&
-                                funcarg->typeStartToken()->isUnsigned() &&
-                                funcarg->typeStartToken()->str() == "long") {
-                                exactMatch = true;
-                            }
-                        } else {
-                            if (!funcarg->typeStartToken()->isLong() &&
-                                !funcarg->typeStartToken()->isUnsigned() &&
-                                funcarg->typeStartToken()->str() == "long") {
-                                exactMatch = true;
-                            }
-                        }
-                    } else if (arguments[j]->str().find('u') != std::string::npos ||
-                               arguments[j]->str().find('U') != std::string::npos) {
-                        if (funcarg->typeStartToken()->isUnsigned() &&
-                            funcarg->typeStartToken()->str() == "int") {
-                            exactMatch = true;
-                        } else if (Token::Match(funcarg->typeStartToken(), "char|short")) {
-                            exactMatch = true;
-                        }
-                    } else {
-                        if (Token::Match(funcarg->typeStartToken(), "wchar_t|char|short|int|long")) {
-                            exactMatch = true;
-                        }
-                    }
-
-                    if (exactMatch)
-                        if (funcarg->isPointer())
-                            fallback2++;
-                        else
-                            same++;
-                    else {
-                        if (funcarg->isPointer() || Token::Match(funcarg->typeStartToken(), "wchar_t|char|short|int|long"))
-                            fallback1++;
-                        else if (Token::Match(funcarg->typeStartToken(), "float|double"))
-                            fallback2++;
-                    }
-                } else if (!funcarg->isPointer()) {
+                const Token *calltok = arguments[j];
+                if (funcarg->isPointer() && MathLib::isNullValue(calltok->str())) {
+                    fallback1++;
+                } else {
                     ValueType::MatchResult res = ValueType::matchParameter(arguments[j]->valueType(), funcarg->valueType());
                     if (res == ValueType::MatchResult::SAME)
                         ++same;
@@ -5844,7 +5788,9 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
 
     if (call->type != func->type) {
         if (call->isIntegral() && func->isIntegral())
-            return ValueType::MatchResult::FALLBACK1;
+            return call->type < func->type ?
+                   ValueType::MatchResult::FALLBACK1 :
+                   ValueType::MatchResult::FALLBACK2;
         else if (call->isFloat() && func->isFloat())
             return ValueType::MatchResult::FALLBACK1;
         else if (call->isIntegral() && func->isFloat())
