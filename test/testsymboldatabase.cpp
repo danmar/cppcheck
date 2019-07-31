@@ -5225,8 +5225,9 @@ private:
         f = Token::findsimplematch(tokenizer.tokens(), "foo3 ( 5");
         ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 7);
 
-        f = Token::findsimplematch(tokenizer.tokens(), "foo3 ( 6");
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 7);
+        // Error: ambiguous function call
+        //f = Token::findsimplematch(tokenizer.tokens(), "foo3 ( 6");
+        //ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 7);
     }
 
     void findFunction16() {

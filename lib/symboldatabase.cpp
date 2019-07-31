@@ -4234,13 +4234,14 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
             }
 
             // check for a match with a char literal
-            else if (!funcarg->isArrayOrPointer() && Token::Match(arguments[j], "%char% ,|)")) {
-                if (arguments[j]->isLong() && funcarg->typeStartToken()->str() == "wchar_t")
-                    same++;
-                else if (!arguments[j]->isLong() && funcarg->typeStartToken()->str() == "char")
-                    same++;
-                else if (Token::Match(funcarg->typeStartToken(), "wchar_t|char|short|int|long"))
-                    fallback1++;
+            else if (!funcarg->isArrayOrPointer() && Token::Match(arguments[j], "%char%")) {
+                ValueType::MatchResult res = ValueType::matchParameter(arguments[j]->valueType(), funcarg->valueType());
+                if (res == ValueType::MatchResult::SAME)
+                    ++same;
+                else if (res == ValueType::MatchResult::FALLBACK1)
+                    ++fallback1;
+                else if (res == ValueType::MatchResult::FALLBACK2)
+                    ++fallback2;
             }
 
             // check for a match with a boolean literal
@@ -5396,9 +5397,9 @@ void SymbolDatabase::setValueTypeInTokenList()
             setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::BOOL, 0U));
         } else if (tok->isBoolean()) {
             setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::BOOL, 0U));
-        } else if (tok->tokType() == Token::eChar)
-            setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, 0U));
-        else if (tok->tokType() == Token::eString) {
+        } else if (tok->tokType() == Token::eChar) {
+            setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, tok->isLong() ? ValueType::Type::WCHAR_T : ValueType::Type::CHAR, 0U));
+        } else if (tok->tokType() == Token::eString) {
             ValueType valuetype(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, 1U, 1U);
             if (tok->isLong()) {
                 valuetype.originalTypeName = "wchar_t";
