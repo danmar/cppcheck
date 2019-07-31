@@ -2834,6 +2834,10 @@ std::string TemplateSimplifier::getNewName(
         if (indentlevel == 0 && Token::Match(tok3->previous(), "[<,]")) {
             mTypesUsedInTemplateInstantiation.emplace_back(tok3, "");
         }
+        if (tok3->str() == "(")
+            ++indentlevel;
+        else if (tok3->str() == ")")
+            --indentlevel;
         const bool constconst = tok3->str() == "const" && tok3->strAt(1) == "const";
         if (!constconst) {
             typeStringsUsedInTemplateInstantiation.push_back(tok3->str());
