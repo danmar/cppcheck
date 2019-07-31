@@ -33,7 +33,7 @@
 namespace CTU {
     class CPPCHECKLIB FileInfo : public Check::FileInfo {
     public:
-        enum InvalidValueType { null, uninit, bufferOverflow };
+        enum class InvalidValueType { null, uninit, bufferOverflow };
 
         std::string toString() const OVERRIDE;
 
