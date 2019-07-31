@@ -4047,6 +4047,10 @@ static void checkVariableCallMatch(const Variable* callarg, const Variable* func
             same++;
             return;
         }
+        if (res == ValueType::MatchResult::FALLBACK1) {
+            fallback1++;
+            return;
+        }
 
         bool ptrequals = callarg->isArrayOrPointer() == funcarg->isArrayOrPointer();
         bool constEquals = !callarg->isArrayOrPointer() || ((callarg->typeStartToken()->strAt(-1) == "const") == (funcarg->typeStartToken()->strAt(-1) == "const"));
@@ -5854,7 +5858,7 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
             return ValueType::MatchResult::NOMATCH;
         return ValueType::MatchResult::UNKNOWN; // TODO
     }
-    if (call->pointer > 0 && func->type != ValueType::Type::VOID && ((call->constness | func->constness) != func->constness))
+    if (call->pointer > 0 && ((call->constness | func->constness) != func->constness))
         return ValueType::MatchResult::NOMATCH;
     if (call->type != func->type) {
         if (call->type == ValueType::Type::VOID || func->type == ValueType::Type::VOID)

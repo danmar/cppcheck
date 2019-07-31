@@ -5126,7 +5126,7 @@ private:
         ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 4);
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo ( & f ) ;");
-        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 5);
+        ASSERT_EQUALS(true, f && f->function() == nullptr);
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo ( ip ) ;");
         ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 4);
