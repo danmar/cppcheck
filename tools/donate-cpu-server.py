@@ -908,7 +908,7 @@ def server(server_address_port, packages, packageIndex, resultPath):
             data = cmd[11:]
             try:
                 t = 0
-                max_data_size = 4 * 1024 * 1024
+                max_data_size = 1024 * 1024
                 while (len(data) < max_data_size) and (not data.endswith('\nDONE')) and (t < 10):
                     d = connection.recv(1024)
                     if d:
