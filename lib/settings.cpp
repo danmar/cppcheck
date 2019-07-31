@@ -55,7 +55,7 @@ Settings::Settings()
       quiet(false),
       relativePaths(false),
       reportProgress(false),
-      showtime(SHOWTIME_NONE),
+      showtime(SHOWTIME_MODES::SHOWTIME_NONE),
       verbose(false),
       xml(false),
       xml_version(2)

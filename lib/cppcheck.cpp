@@ -471,7 +471,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             }
 
             Tokenizer mTokenizer(&mSettings, this);
-            if (mSettings.showtime != SHOWTIME_NONE)
+            if (mSettings.showtime != SHOWTIME_MODES::SHOWTIME_NONE)
                 mTokenizer.setTimerResults(&S_timerResults);
 
             try {
