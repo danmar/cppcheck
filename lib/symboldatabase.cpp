@@ -5807,11 +5807,7 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
     if (call->pointer != func->pointer) {
         if (call->pointer > 1 && func->pointer == 1 && func->type == ValueType::Type::VOID)
             return ValueType::MatchResult::FALLBACK1;
-        if (call->pointer < func->pointer && !call->isIntegral())
-            return ValueType::MatchResult::NOMATCH;
-        if (func->pointer < call->pointer && !func->isIntegral())
-            return ValueType::MatchResult::NOMATCH;
-        return ValueType::MatchResult::UNKNOWN; // TODO
+        return ValueType::MatchResult::NOMATCH; // TODO
     }
     if (call->pointer > 0 && ((call->constness | func->constness) != func->constness))
         return ValueType::MatchResult::NOMATCH;
