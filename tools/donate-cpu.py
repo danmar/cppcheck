@@ -40,7 +40,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.25"
+CLIENT_VERSION = "1.1.27"
 
 
 def check_requirements():
@@ -264,7 +264,7 @@ def scan_package(work_path, cppcheck_path, jobs):
                        'opengl': ['<GL/gl.h>', '<GL/glu.h>', '<GL/glut.h>'],
                        # 'openmp': ['<omp.h>'], <= enable after release of version 1.89
                        'python': ['<Python.h>', '"Python.h"'],
-                       'qt': ['<QApplication>', '<QString>', '<QWidget>', '<QtWidgets>', '<QtGui'],
+                       'qt': ['<QApplication>', '<QList>', '<QObject>', '<QString>', '<QWidget>', '<QtWidgets>', '<QtGui'],
                        'ruby': ['<ruby.h>', '<ruby/'],
                        'sdl': ['<SDL.h>'],
                        'sqlite3': ['<sqlite3.h>', '"sqlite3.h"'],
@@ -568,8 +568,12 @@ while True:
             current_cppcheck_dir = ver
         c, errout, info, t, cppcheck_options = scan_package(work_path, current_cppcheck_dir, jobs)
         if c < 0:
-            crash = True
-            count += ' Crash!'
+            if c == -101 and 'error: could not find or open any of the paths given.' in errout:
+                # No sourcefile found (for example only headers present)
+                count += ' 0'
+            else:
+                crash = True
+                count += ' Crash!'
         else:
             count += ' ' + str(c)
         elapsed_time += " {:.1f}".format(t)

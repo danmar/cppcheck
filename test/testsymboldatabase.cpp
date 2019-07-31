@@ -342,6 +342,9 @@ private:
         TEST_CASE(findFunction23);
         TEST_CASE(findFunction24); // smart pointer
         TEST_CASE(findFunction25); // std::vector<std::shared_ptr<Fred>>
+        TEST_CASE(findFunction26); // #8668 - pointer parameter in function call, const pointer function argument
+
+        TEST_CASE(valueTypeMatchParameter); // ValueType::matchParameter
 
         TEST_CASE(noexceptFunction1);
         TEST_CASE(noexceptFunction2);
@@ -5135,7 +5138,7 @@ private:
         ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 5);
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo ( \"\" ) ;");
-        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 5);
+        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 1);
     }
 
     void findFunction14() {
@@ -5513,6 +5516,34 @@ private:
         ASSERT(db != nullptr);
         const Token *tok1 = Token::findsimplematch(tokenizer.tokens(), ". dostuff ( ) ;")->next();
         ASSERT(tok1->function());
+    }
+
+    void findFunction26() {
+        GET_SYMBOL_DB("void dostuff(const int *p) {}\n"
+                      "void dostuff(float) {}\n"
+                      "void f(int *p) {\n"
+                      "  dostuff(p);\n"
+                      "}");
+        ASSERT(db != nullptr);
+        const Token *dostuff1 = Token::findsimplematch(tokenizer.tokens(), "dostuff ( p ) ;");
+        ASSERT(dostuff1->function());
+        ASSERT(dostuff1->function() && dostuff1->function()->token);
+        ASSERT(dostuff1->function() && dostuff1->function()->token && dostuff1->function()->token->linenr() == 1);
+    }
+
+    void valueTypeMatchParameter() {
+        ValueType vt_int;
+        vt_int.type = ValueType::Type::INT;
+        vt_int.sign = ValueType::Sign::SIGNED;
+
+        ValueType vt_const_int;
+        vt_const_int.type = ValueType::Type::INT;
+        vt_const_int.sign = ValueType::Sign::SIGNED;
+        vt_const_int.constness = 1;
+
+        ASSERT_EQUALS((int)ValueType::MatchResult::SAME, (int)ValueType::matchParameter(&vt_int, &vt_int));
+        ASSERT_EQUALS((int)ValueType::MatchResult::SAME, (int)ValueType::matchParameter(&vt_const_int, &vt_int));
+        ASSERT_EQUALS((int)ValueType::MatchResult::SAME, (int)ValueType::matchParameter(&vt_int, &vt_const_int));
     }
 
 #define FUNC(x) const Function *x = findFunctionByName(#x, &db->scopeList.front()); \

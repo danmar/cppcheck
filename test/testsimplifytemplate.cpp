@@ -165,6 +165,7 @@ private:
         TEST_CASE(template125);
         TEST_CASE(template126); // #9217
         TEST_CASE(template127); // #9225
+        TEST_CASE(template128); // #9224
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -221,6 +222,8 @@ private:
         TEST_CASE(template_variable_2);
         TEST_CASE(template_variable_3);
         TEST_CASE(template_variable_4);
+
+        TEST_CASE(simplifyDecltype);
     }
 
     std::string tok(const char code[], bool debugwarnings = false, Settings::PlatformType type = Settings::Native) {
@@ -3034,6 +3037,18 @@ private:
         }
     }
 
+    void template128() { // #9224
+        const char code[] = "template <typename> struct a { };\n"
+                            "template <typename j> void h() { k.h<a<j>>; }\n"
+                            "void foo() { h<int>(); }";
+        const char exp[] = "struct a<int> ; "
+                           "void h<int> ( ) ; "
+                           "void foo ( ) { h<int> ( ) ; } "
+                           "void h<int> ( ) { k . h < a<int> > ; } "
+                           "struct a<int> { } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         const char code[] = "template <typename T> struct C {};\n"
                             "template <typename T> struct S {a};\n"
@@ -4366,6 +4381,51 @@ private:
                                 "decltype ( test<int> ) * foo<int> = & ( test<int> ) ; "
                                 "void bar ( ) { foo<int> ( ) ; } "
                                 "void test<int> ( ) { }";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void simplifyDecltype() {
+        const char code[] = "template<typename T> class type { };\n"
+                            "type<decltype(true)> b;\n"
+                            "type<decltype(0)> i;\n"
+                            "type<decltype(0U)> ui;\n"
+                            "type<decltype(0L)> l;\n"
+                            "type<decltype(0UL)> ul;\n"
+                            "type<decltype(0LL)> ll;\n"
+                            "type<decltype(0ULL)> ull;\n"
+                            "type<decltype(0.0)> d;\n"
+                            "type<decltype(0.0F)> f;\n"
+                            "type<decltype(0.0L)> ld;";
+        const char expected[] = "class type<bool> ; "
+                                "class type<int> ; "
+                                "class type<unsignedint> ; "
+                                "class type<long> ; "
+                                "class type<unsignedlong> ; "
+                                "class type<longlong> ; "
+                                "class type<unsignedlonglong> ; "
+                                "class type<double> ; "
+                                "class type<float> ; "
+                                "class type<longdouble> ; "
+                                "type<bool> b ; "
+                                "type<int> i ; "
+                                "type<unsignedint> ui ; "
+                                "type<long> l ; "
+                                "type<unsignedlong> ul ; "
+                                "type<longlong> ll ; "
+                                "type<unsignedlonglong> ull ; "
+                                "type<double> d ; "
+                                "type<float> f ; "
+                                "type<longdouble> ld ; "
+                                "class type<bool> { } ; "
+                                "class type<int> { } ; "
+                                "class type<unsignedint> { } ; "
+                                "class type<long> { } ; "
+                                "class type<unsignedlong> { } ; "
+                                "class type<longlong> { } ; "
+                                "class type<unsignedlonglong> { } ; "
+                                "class type<double> { } ; "
+                                "class type<float> { } ; "
+                                "class type<longdouble> { } ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 };

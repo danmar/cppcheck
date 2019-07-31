@@ -147,6 +147,10 @@ private:
                           "  int b;\n"
                           "  if (b) { (int)((INTOF(8))result >> b); }\n"
                           "}", "if", "}");
+        // #9235
+        ASSERT_EQUALS(true, isVariableChanged("void f() {\n"
+                                              "    int &a = a;\n"
+                                              "}\n", "= a", "}"));
     }
 
     bool isVariableChangedByFunctionCall(const char code[], const char pattern[], bool *inconclusive) {

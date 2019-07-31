@@ -153,7 +153,7 @@ int main(int argc, char **argv)
                     continue;   // shouldn't happen
                 fname.erase(fname.find(".cpp"));
                 fout1 << std::string(11, ' ') << "$${PWD}/" << fname << ".h";
-                if (i + 1 < testfiles.size())
+                if (i + 1 < libfiles.size())
                     fout1 << " \\\n";
             }
             fout1 << "\n\nSOURCES += ";

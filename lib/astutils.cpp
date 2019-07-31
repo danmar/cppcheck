@@ -968,10 +968,12 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
     return arg && !arg->isConst() && arg->isReference();
 }
 
-bool isVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp)
+bool isVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth)
 {
     if (!precedes(start, end))
         return false;
+    if (depth < 0)
+        return true;
     for (const Token *tok = start; tok != end; tok = tok->next()) {
         if (tok->varId() != varid) {
             if (globalvar && Token::Match(tok, "%name% ("))
@@ -994,7 +996,7 @@ bool isVariableChanged(const Token *start, const Token *end, const nonneg int va
             // Check if assigning to a non-const lvalue
             const Variable * var = getLHSVariable(tok2->astParent());
             if (var && var->isReference() && !var->isConst() && var->nameToken() && var->nameToken()->next() == tok2->astParent()) {
-                if (!var->isLocal() || isVariableChanged(var, settings, cpp))
+                if (!var->isLocal() || isVariableChanged(var, settings, cpp, depth - 1))
                     return true;
             }
         }
@@ -1050,7 +1052,7 @@ bool isVariableChanged(const Token *start, const Token *end, const nonneg int va
             const Variable * loopVar = varTok->variable();
             if (!loopVar)
                 continue;
-            if (!loopVar->isConst() && loopVar->isReference() && isVariableChanged(loopVar, settings, cpp))
+            if (!loopVar->isConst() && loopVar->isReference() && isVariableChanged(loopVar, settings, cpp, depth - 1))
                 return true;
             continue;
         }
@@ -1058,7 +1060,7 @@ bool isVariableChanged(const Token *start, const Token *end, const nonneg int va
     return false;
 }
 
-bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp)
+bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp, int depth)
 {
     if (!var)
         return false;
@@ -1069,7 +1071,7 @@ bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp)
         return false;
     if (Token::Match(start, "; %varid% =", var->declarationId()))
         start = start->tokAt(2);
-    return isVariableChanged(start->next(), var->scope()->bodyEnd, var->declarationId(), var->isGlobal(), settings, cpp);
+    return isVariableChanged(start->next(), var->scope()->bodyEnd, var->declarationId(), var->isGlobal(), settings, cpp, depth);
 }
 
 int numberOfArguments(const Token *start)
@@ -1417,6 +1419,31 @@ bool reaches(const Token * start, const Token * dest, const Library& library, Er
     return true;
 }
 
+static bool isUnchanged(const Token *startToken, const Token *endToken, const std::set<int> &exprVarIds, bool local)
+{
+    for (const Token *tok = startToken; tok != endToken; tok = tok->next()) {
+        if (!local && Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {"))
+            // TODO: this is a quick bailout
+            return false;
+        if (tok->varId() <= 0 || exprVarIds.find(tok->varId()) == exprVarIds.end())
+            continue;
+        const Token *parent = tok;
+        while (parent->astParent() && !parent->astParent()->isAssignmentOp() && parent->astParent()->tokType() != Token::Type::eIncDecOp) {
+            if (parent->str() == "," || parent->isUnaryOp("&"))
+                // TODO: This is a quick bailout
+                return false;
+            parent = parent->astParent();
+        }
+        if (parent->astParent()) {
+            if (parent->astParent()->tokType() == Token::Type::eIncDecOp)
+                return false;
+            else if (parent->astParent()->isAssignmentOp() && parent == parent->astParent()->astOperand1())
+                return false;
+        }
+    }
+    return true;
+}
+
 struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<int> &exprVarIds, bool local, bool inInnerClass)
 {
     // Parse the given tokens
@@ -1513,8 +1540,28 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             return Result(Result::Type::BAILOUT);
 
         if (mWhat == What::ValueFlow && (Token::Match(tok, "while|for (") || Token::simpleMatch(tok, "do {"))) {
-            // TODO: only bailout if expr is reassigned in loop
-            return Result(Result::Type::BAILOUT);
+            const Token *bodyStart = nullptr;
+            const Token *conditionStart = nullptr;
+            if (Token::simpleMatch(tok, "do {")) {
+                bodyStart = tok->next();
+                if (Token::simpleMatch(bodyStart->link(), "} while ("))
+                    conditionStart = bodyStart->link()->tokAt(2);
+            } else {
+                conditionStart = tok->next();
+                if (Token::simpleMatch(conditionStart->link(), ") {"))
+                    bodyStart = conditionStart->link()->next();
+            }
+
+            if (!bodyStart || !conditionStart)
+                return Result(Result::Type::BAILOUT);
+
+            // Is expr changed in condition?
+            if (!isUnchanged(conditionStart, conditionStart->link(), exprVarIds, local))
+                return Result(Result::Type::BAILOUT);
+
+            // Is expr changed in loop body?
+            if (!isUnchanged(bodyStart, bodyStart->link(), exprVarIds, local))
+                return Result(Result::Type::BAILOUT);
         }
 
         if (!local && Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
@@ -1524,7 +1571,6 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
 
         if (expr->isName() && Token::Match(tok, "%name% (") && tok->str().find("<") != std::string::npos && tok->str().find(expr->str()) != std::string::npos)
             return Result(Result::Type::BAILOUT);
-
 
         if (exprVarIds.find(tok->varId()) != exprVarIds.end()) {
             const Token *parent = tok;

@@ -244,7 +244,7 @@ private:
         // TODO TEST_CASE(negativeMemoryAllocationSizeError) // #389
         TEST_CASE(negativeArraySize);
 
-        // TODO TEST_CASE(pointerAddition1);
+        TEST_CASE(pointerAddition1);
 
         TEST_CASE(ctu_malloc);
         TEST_CASE(ctu_array);
@@ -4055,8 +4055,8 @@ private:
         check("void f() {\n"
               "    char arr[10];\n"
               "    p = arr + 20;\n"
-              "\n");
-        ASSERT_EQUALS("error", errout.str());
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Undefined behaviour, pointer arithmetic 'arr+20' is out of bounds.\n", errout.str());
     }
 
     void ctu(const char code[]) {

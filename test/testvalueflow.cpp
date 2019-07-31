@@ -1357,6 +1357,13 @@ private:
                 "    M;\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:4]: (debug) valueflow.cpp:1260:valueFlowBeforeCondition bailout: variable x, condition is defined in macro\n", errout.str());
+
+        bailout("#define FREE(obj) ((obj) ? (free((char *) (obj)), (obj) = 0) : 0)\n" // #8349
+                "void f(int *x) {\n"
+                "    a = x;\n"
+                "    FREE(x);\n"
+                "}");
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:4]: (debug) valueflow.cpp:1260:valueFlowBeforeCondition bailout: variable x, condition is defined in macro\n", errout.str());
     }
 
     void valueFlowBeforeConditionGoto() {
@@ -2559,6 +2566,19 @@ private:
                "}";
         values = tokenValues(code, "<");
         ASSERT_EQUALS(true, values.empty());
+
+        code = "void f() {\n"
+               "  S s;\n"
+               "  s.x = 37;\n"
+               "  int y = 10;\n"
+               "  while (s.x < y)\n" // s.x has a known value
+               "    y--;\n"
+               "}";
+        values = tokenValues(code, ". x <");
+        ASSERT(values.size() == 1 &&
+               values.front().isKnown() &&
+               values.front().isIntValue() &&
+               values.front().intvalue == 37);
 
         code = "void f() {\n"
                "  Hints hints;\n"
