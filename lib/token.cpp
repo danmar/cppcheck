@@ -1002,6 +1002,100 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
             this->next(newToken);
             newToken->previous(this);
         }
+
+        if (mImpl->mScopeInfo) {
+            // If the brace is immediately closed there is no point opening a new scope for it
+            if (tokenStr == "{") {
+                std::string nextScopeNameAddition = "";
+                // This might be the opening of a member function
+                Token *tok1 = newToken;
+                while (Token::Match(tok1->previous(), "const|volatile|final|override|&|&&|noexcept"))
+                    tok1 = tok1->previous();
+                if (tok1 && tok1->previous() && tok1->strAt(-1) == ")") {
+                    tok1 = tok1->linkAt(-1);
+                    if (Token::Match(tok1->previous(), "throw|noexcept")) {
+                        tok1 = tok1->previous();
+                        while (Token::Match(tok1->previous(), "const|volatile|final|override|&|&&|noexcept"))
+                            tok1 = tok1->previous();
+                        if (tok1->strAt(-1) != ")")
+                            return;
+                    } else if (Token::Match(newToken->tokAt(-2), ":|, %name%")) {
+                        tok1 = tok1->tokAt(-2);
+                        if (tok1->strAt(-1) != ")")
+                            return;
+                    }
+                    if (tok1->strAt(-1) == ">")
+                        tok1 = tok1->previous()->findOpeningBracket();
+                    if (tok1 && Token::Match(tok1->tokAt(-3), "%name% :: %name%")) {
+                        tok1 = tok1->tokAt(-2);
+                        std::string scope = tok1->strAt(-1);
+                        while (Token::Match(tok1->tokAt(-2), ":: %name%")) {
+                            scope = tok1->strAt(-3) + " :: " + scope;
+                            tok1 = tok1->tokAt(-2);
+                        }
+
+                        if (!nextScopeNameAddition.empty() && !scope.empty()) nextScopeNameAddition += " :: ";
+                        nextScopeNameAddition += scope;
+                    }
+                }
+
+                // Or it might be a namespace/class/struct
+                if (Token::Match(newToken->previous(), "%name%|>")) {
+                    Token* nameTok = newToken->previous();
+                    while (nameTok && !Token::Match(nameTok, "namespace|class|struct|union %name% {|::|:|<")) {
+                        nameTok = nameTok->previous();
+                    }
+                    if (nameTok) {
+                        for (nameTok = nameTok->next(); nameTok && !Token::Match(nameTok, "{|:|<"); nameTok = nameTok->next()) {
+                            nextScopeNameAddition.append(nameTok->str());
+                            nextScopeNameAddition.append(" ");
+                        }
+                        if (nextScopeNameAddition.length() > 0) nextScopeNameAddition = nextScopeNameAddition.substr(0, nextScopeNameAddition.length() - 1);
+                    }
+                }
+
+                // New scope is opening, record it here
+                std::shared_ptr<ScopeInfo2> newScopeInfo = std::make_shared<ScopeInfo2>(mImpl->mScopeInfo->name, nullptr, mImpl->mScopeInfo->usingNamespaces);
+
+                if (!newScopeInfo->name.empty() && !nextScopeNameAddition.empty()) newScopeInfo->name.append(" :: ");
+                newScopeInfo->name.append(nextScopeNameAddition);
+
+                newToken->scopeInfo(newScopeInfo);
+            } else if (tokenStr == "}") {
+                Token* matchingTok = newToken->previous();
+                int depth = 0;
+                while (matchingTok && (depth != 0 || !Token::simpleMatch(matchingTok, "{"))) {
+                    if (Token::simpleMatch(matchingTok, "}")) depth++;
+                    if (Token::simpleMatch(matchingTok, "{")) depth--;
+                    matchingTok = matchingTok->previous();
+                }
+                if (matchingTok && matchingTok->previous()) {
+                    newToken->mImpl->mScopeInfo = matchingTok->previous()->scopeInfo();
+                }
+            } else {
+                if (prepend && newToken->previous()) {
+                    newToken->mImpl->mScopeInfo = newToken->previous()->scopeInfo();
+                }
+                else {
+                    newToken->mImpl->mScopeInfo = mImpl->mScopeInfo;
+                }
+                if (tokenStr == ";") {
+                    const Token* statementStart;
+                    for (statementStart = newToken; statementStart->previous() && !Token::Match(statementStart->previous(), ";|{"); statementStart = statementStart->previous());
+                    if (Token::Match(statementStart, "using namespace %name% ::|;")) {
+                        const Token * tok1 = statementStart->tokAt(2);
+                        std::string nameSpace;
+                        while (tok1 && tok1->str() != ";") {
+                            if (!nameSpace.empty())
+                                nameSpace += " ";
+                            nameSpace += tok1->str();
+                            tok1 = tok1->next();
+                        }
+                        mImpl->mScopeInfo->usingNamespaces.insert(nameSpace);
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -1879,6 +1973,13 @@ std::string Token::typeStr(const Token* tok)
     if (!r.first || !r.second)
         return "";
     return r.first->stringifyList(r.second, false);
+}
+
+void Token::scopeInfo(std::shared_ptr<ScopeInfo2> newScopeInfo) {
+    mImpl->mScopeInfo = newScopeInfo;
+}
+std::shared_ptr<ScopeInfo2> Token::scopeInfo() const {
+    return mImpl->mScopeInfo;
 }
 
 TokenImpl::~TokenImpl()

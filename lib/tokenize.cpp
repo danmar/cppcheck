@@ -39,6 +39,7 @@
 #include <cstring>
 #include <ctime>
 #include <iostream>
+#include <set>
 #include <stack>
 #include <unordered_map>
 #include <utility>
@@ -2833,7 +2834,99 @@ void Tokenizer::simplifyCaseRange()
     }
 }
 
+void Tokenizer::calculateScopes()
+{
+    std::string nextScopeNameAddition = "";
 
+    if (!list.front()->scopeInfo()) {
+        std::shared_ptr<ScopeInfo2> primaryScope = std::make_shared<ScopeInfo2>("", list.back());
+        list.front()->scopeInfo(primaryScope);
+
+
+        if (Token::Match(list.front(), "using namespace %name% ::|<|;")) {
+            std::string usingNamespaceName = "";
+            for (const Token* namespaceNameToken = list.front()->tokAt(2); !Token::simpleMatch(namespaceNameToken, ";"); namespaceNameToken = namespaceNameToken->next()) {
+                usingNamespaceName += namespaceNameToken->str();
+                usingNamespaceName += " ";
+            }
+            if (usingNamespaceName.length() > 0) usingNamespaceName = usingNamespaceName.substr(0, usingNamespaceName.length() - 1);
+            list.front()->scopeInfo()->usingNamespaces.insert(usingNamespaceName);
+        } else if (Token::Match(list.front(), "namespace|class|struct|union %name% {|::|:|<")) {
+            for (Token* nameTok = list.front()->next(); nameTok && !Token::Match(nameTok, "{|:|<"); nameTok = nameTok->next()) {
+                nextScopeNameAddition.append(nameTok->str());
+                nextScopeNameAddition.append(" ");
+            }
+            if (nextScopeNameAddition.length() > 0) nextScopeNameAddition = nextScopeNameAddition.substr(0, nextScopeNameAddition.length() - 1);
+        }
+    }
+
+    for (Token* tok = list.front(); tok; tok = tok->next()) {
+        if (!tok->scopeInfo()) {
+            tok->scopeInfo(tok->previous()->scopeInfo());
+
+            if (Token::Match(tok, "using namespace %name% ::|<|;")) {
+                std::string usingNamespaceName = "";
+                for (const Token* namespaceNameToken = tok->tokAt(2); !Token::simpleMatch(namespaceNameToken, ";"); namespaceNameToken = namespaceNameToken->next()) {
+                    usingNamespaceName += namespaceNameToken->str();
+                    usingNamespaceName += " ";
+                }
+                if (usingNamespaceName.length() > 0) usingNamespaceName = usingNamespaceName.substr(0, usingNamespaceName.length() - 1);
+                tok->scopeInfo()->usingNamespaces.insert(usingNamespaceName);
+            } else if (Token::Match(tok, "namespace|class|struct|union %name% {|::|:|<")) {
+                for (Token* nameTok = tok->next(); nameTok && !Token::Match(nameTok, "{|:|<"); nameTok = nameTok->next()) {
+                    nextScopeNameAddition.append(nameTok->str());
+                    nextScopeNameAddition.append(" ");
+                }
+                if (nextScopeNameAddition.length() > 0) nextScopeNameAddition = nextScopeNameAddition.substr(0, nextScopeNameAddition.length() - 1);
+            }
+
+            if (Token::simpleMatch(tok, "{"))
+            {
+                // This might be the opening of a member function
+                Token *tok1 = tok;
+                while (Token::Match(tok1->previous(), "const|volatile|final|override|&|&&|noexcept"))
+                    tok1 = tok1->previous();
+                if (tok1 && tok1->previous() && tok1->strAt(-1) == ")") {
+                    tok1 = tok1->linkAt(-1);
+                    if (Token::Match(tok1->previous(), "throw|noexcept")) {
+                        tok1 = tok1->previous();
+                        while (Token::Match(tok1->previous(), "const|volatile|final|override|&|&&|noexcept"))
+                            tok1 = tok1->previous();
+                        if (tok1->strAt(-1) != ")")
+                            return;
+                    } else if (Token::Match(tok->tokAt(-2), ":|, %name%")) {
+                        tok1 = tok1->tokAt(-2);
+                        if (tok1->strAt(-1) != ")")
+                            return;
+                    }
+                    if (tok1->strAt(-1) == ">")
+                        tok1 = tok1->previous()->findOpeningBracket();
+                    if (tok1 && Token::Match(tok1->tokAt(-3), "%name% :: %name%")) {
+                        tok1 = tok1->tokAt(-2);
+                        std::string scope = tok1->strAt(-1);
+                        while (Token::Match(tok1->tokAt(-2), ":: %name%")) {
+                            scope = tok1->strAt(-3) + " :: " + scope;
+                            tok1 = tok1->tokAt(-2);
+                        }
+
+                        if (!nextScopeNameAddition.empty() && !scope.empty()) nextScopeNameAddition += " :: ";
+                        nextScopeNameAddition += scope;
+                    }
+                }
+
+                // New scope is opening, record it here
+                std::shared_ptr<ScopeInfo2> newScopeInfo = std::make_shared<ScopeInfo2>(tok->scopeInfo()->name, tok->link(), tok->scopeInfo()->usingNamespaces);
+
+                if (newScopeInfo->name != "" && nextScopeNameAddition != "") newScopeInfo->name.append(" :: ");
+                newScopeInfo->name.append(nextScopeNameAddition);
+                nextScopeNameAddition = "";
+
+                if (tok->link()) tok->link()->scopeInfo(tok->scopeInfo());
+                tok->scopeInfo(newScopeInfo);
+            }
+        }
+    }
+}
 
 void Tokenizer::simplifyTemplates()
 {
@@ -3449,12 +3542,6 @@ namespace {
         std::list<const Token *> usingnamespaces;
         std::list<std::string> scope;
         Token *tok;
-    };
-
-    struct ScopeInfo2 {
-        ScopeInfo2(const std::string &name_, const Token *bodyEnd_) : name(name_), bodyEnd(bodyEnd_) {}
-        const std::string name;
-        const Token * const bodyEnd;
     };
 }
 
