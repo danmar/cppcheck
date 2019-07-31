@@ -108,7 +108,7 @@ struct TokenImpl {
 
     // Pointer to the object representing this token's scope
     std::shared_ptr<ScopeInfo2> mScopeInfo;
-    
+
     // __cppcheck_in_range__
     struct CppcheckAttributes {
         enum Type {LOW,HIGH} type;
@@ -1200,7 +1200,7 @@ public:
     void printAst(bool verbose, bool xml, std::ostream &out) const;
 
     void printValueFlow(bool xml, std::ostream &out) const;
-    
+
     void scopeInfo(std::shared_ptr<ScopeInfo2> newScopeInfo);
     std::shared_ptr<ScopeInfo2> scopeInfo() const;
 };

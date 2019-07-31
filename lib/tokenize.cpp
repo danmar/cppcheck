@@ -2880,8 +2880,7 @@ void Tokenizer::calculateScopes()
                 if (nextScopeNameAddition.length() > 0) nextScopeNameAddition = nextScopeNameAddition.substr(0, nextScopeNameAddition.length() - 1);
             }
 
-            if (Token::simpleMatch(tok, "{"))
-            {
+            if (Token::simpleMatch(tok, "{")) {
                 // This might be the opening of a member function
                 Token *tok1 = tok;
                 while (Token::Match(tok1->previous(), "const|volatile|final|override|&|&&|noexcept"))

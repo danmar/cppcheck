@@ -1075,8 +1075,7 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
             } else {
                 if (prepend && newToken->previous()) {
                     newToken->mImpl->mScopeInfo = newToken->previous()->scopeInfo();
-                }
-                else {
+                } else {
                     newToken->mImpl->mScopeInfo = mImpl->mScopeInfo;
                 }
                 if (tokenStr == ";") {
@@ -1975,10 +1974,12 @@ std::string Token::typeStr(const Token* tok)
     return r.first->stringifyList(r.second, false);
 }
 
-void Token::scopeInfo(std::shared_ptr<ScopeInfo2> newScopeInfo) {
+void Token::scopeInfo(std::shared_ptr<ScopeInfo2> newScopeInfo)
+{
     mImpl->mScopeInfo = newScopeInfo;
 }
-std::shared_ptr<ScopeInfo2> Token::scopeInfo() const {
+std::shared_ptr<ScopeInfo2> Token::scopeInfo() const
+{
     return mImpl->mScopeInfo;
 }
 
