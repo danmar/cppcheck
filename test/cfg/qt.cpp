@@ -52,7 +52,7 @@ void QVector1(QVector<int> intVectorArg)
 
     QVector<QString> qstringVector3;
     qstringVector3 << "one" << "two";
-    //(void)qstringVector3[1]; // TODO: no containerOutOfBounds error should be shown
+    //(void)qstringVector3[1]; // TODO: no containerOutOfBounds error should be shown #9242
     // cppcheck-suppress ignoredReturnValue
     qstringVector3.startsWith("one");
     // cppcheck-suppress ignoredReturnValue
