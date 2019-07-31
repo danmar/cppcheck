@@ -750,13 +750,13 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--showtime=", 11) == 0) {
                 const std::string showtimeMode = argv[i] + 11;
                 if (showtimeMode == "file")
-                    mSettings->showtime = SHOWTIME_FILE;
+                    mSettings->showtime = SHOWTIME_MODES::SHOWTIME_FILE;
                 else if (showtimeMode == "summary")
-                    mSettings->showtime = SHOWTIME_SUMMARY;
+                    mSettings->showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY;
                 else if (showtimeMode == "top5")
-                    mSettings->showtime = SHOWTIME_TOP5;
+                    mSettings->showtime = SHOWTIME_MODES::SHOWTIME_TOP5;
                 else if (showtimeMode.empty())
-                    mSettings->showtime = SHOWTIME_NONE;
+                    mSettings->showtime = SHOWTIME_MODES::SHOWTIME_NONE;
                 else {
                     std::string message("cppcheck: error: unrecognized showtime mode: \"");
                     message += showtimeMode;
