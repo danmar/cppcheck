@@ -3407,6 +3407,13 @@ private:
             ASSERT_EQUALS("; x = * b ;", tok("; x = (false)?*a:*b;"));
             ASSERT_EQUALS("void f ( ) { return 1 ; }", tok("void f() { char *p=0; return (p==0)?1:2; }"));
         }
+
+        {
+            ASSERT_EQUALS("; type = decay_t < decltype ( declval < T > ( ) ) > ;",
+                          tok("; type = decay_t<decltype(true ? declval<T>() : declval<U>())>;"));
+            ASSERT_EQUALS("; type = decay_t < decltype ( declval < U > ( ) ) > ;",
+                          tok("; type = decay_t<decltype(false ? declval<T>() : declval<U>())>;"));
+        }
     }
 
     void calculations() {

@@ -1702,13 +1702,36 @@ bool Token::addValue(const ValueFlow::Value &value)
         // if value already exists, don't add it again
         std::list<ValueFlow::Value>::iterator it;
         for (it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
-            // different intvalue => continue
-            if (it->intvalue != value.intvalue)
-                continue;
-
             // different types => continue
             if (it->valueType != value.valueType)
                 continue;
+
+            // different value => continue
+            bool differentValue = true;
+            switch (it->valueType) {
+            case ValueFlow::Value::ValueType::INT:
+            case ValueFlow::Value::ValueType::CONTAINER_SIZE:
+            case ValueFlow::Value::ValueType::BUFFER_SIZE:
+                differentValue = (it->intvalue != value.intvalue);
+                break;
+            case ValueFlow::Value::ValueType::TOK:
+            case ValueFlow::Value::ValueType::LIFETIME:
+                differentValue = (it->tokvalue != value.tokvalue);
+                break;
+            case ValueFlow::Value::ValueType::FLOAT:
+                // TODO: Write some better comparison
+                differentValue = (it->floatValue > value.floatValue || it->floatValue < value.floatValue);
+                break;
+            case ValueFlow::Value::ValueType::MOVED:
+                differentValue = (it->moveKind != value.moveKind);
+                break;
+            case ValueFlow::Value::ValueType::UNINIT:
+                differentValue = false;
+                break;
+            }
+            if (differentValue)
+                continue;
+
             if ((value.isTokValue() || value.isLifetimeValue()) && (it->tokvalue != value.tokvalue) && (it->tokvalue->str() != value.tokvalue->str()))
                 continue;
 

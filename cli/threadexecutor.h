@@ -110,7 +110,7 @@ public:
 #elif defined(THREADING_MODEL_WIN)
 
 private:
-    enum MessageType {REPORT_ERROR, REPORT_INFO};
+    enum class MessageType {REPORT_ERROR, REPORT_INFO};
 
     std::map<std::string, std::string> mFileContents;
     std::map<std::string, std::size_t>::const_iterator mItNextFile;

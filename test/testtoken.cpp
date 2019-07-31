@@ -106,6 +106,8 @@ private:
         TEST_CASE(findClosingBracket);
 
         TEST_CASE(expressionString);
+
+        TEST_CASE(hasKnownIntValue);
     }
 
     void nextprevious() const {
@@ -988,6 +990,21 @@ private:
 
         givenACodeSampleToTokenize data4("return L\"a\";");
         ASSERT_EQUALS("returnL\"a\"", data4.tokens()->expressionString());
+    }
+
+    void hasKnownIntValue() {
+        // pointer might be NULL
+        ValueFlow::Value v1(0);
+
+        // pointer points at buffer that is 2 bytes
+        ValueFlow::Value v2(2);
+        v2.valueType = ValueFlow::Value::BUFFER_SIZE;
+        v2.setKnown();
+
+        Token token;
+        ASSERT_EQUALS(true, token.addValue(v1));
+        ASSERT_EQUALS(true, token.addValue(v2));
+        ASSERT_EQUALS(false, token.hasKnownIntValue());
     }
 };
 

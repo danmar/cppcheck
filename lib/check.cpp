@@ -66,3 +66,12 @@ std::list<Check *> &Check::instances()
     return _instances;
 #endif
 }
+
+std::string Check::getMessageId(const ValueFlow::Value &value, const char id[])
+{
+    if (value.condition != nullptr)
+        return id + std::string("Cond");
+    if (value.safe)
+        return std::string("safe") + (char)std::toupper(id[0]) + (id + 1);
+    return id;
+}

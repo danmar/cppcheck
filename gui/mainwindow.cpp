@@ -33,6 +33,7 @@
 
 #include "applicationlist.h"
 #include "aboutdialog.h"
+#include "codeeditorstyle.h"
 #include "common.h"
 #include "threadhandler.h"
 #include "fileviewdialog.h"
@@ -153,6 +154,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI.mActionHelpContents, &QAction::triggered, this, &MainWindow::openHelpContents);
 
     loadSettings();
+
+    updateStyleSetting();
 
     mThread->initialize(mUI.mResults);
     if (mProjectFile)
@@ -396,6 +399,16 @@ void MainWindow::saveSettings() const
     mSettings->setValue(SETTINGS_OPEN_PROJECT, mProjectFile ? mProjectFile->getFilename() : QString());
 
     mUI.mResults->saveSettings(mSettings);
+}
+
+void MainWindow::updateStyleSetting()
+{
+    mUI.mResults->updateStyleSetting(mSettings);
+    QString styleSheet = CodeEditorStyle::loadSettings(mSettings).generateStyleString();
+    mUI.mToolBarMain->setStyleSheet(styleSheet);
+    mUI.mToolBarView->setStyleSheet(styleSheet);
+    mUI.mToolBarFilter->setStyleSheet(styleSheet);
+    this->setStyleSheet(styleSheet);
 }
 
 void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, const bool checkConfiguration)
@@ -882,7 +895,10 @@ Settings MainWindow::getCppcheckSettings()
         result.maxCtuDepth = mProjectFile->getMaxCtuDepth();
         result.checkHeaders = mProjectFile->getCheckHeaders();
         result.checkUnusedTemplates = mProjectFile->getCheckUnusedTemplates();
-        result.allFunctionsAreSafe = mProjectFile->getCheckAllFunctionParameterValues();
+        result.safeChecks.classes = mProjectFile->getSafeChecks().classes;
+        result.safeChecks.externalFunctions = mProjectFile->getSafeChecks().externalFunctions;
+        result.safeChecks.internalFunctions = mProjectFile->getSafeChecks().internalFunctions;
+        result.safeChecks.externalVariables = mProjectFile->getSafeChecks().externalVariables;
         foreach (QString s, mProjectFile->getCheckUnknownFunctionReturn())
             result.checkUnknownFunctionReturn.insert(s.toStdString());
     }
@@ -912,7 +928,7 @@ Settings MainWindow::getCppcheckSettings()
     result.jobs = mSettings->value(SETTINGS_CHECK_THREADS, 1).toInt();
     result.inlineSuppressions = mSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool();
     result.inconclusive = mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool();
-    if (result.platformType == cppcheck::Platform::Unspecified)
+    if (!mProjectFile || result.platformType == cppcheck::Platform::Unspecified)
         result.platform((cppcheck::Platform::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt());
     result.standards.setCPP(mSettings->value(SETTINGS_STD_CPP, QString()).toString().toStdString());
     result.standards.setC(mSettings->value(SETTINGS_STD_C, QString()).toString().toStdString());
@@ -1010,7 +1026,7 @@ void MainWindow::programSettings()
                                      dialog.showNoErrorsMessage(),
                                      dialog.showErrorId(),
                                      dialog.showInconclusive());
-        mUI.mResults->updateStyleSetting(mSettings);
+        this->updateStyleSetting();
         const QString newLang = mSettings->value(SETTINGS_LANGUAGE, "en").toString();
         setLanguage(newLang);
     }

@@ -31,6 +31,7 @@
 
 class Library;
 class Settings;
+class Scope;
 class Token;
 class Variable;
 
@@ -132,9 +133,11 @@ bool isVariableChangedByFunctionCall(const Token *tok, nonneg int varid, const S
 bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings, bool *inconclusive);
 
 /** Is variable changed in block of code? */
-bool isVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp);
+bool isVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
 
-bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp);
+bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp, int depth = 20);
+
+bool isAliased(const Variable *var);
 
 /** Determines the number of arguments - if token is a function call or macro
  * @param start token which is supposed to be the function/macro name.
@@ -156,6 +159,8 @@ const Token *findLambdaStartToken(const Token *last);
  */
 const Token *findLambdaEndToken(const Token *first);
 
+bool isLikelyStream(bool cpp, const Token *stream);
+
 /**
  * do we see a likely write of rhs through overloaded operator
  *   s >> x;
@@ -168,6 +173,62 @@ bool isCPPCast(const Token* tok);
 bool isConstVarExpression(const Token *tok);
 
 const Variable *getLHSVariable(const Token *tok);
+
+struct PathAnalysis {
+    enum Progress {
+        Continue,
+        Break
+    };
+    PathAnalysis(const Token* start, const Library& library)
+        : start(start), library(&library)
+    {}
+    const Token * start;
+    const Library * library;
+
+    struct Info {
+        const Token* tok;
+        ErrorPath errorPath;
+        bool known;
+    };
+
+    void forward(const std::function<Progress(const Info&)>& f) const;
+    template<class F>
+    void forwardAll(F f) {
+        forward([&](const Info& info) {
+            f(info);
+            return Progress::Continue;
+        });
+    }
+    template<class Predicate>
+    Info forwardFind(Predicate pred) {
+        Info result{};
+        forward([&](const Info& info) {
+            if (pred(info)) {
+                result = info;
+                return Progress::Break;
+            }
+            return Progress::Continue;
+        });
+        return result;
+    }
+private:
+
+    Progress forwardRecursive(const Token* tok, Info info, const std::function<PathAnalysis::Progress(const Info&)>& f) const;
+    Progress forwardRange(const Token* startToken, const Token* endToken, Info info, const std::function<Progress(const Info&)>& f) const;
+
+    static const Scope* findOuterScope(const Scope * scope);
+
+    static std::pair<bool, bool> checkCond(const Token * tok, bool& known);
+};
+
+/**
+ * @brief Returns true if there is a path between the two tokens
+ *
+ * @param start Starting point of the path
+ * @param dest The path destination
+ * @param errorPath Adds the path traversal to the errorPath
+ */
+bool reaches(const Token * start, const Token * dest, const Library& library, ErrorPath* errorPath);
 
 /**
  * Forward data flow analysis for checks

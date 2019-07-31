@@ -946,7 +946,13 @@ public:
     }
 
     bool hasKnownIntValue() const {
-        return hasKnownValue() && std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), std::mem_fn(&ValueFlow::Value::isIntValue));
+        if (!mImpl->mValues)
+            return false;
+        for (const ValueFlow::Value &value : *mImpl->mValues) {
+            if (value.isKnown() && value.isIntValue())
+                return true;
+        }
+        return false;
     }
 
     bool hasKnownValue() const {

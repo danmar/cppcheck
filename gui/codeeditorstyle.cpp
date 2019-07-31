@@ -29,6 +29,7 @@ CodeEditorStyle::CodeEditorStyle(
     const QColor& CmtFGColor, const QFont::Weight& CmtWeight,
     const QColor& SymbFGColor, const QColor& SymbBGColor,
     const QFont::Weight& SymbWeight) :
+    mSystemTheme(false),
     widgetFGColor(CtrlFGColor),
     widgetBGColor(CtrlBGColor),
     highlightBGColor(HiLiBGColor),
@@ -49,6 +50,7 @@ CodeEditorStyle::CodeEditorStyle(
 
 bool CodeEditorStyle::operator==(const CodeEditorStyle& rhs) const
 {
+    if (mSystemTheme != rhs.mSystemTheme) return false;
     if (widgetFGColor != rhs.widgetFGColor) return false;
     if (widgetBGColor != rhs.widgetBGColor) return false;
     if (highlightBGColor != rhs.highlightBGColor) return false;
@@ -73,10 +75,18 @@ bool CodeEditorStyle::operator!=(const CodeEditorStyle& rhs) const
     return !(*this == rhs);
 }
 
-CodeEditorStyle CodeEditorStyle::loadSettings(QSettings *settings)
+CodeEditorStyle CodeEditorStyle::getSystemTheme()
 {
     CodeEditorStyle theStyle(defaultStyleLight);
-    if (!settings)  return theStyle;
+    theStyle.mSystemTheme = true;
+    return theStyle;
+}
+
+CodeEditorStyle CodeEditorStyle::loadSettings(QSettings *settings)
+{
+    CodeEditorStyle theStyle(CodeEditorStyle::getSystemTheme());
+    if (!settings)
+        return theStyle;
 
     if (!settings->childGroups().contains(SETTINGS_STYLE_GROUP))
         return theStyle;
@@ -153,10 +163,13 @@ CodeEditorStyle CodeEditorStyle::loadSettings(QSettings *settings)
 void CodeEditorStyle::saveSettings(QSettings *settings,
                                    const CodeEditorStyle& theStyle)
 {
-    if (!settings) return;
+    if (!settings)
+        return;
 
     if (settings->childGroups().contains(SETTINGS_STYLE_GROUP)) {
         settings->remove(SETTINGS_STYLE_GROUP);
+        if (theStyle.isSystemTheme())
+            return;
     }
 
     settings->beginGroup(SETTINGS_STYLE_GROUP);
@@ -205,4 +218,19 @@ void CodeEditorStyle::saveSettings(QSettings *settings,
                            QVariant(static_cast<int>(theStyle.symbolWeight)));
     }
     settings->endGroup();
+}
+
+static QString rgbStyleString(QColor c)
+{
+    return QString("rgb(%1,%2,%3)").arg(c.red()).arg(c.green()).arg(c.blue());
+}
+
+QString CodeEditorStyle::generateStyleString() const
+{
+    if (isSystemTheme())
+        return QString();
+    return QString("background:%1; color:%2; selection-background-color:%3;")
+           .arg(rgbStyleString(widgetBGColor))
+           .arg(rgbStyleString(widgetFGColor))
+           .arg(rgbStyleString(highlightBGColor));
 }

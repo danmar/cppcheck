@@ -181,10 +181,13 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--inconclusive") == 0)
                 mSettings->inconclusive = true;
 
-            // Experimental: this flag says that all functions are "safe".
-            // todo: add proper configuration options
-            else if (std::strcmp(argv[i], "--all-functions-are-safe") == 0)
-                mSettings->allFunctionsAreSafe = true;
+            // Experimental: Safe checking
+            else if (std::strcmp(argv[i], "--safe-classes") == 0)
+                mSettings->safeChecks.classes = true;
+
+            // Experimental: Safe checking
+            else if (std::strcmp(argv[i], "--safe-functions") == 0)
+                mSettings->safeChecks.externalFunctions = mSettings->safeChecks.internalFunctions = true;
 
             // Enforce language (--language=, -x)
             else if (std::strncmp(argv[i], "--language=", 11) == 0 || std::strcmp(argv[i], "-x") == 0) {

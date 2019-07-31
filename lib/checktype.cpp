@@ -200,9 +200,12 @@ void CheckType::integerOverflowError(const Token *tok, const ValueFlow::Value &v
     else
         msg = "Signed integer overflow for expression '" + expr + "'.";
 
+    if (value.safe)
+        msg = "Safe checks: " + msg;
+
     reportError(getErrorPath(tok, &value, "Integer overflow"),
                 value.errorSeverity() ? Severity::error : Severity::warning,
-                (value.condition == nullptr) ? "integerOverflow" : "integerOverflowCond",
+                getMessageId(value, "integerOverflow").c_str(),
                 msg,
                 CWE190,
                 value.isInconclusive());
@@ -250,9 +253,9 @@ void CheckType::signConversionError(const Token *tok, const bool constvalue)
     if (tok && tok->isName())
         msg << "$symbol:" << expr << "\n";
     if (constvalue)
-        msg << "Suspicious code: sign conversion of '" << expr << "' in calculation because '" << expr << "' has a negative value";
+        msg << "Expression '" << expr << "' has a negative value. That is converted to an unsigned value and used in an unsigned calculation.";
     else
-        msg << "Suspicious code: sign conversion of '" << expr << "' in calculation, even though '" << expr << "' can have a negative value";
+        msg << "Expression '" << expr << "' can have a negative value. That is converted to an unsigned value and used in an unsigned calculation.";
 
     reportError(tok, Severity::warning, "signConversion", msg.str(), CWE195, false);
 }
@@ -367,6 +370,7 @@ void CheckType::checkFloatToIntegerOverflow()
             vtint = tok->valueType();
             vtfloat = tok->astOperand1()->valueType();
             floatValues = &tok->astOperand1()->values();
+            checkFloatToIntegerOverflow(tok, vtint, vtfloat, floatValues);
         }
 
         // Assignment
@@ -374,45 +378,56 @@ void CheckType::checkFloatToIntegerOverflow()
             vtint = tok->astOperand1()->valueType();
             vtfloat = tok->astOperand2()->valueType();
             floatValues = &tok->astOperand2()->values();
+            checkFloatToIntegerOverflow(tok, vtint, vtfloat, floatValues);
         }
 
-        // TODO: function call
-
-        else
-            continue;
-
-        // Conversion of float to integer?
-        if (!vtint || !vtint->isIntegral())
-            continue;
-        if (!vtfloat || !vtfloat->isFloat())
-            continue;
-
-        for (const ValueFlow::Value &f : *floatValues) {
-            if (f.valueType != ValueFlow::Value::ValueType::FLOAT)
-                continue;
-            if (!mSettings->isEnabled(&f, false))
-                continue;
-            if (f.floatValue > ~0ULL)
-                floatToIntegerOverflowError(tok, f);
-            else if ((-f.floatValue) > (1ULL<<62))
-                floatToIntegerOverflowError(tok, f);
-            else if (mSettings->platformType != Settings::Unspecified) {
-                int bits = 0;
-                if (vtint->type == ValueType::Type::CHAR)
-                    bits = mSettings->char_bit;
-                else if (vtint->type == ValueType::Type::SHORT)
-                    bits = mSettings->short_bit;
-                else if (vtint->type == ValueType::Type::INT)
-                    bits = mSettings->int_bit;
-                else if (vtint->type == ValueType::Type::LONG)
-                    bits = mSettings->long_bit;
-                else if (vtint->type == ValueType::Type::LONGLONG)
-                    bits = mSettings->long_long_bit;
-                else
-                    continue;
-                if (bits < MathLib::bigint_bits && f.floatValue >= (((MathLib::biguint)1) << bits))
-                    floatToIntegerOverflowError(tok, f);
+        else if (tok->str() == "return" && tok->astOperand1() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->isFloat()) {
+            const Scope *scope = tok->scope();
+            while (scope && scope->type != Scope::ScopeType::eLambda && scope->type != Scope::ScopeType::eFunction)
+                scope = scope->nestedIn;
+            if (scope && scope->type == Scope::ScopeType::eFunction && scope->function && scope->function->retDef) {
+                const ValueType &valueType = ValueType::parseDecl(scope->function->retDef, mSettings);
+                vtfloat = tok->astOperand1()->valueType();
+                floatValues = &tok->astOperand1()->values();
+                checkFloatToIntegerOverflow(tok, &valueType, vtfloat, floatValues);
             }
+        }
+    }
+}
+
+void CheckType::checkFloatToIntegerOverflow(const Token *tok, const ValueType *vtint, const ValueType *vtfloat, const std::list<ValueFlow::Value> *floatValues)
+{
+    // Conversion of float to integer?
+    if (!vtint || !vtint->isIntegral())
+        return;
+    if (!vtfloat || !vtfloat->isFloat())
+        return;
+
+    for (const ValueFlow::Value &f : *floatValues) {
+        if (f.valueType != ValueFlow::Value::ValueType::FLOAT)
+            continue;
+        if (!mSettings->isEnabled(&f, false))
+            continue;
+        if (f.floatValue > ~0ULL)
+            floatToIntegerOverflowError(tok, f);
+        else if ((-f.floatValue) > (1ULL<<62))
+            floatToIntegerOverflowError(tok, f);
+        else if (mSettings->platformType != Settings::Unspecified) {
+            int bits = 0;
+            if (vtint->type == ValueType::Type::CHAR)
+                bits = mSettings->char_bit;
+            else if (vtint->type == ValueType::Type::SHORT)
+                bits = mSettings->short_bit;
+            else if (vtint->type == ValueType::Type::INT)
+                bits = mSettings->int_bit;
+            else if (vtint->type == ValueType::Type::LONG)
+                bits = mSettings->long_bit;
+            else if (vtint->type == ValueType::Type::LONGLONG)
+                bits = mSettings->long_long_bit;
+            else
+                continue;
+            if (bits < MathLib::bigint_bits && f.floatValue >= (((MathLib::biguint)1) << bits))
+                floatToIntegerOverflowError(tok, f);
         }
     }
 }

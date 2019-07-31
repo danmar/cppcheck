@@ -120,7 +120,7 @@ private:
 
         TEST_CASE(valueFlowDynamicBufferSize);
 
-        TEST_CASE(valueFlowAllFunctionParameterValues);
+        TEST_CASE(valueFlowSafeFunctionParameterValues);
         TEST_CASE(valueFlowUnknownFunctionReturn);
     }
 
@@ -1363,6 +1363,14 @@ private:
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
                                           "[test.cpp:4]: (debug) valueflow.cpp:1260:valueFlowBeforeCondition bailout: variable x, condition is defined in macro\n", errout.str());
+
+        bailout("#define FREE(obj) ((obj) ? (free((char *) (obj)), (obj) = 0) : 0)\n" // #8349
+                "void f(int *x) {\n"
+                "    a = x;\n"
+                "    FREE(x);\n"
+                "}");
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
+                                          "[test.cpp:4]: (debug) valueflow.cpp:1260:valueFlowBeforeCondition bailout: variable x, condition is defined in macro\n", errout.str());
     }
 
     void valueFlowBeforeConditionGoto() {
@@ -2568,6 +2576,19 @@ private:
         ASSERT_EQUALS(true, values.empty());
 
         code = "void f() {\n"
+               "  S s;\n"
+               "  s.x = 37;\n"
+               "  int y = 10;\n"
+               "  while (s.x < y)\n" // s.x has a known value
+               "    y--;\n"
+               "}";
+        values = tokenValues(code, ". x <");
+        ASSERT(values.size() == 1 &&
+               values.front().isKnown() &&
+               values.front().isIntValue() &&
+               values.front().intvalue == 37);
+
+        code = "void f() {\n"
                "  Hints hints;\n"
                "  hints.x = 1;\n"
                "  if (foo)\n"
@@ -2592,6 +2613,16 @@ private:
         values = tokenValues(code, ">");
         ASSERT_EQUALS(true, values.empty());
 
+        code = "void foo() {\n"
+               "    struct ISO_PVD_s pvd;\n"
+               "    pvd.descr_type = 0xff;\n"
+               "    do {\n"
+               "        if (pvd.descr_type == 0xff) {}\n"
+               "        dostuff(&pvd);\n"
+               "    } while (condition)\n"
+               "}";
+        values = tokenValues(code, "==");
+        ASSERT_EQUALS(true, values.empty());
     }
 
     void valueFlowSwitchVariable() {
@@ -3913,11 +3944,12 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 100,  ValueFlow::Value::BUFFER_SIZE));
     }
 
-    void valueFlowAllFunctionParameterValues() {
+    void valueFlowSafeFunctionParameterValues() {
         const char *code;
         std::list<ValueFlow::Value> values;
         Settings s;
-        s.allFunctionsAreSafe = true;
+        LOAD_LIB_2(s.library, "std.cfg");
+        s.safeChecks.classes = s.safeChecks.externalFunctions = s.safeChecks.internalFunctions = true;
 
         code = "short f(short x) {\n"
                "  return x + 0;\n"
@@ -3927,7 +3959,23 @@ private:
         ASSERT_EQUALS(-0x8000, values.front().intvalue);
         ASSERT_EQUALS(0x7fff, values.back().intvalue);
 
-        code = "short f(__cppcheck_in_range__(0,100) short x) {\n"
+        code = "short f(std::string x) {\n"
+               "  return x[10];\n"
+               "}";
+        values = tokenValues(code, "x [", &s);
+        ASSERT_EQUALS(2, values.size());
+        ASSERT_EQUALS(0, values.front().intvalue);
+        ASSERT_EQUALS(1000000, values.back().intvalue);
+
+        code = "int f(float x) {\n"
+               "  return x;\n"
+               "}";
+        values = tokenValues(code, "x ;", &s);
+        ASSERT_EQUALS(2, values.size());
+        ASSERT(values.front().floatValue < -1E20);
+        ASSERT(values.back().floatValue > 1E20);
+
+        code = "short f(__cppcheck_low__(0) __cppcheck_high__(100) short x) {\n"
                "  return x + 0;\n"
                "}";
         values = tokenValues(code, "+", &s);

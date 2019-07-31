@@ -19,6 +19,14 @@
 #include <QObject>
 #include "testprojectfile.h"
 #include "projectfile.h"
+#include "settings.h"
+
+// Mock...
+const char Settings::SafeChecks::XmlRootName[] = "safe-checks";
+const char Settings::SafeChecks::XmlClasses[] = "class-public";
+const char Settings::SafeChecks::XmlExternalFunctions[] = "external-functions";
+const char Settings::SafeChecks::XmlInternalFunctions[] = "internal-functions";
+const char Settings::SafeChecks::XmlExternalVariables[] = "external-variables";
 
 void TestProjectFile::loadInexisting()
 {

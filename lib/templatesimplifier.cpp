@@ -79,7 +79,21 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *tok, const std::string &s,
     // only set flags for declaration
     if (token && nameToken && paramEnd) {
         isSpecialization(Token::simpleMatch(token, "template < >"));
-        isPartialSpecialization(!isSpecialization() && nameToken->strAt(1) == "<");
+
+        if (!isSpecialization()) {
+            if (Token::simpleMatch(token->next()->findClosingBracket(), "> template <")) {
+                const Token * temp = nameToken->tokAt(-2);
+                while (Token::Match(temp, ">|%name% ::")) {
+                    if (temp->str() == ">")
+                        temp = temp->findOpeningBracket()->previous();
+                    else
+                        temp = temp->tokAt(-2);
+                }
+                isPartialSpecialization(temp->strAt(1) == "<");
+            } else
+                isPartialSpecialization(nameToken->strAt(1) == "<");
+        }
+
         isAlias(paramEnd->strAt(1) == "using");
 
         if (isAlias() && isPartialSpecialization()) {
@@ -775,6 +789,19 @@ bool TemplateSimplifier::getTemplateDeclarations()
         // ignore template template parameter
         if (tok->strAt(-1) == "<")
             continue;
+        // ignore nested template
+        if (tok->strAt(-1) == ">")
+            continue;
+        // skip to last nested template parameter
+        const Token *tok1 = tok;
+        while (tok1 && tok1->next() && Token::simpleMatch(tok1->next()->findClosingBracket(), "> template <")) {
+            const Token *closing = tok1->next()->findClosingBracket();
+            if (!closing)
+                syntaxError(tok1->next());
+            tok1 = closing->next();
+        }
+        if (!tok1)
+            syntaxError(tok);
         // Some syntax checks, see #6865
         if (!tok->tokAt(2))
             syntaxError(tok->next());
@@ -782,7 +809,7 @@ bool TemplateSimplifier::getTemplateDeclarations()
             !Token::Match(tok->tokAt(3), "%name%|.|,|=|>"))
             syntaxError(tok->next());
         codeWithTemplates = true;
-        const Token * const parmEnd = tok->next()->findClosingBracket();
+        const Token * const parmEnd = tok1->next()->findClosingBracket();
         for (const Token *tok2 = parmEnd; tok2; tok2 = tok2->next()) {
             if (tok2->str() == "(" && tok2->link())
                 tok2 = tok2->link();
@@ -1317,8 +1344,11 @@ void TemplateSimplifier::simplifyTemplateAliases()
                     const unsigned int argnr = aliasParameterNames[tok1->str()];
                     const Token * const fromStart = args[argnr].first;
                     const Token * const fromEnd   = args[argnr].second->previous();
-                    TokenList::copyTokens(tok1, fromStart, fromEnd, true);
+                    Token *temp = TokenList::copyTokens(tok1, fromStart, fromEnd, true);
+                    const bool tempOK(temp && temp != tok1->next());
                     tok1->deleteThis();
+                    if (tempOK)
+                        tok1 = temp; // skip over inserted parameters
                 } else if (tok1->str() == "typename")
                     tok1->deleteThis();
             }
@@ -1400,9 +1430,9 @@ bool TemplateSimplifier::getTemplateNamePositionTemplateFunction(const Token *to
         if (Token::Match(tok->next(), ";|{"))
             return false;
         // skip decltype(...)
-        else if (Token::simpleMatch(tok, "decltype (")) {
-            const Token * end = tok->linkAt(1);
-            while (tok && tok != end) {
+        else if (Token::simpleMatch(tok->next(), "decltype (")) {
+            const Token * end = tok->linkAt(2)->previous();
+            while (tok && tok->next() && tok != end) {
                 tok = tok->next();
                 namepos++;
             }
@@ -1860,6 +1890,7 @@ void TemplateSimplifier::expandTemplate(
             if (tok5)
                 tok5 = tok5->next();
             // copy return type
+            std::stack<Token *> brackets2; // holds "(" and "{" tokens
             while (tok5 && tok5 != tok3) {
                 // replace name if found
                 if (Token::Match(tok5, "%name% <") && tok5->str() == templateInstantiation.name) {
@@ -1921,8 +1952,28 @@ void TemplateSimplifier::expandTemplate(
                             }
                         }
                     }
-                    if (!added)
+                    if (!added) {
                         mTokenList.addtoken(tok5, tok5->linenr(), tok5->fileIndex());
+                        Token *back = mTokenList.back();
+                        if (Token::Match(back, "{|(|[")) {
+                            brackets2.push(back);
+                        } else if (back->str() == "}") {
+                            assert(brackets2.empty() == false);
+                            assert(brackets2.top()->str() == "{");
+                            Token::createMutualLinks(brackets2.top(), back);
+                            brackets2.pop();
+                        } else if (back->str() == ")") {
+                            assert(brackets2.empty() == false);
+                            assert(brackets2.top()->str() == "(");
+                            Token::createMutualLinks(brackets2.top(), back);
+                            brackets2.pop();
+                        } else if (back->str() == "]") {
+                            assert(brackets2.empty() == false);
+                            assert(brackets2.top()->str() == "[");
+                            Token::createMutualLinks(brackets2.top(), back);
+                            brackets2.pop();
+                        }
+                    }
                 }
 
                 tok5 = tok5->next();
@@ -2153,7 +2204,7 @@ static bool isLowerEqualThanMulDiv(const Token* lower)
 }
 
 
-bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
+bool TemplateSimplifier::simplifyNumericCalculations(Token *tok, bool isTemplate)
 {
     bool ret = false;
     // (1-2)
@@ -2179,8 +2230,10 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
             break;
 
         // Don't simplify "%num% / 0"
-        if (Token::Match(op, "[/%] 0"))
-            throw InternalError(op, "Instantiation error: Divide by zero in template instantiation.", InternalError::INSTANTIATION);
+        if (Token::Match(op, "[/%] 0")) {
+            if (isTemplate) throw InternalError(op, "Instantiation error: Divide by zero in template instantiation.", InternalError::INSTANTIATION);
+            else return ret;
+        }
 
         // Integer operations
         if (Token::Match(op, ">>|<<|&|^|%or%")) {
@@ -2325,7 +2378,9 @@ void TemplateSimplifier::simplifyTemplateArgs(Token *start, Token *end)
             again = true;
 
         for (Token *tok = first->next(); tok && tok != end; tok = tok->next()) {
-            if (tok->str() == "?" && (tok->previous()->isNumber() || tok->previous()->isBoolean())) {
+            if (tok->str() == "?" &&
+                ((tok->previous()->isNumber() || tok->previous()->isBoolean()) ||
+                 Token::Match(tok->tokAt(-3), "( %bool%|%num% )"))) {
                 const int offset = (tok->previous()->str() == ")") ? 2 : 1;
 
                 // Find the token ":" then go to the next token
@@ -2362,10 +2417,10 @@ void TemplateSimplifier::simplifyTemplateArgs(Token *start, Token *end)
 
                     unsigned int ternaryOplevel = 0;
                     for (const Token *endTok = colon; endTok; endTok = endTok->next()) {
-                        if (Token::Match(endTok, "(|[|{")) {
+                        if (Token::Match(endTok, "(|[|{"))
                             endTok = endTok->link();
-                        }
-
+                        else if (endTok->str() == "<" && (endTok->strAt(1) == ">" || templateParameters(endTok)))
+                            endTok = endTok->findClosingBracket();
                         else if (endTok->str() == "?")
                             ++ternaryOplevel;
                         else if (Token::Match(endTok, ")|}|]|;|,|:|>")) {
@@ -2430,7 +2485,7 @@ static bool validTokenEnd(bool bounded, const Token *tok, const Token *backToken
 
 // TODO: This is not the correct class for simplifyCalculations(), so it
 // should be moved away.
-bool TemplateSimplifier::simplifyCalculations(Token* frontToken, Token *backToken)
+bool TemplateSimplifier::simplifyCalculations(Token* frontToken, Token *backToken, bool isTemplate)
 {
     bool ret = false;
     const bool bounded = frontToken || backToken;
@@ -2476,6 +2531,37 @@ bool TemplateSimplifier::simplifyCalculations(Token* frontToken, Token *backToke
             ret = true;
         }
 
+        if (validTokenEnd(bounded, tok, backToken, 3) &&
+            Token::Match(tok, "decltype ( %bool%|%num% )")) {
+            tok->deleteThis();
+            tok->deleteThis();
+            if (tok->isBoolean())
+                tok->str("bool");
+            else if (MathLib::isFloat(tok->str())) {
+                // MathLib::getSuffix doesn't work for floating point numbers
+                char suffix = tok->str().back();
+                if (suffix == 'f' || suffix == 'F')
+                    tok->str("float");
+                else if (suffix == 'l' || suffix == 'L') {
+                    tok->str("double");
+                    tok->isLong(true);
+                } else
+                    tok->str("double");
+            } else if (MathLib::isInt(tok->str())) {
+                std::string suffix = MathLib::getSuffix(tok->str());
+                if (suffix.find("LL") != std::string::npos) {
+                    tok->str("long");
+                    tok->isLong(true);
+                } else if (suffix.find('L') != std::string::npos)
+                    tok->str("long");
+                else
+                    tok->str("int");
+                tok->isUnsigned(suffix.find('U') != std::string::npos);
+            }
+            tok->deleteNext();
+            ret = true;
+        }
+
         if (validTokenEnd(bounded, tok, backToken, 2) &&
             Token::Match(tok, "char|short|int|long { }")) {
             tok->str("0"); // FIXME add type suffix
@@ -2489,11 +2575,11 @@ bool TemplateSimplifier::simplifyCalculations(Token* frontToken, Token *backToke
 
         if (tok && tok->isNumber()) {
             if (validTokenEnd(bounded, tok, backToken, 2) &&
-                simplifyNumericCalculations(tok)) {
+                simplifyNumericCalculations(tok, isTemplate)) {
                 ret = true;
                 Token *prev = tok->tokAt(-2);
                 while (validTokenStart(bounded, tok, frontToken, -2) &&
-                       prev && simplifyNumericCalculations(prev)) {
+                       prev && simplifyNumericCalculations(prev, isTemplate)) {
                     tok = prev;
                     prev = prev->tokAt(-2);
                 }
@@ -2818,6 +2904,10 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
             if (!instantiation.scope.empty() && !templateDeclaration.scope.empty())
                 continue;
         }
+
+        // A global function can't be called through a pointer.
+        if (templateDeclaration.isFunction() && templateDeclaration.scope.empty() && instantiation.token->strAt(-1) == ".")
+            continue;
 
         if (!matchSpecialization(templateDeclaration.nameToken, instantiation.token, specializations))
             continue;

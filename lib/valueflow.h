@@ -50,6 +50,7 @@ namespace ValueFlow {
               varvalue(val),
               condition(nullptr),
               varId(0U),
+              safe(false),
               conditional(false),
               defaultArg(false),
               lifetimeKind(LifetimeKind::Object),
@@ -161,6 +162,9 @@ namespace ValueFlow {
         /** For calculated values - varId that calculated value depends on */
         nonneg int varId;
 
+        /** value relies on safe checking */
+        bool safe;
+
         /** Conditional value */
         bool conditional;
 
@@ -242,6 +246,8 @@ const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPat
 bool isLifetimeBorrowed(const Token *tok, const Settings *settings);
 
 std::string lifetimeType(const Token *tok, const ValueFlow::Value *val);
+
+std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, ValueFlow::Value::ErrorPath &errorPath);
 
 ValueFlow::Value getLifetimeObjValue(const Token *tok);
 
