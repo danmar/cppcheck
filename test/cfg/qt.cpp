@@ -9,6 +9,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QVector>
 #include <QtPlugin>
 #include <QFile>
 #include <cstdio>
@@ -28,6 +29,44 @@ int QString2()
     QString s;
     // FIXME cppcheck-suppress reademptycontainer
     return s.size();
+}
+
+void QVector1(QVector<int> intVectorArg)
+{
+    for (int i = 0; i <= intVectorArg.size(); ++i) {
+        // cppcheck-suppress stlOutOfBounds
+        intVectorArg[i] = 1;
+    }
+    // cppcheck-suppress containerOutOfBoundsIndexExpression
+    intVectorArg[intVectorArg.length()] = 5;
+    // cppcheck-suppress containerOutOfBoundsIndexExpression
+    intVectorArg[intVectorArg.count()] = 10;
+    // cppcheck-suppress containerOutOfBoundsIndexExpression
+    printf("val: %d\n", intVectorArg[intVectorArg.size()]);
+
+    QVector<QString> qstringVector1{"one", "two"};
+    (void)qstringVector1[1];
+
+    QVector<QString> qstringVector2 = {"one", "two"};
+    (void)qstringVector2[1];
+
+    QVector<QString> qstringVector3;
+    qstringVector3 << "one" << "two";
+    //(void)qstringVector3[1]; // TODO: no containerOutOfBounds error should be shown #9242
+    // cppcheck-suppress ignoredReturnValue
+    qstringVector3.startsWith("one");
+    // cppcheck-suppress ignoredReturnValue
+    qstringVector3.endsWith("one");
+    // cppcheck-suppress ignoredReturnValue
+    qstringVector3.count();
+    // cppcheck-suppress ignoredReturnValue
+    qstringVector3.length();
+    // cppcheck-suppress ignoredReturnValue
+    qstringVector3.size();
+    // cppcheck-suppress ignoredReturnValue
+    qstringVector3.at(5);
+    // cppcheck-suppress invalidFunctionArg
+    (void)qstringVector3.at(-5);
 }
 
 // Verify that Qt macros do not result in syntax errors, false positives or other issues.
