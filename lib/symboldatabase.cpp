@@ -4051,6 +4051,10 @@ static void checkVariableCallMatch(const Variable* callarg, const Variable* func
             fallback1++;
             return;
         }
+        if (res == ValueType::MatchResult::FALLBACK2) {
+            fallback2++;
+            return;
+        }
 
         bool ptrequals = callarg->isArrayOrPointer() == funcarg->isArrayOrPointer();
         bool constEquals = !callarg->isArrayOrPointer() || ((callarg->typeStartToken()->strAt(-1) == "const") == (funcarg->typeStartToken()->strAt(-1) == "const"));
