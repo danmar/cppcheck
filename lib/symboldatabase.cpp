@@ -1286,7 +1286,6 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
     const std::set<std::string> cpp20keywords = {
         "alignas",
         "alignof",
-        "audit",
         "co_await",
         "co_return",
         "co_yield",
