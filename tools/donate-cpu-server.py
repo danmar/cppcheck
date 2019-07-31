@@ -18,7 +18,7 @@ import operator
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.1.4"
+SERVER_VERSION = "1.1.5"
 
 OLD_VERSION = '1.88'
 
@@ -845,7 +845,7 @@ def server(server_address_port, packages, packageIndex, resultPath):
             data = cmd[cmd.find('ftp'):]
             try:
                 t = 0
-                max_data_size = 2 * 1024 * 1024
+                max_data_size = 4 * 1024 * 1024
                 while (len(data) < max_data_size) and (not data.endswith('\nDONE')) and (t < 10):
                     d = connection.recv(1024)
                     if d:
@@ -908,7 +908,7 @@ def server(server_address_port, packages, packageIndex, resultPath):
             data = cmd[11:]
             try:
                 t = 0
-                max_data_size = 1024 * 1024
+                max_data_size = 4 * 1024 * 1024
                 while (len(data) < max_data_size) and (not data.endswith('\nDONE')) and (t < 10):
                     d = connection.recv(1024)
                     if d:
