@@ -3109,6 +3109,27 @@ private:
               "    return ret;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f(void *handle) {\n"
+              "    if (!handle) return 0;\n"
+              "    if (handle) return 1;\n"
+              "    else return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Condition 'handle' is always true\n", errout.str());
+
+        check("int f(void *handle) {\n"
+              "    if (handle == 0) return 0;\n"
+              "    if (handle) return 1;\n"
+              "    else return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Condition 'handle' is always true\n", errout.str());
+        
+        check("int f(void *handle) {\n"
+              "    if (handle != 0) return 0;\n"
+              "    if (handle) return 1;\n"
+              "    else return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Condition 'handle' is always false\n", errout.str());
     }
 
     void multiConditionAlwaysTrue() {
