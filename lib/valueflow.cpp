@@ -3890,7 +3890,7 @@ struct ValueFlowConditionHandler {
                             continue;
                         }
 
-                        const bool dead_if = isReturnScope(after) || Token::simpleMatch(top->previous(), "while (");
+                        const bool dead_if = isReturnScope(after) || (tok->astParent() && Token::simpleMatch(tok->astParent()->previous(), "while ("));
                         bool dead_else = false;
 
                         if (Token::simpleMatch(after, "} else {")) {
