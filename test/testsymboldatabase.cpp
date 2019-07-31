@@ -5533,18 +5533,17 @@ private:
     }
 
     void valueTypeMatchParameter() {
-        ValueType vt_int;
-        vt_int.type = ValueType::Type::INT;
-        vt_int.sign = ValueType::Sign::SIGNED;
-
-        ValueType vt_const_int;
-        vt_const_int.type = ValueType::Type::INT;
-        vt_const_int.sign = ValueType::Sign::SIGNED;
-        vt_const_int.constness = 1;
-
+        ValueType vt_int(ValueType::Sign::SIGNED, ValueType::Type::INT, 0);
+        ValueType vt_const_int(ValueType::Sign::SIGNED, ValueType::Type::INT, 0, 1);
         ASSERT_EQUALS((int)ValueType::MatchResult::SAME, (int)ValueType::matchParameter(&vt_int, &vt_int));
         ASSERT_EQUALS((int)ValueType::MatchResult::SAME, (int)ValueType::matchParameter(&vt_const_int, &vt_int));
         ASSERT_EQUALS((int)ValueType::MatchResult::SAME, (int)ValueType::matchParameter(&vt_int, &vt_const_int));
+
+        ValueType vt_char_pointer(ValueType::Sign::SIGNED, ValueType::Type::CHAR, 1);
+        ValueType vt_void_pointer(ValueType::Sign::SIGNED, ValueType::Type::VOID, 1); // compatible
+        ValueType vt_int_pointer(ValueType::Sign::SIGNED, ValueType::Type::INT, 1); // not compatible
+        ASSERT_EQUALS((int)ValueType::MatchResult::FALLBACK1, (int)ValueType::matchParameter(&vt_char_pointer, &vt_void_pointer));
+        ASSERT_EQUALS((int)ValueType::MatchResult::UNKNOWN, (int)ValueType::matchParameter(&vt_char_pointer, &vt_int_pointer));
     }
 
 #define FUNC(x) const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
