@@ -1137,7 +1137,7 @@ public:
 
     static Type typeFromString(const std::string &typestr, bool longType);
 
-    enum class MatchResult { UNKNOWN, SAME, FALLBACK1, FALLBACK2 };
+    enum class MatchResult { UNKNOWN, SAME, FALLBACK1, FALLBACK2, NOMATCH };
     static MatchResult matchParameter(const ValueType *call, const ValueType *func);
 
     bool isIntegral() const {

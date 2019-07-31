@@ -4185,23 +4185,39 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
 
             // check for a match with address of a variable
             else if (Token::Match(arguments[j], "& %var% ,|)")) {
-                const Variable * callarg = check->getVariableFromVarId(arguments[j]->next()->varId());
-                if (callarg) {
-                    const bool funcargptr = (funcarg->typeEndToken()->str() == "*");
-                    if (funcargptr &&
-                        (callarg->typeStartToken()->str() == funcarg->typeStartToken()->str() &&
-                         callarg->typeStartToken()->isUnsigned() == funcarg->typeStartToken()->isUnsigned() &&
-                         callarg->typeStartToken()->isLong() == funcarg->typeStartToken()->isLong())) {
-                        same++;
-                    } else if (funcargptr && funcarg->typeStartToken()->str() == "void") {
-                        fallback1++;
-                    } else {
-                        // can't match so remove this function from possible matches
-                        matches.erase(matches.begin() + i);
-                        erased = true;
-                        break;
+                ValueType::MatchResult res = ValueType::matchParameter(arguments[j]->valueType(), funcarg->valueType());
+                if (res == ValueType::MatchResult::SAME)
+                    ++same;
+                else if (res == ValueType::MatchResult::FALLBACK1)
+                    ++fallback1;
+                else if (res == ValueType::MatchResult::FALLBACK2)
+                    ++fallback2;
+                else if (res == ValueType::MatchResult::NOMATCH) {
+                    // can't match so remove this function from possible matches
+                    matches.erase(matches.begin() + i);
+                    erased = true;
+                    break;
+                } else {
+                    // TODO: Remove this code
+                    const Variable * callarg = check->getVariableFromVarId(arguments[j]->next()->varId());
+                    if (callarg) {
+                        const bool funcargptr = (funcarg->typeEndToken()->str() == "*");
+                        if (funcargptr &&
+                            (callarg->typeStartToken()->str() == funcarg->typeStartToken()->str() &&
+                             callarg->typeStartToken()->isUnsigned() == funcarg->typeStartToken()->isUnsigned() &&
+                             callarg->typeStartToken()->isLong() == funcarg->typeStartToken()->isLong())) {
+                            same++;
+                        } else if (funcargptr && funcarg->typeStartToken()->str() == "void") {
+                            fallback1++;
+                        } else {
+                            // can't match so remove this function from possible matches
+                            matches.erase(matches.begin() + i);
+                            erased = true;
+                            break;
+                        }
                     }
                 }
+
             }
 
             // check for a match with a numeric literal
@@ -5829,15 +5845,20 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
 {
     if (!call || !func)
         return ValueType::MatchResult::UNKNOWN;
-    if (call->pointer != func->pointer)
+    if (call->pointer != func->pointer) {
+        if (call->pointer < func->pointer && !call->isIntegral())
+            return ValueType::MatchResult::NOMATCH;
+        if (func->pointer < call->pointer && !func->isIntegral())
+            return ValueType::MatchResult::NOMATCH;
         return ValueType::MatchResult::UNKNOWN; // TODO
+    }
     if (call->pointer > 0 && func->type != ValueType::Type::VOID && ((call->constness | func->constness) != func->constness))
-        return ValueType::MatchResult::UNKNOWN;
+        return ValueType::MatchResult::NOMATCH;
     if (call->type != func->type) {
         if (call->type == ValueType::Type::VOID || func->type == ValueType::Type::VOID)
             return ValueType::MatchResult::FALLBACK1;
         if (call->pointer > 0 && func->pointer > 0)
-            return ValueType::MatchResult::UNKNOWN;
+            return ValueType::MatchResult::NOMATCH;
         if (call->isIntegral() && func->isIntegral())
             return call->type < func->type ?
                    ValueType::MatchResult::FALLBACK1 :

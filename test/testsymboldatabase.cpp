@@ -5543,7 +5543,7 @@ private:
         ValueType vt_void_pointer(ValueType::Sign::SIGNED, ValueType::Type::VOID, 1); // compatible
         ValueType vt_int_pointer(ValueType::Sign::SIGNED, ValueType::Type::INT, 1); // not compatible
         ASSERT_EQUALS((int)ValueType::MatchResult::FALLBACK1, (int)ValueType::matchParameter(&vt_char_pointer, &vt_void_pointer));
-        ASSERT_EQUALS((int)ValueType::MatchResult::UNKNOWN, (int)ValueType::matchParameter(&vt_char_pointer, &vt_int_pointer));
+        ASSERT_EQUALS((int)ValueType::MatchResult::NOMATCH, (int)ValueType::matchParameter(&vt_char_pointer, &vt_int_pointer));
     }
 
 #define FUNC(x) const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
