@@ -4186,27 +4186,49 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                     matches.erase(matches.begin() + i);
                     erased = true;
                     break;
-                } else {
-                    // TODO: Remove this code
-                    const Variable * callarg = check->getVariableFromVarId(arguments[j]->next()->varId());
-                    if (callarg) {
-                        const bool funcargptr = (funcarg->typeEndToken()->str() == "*");
-                        if (funcargptr &&
-                            (callarg->typeStartToken()->str() == funcarg->typeStartToken()->str() &&
-                             callarg->typeStartToken()->isUnsigned() == funcarg->typeStartToken()->isUnsigned() &&
-                             callarg->typeStartToken()->isLong() == funcarg->typeStartToken()->isLong())) {
-                            same++;
-                        } else if (funcargptr && funcarg->typeStartToken()->str() == "void") {
-                            fallback1++;
-                        } else {
-                            // can't match so remove this function from possible matches
-                            matches.erase(matches.begin() + i);
-                            erased = true;
-                            break;
+                } else if (!arguments[j]->valueType() && arguments[j]->astOperand1()->variable()) {
+                    const Token *callArgTypeToken = arguments[j]->astOperand1()->variable()->typeStartToken();
+                    const Token *funcArgTypeToken = funcarg->typeStartToken();
+
+                    auto parseDecl = [](const Token *typeToken) -> ValueType {
+                        ValueType ret;
+                        while (Token::Match(typeToken->previous(), "%name%"))
+                            typeToken = typeToken->previous();
+                        while (Token::Match(typeToken, "%name%|*|&|::"))
+                        {
+                            if (ret.originalTypeName.empty() && typeToken->str() == "::") {
+                                while (Token::Match(typeToken, ":: %name%")) {
+                                    ret.originalTypeName += "::" + typeToken->strAt(1);
+                                    typeToken = typeToken->tokAt(2);
+                                }
+                            }
+                            if (typeToken->str() == "const")
+                                ret.constness |= (1 << ret.pointer);
+                            else if (typeToken->str() == "*")
+                                ret.pointer++;
+                            else if (ret.originalTypeName.empty() && Token::Match(typeToken, "%name% const| %var%|*|&"))
+                                ret.originalTypeName = typeToken->str();
+                            typeToken = typeToken->next();
                         }
+                        return ret;
+                    };
+
+                    ValueType callArgType = parseDecl(callArgTypeToken);
+                    callArgType.pointer++;
+                    ValueType funcArgType = parseDecl(funcArgTypeToken);
+                    if (!callArgType.originalTypeName.empty() &&
+                        callArgType.originalTypeName == funcArgType.originalTypeName) {
+                        callArgType.sign = funcArgType.sign = ValueType::Sign::SIGNED;
+                        callArgType.type = funcArgType.type = ValueType::Type::INT;
+                        res = ValueType::matchParameter(&callArgType, &funcArgType);
+                        if (res == ValueType::MatchResult::SAME)
+                            ++same;
+                        else if (res == ValueType::MatchResult::FALLBACK1)
+                            ++fallback1;
+                        else if (res == ValueType::MatchResult::FALLBACK2)
+                            ++fallback2;
                     }
                 }
-
             }
 
             // check for a match with a numeric literal
