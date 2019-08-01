@@ -4147,45 +4147,16 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                 break;
             }
             const Variable *funcarg = func->getArgumentVar(j);
-            // check for a match with a variable
-            if (Token::Match(arguments[j], "%var% ,|)")) {
-                const Variable * callarg = check->getVariableFromVarId(arguments[j]->varId());
-                checkVariableCallMatch(callarg, funcarg, same, fallback1, fallback2);
-            }
 
-            // check for a match with reference of a variable
-            else if (Token::Match(arguments[j], "* %var% ,|)")) {
-                ValueType::MatchResult res = ValueType::matchParameter(arguments[j]->valueType(), funcarg->valueType());
-                if (res == ValueType::MatchResult::SAME)
-                    ++same;
-                else if (res == ValueType::MatchResult::FALLBACK1)
-                    ++fallback1;
-                else if (res == ValueType::MatchResult::FALLBACK2)
-                    ++fallback2;
-                else if (res == ValueType::MatchResult::NOMATCH) {
-                    // can't match so remove this function from possible matches
-                    matches.erase(matches.begin() + i);
-                    erased = true;
-                    break;
+            if (!arguments[j]->valueType()) {
+                const Token *vartok = arguments[j];
+                int pointer = 0;
+                while (vartok && (vartok->isUnaryOp("&") || vartok->isUnaryOp("*"))) {
+                    pointer += vartok->isUnaryOp("&") ? 1 : -1;
+                    vartok = vartok->astOperand1();
                 }
-            }
-
-            // check for a match with address of a variable
-            else if (Token::Match(arguments[j], "& %var% ,|)")) {
-                ValueType::MatchResult res = ValueType::matchParameter(arguments[j]->valueType(), funcarg->valueType());
-                if (res == ValueType::MatchResult::SAME)
-                    ++same;
-                else if (res == ValueType::MatchResult::FALLBACK1)
-                    ++fallback1;
-                else if (res == ValueType::MatchResult::FALLBACK2)
-                    ++fallback2;
-                else if (res == ValueType::MatchResult::NOMATCH) {
-                    // can't match so remove this function from possible matches
-                    matches.erase(matches.begin() + i);
-                    erased = true;
-                    break;
-                } else if (!arguments[j]->valueType() && arguments[j]->astOperand1()->variable()) {
-                    const Token *callArgTypeToken = arguments[j]->astOperand1()->variable()->typeStartToken();
+                if (vartok && vartok->variable()) {
+                    const Token *callArgTypeToken = vartok->variable()->typeStartToken();
                     const Token *funcArgTypeToken = funcarg->typeStartToken();
 
                     auto parseDecl = [](const Token *typeToken) -> ValueType {
@@ -4212,25 +4183,32 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                     };
 
                     ValueType callArgType = parseDecl(callArgTypeToken);
-                    callArgType.pointer++;
+                    callArgType.pointer += pointer;
                     ValueType funcArgType = parseDecl(funcArgTypeToken);
                     if (!callArgType.originalTypeName.empty() &&
                         callArgType.originalTypeName == funcArgType.originalTypeName) {
                         callArgType.sign = funcArgType.sign = ValueType::Sign::SIGNED;
                         callArgType.type = funcArgType.type = ValueType::Type::INT;
-                        res = ValueType::matchParameter(&callArgType, &funcArgType);
+                        ValueType::MatchResult res = ValueType::matchParameter(&callArgType, &funcArgType);
                         if (res == ValueType::MatchResult::SAME)
                             ++same;
                         else if (res == ValueType::MatchResult::FALLBACK1)
                             ++fallback1;
                         else if (res == ValueType::MatchResult::FALLBACK2)
                             ++fallback2;
+                        continue;
                     }
                 }
             }
 
+            // check for a match with a variable
+            if (Token::Match(arguments[j], "%var% ,|)")) {
+                const Variable * callarg = check->getVariableFromVarId(arguments[j]->varId());
+                checkVariableCallMatch(callarg, funcarg, same, fallback1, fallback2);
+            }
+
             else if (funcarg->isStlStringType() && arguments[j]->valueType() && arguments[j]->valueType()->pointer == 1 && arguments[j]->valueType()->type == ValueType::Type::CHAR)
-                fallback1++;
+                fallback2++;
 
             // check for a match with nullptr
             else if (funcarg->isPointer() && Token::Match(arguments[j], "nullptr|NULL ,|)"))
