@@ -1627,7 +1627,9 @@ void TemplateSimplifier::expandTemplate(
                     // skip scope
                     while (start->strAt(1) != templateDeclarationNameToken->str())
                         start = start->next();
-                } else if (start->str() == templateDeclarationNameToken->str()) {
+                } else if (start->str() == templateDeclarationNameToken->str() &&
+                           !(templateDeclaration.isFunction() && templateDeclaration.scope.empty() &&
+                             (start->strAt(-1) == "." || Token::simpleMatch(start->tokAt(-2), ". template")))) {
                     if (start->strAt(1) != "<" || Token::Match(start, newName.c_str()) || !inAssignment) {
                         dst->insertToken(newName, "", true);
                         if (start->strAt(1) == "<")
@@ -2801,7 +2803,9 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         }
 
         // A global function can't be called through a pointer.
-        if (templateDeclaration.isFunction() && templateDeclaration.scope.empty() && instantiation.token->strAt(-1) == ".")
+        if (templateDeclaration.isFunction() && templateDeclaration.scope.empty() &&
+            (instantiation.token->strAt(-1) == "." ||
+             Token::simpleMatch(instantiation.token->tokAt(-2), ". template")))
             continue;
 
         if (!matchSpecialization(templateDeclaration.nameToken, instantiation.token, specializations))
