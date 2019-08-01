@@ -31,6 +31,56 @@ int QString2()
     return s.size();
 }
 
+void QList1(QList<int> intListArg)
+{
+    for (int i = 0; i <= intListArg.size(); ++i) {
+        // cppcheck-suppress stlOutOfBounds
+        intListArg[i] = 1;
+    }
+    // cppcheck-suppress containerOutOfBoundsIndexExpression
+    intListArg[intListArg.length()] = 5;
+    // cppcheck-suppress containerOutOfBoundsIndexExpression
+    intListArg[intListArg.count()] = 10;
+    // cppcheck-suppress containerOutOfBoundsIndexExpression
+    printf("val: %d\n", intListArg[intListArg.size()]);
+
+    QList<QString> qstringList1{"one", "two"};
+    (void)qstringList1[1];
+
+    QList<QString> qstringList2 = {"one", "two"};
+    (void)qstringList2[1];
+    qstringList2.clear();
+    // TODO: cppcheck-suppress containerOutOfBounds #9243
+    (void)qstringList2[1];
+
+    QList<QString> qstringList3;
+    qstringList3 << "one" << "two";
+    //(void)qstringList3[1]; // TODO: no containerOutOfBounds error should be shown #9242
+    // cppcheck-suppress ignoredReturnValue
+    qstringList3.startsWith("one");
+    // cppcheck-suppress ignoredReturnValue
+    qstringList3.endsWith("one");
+    // cppcheck-suppress ignoredReturnValue
+    qstringList3.count();
+    // cppcheck-suppress ignoredReturnValue
+    qstringList3.length();
+    // cppcheck-suppress ignoredReturnValue
+    qstringList3.size();
+    // cppcheck-suppress ignoredReturnValue
+    qstringList3.at(5);
+    // cppcheck-suppress invalidFunctionArg
+    (void)qstringList3.at(-5);
+
+    QList<QString> qstringList4;
+    // cppcheck-suppress containerOutOfBounds
+    (void)qstringList4[0];
+    qstringList4.append("a");
+    (void)qstringList4[0];
+    qstringList4.clear();
+    // TODO: cppcheck-suppress containerOutOfBounds #9243
+    (void)qstringList4[0];
+}
+
 void QVector1(QVector<int> intVectorArg)
 {
     for (int i = 0; i <= intVectorArg.size(); ++i) {
