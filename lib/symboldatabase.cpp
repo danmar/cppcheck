@@ -4258,39 +4258,9 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                     fallback1++;
             }
 
-            // check for a match with a char literal
-            else if (!funcarg->isArrayOrPointer() && Token::Match(arguments[j], "%char%")) {
-                ValueType::MatchResult res = ValueType::matchParameter(arguments[j]->valueType(), funcarg->valueType());
-                if (res == ValueType::MatchResult::SAME)
-                    ++same;
-                else if (res == ValueType::MatchResult::FALLBACK1)
-                    ++fallback1;
-                else if (res == ValueType::MatchResult::FALLBACK2)
-                    ++fallback2;
-            }
-
-            // check for a match with a boolean literal
-            else if (!funcarg->isArrayOrPointer() && Token::Match(arguments[j], "%bool% ,|)")) {
-                ValueType::MatchResult res = ValueType::matchParameter(arguments[j]->valueType(), funcarg->valueType());
-                if (res == ValueType::MatchResult::SAME)
-                    ++same;
-                else if (res == ValueType::MatchResult::FALLBACK1)
-                    ++fallback1;
-                else if (res == ValueType::MatchResult::FALLBACK2)
-                    ++fallback2;
-            }
-
             // check for a match with nullptr
             else if (funcarg->isPointer() && Token::Match(arguments[j], "nullptr|NULL ,|)")) {
                 same++;
-            }
-
-            // check that function argument type is not mismatching
-            else if (funcarg->isReference() && arguments[j]->str() == "&") {
-                // can't match so remove this function from possible matches
-                matches.erase(matches.begin() + i);
-                erased = true;
-                break;
             }
 
             // Try to evaluate the apparently more complex expression
@@ -4302,6 +4272,12 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                     ++fallback1;
                 else if (res == ValueType::MatchResult::FALLBACK2)
                     ++fallback2;
+                else if (res == ValueType::MatchResult::NOMATCH) {
+                    // can't match so remove this function from possible matches
+                    matches.erase(matches.begin() + i);
+                    erased = true;
+                    break;
+                }
             }
         }
 
