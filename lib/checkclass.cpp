@@ -2648,17 +2648,18 @@ void CheckClass::checkOverride()
 
 void CheckClass::overrideError(const Function *funcInBase, const Function *funcInDerived)
 {
-    const std::string functionName = funcInDerived ? funcInDerived->name() : "";
+    const std::string functionName = funcInDerived ? ((funcInDerived->isDestructor() ? "~" : "") + funcInDerived->name()) : "";
+    const std::string funcType = (funcInDerived && funcInDerived->isDestructor()) ? "destructor" : "function";
 
     ErrorPath errorPath;
     if (funcInBase && funcInDerived) {
-        errorPath.push_back(ErrorPathItem(funcInBase->tokenDef, "Virtual function in base class"));
-        errorPath.push_back(ErrorPathItem(funcInDerived->tokenDef, "Function in derived class"));
+        errorPath.push_back(ErrorPathItem(funcInBase->tokenDef, "Virtual " + funcType + " in base class"));
+        errorPath.push_back(ErrorPathItem(funcInDerived->tokenDef, char(std::toupper(funcType[0])) + funcType.substr(1) + " in derived class"));
     }
 
     reportError(errorPath, Severity::style, "missingOverride",
                 "$symbol:" + functionName + "\n"
-                "The function '$symbol' overrides a function in a base class but is not marked with a 'override' specifier.",
+                "The " + funcType + " '$symbol' overrides a " + funcType + " in a base class but is not marked with a 'override' specifier.",
                 CWE(0U) /* Unknown CWE! */,
                 false);
 }

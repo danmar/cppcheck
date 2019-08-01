@@ -7128,6 +7128,19 @@ private:
                       "    auto bar( ) const -> size_t override { return 0; }\n"
                       "};");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:8]: (style) The function 'foo' overrides a function in a base class but is not marked with a 'override' specifier.\n", errout.str());
+
+        checkOverride("namespace Test {\n"
+                      "    class C {\n"
+                      "    public:\n"
+                      "        virtual ~C();\n"
+                      "    };\n"
+                      "}\n"
+                      "class C : Test::C {\n"
+                      "public:\n"
+                      "    ~C();\n"
+                      "};");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:9]: (style) The destructor '~C' overrides a destructor in a base class but is not marked with a 'override' specifier.\n", errout.str());
+
     }
 
     void overrideCVRefQualifiers() {
