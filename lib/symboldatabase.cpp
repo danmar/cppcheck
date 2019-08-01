@@ -4229,29 +4229,15 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                 }
             }
 
-            // check for a match with a numeric literal
-            else if (Token::Match(arguments[j], "%num%")) {
-                const Token *calltok = arguments[j];
-                if (funcarg->isPointer() && MathLib::isNullValue(calltok->str())) {
-                    fallback1++;
-                } else {
-                    ValueType::MatchResult res = ValueType::matchParameter(arguments[j]->valueType(), funcarg->valueType());
-                    if (res == ValueType::MatchResult::SAME)
-                        ++same;
-                    else if (res == ValueType::MatchResult::FALLBACK1)
-                        ++fallback1;
-                    else if (res == ValueType::MatchResult::FALLBACK2)
-                        ++fallback2;
-                }
-            }
-
             else if (funcarg->isStlStringType() && arguments[j]->valueType() && arguments[j]->valueType()->pointer == 1 && arguments[j]->valueType()->type == ValueType::Type::CHAR)
                 fallback1++;
 
             // check for a match with nullptr
-            else if (funcarg->isPointer() && Token::Match(arguments[j], "nullptr|NULL ,|)")) {
+            else if (funcarg->isPointer() && Token::Match(arguments[j], "nullptr|NULL ,|)"))
                 same++;
-            }
+
+            else if (arguments[j]->isNumber() && funcarg->isPointer() && MathLib::isNullValue(arguments[j]->str()))
+                fallback1++;
 
             // Try to evaluate the apparently more complex expression
             else {
