@@ -4245,18 +4245,8 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                 }
             }
 
-            // check for a match with a string literal
-            else if (Token::Match(arguments[j], "%str%")) {
-                ValueType::MatchResult res = ValueType::matchParameter(arguments[j]->valueType(), funcarg->valueType());
-                if (res == ValueType::MatchResult::SAME)
-                    ++same;
-                else if (res == ValueType::MatchResult::FALLBACK1)
-                    ++fallback1;
-                else if (res == ValueType::MatchResult::FALLBACK2)
-                    ++fallback2;
-                else if (funcarg->isStlStringType())
-                    fallback1++;
-            }
+            else if (funcarg->isStlStringType() && arguments[j]->valueType() && arguments[j]->valueType()->pointer == 1 && arguments[j]->valueType()->type == ValueType::Type::CHAR)
+                fallback1++;
 
             // check for a match with nullptr
             else if (funcarg->isPointer() && Token::Match(arguments[j], "nullptr|NULL ,|)")) {
