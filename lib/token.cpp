@@ -1059,6 +1059,7 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
 
                 if (!newScopeInfo->name.empty() && !nextScopeNameAddition.empty()) newScopeInfo->name.append(" :: ");
                 newScopeInfo->name.append(nextScopeNameAddition);
+                nextScopeNameAddition = "";
 
                 newToken->scopeInfo(newScopeInfo);
             } else if (tokenStr == "}") {
