@@ -504,7 +504,7 @@ private:
         givenACodeSampleToTokenize var("int a ; int b ;");
 
         // Varid == 0 should throw exception
-        ASSERT_THROW(Token::Match(var.tokens(), "%type% %varid% ; %type% %name%", 0),InternalError);
+        ASSERT_THROW((void)Token::Match(var.tokens(), "%type% %varid% ; %type% %name%", 0),InternalError);
 
         ASSERT_EQUALS(true, Token::Match(var.tokens(), "%type% %varid% ; %type% %name%", 1));
         ASSERT_EQUALS(true, Token::Match(var.tokens(), "%type% %name% ; %type% %varid%", 2));
