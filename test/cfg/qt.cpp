@@ -31,6 +31,19 @@ int QString2()
     return s.size();
 }
 
+QString::iterator QString3()
+{
+    QString qstring1;
+    QString qstring2;
+    // cppcheck-suppress iterators2
+    for (QString::iterator it = qstring1.begin(); it != qstring2.end(); ++it)
+    {}
+
+    QString::iterator it = qstring1.begin();
+    // cppcheck-suppress returnDanglingLifetime
+    return it;
+}
+
 void QList1(QList<int> intListArg)
 {
     for (int i = 0; i <= intListArg.size(); ++i) {
@@ -55,7 +68,10 @@ void QList1(QList<int> intListArg)
 
     QList<QString> qstringList3;
     qstringList3 << "one" << "two";
-    //(void)qstringList3[1]; // TODO: no containerOutOfBounds error should be shown #9242
+    // FIXME: The following containerOutOfBounds suppression is wrong #9242
+    // Please remove the suppression as soon as this is fixed
+    // cppcheck-suppress containerOutOfBounds
+    (void)qstringList3[1];
     // cppcheck-suppress ignoredReturnValue
     qstringList3.startsWith("one");
     // cppcheck-suppress ignoredReturnValue
@@ -81,6 +97,76 @@ void QList1(QList<int> intListArg)
     (void)qstringList4[0];
 }
 
+QList<int>::iterator QList3()
+{
+    QList<int> qlist1;
+    QList<int> qlist2;
+    // cppcheck-suppress iterators2
+    for (QList<int>::iterator it = qlist1.begin(); it != qlist2.end(); ++it)
+    {}
+
+    QList<int>::iterator it = qlist1.begin();
+    // TODO: cppcheck-suppress returnDanglingLifetime
+    return it;
+}
+
+void QStringList1(QStringList stringlistArg)
+{
+    for (int i = 0; i <= stringlistArg.size(); ++i) {
+        // cppcheck-suppress stlOutOfBounds
+        stringlistArg[i] = "abc";
+    }
+    // cppcheck-suppress containerOutOfBoundsIndexExpression
+    stringlistArg[stringlistArg.length()] = "ab";
+    stringlistArg[stringlistArg.length() - 1] = "ab"; // could be valid
+    // cppcheck-suppress containerOutOfBoundsIndexExpression
+    stringlistArg[stringlistArg.count()] = "12";
+    stringlistArg[stringlistArg.count() - 1] = "12"; // could be valid
+    // cppcheck-suppress containerOutOfBoundsIndexExpression
+    (void)stringlistArg[stringlistArg.size()];
+    (void)stringlistArg[stringlistArg.size() - 1]; // could be valid
+
+    QStringList qstringlist1{"one", "two"};
+    (void)qstringlist1[1];
+
+    QStringList qstringlist2 = {"one", "two"};
+    (void)qstringlist2[1];
+
+    QStringList qstringlist3;
+    qstringlist3 << "one" << "two";
+    // FIXME: The following containerOutOfBounds suppression is wrong #9242
+    // Please remove the suppression as soon as this is fixed
+    // cppcheck-suppress containerOutOfBounds
+    (void)qstringlist3[1];
+    // cppcheck-suppress ignoredReturnValue
+    qstringlist3.startsWith("one");
+    // cppcheck-suppress ignoredReturnValue
+    qstringlist3.endsWith("one");
+    // cppcheck-suppress ignoredReturnValue
+    qstringlist3.count();
+    // cppcheck-suppress ignoredReturnValue
+    qstringlist3.length();
+    // cppcheck-suppress ignoredReturnValue
+    qstringlist3.size();
+    // cppcheck-suppress ignoredReturnValue
+    qstringlist3.at(5);
+    // cppcheck-suppress invalidFunctionArg
+    (void)qstringlist3.at(-5);
+}
+
+QStringList::iterator QStringList2()
+{
+    QStringList qstringlist1;
+    QStringList qstringlist2;
+    // cppcheck-suppress iterators2
+    for (QStringList::iterator it = qstringlist1.begin(); it != qstringlist2.end(); ++it)
+    {}
+
+    QStringList::iterator it = qstringlist1.begin();
+    // cppcheck-suppress returnDanglingLifetime
+    return it;
+}
+
 void QVector1(QVector<int> intVectorArg)
 {
     for (int i = 0; i <= intVectorArg.size(); ++i) {
@@ -102,7 +188,10 @@ void QVector1(QVector<int> intVectorArg)
 
     QVector<QString> qstringVector3;
     qstringVector3 << "one" << "two";
-    //(void)qstringVector3[1]; // TODO: no containerOutOfBounds error should be shown #9242
+    // FIXME: The following containerOutOfBounds suppression is wrong #9242
+    // Please remove the suppression as soon as this is fixed
+    // cppcheck-suppress containerOutOfBounds
+    (void)qstringVector3[1];
     // cppcheck-suppress ignoredReturnValue
     qstringVector3.startsWith("one");
     // cppcheck-suppress ignoredReturnValue
@@ -117,6 +206,19 @@ void QVector1(QVector<int> intVectorArg)
     qstringVector3.at(5);
     // cppcheck-suppress invalidFunctionArg
     (void)qstringVector3.at(-5);
+}
+
+QVector<int>::iterator QVector2()
+{
+    QVector<int> qvector1;
+    QVector<int> qvector2;
+    // cppcheck-suppress iterators2
+    for (QVector<int>::iterator it = qvector1.begin(); it != qvector2.end(); ++it)
+    {}
+
+    QVector<int>::iterator it = qvector1.begin();
+    // TODO cppcheck-suppress returnDanglingLifetime
+    return it;
 }
 
 // Verify that Qt macros do not result in syntax errors, false positives or other issues.
