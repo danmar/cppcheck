@@ -19,6 +19,7 @@
 extern void *xcalloc(size_t nmemb, size_t size);
 extern void *xmalloc(size_t size);
 extern void *xrealloc(void *block, size_t newsize);
+extern void xfree(void *ptr);
 
 void resourceLeak_mkostemps(char *template, int suffixlen, int flags)
 {
@@ -76,8 +77,19 @@ int no_resourceLeak_mkostemp_02(char *template, int flags)
 
 void valid_code(int argInt1)
 {
+    char *p;
+
     if (__builtin_expect(argInt1, 0)) {}
     if (__builtin_expect_with_probability(argInt1 + 1, 2, 0.5)) {}
+
+    p = (char *)malloc(10);
+    free(p);
+    p = (char *)malloc(5);
+    xfree(p);
+    p = (char *)xmalloc(10);
+    free(p);
+    p = (char *)xmalloc(5);
+    xfree(p);
 }
 
 void ignoreleak(void)
@@ -96,6 +108,13 @@ void memleak_asprintf(char **ptr, const char *fmt, const int arg)
     if (-1 != asprintf(ptr,fmt,arg)) {
         // TODO: Related to #8980 cppcheck-suppress memleak
     }
+}
+
+void memleak_xmalloc()
+{
+    char *p = (char*)xmalloc(10);
+    p[9] = 0;
+    // cppcheck-suppress memleak
 }
 
 void uninitvar__builtin_memset(void)
