@@ -5782,6 +5782,10 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
     if (call->typeScope != nullptr || func->typeScope != nullptr)
         return call->typeScope == func->typeScope ? ValueType::MatchResult::SAME : ValueType::MatchResult::NOMATCH;
 
+    if (call->container != nullptr || func->container != nullptr)
+        // TODO: verify the typename
+        return call->container == func->container ? ValueType::MatchResult::SAME : ValueType::MatchResult::NOMATCH;
+
     if (func->type < ValueType::Type::VOID || func->type == ValueType::Type::UNKNOWN_INT)
         return ValueType::MatchResult::UNKNOWN;
 
