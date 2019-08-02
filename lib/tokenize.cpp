@@ -2873,7 +2873,11 @@ void Tokenizer::calculateScopes()
                 if (usingNamespaceName.length() > 0) usingNamespaceName = usingNamespaceName.substr(0, usingNamespaceName.length() - 1);
                 tok->scopeInfo()->usingNamespaces.insert(usingNamespaceName);
             } else if (Token::Match(tok, "namespace|class|struct|union %name% {|::|:|<")) {
-                for (Token* nameTok = tok->next(); nameTok && !Token::Match(nameTok, "{|:|<"); nameTok = nameTok->next()) {
+                for (Token* nameTok = tok->next(); nameTok && !Token::Match(nameTok, "{|:"); nameTok = nameTok->next()) {
+                    if (Token::Match(nameTok, ";|<")) {
+                        nextScopeNameAddition = "";
+                        break;
+                    }
                     nextScopeNameAddition.append(nameTok->str());
                     nextScopeNameAddition.append(" ");
                 }
