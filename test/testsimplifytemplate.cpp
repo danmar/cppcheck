@@ -2774,11 +2774,28 @@ private:
     }
 
     void template116() { // #9178
-        const char code[] = "template <class, class a> auto b() -> decltype(a{}.template b<void(int, int)>);\n"
-                            "template <class, class a> auto b() -> decltype(a{}.template b<void(int, int)>){}";
-        const char exp[] = "template < class , class a > auto b ( ) . decltype ( a { } . template b < void ( int , int ) > ) ; "
-                           "template < class , class a > auto b ( ) . decltype ( a { } . template b < void ( int , int ) > ) { }";
-        ASSERT_EQUALS(exp, tok(code));
+        {
+            const char code[] = "template <class, class a> auto b() -> decltype(a{}.template b<void(int, int)>);\n"
+                                "template <class, class a> auto b() -> decltype(a{}.template b<void(int, int)>){}";
+            const char exp[] = "template < class , class a > auto b ( ) . decltype ( a { } . template b < void ( int , int ) > ) ; "
+                               "template < class , class a > auto b ( ) . decltype ( a { } . template b < void ( int , int ) > ) { }";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            const char code[] = "template <class, class a>\n"
+                                "auto b() -> decltype(a{}.template b<void(int, int)>()) {}\n"
+                                "struct c {\n"
+                                "  template <class> void b();\n"
+                                "};\n"
+                                "void d() { b<c, c>(); }";
+            const char exp[] = "auto b<c,c> ( ) . decltype ( c { } . template b < void ( int , int ) > ( ) ) ; "
+                               "struct c { "
+                               "template < class > void b ( ) ; "
+                               "} ; "
+                               "void d ( ) { b<c,c> ( ) ; } "
+                               "auto b<c,c> ( ) . decltype ( c { } . template b < void ( int , int ) > ( ) ) { }";
+            ASSERT_EQUALS(exp, tok(code));
+        }
     }
 
     void template117() {
