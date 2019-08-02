@@ -90,6 +90,15 @@ void valid_code(int argInt1)
     free(p);
     p = (char *)xmalloc(5);
     xfree(p);
+
+    // cppcheck-suppress allocaCalled
+    p = __builtin_alloca(5);
+    p[0] = 1;
+    // TODO cppcheck-suppress arrayIndexOutOfBounds
+    p[5] = 1;
+    __builtin_prefetch(p, 0, 1);
+
+    if (__builtin_types_compatible_p(int, char)) {}
 }
 
 void ignoreleak(void)
