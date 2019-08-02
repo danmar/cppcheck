@@ -826,7 +826,7 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
         for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
             Scope *scope = &(*it);
             if (scope->definedType)
-                scope->definedType->needInitialization = Type::True;
+                scope->definedType->needInitialization = Type::NeedInitialization::True;
         }
     } else {
         // For C++, it is more difficult: Determine if user defined type needs initialization...
@@ -844,7 +844,7 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                     scope->definedType = &mBlankTypes.back();
                 }
 
-                if (scope->isClassOrStruct() && scope->definedType->needInitialization == Type::Unknown) {
+                if (scope->isClassOrStruct() && scope->definedType->needInitialization == Type::NeedInitialization::Unknown) {
                     // check for default constructor
                     bool hasDefaultConstructor = false;
 
@@ -870,7 +870,7 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                     // We assume the default constructor initializes everything.
                     // Another check will figure out if the constructor actually initializes everything.
                     if (hasDefaultConstructor)
-                        scope->definedType->needInitialization = Type::False;
+                        scope->definedType->needInitialization = Type::NeedInitialization::False;
 
                     // check each member variable to see if it needs initialization
                     else {
@@ -882,9 +882,9 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                             if (var->isClass()) {
                                 if (var->type()) {
                                     // does this type need initialization?
-                                    if (var->type()->needInitialization == Type::True)
+                                    if (var->type()->needInitialization == Type::NeedInitialization::True)
                                         needInitialization = true;
-                                    else if (var->type()->needInitialization == Type::Unknown) {
+                                    else if (var->type()->needInitialization == Type::NeedInitialization::Unknown) {
                                         if (!(var->valueType() && var->valueType()->type == ValueType::CONTAINER))
                                             unknown = true;
                                     }
@@ -894,16 +894,16 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                         }
 
                         if (needInitialization)
-                            scope->definedType->needInitialization = Type::True;
+                            scope->definedType->needInitialization = Type::NeedInitialization::True;
                         else if (!unknown)
-                            scope->definedType->needInitialization = Type::False;
+                            scope->definedType->needInitialization = Type::NeedInitialization::False;
                         else {
-                            if (scope->definedType->needInitialization == Type::Unknown)
+                            if (scope->definedType->needInitialization == Type::NeedInitialization::Unknown)
                                 unknowns++;
                         }
                     }
-                } else if (scope->type == Scope::eUnion && scope->definedType->needInitialization == Type::Unknown)
-                    scope->definedType->needInitialization = Type::True;
+                } else if (scope->type == Scope::eUnion && scope->definedType->needInitialization == Type::NeedInitialization::Unknown)
+                    scope->definedType->needInitialization = Type::NeedInitialization::True;
             }
 
             retry++;
@@ -914,7 +914,7 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
             for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
                 const Scope *scope = &(*it);
 
-                if (scope->isClassOrStruct() && scope->definedType->needInitialization == Type::Unknown)
+                if (scope->isClassOrStruct() && scope->definedType->needInitialization == Type::NeedInitialization::Unknown)
                     debugMessage(scope->classDef, "SymbolDatabase::SymbolDatabase couldn't resolve all user defined types.");
             }
         }
@@ -2919,9 +2919,9 @@ void SymbolDatabase::printOut(const char *title) const
                       << type->enclosingScope->className;
         }
         std::cout << std::endl;
-        std::cout << "    needInitialization: " << (type->needInitialization == Type::Unknown ? "Unknown" :
-                  type->needInitialization == Type::True ? "True" :
-                  type->needInitialization == Type::False ? "False" :
+        std::cout << "    needInitialization: " << (type->needInitialization == Type::NeedInitialization::Unknown ? "Unknown" :
+                  type->needInitialization == Type::NeedInitialization::True ? "True" :
+                  type->needInitialization == Type::NeedInitialization::False ? "False" :
                   "Invalid") << std::endl;
 
         std::cout << "    derivedFrom[" << type->derivedFrom.size() << "] = (";

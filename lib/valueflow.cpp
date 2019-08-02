@@ -4906,7 +4906,7 @@ static void valueFlowUninit(TokenList *tokenlist, SymbolDatabase * /*symbolDatab
         const Variable *var = vardecl->variable();
         if (!var || var->nameToken() != vardecl)
             continue;
-        if ((!var->isPointer() && var->type() && var->type()->needInitialization != Type::True) ||
+        if ((!var->isPointer() && var->type() && var->type()->needInitialization != Type::NeedInitialization::True) ||
             !var->isLocal() || var->isStatic() || var->isExtern() || var->isReference() || var->isThrow())
             continue;
 

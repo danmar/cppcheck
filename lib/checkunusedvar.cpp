@@ -1376,7 +1376,7 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
         return withoutSideEffects;
 
     if (type && type->classScope && type->classScope->numConstructors == 0 &&
-        (type->classScope->varlist.empty() || type->needInitialization == Type::True)) {
+        (type->classScope->varlist.empty() || type->needInitialization == Type::NeedInitialization::True)) {
         for (std::vector<Type::BaseInfo>::const_iterator i = type->derivedFrom.begin(); i != type->derivedFrom.end(); ++i) {
             if (!isRecordTypeWithoutSideEffects(i->type)) {
                 withoutSideEffects=false;

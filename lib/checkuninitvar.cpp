@@ -99,7 +99,7 @@ void CheckUninitVar::check()
 void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> &arrayTypeDefs)
 {
     for (const Variable &var : scope->varlist) {
-        if ((mTokenizer->isCPP() && var.type() && !var.isPointer() && var.type()->needInitialization != Type::True) ||
+        if ((mTokenizer->isCPP() && var.type() && !var.isPointer() && var.type()->needInitialization != Type::NeedInitialization::True) ||
             var.isStatic() || var.isExtern() || var.isReference())
             continue;
 
@@ -197,7 +197,7 @@ void CheckUninitVar::checkStruct(const Token *tok, const Variable &structvar)
         if (scope2->className == typeToken->str() && scope2->numConstructors == 0U) {
             for (const Variable &var : scope2->varlist) {
                 if (var.isStatic() || var.hasDefault() || var.isArray() ||
-                    (!mTokenizer->isC() && var.isClass() && (!var.type() || var.type()->needInitialization != Type::True)))
+                    (!mTokenizer->isC() && var.isClass() && (!var.type() || var.type()->needInitialization != Type::NeedInitialization::True)))
                     continue;
 
                 // is the variable declared in a inner union?
@@ -693,7 +693,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                     continue;
                 }
             }
-            if (var.isPointer() && (var.typeStartToken()->isStandardType() || var.typeStartToken()->isEnumType() || (var.type() && var.type()->needInitialization == Type::True)) && Token::simpleMatch(tok->next(), "= new")) {
+            if (var.isPointer() && (var.typeStartToken()->isStandardType() || var.typeStartToken()->isEnumType() || (var.type() && var.type()->needInitialization == Type::NeedInitialization::True)) && Token::simpleMatch(tok->next(), "= new")) {
                 *alloc = CTOR_CALL;
 
                 // type has constructor(s)

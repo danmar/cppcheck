@@ -65,7 +65,7 @@ public:
     const Token* classDef;     ///< Points to "class" token
     const Scope* classScope;
     const Scope* enclosingScope;
-    enum NeedInitialization {
+    enum class NeedInitialization {
         Unknown, True, False
     } needInitialization;
 
@@ -106,11 +106,11 @@ public:
         classDef(classDef_),
         classScope(classScope_),
         enclosingScope(enclosingScope_),
-        needInitialization(Unknown),
+        needInitialization(NeedInitialization::Unknown),
         typeStart(nullptr),
         typeEnd(nullptr) {
         if (classDef_ && classDef_->str() == "enum")
-            needInitialization = True;
+            needInitialization = NeedInitialization::True;
         else if (classDef_ && classDef_->str() == "using") {
             typeStart = classDef->tokAt(3);
             typeEnd = typeStart;
