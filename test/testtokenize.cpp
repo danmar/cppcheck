@@ -3645,6 +3645,10 @@ private:
         const char code4[] = "const void * const p = NULL;";
         const char res4[]  = "const void * const p ; p = NULL ;";
         ASSERT_EQUALS(res4, tokenizeAndStringify(code4));
+
+        const char code5[] = "const void * volatile p = NULL;";
+        const char res5[]  = "const void * volatile p ; p = NULL ;";
+        ASSERT_EQUALS(res5, tokenizeAndStringify(code5));;
     }
 
     void vardecl5() {
