@@ -167,6 +167,7 @@ private:
         TEST_CASE(template127); // #9225
         TEST_CASE(template128); // #9224
         TEST_CASE(template129);
+        TEST_CASE(template130); // #9246
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -3084,6 +3085,19 @@ private:
                            "void setupLuaBindingsDNSQuestion ( ) { "
                            "g_lua . registerFunction < void ( DNSQuestion :: * ) ( std :: string , std :: string ) > ( ) ; "
                            "}";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template130() { // #9246
+        const char code[] = "template <typename...> using a = int;\n"
+                            "template <typename, typename> using b = a<>;\n"
+                            "template <typename, typename> void c();\n"
+                            "template <typename d, typename> void e() { c<b<d, int>, int>; }\n"
+                            "void f() { e<int(int, ...), int>(); }";
+        const char exp[] = "template < typename , typename > void c ( ) ; "
+                           "void e<int(int,...),int> ( ) ; "
+                           "void f ( ) { e<int(int,...),int> ( ) ; } "
+                           "void e<int(int,...),int> ( ) { c < int , int > ; }";
         ASSERT_EQUALS(exp, tok(code));
     }
 

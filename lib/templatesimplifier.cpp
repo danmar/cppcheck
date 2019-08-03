@@ -1221,7 +1221,7 @@ void TemplateSimplifier::simplifyTemplateAliases()
                     break;
                 }
             }
-            if (!tok2 || tok2->str() != ">" || args.size() != aliasParameters.size()) {
+            if (!tok2 || tok2->str() != ">" || (!aliasDeclaration.isVariadic() && (args.size() != aliasParameters.size()))) {
                 ++it2;
                 continue;
             }
@@ -1597,6 +1597,10 @@ void TemplateSimplifier::expandTemplate(
                         ++typeindentlevel;
                     else if (typeindentlevel > 0 && typetok->str() == ">")
                         --typeindentlevel;
+                    else if (typetok->str() == "(")
+                        ++typeindentlevel;
+                    else if (typetok->str() == ")")
+                        --typeindentlevel;
                     dst->insertToken(typetok->str(), typetok->originalName(), true);
                     Token *previous = dst->previous();
                     previous->isTemplateArg(true);
@@ -1818,6 +1822,10 @@ void TemplateSimplifier::expandTemplate(
                                         ++typeindentlevel;
                                     else if (typeindentlevel > 0 && typetok->str() == ">")
                                         --typeindentlevel;
+                                    else if (typetok->str() == "(")
+                                        ++typeindentlevel;
+                                    else if (typetok->str() == ")")
+                                        --typeindentlevel;
                                     mTokenList.addtoken(typetok, tok5->linenr(), tok5->fileIndex());
                                     Token *back = mTokenList.back();
                                     if (Token::Match(back, "{|(|[")) {
@@ -1917,6 +1925,10 @@ void TemplateSimplifier::expandTemplate(
                         if (Token::Match(typetok, "%name% <") && (typetok->strAt(2) == ">" || templateParameters(typetok->next())))
                             ++typeindentlevel;
                         else if (typeindentlevel > 0 && typetok->str() == ">")
+                            --typeindentlevel;
+                        else if (typetok->str() == "(")
+                            ++typeindentlevel;
+                        else if (typetok->str() == ")")
                             --typeindentlevel;
                         if (copy) {
                             mTokenList.addtoken(typetok, tok3->linenr(), tok3->fileIndex());
@@ -2992,6 +3004,10 @@ void TemplateSimplifier::replaceTemplateUsage(
         while (tok2 != endToken && (indentlevel2 > 0 || tok2->str() != ">")) {
             if (tok2->str() == "<" && (tok2->strAt(1) == ">" || templateParameters(tok2)))
                 ++indentlevel2;
+            else if (tok2->str() == "(")
+                ++indentlevel2;
+            else if (tok2->str() == ")")
+                --indentlevel2;
             else if (indentlevel2 > 0 && Token::Match(tok2, "> [,>]"))
                 --indentlevel2;
             else if (indentlevel2 == 0) {
