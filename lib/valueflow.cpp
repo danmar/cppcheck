@@ -3910,7 +3910,7 @@ struct ValueFlowConditionHandler {
                             values = &cond.false_values;
 
                         if (values) {
-                            if (dead_if || dead_else) {
+                            if ((dead_if || dead_else) && !Token::Match(tok->astParent(), "&&|&")) {
                                 valueFlowSetConditionToKnown(tok, *values, true);
                                 valueFlowSetConditionToKnown(tok, *values, false);
                             }
