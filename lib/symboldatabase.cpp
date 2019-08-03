@@ -1286,6 +1286,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
     const std::set<std::string> cpp20keywords = {
         "alignas",
         "alignof",
+        "axiom",
         "co_await",
         "co_return",
         "co_yield",
@@ -1293,11 +1294,11 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
         "synchronized",
         "consteval",
         "reflexpr",
+        "requires",
     };
     const std::set<std::string> cppkeywords = {
         "asm",
         "auto",
-        "axiom",
         "catch",
         "char",
         "class",
@@ -1322,7 +1323,6 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
         "protected",
         "public",
         "register",
-        "requires",
         "sizeof",
         "static",
         "static_assert",
