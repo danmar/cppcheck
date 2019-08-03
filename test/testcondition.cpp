@@ -3130,6 +3130,14 @@ private:
               "    else return 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Condition 'handle' is always false\n", errout.str());
+
+        check("void f(void* x, void* y) {\n"
+              "    if (x == nullptr && y == nullptr)\n"
+              "        return;\n"
+              "    if (x == nullptr || y == nullptr)\n"
+              "        return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void multiConditionAlwaysTrue() {
