@@ -855,6 +855,8 @@ const Token * Token::findClosingBracket() const
         return nullptr;
 
     const Token *closing = nullptr;
+    const bool templateParameter(strAt(-1) == "template");
+    std::set<std::string> templateParameters;
 
     unsigned int depth = 0;
     for (closing = this; closing != nullptr; closing = closing->next()) {
@@ -864,7 +866,10 @@ const Token * Token::findClosingBracket() const
                 return nullptr; // #6803
         } else if (Token::Match(closing, "}|]|)|;"))
             return nullptr;
-        else if (closing->str() == "<")
+        // we can make some guesses for template parameters
+        else if (closing->str() == "<" &&
+                 (!templateParameter || (closing->previous() && closing->previous()->isName() &&
+                                         templateParameters.find(closing->strAt(-1)) == templateParameters.end())))
             ++depth;
         else if (closing->str() == ">") {
             if (--depth == 0)
@@ -874,6 +879,10 @@ const Token * Token::findClosingBracket() const
                 return closing;
             depth -= 2;
         }
+        // save named template parameter
+        else if (templateParameter && depth == 1 && closing->str() == "," &&
+                 closing->previous()->isName() && !Match(closing->previous(), "class|typename|."))
+            templateParameters.insert(closing->strAt(-1));
     }
 
     return closing;
