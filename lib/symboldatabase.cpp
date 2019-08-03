@@ -4042,7 +4042,7 @@ void Scope::findFunctionInBase(const std::string & name, nonneg int args, std::v
 static void checkVariableCallMatch(const Variable* callarg, const Variable* funcarg, size_t& same, size_t& fallback1, size_t& fallback2)
 {
     if (callarg) {
-        ValueType::MatchResult res = ValueType::matchParameter(callarg->valueType(), funcarg->valueType());
+        ValueType::MatchResult res = ValueType::matchParameter(callarg->valueType(), callarg, funcarg);
         if (res == ValueType::MatchResult::SAME) {
             same++;
             return;
@@ -4055,6 +4055,8 @@ static void checkVariableCallMatch(const Variable* callarg, const Variable* func
             fallback2++;
             return;
         }
+        if (res == ValueType::MatchResult::NOMATCH)
+            return;
 
         bool ptrequals = callarg->isArrayOrPointer() == funcarg->isArrayOrPointer();
         bool constEquals = !callarg->isArrayOrPointer() || ((callarg->typeStartToken()->strAt(-1) == "const") == (funcarg->typeStartToken()->strAt(-1) == "const"));
@@ -4079,6 +4081,32 @@ static void checkVariableCallMatch(const Variable* callarg, const Variable* func
                 fallback2++;
         }
     }
+}
+
+static std::string getTypeString(const Token *typeToken)
+{
+    if (!typeToken)
+        return "";
+    while (Token::Match(typeToken, "%name%|*|&|::")) {
+        if (typeToken->str() == "::") {
+            std::string ret;
+            while (Token::Match(typeToken, ":: %name%")) {
+                ret += "::" + typeToken->strAt(1);
+                typeToken = typeToken->tokAt(2);
+            }
+            if (typeToken->str() == "<") {
+                for (const Token *tok = typeToken; tok != typeToken->link(); tok = tok->next())
+                    ret += tok->str();
+                ret += ">";
+            }
+            return ret;
+        }
+        if (Token::Match(typeToken, "%name% const| %var%|*|&")) {
+            return typeToken->str();
+        }
+        typeToken = typeToken->next();
+    }
+    return "";
 }
 
 const Function* Scope::findFunction(const Token *tok, bool requireConst) const
@@ -4163,32 +4191,32 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                         ValueType ret;
                         while (Token::Match(typeToken->previous(), "%name%"))
                             typeToken = typeToken->previous();
-                        while (Token::Match(typeToken, "%name%|*|&|::"))
+                        while (Token::Match(typeToken, "%name%|*|&|::|<"))
                         {
-                            if (ret.originalTypeName.empty() && typeToken->str() == "::") {
-                                while (Token::Match(typeToken, ":: %name%")) {
-                                    ret.originalTypeName += "::" + typeToken->strAt(1);
-                                    typeToken = typeToken->tokAt(2);
-                                }
-                            }
                             if (typeToken->str() == "const")
                                 ret.constness |= (1 << ret.pointer);
                             else if (typeToken->str() == "*")
                                 ret.pointer++;
-                            else if (ret.originalTypeName.empty() && Token::Match(typeToken, "%name% const| %var%|*|&"))
-                                ret.originalTypeName = typeToken->str();
+                            else if (typeToken->str() == "<") {
+                                if (!typeToken->link())
+                                    break;
+                                typeToken = typeToken->link();
+                            }
                             typeToken = typeToken->next();
                         }
                         return ret;
                     };
 
-                    ValueType callArgType = parseDecl(callArgTypeToken);
-                    callArgType.pointer += pointer;
-                    ValueType funcArgType = parseDecl(funcArgTypeToken);
-                    if (!callArgType.originalTypeName.empty() &&
-                        callArgType.originalTypeName == funcArgType.originalTypeName) {
+                    const std::string type1 = getTypeString(callArgTypeToken);
+                    const std::string type2 = getTypeString(funcArgTypeToken);
+                    if (!type1.empty() && type1 == type2) {
+                        ValueType callArgType = parseDecl(callArgTypeToken);
+                        callArgType.pointer += pointer;
+                        ValueType funcArgType = parseDecl(funcArgTypeToken);
+
                         callArgType.sign = funcArgType.sign = ValueType::Sign::SIGNED;
                         callArgType.type = funcArgType.type = ValueType::Type::INT;
+
                         ValueType::MatchResult res = ValueType::matchParameter(&callArgType, &funcArgType);
                         if (res == ValueType::MatchResult::SAME)
                             ++same;
@@ -4219,7 +4247,10 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
 
             // Try to evaluate the apparently more complex expression
             else {
-                ValueType::MatchResult res = ValueType::matchParameter(arguments[j]->valueType(), funcarg->valueType());
+                const Token *vartok = arguments[j];
+                while (vartok->isUnaryOp("&") || vartok->isUnaryOp("*"))
+                    vartok = vartok->astOperand1();
+                ValueType::MatchResult res = ValueType::matchParameter(arguments[j]->valueType(), vartok->variable(), funcarg);
                 if (res == ValueType::MatchResult::SAME)
                     ++same;
                 else if (res == ValueType::MatchResult::FALLBACK1)
@@ -5757,6 +5788,8 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
     if (call->pointer != func->pointer) {
         if (call->pointer > 1 && func->pointer == 1 && func->type == ValueType::Type::VOID)
             return ValueType::MatchResult::FALLBACK1;
+        if (call->pointer == 1 && call->type == ValueType::Type::CHAR && func->pointer == 0 && func->container && func->container->stdStringLike)
+            return ValueType::MatchResult::FALLBACK2;
         return ValueType::MatchResult::NOMATCH; // TODO
     }
     if (call->pointer > 0 && ((call->constness | func->constness) != func->constness))
@@ -5782,15 +5815,28 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
     if (call->typeScope != nullptr || func->typeScope != nullptr)
         return call->typeScope == func->typeScope ? ValueType::MatchResult::SAME : ValueType::MatchResult::NOMATCH;
 
-    if (call->container != nullptr || func->container != nullptr)
-        // TODO: verify the typename
-        return call->container == func->container ? ValueType::MatchResult::SAME : ValueType::MatchResult::NOMATCH;
+    if (call->container != nullptr || func->container != nullptr) {
+        if (call->container != func->container)
+            return ValueType::MatchResult::NOMATCH;
+    }
 
-    if (func->type < ValueType::Type::VOID || func->type == ValueType::Type::UNKNOWN_INT)
+    else if (func->type < ValueType::Type::VOID || func->type == ValueType::Type::UNKNOWN_INT)
         return ValueType::MatchResult::UNKNOWN;
 
     if (call->isIntegral() && func->isIntegral() && call->sign != ValueType::Sign::UNKNOWN_SIGN && func->sign != ValueType::Sign::UNKNOWN_SIGN && call->sign != func->sign)
         return ValueType::MatchResult::UNKNOWN; // TODO
 
     return ValueType::MatchResult::SAME;
+}
+
+ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Variable *callVar, const Variable *funcVar)
+{
+    ValueType::MatchResult res = ValueType::matchParameter(call, funcVar->valueType());
+    if (res == ValueType::MatchResult::SAME && callVar && call->container) {
+        const std::string type1 = getTypeString(callVar->typeStartToken());
+        const std::string type2 = getTypeString(funcVar->typeStartToken());
+        if (type1 != type2)
+            return ValueType::MatchResult::NOMATCH;
+    }
+    return res;
 }
