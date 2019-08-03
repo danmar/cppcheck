@@ -343,7 +343,7 @@ private:
         TEST_CASE(findFunction24); // smart pointer
         TEST_CASE(findFunction25); // std::vector<std::shared_ptr<Fred>>
         TEST_CASE(findFunction26); // #8668 - pointer parameter in function call, const pointer function argument
-        TEST_CASE(findFunction27);
+        TEST_CASE(findFunctionContainer);
 
         TEST_CASE(valueTypeMatchParameter); // ValueType::matchParameter
 
@@ -5533,16 +5533,28 @@ private:
         ASSERT(dostuff1->function() && dostuff1->function()->token && dostuff1->function()->token->linenr() == 1);
     }
 
-    void findFunction27() {
-        GET_SYMBOL_DB("void dostuff(std::vector<int> v);\n"
-                      "void f(std::vector<int> v) {\n"
-                      "  dostuff(v);\n"
-                      "}");
-        (void)db;
-        const Token *dostuff = Token::findsimplematch(tokenizer.tokens(), "dostuff ( v ) ;");
-        ASSERT(dostuff->function());
-        ASSERT(dostuff->function() && dostuff->function()->tokenDef);
-        ASSERT(dostuff->function() && dostuff->function()->tokenDef && dostuff->function()->tokenDef->linenr() == 1);
+    void findFunctionContainer() {
+        {
+            GET_SYMBOL_DB("void dostuff(std::vector<int> v);\n"
+                          "void f(std::vector<int> v) {\n"
+                          "  dostuff(v);\n"
+                          "}");
+            (void)db;
+            const Token *dostuff = Token::findsimplematch(tokenizer.tokens(), "dostuff ( v ) ;");
+            ASSERT(dostuff->function());
+            ASSERT(dostuff->function() && dostuff->function()->tokenDef);
+            ASSERT(dostuff->function() && dostuff->function()->tokenDef && dostuff->function()->tokenDef->linenr() == 1);
+        }
+        {
+            GET_SYMBOL_DB("void dostuff(std::vector<int> v);\n"
+                          "void dostuff(int *i);\n"
+                          "void f(std::vector<char> v) {\n"
+                          "  dostuff(v);\n"
+                          "}");
+            (void)db;
+            const Token *dostuff = Token::findsimplematch(tokenizer.tokens(), "dostuff ( v ) ;");
+            ASSERT(!dostuff->function());
+        }
     }
 
     void valueTypeMatchParameter() {

@@ -1139,6 +1139,7 @@ public:
 
     enum class MatchResult { UNKNOWN, SAME, FALLBACK1, FALLBACK2, NOMATCH };
     static MatchResult matchParameter(const ValueType *call, const ValueType *func);
+    static MatchResult matchParameter(const ValueType *call, const Variable *callVar, const Variable *funcVar);
 
     bool isIntegral() const {
         return (type >= ValueType::Type::BOOL && type <= ValueType::Type::UNKNOWN_INT);
