@@ -2147,9 +2147,7 @@ static bool valueFlowForward(Token * const               startToken,
                     truevalues.push_back(v);
                 else if (!subFunction && !conditionIsFalse(condTok, programMemory))
                     truevalues.push_back(v);
-                if (condAlwaysFalse)
-                    falsevalues.push_back(v);
-                else if (conditionIsFalse(condTok, programMemory))
+                if (conditionIsFalse(condTok, programMemory))
                     falsevalues.push_back(v);
                 else if (!subFunction && !conditionIsTrue(condTok, programMemory))
                     falsevalues.push_back(v);
