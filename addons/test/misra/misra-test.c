@@ -1,5 +1,5 @@
 // To test:
-// ~/cppcheck/cppcheck --dump misra-test.c && python ../misra.py -verify misra-test.c.dump
+// ~/cppcheck/cppcheck --dump misra-test.c && python ../../misra.py -verify misra-test.c.dump
 
 #include "path\file.h" // 20.2
 #include /*abc*/ "file.h" // no warning
@@ -153,6 +153,7 @@ enum misra_8_12_a { misra_a1 = 1, misra_a2 = 2, misra_a3, misra_a4 = 3 }; //8.12
 enum misra_8_12_b { misra_b1, misra_b2, misra_b3 = 3, misra_b4 = 3 }; // no-warning
 enum misra_8_12_c { misra_c1 = misra_a1, misra_c2 = 1 }; // no-warning
 enum misra_8_12_d { misra_d1 = 1, misra_d2 = 2, misra_d3 = misra_d1 }; // no-warning
+enum misra_8_12_e { misra_e1 = sizeof(int), misra_e2}; // no-crash
 
 void misra_8_14(char * restrict str) {} // 8.14
 
