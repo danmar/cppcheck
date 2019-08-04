@@ -3138,6 +3138,26 @@ private:
               "        return;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void* g();\n"
+              "void f(void* a, void* b) {\n"
+              "    while (a) {\n"
+              "        a = g();\n"
+              "        if (a == b)\n"
+              "            break;\n"
+              "    }\n"
+              "    if (a) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void* g();\n"
+              "void f(void* a, void* b) {\n"
+              "    while (a) {\n"
+              "        a = g();\n"
+              "    }\n"
+              "    if (a) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (style) Condition 'a' is always false\n", errout.str());
     }
 
     void multiConditionAlwaysTrue() {
