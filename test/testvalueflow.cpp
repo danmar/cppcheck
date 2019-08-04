@@ -1921,6 +1921,21 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 9U, 0)); // x can be 0 at line 9
 
         code = "void f(const int *buf) {\n"
+               "  int x = 111;\n"
+               "  bool found = false;\n"
+               "  for (int i = 0; i < 10; i++) {\n"
+               "    if (buf[i] == 123) {\n"
+               "      x = i;\n"
+               "      found = true;\n"
+               "      break;\n"
+               "    }\n"
+               "  }\n"
+               "  if (found)\n"
+               "    a = x;\n" // <- x can't be 111
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 12U, 111)); // x can not be 111 at line 9
+
+        code = "void f(const int *buf) {\n"
                "  int x = 0;\n"
                "  for (int i = 0; i < 10; i++) {\n"
                "    if (buf[i] == 123) {\n"

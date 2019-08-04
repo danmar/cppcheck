@@ -69,7 +69,7 @@ static const char * getFunctionTypeName(Function::Type type)
 
 static bool isVariableCopyNeeded(const Variable &var)
 {
-    return var.isPointer() || (var.type() && var.type()->needInitialization == Type::True) || (var.valueType()->type >= ValueType::Type::CHAR);
+    return var.isPointer() || (var.type() && var.type()->needInitialization == Type::NeedInitialization::True) || (var.valueType()->type >= ValueType::Type::CHAR);
 }
 
 //---------------------------------------------------------------------------
@@ -117,7 +117,7 @@ void CheckClass::constructors()
                     initTok = initTok->linkAt(1);
                 if (var.isPrivate() && !var.isStatic() && !Token::Match(var.nameToken(), "%varid% ; %varid% =", var.declarationId()) &&
                     !Token::Match(initTok, "%var%|] {|=") &&
-                    (!var.isClass() || (var.type() && var.type()->needInitialization == Type::True))) {
+                    (!var.isClass() || (var.type() && var.type()->needInitialization == Type::NeedInitialization::True))) {
                     noConstructorError(scope->classDef, scope->className, scope->classDef->str() == "struct");
                     break;
                 }
@@ -175,7 +175,7 @@ void CheckClass::constructors()
                 if (usage[count].assign || usage[count].init || var.isStatic())
                     continue;
 
-                if (var.valueType()->pointer == 0 && var.type() && var.type()->needInitialization == Type::False && var.type()->derivedFrom.empty())
+                if (var.valueType()->pointer == 0 && var.type() && var.type()->needInitialization == Type::NeedInitialization::False && var.type()->derivedFrom.empty())
                     continue;
 
                 if (var.isConst() && func.isOperator()) // We can't set const members in assignment operator
@@ -189,7 +189,7 @@ void CheckClass::constructors()
 
                     // Known type that doesn't need initialization or
                     // known type that has member variables of an unknown type
-                    else if (var.type()->needInitialization != Type::True)
+                    else if (var.type()->needInitialization != Type::NeedInitialization::True)
                         continue;
                 }
 
@@ -2648,17 +2648,18 @@ void CheckClass::checkOverride()
 
 void CheckClass::overrideError(const Function *funcInBase, const Function *funcInDerived)
 {
-    const std::string functionName = funcInDerived ? funcInDerived->name() : "";
+    const std::string functionName = funcInDerived ? ((funcInDerived->isDestructor() ? "~" : "") + funcInDerived->name()) : "";
+    const std::string funcType = (funcInDerived && funcInDerived->isDestructor()) ? "destructor" : "function";
 
     ErrorPath errorPath;
     if (funcInBase && funcInDerived) {
-        errorPath.push_back(ErrorPathItem(funcInBase->tokenDef, "Virtual function in base class"));
-        errorPath.push_back(ErrorPathItem(funcInDerived->tokenDef, "Function in derived class"));
+        errorPath.push_back(ErrorPathItem(funcInBase->tokenDef, "Virtual " + funcType + " in base class"));
+        errorPath.push_back(ErrorPathItem(funcInDerived->tokenDef, char(std::toupper(funcType[0])) + funcType.substr(1) + " in derived class"));
     }
 
     reportError(errorPath, Severity::style, "missingOverride",
                 "$symbol:" + functionName + "\n"
-                "The function '$symbol' overrides a function in a base class but is not marked with a 'override' specifier.",
+                "The " + funcType + " '$symbol' overrides a " + funcType + " in a base class but is not marked with a 'override' specifier.",
                 CWE(0U) /* Unknown CWE! */,
                 false);
 }

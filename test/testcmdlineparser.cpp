@@ -893,9 +893,9 @@ private:
     void showtime() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--showtime=summary"};
-        settings.showtime = SHOWTIME_NONE;
+        settings.showtime = SHOWTIME_MODES::SHOWTIME_NONE;
         ASSERT(defParser.parseFromArgs(2, argv));
-        ASSERT(settings.showtime == SHOWTIME_SUMMARY);
+        ASSERT(settings.showtime == SHOWTIME_MODES::SHOWTIME_SUMMARY);
     }
 
     void errorlist1() {

@@ -1911,25 +1911,22 @@ static void valueFlowAST(Token *tok, nonneg int varid, const ValueFlow::Value &v
 }
 
 /** if known variable is changed in loop body, change it to a possible value */
-static void handleKnownValuesInLoop(const Token                 *startToken,
+static bool handleKnownValuesInLoop(const Token                 *startToken,
                                     const Token                 *endToken,
                                     std::list<ValueFlow::Value> *values,
                                     nonneg int                  varid,
                                     bool                        globalvar,
                                     const Settings              *settings)
 {
-    bool isChanged = false;
+    const bool isChanged = isVariableChanged(startToken, endToken, varid, globalvar, settings, true);
+    if (!isChanged)
+        return false;
     for (std::list<ValueFlow::Value>::iterator it = values->begin(); it != values->end(); ++it) {
         if (it->isKnown()) {
-            if (!isChanged) {
-                if (!isVariableChanged(startToken, endToken, varid, globalvar, settings, true))
-                    break;
-                isChanged = true;
-            }
-
             it->setPossible();
         }
     }
+    return isChanged;
 }
 
 static bool evalAssignment(ValueFlow::Value &lhsValue, const std::string &assign, const ValueFlow::Value &rhsValue)
@@ -2116,8 +2113,10 @@ static bool valueFlowForward(Token * const               startToken,
             }
 
             // if known variable is changed in loop body, change it to a possible value..
-            if (Token::Match(tok2, "for|while"))
-                handleKnownValuesInLoop(tok2, tok2->linkAt(1)->linkAt(1), &values, varid, var->isGlobal(), settings);
+            if (Token::Match(tok2, "for|while")) {
+                if (handleKnownValuesInLoop(tok2, tok2->linkAt(1)->linkAt(1), &values, varid, var->isGlobal(), settings))
+                    number_of_if++;
+            }
 
             // Set values in condition
             for (Token* tok3 = tok2->tokAt(2); tok3 != tok2->next()->link(); tok3 = tok3->next()) {
@@ -4909,7 +4908,7 @@ static void valueFlowUninit(TokenList *tokenlist, SymbolDatabase * /*symbolDatab
         const Variable *var = vardecl->variable();
         if (!var || var->nameToken() != vardecl)
             continue;
-        if ((!var->isPointer() && var->type() && var->type()->needInitialization != Type::True) ||
+        if ((!var->isPointer() && var->type() && var->type()->needInitialization != Type::NeedInitialization::True) ||
             !var->isLocal() || var->isStatic() || var->isExtern() || var->isReference() || var->isThrow())
             continue;
 

@@ -166,6 +166,9 @@ private:
         TEST_CASE(template126); // #9217
         TEST_CASE(template127); // #9225
         TEST_CASE(template128); // #9224
+        TEST_CASE(template129);
+        TEST_CASE(template130); // #9246
+        TEST_CASE(template131); // #9249
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -2773,11 +2776,28 @@ private:
     }
 
     void template116() { // #9178
-        const char code[] = "template <class, class a> auto b() -> decltype(a{}.template b<void(int, int)>);\n"
-                            "template <class, class a> auto b() -> decltype(a{}.template b<void(int, int)>){}";
-        const char exp[] = "template < class , class a > auto b ( ) . decltype ( a { } . template b < void ( int , int ) > ) ; "
-                           "template < class , class a > auto b ( ) . decltype ( a { } . template b < void ( int , int ) > ) { }";
-        ASSERT_EQUALS(exp, tok(code));
+        {
+            const char code[] = "template <class, class a> auto b() -> decltype(a{}.template b<void(int, int)>);\n"
+                                "template <class, class a> auto b() -> decltype(a{}.template b<void(int, int)>){}";
+            const char exp[] = "template < class , class a > auto b ( ) . decltype ( a { } . template b < void ( int , int ) > ) ; "
+                               "template < class , class a > auto b ( ) . decltype ( a { } . template b < void ( int , int ) > ) { }";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            const char code[] = "template <class, class a>\n"
+                                "auto b() -> decltype(a{}.template b<void(int, int)>()) {}\n"
+                                "struct c {\n"
+                                "  template <class> void b();\n"
+                                "};\n"
+                                "void d() { b<c, c>(); }";
+            const char exp[] = "auto b<c,c> ( ) . decltype ( c { } . template b < void ( int , int ) > ( ) ) ; "
+                               "struct c { "
+                               "template < class > void b ( ) ; "
+                               "} ; "
+                               "void d ( ) { b<c,c> ( ) ; } "
+                               "auto b<c,c> ( ) . decltype ( c { } . template b < void ( int , int ) > ( ) ) { }";
+            ASSERT_EQUALS(exp, tok(code));
+        }
     }
 
     void template117() {
@@ -3047,6 +3067,66 @@ private:
                            "void h<int> ( ) { k . h < a<int> > ; } "
                            "struct a<int> { } ;";
         ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template129() {
+        const char code[] = "class LuaContext {\n"
+                            "public:\n"
+                            "  template <typename TFunctionType, typename TType>\n"
+                            "  void registerFunction(TType fn) { }\n"
+                            "};\n"
+                            "void setupLuaBindingsDNSQuestion() {\n"
+                            "  g_lua.registerFunction<void (DNSQuestion ::*)(std ::string, std ::string)>();\n"
+                            "}";
+        const char exp[] = "class LuaContext { "
+                           "public: "
+                           "template < typename TFunctionType , typename TType > "
+                           "void registerFunction ( TType fn ) { } "
+                           "} ; "
+                           "void setupLuaBindingsDNSQuestion ( ) { "
+                           "g_lua . registerFunction < void ( DNSQuestion :: * ) ( std :: string , std :: string ) > ( ) ; "
+                           "}";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template130() { // #9246
+        const char code[] = "template <typename...> using a = int;\n"
+                            "template <typename, typename> using b = a<>;\n"
+                            "template <typename, typename> void c();\n"
+                            "template <typename d, typename> void e() { c<b<d, int>, int>; }\n"
+                            "void f() { e<int(int, ...), int>(); }";
+        const char exp[] = "template < typename , typename > void c ( ) ; "
+                           "void e<int(int,...),int> ( ) ; "
+                           "void f ( ) { e<int(int,...),int> ( ) ; } "
+                           "void e<int(int,...),int> ( ) { c < int , int > ; }";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template131() { // #9249
+        {
+            const char code[] = "template <long a, bool = 0 == a> struct b {};\n"
+                                "b<1> b1;";
+            const char exp[] = "struct b<1,false> ; "
+                               "b<1,false> b1 ; "
+                               "struct b<1,false> { } ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            const char code[] = "template <long a, bool = a < 0> struct b {};\n"
+                                "b<1> b1;";
+            const char exp[] = "struct b<1,false> ; "
+                               "b<1,false> b1 ; "
+                               "struct b<1,false> { } ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            const char code[] = "template <long a, bool = 0 < a> struct b {};\n"
+                                "b<1> b1;";
+            const char exp[] = "struct b<1,true> ; "
+                               "b<1,true> b1 ; "
+                               "struct b<1,true> { } ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};

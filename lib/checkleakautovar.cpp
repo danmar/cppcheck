@@ -69,7 +69,7 @@ static bool isAutoDealloc(const Variable *var)
     /** @todo false negative: check base class for side effects */
     /** @todo false negative: check constructors for side effects */
     if (var->typeScope() && var->typeScope()->numConstructors == 0 &&
-        (var->typeScope()->varlist.empty() || var->type()->needInitialization == Type::True) &&
+        (var->typeScope()->varlist.empty() || var->type()->needInitialization == Type::NeedInitialization::True) &&
         var->type()->derivedFrom.empty())
         return false;
 

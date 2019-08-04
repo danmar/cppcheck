@@ -827,7 +827,7 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
         for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
             Scope *scope = &(*it);
             if (scope->definedType)
-                scope->definedType->needInitialization = Type::True;
+                scope->definedType->needInitialization = Type::NeedInitialization::True;
         }
     } else {
         // For C++, it is more difficult: Determine if user defined type needs initialization...
@@ -845,7 +845,7 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                     scope->definedType = &mBlankTypes.back();
                 }
 
-                if (scope->isClassOrStruct() && scope->definedType->needInitialization == Type::Unknown) {
+                if (scope->isClassOrStruct() && scope->definedType->needInitialization == Type::NeedInitialization::Unknown) {
                     // check for default constructor
                     bool hasDefaultConstructor = false;
 
@@ -871,7 +871,7 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                     // We assume the default constructor initializes everything.
                     // Another check will figure out if the constructor actually initializes everything.
                     if (hasDefaultConstructor)
-                        scope->definedType->needInitialization = Type::False;
+                        scope->definedType->needInitialization = Type::NeedInitialization::False;
 
                     // check each member variable to see if it needs initialization
                     else {
@@ -883,9 +883,9 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                             if (var->isClass()) {
                                 if (var->type()) {
                                     // does this type need initialization?
-                                    if (var->type()->needInitialization == Type::True)
+                                    if (var->type()->needInitialization == Type::NeedInitialization::True)
                                         needInitialization = true;
-                                    else if (var->type()->needInitialization == Type::Unknown) {
+                                    else if (var->type()->needInitialization == Type::NeedInitialization::Unknown) {
                                         if (!(var->valueType() && var->valueType()->type == ValueType::CONTAINER))
                                             unknown = true;
                                     }
@@ -895,16 +895,16 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                         }
 
                         if (needInitialization)
-                            scope->definedType->needInitialization = Type::True;
+                            scope->definedType->needInitialization = Type::NeedInitialization::True;
                         else if (!unknown)
-                            scope->definedType->needInitialization = Type::False;
+                            scope->definedType->needInitialization = Type::NeedInitialization::False;
                         else {
-                            if (scope->definedType->needInitialization == Type::Unknown)
+                            if (scope->definedType->needInitialization == Type::NeedInitialization::Unknown)
                                 unknowns++;
                         }
                     }
-                } else if (scope->type == Scope::eUnion && scope->definedType->needInitialization == Type::Unknown)
-                    scope->definedType->needInitialization = Type::True;
+                } else if (scope->type == Scope::eUnion && scope->definedType->needInitialization == Type::NeedInitialization::Unknown)
+                    scope->definedType->needInitialization = Type::NeedInitialization::True;
             }
 
             retry++;
@@ -915,7 +915,7 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
             for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
                 const Scope *scope = &(*it);
 
-                if (scope->isClassOrStruct() && scope->definedType->needInitialization == Type::Unknown)
+                if (scope->isClassOrStruct() && scope->definedType->needInitialization == Type::NeedInitialization::Unknown)
                     debugMessage(scope->classDef, "SymbolDatabase::SymbolDatabase couldn't resolve all user defined types.");
             }
         }
@@ -3019,9 +3019,9 @@ void SymbolDatabase::printOut(const char *title) const
                       << type->enclosingScope->className;
         }
         std::cout << std::endl;
-        std::cout << "    needInitialization: " << (type->needInitialization == Type::Unknown ? "Unknown" :
-                  type->needInitialization == Type::True ? "True" :
-                  type->needInitialization == Type::False ? "False" :
+        std::cout << "    needInitialization: " << (type->needInitialization == Type::NeedInitialization::Unknown ? "Unknown" :
+                  type->needInitialization == Type::NeedInitialization::True ? "True" :
+                  type->needInitialization == Type::NeedInitialization::False ? "False" :
                   "Invalid") << std::endl;
 
         std::cout << "    derivedFrom[" << type->derivedFrom.size() << "] = (";
@@ -4142,11 +4142,21 @@ void Scope::findFunctionInBase(const std::string & name, nonneg int args, std::v
 static void checkVariableCallMatch(const Variable* callarg, const Variable* funcarg, size_t& same, size_t& fallback1, size_t& fallback2)
 {
     if (callarg) {
-        ValueType::MatchResult res = ValueType::matchParameter(callarg->valueType(), funcarg->valueType());
+        ValueType::MatchResult res = ValueType::matchParameter(callarg->valueType(), callarg, funcarg);
         if (res == ValueType::MatchResult::SAME) {
             same++;
             return;
         }
+        if (res == ValueType::MatchResult::FALLBACK1) {
+            fallback1++;
+            return;
+        }
+        if (res == ValueType::MatchResult::FALLBACK2) {
+            fallback2++;
+            return;
+        }
+        if (res == ValueType::MatchResult::NOMATCH)
+            return;
 
         bool ptrequals = callarg->isArrayOrPointer() == funcarg->isArrayOrPointer();
         bool constEquals = !callarg->isArrayOrPointer() || ((callarg->typeStartToken()->strAt(-1) == "const") == (funcarg->typeStartToken()->strAt(-1) == "const"));
@@ -4173,23 +4183,30 @@ static void checkVariableCallMatch(const Variable* callarg, const Variable* func
     }
 }
 
-static bool valueTypeMatch(const ValueType * valuetype, const Token * type)
+static std::string getTypeString(const Token *typeToken)
 {
-    if (valuetype->typeScope && type->type() && type->type()->classScope == valuetype->typeScope)
-        return true;
-
-    return ((((type->str() == "bool" && valuetype->type == ValueType::BOOL) ||
-              (type->str() == "char" && valuetype->type == ValueType::CHAR) ||
-              (type->str() == "short" && valuetype->type == ValueType::SHORT) ||
-              (type->str() == "wchar_t" && valuetype->type == ValueType::WCHAR_T) ||
-              (type->str() == "int" && valuetype->type == ValueType::INT) ||
-              ((type->str() == "long" && type->isLong()) && valuetype->type == ValueType::LONGLONG) ||
-              (type->str() == "long" && valuetype->type == ValueType::LONG) ||
-              (type->str() == "float" && valuetype->type == ValueType::FLOAT) ||
-              ((type->str() == "double" && type->isLong()) && valuetype->type == ValueType::LONGDOUBLE) ||
-              (type->str() == "double" && valuetype->type == ValueType::DOUBLE)) &&
-             (type->isUnsigned() == (valuetype->sign == ValueType::UNSIGNED))) ||
-            (valuetype->isEnum() && type->isEnumType() && valuetype->typeScope->className == type->str()));
+    if (!typeToken)
+        return "";
+    while (Token::Match(typeToken, "%name%|*|&|::")) {
+        if (typeToken->str() == "::") {
+            std::string ret;
+            while (Token::Match(typeToken, ":: %name%")) {
+                ret += "::" + typeToken->strAt(1);
+                typeToken = typeToken->tokAt(2);
+            }
+            if (typeToken->str() == "<") {
+                for (const Token *tok = typeToken; tok != typeToken->link(); tok = tok->next())
+                    ret += tok->str();
+                ret += ">";
+            }
+            return ret;
+        }
+        if (Token::Match(typeToken, "%name% const| %var%|*|&")) {
+            return typeToken->str();
+        }
+        typeToken = typeToken->next();
+    }
+    return "";
 }
 
 const Function* Scope::findFunction(const Token *tok, bool requireConst) const
@@ -4258,153 +4275,93 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                 break;
             }
             const Variable *funcarg = func->getArgumentVar(j);
+
+            if (!arguments[j]->valueType()) {
+                const Token *vartok = arguments[j];
+                int pointer = 0;
+                while (vartok && (vartok->isUnaryOp("&") || vartok->isUnaryOp("*"))) {
+                    pointer += vartok->isUnaryOp("&") ? 1 : -1;
+                    vartok = vartok->astOperand1();
+                }
+                if (vartok && vartok->variable()) {
+                    const Token *callArgTypeToken = vartok->variable()->typeStartToken();
+                    const Token *funcArgTypeToken = funcarg->typeStartToken();
+
+                    auto parseDecl = [](const Token *typeToken) -> ValueType {
+                        ValueType ret;
+                        while (Token::Match(typeToken->previous(), "%name%"))
+                            typeToken = typeToken->previous();
+                        while (Token::Match(typeToken, "%name%|*|&|::|<"))
+                        {
+                            if (typeToken->str() == "const")
+                                ret.constness |= (1 << ret.pointer);
+                            else if (typeToken->str() == "*")
+                                ret.pointer++;
+                            else if (typeToken->str() == "<") {
+                                if (!typeToken->link())
+                                    break;
+                                typeToken = typeToken->link();
+                            }
+                            typeToken = typeToken->next();
+                        }
+                        return ret;
+                    };
+
+                    const std::string type1 = getTypeString(callArgTypeToken);
+                    const std::string type2 = getTypeString(funcArgTypeToken);
+                    if (!type1.empty() && type1 == type2) {
+                        ValueType callArgType = parseDecl(callArgTypeToken);
+                        callArgType.pointer += pointer;
+                        ValueType funcArgType = parseDecl(funcArgTypeToken);
+
+                        callArgType.sign = funcArgType.sign = ValueType::Sign::SIGNED;
+                        callArgType.type = funcArgType.type = ValueType::Type::INT;
+
+                        ValueType::MatchResult res = ValueType::matchParameter(&callArgType, &funcArgType);
+                        if (res == ValueType::MatchResult::SAME)
+                            ++same;
+                        else if (res == ValueType::MatchResult::FALLBACK1)
+                            ++fallback1;
+                        else if (res == ValueType::MatchResult::FALLBACK2)
+                            ++fallback2;
+                        continue;
+                    }
+                }
+            }
+
             // check for a match with a variable
             if (Token::Match(arguments[j], "%var% ,|)")) {
-                const Variable * callarg = check->getVariableFromVarId(arguments[j]->varId());
+                const Variable * callarg = arguments[j]->variable();
                 checkVariableCallMatch(callarg, funcarg, same, fallback1, fallback2);
             }
 
-            // check for a match with reference of a variable
-            else if (Token::Match(arguments[j], "* %var% ,|)")) {
-                const Variable * callarg = check->getVariableFromVarId(arguments[j]->next()->varId());
-                if (callarg) {
-                    const bool funcargref = (funcarg->typeEndToken()->str() == "&");
-                    if (funcargref &&
-                        (callarg->typeStartToken()->str() == funcarg->typeStartToken()->str() &&
-                         callarg->typeStartToken()->isUnsigned() == funcarg->typeStartToken()->isUnsigned() &&
-                         callarg->typeStartToken()->isLong() == funcarg->typeStartToken()->isLong())) {
-                        same++;
-                    } else {
-                        // can't match so remove this function from possible matches
-                        matches.erase(matches.begin() + i);
-                        erased = true;
-                        break;
-                    }
-                }
-            }
-
-            // check for a match with address of a variable
-            else if (Token::Match(arguments[j], "& %var% ,|)")) {
-                const Variable * callarg = check->getVariableFromVarId(arguments[j]->next()->varId());
-                if (callarg) {
-                    const bool funcargptr = (funcarg->typeEndToken()->str() == "*");
-                    if (funcargptr &&
-                        (callarg->typeStartToken()->str() == funcarg->typeStartToken()->str() &&
-                         callarg->typeStartToken()->isUnsigned() == funcarg->typeStartToken()->isUnsigned() &&
-                         callarg->typeStartToken()->isLong() == funcarg->typeStartToken()->isLong())) {
-                        same++;
-                    } else if (funcargptr && funcarg->typeStartToken()->str() == "void") {
-                        fallback1++;
-                    } else {
-                        // can't match so remove this function from possible matches
-                        matches.erase(matches.begin() + i);
-                        erased = true;
-                        break;
-                    }
-                }
-            }
-
-            // check for a match with a numeric literal
-            else if (Token::Match(arguments[j], "%num%")) {
-                const Token *calltok = arguments[j];
-                if (funcarg->isPointer() && MathLib::isNullValue(calltok->str())) {
-                    fallback1++;
-                } else {
-                    ValueType::MatchResult res = ValueType::matchParameter(arguments[j]->valueType(), funcarg->valueType());
-                    if (res == ValueType::MatchResult::SAME)
-                        ++same;
-                    else if (res == ValueType::MatchResult::FALLBACK1)
-                        ++fallback1;
-                    else if (res == ValueType::MatchResult::FALLBACK2)
-                        ++fallback2;
-                }
-            }
-
-            // check for a match with a string literal
-            else if (Token::Match(arguments[j], "%str%")) {
-                ValueType::MatchResult res = ValueType::matchParameter(arguments[j]->valueType(), funcarg->valueType());
-                if (res == ValueType::MatchResult::SAME)
-                    ++same;
-                else if (res == ValueType::MatchResult::FALLBACK1)
-                    ++fallback1;
-                else if (res == ValueType::MatchResult::FALLBACK2)
-                    ++fallback2;
-                else if (funcarg->isStlStringType())
-                    fallback1++;
-            }
-
-            // check for a match with a char literal
-            else if (!funcarg->isArrayOrPointer() && Token::Match(arguments[j], "%char% ,|)")) {
-                if (arguments[j]->isLong() && funcarg->typeStartToken()->str() == "wchar_t")
-                    same++;
-                else if (!arguments[j]->isLong() && funcarg->typeStartToken()->str() == "char")
-                    same++;
-                else if (Token::Match(funcarg->typeStartToken(), "wchar_t|char|short|int|long"))
-                    fallback1++;
-            }
-
-            // check for a match with a boolean literal
-            else if (!funcarg->isArrayOrPointer() && Token::Match(arguments[j], "%bool% ,|)")) {
-                ValueType::MatchResult res = ValueType::matchParameter(arguments[j]->valueType(), funcarg->valueType());
-                if (res == ValueType::MatchResult::SAME)
-                    ++same;
-                else if (res == ValueType::MatchResult::FALLBACK1)
-                    ++fallback1;
-                else if (res == ValueType::MatchResult::FALLBACK2)
-                    ++fallback2;
-            }
+            else if (funcarg->isStlStringType() && arguments[j]->valueType() && arguments[j]->valueType()->pointer == 1 && arguments[j]->valueType()->type == ValueType::Type::CHAR)
+                fallback2++;
 
             // check for a match with nullptr
-            else if (funcarg->isPointer() && Token::Match(arguments[j], "nullptr|NULL ,|)")) {
+            else if (funcarg->isPointer() && Token::Match(arguments[j], "nullptr|NULL ,|)"))
                 same++;
-            }
 
-            // check that function argument type is not mismatching
-            else if (funcarg->isReference() && arguments[j]->str() == "&") {
-                // can't match so remove this function from possible matches
-                matches.erase(matches.begin() + i);
-                erased = true;
-                break;
-            }
+            else if (arguments[j]->isNumber() && funcarg->isPointer() && MathLib::isNullValue(arguments[j]->str()))
+                fallback1++;
 
             // Try to evaluate the apparently more complex expression
             else {
-                const Token* argtok = arguments[j];
-                while (argtok->astParent() && argtok->astParent() != tok->next() && argtok->astParent()->str() != ",") {
-                    argtok = argtok->astParent();
-                }
-                if (argtok && argtok->valueType()) {
-                    const ValueType* valuetype = argtok->valueType();
-                    const bool isArrayOrPointer = valuetype->pointer;
-                    const bool ptrequals = isArrayOrPointer == funcarg->isArrayOrPointer();
-                    const bool constEquals = !isArrayOrPointer ||
-                                             ((valuetype->constness > 0) == (funcarg->typeStartToken()->strAt(-1) == "const"));
-                    if (ptrequals && constEquals && valueTypeMatch(valuetype, funcarg->typeStartToken())) {
-                        same++;
-                    } else if (isArrayOrPointer) {
-                        if (ptrequals && constEquals && valuetype->type == ValueType::VOID)
-                            fallback1++;
-                        else if (constEquals && funcarg->isStlStringType() && valuetype->type == ValueType::CHAR)
-                            fallback2++;
-                    } else if (ptrequals) {
-                        const bool takesInt = Token::Match(funcarg->typeStartToken(), "bool|char|short|int|long") ||
-                                              funcarg->typeStartToken()->isEnumType();
-                        const bool takesFloat = Token::Match(funcarg->typeStartToken(), "float|double");
-                        const bool passesInt = valuetype->isIntegral() || valuetype->isEnum();
-                        const bool passesFloat = valuetype->isFloat();
-                        if ((takesInt && passesInt) || (takesFloat && passesFloat))
-                            fallback1++;
-                        else if ((takesInt && passesFloat) || (takesFloat && passesInt))
-                            fallback2++;
-                    }
-                } else {
-                    while (Token::Match(argtok, ".|::"))
-                        argtok = argtok->astOperand2();
-
-                    if (argtok) {
-                        const Variable * callarg = check->getVariableFromVarId(argtok->varId());
-                        checkVariableCallMatch(callarg, funcarg, same, fallback1, fallback2);
-                    }
+                const Token *vartok = arguments[j];
+                while (vartok->isUnaryOp("&") || vartok->isUnaryOp("*"))
+                    vartok = vartok->astOperand1();
+                ValueType::MatchResult res = ValueType::matchParameter(arguments[j]->valueType(), vartok->variable(), funcarg);
+                if (res == ValueType::MatchResult::SAME)
+                    ++same;
+                else if (res == ValueType::MatchResult::FALLBACK1)
+                    ++fallback1;
+                else if (res == ValueType::MatchResult::FALLBACK2)
+                    ++fallback2;
+                else if (res == ValueType::MatchResult::NOMATCH) {
+                    // can't match so remove this function from possible matches
+                    matches.erase(matches.begin() + i);
+                    erased = true;
+                    break;
                 }
             }
         }
@@ -5496,9 +5453,9 @@ void SymbolDatabase::setValueTypeInTokenList()
             setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::BOOL, 0U));
         } else if (tok->isBoolean()) {
             setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::BOOL, 0U));
-        } else if (tok->tokType() == Token::eChar)
-            setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, 0U));
-        else if (tok->tokType() == Token::eString) {
+        } else if (tok->tokType() == Token::eChar) {
+            setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, tok->isLong() ? ValueType::Type::WCHAR_T : ValueType::Type::CHAR, 0U));
+        } else if (tok->tokType() == Token::eString) {
             ValueType valuetype(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, 1U, 1U);
             if (tok->isLong()) {
                 valuetype.originalTypeName = "wchar_t";
@@ -5928,13 +5885,20 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
 {
     if (!call || !func)
         return ValueType::MatchResult::UNKNOWN;
-    if (call->pointer != func->pointer)
-        return ValueType::MatchResult::UNKNOWN; // TODO
-    if (call->pointer > 0 && func->type != ValueType::Type::VOID && ((call->constness | func->constness) != func->constness))
-        return ValueType::MatchResult::UNKNOWN;
-    if (call->type != func->type) {
-        if (func->type == ValueType::Type::VOID)
+    if (call->pointer != func->pointer) {
+        if (call->pointer > 1 && func->pointer == 1 && func->type == ValueType::Type::VOID)
             return ValueType::MatchResult::FALLBACK1;
+        if (call->pointer == 1 && call->type == ValueType::Type::CHAR && func->pointer == 0 && func->container && func->container->stdStringLike)
+            return ValueType::MatchResult::FALLBACK2;
+        return ValueType::MatchResult::NOMATCH; // TODO
+    }
+    if (call->pointer > 0 && ((call->constness | func->constness) != func->constness))
+        return ValueType::MatchResult::NOMATCH;
+    if (call->type != func->type) {
+        if (call->type == ValueType::Type::VOID || func->type == ValueType::Type::VOID)
+            return ValueType::MatchResult::FALLBACK1;
+        if (call->pointer > 0 && func->pointer > 0)
+            return ValueType::MatchResult::NOMATCH;
         if (call->isIntegral() && func->isIntegral())
             return call->type < func->type ?
                    ValueType::MatchResult::FALLBACK1 :
@@ -5948,11 +5912,31 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
         return ValueType::MatchResult::UNKNOWN; // TODO
     }
 
-    if (func->type < ValueType::Type::VOID || func->type == ValueType::Type::UNKNOWN_INT)
+    if (call->typeScope != nullptr || func->typeScope != nullptr)
+        return call->typeScope == func->typeScope ? ValueType::MatchResult::SAME : ValueType::MatchResult::NOMATCH;
+
+    if (call->container != nullptr || func->container != nullptr) {
+        if (call->container != func->container)
+            return ValueType::MatchResult::NOMATCH;
+    }
+
+    else if (func->type < ValueType::Type::VOID || func->type == ValueType::Type::UNKNOWN_INT)
         return ValueType::MatchResult::UNKNOWN;
 
     if (call->isIntegral() && func->isIntegral() && call->sign != ValueType::Sign::UNKNOWN_SIGN && func->sign != ValueType::Sign::UNKNOWN_SIGN && call->sign != func->sign)
         return ValueType::MatchResult::UNKNOWN; // TODO
 
     return ValueType::MatchResult::SAME;
+}
+
+ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Variable *callVar, const Variable *funcVar)
+{
+    ValueType::MatchResult res = ValueType::matchParameter(call, funcVar->valueType());
+    if (res == ValueType::MatchResult::SAME && callVar && call->container) {
+        const std::string type1 = getTypeString(callVar->typeStartToken());
+        const std::string type2 = getTypeString(funcVar->typeStartToken());
+        if (type1 != type2)
+            return ValueType::MatchResult::NOMATCH;
+    }
+    return res;
 }
