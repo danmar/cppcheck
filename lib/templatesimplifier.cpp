@@ -1000,7 +1000,9 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
             continue;
         }
 
-        if (tok->str() == "<" && (tok->strAt(1) == ">" || templateParameters(tok)))
+        if (tok->str() == "<" &&
+            (tok->strAt(1) == ">" || (tok->previous()->isName() &&
+                                      typeParameterNames.find(tok->strAt(-1)) == typeParameterNames.end())))
             ++templateParmDepth;
 
         // end of template parameters?
@@ -1012,7 +1014,7 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
         }
 
         // map type parameter name to index
-        if (Token::Match(tok, "typename|class %name% ,|>"))
+        if (Token::Match(tok, "typename|class|%type% %name% ,|>"))
             typeParameterNames[tok->strAt(1)] = templatepar - 1;
 
         // next template parameter
@@ -1054,7 +1056,9 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
                     tok1 = tok1->next();
                 } while (tok1 && tok1 != endLink);
                 instantiationArgs[index].push_back(tok1);
-            } else if (tok1->str() == "<" && (tok1->strAt(1) == ">" || templateParameters(tok1))) {
+            } else if (tok1->str() == "<" &&
+                       (tok1->strAt(1) == ">" || (tok1->previous()->isName() &&
+                                                  typeParameterNames.find(tok1->strAt(-1)) == typeParameterNames.end()))) {
                 const Token *endLink = tok1->findClosingBracket();
                 do {
                     instantiationArgs[index].push_back(tok1);
@@ -1071,7 +1075,8 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
         // count the parameters..
         Token *tok = instantiation.token->next();
         unsigned int usedpar = templateParameters(tok);
-        tok = tok->findClosingBracket();
+        Token *instantiationEnd = tok->findClosingBracket();
+        tok = instantiationEnd;
 
         if (tok && tok->str() == ">") {
             tok = tok->previous();
@@ -1088,7 +1093,9 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
                 const Token *from = (*it)->next();
                 std::stack<Token *> links;
                 while (from && (!links.empty() || indentlevel || !Token::Match(from, ",|>"))) {
-                    if (from->str() == "<" && (from->strAt(1) == ">" || templateParameters(from)))
+                    if (from->str() == "<" &&
+                        (from->strAt(1) == ">" || (from->previous()->isName() &&
+                                                   typeParameterNames.find(from->strAt(-1)) == typeParameterNames.end())))
                         ++indentlevel;
                     else if (from->str() == ">")
                         --indentlevel;
@@ -1123,6 +1130,8 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
                 usedpar++;
             }
         }
+
+        simplifyTemplateArgs(instantiation.token->next(), instantiationEnd);
     }
 
     for (Token * const eqtok : eq) {
@@ -2275,6 +2284,35 @@ void TemplateSimplifier::simplifyTemplateArgs(Token *start, Token *end)
                     }
                 } else if (tok->strAt(1) == "(") {
                     tok = tok->linkAt(1);
+                }
+            } else if (Token::Match(tok, "%num% %comp% %num%") &&
+                       MathLib::isInt(tok->str()) &&
+                       MathLib::isInt(tok->strAt(2))) {
+                if ((Token::Match(tok->previous(), "(|&&|%oror%|,") || tok->previous() == start) &&
+                    (Token::Match(tok->tokAt(3), ")|&&|%oror%|?") || tok->tokAt(3) == end)) {
+                    const MathLib::bigint op1(MathLib::toLongNumber(tok->str()));
+                    const std::string &cmp(tok->next()->str());
+                    const MathLib::bigint op2(MathLib::toLongNumber(tok->strAt(2)));
+
+                    std::string result;
+
+                    if (cmp == "==")
+                        result = (op1 == op2) ? "true" : "false";
+                    else if (cmp == "!=")
+                        result = (op1 != op2) ? "true" : "false";
+                    else if (cmp == "<=")
+                        result = (op1 <= op2) ? "true" : "false";
+                    else if (cmp == ">=")
+                        result = (op1 >= op2) ? "true" : "false";
+                    else if (cmp == "<")
+                        result = (op1 < op2) ? "true" : "false";
+                    else
+                        result = (op1 > op2) ? "true" : "false";
+
+                    tok->str(result);
+                    tok->deleteNext(2);
+                    again = true;
+                    tok = tok->previous();
                 }
             }
         }
