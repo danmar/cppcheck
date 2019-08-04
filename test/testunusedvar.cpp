@@ -129,6 +129,7 @@ private:
         TEST_CASE(localvaralias15); // ticket #6315
         TEST_CASE(localvaralias16);
         TEST_CASE(localvaralias17); // ticket #8911
+        TEST_CASE(localvaralias18); // ticket #9234 - iterator
         TEST_CASE(localvarasm);
         TEST_CASE(localvarstatic);
         TEST_CASE(localvarextern);
@@ -3214,6 +3215,22 @@ private:
                               "  unknown_type p = &x;\n"
                               "  *p = 9;\n"
                               "}", "test.c");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvaralias18() {
+        functionVariableUsage("void add( std::vector< std::pair< int, double > >& v)\n"
+                              "{\n"
+                              "    std::vector< std::pair< int, double > >::iterator it;\n"
+                              "    for ( it = v.begin(); it != v.end(); ++it )\n"
+                              "    {\n"
+                              "        if ( x )\n"
+                              "        {\n"
+                              "            ( *it ).second = 0;\n"
+                              "            break;\n"
+                              "        }\n"
+                              "    }\n"
+                              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
