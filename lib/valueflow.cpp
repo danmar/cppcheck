@@ -3712,7 +3712,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
     }
 }
 
-static void valueFlowSetConditionToKnown(const Token* tok, std::list<ValueFlow::Value> &values, bool then)
+static void valueFlowSetConditionToKnown(const Token* tok, std::list<ValueFlow::Value>& values, bool then)
 {
     if (values.size() != 1U)
         return;
@@ -3722,14 +3722,14 @@ static void valueFlowSetConditionToKnown(const Token* tok, std::list<ValueFlow::
         return;
     if (!then && !Token::Match(tok, "!=|%var%|("))
         return;
-    const Token *parent = tok->astParent();
+    const Token* parent = tok->astParent();
     while (parent && parent->str() == "&&")
         parent = parent->astParent();
     if (parent && parent->str() == "(")
         values.front().setKnown();
 }
 
-static bool isBreakScope(const Token * const endToken)
+static bool isBreakScope(const Token* const endToken)
 {
     if (!Token::simpleMatch(endToken, "}"))
         return false;
@@ -3897,7 +3897,9 @@ struct ValueFlowConditionHandler {
                             continue;
                         }
 
-                        bool dead_if = isReturnScope(after) || (tok->astParent() && Token::simpleMatch(tok->astParent()->previous(), "while (") && !isBreakScope(after));
+                        bool dead_if = isReturnScope(after) ||
+                                       (tok->astParent() && Token::simpleMatch(tok->astParent()->previous(), "while (") &&
+                                        !isBreakScope(after));
                         bool dead_else = false;
 
                         if (Token::simpleMatch(after, "} else {")) {
