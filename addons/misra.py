@@ -925,7 +925,7 @@ class MisraChecker:
             e_token = scope.bodyStart.next
             while e_token != scope.bodyEnd:
                 if e_token.str == '(':
-                    e_token.str = e_token.link
+                    e_token = e_token.link
                     continue
                 if not e_token.previous.str in ',{':
                     e_token = e_token.next
