@@ -2594,7 +2594,7 @@ private:
                               "  constexpr operator foo &() const noexcept { return _a; }\n"
                               "};";
 
-            const char exp [] = "class c { char ( & f const noexcept ) [ 4 ] ; } ;";
+            const char exp [] = "class c { char _a [ 4 ] ; const operatorchar ( & ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
             ASSERT_EQUALS(exp, tok(code, false));
         }
 
@@ -2605,7 +2605,7 @@ private:
                               "  constexpr operator const foo &() const noexcept { return _a; }\n"
                               "};";
 
-            const char exp [] = "class c { char ( & f const noexcept ) [ 4 ] ; } ;";
+            const char exp [] = "class c { char _a [ 4 ] ; const operatorconstchar ( & ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
             ASSERT_EQUALS(exp, tok(code, false));
         }
     }

@@ -1533,7 +1533,7 @@ void Tokenizer::simplifyTypedef()
                                 Token *tok3 = tok2->next();
 
                                 // handle missing variable name
-                                if (tok2->strAt(3) == ")" || tok2->strAt(3) == ",")
+                                if (tok2->strAt(3) == ")" || tok2->strAt(3) == "," || tok2->strAt(3) == "(")
                                     tok2 = tok2->tokAt(2);
                                 else
                                     tok2 = tok2->tokAt(3);
@@ -1544,7 +1544,7 @@ void Tokenizer::simplifyTypedef()
                                     tok2 = tok2->tokAt(2);
 
                                 // skip over function parameters
-                                if (tok2->strAt(1) == "(") {
+                                if (tok2->str() == "(" || tok2->strAt(1) == "(") {
                                     tok2 = tok2->linkAt(1);
                                 }
 
