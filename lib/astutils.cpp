@@ -812,9 +812,9 @@ bool isReturnScope(const Token * const endToken)
         if (Token::Match(prev->link()->previous(), "[;{}] {"))
             return isReturnScope(prev);
     } else if (Token::simpleMatch(prev, ";")) {
-        // noreturn function
+        // TODO: check for noreturn function using library
         if (Token::simpleMatch(prev->previous(), ") ;") && Token::Match(prev->linkAt(-1)->tokAt(-2), "[;{}] %name% ("))
-            return true;
+            return false;
         if (Token::simpleMatch(prev->previous(), ") ;") && prev->previous()->link() &&
             Token::Match(prev->previous()->link()->astTop(), "return|throw"))
             return true;

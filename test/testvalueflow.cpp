@@ -2267,6 +2267,16 @@ private:
                "  }\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 6U, 0));
+
+        code = "int* g();\n"
+               "int f() {\n"
+               "    int * x;\n"
+               "    x = g();\n"
+               "    if (x) { printf(\"\"); }\n"
+               "    return *x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, 0));
+        ASSERT_EQUALS(true, testValueOfX(code, 6U, 0));
     }
 
     void valueFlowAfterConditionSeveralNot() {
@@ -2836,7 +2846,7 @@ private:
                "  int x;\n"
                "  for (x = 0; x < 5; x++) {}\n"
                "  if (x == 5) {\n"
-               "    panic();\n"
+               "    abort();\n"
                "  }\n"
                "  a = x;\n" // <- x can't be 5
                "}";
