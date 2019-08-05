@@ -70,7 +70,7 @@ void CheckType::checkTooBigBitwiseShift()
 
         // get number of bits of lhs
         const ValueType * const lhstype = tok->astOperand1()->valueType();
-        if (!lhstype || !lhstype->isIntegral() || lhstype->pointer >= 1U)
+        if (!lhstype || !lhstype->isIntegral() || lhstype->pointer >= 1)
             continue;
         // C11 Standard, section 6.5.7 Bitwise shift operators, states:
         //   The integer promotions are performed on each of the operands.
@@ -237,15 +237,16 @@ void CheckType::checkSignConversion()
             tokens.pop();
             if (!tok1)
                 continue;
-            if (!tok1->getValueLE(-1,mSettings))
+            const ValueFlow::Value *negativeValue = tok1->getValueLE(-1,mSettings);
+            if (!negativeValue)
                 continue;
             if (tok1->valueType() && tok1->valueType()->sign != ValueType::Sign::UNSIGNED)
-                signConversionError(tok1, tok1->isNumber());
+                signConversionError(tok1, negativeValue, tok1->isNumber());
         }
     }
 }
 
-void CheckType::signConversionError(const Token *tok, const bool constvalue)
+void CheckType::signConversionError(const Token *tok, const ValueFlow::Value *negativeValue, const bool constvalue)
 {
     const std::string expr(tok ? tok->expressionString() : "var");
 
@@ -257,7 +258,17 @@ void CheckType::signConversionError(const Token *tok, const bool constvalue)
     else
         msg << "Expression '" << expr << "' can have a negative value. That is converted to an unsigned value and used in an unsigned calculation.";
 
-    reportError(tok, Severity::warning, "signConversion", msg.str(), CWE195, false);
+    if (!negativeValue)
+        reportError(tok, Severity::warning, "signConversion", msg.str(), CWE195, false);
+    else {
+        const ErrorPath &errorPath = getErrorPath(tok,negativeValue,"Negative value is converted to an unsigned value");
+        reportError(errorPath,
+                    Severity::warning,
+                    Check::getMessageId(*negativeValue, "signConversion").c_str(),
+                    msg.str(),
+                    CWE195,
+                    negativeValue->isInconclusive());
+    }
 }
 
 
