@@ -2315,9 +2315,9 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
 
     if (mTimerResults) {
         Timer t("Tokenizer::simplifyTokens1::setValueType", mSettings->showtime, mTimerResults);
-        mSymbolDatabase->setValueTypeInTokenList();
+        mSymbolDatabase->setValueTypeInTokenList(true);
     } else {
-        mSymbolDatabase->setValueTypeInTokenList();
+        mSymbolDatabase->setValueTypeInTokenList(true);
     }
 
     if (mTimerResults) {
@@ -4762,7 +4762,7 @@ bool Tokenizer::simplifyTokenList2()
 
     // Create symbol database and then remove const keywords
     createSymbolDatabase();
-    mSymbolDatabase->setValueTypeInTokenList();
+    mSymbolDatabase->setValueTypeInTokenList(true);
 
     ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings);
 
