@@ -175,7 +175,7 @@ bool isConstVarExpression(const Token *tok);
 const Variable *getLHSVariable(const Token *tok);
 
 struct PathAnalysis {
-    enum Progress {
+    enum class Progress {
         Continue,
         Break
     };

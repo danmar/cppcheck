@@ -194,7 +194,7 @@ private:
               "  if (x==0) {}\n"
               "  return (x-1)*sizeof(int);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Expression 'x-1' can have a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Expression 'x-1' can have a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n", errout.str());
 
         check("unsigned int f1(signed int x, unsigned int y) {" // x is signed
               "  return x * y;\n"

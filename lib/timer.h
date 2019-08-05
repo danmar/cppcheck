@@ -26,7 +26,7 @@
 #include <map>
 #include <string>
 
-enum SHOWTIME_MODES {
+enum class SHOWTIME_MODES {
     SHOWTIME_NONE = 0,
     SHOWTIME_FILE,
     SHOWTIME_SUMMARY,
@@ -69,7 +69,7 @@ private:
 
 class CPPCHECKLIB Timer {
 public:
-    Timer(const std::string& str, unsigned int showtimeMode, TimerResultsIntf* timerResults = nullptr);
+    Timer(const std::string& str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults = nullptr);
     ~Timer();
     void Stop();
 
@@ -80,7 +80,7 @@ private:
     const std::string mStr;
     TimerResultsIntf* mTimerResults;
     std::clock_t mStart;
-    const unsigned int mShowTimeMode;
+    const SHOWTIME_MODES mShowTimeMode;
     bool mStopped;
 };
 //---------------------------------------------------------------------------
