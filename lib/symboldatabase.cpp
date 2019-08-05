@@ -59,7 +59,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     createSymbolDatabaseVariableSymbolTable();
     createSymbolDatabaseSetScopePointers();
     createSymbolDatabaseSetVariablePointers();
-    setValueTypeInTokenList();
+    setValueTypeInTokenList(false);
     createSymbolDatabaseSetFunctionPointers(true);
     createSymbolDatabaseSetTypePointers();
     createSymbolDatabaseEnums();
@@ -5395,7 +5395,7 @@ static const Function *getOperatorFunction(const Token * const tok)
     return nullptr;
 }
 
-void SymbolDatabase::setValueTypeInTokenList()
+void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings)
 {
     Token * tokens = const_cast<Tokenizer *>(mTokenizer)->list.front();
 
@@ -5605,7 +5605,7 @@ void SymbolDatabase::setValueTypeInTokenList()
         }
     }
 
-    if (mSettings->debugwarnings) {
+    if (reportDebugWarnings && mSettings->debugwarnings) {
         for (Token *tok = tokens; tok; tok = tok->next()) {
             if (tok->str() == "auto" && !tok->valueType())
                 debugMessage(tok, "auto token with no type.");

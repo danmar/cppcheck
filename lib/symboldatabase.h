@@ -1238,7 +1238,7 @@ public:
     void validateVariables() const;
 
     /** Set valuetype in provided tokenlist */
-    void setValueTypeInTokenList();
+    void setValueTypeInTokenList(bool reportDebugWarnings);
 
     /**
      * Calculates sizeof value for given type.
