@@ -3881,7 +3881,6 @@ struct ValueFlowConditionHandler {
                                         startTokens[i]->link(),
                                         "valueFlowAfterCondition: " + var->name() + " is changed in conditional block");
                             bail = true;
-                            break;
                         }
                     }
                     if (bail)
