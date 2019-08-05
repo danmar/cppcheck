@@ -76,6 +76,7 @@ private:
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
         TEST_CASE(nullpointer_castToVoid); // #3771
+        TEST_CASE(nullpointer_subfunction);
         TEST_CASE(pointerCheckAndDeRef);     // check if pointer is null and then dereference it
         TEST_CASE(nullConstantDereference);  // Dereference NULL constant
         TEST_CASE(gcc_statement_expression); // Don't crash
@@ -1432,6 +1433,18 @@ private:
               "    int *buf; buf = NULL;\n"
               "    buf;\n"
               "}", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer_subfunction() {
+        check("int f(int* x, int* y) {\n"
+              "    if (!x)\n"
+              "        return;\n"
+              "    return *x + *y;\n"
+              "}\n"
+              "void g() {\n"
+              "    f(nullptr, nullptr);\n"
+              "}\n", true);
         ASSERT_EQUALS("", errout.str());
     }
 
