@@ -2409,6 +2409,12 @@ static bool valueFlowForward(Token * const               startToken,
 
         // If a ? is seen and it's known that the condition is true/false..
         else if (tok2->str() == "?") {
+            if (subFunction) {
+                tok2 = const_cast<Token*>(nextAfterAstRightmostLeaf(tok2));
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " valueFlowForward, skip ternary in subfunctions");
+                continue;
+            }
             const Token *condition = tok2->astOperand1();
             Token *op2 = tok2->astOperand2();
             if (!condition || !op2) // Ticket #6713
