@@ -2147,7 +2147,7 @@ static bool valueFlowForward(Token * const               startToken,
                 const ProgramMemory &programMemory = getProgramMemory(tok2, varid, v);
                 if (subFunction && conditionIsTrue(condTok, programMemory))
                     truevalues.push_back(v);
-                else if (!subFunction && !conditionIsFalse(condTok, programMemory))
+                else if (!conditionIsFalse(condTok, programMemory))
                     truevalues.push_back(v);
                 if (condAlwaysFalse)
                     falsevalues.push_back(v);
@@ -2412,6 +2412,12 @@ static bool valueFlowForward(Token * const               startToken,
 
         // If a ? is seen and it's known that the condition is true/false..
         else if (tok2->str() == "?") {
+            if (subFunction && (astIsPointer(tok2->astOperand1()) || astIsIntegral(tok2->astOperand1(), false))) {
+                tok2 = const_cast<Token*>(nextAfterAstRightmostLeaf(tok2));
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " valueFlowForward, skip ternary in subfunctions");
+                continue;
+            }
             const Token *condition = tok2->astOperand1();
             Token *op2 = tok2->astOperand2();
             if (!condition || !op2) // Ticket #6713
@@ -4722,7 +4728,7 @@ static void valueFlowLibraryFunction(Token *tok, const std::string &returnValue,
         setTokenValues(tok, results, settings);
 }
 
-static void valueFlowSubFunction(TokenList *tokenlist, const Settings *settings)
+static void valueFlowSubFunction(TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "%name% ("))
@@ -4777,8 +4783,10 @@ static void valueFlowSubFunction(TokenList *tokenlist, const Settings *settings)
             // passed values are not "known"..
             changeKnownToPossible(argvalues);
 
-            // FIXME: We need to rewrite the valueflow analysis of function calls. This does not work well.
-            //valueFlowInjectParameter(tokenlist, errorLogger, settings, argvar, calledFunctionScope, argvalues);
+            valueFlowInjectParameter(tokenlist, errorLogger, settings, argvar, calledFunctionScope, argvalues);
+            // FIXME: We need to rewrite the valueflow analysis to better handle multiple arguments
+            if (!argvalues.empty())
+                break;
         }
     }
 }
@@ -5696,7 +5704,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
         valueFlowAfterCondition(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowSwitchVariable(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowForLoop(tokenlist, symboldatabase, errorLogger, settings);
-        valueFlowSubFunction(tokenlist, settings);
+        valueFlowSubFunction(tokenlist, errorLogger, settings);
         valueFlowFunctionDefaultParameter(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowUninit(tokenlist, symboldatabase, errorLogger, settings);
         if (tokenlist->isCPP()) {
