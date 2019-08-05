@@ -138,19 +138,6 @@ matrix:
         - cmake -G "Unix Makefiles" ..
         - cd ..
 
-# check clang sources with cppcheck and look for crashes
-    - name: "check clang sources with cppcheck"
-      compiler: clang
-      script:
-        - wget "https://github.com/llvm-mirror/clang/archive/a1f8bd3778cc5a53236a53500c6ab184e945eefa.zip" & MATCHCOMPILER=yes VERIFY=1 make -j 2 & wait
-        - unzip a1f8bd3778cc5a53236a53500c6ab184e945eefa.zip > /dev/null
-        - touch /tmp/clang.cppcheck
-        - cd ./clang-a1f8bd3778cc5a53236a53500c6ab184e945eefa
-        - ${CPPCHECK} . --max-configs=1 --enable=all --inconclusive --exception-handling --template="{callstack} ({severity}) {message} [{id}]" -iINPUTS -itest/Driver/Inputs/gen-response.c -itest/Index/index-many-logical-ops.c -itest/Sema/many-logical-ops.c --suppressions-list=../.travis_llvmcheck_suppressions -j 2 |& grep -v ".* files checked.*done" |& tee /tmp/clang.cppcheck
-        - cd ../
-        - echo "CLANG"
-        - grep "process crashed with signal\|Internal error\. compiled" /tmp/clang.cppcheck || true
-        - grep -qv "process crashed with signal\|Internal error\. compiled" /tmp/clang.cppcheck
 # check if dmake needs to be rerun (this job may fail)
     - name: "rerun dmake?"
       compiler: clang
