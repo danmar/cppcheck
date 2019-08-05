@@ -370,6 +370,9 @@ public:
     bool isName() const {
         return getFlag(fIsName);
     }
+    bool isNameOnly() const {
+        return mFlags == fIsName && mTokType == eName;
+    }
     bool isUpperCaseName() const;
     bool isLiteral() const {
         return getFlag(fIsLiteral);
@@ -556,6 +559,13 @@ public:
     void isAtAddress(bool b) {
         setFlag(fAtAddress, b);
     }
+    bool isIncompleteVar() const {
+        return getFlag(fIncompleteVar);
+    }
+    void isIncompleteVar(bool b) {
+        setFlag(fIncompleteVar, b);
+    }
+
 
     bool isBitfield() const {
         return mImpl->mBits > 0;
@@ -1089,6 +1099,7 @@ private:
         fIsTemplateArg          = (1 << 22),
         fIsAttributeNodiscard   = (1 << 23), // __attribute__ ((warn_unused_result)), [[nodiscard]]
         fAtAddress              = (1 << 24), // @ 0x4000
+        fIncompleteVar          = (1 << 25),
     };
 
     Token::Type mTokType;

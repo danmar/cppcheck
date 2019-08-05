@@ -63,6 +63,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     createSymbolDatabaseSetFunctionPointers(true);
     createSymbolDatabaseSetTypePointers();
     createSymbolDatabaseEnums();
+    createSymbolDatabaseIncompleteVars();
 }
 
 static const Token* skipScopeIdentifiers(const Token* tok)
@@ -1277,6 +1278,105 @@ void SymbolDatabase::createSymbolDatabaseEnums()
         const Enumerator * enumerator = findEnumerator(tok);
         if (enumerator)
             const_cast<Token *>(tok)->enumerator(enumerator);
+    }
+}
+
+void SymbolDatabase::createSymbolDatabaseIncompleteVars()
+{
+    const std::set<std::string> cpp20keywords = {
+        "alignas",
+        "alignof",
+        "axiom",
+        "co_await",
+        "co_return",
+        "co_yield",
+        "concept",
+        "synchronized",
+        "consteval",
+        "reflexpr",
+        "requires",
+    };
+    const std::set<std::string> cppkeywords = {
+        "asm",
+        "auto",
+        "catch",
+        "char",
+        "class",
+        "const",
+        "constexpr",
+        "decltype",
+        "default",
+        "do",
+        "enum",
+        "explicit",
+        "export",
+        "extern",
+        "final",
+        "friend",
+        "inline",
+        "mutable",
+        "namespace",
+        "new",
+        "noexcept",
+        "override",
+        "private",
+        "protected",
+        "public",
+        "register",
+        "sizeof",
+        "static",
+        "static_assert",
+        "struct",
+        "template",
+        "this",
+        "thread_local",
+        "throw",
+        "try",
+        "typedef",
+        "typeid",
+        "typename",
+        "union",
+        "using",
+        "virtual",
+        "void",
+        "volatile",
+    };
+    for (const Token* tok = mTokenizer->list.front(); tok != mTokenizer->list.back(); tok = tok->next()) {
+        const Scope * scope = tok->scope();
+        if (!scope)
+            continue;
+        if (!scope->isExecutable())
+            continue;
+        if (!Token::Match(tok, "%name%"))
+            continue;
+        if (!tok->isNameOnly())
+            continue;
+        if (Token::Match(tok, "%var%"))
+            continue;
+        if (tok->type())
+            continue;
+        if (Token::Match(tok->next(), "::|.|(|:|%var%"))
+            continue;
+        if (Token::Match(tok->next(), "&|&&|* )|%var%"))
+            continue;
+        if (Token::simpleMatch(tok->next(), ")") && Token::simpleMatch(tok->next()->link()->previous(), "catch ("))
+            continue;
+        // Very likely a typelist
+        if (Token::Match(tok->tokAt(-2), "%type% ,"))
+            continue;
+        // Inside template brackets
+        if (Token::Match(tok->next(), "<|>") && tok->next()->link())
+            continue;
+        if (Token::simpleMatch(tok->previous(), "<") && tok->previous()->link())
+            continue;
+        // Skip goto labels
+        if (Token::simpleMatch(tok->previous(), "goto"))
+            continue;
+        if (cppkeywords.count(tok->str()) > 0)
+            continue;
+        if (mSettings->standards.cpp >= Standards::CPP20 && cpp20keywords.count(tok->str()) > 0)
+            continue;
+        const_cast<Token *>(tok)->isIncompleteVar(true);
     }
 }
 

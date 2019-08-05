@@ -1222,17 +1222,20 @@ static void valueFlowSameExpressions(TokenList *tokenlist)
     }
 }
 
-static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* symboldatabase, const Settings *settings)
+static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
-    (void)tokenlist;
-    (void)symboldatabase;
-    (void)settings;
-    /* TODO : this is commented out until #8924 is fixed (There is a test case with the comment #8924)
     const bool cpp = symboldatabase->isCPP();
     typedef std::pair<const Token*, const Scope*> Condition;
     for (const Scope * scope : symboldatabase->functionScopes) {
+        bool skipFunction = false;
         std::vector<Condition> conds;
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+            if (tok->isIncompleteVar()) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok, "Skipping function due to incomplete variable " + tok->str());
+                skipFunction = true;
+                break;
+            }
             if (!Token::simpleMatch(tok, "if ("))
                 continue;
             // Skip known values
@@ -1282,8 +1285,9 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
                 }
             }
             conds.emplace_back(condTok->astOperand2(), condScope);
-
         }
+        if (skipFunction)
+            break;
         for (Condition cond:conds) {
             if (!cond.first)
                 continue;
@@ -1324,7 +1328,6 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
             }
         }
     }
-    */
 }
 
 static bool getExpressionRange(const Token *expr, MathLib::bigint *minvalue, MathLib::bigint *maxvalue)
@@ -5686,7 +5689,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
         valueFlowArrayBool(tokenlist);
         valueFlowRightShift(tokenlist, settings);
         valueFlowOppositeCondition(symboldatabase, settings);
-        valueFlowTerminatingCondition(tokenlist, symboldatabase, settings);
+        valueFlowTerminatingCondition(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowBeforeCondition(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowAfterMove(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings);
