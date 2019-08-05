@@ -2144,7 +2144,7 @@ static bool valueFlowForward(Token * const               startToken,
                 const ProgramMemory &programMemory = getProgramMemory(tok2, varid, v);
                 if (subFunction && conditionIsTrue(condTok, programMemory))
                     truevalues.push_back(v);
-                else if (!subFunction && !conditionIsFalse(condTok, programMemory))
+                else if (!conditionIsFalse(condTok, programMemory))
                     truevalues.push_back(v);
                 if (condAlwaysFalse)
                     falsevalues.push_back(v);
@@ -4719,7 +4719,7 @@ static void valueFlowLibraryFunction(Token *tok, const std::string &returnValue,
         setTokenValues(tok, results, settings);
 }
 
-static void valueFlowSubFunction(TokenList *tokenlist, const Settings *settings)
+static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "%name% ("))
@@ -4775,7 +4775,7 @@ static void valueFlowSubFunction(TokenList *tokenlist, const Settings *settings)
             changeKnownToPossible(argvalues);
 
             // FIXME: We need to rewrite the valueflow analysis of function calls. This does not work well.
-            //valueFlowInjectParameter(tokenlist, errorLogger, settings, argvar, calledFunctionScope, argvalues);
+            valueFlowInjectParameter(tokenlist, errorLogger, settings, argvar, calledFunctionScope, argvalues);
         }
     }
 }
@@ -5693,7 +5693,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
         valueFlowAfterCondition(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowSwitchVariable(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowForLoop(tokenlist, symboldatabase, errorLogger, settings);
-        valueFlowSubFunction(tokenlist, settings);
+        valueFlowSubFunction(tokenlist, errorLogger, settings);
         valueFlowFunctionDefaultParameter(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowUninit(tokenlist, symboldatabase, errorLogger, settings);
         if (tokenlist->isCPP()) {

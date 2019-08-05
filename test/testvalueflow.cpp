@@ -341,7 +341,7 @@ private:
                 "}\n"
                 "\n"
                 "void test() { dostuff(\"abc\"); }";
-        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 2, "\"abc\"", ValueFlow::Value::TOK));
+        ASSERT_EQUALS(true, testValueOfX(code, 2, "\"abc\"", ValueFlow::Value::TOK));
     }
 
     void valueFlowPointerAlias() {
@@ -982,9 +982,8 @@ private:
                "  int x = 3;\n"
                "  f1(x+1);\n"
                "}\n";
-        TODO_ASSERT_EQUALS("5,Assignment 'x=3', assigned value is 3\n"
+        ASSERT_EQUALS("5,Assignment 'x=3', assigned value is 3\n"
                            "6,Calling function 'f1', 1st argument 'x+1' value is 4\n",
-                           "",
                            getErrorPathForX(code, 2U));
 
         code = "void f(int a) {\n"
