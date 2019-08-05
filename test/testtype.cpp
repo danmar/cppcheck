@@ -200,13 +200,17 @@ private:
               "  return x * y;\n"
               "}\n"
               "void f2() { f1(-4,4); }");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1]: (warning) Expression 'x' can have a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n",
+            errout.str());
 
         check("unsigned int f1(int x) {"
               "  return x * 5U;\n"
               "}\n"
               "void f2() { f1(-4); }");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1]: (warning) Expression 'x' can have a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n",
+            errout.str());
 
         check("unsigned int f1(int x) {" // #6168: FP for inner calculation
               "  return 5U * (1234 - x);\n" // <- signed subtraction, x is not sign converted
