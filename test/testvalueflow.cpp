@@ -983,8 +983,8 @@ private:
                "  f1(x+1);\n"
                "}\n";
         ASSERT_EQUALS("5,Assignment 'x=3', assigned value is 3\n"
-                           "6,Calling function 'f1', 1st argument 'x+1' value is 4\n",
-                           getErrorPathForX(code, 2U));
+                      "6,Calling function 'f1', 1st argument 'x+1' value is 4\n",
+                      getErrorPathForX(code, 2U));
 
         code = "void f(int a) {\n"
                "  int x;\n"

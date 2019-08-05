@@ -2683,7 +2683,8 @@ private:
               "  p = s - 20;\n"
               "}\n"
               "void bar() { foo(0); }\n");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Overflow in pointer arithmetic, NULL pointer is subtracted.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Overflow in pointer arithmetic, NULL pointer is subtracted.\n",
+                      errout.str());
 
         check("void foo(char *s) {\n"
               "  if (!s) {}\n"
@@ -2695,7 +2696,8 @@ private:
               "  s -= 20;\n"
               "}\n"
               "void bar() { foo(0); }\n");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Overflow in pointer arithmetic, NULL pointer is subtracted.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Overflow in pointer arithmetic, NULL pointer is subtracted.\n",
+                      errout.str());
 
         check("void foo(char *s) {\n"
               "  if (!s) {}\n"
