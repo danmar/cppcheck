@@ -164,6 +164,7 @@ private:
         TEST_CASE(simplifyTypedef126); // ticket #5953
         TEST_CASE(simplifyTypedef127); // ticket #8878
         TEST_CASE(simplifyTypedef128); // ticket #9053
+        TEST_CASE(simplifyTypedef129);
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -2542,6 +2543,71 @@ private:
                             "dostuff ( ( const int [ 4 ] ) { 1 , 2 , 3 , 4 } ) ; "
                             "}";
         ASSERT_EQUALS(exp, tok(code, false));
+    }
+
+    void simplifyTypedef129() { 
+        {
+           const char code[] = "class c {\n"
+                              "  typedef char foo[4];\n"
+                              "  foo &f ;\n"
+                              "};";
+
+            const char exp [] = "class c { char ( & f ) [ 4 ] ; } ;";
+            ASSERT_EQUALS(exp, tok(code, false));
+        }
+
+        {
+           const char code[] = "class c {\n"
+                              "  typedef char foo[4];\n"
+                              "  foo &f const;\n"
+                              "};";
+
+            const char exp [] = "class c { char ( & f const ) [ 4 ] ; } ;";
+            ASSERT_EQUALS(exp, tok(code, false));
+        }
+
+        {
+           const char code[] = "class c {\n"
+                              "  typedef char foo[4];\n"
+                              "  foo &f const noexcept;\n"
+                              "};";
+
+            const char exp [] = "class c { char ( & f const noexcept ) [ 4 ] ; } ;";
+            ASSERT_EQUALS(exp, tok(code, false));
+        }
+
+        {
+           const char code[] = "class c {\n"
+                              "  typedef char foo[4];\n"
+                              "  foo _a;\n"
+                              "  constexpr const foo &c_str() const noexcept { return _a; }\n"
+                              "};";
+
+            const char exp [] = "class c { char _a [ 4 ] ; const const char ( & c_str ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
+            ASSERT_EQUALS(exp, tok(code, false));
+        }
+
+        {
+           const char code[] = "class c {\n"
+                              "  typedef char foo[4];\n"
+                              "  foo _a;\n"
+                              "  constexpr operator foo &() const noexcept { return _a; }\n"
+                              "};";
+
+            const char exp [] = "class c { char ( & f const noexcept ) [ 4 ] ; } ;";
+            ASSERT_EQUALS(exp, tok(code, false));
+        }
+
+        {
+           const char code[] = "class c {\n"
+                              "  typedef char foo[4];\n"
+                              "  foo _a;\n"
+                              "  constexpr operator const foo &() const noexcept { return _a; }\n"
+                              "};";
+
+            const char exp [] = "class c { char ( & f const noexcept ) [ 4 ] ; } ;";
+            ASSERT_EQUALS(exp, tok(code, false));
+        }
     }
 
     void simplifyTypedefFunction1() {

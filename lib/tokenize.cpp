@@ -1546,10 +1546,11 @@ void Tokenizer::simplifyTypedef()
                                 // skip over function parameters
                                 if (tok2->strAt(1) == "(") {
                                     tok2 = tok2->linkAt(1);
-
-                                    if (tok2->strAt(1) == "const")
-                                        tok2 = tok2->next();
                                 }
+
+                                // skip over const/noexcept
+                                while (Token::Match(tok2->next(), "const|noexcept"))
+                                    tok2 = tok2->next();
 
                                 tok2->insertToken(")");
                                 tok2 = tok2->next();
