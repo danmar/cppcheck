@@ -2874,11 +2874,11 @@ void Tokenizer::calculateScopes()
 
             if (Token::simpleMatch(tok, "{")) {
                 // This might be the opening of a member function
-                bool member = true;
                 Token *tok1 = tok;
                 while (Token::Match(tok1->previous(), "const|volatile|final|override|&|&&|noexcept"))
                     tok1 = tok1->previous();
                 if (tok1 && tok1->previous() && tok1->strAt(-1) == ")") {
+                    bool member = true;
                     tok1 = tok1->linkAt(-1);
                     if (Token::Match(tok1->previous(), "throw|noexcept")) {
                         tok1 = tok1->previous();
