@@ -960,11 +960,9 @@ public:
     bool hasKnownIntValue() const {
         if (!mImpl->mValues)
             return false;
-        for (const ValueFlow::Value &value : *mImpl->mValues) {
-            if (value.isKnown() && value.isIntValue())
-                return true;
-        }
-        return false;
+        return std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value &value) {
+            return value.isKnown() && value.isIntValue();
+        });
     }
 
     bool hasKnownValue() const {
