@@ -3436,12 +3436,11 @@ void TemplateSimplifier::simplifyTemplates(
         }
     }
 
+    mTokenizer->calculateScopes();
+
     unsigned int passCount = 0;
     const unsigned int passCountMax = 10;
     for (; passCount < passCountMax; ++passCount) {
-        for (auto tok = mTokenizer->list.front(); tok; tok = tok->next()) tok->scopeInfo(nullptr);
-        mTokenizer->calculateScopes();
-
         if (passCount) {
             // it may take more than one pass to simplify type aliases
             bool usingChanged = false;
