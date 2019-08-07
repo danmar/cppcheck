@@ -525,13 +525,13 @@ private:
               "    if (a) { b = 1; }\n"
               "    else { if (a) { b = 2; } }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Condition 'a' is always false\n", errout.str());
 
         check("void f(int a, int &b) {\n"
               "    if (a) { b = 1; }\n"
               "    else { if (a) { b = 2; } }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Condition 'a' is always false\n", errout.str());
 
         check("void f(int a, int &b) {\n"
               "    if (a == 1) { b = 1; }\n"
@@ -701,9 +701,9 @@ private:
               "    if (x) {}\n"
               "    else if (!x) {}\n"
               "}");
-        ASSERT_EQUALS("test.cpp:3:style:Expression is always true because 'else if' condition is opposite to previous condition at line 2.\n"
-                      "test.cpp:2:note:first condition\n"
-                      "test.cpp:3:note:else if condition is opposite to first condition\n", errout.str());
+        ASSERT_EQUALS("test.cpp:3:style:Condition '!x' is always true\n"
+                      "test.cpp:2:note:condition 'x'\n"
+                      "test.cpp:3:note:Condition '!x' is always true\n", errout.str());
 
         check("void f(int x) {\n"
               "    int y = x;\n"
