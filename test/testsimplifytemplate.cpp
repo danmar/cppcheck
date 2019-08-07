@@ -169,6 +169,7 @@ private:
         TEST_CASE(template129);
         TEST_CASE(template130); // #9246
         TEST_CASE(template131); // #9249
+        TEST_CASE(template132); // #9250
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -3127,6 +3128,33 @@ private:
                                "struct b<1,true> { } ;";
             ASSERT_EQUALS(exp, tok(code));
         }
+    }
+
+    void template132() { // #9250
+        const char code[] = "struct TrueFalse {\n"
+                            "  static constexpr bool v() { return true; }\n"
+                            "};\n"
+                            "int global;\n"
+                            "template<typename T> int foo() {\n"
+                            "  __transaction_atomic noexcept(T::v()) { global += 1; }\n"
+                            "  return __transaction_atomic noexcept(T::v()) (global + 2);\n"
+                            "}\n"
+                            "int f1() {\n"
+                            "  return foo<TrueFalse>();\n"
+                            "}";
+        const char exp[] = "struct TrueFalse { "
+                           "static const bool v ( ) { return true ; } "
+                           "} ; "
+                           "int global ; "
+                           "int foo<TrueFalse> ( ) ; "
+                           "int f1 ( ) { "
+                           "return foo<TrueFalse> ( ) ; "
+                           "} "
+                           "int foo<TrueFalse> ( ) { "
+                           "__transaction_atomic noexcept ( TrueFalse :: v ( ) ) { global += 1 ; } "
+                           "return __transaction_atomic noexcept ( TrueFalse :: v ( ) ) ( global + 2 ) ; "
+                           "}";
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
