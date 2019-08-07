@@ -854,6 +854,11 @@ static bool isScopeBracket(const Token *tok)
 
 bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings, bool *inconclusive)
 {
+    return isVariableChangedByFunctionCall(tok, false, settings, inconclusive);
+}
+
+bool isVariableChangedByFunctionCall(const Token *tok, bool pointedvalue, const Settings *settings, bool *inconclusive)
+{
     if (!tok)
         return false;
 
@@ -957,7 +962,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
 
     const Variable *arg = tok->function()->getArgumentVar(argnr);
 
-    if (addressOf) {
+    if (addressOf || (pointedvalue && arg && arg->isPointer())) {
         if (!(arg && arg->isConst()))
             return true;
         // If const is applied to the pointer, then the value can still be modified
@@ -969,6 +974,11 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
 }
 
 bool isVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth)
+{
+    return isVariableChanged(start,end, varid, globalvar, settings, cpp, false, depth);
+}
+
+bool isVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, bool pointedvalue, int depth)
 {
     if (!precedes(start, end))
         return false;
@@ -983,7 +993,7 @@ bool isVariableChanged(const Token *start, const Token *end, const nonneg int va
         }
 
         const Token *tok2 = tok;
-        while (Token::simpleMatch(tok2->astParent(), "*") || (Token::simpleMatch(tok2->astParent(), ".") && !Token::simpleMatch(tok2->astParent()->astParent(), "(")) ||
+        while ((pointedvalue && Token::simpleMatch(tok2->astParent(), "*")) || (Token::simpleMatch(tok2->astParent(), ".") && !Token::simpleMatch(tok2->astParent()->astParent(), "(")) ||
                (Token::simpleMatch(tok2->astParent(), "[") && tok2 == tok2->astParent()->astOperand1()))
             tok2 = tok2->astParent();
 
@@ -1033,7 +1043,7 @@ bool isVariableChanged(const Token *start, const Token *end, const nonneg int va
             while (Token::Match(ptok->astParent(), ".|::|["))
                 ptok = ptok->astParent();
             bool inconclusive = false;
-            bool isChanged = isVariableChangedByFunctionCall(ptok, settings, &inconclusive);
+            bool isChanged = isVariableChangedByFunctionCall(ptok, pointedvalue, settings, &inconclusive);
             isChanged |= inconclusive;
             if (isChanged)
                 return true;

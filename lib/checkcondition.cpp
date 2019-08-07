@@ -23,6 +23,7 @@
 #include "checkcondition.h"
 
 #include "astutils.h"
+#include "checknullpointer.h" // <- CheckNullPointer::isPointerDeRef
 #include "errorlogger.h"
 #include "settings.h"
 #include "symboldatabase.h"
@@ -452,8 +453,10 @@ void CheckCondition::duplicateCondition()
 
         bool modified = false;
         visitAstNodes(cond1, [&](const Token *tok3) {
+            bool unknown = false;
+            const bool varIsDereferenced = tok3->variable() && tok3->variable()->isPointer() && CheckNullPointer::isPointerDeRef(tok3, unknown, mSettings);
             if (tok3->varId() > 0 &&
-                isVariableChanged(scope.classDef->next(), cond2, tok3->varId(), false, mSettings, mTokenizer->isCPP())) {
+                isVariableChanged(scope.classDef->next(), cond2, tok3->varId(), false, mSettings, mTokenizer->isCPP(), varIsDereferenced)) {
                 modified = true;
                 return ChildrenToVisit::done;
             }

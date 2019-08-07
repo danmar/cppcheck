@@ -132,8 +132,27 @@ bool isVariableChangedByFunctionCall(const Token *tok, nonneg int varid, const S
  */
 bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings, bool *inconclusive);
 
+/** Is variable changed by function call?
+ * In case the answer of the question is inconclusive, e.g. because the function declaration is not known
+ * the return value is false and the output parameter inconclusive is set to true
+ *
+ * @param tok           token of variable in function call
+ * @param settings      program settings
+ * @param pointedvalue  if true return true also if tok is a pointer and the pointed value is changed
+ *                      if false, we only care if tok is changed (we don't care if it is a pointer or if the pointed value is changed or not)
+ * @param inconclusive pointer to output variable which indicates that the answer of the question is inconclusive
+ */
+bool isVariableChangedByFunctionCall(const Token *tok, bool pointedvalue, const Settings *settings, bool *inconclusive);
+
 /** Is variable changed in block of code? */
 bool isVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
+
+/**
+ * @param pointedvalue  if true return true also if tok is a pointer and the pointed value is changed
+ *                      if false, we only care if tok is changed (we don't care if it is a pointer or if the pointed value is changed or not)
+ */
+bool isVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, bool pointedvalue, int depth = 20);
+
 
 bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp, int depth = 20);
 
