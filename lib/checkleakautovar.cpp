@@ -316,7 +316,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
 
         // look for end of statement
-        if (!Token::Match(tok, "[;{}]") || Token::Match(tok->next(), "[;{}]"))
+        if (!Token::Match(tok, "[;{},]") || Token::Match(tok->next(), "[;{},]"))
             continue;
 
         tok = tok->next();

@@ -94,6 +94,7 @@ private:
         TEST_CASE(doublefree7);
         TEST_CASE(doublefree8);
         TEST_CASE(doublefree9);
+        TEST_CASE(doublefree10); // #8706
 
         // exit
         TEST_CASE(exit1);
@@ -1132,6 +1133,32 @@ private:
               "void f(foo* b) {\n"
               "    std::unique_ptr<int> x(b->get(0));\n"
               "    std::unique_ptr<int> y(b->get(1));\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void doublefree10() {
+        check("void f(char* s) {\n"
+              "    char *p = malloc(strlen(s));\n" 
+              "    if (p != NULL) {\n" 
+              "        strcat(p, s);\n" 
+              "        if (strlen(s) != 10)\n" 
+              "            free(p); p = NULL;\n"
+              "    }\n" 
+              "    if (p != NULL)\n" 
+              "        free(p);\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(char* s) {\n"
+              "    char *p = malloc(strlen(s));\n" 
+              "    if (p != NULL) {\n" 
+              "        strcat(p, s);\n" 
+              "        if (strlen(s) != 10)\n" 
+              "            free(p), p = NULL;\n"
+              "    }\n" 
+              "    if (p != NULL)\n" 
+              "        free(p);\n"
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
     }
