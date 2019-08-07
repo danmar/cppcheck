@@ -485,6 +485,11 @@ void CheckOther::checkRedundantAssignment()
                 else
                     start = tok->findExpressionStartEndTokens().second->next();
 
+                // Is this a variable declaration with initialization?
+                const Token* defineAndInitTok = start->tokAt(-3);
+                if(defineAndInitTok->str()==";" && defineAndInitTok->linenr() == start->linenr())
+                    continue;
+
                 // Get next assignment..
                 const Token *nextAssign = fwdAnalysis.reassign(tok->astOperand1(), start, scope->bodyEnd);
 
