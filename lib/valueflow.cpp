@@ -3724,8 +3724,11 @@ static void valueFlowSetConditionToKnown(const Token* tok, std::list<ValueFlow::
         return;
     if (!then && !Token::Match(tok, "!=|%var%|("))
         return;
+    const char * op = "||";
+    if (then)
+        op = "&&";
     const Token* parent = tok->astParent();
-    while (parent && parent->str() == "&&")
+    while (parent && parent->str() == op)
         parent = parent->astParent();
     if (parent && parent->str() == "(")
         values.front().setKnown();
@@ -3871,7 +3874,7 @@ struct ValueFlowConditionHandler {
                         if (!startToken)
                             continue;
                         std::list<ValueFlow::Value> &values = (i == 0 ? cond.true_values : cond.false_values);
-                        valueFlowSetConditionToKnown(tok, values, true);
+                        valueFlowSetConditionToKnown(tok, values, i == 0);
 
                         bool changed = forward(startTokens[i], startTokens[i]->link(), var, values, true);
                         values.front().setPossible();

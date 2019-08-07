@@ -3169,6 +3169,12 @@ private:
               "    if (a) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (style) Condition 'a' is always false\n", errout.str());
+
+        check("void f(int * x, bool b) {\n"
+              "    if (!x && b) {}\n"
+              "    else if (x) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void multiConditionAlwaysTrue() {
