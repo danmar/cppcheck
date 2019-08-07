@@ -686,6 +686,7 @@ class CPPCHECKLIB Function {
         fIsVariadic            = (1 << 19), ///< @brief is variadic
         fIsVolatile            = (1 << 20), ///< @brief is volatile
         fHasTrailingReturnType = (1 << 21), ///< @brief has trailing return type
+        fIsEscapeFunction      = (1 << 22), ///< @brief Function throws or exits
     };
 
     /**
@@ -834,11 +835,16 @@ public:
     bool hasTrailingReturnType() const {
         return getFlag(fHasTrailingReturnType);
     }
-
     void hasBody(bool state) {
         setFlag(fHasBody, state);
     }
 
+    bool isEscapeFunction() const {
+        return getFlag(fIsEscapeFunction);
+    }
+    void isEscapeFunction(bool state) {
+        setFlag(fIsEscapeFunction, state);
+    }
     bool isSafe(const Settings *settings) const;
 
     const Token *tokenDef;            ///< function name token in class definition
@@ -1269,6 +1275,7 @@ private:
     void createSymbolDatabaseSetVariablePointers();
     void createSymbolDatabaseSetTypePointers();
     void createSymbolDatabaseEnums();
+    void createSymbolDatabaseEscapeFunctions();
     void createSymbolDatabaseIncompleteVars();
 
     void addClassFunction(Scope **scope, const Token **tok, const Token *argStart);

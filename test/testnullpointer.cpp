@@ -73,6 +73,7 @@ private:
         TEST_CASE(nullpointer31); // #8482
         TEST_CASE(nullpointer32); // #8460
         TEST_CASE(nullpointer33);
+        TEST_CASE(nullpointer34);
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1397,6 +1398,18 @@ private:
               "        *x = 3;\n"
               "}\n", true);
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5]: (warning) Either the condition 'x!=nullptr' is redundant or there is possible null pointer dereference: x.\n", errout.str());
+    }
+
+    void nullpointer34() {
+        check("void g() {\n"
+              "    throw "";\n"
+              "}\n"
+              "bool f(int * x) {\n"
+              "    if (x) *x += 1;\n"
+              "    if (!x) g();\n"
+              "    return *x;\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer_addressOf() { // address of

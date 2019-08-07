@@ -788,7 +788,23 @@ bool isUniqueExpression(const Token* tok)
     return isUniqueExpression(tok->astOperand2());
 }
 
-bool isReturnScope(const Token * const endToken)
+static bool isEscaped(const Token* tok, bool functionsScope)
+{
+    if (functionsScope)
+        return Token::simpleMatch(tok, "throw");
+    else
+        return Token::Match(tok, "return|throw");
+}
+
+static bool isEscapedOrJump(const Token* tok, bool functionsScope)
+{
+    if (functionsScope)
+        return Token::simpleMatch(tok, "throw");
+    else
+        return Token::Match(tok, "return|goto|throw|continue|break");
+}
+
+bool isReturnScope(const Token * const endToken, const Settings * settings, bool functionScope)
 {
     if (!endToken || endToken->str() != "}")
         return false;
@@ -801,28 +817,39 @@ bool isReturnScope(const Token * const endToken)
 
     if (Token::simpleMatch(prev, "}")) {
         if (Token::simpleMatch(prev->link()->tokAt(-2), "} else {"))
-            return isReturnScope(prev) && isReturnScope(prev->link()->tokAt(-2));
+            return isReturnScope(prev, settings, functionScope) && isReturnScope(prev->link()->tokAt(-2), settings, functionScope);
         if (Token::simpleMatch(prev->link()->previous(), ") {") &&
             Token::simpleMatch(prev->link()->linkAt(-1)->previous(), "switch (") &&
             !Token::findsimplematch(prev->link(), "break", prev)) {
             return true;
         }
-        if (Token::Match(prev->link()->astTop(), "return|throw"))
+        if (isEscaped(prev->link()->astTop(), functionScope))
             return true;
         if (Token::Match(prev->link()->previous(), "[;{}] {"))
-            return isReturnScope(prev);
+            return isReturnScope(prev, settings, functionScope);
     } else if (Token::simpleMatch(prev, ";")) {
-        // TODO: check for noreturn function using library
-        if (Token::simpleMatch(prev->previous(), ") ;") && Token::Match(prev->linkAt(-1)->tokAt(-2), "[;{}] %name% ("))
+        if (Token::simpleMatch(prev->previous(), ") ;") && Token::Match(prev->linkAt(-1)->tokAt(-2), "[;{}] %name% (")) {
+            const Token * ftok = prev->linkAt(-1)->previous();
+            const Function * function = ftok->function();
+            if (function) {
+                if (function->isEscapeFunction())
+                    return true;
+                if (function->isAttributeNoreturn())
+                    return true;
+            } else if(settings) {
+                if (settings->library.isnoreturn(ftok))
+                    return true;
+            }
             return false;
+        }
         if (Token::simpleMatch(prev->previous(), ") ;") && prev->previous()->link() &&
-            Token::Match(prev->previous()->link()->astTop(), "return|throw"))
+            isEscaped(prev->previous()->link()->astTop(), functionScope))
             return true;
-        if (Token::Match(prev->previous()->astTop(), "return|throw"))
+        if (isEscaped(prev->previous()->astTop(), functionScope))
             return true;
         // return/goto statement
         prev = prev->previous();
-        while (prev && !Token::Match(prev, ";|{|}|return|goto|throw|continue|break"))
+        while (prev && !Token::Match(prev, ";|{|}") && !isEscapedOrJump(prev, functionScope))
             prev = prev->previous();
         return prev && prev->isName();
     }
