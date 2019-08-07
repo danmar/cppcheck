@@ -2704,7 +2704,7 @@ void CheckOther::checkAccessOfMovedVariable()
                 else
                     inconclusive = true;
             } else {
-                const bool isVariableChanged = isVariableChangedByFunctionCall(tok, mSettings, &inconclusive);
+                const bool isVariableChanged = isVariableChangedByFunctionCall(tok, true, mSettings, &inconclusive);
                 accessOfMoved = !isVariableChanged && checkUninitVar.isVariableUsage(tok, false, CheckUninitVar::NO_ALLOC);
                 if (inconclusive) {
                     accessOfMoved = !isMovedParameterAllowedForInconclusiveFunction(tok);

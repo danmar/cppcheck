@@ -335,7 +335,7 @@ static const Token * followVariableExpression(const Token * tok, bool cpp, const
     const Token * lastTok = precedes(tok, end) ? end : tok;
     // If this is in a loop then check if variables are modified in the entire scope
     const Token * endToken = (isInLoopCondition(tok) || isInLoopCondition(varTok) || var->scope() != tok->scope()) ? var->scope()->bodyEnd : lastTok;
-    if (!var->isConst() && (!precedes(varTok, endToken) || isVariableChanged(varTok, endToken, tok->varId(), false, nullptr, cpp)))
+    if (!var->isConst() && (!precedes(varTok, endToken) || isVariableChanged(varTok, endToken, tok->varId(), false, nullptr, cpp, true)))
         return tok;
     if (precedes(varTok, endToken) && isAliased(varTok, endToken, tok->varId()))
         return tok;
@@ -363,7 +363,7 @@ static const Token * followVariableExpression(const Token * tok, bool cpp, const
                 return tok;
             if (var2->isStatic() && !var2->isConst())
                 return tok;
-            if (!var2->isConst() && (!precedes(tok2, endToken2) || isVariableChanged(tok2, endToken2, tok2->varId(), false, nullptr, cpp)))
+            if (!var2->isConst() && (!precedes(tok2, endToken2) || isVariableChanged(tok2, endToken2, tok2->varId(), false, nullptr, cpp, true)))
                 return tok;
             if (precedes(tok2, endToken2) && isAliased(tok2, endToken2, tok2->varId()))
                 return tok;

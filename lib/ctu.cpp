@@ -413,7 +413,7 @@ static std::list<std::pair<const Token *, MathLib::bigint>> getUnsafeFunction(co
             tok2 = tok2->linkAt(1);
             if (Token::findmatch(tok2->link(), "return|throw", tok2))
                 return ret;
-            if (isVariableChanged(tok2->link(), tok2, argvar->declarationId(), false, settings, tokenizer->isCPP()))
+            if (isVariableChanged(tok2->link(), tok2, argvar->declarationId(), false, settings, tokenizer->isCPP(), true))
                 return ret;
         }
         if (Token::Match(tok2, "%oror%|&&|?")) {

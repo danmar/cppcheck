@@ -2554,7 +2554,7 @@ private:
               "    if (a != 0)\n"
               "      *p = 0;\n"
               "}", true);
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (warning) Possible null pointer dereference if the default parameter value is used: p\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Possible null pointer dereference if the default parameter value is used: p\n", errout.str());
 
         check("void f(int *p = 0) {\n"
               "    p = a;\n"
