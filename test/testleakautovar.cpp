@@ -1139,25 +1139,25 @@ private:
 
     void doublefree10() {
         check("void f(char* s) {\n"
-              "    char *p = malloc(strlen(s));\n" 
-              "    if (p != NULL) {\n" 
-              "        strcat(p, s);\n" 
-              "        if (strlen(s) != 10)\n" 
+              "    char *p = malloc(strlen(s));\n"
+              "    if (p != NULL) {\n"
+              "        strcat(p, s);\n"
+              "        if (strlen(s) != 10)\n"
               "            free(p); p = NULL;\n"
-              "    }\n" 
-              "    if (p != NULL)\n" 
+              "    }\n"
+              "    if (p != NULL)\n"
               "        free(p);\n"
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
 
         check("void f(char* s) {\n"
-              "    char *p = malloc(strlen(s));\n" 
-              "    if (p != NULL) {\n" 
-              "        strcat(p, s);\n" 
-              "        if (strlen(s) != 10)\n" 
+              "    char *p = malloc(strlen(s));\n"
+              "    if (p != NULL) {\n"
+              "        strcat(p, s);\n"
+              "        if (strlen(s) != 10)\n"
               "            free(p), p = NULL;\n"
-              "    }\n" 
-              "    if (p != NULL)\n" 
+              "    }\n"
+              "    if (p != NULL)\n"
               "        free(p);\n"
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
