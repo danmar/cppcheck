@@ -217,8 +217,8 @@ public:
          */
         bool isSameFamily(const TemplateSimplifier::TokenAndName &decl) const {
             // maks sure a family flag is set and matches
-            return (flags & (fIsClass | fIsFunction | fIsVariable)) &
-                   (decl.flags & (fIsClass | fIsFunction | fIsVariable));
+            const unsigned int flagsToTest = fIsClass | fIsFunction | fIsVariable;
+            return ((flags & flagsToTest) & (decl.flags & flagsToTest)) != 0;
         }
     };
 
