@@ -774,7 +774,7 @@ void TemplateSimplifier::getTemplateInstantiations()
 
             const bool isUsing = tok->strAt(1) == "using";
             if (isUsing && Token::Match(tok->tokAt(2), "%name% <")) {
-                // Cant have specialized type alias so ignore it
+                // Can't have specialized type alias so ignore it
                 Token *tok2 = Token::findsimplematch(tok->tokAt(3), ";");
                 if (tok2)
                     tok = tok2;
@@ -795,12 +795,12 @@ void TemplateSimplifier::getTemplateInstantiations()
                     tok = tok2;
             }
         } else if (Token::Match(tok, "template using %name% <")) {
-            // Cant have specialized type alias so ignore it
+            // Can't have specialized type alias so ignore it
             Token *tok2 = Token::findsimplematch(tok->tokAt(3), ";");
             if (tok2)
                 tok = tok2;
         } else if (Token::Match(tok, "using %name% <")) {
-            // Cant have specialized type alias so ignore it
+            // Can't have specialized type alias so ignore it
             Token *tok2 = Token::findsimplematch(tok->tokAt(2), ";");
             if (tok2)
                 tok = tok2;
