@@ -238,25 +238,25 @@ def int31(data, platform):
 def msc24(data):
     for token in data.tokenlist:
         if isFunctionCall(token, ('asctime',), 1):
-            reportError(token,'style','Do no use asctime() better use asctime_s()', 'MSC24-C')
+            reportError(token,'style','Do not use asctime() better use asctime_s()', 'MSC24-C')
         elif isFunctionCall(token, ('atof',), 1):
-            reportError(token,'style','Do no use atof() better use strtod()', 'MSC24-C')
+            reportError(token,'style','Do not use atof() better use strtod()', 'MSC24-C')
         elif isFunctionCall(token, ('atoi',), 1):
-            reportError(token,'style','Do no use atoi() better use strtol()', 'MSC24-C')
+            reportError(token,'style','Do not use atoi() better use strtol()', 'MSC24-C')
         elif isFunctionCall(token, ('atol',), 1):
-            reportError(token,'style','Do no use atol() better use strtol()', 'MSC24-C')
+            reportError(token,'style','Do not use atol() better use strtol()', 'MSC24-C')
         elif isFunctionCall(token, ('atoll',), 1):
-            reportError(token,'style','Do no use atoll() better use strtoll()', 'MSC24-C')
+            reportError(token,'style','Do not use atoll() better use strtoll()', 'MSC24-C')
         elif isFunctionCall(token, ('ctime',), 1):
-            reportError(token,'style','Do no use ctime() better use ctime_s()', 'MSC24-C')
+            reportError(token,'style','Do not use ctime() better use ctime_s()', 'MSC24-C')
         elif isFunctionCall(token, ('fopen',), 2):
-            reportError(token,'style','Do no use fopen() better use fopen_s()', 'MSC24-C')
+            reportError(token,'style','Do not use fopen() better use fopen_s()', 'MSC24-C')
         elif isFunctionCall(token, ('freopen',), 3):
-            reportError(token,'style','Do no use freopen() better use freopen_s()', 'MSC24-C')
+            reportError(token,'style','Do not use freopen() better use freopen_s()', 'MSC24-C')
         elif isFunctionCall(token, ('rewind',), 1):
-            reportError(token,'style','Do no use rewind() better use fseek()', 'MSC24-C')
+            reportError(token,'style','Do not use rewind() better use fseek()', 'MSC24-C')
         elif isFunctionCall(token, ('setbuf',), 2):
-            reportError(token,'style','Do no use setbuf() better use setvbuf()', 'MSC24-C')
+            reportError(token,'style','Do not use setbuf() better use setvbuf()', 'MSC24-C')
 
 # MSC30-C
 # Do not use the rand() function for generating pseudorandom numbers

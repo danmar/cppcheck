@@ -216,7 +216,7 @@ public:
          * @return true if same family, false if different family
          */
         bool isSameFamily(const TemplateSimplifier::TokenAndName &decl) const {
-            // maks sure a family flag is set and matches
+            // make sure a family flag is set and matches
             return (flags & (fIsClass | fIsFunction | fIsVariable)) &
                    (decl.flags & (fIsClass | fIsFunction | fIsVariable));
         }
