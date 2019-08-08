@@ -2154,7 +2154,7 @@ static bool valueFlowForward(Token * const               startToken,
                 else if (!subFunction && !conditionIsTrue(condTok, programMemory))
                     falsevalues.push_back(v);
             }
-            if (truevalues.size() != values.size() || condAlwaysTrue) {
+            if (truevalues.size() != values.size() || falsevalues.size() != values.size() || condAlwaysTrue) {
                 // '{'
                 const Token * const startToken1 = tok2->linkAt(1)->next();
 
@@ -2211,7 +2211,8 @@ static bool valueFlowForward(Token * const               startToken,
                         removeValues(values, falsevalues);
                     }
                 }
-
+                if (values.empty())
+                    return false;
                 continue;
             }
 
