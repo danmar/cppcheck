@@ -402,7 +402,6 @@ void dl(const char* libname, const char* func)
 {
     void* lib = dlopen(libname, RTLD_NOW);
     // cppcheck-suppress resourceLeak
-    // cppcheck-suppress redundantAssignment
     lib = dlopen(libname, RTLD_LAZY);
     const char* funcname;
     // cppcheck-suppress uninitvar

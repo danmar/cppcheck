@@ -487,7 +487,7 @@ void CheckOther::checkRedundantAssignment()
 
                 // Is this a variable declaration with initialization?
                 const Token* defineAndInitTok = start->tokAt(-3);
-                if(defineAndInitTok->str()==";" && defineAndInitTok->linenr() == start->linenr())
+                if(Token::Match(defineAndInitTok, "; %var% =") && defineAndInitTok->linenr() == start->linenr())
                     continue;
 
                 // Get next assignment..
