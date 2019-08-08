@@ -2304,7 +2304,7 @@ static bool valueFlowForward(Token * const               startToken,
                 return false;
             }
 
-            if (isVariableChanged(start, end, varid, var->isGlobal(), settings, tokenlist->isCPP())) {
+            if (isVariableChanged(start, end, varid, var->isGlobal(), settings, tokenlist->isCPP(), true)) {
                 if ((!read || number_of_if == 0) &&
                     Token::simpleMatch(tok2, "if (") &&
                     !(Token::simpleMatch(end, "} else {") &&
