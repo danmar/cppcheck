@@ -1998,7 +1998,7 @@ static bool valueFlowForward(Token * const               startToken,
             ++indentlevel;
         else if (indentlevel >= 0 && tok2->str() == "}") {
             --indentlevel;
-            if (indentlevel <= 0 && isReturnScope(tok2) && Token::Match(tok2->link()->previous(), "else|) {")) {
+            if (indentlevel <= 0 && isReturnScope(tok2, settings) && Token::Match(tok2->link()->previous(), "else|) {")) {
                 const Token *condition = tok2->link();
                 const bool iselse = Token::simpleMatch(condition->tokAt(-2), "} else {");
                 if (iselse)
@@ -2039,7 +2039,7 @@ static bool valueFlowForward(Token * const               startToken,
                     return true;
             } else if (indentlevel <= 0 &&
                        Token::simpleMatch(tok2->link()->previous(), "else {") &&
-                       !isReturnScope(tok2->link()->tokAt(-2)) &&
+                       !isReturnScope(tok2->link()->tokAt(-2), settings) &&
                        isVariableChanged(tok2->link(), tok2, varid, var->isGlobal(), settings, tokenlist->isCPP())) {
                 changeKnownToPossible(values);
             }
@@ -2149,9 +2149,7 @@ static bool valueFlowForward(Token * const               startToken,
                     truevalues.push_back(v);
                 else if (!conditionIsFalse(condTok, programMemory))
                     truevalues.push_back(v);
-                if (condAlwaysFalse)
-                    falsevalues.push_back(v);
-                else if (conditionIsFalse(condTok, programMemory))
+                if (conditionIsFalse(condTok, programMemory))
                     falsevalues.push_back(v);
                 else if (!subFunction && !conditionIsTrue(condTok, programMemory))
                     falsevalues.push_back(v);
@@ -2179,7 +2177,7 @@ static bool valueFlowForward(Token * const               startToken,
                 // goto '}'
                 tok2 = startToken1->link();
 
-                if (isReturnScope(tok2) || !vfresult) {
+                if (isReturnScope(tok2, settings) || !vfresult) {
                     if (condAlwaysTrue)
                         return false;
                     removeValues(values, truevalues);
@@ -2207,7 +2205,7 @@ static bool valueFlowForward(Token * const               startToken,
                     // goto '}'
                     tok2 = startTokenElse->link();
 
-                    if (isReturnScope(tok2) || !vfresult) {
+                    if (isReturnScope(tok2, settings) || !vfresult) {
                         if (condAlwaysFalse)
                             return false;
                         removeValues(values, falsevalues);
@@ -2283,7 +2281,7 @@ static bool valueFlowForward(Token * const               startToken,
             }
 
             // stop after conditional return scopes that are executed
-            if (isReturnScope(end)) {
+            if (isReturnScope(end, settings)) {
                 std::list<ValueFlow::Value>::iterator it;
                 for (it = values.begin(); it != values.end();) {
                     if (conditionIsTrue(tok2->next()->astOperand2(), getProgramMemory(tok2, varid, *it)))
@@ -3722,6 +3720,35 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
     }
 }
 
+static void valueFlowSetConditionToKnown(const Token* tok, std::list<ValueFlow::Value>& values, bool then)
+{
+    if (values.size() != 1U)
+        return;
+    if (values.front().isKnown())
+        return;
+    if (then && !Token::Match(tok, "==|!|("))
+        return;
+    if (!then && !Token::Match(tok, "!=|%var%|("))
+        return;
+    const char * op = "||";
+    if (then)
+        op = "&&";
+    const Token* parent = tok->astParent();
+    while (parent && parent->str() == op)
+        parent = parent->astParent();
+    if (parent && parent->str() == "(")
+        values.front().setKnown();
+}
+
+static bool isBreakScope(const Token* const endToken)
+{
+    if (!Token::simpleMatch(endToken, "}"))
+        return false;
+    if (!Token::simpleMatch(endToken->link(), "{"))
+        return false;
+    return Token::findmatch(endToken->link(), "break|goto", endToken);
+}
+
 struct ValueFlowConditionHandler {
     struct Condition {
         const Token *vartok;
@@ -3835,6 +3862,10 @@ struct ValueFlowConditionHandler {
                             tok2 = parent;
                         }
                     }
+                    if (cond.true_values != cond.false_values) {
+                        check_if = true;
+                        check_else = true;
+                    }
 
                     // determine startToken(s)
                     if (check_if && Token::simpleMatch(top->link(), ") {"))
@@ -3849,13 +3880,7 @@ struct ValueFlowConditionHandler {
                         if (!startToken)
                             continue;
                         std::list<ValueFlow::Value> &values = (i == 0 ? cond.true_values : cond.false_values);
-                        if (values.size() == 1U && Token::Match(tok, "==|!|(")) {
-                            const Token *parent = tok->astParent();
-                            while (parent && parent->str() == "&&")
-                                parent = parent->astParent();
-                            if (parent && parent->str() == "(")
-                                values.front().setKnown();
-                        }
+                        valueFlowSetConditionToKnown(tok, values, i == 0);
 
                         bool changed = forward(startTokens[i], startTokens[i]->link(), var, values, true);
                         values.front().setPossible();
@@ -3867,7 +3892,6 @@ struct ValueFlowConditionHandler {
                                         startTokens[i]->link(),
                                         "valueFlowAfterCondition: " + var->name() + " is changed in conditional block");
                             bail = true;
-                            break;
                         }
                     }
                     if (bail)
@@ -3883,7 +3907,9 @@ struct ValueFlowConditionHandler {
                             continue;
                         }
 
-                        const bool dead_if = isReturnScope(after);
+                        bool dead_if = isReturnScope(after, settings) ||
+                                       (tok->astParent() && Token::simpleMatch(tok->astParent()->previous(), "while (") &&
+                                        !isBreakScope(after));
                         bool dead_else = false;
 
                         if (Token::simpleMatch(after, "} else {")) {
@@ -3893,7 +3919,7 @@ struct ValueFlowConditionHandler {
                                     bailout(tokenlist, errorLogger, after, "possible noreturn scope");
                                 continue;
                             }
-                            dead_else = isReturnScope(after);
+                            dead_else = isReturnScope(after, settings);
                         }
 
                         std::list<ValueFlow::Value> *values = nullptr;
@@ -3903,6 +3929,10 @@ struct ValueFlowConditionHandler {
                             values = &cond.false_values;
 
                         if (values) {
+                            if ((dead_if || dead_else) && !Token::Match(tok->astParent(), "&&|&")) {
+                                valueFlowSetConditionToKnown(tok, *values, true);
+                                valueFlowSetConditionToKnown(tok, *values, false);
+                            }
                             // TODO: constValue could be true if there are no assignments in the conditional blocks and
                             //       perhaps if there are no && and no || in the condition
                             bool constValue = false;
@@ -3980,14 +4010,24 @@ static void valueFlowAfterCondition(TokenList *tokenlist,
                 vartok = vartok->astOperand1();
             if (!vartok->isName())
                 return cond;
+            if (astIsPointer(vartok) && true_value.intvalue == 0) {
+                if (Token::simpleMatch(tok, "=="))
+                    false_value.intvalue = 1;
+                if (Token::simpleMatch(tok, "!="))
+                    true_value.intvalue = 1;
+            }
+
             cond.true_values.push_back(true_value);
             cond.false_values.push_back(false_value);
             cond.vartok = vartok;
             return cond;
         }
 
+        long long falseIntValue = 0LL;
         if (tok->str() == "!") {
             vartok = tok->astOperand1();
+            if (astIsPointer(vartok))
+                falseIntValue = 1LL;
 
         } else if (tok->isName() && (Token::Match(tok->astParent(), "%oror%|&&") ||
                                      Token::Match(tok->tokAt(-2), "if|while ( %var% [)=]"))) {
@@ -3997,7 +4037,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist,
         if (!vartok || !vartok->isName())
             return cond;
         cond.true_values.emplace_back(tok, 0LL);
-        cond.false_values.emplace_back(tok, 0LL);
+        cond.false_values.emplace_back(tok, falseIntValue);
         cond.vartok = vartok;
 
         return cond;

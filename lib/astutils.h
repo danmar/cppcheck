@@ -109,7 +109,7 @@ bool isWithoutSideEffects(bool cpp, const Token* tok);
 bool isUniqueExpression(const Token* tok);
 
 /** Is scope a return scope (scope will unconditionally return) */
-bool isReturnScope(const Token *endToken);
+bool isReturnScope(const Token *endToken, const Settings * settings = nullptr, bool functionScope=false);
 
 /** Is variable changed by function call?
  * In case the answer of the question is inconclusive, e.g. because the function declaration is not known

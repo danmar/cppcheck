@@ -63,6 +63,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     createSymbolDatabaseSetFunctionPointers(true);
     createSymbolDatabaseSetTypePointers();
     createSymbolDatabaseEnums();
+    createSymbolDatabaseEscapeFunctions();
     createSymbolDatabaseIncompleteVars();
 }
 
@@ -1377,6 +1378,18 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
         if (mSettings->standards.cpp >= Standards::CPP20 && cpp20keywords.count(tok->str()) > 0)
             continue;
         const_cast<Token *>(tok)->isIncompleteVar(true);
+    }
+}
+
+void SymbolDatabase::createSymbolDatabaseEscapeFunctions()
+{
+    for (Scope & scope : scopeList) {
+        if (scope.type != Scope::eFunction)
+            continue;
+        Function * function = scope.function;
+        if (!function)
+            continue;
+        function->isEscapeFunction(isReturnScope(scope.bodyEnd, mSettings, true));
     }
 }
 
