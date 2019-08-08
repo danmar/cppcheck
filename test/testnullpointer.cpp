@@ -74,6 +74,7 @@ private:
         TEST_CASE(nullpointer32); // #8460
         TEST_CASE(nullpointer33);
         TEST_CASE(nullpointer34);
+        TEST_CASE(nullpointer35);
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1409,6 +1410,19 @@ private:
               "    if (x) *x += 1;\n"
               "    if (!x) g();\n"
               "    return *x;\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer35() {
+        check("bool f(int*);\n"
+              "void g(int* x) {\n"
+              "    if (f(x)) {\n"
+              "        *x = 1;\n"
+              "    }\n"
+              "}\n"
+              "void h() {\n"
+              "    g(0);\n"
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
     }

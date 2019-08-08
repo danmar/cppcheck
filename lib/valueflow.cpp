@@ -1973,6 +1973,15 @@ static bool evalAssignment(ValueFlow::Value &lhsValue, const std::string &assign
     return true;
 }
 
+static bool hasVar(const Token * tok, nonneg int varid)
+{
+    if (!tok)
+        return false;
+    if (tok->varId() == varid)
+        return true;
+    return hasVar(tok->astOperand1(), varid) || hasVar(tok->astOperand2(), varid);
+}
+
 static bool valueFlowForward(Token * const               startToken,
                              const Token * const         endToken,
                              const Variable * const      var,
@@ -2131,6 +2140,7 @@ static bool valueFlowForward(Token * const               startToken,
             const Token * const condTok = tok2->next()->astOperand2();
             const bool condAlwaysTrue = (condTok && condTok->hasKnownIntValue() && condTok->values().front().intvalue != 0);
             const bool condAlwaysFalse = (condTok && condTok->hasKnownIntValue() && condTok->values().front().intvalue == 0);
+            const bool weak = subFunction || hasVar(condTok, varid);
 
             // Should scope be skipped because variable value is checked?
             std::list<ValueFlow::Value> truevalues;
@@ -2145,16 +2155,20 @@ static bool valueFlowForward(Token * const               startToken,
                     continue;
                 }
                 const ProgramMemory &programMemory = getProgramMemory(tok2, varid, v);
-                if (subFunction && conditionIsTrue(condTok, programMemory))
+                const bool isTrue = conditionIsTrue(condTok, programMemory);
+                const bool isFalse = conditionIsFalse(condTok, programMemory);
+
+                if (isTrue)
                     truevalues.push_back(v);
-                else if (!conditionIsFalse(condTok, programMemory))
+                if (isFalse)
+                    falsevalues.push_back(v);
+                if (!isTrue && !isFalse && !weak) {
                     truevalues.push_back(v);
-                if (conditionIsFalse(condTok, programMemory))
                     falsevalues.push_back(v);
-                else if (!subFunction && !conditionIsTrue(condTok, programMemory))
-                    falsevalues.push_back(v);
+                }
+
             }
-            if (truevalues.size() != values.size() || falsevalues.size() != values.size() || condAlwaysTrue) {
+            if (!truevalues.empty() || !falsevalues.empty()) {
                 // '{'
                 const Token * const startToken1 = tok2->linkAt(1)->next();
 
