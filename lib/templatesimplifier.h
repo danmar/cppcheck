@@ -69,7 +69,71 @@ public:
     /**
      * Token and its full scopename
      */
-    struct TokenAndName {
+    class TokenAndName {
+        Token *mToken;
+        std::string mScope;
+        std::string mName;
+        std::string mFullName;
+        const Token *mNameToken;
+        const Token *mParamEnd;
+        unsigned int mFlags;
+
+        enum {
+            fIsClass                 = (1 << 0), // class template
+            fIsFunction              = (1 << 1), // function template
+            fIsVariable              = (1 << 2), // variable template
+            fIsAlias                 = (1 << 3), // alias template
+            fIsSpecialization        = (1 << 4), // user specialized template
+            fIsPartialSpecialization = (1 << 5), // user partial specialized template
+            fIsForwardDeclaration    = (1 << 6), // forward declaration
+            fIsVariadic              = (1 << 7), // variadic template
+            fFamilyMask              = (fIsClass | fIsFunction | fIsVariable)
+        };
+
+        void isClass(bool state) {
+            setFlag(fIsClass, state);
+        }
+        void isFunction(bool state) {
+            setFlag(fIsFunction, state);
+        }
+        void isVariable(bool state) {
+            setFlag(fIsVariable, state);
+        }
+        void isAlias(bool state) {
+            setFlag(fIsAlias, state);
+        }
+        void isSpecialization(bool state) {
+            setFlag(fIsSpecialization, state);
+        }
+        void isPartialSpecialization(bool state) {
+            setFlag(fIsPartialSpecialization, state);
+        }
+        void isForwardDeclaration(bool state) {
+            setFlag(fIsForwardDeclaration, state);
+        }
+        void isVariadic(bool state) {
+            setFlag(fIsVariadic, state);
+        }
+
+        /**
+         * Get specified flag state.
+         * @param flag flag to get state of
+         * @return true if flag set or false in flag not set
+         */
+        bool getFlag(unsigned int flag) const {
+            return ((mFlags & flag) != 0);
+        }
+
+        /**
+         * Set specified flag state.
+         * @param flag flag to set state
+         * @param state new state of flag
+         */
+        void setFlag(unsigned int flag, bool state) {
+            mFlags = state ? mFlags | flag : mFlags & ~flag;
+        }
+
+    public:
         /**
          * Constructor used for instantiations.
          * \param tok template instantiation name token "name<...>"
@@ -88,100 +152,58 @@ public:
         ~TokenAndName();
 
         bool operator == (const TokenAndName & rhs) const {
-            return token == rhs.token && scope == rhs.scope && name == rhs.name && fullName == rhs.fullName &&
-                   nameToken == rhs.nameToken && paramEnd == rhs.paramEnd && flags == rhs.flags;
+            return mToken == rhs.mToken && mScope == rhs.mScope && mName == rhs.mName && mFullName == rhs.mFullName &&
+                   mNameToken == rhs.mNameToken && mParamEnd == rhs.mParamEnd && mFlags == rhs.mFlags;
         }
-        Token *token;
-        std::string scope;
-        std::string name;
-        std::string fullName;
-        const Token *nameToken;
-        const Token *paramEnd;
-        unsigned int flags;
 
-        enum {
-            fIsClass                 = (1 << 0), // class template
-            fIsFunction              = (1 << 1), // function template
-            fIsVariable              = (1 << 2), // variable template
-            fIsAlias                 = (1 << 3), // alias template
-            fIsSpecialization        = (1 << 4), // user specialized template
-            fIsPartialSpecialization = (1 << 5), // user partial specialized template
-            fIsForwardDeclaration    = (1 << 6), // forward declaration
-            fIsVariadic              = (1 << 7), // variadic template
-        };
+        Token * token() const {
+            return mToken;
+        }
+        void token(Token * token) {
+            mToken = token;
+        }
+        const std::string & scope() const {
+            return mScope;
+        }
+        const std::string & name() const {
+            return mName;
+        }
+        const std::string & fullName() const {
+            return mFullName;
+        }
+        const Token * nameToken() const  {
+            return mNameToken;
+        }
+        const Token * paramEnd() const {
+            return mParamEnd;
+        }
+        void paramEnd(const Token *end) {
+            mParamEnd = end;
+        }
 
         bool isClass() const {
             return getFlag(fIsClass);
         }
-        void isClass(bool state) {
-            setFlag(fIsClass, state);
-        }
-
         bool isFunction() const {
             return getFlag(fIsFunction);
         }
-        void isFunction(bool state) {
-            setFlag(fIsFunction, state);
-        }
-
         bool isVariable() const {
             return getFlag(fIsVariable);
         }
-        void isVariable(bool state) {
-            setFlag(fIsVariable, state);
-        }
-
         bool isAlias() const {
             return getFlag(fIsAlias);
         }
-        void isAlias(bool state) {
-            setFlag(fIsAlias, state);
-        }
-
         bool isSpecialization() const {
             return getFlag(fIsSpecialization);
         }
-        void isSpecialization(bool state) {
-            setFlag(fIsSpecialization, state);
-        }
-
         bool isPartialSpecialization() const {
             return getFlag(fIsPartialSpecialization);
         }
-        void isPartialSpecialization(bool state) {
-            setFlag(fIsPartialSpecialization, state);
-        }
-
         bool isForwardDeclaration() const {
             return getFlag(fIsForwardDeclaration);
         }
-        void isForwardDeclaration(bool state) {
-            setFlag(fIsForwardDeclaration, state);
-        }
-
         bool isVariadic() const {
             return getFlag(fIsVariadic);
-        }
-        void isVariadic(bool state) {
-            setFlag(fIsVariadic, state);
-        }
-
-        /**
-         * Get specified flag state.
-         * @param flag flag to get state of
-         * @return true if flag set or false in flag not set
-         */
-        bool getFlag(unsigned int flag) const {
-            return ((flags & flag) != 0);
-        }
-
-        /**
-         * Set specified flag state.
-         * @param flag flag to set state
-         * @param state new state of flag
-         */
-        void setFlag(unsigned int flag, bool state) {
-            flags = state ? flags | flag : flags & ~flag;
         }
 
         /**
@@ -216,9 +238,9 @@ public:
          * @return true if same family, false if different family
          */
         bool isSameFamily(const TemplateSimplifier::TokenAndName &decl) const {
-            // make sure a family flag is set and matches
-            return (flags & (fIsClass | fIsFunction | fIsVariable)) &
-                   (decl.flags & (fIsClass | fIsFunction | fIsVariable));
+            // Make sure a family flag is set and matches.
+            // This works because at most only one flag will be set.
+            return (mFlags & fFamilyMask) & (decl.mFlags & (fFamilyMask));
         }
     };
 
