@@ -545,10 +545,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 ImportProject::Type projType = mSettings->project.import(projectFile, mSettings);
                 if (projType == ImportProject::Type::CPPCHECK_GUI) {
                     mPathNames = mSettings->project.guiProject.pathNames;
-                    for (const std::string &lib : mSettings->project.guiProject.libraries) {
-                        if (!CppCheckExecutor::tryLoadLibrary(mSettings->library, argv[0], lib.c_str()))
-                            return false;
-                    }
+                    for (const std::string &lib : mSettings->project.guiProject.libraries)
+                        mSettings->libraries.push_back(lib);
 
                     for (const std::string &ignorePath : mSettings->project.guiProject.excludedPaths)
                         mIgnoredPaths.emplace_back(ignorePath);

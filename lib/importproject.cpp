@@ -33,6 +33,7 @@
 #include <utility>
 #include <sstream>
 
+
 void ImportProject::ignorePaths(const std::vector<std::string> &ipaths)
 {
     for (std::list<FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
@@ -959,47 +960,6 @@ static std::string join(const std::list<std::string> &strlist, const char *sep)
     return ret;
 }
 
-// These constants are copy/pasted from gui/projectfile.cpp
-static const char ProjectElementName[] = "project";
-static const char ProjectVersionAttrib[] = "version";
-static const char ProjectFileVersion[] = "1";
-static const char BuildDirElementName[] = "builddir";
-static const char ImportProjectElementName[] = "importproject";
-static const char AnalyzeAllVsConfigsElementName[] = "analyze-all-vs-configs";
-static const char IncludeDirElementName[] = "includedir";
-static const char DirElementName[] = "dir";
-static const char DirNameAttrib[] = "name";
-static const char DefinesElementName[] = "defines";
-static const char DefineName[] = "define";
-static const char DefineNameAttrib[] = "name";
-static const char UndefinesElementName[] = "undefines";
-static const char UndefineName[] = "undefine";
-static const char PathsElementName[] = "paths";
-static const char PathName[] = "dir";
-static const char PathNameAttrib[] = "name";
-static const char RootPathName[] = "root";
-static const char RootPathNameAttrib[] = "name";
-static const char IgnoreElementName[] = "ignore";
-static const char IgnorePathName[] = "path";
-static const char IgnorePathNameAttrib[] = "name";
-static const char ExcludeElementName[] = "exclude";
-static const char ExcludePathName[] = "path";
-static const char ExcludePathNameAttrib[] = "name";
-static const char LibrariesElementName[] = "libraries";
-static const char LibraryElementName[] = "library";
-static const char PlatformElementName[] = "platform";
-static const char SuppressionsElementName[] = "suppressions";
-static const char SuppressionElementName[] = "suppression";
-static const char AddonElementName[] = "addon";
-static const char AddonsElementName[] = "addons";
-static const char ToolElementName[] = "tool";
-static const char ToolsElementName[] = "tools";
-static const char TagsElementName[] = "tags";
-static const char TagElementName[] = "tag";
-static const char CheckHeadersElementName[] = "check-headers";
-static const char CheckUnusedTemplatesElementName[] = "check-unused-templates";
-static const char MaxCtuDepthElementName[] = "max-ctu-depth";
-
 static std::string istream_to_string(std::istream &istr)
 {
     std::istreambuf_iterator<char> eos;
@@ -1013,11 +973,8 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     if (doc.Parse(xmldata.data(), xmldata.size()) != tinyxml2::XML_SUCCESS)
         return false;
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
-    if (rootnode == nullptr || strcmp(rootnode->Name(), ProjectElementName) != 0)
+    if (rootnode == nullptr || strcmp(rootnode->Name(), CppcheckXml::ProjectElementName) != 0)
         return false;
-
-    (void)ProjectFileVersion;
-    (void)ProjectVersionAttrib;
 
     const std::string &path = mPath;
 
@@ -1028,46 +985,48 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     guiProject.analyzeAllVsConfigs.clear();
 
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
-        if (strcmp(node->Name(), RootPathName) == 0 && node->Attribute(RootPathNameAttrib)) {
-            temp.basePaths.push_back(joinRelativePath(path, node->Attribute(RootPathNameAttrib)));
+        if (strcmp(node->Name(), CppcheckXml::RootPathName) == 0 && node->Attribute(CppcheckXml::RootPathNameAttrib)) {
+            temp.basePaths.push_back(joinRelativePath(path, node->Attribute(CppcheckXml::RootPathNameAttrib)));
             temp.relativePaths = true;
-        } else if (strcmp(node->Name(), BuildDirElementName) == 0)
+        } else if (strcmp(node->Name(), CppcheckXml::BuildDirElementName) == 0)
             temp.buildDir = joinRelativePath(path, node->GetText() ? node->GetText() : "");
-        else if (strcmp(node->Name(), IncludeDirElementName) == 0)
-            temp.includePaths = readXmlStringList(node, path, DirElementName, DirNameAttrib);
-        else if (strcmp(node->Name(), DefinesElementName) == 0)
-            temp.userDefines = join(readXmlStringList(node, "", DefineName, DefineNameAttrib), ";");
-        else if (strcmp(node->Name(), UndefinesElementName) == 0) {
-            for (const std::string &u : readXmlStringList(node, "", UndefineName, nullptr))
+        else if (strcmp(node->Name(), CppcheckXml::IncludeDirElementName) == 0)
+            temp.includePaths = readXmlStringList(node, path, CppcheckXml::DirElementName, CppcheckXml::DirNameAttrib);
+        else if (strcmp(node->Name(), CppcheckXml::DefinesElementName) == 0)
+            temp.userDefines = join(readXmlStringList(node, "", CppcheckXml::DefineName, CppcheckXml::DefineNameAttrib), ";");
+        else if (strcmp(node->Name(), CppcheckXml::UndefinesElementName) == 0) {
+            for (const std::string &u : readXmlStringList(node, "", CppcheckXml::UndefineName, nullptr))
                 temp.userUndefs.insert(u);
-        } else if (strcmp(node->Name(), ImportProjectElementName) == 0)
+        } else if (strcmp(node->Name(), CppcheckXml::ImportProjectElementName) == 0)
             guiProject.projectFile = path + (node->GetText() ? node->GetText() : "");
-        else if (strcmp(node->Name(), PathsElementName) == 0)
-            paths = readXmlStringList(node, path, PathName, PathNameAttrib);
-        else if (strcmp(node->Name(), ExcludeElementName) == 0)
-            guiProject.excludedPaths = readXmlStringList(node, "", ExcludePathName, ExcludePathNameAttrib);
-        else if (strcmp(node->Name(), IgnoreElementName) == 0)
-            guiProject.excludedPaths = readXmlStringList(node, "", IgnorePathName, IgnorePathNameAttrib);
-        else if (strcmp(node->Name(), LibrariesElementName) == 0)
-            guiProject.libraries = readXmlStringList(node, "", LibraryElementName, nullptr);
-        else if (strcmp(node->Name(), SuppressionsElementName) == 0)
-            suppressions = readXmlStringList(node, "", SuppressionElementName, nullptr);
-        else if (strcmp(node->Name(), PlatformElementName) == 0)
+        else if (strcmp(node->Name(), CppcheckXml::PathsElementName) == 0)
+            paths = readXmlStringList(node, path, CppcheckXml::PathName, CppcheckXml::PathNameAttrib);
+        else if (strcmp(node->Name(), CppcheckXml::ExcludeElementName) == 0)
+            guiProject.excludedPaths = readXmlStringList(node, "", CppcheckXml::ExcludePathName, CppcheckXml::ExcludePathNameAttrib);
+        else if (strcmp(node->Name(), CppcheckXml::IgnoreElementName) == 0)
+            guiProject.excludedPaths = readXmlStringList(node, "", CppcheckXml::IgnorePathName, CppcheckXml::IgnorePathNameAttrib);
+        else if (strcmp(node->Name(), CppcheckXml::LibrariesElementName) == 0)
+            guiProject.libraries = readXmlStringList(node, "", CppcheckXml::LibraryElementName, nullptr);
+        else if (strcmp(node->Name(), CppcheckXml::SuppressionsElementName) == 0)
+            suppressions = readXmlStringList(node, "", CppcheckXml::SuppressionElementName, nullptr);
+        else if (strcmp(node->Name(), CppcheckXml::PlatformElementName) == 0)
             guiProject.platform = node->GetText();
-        else if (strcmp(node->Name(), AnalyzeAllVsConfigsElementName) == 0)
+        else if (strcmp(node->Name(), CppcheckXml::AnalyzeAllVsConfigsElementName) == 0)
             guiProject.analyzeAllVsConfigs = node->GetText();
-        else if (strcmp(node->Name(), AddonsElementName) == 0)
-            temp.addons = readXmlStringList(node, "", AddonElementName, nullptr);
-        else if (strcmp(node->Name(), TagsElementName) == 0)
-            node->Attribute(TagElementName); // FIXME: Write some warning
-        else if (strcmp(node->Name(), ToolsElementName) == 0)
-            node->Attribute(ToolElementName); // FIXME: Write some warning
-        else if (strcmp(node->Name(), CheckHeadersElementName) == 0)
+        else if (strcmp(node->Name(), CppcheckXml::AddonsElementName) == 0)
+            temp.addons = readXmlStringList(node, "", CppcheckXml::AddonElementName, nullptr);
+        else if (strcmp(node->Name(), CppcheckXml::TagsElementName) == 0)
+            node->Attribute(CppcheckXml::TagElementName); // FIXME: Write some warning
+        else if (strcmp(node->Name(), CppcheckXml::ToolsElementName) == 0)
+            node->Attribute(CppcheckXml::ToolElementName); // FIXME: Write some warning
+        else if (strcmp(node->Name(), CppcheckXml::CheckHeadersElementName) == 0)
             temp.checkHeaders = (strcmp(node->GetText(), "true") == 0);
-        else if (strcmp(node->Name(), CheckUnusedTemplatesElementName) == 0)
+        else if (strcmp(node->Name(), CppcheckXml::CheckUnusedTemplatesElementName) == 0)
             temp.checkUnusedTemplates = (strcmp(node->GetText(), "true") == 0);
-        else if (strcmp(node->Name(), MaxCtuDepthElementName) == 0)
+        else if (strcmp(node->Name(), CppcheckXml::MaxCtuDepthElementName) == 0)
             temp.maxCtuDepth = std::atoi(node->GetText());
+        else if (strcmp(node->Name(), CppcheckXml::CheckUnknownFunctionReturn) == 0)
+            ; // TODO
         else if (strcmp(node->Name(), Settings::SafeChecks::XmlRootName) == 0) {
             for (const tinyxml2::XMLElement *child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
                 if (strcmp(child->Name(), Settings::SafeChecks::XmlClasses) == 0)
