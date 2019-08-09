@@ -110,6 +110,51 @@ private:
     std::string mPath;
 };
 
+
+namespace CppcheckXml {
+constexpr char ProjectElementName[] = "project";
+constexpr char ProjectVersionAttrib[] = "version";
+constexpr char ProjectFileVersion[] = "1";
+constexpr char BuildDirElementName[] = "builddir";
+constexpr char ImportProjectElementName[] = "importproject";
+constexpr char AnalyzeAllVsConfigsElementName[] = "analyze-all-vs-configs";
+constexpr char IncludeDirElementName[] = "includedir";
+constexpr char DirElementName[] = "dir";
+constexpr char DirNameAttrib[] = "name";
+constexpr char DefinesElementName[] = "defines";
+constexpr char DefineName[] = "define";
+constexpr char DefineNameAttrib[] = "name";
+constexpr char UndefinesElementName[] = "undefines";
+constexpr char UndefineName[] = "undefine";
+constexpr char PathsElementName[] = "paths";
+constexpr char PathName[] = "dir";
+constexpr char PathNameAttrib[] = "name";
+constexpr char RootPathName[] = "root";
+constexpr char RootPathNameAttrib[] = "name";
+constexpr char IgnoreElementName[] = "ignore";
+constexpr char IgnorePathName[] = "path";
+constexpr char IgnorePathNameAttrib[] = "name";
+constexpr char ExcludeElementName[] = "exclude";
+constexpr char ExcludePathName[] = "path";
+constexpr char ExcludePathNameAttrib[] = "name";
+constexpr char LibrariesElementName[] = "libraries";
+constexpr char LibraryElementName[] = "library";
+constexpr char PlatformElementName[] = "platform";
+constexpr char SuppressionsElementName[] = "suppressions";
+constexpr char SuppressionElementName[] = "suppression";
+constexpr char AddonElementName[] = "addon";
+constexpr char AddonsElementName[] = "addons";
+constexpr char ToolElementName[] = "tool";
+constexpr char ToolsElementName[] = "tools";
+constexpr char TagsElementName[] = "tags";
+constexpr char TagElementName[] = "tag";
+constexpr char CheckHeadersElementName[] = "check-headers";
+constexpr char CheckUnusedTemplatesElementName[] = "check-unused-templates";
+constexpr char MaxCtuDepthElementName[] = "max-ctu-depth";
+constexpr char CheckUnknownFunctionReturn[] = "check-unknown-function-return-values";
+constexpr char Name[] = "name";
+}
+
 /// @}
 //---------------------------------------------------------------------------
 #endif // importprojectH
