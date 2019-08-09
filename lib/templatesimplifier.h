@@ -139,7 +139,7 @@ public:
          * \param tok template instantiation name token "name<...>"
          * \param s full qualification of template(scope)
          */
-        TokenAndName(Token *tok, const std::string &s);
+        TokenAndName(Token *token, const std::string &scope);
         /**
          * Constructor used for declarations.
          * \param tok template declaration token "template < ... >"
@@ -147,8 +147,8 @@ public:
          * \param nt template name token "template < ... > class name"
          * \param pe template parameter end token ">"
          */
-        TokenAndName(Token *tok, const std::string &s, const Token *nt, const Token *pe);
-        TokenAndName(const TokenAndName& otherTok);
+        TokenAndName(Token *token, const std::string &scope, const Token *nameToken, const Token *paramEnd);
+        TokenAndName(const TokenAndName& other);
         ~TokenAndName();
 
         bool operator == (const TokenAndName & rhs) const {
