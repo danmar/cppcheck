@@ -147,6 +147,8 @@ private:
     void parseAddonErrors(QString err, const QString &tool);
     void parseClangErrors(const QString &tool, const QString &file0, QString err);
 
+    bool isSuppressed(const Suppressions::ErrorMessage &errorMessage) const;
+
     QStringList mFiles;
     bool mAnalyseWholeProgram;
     QStringList mAddonsAndTools;
