@@ -1973,15 +1973,6 @@ static bool evalAssignment(ValueFlow::Value &lhsValue, const std::string &assign
     return true;
 }
 
-static bool hasVar(const Token * tok, nonneg int varid)
-{
-    if (!tok)
-        return false;
-    if (tok->varId() == varid)
-        return true;
-    return hasVar(tok->astOperand1(), varid) || hasVar(tok->astOperand2(), varid);
-}
-
 static bool valueFlowForward(Token * const               startToken,
                              const Token * const         endToken,
                              const Variable * const      var,
@@ -2140,7 +2131,6 @@ static bool valueFlowForward(Token * const               startToken,
             const Token * const condTok = tok2->next()->astOperand2();
             const bool condAlwaysTrue = (condTok && condTok->hasKnownIntValue() && condTok->values().front().intvalue != 0);
             const bool condAlwaysFalse = (condTok && condTok->hasKnownIntValue() && condTok->values().front().intvalue == 0);
-            const bool weak = subFunction || hasVar(condTok, varid);
 
             // Should scope be skipped because variable value is checked?
             std::list<ValueFlow::Value> truevalues;
@@ -2162,10 +2152,6 @@ static bool valueFlowForward(Token * const               startToken,
                     truevalues.push_back(v);
                 if (isFalse)
                     falsevalues.push_back(v);
-                if (!isTrue && !isFalse && !weak) {
-                    truevalues.push_back(v);
-                    falsevalues.push_back(v);
-                }
 
             }
             if (!truevalues.empty() || !falsevalues.empty()) {
