@@ -96,9 +96,15 @@ KEYWORDS = {
 def getEssentialTypeCategory(expr):
     if not expr:
         return None
-    if expr.valueType and expr.valueType.typeScope:
-        return "enum<" + expr.valueType.typeScope.className + ">"
-    if expr.astOperand1 and expr.astOperand2:
+    if expr.str == ',':
+        return getEssentialTypeCategory(expr.astOperand2)
+    if expr.str in ('<', '<=', '==', '!=', '>=', '>', '&&', '||', '!'):
+        return 'bool'
+    if expr.str in ('<<', '>>'):
+        # TODO this is incomplete
+        return getEssentialTypeCategory(expr.astOperand1)
+    if len(expr.str) == 1 and expr.str in '+-*/%&|^':
+        # TODO this is incomplete
         e1 = getEssentialTypeCategory(expr.astOperand1)
         e2 = getEssentialTypeCategory(expr.astOperand2)
         #print('{0}: {1} {2}'.format(expr.str, e1, e2))
@@ -106,6 +112,8 @@ def getEssentialTypeCategory(expr):
             return e1
         if expr.valueType:
             return expr.valueType.sign
+    if expr.valueType and expr.valueType.typeScope:
+        return "enum<" + expr.valueType.typeScope.className + ">"
     if expr.variable:
         typeToken = expr.variable.typeStartToken
         while typeToken:
