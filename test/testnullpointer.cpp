@@ -74,6 +74,7 @@ private:
         TEST_CASE(nullpointer32); // #8460
         TEST_CASE(nullpointer33);
         TEST_CASE(nullpointer34);
+        TEST_CASE(nullpointer35);
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1413,6 +1414,19 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void nullpointer35() {
+        check("bool f(int*);\n"
+              "void g(int* x) {\n"
+              "    if (f(x)) {\n"
+              "        *x = 1;\n"
+              "    }\n"
+              "}\n"
+              "void h() {\n"
+              "    g(0);\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void nullpointer_addressOf() { // address of
         check("void f() {\n"
               "  struct X *x = 0;\n"
@@ -2574,7 +2588,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f(int *p = 0) {\n"
+        check("void f(int a, int *p = 0) {\n"
               "    if (a != 0)\n"
               "      *p = 0;\n"
               "}", true);
