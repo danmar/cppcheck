@@ -1155,6 +1155,43 @@ static void valueFlowPointerAlias(TokenList *tokenlist)
     }
 }
 
+static void valueFlowPointerAliasDeref(TokenList *tokenlist)
+{
+    for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+        // not address of
+        if (!tok->isUnaryOp("*"))
+            continue;
+        if (!astIsPointer(tok->astOperand1()))
+            continue;
+
+        const Token* lifeTok = nullptr;
+        ErrorPath errorPath;
+        for (const ValueFlow::Value& v:tok->astOperand1()->values()) {
+            if (!v.isLocalLifetimeValue())
+                continue;
+            lifeTok = v.tokvalue;
+            errorPath = v.errorPath;
+        }
+        if (!lifeTok)
+            continue;
+        if (lifeTok->varId() == 0)
+            continue;
+        const Variable * var = lifeTok->variable();
+        if (!var)
+            continue;
+        if (!var->isConst() && isVariableChanged(lifeTok->next(), tok, lifeTok->varId(), !var->isLocal(), tokenlist->getSettings(), tokenlist->isCPP()))
+            continue;
+        for (const ValueFlow::Value& v:lifeTok->values()) {
+            if (v.isLifetimeValue())
+                continue;
+            ValueFlow::Value value = v;
+            value.errorPath.insert(value.errorPath.begin(), errorPath.begin(), errorPath.end());
+            setTokenValue(tok, value, tokenlist->getSettings());
+        }
+
+    }
+}
+
 static void valueFlowBitAnd(TokenList *tokenlist)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
@@ -5734,6 +5771,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     std::size_t values = 0;
     while (std::time(nullptr) < timeout && values < getTotalValues(tokenlist)) {
         values = getTotalValues(tokenlist);
+        valueFlowPointerAliasDeref(tokenlist);
         valueFlowArrayBool(tokenlist);
         valueFlowRightShift(tokenlist, settings);
         valueFlowOppositeCondition(symboldatabase, settings);
