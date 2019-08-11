@@ -441,6 +441,23 @@ void misra_16_3() {
     case 12:
     default: break;
   }
+
+    switch (x) {
+    case 1:     // comment 1
+    {
+        a = 1;
+        break;
+    }
+    case 2:     // comment 2
+    {
+        a = 2;
+        break;
+    }
+    default:
+    {
+        break;
+    }
+    }
 }
 
 void misra_16_4() {
