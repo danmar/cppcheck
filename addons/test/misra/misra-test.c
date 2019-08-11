@@ -397,6 +397,9 @@ void misra_15_7() {
         var2 = 10u;
     }   // no-warning
   }
+
+  if (a==2) {} else if (b==4) {} // 15.7
+  if (a==2) {} else { if (b==4) {} } // no-warning
 }
 
 void misra_16_2() {

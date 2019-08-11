@@ -1479,6 +1479,8 @@ class MisraChecker:
                 continue
             if not simpleMatch(scope.bodyStart, '{ if ('):
                 continue
+            if scope.bodyStart.col > 0:
+                continue
             tok = scope.bodyStart.next.next.link
             if not simpleMatch(tok, ') {'):
                 continue
