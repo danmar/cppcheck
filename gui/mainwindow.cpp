@@ -461,7 +461,7 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
         mThread->setAddonsAndTools(mProjectFile->getAddonsAndTools(), mSettings->value(SETTINGS_MISRA_FILE).toString());
         QString clangHeaders = mSettings->value(SETTINGS_VS_INCLUDE_PATHS).toString();
         mThread->setClangIncludePaths(clangHeaders.split(";"));
-        mThread->setSuppressions(mProjectFile->getCheckSuppressions());
+        mThread->setSuppressions(mProjectFile->getSuppressions());
     }
     mThread->setProject(p);
     mThread->check(checkSettings);
@@ -860,7 +860,7 @@ Settings MainWindow::getCppcheckSettings()
             tryLoadLibrary(&result.library, filename);
         }
 
-        foreach (const Suppressions::Suppression &suppression, mProjectFile->getCheckSuppressions()) {
+        foreach (const Suppressions::Suppression &suppression, mProjectFile->getSuppressions()) {
             result.nomsg.addSuppression(suppression);
         }
 

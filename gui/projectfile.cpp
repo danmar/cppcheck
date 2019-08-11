@@ -574,19 +574,6 @@ void ProjectFile::readStringList(QStringList &stringlist, QXmlStreamReader &read
     } while (!allRead);
 }
 
-QList<Suppressions::Suppression> ProjectFile::getCheckSuppressions() const
-{
-    QList<Suppressions::Suppression> ret;
-    const std::string projectFilePath = Path::getPathFromFilename(mFilename.toStdString());
-    foreach (Suppressions::Suppression suppression, getSuppressions()) {
-        if (!suppression.fileName.empty() && suppression.fileName[0]!='*' && !Path::isAbsolute(suppression.fileName))
-            suppression.fileName = Path::simplifyPath(projectFilePath) + suppression.fileName;
-
-        ret.append(suppression);
-    }
-    return ret;
-}
-
 void ProjectFile::setIncludes(const QStringList &includes)
 {
     mIncludeDirs = includes;
