@@ -89,17 +89,17 @@ void CheckStl::outOfBounds()
                     continue;
                 }
                 if (Token::Match(tok, "%name% . %name% (") && container->getYield(tok->strAt(2)) == Library::Container::Yield::START_ITERATOR) {
-                    const Token *parent = tok->tokAt(3)->astParent();
+                    const Token *fparent = tok->tokAt(3)->astParent();
                     const Token *other = nullptr;
-                    if (Token::simpleMatch(parent, "+") && parent->astOperand1() == tok->tokAt(3))
-                        other = parent->astOperand2();
-                    else if (Token::simpleMatch(parent, "+") && parent->astOperand2() == tok->tokAt(3))
-                        other = parent->astOperand1();
+                    if (Token::simpleMatch(fparent, "+") && fparent->astOperand1() == tok->tokAt(3))
+                        other = fparent->astOperand2();
+                    else if (Token::simpleMatch(fparent, "+") && fparent->astOperand2() == tok->tokAt(3))
+                        other = fparent->astOperand1();
                     if (other && other->hasKnownIntValue() && other->getKnownIntValue() > value.intvalue) {
-                        outOfBoundsError(parent, tok->expressionString(), &value, other->expressionString(), &other->values().back());
+                        outOfBoundsError(fparent, tok->expressionString(), &value, other->expressionString(), &other->values().back());
                         continue;
                     } else if (other && !other->hasKnownIntValue() && value.isKnown() && value.intvalue==0) {
-                        outOfBoundsError(parent, tok->expressionString(), &value, other->expressionString(), nullptr);
+                        outOfBoundsError(fparent, tok->expressionString(), &value, other->expressionString(), nullptr);
                         continue;
                     }
                 }
