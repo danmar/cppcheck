@@ -76,7 +76,7 @@ void CheckStl::outOfBounds()
                 continue;
             const Token * parent = tok->astParent();
             while(Token::simpleMatch(parent, "(") && !Token::Match(parent->previous(), "%name%"))
-                parent = tok->astParent();
+                parent = parent->astParent();
             for (const ValueFlow::Value &value : tok->values()) {
                 if (!value.isContainerSizeValue())
                     continue;

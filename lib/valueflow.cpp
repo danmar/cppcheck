@@ -1158,7 +1158,6 @@ static void valueFlowPointerAlias(TokenList *tokenlist)
 static void valueFlowPointerAliasDeref(TokenList *tokenlist)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
-        // not address of
         if (!tok->isUnaryOp("*"))
             continue;
         if (!astIsPointer(tok->astOperand1()))
@@ -1188,7 +1187,6 @@ static void valueFlowPointerAliasDeref(TokenList *tokenlist)
             value.errorPath.insert(value.errorPath.begin(), errorPath.begin(), errorPath.end());
             setTokenValue(tok, value, tokenlist->getSettings());
         }
-
     }
 }
 
