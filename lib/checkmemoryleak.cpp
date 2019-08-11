@@ -970,34 +970,45 @@ void CheckMemoryLeakNoVar::check()
         // could be leaked if a function called for another argument throws.
         checkForUnsafeArgAlloc(scope);
 
-        // parse the executable scope until tok is reached...
-        for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
-            // allocating memory in parameter for function call..
-            if (!(Token::Match(tok, "[(,] %name% (") && Token::Match(tok->linkAt(2), ") [,)]")))
-                continue;
-            if (getAllocationType(tok->next(), 0) == No)
-                continue;
-            // locate outer function call..
-            const Token* tok3 = tok;
-            while (tok3 && tok3->astParent() && tok3->str() == ",")
-                tok3 = tok3->astParent();
-            if (!tok3 || tok3->str() != "(")
-                continue;
-            // Is it a function call..
-            if (!Token::Match(tok3->tokAt(-2), "!!= %name% ("))
-                continue;
-            const std::string& functionName = tok3->strAt(-1);
-            if ((mTokenizer->isCPP() && functionName == "delete") ||
-                functionName == "free" ||
-                functionName == "fclose" ||
-                functionName == "realloc")
-                break;
-            if (isReopenStandardStream(tok->next()))
-                continue;
-            if (CheckMemoryLeakInFunction::test_white_list(functionName, mSettings, mTokenizer->isCPP())) {
-                functionCallLeak(tok, tok->strAt(1), functionName);
-                break;
-            }
+        // Check for leaks where a the return value of an allocation function like malloc() is an input argument,
+        // for example f(malloc(1)), where f is known to not release the input argument.
+        checkForUnreleasedInputArgument(scope);
+    }
+}
+
+//---------------------------------------------------------------------------
+// Checks if an input argument to a function is the return value of an allocation function
+// like malloc(), and the function does not release it.
+//---------------------------------------------------------------------------
+void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
+{
+    // parse the executable scope until tok is reached...
+    for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+        // allocating memory in parameter for function call..
+        if (!(Token::Match(tok, "[(,] %name% (") && Token::Match(tok->linkAt(2), ") [,)]")))
+            continue;
+        if (getAllocationType(tok->next(), 0) == No)
+            continue;
+        // locate outer function call..
+        const Token* tok3 = tok;
+        while (tok3 && tok3->astParent() && tok3->str() == ",")
+            tok3 = tok3->astParent();
+        if (!tok3 || tok3->str() != "(")
+            continue;
+        // Is it a function call..
+        if (!Token::Match(tok3->tokAt(-2), "!!= %name% ("))
+            continue;
+        const std::string& functionName = tok3->strAt(-1);
+        if ((mTokenizer->isCPP() && functionName == "delete") ||
+            functionName == "free" ||
+            functionName == "fclose" ||
+            functionName == "realloc")
+            break;
+        if (isReopenStandardStream(tok->next()))
+            continue;
+        if (CheckMemoryLeakInFunction::test_white_list(functionName, mSettings, mTokenizer->isCPP())) {
+            functionCallLeak(tok, tok->strAt(1), functionName);
+            break;
         }
     }
 }
