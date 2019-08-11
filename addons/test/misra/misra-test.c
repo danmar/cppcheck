@@ -161,9 +161,10 @@ void misra_9_5() {
   int x[] = {[0]=23}; // 9.5
 }
 
-void misra_10_1() {
+void misra_10_1(uint8_t u) {
   int32_t i;
   i = 3 << 1; // 10.1
+  i = (u & u) << 4; // no-warning
 }
 
 void misra_10_4(u32 x, s32 y) {

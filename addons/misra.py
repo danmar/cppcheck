@@ -98,6 +98,14 @@ def getEssentialTypeCategory(expr):
         return None
     if expr.valueType and expr.valueType.typeScope:
         return "enum<" + expr.valueType.typeScope.className + ">"
+    if expr.astOperand1 and expr.astOperand2:
+        e1 = getEssentialTypeCategory(expr.astOperand1)
+        e2 = getEssentialTypeCategory(expr.astOperand2)
+        #print('{0}: {1} {2}'.format(expr.str, e1, e2))
+        if e1 and e2 and e1 == e2:
+            return e1
+        if expr.valueType:
+            return expr.valueType.sign
     if expr.variable:
         typeToken = expr.variable.typeStartToken
         while typeToken:
