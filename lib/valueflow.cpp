@@ -5203,7 +5203,7 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
             continue;
         if (!var->valueType() || !var->valueType()->container)
             continue;
-        if (!Token::Match(var->nameToken(), "%name% ;"))
+        if (!Token::Match(var->nameToken(), "%name% ;|="))
             continue;
         if (var->nameToken()->hasKnownValue())
             continue;

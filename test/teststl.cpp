@@ -289,6 +289,11 @@ private:
                     "  x = s.begin() + x;\n"
                     "}\n");
         ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in expression 's.begin()+x' because 's' is empty and 'x' may be non-zero.\n", errout.str());
+
+        checkNormal("char fstr1(){const std::string s = \"<a><b>\"; return s[42]; }\n"
+                    "wchar_t fwstr1(){const std::wstring s = L\"<a><b>\"; return s[42]; }\n");
+        ASSERT_EQUALS("test.cpp:1:error:Out of bounds access in expression 's[42]' because 's' is empty.\n"
+                      "test.cpp:2:error:Out of bounds access in expression 's[42]' because 's' is empty.\n", errout.str());
     }
 
     void outOfBoundsIndexExpression() {
