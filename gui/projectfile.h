@@ -149,12 +149,6 @@ public:
     }
 
     /**
-    * @brief Get "check" suppressions.
-    * @return list of suppressions.
-    */
-    QList<Suppressions::Suppression> getCheckSuppressions() const;
-
-    /**
     * @brief Get list addons.
     * @return list of addons.
     */

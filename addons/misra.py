@@ -96,6 +96,22 @@ KEYWORDS = {
 def getEssentialTypeCategory(expr):
     if not expr:
         return None
+    if expr.str == ',':
+        return getEssentialTypeCategory(expr.astOperand2)
+    if expr.str in ('<', '<=', '==', '!=', '>=', '>', '&&', '||', '!'):
+        return 'bool'
+    if expr.str in ('<<', '>>'):
+        # TODO this is incomplete
+        return getEssentialTypeCategory(expr.astOperand1)
+    if len(expr.str) == 1 and expr.str in '+-*/%&|^':
+        # TODO this is incomplete
+        e1 = getEssentialTypeCategory(expr.astOperand1)
+        e2 = getEssentialTypeCategory(expr.astOperand2)
+        #print('{0}: {1} {2}'.format(expr.str, e1, e2))
+        if e1 and e2 and e1 == e2:
+            return e1
+        if expr.valueType:
+            return expr.valueType.sign
     if expr.valueType and expr.valueType.typeScope:
         return "enum<" + expr.valueType.typeScope.className + ">"
     if expr.variable:
@@ -1463,6 +1479,8 @@ class MisraChecker:
                 continue
             if not simpleMatch(scope.bodyStart, '{ if ('):
                 continue
+            if scope.bodyStart.col > 0:
+                continue
             tok = scope.bodyStart.next.next.link
             if not simpleMatch(tok, ') {'):
                 continue
@@ -1501,8 +1519,12 @@ class MisraChecker:
                 state = STATE_OK
             elif token.str == '}' and state == STATE_OK:
                 # is this {} an unconditional block of code?
-                link = findRawLink(token)
-                if (link is None) or (link.previous is None) or (link.previous.str not in ':;{}'):
+                prev = findRawLink(token)
+                if prev:
+                    prev = prev.previous
+                    while prev and prev.str[:2] in ('//', '/*'):
+                        prev = prev.previous
+                if (prev is None) or (prev.str not in ':;{}'):
                     state = STATE_NONE
             elif token.str == 'case' or token.str == 'default':
                 if state != STATE_OK:

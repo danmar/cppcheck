@@ -2180,16 +2180,16 @@ static bool valueFlowForward(Token * const               startToken,
                     continue;
                 }
                 const ProgramMemory &programMemory = getProgramMemory(tok2, varid, v);
-                if (subFunction && conditionIsTrue(condTok, programMemory))
+                const bool isTrue = conditionIsTrue(condTok, programMemory);
+                const bool isFalse = conditionIsFalse(condTok, programMemory);
+
+                if (isTrue)
                     truevalues.push_back(v);
-                else if (!conditionIsFalse(condTok, programMemory))
-                    truevalues.push_back(v);
-                if (conditionIsFalse(condTok, programMemory))
+                if (isFalse)
                     falsevalues.push_back(v);
-                else if (!subFunction && !conditionIsTrue(condTok, programMemory))
-                    falsevalues.push_back(v);
+
             }
-            if (truevalues.size() != values.size() || condAlwaysTrue) {
+            if (!truevalues.empty() || !falsevalues.empty()) {
                 // '{'
                 const Token * const startToken1 = tok2->linkAt(1)->next();
 
@@ -2246,7 +2246,8 @@ static bool valueFlowForward(Token * const               startToken,
                         removeValues(values, falsevalues);
                     }
                 }
-
+                if (values.empty())
+                    return false;
                 continue;
             }
 

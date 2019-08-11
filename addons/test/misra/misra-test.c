@@ -161,9 +161,10 @@ void misra_9_5() {
   int x[] = {[0]=23}; // 9.5
 }
 
-void misra_10_1() {
+void misra_10_1(uint8_t u) {
   int32_t i;
   i = 3 << 1; // 10.1
+  i = (u & u) << 4; // no-warning
 }
 
 void misra_10_4(u32 x, s32 y) {
@@ -396,6 +397,9 @@ void misra_15_7() {
         var2 = 10u;
     }   // no-warning
   }
+
+  if (a==2) {} else if (b==4) {} // 15.7
+  if (a==2) {} else { if (b==4) {} } // no-warning
 }
 
 void misra_16_2() {
@@ -437,6 +441,23 @@ void misra_16_3() {
     case 12:
     default: break;
   }
+
+    switch (x) {
+    case 1:     // comment 1
+    {
+        a = 1;
+        break;
+    }
+    case 2:     // comment 2
+    {
+        a = 2;
+        break;
+    }
+    default:
+    {
+        break;
+    }
+    }
 }
 
 void misra_16_4() {
