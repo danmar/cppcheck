@@ -1519,8 +1519,12 @@ class MisraChecker:
                 state = STATE_OK
             elif token.str == '}' and state == STATE_OK:
                 # is this {} an unconditional block of code?
-                link = findRawLink(token)
-                if (link is None) or (link.previous is None) or (link.previous.str not in ':;{}'):
+                prev = findRawLink(token)
+                if prev:
+                    prev = prev.previous
+                    while prev and prev.str[:2] in ('//', '/*'):
+                        prev = prev.previous
+                if (prev is None) or (prev.str not in ':;{}'):
                     state = STATE_NONE
             elif token.str == 'case' or token.str == 'default':
                 if state != STATE_OK:
