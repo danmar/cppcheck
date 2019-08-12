@@ -289,6 +289,13 @@ private:
                     "  x = s.begin() + x;\n"
                     "}\n");
         ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in expression 's.begin()+x' because 's' is empty and 'x' may be non-zero.\n", errout.str());
+
+        checkNormal("int f() {\n"
+                    "    std::vector<int> v;\n"
+                    "    std::vector<int> * pv = &v;\n"
+                    "    return (*pv)[42];\n"
+                    "}\n");
+        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in expression '(*pv)[42]' because '*pv' is empty.\n", errout.str());
     }
 
     void outOfBoundsIndexExpression() {

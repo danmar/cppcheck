@@ -51,17 +51,32 @@ static const struct CWE CWE788(788U);   // Access of Memory Location After End o
 static const struct CWE CWE825(825U);   // Expired Pointer Dereference
 static const struct CWE CWE834(834U);   // Excessive Iteration
 
-
+static const Library::Container * getLibraryContainer(const Token * tok)
+{
+    if (!tok)
+        return nullptr;
+    if (tok->isUnaryOp("*") && astIsPointer(tok->astOperand1())) {
+        for (const ValueFlow::Value& v:tok->astOperand1()->values()) {
+            if (!v.isLocalLifetimeValue())
+                continue;
+            return getLibraryContainer(v.tokvalue);
+        }
+    }
+    if (!tok->valueType())
+        return nullptr;
+    return tok->valueType()->container;
+}
 
 void CheckStl::outOfBounds()
 {
     for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
         for (const Token *tok = function->bodyStart; tok != function->bodyEnd; tok = tok->next()) {
-            if (!tok->isName() || !tok->valueType())
-                continue;
-            const Library::Container *container = tok->valueType()->container;
+            const Library::Container *container = getLibraryContainer(tok);
             if (!container)
                 continue;
+            const Token * parent = tok->astParent();
+            while (Token::simpleMatch(parent, "(") && !Token::Match(parent->previous(), "%name%"))
+                parent = parent->astParent();
             for (const ValueFlow::Value &value : tok->values()) {
                 if (!value.isContainerSizeValue())
                     continue;
@@ -69,41 +84,41 @@ void CheckStl::outOfBounds()
                     continue;
                 if (!value.errorSeverity() && !mSettings->isEnabled(Settings::WARNING))
                     continue;
-                if (value.intvalue == 0 && Token::Match(tok, "%name% . %name% (") && container->getYield(tok->strAt(2)) == Library::Container::Yield::ITEM) {
-                    outOfBoundsError(tok->tokAt(3), tok->str(), &value, tok->strAt(2), nullptr);
+                if (value.intvalue == 0 && Token::Match(parent, ". %name% (") && container->getYield(parent->strAt(1)) == Library::Container::Yield::ITEM) {
+                    outOfBoundsError(parent->tokAt(2), tok->expressionString(), &value, parent->strAt(1), nullptr);
                     continue;
                 }
                 if (Token::Match(tok, "%name% . %name% (") && container->getYield(tok->strAt(2)) == Library::Container::Yield::START_ITERATOR) {
-                    const Token *parent = tok->tokAt(3)->astParent();
+                    const Token *fparent = tok->tokAt(3)->astParent();
                     const Token *other = nullptr;
-                    if (Token::simpleMatch(parent, "+") && parent->astOperand1() == tok->tokAt(3))
-                        other = parent->astOperand2();
-                    else if (Token::simpleMatch(parent, "+") && parent->astOperand2() == tok->tokAt(3))
-                        other = parent->astOperand1();
+                    if (Token::simpleMatch(fparent, "+") && fparent->astOperand1() == tok->tokAt(3))
+                        other = fparent->astOperand2();
+                    else if (Token::simpleMatch(fparent, "+") && fparent->astOperand2() == tok->tokAt(3))
+                        other = fparent->astOperand1();
                     if (other && other->hasKnownIntValue() && other->getKnownIntValue() > value.intvalue) {
-                        outOfBoundsError(parent, tok->str(), &value, other->expressionString(), &other->values().back());
+                        outOfBoundsError(fparent, tok->expressionString(), &value, other->expressionString(), &other->values().back());
                         continue;
                     } else if (other && !other->hasKnownIntValue() && value.isKnown() && value.intvalue==0) {
-                        outOfBoundsError(parent, tok->str(), &value, other->expressionString(), nullptr);
+                        outOfBoundsError(fparent, tok->expressionString(), &value, other->expressionString(), nullptr);
                         continue;
                     }
                 }
                 if (!container->arrayLike_indexOp && !container->stdStringLike)
                     continue;
-                if (value.intvalue == 0 && Token::Match(tok, "%name% [")) {
-                    outOfBoundsError(tok->next(), tok->str(), &value, "", nullptr);
+                if (value.intvalue == 0 && Token::Match(parent, "[")) {
+                    outOfBoundsError(parent, tok->expressionString(), &value, "", nullptr);
                     continue;
                 }
-                if (container->arrayLike_indexOp && Token::Match(tok, "%name% [")) {
-                    const ValueFlow::Value *indexValue = tok->next()->astOperand2() ? tok->next()->astOperand2()->getMaxValue(false) : nullptr;
+                if (container->arrayLike_indexOp && Token::Match(parent, "[")) {
+                    const ValueFlow::Value *indexValue = parent->astOperand2() ? parent->astOperand2()->getMaxValue(false) : nullptr;
                     if (indexValue && indexValue->intvalue >= value.intvalue) {
-                        outOfBoundsError(tok->next(), tok->str(), &value, tok->next()->astOperand2()->expressionString(), indexValue);
+                        outOfBoundsError(parent, tok->expressionString(), &value, parent->astOperand2()->expressionString(), indexValue);
                         continue;
                     }
                     if (mSettings->isEnabled(Settings::WARNING)) {
-                        indexValue = tok->next()->astOperand2() ? tok->next()->astOperand2()->getMaxValue(true) : nullptr;
+                        indexValue = parent->astOperand2() ? parent->astOperand2()->getMaxValue(true) : nullptr;
                         if (indexValue && indexValue->intvalue >= value.intvalue) {
-                            outOfBoundsError(tok->next(), tok->str(), &value, tok->next()->astOperand2()->expressionString(), indexValue);
+                            outOfBoundsError(parent, tok->expressionString(), &value, parent->astOperand2()->expressionString(), indexValue);
                             continue;
                         }
                     }

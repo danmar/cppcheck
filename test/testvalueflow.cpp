@@ -123,6 +123,8 @@ private:
 
         TEST_CASE(valueFlowSafeFunctionParameterValues);
         TEST_CASE(valueFlowUnknownFunctionReturn);
+
+        TEST_CASE(valueFlowPointerAliasDeref);
     }
 
     static bool isNotTokValue(const ValueFlow::Value &val) {
@@ -4064,6 +4066,18 @@ private:
         ASSERT_EQUALS(2, values.size());
         ASSERT_EQUALS(INT_MIN, values.front().intvalue);
         ASSERT_EQUALS(INT_MAX, values.back().intvalue);
+    }
+
+    void valueFlowPointerAliasDeref() {
+        const char* code;
+
+        code = "int f() {\n"
+               "  int a = 123;\n"
+               "  int *p = &a;\n"
+               "  int x = *p;\n"
+               "  return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 5U, 123));
     }
 };
 
