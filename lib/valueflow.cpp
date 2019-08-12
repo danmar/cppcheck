@@ -5203,7 +5203,7 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
             continue;
         if (!var->valueType() || !var->valueType()->container)
             continue;
-        if (!Token::Match(var->nameToken(), "%name% ;|="))
+        if (!Token::Match(var->nameToken(), "%name% ;"))
             continue;
         if (var->nameToken()->hasKnownValue())
             continue;
@@ -5222,7 +5222,7 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
     // after assignment
     for (const Scope *functionScope : symboldatabase->functionScopes) {
         for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
-            if (Token::Match(tok, "[;{}] %var% = %str% ;")) {
+            if (Token::Match(tok, "%name%|;|{|} %var% = %str% ;")) {
                 const Token *containerTok = tok->next();
                 if (containerTok && containerTok->valueType() && containerTok->valueType()->container && containerTok->valueType()->container->stdStringLike) {
                     ValueFlow::Value value(Token::getStrLength(containerTok->tokAt(2)));

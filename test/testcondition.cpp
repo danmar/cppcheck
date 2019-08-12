@@ -3180,7 +3180,14 @@ private:
               "    const std::string x=\"xyz\";\n"
               "    if(!x.empty()){}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Condition '!x.empty()' is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition '!x.empty()' is always true\n", errout.str());
+
+        check("std::string g();\n"
+              "void f() {\n"
+              "    const std::string msg = g();\n"
+              "    if(!msg.empty()){}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void multiConditionAlwaysTrue() {
