@@ -115,6 +115,11 @@ public:
     AllocType getReallocationType(const Token *tok2, nonneg int varid) const;
 
     /**
+     * Check if token reopens a standard stream
+     * @param tok token to check
+     */
+    bool isReopenStandardStream(const Token *tok) const;
+    /**
      * Report that there is a memory leak (new/malloc/etc)
      * @param tok token where memory is leaked
      * @param varname name of variable
