@@ -69,7 +69,7 @@ static bool isAutoDealloc(const Variable *var)
     /** @todo false negative: check base class for side effects */
     /** @todo false negative: check constructors for side effects */
     if (var->typeScope() && var->typeScope()->numConstructors == 0 &&
-        (var->typeScope()->varlist.empty() || var->type()->needInitialization == Type::True) &&
+        (var->typeScope()->varlist.empty() || var->type()->needInitialization == Type::NeedInitialization::True) &&
         var->type()->derivedFrom.empty())
         return false;
 
@@ -284,7 +284,12 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                                   std::set<int> notzero,
                                   nonneg int recursiveCount)
 {
-    if (++recursiveCount > 1000)    // maximum number of "else if ()"
+#if ASAN
+    static const nonneg int recursiveLimit = 300;
+#else
+    static const nonneg int recursiveLimit = 1000;
+#endif
+    if (++recursiveCount > recursiveLimit)    // maximum number of "else if ()"
         throw InternalError(startToken, "Internal limit: CheckLeakAutoVar::checkScope() Maximum recursive count of 1000 reached.", InternalError::LIMIT);
 
     std::map<int, VarInfo::AllocInfo> &alloctype = varInfo->alloctype;
@@ -311,7 +316,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
 
         // look for end of statement
-        if (!Token::Match(tok, "[;{}]") || Token::Match(tok->next(), "[;{}]"))
+        if (!Token::Match(tok, "[;{},]") || Token::Match(tok->next(), "[;{},]"))
             continue;
 
         tok = tok->next();
@@ -927,11 +932,11 @@ void CheckLeakAutoVar::ret(const Token *tok, const VarInfo &varInfo)
             for (const Token *tok2 = tok; tok2; tok2 = tok2->next()) {
                 if (tok2->str() == ";")
                     break;
-                if (Token::Match(tok2, "return|(|, %varid% [);,]", varid)) {
+                if (Token::Match(tok2, "return|(|{|, %varid% [});,]", varid)) {
                     used = true;
                     break;
                 }
-                if (Token::Match(tok2, "return|(|, & %varid% . %name% [);,]", varid)) {
+                if (Token::Match(tok2, "return|(|{|, & %varid% . %name% [});,]", varid)) {
                     used = true;
                     break;
                 }

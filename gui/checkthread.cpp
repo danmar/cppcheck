@@ -360,12 +360,16 @@ void CheckThread::parseAddonErrors(QString err, const QString &tool)
         const int column = obj["col"].toInt();
         const std::string severity = obj["severity"].toString().toStdString();
         const std::string message = obj["message"].toString().toStdString();
-        const std::string id = obj["errorId"].toString().toStdString();
+        const std::string id = (obj["addon"].toString() + "-" + obj["errorId"].toString()).toStdString();
 
         std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
         callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(filename, lineNumber));
         callstack.back().col = column;
         ErrorLogger::ErrorMessage errmsg(callstack, filename, Severity::fromString(severity), message, id, false);
+
+        if (isSuppressed(errmsg.toSuppressionsErrorMessage()))
+            continue;
+
         mResult.reportErr(errmsg);
     }
 }
@@ -452,15 +456,9 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
         errorMessage.errorId = e.errorId.toStdString();
         errorMessage.symbolNames = e.symbolNames.toStdString();
 
-        bool isSuppressed = false;
-        foreach (const Suppressions::Suppression &suppression, mSuppressions) {
-            if (suppression.isSuppressed(errorMessage)) {
-                isSuppressed = true;
-                break;
-            }
-        }
-        if (isSuppressed)
+        if (isSuppressed(errorMessage))
             continue;
+
         std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
         foreach (const QErrorPathItem &path, e.errorPath) {
             callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(path.file.toStdString(), path.info.toStdString(), path.line));
@@ -471,6 +469,15 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
         ErrorLogger::ErrorMessage errmsg(callstack, f0, e.severity, msg, id, false);
         mResult.reportErr(errmsg);
     }
+}
+
+bool CheckThread::isSuppressed(const Suppressions::ErrorMessage &errorMessage) const
+{
+    foreach (const Suppressions::Suppression &suppression, mSuppressions) {
+        if (suppression.isSuppressed(errorMessage))
+            return true;
+    }
+    return false;
 }
 
 QString CheckThread::clangCmd()

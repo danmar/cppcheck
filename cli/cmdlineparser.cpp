@@ -181,10 +181,13 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--inconclusive") == 0)
                 mSettings->inconclusive = true;
 
-            // Experimental: this flag says that all functions are "safe".
-            // todo: add proper configuration options
-            else if (std::strcmp(argv[i], "--all-functions-are-safe") == 0)
-                mSettings->allFunctionsAreSafe = true;
+            // Experimental: Safe checking
+            else if (std::strcmp(argv[i], "--safe-classes") == 0)
+                mSettings->safeChecks.classes = true;
+
+            // Experimental: Safe checking
+            else if (std::strcmp(argv[i], "--safe-functions") == 0)
+                mSettings->safeChecks.externalFunctions = mSettings->safeChecks.internalFunctions = true;
 
             // Enforce language (--language=, -x)
             else if (std::strncmp(argv[i], "--language=", 11) == 0 || std::strcmp(argv[i], "-x") == 0) {
@@ -542,10 +545,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 ImportProject::Type projType = mSettings->project.import(projectFile, mSettings);
                 if (projType == ImportProject::Type::CPPCHECK_GUI) {
                     mPathNames = mSettings->project.guiProject.pathNames;
-                    for (const std::string &lib : mSettings->project.guiProject.libraries) {
-                        if (!CppCheckExecutor::tryLoadLibrary(mSettings->library, argv[0], lib.c_str()))
-                            return false;
-                    }
+                    for (const std::string &lib : mSettings->project.guiProject.libraries)
+                        mSettings->libraries.push_back(lib);
 
                     for (const std::string &ignorePath : mSettings->project.guiProject.excludedPaths)
                         mIgnoredPaths.emplace_back(ignorePath);
@@ -747,13 +748,13 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--showtime=", 11) == 0) {
                 const std::string showtimeMode = argv[i] + 11;
                 if (showtimeMode == "file")
-                    mSettings->showtime = SHOWTIME_FILE;
+                    mSettings->showtime = SHOWTIME_MODES::SHOWTIME_FILE;
                 else if (showtimeMode == "summary")
-                    mSettings->showtime = SHOWTIME_SUMMARY;
+                    mSettings->showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY;
                 else if (showtimeMode == "top5")
-                    mSettings->showtime = SHOWTIME_TOP5;
+                    mSettings->showtime = SHOWTIME_MODES::SHOWTIME_TOP5;
                 else if (showtimeMode.empty())
-                    mSettings->showtime = SHOWTIME_NONE;
+                    mSettings->showtime = SHOWTIME_MODES::SHOWTIME_NONE;
                 else {
                     std::string message("cppcheck: error: unrecognized showtime mode: \"");
                     message += showtimeMode;

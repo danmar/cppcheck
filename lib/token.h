@@ -31,6 +31,7 @@
 #include <cstddef>
 #include <functional>
 #include <list>
+#include <memory>
 #include <ostream>
 #include <string>
 #include <vector>
@@ -49,6 +50,13 @@ class Variable;
 struct TokensFrontBack {
     Token *front;
     Token *back;
+};
+
+struct ScopeInfo2 {
+    ScopeInfo2(const std::string &name_, const Token *bodyEnd_, const std::set<std::string> &usingNamespaces_ = std::set<std::string>()) : name(name_), bodyEnd(bodyEnd_), usingNamespaces(usingNamespaces_) {}
+    std::string name;
+    const Token * const bodyEnd;
+    std::set<std::string> usingNamespaces;
 };
 
 struct TokenImpl {
@@ -98,6 +106,9 @@ struct TokenImpl {
     // Pointer to a template in the template simplifier
     std::set<TemplateSimplifier::TokenAndName*> mTemplateSimplifierPointers;
 
+    // Pointer to the object representing this token's scope
+    std::shared_ptr<ScopeInfo2> mScopeInfo;
+
     // __cppcheck_in_range__
     struct CppcheckAttributes {
         enum Type {LOW,HIGH} type;
@@ -126,6 +137,7 @@ struct TokenImpl {
         , mValues(nullptr)
         , mBits(0)
         , mTemplateSimplifierPointers()
+        , mScopeInfo(nullptr)
         , mCppcheckAttributes(nullptr)
     {}
 
@@ -358,6 +370,9 @@ public:
     bool isName() const {
         return getFlag(fIsName);
     }
+    bool isNameOnly() const {
+        return mFlags == fIsName && mTokType == eName;
+    }
     bool isUpperCaseName() const;
     bool isLiteral() const {
         return getFlag(fIsLiteral);
@@ -544,6 +559,13 @@ public:
     void isAtAddress(bool b) {
         setFlag(fAtAddress, b);
     }
+    bool isIncompleteVar() const {
+        return getFlag(fIncompleteVar);
+    }
+    void isIncompleteVar(bool b) {
+        setFlag(fIncompleteVar, b);
+    }
+
 
     bool isBitfield() const {
         return mImpl->mBits > 0;
@@ -936,7 +958,11 @@ public:
     }
 
     bool hasKnownIntValue() const {
-        return hasKnownValue() && std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), std::mem_fn(&ValueFlow::Value::isIntValue));
+        if (!mImpl->mValues)
+            return false;
+        return std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value &value) {
+            return value.isKnown() && value.isIntValue();
+        });
     }
 
     bool hasKnownValue() const {
@@ -1071,6 +1097,7 @@ private:
         fIsTemplateArg          = (1 << 22),
         fIsAttributeNodiscard   = (1 << 23), // __attribute__ ((warn_unused_result)), [[nodiscard]]
         fAtAddress              = (1 << 24), // @ 0x4000
+        fIncompleteVar          = (1 << 25),
     };
 
     Token::Type mTokType;
@@ -1182,6 +1209,9 @@ public:
     void printAst(bool verbose, bool xml, std::ostream &out) const;
 
     void printValueFlow(bool xml, std::ostream &out) const;
+
+    void scopeInfo(std::shared_ptr<ScopeInfo2> newScopeInfo);
+    std::shared_ptr<ScopeInfo2> scopeInfo() const;
 };
 
 /// @}

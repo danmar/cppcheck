@@ -420,26 +420,33 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="mTabEditorStyle">
+     <widget class="QWidget" name="mTabTheme">
       <attribute name="title">
-       <string>Code Editor</string>
+       <string>Theme</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_11">
        <item>
         <widget class="QGroupBox" name="gboxEditorStyle">
          <property name="title">
-          <string>Code Editor Style</string>
+          <string>Style</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_12">
           <item>
-           <widget class="QRadioButton" name="choiceLight">
+           <widget class="QRadioButton" name="mThemeSystem">
+            <property name="text">
+             <string>System Style</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="mThemeLight">
             <property name="text">
              <string>Default Light Style</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="choiceDark">
+           <widget class="QRadioButton" name="mThemeDark">
             <property name="text">
              <string>Default Dark Style</string>
             </property>
@@ -448,14 +455,14 @@
           <item>
            <layout class="QHBoxLayout" name="hlEditCustom">
             <item>
-             <widget class="QRadioButton" name="choiceCustom">
+             <widget class="QRadioButton" name="mThemeCustom">
               <property name="text">
                <string>Custom</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="btnEditCustom">
+             <widget class="QPushButton" name="mBtnEditTheme">
               <property name="text">
                <string>Edit...</string>
               </property>

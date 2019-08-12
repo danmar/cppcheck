@@ -1,5 +1,5 @@
 // To test:
-// ~/cppcheck/cppcheck --dump misra-test.c && python ../misra.py -verify misra-test.c.dump
+// ~/cppcheck/cppcheck --dump misra-test.c && python ../../misra.py -verify misra-test.c.dump
 
 #include "path\file.h" // 20.2
 #include /*abc*/ "file.h" // no warning
@@ -153,6 +153,7 @@ enum misra_8_12_a { misra_a1 = 1, misra_a2 = 2, misra_a3, misra_a4 = 3 }; //8.12
 enum misra_8_12_b { misra_b1, misra_b2, misra_b3 = 3, misra_b4 = 3 }; // no-warning
 enum misra_8_12_c { misra_c1 = misra_a1, misra_c2 = 1 }; // no-warning
 enum misra_8_12_d { misra_d1 = 1, misra_d2 = 2, misra_d3 = misra_d1 }; // no-warning
+enum misra_8_12_e { misra_e1 = sizeof(int), misra_e2}; // no-crash
 
 void misra_8_14(char * restrict str) {} // 8.14
 
@@ -160,9 +161,10 @@ void misra_9_5() {
   int x[] = {[0]=23}; // 9.5
 }
 
-void misra_10_1() {
+void misra_10_1(uint8_t u) {
   int32_t i;
   i = 3 << 1; // 10.1
+  i = (u & u) << 4; // no-warning
 }
 
 void misra_10_4(u32 x, s32 y) {
@@ -395,6 +397,9 @@ void misra_15_7() {
         var2 = 10u;
     }   // no-warning
   }
+
+  if (a==2) {} else if (b==4) {} // 15.7
+  if (a==2) {} else { if (b==4) {} } // no-warning
 }
 
 void misra_16_2() {
@@ -436,6 +441,23 @@ void misra_16_3() {
     case 12:
     default: break;
   }
+
+    switch (x) {
+    case 1:     // comment 1
+    {
+        a = 1;
+        break;
+    }
+    case 2:     // comment 2
+    {
+        a = 2;
+        break;
+    }
+    default:
+    {
+        break;
+    }
+    }
 }
 
 void misra_16_4() {

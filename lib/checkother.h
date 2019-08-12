@@ -89,6 +89,7 @@ public:
         checkOther.checkRedundantCopy();
         checkOther.clarifyCalculation();
         checkOther.checkPassByReference();
+        checkOther.checkConstVariable();
         checkOther.checkComparisonFunctionIsAlwaysTrueOrFalse();
         checkOther.checkInvalidFree();
         checkOther.clarifyStatement();
@@ -118,6 +119,8 @@ public:
 
     /** @brief %Check for function parameters that should be passed by reference */
     void checkPassByReference();
+
+    void checkConstVariable();
 
     /** @brief Using char variable as array index / as operand in bit operation */
     void checkCharVariable();
@@ -218,6 +221,7 @@ private:
     void cstyleCastError(const Token *tok);
     void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive);
     void passedByValueError(const Token *tok, const std::string &parname, bool inconclusive);
+    void constVariableError(const Variable *var);
     void constStatementError(const Token *tok, const std::string &type, bool inconclusive);
     void signedCharArrayIndexError(const Token *tok);
     void unknownSignCharArrayIndexError(const Token *tok);
@@ -288,6 +292,7 @@ private:
         c.checkCastIntToCharAndBackError(nullptr, "func_name");
         c.cstyleCastError(nullptr);
         c.passedByValueError(nullptr, "parametername", false);
+        c.constVariableError(nullptr);
         c.constStatementError(nullptr, "type", false);
         c.signedCharArrayIndexError(nullptr);
         c.unknownSignCharArrayIndexError(nullptr);
@@ -390,7 +395,8 @@ private:
                "- find unused 'goto' labels.\n"
                "- function declaration and definition argument names different.\n"
                "- function declaration and definition argument order different.\n"
-               "- shadow variable.\n";
+               "- shadow variable.\n"
+               "- variable can be declared const.\n";
     }
 };
 /// @}

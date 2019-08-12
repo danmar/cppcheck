@@ -93,6 +93,8 @@ private:
         TEST_CASE(passedByValue);
         TEST_CASE(passedByValue_nonConst);
 
+        TEST_CASE(constVariable);
+
         TEST_CASE(switchRedundantAssignmentTest);
         TEST_CASE(switchRedundantOperationTest);
         TEST_CASE(switchRedundantBitwiseOperationTest);
@@ -572,7 +574,10 @@ private:
               "    f1(123,y);\n"
               "    if (y>0){}\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (warning) Either the condition 'y>0' is redundant or there is division by zero at line 1.\n", "", errout.str());
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:1]: (warning) Either the condition 'y>0' is redundant or there is division by zero at line 1.\n",
+            "",
+            errout.str());
 
         // avoid false positives when variable is changed after division
         check("void f() {\n"
@@ -1567,7 +1572,7 @@ private:
         check("void f(std::string str) {\n"
               "    std::string& s2 = str;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's2' can be declared with const\n", errout.str());
 
         check("void f(std::string str) {\n"
               "    const std::string& s2 = str;\n"
@@ -1688,6 +1693,369 @@ private:
             check(code, &s64);
             ASSERT_EQUALS("", errout.str());
         }
+    }
+
+    void constVariable() {
+        check("int f(std::vector<int> x) {\n"
+              "    int& i = x[0];\n"
+              "    return i;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' can be declared with const\n", errout.str());
+
+        check("int f(std::vector<int>& x) {\n"
+              "    return x[0];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'x' can be declared with const\n", errout.str());
+
+        check("int f(std::vector<int> x) {\n"
+              "    const int& i = x[0];\n"
+              "    return i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(std::vector<int> x) {\n"
+              "    static int& i = x[0];\n"
+              "    return i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(std::vector<int> x) {\n"
+              "    int& i = x[0];\n"
+              "    i++;\n"
+              "    return i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int& f(std::vector<int>& x) {\n"
+              "    x.push_back(1);\n"
+              "    int& i = x[0];\n"
+              "    return i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(const std::vector<int>& x) {\n"
+              "    return x[0];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int& f(std::vector<int>& x) {\n"
+              "    return x[0];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(std::vector<int>& x) {\n"
+              "    x[0]++;\n"
+              "    return x[0];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { int a; };\n"
+              "A f(std::vector<A>& x) {\n"
+              "    x[0].a = 1;\n"
+              "    return x[0];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { int a(); };\n"
+              "A f(std::vector<A>& x) {\n"
+              "    x[0].a();\n"
+              "    return x[0];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int g(int& x);\n"
+              "int f(std::vector<int>& x) {\n"
+              "    g(x[0]);\n"
+              "    return x[0];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("template<class T>\n"
+              "T f(T& x) {\n"
+              "    return x[0];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("template<class T>\n"
+              "T f(T&& x) {\n"
+              "    return x[0];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("template<class T>\n"
+              "T f(T& x) {\n"
+              "    return x[0];\n"
+              "}\n"
+              "void h() { std::vector<int> v; h(v); }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(int& x) {\n"
+              "    return std::move(x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::ostream& os) {\n"
+              "    os << \"Hello\";\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g(int*);\n"
+              "void f(int& x) {\n"
+              "    g(&x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { A(int*); };\n"
+              "A f(int& x) {\n"
+              "    return A(&x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { A(int*); };\n"
+              "A f(int& x) {\n"
+              "    return A{&x};\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // Perhaps unused variable should be checked as well.
+        check("void f(int& x, int& y) {\n"
+              "    y++;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    explicit A(int& y) : x(&y) {}\n"
+              "    int * x = nullptr;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    std::vector<int> v;\n"
+              "    void swap(A& a) {\n"
+              "        v.swap(a.v);\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    template<class T>\n"
+              "    void f();\n"
+              "    template<class T>\n"
+              "    void f() const;\n"
+              "};\n"
+              "void g(A& a) {\n"
+              "    a.f<int>();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::vector<int>& v) {\n"
+              "    for(auto&& x:v)\n"
+              "        x = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::vector<int>& v) {\n"
+              "    for(auto x:v)\n"
+              "        x = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared with const\n", errout.str());
+
+        check("void f(std::vector<int>& v) {\n"
+              "    for(auto& x:v) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared with const\n", errout.str());
+
+        check("void f(std::vector<int>& v) {\n"
+              "    for(const auto& x:v) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared with const\n", errout.str());
+
+        check("void f(int& i) {\n"
+              "    int& j = i;\n"
+              "    j++;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::vector<int>& v) {\n"
+              "    int& i = v[0];\n"
+              "    i++;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::map<unsigned int, std::map<std::string, unsigned int> >& m, unsigned int i) {\n"
+              "    std::map<std::string, unsigned int>& members = m[i];\n"
+              "    members.clear();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    int& x;\n"
+              "    A(int& y) : x(y)\n"
+              "    {}\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    A(int& x);\n"
+              "};\n"
+              "struct B : A {\n"
+              "    B(int& x) : A(x)\n"
+              "    {}\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void e();\n"
+              "void g(void);\n"
+              "void h(void);\n"
+              "void ah(void);\n"
+              "void ai(void);\n"
+              "void j(void);\n"
+              "void e(void);\n"
+              "void k(void);\n"
+              "void l(void);\n"
+              "void m(void);\n"
+              "void n(void);\n"
+              "void o(void);\n"
+              "void q(void);\n"
+              "void r(void);\n"
+              "void t(void);\n"
+              "void u(void);\n"
+              "void v(void);\n"
+              "void w(void);\n"
+              "void z(void);\n"
+              "void aj(void);\n"
+              "void am(void);\n"
+              "void g(void);\n"
+              "void h(void);\n"
+              "void ah(void);\n"
+              "void an(void);\n"
+              "void e(void);\n"
+              "void k(void);\n"
+              "void ao(wchar_t *d);\n"
+              "void ah(void);\n"
+              "void e(void);\n"
+              "void an(void);\n"
+              "void e(void);\n"
+              "void k(void);\n"
+              "void g(void);\n"
+              "void ah(void);\n"
+              "void an(void);\n"
+              "void e(void);\n"
+              "void e(void);\n"
+              "void e(void);\n"
+              "void k(void);\n"
+              "void g(void);\n"
+              "void ah(void);\n"
+              "void an(void);\n"
+              "void e(void);\n"
+              "void e(void);\n"
+              "void k(void);\n"
+              "void g(void);\n"
+              "void h(void);\n"
+              "void ah(void);\n"
+              "void an(void);\n"
+              "void e(void);\n"
+              "void k(void);\n"
+              "void e(void);\n"
+              "void g(void);\n"
+              "void ah(void);\n"
+              "void k(void);\n"
+              "void an(void);\n"
+              "void e(void);\n"
+              "void e(void);\n"
+              "void e(void);\n"
+              "void k(void);\n"
+              "void g(void);\n"
+              "void h(void);\n"
+              "void ah(void);\n"
+              "void k(void);\n"
+              "void an(void);\n"
+              "void k(void);\n"
+              "void e(void);\n"
+              "void g(void);\n"
+              "void ah(void);\n"
+              "void e(void);\n"
+              "void k(void);\n"
+              "void g(void);\n"
+              "void h(void);\n"
+              "void ah(void);\n"
+              "void an(void);\n"
+              "void an(void);\n"
+              "void k(void);\n"
+              "void e(void);\n"
+              "void e(void);\n"
+              "void e(void);\n"
+              "void g(void);\n"
+              "void k(void);\n"
+              "void g(void);\n"
+              "void h(void);\n"
+              "void ah(void);\n"
+              "void an(void);\n"
+              "void k(void);\n"
+              "void k(void);\n"
+              "void e(void);\n"
+              "void g(void);\n"
+              "void g(void);\n"
+              "void ah(void);\n"
+              "void an(void);\n"
+              "void e(void);\n"
+              "void k(void);\n"
+              "void e(void);\n"
+              "void ap(wchar_t *c, int d);\n"
+              "void ah(void);\n"
+              "void an(void);\n"
+              "void g(void);\n"
+              "void h(void);\n"
+              "void ah(void);\n"
+              "void aq(char *b, size_t d, char *c, int a);\n"
+              "void ar(char *b, size_t d, char *c, va_list a);\n"
+              "void k(void);\n"
+              "void g(void);\n"
+              "void g(void);\n"
+              "void h(void);\n"
+              "void ah(void);\n"
+              "void an(void);\n"
+              "void k(void);\n"
+              "void k(void);\n"
+              "void e(void);\n"
+              "void g(void);\n"
+              "void g(void);\n"
+              "void as(std::string s);\n"
+              "void at(std::ifstream &f);\n"
+              "void au(std::istream &f);\n"
+              "void av(std::string &aa, std::wstring &ab);\n"
+              "void aw(bool b, double x, double y);\n"
+              "void ax(int i);\n"
+              "void ay(std::string c, std::wstring a);\n"
+              "void az(const std::locale &ac);\n"
+              "void an();\n"
+              "void ba(std::ifstream &f);\n"
+              "void bb(std::istream &f) {\n"
+              "f.read(NULL, 0);\n"
+              "}\n"
+              "void h(void) {\n"
+              "struct tm *tm = 0;\n"
+              "(void)std::asctime(tm);\n"
+              "(void)std::asctime(0);\n"
+              "}\n"
+              "void bc(size_t ae) {\n"
+              "wchar_t *ad = 0, *af = 0;\n"
+              "struct tm *ag = 0;                  \n"
+              "(void)std::wcsftime(ad, ae, af, ag);\n"
+              "(void)std::wcsftime(0, ae, 0, 0);\n"
+              "}\n"
+              "void k(void) {}\n"
+              "void bd(void);\n"
+              "void be(void);\n"
+              "void bf(int b);\n"
+              "void e(void);\n"
+              "void e(void);\n"
+              "void bg(wchar_t *p);\n"
+              "void bh(const std::list<int> &ak, const std::list<int> &al);\n"
+              "void ah();\n"
+              "void an();\n"
+              "void h();\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
@@ -3738,7 +4106,7 @@ private:
 
         // #5535: Reference named like its type
         check("void foo() { UMSConfig& UMSConfig = GetUMSConfiguration(); }");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Variable 'UMSConfig' can be declared with const\n", errout.str());
 
         // #3868 - false positive (same expression on both sides of |)
         check("void f(int x) {\n"
@@ -7755,17 +8123,17 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("bool f(int & x, int& y) {\n"
+        check("bool f(const int & x, const int& y) {\n"
               "    return &x > &y;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
         check("int& g();\n"
               "bool f() {\n"
-              "    int& x = g();\n"
-              "    int& y = g();\n"
-              "    int* xp = &x;\n"
-              "    int* yp = &y;\n"
+              "    const int& x = g();\n"
+              "    const int& y = g();\n"
+              "    const int* xp = &x;\n"
+              "    const int* yp = &y;\n"
               "    return xp > yp;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());

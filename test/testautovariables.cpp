@@ -1161,6 +1161,23 @@ private:
             "[test.cpp:1] -> [test.cpp:2] -> [test.cpp:6] -> [test.cpp:6] -> [test.cpp:5] -> [test.cpp:6]: (error) Returning pointer to local variable 'x' that will be invalid when returning.\n",
             errout.str());
 
+        check("int* f(int * x) {\n"
+              "    return x;\n"
+              "}\n"
+              "int * g(int x) {\n"
+              "    return f(&x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:5] -> [test.cpp:4] -> [test.cpp:5]: (error) Returning pointer to local variable 'x' that will be invalid when returning.\n", errout.str());
+
+        check("int* f(int * x) {\n"
+              "    x = nullptr;\n"
+              "    return x;\n"
+              "}\n"
+              "int * g(int x) {\n"
+              "    return f(&x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("int f(int& a) {\n"
               "    return a;\n"
               "}\n"
@@ -1755,6 +1772,13 @@ private:
         check("size_t f(const std::string& x) {\n"
               "    std::string y = \"x\";\n"
               "    return y.find(x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::string* f();\n"
+              "const char* g() {\n"
+              "    std::string* var = f();\n"
+              "    return var->c_str();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

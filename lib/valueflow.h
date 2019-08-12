@@ -50,6 +50,7 @@ namespace ValueFlow {
               varvalue(val),
               condition(nullptr),
               varId(0U),
+              safe(false),
               conditional(false),
               defaultArg(false),
               lifetimeKind(LifetimeKind::Object),
@@ -160,6 +161,9 @@ namespace ValueFlow {
 
         /** For calculated values - varId that calculated value depends on */
         nonneg int varId;
+
+        /** value relies on safe checking */
+        bool safe;
 
         /** Conditional value */
         bool conditional;

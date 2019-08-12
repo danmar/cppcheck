@@ -176,6 +176,17 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
     return ret;
 }
 
+static bool isFunctionCall(const Token* tok)
+{
+    if (Token::Match(tok, "%name% ("))
+        return true;
+    if (Token::Match(tok, "%name% <") && Token::simpleMatch(tok->next()->link(), "> ("))
+        return true;
+    if (Token::Match(tok, "%name% ::"))
+        return isFunctionCall(tok->tokAt(2));
+    return false;
+}
+
 static bool hasToken(const Token * startTok, const Token * stopTok, const Token * tok)
 {
     for (const Token * tok2 = startTok; tok2 != stopTok; tok2 = tok2->next()) {
@@ -227,8 +238,10 @@ bool precedes(const Token * tok1, const Token * tok2)
     return tok1->index() < tok2->index();
 }
 
-static bool isAliased(const Token * startTok, const Token * endTok, nonneg int varid)
+static bool isAliased(const Token *startTok, const Token *endTok, nonneg int varid)
 {
+    if (!precedes(startTok, endTok))
+        return false;
     for (const Token *tok = startTok; tok != endTok; tok = tok->next()) {
         if (Token::Match(tok, "= & %varid% ;", varid))
             return true;
@@ -246,6 +259,18 @@ static bool isAliased(const Token * startTok, const Token * endTok, nonneg int v
         }
     }
     return false;
+}
+
+bool isAliased(const Variable *var)
+{
+    if (!var)
+        return false;
+    if (!var->scope())
+        return false;
+    const Token *start = var->declEndToken();
+    if (!start)
+        return false;
+    return isAliased(start, var->scope()->bodyEnd, var->declarationId());
 }
 
 static bool exprDependsOnThis(const Token *expr, nonneg int depth)
@@ -763,7 +788,23 @@ bool isUniqueExpression(const Token* tok)
     return isUniqueExpression(tok->astOperand2());
 }
 
-bool isReturnScope(const Token * const endToken)
+static bool isEscaped(const Token* tok, bool functionsScope)
+{
+    if (functionsScope)
+        return Token::simpleMatch(tok, "throw");
+    else
+        return Token::Match(tok, "return|throw");
+}
+
+static bool isEscapedOrJump(const Token* tok, bool functionsScope)
+{
+    if (functionsScope)
+        return Token::simpleMatch(tok, "throw");
+    else
+        return Token::Match(tok, "return|goto|throw|continue|break");
+}
+
+bool isReturnScope(const Token * const endToken, const Settings * settings, bool functionScope)
 {
     if (!endToken || endToken->str() != "}")
         return false;
@@ -776,28 +817,39 @@ bool isReturnScope(const Token * const endToken)
 
     if (Token::simpleMatch(prev, "}")) {
         if (Token::simpleMatch(prev->link()->tokAt(-2), "} else {"))
-            return isReturnScope(prev) && isReturnScope(prev->link()->tokAt(-2));
+            return isReturnScope(prev, settings, functionScope) && isReturnScope(prev->link()->tokAt(-2), settings, functionScope);
         if (Token::simpleMatch(prev->link()->previous(), ") {") &&
             Token::simpleMatch(prev->link()->linkAt(-1)->previous(), "switch (") &&
             !Token::findsimplematch(prev->link(), "break", prev)) {
             return true;
         }
-        if (Token::Match(prev->link()->astTop(), "return|throw"))
+        if (isEscaped(prev->link()->astTop(), functionScope))
             return true;
         if (Token::Match(prev->link()->previous(), "[;{}] {"))
-            return isReturnScope(prev);
+            return isReturnScope(prev, settings, functionScope);
     } else if (Token::simpleMatch(prev, ";")) {
-        // noreturn function
-        if (Token::simpleMatch(prev->previous(), ") ;") && Token::Match(prev->linkAt(-1)->tokAt(-2), "[;{}] %name% ("))
-            return true;
+        if (Token::simpleMatch(prev->previous(), ") ;") && Token::Match(prev->linkAt(-1)->tokAt(-2), "[;{}] %name% (")) {
+            const Token * ftok = prev->linkAt(-1)->previous();
+            const Function * function = ftok->function();
+            if (function) {
+                if (function->isEscapeFunction())
+                    return true;
+                if (function->isAttributeNoreturn())
+                    return true;
+            } else if (settings) {
+                if (settings->library.isnoreturn(ftok))
+                    return true;
+            }
+            return false;
+        }
         if (Token::simpleMatch(prev->previous(), ") ;") && prev->previous()->link() &&
-            Token::Match(prev->previous()->link()->astTop(), "return|throw"))
+            isEscaped(prev->previous()->link()->astTop(), functionScope))
             return true;
-        if (Token::Match(prev->previous()->astTop(), "return|throw"))
+        if (isEscaped(prev->previous()->astTop(), functionScope))
             return true;
         // return/goto statement
         prev = prev->previous();
-        while (prev && !Token::Match(prev, ";|{|}|return|goto|throw|continue|break"))
+        while (prev && !Token::Match(prev, ";|{|}") && !isEscapedOrJump(prev, functionScope))
             prev = prev->previous();
         return prev && prev->isName();
     }
@@ -812,6 +864,19 @@ bool isVariableChangedByFunctionCall(const Token *tok, nonneg int varid, const S
         return isVariableChangedByFunctionCall(tok, settings, inconclusive);
     return isVariableChangedByFunctionCall(tok->astOperand1(), varid, settings, inconclusive) ||
            isVariableChangedByFunctionCall(tok->astOperand2(), varid, settings, inconclusive);
+}
+
+static bool isScopeBracket(const Token *tok)
+{
+    if (!Token::Match(tok, "{|}"))
+        return false;
+    if (!tok->scope())
+        return false;
+    if (tok->str() == "{")
+        return tok->scope()->bodyStart == tok;
+    if (tok->str() == "}")
+        return tok->scope()->bodyEnd == tok;
+    return false;
 }
 
 bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings, bool *inconclusive)
@@ -832,7 +897,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
             parent = parent->astParent();
 
         // passing variable to subfunction?
-        if (Token::Match(parent, "[(,]"))
+        if (Token::Match(parent, "[(,{]"))
             ;
         else if (Token::simpleMatch(parent, ":")) {
             while (Token::Match(parent, "[?:]"))
@@ -847,24 +912,24 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
 
     // goto start of function call and get argnr
     int argnr = 0;
-    while (tok && !Token::Match(tok, "[;{}]")) {
+    while (tok && !Token::simpleMatch(tok, ";") && !isScopeBracket(tok)) {
         if (tok->str() == ",")
             ++argnr;
         else if (tok->str() == ")")
             tok = tok->link();
-        else if (Token::Match(tok->previous(), "%name% ("))
+        else if (Token::Match(tok->previous(), "%name% (|{"))
             break;
-        else if (Token::simpleMatch(tok->previous(), "> (") && tok->previous()->link())
+        else if (Token::Match(tok->previous(), "> (|{") && tok->previous()->link())
             break;
         tok = tok->previous();
     }
-    if (!tok || tok->str() != "(")
+    if (!Token::Match(tok, "{|("))
         return false;
-    const bool possiblyPassedByReference = (tok->next() == tok1 || Token::Match(tok1->previous(), ", %name% [,)]"));
+    const bool possiblyPassedByReference = (tok->next() == tok1 || Token::Match(tok1->previous(), ", %name% [,)}]"));
     tok = tok->previous();
     if (tok && tok->link() && tok->str() == ">")
         tok = tok->link()->previous();
-    if (!Token::Match(tok, "%name% [(<]"))
+    if (!Token::Match(tok, "%name% [({<]"))
         return false; // not a function => variable not changed
 
     // Constructor call
@@ -930,8 +995,12 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
     return arg && !arg->isConst() && arg->isReference();
 }
 
-bool isVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp)
+bool isVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth)
 {
+    if (!precedes(start, end))
+        return false;
+    if (depth < 0)
+        return true;
     for (const Token *tok = start; tok != end; tok = tok->next()) {
         if (tok->varId() != varid) {
             if (globalvar && Token::Match(tok, "%name% ("))
@@ -941,20 +1010,32 @@ bool isVariableChanged(const Token *start, const Token *end, const nonneg int va
         }
 
         const Token *tok2 = tok;
-        while (Token::simpleMatch(tok2->astParent(), "*"))
+        while (Token::simpleMatch(tok2->astParent(), "*") || (Token::simpleMatch(tok2->astParent(), ".") && !Token::simpleMatch(tok2->astParent()->astParent(), "(")) ||
+               (Token::simpleMatch(tok2->astParent(), "[") && tok2 == tok2->astParent()->astOperand1()))
             tok2 = tok2->astParent();
 
         if (Token::Match(tok2->astParent(), "++|--"))
             return true;
 
-        if (tok2->astParent() && tok2->astParent()->isAssignmentOp() && tok2 == tok2->astParent()->astOperand1())
-            return true;
+        if (tok2->astParent() && tok2->astParent()->isAssignmentOp()) {
+            if (tok2 == tok2->astParent()->astOperand1())
+                return true;
+            // Check if assigning to a non-const lvalue
+            const Variable * var = getLHSVariable(tok2->astParent());
+            if (var && var->isReference() && !var->isConst() && var->nameToken() && var->nameToken()->next() == tok2->astParent()) {
+                if (!var->isLocal() || isVariableChanged(var, settings, cpp, depth - 1))
+                    return true;
+            }
+        }
 
         if (isLikelyStreamRead(cpp, tok->previous()))
             return true;
 
+        if (isLikelyStream(cpp, tok2))
+            return true;
+
         // Member function call
-        if (Token::Match(tok, "%name% . %name% (")) {
+        if (tok->variable() && Token::Match(tok2->astParent(), ". %name%") && isFunctionCall(tok2->astParent()->next()) && tok2->astParent()->astOperand1() == tok2) {
             const Variable * var = tok->variable();
             bool isConst = var && var->isConst();
             if (!isConst && var) {
@@ -966,30 +1047,47 @@ bool isVariableChanged(const Token *start, const Token *end, const nonneg int va
             const Function * fun = ftok->function();
             if (!isConst && (!fun || !fun->isConst()))
                 return true;
+            else
+                continue;
         }
 
-        const Token *ftok = tok;
-        while (ftok && (!Token::Match(ftok, "[({[]") || ftok->isCast()))
+        const Token *ftok = tok2;
+        while (ftok && (!Token::Match(ftok, "[({]") || ftok->isCast()))
             ftok = ftok->astParent();
 
-        if (ftok && Token::Match(ftok->link(), ") !!{")) {
+        if (ftok && Token::Match(ftok->link(), ")|} !!{")) {
+            const Token * ptok = tok2;
+            while (Token::Match(ptok->astParent(), ".|::|["))
+                ptok = ptok->astParent();
             bool inconclusive = false;
-            bool isChanged = isVariableChangedByFunctionCall(tok, settings, &inconclusive);
+            bool isChanged = isVariableChangedByFunctionCall(ptok, settings, &inconclusive);
             isChanged |= inconclusive;
             if (isChanged)
                 return true;
         }
 
-        const Token *parent = tok->astParent();
+        const Token *parent = tok2->astParent();
         while (Token::Match(parent, ".|::"))
             parent = parent->astParent();
         if (parent && parent->tokType() == Token::eIncDecOp)
             return true;
+
+        if (Token::simpleMatch(tok2->astParent(), ":") && tok2->astParent()->astParent() && Token::simpleMatch(tok2->astParent()->astParent()->previous(), "for (")) {
+            const Token * varTok = tok2->astParent()->previous();
+            if (!varTok)
+                continue;
+            const Variable * loopVar = varTok->variable();
+            if (!loopVar)
+                continue;
+            if (!loopVar->isConst() && loopVar->isReference() && isVariableChanged(loopVar, settings, cpp, depth - 1))
+                return true;
+            continue;
+        }
     }
     return false;
 }
 
-bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp)
+bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp, int depth)
 {
     if (!var)
         return false;
@@ -1000,7 +1098,7 @@ bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp)
         return false;
     if (Token::Match(start, "; %varid% =", var->declarationId()))
         start = start->tokAt(2);
-    return isVariableChanged(start->next(), var->scope()->bodyEnd, var->declarationId(), var->isGlobal(), settings, cpp);
+    return isVariableChanged(start->next(), var->scope()->bodyEnd, var->declarationId(), var->isGlobal(), settings, cpp, depth);
 }
 
 int numberOfArguments(const Token *start)
@@ -1070,6 +1168,23 @@ const Token *findLambdaEndToken(const Token *first)
     if (tok->astOperand1() && tok->astOperand1()->str() == "{")
         return tok->astOperand1()->link();
     return nullptr;
+}
+
+bool isLikelyStream(bool cpp, const Token *stream)
+{
+    if (!cpp)
+        return false;
+
+    if (!stream)
+        return false;
+
+    if (!Token::Match(stream->astParent(), "&|<<|>>") || !stream->astParent()->isBinaryOp())
+        return false;
+
+    if (stream->astParent()->astOperand1() != stream)
+        return false;
+
+    return !astIsIntegral(stream, false);
 }
 
 bool isLikelyStreamRead(bool cpp, const Token *op)
@@ -1302,7 +1417,7 @@ PathAnalysis::Progress PathAnalysis::forwardRange(const Token* startToken, const
             if (f(info) == Progress::Break)
                 return Progress::Break;
         }
-        // Prevent inifinite recursion
+        // Prevent infinite recursion
         if (tok->next() == start)
             break;
     }
@@ -1328,6 +1443,31 @@ bool reaches(const Token * start, const Token * dest, const Library& library, Er
         return false;
     if (errorPath)
         errorPath->insert(errorPath->end(), info.errorPath.begin(), info.errorPath.end());
+    return true;
+}
+
+static bool isUnchanged(const Token *startToken, const Token *endToken, const std::set<int> &exprVarIds, bool local)
+{
+    for (const Token *tok = startToken; tok != endToken; tok = tok->next()) {
+        if (!local && Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {"))
+            // TODO: this is a quick bailout
+            return false;
+        if (tok->varId() <= 0 || exprVarIds.find(tok->varId()) == exprVarIds.end())
+            continue;
+        const Token *parent = tok;
+        while (parent->astParent() && !parent->astParent()->isAssignmentOp() && parent->astParent()->tokType() != Token::Type::eIncDecOp) {
+            if (parent->str() == "," || parent->isUnaryOp("&"))
+                // TODO: This is a quick bailout
+                return false;
+            parent = parent->astParent();
+        }
+        if (parent->astParent()) {
+            if (parent->astParent()->tokType() == Token::Type::eIncDecOp)
+                return false;
+            else if (parent->astParent()->isAssignmentOp() && parent == parent->astParent()->astOperand1())
+                return false;
+        }
+    }
     return true;
 }
 
@@ -1426,9 +1566,29 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
         if (Token::simpleMatch(tok, "asm ("))
             return Result(Result::Type::BAILOUT);
 
-        if (mWhat == What::ValueFlow && Token::Match(tok, "while|for (")) {
-            // TODO: only bailout if expr is reassigned in loop
-            return Result(Result::Type::BAILOUT);
+        if (mWhat == What::ValueFlow && (Token::Match(tok, "while|for (") || Token::simpleMatch(tok, "do {"))) {
+            const Token *bodyStart = nullptr;
+            const Token *conditionStart = nullptr;
+            if (Token::simpleMatch(tok, "do {")) {
+                bodyStart = tok->next();
+                if (Token::simpleMatch(bodyStart->link(), "} while ("))
+                    conditionStart = bodyStart->link()->tokAt(2);
+            } else {
+                conditionStart = tok->next();
+                if (Token::simpleMatch(conditionStart->link(), ") {"))
+                    bodyStart = conditionStart->link()->next();
+            }
+
+            if (!bodyStart || !conditionStart)
+                return Result(Result::Type::BAILOUT);
+
+            // Is expr changed in condition?
+            if (!isUnchanged(conditionStart, conditionStart->link(), exprVarIds, local))
+                return Result(Result::Type::BAILOUT);
+
+            // Is expr changed in loop body?
+            if (!isUnchanged(bodyStart, bodyStart->link(), exprVarIds, local))
+                return Result(Result::Type::BAILOUT);
         }
 
         if (!local && Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
@@ -1438,7 +1598,6 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
 
         if (expr->isName() && Token::Match(tok, "%name% (") && tok->str().find("<") != std::string::npos && tok->str().find(expr->str()) != std::string::npos)
             return Result(Result::Type::BAILOUT);
-
 
         if (exprVarIds.find(tok->varId()) != exprVarIds.end()) {
             const Token *parent = tok;

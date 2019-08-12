@@ -485,12 +485,12 @@ void ThreadExecutor::reportOut(const std::string &outmsg)
 }
 void ThreadExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
-    report(msg, REPORT_ERROR);
+    report(msg, MessageType::REPORT_ERROR);
 }
 
 void ThreadExecutor::reportInfo(const ErrorLogger::ErrorMessage &msg)
 {
-    report(msg, REPORT_INFO);
+    report(msg, MessageType::REPORT_INFO);
 }
 
 void ThreadExecutor::report(const ErrorLogger::ErrorMessage &msg, MessageType msgType)
@@ -513,10 +513,10 @@ void ThreadExecutor::report(const ErrorLogger::ErrorMessage &msg, MessageType ms
         EnterCriticalSection(&mReportSync);
 
         switch (msgType) {
-        case REPORT_ERROR:
+        case MessageType::REPORT_ERROR:
             mErrorLogger.reportErr(msg);
             break;
-        case REPORT_INFO:
+        case MessageType::REPORT_INFO:
             mErrorLogger.reportInfo(msg);
             break;
         }

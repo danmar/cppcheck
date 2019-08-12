@@ -19,6 +19,14 @@
 #include <QObject>
 #include "testprojectfile.h"
 #include "projectfile.h"
+#include "settings.h"
+
+// Mock...
+const char Settings::SafeChecks::XmlRootName[] = "safe-checks";
+const char Settings::SafeChecks::XmlClasses[] = "class-public";
+const char Settings::SafeChecks::XmlExternalFunctions[] = "external-functions";
+const char Settings::SafeChecks::XmlInternalFunctions[] = "internal-functions";
+const char Settings::SafeChecks::XmlExternalVariables[] = "external-variables";
 
 void TestProjectFile::loadInexisting()
 {
@@ -92,20 +100,6 @@ void TestProjectFile::loadSimpleNoroot()
     QStringList defines = pfile.getDefines();
     QCOMPARE(defines.size(), 1);
     QCOMPARE(defines[0], QString("FOO"));
-}
-
-void TestProjectFile::checkSuppressions()
-{
-    ProjectFile projectFile("/foo/bar/test.cppcheck");
-    QList<Suppressions::Suppression> suppressions;
-    suppressions.append(Suppressions::Suppression("id", "file.c"));
-    suppressions.append(Suppressions::Suppression("id", "/abc/file.c"));
-    projectFile.setSuppressions(suppressions);
-
-    const QList<Suppressions::Suppression> s = projectFile.getCheckSuppressions();
-    QCOMPARE(s.size(), 2);
-    QCOMPARE(s[0].fileName, std::string("/foo/bar/file.c"));
-    QCOMPARE(s[1].fileName, std::string("/abc/file.c"));
 }
 
 QTEST_MAIN(TestProjectFile)

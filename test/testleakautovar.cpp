@@ -94,6 +94,7 @@ private:
         TEST_CASE(doublefree7);
         TEST_CASE(doublefree8);
         TEST_CASE(doublefree9);
+        TEST_CASE(doublefree10); // #8706
 
         // exit
         TEST_CASE(exit1);
@@ -142,6 +143,7 @@ private:
         TEST_CASE(return3);
         TEST_CASE(return4);
         TEST_CASE(return5);
+        TEST_CASE(return6); // #8282 return {p, p}
 
         // General tests: variable type, allocation type, etc
         TEST_CASE(test1);
@@ -1135,6 +1137,32 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void doublefree10() {
+        check("void f(char* s) {\n"
+              "    char *p = malloc(strlen(s));\n"
+              "    if (p != NULL) {\n"
+              "        strcat(p, s);\n"
+              "        if (strlen(s) != 10)\n"
+              "            free(p); p = NULL;\n"
+              "    }\n"
+              "    if (p != NULL)\n"
+              "        free(p);\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(char* s) {\n"
+              "    char *p = malloc(strlen(s));\n"
+              "    if (p != NULL) {\n"
+              "        strcat(p, s);\n"
+              "        if (strlen(s) != 10)\n"
+              "            free(p), p = NULL;\n"
+              "    }\n"
+              "    if (p != NULL)\n"
+              "        free(p);\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void exit1() {
         check("void f() {\n"
               "    char *p = malloc(10);\n"
@@ -1654,6 +1682,14 @@ private:
               "        return;\n"
               "    }\n"
               "    *p = 0;\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void return6() { // #8282
+        check("std::pair<char*, char*> f(size_t n) {\n"
+              "   char* p = (char* )malloc(n);\n"
+              "   return {p, p};\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
     }

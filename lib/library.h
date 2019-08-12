@@ -248,7 +248,7 @@ public:
             optional(false),
             variadic(false),
             iteratorInfo(),
-            direction(DIR_UNKNOWN) {
+            direction(Direction::DIR_UNKNOWN) {
         }
 
         bool         notbool;
@@ -282,7 +282,7 @@ public:
         };
         std::vector<MinSize> minsizes;
 
-        enum Direction {
+        enum class Direction {
             DIR_IN,     ///< Input to called function. Data is treated as read-only.
             DIR_OUT,    ///< Output to caller. Data is passed by reference or address and is potentially written.
             DIR_INOUT,  ///< Input to called function, and output to caller. Data is passed by reference or address and is potentially modified.

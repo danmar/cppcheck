@@ -268,11 +268,11 @@ void Token::swapWithNext()
         std::swap(mFlags, mNext->mFlags);
         std::swap(mImpl, mNext->mImpl);
         for (auto templateSimplifierPointer : mImpl->mTemplateSimplifierPointers) {
-            templateSimplifierPointer->token = this;
+            templateSimplifierPointer->token(this);
         }
 
         for (auto templateSimplifierPointer : mNext->mImpl->mTemplateSimplifierPointers) {
-            templateSimplifierPointer->token = mNext;
+            templateSimplifierPointer->token(mNext);
         }
         if (mNext->mLink)
             mNext->mLink->mLink = this;
@@ -291,7 +291,7 @@ void Token::takeData(Token *fromToken)
     mImpl = fromToken->mImpl;
     fromToken->mImpl = nullptr;
     for (auto templateSimplifierPointer : mImpl->mTemplateSimplifierPointers) {
-        templateSimplifierPointer->token = this;
+        templateSimplifierPointer->token(this);
     }
     mLink = fromToken->mLink;
     if (mLink)
@@ -855,6 +855,8 @@ const Token * Token::findClosingBracket() const
         return nullptr;
 
     const Token *closing = nullptr;
+    const bool templateParameter(strAt(-1) == "template");
+    std::set<std::string> templateParameters;
 
     unsigned int depth = 0;
     for (closing = this; closing != nullptr; closing = closing->next()) {
@@ -864,7 +866,10 @@ const Token * Token::findClosingBracket() const
                 return nullptr; // #6803
         } else if (Token::Match(closing, "}|]|)|;"))
             return nullptr;
-        else if (closing->str() == "<")
+        // we can make some guesses for template parameters
+        else if (closing->str() == "<" &&
+                 (!templateParameter || (closing->previous() && closing->previous()->isName() &&
+                                         templateParameters.find(closing->strAt(-1)) == templateParameters.end())))
             ++depth;
         else if (closing->str() == ">") {
             if (--depth == 0)
@@ -874,6 +879,10 @@ const Token * Token::findClosingBracket() const
                 return closing;
             depth -= 2;
         }
+        // save named template parameter
+        else if (templateParameter && depth == 1 && closing->str() == "," &&
+                 closing->previous()->isName() && !Match(closing->previous(), "class|typename|."))
+            templateParameters.insert(closing->strAt(-1));
     }
 
     return closing;
@@ -1001,6 +1010,100 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
             }
             this->next(newToken);
             newToken->previous(this);
+        }
+
+        if (mImpl->mScopeInfo) {
+            // If the brace is immediately closed there is no point opening a new scope for it
+            if (tokenStr == "{") {
+                std::string nextScopeNameAddition = "";
+                // This might be the opening of a member function
+                Token *tok1 = newToken;
+                while (Token::Match(tok1->previous(), "const|volatile|final|override|&|&&|noexcept"))
+                    tok1 = tok1->previous();
+                if (tok1 && tok1->previous() && tok1->strAt(-1) == ")") {
+                    tok1 = tok1->linkAt(-1);
+                    if (Token::Match(tok1->previous(), "throw|noexcept")) {
+                        tok1 = tok1->previous();
+                        while (Token::Match(tok1->previous(), "const|volatile|final|override|&|&&|noexcept"))
+                            tok1 = tok1->previous();
+                        if (tok1->strAt(-1) != ")")
+                            return;
+                    } else if (Token::Match(newToken->tokAt(-2), ":|, %name%")) {
+                        tok1 = tok1->tokAt(-2);
+                        if (tok1->strAt(-1) != ")")
+                            return;
+                    }
+                    if (tok1->strAt(-1) == ">")
+                        tok1 = tok1->previous()->findOpeningBracket();
+                    if (tok1 && Token::Match(tok1->tokAt(-3), "%name% :: %name%")) {
+                        tok1 = tok1->tokAt(-2);
+                        std::string scope = tok1->strAt(-1);
+                        while (Token::Match(tok1->tokAt(-2), ":: %name%")) {
+                            scope = tok1->strAt(-3) + " :: " + scope;
+                            tok1 = tok1->tokAt(-2);
+                        }
+
+                        if (!nextScopeNameAddition.empty() && !scope.empty()) nextScopeNameAddition += " :: ";
+                        nextScopeNameAddition += scope;
+                    }
+                }
+
+                // Or it might be a namespace/class/struct
+                if (Token::Match(newToken->previous(), "%name%|>")) {
+                    Token* nameTok = newToken->previous();
+                    while (nameTok && !Token::Match(nameTok, "namespace|class|struct|union %name% {|::|:|<")) {
+                        nameTok = nameTok->previous();
+                    }
+                    if (nameTok) {
+                        for (nameTok = nameTok->next(); nameTok && !Token::Match(nameTok, "{|:|<"); nameTok = nameTok->next()) {
+                            nextScopeNameAddition.append(nameTok->str());
+                            nextScopeNameAddition.append(" ");
+                        }
+                        if (nextScopeNameAddition.length() > 0) nextScopeNameAddition = nextScopeNameAddition.substr(0, nextScopeNameAddition.length() - 1);
+                    }
+                }
+
+                // New scope is opening, record it here
+                std::shared_ptr<ScopeInfo2> newScopeInfo = std::make_shared<ScopeInfo2>(mImpl->mScopeInfo->name, nullptr, mImpl->mScopeInfo->usingNamespaces);
+
+                if (!newScopeInfo->name.empty() && !nextScopeNameAddition.empty()) newScopeInfo->name.append(" :: ");
+                newScopeInfo->name.append(nextScopeNameAddition);
+                nextScopeNameAddition = "";
+
+                newToken->scopeInfo(newScopeInfo);
+            } else if (tokenStr == "}") {
+                Token* matchingTok = newToken->previous();
+                int depth = 0;
+                while (matchingTok && (depth != 0 || !Token::simpleMatch(matchingTok, "{"))) {
+                    if (Token::simpleMatch(matchingTok, "}")) depth++;
+                    if (Token::simpleMatch(matchingTok, "{")) depth--;
+                    matchingTok = matchingTok->previous();
+                }
+                if (matchingTok && matchingTok->previous()) {
+                    newToken->mImpl->mScopeInfo = matchingTok->previous()->scopeInfo();
+                }
+            } else {
+                if (prepend && newToken->previous()) {
+                    newToken->mImpl->mScopeInfo = newToken->previous()->scopeInfo();
+                } else {
+                    newToken->mImpl->mScopeInfo = mImpl->mScopeInfo;
+                }
+                if (tokenStr == ";") {
+                    const Token* statementStart;
+                    for (statementStart = newToken; statementStart->previous() && !Token::Match(statementStart->previous(), ";|{"); statementStart = statementStart->previous());
+                    if (Token::Match(statementStart, "using namespace %name% ::|;")) {
+                        const Token * tok1 = statementStart->tokAt(2);
+                        std::string nameSpace;
+                        while (tok1 && tok1->str() != ";") {
+                            if (!nameSpace.empty())
+                                nameSpace += " ";
+                            nameSpace += tok1->str();
+                            tok1 = tok1->next();
+                        }
+                        mImpl->mScopeInfo->usingNamespaces.insert(nameSpace);
+                    }
+                }
+            }
         }
     }
 }
@@ -1702,13 +1805,36 @@ bool Token::addValue(const ValueFlow::Value &value)
         // if value already exists, don't add it again
         std::list<ValueFlow::Value>::iterator it;
         for (it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
-            // different intvalue => continue
-            if (it->intvalue != value.intvalue)
-                continue;
-
             // different types => continue
             if (it->valueType != value.valueType)
                 continue;
+
+            // different value => continue
+            bool differentValue = true;
+            switch (it->valueType) {
+            case ValueFlow::Value::ValueType::INT:
+            case ValueFlow::Value::ValueType::CONTAINER_SIZE:
+            case ValueFlow::Value::ValueType::BUFFER_SIZE:
+                differentValue = (it->intvalue != value.intvalue);
+                break;
+            case ValueFlow::Value::ValueType::TOK:
+            case ValueFlow::Value::ValueType::LIFETIME:
+                differentValue = (it->tokvalue != value.tokvalue);
+                break;
+            case ValueFlow::Value::ValueType::FLOAT:
+                // TODO: Write some better comparison
+                differentValue = (it->floatValue > value.floatValue || it->floatValue < value.floatValue);
+                break;
+            case ValueFlow::Value::ValueType::MOVED:
+                differentValue = (it->moveKind != value.moveKind);
+                break;
+            case ValueFlow::Value::ValueType::UNINIT:
+                differentValue = false;
+                break;
+            }
+            if (differentValue)
+                continue;
+
             if ((value.isTokValue() || value.isLifetimeValue()) && (it->tokvalue != value.tokvalue) && (it->tokvalue->str() != value.tokvalue->str()))
                 continue;
 
@@ -1858,6 +1984,15 @@ std::string Token::typeStr(const Token* tok)
     return r.first->stringifyList(r.second, false);
 }
 
+void Token::scopeInfo(std::shared_ptr<ScopeInfo2> newScopeInfo)
+{
+    mImpl->mScopeInfo = newScopeInfo;
+}
+std::shared_ptr<ScopeInfo2> Token::scopeInfo() const
+{
+    return mImpl->mScopeInfo;
+}
+
 TokenImpl::~TokenImpl()
 {
     delete mOriginalName;
@@ -1865,7 +2000,7 @@ TokenImpl::~TokenImpl()
     delete mValues;
 
     for (auto templateSimplifierPointer : mTemplateSimplifierPointers) {
-        templateSimplifierPointer->token = nullptr;
+        templateSimplifierPointer->token(nullptr);
     }
 
     while (mCppcheckAttributes) {

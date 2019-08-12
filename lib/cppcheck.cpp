@@ -471,7 +471,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             }
 
             Tokenizer mTokenizer(&mSettings, this);
-            if (mSettings.showtime != SHOWTIME_NONE)
+            if (mSettings.showtime != SHOWTIME_MODES::SHOWTIME_NONE)
                 mTokenizer.setTimerResults(&S_timerResults);
 
             try {
@@ -643,7 +643,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     errmsg._callStack.emplace_back(ErrorLogger::ErrorMessage::FileLocation(fileName, lineNumber));
                     errmsg._callStack.back().col = column;
 
-                    errmsg._id = obj["errorId"].get<std::string>();
+                    errmsg._id = obj["addon"].get<std::string>() + "-" + obj["errorId"].get<std::string>();
                     const std::string text = obj["message"].get<std::string>();
                     errmsg.setmsg(text);
                     const std::string severity = obj["severity"].get<std::string>();
