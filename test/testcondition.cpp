@@ -3176,6 +3176,19 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f() {\n"
+              "    const std::string x=\"xyz\";\n"
+              "    if(!x.empty()){}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition '!x.empty()' is always true\n", errout.str());
+
+        check("std::string g();\n"
+              "void f() {\n"
+              "    const std::string msg = g();\n"
+              "    if(!msg.empty()){}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f(int *array, int size ) {\n"
               "    for(int i = 0; i < size; ++i) {\n"
               "        if(array == 0)\n"
