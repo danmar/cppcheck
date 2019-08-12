@@ -41,6 +41,15 @@ static std::string objfile(std::string cppfile)
     return builddir(cppfile + ".o");
 }
 
+static std::string objfiles(const std::vector<std::string> &files)
+{
+    std::string allObjfiles = objfile(files[0]);
+    for (size_t i = 1; i < files.size(); ++i) {
+        allObjfiles += " \\\n" + std::string(14, ' ') + objfile(files[i]);
+    }
+    return allObjfiles;
+}
+
 static void getDeps(const std::string &filename, std::vector<std::string> &depfiles)
 {
     // Is the dependency already included?
@@ -362,22 +371,10 @@ int main(int argc, char **argv)
     fout << "MAN_SOURCE=man/cppcheck.1.xml\n\n";
 
     fout << "\n###### Object Files\n\n";
-    fout << "LIBOBJ =      " << objfile(libfiles[0]);
-    for (size_t i = 1; i < libfiles.size(); ++i)
-        fout << " \\\n" << std::string(14, ' ') << objfile(libfiles[i]);
-    fout << "\n\n";
-    fout << "EXTOBJ =      " << objfile(extfiles[0]);
-    for (size_t i = 1; i < extfiles.size(); ++i)
-        fout << " \\\n" << std::string(14, ' ') << objfile(extfiles[i]);
-    fout << "\n\n";
-    fout << "CLIOBJ =      " << objfile(clifiles[0]);
-    for (size_t i = 1; i < clifiles.size(); ++i)
-        fout << " \\\n" << std::string(14, ' ') << objfile(clifiles[i]);
-    fout << "\n\n";
-    fout << "TESTOBJ =     " << objfile(testfiles[0]);
-    for (size_t i = 1; i < testfiles.size(); ++i)
-        fout << " \\\n" << std::string(14, ' ') << objfile(testfiles[i]);
-    fout << "\n\n";
+    fout << "LIBOBJ =      " << objfiles(libfiles) << "\n\n";
+    fout << "EXTOBJ =      " << objfiles(extfiles) << "\n\n";
+    fout << "CLIOBJ =      " << objfiles(clifiles) << "\n\n";
+    fout << "TESTOBJ =     " << objfiles(testfiles) << "\n\n";
 
     fout << ".PHONY: run-dmake tags\n\n";
     fout << "\n###### Targets\n\n";
