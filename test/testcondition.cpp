@@ -3175,6 +3175,15 @@ private:
               "    else if (x) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int *array, int size ) {\n"
+              "    for(int i = 0; i < size; ++i) {\n"
+              "        if(array == 0)\n"
+              "            continue;\n"
+              "        if(array){}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style) Condition 'array' is always true\n", errout.str());
     }
 
     void multiConditionAlwaysTrue() {
