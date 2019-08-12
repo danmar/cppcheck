@@ -294,6 +294,10 @@ private:
                     "wchar_t fwstr1(){const std::wstring s = L\"<a><b>\"; return s[42]; }\n");
         ASSERT_EQUALS("test.cpp:1:error:Out of bounds access in 's[42]', if 's' size is 6 and '42' is 42\n"
                       "test.cpp:2:error:Out of bounds access in 's[42]', if 's' size is 6 and '42' is 42\n", errout.str());
+
+        checkNormal("char fstr1(){const std::string s = \"<a><b>\"; return s[1]; }\n"
+                    "wchar_t fwstr1(){const std::wstring s = L\"<a><b>\"; return s[1]; }\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void outOfBoundsIndexExpression() {
