@@ -298,6 +298,13 @@ private:
         checkNormal("char fstr1(){const std::string s = \"<a><b>\"; return s[1]; }\n"
                     "wchar_t fwstr1(){const std::wstring s = L\"<a><b>\"; return s[1]; }\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkNormal("int f() {\n"
+                    "    std::vector<int> v;\n"
+                    "    std::vector<int> * pv = &v;\n"
+                    "    return (*pv)[42];\n"
+                    "}\n");
+        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in expression '(*pv)[42]' because '*pv' is empty.\n", errout.str());
     }
 
     void outOfBoundsIndexExpression() {
