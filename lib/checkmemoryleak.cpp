@@ -259,6 +259,19 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
     return No;
 }
 
+bool CheckMemoryLeak::isReopenStandardStream(const Token *tok) const
+{
+    if (getReallocationType(tok, 0) == File) {
+        const Library::AllocFunc *f = mSettings_->library.getReallocFuncInfo(tok);
+        if (f && f->reallocArg > 0 && f->reallocArg <= numberOfArguments(tok)) {
+            const Token* arg = getArguments(tok).at(f->reallocArg - 1);
+            if (Token::Match(arg, "stdin|stdout|stderr"))
+                return true;
+        }
+    }
+    return false;
+}
+
 //--------------------------------------------------------------------------
 
 
@@ -979,6 +992,8 @@ void CheckMemoryLeakNoVar::check()
                 functionName == "fclose" ||
                 functionName == "realloc")
                 break;
+            if (isReopenStandardStream(tok->next()))
+                continue;
             if (CheckMemoryLeakInFunction::test_white_list(functionName, mSettings, mTokenizer->isCPP())) {
                 functionCallLeak(tok, tok->strAt(1), functionName);
                 break;
@@ -1006,14 +1021,8 @@ void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
         if (tok != tok->next()->astOperand1())
             continue;
 
-        if (getReallocationType(tok, 0) == File) {
-            const Library::AllocFunc *f = mSettings->library.getReallocFuncInfo(tok);
-            if (f && f->reallocArg > 0 && f->reallocArg <= numberOfArguments(tok)) {
-                const Token* arg = getArguments(tok).at(f->reallocArg - 1);
-                if (Token::Match(arg, "stdin|stdout|stderr"))
-                    continue;
-            }
-        }
+        if (isReopenStandardStream(tok))
+            continue;
 
         // get ast parent, skip casts
         const Token *parent = tok->next()->astParent();
