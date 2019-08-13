@@ -2664,7 +2664,7 @@ void CheckClass::overrideError(const Function *funcInBase, const Function *funcI
                 false);
 }
 
-void CheckClass::checkSafeClassRefMember()
+void CheckClass::checkUnsafeClassRefMember()
 {
     if (!mSettings->safeChecks.classes || !mSettings->isEnabled(Settings::WARNING))
         return;
@@ -2679,7 +2679,7 @@ void CheckClass::checkSafeClassRefMember()
                     const Variable * const memberVar = initList->next()->variable();
                     const Variable * const argVar = initList->tokAt(3)->variable();
                     if (memberVar && argVar && memberVar->isConst() && memberVar->isReference() && argVar->isArgument() && argVar->isConst() && argVar->isReference())
-                        safeClassRefMemberError(initList->next(), classScope->className + "::" + memberVar->name());
+                        unsafeClassRefMemberError(initList->next(), classScope->className + "::" + memberVar->name());
                 }
                 initList = initList->linkAt(2)->next();
             }
@@ -2687,11 +2687,11 @@ void CheckClass::checkSafeClassRefMember()
     }
 }
 
-void CheckClass::safeClassRefMemberError(const Token *tok, const std::string &varname)
+void CheckClass::unsafeClassRefMemberError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::warning, "safeClassRefMember",
+    reportError(tok, Severity::warning, "unsafeClassRefMember",
                 "$symbol:" + varname + "\n"
                 "Unsafe class: The const reference member '$symbol' is initialized by a const reference constructor argument. You need to be careful about lifetime issues.\n"
-                "Safe class checking: The const reference member '$symbol' is initialized by a const reference constructor argument. You need to be careful about lifetime issues. If you pass a local variable or temporary value in this constructor argument, be extra careful. If the argument is always some global object that is never destroyed then this is safe usage. However it would be defensive to make the member '$symbol' a non-reference variable or a smart pointer.",
+                "Unsafe class checking: The const reference member '$symbol' is initialized by a const reference constructor argument. You need to be careful about lifetime issues. If you pass a local variable or temporary value in this constructor argument, be extra careful. If the argument is always some global object that is never destroyed then this is safe usage. However it would be defensive to make the member '$symbol' a non-reference variable or a smart pointer.",
                 CWE(0), false);
 }

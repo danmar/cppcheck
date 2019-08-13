@@ -222,7 +222,7 @@ private:
         TEST_CASE(override1);
         TEST_CASE(overrideCVRefQualifiers);
 
-        TEST_CASE(safeClassRefMember);
+        TEST_CASE(unsafeClassRefMember);
     }
 
     void checkCopyCtorAndEqOperator(const char code[]) {
@@ -7163,7 +7163,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkSafeClassRefMember(const char code[]) {
+    void checkUnsafeClassRefMember(const char code[]) {
         // Clear the error log
         errout.str("");
         Settings settings;
@@ -7177,11 +7177,11 @@ private:
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings, this);
-        checkClass.checkSafeClassRefMember();
+        checkClass.checkUnsafeClassRefMember();
     }
 
-    void safeClassRefMember() {
-        checkSafeClassRefMember("class C { C(const std::string &s) : s(s) {} const std::string &s; };");
+    void unsafeClassRefMember() {
+        checkUnsafeClassRefMember("class C { C(const std::string &s) : s(s) {} const std::string &s; };");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Unsafe class: The const reference member 'C::s' is initialized by a const reference constructor argument. You need to be careful about lifetime issues.\n", errout.str());
     }
 };
