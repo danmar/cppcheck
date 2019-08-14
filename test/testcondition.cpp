@@ -3197,7 +3197,16 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style) Condition 'array' is always true\n", errout.str());
-
+      
+        check("void f(int *array, int size ) {\n"
+              "    for(int i = 0; i < size; ++i) {\n"
+              "        if(array == 0)\n"
+              "            continue;\n"
+              "        else if(array){}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style) Condition 'array' is always true\n", errout.str());
+      
         // #9277
         check("int f() {\n"
               "    constexpr bool x = true;\n"

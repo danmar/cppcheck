@@ -1379,6 +1379,14 @@ private:
               "  v[-11] = 123;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Array index -11 is out of bounds.\n", errout.str());
+
+        check("int f(int x, const std::vector<int>& a) {\n"
+              "    if (!(x < 5))\n"
+              "        return a[x - 5];\n"
+              "    else\n"
+              "        return a[4 - x];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
