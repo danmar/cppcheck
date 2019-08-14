@@ -3,8 +3,7 @@
 include($$PWD/pcrerules.pri)
 include($$PWD/../externals/externals.pri)
 INCLUDEPATH += $$PWD
-HEADERS += $${PWD}/check.h \
-           $${PWD}/analyzerinfo.h \
+HEADERS += $${PWD}/analyzerinfo.h \
            $${PWD}/astutils.h \
            $${PWD}/check.h \
            $${PWD}/check64bit.h \
