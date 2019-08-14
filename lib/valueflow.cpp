@@ -3894,6 +3894,7 @@ struct ValueFlowConditionHandler {
                             if (parent && (parent->str() == "!" || Token::simpleMatch(parent, "== false"))) {
                                 check_if = !check_if;
                                 check_else = !check_else;
+                                std::swap(cond.true_values, cond.false_values);
                             }
                             tok2 = parent;
                         }
