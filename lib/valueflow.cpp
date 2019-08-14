@@ -3450,7 +3450,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
 
             if (astIsIterator(parent->tokAt(2)))
                 ls = LifetimeStore{tok, "Iterator to container is created here.", ValueFlow::Value::LifetimeKind::Iterator};
-            else if(astIsPointer(parent->tokAt(2)))
+            else if(astIsPointer(parent->tokAt(2)) || Token::Match(parent->next(), "data|c_str"))
                 ls = LifetimeStore{tok, "Pointer to container is created here.", ValueFlow::Value::LifetimeKind::Object};
             else
                 continue;

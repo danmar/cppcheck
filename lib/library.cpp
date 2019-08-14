@@ -1365,9 +1365,13 @@ const Library::Container * getLibraryContainer(const Token * tok)
 {
     if (!tok)
         return nullptr;
-    if (tok->isUnaryOp("*") && (astIsPointer(tok->astOperand1()) || astIsIterator(tok->astOperand1()))) {
+    // TODO: Support dereferencing iterators
+    // TODO: Support dereferencing with ->
+    if (tok->isUnaryOp("*") && astIsPointer(tok->astOperand1())) {
         for (const ValueFlow::Value& v:tok->astOperand1()->values()) {
             if (!v.isLocalLifetimeValue())
+                continue;
+            if (v.lifetimeKind != ValueFlow::Value::LifetimeKind::Address)
                 continue;
             return getLibraryContainer(v.tokvalue);
         }
