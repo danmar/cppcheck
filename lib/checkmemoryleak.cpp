@@ -985,31 +985,40 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
     // parse the executable scope until tok is reached...
     for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
         // allocating memory in parameter for function call..
-        if (!(Token::Match(tok, "[(,] %name% (") && Token::Match(tok->linkAt(2), ") [,)]")))
+        if (!Token::Match(tok, "%name% ("))
             continue;
-        if (getAllocationType(tok->next(), 0) == No)
+
+        // check if the output of the function is assigned
+        const Token* tok2 = tok->next()->astParent();
+        while (tok2 && tok2->isCast())
+            tok2 = tok2->astParent();
+        if (tok2 && tok2->isAssignmentOp())
             continue;
-        // locate outer function call..
-        const Token* tok3 = tok;
-        while (tok3 && tok3->astParent() && tok3->str() == ",")
-            tok3 = tok3->astParent();
-        if (!tok3 || tok3->str() != "(")
-            continue;
-        // Is it a function call..
-        if (!Token::Match(tok3->tokAt(-2), "!!= %name% ("))
-            continue;
-        const std::string& functionName = tok3->strAt(-1);
+
+        const std::string& functionName = tok->str();
         if ((mTokenizer->isCPP() && functionName == "delete") ||
             functionName == "free" ||
             functionName == "fclose" ||
             functionName == "realloc")
             break;
-        if (isReopenStandardStream(tok->next()))
+
+        if (!CheckMemoryLeakInFunction::test_white_list(functionName, mSettings, mTokenizer->isCPP()))
             continue;
-        if (CheckMemoryLeakInFunction::test_white_list(functionName, mSettings, mTokenizer->isCPP())) {
-            functionCallLeak(tok, tok->strAt(1), functionName);
+
+        const std::vector<const Token *> args = getArguments(tok);
+        for (const Token* arg : args) {
+            if (arg->isOp())
+                continue;
+            while (arg->astOperand1())
+                arg = arg->astOperand1();
+            if (getAllocationType(arg, 0) == No)
+                continue;
+            if (isReopenStandardStream(arg))
+                continue;
+            functionCallLeak(arg, arg->str(), functionName);
             break;
         }
+
     }
 }
 
