@@ -3911,6 +3911,7 @@ struct ValueFlowConditionHandler {
                         startTokens[1] = top->link()->linkAt(1)->tokAt(2);
 
                     bool bail = false;
+                    const bool bothCanBeKnown = check_if && check_else && !Token::Match(tok->astParent(), "&&|%oror%");
 
                     for (int i = 0; i < 2; i++) {
                         const Token *const startToken = startTokens[i];
@@ -3918,6 +3919,8 @@ struct ValueFlowConditionHandler {
                             continue;
                         std::list<ValueFlow::Value> &values = (i == 0 ? cond.true_values : cond.false_values);
                         valueFlowSetConditionToKnown(tok, values, i == 0);
+                        if (bothCanBeKnown)
+                            valueFlowSetConditionToKnown(tok, values, i != 0);
 
                         bool changed = forward(startTokens[i], startTokens[i]->link(), var, values, true);
                         values.front().setPossible();
