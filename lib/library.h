@@ -565,6 +565,8 @@ private:
     }
 };
 
+const Library::Container * getLibraryContainer(const Token * tok);
+
 /// @}
 //---------------------------------------------------------------------------
 #endif // libraryH

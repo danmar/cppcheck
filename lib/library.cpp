@@ -1361,3 +1361,19 @@ bool Library::isSmartPointer(const Token *tok) const
     return smartPointers.find(typestr) != smartPointers.end();
 }
 
+const Library::Container * getLibraryContainer(const Token * tok)
+{
+    if (!tok)
+        return nullptr;
+    if (tok->isUnaryOp("*") && (astIsPointer(tok->astOperand1()) || astIsIterator(tok->astOperand1()))) {
+        for (const ValueFlow::Value& v:tok->astOperand1()->values()) {
+            if (!v.isLocalLifetimeValue())
+                continue;
+            return getLibraryContainer(v.tokvalue);
+        }
+    }
+    if (!tok->valueType())
+        return nullptr;
+    return tok->valueType()->container;
+}
+

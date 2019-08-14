@@ -106,7 +106,7 @@ bool astIsIterator(const Token *tok)
 
 bool astIsContainer(const Token *tok)
 {
-    return tok && tok->valueType() && tok->valueType()->type == ValueType::Type::CONTAINER;
+    return getLibraryContainer(tok) != nullptr;
 }
 
 std::string astCanonicalType(const Token *expr)
@@ -212,6 +212,22 @@ const Token * nextAfterAstRightmostLeaf(const Token * tok)
     if (rightmostLeaf->str() == "{" && rightmostLeaf->link())
         rightmostLeaf = rightmostLeaf->link();
     return rightmostLeaf->next();
+}
+
+const Token* astParentSkipParens(const Token* tok)
+{
+    return astParentSkipParens(const_cast<Token*>(tok));
+}
+Token* astParentSkipParens(Token* tok)
+{
+    if (!tok)
+        return nullptr;
+    Token * parent = tok->astParent();
+    if (!Token::simpleMatch(parent, "("))
+        return parent;
+    if (parent->link() != nextAfterAstRightmostLeaf(tok))
+        return parent;
+    return astParentSkipParens(parent);
 }
 
 static const Token * getVariableInitExpression(const Variable * var)
