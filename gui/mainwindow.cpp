@@ -343,6 +343,7 @@ void MainWindow::loadSettings()
             mProjectFile = new ProjectFile(this);
             mProjectFile->read(projectFile);
             loadLastResults();
+            QDir::setCurrent(inf.absolutePath());
         }
     }
 }
