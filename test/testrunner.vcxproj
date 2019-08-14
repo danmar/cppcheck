@@ -29,6 +29,7 @@
     <ClCompile Include="..\cli\filelister.cpp" />
     <ClCompile Include="..\cli\threadexecutor.cpp" />
     <ClCompile Include="..\lib\astutils.cpp" />
+    <ClCompile Include="..\lib\library.cpp" />
     <ClCompile Include="options.cpp" />
     <ClCompile Include="test64bit.cpp" />
     <ClCompile Include="testassert.cpp" />
