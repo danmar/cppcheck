@@ -595,6 +595,8 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                 } else if (tok->variable() && tok->variable()->declarationId() == tok->varId()) {
                     var = tok->variable();
                 }
+                if (!isLifetimeBorrowed(tok, mSettings))
+                    continue;
                 if (var && !var->isLocal() && !var->isArgument() && !isVariableChanged(tok->next(), tok->scope()->bodyEnd, var->declarationId(), var->isGlobal(), mSettings, mTokenizer->isCPP())) {
                     errorDanglngLifetime(tok2, &val);
                     break;
