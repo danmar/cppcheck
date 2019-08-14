@@ -3910,7 +3910,7 @@ struct ValueFlowConditionHandler {
                         startTokens[1] = top->link()->linkAt(1)->tokAt(2);
 
                     bool bail = false;
-                    const bool bothCanBeKnown = check_else && check_else && !Token::Match(tok->astParent(), "&&|%oror%");
+                    const bool bothCanBeKnown = check_if && check_else && !Token::Match(tok->astParent(), "&&|%oror%");
 
                     for (int i = 0; i < 2; i++) {
                         const Token *const startToken = startTokens[i];
