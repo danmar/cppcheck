@@ -115,6 +115,11 @@ public:
     AllocType getReallocationType(const Token *tok2, nonneg int varid) const;
 
     /**
+     * Check if token reopens a standard stream
+     * @param tok token to check
+     */
+    bool isReopenStandardStream(const Token *tok) const;
+    /**
      * Report that there is a memory leak (new/malloc/etc)
      * @param tok token where memory is leaked
      * @param varname name of variable
@@ -330,6 +335,13 @@ public:
     void check();
 
 private:
+    /**
+     * @brief %Check if an input argument to a function is the return value of an allocation function
+     * like malloc(), and the function does not release it.
+     * @param scope     The scope of the function to check.
+     */
+    void checkForUnreleasedInputArgument(const Scope *scope);
+
     /**
      * @brief %Check if a call to an allocation function like malloc() is made and its return value is not assigned.
      * @param scope     The scope of the function to check.

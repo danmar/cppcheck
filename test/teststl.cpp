@@ -289,6 +289,22 @@ private:
                     "  x = s.begin() + x;\n"
                     "}\n");
         ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in expression 's.begin()+x' because 's' is empty and 'x' may be non-zero.\n", errout.str());
+
+        checkNormal("char fstr1(){const std::string s = \"<a><b>\"; return s[42]; }\n"
+                    "wchar_t fwstr1(){const std::wstring s = L\"<a><b>\"; return s[42]; }\n");
+        ASSERT_EQUALS("test.cpp:1:error:Out of bounds access in 's[42]', if 's' size is 6 and '42' is 42\n"
+                      "test.cpp:2:error:Out of bounds access in 's[42]', if 's' size is 6 and '42' is 42\n", errout.str());
+
+        checkNormal("char fstr1(){const std::string s = \"<a><b>\"; return s[1]; }\n"
+                    "wchar_t fwstr1(){const std::wstring s = L\"<a><b>\"; return s[1]; }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("int f() {\n"
+                    "    std::vector<int> v;\n"
+                    "    std::vector<int> * pv = &v;\n"
+                    "    return (*pv)[42];\n"
+                    "}\n");
+        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in expression '(*pv)[42]' because '*pv' is empty.\n", errout.str());
     }
 
     void outOfBoundsIndexExpression() {
@@ -1363,6 +1379,14 @@ private:
               "  v[-11] = 123;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Array index -11 is out of bounds.\n", errout.str());
+
+        check("int f(int x, const std::vector<int>& a) {\n"
+              "    if (!(x < 5))\n"
+              "        return a[x - 5];\n"
+              "    else\n"
+              "        return a[4 - x];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

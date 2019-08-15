@@ -96,15 +96,31 @@ KEYWORDS = {
 def getEssentialTypeCategory(expr):
     if not expr:
         return None
+    if expr.str == ',':
+        return getEssentialTypeCategory(expr.astOperand2)
+    if expr.str in ('<', '<=', '==', '!=', '>=', '>', '&&', '||', '!'):
+        return 'bool'
+    if expr.str in ('<<', '>>'):
+        # TODO this is incomplete
+        return getEssentialTypeCategory(expr.astOperand1)
+    if len(expr.str) == 1 and expr.str in '+-*/%&|^':
+        # TODO this is incomplete
+        e1 = getEssentialTypeCategory(expr.astOperand1)
+        e2 = getEssentialTypeCategory(expr.astOperand2)
+        #print('{0}: {1} {2}'.format(expr.str, e1, e2))
+        if e1 and e2 and e1 == e2:
+            return e1
+        if expr.valueType:
+            return expr.valueType.sign
     if expr.valueType and expr.valueType.typeScope:
         return "enum<" + expr.valueType.typeScope.className + ">"
     if expr.variable:
         typeToken = expr.variable.typeStartToken
         while typeToken:
             if typeToken.valueType:
-                if typeToken.valueType.type in {'bool'}:
+                if typeToken.valueType.type == 'bool':
                     return typeToken.valueType.type
-                if typeToken.valueType.type in {'float', 'double', 'long double'}:
+                if typeToken.valueType.type in ('float', 'double', 'long double'):
                     return "float"
                 if typeToken.valueType.sign:
                     return typeToken.valueType.sign
@@ -117,8 +133,8 @@ def getEssentialTypeCategory(expr):
 def getEssentialCategorylist(operand1, operand2):
     if not operand1 or not operand2:
         return None, None
-    if (operand1.str in {'++', '--'} or
-            operand2.str in {'++', '--'}):
+    if (operand1.str in ('++', '--') or
+            operand2.str in ('++', '--')):
         return None, None
     if ((operand1.valueType and operand1.valueType.pointer) or
             (operand2.valueType and operand2.valueType.pointer)):
@@ -134,11 +150,11 @@ def getEssentialType(expr):
     if expr.variable:
         typeToken = expr.variable.typeStartToken
         while typeToken and typeToken.isName:
-            if typeToken.str in {'char', 'short', 'int', 'long', 'float', 'double'}:
+            if typeToken.str in ('char', 'short', 'int', 'long', 'float', 'double'):
                 return typeToken.str
             typeToken = typeToken.next
 
-    elif expr.astOperand1 and expr.astOperand2 and expr.str in {'+', '-', '*', '/', '%', '&', '|', '^', '>>', "<<", "?", ":"}:
+    elif expr.astOperand1 and expr.astOperand2 and expr.str in ('+', '-', '*', '/', '%', '&', '|', '^', '>>', "<<", "?", ":"):
         if expr.astOperand1.valueType and expr.astOperand1.valueType.pointer > 0:
             return None
         if expr.astOperand2.valueType and expr.astOperand2.valueType.pointer > 0:
@@ -205,10 +221,10 @@ def hasExternalLinkage(var):
 
 
 def countSideEffects(expr):
-    if not expr or expr.str in {',', ';'}:
+    if not expr or expr.str in (',', ';'):
         return 0
     ret = 0
-    if expr.str in {'++', '--', '='}:
+    if expr.str in ('++', '--', '='):
         ret = 1
     return ret + countSideEffects(expr.astOperand1) + countSideEffects(expr.astOperand2)
 
@@ -270,7 +286,7 @@ def isFloatCounterInWhileLoop(whileToken):
                 continue
             if token.isAssignmentOp and token.astOperand1.str == counterToken.str:
                 return True
-            if token.str == counterToken.str and token.astParent and token.astParent.str in {'++', '--'}:
+            if token.str == counterToken.str and token.astParent and token.astParent.str in ('++', '--'):
                 return True
     return False
 
@@ -288,7 +304,7 @@ def hasSideEffectsRecursive(expr):
             e = e.astOperand1
         if e and e.str == '.':
             return False
-    if expr.str in {'++', '--', '='}:
+    if expr.str in ('++', '--', '='):
         return True
     # Todo: Check function calls
     return hasSideEffectsRecursive(expr.astOperand1) or hasSideEffectsRecursive(expr.astOperand2)
@@ -322,7 +338,7 @@ def isUnsignedInt(expr):
         return False
     if expr.isNumber:
         return 'u' in expr.str or 'U' in expr.str
-    if expr.str in {'+', '-', '*', '/', '%'}:
+    if expr.str in ('+', '-', '*', '/', '%'):
         return isUnsignedInt(expr.astOperand1) or isUnsignedInt(expr.astOperand2)
     return False
 
@@ -332,15 +348,15 @@ def getPrecedence(expr):
         return 16
     if not expr.astOperand1 or not expr.astOperand2:
         return 16
-    if expr.str in {'*', '/', '%'}:
+    if expr.str in ('*', '/', '%'):
         return 12
-    if expr.str in {'+', '-'}:
+    if expr.str in ('+', '-'):
         return 11
-    if expr.str in {'<<', '>>'}:
+    if expr.str in ('<<', '>>'):
         return 10
-    if expr.str in {'<', '>', '<=', '>='}:
+    if expr.str in ('<', '>', '<=', '>='):
         return 9
-    if expr.str in {'==', '!='}:
+    if expr.str in ('==', '!='):
         return 8
     if expr.str == '&':
         return 7
@@ -352,7 +368,7 @@ def getPrecedence(expr):
         return 4
     if expr.str == '||':
         return 3
-    if expr.str in {'?', ':'}:
+    if expr.str in ('?', ':'):
         return 2
     if expr.isAssignmentOp:
         return 1
@@ -1005,7 +1021,7 @@ class MisraChecker:
         for token in data.tokenlist:
             if token.str != '=' or not token.astOperand1 or not token.astOperand2:
                 continue
-            if (token.astOperand2.str not in {'+', '-', '*', '/', '%', '&', '|', '^', '>>', "<<", "?", ":", '~'} and
+            if (token.astOperand2.str not in ('+', '-', '*', '/', '%', '&', '|', '^', '>>', "<<", "?", ":", '~') and
                     not isCast(token.astOperand2)):
                 continue
             vt1 = token.astOperand1.valueType
@@ -1039,7 +1055,7 @@ class MisraChecker:
                 continue
             if not token.astOperand1.astOperand1:
                 continue
-            if token.astOperand1.str not in {'+', '-', '*', '/', '%', '&', '|', '^', '>>', "<<", "?", ":", '~'}:
+            if token.astOperand1.str not in ('+', '-', '*', '/', '%', '&', '|', '^', '>>', "<<", "?", ":", '~'):
                 continue
             if token.astOperand1.str != '~' and not token.astOperand1.astOperand2:
                 continue
@@ -1110,7 +1126,7 @@ class MisraChecker:
                     if vt1.pointer > 0 and vt1.type != 'void' and vt2.pointer == vt1.pointer and vt2.type == 'void':
                         self.reportError(token, 11, 5)
                 continue
-            if token.astOperand1.astOperand1 and token.astOperand1.astOperand1.str in {'malloc', 'calloc', 'realloc', 'free'}:
+            if token.astOperand1.astOperand1 and token.astOperand1.astOperand1.str in ('malloc', 'calloc', 'realloc', 'free'):
                 continue
             vt1 = token.valueType
             vt2 = token.astOperand1.valueType
@@ -1223,7 +1239,7 @@ class MisraChecker:
                 else:
                     state = 0
             elif state == 2:
-                if tok.str in {'+', '-', '*', '/', '%'}:
+                if tok.str in ('+', '-', '*', '/', '%'):
                     self.reportError(tok, 12, 1)
                 else:
                     state = 0
@@ -1246,7 +1262,7 @@ class MisraChecker:
 
     def misra_12_2(self, data):
         for token in data.tokenlist:
-            if not (token.str in {'<<', '>>'}):
+            if not (token.str in ('<<', '>>')):
                 continue
             if (not token.astOperand2) or (not token.astOperand2.values):
                 continue
@@ -1303,10 +1319,10 @@ class MisraChecker:
 
     def misra_13_3(self, data):
         for token in data.tokenlist:
-            if token.str not in {'++', '--'}:
+            if token.str not in ('++', '--'):
                 continue
             astTop = token
-            while astTop.astParent and astTop.astParent.str not in {',', ';'}:
+            while astTop.astParent and astTop.astParent.str not in (',', ';'):
                 astTop = astTop.astParent
             if countSideEffects(astTop) >= 2:
                 self.reportError(astTop, 13, 3)
@@ -1318,7 +1334,7 @@ class MisraChecker:
                 continue
             if not token.astParent:
                 continue
-            if token.astOperand1.str == '[' and token.astOperand1.previous.str in {'{', ','}:
+            if token.astOperand1.str == '[' and token.astOperand1.previous.str in ('{', ','):
                 continue
             if not (token.astParent.str in [',', ';', '{']):
                 self.reportError(token, 13, 4)
@@ -1463,6 +1479,8 @@ class MisraChecker:
                 continue
             if not simpleMatch(scope.bodyStart, '{ if ('):
                 continue
+            if scope.bodyStart.col > 0:
+                continue
             tok = scope.bodyStart.next.next.link
             if not simpleMatch(tok, ') {'):
                 continue
@@ -1501,8 +1519,12 @@ class MisraChecker:
                 state = STATE_OK
             elif token.str == '}' and state == STATE_OK:
                 # is this {} an unconditional block of code?
-                link = findRawLink(token)
-                if (link is None) or (link.previous is None) or (link.previous.str not in ':;{}'):
+                prev = findRawLink(token)
+                if prev:
+                    prev = prev.previous
+                    while prev and prev.str[:2] in ('//', '/*'):
+                        prev = prev.previous
+                if (prev is None) or (prev.str not in ':;{}'):
                     state = STATE_NONE
             elif token.str == 'case' or token.str == 'default':
                 if state != STATE_OK:
@@ -1538,7 +1560,7 @@ class MisraChecker:
                 continue
             tok2 = token
             while tok2:
-                if tok2.str in {'}', 'case'}:
+                if tok2.str in ('}', 'case'):
                     break
                 if tok2.str == '{':
                     tok2 = tok2.link
@@ -1575,7 +1597,7 @@ class MisraChecker:
 
     def misra_17_1(self, data):
         for token in data.tokenlist:
-            if isFunctionCall(token) and token.astOperand1.str in {'va_list', 'va_arg', 'va_start', 'va_end', 'va_copy'}:
+            if isFunctionCall(token) and token.astOperand1.str in ('va_list', 'va_arg', 'va_start', 'va_end', 'va_copy'):
                 self.reportError(token, 17, 1)
             elif token.str == 'va_list':
                 self.reportError(token, 17, 1)
@@ -1652,7 +1674,7 @@ class MisraChecker:
 
     def misra_17_8(self, data):
         for token in data.tokenlist:
-            if not (token.isAssignmentOp or (token.str in {'++', '--'})):
+            if not (token.isAssignmentOp or (token.str in ('++', '--'))):
                 continue
             if not token.astOperand1:
                 continue
@@ -1741,7 +1763,7 @@ class MisraChecker:
         for directive in data.directives:
             if not directive.str.startswith('#include '):
                 continue
-            for pattern in {'\\', '//', '/*', "'"}:
+            for pattern in ('\\', '//', '/*', "'"):
                 if pattern in directive.str:
                     self.reportError(directive, 20, 2)
                     break
@@ -1848,7 +1870,7 @@ class MisraChecker:
 
     def misra_21_3(self, data):
         for token in data.tokenlist:
-            if isFunctionCall(token) and (token.astOperand1.str in {'malloc', 'calloc', 'realloc', 'free'}):
+            if isFunctionCall(token) and (token.astOperand1.str in ('malloc', 'calloc', 'realloc', 'free')):
                 self.reportError(token, 21, 3)
 
 
@@ -1875,19 +1897,19 @@ class MisraChecker:
 
     def misra_21_7(self, data):
         for token in data.tokenlist:
-            if isFunctionCall(token) and (token.astOperand1.str in {'atof', 'atoi', 'atol', 'atoll'}):
+            if isFunctionCall(token) and (token.astOperand1.str in ('atof', 'atoi', 'atol', 'atoll')):
                 self.reportError(token, 21, 7)
 
 
     def misra_21_8(self, data):
         for token in data.tokenlist:
-            if isFunctionCall(token) and (token.astOperand1.str in {'abort', 'exit', 'getenv', 'system'}):
+            if isFunctionCall(token) and (token.astOperand1.str in ('abort', 'exit', 'getenv', 'system')):
                 self.reportError(token, 21, 8)
 
 
     def misra_21_9(self, data):
         for token in data.tokenlist:
-            if (token.str in {'bsearch', 'qsort'}) and token.next and token.next.str == '(':
+            if (token.str in ('bsearch', 'qsort')) and token.next and token.next.str == '(':
                 self.reportError(token, 21, 9)
 
 

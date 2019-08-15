@@ -94,6 +94,7 @@ private:
         TEST_CASE(valueFlowSwitchVariable);
 
         TEST_CASE(valueFlowForLoop);
+        TEST_CASE(valueFlowSubFunction);
         TEST_CASE(valueFlowFunctionReturn);
 
         TEST_CASE(valueFlowFunctionDefaultParameter);
@@ -122,6 +123,8 @@ private:
 
         TEST_CASE(valueFlowSafeFunctionParameterValues);
         TEST_CASE(valueFlowUnknownFunctionReturn);
+
+        TEST_CASE(valueFlowPointerAliasDeref);
     }
 
     static bool isNotTokValue(const ValueFlow::Value &val) {
@@ -2203,7 +2206,7 @@ private:
                "  else\n"
                "    b = x;\n"
                "}";
-        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 4U, 2));
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 2));
         ASSERT_EQUALS(false, testValueOfX(code, 6U, 2));
 
         // condition with 2nd variable
@@ -2925,6 +2928,26 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 5U, 3));
     }
 
+    void valueFlowSubFunction() {
+        const char *code;
+
+        code = "int f(int size) {\n"
+               "    int x = 0;\n"
+               "    if(size>16) {\n"
+               "        x = size;\n"
+               "        int a = x;\n"
+               "    }\n"
+               "    return x;\n"
+               "}\n"
+               "void g(){\n"
+               "    f(42);\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 5U, 17));
+        ASSERT_EQUALS(true, testValueOfX(code, 5U, 42));
+        ASSERT_EQUALS(true, testValueOfX(code, 7U, 0));
+        ASSERT_EQUALS(true, testValueOfX(code, 7U, 17));
+        ASSERT_EQUALS(true, testValueOfX(code, 7U, 42));
+    }
     void valueFlowFunctionReturn() {
         const char *code;
 
@@ -4043,6 +4066,18 @@ private:
         ASSERT_EQUALS(2, values.size());
         ASSERT_EQUALS(INT_MIN, values.front().intvalue);
         ASSERT_EQUALS(INT_MAX, values.back().intvalue);
+    }
+
+    void valueFlowPointerAliasDeref() {
+        const char* code;
+
+        code = "int f() {\n"
+               "  int a = 123;\n"
+               "  int *p = &a;\n"
+               "  int x = *p;\n"
+               "  return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 5U, 123));
     }
 };
 

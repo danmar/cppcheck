@@ -2058,7 +2058,6 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList2();
 
         // Check for memory leaks..
         CheckMemoryLeakNoVar checkMemoryLeakNoVar(&tokenizer, &settings, this);
@@ -2139,6 +2138,27 @@ private:
               "    42, strcmp(strdup(a), b);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Allocation with strdup, strcmp doesn't release it.\n", errout.str());
+
+        check("void f() {\n"
+              "   assert(freopen(\"/dev/null\", \"r\", stdin));\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void x() {\n"
+              "    strcpy(a, (void*)strdup(p));\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Allocation with strdup, strcpy doesn't release it.\n", errout.str());
+
+        check("void* malloc1() {\n"
+              "    return (malloc(1));\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("char *x() {\n"
+              "    char *ret = (char*)strcpy(malloc(10), \"abc\");\n"
+              "    return ret;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void missingAssignment() {
