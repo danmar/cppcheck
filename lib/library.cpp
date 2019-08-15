@@ -1361,7 +1361,7 @@ bool Library::isSmartPointer(const Token *tok) const
     return smartPointers.find(typestr) != smartPointers.end();
 }
 
-const Library::Container * getLibraryContainer(const Token * tok)
+CPPCHECKLIB const Library::Container * getLibraryContainer(const Token * tok)
 {
     if (!tok)
         return nullptr;
