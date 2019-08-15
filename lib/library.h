@@ -565,7 +565,7 @@ private:
     }
 };
 
-const Library::Container * getLibraryContainer(const Token * tok);
+CPPCHECKLIB const Library::Container * getLibraryContainer(const Token * tok);
 
 /// @}
 //---------------------------------------------------------------------------
