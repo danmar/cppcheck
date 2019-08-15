@@ -1269,9 +1269,11 @@ void CheckUninitVar::uninitdataError(const Token *tok, const std::string &varnam
     reportError(tok, Severity::error, "uninitdata", "$symbol:" + varname + "\nMemory is allocated but not initialized: $symbol", CWE908, false);
 }
 
-void CheckUninitVar::uninitvarError(const Token *tok, const std::string &varname)
+void CheckUninitVar::uninitvarError(const Token *tok, const std::string &varname, ErrorPath errorPath)
 {
-    reportError(tok, Severity::error, "uninitvar", "$symbol:" + varname + "\nUninitialized variable: $symbol", CWE908, false);
+    errorPath.emplace_back(tok, "");
+    reportError(errorPath, Severity::error, "uninitvar", "$symbol:" + varname + "\nUninitialized variable: $symbol", CWE908, false);
+    // reportError(tok, Severity::error, "uninitvar", "$symbol:" + varname + "\nUninitialized variable: $symbol", CWE908, false);
 }
 
 void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string &membername)
@@ -1302,7 +1304,9 @@ void CheckUninitVar::valueFlowUninit()
                 continue;
             if (!isVariableUsage(tok, tok->variable()->isPointer(), NO_ALLOC))
                 continue;
-            uninitvarError(tok, tok->str());
+            if (isVariableChanged(tok, mSettings, true))
+                continue;
+            uninitvarError(tok, tok->str(), v.errorPath);
         }
     }
 }
