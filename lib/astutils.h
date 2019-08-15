@@ -81,6 +81,9 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
 
 const Token * nextAfterAstRightmostLeaf(const Token * tok);
 
+Token* astParentSkipParens(Token* tok);
+const Token* astParentSkipParens(const Token* tok);
+
 bool precedes(const Token * tok1, const Token * tok2);
 
 bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors=nullptr);
