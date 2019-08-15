@@ -4992,7 +4992,7 @@ static void valueFlowUninit(TokenList *tokenlist, SymbolDatabase * /*symbolDatab
             vardecl = vardecl->next();
         }
         // if (!stdtype && !pointer)
-            // continue;
+        // continue;
         if (!Token::Match(vardecl, "%var% ;"))
             continue;
         if (Token::Match(vardecl, "%varid% ; %varid% =", vardecl->varId()))
