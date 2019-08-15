@@ -3445,31 +3445,25 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
         }
         // container lifetimes
-        else if (tok->variable() &&
-                 Token::Match(tok, "%var% . begin|cbegin|rbegin|crbegin|end|cend|rend|crend|data|c_str|find|insert (") &&
-                 tok->next()->originalName() != "->") {
-            if (Token::simpleMatch(tok->tokAt(2), "find") && !astIsIterator(tok->tokAt(3)))
-                continue;
-            ErrorPath errorPath;
-            const Library::Container * container = settings->library.detectContainer(tok->variable()->typeStartToken());
-            if (!container)
+        else if (astIsContainer(tok)) {
+            Token * parent = astParentSkipParens(tok);
+            if (!Token::Match(parent, ". %name% ("))
                 continue;
 
-            bool isIterator = !Token::Match(tok->tokAt(2), "data|c_str");
-            if (isIterator)
-                errorPath.emplace_back(tok, "Iterator to container is created here.");
+            LifetimeStore ls;
+
+            if (astIsIterator(parent->tokAt(2)))
+                ls = LifetimeStore{tok, "Iterator to container is created here.", ValueFlow::Value::LifetimeKind::Iterator};
+            else if (astIsPointer(parent->tokAt(2)) || Token::Match(parent->next(), "data|c_str"))
+                ls = LifetimeStore{tok, "Pointer to container is created here.", ValueFlow::Value::LifetimeKind::Object};
             else
-                errorPath.emplace_back(tok, "Pointer to container is created here.");
+                continue;
 
-            ValueFlow::Value value;
-            value.valueType = ValueFlow::Value::ValueType::LIFETIME;
-            value.lifetimeScope = ValueFlow::Value::LifetimeScope::Local;
-            value.tokvalue = tok;
-            value.errorPath = errorPath;
-            value.lifetimeKind = isIterator ? ValueFlow::Value::LifetimeKind::Iterator : ValueFlow::Value::LifetimeKind::Object;
-            setTokenValue(tok->tokAt(3), value, tokenlist->getSettings());
-
-            valueFlowForwardLifetime(tok->tokAt(3), tokenlist, errorLogger, settings);
+            // Dereferencing
+            if (tok->isUnaryOp("*") || parent->originalName() == "->")
+                ls.byDerefCopy(parent->tokAt(2), tokenlist, errorLogger, settings);
+            else
+                ls.byRef(parent->tokAt(2), tokenlist, errorLogger, settings);
 
         }
         // Check constructors

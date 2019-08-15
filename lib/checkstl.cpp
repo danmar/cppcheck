@@ -51,22 +51,6 @@ static const struct CWE CWE788(788U);   // Access of Memory Location After End o
 static const struct CWE CWE825(825U);   // Expired Pointer Dereference
 static const struct CWE CWE834(834U);   // Excessive Iteration
 
-static const Library::Container * getLibraryContainer(const Token * tok)
-{
-    if (!tok)
-        return nullptr;
-    if (tok->isUnaryOp("*") && astIsPointer(tok->astOperand1())) {
-        for (const ValueFlow::Value& v:tok->astOperand1()->values()) {
-            if (!v.isLocalLifetimeValue())
-                continue;
-            return getLibraryContainer(v.tokvalue);
-        }
-    }
-    if (!tok->valueType())
-        return nullptr;
-    return tok->valueType()->container;
-}
-
 void CheckStl::outOfBounds()
 {
     for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
@@ -74,9 +58,7 @@ void CheckStl::outOfBounds()
             const Library::Container *container = getLibraryContainer(tok);
             if (!container)
                 continue;
-            const Token * parent = tok->astParent();
-            while (Token::simpleMatch(parent, "(") && !Token::Match(parent->previous(), "%name%"))
-                parent = parent->astParent();
+            const Token * parent = astParentSkipParens(tok);
             for (const ValueFlow::Value &value : tok->values()) {
                 if (!value.isContainerSizeValue())
                     continue;
