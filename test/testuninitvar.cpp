@@ -81,6 +81,7 @@ private:
         TEST_CASE(syntax_error); // Ticket #5073
         TEST_CASE(trac_5970);
         TEST_CASE(valueFlowUninit);
+        TEST_CASE(uninitvar_ipa);
 
         TEST_CASE(isVariableUsageDeref); // *p
 
@@ -3975,6 +3976,57 @@ private:
                         "  char **x;\n"
                         "  if (2 < sizeof(*x)) {}\n"
                         "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitvar_ipa() {
+        // #8825
+        valueFlowUninit("typedef struct  {\n"
+                        "    int flags;\n"
+                        "} someType_t;\n"
+                        "void bar(const someType_t * const p)  {\n"
+                        "    if( (p->flags & 0xF000) == 0xF000){}\n"
+                        "}\n"
+                        "void f(void) {\n"
+                        "    someType_t gVar;\n"
+                        "    bar(&gVar);\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:5]: (error) Uninitialized variable: flags\n", errout.str());
+
+        valueFlowUninit("typedef struct \n"
+                        "{\n"
+                        "        int flags[3];\n"
+                        "} someType_t;\n"
+                        "void f(void) {\n"
+                        "        someType_t gVar;\n"
+                        "        if(gVar.flags[1] == 42){}\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: flags\n", errout.str());
+
+        valueFlowUninit("void f(bool * x) {\n"
+                        "    *x = false;\n"
+                        "}\n"
+                        "void g() {\n"
+                        "    bool b;\n"
+                        "    f(&b);\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("struct A { bool b; };"
+                        "void f(A * x) {\n"
+                        "    x->b = false;\n"
+                        "}\n"
+                        "void g() {\n"
+                        "    A b;\n"
+                        "    f(&b);\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("std::string f() {\n"
+                        "    std::ostringstream ostr;\n"
+                        "    ostr << \"\";\n"
+                        "    return ostr.str();\n"
+                        "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

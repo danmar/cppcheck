@@ -399,10 +399,6 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
     if (!tok->addValue(value))
         return;
 
-    // Don't set parent for uninitialized values
-    if (value.isUninitValue())
-        return;
-
     Token *parent = tok->astParent();
     if (!parent)
         return;
@@ -456,6 +452,14 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                    (parent->isArithmeticalOp() || Token::Match(parent, "( %type%"))) {
             setTokenValue(parent,value,settings);
         }
+        return;
+    }
+
+    if (value.isUninitValue()) {
+        if (parent->isUnaryOp("&"))
+            setTokenValue(parent, value, settings);
+        else if (Token::Match(parent, ". %var%") && parent->astOperand1() == tok)
+            setTokenValue(parent->astOperand2(), value, settings);
         return;
     }
 
@@ -4987,8 +4991,8 @@ static void valueFlowUninit(TokenList *tokenlist, SymbolDatabase * /*symbolDatab
             pointer |= vardecl->str() == "*";
             vardecl = vardecl->next();
         }
-        if (!stdtype && !pointer)
-            continue;
+        // if (!stdtype && !pointer)
+            // continue;
         if (!Token::Match(vardecl, "%var% ;"))
             continue;
         if (Token::Match(vardecl, "%varid% ; %varid% =", vardecl->varId()))
@@ -4998,6 +5002,8 @@ static void valueFlowUninit(TokenList *tokenlist, SymbolDatabase * /*symbolDatab
             continue;
         if ((!var->isPointer() && var->type() && var->type()->needInitialization != Type::NeedInitialization::True) ||
             !var->isLocal() || var->isStatic() || var->isExtern() || var->isReference() || var->isThrow())
+            continue;
+        if (!var->type() && !stdtype && !pointer)
             continue;
 
         ValueFlow::Value uninitValue;
