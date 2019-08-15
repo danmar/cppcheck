@@ -458,6 +458,8 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
     if (value.isUninitValue()) {
         if (parent->isUnaryOp("&"))
             setTokenValue(parent, value, settings);
+        else if (Token::Match(parent, ". %var%") && parent->astOperand1() == tok)
+            setTokenValue(parent->astOperand2(), value, settings);
         return;
     }
 

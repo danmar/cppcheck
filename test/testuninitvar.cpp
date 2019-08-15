@@ -3991,7 +3991,17 @@ private:
                         "    someType_t gVar;\n"
                         "    bar(&gVar);\n"
                         "}\n");
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:5]: (error) Uninitialized variable: p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:5]: (error) Uninitialized variable: flags\n", errout.str());
+
+        valueFlowUninit("typedef struct \n"
+                        "{\n"
+                        "        int flags[3];\n"
+                        "} someType_t;\n"
+                        "void f(void) {\n"
+                        "        someType_t gVar;\n"
+                        "        if(gVar.flags[1] == 42){}\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: flags\n", errout.str());
 
         valueFlowUninit("void f(bool * x) {\n"
                         "    *x = false;\n"
@@ -3999,6 +4009,23 @@ private:
                         "void g() {\n"
                         "    bool b;\n"
                         "    f(&b);\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("struct A { bool b; };"
+                        "void f(A * x) {\n"
+                        "    x->b = false;\n"
+                        "}\n"
+                        "void g() {\n"
+                        "    A b;\n"
+                        "    f(&b);\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("std::string f() {\n"
+                        "    std::ostringstream ostr;\n"
+                        "    ostr << \"\";\n"
+                        "    return ostr.str();\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
     }

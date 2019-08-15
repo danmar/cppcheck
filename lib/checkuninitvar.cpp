@@ -1297,16 +1297,20 @@ void CheckUninitVar::valueFlowUninit()
                 tok = tok->linkAt(1);
                 continue;
             }
-            if (!tok->variable() || tok->values().size() != 1U)
+            if (!tok->variable())
                 continue;
-            const ValueFlow::Value &v = tok->values().front();
-            if (v.valueType != ValueFlow::Value::ValueType::UNINIT || v.isInconclusive())
+            if (Token::simpleMatch(tok->astParent(), ".") && tok->astParent()->astOperand1() == tok)
                 continue;
-            if (!isVariableUsage(tok, tok->variable()->isPointer(), NO_ALLOC))
+            auto v = std::find_if(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isUninitValue));
+            if (v == tok->values().end())
                 continue;
-            if (isVariableChanged(tok, mSettings, true))
+            if (v->isInconclusive())
                 continue;
-            uninitvarError(tok, tok->str(), v.errorPath);
+            if (!isVariableUsage(tok, tok->variable()->isPointer(), tok->variable()->isArray() ? ARRAY : NO_ALLOC))
+                continue;
+            if (isVariableChanged(tok, mSettings, mTokenizer->isCPP()))
+                continue;
+            uninitvarError(tok, tok->str(), v->errorPath);
         }
     }
 }
