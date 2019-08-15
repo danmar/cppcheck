@@ -915,10 +915,14 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
         ostr << " " << tok->str();
     const std::string str(ostr.str());
 
+    bool verbose = tokenizer.getSettings()->verbose;
+
     for (const Settings::Rule &rule : mSettings.rules) {
         if (rule.pattern.empty() || rule.id.empty() || rule.severity == Severity::none || rule.tokenlist != tokenlist)
             continue;
 
+        if (verbose)
+            std::cout << "Compile " << rule.id << " rule: " << rule.pattern << std::endl;
         const char *pcreCompileErrorStr = nullptr;
         int erroffset = 0;
         pcre * const re = pcre_compile(rule.pattern.c_str(),0,&pcreCompileErrorStr,&erroffset,nullptr);
@@ -962,6 +966,8 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
         const pcre_extra * const pcreExtra = nullptr;
 #endif
 
+        if (verbose)
+            std::cout << "Run " << rule.id << " rule: " << rule.pattern << std::endl;
         int pos = 0;
         int ovector[30]= {0};
         while (pos < (int)str.size()) {
