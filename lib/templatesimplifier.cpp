@@ -1863,6 +1863,7 @@ void TemplateSimplifier::expandTemplate(
                                         brackets1.pop();
                                     }
                                     back->isTemplateArg(true);
+                                    back->col(tok5->col());
                                     added = true;
                                     break;
                                 }
@@ -1872,6 +1873,7 @@ void TemplateSimplifier::expandTemplate(
                     if (!added) {
                         mTokenList.addtoken(tok5, tok5->linenr(), tok5->fileIndex());
                         Token *back = mTokenList.back();
+                        back->col(tok5->col());
                         if (Token::Match(back, "{|(|[")) {
                             brackets2.push(back);
                         } else if (back->str() == "}") {
@@ -1949,6 +1951,7 @@ void TemplateSimplifier::expandTemplate(
                         if (copy) {
                             mTokenList.addtoken(typetok, tok3->linenr(), tok3->fileIndex());
                             Token *back = mTokenList.back();
+                            back->col(tok3->col());
                             if (Token::Match(back, "{|(|[")) {
                                 brackets1.push(back);
                             } else if (back->str() == "(") {
@@ -1986,6 +1989,8 @@ void TemplateSimplifier::expandTemplate(
                             Token::Match(tok3, newName.c_str())) {
                             if (copy) {
                                 mTokenList.addtoken(newName, tok3->linenr(), tok3->fileIndex());
+                                Token *back = mTokenList.back();
+                                back->col(tok3->col());
                                 tok3 = closingBracket;
                             } else {
                                 tok3->str(newName);
@@ -2007,6 +2012,8 @@ void TemplateSimplifier::expandTemplate(
                             addNamespace(templateDeclaration, tok3);
                         }
                         mTokenList.addtoken(newName, tok3->linenr(), tok3->fileIndex());
+                        Token *back = mTokenList.back();
+                        back->col(tok3->col());
                     } else if (!Token::Match(tok3->next(), ":|{|="))
                         tok3->str(newName);
                     continue;
@@ -2014,8 +2021,11 @@ void TemplateSimplifier::expandTemplate(
             }
 
             // copy
-            if (copy)
+            if (copy) {
                 mTokenList.addtoken(tok3, tok3->linenr(), tok3->fileIndex());
+                Token *back = mTokenList.back();
+                back->col(tok3->col());
+            }
 
             if (Token::Match(tok3, "%type% <") &&
                 !Token::Match(tok3, "template|static_cast|const_cast|reinterpret_cast|dynamic_cast") &&
