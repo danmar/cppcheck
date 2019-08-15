@@ -5712,7 +5712,7 @@ ValueFlow::Value::Value(const Token *c, long long val)
       safe(false),
       conditional(false),
       defaultArg(false),
-      indirect(false),
+      indirect(0),
       lifetimeKind(LifetimeKind::Object),
       lifetimeScope(LifetimeScope::Local),
       valueKind(ValueKind::Possible)
