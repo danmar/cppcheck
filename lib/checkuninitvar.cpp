@@ -1299,7 +1299,7 @@ void CheckUninitVar::valueFlowUninit()
             }
             if (!tok->variable())
                 continue;
-            if (Token::simpleMatch(tok->astParent(), ".") && tok->astParent()->astOperand1() == tok)
+            if (Token::Match(tok->astParent(), ". %var%") && tok->astParent()->astOperand1() == tok)
                 continue;
             auto v = std::find_if(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isUninitValue));
             if (v == tok->values().end())
@@ -1307,6 +1307,11 @@ void CheckUninitVar::valueFlowUninit()
             if (v->isInconclusive())
                 continue;
             if (!isVariableUsage(tok, tok->variable()->isPointer(), tok->variable()->isArray() ? ARRAY : NO_ALLOC))
+                continue;
+            if (v->indirect > 1 || v->indirect < 0)
+                continue;
+            bool unknown;
+            if (v->indirect == 1 && !CheckNullPointer::isPointerDeRef(tok, unknown, mSettings))
                 continue;
             if (isVariableChanged(tok, mSettings, mTokenizer->isCPP()))
                 continue;

@@ -456,10 +456,18 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
     }
 
     if (value.isUninitValue()) {
-        if (parent->isUnaryOp("&"))
-            setTokenValue(parent, value, settings);
-        else if (Token::Match(parent, ". %var%") && parent->astOperand1() == tok)
-            setTokenValue(parent->astOperand2(), value, settings);
+        ValueFlow::Value pvalue = value;
+        if (parent->isUnaryOp("&")) {
+            pvalue.indirect++;
+            setTokenValue(parent, pvalue, settings);
+        } else if (Token::Match(parent, ". %var%") && parent->astOperand1() == tok) {
+            if (parent->originalName() == "->")
+                pvalue.indirect--;
+            setTokenValue(parent->astOperand2(), pvalue, settings);
+        } else if (parent->isUnaryOp("*") && pvalue.indirect > 0) {
+            pvalue.indirect--;
+            setTokenValue(parent, pvalue, settings);
+        }
         return;
     }
 
@@ -5704,6 +5712,7 @@ ValueFlow::Value::Value(const Token *c, long long val)
       safe(false),
       conditional(false),
       defaultArg(false),
+      indirect(false),
       lifetimeKind(LifetimeKind::Object),
       lifetimeScope(LifetimeScope::Local),
       valueKind(ValueKind::Possible)

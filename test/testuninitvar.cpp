@@ -4012,6 +4012,24 @@ private:
                         "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        valueFlowUninit("void f(bool * x) {\n"
+                        "    if (x != nullptr)\n"
+                        "        x = 1;\n"
+                        "}\n"
+                        "void g() {\n"
+                        "    bool x;\n"
+                        "    f(&x);\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("void f() {\n"
+                        "    bool b;\n"
+                        "    bool * x = &b;\n"
+                        "    if (x != nullptr)\n"
+                        "        x = 1;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         valueFlowUninit("struct A { bool b; };"
                         "void f(A * x) {\n"
                         "    x->b = false;\n"
