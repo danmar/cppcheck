@@ -44,6 +44,26 @@ QString::iterator QString3()
     return it;
 }
 
+void QByteArray1(QByteArray byteArrayArg)
+{
+    for (int i = 0; i <= byteArrayArg.size(); ++i) {
+        // cppcheck-suppress stlOutOfBounds
+        byteArrayArg[i] = 'x';
+    }
+
+    // cppcheck-suppress containerOutOfBoundsIndexExpression
+    byteArrayArg[byteArrayArg.length()] = 'a';
+    // cppcheck-suppress containerOutOfBoundsIndexExpression
+    byteArrayArg[byteArrayArg.count()] = 'b';
+    // cppcheck-suppress containerOutOfBoundsIndexExpression
+    printf("val: %c\n", byteArrayArg[byteArrayArg.size()]);
+
+    QByteArray byteArray1{'a', 'b'};
+    (void)byteArray1[1];
+    // cppcheck-suppress ignoredReturnValue
+    byteArray1.at(1);
+}
+
 void QList1(QList<int> intListArg)
 {
     for (int i = 0; i <= intListArg.size(); ++i) {
