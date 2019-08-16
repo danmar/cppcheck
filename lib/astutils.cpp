@@ -1094,21 +1094,31 @@ bool isVariableChanged(const Token *tok, const Settings *settings, bool cpp, int
 
 bool isVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth)
 {
+    return findVariableChanged(start, end, varid, globalvar, settings, cpp, depth) != nullptr;
+}
+
+Token* findVariableChanged(Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth)
+{
     if (!precedes(start, end))
-        return false;
+        return nullptr;
     if (depth < 0)
-        return true;
-    for (const Token *tok = start; tok != end; tok = tok->next()) {
+        return start;
+    for (Token *tok = start; tok != end; tok = tok->next()) {
         if (tok->varId() != varid) {
             if (globalvar && Token::Match(tok, "%name% ("))
                 // TODO: Is global variable really changed by function call?
-                return true;
+                return tok;
             continue;
         }
         if (isVariableChanged(tok, settings, cpp, depth))
-            return true;
+            return tok;
     }
-    return false;
+    return nullptr;
+}
+
+const Token* findVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth)
+{
+    return findVariableChanged(const_cast<Token*>(start), end, varid, globalvar, settings, cpp, depth);
 }
 
 bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp, int depth)
