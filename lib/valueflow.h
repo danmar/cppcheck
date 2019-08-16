@@ -172,7 +172,7 @@ namespace ValueFlow {
         /** Is this value passed as default parameter to the function? */
         bool defaultArg;
 
-        long long indirect;
+        int indirect;
 
         enum class LifetimeKind {Object, Lambda, Iterator, Address} lifetimeKind;
 
