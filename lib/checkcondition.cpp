@@ -1345,7 +1345,7 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
 
             const bool constIfWhileExpression =
-                tok->astParent() && Token::Match(tok->astTop()->astOperand1(), "if|while") &&
+                tok->astParent() && Token::Match(tok->astTop()->astOperand1(), "if|while") && !tok->astTop()->astOperand1()->isConstexpr() &&
                 (Token::Match(tok->astParent(), "%oror%|&&") || Token::Match(tok->astParent()->astOperand1(), "if|while"));
             const bool constValExpr = tok->isNumber() && Token::Match(tok->astParent(),"%oror%|&&|?"); // just one number in boolean expression
             const bool compExpr = Token::Match(tok, "%comp%|!"); // a compare expression
