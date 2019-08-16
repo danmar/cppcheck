@@ -2145,7 +2145,16 @@ static bool valueFlowForward(Token * const               startToken,
         // conditional block of code that assigns variable..
         else if (!tok2->varId() && Token::Match(tok2, "%name% (") && Token::simpleMatch(tok2->linkAt(1), ") {")) {
             // is variable changed in condition?
-            if (isVariableChanged(tok2->next(), tok2->next()->link(), varid, var->isGlobal(), settings, tokenlist->isCPP())) {
+            Token* tokChanged = findVariableChanged(tok2->next(), tok2->next()->link(), varid, var->isGlobal(), settings, tokenlist->isCPP());
+            if (tokChanged != nullptr) {
+                // Set the value before bailing
+                if (tokChanged->varId() == varid) {
+                    for (const ValueFlow::Value &v : values) {
+                        if (!v.isNonValue())
+                            continue;
+                        setTokenValue(tokChanged, v, settings);
+                    }
+                }
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " valueFlowForward, assignment in condition");
                 return false;
