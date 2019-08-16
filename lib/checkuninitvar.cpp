@@ -1313,7 +1313,7 @@ void CheckUninitVar::valueFlowUninit()
             bool unknown;
             if (v->indirect == 1 && !CheckNullPointer::isPointerDeRef(tok, unknown, mSettings))
                 continue;
-            if (isVariableChanged(tok, mSettings, mTokenizer->isCPP()))
+            if (!Token::Match(tok->astParent(), ". %name% (") && isVariableChanged(tok, mSettings, mTokenizer->isCPP()))
                 continue;
             uninitvarError(tok, tok->str(), v->errorPath);
         }

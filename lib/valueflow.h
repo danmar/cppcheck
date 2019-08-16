@@ -140,6 +140,10 @@ namespace ValueFlow {
             return valueType == ValueType::LIFETIME && lifetimeScope == LifetimeScope::Argument;
         }
 
+        bool isNonValue() const {
+            return isMovedValue() || isUninitValue() || isLifetimeValue();
+        }
+
         /** int value */
         long long intvalue;
 

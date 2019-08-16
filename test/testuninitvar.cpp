@@ -82,6 +82,7 @@ private:
         TEST_CASE(trac_5970);
         TEST_CASE(valueFlowUninit);
         TEST_CASE(uninitvar_ipa);
+        TEST_CASE(uninitvar_memberfunction);
 
         TEST_CASE(isVariableUsageDeref); // *p
 
@@ -4046,6 +4047,18 @@ private:
                         "    return ostr.str();\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitvar_memberfunction() {
+        // # 8715
+        valueFlowUninit("struct C {\n"
+                        "    int x();\n"
+                        "};\n"
+                        "void f() {\n"
+                        "    C *c;\n"
+                        "    if (c->x() == 4) {}\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: c\n", errout.str());
     }
 
     void isVariableUsageDeref() {
