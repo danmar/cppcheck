@@ -4233,6 +4233,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
                 tok->deleteNext();
             } else if (tok->strAt(1) == "constexpr") {
                 tok->deleteNext();
+                tok->isConstexpr(true);
             } else {
                 syntaxError(tok);
             }
