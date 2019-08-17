@@ -105,7 +105,7 @@ private:
         TestImporter importer;
         importer.importCompileCommands(istr);
         ASSERT_EQUALS(1, importer.fileSettings.size());
-        ASSERT_EQUALS("CFGDIR=\"/usr/local/share/Cppcheck\";TEST1=1;TEST2=2", importer.fileSettings.begin()->defines);
+        ASSERT_EQUALS("FILESDIR=\"/usr/local/share/Cppcheck\";TEST1=1;TEST2=2", importer.fileSettings.begin()->defines);
     }
 
     void importCompileCommands2() const {
