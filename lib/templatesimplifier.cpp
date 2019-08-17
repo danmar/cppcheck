@@ -1469,7 +1469,7 @@ void TemplateSimplifier::addNamespace(const TokenAndName &templateDeclaration, c
         }
         if (inTemplate) {
             if (insert)
-                mTokenList.back()->tokAt(offset)->str(mTokenList.back()->tokAt(offset)->str() + token);
+                mTokenList.back()->tokAt(offset)->str(mTokenList.back()->strAt(offset) + token);
             else
                 mTokenList.back()->str(mTokenList.back()->str() + token);
             if (token == ">") {
@@ -1492,7 +1492,7 @@ void TemplateSimplifier::addNamespace(const TokenAndName &templateDeclaration, c
             if (!inTemplate)
                 mTokenList.back()->tokAt(offset)->insertToken(templateDeclaration.scope().substr(start), "");
             else
-                mTokenList.back()->tokAt(offset)->str(mTokenList.back()->tokAt(offset)->str() + templateDeclaration.scope().substr(start));
+                mTokenList.back()->tokAt(offset)->str(mTokenList.back()->strAt(offset) + templateDeclaration.scope().substr(start));
             mTokenList.back()->tokAt(offset)->insertToken("::", "");
         } else {
             if (!inTemplate)
@@ -2042,7 +2042,7 @@ void TemplateSimplifier::expandTemplate(
                 mTokenList.addtoken(tok3);
 
             // look for template definitions
-            if (Token::Match(tok3, "template <")) {
+            if (Token::simpleMatch(tok3, "template <")) {
                 Token * tok2 = findTemplateDeclarationEnd(tok3);
                 if (tok2)
                     templates.push(tok2);
