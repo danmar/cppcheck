@@ -74,11 +74,11 @@ namespace {
             if (Path::fileExists(exepath + "addons/" + fileName))
                 return exepath + "addons/" + fileName;
 
-#ifdef CFGDIR
-            if (Path::fileExists(CFGDIR + fileName))
-                return CFGDIR + fileName;
-            if (Path::fileExists(CFGDIR + ("../addons/" + fileName)))
-                return CFGDIR + ("../addons/" + fileName);
+#ifdef FILESDIR
+            if (Path::fileExists(FILESDIR + ("/" + fileName)))
+                return FILESDIR + ("/" + fileName);
+            if (Path::fileExists(FILESDIR + ("/addons/" + fileName)))
+                return FILESDIR + ("/addons/" + fileName);
 #endif
             return "";
         }

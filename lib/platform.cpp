@@ -165,12 +165,12 @@ bool cppcheck::Platform::loadPlatformFile(const char exename[], const std::strin
             filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + filename);
             filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + filename + ".xml");
         }
-#ifdef CFGDIR
-        std::string cfgdir = CFGDIR;
-        if (!cfgdir.empty() && cfgdir[cfgdir.size()-1] != '/')
-            cfgdir += '/';
-        filenames.push_back(cfgdir + ("../platforms/" + filename));
-        filenames.push_back(cfgdir + ("../platforms/" + filename + ".xml"));
+#ifdef FILESDIR
+        std::string filesdir = FILESDIR;
+        if (!filesdir.empty() && filesdir[filesdir.size()-1] != '/')
+            filesdir += '/';
+        filenames.push_back(filesdir + ("platforms/" + filename));
+        filenames.push_back(filesdir + ("platforms/" + filename + ".xml"));
 #endif
         bool success = false;
         for (int i = 0; i < filenames.size(); ++i) {

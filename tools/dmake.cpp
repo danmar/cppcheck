@@ -97,7 +97,7 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
         getDeps(file, depfiles);
         for (const std::string &depfile : depfiles)
             fout << " " << depfile;
-        fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CFG) $(CXXFLAGS)" << (external?" -w":"") << " $(UNDEF_STRICT_ANSI) -c -o " << objfile(file) << " " << builddir(file) << "\n\n";
+        fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS)" << (external?" -w":"") << " $(UNDEF_STRICT_ANSI) -c -o " << objfile(file) << " " << builddir(file) << "\n\n";
     }
 }
 
@@ -229,11 +229,11 @@ int main(int argc, char **argv)
          << "    libcppdir:=lib\n"
          << "endif\n\n";
 
-    // explicit cfg dir..
-    fout << "ifdef CFGDIR\n"
-         << "    CFG=-DCFGDIR=\\\"$(CFGDIR)\\\"\n"
+    // explicit files dir..
+    fout << "ifdef FILESDIR\n"
+         << "    CPPFILESDIR=-DFILESDIR=\\\"$(FILESDIR)\\\"\n"
          << "else\n"
-         << "    CFG=\n"
+         << "    CPPFILESDIR=\n"
          << "endif\n\n";
 
     // enable backtrac
@@ -408,20 +408,31 @@ int main(int argc, char **argv)
     fout << "install: cppcheck\n";
     fout << "\tinstall -d ${BIN}\n";
     fout << "\tinstall cppcheck ${BIN}\n";
-    fout << "\tinstall addons/*.py ${BIN}\n";
-    fout << "\tinstall addons/*/*.py ${BIN}\n";
     fout << "\tinstall htmlreport/cppcheck-htmlreport ${BIN}\n";
-    fout << "ifdef CFGDIR \n";
-    fout << "\tinstall -d ${DESTDIR}${CFGDIR}\n";
-    fout << "\tinstall -m 644 cfg/* ${DESTDIR}${CFGDIR}\n";
-    fout << "endif\n\n";
+    fout << "ifdef FILESDIR\n";
+    fout << "\tinstall -d ${DESTDIR}${FILESDIR}\n";
+    fout << "\tinstall -d ${DESTDIR}${FILESDIR}/addons\n";
+    fout << "\tinstall -m 644 addons/*.py ${DESTDIR}${FILESDIR}/addons\n";
+    fout << "\tinstall -d ${DESTDIR}${FILESDIR}/cfg\n";
+    fout << "\tinstall -m 644 cfg/*.cfg ${DESTDIR}${FILESDIR}/cfg\n";
+    fout << "\tinstall -d ${DESTDIR}${FILESDIR}/platforms\n";
+    fout << "\tinstall -m 644 platforms/*.xml ${DESTDIR}${FILESDIR}/platforms\n";
+    fout << "else\n";
+    fout << "\t$(error FILESDIR must be set!)\n";
+    fout << "endif\n";
+    fout << "\n";
     fout << "uninstall:\n";
     fout << "\t@if test -d ${BIN}; then \\\n";
-    fout << "\t  files=\"cppcheck cppcheck-htmlreport \\\n";
-    fout << "\t    `ls -d addons/*.py addons/*/*.py 2>/dev/null | sed 's,^.*/,,'`\"; \\\n";
+    fout << "\t  files=\"cppcheck cppcheck-htmlreport\"; \\\n";
     fout << "\t  echo '(' cd ${BIN} '&&' rm -f $$files ')'; \\\n";
     fout << "\t  ( cd ${BIN} && rm -f $$files ); \\\n";
     fout << "\tfi\n";
+    fout << "ifdef FILESDIR \n";
+    fout << "\t@if test -d ${DESTDIR}${FILESDIR}; then \\\n";
+    fout << "\t  echo rm -rf ${DESTDIR}${FILESDIR}; \\\n";
+    fout << "\t  rm -rf ${DESTDIR}${FILESDIR}; \\\n";
+    fout << "\tfi\n";
+    fout << "endif\n";
     fout << "ifdef CFGDIR \n";
     fout << "\t@if test -d ${DESTDIR}${CFGDIR}; then \\\n";
     fout << "\t  files=\"`cd cfg 2>/dev/null && ls`\"; \\\n";
