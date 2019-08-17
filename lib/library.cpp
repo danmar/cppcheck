@@ -95,8 +95,8 @@ Library::Error Library::load(const char exename[], const char path[])
         }
 
         std::list<std::string> cfgfolders;
-#ifdef CFGDIR
-        cfgfolders.push_back(CFGDIR);
+#ifdef FILESDIR
+        cfgfolders.push_back(FILESDIR "/cfg");
 #endif
         if (exename) {
             const std::string exepath(Path::fromNativeSeparators(Path::getPathFromFilename(exename)));

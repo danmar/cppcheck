@@ -76,15 +76,12 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
     const QString applicationFilePath = QCoreApplication::applicationFilePath();
     const QString appPath = QFileInfo(applicationFilePath).canonicalPath();
     QSettings settings;
-#ifdef CFGDIR
-    const QString cfgdir = CFGDIR;
-#endif
     const QString datadir = settings.value("DATADIR",QString()).toString();
     QStringList searchPaths;
     searchPaths << appPath << appPath + "/cfg" << inf.canonicalPath();
-#ifdef CFGDIR
-    if (!cfgdir.isEmpty())
-        searchPaths << cfgdir << cfgdir + "/cfg";
+#ifdef FILESDIR
+    if (FILESDIR[0])
+        searchPaths << FILESDIR << FILESDIR "/cfg";
 #endif
     if (!datadir.isEmpty())
         searchPaths << datadir << datadir + "/cfg";

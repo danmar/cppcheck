@@ -13,7 +13,9 @@ include(cmake/cxx11.cmake REQUIRED)
 
 use_cxx11()
 
+file(GLOB addons "addons/*.py")
 file(GLOB cfgs "cfg/*.cfg")
+file(GLOB platforms "platforms/*.xml")
 
 if (BUILD_TESTS)
     enable_testing()
