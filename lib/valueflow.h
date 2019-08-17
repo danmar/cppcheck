@@ -101,6 +101,7 @@ namespace ValueFlow {
                    varId == rhs.varId &&
                    conditional == rhs.conditional &&
                    defaultArg == rhs.defaultArg &&
+                   indirect == rhs.indirect &&
                    valueKind == rhs.valueKind;
         }
 
