@@ -1308,6 +1308,11 @@ void CheckUninitVar::valueFlowUninit()
                 continue;
             if (!isVariableUsage(tok, tok->variable()->isPointer(), tok->variable()->isArray() ? ARRAY : NO_ALLOC))
                 continue;
+            if (v->indirect > 1 || v->indirect < 0)
+                continue;
+            bool unknown;
+            if (v->indirect == 1 && !CheckNullPointer::isPointerDeRef(tok, unknown, mSettings))
+                continue;
             if (!Token::Match(tok->astParent(), ". %name% (") && isVariableChanged(tok, mSettings, mTokenizer->isCPP()))
                 continue;
             uninitvarError(tok, tok->str(), v->errorPath);

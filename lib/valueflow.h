@@ -53,6 +53,7 @@ namespace ValueFlow {
               safe(false),
               conditional(false),
               defaultArg(false),
+              indirect(0),
               lifetimeKind(LifetimeKind::Object),
               lifetimeScope(LifetimeScope::Local),
               valueKind(ValueKind::Possible)
@@ -100,6 +101,7 @@ namespace ValueFlow {
                    varId == rhs.varId &&
                    conditional == rhs.conditional &&
                    defaultArg == rhs.defaultArg &&
+                   indirect == rhs.indirect &&
                    valueKind == rhs.valueKind;
         }
 
@@ -174,6 +176,8 @@ namespace ValueFlow {
 
         /** Is this value passed as default parameter to the function? */
         bool defaultArg;
+
+        int indirect;
 
         enum class LifetimeKind {Object, Lambda, Iterator, Address} lifetimeKind;
 
