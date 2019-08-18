@@ -33,7 +33,6 @@
 
 #include "applicationlist.h"
 #include "aboutdialog.h"
-#include "codeeditorstyle.h"
 #include "common.h"
 #include "threadhandler.h"
 #include "fileviewdialog.h"
@@ -154,8 +153,6 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI.mActionHelpContents, &QAction::triggered, this, &MainWindow::openHelpContents);
 
     loadSettings();
-
-    updateStyleSetting();
 
     mThread->initialize(mUI.mResults);
     if (mProjectFile)
@@ -400,16 +397,6 @@ void MainWindow::saveSettings() const
     mSettings->setValue(SETTINGS_OPEN_PROJECT, mProjectFile ? mProjectFile->getFilename() : QString());
 
     mUI.mResults->saveSettings(mSettings);
-}
-
-void MainWindow::updateStyleSetting()
-{
-    mUI.mResults->updateStyleSetting(mSettings);
-    QString styleSheet = CodeEditorStyle::loadSettings(mSettings).generateStyleString();
-    mUI.mToolBarMain->setStyleSheet(styleSheet);
-    mUI.mToolBarView->setStyleSheet(styleSheet);
-    mUI.mToolBarFilter->setStyleSheet(styleSheet);
-    this->setStyleSheet(styleSheet);
 }
 
 void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, const bool checkConfiguration)
@@ -1027,7 +1014,7 @@ void MainWindow::programSettings()
                                      dialog.showNoErrorsMessage(),
                                      dialog.showErrorId(),
                                      dialog.showInconclusive());
-        this->updateStyleSetting();
+        mUI.mResults->updateStyleSetting(mSettings);
         const QString newLang = mSettings->value(SETTINGS_LANGUAGE, "en").toString();
         setLanguage(newLang);
     }

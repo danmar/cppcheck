@@ -219,18 +219,3 @@ void CodeEditorStyle::saveSettings(QSettings *settings,
     }
     settings->endGroup();
 }
-
-static QString rgbStyleString(QColor c)
-{
-    return QString("rgb(%1,%2,%3)").arg(c.red()).arg(c.green()).arg(c.blue());
-}
-
-QString CodeEditorStyle::generateStyleString() const
-{
-    if (isSystemTheme())
-        return QString();
-    return QString("background:%1; color:%2; selection-background-color:%3;")
-           .arg(rgbStyleString(widgetBGColor))
-           .arg(rgbStyleString(widgetFGColor))
-           .arg(rgbStyleString(highlightBGColor));
-}
