@@ -746,7 +746,7 @@ class MisraChecker:
             tokens = long_vars[name_prefix]
             if len(tokens) < 2:
                 continue
-            for tok in sorted(tokens, key=lambda t: (t.linenr, t.col))[1:]:
+            for tok in sorted(tokens, key=lambda t: (t.linenr, t.column))[1:]:
                 self.reportError(tok, 5, 1)
 
     def misra_5_2(self, data):
@@ -1479,7 +1479,7 @@ class MisraChecker:
                 continue
             if not simpleMatch(scope.bodyStart, '{ if ('):
                 continue
-            if scope.bodyStart.col > 0:
+            if scope.bodyStart.column > 0:
                 continue
             tok = scope.bodyStart.next.next.link
             if not simpleMatch(tok, ') {'):

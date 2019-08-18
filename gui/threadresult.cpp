@@ -61,7 +61,7 @@ void ThreadResult::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
     QMutexLocker locker(&mutex);
     const ErrorItem item(msg);
-    if (msg._severity != Severity::debug)
+    if (msg.severity != Severity::debug)
         emit error(item);
     else
         emit debugError(item);

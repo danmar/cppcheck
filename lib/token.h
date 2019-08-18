@@ -661,10 +661,10 @@ public:
         mImpl->mLineNumber = lineNumber;
     }
 
-    nonneg int col() const {
+    nonneg int column() const {
         return mImpl->mColumn;
     }
-    void col(nonneg int c) {
+    void column(nonneg int c) {
         mImpl->mColumn = c;
     }
 

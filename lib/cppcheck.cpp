@@ -279,7 +279,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             };
 
             if (err) {
-                const ErrorLogger::ErrorMessage::FileLocation loc1(output.location.file(), output.location.line);
+                const ErrorLogger::ErrorMessage::FileLocation loc1(output.location.file(), output.location.line, output.location.col);
                 std::list<ErrorLogger::ErrorMessage::FileLocation> callstack(1, loc1);
 
                 ErrorLogger::ErrorMessage errmsg(callstack,
@@ -562,7 +562,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 ErrorLogger::ErrorMessage::FileLocation loc;
                 if (e.token) {
                     loc.line = e.token->linenr();
-                    loc.col = e.token->col();
+                    loc.column = e.token->column();
                     const std::string fixedpath = Path::toNativeSeparators(mTokenizer.list.file(e.token));
                     loc.setfile(fixedpath);
                 } else {
@@ -579,7 +579,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                                                  e.id,
                                                  false);
 
-                if (errmsg._severity == Severity::error || mSettings.isEnabled(errmsg._severity))
+                if (errmsg.severity == Severity::error || mSettings.isEnabled(errmsg.severity))
                     reportErr(errmsg);
             }
         }
@@ -636,19 +636,18 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
                     const std::string fileName = obj["file"].get<std::string>();
                     const int64_t lineNumber = obj["linenr"].get<int64_t>();
-                    const int64_t column = obj["col"].get<int64_t>();
+                    const int64_t column = obj["column"].get<int64_t>();
 
                     ErrorLogger::ErrorMessage errmsg;
 
-                    errmsg._callStack.emplace_back(ErrorLogger::ErrorMessage::FileLocation(fileName, lineNumber));
-                    errmsg._callStack.back().col = column;
+                    errmsg.callStack.emplace_back(ErrorLogger::ErrorMessage::FileLocation(fileName, lineNumber, column));
 
-                    errmsg._id = obj["addon"].get<std::string>() + "-" + obj["errorId"].get<std::string>();
+                    errmsg.id = obj["addon"].get<std::string>() + "-" + obj["errorId"].get<std::string>();
                     const std::string text = obj["message"].get<std::string>();
                     errmsg.setmsg(text);
                     const std::string severity = obj["severity"].get<std::string>();
-                    errmsg._severity = Severity::fromString(severity);
-                    if (errmsg._severity == Severity::SeverityType::none)
+                    errmsg.severity = Severity::fromString(severity);
+                    if (errmsg.severity == Severity::SeverityType::none)
                         continue;
                     errmsg.file0 = fileName;
 
@@ -686,7 +685,7 @@ void CppCheck::internalError(const std::string &filename, const std::string &msg
     const std::string fullmsg("Bailing out from checking " + fixedpath + " since there was an internal error: " + msg);
 
     if (mSettings.isEnabled(Settings::INFORMATION)) {
-        const ErrorLogger::ErrorMessage::FileLocation loc1(filename, 0);
+        const ErrorLogger::ErrorMessage::FileLocation loc1(filename, 0, 0);
         std::list<ErrorLogger::ErrorMessage::FileLocation> callstack(1, loc1);
 
         ErrorLogger::ErrorMessage errmsg(callstack,

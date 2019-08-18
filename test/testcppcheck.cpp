@@ -41,7 +41,7 @@ private:
         }
 
         void reportErr(const ErrorLogger::ErrorMessage &msg) {
-            id.push_back(msg._id);
+            id.push_back(msg.id);
         }
     };
 

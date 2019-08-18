@@ -185,7 +185,7 @@ void TokenList::addtoken(std::string str, const Token *locationTok)
     if (isCPP() && str == "delete")
         mTokensFrontBack.back->isKeyword(true);
     mTokensFrontBack.back->linenr(locationTok->linenr());
-    mTokensFrontBack.back->col(locationTok->col());
+    mTokensFrontBack.back->column(locationTok->column());
     mTokensFrontBack.back->fileIndex(locationTok->fileIndex());
 }
 
@@ -226,7 +226,7 @@ void TokenList::addtoken(const Token *tok, const Token *locationTok)
 
     mTokensFrontBack.back->flags(tok->flags());
     mTokensFrontBack.back->linenr(locationTok->linenr());
-    mTokensFrontBack.back->col(locationTok->col());
+    mTokensFrontBack.back->column(locationTok->column());
     mTokensFrontBack.back->fileIndex(locationTok->fileIndex());
 }
 
@@ -247,7 +247,7 @@ void TokenList::addtoken(const Token *tok)
 
     mTokensFrontBack.back->flags(tok->flags());
     mTokensFrontBack.back->linenr(tok->linenr());
-    mTokensFrontBack.back->col(tok->col());
+    mTokensFrontBack.back->column(tok->column());
     mTokensFrontBack.back->fileIndex(tok->fileIndex());
 }
 
@@ -392,7 +392,7 @@ void TokenList::createTokens(const simplecpp::TokenList *tokenList)
             mTokensFrontBack.back->isKeyword(true);
         mTokensFrontBack.back->fileIndex(tok->location.fileIndex);
         mTokensFrontBack.back->linenr(tok->location.line);
-        mTokensFrontBack.back->col(tok->location.col);
+        mTokensFrontBack.back->column(tok->location.col);
         mTokensFrontBack.back->isExpandedMacro(!tok->macro.empty());
     }
 

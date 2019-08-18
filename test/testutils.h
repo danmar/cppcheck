@@ -26,21 +26,21 @@ class Token;
 
 class givenACodeSampleToTokenize {
 private:
-    Settings _settings;
-    Tokenizer _tokenizer;
+    Settings settings;
+    Tokenizer tokenizer;
 
 public:
     explicit givenACodeSampleToTokenize(const char sample[], bool createOnly = false, bool cpp = true)
-        : _tokenizer(&_settings, nullptr) {
+        : tokenizer(&settings, nullptr) {
         std::istringstream iss(sample);
         if (createOnly)
-            _tokenizer.list.createTokens(iss, cpp ? "test.cpp" : "test.c");
+            tokenizer.list.createTokens(iss, cpp ? "test.cpp" : "test.c");
         else
-            _tokenizer.tokenize(iss, cpp ? "test.cpp" : "test.c");
+            tokenizer.tokenize(iss, cpp ? "test.cpp" : "test.c");
     }
 
     const Token* tokens() const {
-        return _tokenizer.tokens();
+        return tokenizer.tokens();
     }
 };
 
@@ -48,18 +48,18 @@ public:
 class SimpleSuppressor : public ErrorLogger {
 public:
     SimpleSuppressor(Settings &settings, ErrorLogger *next)
-        : _settings(settings), _next(next) {
+        : settings(settings), next(next) {
     }
     virtual void reportOut(const std::string &outmsg) OVERRIDE {
-        _next->reportOut(outmsg);
+        next->reportOut(outmsg);
     }
     virtual void reportErr(const ErrorLogger::ErrorMessage &msg) OVERRIDE {
-        if (!msg._callStack.empty() && !_settings.nomsg.isSuppressed(msg.toSuppressionsErrorMessage()))
-            _next->reportErr(msg);
+        if (!msg.callStack.empty() && !settings.nomsg.isSuppressed(msg.toSuppressionsErrorMessage()))
+            next->reportErr(msg);
     }
 private:
-    Settings &_settings;
-    ErrorLogger *_next;
+    Settings &settings;
+    ErrorLogger *next;
 };
 
 #endif // TestUtilsH

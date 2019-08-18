@@ -33,7 +33,6 @@ static const QString CppcheckElementName = "cppcheck";
 static const QString ErrorElementName = "error";
 static const QString ErrorsElementName = "errors";
 static const QString LocationElementName = "location";
-static const QString ColAttribute = "col";
 static const QString CWEAttribute = "cwe";
 static const QString SinceDateAttribute = "sinceDate";
 static const QString TagsAttribute = "tag";
@@ -42,6 +41,7 @@ static const QString IncludedFromFilenameAttribute = "file0";
 static const QString InconclusiveAttribute = "inconclusive";
 static const QString InfoAttribute = "info";
 static const QString LineAttribute = "line";
+static const QString ColumnAttribute = "column";
 static const QString IdAttribute = "id";
 static const QString SeverityAttribute = "severity";
 static const QString MsgAttribute = "msg";
@@ -136,8 +136,8 @@ void XmlReportV2::writeError(const ErrorItem &error)
         }
         mXmlWriter->writeAttribute(FilenameAttribute, XmlReport::quoteMessage(file));
         mXmlWriter->writeAttribute(LineAttribute, QString::number(error.errorPath[i].line));
-        if (error.errorPath[i].col > 0)
-            mXmlWriter->writeAttribute(ColAttribute, QString::number(error.errorPath[i].col));
+        if (error.errorPath[i].column > 0)
+            mXmlWriter->writeAttribute(ColumnAttribute, QString::number(error.errorPath[i].column));
         if (error.errorPath.count() > 1)
             mXmlWriter->writeAttribute(InfoAttribute, XmlReport::quoteMessage(error.errorPath[i].info));
 
@@ -235,8 +235,8 @@ ErrorItem XmlReportV2::readError(QXmlStreamReader *reader)
                 QErrorPathItem loc;
                 loc.file = XmlReport::unquoteMessage(attribs.value(QString(), FilenameAttribute).toString());
                 loc.line = attribs.value(QString(), LineAttribute).toString().toUInt();
-                if (attribs.hasAttribute(QString(), ColAttribute))
-                    loc.col = attribs.value(QString(), ColAttribute).toString().toInt();
+                if (attribs.hasAttribute(QString(), ColumnAttribute))
+                    loc.column = attribs.value(QString(), ColumnAttribute).toString().toInt();
                 if (attribs.hasAttribute(QString(), InfoAttribute))
                     loc.info = XmlReport::unquoteMessage(attribs.value(QString(), InfoAttribute).toString());
                 item.errorPath.push_front(loc);

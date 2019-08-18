@@ -14,7 +14,7 @@ NewSuppressionDialog::NewSuppressionDialog(QWidget *parent) :
     public:
         virtual void reportOut(const std::string &/*outmsg*/) {}
         virtual void reportErr(const ErrorLogger::ErrorMessage &msg) {
-            errorIds << QString::fromStdString(msg._id);
+            errorIds << QString::fromStdString(msg.id);
         }
         QStringList errorIds;
     };
