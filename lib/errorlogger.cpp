@@ -245,7 +245,7 @@ std::string ErrorLogger::ErrorMessage::serialize() const
 
     for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator loc = _callStack.begin(); loc != _callStack.end(); ++loc) {
         std::ostringstream smallStream;
-        smallStream << (*loc).line << ':' << (*loc).getfile() << '\t' << loc->getinfo();
+        smallStream << (*loc).line << ':' << (*loc).col << ':' << (*loc).getfile() << '\t' << loc->getinfo();
         oss << smallStream.str().length() << " " << smallStream.str();
     }
 
@@ -307,23 +307,28 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
             temp.append(1, c);
         }
 
-        const std::string::size_type colonPos = temp.find(':');
-        if (colonPos == std::string::npos)
-            throw InternalError(nullptr, "Internal Error: No colon found in <filename:line> pattern");
+        const std::string::size_type colonPos1 = temp.find(':');
+        if (colonPos1 == std::string::npos)
+            throw InternalError(nullptr, "Internal Error: No colon found in <line:col:filename> pattern");
+        const std::string::size_type colonPos2 = temp.find(':', colonPos1+1);
+        if (colonPos2 == std::string::npos)
+            throw InternalError(nullptr, "Internal Error: second colon not found in <line:col:filename> pattern");
         const std::string::size_type tabPos = temp.find('\t');
         if (tabPos == std::string::npos)
             throw InternalError(nullptr, "Internal Error: No tab found in <filename:line> pattern");
 
         const std::string tempinfo = temp.substr(tabPos + 1);
         temp.erase(tabPos);
-        const std::string tempfile = temp.substr(colonPos + 1);
-        temp.erase(colonPos);
+        const std::string tempfile = temp.substr(colonPos2 + 1);
+        temp.erase(colonPos2);
+        const std::string tempcolumn = temp.substr(colonPos1 + 1);
+        temp.erase(colonPos1);
         const std::string templine = temp;
         ErrorLogger::ErrorMessage::FileLocation loc;
         loc.setfile(tempfile);
         loc.setinfo(tempinfo);
-        std::istringstream fiss(templine);
-        fiss >> loc.line;
+        loc.col = MathLib::toLongNumber(tempcolumn);
+        loc.line = MathLib::toLongNumber(templine);
 
         _callStack.push_back(loc);
 

@@ -57,6 +57,7 @@ private:
         TEST_CASE(SerializeInconclusiveMessage);
         TEST_CASE(DeserializeInvalidInput);
         TEST_CASE(SerializeSanitize);
+        TEST_CASE(SerializeFileLocation);
 
         TEST_CASE(suppressUnmatchedSuppressions);
     }
@@ -287,6 +288,25 @@ private:
         ASSERT_EQUALS(Severity::error, msg2._severity);
         ASSERT_EQUALS("Illegal character in \"foo\\001bar\"", msg2.shortMessage());
         ASSERT_EQUALS("Illegal character in \"foo\\001bar\"", msg2.verboseMessage());
+    }
+
+    void SerializeFileLocation() const {
+        ErrorLogger::ErrorMessage::FileLocation loc1;
+        loc1.setfile(":/,");
+        loc1.line = 643;
+        loc1.col = 33;
+        loc1.setinfo("abcd:/,");
+
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locs{loc1};
+        
+        ErrorMessage msg(locs, emptyString, Severity::error, "Programming error", "errorId", true);
+
+        ErrorMessage msg2;
+        msg2.deserialize(msg.serialize());
+        ASSERT_EQUALS(":/,", msg2._callStack.front().getfile(false));
+        ASSERT_EQUALS(643, msg2._callStack.front().line);
+        ASSERT_EQUALS(33, msg2._callStack.front().col);
+        ASSERT_EQUALS("abcd:/,", msg2._callStack.front().getinfo());
     }
 
     void suppressUnmatchedSuppressions() {
