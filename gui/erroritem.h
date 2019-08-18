@@ -51,11 +51,11 @@ public:
 */
 class QErrorPathItem {
 public:
-    QErrorPathItem() : line(0), col(-1) {}
+    QErrorPathItem() : line(0), column(-1) {}
     explicit QErrorPathItem(const ErrorLogger::ErrorMessage::FileLocation &loc);
     QString file;
-    unsigned int line;
-    int col;
+    int line;
+    int column;
     QString info;
 };
 

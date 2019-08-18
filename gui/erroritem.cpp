@@ -22,14 +22,14 @@
 QErrorPathItem::QErrorPathItem(const ErrorLogger::ErrorMessage::FileLocation &loc)
     : file(QString::fromStdString(loc.getfile(false)))
     , line(loc.line)
-    , col(loc.col)
+    , column(loc.column)
     , info(QString::fromStdString(loc.getinfo()))
 {
 }
 
 bool operator==(const QErrorPathItem &i1, const QErrorPathItem &i2)
 {
-    return i1.file == i2.file && i1.col == i2.col && i1.line == i2.line && i1.info == i2.info;
+    return i1.file == i2.file && i1.column == i2.column && i1.line == i2.line && i1.info == i2.info;
 }
 
 ErrorItem::ErrorItem()
@@ -40,16 +40,16 @@ ErrorItem::ErrorItem()
 }
 
 ErrorItem::ErrorItem(const ErrorLogger::ErrorMessage &errmsg)
-    : errorId(QString::fromStdString(errmsg._id))
-    , severity(errmsg._severity)
-    , inconclusive(errmsg._inconclusive)
+    : errorId(QString::fromStdString(errmsg.id))
+    , severity(errmsg.severity)
+    , inconclusive(errmsg.inconclusive)
     , summary(QString::fromStdString(errmsg.shortMessage()))
     , message(QString::fromStdString(errmsg.verboseMessage()))
-    , cwe(errmsg._cwe.id)
+    , cwe(errmsg.cwe.id)
     , symbolNames(QString::fromStdString(errmsg.symbolNames()))
 {
-    for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator loc = errmsg._callStack.begin();
-         loc != errmsg._callStack.end();
+    for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator loc = errmsg.callStack.begin();
+         loc != errmsg.callStack.end();
          ++loc) {
         errorPath << QErrorPathItem(*loc);
     }

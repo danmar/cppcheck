@@ -34,7 +34,7 @@ class Directive:
     str = None
     file = None
     linenr = None
-    col = 0
+    column = 0
 
     def __init__(self, element):
         self.str = element.get('str')
@@ -131,7 +131,7 @@ class Token:
         astOperand2        ast operand2
         file               file name
         linenr             line number
-        col                column
+        column             column
 
     To iterate through all tokens use such code:
     @code
@@ -188,7 +188,7 @@ class Token:
 
     file = None
     linenr = None
-    col = None
+    column = None
 
     def __init__(self, element):
         self.Id = element.get('id')
@@ -251,7 +251,7 @@ class Token:
         self.astOperand2 = None
         self.file = element.get('file')
         self.linenr = int(element.get('linenr'))
-        self.col = int(element.get('col'))
+        self.column = int(element.get('column'))
 
     def setId(self, IdMap):
         self.scope = IdMap[self.scopeId]
@@ -868,7 +868,7 @@ def reportError(location, severity, message, addon, errorId, extra=''):
     if '--cli' in sys.argv:
         msg = { 'file': location.file,
                 'linenr': location.linenr,
-                'col': location.col,
+                'column': location.column,
                 'severity': severity,
                 'message': message,
                 'addon': addon,
