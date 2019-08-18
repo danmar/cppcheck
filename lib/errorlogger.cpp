@@ -247,7 +247,7 @@ std::string ErrorLogger::ErrorMessage::serialize() const
 
     for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator loc = callStack.begin(); loc != callStack.end(); ++loc) {
         std::ostringstream smallStream;
-        smallStream << (*loc).line << ':' << (*loc).column << ':' << (*loc).getfile() << '\t' << loc->getinfo();
+        smallStream << (*loc).line << '\t' << (*loc).column << '\t' << (*loc).getfile(false) << '\t' << loc->getOrigFile(false) << '\t' << loc->getinfo();
         oss << smallStream.str().length() << " " << smallStream.str();
     }
 
@@ -309,28 +309,29 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
             temp.append(1, c);
         }
 
-        const std::string::size_type colonPos1 = temp.find(':');
-        if (colonPos1 == std::string::npos)
-            throw InternalError(nullptr, "Internal Error: No colon found in <line:col:filename> pattern");
-        const std::string::size_type colonPos2 = temp.find(':', colonPos1+1);
-        if (colonPos2 == std::string::npos)
-            throw InternalError(nullptr, "Internal Error: second colon not found in <line:col:filename> pattern");
-        const std::string::size_type tabPos = temp.find('\t');
-        if (tabPos == std::string::npos)
-            throw InternalError(nullptr, "Internal Error: No tab found in <filename:line> pattern");
+        std::vector<std::string> substrings;
+        for (std::string::size_type pos = 0; pos < temp.size() && substrings.size() < 5; ++pos) {
+            if (substrings.size() == 4) {
+                substrings.push_back(temp.substr(pos));
+                break;
+            }
+            const std::string::size_type start = pos;
+            pos = temp.find("\t", pos);
+            if (pos == std::string::npos) {
+                substrings.push_back(temp.substr(start));
+                break;
+            }
+            substrings.push_back(temp.substr(start, pos - start));
+        }
+        if (substrings.size() < 4)
+            throw InternalError(nullptr, "Internal Error: serializing/deserializing of error message failed!");
 
-        const std::string tempinfo = temp.substr(tabPos + 1);
-        temp.erase(tabPos);
-        const std::string tempfile = temp.substr(colonPos2 + 1);
-        temp.erase(colonPos2);
-        const std::string tempcolumn = temp.substr(colonPos1 + 1);
-        temp.erase(colonPos1);
-        const std::string templine = temp;
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.setfile(tempfile);
-        loc.setinfo(tempinfo);
-        loc.column = MathLib::toLongNumber(tempcolumn);
-        loc.line = MathLib::toLongNumber(templine);
+        // (*loc).line << '\t' << (*loc).column << '\t' << (*loc).getfile(false) << '\t' << loc->getOrigFile(false) << '\t' << loc->getinfo();
+
+        ErrorLogger::ErrorMessage::FileLocation loc(substrings[3], MathLib::toLongNumber(substrings[0]), MathLib::toLongNumber(substrings[1]));
+        loc.setfile(substrings[2]);
+        if (substrings.size() == 5)
+            loc.setinfo(substrings[4]);
 
         callStack.push_back(loc);
 
@@ -441,7 +442,7 @@ void ErrorLogger::ErrorMessage::findAndReplace(std::string &source, const std::s
 }
 
 // TODO: read info from some shared resource instead?
-static std::string readCode(const std::string &file, unsigned int linenr, unsigned int column, const char endl[])
+static std::string readCode(const std::string &file, int linenr, int column, const char endl[])
 {
     std::ifstream fin(file);
     std::string line;
