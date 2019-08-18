@@ -44,6 +44,10 @@
 #include <tinyxml2.h>
 #endif
 
+// The default template format is "gcc"
+static const char GCC_TEMPLATE_FORMAT[] = "{file}:{line}:{column}: warning: {message} [{id}]\\n{code}";
+static const char GCC_TEMPLATE_LOCATION[] = "{file}:{line}:{column}: note: {info}\\n{code}";
+
 static void addFilesToList(const std::string& FileList, std::vector<std::string>& PathNames)
 {
     // To keep things initially simple, if the file can't be opened, just be silent and move on.
@@ -638,9 +642,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
 
                 if (mSettings->templateFormat == "gcc") {
-                    //_settings->templateFormat = "{file}:{line}: {severity}: {message}";
-                    mSettings->templateFormat = "{file}:{line}:{column}: warning: {message} [{id}]\\n{code}";
-                    mSettings->templateLocation = "{file}:{line}:{column}: note: {info}\\n{code}";
+                    mSettings->templateFormat = GCC_TEMPLATE_FORMAT;
+                    mSettings->templateLocation = GCC_TEMPLATE_LOCATION;
                 } else if (mSettings->templateFormat == "daca2") {
                     mSettings->templateFormat = "{file}:{line}:{column}: {severity}: {message} [{id}]";
                     mSettings->templateLocation = "{file}:{line}:{column}: note: {info}";
@@ -648,6 +651,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     mSettings->templateFormat = "{file}({line}): {severity}: {message}";
                 else if (mSettings->templateFormat == "edit")
                     mSettings->templateFormat = "{file} +{line}: {severity}: {message}";
+                else if (mSettings->templateFormat == "cppcheck1")
+                    mSettings->templateFormat = "{callstack}: ({severity}{inconclusive:, inconclusive}) {message}";
             }
 
             else if (std::strcmp(argv[i], "--template-location") == 0 ||
@@ -881,6 +886,13 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             path = Path::fromNativeSeparators(path);
             mPathNames.push_back(path);
         }
+    }
+
+    // Default template format..
+    if (mSettings->templateFormat.empty()) {
+        mSettings->templateFormat = GCC_TEMPLATE_FORMAT;
+        if (mSettings->templateLocation.empty())
+            mSettings->templateLocation = GCC_TEMPLATE_LOCATION;
     }
 
     mSettings->project.ignorePaths(mIgnoredPaths);
@@ -1143,7 +1155,8 @@ void CmdLineParser::printHelp()
               "                         '{file}:{line},{severity},{id},{message}' or\n"
               "                         '{file}({line}):({severity}) {message}' or\n"
               "                         '{callstack} {message}'\n"
-              "                         Pre-defined templates: gcc, vs, edit.\n"
+              "                         Pre-defined templates: gcc, vs, edit, cppcheck1\n"
+              "                         The default format is 'gcc'.\n"
               "    --template-location='<text>'\n"
               "                         Format error message location. If this is not provided\n"
               "                         then no extra location info is shown.\n"
