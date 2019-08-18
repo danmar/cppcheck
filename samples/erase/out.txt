@@ -1,4 +1,4 @@
-samples\erase\bad.cpp:9:32: warning: Using iterator to local container 'items' that may be invalid. [invalidContainer]
+samples\erase\bad.cpp:9:32: error: Using iterator to local container 'items' that may be invalid. [invalidContainer]
     for (iter = items.begin(); iter != items.end(); ++iter) {
                                ^
 samples\erase\bad.cpp:9:17: note: Iterator to container is created here.

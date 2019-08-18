@@ -7,6 +7,13 @@ from testutils import create_gui_project_file, cppcheck
 
 COMPILE_COMMANDS_JSON = os.path.join('proj2', 'compile_commands.json')
 
+ERR_A = ('a/a.c:1:7: error: Division by zero. [zerodiv]\n' +
+         'x = 3 / 0;\n' +
+         '      ^\n')
+ERR_B = ('b/b.c:1:7: error: Division by zero. [zerodiv]\n' +
+         'x = 3 / 0;\n' +
+         '      ^\n')
+
 def create_compile_commands():
     prjpath = os.path.join(os.getcwd(), 'proj2')
     j = [{'directory': os.path.join(prjpath,'a'), 'command': 'gcc -c a.c', 'file': 'a.c'},
@@ -112,19 +119,17 @@ def test_gui_project_loads_absolute_vs_solution():
 def test_gui_project_loads_relative_vs_solution():
     create_gui_project_file('test.cppcheck', root_path='proj2', import_project='proj2/proj2.sln')
     ret, stdout, stderr = cppcheck(['--project=test.cppcheck'])
-    assert stderr == ('[a/a.c:1]: (error) Division by zero.\n'
-                      '[b/b.c:1]: (error) Division by zero.\n')
+    assert stderr == ERR_A + ERR_B
 
 def test_gui_project_loads_relative_vs_solution():
     create_gui_project_file('test.cppcheck', root_path='proj2', import_project='proj2/proj2.sln', exclude_paths=['b'])
     ret, stdout, stderr = cppcheck(['--project=test.cppcheck'])
-    assert stderr == '[a/a.c:1]: (error) Division by zero.\n'
+    assert stderr == ERR_A
 
 def test_gui_project_loads_absolute_vs_solution():
     create_gui_project_file('test.cppcheck',
                             root_path=os.path.join(os.getcwd(), 'proj2').replace('\\', '/'),
                             import_project=os.path.join(os.getcwd(), 'proj2', 'proj2.sln').replace('\\', '/'))
     ret, stdout, stderr = cppcheck(['--project=test.cppcheck'])
-    assert stderr == ('[a/a.c:1]: (error) Division by zero.\n'
-                      '[b/b.c:1]: (error) Division by zero.\n')
+    assert stderr == ERR_A + ERR_B
 
