@@ -191,7 +191,7 @@ private:
         ASSERT_EQUALS("    </errors>\n</results>", ErrorLogger::ErrorMessage::getXMLFooter());
         std::string message("        <error id=\"errorId\" severity=\"error\"");
         message += " msg=\"Programming error.\" verbose=\"Verbose error\">\n";
-        message += "            <location file=\"foo.cpp\" line=\"5\"/>\n        </error>";
+        message += "            <location file=\"foo.cpp\" line=\"5\" column=\"0\"/>\n        </error>";
         ASSERT_EQUALS(message, msg.toXML());
     }
 
@@ -207,8 +207,8 @@ private:
         ASSERT_EQUALS("    </errors>\n</results>", ErrorLogger::ErrorMessage::getXMLFooter());
         std::string message("        <error id=\"errorId\" severity=\"error\"");
         message += " msg=\"Programming error.\" verbose=\"Verbose error\">\n";
-        message += "            <location file=\"bar.cpp\" line=\"8\" info=\"\\303\\244\"/>\n";
-        message += "            <location file=\"foo.cpp\" line=\"5\"/>\n        </error>";
+        message += "            <location file=\"bar.cpp\" line=\"8\" column=\"0\" info=\"\\303\\244\"/>\n";
+        message += "            <location file=\"foo.cpp\" line=\"5\" column=\"0\"/>\n        </error>";
         ASSERT_EQUALS(message, msg.toXML());
     }
 
@@ -239,7 +239,7 @@ private:
 
         // xml version 2 error message
         ASSERT_EQUALS("        <error id=\"errorId\" severity=\"error\" msg=\"Programming error\" verbose=\"Programming error\" inconclusive=\"true\">\n"
-                      "            <location file=\"foo.cpp\" line=\"5\"/>\n"
+                      "            <location file=\"foo.cpp\" line=\"5\" column=\"0\"/>\n"
                       "        </error>",
                       msg.toXML());
     }
