@@ -298,7 +298,7 @@ private:
         loc1.setinfo("abcd:/,");
 
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs{loc1};
-        
+
         ErrorMessage msg(locs, emptyString, Severity::error, "Programming error", "errorId", true);
 
         ErrorMessage msg2;
