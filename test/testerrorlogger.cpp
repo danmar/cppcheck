@@ -291,10 +291,8 @@ private:
     }
 
     void SerializeFileLocation() const {
-        ErrorLogger::ErrorMessage::FileLocation loc1;
-        loc1.setfile(":/,");
-        loc1.line = 643;
-        loc1.column = 33;
+        ErrorLogger::ErrorMessage::FileLocation loc1(":/,;", 654, 33);
+        loc1.setfile("[]:;,()");
         loc1.setinfo("abcd:/,");
 
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs{loc1};
@@ -303,8 +301,9 @@ private:
 
         ErrorMessage msg2;
         msg2.deserialize(msg.serialize());
-        ASSERT_EQUALS(":/,", msg2.callStack.front().getfile(false));
-        ASSERT_EQUALS(643, msg2.callStack.front().line);
+        ASSERT_EQUALS("[]:;,()", msg2.callStack.front().getfile(false));
+        ASSERT_EQUALS(":/,;", msg2.callStack.front().getOrigFile(false));
+        ASSERT_EQUALS(654, msg2.callStack.front().line);
         ASSERT_EQUALS(33, msg2.callStack.front().column);
         ASSERT_EQUALS("abcd:/,", msg2.callStack.front().getinfo());
     }

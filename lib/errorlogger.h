@@ -211,6 +211,11 @@ public:
              */
             std::string getfile(bool convert = true) const;
 
+            /**
+             * Filename with the whole path (no --rp)
+             * @param convert If true convert path to native separators.
+             * @return filename.
+             */
             std::string getOrigFile(bool convert = true) const;
 
             /**

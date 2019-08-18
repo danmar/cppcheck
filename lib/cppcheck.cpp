@@ -559,19 +559,15 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
             } catch (const InternalError &e) {
                 std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-                ErrorLogger::ErrorMessage::FileLocation loc;
                 if (e.token) {
-                    loc.line = e.token->linenr();
-                    loc.column = e.token->column();
-                    const std::string fixedpath = Path::toNativeSeparators(mTokenizer.list.file(e.token));
-                    loc.setfile(fixedpath);
+                    ErrorLogger::ErrorMessage::FileLocation loc(e.token, &mTokenizer.list);
+                    locationList.push_back(loc);
                 } else {
-                    ErrorLogger::ErrorMessage::FileLocation loc2;
-                    loc2.setfile(Path::toNativeSeparators(filename));
+                    ErrorLogger::ErrorMessage::FileLocation loc(mTokenizer.list.getSourceFilePath(), 0, 0);
+                    ErrorLogger::ErrorMessage::FileLocation loc2(filename, 0, 0);
                     locationList.push_back(loc2);
-                    loc.setfile(mTokenizer.list.getSourceFilePath());
+                    locationList.push_back(loc);
                 }
-                locationList.push_back(loc);
                 ErrorLogger::ErrorMessage errmsg(locationList,
                                                  mTokenizer.list.getSourceFilePath(),
                                                  Severity::error,
