@@ -52,6 +52,11 @@
                     <param name="minInclusive">0</param>
                   </data>
                 </attribute>
+                <attribute name="column">
+                  <data type="integer">
+                    <param name="minInclusive">0</param>
+                  </data>
+                </attribute>
                 <optional>
                   <attribute name="info">
                     <data type="string"/>
