@@ -44,10 +44,6 @@
 #include <tinyxml2.h>
 #endif
 
-// The default template format is "gcc"
-static const char GCC_TEMPLATE_FORMAT[] = "{file}:{line}:{column}: warning: {message} [{id}]\\n{code}";
-static const char GCC_TEMPLATE_LOCATION[] = "{file}:{line}:{column}: note: {info}\\n{code}";
-
 static void addFilesToList(const std::string& FileList, std::vector<std::string>& PathNames)
 {
     // To keep things initially simple, if the file can't be opened, just be silent and move on.
@@ -642,8 +638,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
 
                 if (mSettings->templateFormat == "gcc") {
-                    mSettings->templateFormat = GCC_TEMPLATE_FORMAT;
-                    mSettings->templateLocation = GCC_TEMPLATE_LOCATION;
+                    mSettings->templateFormat = "{file}:{line}:{column}: warning: {message} [{id}]\\n{code}";
+                    mSettings->templateLocation = "{file}:{line}:{column}: note: {info}\\n{code}";
                 } else if (mSettings->templateFormat == "daca2") {
                     mSettings->templateFormat = "{file}:{line}:{column}: {severity}: {message} [{id}]";
                     mSettings->templateLocation = "{file}:{line}:{column}: note: {info}";
@@ -890,9 +886,9 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
     // Default template format..
     if (mSettings->templateFormat.empty()) {
-        mSettings->templateFormat = GCC_TEMPLATE_FORMAT;
+        mSettings->templateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]\\n{code}";
         if (mSettings->templateLocation.empty())
-            mSettings->templateLocation = GCC_TEMPLATE_LOCATION;
+            mSettings->templateLocation = "{file}:{line}:{column}: note: {info}\\n{code}";
     }
 
     mSettings->project.ignorePaths(mIgnoredPaths);
