@@ -40,7 +40,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.31"
+CLIENT_VERSION = "1.1.32"
 
 
 def check_requirements():
@@ -85,6 +85,14 @@ def get_cppcheck(cppcheck_path, work_path):
             print('Failed to remove Cppcheck folder, please manually remove ' + work_path)
             return False
     return False
+
+
+def get_cppcheck_info(cppcheck_path):
+    try:
+        os.chdir(cppcheck_path)
+        return subprocess.check_output(['git', 'show', "--pretty=%h (%ci)", 'HEAD', '--no-patch', '--no-notes']).decode('utf-8').strip()
+    except:
+        return ''
 
 
 def compile_version(work_path, jobs, version):
@@ -578,9 +586,11 @@ while True:
     results_to_diff = []
     cppcheck_options = ''
     head_info_msg = ''
+    cppcheck_head_info = '';
     for ver in cppcheck_versions:
         if ver == 'head':
             current_cppcheck_dir = 'cppcheck'
+            cppcheck_head_info = get_cppcheck_info(work_path + '/cppcheck')
         else:
             current_cppcheck_dir = ver
         c, errout, info, t, cppcheck_options = scan_package(work_path, current_cppcheck_dir, jobs)
@@ -603,6 +613,7 @@ while True:
     output += 'python: ' + platform.python_version() + '\n'
     output += 'client-version: ' + CLIENT_VERSION + '\n'
     output += 'cppcheck: ' + ' '.join(cppcheck_versions) + '\n'
+    output += 'head-info: ' + cppcheck_head_info + '\n'
     output += 'count:' + count + '\n'
     output += 'elapsed-time:' + elapsed_time + '\n'
     info_output = output
