@@ -1137,7 +1137,7 @@ void CmdLineParser::printHelp()
               "                           {column}            column number\n"
               "                           {callstack}         show a callstack. Example:\n"
               "                                                 [file.c:1] -> [file.c:100]\n"
-              "                           {inconlusive:text}  if warning is inconclusive, text\n"
+              "                           {inconclusive:text} if warning is inconclusive, text\n"
               "                                               is written\n"
               "                           {severity}          severity\n"
               "                           {message}           warning message\n"
