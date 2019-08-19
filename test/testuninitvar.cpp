@@ -4047,6 +4047,22 @@ private:
                         "    return ostr.str();\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9281
+        valueFlowUninit("struct s {\n"
+                        "    char a[20];\n"
+                        "};\n"
+                        "void c(struct s *sarg) {\n"
+                        "    sarg->a[0] = '\\0';\n"
+                        "}\n"
+                        "void b(struct s *sarg) {\n"
+                        "    c(sarg);\n"
+                        "}\n"
+                        "void a() {\n"
+                        "    struct s s1;\n"
+                        "    b(&s1);\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_memberfunction() {
