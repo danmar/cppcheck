@@ -1284,6 +1284,18 @@ void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string
                 "$symbol:" + membername + "\nUninitialized struct member: $symbol", CWE908, false);
 }
 
+static bool isLeaf(const Token* tok)
+{
+    if (!tok)
+        return false;
+    const Token * parent = tok->astParent();
+    if (!Token::simpleMatch(parent, "."))
+        return false;
+    if (parent->astOperand2() == tok)
+        return true;
+    return isLeaf(parent);
+}
+
 void CheckUninitVar::valueFlowUninit()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -1299,7 +1311,7 @@ void CheckUninitVar::valueFlowUninit()
             }
             if (!tok->variable())
                 continue;
-            if (Token::Match(tok->astParent(), ". %var%") && tok->astParent()->astOperand1() == tok)
+            if (Token::Match(tok->astParent(), ". %var%") && !isLeaf(tok))
                 continue;
             auto v = std::find_if(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isUninitValue));
             if (v == tok->values().end())

@@ -461,9 +461,13 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
             pvalue.indirect++;
             setTokenValue(parent, pvalue, settings);
         } else if (Token::Match(parent, ". %var%") && parent->astOperand1() == tok) {
-            if (parent->originalName() == "->")
+            if (parent->originalName() == "->" && pvalue.indirect > 0)
                 pvalue.indirect--;
             setTokenValue(parent->astOperand2(), pvalue, settings);
+        } else if (Token::Match(parent->astParent(), ". %var%") && parent->astParent()->astOperand1() == parent) {
+            if (parent->astParent()->originalName() == "->" && pvalue.indirect > 0)
+                pvalue.indirect--;
+            setTokenValue(parent->astParent()->astOperand2(), pvalue, settings);
         } else if (parent->isUnaryOp("*") && pvalue.indirect > 0) {
             pvalue.indirect--;
             setTokenValue(parent, pvalue, settings);
