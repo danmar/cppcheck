@@ -10,6 +10,9 @@
 #include <QObject>
 #include <QString>
 #include <QVector>
+#include <QByteArray>
+#include <QList>
+#include <QLinkedList>
 #include <QtPlugin>
 #include <QFile>
 #include <cstdio>
@@ -126,6 +129,42 @@ QList<int>::iterator QList3()
     {}
 
     QList<int>::iterator it = qlist1.begin();
+    // TODO: cppcheck-suppress returnDanglingLifetime
+    return it;
+}
+
+void QLinkedList1()
+{
+    QLinkedList<QString> qstringLinkedList1{"one", "two"};
+
+    QLinkedList<QString> qstringLinkedList2 = {"one", "two"};
+    qstringLinkedList2.clear();
+
+    QLinkedList<QString> qstringLinkedList3;
+    qstringLinkedList3 << "one" << "two";
+    // cppcheck-suppress ignoredReturnValue
+    qstringLinkedList3.startsWith("one");
+    // cppcheck-suppress ignoredReturnValue
+    qstringLinkedList3.endsWith("one");
+    // cppcheck-suppress ignoredReturnValue
+    qstringLinkedList3.count();
+    // cppcheck-suppress ignoredReturnValue
+    qstringLinkedList3.size();
+
+    QLinkedList<QString> qstringLinkedList4;
+    qstringLinkedList4.append("a");
+    qstringLinkedList4.clear();
+}
+
+QLinkedList<int>::iterator QLinkedList3()
+{
+    QLinkedList<int> intQLinkedList1;
+    QLinkedList<int> intQLinkedList2;
+    // cppcheck-suppress iterators2
+    for (QLinkedList<int>::iterator it = intQLinkedList1.begin(); it != intQLinkedList2.end(); ++it)
+    {}
+
+    QLinkedList<int>::iterator it = intQLinkedList1.begin();
     // TODO: cppcheck-suppress returnDanglingLifetime
     return it;
 }
