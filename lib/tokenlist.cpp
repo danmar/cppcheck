@@ -313,6 +313,7 @@ void TokenList::insertTokens(Token *dest, const Token *src, nonneg int n)
 
         dest->fileIndex(src->fileIndex());
         dest->linenr(src->linenr());
+        dest->column(src->column());
         dest->varId(src->varId());
         dest->tokType(src->tokType());
         dest->flags(src->flags());
