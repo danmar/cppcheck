@@ -420,15 +420,15 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="mTabTheme">
+     <widget class="QWidget" name="mTabEditorStyle">
       <attribute name="title">
-       <string>Theme</string>
+       <string>Code Editor</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_11">
        <item>
         <widget class="QGroupBox" name="gboxEditorStyle">
          <property name="title">
-          <string>Style</string>
+          <string>Code Editor Style</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_12">
           <item>

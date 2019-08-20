@@ -173,6 +173,8 @@ private:
         TEST_CASE(template133);
         TEST_CASE(template134);
         TEST_CASE(template135);
+        TEST_CASE(template136); // #9287
+        TEST_CASE(template137); // #9288
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -3227,6 +3229,48 @@ private:
         const char exp[] = "struct a<2> ; "
                            "a<2> d ; "
                            "struct a<2> { template < int b > void c ( a < b > ) ; } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template136() { // #9287
+        const char code[] = "namespace a {\n"
+                            "template <typename> struct b;\n"
+                            "template <int> struct c;\n"
+                            "template <typename> struct d;\n"
+                            "template <typename> struct f;\n"
+                            "template <typename> struct g;\n"
+                            "template <typename h>\n"
+                            "struct i : c<b<f<typename h ::j>>::k && b<g<typename h ::j>>::k> {};\n"
+                            "}\n"
+                            "namespace hana = a;\n"
+                            "using e = int;\n"
+                            "void l(hana::d<hana::i<e>>);";
+        const char exp[] = "namespace a { "
+                           "template < typename > struct b ; "
+                           "template < int > struct c ; "
+                           "template < typename > struct d ; "
+                           "template < typename > struct f ; "
+                           "template < typename > struct g ; "
+                           "struct i<int> ; "
+                           "} "
+                           "void l ( a :: d < a :: i<int> > ) ; "
+                           "struct a :: i<int> : c < b < f < int :: j > > :: k && b < g < int :: j > > :: k > { } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template137() { // #9288
+        const char code[] = "template <bool> struct a;\n"
+                            "template <bool b, class> using c = typename a<b>::d;\n"
+                            "template <class, template <class> class, class> struct e;\n"
+                            "template <class f, class g, class... h>\n"
+                            "using i = typename e<f, g::template fn, h...>::d;\n"
+                            "template <class... j> struct k : c<sizeof...(j), int>::template fn<j...> {};";
+        const char exp[] = "template < bool > struct a ; "
+                           "template < bool b , class > using c = typename a < b > :: d ; "
+                           "template < class , template < class > class , class > struct e ; "
+                           "template < class f , class g , class . . . h > "
+                           "using i = typename e < f , g :: template fn , h . . . > :: d ; "
+                           "template < class . . . j > struct k : c < sizeof . . . ( j ) , int > :: template fn < j . . . > { } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
