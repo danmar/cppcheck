@@ -10,6 +10,7 @@
 #include <QObject>
 #include <QString>
 #include <QVector>
+#include <QStack>
 #include <QByteArray>
 #include <QList>
 #include <QLinkedList>
@@ -278,6 +279,68 @@ QVector<int>::iterator QVector2()
     QVector<int>::iterator it = qvector1.begin();
     // TODO cppcheck-suppress returnDanglingLifetime
     return it;
+}
+
+void QStack1(QStack<int> intStackArg)
+{
+    for (int i = 0; i <= intStackArg.size(); ++i) {
+        // cppcheck-suppress stlOutOfBounds
+        intStackArg[i] = 1;
+    }
+    // cppcheck-suppress containerOutOfBoundsIndexExpression
+    intStackArg[intStackArg.length()] = 5;
+    // cppcheck-suppress containerOutOfBoundsIndexExpression
+    intStackArg[intStackArg.count()] = 10;
+    // cppcheck-suppress containerOutOfBoundsIndexExpression
+    printf("val: %d\n", intStackArg[intStackArg.size()]);
+
+    QStack<QString> qstringStack1;
+    qstringStack1.push("one");
+    qstringStack1.push("two");
+    (void)qstringStack1[1];
+
+    QStack<QString> qstringStack2;
+    qstringStack2 << "one" << "two";
+    // FIXME: The following containerOutOfBounds suppression is wrong #9242
+    // Please remove the suppression as soon as this is fixed
+    // cppcheck-suppress containerOutOfBounds
+    (void)qstringStack2[1];
+    // cppcheck-suppress ignoredReturnValue
+    qstringStack2.startsWith("one");
+    // cppcheck-suppress ignoredReturnValue
+    qstringStack2.endsWith("one");
+    // cppcheck-suppress ignoredReturnValue
+    qstringStack2.count();
+    // cppcheck-suppress ignoredReturnValue
+    qstringStack2.length();
+    // cppcheck-suppress ignoredReturnValue
+    qstringStack2.size();
+    // cppcheck-suppress ignoredReturnValue
+    qstringStack2.at(5);
+    // cppcheck-suppress invalidFunctionArg
+    (void)qstringStack2.at(-5);
+}
+
+QStack<int>::iterator QStack2()
+{
+    QStack<int> qstack1;
+    QStack<int> qstack2;
+    // cppcheck-suppress iterators2
+    for (QStack<int>::iterator it = qstack1.begin(); it != qstack2.end(); ++it)
+    {}
+
+    QStack<int>::iterator it = qstack1.begin();
+    // TODO cppcheck-suppress returnDanglingLifetime
+    return it;
+}
+
+void QStack3()
+{
+    QStack<int> intStack;
+    intStack.push(1);
+    // cppcheck-suppress ignoredReturnValue
+    intStack.top();
+    intStack.pop();
 }
 
 // Verify that Qt macros do not result in syntax errors, false positives or other issues.
