@@ -53,6 +53,12 @@ void validCode(int argInt)
 
     GError * pGerror = g_error_new(1, -2, "a %d", 1);
     g_error_free(pGerror);
+
+    static gsize init_val = 0;
+    if (g_once_init_enter(&init_val)) {
+        gsize result_val = 1;
+        g_once_init_leave(&init_val, result_val);
+    }
 }
 
 void g_malloc_test()
@@ -365,4 +371,33 @@ void g_error_new_test()
     GError * pNew2 = g_error_new(1, -2, "a %d", 1);
     printf("%p", pNew2);
     // cppcheck-suppress memleak
+}
+
+void g_once_init_enter_leave_test()
+{
+    static gsize init_val;
+    if (g_once_init_enter(&init_val)) {
+        gsize result_val = 0;
+        // cppcheck-suppress invalidFunctionArg
+        g_once_init_leave(&init_val, result_val);
+    }
+
+    gsize init_val2;
+    // cppcheck-suppress uninitvar
+    // cppcheck-suppress ignoredReturnValue
+    g_once_init_enter(&init_val2);
+
+    gsize * init_val3 = NULL;
+    // cppcheck-suppress nullPointer
+    if (g_once_init_enter(init_val3)) {
+        // cppcheck-suppress nullPointer
+        g_once_init_leave(init_val3, 1);
+    }
+
+    gsize * init_val4;
+    // cppcheck-suppress uninitvar
+    if (g_once_init_enter(init_val4)) {
+        // cppcheck-suppress uninitvar
+        g_once_init_leave(init_val4, 1);
+    }
 }
