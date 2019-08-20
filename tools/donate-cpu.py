@@ -40,7 +40,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.27"
+CLIENT_VERSION = "1.1.29"
 
 
 def check_requirements():
@@ -256,7 +256,7 @@ def scan_package(work_path, cppcheck_path, jobs):
     library_includes = {'boost': ['<boost/'],
                        'cppunit': ['<cppunit/'],
                        'googletest': ['<gtest/gtest.h>'],
-                       'gtk': ['<gtk/gtk.h>', '<glib.h>', '<glib/'],
+                       'gtk': ['<gtk/gtk.h>', '<glib.h>', '<glib/', '<gnome.h>'],
                        'libcerror': ['<libcerror.h>'],
                        'microsoft_sal': ['<sal.h>'],
                        'motif': ['<X11/', '<Xm/'],
