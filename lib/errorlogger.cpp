@@ -59,17 +59,17 @@ InternalError::InternalError(const Token *tok, const std::string &errorMsg, Type
 }
 
 ErrorLogger::ErrorMessage::ErrorMessage()
-    : _severity(Severity::none), _cwe(0U), _inconclusive(false)
+    : severity(Severity::none), cwe(0U), inconclusive(false)
 {
 }
 
 ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file1, Severity::SeverityType severity, const std::string &msg, const std::string &id, bool inconclusive) :
-    _callStack(callStack), // locations for this error message
-    _id(id),               // set the message id
+    callStack(callStack), // locations for this error message
+    id(id),               // set the message id
     file0(file1),
-    _severity(severity),   // severity for this error message
-    _cwe(0U),
-    _inconclusive(inconclusive)
+    severity(severity),   // severity for this error message
+    cwe(0U),
+    inconclusive(inconclusive)
 {
     // set the summary and verbose messages
     setmsg(msg);
@@ -78,19 +78,19 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack
 
 
 ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file1, Severity::SeverityType severity, const std::string &msg, const std::string &id, const CWE &cwe, bool inconclusive) :
-    _callStack(callStack), // locations for this error message
-    _id(id),               // set the message id
+    callStack(callStack), // locations for this error message
+    id(id),               // set the message id
     file0(file1),
-    _severity(severity),   // severity for this error message
-    _cwe(cwe.id),
-    _inconclusive(inconclusive)
+    severity(severity),   // severity for this error message
+    cwe(cwe.id),
+    inconclusive(inconclusive)
 {
     // set the summary and verbose messages
     setmsg(msg);
 }
 
 ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive)
-    : _id(id), _severity(severity), _cwe(0U), _inconclusive(inconclusive)
+    : id(id), severity(severity), cwe(0U), inconclusive(inconclusive)
 {
     // Format callstack
     for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it) {
@@ -98,7 +98,7 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack
         if (!(*it))
             continue;
 
-        _callStack.emplace_back(*it, list);
+        callStack.emplace_back(*it, list);
     }
 
     if (list && !list->getFiles().empty())
@@ -109,7 +109,7 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack
 
 
 ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, const CWE &cwe, bool inconclusive)
-    : _id(id), _severity(severity), _cwe(cwe.id), _inconclusive(inconclusive)
+    : id(id), severity(severity), cwe(cwe.id), inconclusive(inconclusive)
 {
     // Format callstack
     for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it) {
@@ -117,7 +117,7 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack
         if (!(*it))
             continue;
 
-        _callStack.emplace_back(*it, list);
+        callStack.emplace_back(*it, list);
     }
 
     if (list && !list->getFiles().empty())
@@ -127,7 +127,7 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack
 }
 
 ErrorLogger::ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenList, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, bool inconclusive)
-    : _id(id), _severity(severity), _cwe(cwe.id), _inconclusive(inconclusive)
+    : id(id), severity(severity), cwe(cwe.id), inconclusive(inconclusive)
 {
     // Format callstack
     for (ErrorPath::const_iterator it = errorPath.begin(); it != errorPath.end(); ++it) {
@@ -136,7 +136,7 @@ ErrorLogger::ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenL
 
         // --errorlist can provide null values here
         if (tok)
-            _callStack.emplace_back(tok, info, tokenList);
+            callStack.emplace_back(tok, info, tokenList);
     }
 
     if (tokenList && !tokenList->getFiles().empty())
@@ -146,23 +146,23 @@ ErrorLogger::ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenL
 }
 
 ErrorLogger::ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
-    : _severity(Severity::none),
-      _cwe(0U),
-      _inconclusive(false)
+    : severity(Severity::none),
+      cwe(0U),
+      inconclusive(false)
 {
     const char * const unknown = "<UNKNOWN>";
 
     const char *attr = errmsg->Attribute("id");
-    _id = attr ? attr : unknown;
+    id = attr ? attr : unknown;
 
     attr = errmsg->Attribute("severity");
-    _severity = attr ? Severity::fromString(attr) : Severity::none;
+    severity = attr ? Severity::fromString(attr) : Severity::none;
 
     attr = errmsg->Attribute("cwe");
-    std::istringstream(attr ? attr : "0") >> _cwe.id;
+    std::istringstream(attr ? attr : "0") >> cwe.id;
 
     attr = errmsg->Attribute("inconclusive");
-    _inconclusive = attr && (std::strcmp(attr, "true") == 0);
+    inconclusive = attr && (std::strcmp(attr, "true") == 0);
 
     attr = errmsg->Attribute("msg");
     mShortMessage = attr ? attr : "";
@@ -175,11 +175,13 @@ ErrorLogger::ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errms
             const char *strfile = e->Attribute("file");
             const char *strinfo = e->Attribute("info");
             const char *strline = e->Attribute("line");
+            const char *strcolumn = e->Attribute("column");
 
             const char *file = strfile ? strfile : unknown;
             const char *info = strinfo ? strinfo : "";
             const int line = strline ? std::atoi(strline) : 0;
-            _callStack.emplace_back(file, info, line);
+            const int column = strcolumn ? std::atoi(strcolumn) : 0;
+            callStack.emplace_back(file, info, line, column);
         }
     }
 }
@@ -213,12 +215,12 @@ void ErrorLogger::ErrorMessage::setmsg(const std::string &msg)
 Suppressions::ErrorMessage ErrorLogger::ErrorMessage::toSuppressionsErrorMessage() const
 {
     Suppressions::ErrorMessage ret;
-    ret.errorId = _id;
-    if (!_callStack.empty()) {
-        ret.setFileName(_callStack.back().getfile(false));
-        ret.lineNumber = _callStack.back().line;
+    ret.errorId = id;
+    if (!callStack.empty()) {
+        ret.setFileName(callStack.back().getfile(false));
+        ret.lineNumber = callStack.back().line;
     }
-    ret.inconclusive = _inconclusive;
+    ret.inconclusive = inconclusive;
     ret.symbolNames = mSymbolNames;
     return ret;
 }
@@ -228,10 +230,10 @@ std::string ErrorLogger::ErrorMessage::serialize() const
 {
     // Serialize this message into a simple string
     std::ostringstream oss;
-    oss << _id.length() << " " << _id;
-    oss << Severity::toString(_severity).length() << " " << Severity::toString(_severity);
-    oss << MathLib::toString(_cwe.id).length() << " " << MathLib::toString(_cwe.id);
-    if (_inconclusive) {
+    oss << id.length() << " " << id;
+    oss << Severity::toString(severity).length() << " " << Severity::toString(severity);
+    oss << MathLib::toString(cwe.id).length() << " " << MathLib::toString(cwe.id);
+    if (inconclusive) {
         const std::string inconclusive("inconclusive");
         oss << inconclusive.length() << " " << inconclusive;
     }
@@ -241,11 +243,11 @@ std::string ErrorLogger::ErrorMessage::serialize() const
 
     oss << saneShortMessage.length() << " " << saneShortMessage;
     oss << saneVerboseMessage.length() << " " << saneVerboseMessage;
-    oss << _callStack.size() << " ";
+    oss << callStack.size() << " ";
 
-    for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator loc = _callStack.begin(); loc != _callStack.end(); ++loc) {
+    for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator loc = callStack.begin(); loc != callStack.end(); ++loc) {
         std::ostringstream smallStream;
-        smallStream << (*loc).line << ':' << (*loc).getfile() << '\t' << loc->getinfo();
+        smallStream << (*loc).line << '\t' << (*loc).column << '\t' << (*loc).getfile(false) << '\t' << loc->getOrigFile(false) << '\t' << loc->getinfo();
         oss << smallStream.str().length() << " " << smallStream.str();
     }
 
@@ -254,8 +256,8 @@ std::string ErrorLogger::ErrorMessage::serialize() const
 
 bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
 {
-    _inconclusive = false;
-    _callStack.clear();
+    inconclusive = false;
+    callStack.clear();
     std::istringstream iss(data);
     std::array<std::string, 5> results;
     std::size_t elem = 0;
@@ -272,7 +274,7 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
         }
 
         if (temp == "inconclusive") {
-            _inconclusive = true;
+            inconclusive = true;
             continue;
         }
 
@@ -284,10 +286,10 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
     if (elem != 5)
         throw InternalError(nullptr, "Internal Error: Deserialization of error message failed");
 
-    _id = results[0];
-    _severity = Severity::fromString(results[1]);
+    id = results[0];
+    severity = Severity::fromString(results[1]);
     std::istringstream scwe(results[2]);
-    scwe >> _cwe.id;
+    scwe >> cwe.id;
     mShortMessage = results[3];
     mVerboseMessage = results[4];
 
@@ -307,27 +309,33 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
             temp.append(1, c);
         }
 
-        const std::string::size_type colonPos = temp.find(':');
-        if (colonPos == std::string::npos)
-            throw InternalError(nullptr, "Internal Error: No colon found in <filename:line> pattern");
-        const std::string::size_type tabPos = temp.find('\t');
-        if (tabPos == std::string::npos)
-            throw InternalError(nullptr, "Internal Error: No tab found in <filename:line> pattern");
+        std::vector<std::string> substrings;
+        for (std::string::size_type pos = 0; pos < temp.size() && substrings.size() < 5; ++pos) {
+            if (substrings.size() == 4) {
+                substrings.push_back(temp.substr(pos));
+                break;
+            }
+            const std::string::size_type start = pos;
+            pos = temp.find("\t", pos);
+            if (pos == std::string::npos) {
+                substrings.push_back(temp.substr(start));
+                break;
+            }
+            substrings.push_back(temp.substr(start, pos - start));
+        }
+        if (substrings.size() < 4)
+            throw InternalError(nullptr, "Internal Error: serializing/deserializing of error message failed!");
 
-        const std::string tempinfo = temp.substr(tabPos + 1);
-        temp.erase(tabPos);
-        const std::string tempfile = temp.substr(colonPos + 1);
-        temp.erase(colonPos);
-        const std::string templine = temp;
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.setfile(tempfile);
-        loc.setinfo(tempinfo);
-        std::istringstream fiss(templine);
-        fiss >> loc.line;
+        // (*loc).line << '\t' << (*loc).column << '\t' << (*loc).getfile(false) << '\t' << loc->getOrigFile(false) << '\t' << loc->getinfo();
 
-        _callStack.push_back(loc);
+        ErrorLogger::ErrorMessage::FileLocation loc(substrings[3], MathLib::toLongNumber(substrings[0]), MathLib::toLongNumber(substrings[1]));
+        loc.setfile(substrings[2]);
+        if (substrings.size() == 5)
+            loc.setinfo(substrings[4]);
 
-        if (_callStack.size() >= stackSize)
+        callStack.push_back(loc);
+
+        if (callStack.size() >= stackSize)
             break;
     }
 
@@ -386,21 +394,22 @@ std::string ErrorLogger::ErrorMessage::toXML() const
 {
     tinyxml2::XMLPrinter printer(nullptr, false, 2);
     printer.OpenElement("error", false);
-    printer.PushAttribute("id", _id.c_str());
-    printer.PushAttribute("severity", Severity::toString(_severity).c_str());
+    printer.PushAttribute("id", id.c_str());
+    printer.PushAttribute("severity", Severity::toString(severity).c_str());
     printer.PushAttribute("msg", fixInvalidChars(mShortMessage).c_str());
     printer.PushAttribute("verbose", fixInvalidChars(mVerboseMessage).c_str());
-    if (_cwe.id)
-        printer.PushAttribute("cwe", _cwe.id);
-    if (_inconclusive)
+    if (cwe.id)
+        printer.PushAttribute("cwe", cwe.id);
+    if (inconclusive)
         printer.PushAttribute("inconclusive", "true");
 
-    for (std::list<FileLocation>::const_reverse_iterator it = _callStack.rbegin(); it != _callStack.rend(); ++it) {
+    for (std::list<FileLocation>::const_reverse_iterator it = callStack.rbegin(); it != callStack.rend(); ++it) {
         printer.OpenElement("location", false);
         if (!file0.empty() && (*it).getfile() != file0)
             printer.PushAttribute("file0", Path::toNativeSeparators(file0).c_str());
         printer.PushAttribute("file", (*it).getfile().c_str());
         printer.PushAttribute("line", std::max((*it).line,0));
+        printer.PushAttribute("column", (*it).column);
         if (!it->getinfo().empty())
             printer.PushAttribute("info", fixInvalidChars(it->getinfo()).c_str());
         printer.CloseElement(false);
@@ -433,7 +442,7 @@ void ErrorLogger::ErrorMessage::findAndReplace(std::string &source, const std::s
 }
 
 // TODO: read info from some shared resource instead?
-static std::string readCode(const std::string &file, unsigned int linenr, unsigned int column, const char endl[])
+static std::string readCode(const std::string &file, int linenr, int column, const char endl[])
 {
     std::ifstream fin(file);
     std::string line;
@@ -456,11 +465,11 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
     // No template is given
     if (templateFormat.empty()) {
         std::ostringstream text;
-        if (!_callStack.empty())
-            text << callStackToString(_callStack) << ": ";
-        if (_severity != Severity::none) {
-            text << '(' << Severity::toString(_severity);
-            if (_inconclusive)
+        if (!callStack.empty())
+            text << callStackToString(callStack) << ": ";
+        if (severity != Severity::none) {
+            text << '(' << Severity::toString(severity);
+            if (inconclusive)
                 text << ", inconclusive";
             text << ") ";
         }
@@ -477,22 +486,22 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
     findAndReplace(result, "\\r", "\r");
     findAndReplace(result, "\\t", "\t");
 
-    findAndReplace(result, "{id}", _id);
+    findAndReplace(result, "{id}", id);
     if (result.find("{inconclusive:") != std::string::npos) {
         const std::string::size_type pos1 = result.find("{inconclusive:");
         const std::string::size_type pos2 = result.find('}', pos1+1);
         const std::string replaceFrom = result.substr(pos1,pos2-pos1+1);
-        const std::string replaceWith = _inconclusive ? result.substr(pos1+14, pos2-pos1-14) : std::string();
+        const std::string replaceWith = inconclusive ? result.substr(pos1+14, pos2-pos1-14) : std::string();
         findAndReplace(result, replaceFrom, replaceWith);
     }
-    findAndReplace(result, "{severity}", Severity::toString(_severity));
-    findAndReplace(result, "{cwe}", MathLib::toString(_cwe.id));
+    findAndReplace(result, "{severity}", Severity::toString(severity));
+    findAndReplace(result, "{cwe}", MathLib::toString(cwe.id));
     findAndReplace(result, "{message}", verbose ? mVerboseMessage : mShortMessage);
-    findAndReplace(result, "{callstack}", _callStack.empty() ? emptyString : callStackToString(_callStack));
-    if (!_callStack.empty()) {
-        findAndReplace(result, "{file}", _callStack.back().getfile());
-        findAndReplace(result, "{line}", MathLib::toString(_callStack.back().line));
-        findAndReplace(result, "{column}", MathLib::toString(_callStack.back().col));
+    findAndReplace(result, "{callstack}", callStack.empty() ? emptyString : callStackToString(callStack));
+    if (!callStack.empty()) {
+        findAndReplace(result, "{file}", callStack.back().getfile());
+        findAndReplace(result, "{line}", MathLib::toString(callStack.back().line));
+        findAndReplace(result, "{column}", MathLib::toString(callStack.back().column));
         if (result.find("{code}") != std::string::npos) {
             const std::string::size_type pos = result.find('\r');
             const char *endl;
@@ -502,7 +511,7 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
                 endl = "\r\n";
             else
                 endl = "\r";
-            findAndReplace(result, "{code}", readCode(_callStack.back().getOrigFile(), _callStack.back().line, _callStack.back().col, endl));
+            findAndReplace(result, "{code}", readCode(callStack.back().getOrigFile(), callStack.back().line, callStack.back().column, endl));
         }
     } else {
         findAndReplace(result, "{file}", "nofile");
@@ -511,8 +520,8 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
         findAndReplace(result, "{code}", emptyString);
     }
 
-    if (!templateLocation.empty() && _callStack.size() >= 2U) {
-        for (const FileLocation &fileLocation : _callStack) {
+    if (!templateLocation.empty() && callStack.size() >= 2U) {
+        for (const FileLocation &fileLocation : callStack) {
             std::string text = templateLocation;
 
             findAndReplace(text, "\\b", "\b");
@@ -522,7 +531,7 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
 
             findAndReplace(text, "{file}", fileLocation.getfile());
             findAndReplace(text, "{line}", MathLib::toString(fileLocation.line));
-            findAndReplace(text, "{column}", MathLib::toString(fileLocation.col));
+            findAndReplace(text, "{column}", MathLib::toString(fileLocation.column));
             findAndReplace(text, "{info}", fileLocation.getinfo().empty() ? mShortMessage : fileLocation.getinfo());
             if (text.find("{code}") != std::string::npos) {
                 const std::string::size_type pos = text.find('\r');
@@ -533,7 +542,7 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
                     endl = "\r\n";
                 else
                     endl = "\r";
-                findAndReplace(text, "{code}", readCode(fileLocation.getOrigFile(), fileLocation.line, fileLocation.col, endl));
+                findAndReplace(text, "{code}", readCode(fileLocation.getOrigFile(), fileLocation.line, fileLocation.column, endl));
             }
             result += '\n' + text;
         }
@@ -568,7 +577,7 @@ bool ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::Supp
 
         std::list<ErrorLogger::ErrorMessage::FileLocation> callStack;
         if (!s.fileName.empty())
-            callStack.emplace_back(s.fileName, s.lineNumber);
+            callStack.emplace_back(s.fileName, s.lineNumber, 0);
         reportErr(ErrorLogger::ErrorMessage(callStack, emptyString, Severity::information, "Unmatched suppression: " + s.errorId, "unmatchedSuppression", false));
         err = true;
     }
@@ -586,12 +595,12 @@ std::string ErrorLogger::callStackToString(const std::list<ErrorLogger::ErrorMes
 
 
 ErrorLogger::ErrorMessage::FileLocation::FileLocation(const Token* tok, const TokenList* tokenList)
-    : fileIndex(tok->fileIndex()), line(tok->linenr()), col(tok->col()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(tokenList->file(tok))
+    : fileIndex(tok->fileIndex()), line(tok->linenr()), column(tok->column()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(tokenList->file(tok))
 {
 }
 
 ErrorLogger::ErrorMessage::FileLocation::FileLocation(const Token* tok, const std::string &info, const TokenList* tokenList)
-    : fileIndex(tok->fileIndex()), line(tok->linenr()), col(tok->col()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(tokenList->file(tok)), mInfo(info)
+    : fileIndex(tok->fileIndex()), line(tok->linenr()), column(tok->column()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(tokenList->file(tok)), mInfo(info)
 {
 }
 
@@ -682,7 +691,7 @@ static std::string plistLoc(const char indent[], const ErrorLogger::ErrorMessage
     std::ostringstream ostr;
     ostr << indent << "<dict>\r\n"
          << indent << ' ' << "<key>line</key><integer>" << loc.line << "</integer>\r\n"
-         << indent << ' ' << "<key>col</key><integer>" << loc.col << "</integer>\r\n"
+         << indent << ' ' << "<key>col</key><integer>" << loc.column << "</integer>\r\n"
          << indent << ' ' << "<key>file</key><integer>" << loc.fileIndex << "</integer>\r\n"
          << indent << "</dict>\r\n";
     return ostr.str();
@@ -695,9 +704,9 @@ std::string ErrorLogger::plistData(const ErrorLogger::ErrorMessage &msg)
           << "   <key>path</key>\r\n"
           << "   <array>\r\n";
 
-    std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator prev = msg._callStack.begin();
+    std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator prev = msg.callStack.begin();
 
-    for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator it = msg._callStack.begin(); it != msg._callStack.end(); ++it) {
+    for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator it = msg.callStack.begin(); it != msg.callStack.end(); ++it) {
         if (prev != it) {
             plist << "    <dict>\r\n"
                   << "     <key>kind</key><string>control</string>\r\n"
@@ -722,7 +731,7 @@ std::string ErrorLogger::plistData(const ErrorLogger::ErrorMessage &msg)
 
         std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator next = it;
         ++next;
-        const std::string message = (it->getinfo().empty() && next == msg._callStack.end() ? msg.shortMessage() : it->getinfo());
+        const std::string message = (it->getinfo().empty() && next == msg.callStack.end() ? msg.shortMessage() : it->getinfo());
 
         plist << "    <dict>\r\n"
               << "     <key>kind</key><string>event</string>\r\n"
@@ -745,16 +754,16 @@ std::string ErrorLogger::plistData(const ErrorLogger::ErrorMessage &msg)
 
     plist << "   </array>\r\n"
           << "   <key>description</key><string>" << ErrorLogger::toxml(msg.shortMessage()) << "</string>\r\n"
-          << "   <key>category</key><string>" << Severity::toString(msg._severity) << "</string>\r\n"
+          << "   <key>category</key><string>" << Severity::toString(msg.severity) << "</string>\r\n"
           << "   <key>type</key><string>" << ErrorLogger::toxml(msg.shortMessage()) << "</string>\r\n"
-          << "   <key>check_name</key><string>" << msg._id << "</string>\r\n"
+          << "   <key>check_name</key><string>" << msg.id << "</string>\r\n"
           << "   <!-- This hash is experimental and going to change! -->\r\n"
           << "   <key>issue_hash_content_of_line_in_context</key><string>" << 0 << "</string>\r\n"
           << "  <key>issue_context_kind</key><string></string>\r\n"
           << "  <key>issue_context</key><string></string>\r\n"
           << "  <key>issue_hash_function_offset</key><string></string>\r\n"
           << "  <key>location</key>\r\n"
-          << plistLoc("  ", msg._callStack.back())
+          << plistLoc("  ", msg.callStack.back())
           << "  </dict>\r\n";
     return plist.str();
 }

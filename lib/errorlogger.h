@@ -190,15 +190,15 @@ public:
         class CPPCHECKLIB FileLocation {
         public:
             FileLocation()
-                : fileIndex(0), line(0), col(0) {
+                : fileIndex(0), line(0), column(0) {
             }
 
-            FileLocation(const std::string &file, int line)
-                : fileIndex(0), line(line), col(0), mOrigFileName(file), mFileName(file) {
+            FileLocation(const std::string &file, int line, int column)
+                : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file) {
             }
 
-            FileLocation(const std::string &file, const std::string &info, int line)
-                : fileIndex(0), line(line), col(0), mOrigFileName(file), mFileName(file), mInfo(info) {
+            FileLocation(const std::string &file, const std::string &info, int line, int column)
+                : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file), mInfo(info) {
             }
 
             FileLocation(const Token* tok, const TokenList* tokenList);
@@ -211,6 +211,11 @@ public:
              */
             std::string getfile(bool convert = true) const;
 
+            /**
+             * Filename with the whole path (no --rp)
+             * @param convert If true convert path to native separators.
+             * @return filename.
+             */
             std::string getOrigFile(bool convert = true) const;
 
             /**
@@ -226,7 +231,7 @@ public:
 
             unsigned int fileIndex;
             int line; // negative value means "no line"
-            unsigned int col;
+            unsigned int column;
 
             std::string getinfo() const {
                 return mInfo;
@@ -300,15 +305,15 @@ public:
         std::string serialize() const;
         bool deserialize(const std::string &data);
 
-        std::list<FileLocation> _callStack;
-        std::string _id;
+        std::list<FileLocation> callStack;
+        std::string id;
 
         /** source file (not header) */
         std::string file0;
 
-        Severity::SeverityType _severity;
-        CWE _cwe;
-        bool _inconclusive;
+        Severity::SeverityType severity;
+        CWE cwe;
+        bool inconclusive;
 
         /** set short and verbose messages */
         void setmsg(const std::string &msg);

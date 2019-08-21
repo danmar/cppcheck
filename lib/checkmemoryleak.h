@@ -336,6 +336,13 @@ public:
 
 private:
     /**
+     * @brief %Check if an input argument to a function is the return value of an allocation function
+     * like malloc(), and the function does not release it.
+     * @param scope     The scope of the function to check.
+     */
+    void checkForUnreleasedInputArgument(const Scope *scope);
+
+    /**
      * @brief %Check if a call to an allocation function like malloc() is made and its return value is not assigned.
      * @param scope     The scope of the function to check.
      */

@@ -14,10 +14,10 @@ cd ~/cppcheck
 git checkout -f
 git apply $1
 make clean
-nice make SRCDIR=build CFGDIR=~/cppcheck/cfg CXXFLAGS=-O2
+nice make MATCHCOMPILER=yes FILESDIR=~/cppcheck CXXFLAGS=-O2
 mv cppcheck ~/daca2/cppcheck-patch
 git checkout -f
-nice make SRCDIR=build CFGDIR=~/cppcheck/cfg CXXFLAGS=-O2
+nice make MATCHCOMPILER=yes FILESDIR=~/cppcheck CXXFLAGS=-O2
 mv cppcheck ~/daca2/cppcheck-head
 make clean
 nice make

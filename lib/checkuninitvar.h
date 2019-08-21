@@ -109,7 +109,11 @@ public:
 
     void uninitstringError(const Token *tok, const std::string &varname, bool strncpy_);
     void uninitdataError(const Token *tok, const std::string &varname);
-    void uninitvarError(const Token *tok, const std::string &varname);
+    void uninitvarError(const Token *tok, const std::string &varname, ErrorPath errorPath);
+    void uninitvarError(const Token *tok, const std::string &varname) {
+        ErrorPath errorPath;
+        uninitvarError(tok, varname, errorPath);
+    }
     void uninitvarError(const Token *tok, const std::string &varname, Alloc alloc) {
         if (alloc == NO_CTOR_CALL || alloc == CTOR_CALL)
             uninitdataError(tok, varname);

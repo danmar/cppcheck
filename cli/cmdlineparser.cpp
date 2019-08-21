@@ -638,7 +638,6 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
 
                 if (mSettings->templateFormat == "gcc") {
-                    //_settings->templateFormat = "{file}:{line}: {severity}: {message}";
                     mSettings->templateFormat = "{file}:{line}:{column}: warning: {message} [{id}]\\n{code}";
                     mSettings->templateLocation = "{file}:{line}:{column}: note: {info}\\n{code}";
                 } else if (mSettings->templateFormat == "daca2") {
@@ -648,6 +647,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     mSettings->templateFormat = "{file}({line}): {severity}: {message}";
                 else if (mSettings->templateFormat == "edit")
                     mSettings->templateFormat = "{file} +{line}: {severity}: {message}";
+                else if (mSettings->templateFormat == "cppcheck1")
+                    mSettings->templateFormat = "{callstack}: ({severity}{inconclusive:, inconclusive}) {message}";
             }
 
             else if (std::strcmp(argv[i], "--template-location") == 0 ||
@@ -881,6 +882,13 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             path = Path::fromNativeSeparators(path);
             mPathNames.push_back(path);
         }
+    }
+
+    // Default template format..
+    if (mSettings->templateFormat.empty()) {
+        mSettings->templateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]\\n{code}";
+        if (mSettings->templateLocation.empty())
+            mSettings->templateLocation = "{file}:{line}:{column}: note: {info}\\n{code}";
     }
 
     mSettings->project.ignorePaths(mIgnoredPaths);
@@ -1129,7 +1137,7 @@ void CmdLineParser::printHelp()
               "                           {column}            column number\n"
               "                           {callstack}         show a callstack. Example:\n"
               "                                                 [file.c:1] -> [file.c:100]\n"
-              "                           {inconlusive:text}  if warning is inconclusive, text\n"
+              "                           {inconclusive:text} if warning is inconclusive, text\n"
               "                                               is written\n"
               "                           {severity}          severity\n"
               "                           {message}           warning message\n"
@@ -1143,7 +1151,8 @@ void CmdLineParser::printHelp()
               "                         '{file}:{line},{severity},{id},{message}' or\n"
               "                         '{file}({line}):({severity}) {message}' or\n"
               "                         '{callstack} {message}'\n"
-              "                         Pre-defined templates: gcc, vs, edit.\n"
+              "                         Pre-defined templates: gcc, vs, edit, cppcheck1\n"
+              "                         The default format is 'gcc'.\n"
               "    --template-location='<text>'\n"
               "                         Format error message location. If this is not provided\n"
               "                         then no extra location info is shown.\n"

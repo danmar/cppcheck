@@ -33,7 +33,6 @@
 
 #include "applicationlist.h"
 #include "aboutdialog.h"
-#include "codeeditorstyle.h"
 #include "common.h"
 #include "threadhandler.h"
 #include "fileviewdialog.h"
@@ -154,8 +153,6 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI.mActionHelpContents, &QAction::triggered, this, &MainWindow::openHelpContents);
 
     loadSettings();
-
-    updateStyleSetting();
 
     mThread->initialize(mUI.mResults);
     if (mProjectFile)
@@ -343,6 +340,7 @@ void MainWindow::loadSettings()
             mProjectFile = new ProjectFile(this);
             mProjectFile->read(projectFile);
             loadLastResults();
+            QDir::setCurrent(inf.absolutePath());
         }
     }
 }
@@ -399,16 +397,6 @@ void MainWindow::saveSettings() const
     mSettings->setValue(SETTINGS_OPEN_PROJECT, mProjectFile ? mProjectFile->getFilename() : QString());
 
     mUI.mResults->saveSettings(mSettings);
-}
-
-void MainWindow::updateStyleSetting()
-{
-    mUI.mResults->updateStyleSetting(mSettings);
-    QString styleSheet = CodeEditorStyle::loadSettings(mSettings).generateStyleString();
-    mUI.mToolBarMain->setStyleSheet(styleSheet);
-    mUI.mToolBarView->setStyleSheet(styleSheet);
-    mUI.mToolBarFilter->setStyleSheet(styleSheet);
-    this->setStyleSheet(styleSheet);
 }
 
 void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, const bool checkConfiguration)
@@ -502,6 +490,7 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
     mThread->setFiles(fileNames);
     if (mProjectFile && !checkConfiguration)
         mThread->setAddonsAndTools(mProjectFile->getAddonsAndTools(), mSettings->value(SETTINGS_MISRA_FILE).toString());
+    mThread->setSuppressions(mProjectFile ? mProjectFile->getSuppressions() : QList<Suppressions::Suppression>());
     QDir inf(mCurrentDirectory);
     const QString checkPath = inf.canonicalPath();
     setPath(SETTINGS_LAST_CHECK_PATH, checkPath);
@@ -745,14 +734,14 @@ Library::Error MainWindow::loadLibrary(Library *library, const QString &filename
     if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
         return ret;
 
-#ifdef CFGDIR
-    // Try to load the library from CFGDIR..
-    const QString cfgdir = CFGDIR;
-    if (!cfgdir.isEmpty()) {
-        ret = library->load(nullptr, (cfgdir+"/"+filename).toLatin1());
+#ifdef FILESDIR
+    // Try to load the library from FILESDIR/cfg..
+    const QString filesdir = FILESDIR;
+    if (!filesdir.isEmpty()) {
+        ret = library->load(nullptr, (filesdir+"/cfg/"+filename).toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
             return ret;
-        ret = library->load(nullptr, (cfgdir+"/cfg/"+filename).toLatin1());
+        ret = library->load(nullptr, (filesdir+filename).toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
             return ret;
     }
@@ -1026,7 +1015,7 @@ void MainWindow::programSettings()
                                      dialog.showNoErrorsMessage(),
                                      dialog.showErrorId(),
                                      dialog.showInconclusive());
-        this->updateStyleSetting();
+        mUI.mResults->updateStyleSetting(mSettings);
         const QString newLang = mSettings->value(SETTINGS_LANGUAGE, "en").toString();
         setLanguage(newLang);
     }

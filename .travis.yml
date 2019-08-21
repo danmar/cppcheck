@@ -66,15 +66,13 @@ matrix:
 # check if DESTDIR works  TODO: actually execute this
         - mkdir install_test
         - echo $CXXFLAGS
-        - make -s DESTDIR=install_test install
+        - make -s DESTDIR=install_test FILESDIR=/usr/share/cppcheck install
 # rm everything
         - git clean -dfx
 # check what happens if we want to install it to some other dir,
         - echo $CXXFLAGS
-        - make -s MATCHCOMPILER=yes CFGDIR=/usr/share/cppcheck/cfg -j 2
-        - sudo make MATCHCOMPILER=yes CFGDIR=/usr/share/cppcheck/cfg install
-        - sudo mkdir -p /usr/share/cppcheck/cfg
-        - sudo install -D ./cfg/* -t /usr/share/cppcheck/cfg
+        - make -s MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck -j 2
+        - sudo make MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck install
 # check if it actually works:
         - /usr/bin/cppcheck ./cli
 # check if showtime=top5 works

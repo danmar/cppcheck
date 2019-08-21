@@ -155,6 +155,40 @@ void TokenList::addtoken(std::string str, const nonneg int lineno, const nonneg 
     mTokensFrontBack.back->fileIndex(fileno);
 }
 
+void TokenList::addtoken(std::string str, const Token *locationTok)
+{
+    if (str.empty())
+        return;
+
+    // Replace hexadecimal value with decimal
+    const bool isHex = MathLib::isIntHex(str) ;
+    if (isHex || MathLib::isOct(str) || MathLib::isBin(str)) {
+        // TODO: It would be better if TokenList didn't simplify hexadecimal numbers
+        std::string suffix;
+        if (isHex &&
+            str.size() == (2 + mSettings->int_bit / 4) &&
+            (str[2] >= '8') &&  // includes A-F and a-f
+            MathLib::getSuffix(str).empty()
+           )
+            suffix = "U";
+        str = MathLib::value(str).str() + suffix;
+    }
+
+    if (mTokensFrontBack.back) {
+        mTokensFrontBack.back->insertToken(str);
+    } else {
+        mTokensFrontBack.front = new Token(&mTokensFrontBack);
+        mTokensFrontBack.back = mTokensFrontBack.front;
+        mTokensFrontBack.back->str(str);
+    }
+
+    if (isCPP() && str == "delete")
+        mTokensFrontBack.back->isKeyword(true);
+    mTokensFrontBack.back->linenr(locationTok->linenr());
+    mTokensFrontBack.back->column(locationTok->column());
+    mTokensFrontBack.back->fileIndex(locationTok->fileIndex());
+}
+
 void TokenList::addtoken(const Token * tok, const nonneg int lineno, const nonneg int fileno)
 {
     if (tok == nullptr)
@@ -173,6 +207,48 @@ void TokenList::addtoken(const Token * tok, const nonneg int lineno, const nonne
     mTokensFrontBack.back->linenr(lineno);
     mTokensFrontBack.back->fileIndex(fileno);
     mTokensFrontBack.back->flags(tok->flags());
+}
+
+void TokenList::addtoken(const Token *tok, const Token *locationTok)
+{
+    if (tok == nullptr || locationTok == nullptr)
+        return;
+
+    if (mTokensFrontBack.back) {
+        mTokensFrontBack.back->insertToken(tok->str(), tok->originalName());
+    } else {
+        mTokensFrontBack.front = new Token(&mTokensFrontBack);
+        mTokensFrontBack.back = mTokensFrontBack.front;
+        mTokensFrontBack.back->str(tok->str());
+        if (!tok->originalName().empty())
+            mTokensFrontBack.back->originalName(tok->originalName());
+    }
+
+    mTokensFrontBack.back->flags(tok->flags());
+    mTokensFrontBack.back->linenr(locationTok->linenr());
+    mTokensFrontBack.back->column(locationTok->column());
+    mTokensFrontBack.back->fileIndex(locationTok->fileIndex());
+}
+
+void TokenList::addtoken(const Token *tok)
+{
+    if (tok == nullptr)
+        return;
+
+    if (mTokensFrontBack.back) {
+        mTokensFrontBack.back->insertToken(tok->str(), tok->originalName());
+    } else {
+        mTokensFrontBack.front = new Token(&mTokensFrontBack);
+        mTokensFrontBack.back = mTokensFrontBack.front;
+        mTokensFrontBack.back->str(tok->str());
+        if (!tok->originalName().empty())
+            mTokensFrontBack.back->originalName(tok->originalName());
+    }
+
+    mTokensFrontBack.back->flags(tok->flags());
+    mTokensFrontBack.back->linenr(tok->linenr());
+    mTokensFrontBack.back->column(tok->column());
+    mTokensFrontBack.back->fileIndex(tok->fileIndex());
 }
 
 
@@ -237,6 +313,7 @@ void TokenList::insertTokens(Token *dest, const Token *src, nonneg int n)
 
         dest->fileIndex(src->fileIndex());
         dest->linenr(src->linenr());
+        dest->column(src->column());
         dest->varId(src->varId());
         dest->tokType(src->tokType());
         dest->flags(src->flags());
@@ -316,7 +393,7 @@ void TokenList::createTokens(const simplecpp::TokenList *tokenList)
             mTokensFrontBack.back->isKeyword(true);
         mTokensFrontBack.back->fileIndex(tok->location.fileIndex);
         mTokensFrontBack.back->linenr(tok->location.line);
-        mTokensFrontBack.back->col(tok->location.col);
+        mTokensFrontBack.back->column(tok->location.col);
         mTokensFrontBack.back->isExpandedMacro(!tok->macro.empty());
     }
 

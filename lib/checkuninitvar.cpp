@@ -1269,9 +1269,11 @@ void CheckUninitVar::uninitdataError(const Token *tok, const std::string &varnam
     reportError(tok, Severity::error, "uninitdata", "$symbol:" + varname + "\nMemory is allocated but not initialized: $symbol", CWE908, false);
 }
 
-void CheckUninitVar::uninitvarError(const Token *tok, const std::string &varname)
+void CheckUninitVar::uninitvarError(const Token *tok, const std::string &varname, ErrorPath errorPath)
 {
-    reportError(tok, Severity::error, "uninitvar", "$symbol:" + varname + "\nUninitialized variable: $symbol", CWE908, false);
+    errorPath.emplace_back(tok, "");
+    reportError(errorPath, Severity::error, "uninitvar", "$symbol:" + varname + "\nUninitialized variable: $symbol", CWE908, false);
+    // reportError(tok, Severity::error, "uninitvar", "$symbol:" + varname + "\nUninitialized variable: $symbol", CWE908, false);
 }
 
 void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string &membername)
@@ -1295,14 +1297,25 @@ void CheckUninitVar::valueFlowUninit()
                 tok = tok->linkAt(1);
                 continue;
             }
-            if (!tok->variable() || tok->values().size() != 1U)
+            if (!tok->variable())
                 continue;
-            const ValueFlow::Value &v = tok->values().front();
-            if (v.valueType != ValueFlow::Value::ValueType::UNINIT || v.isInconclusive())
+            if (Token::Match(tok->astParent(), ". %var%") && tok->astParent()->astOperand1() == tok)
                 continue;
-            if (!isVariableUsage(tok, tok->variable()->isPointer(), NO_ALLOC))
+            auto v = std::find_if(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isUninitValue));
+            if (v == tok->values().end())
                 continue;
-            uninitvarError(tok, tok->str());
+            if (v->isInconclusive())
+                continue;
+            if (!isVariableUsage(tok, tok->variable()->isPointer(), tok->variable()->isArray() ? ARRAY : NO_ALLOC))
+                continue;
+            if (v->indirect > 1 || v->indirect < 0)
+                continue;
+            bool unknown;
+            if (v->indirect == 1 && !CheckNullPointer::isPointerDeRef(tok, unknown, mSettings))
+                continue;
+            if (!Token::Match(tok->astParent(), ". %name% (") && isVariableChanged(tok, mSettings, mTokenizer->isCPP()))
+                continue;
+            uninitvarError(tok, tok->str(), v->errorPath);
         }
     }
 }

@@ -294,7 +294,7 @@ unsigned int ThreadExecutor::check()
                     oss << "Internal error: Child process crashed with signal " << WTERMSIG(stat);
 
                     std::list<ErrorLogger::ErrorMessage::FileLocation> locations;
-                    locations.emplace_back(childname, 0);
+                    locations.emplace_back(childname, 0, 0);
                     const ErrorLogger::ErrorMessage errmsg(locations,
                                                            emptyString,
                                                            Severity::error,
