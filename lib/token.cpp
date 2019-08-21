@@ -1477,7 +1477,7 @@ void Token::printAst(bool verbose, bool xml, std::ostream &out) const
 
             if (xml) {
                 out << "<ast scope=\"" << tok->scope() << "\" fileIndex=\"" << tok->fileIndex() << "\" linenr=\"" << tok->linenr()
-                    << "\" col=\"" << tok->col() << "\">" << std::endl;
+                    << "\" column=\"" << tok->column() << "\">" << std::endl;
                 astStringXml(tok, 2U, out);
                 out << "</ast>" << std::endl;
             } else if (verbose)

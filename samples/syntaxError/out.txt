@@ -1,1 +1,3 @@
-[samples\syntaxError\bad.c:2]: (error) Unmatched '{'. Configuration: ''.
+samples\syntaxError\bad.c:2:1: error: Unmatched '{'. Configuration: ''. [syntaxError]
+{
+^

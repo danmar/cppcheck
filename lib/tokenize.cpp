@@ -3476,6 +3476,8 @@ void Tokenizer::setVarIdPass1()
                     continue;
                 if (tok->next() && tok->next()->str() == "::")
                     continue;
+                if (Token::simpleMatch(tok->tokAt(-2), ":: template"))
+                    continue;
             }
 
             // function declaration inside executable scope? Function declaration is of form: type name "(" args ")"
@@ -3943,7 +3945,7 @@ void Tokenizer::createLinks2()
 
             while (!type.empty() && type.top()->str() == "<") {
                 const Token* end = type.top()->findClosingBracket();
-                if (Token::Match(end, "> %comp%|;|.|="))
+                if (Token::Match(end, "> %comp%|;|.|=|{"))
                     break;
                 // Variable declaration
                 if (Token::Match(end, "> %var% ;") && (type.top()->tokAt(-2) == nullptr || Token::Match(type.top()->tokAt(-2), ";|}|{")))
@@ -4233,6 +4235,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
                 tok->deleteNext();
             } else if (tok->strAt(1) == "constexpr") {
                 tok->deleteNext();
+                tok->isConstexpr(true);
             } else {
                 syntaxError(tok);
             }
@@ -4828,7 +4831,7 @@ void Tokenizer::dump(std::ostream &out) const
     // tokens..
     out << "  <tokenlist>" << std::endl;
     for (const Token *tok = list.front(); tok; tok = tok->next()) {
-        out << "    <token id=\"" << tok << "\" file=\"" << ErrorLogger::toxml(list.file(tok)) << "\" linenr=\"" << tok->linenr() << "\" col=\"" << tok->col() << "\"";
+        out << "    <token id=\"" << tok << "\" file=\"" << ErrorLogger::toxml(list.file(tok)) << "\" linenr=\"" << tok->linenr() << "\" column=\"" << tok->column() << "\"";
         out << " str=\"" << ErrorLogger::toxml(tok->str()) << '\"';
         out << " scope=\"" << tok->scope() << '\"';
         if (tok->isName()) {
@@ -4860,6 +4863,8 @@ void Tokenizer::dump(std::ostream &out) const
             else if (tok->tokType() == Token::eLogicalOp)
                 out << " isLogicalOp=\"True\"";
         }
+        if (tok->isExpandedMacro())
+            out << " isExpandedMacro=\"True\"";
         if (tok->link())
             out << " link=\"" << tok->link() << '\"';
         if (tok->varId() > 0)
@@ -9355,11 +9360,11 @@ void Tokenizer::findGarbageCode() const
         if (Token::simpleMatch(tok, ".") &&
             !Token::simpleMatch(tok->previous(), ".") &&
             !Token::simpleMatch(tok->next(), ".") &&
-            !Token::Match(tok->previous(), "{|, . %name% =") &&
+            !Token::Match(tok->previous(), "{|, . %name% [=.]") &&
             !Token::Match(tok->previous(), ", . %name%")) {
-            if (!Token::Match(tok->previous(), ")|]|>|}|%name%"))
+            if (!Token::Match(tok->previous(), "%name%|)|]|>|}"))
                 syntaxError(tok, tok->strAt(-1) + " " + tok->str() + " " + tok->strAt(1));
-            if (!Token::Match(tok->next(), "template|operator|*|~|%name%"))
+            if (!Token::Match(tok->next(), "%name%|*|~"))
                 syntaxError(tok, tok->strAt(-1) + " " + tok->str() + " " + tok->strAt(1));
         }
     }

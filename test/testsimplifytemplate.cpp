@@ -170,6 +170,11 @@ private:
         TEST_CASE(template130); // #9246
         TEST_CASE(template131); // #9249
         TEST_CASE(template132); // #9250
+        TEST_CASE(template133);
+        TEST_CASE(template134);
+        TEST_CASE(template135);
+        TEST_CASE(template136); // #9287
+        TEST_CASE(template137); // #9288
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -3154,6 +3159,118 @@ private:
                            "__transaction_atomic noexcept ( TrueFalse :: v ( ) ) { global += 1 ; } "
                            "return __transaction_atomic noexcept ( TrueFalse :: v ( ) ) ( global + 2 ) ; "
                            "}";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template133() {
+        const char code[] = "template <typename a> struct bar {\n"
+                            "  template <typename b> static bar foo(const bar<b> &c) {\n"
+                            "    return bar();\n"
+                            "  }\n"
+                            "};\n"
+                            "bar<short> bs;\n"
+                            "bar<std::array<int,4>> ba;\n"
+                            "bar<short> b1 = bar<short>::foo<std::array<int,4>>(ba);\n"
+                            "bar<std::array<int,4>> b2 = bar<std::array<int,4>>::foo<short>(bs);";
+        const char act[] = "struct bar<short> ; struct bar<std::array<int,4>> ; "
+                           "bar<short> bs ; "
+                           "bar<std::array<int,4>> ba ; "
+                           "bar<short> b1 ; b1 = bar<short> :: foo<std::array<int,4>> ( ba ) ; "
+                           "bar<std::array<int,4>> b2 ; b2 = bar<std::array<int,4>> :: foo<short> ( bs ) ; "
+                           "struct bar<short> { "
+                           "static bar<short> foo<std::array<int,4>> ( const bar < std :: array < int , 4 > > & c ) ; "
+                           "} ; "
+                           "struct bar<std::array<int,4>> { "
+                           "static bar<std::array<int,4>> foo<short> ( const bar < short > & c ) ; "
+                           "} ; "
+                           "bar<std::array<int,4>> bar<std::array<int,4>> :: foo<short> ( const bar < short > & c ) { "
+                           "return bar<std::array<int,4>> ( ) ; "
+                           "} "
+                           "bar<short> bar<short> :: foo<std::array<int,4>> ( const bar < std :: array < int , 4 > > & c ) { "
+                           "return bar<short> ( ) ; "
+                           "}";
+        const char exp[] = "struct bar<short> ; struct bar<std::array<int,4>> ; "
+                           "bar<short> bs ; "
+                           "bar<std::array<int,4>> ba ; "
+                           "bar<short> b1 ; b1 = bar<short> :: foo<std::array<int,4>> ( ba ) ; "
+                           "bar<std::array<int,4>> b2 ; b2 = bar<std::array<int,4>> :: foo<short> ( bs ) ; "
+                           "struct bar<short> { "
+                           "static bar<short> foo<std::array<int,4>> ( const bar<std::array<int,4>> & c ) ; "
+                           "} ; "
+                           "struct bar<std::array<int,4>> { "
+                           "static bar<std::array<int,4>> foo<short> ( const bar<short> & c ) ; "
+                           "} ; "
+                           "bar<std::array<int,4>> bar<std::array<int,4>> :: foo<short> ( const bar<short> & c ) { "
+                           "return bar<std::array<int,4>> ( ) ; "
+                           "} "
+                           "bar<short> bar<short> :: foo<std::array<int,4>> ( const bar<std::array<int,4>> & c ) { "
+                           "return bar<short> ( ) ; "
+                           "}";
+        TODO_ASSERT_EQUALS(exp, act, tok(code));
+    }
+
+    void template134() {
+        const char code[] = "template <int a> class e { };\n"
+                            "template <int a> class b { e<(c > a ? 1 : 0)> d; };\n"
+                            "b<0> b0;\n"
+                            "b<1> b1;";
+        const char exp[] = "class e<(c>0)> ; class e<(c>1)> ; "
+                           "class b<0> ; class b<1> ; "
+                           "b<0> b0 ; "
+                           "b<1> b1 ; "
+                           "class b<0> { e<(c>0)> d ; } ; class b<1> { e<(c>1)> d ; } ; "
+                           "class e<(c>0)> { } ; class e<(c>1)> { } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template135() {
+        const char code[] = "template <int> struct a { template <int b> void c(a<b>); };\n"
+                            "a<2> d;";
+        const char exp[] = "struct a<2> ; "
+                           "a<2> d ; "
+                           "struct a<2> { template < int b > void c ( a < b > ) ; } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template136() { // #9287
+        const char code[] = "namespace a {\n"
+                            "template <typename> struct b;\n"
+                            "template <int> struct c;\n"
+                            "template <typename> struct d;\n"
+                            "template <typename> struct f;\n"
+                            "template <typename> struct g;\n"
+                            "template <typename h>\n"
+                            "struct i : c<b<f<typename h ::j>>::k && b<g<typename h ::j>>::k> {};\n"
+                            "}\n"
+                            "namespace hana = a;\n"
+                            "using e = int;\n"
+                            "void l(hana::d<hana::i<e>>);";
+        const char exp[] = "namespace a { "
+                           "template < typename > struct b ; "
+                           "template < int > struct c ; "
+                           "template < typename > struct d ; "
+                           "template < typename > struct f ; "
+                           "template < typename > struct g ; "
+                           "struct i<int> ; "
+                           "} "
+                           "void l ( a :: d < a :: i<int> > ) ; "
+                           "struct a :: i<int> : c < b < f < int :: j > > :: k && b < g < int :: j > > :: k > { } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template137() { // #9288
+        const char code[] = "template <bool> struct a;\n"
+                            "template <bool b, class> using c = typename a<b>::d;\n"
+                            "template <class, template <class> class, class> struct e;\n"
+                            "template <class f, class g, class... h>\n"
+                            "using i = typename e<f, g::template fn, h...>::d;\n"
+                            "template <class... j> struct k : c<sizeof...(j), int>::template fn<j...> {};";
+        const char exp[] = "template < bool > struct a ; "
+                           "template < bool b , class > using c = typename a < b > :: d ; "
+                           "template < class , template < class > class , class > struct e ; "
+                           "template < class f , class g , class . . . h > "
+                           "using i = typename e < f , g :: template fn , h . . . > :: d ; "
+                           "template < class . . . j > struct k : c < sizeof . . . ( j ) , int > :: template fn < j . . . > { } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 

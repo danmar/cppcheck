@@ -725,7 +725,7 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
 {
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
     if (!filename.empty()) {
-        const ErrorLogger::ErrorMessage::FileLocation loc(filename, linenr);
+        const ErrorLogger::ErrorMessage::FileLocation loc(filename, linenr, 0);
         locationList.push_back(loc);
     }
     mErrorLogger->reportErr(ErrorLogger::ErrorMessage(locationList,
@@ -807,7 +807,7 @@ void Preprocessor::validateCfgError(const std::string &file, const unsigned int 
 {
     const std::string id = "ConfigurationNotChecked";
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-    const ErrorLogger::ErrorMessage::FileLocation loc(file, line);
+    const ErrorLogger::ErrorMessage::FileLocation loc(file, line, 0);
     locationList.push_back(loc);
     const ErrorLogger::ErrorMessage errmsg(locationList, mFile0, Severity::information, "Skipping configuration '" + cfg + "' since the value of '" + macro + "' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly.", id, false);
     mErrorLogger->reportInfo(errmsg);

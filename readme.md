@@ -83,7 +83,7 @@ make
 The recommended release build is:
 
 ```shell
-make MATCHCOMPILER=yes CFGDIR=cfg HAVE_RULES=yes CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function"
+make MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck HAVE_RULES=yes CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function"
 ```
 
 Flags:
@@ -91,8 +91,8 @@ Flags:
 1.  `MATCHCOMPILER=yes`
     Python is used to optimise cppcheck. The Token::Match patterns are converted into C++ code at compile time.
 
-2.  `CFGDIR=cfg`
-    Specify folder where .cfg files are found
+2.  `FILESDIR=/usr/share/cppcheck`
+    Specify folder where cppcheck files are installed (addons, cfg, platform)
 
 3.  `HAVE_RULES=yes`
     Enable rules (PCRE is required if this is used)

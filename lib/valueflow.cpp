@@ -399,10 +399,6 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
     if (!tok->addValue(value))
         return;
 
-    // Don't set parent for uninitialized values
-    if (value.isUninitValue())
-        return;
-
     Token *parent = tok->astParent();
     if (!parent)
         return;
@@ -455,6 +451,22 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
         } else if (astIsPointer(tok) && astIsPointer(parent) &&
                    (parent->isArithmeticalOp() || Token::Match(parent, "( %type%"))) {
             setTokenValue(parent,value,settings);
+        }
+        return;
+    }
+
+    if (value.isUninitValue()) {
+        ValueFlow::Value pvalue = value;
+        if (parent->isUnaryOp("&")) {
+            pvalue.indirect++;
+            setTokenValue(parent, pvalue, settings);
+        } else if (Token::Match(parent, ". %var%") && parent->astOperand1() == tok) {
+            if (parent->originalName() == "->")
+                pvalue.indirect--;
+            setTokenValue(parent->astOperand2(), pvalue, settings);
+        } else if (parent->isUnaryOp("*") && pvalue.indirect > 0) {
+            pvalue.indirect--;
+            setTokenValue(parent, pvalue, settings);
         }
         return;
     }
@@ -2141,7 +2153,16 @@ static bool valueFlowForward(Token * const               startToken,
         // conditional block of code that assigns variable..
         else if (!tok2->varId() && Token::Match(tok2, "%name% (") && Token::simpleMatch(tok2->linkAt(1), ") {")) {
             // is variable changed in condition?
-            if (isVariableChanged(tok2->next(), tok2->next()->link(), varid, var->isGlobal(), settings, tokenlist->isCPP())) {
+            Token* tokChanged = findVariableChanged(tok2->next(), tok2->next()->link(), varid, var->isGlobal(), settings, tokenlist->isCPP());
+            if (tokChanged != nullptr) {
+                // Set the value before bailing
+                if (tokChanged->varId() == varid) {
+                    for (const ValueFlow::Value &v : values) {
+                        if (!v.isNonValue())
+                            continue;
+                        setTokenValue(tokChanged, v, settings);
+                    }
+                }
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " valueFlowForward, assignment in condition");
                 return false;
@@ -3441,31 +3462,25 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
         }
         // container lifetimes
-        else if (tok->variable() &&
-                 Token::Match(tok, "%var% . begin|cbegin|rbegin|crbegin|end|cend|rend|crend|data|c_str|find|insert (") &&
-                 tok->next()->originalName() != "->") {
-            if (Token::simpleMatch(tok->tokAt(2), "find") && !astIsIterator(tok->tokAt(3)))
-                continue;
-            ErrorPath errorPath;
-            const Library::Container * container = settings->library.detectContainer(tok->variable()->typeStartToken());
-            if (!container)
+        else if (astIsContainer(tok)) {
+            Token * parent = astParentSkipParens(tok);
+            if (!Token::Match(parent, ". %name% ("))
                 continue;
 
-            bool isIterator = !Token::Match(tok->tokAt(2), "data|c_str");
-            if (isIterator)
-                errorPath.emplace_back(tok, "Iterator to container is created here.");
+            LifetimeStore ls;
+
+            if (astIsIterator(parent->tokAt(2)))
+                ls = LifetimeStore{tok, "Iterator to container is created here.", ValueFlow::Value::LifetimeKind::Iterator};
+            else if (astIsPointer(parent->tokAt(2)) || Token::Match(parent->next(), "data|c_str"))
+                ls = LifetimeStore{tok, "Pointer to container is created here.", ValueFlow::Value::LifetimeKind::Object};
             else
-                errorPath.emplace_back(tok, "Pointer to container is created here.");
+                continue;
 
-            ValueFlow::Value value;
-            value.valueType = ValueFlow::Value::ValueType::LIFETIME;
-            value.lifetimeScope = ValueFlow::Value::LifetimeScope::Local;
-            value.tokvalue = tok;
-            value.errorPath = errorPath;
-            value.lifetimeKind = isIterator ? ValueFlow::Value::LifetimeKind::Iterator : ValueFlow::Value::LifetimeKind::Object;
-            setTokenValue(tok->tokAt(3), value, tokenlist->getSettings());
-
-            valueFlowForwardLifetime(tok->tokAt(3), tokenlist, errorLogger, settings);
+            // Dereferencing
+            if (tok->isUnaryOp("*") || parent->originalName() == "->")
+                ls.byDerefCopy(parent->tokAt(2), tokenlist, errorLogger, settings);
+            else
+                ls.byRef(parent->tokAt(2), tokenlist, errorLogger, settings);
 
         }
         // Check constructors
@@ -4987,8 +5002,8 @@ static void valueFlowUninit(TokenList *tokenlist, SymbolDatabase * /*symbolDatab
             pointer |= vardecl->str() == "*";
             vardecl = vardecl->next();
         }
-        if (!stdtype && !pointer)
-            continue;
+        // if (!stdtype && !pointer)
+        // continue;
         if (!Token::Match(vardecl, "%var% ;"))
             continue;
         if (Token::Match(vardecl, "%varid% ; %varid% =", vardecl->varId()))
@@ -4998,6 +5013,8 @@ static void valueFlowUninit(TokenList *tokenlist, SymbolDatabase * /*symbolDatab
             continue;
         if ((!var->isPointer() && var->type() && var->type()->needInitialization != Type::NeedInitialization::True) ||
             !var->isLocal() || var->isStatic() || var->isExtern() || var->isReference() || var->isThrow())
+            continue;
+        if (!var->type() && !stdtype && !pointer)
             continue;
 
         ValueFlow::Value uninitValue;
@@ -5704,6 +5721,7 @@ ValueFlow::Value::Value(const Token *c, long long val)
       safe(false),
       conditional(false),
       defaultArg(false),
+      indirect(0),
       lifetimeKind(LifetimeKind::Object),
       lifetimeScope(LifetimeScope::Local),
       valueKind(ValueKind::Possible)

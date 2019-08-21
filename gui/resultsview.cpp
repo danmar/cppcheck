@@ -244,9 +244,6 @@ void ResultsView::updateStyleSetting(QSettings *settings)
 {
     CodeEditorStyle theStyle(CodeEditorStyle::loadSettings(settings));
     mUI.mCode->setStyle(theStyle);
-    QString styleString(theStyle.generateStyleString());
-    mUI.mTree->setStyleSheet(styleString);
-    mUI.mDetails->setStyleSheet(styleString);
 }
 
 void ResultsView::setCheckDirectory(const QString &dir)

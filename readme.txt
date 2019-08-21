@@ -77,12 +77,12 @@ Compiling
             make
 
         The recommended release build is:
-            make MATCHCOMPILER=yes CFGDIR=cfg HAVE_RULES=yes
+            make MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck HAVE_RULES=yes
 
         Flags:
-        MATCHCOMPILER=yes : Python is used to optimise cppcheck at compile time
-        CFGDIR=cfg        : Specify folder where .cfg files are found
-        HAVE_RULES=yes    : Enable rules (pcre is required if this is used)
+        MATCHCOMPILER=yes               : Python is used to optimise cppcheck at compile time
+        FILESDIR=/usr/share/cppcheck    : Specify folder where cppcheck files are installed
+        HAVE_RULES=yes                  : Enable rules (pcre is required if this is used)
 
     g++ (for experts)
     =================

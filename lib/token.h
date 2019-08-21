@@ -566,6 +566,13 @@ public:
         setFlag(fIncompleteVar, b);
     }
 
+    bool isConstexpr() const {
+        return getFlag(fConstexpr);
+    }
+    void isConstexpr(bool b) {
+        setFlag(fConstexpr, b);
+    }
+
 
     bool isBitfield() const {
         return mImpl->mBits > 0;
@@ -654,10 +661,10 @@ public:
         mImpl->mLineNumber = lineNumber;
     }
 
-    nonneg int col() const {
+    nonneg int column() const {
         return mImpl->mColumn;
     }
-    void col(nonneg int c) {
+    void column(nonneg int c) {
         mImpl->mColumn = c;
     }
 
@@ -1098,6 +1105,7 @@ private:
         fIsAttributeNodiscard   = (1 << 23), // __attribute__ ((warn_unused_result)), [[nodiscard]]
         fAtAddress              = (1 << 24), // @ 0x4000
         fIncompleteVar          = (1 << 25),
+        fConstexpr              = (1 << 26),
     };
 
     Token::Type mTokType;

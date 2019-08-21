@@ -735,7 +735,7 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
                 deallocUseError(tok, tok->str());
             } else if (Token::simpleMatch(tok->tokAt(-2), "= &")) {
                 varInfo->erase(tok->varId());
-            } else if (tok->strAt(-1) == "=") {
+            } else if (Token::Match(tok->previous(), "= %var% [;,)]")) {
                 varInfo->erase(tok->varId());
             }
         } else if (Token::Match(tok->previous(), "& %name% = %var% ;")) {

@@ -347,7 +347,7 @@ void CheckThread::parseAddonErrors(QString err, const QString &tool)
         /*
         msg = { 'file': location.file,
                 'linenr': location.linenr,
-                'col': location.col,
+                'column': location.column,
                 'severity': severity,
                 'message': message,
                 'addon': addon,
@@ -357,14 +357,13 @@ void CheckThread::parseAddonErrors(QString err, const QString &tool)
 
         const std::string &filename = obj["file"].toString().toStdString();
         const int lineNumber = obj["linenr"].toInt();
-        const int column = obj["col"].toInt();
+        const int column = obj["column"].toInt();
         const std::string severity = obj["severity"].toString().toStdString();
         const std::string message = obj["message"].toString().toStdString();
         const std::string id = (obj["addon"].toString() + "-" + obj["errorId"].toString()).toStdString();
 
         std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
-        callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(filename, lineNumber));
-        callstack.back().col = column;
+        callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(filename, lineNumber, column));
         ErrorLogger::ErrorMessage errmsg(callstack, filename, Severity::fromString(severity), message, id, false);
 
         if (isSuppressed(errmsg.toSuppressionsErrorMessage()))
@@ -387,9 +386,9 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
         if (line.startsWith("Assertion failed:")) {
             ErrorItem e;
             e.errorPath.append(QErrorPathItem());
-            e.errorPath.last().file = file0;
-            e.errorPath.last().line = 1;
-            e.errorPath.last().col  = 1;
+            e.errorPath.last().file   = file0;
+            e.errorPath.last().line   = 1;
+            e.errorPath.last().column = 1;
             e.errorId = tool + "-internal-error";
             e.file0 = file0;
             e.message = line;
@@ -409,7 +408,7 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
         errorItem.errorPath.append(QErrorPathItem());
         errorItem.errorPath.last().file = r1.cap(1);
         errorItem.errorPath.last().line = r1.cap(2).toInt();
-        errorItem.errorPath.last().col  = r1.cap(3).toInt();
+        errorItem.errorPath.last().column = r1.cap(3).toInt();
         if (r1.cap(4) == "warning")
             errorItem.severity = Severity::SeverityType::warning;
         else if (r1.cap(4) == "error" || r1.cap(4) == "fatal error")
@@ -461,7 +460,7 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
 
         std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
         foreach (const QErrorPathItem &path, e.errorPath) {
-            callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(path.file.toStdString(), path.info.toStdString(), path.line));
+            callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(path.file.toStdString(), path.info.toStdString(), path.line, path.column));
         }
         const std::string f0 = file0.toStdString();
         const std::string msg = e.message.toStdString();

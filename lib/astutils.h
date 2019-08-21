@@ -81,6 +81,9 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
 
 const Token * nextAfterAstRightmostLeaf(const Token * tok);
 
+Token* astParentSkipParens(Token* tok);
+const Token* astParentSkipParens(const Token* tok);
+
 bool precedes(const Token * tok1, const Token * tok2);
 
 bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors=nullptr);
@@ -135,7 +138,12 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
 /** Is variable changed in block of code? */
 bool isVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
 
+bool isVariableChanged(const Token *tok, const Settings *settings, bool cpp, int depth = 20);
+
 bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp, int depth = 20);
+
+const Token* findVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
+Token* findVariableChanged(Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
 
 bool isAliased(const Variable *var);
 
