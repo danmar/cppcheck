@@ -4258,6 +4258,10 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     if (mSettings->terminated())
         return false;
 
+    // Remove __declspec()
+    simplifyDeclspec();
+    validate();
+
     // Remove "inline", "register", and "restrict"
     simplifyKeyword();
 
@@ -4303,9 +4307,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // remove calling conventions __cdecl, __stdcall..
     simplifyCallingConvention();
 
-    // Remove __declspec()
-    simplifyDeclspec();
-    validate();
+
     // remove some unhandled macros in global scope
     removeMacrosInGlobalScope();
 
