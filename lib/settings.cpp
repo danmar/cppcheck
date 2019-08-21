@@ -22,6 +22,12 @@
 
 bool Settings::mTerminated;
 
+const char Settings::SafeChecks::XmlRootName[] = "safe-checks";
+const char Settings::SafeChecks::XmlClasses[] = "class-public";
+const char Settings::SafeChecks::XmlExternalFunctions[] = "external-functions";
+const char Settings::SafeChecks::XmlInternalFunctions[] = "internal-functions";
+const char Settings::SafeChecks::XmlExternalVariables[] = "external-variables";
+
 Settings::Settings()
     : mEnabled(0),
       checkConfiguration(false),
@@ -39,7 +45,6 @@ Settings::Settings()
       experimental(false),
       force(false),
       inconclusive(false),
-      allFunctionsAreSafe(false),
       inlineSuppressions(false),
       jobs(1),
       jointSuppressionReport(false),
@@ -50,7 +55,7 @@ Settings::Settings()
       quiet(false),
       relativePaths(false),
       reportProgress(false),
-      showtime(SHOWTIME_NONE),
+      showtime(SHOWTIME_MODES::SHOWTIME_NONE),
       verbose(false),
       xml(false),
       xml_version(2)

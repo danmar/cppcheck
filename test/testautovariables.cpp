@@ -1161,6 +1161,23 @@ private:
             "[test.cpp:1] -> [test.cpp:2] -> [test.cpp:6] -> [test.cpp:6] -> [test.cpp:5] -> [test.cpp:6]: (error) Returning pointer to local variable 'x' that will be invalid when returning.\n",
             errout.str());
 
+        check("int* f(int * x) {\n"
+              "    return x;\n"
+              "}\n"
+              "int * g(int x) {\n"
+              "    return f(&x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:5] -> [test.cpp:4] -> [test.cpp:5]: (error) Returning pointer to local variable 'x' that will be invalid when returning.\n", errout.str());
+
+        check("int* f(int * x) {\n"
+              "    x = nullptr;\n"
+              "    return x;\n"
+              "}\n"
+              "int * g(int x) {\n"
+              "    return f(&x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("int f(int& a) {\n"
               "    return a;\n"
               "}\n"
@@ -1757,6 +1774,13 @@ private:
               "    return y.find(x);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("std::string* f();\n"
+              "const char* g() {\n"
+              "    std::string* var = f();\n"
+              "    return var->c_str();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetime() {
@@ -1886,6 +1910,18 @@ private:
               "    for(int & x : v)\n"
               "        return &x;\n"
               "    return nullptr;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #9275
+        check("struct S {\n"
+              "   void f();\n"
+              "   std::string m;\n"
+              "}\n"
+              "void S::f() {\n"
+              "    char buf[1024];\n"
+              "    const char* msg = buf;\n"
+              "    m = msg;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

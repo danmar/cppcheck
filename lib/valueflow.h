@@ -50,8 +50,10 @@ namespace ValueFlow {
               varvalue(val),
               condition(nullptr),
               varId(0U),
+              safe(false),
               conditional(false),
               defaultArg(false),
+              indirect(0),
               lifetimeKind(LifetimeKind::Object),
               lifetimeScope(LifetimeScope::Local),
               valueKind(ValueKind::Possible)
@@ -99,6 +101,7 @@ namespace ValueFlow {
                    varId == rhs.varId &&
                    conditional == rhs.conditional &&
                    defaultArg == rhs.defaultArg &&
+                   indirect == rhs.indirect &&
                    valueKind == rhs.valueKind;
         }
 
@@ -138,6 +141,10 @@ namespace ValueFlow {
             return valueType == ValueType::LIFETIME && lifetimeScope == LifetimeScope::Argument;
         }
 
+        bool isNonValue() const {
+            return isMovedValue() || isUninitValue() || isLifetimeValue();
+        }
+
         /** int value */
         long long intvalue;
 
@@ -161,11 +168,16 @@ namespace ValueFlow {
         /** For calculated values - varId that calculated value depends on */
         nonneg int varId;
 
+        /** value relies on safe checking */
+        bool safe;
+
         /** Conditional value */
         bool conditional;
 
         /** Is this value passed as default parameter to the function? */
         bool defaultArg;
+
+        int indirect;
 
         enum class LifetimeKind {Object, Lambda, Iterator, Address} lifetimeKind;
 
@@ -242,6 +254,8 @@ const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPat
 bool isLifetimeBorrowed(const Token *tok, const Settings *settings);
 
 std::string lifetimeType(const Token *tok, const ValueFlow::Value *val);
+
+std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, ValueFlow::Value::ErrorPath &errorPath);
 
 ValueFlow::Value getLifetimeObjValue(const Token *tok);
 

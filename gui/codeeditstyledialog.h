@@ -42,22 +42,22 @@ public slots:
     void resetStyle();
     void setStyleDefaultLight();
     void setStyleDefaultDark();
-    void colorChangedWidgetFG(QColor& newColor);
-    void colorChangedWidgetBG(QColor& newColor);
-    void colorChangedHighlightBG(QColor& newColor);
-    void colorChangedLineNumFG(QColor& newColor);
-    void colorChangedLineNumBG(QColor& newColor);
-    void colorChangedKeywordFG(QColor& newColor);
-    void weightChangedKeyword(QFont::Weight& newWeight);
-    void colorChangedClassFG(QColor& newColor);
-    void weightChangedClass(QFont::Weight& newWeight);
-    void colorChangedQuoteFG(QColor& newColor);
-    void weightChangedQuote(QFont::Weight& newWeight);
-    void colorChangedCommentFG(QColor& newColor);
-    void weightChangedComment(QFont::Weight& newWeight);
-    void colorChangedSymbolFG(QColor& newColor);
-    void colorChangedSymbolBG(QColor& newColor);
-    void weightChangedSymbol(QFont::Weight& newWeight);
+    void colorChangedWidgetFG(const QColor& newColor);
+    void colorChangedWidgetBG(const QColor& newColor);
+    void colorChangedHighlightBG(const QColor& newColor);
+    void colorChangedLineNumFG(const QColor& newColor);
+    void colorChangedLineNumBG(const QColor& newColor);
+    void colorChangedKeywordFG(const QColor& newColor);
+    void weightChangedKeyword(const QFont::Weight& newWeight);
+    void colorChangedClassFG(const QColor& newColor);
+    void weightChangedClass(const QFont::Weight& newWeight);
+    void colorChangedQuoteFG(const QColor& newColor);
+    void weightChangedQuote(const QFont::Weight& newWeight);
+    void colorChangedCommentFG(const QColor& newColor);
+    void weightChangedComment(const QFont::Weight& newWeight);
+    void colorChangedSymbolFG(const QColor& newColor);
+    void colorChangedSymbolBG(const QColor& newColor);
+    void weightChangedSymbol(const QFont::Weight& newWeight);
 
 private:
     CodeEditorStyle         mStyleIncoming;

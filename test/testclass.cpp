@@ -221,6 +221,8 @@ private:
 
         TEST_CASE(override1);
         TEST_CASE(overrideCVRefQualifiers);
+
+        TEST_CASE(unsafeClassRefMember);
     }
 
     void checkCopyCtorAndEqOperator(const char code[]) {
@@ -7128,6 +7130,19 @@ private:
                       "    auto bar( ) const -> size_t override { return 0; }\n"
                       "};");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:8]: (style) The function 'foo' overrides a function in a base class but is not marked with a 'override' specifier.\n", errout.str());
+
+        checkOverride("namespace Test {\n"
+                      "    class C {\n"
+                      "    public:\n"
+                      "        virtual ~C();\n"
+                      "    };\n"
+                      "}\n"
+                      "class C : Test::C {\n"
+                      "public:\n"
+                      "    ~C();\n"
+                      "};");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:9]: (style) The destructor '~C' overrides a destructor in a base class but is not marked with a 'override' specifier.\n", errout.str());
+
     }
 
     void overrideCVRefQualifiers() {
@@ -7146,6 +7161,28 @@ private:
         checkOverride("class Base { virtual void f(); };\n"
                       "class Derived : Base { void f() &&; }");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkUnsafeClassRefMember(const char code[]) {
+        // Clear the error log
+        errout.str("");
+        Settings settings;
+        settings.safeChecks.classes = true;
+        settings.addEnabled("warning");
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Check..
+        CheckClass checkClass(&tokenizer, &settings, this);
+        checkClass.checkUnsafeClassRefMember();
+    }
+
+    void unsafeClassRefMember() {
+        checkUnsafeClassRefMember("class C { C(const std::string &s) : s(s) {} const std::string &s; };");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Unsafe class: The const reference member 'C::s' is initialized by a const reference constructor argument. You need to be careful about lifetime issues.\n", errout.str());
     }
 };
 

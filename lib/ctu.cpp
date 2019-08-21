@@ -44,7 +44,7 @@ int CTU::maxCtuDepth = 2;
 
 std::string CTU::getFunctionId(const Tokenizer *tokenizer, const Function *function)
 {
-    return tokenizer->list.file(function->tokenDef) + ':' + MathLib::toString(function->tokenDef->linenr()) + ':' + MathLib::toString(function->tokenDef->col());
+    return tokenizer->list.file(function->tokenDef) + ':' + MathLib::toString(function->tokenDef->linenr()) + ':' + MathLib::toString(function->tokenDef->column());
 }
 
 CTU::FileInfo::Location::Location(const Tokenizer *tokenizer, const Token *tok)

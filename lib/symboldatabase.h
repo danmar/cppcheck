@@ -46,7 +46,7 @@ class ValueType;
 /**
  * @brief Access control enumerations.
  */
-enum AccessControl { Public, Protected, Private, Global, Namespace, Argument, Local, Throw };
+enum class AccessControl { Public, Protected, Private, Global, Namespace, Argument, Local, Throw };
 
 /**
  * @brief Array dimension information.
@@ -65,14 +65,14 @@ public:
     const Token* classDef;     ///< Points to "class" token
     const Scope* classScope;
     const Scope* enclosingScope;
-    enum NeedInitialization {
+    enum class NeedInitialization {
         Unknown, True, False
     } needInitialization;
 
     class BaseInfo {
     public:
         BaseInfo() :
-            type(nullptr), nameTok(nullptr), access(Public), isVirtual(false) {
+            type(nullptr), nameTok(nullptr), access(AccessControl::Public), isVirtual(false) {
         }
 
         std::string name;
@@ -106,11 +106,11 @@ public:
         classDef(classDef_),
         classScope(classScope_),
         enclosingScope(enclosingScope_),
-        needInitialization(Unknown),
+        needInitialization(NeedInitialization::Unknown),
         typeStart(nullptr),
         typeEnd(nullptr) {
         if (classDef_ && classDef_->str() == "enum")
-            needInitialization = True;
+            needInitialization = NeedInitialization::True;
         else if (classDef_ && classDef_->str() == "using") {
             typeStart = classDef->tokAt(3);
             typeEnd = typeStart;
@@ -221,7 +221,7 @@ class CPPCHECKLIB Variable {
 
 public:
     Variable(const Token *name_, const Token *start_, const Token *end_,
-             std::size_t index_, AccessControl access_, const Type *type_,
+             nonneg int index_, AccessControl access_, const Type *type_,
              const Scope *scope_, const Settings* settings)
         : mNameToken(name_),
           mTypeStartToken(start_),
@@ -294,7 +294,7 @@ public:
      * Get declaration ID (varId used for variable in its declaration).
      * @return declaration ID
      */
-    unsigned int declarationId() const {
+    nonneg int declarationId() const {
         // name may not exist for function arguments
         if (mNameToken)
             return mNameToken->varId();
@@ -306,7 +306,7 @@ public:
      * Get index of variable in declared order.
      * @return variable index
      */
-    std::size_t index() const {
+    nonneg int index() const {
         return mIndex;
     }
 
@@ -315,7 +315,7 @@ public:
      * @return true if public, false if not
      */
     bool isPublic() const {
-        return mAccess == Public;
+        return mAccess == AccessControl::Public;
     }
 
     /**
@@ -323,7 +323,7 @@ public:
      * @return true if protected, false if not
      */
     bool isProtected() const {
-        return mAccess == Protected;
+        return mAccess == AccessControl::Protected;
     }
 
     /**
@@ -331,7 +331,7 @@ public:
      * @return true if private, false if not
      */
     bool isPrivate() const {
-        return mAccess == Private;
+        return mAccess == AccessControl::Private;
     }
 
     /**
@@ -339,7 +339,7 @@ public:
      * @return true if global, false if not
      */
     bool isGlobal() const {
-        return mAccess == Global;
+        return mAccess == AccessControl::Global;
     }
 
     /**
@@ -347,7 +347,7 @@ public:
      * @return true if in a namespace, false if not
      */
     bool isNamespace() const {
-        return mAccess == Namespace;
+        return mAccess == AccessControl::Namespace;
     }
 
     /**
@@ -355,7 +355,7 @@ public:
      * @return true if a function argument, false if not
      */
     bool isArgument() const {
-        return mAccess == Argument;
+        return mAccess == AccessControl::Argument;
     }
 
     /**
@@ -363,7 +363,7 @@ public:
      * @return true if local, false if not
      */
     bool isLocal() const {
-        return (mAccess == Local) && !isExtern();
+        return (mAccess == AccessControl::Local) && !isExtern();
     }
 
     /**
@@ -411,7 +411,7 @@ public:
      * @return true if throw type, false if not
      */
     bool isThrow() const {
-        return mAccess == Throw;
+        return mAccess == AccessControl::Throw;
     }
 
     /**
@@ -520,7 +520,7 @@ public:
      * Get array dimension length.
      * @return length of dimension
      */
-    MathLib::bigint dimension(std::size_t index_) const {
+    MathLib::bigint dimension(nonneg int index_) const {
         return mDimensions[index_].num;
     }
 
@@ -528,7 +528,7 @@ public:
      * Get array dimension known.
      * @return length of dimension known
      */
-    bool dimensionKnown(std::size_t index_) const {
+    bool dimensionKnown(nonneg int index_) const {
         return mDimensions[index_].known;
     }
 
@@ -638,7 +638,7 @@ private:
     const Token *mTypeEndToken;
 
     /** @brief order declared */
-    std::size_t mIndex;
+    nonneg int mIndex;
 
     /** @brief what section is this variable declared in? */
     AccessControl mAccess;  // public/protected/private
@@ -686,6 +686,7 @@ class CPPCHECKLIB Function {
         fIsVariadic            = (1 << 19), ///< @brief is variadic
         fIsVolatile            = (1 << 20), ///< @brief is volatile
         fHasTrailingReturnType = (1 << 21), ///< @brief has trailing return type
+        fIsEscapeFunction      = (1 << 22), ///< @brief Function throws or exits
     };
 
     /**
@@ -715,14 +716,14 @@ public:
         return tokenDef->str();
     }
 
-    std::size_t argCount() const {
+    nonneg int argCount() const {
         return argumentList.size();
     }
-    std::size_t minArgCount() const {
+    nonneg int minArgCount() const {
         return argumentList.size() - initArgCount;
     }
-    const Variable* getArgumentVar(std::size_t num) const;
-    unsigned int initializedArgCount() const {
+    const Variable* getArgumentVar(nonneg int num) const;
+    nonneg int initializedArgCount() const {
         return initArgCount;
     }
     void addArguments(const SymbolDatabase *symbolDatabase, const Scope *scope);
@@ -834,11 +835,16 @@ public:
     bool hasTrailingReturnType() const {
         return getFlag(fHasTrailingReturnType);
     }
-
     void hasBody(bool state) {
         setFlag(fHasBody, state);
     }
 
+    bool isEscapeFunction() const {
+        return getFlag(fIsEscapeFunction);
+    }
+    void isEscapeFunction(bool state) {
+        setFlag(fIsEscapeFunction, state);
+    }
     bool isSafe(const Settings *settings) const;
 
     const Token *tokenDef;            ///< function name token in class definition
@@ -850,13 +856,14 @@ public:
     const Scope *functionScope;       ///< scope of function body
     const Scope* nestedIn;            ///< Scope the function is declared in
     std::list<Variable> argumentList; ///< argument list
-    unsigned int initArgCount;        ///< number of args with default values
+    nonneg int initArgCount;        ///< number of args with default values
     Type type;                        ///< constructor, destructor, ...
     AccessControl access;             ///< public/protected/private
     const Token *noexceptArg;         ///< noexcept token
     const Token *throwArg;            ///< throw token
+    const Token *templateDef;         ///< points to 'template <' before function
 
-    static bool argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, unsigned int path_length);
+    static bool argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, nonneg int path_length);
 
     static bool returnsReference(const Function *function);
 
@@ -964,8 +971,8 @@ public:
     std::list<Variable> varlist;
     const Scope *nestedIn;
     std::list<Scope *> nestedList;
-    unsigned int numConstructors;
-    unsigned int numCopyOrMoveConstructors;
+    nonneg int numConstructors;
+    nonneg int numCopyOrMoveConstructors;
     std::list<UsingInfo> usingList;
     ScopeType type;
     Type* definedType;
@@ -982,7 +989,7 @@ public:
     std::vector<Enumerator> enumeratorList;
 
     const Enumerator * findEnumerator(const std::string & name) const {
-        for (std::size_t i = 0, end = enumeratorList.size(); i < end; ++i) {
+        for (int i = 0, end = enumeratorList.size(); i < end; ++i) {
             if (enumeratorList[i].name->str() == name)
                 return &enumeratorList[i];
         }
@@ -1107,7 +1114,7 @@ private:
      */
     bool isVariableDeclaration(const Token* const tok, const Token*& vartok, const Token*& typetok) const;
 
-    void findFunctionInBase(const std::string & name, size_t args, std::vector<const Function *> & matches) const;
+    void findFunctionInBase(const std::string & name, nonneg int args, std::vector<const Function *> & matches) const;
 };
 
 
@@ -1116,9 +1123,9 @@ class CPPCHECKLIB ValueType {
 public:
     enum Sign { UNKNOWN_SIGN, SIGNED, UNSIGNED } sign;
     enum Type { UNKNOWN_TYPE, NONSTD, RECORD, CONTAINER, ITERATOR, VOID, BOOL, CHAR, SHORT, WCHAR_T, INT, LONG, LONGLONG, UNKNOWN_INT, FLOAT, DOUBLE, LONGDOUBLE } type;
-    unsigned int bits;                    ///< bitfield bitcount
-    unsigned int pointer;                 ///< 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
-    unsigned int constness;               ///< bit 0=data, bit 1=*, bit 2=**
+    nonneg int bits;                    ///< bitfield bitcount
+    nonneg int pointer;                 ///< 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
+    nonneg int constness;               ///< bit 0=data, bit 1=*, bit 2=**
     const Scope *typeScope;               ///< if the type definition is seen this point out the type scope
     const ::Type *smartPointerType;       ///< Smart pointer type
     const Library::Container *container;  ///< If the type is a container defined in a cfg file, this is the used container
@@ -1127,14 +1134,18 @@ public:
 
     ValueType() : sign(UNKNOWN_SIGN), type(UNKNOWN_TYPE), bits(0), pointer(0U), constness(0U), typeScope(nullptr), smartPointerType(nullptr), container(nullptr), containerTypeToken(nullptr) {}
     ValueType(const ValueType &vt) : sign(vt.sign), type(vt.type), bits(vt.bits), pointer(vt.pointer), constness(vt.constness), typeScope(vt.typeScope), smartPointerType(vt.smartPointerType), container(vt.container), containerTypeToken(vt.containerTypeToken), originalTypeName(vt.originalTypeName) {}
-    ValueType(enum Sign s, enum Type t, unsigned int p) : sign(s), type(t), bits(0), pointer(p), constness(0U), typeScope(nullptr), smartPointerType(nullptr), container(nullptr), containerTypeToken(nullptr) {}
-    ValueType(enum Sign s, enum Type t, unsigned int p, unsigned int c) : sign(s), type(t), bits(0), pointer(p), constness(c), typeScope(nullptr), smartPointerType(nullptr), container(nullptr), containerTypeToken(nullptr) {}
-    ValueType(enum Sign s, enum Type t, unsigned int p, unsigned int c, const std::string &otn) : sign(s), type(t), bits(0), pointer(p), constness(c), typeScope(nullptr), smartPointerType(nullptr), container(nullptr), containerTypeToken(nullptr), originalTypeName(otn) {}
+    ValueType(enum Sign s, enum Type t, nonneg int p) : sign(s), type(t), bits(0), pointer(p), constness(0U), typeScope(nullptr), smartPointerType(nullptr), container(nullptr), containerTypeToken(nullptr) {}
+    ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c) : sign(s), type(t), bits(0), pointer(p), constness(c), typeScope(nullptr), smartPointerType(nullptr), container(nullptr), containerTypeToken(nullptr) {}
+    ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c, const std::string &otn) : sign(s), type(t), bits(0), pointer(p), constness(c), typeScope(nullptr), smartPointerType(nullptr), container(nullptr), containerTypeToken(nullptr), originalTypeName(otn) {}
     ValueType &operator=(const ValueType &other) = delete;
 
     static ValueType parseDecl(const Token *type, const Settings *settings);
 
     static Type typeFromString(const std::string &typestr, bool longType);
+
+    enum class MatchResult { UNKNOWN, SAME, FALLBACK1, FALLBACK2, NOMATCH };
+    static MatchResult matchParameter(const ValueType *call, const ValueType *func);
+    static MatchResult matchParameter(const ValueType *call, const Variable *callVar, const Variable *funcVar);
 
     bool isIntegral() const {
         return (type >= ValueType::Type::BOOL && type <= ValueType::Type::UNKNOWN_INT);
@@ -1202,7 +1213,7 @@ public:
         return const_cast<Scope *>(this->findScope(tok, const_cast<const Scope *>(startScope)));
     }
 
-    const Variable *getVariableFromVarId(std::size_t varId) const {
+    const Variable *getVariableFromVarId(nonneg int varId) const {
         return mVariableList.at(varId);
     }
 
@@ -1233,14 +1244,14 @@ public:
     void validateVariables() const;
 
     /** Set valuetype in provided tokenlist */
-    void setValueTypeInTokenList();
+    void setValueTypeInTokenList(bool reportDebugWarnings);
 
     /**
      * Calculates sizeof value for given type.
      * @param type Token which will contain e.g. "int", "*", or string.
      * @return sizeof for given type, or 0 if it can't be calculated.
      */
-    unsigned int sizeOfType(const Token *type) const;
+    nonneg int sizeOfType(const Token *type) const;
 
     /** Set array dimensions when valueflow analysis is completed */
     void setArrayDimensionsUsingValueFlow();
@@ -1264,6 +1275,8 @@ private:
     void createSymbolDatabaseSetVariablePointers();
     void createSymbolDatabaseSetTypePointers();
     void createSymbolDatabaseEnums();
+    void createSymbolDatabaseEscapeFunctions();
+    void createSymbolDatabaseIncompleteVars();
 
     void addClassFunction(Scope **scope, const Token **tok, const Token *argStart);
     Function *addGlobalFunctionDecl(Scope*& scope, const Token* tok, const Token *argStart, const Token* funcStart);
@@ -1272,7 +1285,7 @@ private:
     bool isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart, const Token** declEnd) const;
     const Type *findTypeInNested(const Token *startTok, const Scope *startScope) const;
     const Scope *findNamespace(const Token * tok, const Scope * scope) const;
-    Function *findFunctionInScope(const Token *func, const Scope *ns, const std::string & path, unsigned int path_length);
+    Function *findFunctionInScope(const Token *func, const Scope *ns, const std::string & path, nonneg int path_length);
     const Type *findVariableTypeInBase(const Scope *scope, const Token *typeTok) const;
 
     typedef std::map<unsigned int, unsigned int> MemberIdMap;

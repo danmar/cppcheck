@@ -95,8 +95,8 @@ Library::Error Library::load(const char exename[], const char path[])
         }
 
         std::list<std::string> cfgfolders;
-#ifdef CFGDIR
-        cfgfolders.push_back(CFGDIR);
+#ifdef FILESDIR
+        cfgfolders.push_back(FILESDIR "/cfg");
 #endif
         if (exename) {
             const std::string exepath(Path::fromNativeSeparators(Path::getPathFromFilename(exename)));
@@ -1359,5 +1359,25 @@ bool Library::isSmartPointer(const Token *tok) const
         tok = tok->next();
     }
     return smartPointers.find(typestr) != smartPointers.end();
+}
+
+CPPCHECKLIB const Library::Container * getLibraryContainer(const Token * tok)
+{
+    if (!tok)
+        return nullptr;
+    // TODO: Support dereferencing iterators
+    // TODO: Support dereferencing with ->
+    if (tok->isUnaryOp("*") && astIsPointer(tok->astOperand1())) {
+        for (const ValueFlow::Value& v:tok->astOperand1()->values()) {
+            if (!v.isLocalLifetimeValue())
+                continue;
+            if (v.lifetimeKind != ValueFlow::Value::LifetimeKind::Address)
+                continue;
+            return getLibraryContainer(v.tokvalue);
+        }
+    }
+    if (!tok->valueType())
+        return nullptr;
+    return tok->valueType()->container;
 }
 

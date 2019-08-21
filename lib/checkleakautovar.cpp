@@ -69,7 +69,7 @@ static bool isAutoDealloc(const Variable *var)
     /** @todo false negative: check base class for side effects */
     /** @todo false negative: check constructors for side effects */
     if (var->typeScope() && var->typeScope()->numConstructors == 0 &&
-        (var->typeScope()->varlist.empty() || var->type()->needInitialization == Type::True) &&
+        (var->typeScope()->varlist.empty() || var->type()->needInitialization == Type::NeedInitialization::True) &&
         var->type()->derivedFrom.empty())
         return false;
 
@@ -229,21 +229,21 @@ static bool isPointerReleased(const Token *startToken, const Token *endToken, no
     return false;
 }
 
-static bool checkVariable(const Token *varTok, const bool isCpp)
+static bool isLocalVarNoAutoDealloc(const Token *varTok, const bool isCpp)
 {
     // not a local variable nor argument?
     const Variable *var = varTok->variable();
-    if (var && !var->isArgument() && (!var->isLocal() || var->isStatic()))
+    if (!var)
+        return true;
+    if (!var->isArgument() && (!var->isLocal() || var->isStatic()))
         return false;
 
     // Don't check reference variables
-    if (var && var->isReference())
+    if (var->isReference())
         return false;
 
     // non-pod variable
     if (isCpp) {
-        if (!var)
-            return false;
         // Possibly automatically deallocated memory
         if (isAutoDealloc(var) && Token::Match(varTok, "%var% = new"))
             return false;
@@ -284,7 +284,12 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                                   std::set<int> notzero,
                                   nonneg int recursiveCount)
 {
-    if (++recursiveCount > 1000)    // maximum number of "else if ()"
+#if ASAN
+    static const nonneg int recursiveLimit = 300;
+#else
+    static const nonneg int recursiveLimit = 1000;
+#endif
+    if (++recursiveCount > recursiveLimit)    // maximum number of "else if ()"
         throw InternalError(startToken, "Internal limit: CheckLeakAutoVar::checkScope() Maximum recursive count of 1000 reached.", InternalError::LIMIT);
 
     std::map<int, VarInfo::AllocInfo> &alloctype = varInfo->alloctype;
@@ -311,7 +316,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
 
         // look for end of statement
-        if (!Token::Match(tok, "[;{}]") || Token::Match(tok->next(), "[;{}]"))
+        if (!Token::Match(tok, "[;{},]") || Token::Match(tok->next(), "[;{},]"))
             continue;
 
         tok = tok->next();
@@ -365,7 +370,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 leakIfAllocated(varTok, *varInfo);
             varInfo->erase(varTok->varId());
 
-            if (!checkVariable(varTok, mTokenizer->isCPP()))
+            if (!isLocalVarNoAutoDealloc(varTok, mTokenizer->isCPP()))
                 continue;
 
             // allocation?
@@ -405,7 +410,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             for (const Token *innerTok = tok->tokAt(2); innerTok && innerTok != closingParenthesis; innerTok = innerTok->next()) {
                 // TODO: replace with checkTokenInsideExpression()
 
-                if (!checkVariable(innerTok, mTokenizer->isCPP()))
+                if (!isLocalVarNoAutoDealloc(innerTok, mTokenizer->isCPP()))
                     continue;
 
                 if (Token::Match(innerTok, "%var% =") && innerTok->astParent() == innerTok->next()) {
@@ -730,7 +735,7 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
                 deallocUseError(tok, tok->str());
             } else if (Token::simpleMatch(tok->tokAt(-2), "= &")) {
                 varInfo->erase(tok->varId());
-            } else if (tok->strAt(-1) == "=") {
+            } else if (Token::Match(tok->previous(), "= %var% [;,)]")) {
                 varInfo->erase(tok->varId());
             }
         } else if (Token::Match(tok->previous(), "& %name% = %var% ;")) {
@@ -927,11 +932,11 @@ void CheckLeakAutoVar::ret(const Token *tok, const VarInfo &varInfo)
             for (const Token *tok2 = tok; tok2; tok2 = tok2->next()) {
                 if (tok2->str() == ";")
                     break;
-                if (Token::Match(tok2, "return|(|, %varid% [);,]", varid)) {
+                if (Token::Match(tok2, "return|(|{|, %varid% [});,]", varid)) {
                     used = true;
                     break;
                 }
-                if (Token::Match(tok2, "return|(|, & %varid% . %name% [);,]", varid)) {
+                if (Token::Match(tok2, "return|(|{|, & %varid% . %name% [});,]", varid)) {
                     used = true;
                     break;
                 }

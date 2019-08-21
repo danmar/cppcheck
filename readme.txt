@@ -57,12 +57,14 @@ Compiling
 
     Visual Studio
     =============
-        Use the cppcheck.sln file. The file is configured for Visual Studio 2015, but the platform
+        Use the cppcheck.sln file. The file is configured for Visual Studio 2019, but the platform
         toolset can be changed easily to older or newer versions. The solution contains platform
         targets for both x86 and x64.
 
         To compile with rules, select "Release-PCRE" or "Debug-PCRE" configuration.
         pcre.lib (pcre64.lib for x64 builds) and pcre.h are expected to be in /externals then.
+        A current version of PCRE for Visual Studio can be obtained using vcpkg:
+        https://github.com/microsoft/vcpkg
 
     Qt Creator + mingw
     ==================
@@ -75,12 +77,12 @@ Compiling
             make
 
         The recommended release build is:
-            make MATCHCOMPILER=yes CFGDIR=cfg HAVE_RULES=yes
+            make MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck HAVE_RULES=yes
 
         Flags:
-        MATCHCOMPILER=yes : Python is used to optimise cppcheck at compile time
-        CFGDIR=cfg        : Specify folder where .cfg files are found
-        HAVE_RULES=yes    : Enable rules (pcre is required if this is used)
+        MATCHCOMPILER=yes               : Python is used to optimise cppcheck at compile time
+        FILESDIR=/usr/share/cppcheck    : Specify folder where cppcheck files are installed
+        HAVE_RULES=yes                  : Enable rules (pcre is required if this is used)
 
     g++ (for experts)
     =================

@@ -340,6 +340,7 @@ void MainWindow::loadSettings()
             mProjectFile = new ProjectFile(this);
             mProjectFile->read(projectFile);
             loadLastResults();
+            QDir::setCurrent(inf.absolutePath());
         }
     }
 }
@@ -448,7 +449,7 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
         mThread->setAddonsAndTools(mProjectFile->getAddonsAndTools(), mSettings->value(SETTINGS_MISRA_FILE).toString());
         QString clangHeaders = mSettings->value(SETTINGS_VS_INCLUDE_PATHS).toString();
         mThread->setClangIncludePaths(clangHeaders.split(";"));
-        mThread->setSuppressions(mProjectFile->getCheckSuppressions());
+        mThread->setSuppressions(mProjectFile->getSuppressions());
     }
     mThread->setProject(p);
     mThread->check(checkSettings);
@@ -489,6 +490,7 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
     mThread->setFiles(fileNames);
     if (mProjectFile && !checkConfiguration)
         mThread->setAddonsAndTools(mProjectFile->getAddonsAndTools(), mSettings->value(SETTINGS_MISRA_FILE).toString());
+    mThread->setSuppressions(mProjectFile ? mProjectFile->getSuppressions() : QList<Suppressions::Suppression>());
     QDir inf(mCurrentDirectory);
     const QString checkPath = inf.canonicalPath();
     setPath(SETTINGS_LAST_CHECK_PATH, checkPath);
@@ -732,14 +734,14 @@ Library::Error MainWindow::loadLibrary(Library *library, const QString &filename
     if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
         return ret;
 
-#ifdef CFGDIR
-    // Try to load the library from CFGDIR..
-    const QString cfgdir = CFGDIR;
-    if (!cfgdir.isEmpty()) {
-        ret = library->load(nullptr, (cfgdir+"/"+filename).toLatin1());
+#ifdef FILESDIR
+    // Try to load the library from FILESDIR/cfg..
+    const QString filesdir = FILESDIR;
+    if (!filesdir.isEmpty()) {
+        ret = library->load(nullptr, (filesdir+"/cfg/"+filename).toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
             return ret;
-        ret = library->load(nullptr, (cfgdir+"/cfg/"+filename).toLatin1());
+        ret = library->load(nullptr, (filesdir+filename).toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
             return ret;
     }
@@ -847,7 +849,7 @@ Settings MainWindow::getCppcheckSettings()
             tryLoadLibrary(&result.library, filename);
         }
 
-        foreach (const Suppressions::Suppression &suppression, mProjectFile->getCheckSuppressions()) {
+        foreach (const Suppressions::Suppression &suppression, mProjectFile->getSuppressions()) {
             result.nomsg.addSuppression(suppression);
         }
 
@@ -882,7 +884,10 @@ Settings MainWindow::getCppcheckSettings()
         result.maxCtuDepth = mProjectFile->getMaxCtuDepth();
         result.checkHeaders = mProjectFile->getCheckHeaders();
         result.checkUnusedTemplates = mProjectFile->getCheckUnusedTemplates();
-        result.allFunctionsAreSafe = mProjectFile->getCheckAllFunctionParameterValues();
+        result.safeChecks.classes = mProjectFile->getSafeChecks().classes;
+        result.safeChecks.externalFunctions = mProjectFile->getSafeChecks().externalFunctions;
+        result.safeChecks.internalFunctions = mProjectFile->getSafeChecks().internalFunctions;
+        result.safeChecks.externalVariables = mProjectFile->getSafeChecks().externalVariables;
         foreach (QString s, mProjectFile->getCheckUnknownFunctionReturn())
             result.checkUnknownFunctionReturn.insert(s.toStdString());
     }
@@ -912,7 +917,7 @@ Settings MainWindow::getCppcheckSettings()
     result.jobs = mSettings->value(SETTINGS_CHECK_THREADS, 1).toInt();
     result.inlineSuppressions = mSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool();
     result.inconclusive = mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool();
-    if (result.platformType == cppcheck::Platform::Unspecified)
+    if (!mProjectFile || result.platformType == cppcheck::Platform::Unspecified)
         result.platform((cppcheck::Platform::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt());
     result.standards.setCPP(mSettings->value(SETTINGS_STD_CPP, QString()).toString().toStdString());
     result.standards.setC(mSettings->value(SETTINGS_STD_C, QString()).toString().toStdString());
@@ -1480,7 +1485,7 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool check
     // file's location directory as root path
     if (rootpath.isEmpty() || rootpath == ".")
         mCurrentDirectory = inf.canonicalPath();
-    else if (rootpath.startsWith("."))
+    else if (rootpath.startsWith("./"))
         mCurrentDirectory = inf.canonicalPath() + rootpath.mid(1);
     else
         mCurrentDirectory = rootpath;
@@ -1488,7 +1493,7 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool check
     if (!projectFile->getBuildDir().isEmpty()) {
         QString buildDir = projectFile->getBuildDir();
         if (!QDir::isAbsolutePath(buildDir))
-            buildDir = mCurrentDirectory + '/' + buildDir;
+            buildDir = inf.canonicalPath() + '/' + buildDir;
         if (!QDir(buildDir).exists()) {
             QMessageBox msg(QMessageBox::Critical,
                             tr("Cppcheck"),

@@ -141,7 +141,6 @@ private:
         Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList2();
 
         // Check for memory leaks..
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, settings, this);
@@ -169,6 +168,11 @@ private:
         TEST_CASE(realloc14);
         TEST_CASE(realloc15);
         TEST_CASE(realloc16);
+        TEST_CASE(realloc17);
+        TEST_CASE(realloc18);
+        TEST_CASE(realloc19);
+        TEST_CASE(realloc20);
+        TEST_CASE(reallocarray1);
     }
 
     void realloc1() {
@@ -200,7 +204,7 @@ private:
               "    free(a);\n"
               "}");
 
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("", "[test.cpp:4]: (error) Common realloc mistake: 'a' nulled but not freed upon failure\n", errout.str());
     }
 
     void realloc4() {
@@ -295,7 +299,7 @@ private:
               "        return;\n"
               "    free(a);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("", "[test.cpp:4]: (error) Common realloc mistake: 'a' nulled but not freed upon failure\n", errout.str());
     }
 
     void realloc13() {
@@ -338,6 +342,51 @@ private:
               "  }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void realloc17() {
+        check("void foo()\n"
+              "{\n"
+              "    void ***a = malloc(sizeof(a));\n"
+              "    ***a = realloc(***(a), sizeof(a) * 2);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n", errout.str());
+    }
+
+    void realloc18() {
+        check("void foo()\n"
+              "{\n"
+              "    void *a = malloc(sizeof(a));\n"
+              "    a = realloc((void*)a, sizeof(a) * 2);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n", errout.str());
+    }
+
+    void realloc19() {
+        check("void foo()\n"
+              "{\n"
+              "    void *a = malloc(sizeof(a));\n"
+              "    a = (realloc((void*)((a)), sizeof(a) * 2));\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n", errout.str());
+    }
+
+    void realloc20() {
+        check("void foo()\n"
+              "{\n"
+              "    void *a = malloc(sizeof(a));\n"
+              "    a = realloc((a) + 1, sizeof(a) * 2);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void reallocarray1() {
+        check("void foo()\n"
+              "{\n"
+              "    char *a = (char *)malloc(10);\n"
+              "    a = reallocarray(a, 100, 2);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Common reallocarray mistake: \'a\' nulled but not freed upon failure\n", errout.str());
     }
 };
 
@@ -2009,7 +2058,6 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList2();
 
         // Check for memory leaks..
         CheckMemoryLeakNoVar checkMemoryLeakNoVar(&tokenizer, &settings, this);
@@ -2090,6 +2138,27 @@ private:
               "    42, strcmp(strdup(a), b);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Allocation with strdup, strcmp doesn't release it.\n", errout.str());
+
+        check("void f() {\n"
+              "   assert(freopen(\"/dev/null\", \"r\", stdin));\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void x() {\n"
+              "    strcpy(a, (void*)strdup(p));\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Allocation with strdup, strcpy doesn't release it.\n", errout.str());
+
+        check("void* malloc1() {\n"
+              "    return (malloc(1));\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("char *x() {\n"
+              "    char *ret = (char*)strcpy(malloc(10), \"abc\");\n"
+              "    return ret;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void missingAssignment() {
@@ -2110,6 +2179,12 @@ private:
               "    strdup(\"Test\");\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function 'strdup' is not stored.\n", errout.str());
+
+        check("void x()\n"
+              "{\n"
+              "    reallocarray(NULL, 10, 10);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function 'reallocarray' is not stored.\n", errout.str());
 
         check("void x()\n"
               "{\n"
@@ -2267,6 +2342,17 @@ private:
               "  fopen(\"file.txt\", \"r\");\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (error) Return value of allocation function 'fopen' is not stored.\n", errout.str());
+
+        check("void foo() {\n"
+              "  FILE f* = fopen(\"file.txt\", \"r\");\n"
+              "  freopen(\"file.txt\", \"r\", f);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function 'freopen' is not stored.\n", errout.str());
+
+        check("void foo() {\n"
+              "  freopen(\"file.txt\", \"r\", stdin);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
 
         check("struct Holder {\n"
               "  Holder(FILE* f) : file(f) {}\n"

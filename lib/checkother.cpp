@@ -1257,6 +1257,114 @@ void CheckOther::passedByValueError(const Token *tok, const std::string &parname
                 "as a const reference which is usually faster and recommended in C++.", CWE398, inconclusive);
 }
 
+static bool isUnusedVariable(const Variable *var)
+{
+    if (!var)
+        return false;
+    if (!var->scope())
+        return false;
+    const Token *start = var->declEndToken();
+    if (!start)
+        return false;
+    if (Token::Match(start, "; %varid% =", var->declarationId()))
+        start = start->tokAt(2);
+    return !Token::findmatch(start->next(), "%varid%", var->scope()->bodyEnd, var->declarationId());
+}
+
+static bool isVariableMutableInInitializer(const Token* start, const Token * end, nonneg int varid)
+{
+    if (!start)
+        return false;
+    if (!end)
+        return false;
+    for (const Token *tok = start; tok != end; tok = tok->next()) {
+        if (tok->varId() != varid)
+            continue;
+        if (tok->astParent()) {
+            const Token * memberTok = tok->astParent()->previous();
+            if (Token::Match(memberTok, "%var% (") && memberTok->variable()) {
+                const Variable * memberVar = memberTok->variable();
+                if (!memberVar->isReference())
+                    continue;
+                if (memberVar->isConst())
+                    continue;
+            }
+            return true;
+        } else {
+            return true;
+        }
+    }
+    return false;
+}
+
+void CheckOther::checkConstVariable()
+{
+    if (!mSettings->isEnabled(Settings::STYLE) || mTokenizer->isC())
+        return;
+
+    const SymbolDatabase *const symbolDatabase = mTokenizer->getSymbolDatabase();
+
+    for (const Variable *var : symbolDatabase->variableList()) {
+        if (!var)
+            continue;
+        if (!var->isReference())
+            continue;
+        if (var->isRValueReference())
+            continue;
+        if (var->isConst())
+            continue;
+        if (!var->scope())
+            continue;
+        const Scope *scope = var->scope();
+        if (!scope->function)
+            continue;
+        Function *function = scope->function;
+        if (var->isArgument()) {
+            if (function->isImplicitlyVirtual() || function->templateDef)
+                continue;
+            if (isUnusedVariable(var))
+                continue;
+            if (function->isConstructor() && isVariableMutableInInitializer(function->constructorMemberInitialization(), scope->bodyStart, var->declarationId()))
+                continue;
+        }
+        if (var->isGlobal())
+            continue;
+        if (var->isStatic())
+            continue;
+        if (var->isArray())
+            continue;
+        if (var->isEnumType())
+            continue;
+        if (var->isVolatile())
+            continue;
+        if (isAliased(var))
+            continue;
+        if (isVariableChanged(var, mSettings, mTokenizer->isCPP()))
+            continue;
+        if (Function::returnsReference(function) &&
+            Token::findmatch(var->nameToken(), "return %varid% ;|[", scope->bodyEnd, var->declarationId()))
+            continue;
+        // Skip if address is taken
+        if (Token::findmatch(var->nameToken(), "& %varid%", scope->bodyEnd, var->declarationId()))
+            continue;
+        constVariableError(var);
+    }
+}
+
+void CheckOther::constVariableError(const Variable *var)
+{
+    const Token *tok = nullptr;
+    std::string name = "x";
+    std::string id = "Variable";
+    if (var) {
+        tok = var->nameToken();
+        name = var->name();
+        if (var->isArgument())
+            id = "Parameter";
+    }
+    reportError(tok, Severity::style, "const" + id, id + " '" + name + "' can be declared with const", CWE398, false);
+}
+
 //---------------------------------------------------------------------------
 // Check usage of char variables..
 //---------------------------------------------------------------------------
@@ -2798,26 +2906,43 @@ void CheckOther::checkShadowVariables()
     for (const Scope & scope : symbolDatabase->scopeList) {
         if (!scope.isExecutable() || scope.type == Scope::eLambda)
             continue;
+        const Scope *functionScope = &scope;
+        while (functionScope && functionScope->type != Scope::ScopeType::eFunction && functionScope->type != Scope::ScopeType::eLambda)
+            functionScope = functionScope->nestedIn;
         for (const Variable &var : scope.varlist) {
+            if (functionScope && functionScope->type == Scope::ScopeType::eFunction && functionScope->function) {
+                bool shadowArg = false;
+                for (const Variable &arg : functionScope->function->argumentList) {
+                    if (arg.nameToken() && var.name() == arg.name()) {
+                        shadowError(var.nameToken(), arg.nameToken(), "argument");
+                        shadowArg = true;
+                        break;
+                    }
+                }
+                if (shadowArg)
+                    continue;
+            }
+
             const Token *shadowed = findShadowed(scope.nestedIn, var.name(), var.nameToken()->linenr());
             if (!shadowed)
                 continue;
             if (scope.type == Scope::eFunction && scope.className == var.name())
                 continue;
-            shadowError(var.nameToken(), shadowed, shadowed->varId() != 0);
+            shadowError(var.nameToken(), shadowed, (shadowed->varId() != 0) ? "variable" : "function");
         }
     }
 }
 
-void CheckOther::shadowError(const Token *var, const Token *shadowed, bool shadowVar)
+void CheckOther::shadowError(const Token *var, const Token *shadowed, std::string type)
 {
     ErrorPath errorPath;
     errorPath.push_back(ErrorPathItem(shadowed, "Shadowed declaration"));
     errorPath.push_back(ErrorPathItem(var, "Shadow variable"));
-    const std::string &varname = var ? var->str() : (shadowVar ? "var" : "f");
-    const char *id = shadowVar ? "shadowVar" : "shadowFunction";
-    std::string message = "$symbol:" + varname + "\nLocal variable \'$symbol\' shadows outer " + (shadowVar ? "variable" : "function");
-    reportError(errorPath, Severity::style, id, message, CWE398, false);
+    const std::string &varname = var ? var->str() : type;
+    const std::string Type = char(std::toupper(type[0])) + type.substr(1);
+    const std::string id = "shadow" + Type;
+    const std::string message = "$symbol:" + varname + "\nLocal variable \'$symbol\' shadows outer " + type;
+    reportError(errorPath, Severity::style, id.c_str(), message, CWE398, false);
 }
 
 static bool isVariableExpression(const Token* tok)

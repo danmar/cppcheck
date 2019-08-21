@@ -69,35 +69,14 @@ public:
     /**
      * Token and its full scopename
      */
-    struct TokenAndName {
-        /**
-         * Constructor used for instantiations.
-         * \param tok template instantiation name token "name<...>"
-         * \param s full qualification of template(scope)
-         */
-        TokenAndName(Token *tok, const std::string &s);
-        /**
-         * Constructor used for declarations.
-         * \param tok template declaration token "template < ... >"
-         * \param s full qualification of template(scope)
-         * \param nt template name token "template < ... > class name"
-         * \param pe template parameter end token ">"
-         */
-        TokenAndName(Token *tok, const std::string &s, const Token *nt, const Token *pe);
-        TokenAndName(const TokenAndName& otherTok);
-        ~TokenAndName();
-
-        bool operator == (const TokenAndName & rhs) const {
-            return token == rhs.token && scope == rhs.scope && name == rhs.name && fullName == rhs.fullName &&
-                   nameToken == rhs.nameToken && paramEnd == rhs.paramEnd && flags == rhs.flags;
-        }
-        Token *token;
-        std::string scope;
-        std::string name;
-        std::string fullName;
-        const Token *nameToken;
-        const Token *paramEnd;
-        unsigned int flags;
+    class TokenAndName {
+        Token *mToken;
+        std::string mScope;
+        std::string mName;
+        std::string mFullName;
+        const Token *mNameToken;
+        const Token *mParamEnd;
+        unsigned int mFlags;
 
         enum {
             fIsClass                 = (1 << 0), // class template
@@ -108,59 +87,29 @@ public:
             fIsPartialSpecialization = (1 << 5), // user partial specialized template
             fIsForwardDeclaration    = (1 << 6), // forward declaration
             fIsVariadic              = (1 << 7), // variadic template
+            fFamilyMask              = (fIsClass | fIsFunction | fIsVariable)
         };
 
-        bool isClass() const {
-            return getFlag(fIsClass);
-        }
         void isClass(bool state) {
             setFlag(fIsClass, state);
-        }
-
-        bool isFunction() const {
-            return getFlag(fIsFunction);
         }
         void isFunction(bool state) {
             setFlag(fIsFunction, state);
         }
-
-        bool isVariable() const {
-            return getFlag(fIsVariable);
-        }
         void isVariable(bool state) {
             setFlag(fIsVariable, state);
-        }
-
-        bool isAlias() const {
-            return getFlag(fIsAlias);
         }
         void isAlias(bool state) {
             setFlag(fIsAlias, state);
         }
-
-        bool isSpecialization() const {
-            return getFlag(fIsSpecialization);
-        }
         void isSpecialization(bool state) {
             setFlag(fIsSpecialization, state);
-        }
-
-        bool isPartialSpecialization() const {
-            return getFlag(fIsPartialSpecialization);
         }
         void isPartialSpecialization(bool state) {
             setFlag(fIsPartialSpecialization, state);
         }
-
-        bool isForwardDeclaration() const {
-            return getFlag(fIsForwardDeclaration);
-        }
         void isForwardDeclaration(bool state) {
             setFlag(fIsForwardDeclaration, state);
-        }
-
-        bool isVariadic() const {
-            return getFlag(fIsVariadic);
         }
         void isVariadic(bool state) {
             setFlag(fIsVariadic, state);
@@ -172,7 +121,7 @@ public:
          * @return true if flag set or false in flag not set
          */
         bool getFlag(unsigned int flag) const {
-            return ((flags & flag) != 0);
+            return ((mFlags & flag) != 0);
         }
 
         /**
@@ -181,7 +130,80 @@ public:
          * @param state new state of flag
          */
         void setFlag(unsigned int flag, bool state) {
-            flags = state ? flags | flag : flags & ~flag;
+            mFlags = state ? mFlags | flag : mFlags & ~flag;
+        }
+
+    public:
+        /**
+         * Constructor used for instantiations.
+         * \param tok template instantiation name token "name<...>"
+         * \param s full qualification of template(scope)
+         */
+        TokenAndName(Token *token, const std::string &scope);
+        /**
+         * Constructor used for declarations.
+         * \param tok template declaration token "template < ... >"
+         * \param s full qualification of template(scope)
+         * \param nt template name token "template < ... > class name"
+         * \param pe template parameter end token ">"
+         */
+        TokenAndName(Token *token, const std::string &scope, const Token *nameToken, const Token *paramEnd);
+        TokenAndName(const TokenAndName& other);
+        ~TokenAndName();
+
+        bool operator == (const TokenAndName & rhs) const {
+            return mToken == rhs.mToken && mScope == rhs.mScope && mName == rhs.mName && mFullName == rhs.mFullName &&
+                   mNameToken == rhs.mNameToken && mParamEnd == rhs.mParamEnd && mFlags == rhs.mFlags;
+        }
+
+        Token * token() const {
+            return mToken;
+        }
+        void token(Token * token) {
+            mToken = token;
+        }
+        const std::string & scope() const {
+            return mScope;
+        }
+        const std::string & name() const {
+            return mName;
+        }
+        const std::string & fullName() const {
+            return mFullName;
+        }
+        const Token * nameToken() const  {
+            return mNameToken;
+        }
+        const Token * paramEnd() const {
+            return mParamEnd;
+        }
+        void paramEnd(const Token *end) {
+            mParamEnd = end;
+        }
+
+        bool isClass() const {
+            return getFlag(fIsClass);
+        }
+        bool isFunction() const {
+            return getFlag(fIsFunction);
+        }
+        bool isVariable() const {
+            return getFlag(fIsVariable);
+        }
+        bool isAlias() const {
+            return getFlag(fIsAlias);
+        }
+        bool isSpecialization() const {
+            return getFlag(fIsSpecialization);
+        }
+        bool isPartialSpecialization() const {
+            return getFlag(fIsPartialSpecialization);
+        }
+        bool isForwardDeclaration() const {
+            return getFlag(fIsForwardDeclaration);
+        }
+        bool isVariadic() const {
+            return getFlag(fIsVariadic);
         }
 
         /**
@@ -216,9 +238,9 @@ public:
          * @return true if same family, false if different family
          */
         bool isSameFamily(const TemplateSimplifier::TokenAndName &decl) const {
-            // maks sure a family flag is set and matches
-            return (flags & (fIsClass | fIsFunction | fIsVariable)) &
-                   (decl.flags & (fIsClass | fIsFunction | fIsVariable));
+            // Make sure a family flag is set and matches.
+            // This works because at most only one flag will be set.
+            return (mFlags & fFamilyMask) & (decl.mFlags & (fFamilyMask));
         }
     };
 
@@ -286,7 +308,7 @@ public:
      * @return true if modifications to token-list are done.
      *         false if no modifications are done.
      */
-    static bool simplifyNumericCalculations(Token *tok);
+    static bool simplifyNumericCalculations(Token *tok, bool isTemplate = true);
 
     /**
      * Simplify constant calculations such as "1+2" => "3".
@@ -294,7 +316,7 @@ public:
      * @return true if modifications to token-list are done.
      *         false if no modifications are done.
      */
-    bool simplifyCalculations(Token* frontToken = nullptr, Token *backToken = nullptr);
+    bool simplifyCalculations(Token* frontToken = nullptr, Token *backToken = nullptr, bool isTemplate = true);
 
     /** Simplify template instantiation arguments.
      * @param start first token of arguments
