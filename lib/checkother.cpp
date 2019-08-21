@@ -487,8 +487,9 @@ void CheckOther::checkRedundantAssignment()
 
                 // Is this a variable declaration with initialization?
                 const Token* defineAndInitTok = start->tokAt(-3);
-                if(Token::Match(defineAndInitTok, "; %var% =") && defineAndInitTok->linenr() == start->linenr())
-                    continue;
+                bool isInitialization = false;
+                if (Token::Match(defineAndInitTok, "; %var% =") && defineAndInitTok->linenr() == start->linenr())
+                    isInitialization = true;
 
                 // Get next assignment..
                 const Token *nextAssign = fwdAnalysis.reassign(tok->astOperand1(), start, scope->bodyEnd);
@@ -510,6 +511,8 @@ void CheckOther::checkRedundantAssignment()
                 // warn
                 if (hasCase)
                     redundantAssignmentInSwitchError(tok, nextAssign, tok->astOperand1()->expressionString());
+                if (isInitialization)
+                    redundantInitializationError(tok, nextAssign, tok->astOperand1()->expressionString());
                 else
                     redundantAssignmentError(tok, nextAssign, tok->astOperand1()->expressionString(), inconclusive);
             }
@@ -531,6 +534,14 @@ void CheckOther::redundantCopyInSwitchError(const Token *tok1, const Token* tok2
     reportError(callstack, Severity::warning, "redundantCopyInSwitch",
                 "$symbol:" + var + "\n"
                 "Buffer '$symbol' is being written before its old content has been used. 'break;' missing?", CWE563, false);
+}
+
+void CheckOther::redundantInitializationError(const Token *tok1, const Token *tok2, const std::string &var)
+{
+    const std::list<const Token *> callstack = {tok1, tok2};
+    reportError(callstack, Severity::warning, "redundantInitialization",
+                "$symbol:" + var + "\n"
+                "Variable '$symbol' is reassigned a value before the old one has been used.", CWE563, false);
 }
 
 void CheckOther::redundantAssignmentError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive)
