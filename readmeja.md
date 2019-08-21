@@ -83,7 +83,7 @@ make
 推奨するリリースビルド方法:
 
 ```shell
-make MATCHCOMPILER=yes CFGDIR=cfg HAVE_RULES=yes CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function"
+make MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck HAVE_RULES=yes CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function"
 ```
 
 フラグ:
@@ -91,8 +91,8 @@ make MATCHCOMPILER=yes CFGDIR=cfg HAVE_RULES=yes CXXFLAGS="-O2 -DNDEBUG -Wall -W
 1. `MATCHCOMPILER=yes`
 cppcheckの最適化にPythonを使用します。Token::Match パターンはコンパイル時にlC++コードに変換されます。
 
-2. `CFGDIR=cfg`
-cppcheckの設定ファイル(.cfg)を置くディレクトリを指定します。
+2. `FILESDIR=/usr/share/cppcheck`
+cppcheckの設定ファイル(addon や cfg や platform)を置くディレクトリを指定します。
 
 3. `HAVE_RULES=yes`
 ルール機能の有効化 (ルール機能には PCRE が必要です)設定です。
