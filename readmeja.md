@@ -63,9 +63,9 @@ make
 
 ### Visual Studio
 
-cppcheck.slnファイルが利用できます。このファイルは、Visual Studio 2015向けです。しかし、このプラットフォームツールセットはこれより新しいバージョンまたは古いバージョン向けに変更できます。このソルーションには、プラットフォームターゲットとしてx86とx64があります。
+cppcheck.slnファイルが利用できます。このファイルは、Visual Studio 2019向けです。しかし、このプラットフォームツールセットはこれより新しいバージョンまたは古いバージョン向けに変更できます。このソルーションには、プラットフォームターゲットとしてx86とx64があります。
 
-ルールをコンパイルするためには、"Release-PCRE" または "Debug-PCRE" 設定を選択してください。pcre.lib (または pcre64.lib x64ビルド向け) と pcre.h を /externals にコピーしてください。
+ルールをコンパイルするためには、"Release-PCRE" または "Debug-PCRE" 設定を選択してください。pcre.lib (または pcre64.lib x64ビルド向け) と pcre.h を /externals にコピーしてください。Visual Studio のための PCRE の最新バージョンは [vcpkg](https://github.com/microsoft/vcpkg) から取得できます。
 
 ### Qt Creator + MinGW
 
