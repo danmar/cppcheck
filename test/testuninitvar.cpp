@@ -4002,7 +4002,7 @@ private:
                         "        someType_t gVar;\n"
                         "        if(gVar.flags[1] == 42){}\n"
                         "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: flags\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: gVar\n", errout.str());
 
         valueFlowUninit("struct pc_data {\n"
                         "    struct {\n"
@@ -4013,7 +4013,7 @@ private:
                         "    struct pc_data *pcdata;\n"
                         "    if ( *pcdata->wampiryzm.strefa == '\\0' ) { }\n"
                         "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Uninitialized variable: strefa\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Uninitialized variable: pcdata\n", errout.str());
 
         valueFlowUninit("void f(bool * x) {\n"
                         "    *x = false;\n"

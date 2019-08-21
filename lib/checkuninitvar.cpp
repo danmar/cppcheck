@@ -1284,7 +1284,7 @@ void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string
                 "$symbol:" + membername + "\nUninitialized struct member: $symbol", CWE908, false);
 }
 
-static bool isLeaf(const Token* tok)
+static bool isLeafDot(const Token* tok)
 {
     if (!tok)
         return false;
@@ -1293,7 +1293,24 @@ static bool isLeaf(const Token* tok)
         return false;
     if (parent->astOperand2() == tok)
         return true;
-    return isLeaf(parent);
+    return isLeafDot(parent);
+}
+
+static const Token* getRootUninit(const Token* tok)
+{
+    while(Token::simpleMatch(tok->astParent(), "."))
+        tok = tok->astParent();
+    if (!tok)
+        return nullptr;
+    std::vector<const Token*> arguments = astFlatten(tok, ".");
+    auto it = std::find_if(arguments.begin(), arguments.end(), [](const Token* tok2) {
+        return std::any_of(tok2->values().begin(), tok2->values().end(), [](const ValueFlow::Value& value) {
+            return value.isUninitValue() && value.indirect == 0;
+        });
+    });
+    if (it == arguments.end())
+        return nullptr;
+    return *it;
 }
 
 void CheckUninitVar::valueFlowUninit()
@@ -1311,7 +1328,7 @@ void CheckUninitVar::valueFlowUninit()
             }
             if (!tok->variable())
                 continue;
-            if (Token::Match(tok->astParent(), ". %var%") && !isLeaf(tok))
+            if (Token::Match(tok->astParent(), ". %var%") && !isLeafDot(tok))
                 continue;
             auto v = std::find_if(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isUninitValue));
             if (v == tok->values().end())
@@ -1327,7 +1344,10 @@ void CheckUninitVar::valueFlowUninit()
                 continue;
             if (!Token::Match(tok->astParent(), ". %name% (") && isVariableChanged(tok, mSettings, mTokenizer->isCPP()))
                 continue;
-            uninitvarError(tok, tok->str(), v->errorPath);
+            const Token * tok2 = getRootUninit(tok);
+            if (!tok2)
+                tok2 = tok;
+            uninitvarError(tok2, tok2->str(), v->errorPath);
         }
     }
 }
