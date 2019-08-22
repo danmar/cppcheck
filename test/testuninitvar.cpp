@@ -4002,7 +4002,7 @@ private:
                         "        someType_t gVar;\n"
                         "        if(gVar.flags[1] == 42){}\n"
                         "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: gVar\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: flags\n", errout.str());
 
         valueFlowUninit("struct pc_data {\n"
                         "    struct {\n"

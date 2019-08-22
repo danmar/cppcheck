@@ -1296,23 +1296,6 @@ static bool isLeafDot(const Token* tok)
     return isLeafDot(parent);
 }
 
-static const Token* getRootUninit(const Token* tok)
-{
-    while(Token::simpleMatch(tok->astParent(), "."))
-        tok = tok->astParent();
-    if (!tok)
-        return nullptr;
-    std::vector<const Token*> arguments = astFlatten(tok, ".");
-    auto it = std::find_if(arguments.begin(), arguments.end(), [](const Token* tok2) {
-        return std::any_of(tok2->values().begin(), tok2->values().end(), [](const ValueFlow::Value& value) {
-            return value.isUninitValue() && value.indirect == 0;
-        });
-    });
-    if (it == arguments.end())
-        return nullptr;
-    return *it;
-}
-
 void CheckUninitVar::valueFlowUninit()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -1328,8 +1311,6 @@ void CheckUninitVar::valueFlowUninit()
             }
             if (!tok->variable())
                 continue;
-            if (Token::Match(tok->astParent(), ". %var%") && !isLeafDot(tok))
-                continue;
             auto v = std::find_if(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isUninitValue));
             if (v == tok->values().end())
                 continue;
@@ -1340,14 +1321,19 @@ void CheckUninitVar::valueFlowUninit()
             if (v->indirect > 1 || v->indirect < 0)
                 continue;
             bool unknown;
-            if (v->indirect == 1 && !CheckNullPointer::isPointerDeRef(tok, unknown, mSettings))
+            const bool deref = CheckNullPointer::isPointerDeRef(tok, unknown, mSettings);
+            if (v->indirect == 1 && !deref)
+                continue;
+            if (Token::Match(tok->astParent(), ". %var%") && !(isLeafDot(tok) || deref))
                 continue;
             if (!Token::Match(tok->astParent(), ". %name% (") && isVariableChanged(tok, mSettings, mTokenizer->isCPP()))
                 continue;
-            const Token * tok2 = getRootUninit(tok);
-            if (!tok2)
-                tok2 = tok;
-            uninitvarError(tok2, tok2->str(), v->errorPath);
+            uninitvarError(tok, tok->str(), v->errorPath);
+            const Token * nextTok = tok;
+            while(Token::simpleMatch(nextTok->astParent(), "."))
+                nextTok = nextTok->astParent();
+            nextTok = nextAfterAstRightmostLeaf(nextTok);
+            tok = nextTok ? nextTok : tok;
         }
     }
 }
