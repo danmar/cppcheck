@@ -511,7 +511,7 @@ void CheckOther::checkRedundantAssignment()
                 // warn
                 if (hasCase)
                     redundantAssignmentInSwitchError(tok, nextAssign, tok->astOperand1()->expressionString());
-                if (isInitialization)
+                else if (isInitialization)
                     redundantInitializationError(tok, nextAssign, tok->astOperand1()->expressionString());
                 else
                     redundantAssignmentError(tok, nextAssign, tok->astOperand1()->expressionString(), inconclusive);
@@ -539,7 +539,7 @@ void CheckOther::redundantCopyInSwitchError(const Token *tok1, const Token* tok2
 void CheckOther::redundantInitializationError(const Token *tok1, const Token *tok2, const std::string &var)
 {
     const std::list<const Token *> callstack = {tok1, tok2};
-    reportError(callstack, Severity::warning, "redundantInitialization",
+    reportError(callstack, Severity::style, "redundantInitialization",
                 "$symbol:" + var + "\n"
                 "Variable '$symbol' is reassigned a value before the old one has been used.", CWE563, false);
 }
