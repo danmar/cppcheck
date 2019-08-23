@@ -45,7 +45,7 @@ private:
         settings.experimental = true;
 
         // don't freak out when the syntax is wrong
-        
+
         TEST_CASE(final_class_x);
         TEST_CASE(wrong_syntax1);
         TEST_CASE(wrong_syntax2);
@@ -303,15 +303,15 @@ private:
 
     void final_class_x() {
 
-      const char code[] = "class __declspec(dllexport) x final { };";
-      {
-        errout.str("");
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList2();
-        ASSERT_EQUALS("", errout.str());
-      }
+        const char code[] = "class __declspec(dllexport) x final { };";
+        {
+            errout.str("");
+            Tokenizer tokenizer(&settings, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            tokenizer.simplifyTokenList2();
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void wrong_syntax1() {
