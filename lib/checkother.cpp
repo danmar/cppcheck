@@ -437,7 +437,7 @@ void CheckOther::checkRedundantAssignment()
                     bool trivial = true;
                     visitAstNodes(tok->astOperand2(),
                     [&](const Token *rhs) {
-                        if (Token::Match(rhs, "{ 0 }"))
+                        if (Token::simpleMatch(rhs, "{ 0 }"))
                             return ChildrenToVisit::none;
                         if (Token::Match(rhs, "%str%|%num%|%name%") && !rhs->varId())
                             return ChildrenToVisit::none;
