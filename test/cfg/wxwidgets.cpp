@@ -22,6 +22,7 @@
 #include <wx/menu.h>
 #include <wx/stattext.h>
 #include <wx/sizer.h>
+#include <wx/string.h>
 
 void validCode()
 {
@@ -276,4 +277,38 @@ void deprecatedFunctions(wxApp &a,
     // cppcheck-suppress EnableYearChangeCalled
     calenderCtrl.EnableYearChange(/*default=yes*/);
 #endif
+}
+
+void wxString_test1(wxString s)
+{
+    for (int i = 0; i <= s.size(); ++i) {
+        // cppcheck-suppress stlOutOfBounds
+        s[i] = 'x';
+    }
+}
+
+void wxString_test2()
+{
+    wxString s;
+    // cppcheck-suppress containerOutOfBounds
+    s[1] = 'a';
+    s.append("abc");
+    s[1] = 'B';
+    printf("%s", static_cast<const char*>(s.c_str()));
+    wxPrintf("%s", s);
+    wxPrintf("%s", s.c_str());
+    s.Clear();
+}
+
+wxString::iterator wxString_test3()
+{
+    wxString wxString1;
+    wxString wxString2;
+    // cppcheck-suppress iterators2
+    for (wxString::iterator it = wxString1.begin(); it != wxString2.end(); ++it)
+    {}
+
+    wxString::iterator it = wxString1.begin();
+    // cppcheck-suppress returnDanglingLifetime
+    return it;
 }
