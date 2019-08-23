@@ -6402,6 +6402,12 @@ private:
               "  ab.x = 1;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style) Variable 'ab.x' is reassigned a value before the old one has been used.\n", errout.str());
+
+        check("void f() {\n"
+              "  struct AB ab = {0};\n"
+              "  ab = foo();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void redundantVarAssignment_7133() {
