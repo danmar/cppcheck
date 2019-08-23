@@ -1652,8 +1652,12 @@ void MainWindow::openRecentProject()
     const QString project = action->data().toString();
     QFileInfo inf(project);
     if (inf.exists()) {
-        loadProjectFile(project);
-        loadLastResults();
+        if (inf.suffix() == "xml")
+            loadResults(project);
+        else {
+            loadProjectFile(project);
+            loadLastResults();
+        }
     } else {
         const QString text(tr("The project file\n\n%1\n\n could not be found!\n\n"
                               "Do you want to remove the file from the recently "
