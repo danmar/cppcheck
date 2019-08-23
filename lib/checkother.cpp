@@ -439,8 +439,8 @@ void CheckOther::checkRedundantAssignment()
                     [&](const Token *rhs) {
                         if (Token::Match(rhs, "{ 0 }"))
                             return ChildrenToVisit::none;
-                        if (Token::Match(rhs, "0|NULL|nullptr"))
-                            return ChildrenToVisit::op1_and_op2;
+                        if (Token::Match(rhs, "%str%|%num%|%name%") && !rhs->varId())
+                            return ChildrenToVisit::none;
                         if (rhs->isCast())
                             return ChildrenToVisit::op2;
                         trivial = false;
