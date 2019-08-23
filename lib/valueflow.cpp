@@ -2703,6 +2703,10 @@ static bool valueFlowForward(Token * const               startToken,
                     return false;
                 }
             }
+            // Variable changed
+            if (isVariableChanged(tok2, settings, tokenlist->isCPP())) {
+                values.remove_if(std::mem_fn(&ValueFlow::Value::isUninitValue));
+            }
         }
 
         // Lambda function
@@ -2716,6 +2720,7 @@ static bool valueFlowForward(Token * const               startToken,
                 return false;
             }
         }
+
     }
     return true;
 }

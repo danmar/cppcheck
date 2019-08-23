@@ -1626,6 +1626,9 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     out << "lifetime=" << value.tokvalue->str();
                     break;
                 }
+                if (value.indirect > 0)
+                    for(int i=0;i<value.indirect;i++)
+                        out << "*";
             }
         }
         if (xml)

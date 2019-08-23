@@ -4074,6 +4074,17 @@ private:
                         "    b(&s1);\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // # 9290
+        valueFlowUninit("struct A {\n"
+                        "    double x;\n"
+                        "};\n"
+                        "double b() {\n"
+                        "    A c;\n"
+                        "    c->x = 42;\n"
+                        "    return c->x;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_memberfunction() {
