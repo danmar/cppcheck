@@ -2159,6 +2159,18 @@ private:
               "    return ret;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    free(malloc(1));\n"
+              "    strcpy(a, strdup(p));\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Allocation with strdup, strcpy doesn't release it.\n", errout.str());
+
+        check("void f() {\n"
+              "    memcmp(calloc(10, 10), strdup(q), 100);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Allocation with calloc, memcmp doesn't release it.\n"
+                      "[test.cpp:2]: (error) Allocation with strdup, memcmp doesn't release it.\n", errout.str());
     }
 
     void missingAssignment() {
