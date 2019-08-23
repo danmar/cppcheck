@@ -1284,6 +1284,18 @@ void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string
                 "$symbol:" + membername + "\nUninitialized struct member: $symbol", CWE908, false);
 }
 
+static bool isLeafDot(const Token* tok)
+{
+    if (!tok)
+        return false;
+    const Token * parent = tok->astParent();
+    if (!Token::simpleMatch(parent, "."))
+        return false;
+    if (parent->astOperand2() == tok)
+        return true;
+    return isLeafDot(parent);
+}
+
 void CheckUninitVar::valueFlowUninit()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -1299,8 +1311,6 @@ void CheckUninitVar::valueFlowUninit()
             }
             if (!tok->variable())
                 continue;
-            if (Token::Match(tok->astParent(), ". %var%") && tok->astParent()->astOperand1() == tok)
-                continue;
             auto v = std::find_if(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isUninitValue));
             if (v == tok->values().end())
                 continue;
@@ -1311,11 +1321,19 @@ void CheckUninitVar::valueFlowUninit()
             if (v->indirect > 1 || v->indirect < 0)
                 continue;
             bool unknown;
-            if (v->indirect == 1 && !CheckNullPointer::isPointerDeRef(tok, unknown, mSettings))
+            const bool deref = CheckNullPointer::isPointerDeRef(tok, unknown, mSettings);
+            if (v->indirect == 1 && !deref)
+                continue;
+            if (Token::Match(tok->astParent(), ". %var%") && !(isLeafDot(tok) || deref))
                 continue;
             if (!Token::Match(tok->astParent(), ". %name% (") && isVariableChanged(tok, mSettings, mTokenizer->isCPP()))
                 continue;
             uninitvarError(tok, tok->str(), v->errorPath);
+            const Token * nextTok = tok;
+            while(Token::simpleMatch(nextTok->astParent(), "."))
+                nextTok = nextTok->astParent();
+            nextTok = nextAfterAstRightmostLeaf(nextTok);
+            tok = nextTok ? nextTok : tok;
         }
     }
 }

@@ -52,6 +52,26 @@ void visitAstNodes(const Token *ast, std::function<ChildrenToVisit(const Token *
     }
 }
 
+static void astFlattenRecursive(const Token *tok, std::vector<const Token *> *result, const char* op, nonneg int depth = 0)
+{
+    ++depth;
+    if (!tok || depth >= 100)
+        return;
+    if (tok->str() == op) {
+        astFlattenRecursive(tok->astOperand1(), result, op, depth);
+        astFlattenRecursive(tok->astOperand2(), result, op, depth);
+    } else {
+        result->push_back(tok);
+    }
+}
+
+std::vector<const Token*> astFlatten(const Token* tok, const char* op)
+{
+    std::vector<const Token*> result;
+    astFlattenRecursive(tok, &result, op);
+    return result;
+}
+
 
 static bool astIsCharWithSign(const Token *tok, ValueType::Sign sign)
 {
