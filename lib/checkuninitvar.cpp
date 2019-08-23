@@ -1330,7 +1330,7 @@ void CheckUninitVar::valueFlowUninit()
                 continue;
             uninitvarError(tok, tok->str(), v->errorPath);
             const Token * nextTok = tok;
-            while(Token::simpleMatch(nextTok->astParent(), "."))
+            while (Token::simpleMatch(nextTok->astParent(), "."))
                 nextTok = nextTok->astParent();
             nextTok = nextAfterAstRightmostLeaf(nextTok);
             tok = nextTok ? nextTok : tok;
