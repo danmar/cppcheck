@@ -4004,6 +4004,17 @@ private:
                         "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: flags\n", errout.str());
 
+        valueFlowUninit("struct pc_data {\n"
+                        "    struct {\n"
+                        "        char   * strefa;\n"
+                        "    } wampiryzm;\n"
+                        "};\n"
+                        "void f() {\n"
+                        "    struct pc_data *pcdata;\n"
+                        "    if ( *pcdata->wampiryzm.strefa == '\\0' ) { }\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Uninitialized variable: pcdata\n", errout.str());
+
         valueFlowUninit("void f(bool * x) {\n"
                         "    *x = false;\n"
                         "}\n"

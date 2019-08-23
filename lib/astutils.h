@@ -48,6 +48,8 @@ enum class ChildrenToVisit {
  */
 void visitAstNodes(const Token *ast, std::function<ChildrenToVisit(const Token *)> visitor);
 
+std::vector<const Token*> astFlatten(const Token* tok, const char* op);
+
 /** Is expression a 'signed char' if no promotion is used */
 bool astIsSignedChar(const Token *tok);
 /** Is expression a 'char' if no promotion is used? */

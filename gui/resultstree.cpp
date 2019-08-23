@@ -136,7 +136,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
         realfile = tr("Undefined file");
     }
 
-    bool hide = !mShowSeverities.isShown(item.severity);
+    bool hide = false;
 
     // Ids that are temporarily hidden..
     if (mHiddenMessageId.contains(item.errorId))
@@ -228,7 +228,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
 
     // Partially refresh the tree: Unhide file item if necessary
     if (!hide) {
-        setRowHidden(fileItem->row(), QModelIndex(), false);
+        setRowHidden(fileItem->row(), QModelIndex(), !mShowSeverities.isShown(item.severity));
     }
     return true;
 }

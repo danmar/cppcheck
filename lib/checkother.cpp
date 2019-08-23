@@ -437,10 +437,12 @@ void CheckOther::checkRedundantAssignment()
                     bool trivial = true;
                     visitAstNodes(tok->astOperand2(),
                     [&](const Token *rhs) {
-                        if (Token::Match(rhs, "%str%|%num%|%name%"))
+                        if (Token::Match(rhs, "{ 0 }"))
+                            return ChildrenToVisit::none;
+                        if (Token::Match(rhs, "0|NULL|nullptr"))
                             return ChildrenToVisit::op1_and_op2;
-                        if (rhs->str() == "(" && !rhs->previous()->isName())
-                            return ChildrenToVisit::op1_and_op2;
+                        if (rhs->isCast())
+                            return ChildrenToVisit::op2;
                         trivial = false;
                         return ChildrenToVisit::done;
                     });
@@ -511,8 +513,6 @@ void CheckOther::checkRedundantAssignment()
                 // warn
                 if (hasCase)
                     redundantAssignmentInSwitchError(tok, nextAssign, tok->astOperand1()->expressionString());
-                else if (isInitialization)
-                    redundantInitializationError(tok, nextAssign, tok->astOperand1()->expressionString());
                 else
                     redundantAssignmentError(tok, nextAssign, tok->astOperand1()->expressionString(), inconclusive);
             }
