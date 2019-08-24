@@ -4080,9 +4080,32 @@ private:
                         "    double x;\n"
                         "};\n"
                         "double b() {\n"
-                        "    A c;\n"
+                        "    A * c;\n"
                         "    c->x = 42;\n"
                         "    return c->x;\n"
+                        "}\n");
+        ASSERT_EQUALS("error", errout.str());
+
+        valueFlowUninit("struct A {\n"
+                        "    double x;\n"
+                        "};\n"
+                        "double b() {\n"
+                        "    A c;\n"
+                        "    c.x = 42;\n"
+                        "    return c->x;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("struct A {\n"
+                        "    double x;\n"
+                        "};\n"
+                        "double d(A * e) {\n"
+                        "    e->x = 42;\n"
+                        "    return e->x;\n"
+                        "}\n"
+                        "double b() {\n"
+                        "    A c;\n"
+                        "    return d(&c);\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
     }
