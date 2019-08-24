@@ -550,7 +550,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                     return ChildrenToVisit::none;
                 if (child->str() == "," || child->str() == "{" || child->isConstOp())
                     return ChildrenToVisit::op1_and_op2;
-                if (child->str() == "." && Token::Match(child->astOperand1(), "%varid", var.declarationId()) && child->astOperand2() && child->astOperand2()->str() == membervar) {
+                if (child->str() == "." && Token::Match(child->astOperand1(), "%varid%", var.declarationId()) && child->astOperand2() && child->astOperand2()->str() == membervar) {
                     errorToken = child;
                     return ChildrenToVisit::done;
                 }
