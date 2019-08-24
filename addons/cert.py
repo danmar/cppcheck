@@ -9,6 +9,7 @@
 # cppcheck --dump main.cpp
 # python cert.py main.cpp.dump
 
+import argparse
 import cppcheckdata
 import sys
 import re
@@ -237,25 +238,25 @@ def int31(data, platform):
 def msc24(data):
     for token in data.tokenlist:
         if isFunctionCall(token, ('asctime',), 1):
-            reportError(token,'style','Do no use asctime() better use asctime_s()', 'MSC24-C')
+            reportError(token,'style','Do not use asctime() better use asctime_s()', 'MSC24-C')
         elif isFunctionCall(token, ('atof',), 1):
-            reportError(token,'style','Do no use atof() better use strtod()', 'MSC24-C')
+            reportError(token,'style','Do not use atof() better use strtod()', 'MSC24-C')
         elif isFunctionCall(token, ('atoi',), 1):
-            reportError(token,'style','Do no use atoi() better use strtol()', 'MSC24-C')
+            reportError(token,'style','Do not use atoi() better use strtol()', 'MSC24-C')
         elif isFunctionCall(token, ('atol',), 1):
-            reportError(token,'style','Do no use atol() better use strtol()', 'MSC24-C')
+            reportError(token,'style','Do not use atol() better use strtol()', 'MSC24-C')
         elif isFunctionCall(token, ('atoll',), 1):
-            reportError(token,'style','Do no use atoll() better use strtoll()', 'MSC24-C')
+            reportError(token,'style','Do not use atoll() better use strtoll()', 'MSC24-C')
         elif isFunctionCall(token, ('ctime',), 1):
-            reportError(token,'style','Do no use ctime() better use ctime_s()', 'MSC24-C')
+            reportError(token,'style','Do not use ctime() better use ctime_s()', 'MSC24-C')
         elif isFunctionCall(token, ('fopen',), 2):
-            reportError(token,'style','Do no use fopen() better use fopen_s()', 'MSC24-C')
+            reportError(token,'style','Do not use fopen() better use fopen_s()', 'MSC24-C')
         elif isFunctionCall(token, ('freopen',), 3):
-            reportError(token,'style','Do no use freopen() better use freopen_s()', 'MSC24-C')
+            reportError(token,'style','Do not use freopen() better use freopen_s()', 'MSC24-C')
         elif isFunctionCall(token, ('rewind',), 1):
-            reportError(token,'style','Do no use rewind() better use fseek()', 'MSC24-C')
+            reportError(token,'style','Do not use rewind() better use fseek()', 'MSC24-C')
         elif isFunctionCall(token, ('setbuf',), 2):
-            reportError(token,'style','Do no use setbuf() better use setvbuf()', 'MSC24-C')
+            reportError(token,'style','Do not use setbuf() better use setvbuf()', 'MSC24-C')
 
 # MSC30-C
 # Do not use the rand() function for generating pseudorandom numbers
@@ -335,45 +336,78 @@ def str11(data):
         if valueToken.isNumber and int(valueToken.str)==strlen:
             reportError(valueToken, 'style', 'Do not specify the bound of a character array initialized with a string literal', 'STR11-C')
 
-for arg in sys.argv[1:]:
-    if arg == '-verify':
+# API01-C
+# Avoid laying out strings in memory directly before sensitive data
+def api01(data):
+    for scope in data.scopes:
+        if scope.type!='Struct':
+            continue
+        token = scope.bodyStart
+        arrayFound=False
+        # loop through the complete struct
+        while token != scope.bodyEnd:
+            if token.isName and token.variable:
+                if token.variable.isArray:
+                    arrayFound=True
+                elif arrayFound and not token.variable.isArray and not token.variable.isConst:
+                    reportError(token, 'style', 'Avoid laying out strings in memory directly before sensitive data', 'API01-C')
+                    # reset flags to report other positions in the same struct
+                    arrayFound=False
+            token = token.next
+
+
+def get_args():
+    parser = cppcheckdata.ArgumentParser()
+    parser.add_argument("dumpfile", nargs='*', help="Path of dump files from cppcheck")
+    parser.add_argument('-q', '--quiet', action='store_true',
+                        help='do not print "Checking ..." lines')
+    parser.add_argument('--cli', help='Addon is executed from Cppcheck', action='store_true')
+    parser.add_argument("-verify", help=argparse.SUPPRESS, action="store_true")
+    return parser.parse_args()
+
+if __name__ == '__main__':
+    args = get_args()
+
+    if args.verify:
         VERIFY = True
-        continue
-    if arg == '--cli':
-        continue
-    print('Checking ' + arg + '...')
-    data = cppcheckdata.parsedump(arg)
 
-    if VERIFY:
-        VERIFY_ACTUAL = []
-        VERIFY_EXPECTED = []
-        for tok in data.rawTokens:
-            if tok.str.startswith('//') and 'TODO' not in tok.str:
-                for word in tok.str[2:].split(' '):
-                    if re.match(r'cert-[A-Z][A-Z][A-Z][0-9][0-9].*',word):
-                        VERIFY_EXPECTED.append(str(tok.linenr) + ':' + word)
+    for dumpfile in args.dumpfile:
+        if not args.quiet:
+            print('Checking %s...' % dumpfile)
 
-    for cfg in data.configurations:
-        if len(data.configurations) > 1:
-            print('Checking ' + arg + ', config "' + cfg.name + '"...')
-        exp05(cfg)
-        exp42(cfg)
-        exp46(cfg)
-        exp15(cfg)
-        int31(cfg, data.platform)
-        str03(cfg)
-        str05(cfg)
-        str07(cfg)
-        str11(cfg)
-        msc24(cfg)
-        msc30(cfg)
+        data = cppcheckdata.parsedump(dumpfile)
 
-    if VERIFY:
-        for expected in VERIFY_EXPECTED:
-            if expected not in VERIFY_ACTUAL:
-                print('Expected but not seen: ' + expected)
-                sys.exit(1)
-        for actual in VERIFY_ACTUAL:
-            if actual not in VERIFY_EXPECTED:
-                print('Not expected: ' + actual)
-                sys.exit(1)
+        if VERIFY:
+            VERIFY_ACTUAL = []
+            VERIFY_EXPECTED = []
+            for tok in data.rawTokens:
+                if tok.str.startswith('//') and 'TODO' not in tok.str:
+                    for word in tok.str[2:].split(' '):
+                        if re.match(r'cert-[A-Z][A-Z][A-Z][0-9][0-9].*',word):
+                            VERIFY_EXPECTED.append(str(tok.linenr) + ':' + word)
+
+        for cfg in data.configurations:
+            if (len(data.configurations) > 1) and (not args.quiet):
+                print('Checking %s, config %s...' % (dumpfile, cfg.name))
+            exp05(cfg)
+            exp42(cfg)
+            exp46(cfg)
+            exp15(cfg)
+            int31(cfg, data.platform)
+            str03(cfg)
+            str05(cfg)
+            str07(cfg)
+            str11(cfg)
+            msc24(cfg)
+            msc30(cfg)
+            api01(cfg)
+
+        if VERIFY:
+            for expected in VERIFY_EXPECTED:
+                if expected not in VERIFY_ACTUAL:
+                    print('Expected but not seen: ' + expected)
+                    sys.exit(1)
+            for actual in VERIFY_ACTUAL:
+                if actual not in VERIFY_EXPECTED:
+                    print('Not expected: ' + actual)
+                    sys.exit(1)

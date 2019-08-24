@@ -64,10 +64,16 @@ public:
     bool operator==(const CodeEditorStyle& rhs) const;
     bool operator!=(const CodeEditorStyle& rhs) const;
 
+    bool isSystemTheme() const {
+        return mSystemTheme;
+    }
+
+    static CodeEditorStyle getSystemTheme();
     static CodeEditorStyle loadSettings(QSettings *settings);
     static void saveSettings(QSettings *settings, const CodeEditorStyle& theStyle);
 
 public:
+    bool            mSystemTheme;
     QColor          widgetFGColor;
     QColor          widgetBGColor;
     QColor          highlightBGColor;

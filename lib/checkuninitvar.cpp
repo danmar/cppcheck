@@ -99,7 +99,7 @@ void CheckUninitVar::check()
 void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> &arrayTypeDefs)
 {
     for (const Variable &var : scope->varlist) {
-        if ((mTokenizer->isCPP() && var.type() && !var.isPointer() && var.type()->needInitialization != Type::True) ||
+        if ((mTokenizer->isCPP() && var.type() && !var.isPointer() && var.type()->needInitialization != Type::NeedInitialization::True) ||
             var.isStatic() || var.isExtern() || var.isReference())
             continue;
 
@@ -150,7 +150,13 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
         if (var.isArray()) {
             Alloc alloc = ARRAY;
             const std::map<int, VariableValue> variableValue;
-            checkScopeForVariable(tok, var, nullptr, nullptr, &alloc, emptyString, variableValue);
+            bool init = false;
+            for (const Token *parent = var.nameToken(); parent; parent = parent->astParent()) {
+                if (parent->str() == "=")
+                    init = true;
+            }
+            if (!init)
+                checkScopeForVariable(tok, var, nullptr, nullptr, &alloc, emptyString, variableValue);
             continue;
         }
         if (stdtype || var.isPointer()) {
@@ -191,7 +197,7 @@ void CheckUninitVar::checkStruct(const Token *tok, const Variable &structvar)
         if (scope2->className == typeToken->str() && scope2->numConstructors == 0U) {
             for (const Variable &var : scope2->varlist) {
                 if (var.isStatic() || var.hasDefault() || var.isArray() ||
-                    (!mTokenizer->isC() && var.isClass() && (!var.type() || var.type()->needInitialization != Type::True)))
+                    (!mTokenizer->isC() && var.isClass() && (!var.type() || var.type()->needInitialization != Type::NeedInitialization::True)))
                     continue;
 
                 // is the variable declared in a inner union?
@@ -687,7 +693,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                     continue;
                 }
             }
-            if (var.isPointer() && (var.typeStartToken()->isStandardType() || var.typeStartToken()->isEnumType() || (var.type() && var.type()->needInitialization == Type::True)) && Token::simpleMatch(tok->next(), "= new")) {
+            if (var.isPointer() && (var.typeStartToken()->isStandardType() || var.typeStartToken()->isEnumType() || (var.type() && var.type()->needInitialization == Type::NeedInitialization::True)) && Token::simpleMatch(tok->next(), "= new")) {
                 *alloc = CTOR_CALL;
 
                 // type has constructor(s)
@@ -1263,9 +1269,11 @@ void CheckUninitVar::uninitdataError(const Token *tok, const std::string &varnam
     reportError(tok, Severity::error, "uninitdata", "$symbol:" + varname + "\nMemory is allocated but not initialized: $symbol", CWE908, false);
 }
 
-void CheckUninitVar::uninitvarError(const Token *tok, const std::string &varname)
+void CheckUninitVar::uninitvarError(const Token *tok, const std::string &varname, ErrorPath errorPath)
 {
-    reportError(tok, Severity::error, "uninitvar", "$symbol:" + varname + "\nUninitialized variable: $symbol", CWE908, false);
+    errorPath.emplace_back(tok, "");
+    reportError(errorPath, Severity::error, "uninitvar", "$symbol:" + varname + "\nUninitialized variable: $symbol", CWE908, false);
+    // reportError(tok, Severity::error, "uninitvar", "$symbol:" + varname + "\nUninitialized variable: $symbol", CWE908, false);
 }
 
 void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string &membername)
@@ -1274,6 +1282,18 @@ void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string
                 Severity::error,
                 "uninitStructMember",
                 "$symbol:" + membername + "\nUninitialized struct member: $symbol", CWE908, false);
+}
+
+static bool isLeafDot(const Token* tok)
+{
+    if (!tok)
+        return false;
+    const Token * parent = tok->astParent();
+    if (!Token::simpleMatch(parent, "."))
+        return false;
+    if (parent->astOperand2() == tok)
+        return true;
+    return isLeafDot(parent);
 }
 
 void CheckUninitVar::valueFlowUninit()
@@ -1289,14 +1309,31 @@ void CheckUninitVar::valueFlowUninit()
                 tok = tok->linkAt(1);
                 continue;
             }
-            if (!tok->variable() || tok->values().size() != 1U)
+            if (!tok->variable())
                 continue;
-            const ValueFlow::Value &v = tok->values().front();
-            if (v.valueType != ValueFlow::Value::ValueType::UNINIT || v.isInconclusive())
+            auto v = std::find_if(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isUninitValue));
+            if (v == tok->values().end())
                 continue;
-            if (!isVariableUsage(tok, tok->variable()->isPointer(), NO_ALLOC))
+            if (v->isInconclusive())
                 continue;
-            uninitvarError(tok, tok->str());
+            if (!isVariableUsage(tok, tok->variable()->isPointer(), tok->variable()->isArray() ? ARRAY : NO_ALLOC))
+                continue;
+            if (v->indirect > 1 || v->indirect < 0)
+                continue;
+            bool unknown;
+            const bool deref = CheckNullPointer::isPointerDeRef(tok, unknown, mSettings);
+            if (v->indirect == 1 && !deref)
+                continue;
+            if (Token::Match(tok->astParent(), ". %var%") && !(isLeafDot(tok) || deref))
+                continue;
+            if (!Token::Match(tok->astParent(), ". %name% (") && isVariableChanged(tok, mSettings, mTokenizer->isCPP()))
+                continue;
+            uninitvarError(tok, tok->str(), v->errorPath);
+            const Token * nextTok = tok;
+            while (Token::simpleMatch(nextTok->astParent(), "."))
+                nextTok = nextTok->astParent();
+            nextTok = nextAfterAstRightmostLeaf(nextTok);
+            tok = nextTok ? nextTok : tok;
         }
     }
 }

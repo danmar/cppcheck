@@ -48,6 +48,8 @@ enum class ChildrenToVisit {
  */
 void visitAstNodes(const Token *ast, std::function<ChildrenToVisit(const Token *)> visitor);
 
+std::vector<const Token*> astFlatten(const Token* tok, const char* op);
+
 /** Is expression a 'signed char' if no promotion is used */
 bool astIsSignedChar(const Token *tok);
 /** Is expression a 'char' if no promotion is used? */
@@ -81,6 +83,9 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
 
 const Token * nextAfterAstRightmostLeaf(const Token * tok);
 
+Token* astParentSkipParens(Token* tok);
+const Token* astParentSkipParens(const Token* tok);
+
 bool precedes(const Token * tok1, const Token * tok2);
 
 bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors=nullptr);
@@ -109,7 +114,7 @@ bool isWithoutSideEffects(bool cpp, const Token* tok);
 bool isUniqueExpression(const Token* tok);
 
 /** Is scope a return scope (scope will unconditionally return) */
-bool isReturnScope(const Token *endToken);
+bool isReturnScope(const Token *endToken, const Settings * settings = nullptr, bool functionScope=false);
 
 /** Is variable changed by function call?
  * In case the answer of the question is inconclusive, e.g. because the function declaration is not known
@@ -133,9 +138,16 @@ bool isVariableChangedByFunctionCall(const Token *tok, nonneg int varid, const S
 bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings, bool *inconclusive);
 
 /** Is variable changed in block of code? */
-bool isVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp);
+bool isVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
 
-bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp);
+bool isVariableChanged(const Token *tok, const Settings *settings, bool cpp, int depth = 20);
+
+bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp, int depth = 20);
+
+const Token* findVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
+Token* findVariableChanged(Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
+
+bool isAliased(const Variable *var);
 
 /** Determines the number of arguments - if token is a function call or macro
  * @param start token which is supposed to be the function/macro name.
@@ -157,6 +169,8 @@ const Token *findLambdaStartToken(const Token *last);
  */
 const Token *findLambdaEndToken(const Token *first);
 
+bool isLikelyStream(bool cpp, const Token *stream);
+
 /**
  * do we see a likely write of rhs through overloaded operator
  *   s >> x;
@@ -171,7 +185,7 @@ bool isConstVarExpression(const Token *tok);
 const Variable *getLHSVariable(const Token *tok);
 
 struct PathAnalysis {
-    enum Progress {
+    enum class Progress {
         Continue,
         Break
     };

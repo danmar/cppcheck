@@ -244,7 +244,7 @@ private:
         // TODO TEST_CASE(negativeMemoryAllocationSizeError) // #389
         TEST_CASE(negativeArraySize);
 
-        // TODO TEST_CASE(pointerAddition1);
+        TEST_CASE(pointerAddition1);
 
         TEST_CASE(ctu_malloc);
         TEST_CASE(ctu_array);
@@ -3723,6 +3723,20 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
 
+        check("int main(int argc, const char *const *const argv, char **envp)\n"
+              "{\n"
+              "    char prog[10];\n"
+              "    strcpy(prog, argv[0]);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
+
+        check("int main(const int argc, const char *const *const argv, const char *const *const envp)\n"
+              "{\n"
+              "    char prog[10];\n"
+              "    strcpy(prog, argv[0]);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
+
         check("int main(int argc, char **argv, char **envp)\n"
               "{\n"
               "    char prog[10] = {'\\0'};\n"
@@ -4055,8 +4069,8 @@ private:
         check("void f() {\n"
               "    char arr[10];\n"
               "    p = arr + 20;\n"
-              "\n");
-        ASSERT_EQUALS("error", errout.str());
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Undefined behaviour, pointer arithmetic 'arr+20' is out of bounds.\n", errout.str());
     }
 
     void ctu(const char code[]) {

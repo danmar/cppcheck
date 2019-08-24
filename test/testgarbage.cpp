@@ -45,6 +45,8 @@ private:
         settings.experimental = true;
 
         // don't freak out when the syntax is wrong
+
+        TEST_CASE(final_class_x);
         TEST_CASE(wrong_syntax1);
         TEST_CASE(wrong_syntax2);
         TEST_CASE(wrong_syntax3); // #3544
@@ -298,6 +300,20 @@ private:
         return "";
     }
 
+
+    void final_class_x() {
+
+        const char code[] = "class __declspec(dllexport) x final { };";
+        {
+            errout.str("");
+            Tokenizer tokenizer(&settings, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            tokenizer.simplifyTokenList2();
+            ASSERT_EQUALS("", errout.str());
+        }
+    }
+
     void wrong_syntax1() {
         {
             const char code[] ="TR(kvmpio, PROTO(int rw), ARGS(rw), TP_(aa->rw;))";
@@ -327,6 +343,7 @@ private:
         // don't segfault..
         ASSERT_THROW(checkCode(code), InternalError);
     }
+
 
     void wrong_syntax3() {   // #3544
         const char code[] = "X #define\n"
@@ -1592,7 +1609,6 @@ private:
     void garbageCode203() { // #8972
         checkCode("{ > () {} }");
         checkCode("template <> a > ::b();");
-        ASSERT_THROW(checkCode("{ template <a> class b { } template <> template <c> c() b<a>::e() { } template b<d>; }"), InternalError);
     }
 
     void garbageCode204() {

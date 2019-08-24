@@ -69,7 +69,7 @@ static const char * getFunctionTypeName(Function::Type type)
 
 static bool isVariableCopyNeeded(const Variable &var)
 {
-    return var.isPointer() || (var.type() && var.type()->needInitialization == Type::True) || (var.valueType()->type >= ValueType::Type::CHAR);
+    return var.isPointer() || (var.type() && var.type()->needInitialization == Type::NeedInitialization::True) || (var.valueType()->type >= ValueType::Type::CHAR);
 }
 
 //---------------------------------------------------------------------------
@@ -117,7 +117,7 @@ void CheckClass::constructors()
                     initTok = initTok->linkAt(1);
                 if (var.isPrivate() && !var.isStatic() && !Token::Match(var.nameToken(), "%varid% ; %varid% =", var.declarationId()) &&
                     !Token::Match(initTok, "%var%|] {|=") &&
-                    (!var.isClass() || (var.type() && var.type()->needInitialization == Type::True))) {
+                    (!var.isClass() || (var.type() && var.type()->needInitialization == Type::NeedInitialization::True))) {
                     noConstructorError(scope->classDef, scope->className, scope->classDef->str() == "struct");
                     break;
                 }
@@ -175,7 +175,7 @@ void CheckClass::constructors()
                 if (usage[count].assign || usage[count].init || var.isStatic())
                     continue;
 
-                if (var.valueType()->pointer == 0 && var.type() && var.type()->needInitialization == Type::False && var.type()->derivedFrom.empty())
+                if (var.valueType()->pointer == 0 && var.type() && var.type()->needInitialization == Type::NeedInitialization::False && var.type()->derivedFrom.empty())
                     continue;
 
                 if (var.isConst() && func.isOperator()) // We can't set const members in assignment operator
@@ -189,7 +189,7 @@ void CheckClass::constructors()
 
                     // Known type that doesn't need initialization or
                     // known type that has member variables of an unknown type
-                    else if (var.type()->needInitialization != Type::True)
+                    else if (var.type()->needInitialization != Type::NeedInitialization::True)
                         continue;
                 }
 
@@ -227,7 +227,7 @@ void CheckClass::constructors()
 
                     if (classNameUsed)
                         operatorEqVarError(func.token, scope->className, var.name(), inconclusive);
-                } else if (func.access != Private || mSettings->standards.cpp >= Standards::CPP11) {
+                } else if (func.access != AccessControl::Private || mSettings->standards.cpp >= Standards::CPP11) {
                     // If constructor is not in scope then we maybe using a oonstructor from a different template specialization
                     if (!precedes(scope->bodyStart, func.tokenDef))
                         continue;
@@ -240,9 +240,9 @@ void CheckClass::constructors()
                             func.functionScope->bodyStart->link() == func.functionScope->bodyStart->next()) {
                             // don't warn about user defined default constructor when there are other constructors
                             if (printInconclusive)
-                                uninitVarError(func.token, func.access == Private, scope->className, var.name(), true);
+                                uninitVarError(func.token, func.access == AccessControl::Private, scope->className, var.name(), true);
                         } else
-                            uninitVarError(func.token, func.access == Private, scope->className, var.name(), inconclusive);
+                            uninitVarError(func.token, func.access == AccessControl::Private, scope->className, var.name(), inconclusive);
                     }
                 }
             }
@@ -282,7 +282,7 @@ void CheckClass::checkExplicitConstructors()
             //  2) Constructor is not declared as explicit
             //  3) It is not a copy/move constructor of non-abstract class
             //  4) Constructor is not marked as delete (programmer can mark the default constructor as deleted, which is ok)
-            if (!func.isConstructor() || func.isDelete() || (!func.hasBody() && func.access == Private))
+            if (!func.isConstructor() || func.isDelete() || (!func.hasBody() && func.access == AccessControl::Private))
                 continue;
 
             if (!func.isExplicit() &&
@@ -311,7 +311,7 @@ static bool isNonCopyable(const Scope *scope, bool *unknown)
         for (const Function &func : baseInfo.type->classScope->functionList) {
             if (func.type != Function::eCopyConstructor)
                 continue;
-            if (func.access == Private || func.isDelete())
+            if (func.access == AccessControl::Private || func.isDelete())
                 return true;
         }
     }
@@ -496,7 +496,7 @@ bool CheckClass::canNotCopy(const Scope *scope)
     for (const Function &func : scope->functionList) {
         if (func.isConstructor())
             constructor = true;
-        if (func.access != Public)
+        if (func.access != AccessControl::Public)
             continue;
         if (func.type == Function::eCopyConstructor) {
             publicCopy = true;
@@ -520,7 +520,7 @@ bool CheckClass::canNotMove(const Scope *scope)
     for (const Function &func : scope->functionList) {
         if (func.isConstructor())
             constructor = true;
-        if (func.access != Public)
+        if (func.access != AccessControl::Public)
             continue;
         if (func.type == Function::eCopyConstructor) {
             publicCopy = true;
@@ -1038,7 +1038,7 @@ static bool checkFunctionUsage(const Function *privfunc, const Scope* scope)
             }
         } else if ((func->type != Function::eCopyConstructor &&
                     func->type != Function::eOperatorEqual) ||
-                   func->access != Private) // Assume it is used, if a function implementation isn't seen, but empty private copy constructors and assignment operators are OK
+                   func->access != AccessControl::Private) // Assume it is used, if a function implementation isn't seen, but empty private copy constructors and assignment operators are OK
             return true;
     }
 
@@ -1079,7 +1079,7 @@ void CheckClass::privateFunctions()
         std::list<const Function*> privateFuncs;
         for (const Function &func : scope->functionList) {
             // Get private functions..
-            if (func.type == Function::eFunction && func.access == Private && !func.isOperator()) // TODO: There are smarter ways to check private operator usage
+            if (func.type == Function::eFunction && func.access == AccessControl::Private && !func.isOperator()) // TODO: There are smarter ways to check private operator usage
                 privateFuncs.push_back(&func);
         }
 
@@ -1338,7 +1338,7 @@ void CheckClass::operatorEq()
 
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
         for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-            if (func->type == Function::eOperatorEqual && func->access == Public) {
+            if (func->type == Function::eOperatorEqual && func->access == AccessControl::Public) {
                 // skip "deleted" functions - cannot be called anyway
                 if (func->isDelete())
                     continue;
@@ -1472,7 +1472,7 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
     if (startTok->next() == last) {
         if (Token::simpleMatch(func->argDef, std::string("( const " + scope->className + " &").c_str())) {
             // Typical wrong way to suppress default assignment operator by declaring it and leaving empty
-            operatorEqMissingReturnStatementError(func->token, func->access == Public);
+            operatorEqMissingReturnStatementError(func->token, func->access == AccessControl::Public);
         } else {
             operatorEqMissingReturnStatementError(func->token, true);
         }
@@ -1485,7 +1485,7 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
         return;
     }
 
-    operatorEqMissingReturnStatementError(func->token, func->access == Public);
+    operatorEqMissingReturnStatementError(func->token, func->access == AccessControl::Public);
 }
 
 void CheckClass::operatorEqRetRefThisError(const Token *tok)
@@ -1682,7 +1682,7 @@ void CheckClass::virtualDestructor()
         // Iterate through each base class...
         for (int j = 0; j < scope->definedType->derivedFrom.size(); ++j) {
             // Check if base class is public and exists in database
-            if (scope->definedType->derivedFrom[j].access != Private && scope->definedType->derivedFrom[j].type) {
+            if (scope->definedType->derivedFrom[j].access != AccessControl::Private && scope->definedType->derivedFrom[j].type) {
                 const Type *derivedFrom = scope->definedType->derivedFrom[j].type;
                 const Scope *derivedFromScope = derivedFrom->classScope;
                 if (!derivedFromScope)
@@ -1749,7 +1749,7 @@ void CheckClass::virtualDestructor()
                         // Make sure that the destructor is public (protected or private
                         // would not compile if inheritance is used in a way that would
                         // cause the bug we are trying to find here.)
-                        if (baseDestructor->access == Public) {
+                        if (baseDestructor->access == AccessControl::Public) {
                             virtualDestructorError(baseDestructor->token, derivedFrom->name(), derivedClass->str(), false);
                             // check for duplicate error and remove it if found
                             const std::list<const Function *>::iterator found = find(inconclusiveErrors.begin(), inconclusiveErrors.end(), baseDestructor);
@@ -2648,17 +2648,50 @@ void CheckClass::checkOverride()
 
 void CheckClass::overrideError(const Function *funcInBase, const Function *funcInDerived)
 {
-    const std::string functionName = funcInDerived ? funcInDerived->name() : "";
+    const std::string functionName = funcInDerived ? ((funcInDerived->isDestructor() ? "~" : "") + funcInDerived->name()) : "";
+    const std::string funcType = (funcInDerived && funcInDerived->isDestructor()) ? "destructor" : "function";
 
     ErrorPath errorPath;
     if (funcInBase && funcInDerived) {
-        errorPath.push_back(ErrorPathItem(funcInBase->tokenDef, "Virtual function in base class"));
-        errorPath.push_back(ErrorPathItem(funcInDerived->tokenDef, "Function in derived class"));
+        errorPath.push_back(ErrorPathItem(funcInBase->tokenDef, "Virtual " + funcType + " in base class"));
+        errorPath.push_back(ErrorPathItem(funcInDerived->tokenDef, char(std::toupper(funcType[0])) + funcType.substr(1) + " in derived class"));
     }
 
     reportError(errorPath, Severity::style, "missingOverride",
                 "$symbol:" + functionName + "\n"
-                "The function '$symbol' overrides a function in a base class but is not marked with a 'override' specifier.",
+                "The " + funcType + " '$symbol' overrides a " + funcType + " in a base class but is not marked with a 'override' specifier.",
                 CWE(0U) /* Unknown CWE! */,
                 false);
+}
+
+void CheckClass::checkUnsafeClassRefMember()
+{
+    if (!mSettings->safeChecks.classes || !mSettings->isEnabled(Settings::WARNING))
+        return;
+    for (const Scope * classScope : mSymbolDatabase->classAndStructScopes) {
+        for (const Function &func : classScope->functionList) {
+            if (!func.hasBody() || !func.isConstructor())
+                continue;
+
+            const Token *initList = func.constructorMemberInitialization();
+            while (Token::Match(initList, "[:,] %name% (")) {
+                if (Token::Match(initList->tokAt(2), "( %var% )")) {
+                    const Variable * const memberVar = initList->next()->variable();
+                    const Variable * const argVar = initList->tokAt(3)->variable();
+                    if (memberVar && argVar && memberVar->isConst() && memberVar->isReference() && argVar->isArgument() && argVar->isConst() && argVar->isReference())
+                        unsafeClassRefMemberError(initList->next(), classScope->className + "::" + memberVar->name());
+                }
+                initList = initList->linkAt(2)->next();
+            }
+        }
+    }
+}
+
+void CheckClass::unsafeClassRefMemberError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::warning, "unsafeClassRefMember",
+                "$symbol:" + varname + "\n"
+                "Unsafe class: The const reference member '$symbol' is initialized by a const reference constructor argument. You need to be careful about lifetime issues.\n"
+                "Unsafe class checking: The const reference member '$symbol' is initialized by a const reference constructor argument. You need to be careful about lifetime issues. If you pass a local variable or temporary value in this constructor argument, be extra careful. If the argument is always some global object that is never destroyed then this is safe usage. However it would be defensive to make the member '$symbol' a non-reference variable or a smart pointer.",
+                CWE(0), false);
 }

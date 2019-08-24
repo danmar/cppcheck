@@ -79,6 +79,7 @@ public:
         checkClass.checkExplicitConstructors();
         checkClass.checkCopyCtorAndEqOperator();
         checkClass.checkOverride();
+        checkClass.checkUnsafeClassRefMember();
     }
 
     /** @brief %Check that all class constructors are ok */
@@ -146,6 +147,9 @@ public:
     /** @brief Check that the override keyword is used when overriding virtual functions */
     void checkOverride();
 
+    /** @brief Unsafe class check - const reference member */
+    void checkUnsafeClassRefMember();
+
 private:
     const SymbolDatabase *mSymbolDatabase;
 
@@ -183,6 +187,7 @@ private:
     void copyCtorAndEqOperatorError(const Token *tok, const std::string &classname, bool isStruct, bool hasCopyCtor);
     void unsafeClassDivZeroError(const Token *tok, const std::string &className, const std::string &methodName, const std::string &varName);
     void overrideError(const Function *funcInBase, const Function *funcInDerived);
+    void unsafeClassRefMemberError(const Token *tok, const std::string &varname);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckClass c(nullptr, settings, errorLogger);
@@ -220,6 +225,7 @@ private:
         c.pureVirtualFunctionCallInConstructorError(nullptr, std::list<const Token *>(), "f");
         c.virtualFunctionCallInConstructorError(nullptr, std::list<const Token *>(), "f");
         c.overrideError(nullptr, nullptr);
+        c.unsafeClassRefMemberError(nullptr, "UnsafeClass::var");
     }
 
     static std::string myName() {

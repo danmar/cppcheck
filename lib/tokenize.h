@@ -882,6 +882,8 @@ public:
         return mSettings;
     }
 
+    void calculateScopes();
+
 private:
     /** Disable copy constructor */
     Tokenizer(const Tokenizer &) = delete;

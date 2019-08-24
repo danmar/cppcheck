@@ -63,9 +63,9 @@ make
 
 ### Visual Studio
 
-Use the cppcheck.sln file. The file is configured for Visual Studio 2015, but the platform toolset can be changed easily to older or newer versions. The solution contains platform targets for both x86 and x64.
+Use the cppcheck.sln file. The file is configured for Visual Studio 2019, but the platform toolset can be changed easily to older or newer versions. The solution contains platform targets for both x86 and x64.
 
-To compile with rules, select "Release-PCRE" or "Debug-PCRE" configuration. pcre.lib (pcre64.lib for x64 builds) and pcre.h are expected to be in /externals then.
+To compile with rules, select "Release-PCRE" or "Debug-PCRE" configuration. pcre.lib (pcre64.lib for x64 builds) and pcre.h are expected to be in /externals then. A current version of PCRE for Visual Studio can be obtained using [vcpkg](https://github.com/microsoft/vcpkg).
 
 ### Qt Creator + MinGW
 
@@ -83,7 +83,7 @@ make
 The recommended release build is:
 
 ```shell
-make MATCHCOMPILER=yes CFGDIR=cfg HAVE_RULES=yes CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function"
+make MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck HAVE_RULES=yes CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function"
 ```
 
 Flags:
@@ -91,8 +91,8 @@ Flags:
 1.  `MATCHCOMPILER=yes`
     Python is used to optimise cppcheck. The Token::Match patterns are converted into C++ code at compile time.
 
-2.  `CFGDIR=cfg`
-    Specify folder where .cfg files are found
+2.  `FILESDIR=/usr/share/cppcheck`
+    Specify folder where cppcheck files are installed (addons, cfg, platform)
 
 3.  `HAVE_RULES=yes`
     Enable rules (PCRE is required if this is used)

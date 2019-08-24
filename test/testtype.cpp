@@ -194,19 +194,23 @@ private:
               "  if (x==0) {}\n"
               "  return (x-1)*sizeof(int);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Expression 'x-1' can have a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Expression 'x-1' can have a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n", errout.str());
 
         check("unsigned int f1(signed int x, unsigned int y) {" // x is signed
               "  return x * y;\n"
               "}\n"
               "void f2() { f1(-4,4); }");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1]: (warning) Expression 'x' can have a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n",
+            errout.str());
 
         check("unsigned int f1(int x) {"
               "  return x * 5U;\n"
               "}\n"
               "void f2() { f1(-4); }");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1]: (warning) Expression 'x' can have a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n",
+            errout.str());
 
         check("unsigned int f1(int x) {" // #6168: FP for inner calculation
               "  return 5U * (1234 - x);\n" // <- signed subtraction, x is not sign converted
@@ -316,6 +320,11 @@ private:
 
         check("void f(void) {\n"
               "  char c = 1234.5;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
+
+        check("char f(void) {\n"
+              "  return 1234.5;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
     }

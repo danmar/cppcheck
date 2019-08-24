@@ -19,8 +19,10 @@ before_install:
 # install needed deps
  - travis_retry sudo apt-get update -qq
  - travis_retry sudo apt-get install -qq python-pygments qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet
- - travis_retry sudo python2 -m pip install --upgrade pytest==4.6.4
+ - travis_retry python2 -m pip install --user pytest==4.6.4
  - travis_retry python2 -m pip install --user pylint
+ - travis_retry python2 -m pip install --user unittest2
+ - travis_retry python2 -m pip install --user pexpect
 
 matrix:
 # do notify immediately about it when a job of a build fails.
@@ -64,15 +66,13 @@ matrix:
 # check if DESTDIR works  TODO: actually execute this
         - mkdir install_test
         - echo $CXXFLAGS
-        - make -s DESTDIR=install_test install
+        - make -s DESTDIR=install_test FILESDIR=/usr/share/cppcheck install
 # rm everything
         - git clean -dfx
 # check what happens if we want to install it to some other dir,
         - echo $CXXFLAGS
-        - make -s MATCHCOMPILER=yes CFGDIR=/usr/share/cppcheck/cfg -j 2
-        - sudo make MATCHCOMPILER=yes CFGDIR=/usr/share/cppcheck/cfg install
-        - sudo mkdir -p /usr/share/cppcheck/cfg
-        - sudo install -D ./cfg/* -t /usr/share/cppcheck/cfg
+        - make -s MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck -j 2
+        - sudo make MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck install
 # check if it actually works:
         - /usr/bin/cppcheck ./cli
 # check if showtime=top5 works
@@ -86,10 +86,10 @@ matrix:
         - python -m compileall ./addons
         - python3 -m compileall ./addons
 # run pylint
-        - cd addons
-#        - pylint *.py y2038/*.py ! First resolve https://trac.cppcheck.net/ticket/9210 "y2038 addon no longer working"
-        - pylint *.py
-        - cd ..
+#        - pylint --rcfile=pylintrc_travis addons/y2038/*.py ! First resolve https://trac.cppcheck.net/ticket/9210 "y2038 addon no longer working"
+        - pylint --rcfile=pylintrc_travis addons/*.py
+        - pylint --rcfile=pylintrc_travis htmlreport/*.py
+        - pylint --rcfile=pylintrc_travis tools/*.py
 # check python syntax by compiling some selected scripts
         - python -m py_compile ./tools/donate-cpu.py
         - python3 -m py_compile ./tools/donate-cpu.py
@@ -109,16 +109,16 @@ matrix:
         - cd ../../
 # check addons/misra.py
         - cd addons/test
-        - ${CPPCHECK} --dump misra-test.c
-        - python3 ../misra.py -verify misra-test.c.dump
-        - ${CPPCHECK} --dump misra-test.cpp
-        - python3 ../misra.py -verify misra-test.cpp.dump
-        - python ../misra.py --rule-texts=misra2012_rules_dummy_ascii.txt -verify misra-test.cpp.dump
-        - python3 ../misra.py --rule-texts=misra2012_rules_dummy_ascii.txt -verify misra-test.cpp.dump
-        - python ../misra.py --rule-texts=misra2012_rules_dummy_utf8.txt -verify misra-test.cpp.dump
-        - python3 ../misra.py --rule-texts=misra2012_rules_dummy_utf8.txt -verify misra-test.cpp.dump
-        - python ../misra.py --rule-texts=misra2012_rules_dummy_windows1250.txt -verify misra-test.cpp.dump
-        - python3 ../misra.py --rule-texts=misra2012_rules_dummy_windows1250.txt -verify misra-test.cpp.dump
+        - ${CPPCHECK} --dump misra/misra-test.c
+        - python3 ../misra.py -verify misra/misra-test.c.dump
+        - ${CPPCHECK} --dump misra/misra-test.cpp
+        - python3 ../misra.py -verify misra/misra-test.cpp.dump
+        - python ../misra.py --rule-texts=misra/misra2012_rules_dummy_ascii.txt -verify misra/misra-test.cpp.dump
+        - python3 ../misra.py --rule-texts=misra/misra2012_rules_dummy_ascii.txt -verify misra/misra-test.cpp.dump
+        - python ../misra.py --rule-texts=misra/misra2012_rules_dummy_utf8.txt -verify misra/misra-test.cpp.dump
+        - python3 ../misra.py --rule-texts=misra/misra2012_rules_dummy_utf8.txt -verify misra/misra-test.cpp.dump
+        - python ../misra.py --rule-texts=misra/misra2012_rules_dummy_windows1250.txt -verify misra/misra-test.cpp.dump
+        - python3 ../misra.py --rule-texts=misra/misra2012_rules_dummy_windows1250.txt -verify misra/misra-test.cpp.dump
         - cd ../../
 # check addons/naming.py
         - cd addons/test
@@ -136,32 +136,6 @@ matrix:
         - cmake -G "Unix Makefiles" ..
         - cd ..
 
-# check clang sources with cppcheck and look for crashes
-    - name: "check clang sources with cppcheck"
-      compiler: clang
-      script:
-        - wget "https://github.com/llvm-mirror/clang/archive/a1f8bd3778cc5a53236a53500c6ab184e945eefa.zip" & MATCHCOMPILER=yes VERIFY=1 make -j 2 & wait
-        - unzip a1f8bd3778cc5a53236a53500c6ab184e945eefa.zip > /dev/null
-        - touch /tmp/clang.cppcheck
-        - cd ./clang-a1f8bd3778cc5a53236a53500c6ab184e945eefa
-        - ${CPPCHECK} . --max-configs=1 --enable=all --inconclusive --exception-handling --template="{callstack} ({severity}) {message} [{id}]" -iINPUTS -itest/Driver/Inputs/gen-response.c -itest/Index/index-many-logical-ops.c -itest/Sema/many-logical-ops.c --suppressions-list=../.travis_llvmcheck_suppressions -j 2 |& grep -v ".* files checked.*done" |& tee /tmp/clang.cppcheck
-        - cd ../
-        - echo "CLANG"
-        - grep "process crashed with signal\|Internal error\. compiled" /tmp/clang.cppcheck || true
-        - grep -qv "process crashed with signal\|Internal error\. compiled" /tmp/clang.cppcheck
-# check llvm sources with cppcheck and look for crashes
-    - name: "check llvm sources with cppcheck"
-      compiler: clang
-      script:
-        - wget "https://github.com/llvm-mirror/llvm/archive/6fa6453210fa34c1c28bd73a431d04734549f0d6.zip"  & MATCHCOMPILER=yes VERIFY=1 make -j 2 & wait
-        - unzip 6fa6453210fa34c1c28bd73a431d04734549f0d6.zip > /dev/null
-        - touch /tmp/llvm.cppcheck
-        - cd ./llvm-6fa6453210fa34c1c28bd73a431d04734549f0d6
-        - ${CPPCHECK} . --max-configs=1 --enable=all --inconclusive --exception-handling --template="{callstack} ({severity}) {message} [{id}]" --suppressions-list=../.travis_llvmcheck_suppressions -j 2 |& grep -v ".* files checked.*done" |& tee /tmp/llvm.cppcheck
-        - cd ../
-        - echo "LLVM"
-        - grep "process crashed with signal\|Internal error\. compiled" /tmp/llvm.cppcheck || true
-        - grep -qv "process crashed with signal\|Internal error\. compiled" /tmp/llvm.cppcheck
 # check if dmake needs to be rerun (this job may fail)
     - name: "rerun dmake?"
       compiler: clang
@@ -173,17 +147,6 @@ matrix:
         - make -s dmake -j2
         - make -s run-dmake
         - git diff --exit-code
-# check if cppcheck builds on precise
-    - name: "make ubuntu 12.04 precise"
-      compiler: gcc
-      dist: precise
-      before_install:
-        - travis_retry sudo apt-get update -qq
-        - travis_retry sudo apt-get install libxml2-utils libpcre3
-      script:
-        - CXX=g++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck testrunner -j 2
-        - make clean
-        - CXX=clang++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck testrunner -j 2
 # check if cppcheck builds on trusty
     - name: "make ubuntu 14.04 trusty"
       compiler: gcc
