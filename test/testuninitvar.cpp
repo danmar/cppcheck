@@ -4058,7 +4058,6 @@ private:
                         "    return ostr.str();\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
-
         // #9281
         valueFlowUninit("struct s {\n"
                         "    char a[20];\n"
@@ -4084,7 +4083,7 @@ private:
                         "    c->x = 42;\n"
                         "    return c->x;\n"
                         "}\n");
-        ASSERT_EQUALS("error", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: c\n", errout.str());
 
         valueFlowUninit("struct A {\n"
                         "    double x;\n"
