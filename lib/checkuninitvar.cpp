@@ -1334,9 +1334,11 @@ void CheckUninitVar::valueFlowUninit()
             const bool deref = CheckNullPointer::isPointerDeRef(tok, unknown, mSettings);
             if (v->indirect == 1 && !deref)
                 continue;
-            if (Token::Match(tok->astParent(), ". %var%") && !(isLeafDot(tok) || deref))
+            const bool uninitderef = deref && v->indirect == 0;
+            const bool isleaf = isLeafDot(tok) || uninitderef;
+            if (Token::Match(tok->astParent(), ". %var%") && !isleaf)
                 continue;
-            if (!Token::Match(tok->astParent(), ". %name% (") && isVariableChanged(tok, mSettings, mTokenizer->isCPP()))
+            if (!Token::Match(tok->astParent(), ". %name% (") && !uninitderef && isVariableChanged(tok, mSettings, mTokenizer->isCPP()))
                 continue;
             uninitvarError(tok, tok->str(), v->errorPath);
             const Token * nextTok = tok;
