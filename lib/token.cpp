@@ -1627,7 +1627,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     break;
                 }
                 if (value.indirect > 0)
-                    for(int i=0;i<value.indirect;i++)
+                    for (int i=0; i<value.indirect; i++)
                         out << "*";
             }
         }

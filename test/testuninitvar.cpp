@@ -3076,6 +3076,13 @@ private:
 
         checkUninitVar("struct AB { int a; int b; };\n"
                        "void f(void) {\n"
+                       "    AB ab1;\n"
+                       "    AB ab2 = { ab1.a, 0 };\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized struct member: ab1.a\n", errout.str());
+
+        checkUninitVar("struct AB { int a; int b; };\n"
+                       "void f(void) {\n"
                        "    struct AB ab;\n"
                        "    buf[ab.a] = 0;\n"
                        "}\n", "test.c");
