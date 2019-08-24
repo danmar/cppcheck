@@ -18,7 +18,7 @@ env:
 before_install:
 # install needed deps
  - travis_retry sudo apt-get update -qq
- - travis_retry sudo apt-get install -qq python-pygments qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet
+ - travis_retry sudo apt-get install -qq python-pygments qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet python3-dev
  - travis_retry python2 -m pip install --user pytest==4.6.4
  - travis_retry python2 -m pip install --user pylint
  - travis_retry python2 -m pip install --user unittest2
