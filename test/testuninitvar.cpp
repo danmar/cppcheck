@@ -3978,6 +3978,12 @@ private:
                         "  if (2 < sizeof(*x)) {}\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("void foo() {\n" // #5259 - False negative
+                        "    int a;\n"
+                        "    int x[] = {a,2};\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
     }
 
     void uninitvar_ipa() {

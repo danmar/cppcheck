@@ -973,6 +973,16 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
         }
     }
 
+    {
+        const Token *parent = vartok->astParent();
+        while (parent && parent->isCast())
+            parent = parent->astParent();
+        while (parent && parent->str() == ",")
+            parent = parent->astParent();
+        if (Token::simpleMatch(parent, "{"))
+            return true;
+    }
+
     if (Token::Match(vartok->previous(), "++|--|%cop%")) {
         if (mTokenizer->isCPP() && alloc == ARRAY && Token::Match(vartok->tokAt(-4), "& %var% =|( *"))
             return false;
