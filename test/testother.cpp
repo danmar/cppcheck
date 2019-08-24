@@ -6172,6 +6172,14 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // ({ })
+        check("void f() {\n"
+              "  int x;\n"
+              "  x = 321;\n"
+              "  x = ({ asm(123); })\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // from #3103 (avoid a false negative)
         check("int foo(){\n"
               "    int x;\n"

@@ -1331,6 +1331,15 @@ static bool nonLocal(const Variable* var, bool deref)
     return !var || (!var->isLocal() && !var->isArgument()) || (deref && var->isArgument() && var->isPointer()) || var->isStatic() || var->isReference() || var->isExtern();
 }
 
+static bool hasGccCompoundStatement(const Token *tok)
+{
+    if (!tok)
+        return false;
+    if (tok->str() == "{" && Token::simpleMatch(tok->previous(), "( {"))
+        return true;
+    return hasGccCompoundStatement(tok->astOperand1()) || hasGccCompoundStatement(tok->astOperand2());
+}
+
 static bool hasFunctionCall(const Token *tok)
 {
     if (!tok)
@@ -1688,6 +1697,9 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                         return Result(Result::Type::READ);
                     continue;
                 }
+                // ({ .. })
+                if (hasGccCompoundStatement(parent->astParent()->astOperand2()))
+                    return Result(Result::Type::BAILOUT);
                 const bool reassign = isSameExpression(mCpp, false, expr, parent, mLibrary, false, false, nullptr);
                 if (reassign)
                     return Result(Result::Type::WRITE, parent->astParent());
