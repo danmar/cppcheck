@@ -550,9 +550,9 @@ void CheckOther::redundantAssignmentError(const Token *tok1, const Token* tok2, 
 
 void CheckOther::redundantInitializationError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive)
 {
-    const std::list<const Token *> callstack = { tok1, tok2 };
+    const std::list<const Token *> callstack = { tok2, tok1 };
     reportError(callstack, Severity::style, "redundantInitialization",
-                "$symbol:" + var + "\nRedundant initialization for '$symbol'. The initialized value is never used.",
+                "$symbol:" + var + "\nRedundant initialization for '$symbol'. The initialized value is overwritten before it is read.",
                 CWE563,
                 inconclusive);
 }
