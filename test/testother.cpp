@@ -171,6 +171,7 @@ private:
         TEST_CASE(redundantVarAssignment_after_switch);
         TEST_CASE(redundantVarAssignment_pointer);
         TEST_CASE(redundantVarAssignment_pointer_parameter);
+        TEST_CASE(redundantInitialization);
         TEST_CASE(redundantMemWrite);
 
         TEST_CASE(varFuncNullUB);
@@ -6544,6 +6545,32 @@ private:
               "    *p = 1;\n"
               "    if (condition) return;\n"
               "    *p = 2;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void redundantInitialization() {
+        check("void f() {\n"
+              "    int err = -ENOMEM;\n"
+              "    err = dostuff();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Redundant initialization for 'err'. The initialized value is never used.\n", errout.str());
+
+        check("void f() {\n"
+              "    struct S s = {1,2,3};\n"
+              "    s = dostuff();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Redundant initialization for 's'. The initialized value is never used.\n", errout.str());
+
+        check("void f() {\n"
+              "    int *p = NULL;\n"
+              "    p = dostuff();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    struct S s = {0};\n"
+              "    s = dostuff();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

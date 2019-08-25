@@ -230,6 +230,7 @@ private:
     void zerodivError(const Token *tok, const ValueFlow::Value *value);
     void nanInArithmeticExpressionError(const Token *tok);
     void redundantAssignmentError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive);
+    void redundantInitializationError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive);
     void redundantAssignmentInSwitchError(const Token *tok1, const Token *tok2, const std::string &var);
     void redundantCopyError(const Token *tok1, const Token* tok2, const std::string& var);
     void redundantCopyInSwitchError(const Token *tok1, const Token* tok2, const std::string &var);
@@ -285,7 +286,6 @@ private:
         //performance
         c.redundantCopyError(nullptr,  "varname");
         c.redundantCopyError(nullptr, nullptr, "var");
-        c.redundantAssignmentError(nullptr, nullptr, "var", false);
 
         // style/warning
         c.checkComparisonFunctionIsAlwaysTrueOrFalseError(nullptr, "isless","varName",false);
@@ -333,6 +333,8 @@ private:
         c.shadowError(nullptr, nullptr, "argument");
         c.constArgumentError(nullptr, nullptr, nullptr);
         c.comparePointersError(nullptr, nullptr, nullptr);
+        c.redundantAssignmentError(nullptr, nullptr, "var", false);
+        c.redundantInitializationError(nullptr, nullptr, "var", false);
 
         const std::vector<const Token *> nullvec;
         c.funcArgOrderDifferent("function", nullptr, nullptr, nullvec, nullvec);
