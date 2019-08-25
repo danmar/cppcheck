@@ -2832,7 +2832,10 @@ ValueFlow::Value getLifetimeObjValue(const Token *tok)
     return result;
 }
 
-static const Token *getLifetimeToken(const Token *tok, ValueFlow::Value::ErrorPath &errorPath, bool* addressOf = nullptr, int depth = 20)
+static const Token* getLifetimeToken(const Token* tok,
+                                     ValueFlow::Value::ErrorPath& errorPath,
+                                     bool* addressOf = nullptr,
+                                     int depth = 20)
 {
     if (!tok)
         return nullptr;
@@ -2864,28 +2867,28 @@ static const Token *getLifetimeToken(const Token *tok, ValueFlow::Value::ErrorPa
         if (f) {
             if (!Function::returnsReference(f))
                 return tok;
-            const Token *returnTok = findSimpleReturn(f);
+            const Token* returnTok = findSimpleReturn(f);
             if (!returnTok)
                 return tok;
             if (returnTok == tok)
                 return tok;
-            const Token *argvarTok = getLifetimeToken(returnTok, errorPath, addressOf, depth - 1);
+            const Token* argvarTok = getLifetimeToken(returnTok, errorPath, addressOf, depth - 1);
             if (!argvarTok)
                 return tok;
-            const Variable *argvar = argvarTok->variable();
+            const Variable* argvar = argvarTok->variable();
             if (!argvar)
                 return tok;
             if (argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
                 int n = getArgumentPos(argvar, f);
                 if (n < 0)
                     return nullptr;
-                const Token *argTok = getArguments(tok->previous()).at(n);
+                const Token* argTok = getArguments(tok->previous()).at(n);
                 errorPath.emplace_back(returnTok, "Return reference.");
                 errorPath.emplace_back(tok->previous(), "Called function passing '" + argTok->str() + "'.");
                 return getLifetimeToken(argTok, errorPath, addressOf, depth - 1);
             }
         } else if (Token::Match(tok->tokAt(-2), ". %name% (") && astIsContainer(tok->tokAt(-2)->astOperand1())) {
-            const Library::Container * library = getLibraryContainer(tok->tokAt(-2)->astOperand1());
+            const Library::Container* library = getLibraryContainer(tok->tokAt(-2)->astOperand1());
             Library::Container::Yield y = library->getYield(tok->previous()->str());
             if (y == Library::Container::Yield::AT_INDEX || y == Library::Container::Yield::ITEM) {
                 errorPath.emplace_back(tok->previous(), "Accessing container.");
@@ -2927,9 +2930,9 @@ static const Token *getLifetimeToken(const Token *tok, ValueFlow::Value::ErrorPa
     return tok;
 }
 
-const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPath &errorPath, bool* addressOf)
+const Variable* getLifetimeVariable(const Token* tok, ValueFlow::Value::ErrorPath& errorPath, bool* addressOf)
 {
-    const Token *tok2 = getLifetimeToken(tok, errorPath, addressOf);
+    const Token* tok2 = getLifetimeToken(tok, errorPath, addressOf);
     if (tok2 && tok2->variable())
         return tok2->variable();
     return nullptr;

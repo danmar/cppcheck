@@ -793,10 +793,10 @@ static bool isVariableDecl(const Token* tok)
 {
     if (!tok)
         return false;
-    const Variable *var = tok->variable();
+    const Variable* var = tok->variable();
     if (!var)
         return false;
-    if (var->nameToken() == tok) 
+    if (var->nameToken() == tok)
         return true;
     if (Token::Match(var->declEndToken(), "; %var%") && var->declEndToken()->next() == tok)
         return true;
@@ -834,11 +834,12 @@ void CheckStl::invalidContainer()
                 if (info.tok->variable()->isReference() && !isVariableDecl(info.tok)) {
                     ErrorPath ep;
                     bool addressOf = false;
-                    const Variable *var = getLifetimeVariable(info.tok, ep, &addressOf);
+                    const Variable* var = getLifetimeVariable(info.tok, ep, &addressOf);
                     // Check the reference is created before the change
                     if (var && !addressOf) {
                         // An argument always reaches
-                        if (var->isArgument() || (!var->isReference() && !var->isRValueReference() && !isVariableDecl(tok) && reaches(var->nameToken(), tok, library, &ep))) {
+                        if (var->isArgument() || (!var->isReference() && !var->isRValueReference() &&
+                                                  !isVariableDecl(tok) && reaches(var->nameToken(), tok, library, &ep))) {
                             errorPath = ep;
                             return true;
                         }
@@ -886,11 +887,12 @@ void CheckStl::invalidContainerError(const Token *tok, const Token * contTok, co
     reportError(errorPath, Severity::error, "invalidContainer", msg + " that may be invalid.", CWE664, false);
 }
 
-void CheckStl::invalidContainerReferenceError(const Token *tok, const Token * contTok, ErrorPath errorPath)
+void CheckStl::invalidContainerReferenceError(const Token* tok, const Token* contTok, ErrorPath errorPath)
 {
     std::string method = contTok ? contTok->strAt(2) : "erase";
     std::string name = contTok ? contTok->expressionString() : "x";
-    errorPath.emplace_back(contTok, "After calling '" + method + "', iterators or references to the container's data may be invalid .");
+    errorPath.emplace_back(
+        contTok, "After calling '" + method + "', iterators or references to the container's data may be invalid .");
     std::string msg = "Reference to " + name;
     errorPath.emplace_back(tok, "");
     reportError(errorPath, Severity::error, "invalidContainerReference", msg + " that may be invalid.", CWE664, false);
