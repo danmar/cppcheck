@@ -595,6 +595,61 @@ Newline
 
 Carriage return
 
+# Safe checking
+
+This is pedantic checking. It can warn even if your code works perfectly.
+
+Basically:
+
+ * A function is "safe" if it can't crash.
+ * A class is "safe" if it can't crash.
+
+As an example, this function is not "safe":
+
+    int dostuff(int x)
+    {
+        int a[] = {1, 2, 3, 4};
+        return a[x];
+    }
+
+This code might work perfectly, if the value of `x` is always 0-3.
+
+But it is not "safe". If the value of `x` would be negative or greater than 4, then it could crash.
+
+Important: If Cppcheck complains that your function is not "safe" then this does not mean there is a real bug.
+
+## Activate "safe" checks
+
+The "safe" checks can be activated in the Cppcheck-GUI in the project settings.
+
+## Annotations
+
+With annotations you can limit the safety checks.
+
+Using MS SAL:
+
+    int dostuff(_In_range_(0,3) int x)
+    {
+        int a[] = {1, 2, 3, 4};
+        return a[x];
+    }
+
+Using Cppcheck annotations:
+
+    int dostuff(__cppcheck_low__(0) __cppcheck_high__(3) int x)
+    {
+        int a[] = {1, 2, 3, 4};
+        return a[x];
+    }
+
+Using C++ code contracts:
+
+    int dostuff(int x) [[expects: x >= 0 && x <= 3]]
+    {
+        int a[] = {1, 2, 3, 4};
+        return a[x];
+    }
+
 # Addons
 
 Addons are scripts with extra checks. Cppcheck is distributed with a few addons.
