@@ -6554,13 +6554,13 @@ private:
               "    int err = -ENOMEM;\n"
               "    err = dostuff();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Redundant initialization for 'err'. The initialized value is never used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style) Redundant initialization for 'err'. The initialized value is overwritten before it is read.\n", errout.str());
 
         check("void f() {\n"
               "    struct S s = {1,2,3};\n"
               "    s = dostuff();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Redundant initialization for 's'. The initialized value is never used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style) Redundant initialization for 's'. The initialized value is overwritten before it is read.\n", errout.str());
 
         check("void f() {\n"
               "    int *p = NULL;\n"
