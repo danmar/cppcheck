@@ -7,6 +7,7 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
+#include <wx/wx.h>
 #include <wx/app.h>
 #include <wx/log.h>
 #include <wx/filefn.h>
