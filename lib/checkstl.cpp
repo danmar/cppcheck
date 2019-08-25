@@ -789,6 +789,20 @@ static bool isInvalidMethod(const Token * tok)
     return false;
 }
 
+static bool isVariableDecl(const Token* tok)
+{
+    if (!tok)
+        return false;
+    const Variable *var = tok->variable();
+    if (!var)
+        return false;
+    if (var->nameToken() == tok) 
+        return true;
+    if (Token::Match(var->declEndToken(), "; %var%") && var->declEndToken()->next() == tok)
+        return true;
+    return false;
+}
+
 void CheckStl::invalidContainer()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -817,13 +831,17 @@ void CheckStl::invalidContainer()
                     return false;
                 if (info.tok->varId() == skipVarId)
                     return false;
-                if (info.tok->variable()->isReference()) {
+                if (info.tok->variable()->isReference() && !isVariableDecl(info.tok)) {
                     ErrorPath ep;
-                    const Variable *var = getLifetimeVariable(info.tok, ep);
+                    bool addressOf = false;
+                    const Variable *var = getLifetimeVariable(info.tok, ep, &addressOf);
                     // Check the reference is created before the change
-                    if (var && !var->isReference() && !var->isRValueReference() && var->nameToken() != tok && reaches(var->nameToken(), tok, library, &ep)) {
-                        errorPath = ep;
-                        return true;
+                    if (var && !addressOf) {
+                        // An argument always reaches
+                        if (var->isArgument() || (!var->isReference() && !var->isRValueReference() && !isVariableDecl(tok) && reaches(var->nameToken(), tok, library, &ep))) {
+                            errorPath = ep;
+                            return true;
+                        }
                     }
                 }
                 for (const ValueFlow::Value& val:info.tok->values()) {
