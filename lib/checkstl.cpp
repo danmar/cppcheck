@@ -831,7 +831,10 @@ void CheckStl::invalidContainer()
                     return false;
                 if (info.tok->varId() == skipVarId)
                     return false;
-                if (info.tok->variable()->isReference() && !isVariableDecl(info.tok)) {
+                if (info.tok->variable()->isReference() && 
+                    !isVariableDecl(info.tok) && 
+                    reaches(info.tok->variable()->nameToken(), tok, library, nullptr)) {
+                    
                     ErrorPath ep;
                     bool addressOf = false;
                     const Variable* var = getLifetimeVariable(info.tok, ep, &addressOf);

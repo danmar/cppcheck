@@ -3947,6 +3947,22 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
+
+        check("const std::vector<int> * g(int);\n"
+              "void f() {\n"
+              "    const std::vector<int> *v = g(1);\n"
+              "    if (v && v->size() == 1U) {\n"
+              "        const int &m = v->front();\n"
+              "    }\n"
+              "\n"
+              "    v = g(2);\n"
+              "    if (v && v->size() == 1U) {\n"
+              "        const int &m = v->front();\n"
+              "        if (m == 0) {}\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void findInsert() {
