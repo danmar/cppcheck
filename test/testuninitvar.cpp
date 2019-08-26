@@ -4104,7 +4104,7 @@ private:
                         "double b() {\n"
                         "    A c;\n"
                         "    c.x = 42;\n"
-                        "    return c->x;\n"
+                        "    return c.x;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
 
