@@ -310,6 +310,7 @@ static bool isEscapeScope(const Token* tok, TokenList * tokenlist, bool unknown 
 {
     if (!Token::simpleMatch(tok, "{"))
         return false;
+    // TODO this search for termTok in all subscopes. It should check the end of the scope.
     const Token * termTok = Token::findmatch(tok, "return|continue|break|throw|goto", tok->link());
     if (termTok && termTok->scope() == tok->scope())
         return true;
