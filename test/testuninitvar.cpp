@@ -4028,6 +4028,32 @@ private:
                         "}\n");
         ASSERT_EQUALS("[test.cpp:8]: (error) Uninitialized variable: pcdata\n", errout.str());
 
+        // # 9293
+        valueFlowUninit("struct S {\n"
+                        "  int x;\n"
+                        "  int y;\n"
+                        "};\n"
+                        "\n"
+                        "void f() {\n"
+                        "    struct S s1;\n"
+                        "    int * x = &s1.x;\n"
+                        "    struct S s2 = {*x, 0};  \n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:9]: (error) Uninitialized variable: *x\n", errout.str());
+
+        valueFlowUninit("struct S {\n"
+                        "  int x;\n"
+                        "  int y;\n"
+                        "};\n"
+                        "\n"
+                        "void f() {\n"
+                        "    struct S s1;\n"
+                        "    struct S s2;\n"
+                        "    int * x = &s1.x;\n"
+                        "    s2.x = *x;  \n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:10]: (error) Uninitialized variable: *x\n", errout.str());
+
         valueFlowUninit("void f(bool * x) {\n"
                         "    *x = false;\n"
                         "}\n"
