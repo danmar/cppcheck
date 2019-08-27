@@ -91,6 +91,7 @@
 #include "path.h"
 
 #include <algorithm>
+#include <cassert>
 #include <cstddef>
 #include <functional>
 #include <iterator>
@@ -308,12 +309,19 @@ static void fillProgramMemoryFromConditions(ProgramMemory& pm, const Scope* scop
 {
     if (!scope)
         return;
-    if (scope->type == Scope::eFunction)
+    if (!scope->isLocal())
         return;
+    assert(scope != scope->nestedIn);
     fillProgramMemoryFromConditions(pm, scope->nestedIn, endTok, settings);
-    if (scope->type == Scope::eIf || scope->type == Scope::eWhile)
+    if (scope->type == Scope::eIf || scope->type == Scope::eWhile || scope->type == Scope::eElse)
     {
-        const Token * condEndTok = scope->bodyStart->previous();
+        const Token * bodyStart = scope->bodyStart;
+        if (scope->type == Scope::eElse) {
+            if (!Token::simpleMatch(bodyStart->tokAt(-2), "} else {"))
+                return;
+            bodyStart = bodyStart->tokAt(-2)->link();
+        }
+        const Token * condEndTok = bodyStart->previous();
         if (!Token::simpleMatch(condEndTok, ") {"))
             return;
         const Token * condStartTok = condEndTok->link();
@@ -322,7 +330,7 @@ static void fillProgramMemoryFromConditions(ProgramMemory& pm, const Scope* scop
         if (!Token::Match(condStartTok->previous(), "if|while ("))
             return;
         const Token * condTok = condStartTok->astOperand2();
-        programMemoryParseCondition(pm, condTok, endTok, settings, true);
+        programMemoryParseCondition(pm, condTok, endTok, settings, scope->type != Scope::eElse);
     }
 }
 
@@ -392,13 +400,7 @@ static ProgramMemory getProgramMemory(const Token *tok, nonneg int varid, const 
     if (value.varId)
         programMemory.setIntValue(value.varId, value.varvalue);
     const ProgramMemory state = programMemory;
-    ProgramMemory prevState = programMemory;
-    if (value.tokvalue)
-        fillProgramMemoryFromAssignments(programMemory, value.tokvalue, state, {});
-    if (value.condition)
-        fillProgramMemoryFromAssignments(programMemory, value.condition, state, {});
     fillProgramMemoryFromAssignments(programMemory, tok, state, {{varid, value}});
-    programMemory.insert(prevState);
     return programMemory;
 }
 
