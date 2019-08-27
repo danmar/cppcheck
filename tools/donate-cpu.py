@@ -40,7 +40,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.29"
+CLIENT_VERSION = "1.1.30"
 
 
 def check_requirements():
@@ -54,21 +54,36 @@ def check_requirements():
     return result
 
 
-def get_cppcheck(cppcheck_path):
+def get_cppcheck(cppcheck_path, work_path):
     print('Get Cppcheck..')
     for i in range(5):
         if os.path.exists(cppcheck_path):
-            os.chdir(cppcheck_path)
-            subprocess.call(['git', 'checkout', '-f'])
-            subprocess.call(['git', 'pull'])
+            try:
+                os.chdir(cppcheck_path)
+                subprocess.check_call(['git', 'checkout', '-f'])
+                subprocess.check_call(['git', 'pull'])
+            except:
+                print('Failed to update Cppcheck sources! Retrying..')
+                time.sleep(10)
+                continue
         else:
-            subprocess.call(['git', 'clone', 'https://github.com/danmar/cppcheck.git', cppcheck_path])
-            if not os.path.exists(cppcheck_path):
+            try:
+                subprocess.check_call(['git', 'clone', 'https://github.com/danmar/cppcheck.git', cppcheck_path])
+            except:
                 print('Failed to clone, will try again in 10 minutes..')
                 time.sleep(600)
                 continue
         time.sleep(2)
         return True
+    if os.path.exists(cppcheck_path):
+        print('Failed to update Cppcheck sources, trying a fresh clone..')
+        try:
+            os.chdir(work_path)
+            shutil.rmtree(cppcheck_path)
+            get_cppcheck(cppcheck_path, work_path)
+        except:
+            print('Failed to remove Cppcheck folder, please manually remove ' + work_path)
+            return False
     return False
 
 
@@ -522,7 +537,7 @@ while True:
         if stop_time < time.strftime('%H:%M'):
             print('Stopping. Thank you!')
             sys.exit(0)
-    if not get_cppcheck(cppcheck_path):
+    if not get_cppcheck(cppcheck_path, work_path):
         print('Failed to clone Cppcheck, retry later')
         sys.exit(1)
     cppcheck_versions = get_cppcheck_versions(server_address)
