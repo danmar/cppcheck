@@ -40,7 +40,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.30"
+CLIENT_VERSION = "1.1.31"
 
 
 def check_requirements():
@@ -281,7 +281,7 @@ def scan_package(work_path, cppcheck_path, jobs):
                        'python': ['<Python.h>', '"Python.h"'],
                        'qt': ['<QApplication>', '<QList>', '<QObject>', '<QString>', '<QWidget>', '<QtWidgets>', '<QtGui'],
                        'ruby': ['<ruby.h>', '<ruby/'],
-                       'sdl': ['<SDL.h>'],
+                       'sdl': ['<SDL.h>', '<SDL/SDL.h>', '<SDL2/SDL.h>'],
                        'sqlite3': ['<sqlite3.h>', '"sqlite3.h"'],
                        'tinyxml2': ['<tinyxml2', '"tinyxml2'],
                        'wxwidgets': ['<wx/', '"wx/'],
