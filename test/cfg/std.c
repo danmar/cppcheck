@@ -1598,6 +1598,15 @@ void uninitvar_mbrlen(const char* p, size_t m, mbstate_t* s)
     (void)mbrlen(p,m,s);
 }
 
+void nullPointer_mbrlen(const char* p, size_t m, mbstate_t* s)
+{
+    /* no warning is expected: A call to the function with a null pointer as pmb resets the shift state (and ignores parameter max). */
+    (void)mbrlen(NULL,m,s);
+    (void)mbrlen(NULL,0,s);
+    /* cppcheck-suppress nullPointer */
+    (void)mbrlen(p,m,NULL);
+}
+
 void uninitvar_btowc(void)
 {
     int c;
