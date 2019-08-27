@@ -266,9 +266,13 @@ static const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_val
     return nullptr;
 }
 
-static void getProgramMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Token* endTok, const Settings* settings)
+static void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Token* endTok, const Settings* settings, bool then)
 {
-    if (Token::Match(tok, "==|>=|<=")) {
+    if (Token::Match(tok, "==|>=|<=|<|>|!=")) {
+        if (then && !Token::Match(tok, "==|>=|<="))
+            return;
+        if (!then && !Token::Match(tok, "<|>|!="))
+            return;
         ValueFlow::Value truevalue;
         ValueFlow::Value falsevalue;
         const Token* vartok = parseCompareInt(tok, truevalue, falsevalue);
@@ -280,65 +284,78 @@ static void getProgramMemoryParseCondition(ProgramMemory& pm, const Token* tok, 
             return;
         if (isVariableChanged(tok->next(), endTok, vartok->varId(), false, settings, true))
             return;
-        pm.setIntValue(vartok->varId(), truevalue.intvalue);
+        pm.setIntValue(vartok->varId(),  then ? truevalue.intvalue : falsevalue.intvalue);
     } else if (Token::Match(tok, "%var%")) {
         if (tok->varId() == 0)
             return;
+        if (then && !astIsPointer(tok) && !astIsBool(tok))
+            return;
         if (isVariableChanged(tok->next(), endTok, tok->varId(), false, settings, true))
             return;
-        pm.setIntValue(tok->varId(), 1);
+        pm.setIntValue(tok->varId(), then);
+    } else if (Token::simpleMatch(tok, "!")) {
+        programMemoryParseCondition(pm, tok->astOperand1(), endTok, settings, !then);
+    } else if (then && Token::simpleMatch(tok, "&&")) {
+        programMemoryParseCondition(pm, tok->astOperand1(), endTok, settings, then);
+        programMemoryParseCondition(pm, tok->astOperand2(), endTok, settings, then);
+    } else if (!then && Token::simpleMatch(tok, "||")) {
+        programMemoryParseCondition(pm, tok->astOperand1(), endTok, settings, then);
+        programMemoryParseCondition(pm, tok->astOperand2(), endTok, settings, then);
     }
 }
 
-static void getProgramMemoryFromConditions(ProgramMemory& pm, const Scope* scope, const Token* endTok, const Settings* settings)
+static void fillProgramMemoryFromConditions(ProgramMemory& pm, const Scope* scope, const Token* endTok, const Settings* settings)
 {
     if (!scope)
         return;
     if (scope->type == Scope::eFunction)
         return;
-    getProgramMemoryFromConditions(pm, scope->nestedIn, endTok, settings);
-    if (scope->type == Scope::eIf)
+    fillProgramMemoryFromConditions(pm, scope->nestedIn, endTok, settings);
+    if (scope->type == Scope::eIf || scope->type == Scope::eWhile)
     {
-        if (Token::simpleMatch(scope->bodyStart->previous(), ") {") && Token::Match(scope->bodyStart->previous()->link()->previous(), "if|while (")) {
-            const Token * condTok = scope->bodyStart->previous()->link()->previous()->astOperand2();
-            getProgramMemoryParseCondition(pm, condTok, endTok, settings);
-        }
+        const Token * condEndTok = scope->bodyStart->previous();
+        if (!Token::simpleMatch(condEndTok, ") {"))
+            return;
+        const Token * condStartTok = condEndTok->link();
+        if (!condStartTok)
+            return;
+        if (!Token::Match(condStartTok->previous(), "if|while ("))
+            return;
+        const Token * condTok = condStartTok->astOperand2();
+        programMemoryParseCondition(pm, condTok, endTok, settings, true);
     }
 }
 
-static ProgramMemory getProgramMemoryFromConditions(const Token* tok, const Settings* settings)
+static void fillProgramMemoryFromConditions(ProgramMemory& pm, const Token* tok, const Settings* settings)
 {
-    ProgramMemory pm;
-    getProgramMemoryFromConditions(pm, tok->scope(), tok, settings);
-    return pm;
+    fillProgramMemoryFromConditions(pm, tok->scope(), tok, settings);
 }
 
-/**
- * Get program memory by looking backwards from given token.
- */
-static ProgramMemory getProgramMemory(const Token *tok, nonneg int varid, const ValueFlow::Value &value)
+static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok, const ProgramMemory& state, std::unordered_map<nonneg int, ValueFlow::Value> vars)
 {
-    ProgramMemory programMemory;
-    programMemory.setValue(varid, value);
-    if (value.varId)
-        programMemory.setIntValue(value.varId, value.varvalue);
-    const ProgramMemory programMemory1(programMemory);
     int indentlevel = 0;
     for (const Token *tok2 = tok; tok2; tok2 = tok2->previous()) {
-        if (Token::Match(tok2, "[;{}] %varid% = %var% ;", varid)) {
-            const Token *vartok = tok2->tokAt(3);
-            programMemory.setValue(vartok->varId(), value);
-        } else if (Token::Match(tok2, "[;{}] %var% =") ||
-                   Token::Match(tok2, "[;{}] const| %type% %var% (")) {
+        bool setvar = false;
+        if (Token::Match(tok2, "[;{}] %var% = %var% ;")) {
+            for(auto&& p:vars) {
+                if (p.first != tok2->next()->varId())
+                    continue;
+                const Token *vartok = tok2->tokAt(3);
+                pm.setValue(vartok->varId(), p.second);
+                setvar = true;
+            }
+        }
+        if (!setvar && (Token::Match(tok2, "[;{}] %var% =") ||
+                   Token::Match(tok2, "[;{}] const| %type% %var% ("))) {
             const Token *vartok = tok2->next();
             while (vartok->next()->isName())
                 vartok = vartok->next();
-            if (!programMemory.hasValue(vartok->varId())) {
+            if (!pm.hasValue(vartok->varId())) {
                 MathLib::bigint result = 0;
                 bool error = false;
-                execute(vartok->next()->astOperand2(), &programMemory, &result, &error);
+                execute(vartok->next()->astOperand2(), &pm, &result, &error);
                 if (!error)
-                    programMemory.setIntValue(vartok->varId(), result);
+                    pm.setIntValue(vartok->varId(), result);
             }
         }
 
@@ -350,15 +367,38 @@ static ProgramMemory getProgramMemory(const Token *tok, nonneg int varid, const 
         if (tok2->str() == "}") {
             const Token *cond = tok2->link();
             cond = Token::simpleMatch(cond->previous(), ") {") ? cond->linkAt(-1) : nullptr;
-            if (cond && conditionIsFalse(cond->astOperand2(), programMemory1))
+            if (cond && conditionIsFalse(cond->astOperand2(), state))
                 tok2 = cond->previous();
-            else if (cond && conditionIsTrue(cond->astOperand2(), programMemory1)) {
+            else if (cond && conditionIsTrue(cond->astOperand2(), state)) {
                 ++indentlevel;
                 continue;
             } else
                 break;
         }
     }
+}
+
+/**
+ * Get program memory by looking backwards from given token.
+ */
+static ProgramMemory getProgramMemory(const Token *tok, nonneg int varid, const ValueFlow::Value &value)
+{
+    ProgramMemory programMemory;
+    if (value.tokvalue)
+        fillProgramMemoryFromConditions(programMemory, value.tokvalue, nullptr);
+    if (value.condition)
+        fillProgramMemoryFromConditions(programMemory, value.condition, nullptr);
+    programMemory.setValue(varid, value);
+    if (value.varId)
+        programMemory.setIntValue(value.varId, value.varvalue);
+    const ProgramMemory state = programMemory;
+    ProgramMemory prevState = programMemory;
+    if (value.tokvalue)
+        fillProgramMemoryFromAssignments(programMemory, value.tokvalue, state, {});
+    if (value.condition)
+        fillProgramMemoryFromAssignments(programMemory, value.condition, state, {});
+    fillProgramMemoryFromAssignments(programMemory, tok, state, {{varid, value}});
+    programMemory.insert(prevState);
     return programMemory;
 }
 
@@ -2304,8 +2344,6 @@ static bool valueFlowForward(Token * const               startToken,
                 }
                 // TODO: Compute program from tokvalue first
                 ProgramMemory programMemory = getProgramMemory(tok2, varid, v);
-                if (v.tokvalue)
-                    programMemory.insert(getProgramMemoryFromConditions(v.tokvalue, nullptr));
                 const bool isTrue = conditionIsTrue(condTok, programMemory);
                 const bool isFalse = conditionIsFalse(condTok, programMemory);
 
