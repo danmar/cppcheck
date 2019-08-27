@@ -1369,39 +1369,6 @@ void CheckUninitVar::valueFlowUninit()
     }
 }
 
-void CheckUninitVar::deadPointer()
-{
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-
-    // check every executable scope
-    for (const Scope &scope : symbolDatabase->scopeList) {
-        if (!scope.isExecutable())
-            continue;
-        // Dead pointers..
-        for (const Token* tok = scope.bodyStart; tok != scope.bodyEnd; tok = tok->next()) {
-            if (tok->variable() &&
-                tok->variable()->isPointer() &&
-                isVariableUsage(tok, true, NO_ALLOC)) {
-                const Token *alias = tok->getValueTokenDeadPointer();
-                if (alias) {
-                    deadPointerError(tok,alias);
-                }
-            }
-        }
-    }
-}
-
-void CheckUninitVar::deadPointerError(const Token *pointer, const Token *alias)
-{
-    const std::string strpointer(pointer ? pointer->str() : std::string("pointer"));
-    const std::string stralias(alias ? alias->expressionString() : std::string("&x"));
-
-    reportError(pointer,
-                Severity::error,
-                "deadpointer",
-                "$symbol:" + strpointer + "\nDead pointer usage. Pointer '$symbol' is dead if it has been assigned '" + stralias + "' at line " + MathLib::toString(alias ? alias->linenr() : 0U) + ".", CWE825, false);
-}
-
 std::string CheckUninitVar::MyFileInfo::toString() const
 {
     return CTU::toString(unsafeUsage);

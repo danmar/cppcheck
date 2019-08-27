@@ -86,9 +86,6 @@ private:
 
         TEST_CASE(isVariableUsageDeref); // *p
 
-        // dead pointer
-        TEST_CASE(deadPointer);
-
         // whole program analysis
         TEST_CASE(ctu);
     }
@@ -3933,21 +3930,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
-    void checkDeadPointer(const char code[]) {
-        // Clear the error buffer..
-        errout.str("");
-
-        // Tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        // Check code..
-        CheckUninitVar check(&tokenizer, &settings, this);
-        check.deadPointer();
-    }
-
     void valueFlowUninit(const char code[]) {
         // Clear the error buffer..
         errout.str("");
@@ -4164,69 +4146,6 @@ private:
                        "    void (*fp[1]) (void) = {function1};\n"
                        "    (*fp[0])();\n"
                        "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void deadPointer() {
-        checkDeadPointer("void f() {\n"
-                         "  int *p = p1;\n"
-                         "  if (cond) {\n"
-                         "    int x;\n"
-                         "    p = &x;\n"
-                         "  }\n"
-                         "  *p = 0;\n"
-                         "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Dead pointer usage. Pointer 'p' is dead if it has been assigned '&x' at line 5.\n", errout.str());
-
-        // FP: don't warn in subfunction
-        checkDeadPointer("void f(struct KEY *key) {\n"
-                         "  key->x = 0;\n"
-                         "}\n"
-                         "\n"
-                         "int main() {\n"
-                         "  struct KEY *tmp = 0;\n"
-                         "  struct KEY k;\n"
-                         "\n"
-                         "  if (condition) {\n"
-                         "    tmp = &k;\n"
-                         "  } else {\n"
-                         "  }\n"
-                         "  f(tmp);\n"
-                         "}");
-        ASSERT_EQUALS("", errout.str());
-
-        // Don't warn about references (#6399)
-        checkDeadPointer("void f() {\n"
-                         "    wxAuiToolBarItem* former_hover = NULL;\n"
-                         "    for (i = 0, count = m_items.GetCount(); i < count; ++i) {\n"
-                         "        wxAuiToolBarItem& item = m_items.Item(i);\n"
-                         "        former_hover = &item;\n"
-                         "    }\n"
-                         "    if (former_hover != pitem)\n"
-                         "        dosth();\n"
-                         "}");
-        ASSERT_EQUALS("", errout.str());
-
-        checkDeadPointer("void f() {\n"
-                         "    wxAuiToolBarItem* former_hover = NULL;\n"
-                         "    for (i = 0, count = m_items.GetCount(); i < count; ++i) {\n"
-                         "        wxAuiToolBarItem item = m_items.Item(i);\n"
-                         "        former_hover = &item;\n"
-                         "    }\n"
-                         "    if (former_hover != pitem)\n"
-                         "        dosth();\n"
-                         "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Dead pointer usage. Pointer 'former_hover' is dead if it has been assigned '&item' at line 5.\n", errout.str());
-
-        // #6575
-        checkDeadPointer("void trp_deliver_signal()  {\n"
-                         "    union {\n"
-                         "        Uint32 theData[25];\n"
-                         "        EventReport repData;\n"
-                         "    };\n"
-                         "    EventReport * rep = &repData;\n"
-                         "    rep->setEventType(NDB_LE_Connected);\n"
-                         "}");
         ASSERT_EQUALS("", errout.str());
     }
 
