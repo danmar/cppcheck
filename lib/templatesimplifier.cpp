@@ -332,7 +332,7 @@ void TemplateSimplifier::checkComplicatedSyntaxErrorsInTemplates()
             continue;
 
         // skip starting tokens.. ;;; typedef typename foo::bar::..
-        while (Token::simpleMatch(tok, ";"))
+        while (Token::Match(tok, ";|{"))
             tok = tok->next();
         while (Token::Match(tok, "typedef|typename"))
             tok = tok->next();
@@ -357,9 +357,11 @@ void TemplateSimplifier::checkComplicatedSyntaxErrorsInTemplates()
                     bool inclevel = false;
                     if (Token::simpleMatch(tok2->previous(), "operator <"))
                         ;
-                    else if (level == 0)
-                        inclevel = true;
-                    else if (tok2->next() && tok2->next()->isStandardType())
+                    else if (level == 0 && Token::Match(tok2->previous(), "%type%")) {
+                        // @todo add better expression detection
+                        if (!Token::Match(tok2->next(), "%type%|%num% ;"))
+                            inclevel = true;
+                    } else if (tok2->next() && tok2->next()->isStandardType())
                         inclevel = true;
                     else if (Token::simpleMatch(tok2, "< typename"))
                         inclevel = true;
