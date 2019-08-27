@@ -145,6 +145,16 @@ namespace {
         bool empty() const {
             return values.empty();
         }
+
+        void replace(const ProgramMemory &pm) {
+            for(auto&& p:pm.values)
+                values[p.first] = p.second;
+        }
+
+        void insert(const ProgramMemory &pm) {
+            for(auto&& p:pm.values)
+                values.insert(p);
+        }
     };
 }
 
@@ -214,6 +224,93 @@ static bool conditionIsTrue(const Token *condition, const ProgramMemory &program
     MathLib::bigint result = 0;
     execute(condition, &progmem, &result, &error);
     return !error && result == 1;
+}
+
+static void setConditionalValues(const Token *tok,
+                                 bool invert,
+                                 MathLib::bigint value,
+                                 ValueFlow::Value &true_value,
+                                 ValueFlow::Value &false_value)
+{
+    if (Token::Match(tok, "==|!=|>=|<=")) {
+        true_value = ValueFlow::Value{tok, value};
+        false_value = ValueFlow::Value{tok, value};
+        return;
+    }
+    const char *greaterThan = ">";
+    const char *lessThan = "<";
+    if (invert)
+        std::swap(greaterThan, lessThan);
+    if (Token::simpleMatch(tok, greaterThan)) {
+        true_value = ValueFlow::Value{tok, value + 1};
+        false_value = ValueFlow::Value{tok, value};
+    } else if (Token::simpleMatch(tok, lessThan)) {
+        true_value = ValueFlow::Value{tok, value - 1};
+        false_value = ValueFlow::Value{tok, value};
+    }
+}
+
+static const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value)
+{
+    if (!tok->astOperand1() || !tok->astOperand2())
+        return nullptr;
+    if (Token::Match(tok, "%comp%")) {
+        if (tok->astOperand1()->hasKnownIntValue()) {
+            setConditionalValues(tok, true, tok->astOperand1()->values().front().intvalue, true_value, false_value);
+            return tok->astOperand2();
+        } else if (tok->astOperand2()->hasKnownIntValue()) {
+            setConditionalValues(tok, false, tok->astOperand2()->values().front().intvalue, true_value, false_value);
+            return tok->astOperand1();
+        }
+    }
+    return nullptr;
+}
+
+static void getProgramMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Token* endTok, const Settings* settings)
+{
+    if (Token::Match(tok, "==|>=|<=")) {
+        ValueFlow::Value truevalue;
+        ValueFlow::Value falsevalue;
+        const Token* vartok = parseCompareInt(tok, truevalue, falsevalue);
+        if (!vartok)
+            return;
+        if (vartok->varId() == 0)
+            return;
+        if (!truevalue.isIntValue())
+            return;
+        if (isVariableChanged(tok->next(), endTok, vartok->varId(), false, settings, true))
+            return;
+        pm.setIntValue(vartok->varId(), truevalue.intvalue);
+    } else if (Token::Match(tok, "%var%")) {
+        if (tok->varId() == 0)
+            return;
+        if (isVariableChanged(tok->next(), endTok, tok->varId(), false, settings, true))
+            return;
+        pm.setIntValue(tok->varId(), 1);
+    }
+}
+
+static void getProgramMemoryFromConditions(ProgramMemory& pm, const Scope* scope, const Token* endTok, const Settings* settings)
+{
+    if (!scope)
+        return;
+    if (scope->type == Scope::eFunction)
+        return;
+    getProgramMemoryFromConditions(pm, scope->nestedIn, endTok, settings);
+    if (scope->type == Scope::eIf)
+    {
+        if (Token::simpleMatch(scope->bodyStart->previous(), ") {") && Token::Match(scope->bodyStart->previous()->link()->previous(), "if|while (")) {
+            const Token * condTok = scope->bodyStart->previous()->link()->previous()->astOperand2();
+            getProgramMemoryParseCondition(pm, condTok, endTok, settings);
+        }
+    }
+}
+
+static ProgramMemory getProgramMemoryFromConditions(const Token* tok, const Settings* settings)
+{
+    ProgramMemory pm;
+    getProgramMemoryFromConditions(pm, tok->scope(), tok, settings);
+    return pm;
 }
 
 /**
@@ -2205,7 +2302,10 @@ static bool valueFlowForward(Token * const               startToken,
                     falsevalues.push_back(v);
                     continue;
                 }
-                const ProgramMemory &programMemory = getProgramMemory(tok2, varid, v);
+                // TODO: Compute program from tokvalue first
+                ProgramMemory programMemory = getProgramMemory(tok2, varid, v);
+                if (v.tokvalue)
+                    programMemory.insert(getProgramMemoryFromConditions(v.tokvalue, nullptr));
                 const bool isTrue = conditionIsTrue(condTok, programMemory);
                 const bool isFalse = conditionIsFalse(condTok, programMemory);
 
@@ -4009,46 +4109,6 @@ struct ValueFlowConditionHandler {
         }
     }
 };
-
-static void setConditionalValues(const Token *tok,
-                                 bool invert,
-                                 MathLib::bigint value,
-                                 ValueFlow::Value &true_value,
-                                 ValueFlow::Value &false_value)
-{
-    if (Token::Match(tok, "==|!=|>=|<=")) {
-        true_value = ValueFlow::Value{tok, value};
-        false_value = ValueFlow::Value{tok, value};
-        return;
-    }
-    const char *greaterThan = ">";
-    const char *lessThan = "<";
-    if (invert)
-        std::swap(greaterThan, lessThan);
-    if (Token::simpleMatch(tok, greaterThan)) {
-        true_value = ValueFlow::Value{tok, value + 1};
-        false_value = ValueFlow::Value{tok, value};
-    } else if (Token::simpleMatch(tok, lessThan)) {
-        true_value = ValueFlow::Value{tok, value - 1};
-        false_value = ValueFlow::Value{tok, value};
-    }
-}
-
-static const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value)
-{
-    if (!tok->astOperand1() || !tok->astOperand2())
-        return nullptr;
-    if (Token::Match(tok, "%comp%")) {
-        if (tok->astOperand1()->hasKnownIntValue()) {
-            setConditionalValues(tok, true, tok->astOperand1()->values().front().intvalue, true_value, false_value);
-            return tok->astOperand2();
-        } else if (tok->astOperand2()->hasKnownIntValue()) {
-            setConditionalValues(tok, false, tok->astOperand2()->values().front().intvalue, true_value, false_value);
-            return tok->astOperand1();
-        }
-    }
-    return nullptr;
-}
 
 static void valueFlowAfterCondition(TokenList *tokenlist,
                                     SymbolDatabase *symboldatabase,
