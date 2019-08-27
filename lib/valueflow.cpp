@@ -3852,6 +3852,8 @@ static void valueFlowForwardAssign(Token * const               tok,
                          settings);
         values.remove_if(std::mem_fn(&ValueFlow::Value::isTokValue));
     }
+    for(ValueFlow::Value& value:values)
+        value.tokvalue = tok;
     valueFlowForward(const_cast<Token *>(nextExpression), endOfVarScope, var, var->declarationId(), values, constValue, false, tokenlist, errorLogger, settings);
 }
 
