@@ -319,7 +319,7 @@ static void fillProgramMemoryFromConditions(ProgramMemory& pm, const Scope* scop
         if (scope->type == Scope::eElse) {
             if (!Token::simpleMatch(bodyStart->tokAt(-2), "} else {"))
                 return;
-            bodyStart = bodyStart->tokAt(-2)->link();
+            bodyStart = bodyStart->linkAt(-2);
         }
         const Token * condEndTok = bodyStart->previous();
         if (!Token::simpleMatch(condEndTok, ") {"))
