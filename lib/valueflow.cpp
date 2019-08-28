@@ -5141,6 +5141,18 @@ static void valueFlowContainerForward(Token *tok, nonneg int containerId, ValueF
             if (isContainerSizeChanged(containerId, start, start->link()))
                 break;
         }
+        if (Token::simpleMatch(tok, ") {") && Token::Match(tok->link()->previous(), "while|for|if (")) {
+            const Token *start = tok->next();
+            if (isContainerSizeChanged(containerId, start, start->link()))
+                break;
+            tok = start->link();
+            if (Token::simpleMatch(tok, "} else {")) {
+                start = tok->tokAt(2);
+                if (isContainerSizeChanged(containerId, start, start->link()))
+                    break;
+                tok = start->link();
+            }
+        }
         if (tok->varId() != containerId)
             continue;
         if (Token::Match(tok, "%name% ="))

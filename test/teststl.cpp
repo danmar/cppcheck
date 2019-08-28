@@ -311,6 +311,15 @@ private:
                     "  ++abc[s];\n"
                     "}");
         ASSERT_EQUALS("", errout.str());
+
+        // # 9274
+        checkNormal("char f(bool b) {\n"
+                    "    const std::string s = \"<a><b>\";\n"
+                    "    int x = 6;\n"
+                    "    if(b) ++x;\n"
+                    "    return s[x];\n"
+                    "}\n");
+        ASSERT_EQUALS("test.cpp:5:error:Out of bounds access in 's[x]', if 's' size is 6 and 'x' is 6\n", errout.str());
     }
 
     void outOfBoundsIndexExpression() {
