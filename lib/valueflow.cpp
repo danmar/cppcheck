@@ -5196,7 +5196,7 @@ static bool isContainerSizeChanged(nonneg int varId, const Token *start, const T
             continue;
         if (!tok->valueType() || !tok->valueType()->container)
             return true;
-        if (Token::Match(tok, "%name% ="))
+        if (Token::Match(tok, "%name% %assign%|<<"))
             return true;
         if (Token::Match(tok, "%name% . %name% (")) {
             Library::Container::Action action = tok->valueType()->container->getAction(tok->strAt(2));
