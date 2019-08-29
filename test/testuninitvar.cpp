@@ -4133,6 +4133,22 @@ private:
                         "        return;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // # 9305
+        valueFlowUninit("struct kf {\n"
+                        "    double x;\n"
+                        "};\n"
+                        "void set(kf* k) {\n"
+                        "    k->x = 0;\n"
+                        "}\n"
+                        "void cal() {\n"
+                        "    KF b;\n"
+                        "    KF* pb = &b;\n"
+                        "    set( pb);\n"
+                        "    if (pb->x)\n"
+                        "        return;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_memberfunction() {

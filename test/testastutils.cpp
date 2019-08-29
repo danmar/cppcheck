@@ -159,7 +159,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         const Token * const argtok = Token::findmatch(tokenizer.tokens(), pattern);
-        return ::isVariableChangedByFunctionCall(argtok, &settings, inconclusive);
+        return ::isVariableChangedByFunctionCall(argtok, 0, &settings, inconclusive);
     }
 
     void isVariableChangedByFunctionCall() {
