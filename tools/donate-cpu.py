@@ -273,6 +273,7 @@ def scan_package(work_path, cppcheck_path, jobs):
                        'googletest': ['<gtest/gtest.h>'],
                        'gtk': ['<gtk/gtk.h>', '<glib.h>', '<glib/', '<gnome.h>'],
                        'libcerror': ['<libcerror.h>'],
+                       # 'lua': ['<lua.h>', '"lua.h"'], <= enable after release of version 1.89
                        'microsoft_sal': ['<sal.h>'],
                        'motif': ['<X11/', '<Xm/'],
                        'nspr': ['<prtypes.h>', '"prtypes.h"'],
