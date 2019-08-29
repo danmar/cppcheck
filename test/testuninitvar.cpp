@@ -4120,6 +4120,19 @@ private:
                         "    return d(&c);\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // # 9302
+        valueFlowUninit("struct VZ   {\n"
+                        "    double typ;\n"
+                        "};\n"
+                        "void read() {\n"
+                        "    struct VZ vz;\n"
+                        "    struct VZ* pvz = &vz;\n"
+                        "    vz.typ      = 42;\n"
+                        "    if (pvz->typ == 0)\n"
+                        "        return;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_memberfunction() {

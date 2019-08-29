@@ -2025,6 +2025,52 @@ static bool evalAssignment(ValueFlow::Value &lhsValue, const std::string &assign
     return true;
 }
 
+static bool isAliasOf(const Token *tok, nonneg int varid)
+{
+    if (tok->varId() == varid)
+        return false;
+    if (tok->varId() == 0)
+        return false;
+    if (!astIsPointer(tok))
+        return false;
+    for (const ValueFlow::Value &val : tok->values()) {
+        if (!val.isLocalLifetimeValue())
+            continue;
+        if (val.lifetimeKind != ValueFlow::Value::LifetimeKind::Address)
+            continue;
+        if (val.tokvalue->varId() == varid)
+            return true;
+    }
+    return false;
+}
+
+// Check if its an alias of the variable or is being aliased to this variable
+static bool isAliasOf(const Variable * var, const Token *tok, nonneg int varid, const std::list<ValueFlow::Value>& values)
+{
+    if (tok->varId() == varid)
+        return false;
+    if (tok->varId() == 0)
+        return false;
+    if (isAliasOf(tok, varid))
+        return true;
+    if (!var->isPointer())
+        return false;
+    // Search through non value aliases
+    for (const ValueFlow::Value &val : values) {
+        if (!val.isNonValue())
+            continue;
+        if (val.isLifetimeValue() && !val.isLocalLifetimeValue())
+            continue;
+        if (val.isLifetimeValue() && val.lifetimeKind != ValueFlow::Value::LifetimeKind::Address)
+            continue;
+        if (!Token::Match(val.tokvalue, ".|&|*|%var%"))
+            continue;
+        if (astHasVar(val.tokvalue, tok->varId()))
+            return true;
+    }
+    return false;
+}
+
 static bool valueFlowForward(Token * const               startToken,
                              const Token * const         endToken,
                              const Variable * const      var,
@@ -2708,6 +2754,15 @@ static bool valueFlowForward(Token * const               startToken,
             if (isVariableChanged(tok2, settings, tokenlist->isCPP())) {
                 values.remove_if(std::mem_fn(&ValueFlow::Value::isUninitValue));
             }
+        } else if (isAliasOf(var, tok2, varid, values) && isVariableChanged(tok2, settings, tokenlist->isCPP())) {
+            if (settings->debugwarnings)
+                bailout(tokenlist, errorLogger, tok2, "Alias variable was modified.");
+            // Bail at the end of the statement if its in an assignment
+            const Token * top = tok2->astTop();
+            if (Token::Match(top, "%assign%") && astHasToken(top->astOperand1(), tok2))
+                returnStatement = true;
+            else
+                return false;
         }
 
         // Lambda function
@@ -5030,6 +5085,7 @@ static void valueFlowUninit(TokenList *tokenlist, SymbolDatabase * /*symbolDatab
         ValueFlow::Value uninitValue;
         uninitValue.setKnown();
         uninitValue.valueType = ValueFlow::Value::UNINIT;
+        uninitValue.tokvalue = vardecl;
         std::list<ValueFlow::Value> values;
         values.push_back(uninitValue);
 

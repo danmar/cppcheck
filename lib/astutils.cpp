@@ -73,6 +73,24 @@ std::vector<const Token*> astFlatten(const Token* tok, const char* op)
 }
 
 
+bool astHasToken(const Token* root, const Token * tok)
+{
+    if (!root)
+        return false;
+    if (root == tok)
+        return true;
+    return astHasToken(root->astOperand1(), tok) || astHasToken(root->astOperand2(), tok);
+}
+
+bool astHasVar(const Token * tok, nonneg int varid)
+{
+    if (!tok)
+        return false;
+    if (tok->varId() == varid)
+        return true;
+    return astHasVar(tok->astOperand1(), varid) || astHasVar(tok->astOperand2(), varid);
+}
+
 static bool astIsCharWithSign(const Token *tok, ValueType::Sign sign)
 {
     if (!tok)

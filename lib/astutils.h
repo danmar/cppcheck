@@ -50,6 +50,10 @@ void visitAstNodes(const Token *ast, std::function<ChildrenToVisit(const Token *
 
 std::vector<const Token*> astFlatten(const Token* tok, const char* op);
 
+bool astHasToken(const Token* root, const Token * tok);
+
+bool astHasVar(const Token * tok, nonneg int varid);
+
 /** Is expression a 'signed char' if no promotion is used */
 bool astIsSignedChar(const Token *tok);
 /** Is expression a 'char' if no promotion is used? */
