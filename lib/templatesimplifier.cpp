@@ -106,11 +106,11 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *token, const std::string &
         }
 
         isFriend(mParamEnd->strAt(1) == "friend");
-        const Token *start = mParamEnd->next();
+        const Token *next = mParamEnd->next();
         if (isFriend())
-            start = start->next();
+            next = next->next();
 
-        isClass(Token::Match(start, "class|struct|union %name% <|{|:|;|::"));
+        isClass(Token::Match(next, "class|struct|union %name% <|{|:|;|::"));
         if (mToken->strAt(1) == "<" && !isSpecialization()) {
             const Token *end = mToken->next()->findClosingBracket();
             isVariadic(end && Token::findmatch(mToken->tokAt(2), "typename|class . . .", end));
