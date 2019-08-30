@@ -129,7 +129,7 @@ bool isReturnScope(const Token *endToken, const Settings * settings = nullptr, b
  * @param settings      program settings
  * @param inconclusive  pointer to output variable which indicates that the answer of the question is inconclusive
  */
-bool isVariableChangedByFunctionCall(const Token *tok, nonneg int varid, const Settings *settings, bool *inconclusive);
+bool isVariableChangedByFunctionCall(const Token *tok, int indirect, nonneg int varid, const Settings *settings, bool *inconclusive);
 
 /** Is variable changed by function call?
  * In case the answer of the question is inconclusive, e.g. because the function declaration is not known
@@ -139,17 +139,17 @@ bool isVariableChangedByFunctionCall(const Token *tok, nonneg int varid, const S
  * @param settings      program settings
  * @param inconclusive pointer to output variable which indicates that the answer of the question is inconclusive
  */
-bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings, bool *inconclusive);
+bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Settings *settings, bool *inconclusive);
 
 /** Is variable changed in block of code? */
 bool isVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
 
-bool isVariableChanged(const Token *tok, const Settings *settings, bool cpp, int depth = 20);
+bool isVariableChanged(const Token *tok, int indirect, const Settings *settings, bool cpp, int depth = 20);
 
 bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp, int depth = 20);
 
-const Token* findVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
-Token* findVariableChanged(Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
+const Token* findVariableChanged(const Token *start, const Token *end, int indirect, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
+Token* findVariableChanged(Token *start, const Token *end, int indirect, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
 
 bool isAliased(const Variable *var);
 
