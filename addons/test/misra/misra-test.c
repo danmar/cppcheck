@@ -104,6 +104,11 @@ void misra_5_3_enum_hidesfunction_31y(void) {} //5.3
 #define misra_5_4_macro_hides_macro__31y 2 //5.4
 #define m1(misra_5_4_param_hides_macro__31y) 1 //5.4
 #define m2(misra_5_4_param_hides_param__31x,misra_5_4_param_hides_param__31y) 1 //5.4
+#ifdef misra_5_4_macro_hides_macro__31x
+#define misra_5_4_macro 1 // no warning
+#else
+#define misra_5_4_macro 2 // no warning
+#endif
 
 #define misra_5_5_var_hides_macro____31x 1
 #define misra_5_5_functionhides_macro31x 1
