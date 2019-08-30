@@ -2215,7 +2215,7 @@ static bool valueFlowForward(Token * const               startToken,
         // conditional block of code that assigns variable..
         else if (!tok2->varId() && Token::Match(tok2, "%name% (") && Token::simpleMatch(tok2->linkAt(1), ") {")) {
             // is variable changed in condition?
-            for(int i:getIndirections(values)) {
+            for (int i:getIndirections(values)) {
                 Token* tokChanged = findVariableChanged(tok2->next(), tok2->next()->link(), i, varid, var->isGlobal(), settings, tokenlist->isCPP());
                 if (tokChanged != nullptr) {
                     // Set the value before bailing
@@ -2226,7 +2226,9 @@ static bool valueFlowForward(Token * const               startToken,
                             setTokenValue(tokChanged, v, settings);
                         }
                     }
-                    values.remove_if([&](const ValueFlow::Value& v) { return v.indirect == i; });
+                    values.remove_if([&](const ValueFlow::Value& v) {
+                        return v.indirect == i;
+                    });
                 }
             }
             if (values.empty()) {
@@ -2748,10 +2750,12 @@ static bool valueFlowForward(Token * const               startToken,
             }
 
             // assigned by subfunction?
-            for(int i:getIndirections(values)) {
+            for (int i:getIndirections(values)) {
                 bool inconclusive = false;
                 if (isVariableChangedByFunctionCall(tok2, i, settings, &inconclusive)) {
-                    values.remove_if([&](const ValueFlow::Value& v) { return v.indirect <= i; });
+                    values.remove_if([&](const ValueFlow::Value& v) {
+                        return v.indirect <= i;
+                    });
                 }
                 if (inconclusive) {
                     for (ValueFlow::Value &v : values) {
@@ -2777,11 +2781,13 @@ static bool valueFlowForward(Token * const               startToken,
                 }
             }
             // Variable changed
-            for(int i:getIndirections(values)) {
+            for (int i:getIndirections(values)) {
                 // Remove unintialized values if modified
                 if (isVariableChanged(tok2, i, settings, tokenlist->isCPP()))
-                    values.remove_if([&](const ValueFlow::Value& v) { return v.isUninitValue() && v.indirect <= i; });
-        }
+                    values.remove_if([&](const ValueFlow::Value& v) {
+                    return v.isUninitValue() && v.indirect <= i;
+                });
+            }
         } else if (isAliasOf(var, tok2, varid, values) && isVariableChanged(tok2, 0, settings, tokenlist->isCPP())) {
             if (settings->debugwarnings)
                 bailout(tokenlist, errorLogger, tok2, "Alias variable was modified.");
