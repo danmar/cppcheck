@@ -1357,7 +1357,7 @@ void CheckUninitVar::valueFlowUninit()
             const bool isleaf = isLeafDot(tok) || uninitderef;
             if (Token::Match(tok->astParent(), ". %var%") && !isleaf)
                 continue;
-            if (!Token::Match(tok->astParent(), ". %name% (") && !uninitderef && isVariableChanged(tok, mSettings, mTokenizer->isCPP()))
+            if (!Token::Match(tok->astParent(), ". %name% (") && !uninitderef && isVariableChanged(tok, v->indirect, mSettings, mTokenizer->isCPP()))
                 continue;
             uninitvarError(tok, tok->str(), v->errorPath);
             const Token * nextTok = tok;
