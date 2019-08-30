@@ -2510,7 +2510,7 @@ static bool valueFlowForward(Token * const               startToken,
             return false;
         }
 
-        else if (indentlevel <= 0 && Token::Match(tok2, "return|throw"))
+        else if (indentlevel <= 0 && Token::Match(tok2, "return|throw|setjmp|longjmp"))
             returnStatement = true;
 
         else if (returnStatement && tok2->str() == ";")
