@@ -5258,7 +5258,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
             vt.sign = vt2->sign;
             vt.originalTypeName = vt2->originalTypeName;
         }
-        if (vt.type < ValueType::Type::INT) {
+        if (vt.type < ValueType::Type::INT && !(ternary && vt.type==ValueType::Type::BOOL)) {
             vt.type = ValueType::Type::INT;
             vt.sign = ValueType::Sign::SIGNED;
             vt.originalTypeName.clear();
