@@ -880,7 +880,8 @@ class MisraChecker:
 
         for x, m_var1 in enumerate(macro):
             for y, m_var2 in enumerate(macro):
-                if x < y and macro[m_var1]["name"][:num_sign_chars] == macro[m_var2]["name"][:num_sign_chars]:
+                if x < y and macro[m_var1]["name"] != macro[m_var2]["name"] and \
+                    macro[m_var1]["name"][:num_sign_chars] == macro[m_var2]["name"][:num_sign_chars]:
                     if m_var1.linenr > m_var2.linenr:
                         self.reportError(m_var1, 5, 4)
                     else:
