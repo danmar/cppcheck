@@ -63,6 +63,8 @@
 # ./build-cppcheck.sh 1.43
 #
 # run daca with new release
+# 1. edit OLD_VERSION
+# 2. scp tools/donate-cpu-server.py danielmarjamaki@cppcheck.osuosl.org:daca@home/
 
 # Tag to use
 tag=$1
