@@ -176,6 +176,7 @@ private:
         TEST_CASE(template136); // #9287
         TEST_CASE(template137); // #9288
         TEST_CASE(template138);
+        TEST_CASE(template139);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -3360,6 +3361,33 @@ private:
                                "int main ( ) { "
                                "return 0 ; "
                                "}";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+    }
+
+    void template139() {
+        {
+            const char code[] = "template<typename T>\n"
+                                "struct Foo {\n"
+                                "  template<typename> friend struct Foo;\n"
+                                "};";
+            const char exp[] = "template < typename T > "
+                               "struct Foo { "
+                               "template < typename > friend struct Foo ; "
+                               "} ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            const char code[] = "template<typename T>\n"
+                                "struct Foo {\n"
+                                "  template<typename> friend struct Foo;\n"
+                                "} ;\n"
+                                "Foo<int> foo;";
+            const char exp[] = "struct Foo<int> ; "
+                               "Foo<int> foo ; "
+                               "struct Foo<int> { "
+                               "template < typename > friend struct Foo ; "
+                               "} ;";
             ASSERT_EQUALS(exp, tok(code));
         }
     }
