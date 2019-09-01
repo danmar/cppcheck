@@ -38,6 +38,9 @@
             <File Id='Qt5Guidll' Name='Qt5Gui.dll' Source='$(var.QtDllDir)\Qt5Gui.dll' />
             <File Id='Qt5Widgetsdll' Name='Qt5Widgets.dll' Source='$(var.QtDllDir)\Qt5Widgets.dll' />
             <File Id='Qt5PrintSupportdll' Name='Qt5PrintSupport.dll' Source='$(var.QtDllDir)\Qt5PrintSupport.dll' />
+            <?if $(var.Platform) = x64 ?>
+              <File Id='Qt5Chartsdll' Name='Qt5Charts.dll' Source='$(var.QtDllDir)\Qt5Charts.dll' />
+            <?endif?>
           </Component>
           <Directory Id='QtPlatformsFolder' Name='platforms'>
             <Component Id='QtPlatforms' DiskId='1' Guid='$(var.qtplatformsGUID)'>
