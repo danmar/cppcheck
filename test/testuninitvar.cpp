@@ -83,6 +83,7 @@ private:
         TEST_CASE(valueFlowUninit);
         TEST_CASE(uninitvar_ipa);
         TEST_CASE(uninitvar_memberfunction);
+        TEST_CASE(uninitvar_nonmember); // crash in ycmd test
 
         TEST_CASE(isVariableUsageDeref); // *p
 
@@ -4439,6 +4440,18 @@ private:
                         "    if (c->x() == 4) {}\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: c\n", errout.str());
+    }
+
+    void uninitvar_nonmember() {
+        valueFlowUninit( "struct Foo {\n"
+                         "  int bar;\n"
+                         "};\n"
+                         "\n"
+                         "int main() {\n"
+                         "  Foo* foo;\n"
+                         "  foo.b\n"
+                         "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: foo\n", errout.str());
     }
 
     void isVariableUsageDeref() {
