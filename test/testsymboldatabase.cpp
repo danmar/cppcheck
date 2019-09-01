@@ -396,6 +396,8 @@ private:
         TEST_CASE(auto12); // #8993 - const std::string &x; auto y = x; if (y.empty()) ..
 
         TEST_CASE(unionWithConstructor);
+
+        TEST_CASE(incomplete_type); // #9255 (infinite recursion)
     }
 
     void array() {
@@ -7072,6 +7074,25 @@ private:
 
         f = Token::findsimplematch(tokenizer.tokens(), "Fred ( float");
         ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 3);
+    }
+
+    void incomplete_type() {
+        GET_SYMBOL_DB("template<class _Ty,\n"
+                      "  class _Alloc = std::allocator<_Ty>>\n"
+					  "  class SLSurfaceLayerData\n"
+					  "  : public _Vector_alloc<_Vec_base_types<_Ty, _Alloc>>\n"
+					  "{     // varying size array of values\n"
+					  "\n"
+					  "  using reverse_iterator = _STD reverse_iterator<iterator>;\n"
+					  "  using const_reverse_iterator = _STD reverse_iterator<const_iterator>;\n"
+					  "  const_reverse_iterator crend() const noexcept\n"
+					  "  {   // return iterator for end of reversed nonmutable sequence\n"
+					  "    return (rend());\n"
+					  "  }\n"
+					  "};");
+        (void)db;
+
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
