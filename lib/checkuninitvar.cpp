@@ -543,6 +543,25 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 return true;
             }
 
+            const Token *errorToken = nullptr;
+            visitAstNodes(tok->next(),
+            [&](const Token *child) {
+                if (child->isUnaryOp("&"))
+                    return ChildrenToVisit::none;
+                if (child->str() == "," || child->str() == "{" || child->isConstOp())
+                    return ChildrenToVisit::op1_and_op2;
+                if (child->str() == "." && Token::Match(child->astOperand1(), "%varid%", var.declarationId()) && child->astOperand2() && child->astOperand2()->str() == membervar) {
+                    errorToken = child;
+                    return ChildrenToVisit::done;
+                }
+                return ChildrenToVisit::none;
+            });
+
+            if (errorToken) {
+                uninitStructMemberError(errorToken->astOperand2(), errorToken->astOperand1()->str() + "." + membervar);
+                return true;
+            }
+
             // Skip block
             tok = end;
             continue;
@@ -973,6 +992,16 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
         }
     }
 
+    {
+        const Token *parent = vartok->astParent();
+        while (parent && parent->isCast())
+            parent = parent->astParent();
+        while (parent && parent->str() == ",")
+            parent = parent->astParent();
+        if (Token::simpleMatch(parent, "{"))
+            return true;
+    }
+
     if (Token::Match(vartok->previous(), "++|--|%cop%")) {
         if (mTokenizer->isCPP() && alloc == ARRAY && Token::Match(vartok->tokAt(-4), "& %var% =|( *"))
             return false;
@@ -1284,6 +1313,18 @@ void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string
                 "$symbol:" + membername + "\nUninitialized struct member: $symbol", CWE908, false);
 }
 
+static bool isLeafDot(const Token* tok)
+{
+    if (!tok)
+        return false;
+    const Token * parent = tok->astParent();
+    if (!Token::simpleMatch(parent, "."))
+        return false;
+    if (parent->astOperand2() == tok)
+        return true;
+    return isLeafDot(parent);
+}
+
 void CheckUninitVar::valueFlowUninit()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -1292,14 +1333,12 @@ void CheckUninitVar::valueFlowUninit()
     for (const Scope &scope : symbolDatabase->scopeList) {
         if (!scope.isExecutable())
             continue;
-        for (const Token* tok = scope.bodyStart; tok != scope.bodyEnd; tok = tok->next()) {
+        for (const Token* tok = scope.bodyStart; tok && tok != scope.bodyEnd; tok = tok->next()) {
             if (Token::simpleMatch(tok, "sizeof (")) {
                 tok = tok->linkAt(1);
                 continue;
             }
             if (!tok->variable())
-                continue;
-            if (Token::Match(tok->astParent(), ". %var%") && tok->astParent()->astOperand1() == tok)
                 continue;
             auto v = std::find_if(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isUninitValue));
             if (v == tok->values().end())
@@ -1311,11 +1350,21 @@ void CheckUninitVar::valueFlowUninit()
             if (v->indirect > 1 || v->indirect < 0)
                 continue;
             bool unknown;
-            if (v->indirect == 1 && !CheckNullPointer::isPointerDeRef(tok, unknown, mSettings))
+            const bool deref = CheckNullPointer::isPointerDeRef(tok, unknown, mSettings);
+            if (v->indirect == 1 && !deref)
                 continue;
-            if (!Token::Match(tok->astParent(), ". %name% (") && isVariableChanged(tok, mSettings, mTokenizer->isCPP()))
+            const bool uninitderef = deref && v->indirect == 0;
+            const bool isleaf = isLeafDot(tok) || uninitderef;
+            if (Token::Match(tok->astParent(), ". %var%") && !isleaf)
+                continue;
+            if (!Token::Match(tok->astParent(), ". %name% (") && !uninitderef && isVariableChanged(tok, v->indirect, mSettings, mTokenizer->isCPP()))
                 continue;
             uninitvarError(tok, tok->str(), v->errorPath);
+            const Token * nextTok = tok;
+            while (Token::simpleMatch(nextTok->astParent(), "."))
+                nextTok = nextTok->astParent();
+            nextTok = nextAfterAstRightmostLeaf(nextTok);
+            tok = nextTok ? nextTok : tok;
         }
     }
 }

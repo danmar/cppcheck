@@ -171,6 +171,7 @@ private:
         TEST_CASE(redundantVarAssignment_after_switch);
         TEST_CASE(redundantVarAssignment_pointer);
         TEST_CASE(redundantVarAssignment_pointer_parameter);
+        TEST_CASE(redundantInitialization);
         TEST_CASE(redundantMemWrite);
 
         TEST_CASE(varFuncNullUB);
@@ -6172,6 +6173,14 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // ({ })
+        check("void f() {\n"
+              "  int x;\n"
+              "  x = 321;\n"
+              "  x = ({ asm(123); })\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // from #3103 (avoid a false negative)
         check("int foo(){\n"
               "    int x;\n"
@@ -6402,6 +6411,12 @@ private:
               "  ab.x = 1;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style) Variable 'ab.x' is reassigned a value before the old one has been used.\n", errout.str());
+
+        check("void f() {\n"
+              "  struct AB ab = {0};\n"
+              "  ab = foo();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void redundantVarAssignment_7133() {
@@ -6530,6 +6545,32 @@ private:
               "    *p = 1;\n"
               "    if (condition) return;\n"
               "    *p = 2;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void redundantInitialization() {
+        check("void f() {\n"
+              "    int err = -ENOMEM;\n"
+              "    err = dostuff();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style) Redundant initialization for 'err'. The initialized value is overwritten before it is read.\n", errout.str());
+
+        check("void f() {\n"
+              "    struct S s = {1,2,3};\n"
+              "    s = dostuff();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style) Redundant initialization for 's'. The initialized value is overwritten before it is read.\n", errout.str());
+
+        check("void f() {\n"
+              "    int *p = NULL;\n"
+              "    p = dostuff();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    struct S s = {0};\n"
+              "    s = dostuff();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

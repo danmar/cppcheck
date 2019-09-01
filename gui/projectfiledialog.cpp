@@ -272,6 +272,7 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     setSuppressions(projectFile->getSuppressions());
 
     // Human knowledge..
+    /*
     mUI.mListUnknownFunctionReturn->clear();
     mUI.mListUnknownFunctionReturn->addItem("rand()");
     for (int row = 0; row < mUI.mListUnknownFunctionReturn->count(); ++row) {
@@ -284,6 +285,7 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     mUI.mCheckSafeExternalFunctions->setChecked(projectFile->getSafeChecks().externalFunctions);
     mUI.mCheckSafeInternalFunctions->setChecked(projectFile->getSafeChecks().internalFunctions);
     mUI.mCheckSafeExternalVariables->setChecked(projectFile->getSafeChecks().externalVariables);
+    */
 
     // Addons..
     QSettings settings;
@@ -339,6 +341,7 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     }
     projectFile->setSuppressions(getSuppressions());
     // Human knowledge
+    /*
     QStringList unknownReturnValues;
     for (int row = 0; row < mUI.mListUnknownFunctionReturn->count(); ++row) {
         QListWidgetItem *item = mUI.mListUnknownFunctionReturn->item(row);
@@ -352,6 +355,7 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     safeChecks.internalFunctions = mUI.mCheckSafeInternalFunctions->isChecked();
     safeChecks.externalVariables = mUI.mCheckSafeExternalVariables->isChecked();
     projectFile->setSafeChecks(safeChecks);
+    */
     // Addons
     QStringList list;
     if (mUI.mAddonThreadSafety->isChecked())

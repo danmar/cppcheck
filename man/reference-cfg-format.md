@@ -1,6 +1,6 @@
 ---
 title: Cppcheck .cfg format
-subtitle: Version 1.88
+subtitle: Version 1.89
 author: Cppcheck team
 lang: en
 toc: true

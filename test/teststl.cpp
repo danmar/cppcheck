@@ -305,6 +305,19 @@ private:
                     "    return (*pv)[42];\n"
                     "}\n");
         ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in expression '(*pv)[42]' because '*pv' is empty.\n", errout.str());
+
+        checkNormal("void f() {\n"
+                    "  std::string s;\n"
+                    "  ++abc[s];\n"
+                    "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void f() {\n"
+                    "    static const int N = 4;\n"
+                    "    std::array<int, N> x;\n"
+                    "    x[0] = 0;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void outOfBoundsIndexExpression() {

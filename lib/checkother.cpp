@@ -433,14 +433,18 @@ void CheckOther::checkRedundantAssignment()
 
                 // Do not warn about redundant initialization when rhs is trivial
                 // TODO : do not simplify the variable declarations
+                bool isInitialization = false;
                 if (Token::Match(tok->tokAt(-3), "%var% ; %var% =") && tok->previous()->variable() && tok->previous()->variable()->nameToken() == tok->tokAt(-3) && tok->tokAt(-3)->linenr() == tok->previous()->linenr()) {
+                    isInitialization = true;
                     bool trivial = true;
                     visitAstNodes(tok->astOperand2(),
                     [&](const Token *rhs) {
-                        if (Token::Match(rhs, "%str%|%num%|%name%"))
-                            return ChildrenToVisit::op1_and_op2;
-                        if (rhs->str() == "(" && !rhs->previous()->isName())
-                            return ChildrenToVisit::op1_and_op2;
+                        if (Token::simpleMatch(rhs, "{ 0 }"))
+                            return ChildrenToVisit::none;
+                        if (Token::Match(rhs, "%str%|%num%|%name%") && !rhs->varId())
+                            return ChildrenToVisit::none;
+                        if (rhs->isCast())
+                            return ChildrenToVisit::op2;
                         trivial = false;
                         return ChildrenToVisit::done;
                     });
@@ -505,6 +509,8 @@ void CheckOther::checkRedundantAssignment()
                 // warn
                 if (hasCase)
                     redundantAssignmentInSwitchError(tok, nextAssign, tok->astOperand1()->expressionString());
+                else if (isInitialization)
+                    redundantInitializationError(tok, nextAssign, tok->astOperand1()->expressionString(), inconclusive);
                 else
                     redundantAssignmentError(tok, nextAssign, tok->astOperand1()->expressionString(), inconclusive);
             }
@@ -540,6 +546,15 @@ void CheckOther::redundantAssignmentError(const Token *tok1, const Token* tok2, 
         reportError(callstack, Severity::style, "redundantAssignment",
                     "$symbol:" + var + "\n"
                     "Variable '$symbol' is reassigned a value before the old one has been used.", CWE563, false);
+}
+
+void CheckOther::redundantInitializationError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive)
+{
+    const std::list<const Token *> callstack = { tok2, tok1 };
+    reportError(callstack, Severity::style, "redundantInitialization",
+                "$symbol:" + var + "\nRedundant initialization for '$symbol'. The initialized value is overwritten before it is read.",
+                CWE563,
+                inconclusive);
 }
 
 void CheckOther::redundantAssignmentInSwitchError(const Token *tok1, const Token* tok2, const std::string &var)
@@ -2704,7 +2719,7 @@ void CheckOther::checkAccessOfMovedVariable()
                 else
                     inconclusive = true;
             } else {
-                const bool isVariableChanged = isVariableChangedByFunctionCall(tok, mSettings, &inconclusive);
+                const bool isVariableChanged = isVariableChangedByFunctionCall(tok, 0, mSettings, &inconclusive);
                 accessOfMoved = !isVariableChanged && checkUninitVar.isVariableUsage(tok, false, CheckUninitVar::NO_ALLOC);
                 if (inconclusive) {
                     accessOfMoved = !isMovedParameterAllowedForInconclusiveFunction(tok);

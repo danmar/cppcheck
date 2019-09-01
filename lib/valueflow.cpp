@@ -169,11 +169,13 @@ static void bailoutInternal(TokenList *tokenlist, ErrorLogger *errorLogger, cons
 #define bailout(tokenlist, errorLogger, tok, what) bailoutInternal(tokenlist, errorLogger, tok, what, __FILE__, __LINE__, "(valueFlow)")
 #endif
 
-static void changeKnownToPossible(std::list<ValueFlow::Value> &values)
+static void changeKnownToPossible(std::list<ValueFlow::Value> &values, int indirect=-1)
 {
-    std::list<ValueFlow::Value>::iterator it;
-    for (it = values.begin(); it != values.end(); ++it)
-        it->changeKnownToPossible();
+    for (ValueFlow::Value& v: values) {
+        if (indirect >= 0 && v.indirect != indirect)
+            continue;
+        v.changeKnownToPossible();
+    }
 }
 
 /**
@@ -310,6 +312,7 @@ static bool isEscapeScope(const Token* tok, TokenList * tokenlist, bool unknown 
 {
     if (!Token::simpleMatch(tok, "{"))
         return false;
+    // TODO this search for termTok in all subscopes. It should check the end of the scope.
     const Token * termTok = Token::findmatch(tok, "return|continue|break|throw|goto", tok->link());
     if (termTok && termTok->scope() == tok->scope())
         return true;
@@ -461,9 +464,13 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
             pvalue.indirect++;
             setTokenValue(parent, pvalue, settings);
         } else if (Token::Match(parent, ". %var%") && parent->astOperand1() == tok) {
-            if (parent->originalName() == "->")
+            if (parent->originalName() == "->" && pvalue.indirect > 0)
                 pvalue.indirect--;
             setTokenValue(parent->astOperand2(), pvalue, settings);
+        } else if (Token::Match(parent->astParent(), ". %var%") && parent->astParent()->astOperand1() == parent) {
+            if (parent->astParent()->originalName() == "->" && pvalue.indirect > 0)
+                pvalue.indirect--;
+            setTokenValue(parent->astParent()->astOperand2(), pvalue, settings);
         } else if (parent->isUnaryOp("*") && pvalue.indirect > 0) {
             pvalue.indirect--;
             setTokenValue(parent, pvalue, settings);
@@ -1685,7 +1692,7 @@ static void valueFlowReverse(TokenList *tokenlist,
 
             // assigned by subfunction?
             bool inconclusive = false;
-            if (isVariableChangedByFunctionCall(tok2, settings, &inconclusive)) {
+            if (isVariableChangedByFunctionCall(tok2, std::max(val.indirect, val2.indirect), settings, &inconclusive)) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "possible assignment of " + tok2->str() + " by subfunction");
                 break;
@@ -2020,6 +2027,61 @@ static bool evalAssignment(ValueFlow::Value &lhsValue, const std::string &assign
     return true;
 }
 
+static bool isAliasOf(const Token *tok, nonneg int varid)
+{
+    if (tok->varId() == varid)
+        return false;
+    if (tok->varId() == 0)
+        return false;
+    if (!astIsPointer(tok))
+        return false;
+    for (const ValueFlow::Value &val : tok->values()) {
+        if (!val.isLocalLifetimeValue())
+            continue;
+        if (val.lifetimeKind != ValueFlow::Value::LifetimeKind::Address)
+            continue;
+        if (val.tokvalue->varId() == varid)
+            return true;
+    }
+    return false;
+}
+
+// Check if its an alias of the variable or is being aliased to this variable
+static bool isAliasOf(const Variable * var, const Token *tok, nonneg int varid, const std::list<ValueFlow::Value>& values)
+{
+    if (tok->varId() == varid)
+        return false;
+    if (tok->varId() == 0)
+        return false;
+    if (isAliasOf(tok, varid))
+        return true;
+    if (!var->isPointer())
+        return false;
+    // Search through non value aliases
+    for (const ValueFlow::Value &val : values) {
+        if (!val.isNonValue())
+            continue;
+        if (val.isLifetimeValue() && !val.isLocalLifetimeValue())
+            continue;
+        if (val.isLifetimeValue() && val.lifetimeKind != ValueFlow::Value::LifetimeKind::Address)
+            continue;
+        if (!Token::Match(val.tokvalue, ".|&|*|%var%"))
+            continue;
+        if (astHasVar(val.tokvalue, tok->varId()))
+            return true;
+    }
+    return false;
+}
+
+static std::set<int> getIndirections(const std::list<ValueFlow::Value>& values)
+{
+    std::set<int> result;
+    std::transform(values.begin(), values.end(), std::inserter(result, result.end()), [](const ValueFlow::Value& v) {
+        return std::max(0, v.indirect);
+    });
+    return result;
+}
+
 static bool valueFlowForward(Token * const               startToken,
                              const Token * const         endToken,
                              const Variable * const      var,
@@ -2153,16 +2215,23 @@ static bool valueFlowForward(Token * const               startToken,
         // conditional block of code that assigns variable..
         else if (!tok2->varId() && Token::Match(tok2, "%name% (") && Token::simpleMatch(tok2->linkAt(1), ") {")) {
             // is variable changed in condition?
-            Token* tokChanged = findVariableChanged(tok2->next(), tok2->next()->link(), varid, var->isGlobal(), settings, tokenlist->isCPP());
-            if (tokChanged != nullptr) {
-                // Set the value before bailing
-                if (tokChanged->varId() == varid) {
-                    for (const ValueFlow::Value &v : values) {
-                        if (!v.isNonValue())
-                            continue;
-                        setTokenValue(tokChanged, v, settings);
+            for (int i:getIndirections(values)) {
+                Token* tokChanged = findVariableChanged(tok2->next(), tok2->next()->link(), i, varid, var->isGlobal(), settings, tokenlist->isCPP());
+                if (tokChanged != nullptr) {
+                    // Set the value before bailing
+                    if (tokChanged->varId() == varid) {
+                        for (const ValueFlow::Value &v : values) {
+                            if (!v.isNonValue())
+                                continue;
+                            setTokenValue(tokChanged, v, settings);
+                        }
                     }
+                    values.remove_if([&](const ValueFlow::Value& v) {
+                        return v.indirect == i;
+                    });
                 }
+            }
+            if (values.empty()) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " valueFlowForward, assignment in condition");
                 return false;
@@ -2459,7 +2528,7 @@ static bool valueFlowForward(Token * const               startToken,
             return false;
         }
 
-        else if (indentlevel <= 0 && Token::Match(tok2, "return|throw"))
+        else if (indentlevel <= 0 && Token::Match(tok2, "return|throw|setjmp|longjmp"))
             returnStatement = true;
 
         else if (returnStatement && tok2->str() == ";")
@@ -2483,8 +2552,10 @@ static bool valueFlowForward(Token * const               startToken,
                 Token *expr = (condValue.intvalue != 0) ? op2->astOperand1() : op2->astOperand2();
                 for (const ValueFlow::Value &v : values)
                     valueFlowAST(expr, varid, v, settings);
-                if (isVariableChangedByFunctionCall(expr, varid, settings, nullptr))
-                    changeKnownToPossible(values);
+                if (isVariableChangedByFunctionCall(expr, 0, varid, settings, nullptr))
+                    changeKnownToPossible(values, 0);
+                if (isVariableChangedByFunctionCall(expr, 1, varid, settings, nullptr))
+                    changeKnownToPossible(values, 1);
             } else {
                 for (const ValueFlow::Value &v : values) {
                     const ProgramMemory programMemory(getProgramMemory(tok2, varid, v));
@@ -2679,15 +2750,25 @@ static bool valueFlowForward(Token * const               startToken,
             }
 
             // assigned by subfunction?
-            bool inconclusive = false;
-            if (isVariableChangedByFunctionCall(tok2, settings, &inconclusive)) {
+            for (int i:getIndirections(values)) {
+                bool inconclusive = false;
+                if (isVariableChangedByFunctionCall(tok2, i, settings, &inconclusive)) {
+                    values.remove_if([&](const ValueFlow::Value& v) {
+                        return v.indirect <= i;
+                    });
+                }
+                if (inconclusive) {
+                    for (ValueFlow::Value &v : values) {
+                        if (v.indirect != i)
+                            continue;
+                        v.setInconclusive();
+                    }
+                }
+            }
+            if (values.empty()) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "possible assignment of " + tok2->str() + " by subfunction");
                 return false;
-            }
-            if (inconclusive) {
-                for (ValueFlow::Value &v : values)
-                    v.setInconclusive();
             }
             if (tok2->strAt(1) == "." && tok2->next()->originalName() != "->") {
                 if (settings->inconclusive) {
@@ -2699,6 +2780,23 @@ static bool valueFlowForward(Token * const               startToken,
                     return false;
                 }
             }
+            // Variable changed
+            for (int i:getIndirections(values)) {
+                // Remove unintialized values if modified
+                if (isVariableChanged(tok2, i, settings, tokenlist->isCPP()))
+                    values.remove_if([&](const ValueFlow::Value& v) {
+                    return v.isUninitValue() && v.indirect <= i;
+                });
+            }
+        } else if (isAliasOf(var, tok2, varid, values) && isVariableChanged(tok2, 0, settings, tokenlist->isCPP())) {
+            if (settings->debugwarnings)
+                bailout(tokenlist, errorLogger, tok2, "Alias variable was modified.");
+            // Bail at the end of the statement if its in an assignment
+            const Token * top = tok2->astTop();
+            if (Token::Match(top, "%assign%") && astHasToken(top->astOperand1(), tok2))
+                returnStatement = true;
+            else
+                return false;
         }
 
         // Lambda function
@@ -2712,6 +2810,7 @@ static bool valueFlowForward(Token * const               startToken,
                 return false;
             }
         }
+
     }
     return true;
 }
@@ -5020,6 +5119,7 @@ static void valueFlowUninit(TokenList *tokenlist, SymbolDatabase * /*symbolDatab
         ValueFlow::Value uninitValue;
         uninitValue.setKnown();
         uninitValue.valueType = ValueFlow::Value::UNINIT;
+        uninitValue.tokvalue = vardecl;
         std::list<ValueFlow::Value> values;
         values.push_back(uninitValue);
 
@@ -5265,8 +5365,8 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
             continue;
         ValueFlow::Value value(0);
         if (var->valueType()->container->size_templateArgNo >= 0) {
-            if (var->dimensions().size() == 1 && var->dimensions().front().known)
-                value.intvalue = var->dimensions().front().num;
+            if (var->dimensions().size() == 1 && var->dimensions().front().tok && var->dimensions().front().tok->hasKnownIntValue())
+                value.intvalue = var->dimensions().front().tok->getKnownIntValue();
             else
                 continue;
         }

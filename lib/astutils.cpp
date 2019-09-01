@@ -52,6 +52,44 @@ void visitAstNodes(const Token *ast, std::function<ChildrenToVisit(const Token *
     }
 }
 
+static void astFlattenRecursive(const Token *tok, std::vector<const Token *> *result, const char* op, nonneg int depth = 0)
+{
+    ++depth;
+    if (!tok || depth >= 100)
+        return;
+    if (tok->str() == op) {
+        astFlattenRecursive(tok->astOperand1(), result, op, depth);
+        astFlattenRecursive(tok->astOperand2(), result, op, depth);
+    } else {
+        result->push_back(tok);
+    }
+}
+
+std::vector<const Token*> astFlatten(const Token* tok, const char* op)
+{
+    std::vector<const Token*> result;
+    astFlattenRecursive(tok, &result, op);
+    return result;
+}
+
+
+bool astHasToken(const Token* root, const Token * tok)
+{
+    if (!root)
+        return false;
+    if (root == tok)
+        return true;
+    return astHasToken(root->astOperand1(), tok) || astHasToken(root->astOperand2(), tok);
+}
+
+bool astHasVar(const Token * tok, nonneg int varid)
+{
+    if (!tok)
+        return false;
+    if (tok->varId() == varid)
+        return true;
+    return astHasVar(tok->astOperand1(), varid) || astHasVar(tok->astOperand2(), varid);
+}
 
 static bool astIsCharWithSign(const Token *tok, ValueType::Sign sign)
 {
@@ -872,14 +910,14 @@ bool isReturnScope(const Token * const endToken, const Settings * settings, bool
     return false;
 }
 
-bool isVariableChangedByFunctionCall(const Token *tok, nonneg int varid, const Settings *settings, bool *inconclusive)
+bool isVariableChangedByFunctionCall(const Token *tok, int indirect, nonneg int varid, const Settings *settings, bool *inconclusive)
 {
     if (!tok)
         return false;
     if (tok->varId() == varid)
-        return isVariableChangedByFunctionCall(tok, settings, inconclusive);
-    return isVariableChangedByFunctionCall(tok->astOperand1(), varid, settings, inconclusive) ||
-           isVariableChangedByFunctionCall(tok->astOperand2(), varid, settings, inconclusive);
+        return isVariableChangedByFunctionCall(tok, indirect, settings, inconclusive);
+    return isVariableChangedByFunctionCall(tok->astOperand1(), indirect, varid, settings, inconclusive) ||
+           isVariableChangedByFunctionCall(tok->astOperand2(), indirect, varid, settings, inconclusive);
 }
 
 static bool isScopeBracket(const Token *tok)
@@ -895,7 +933,7 @@ static bool isScopeBracket(const Token *tok)
     return false;
 }
 
-bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings, bool *inconclusive)
+bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Settings *settings, bool *inconclusive)
 {
     if (!tok)
         return false;
@@ -1000,7 +1038,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
 
     const Variable *arg = tok->function()->getArgumentVar(argnr);
 
-    if (addressOf) {
+    if (addressOf || (indirect > 0 && arg && arg->isPointer())) {
         if (!(arg && arg->isConst()))
             return true;
         // If const is applied to the pointer, then the value can still be modified
@@ -1011,7 +1049,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
     return arg && !arg->isConst() && arg->isReference();
 }
 
-bool isVariableChanged(const Token *tok, const Settings *settings, bool cpp, int depth)
+bool isVariableChanged(const Token *tok, int indirect, const Settings *settings, bool cpp, int depth)
 {
     if (!tok)
         return false;
@@ -1066,7 +1104,7 @@ bool isVariableChanged(const Token *tok, const Settings *settings, bool cpp, int
         while (Token::Match(ptok->astParent(), ".|::|["))
             ptok = ptok->astParent();
         bool inconclusive = false;
-        bool isChanged = isVariableChangedByFunctionCall(ptok, settings, &inconclusive);
+        bool isChanged = isVariableChangedByFunctionCall(ptok, indirect, settings, &inconclusive);
         isChanged |= inconclusive;
         if (isChanged)
             return true;
@@ -1094,10 +1132,10 @@ bool isVariableChanged(const Token *tok, const Settings *settings, bool cpp, int
 
 bool isVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth)
 {
-    return findVariableChanged(start, end, varid, globalvar, settings, cpp, depth) != nullptr;
+    return findVariableChanged(start, end, 0, varid, globalvar, settings, cpp, depth) != nullptr;
 }
 
-Token* findVariableChanged(Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth)
+Token* findVariableChanged(Token *start, const Token *end, int indirect, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth)
 {
     if (!precedes(start, end))
         return nullptr;
@@ -1110,15 +1148,15 @@ Token* findVariableChanged(Token *start, const Token *end, const nonneg int vari
                 return tok;
             continue;
         }
-        if (isVariableChanged(tok, settings, cpp, depth))
+        if (isVariableChanged(tok, indirect, settings, cpp, depth))
             return tok;
     }
     return nullptr;
 }
 
-const Token* findVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth)
+const Token* findVariableChanged(const Token *start, const Token *end, int indirect, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth)
 {
-    return findVariableChanged(const_cast<Token*>(start), end, varid, globalvar, settings, cpp, depth);
+    return findVariableChanged(const_cast<Token*>(start), end, indirect, varid, globalvar, settings, cpp, depth);
 }
 
 bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp, int depth)
@@ -1309,6 +1347,15 @@ const Variable *getLHSVariable(const Token *tok)
 static bool nonLocal(const Variable* var, bool deref)
 {
     return !var || (!var->isLocal() && !var->isArgument()) || (deref && var->isArgument() && var->isPointer()) || var->isStatic() || var->isReference() || var->isExtern();
+}
+
+static bool hasGccCompoundStatement(const Token *tok)
+{
+    if (!tok)
+        return false;
+    if (tok->str() == "{" && Token::simpleMatch(tok->previous(), "( {"))
+        return true;
+    return hasGccCompoundStatement(tok->astOperand1()) || hasGccCompoundStatement(tok->astOperand2());
 }
 
 static bool hasFunctionCall(const Token *tok)
@@ -1668,6 +1715,9 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                         return Result(Result::Type::READ);
                     continue;
                 }
+                // ({ .. })
+                if (hasGccCompoundStatement(parent->astParent()->astOperand2()))
+                    return Result(Result::Type::BAILOUT);
                 const bool reassign = isSameExpression(mCpp, false, expr, parent, mLibrary, false, false, nullptr);
                 if (reassign)
                     return Result(Result::Type::WRITE, parent->astParent());
