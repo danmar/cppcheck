@@ -6149,6 +6149,7 @@ private:
         ASSERT_EQUALS("double", typeOf("int x; double y; a = (b ? x : y);", "?"));
         ASSERT_EQUALS("const char *", typeOf("int x; double y; a = (b ? \"a\" : \"b\");", "?"));
         ASSERT_EQUALS("", typeOf("int x; double y; a = (b ? \"a\" : std::string(\"b\"));", "?"));
+        ASSERT_EQUALS("bool", typeOf("int x; a = (b ? false : true);", "?"));
 
         // Boolean operators/literals
         ASSERT_EQUALS("bool", typeOf("a > b;", ">"));
