@@ -950,7 +950,7 @@ void CheckClass::initializationListUsage()
                 break;
             if (Token::Match(tok, "try|do {"))
                 break;
-            if (!Token::Match(tok, "%var% =") || tok->strAt(-1) == "*" || (tok->strAt(-1) == "." && tok->strAt(-2) != "this"))
+            if (!Token::Match(tok, "%var% =") || tok->strAt(-1) == "*" || tok->strAt(-1) == ".")
                 continue;
 
             const Variable* var = tok->variable();
