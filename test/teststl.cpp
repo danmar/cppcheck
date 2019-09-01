@@ -311,6 +311,13 @@ private:
                     "  ++abc[s];\n"
                     "}");
         ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void f() {\n"
+                    "    static const int N = 4;\n"
+                    "    std::array<int, N> x;\n"
+                    "    x[0] = 0;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void outOfBoundsIndexExpression() {
