@@ -270,8 +270,7 @@ Parameter: -l(line) (file)
     <message>
         <location filename="librarydialog.cpp" line="96"/>
         <source>Cannot open file %1.</source>
-        <oldsource>Can not open file %1.</oldsource>
-        <translation type="unfinished">Datei %1 kann nicht geöffnet werden.</translation>
+        <translation>Datei %1 kann nicht geöffnet werden.</translation>
     </message>
     <message>
         <location filename="librarydialog.cpp" line="108"/>
@@ -281,8 +280,7 @@ Parameter: -l(line) (file)
     <message>
         <location filename="librarydialog.cpp" line="145"/>
         <source>Cannot save file %1.</source>
-        <oldsource>Can not save file %1.</oldsource>
-        <translation type="unfinished">Datei %1 kann nicht gespeichert werden.</translation>
+        <translation>Datei %1 kann nicht gespeichert werden.</translation>
     </message>
     <message>
         <location filename="librarydialog.cpp" line="157"/>
@@ -885,12 +883,12 @@ Parameter: -l(line) (file)
     <message>
         <location filename="mainwindow.ui" line="820"/>
         <source>C++17</source>
-        <translation type="unfinished">C++17</translation>
+        <translation>C++17</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="831"/>
         <source>C++20</source>
-        <translation type="unfinished">C++20</translation>
+        <translation>C++20</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="423"/>
@@ -1099,22 +1097,22 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
     <message>
         <location filename="mainwindow.cpp" line="568"/>
         <source>C/C++ Source</source>
-        <translation type="unfinished"></translation>
+        <translation>C/C++-Quellcode</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="569"/>
         <source>Compile database</source>
-        <translation type="unfinished"></translation>
+        <translation>Compilerdatenbank</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="570"/>
         <source>Visual Studio</source>
-        <translation type="unfinished"></translation>
+        <translation>Visual Studio</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="571"/>
         <source>Borland C++ Builder 6</source>
-        <translation type="unfinished"></translation>
+        <translation>Borland C++-Builder 6</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="574"/>
@@ -1146,7 +1144,10 @@ Wollen sie fortfahren, ohne diese Projektdateien zu nutzen?</translation>
 
 Opening a new XML file will clear current results.
 Do you want to proceed?</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktuelle Ergebnisse werden gelöscht.
+
+Eine neue XML-Datei zu öffnen wird die aktuellen Ergebnisse löschen
+Möchten sie fortfahren?</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1234"/>
@@ -1578,17 +1579,17 @@ Options:
     <message>
         <location filename="projectfiledialog.cpp" line="445"/>
         <source>Visual Studio</source>
-        <translation type="unfinished"></translation>
+        <translation>Visual Studio</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="446"/>
         <source>Compile database</source>
-        <translation type="unfinished"></translation>
+        <translation>Compilerdatenbank</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="447"/>
         <source>Borland C++ Builder 6</source>
-        <translation type="unfinished"></translation>
+        <translation>Borland C++-Builder 6</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="448"/>
@@ -1744,8 +1745,7 @@ Options:
     <message>
         <location filename="codeeditstyledialog.cpp" line="90"/>
         <source>Class Foreground Color</source>
-        <oldsource>Class ForegroundColor</oldsource>
-        <translation type="unfinished"></translation>
+        <translation>Klassen-Vordergrundfarbe</translation>
     </message>
     <message>
         <location filename="codeeditstyledialog.cpp" line="93"/>
@@ -2266,7 +2266,7 @@ Legen Sie unter dem Menü Ansicht fest, welche Arten von Fehlern angezeigt werde
     <message>
         <location filename="settings.ui" line="437"/>
         <source>System Style</source>
-        <translation type="unfinished"></translation>
+        <translation>Systemstil</translation>
     </message>
     <message>
         <location filename="settings.ui" line="444"/>
