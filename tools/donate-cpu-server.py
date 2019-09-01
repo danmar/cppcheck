@@ -20,7 +20,7 @@ import operator
 # changes)
 SERVER_VERSION = "1.1.4"
 
-OLD_VERSION = '1.88'
+OLD_VERSION = '1.89'
 
 
 # Set up logging
