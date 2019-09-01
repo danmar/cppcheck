@@ -147,7 +147,7 @@ public:
     bool inconclusive;
 
     /** Do not only check how interface is used. Also check that interface is safe. */
-    class SafeChecks {
+    class CPPCHECKLIB SafeChecks {
     public:
         SafeChecks() : classes(false), externalFunctions(false), internalFunctions(false), externalVariables(false) {}
 
