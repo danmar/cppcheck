@@ -115,7 +115,7 @@
               <File Id='misra.py' Name='misra.py' Source='$(var.AddonsDir)\misra.py' />
               <File Id='naming.py' Name='naming.py' Source='$(var.AddonsDir)\naming.py' />
               <File Id='threadsafety.py' Name='threadsafety.py' Source='$(var.AddonsDir)\threadsafety.py' />
-              <File Id='y2038.py' Name='y2038.py' Source='$(var.AddonsDir)\y2038\y2038.py' />
+              <File Id='y2038.py' Name='y2038.py' Source='$(var.AddonsDir)\y2038.py' />
             </Component>
           </Directory>
           <Component Id='BaseDocs' Guid='$(var.basedocsGUID)'>
