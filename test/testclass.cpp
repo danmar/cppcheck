@@ -6695,11 +6695,11 @@ private:
 
         // don't warn if some other instance's members are assigned to
         checkInitializationListUsage("class C {\n"
-                             "public:\n"
-                             "    C(C& c) : m_i(c.m_i) { c.m_i = (Foo)-1; }\n"
-                             "private:\n"
-                             "    Foo m_i;\n"
-                             "};");
+                                     "public:\n"
+                                     "    C(C& c) : m_i(c.m_i) { c.m_i = (Foo)-1; }\n"
+                                     "private:\n"
+                                     "    Foo m_i;\n"
+                                     "};");
         ASSERT_EQUALS("", errout.str());
     }
 

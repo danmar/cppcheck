@@ -1364,7 +1364,7 @@ void CheckUninitVar::valueFlowUninit()
             while (Token::simpleMatch(nextTok->astParent(), "."))
                 nextTok = nextTok->astParent();
             nextTok = nextAfterAstRightmostLeaf(nextTok);
-            if(nextTok == scope.bodyEnd)
+            if (nextTok == scope.bodyEnd)
                 break;
             tok = nextTok ? nextTok : tok;
         }

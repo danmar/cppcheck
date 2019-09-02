@@ -4443,14 +4443,14 @@ private:
     }
 
     void uninitvar_nonmember() {
-        valueFlowUninit( "struct Foo {\n"
-                         "  int bar;\n"
-                         "};\n"
-                         "\n"
-                         "int main() {\n"
-                         "  Foo* foo;\n"
-                         "  foo.b\n"
-                         "}\n");
+        valueFlowUninit("struct Foo {\n"
+                        "  int bar;\n"
+                        "};\n"
+                        "\n"
+                        "int main() {\n"
+                        "  Foo* foo;\n"
+                        "  foo.b\n"
+                        "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: foo\n", errout.str());
     }
 
