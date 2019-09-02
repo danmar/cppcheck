@@ -118,11 +118,10 @@ struct TokenImpl {
     struct CppcheckAttributes *mCppcheckAttributes;
 
     // For memoization, to speed up parsing of huge arrays #8897
-    enum Cpp11init {UNKNOWN, CPP11INIT, NOINIT} mCpp11init;
+    enum class Cpp11init {UNKNOWN, CPP11INIT, NOINIT} mCpp11init;
 
     void setCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint value);
     bool getCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint *value) const;
-
 
     TokenImpl()
         : mVarId(0)
@@ -143,7 +142,7 @@ struct TokenImpl {
         , mTemplateSimplifierPointers()
         , mScopeInfo(nullptr)
         , mCppcheckAttributes(nullptr)
-        , mCpp11init(UNKNOWN)
+        , mCpp11init(Cpp11init::UNKNOWN)
     {}
 
     ~TokenImpl();
@@ -1226,7 +1225,7 @@ public:
     void scopeInfo(std::shared_ptr<ScopeInfo2> newScopeInfo);
     std::shared_ptr<ScopeInfo2> scopeInfo() const;
 
-    void setCpp11init(bool cpp11init) const { mImpl->mCpp11init=cpp11init ? TokenImpl::CPP11INIT : TokenImpl::NOINIT; }
+    void setCpp11init(bool cpp11init) const { mImpl->mCpp11init=cpp11init ? TokenImpl::Cpp11init::CPP11INIT : TokenImpl::Cpp11init::NOINIT; }
     TokenImpl::Cpp11init isCpp11init() const { return mImpl->mCpp11init; }
 };
 
