@@ -154,7 +154,7 @@ private:
         TEST_CASE(garbageCode110);
         TEST_CASE(garbageCode111);
         TEST_CASE(garbageCode112);
-        TEST_CASE(garbageCode114);
+        TEST_CASE(garbageCode114); // #2118
         TEST_CASE(garbageCode115); // #5506
         TEST_CASE(garbageCode116); // #5356
         TEST_CASE(garbageCode117); // #6121
@@ -909,10 +909,10 @@ private:
     }
 
     void garbageCode114() { // #2118
-        ASSERT_THROW(checkCode("Q_GLOBAL_STATIC_WITH_INITIALIZER(Qt4NodeStaticData, qt4NodeStaticData, {\n"
-                               "    for (unsigned i = 0 ; i < count; i++) {\n"
-                               "    }\n"
-                               "});"), InternalError);
+        checkCode("Q_GLOBAL_STATIC_WITH_INITIALIZER(Qt4NodeStaticData, qt4NodeStaticData, {\n"
+                  "    for (unsigned i = 0 ; i < count; i++) {\n"
+                  "    }\n"
+                  "});");
     }
 
     void garbageCode115() { // #5506

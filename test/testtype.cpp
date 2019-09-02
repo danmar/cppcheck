@@ -50,6 +50,7 @@ private:
             settings = &_settings;
         }
         settings->addEnabled("warning");
+        settings->standards.setCPP("c++11");
 
         // Tokenize..
         Tokenizer tokenizer(settings, this);

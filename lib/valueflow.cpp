@@ -180,11 +180,13 @@ static void bailoutInternal(TokenList *tokenlist, ErrorLogger *errorLogger, cons
 #define bailout(tokenlist, errorLogger, tok, what) bailoutInternal(tokenlist, errorLogger, tok, what, __FILE__, __LINE__, "(valueFlow)")
 #endif
 
-static void changeKnownToPossible(std::list<ValueFlow::Value> &values)
+static void changeKnownToPossible(std::list<ValueFlow::Value> &values, int indirect=-1)
 {
-    std::list<ValueFlow::Value>::iterator it;
-    for (it = values.begin(); it != values.end(); ++it)
-        it->changeKnownToPossible();
+    for (ValueFlow::Value& v: values) {
+        if (indirect >= 0 && v.indirect != indirect)
+            continue;
+        v.changeKnownToPossible();
+    }
 }
 
 /**
@@ -1829,7 +1831,7 @@ static void valueFlowReverse(TokenList *tokenlist,
 
             // assigned by subfunction?
             bool inconclusive = false;
-            if (isVariableChangedByFunctionCall(tok2, settings, &inconclusive)) {
+            if (isVariableChangedByFunctionCall(tok2, std::max(val.indirect, val2.indirect), settings, &inconclusive)) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "possible assignment of " + tok2->str() + " by subfunction");
                 break;
@@ -2164,6 +2166,61 @@ static bool evalAssignment(ValueFlow::Value &lhsValue, const std::string &assign
     return true;
 }
 
+static bool isAliasOf(const Token *tok, nonneg int varid)
+{
+    if (tok->varId() == varid)
+        return false;
+    if (tok->varId() == 0)
+        return false;
+    if (!astIsPointer(tok))
+        return false;
+    for (const ValueFlow::Value &val : tok->values()) {
+        if (!val.isLocalLifetimeValue())
+            continue;
+        if (val.lifetimeKind != ValueFlow::Value::LifetimeKind::Address)
+            continue;
+        if (val.tokvalue->varId() == varid)
+            return true;
+    }
+    return false;
+}
+
+// Check if its an alias of the variable or is being aliased to this variable
+static bool isAliasOf(const Variable * var, const Token *tok, nonneg int varid, const std::list<ValueFlow::Value>& values)
+{
+    if (tok->varId() == varid)
+        return false;
+    if (tok->varId() == 0)
+        return false;
+    if (isAliasOf(tok, varid))
+        return true;
+    if (!var->isPointer())
+        return false;
+    // Search through non value aliases
+    for (const ValueFlow::Value &val : values) {
+        if (!val.isNonValue())
+            continue;
+        if (val.isLifetimeValue() && !val.isLocalLifetimeValue())
+            continue;
+        if (val.isLifetimeValue() && val.lifetimeKind != ValueFlow::Value::LifetimeKind::Address)
+            continue;
+        if (!Token::Match(val.tokvalue, ".|&|*|%var%"))
+            continue;
+        if (astHasVar(val.tokvalue, tok->varId()))
+            return true;
+    }
+    return false;
+}
+
+static std::set<int> getIndirections(const std::list<ValueFlow::Value>& values)
+{
+    std::set<int> result;
+    std::transform(values.begin(), values.end(), std::inserter(result, result.end()), [](const ValueFlow::Value& v) {
+        return std::max(0, v.indirect);
+    });
+    return result;
+}
+
 static bool valueFlowForward(Token * const               startToken,
                              const Token * const         endToken,
                              const Variable * const      var,
@@ -2297,16 +2354,23 @@ static bool valueFlowForward(Token * const               startToken,
         // conditional block of code that assigns variable..
         else if (!tok2->varId() && Token::Match(tok2, "%name% (") && Token::simpleMatch(tok2->linkAt(1), ") {")) {
             // is variable changed in condition?
-            Token* tokChanged = findVariableChanged(tok2->next(), tok2->next()->link(), varid, var->isGlobal(), settings, tokenlist->isCPP());
-            if (tokChanged != nullptr) {
-                // Set the value before bailing
-                if (tokChanged->varId() == varid) {
-                    for (const ValueFlow::Value &v : values) {
-                        if (!v.isNonValue())
-                            continue;
-                        setTokenValue(tokChanged, v, settings);
+            for (int i:getIndirections(values)) {
+                Token* tokChanged = findVariableChanged(tok2->next(), tok2->next()->link(), i, varid, var->isGlobal(), settings, tokenlist->isCPP());
+                if (tokChanged != nullptr) {
+                    // Set the value before bailing
+                    if (tokChanged->varId() == varid) {
+                        for (const ValueFlow::Value &v : values) {
+                            if (!v.isNonValue())
+                                continue;
+                            setTokenValue(tokChanged, v, settings);
+                        }
                     }
+                    values.remove_if([&](const ValueFlow::Value& v) {
+                        return v.indirect == i;
+                    });
                 }
+            }
+            if (values.empty()) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " valueFlowForward, assignment in condition");
                 return false;
@@ -2604,7 +2668,7 @@ static bool valueFlowForward(Token * const               startToken,
             return false;
         }
 
-        else if (indentlevel <= 0 && Token::Match(tok2, "return|throw"))
+        else if (indentlevel <= 0 && Token::Match(tok2, "return|throw|setjmp|longjmp"))
             returnStatement = true;
 
         else if (returnStatement && tok2->str() == ";")
@@ -2628,8 +2692,10 @@ static bool valueFlowForward(Token * const               startToken,
                 Token *expr = (condValue.intvalue != 0) ? op2->astOperand1() : op2->astOperand2();
                 for (const ValueFlow::Value &v : values)
                     valueFlowAST(expr, varid, v, settings);
-                if (isVariableChangedByFunctionCall(expr, varid, settings, nullptr))
-                    changeKnownToPossible(values);
+                if (isVariableChangedByFunctionCall(expr, 0, varid, settings, nullptr))
+                    changeKnownToPossible(values, 0);
+                if (isVariableChangedByFunctionCall(expr, 1, varid, settings, nullptr))
+                    changeKnownToPossible(values, 1);
             } else {
                 for (const ValueFlow::Value &v : values) {
                     const ProgramMemory programMemory(getProgramMemory(tok2, varid, v));
@@ -2824,15 +2890,25 @@ static bool valueFlowForward(Token * const               startToken,
             }
 
             // assigned by subfunction?
-            bool inconclusive = false;
-            if (isVariableChangedByFunctionCall(tok2, settings, &inconclusive)) {
+            for (int i:getIndirections(values)) {
+                bool inconclusive = false;
+                if (isVariableChangedByFunctionCall(tok2, i, settings, &inconclusive)) {
+                    values.remove_if([&](const ValueFlow::Value& v) {
+                        return v.indirect <= i;
+                    });
+                }
+                if (inconclusive) {
+                    for (ValueFlow::Value &v : values) {
+                        if (v.indirect != i)
+                            continue;
+                        v.setInconclusive();
+                    }
+                }
+            }
+            if (values.empty()) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "possible assignment of " + tok2->str() + " by subfunction");
                 return false;
-            }
-            if (inconclusive) {
-                for (ValueFlow::Value &v : values)
-                    v.setInconclusive();
             }
             if (tok2->strAt(1) == "." && tok2->next()->originalName() != "->") {
                 if (settings->inconclusive) {
@@ -2845,9 +2921,22 @@ static bool valueFlowForward(Token * const               startToken,
                 }
             }
             // Variable changed
-            if (isVariableChanged(tok2, settings, tokenlist->isCPP())) {
-                values.remove_if(std::mem_fn(&ValueFlow::Value::isUninitValue));
+            for (int i:getIndirections(values)) {
+                // Remove unintialized values if modified
+                if (isVariableChanged(tok2, i, settings, tokenlist->isCPP()))
+                    values.remove_if([&](const ValueFlow::Value& v) {
+                    return v.isUninitValue() && v.indirect <= i;
+                });
             }
+        } else if (isAliasOf(var, tok2, varid, values) && isVariableChanged(tok2, 0, settings, tokenlist->isCPP())) {
+            if (settings->debugwarnings)
+                bailout(tokenlist, errorLogger, tok2, "Alias variable was modified.");
+            // Bail at the end of the statement if its in an assignment
+            const Token * top = tok2->astTop();
+            if (Token::Match(top, "%assign%") && astHasToken(top->astOperand1(), tok2))
+                returnStatement = true;
+            else
+                return false;
         }
 
         // Lambda function
@@ -2978,7 +3067,10 @@ ValueFlow::Value getLifetimeObjValue(const Token *tok)
     return result;
 }
 
-static const Token *getLifetimeToken(const Token *tok, ValueFlow::Value::ErrorPath &errorPath, int depth = 20)
+static const Token* getLifetimeToken(const Token* tok,
+                                     ValueFlow::Value::ErrorPath& errorPath,
+                                     bool* addressOf = nullptr,
+                                     int depth = 20)
 {
     if (!tok)
         return nullptr;
@@ -2987,6 +3079,8 @@ static const Token *getLifetimeToken(const Token *tok, ValueFlow::Value::ErrorPa
         return tok;
     if (var && var->declarationId() == tok->varId()) {
         if (var->isReference() || var->isRValueReference()) {
+            if (addressOf)
+                *addressOf = true;
             if (!var->declEndToken())
                 return tok;
             if (var->isArgument()) {
@@ -2998,36 +3092,45 @@ static const Token *getLifetimeToken(const Token *tok, ValueFlow::Value::ErrorPa
                 if (vartok == tok)
                     return tok;
                 if (vartok)
-                    return getLifetimeToken(vartok, errorPath, depth - 1);
+                    return getLifetimeToken(vartok, errorPath, addressOf, depth - 1);
             } else {
                 return nullptr;
             }
         }
     } else if (Token::Match(tok->previous(), "%name% (")) {
         const Function *f = tok->previous()->function();
-        if (!f)
-            return tok;
-        if (!Function::returnsReference(f))
-            return tok;
-        const Token *returnTok = findSimpleReturn(f);
-        if (!returnTok)
-            return tok;
-        if (returnTok == tok)
-            return tok;
-        const Token *argvarTok = getLifetimeToken(returnTok, errorPath, depth - 1);
-        if (!argvarTok)
-            return tok;
-        const Variable *argvar = argvarTok->variable();
-        if (!argvar)
-            return tok;
-        if (argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
-            int n = getArgumentPos(argvar, f);
-            if (n < 0)
-                return nullptr;
-            const Token *argTok = getArguments(tok->previous()).at(n);
-            errorPath.emplace_back(returnTok, "Return reference.");
-            errorPath.emplace_back(tok->previous(), "Called function passing '" + argTok->str() + "'.");
-            return getLifetimeToken(argTok, errorPath, depth - 1);
+        if (f) {
+            if (!Function::returnsReference(f))
+                return tok;
+            const Token* returnTok = findSimpleReturn(f);
+            if (!returnTok)
+                return tok;
+            if (returnTok == tok)
+                return tok;
+            const Token* argvarTok = getLifetimeToken(returnTok, errorPath, addressOf, depth - 1);
+            if (!argvarTok)
+                return tok;
+            const Variable* argvar = argvarTok->variable();
+            if (!argvar)
+                return tok;
+            if (argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
+                int n = getArgumentPos(argvar, f);
+                if (n < 0)
+                    return nullptr;
+                const Token* argTok = getArguments(tok->previous()).at(n);
+                errorPath.emplace_back(returnTok, "Return reference.");
+                errorPath.emplace_back(tok->previous(), "Called function passing '" + argTok->str() + "'.");
+                return getLifetimeToken(argTok, errorPath, addressOf, depth - 1);
+            }
+        } else if (Token::Match(tok->tokAt(-2), ". %name% (") && astIsContainer(tok->tokAt(-2)->astOperand1())) {
+            const Library::Container* library = getLibraryContainer(tok->tokAt(-2)->astOperand1());
+            Library::Container::Yield y = library->getYield(tok->previous()->str());
+            if (y == Library::Container::Yield::AT_INDEX || y == Library::Container::Yield::ITEM) {
+                errorPath.emplace_back(tok->previous(), "Accessing container.");
+                if (addressOf)
+                    *addressOf = false;
+                return getLifetimeToken(tok->tokAt(-2)->astOperand1(), errorPath, nullptr, depth - 1);
+            }
         }
     } else if (Token::Match(tok, ".|::|[")) {
         const Token *vartok = tok;
@@ -3049,18 +3152,22 @@ static const Token *getLifetimeToken(const Token *tok, ValueFlow::Value::ErrorPa
                 if (!v.isLocalLifetimeValue())
                     continue;
                 errorPath.insert(errorPath.end(), v.errorPath.begin(), v.errorPath.end());
-                return getLifetimeToken(v.tokvalue, errorPath);
+                return getLifetimeToken(v.tokvalue, errorPath, addressOf);
             }
         } else {
-            return getLifetimeToken(vartok, errorPath);
+            if (addressOf && astIsContainer(vartok) && Token::simpleMatch(vartok->astParent(), "[")) {
+                *addressOf = false;
+                addressOf = nullptr;
+            }
+            return getLifetimeToken(vartok, errorPath, addressOf);
         }
     }
     return tok;
 }
 
-const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPath &errorPath)
+const Variable* getLifetimeVariable(const Token* tok, ValueFlow::Value::ErrorPath& errorPath, bool* addressOf)
 {
-    const Token *tok2 = getLifetimeToken(tok, errorPath);
+    const Token* tok2 = getLifetimeToken(tok, errorPath, addressOf);
     if (tok2 && tok2->variable())
         return tok2->variable();
     return nullptr;
@@ -5132,6 +5239,7 @@ static void valueFlowUninit(TokenList *tokenlist, SymbolDatabase * /*symbolDatab
         ValueFlow::Value uninitValue;
         uninitValue.setKnown();
         uninitValue.valueType = ValueFlow::Value::UNINIT;
+        uninitValue.tokvalue = vardecl;
         std::list<ValueFlow::Value> values;
         values.push_back(uninitValue);
 
@@ -5377,8 +5485,8 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
             continue;
         ValueFlow::Value value(0);
         if (var->valueType()->container->size_templateArgNo >= 0) {
-            if (var->dimensions().size() == 1 && var->dimensions().front().known)
-                value.intvalue = var->dimensions().front().num;
+            if (var->dimensions().size() == 1 && var->dimensions().front().tok && var->dimensions().front().tok->hasKnownIntValue())
+                value.intvalue = var->dimensions().front().tok->getKnownIntValue();
             else
                 continue;
         }
