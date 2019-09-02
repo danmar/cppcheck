@@ -176,6 +176,8 @@ private:
         TEST_CASE(template136); // #9287
         TEST_CASE(template137); // #9288
         TEST_CASE(template138);
+        TEST_CASE(template139);
+        TEST_CASE(template140);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -3360,6 +3362,68 @@ private:
                                "int main ( ) { "
                                "return 0 ; "
                                "}";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+    }
+
+    void template139() {
+        {
+            const char code[] = "template<typename T>\n"
+                                "struct Foo {\n"
+                                "  template<typename> friend struct Foo;\n"
+                                "};";
+            const char exp[] = "template < typename T > "
+                               "struct Foo { "
+                               "template < typename > friend struct Foo ; "
+                               "} ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            const char code[] = "template<typename T>\n"
+                                "struct Foo {\n"
+                                "  template<typename> friend struct Foo;\n"
+                                "} ;\n"
+                                "Foo<int> foo;";
+            const char exp[] = "struct Foo<int> ; "
+                               "Foo<int> foo ; "
+                               "struct Foo<int> { "
+                               "template < typename > friend struct Foo ; "
+                               "} ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+    }
+
+    void template140() {
+        {
+            const char code[] = "template <typename> struct a { };\n"
+                                "template <typename b> struct d {\n"
+                                "    d();\n"
+                                "    d(d<a<b>> e);\n"
+                                "};\n"
+                                "void foo() { d<char> c; }";
+            const char exp[] = "struct a<char> ; "
+                               "struct d<char> ; "
+                               "void foo ( ) { d<char> c ; } "
+                               "struct d<char> { "
+                               "d<char> ( ) ; "
+                               "d<char> ( d < a<char> > e ) ; "
+                               "} ; "
+                               "struct a<char> { } ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            const char code[] = "namespace a {\n"
+                                "template <typename b> using c = typename b ::d;\n"
+                                "template <typename> constexpr bool e() { return false; }\n"
+                                "template <typename b> class f { f(f<c<b>>); };\n"
+                                "static_assert(!e<f<char>>());\n"
+                                "}";
+            const char exp[] = "namespace a { "
+                               "const bool e<f<char>> ( ) ; "
+                               "class f<char> ; "
+                               "static_assert ( ! e<f<char>> ( ) ) ; } "
+                               "class a :: f<char> { f<char> ( a :: f < b :: d > ) ; } ; "
+                               "const bool a :: e<f<char>> ( ) { return false ; }";
             ASSERT_EQUALS(exp, tok(code));
         }
     }

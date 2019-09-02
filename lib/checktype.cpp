@@ -57,6 +57,11 @@ void CheckType::checkTooBigBitwiseShift()
     if (mSettings->platformType == Settings::Unspecified)
         return;
 
+    const bool cpp14 = mSettings->standards.cpp >= Standards::CPP14;
+
+    if (cpp14 && !mSettings->isEnabled(Settings::PORTABILITY))
+        return;
+
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         // C++ and macro: OUT(x<<y)
         if (mTokenizer->isCPP() && Token::Match(tok, "[;{}] %name% (") && Token::simpleMatch(tok->linkAt(2), ") ;") && tok->next()->isUpperCaseName() && !tok->next()->function())
@@ -91,7 +96,7 @@ void CheckType::checkTooBigBitwiseShift()
 
         // Get biggest rhs value. preferably a value which doesn't have 'condition'.
         const ValueFlow::Value * value = tok->astOperand2()->getValueGE(lhsbits, mSettings);
-        if (value && mSettings->isEnabled(value, false))
+        if (value && mSettings->isEnabled(value, false) && !cpp14)
             tooBigBitwiseShiftError(tok, lhsbits, *value);
         else if (lhstype->sign == ValueType::Sign::SIGNED) {
             value = tok->astOperand2()->getValueGE(lhsbits-1, mSettings);
@@ -124,19 +129,28 @@ void CheckType::tooBigSignedBitwiseShiftError(const Token *tok, int lhsbits, con
 {
     const char id[] = "shiftTooManyBitsSigned";
 
+    const bool cpp14 = mSettings->standards.cpp >= Standards::CPP14;
+
+    std::string behaviour = "undefined";
+    if (cpp14)
+        behaviour = "implementation-defined";
     if (!tok) {
-        reportError(tok, Severity::error, id, "Shifting signed 32-bit value by 31 bits is undefined behaviour", CWE758, false);
+        reportError(tok, Severity::error, id, "Shifting signed 32-bit value by 31 bits is " + behaviour + " behaviour", CWE758, false);
         return;
     }
 
     const ErrorPath errorPath = getErrorPath(tok, &rhsbits, "Shift");
 
     std::ostringstream errmsg;
-    errmsg << "Shifting signed " << lhsbits << "-bit value by " << rhsbits.intvalue << " bits is undefined behaviour";
+    errmsg << "Shifting signed " << lhsbits << "-bit value by " << rhsbits.intvalue << " bits is " + behaviour + " behaviour";
     if (rhsbits.condition)
         errmsg << ". See condition at line " << rhsbits.condition->linenr() << ".";
 
-    reportError(errorPath, rhsbits.errorSeverity() ? Severity::error : Severity::warning, id, errmsg.str(), CWE758, rhsbits.isInconclusive());
+    Severity::SeverityType severity = rhsbits.errorSeverity() ? Severity::error : Severity::warning;
+    if (cpp14)
+        severity = Severity::portability;
+
+    reportError(errorPath, severity, id, errmsg.str(), CWE758, rhsbits.isInconclusive());
 }
 
 //---------------------------------------------------------------------------

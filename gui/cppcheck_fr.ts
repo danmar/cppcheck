@@ -215,19 +215,19 @@ Paramètres : -l(ligne) (fichier)</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Can not open file %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Can not save file %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Save the library as</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Failed to load %1. %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot open file %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot save file %1.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -696,7 +696,7 @@ Do you want to remove the file from the recently used projects -list?</source>
         <source>Current results will be cleared.
 
 Opening a new XML file will clear current results.Do you want to proceed?</source>
-        <translation>Les résultats courant seront effacés.
+        <translation type="vanished">Les résultats courant seront effacés.
 
 L&apos;ouverture d&apos;un nouveau fichier XML effacera les resultats. Voulez-vous confirmar l&apos;opération ?</translation>
     </message>
@@ -995,6 +995,29 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source>C++20</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>C/C++ Source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Compile database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Visual Studio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Borland C++ Builder 6</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Current results will be cleared.
+
+Opening a new XML file will clear current results.
+Do you want to proceed?</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1316,6 +1339,18 @@ Do you want to stop the analysis and exit Cppcheck?</source>
         <source>Misra rule texts file (%1)</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Visual Studio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Compile database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Borland C++ Builder 6</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QDialogButtonBox</name>
@@ -1423,10 +1458,6 @@ Do you want to stop the analysis and exit Cppcheck?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Class ForegroundColor</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Class Font Weight</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1464,6 +1495,10 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source>Set to Default Dark</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Class Foreground Color</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1921,6 +1956,10 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Custom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>System Style</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

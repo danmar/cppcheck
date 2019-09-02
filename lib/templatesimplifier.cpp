@@ -105,7 +105,12 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *token, const std::string &
             throw InternalError(mToken, "explicit specialization of alias templates is not permitted", InternalError::SYNTAX);
         }
 
-        isClass(Token::Match(mParamEnd->next(), "class|struct|union %name% <|{|:|;|::"));
+        isFriend(mParamEnd->strAt(1) == "friend");
+        const Token *next = mParamEnd->next();
+        if (isFriend())
+            next = next->next();
+
+        isClass(Token::Match(next, "class|struct|union %name% <|{|:|;|::"));
         if (mToken->strAt(1) == "<" && !isSpecialization()) {
             const Token *end = mToken->next()->findClosingBracket();
             isVariadic(end && Token::findmatch(mToken->tokAt(2), "typename|class . . .", end));
@@ -119,22 +124,24 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *token, const std::string &
                 throw InternalError(mToken, "unsupported syntax", InternalError::SYNTAX);
         }
         isFunction(tok1->str() == "(");
-        isVariable(!isClass() && !isAlias() && Token::Match(tok1, "=|;"));
-        if (isVariable())
-            isForwardDeclaration(tok1->str() == ";");
-        else if (!isAlias()) {
-            if (isFunction())
-                tok1 = tok1->link()->next();
-            while (tok1 && !Token::Match(tok1, ";|{")) {
-                if (tok1->str() == "<")
-                    tok1 = tok1->findClosingBracket();
-                else if (Token::Match(tok1, "(|[") && tok1->link())
-                    tok1 = tok1->link();
-                if (tok1)
-                    tok1 = tok1->next();
-            }
-            if (tok1)
+        isVariable(!isClass() && !isAlias() && !isFriend() && Token::Match(tok1, "=|;"));
+        if (!isFriend()) {
+            if (isVariable())
                 isForwardDeclaration(tok1->str() == ";");
+            else if (!isAlias()) {
+                if (isFunction())
+                    tok1 = tok1->link()->next();
+                while (tok1 && !Token::Match(tok1, ";|{")) {
+                    if (tok1->str() == "<")
+                        tok1 = tok1->findClosingBracket();
+                    else if (Token::Match(tok1, "(|[") && tok1->link())
+                        tok1 = tok1->link();
+                    if (tok1)
+                        tok1 = tok1->next();
+                }
+                if (tok1)
+                    isForwardDeclaration(tok1->str() == ";");
+            }
         }
         // check for member class or function and adjust scope
         if ((isFunction() || isClass()) && mNameToken->strAt(-1) == "::") {
@@ -813,7 +820,7 @@ void TemplateSimplifier::getTemplateInstantiations()
             Token *tok2 = Token::findsimplematch(tok->tokAt(2), ";");
             if (tok2)
                 tok = tok2;
-        } else if (Token::Match(tok->previous(), "(|{|}|;|=|>|<<|:|.|*|&|return|<|, %name% ::|<|(") ||
+        } else if (Token::Match(tok->previous(), "(|{|}|;|=|>|<<|:|.|*|&|return|<|,|! %name% ::|<|(") ||
                    Token::Match(tok->previous(), "%type% %name% ::|<") ||
                    Token::Match(tok->tokAt(-2), "[,:] private|protected|public %name% ::|<")) {
             std::string scopeName = tok->scopeInfo()->name;
@@ -983,7 +990,7 @@ void TemplateSimplifier::useDefaultArgumentValues()
 void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
 {
     // Ticket #5762: Skip specialization tokens
-    if (declaration.isSpecialization() || declaration.isAlias())
+    if (declaration.isSpecialization() || declaration.isAlias() || declaration.isFriend())
         return;
 
     // template parameters with default value has syntax such as:
@@ -1395,9 +1402,9 @@ bool TemplateSimplifier::getTemplateNamePositionTemplateVariable(const Token *to
 
 bool TemplateSimplifier::getTemplateNamePositionTemplateClass(const Token *tok, int &namepos)
 {
-    if (Token::Match(tok, "> class|struct|union %type% :|<|;|{|::")) {
-        namepos = 2;
-        tok = tok->tokAt(2);
+    if (Token::Match(tok, "> friend| class|struct|union %type% :|<|;|{|::")) {
+        namepos = tok->strAt(1) == "friend" ? 3 : 2;
+        tok = tok->tokAt(namepos);
         while (Token::Match(tok, "%type% :: %type%") ||
                (Token::Match(tok, "%type% <") && Token::Match(tok->next()->findClosingBracket(), "> :: %type%"))) {
             if (tok->strAt(1) == "::") {
@@ -2026,7 +2033,11 @@ void TemplateSimplifier::expandTemplate(
                         }
                     }
                 } else {
-                    if (copy) {
+                    // don't modify friend
+                    if (Token::Match(tok3->tokAt(-3), "> friend class|struct|union")) {
+                        if (copy)
+                            mTokenList.addtoken(tok3);
+                    } else if (copy) {
                         // add namespace if necessary
                         if (!templateDeclaration.scope().empty() &&
                             (isClass ? tok3->strAt(1) != "(" : true)) {
@@ -2070,11 +2081,26 @@ void TemplateSimplifier::expandTemplate(
                 }
 
                 std::string scope;
-                for (const Token *prev = tok3->tokAt(-2); Token::Match(prev, "%name% ::"); prev = prev->tokAt(-2)) {
+                const Token *prev = tok3;
+                for (; Token::Match(prev->tokAt(-2), "%name% ::"); prev = prev->tokAt(-2)) {
                     if (scope.empty())
-                        scope = prev->str();
+                        scope = prev->strAt(-2);
                     else
-                        scope = prev->str() + " :: " + scope;
+                        scope = prev->strAt(-2) + " :: " + scope;
+                }
+
+                // check for global scope
+                if (prev->strAt(-1) != "::") {
+                    // adjust for current scope
+                    std::string token_scope = tok3->scopeInfo()->name;
+                    std::string::size_type end = token_scope.find_last_of(" :: ");
+                    if (end != std::string::npos) {
+                        token_scope.resize(end);
+                        if (scope.empty())
+                            scope = token_scope;
+                        else
+                            scope = token_scope + " :: " + scope;
+                    }
                 }
 
                 // don't add instantiations in template definitions
@@ -2125,8 +2151,14 @@ void TemplateSimplifier::expandTemplate(
     }
 
     // add new instantiations
-    for (const auto & inst : newInstantiations)
-        addInstantiation(inst.token, inst.scope);
+    for (const auto & inst : newInstantiations) {
+        std::string fullName = inst.scope + (inst.scope.empty() ? "" : " :: ") + inst.token->str();
+        simplifyTemplateArgs(inst.token->tokAt(2), inst.token->next()->findClosingBracket());
+        // only add recursive instantiation if its arguments are a constant expression
+        if (templateDeclaration.fullName() != fullName ||
+            (inst.token->tokAt(2)->isNumber() || inst.token->tokAt(2)->isStandardType()))
+            mTemplateInstantiations.emplace_back(inst.token, inst.scope);
+    }
 }
 
 static bool isLowerThanLogicalAnd(const Token *lower)
@@ -3154,7 +3186,7 @@ static bool specMatch(
     const TemplateSimplifier::TokenAndName &decl)
 {
     // make sure decl is really a declaration
-    if (decl.isPartialSpecialization() || decl.isSpecialization() || decl.isAlias())
+    if (decl.isPartialSpecialization() || decl.isSpecialization() || decl.isAlias() || decl.isFriend())
         return false;
 
     return spec.isSameFamily(decl);
@@ -3237,8 +3269,8 @@ void TemplateSimplifier::fixForwardDeclaredDefaultArgumentValues()
         getTemplateParametersInDeclaration(forwardDecl.token()->tokAt(2), params1);
 
         for (auto & decl : mTemplateDeclarations) {
-            // skip partializations
-            if (decl.isPartialSpecialization())
+            // skip partializations, type aliases and friends
+            if (decl.isPartialSpecialization() || decl.isAlias() || decl.isFriend())
                 continue;
 
             std::vector<const Token *> params2;
@@ -3321,6 +3353,8 @@ void TemplateSimplifier::printOut(const TokenAndName &tokenAndName, const std::s
         std::cout << " isForwardDeclaration";
     if (tokenAndName.isVariadic())
         std::cout << " isVariadic";
+    if (tokenAndName.isFriend())
+        std::cout << " isFriend";
     std::cout << std::endl;
     if (tokenAndName.token() && !tokenAndName.paramEnd() && tokenAndName.token()->strAt(1) == "<") {
         const Token *end = tokenAndName.token()->next()->findClosingBracket();
@@ -3544,13 +3578,13 @@ void TemplateSimplifier::simplifyTemplates(
         std::set<std::string> expandedtemplates;
 
         for (std::list<TokenAndName>::reverse_iterator iter1 = mTemplateDeclarations.rbegin(); iter1 != mTemplateDeclarations.rend(); ++iter1) {
-            if (iter1->isAlias())
+            if (iter1->isAlias() || iter1->isFriend())
                 continue;
 
             // get specializations..
             std::list<const Token *> specializations;
             for (std::list<TokenAndName>::const_iterator iter2 = mTemplateDeclarations.begin(); iter2 != mTemplateDeclarations.end(); ++iter2) {
-                if (iter2->isAlias())
+                if (iter2->isAlias() || iter2->isFriend())
                     continue;
 
                 if (iter1->fullName() == iter2->fullName())

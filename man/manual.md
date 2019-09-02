@@ -1,6 +1,6 @@
 ---
 title: Cppcheck manual
-subtitle: Version 1.88
+subtitle: Version 1.90 dev
 author: Cppcheck team
 lang: en
 toc: true

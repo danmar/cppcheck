@@ -54,6 +54,7 @@ private:
         TEST_CASE(comparisonOfBoolWithInt6); // #4224 - integer is casted to bool
         TEST_CASE(comparisonOfBoolWithInt7); // #4846 - (!x == true)
         TEST_CASE(comparisonOfBoolWithInt8); // #9165
+        TEST_CASE(comparisonOfBoolWithInt9); // #9304
 
         TEST_CASE(checkComparisonOfFuncReturningBool1);
         TEST_CASE(checkComparisonOfFuncReturningBool2);
@@ -1036,6 +1037,17 @@ private:
               "        throw 2;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Comparison of a boolean expression with an integer.\n", errout.str());
+    }
+
+    void comparisonOfBoolWithInt9() { // #9304
+        check("bool f(int a, bool b)\n"
+              "{\n"
+              "    if ((a == 0 ? false : true) != b) {\n"
+              "        b = !b;\n"
+              "    }\n"
+              "    return b;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
