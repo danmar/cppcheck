@@ -3976,6 +3976,16 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
+
+        check("std::vector<std::string> g();\n"
+              "void f() {\n"
+              "    std::vector<std::string> x = g();\n"
+              "    const std::string& y = x[1];\n"
+              "    std::string z;\n"
+              "    z += \"\";\n"
+              "    z += y;\n"
+              "}\n",true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void findInsert() {
