@@ -270,7 +270,7 @@ Parameters: -l(line) (file)</translation>
         <location filename="librarydialog.cpp" line="96"/>
         <source>Cannot open file %1.</source>
         <oldsource>Can not open file %1.</oldsource>
-        <translation type="unfinished">ファイルが見つかりません %1。</translation>
+        <translation>ファイルが見つかりません %1。</translation>
     </message>
     <message>
         <location filename="librarydialog.cpp" line="108"/>
@@ -281,7 +281,7 @@ Parameters: -l(line) (file)</translation>
         <location filename="librarydialog.cpp" line="145"/>
         <source>Cannot save file %1.</source>
         <oldsource>Can not save file %1.</oldsource>
-        <translation type="unfinished">ファイルが保存できません %1。</translation>
+        <translation>ファイルが保存できません %1。</translation>
     </message>
     <message>
         <location filename="librarydialog.cpp" line="157"/>
@@ -1262,22 +1262,22 @@ Do you want to stop the checking and exit Cppcheck?</source>
     <message>
         <location filename="mainwindow.cpp" line="568"/>
         <source>C/C++ Source</source>
-        <translation type="unfinished">C/C++のソースコード</translation>
+        <translation>C/C++のソースコード</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="569"/>
         <source>Compile database</source>
-        <translation type="unfinished">コンパイルデータベース</translation>
+        <translation>コンパイルデータベース</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="570"/>
         <source>Visual Studio</source>
-        <translation type="unfinished">Visual Studio</translation>
+        <translation>Visual Studio</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="571"/>
         <source>Borland C++ Builder 6</source>
-        <translation type="unfinished">Borland C++ Builder 6</translation>
+        <translation>Borland C++ Builder 6</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="574"/>
@@ -1309,7 +1309,9 @@ Do you want to proceed analysis without using any of these project files?</sourc
 
 Opening a new XML file will clear current results.
 Do you want to proceed?</source>
-        <translation type="unfinished"></translation>
+        <translation>現在の結果を作成します。
+
+新しくXMLファイルを開くと現在の結果が削除されます。実行しますか？</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1234"/>
@@ -1812,17 +1814,17 @@ Options:
     <message>
         <location filename="projectfiledialog.cpp" line="445"/>
         <source>Visual Studio</source>
-        <translation type="unfinished">Visual Studio</translation>
+        <translation>Visual Studio</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="446"/>
         <source>Compile database</source>
-        <translation type="unfinished">コンパイルデータベース</translation>
+        <translation>コンパイルデータベース</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="447"/>
         <source>Borland C++ Builder 6</source>
-        <translation type="unfinished">Borland C++ Builder 6</translation>
+        <translation>Borland C++ Builder 6</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="448"/>
@@ -1987,7 +1989,7 @@ Options:
         <location filename="codeeditstyledialog.cpp" line="90"/>
         <source>Class Foreground Color</source>
         <oldsource>Class ForegroundColor</oldsource>
-        <translation type="unfinished">クラスは前景色</translation>
+        <translation>クラスの前景色</translation>
     </message>
     <message>
         <location filename="codeeditstyledialog.cpp" line="93"/>
@@ -2549,7 +2551,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="settings.ui" line="437"/>
         <source>System Style</source>
-        <translation type="unfinished"></translation>
+        <translation>システムのデフォルトのスタイル</translation>
     </message>
     <message>
         <location filename="settings.ui" line="444"/>
