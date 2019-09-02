@@ -1333,7 +1333,7 @@ void CheckUninitVar::valueFlowUninit()
     for (const Scope &scope : symbolDatabase->scopeList) {
         if (!scope.isExecutable())
             continue;
-        for (const Token* tok = scope.bodyStart; tok && tok != scope.bodyEnd; tok = tok->next()) {
+        for (const Token* tok = scope.bodyStart; tok != scope.bodyEnd; tok = tok->next()) {
             if (Token::simpleMatch(tok, "sizeof (")) {
                 tok = tok->linkAt(1);
                 continue;
@@ -1364,6 +1364,8 @@ void CheckUninitVar::valueFlowUninit()
             while (Token::simpleMatch(nextTok->astParent(), "."))
                 nextTok = nextTok->astParent();
             nextTok = nextAfterAstRightmostLeaf(nextTok);
+            if(nextTok == scope.bodyEnd)
+                break;
             tok = nextTok ? nextTok : tok;
         }
     }
