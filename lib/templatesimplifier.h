@@ -87,6 +87,7 @@ public:
             fIsPartialSpecialization = (1 << 5), // user partial specialized template
             fIsForwardDeclaration    = (1 << 6), // forward declaration
             fIsVariadic              = (1 << 7), // variadic template
+            fIsFriend                = (1 << 8), // friend template
             fFamilyMask              = (fIsClass | fIsFunction | fIsVariable)
         };
 
@@ -113,6 +114,9 @@ public:
         }
         void isVariadic(bool state) {
             setFlag(fIsVariadic, state);
+        }
+        void isFriend(bool state) {
+            setFlag(fIsFriend, state);
         }
 
         /**
@@ -204,6 +208,9 @@ public:
         }
         bool isVariadic() const {
             return getFlag(fIsVariadic);
+        }
+        bool isFriend() const {
+            return getFlag(fIsFriend);
         }
 
         /**

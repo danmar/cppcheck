@@ -249,7 +249,7 @@ namespace ValueFlow {
     std::string eitherTheConditionIsRedundant(const Token *condition);
 }
 
-const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPath &errorPath);
+const Variable* getLifetimeVariable(const Token* tok, ValueFlow::Value::ErrorPath& errorPath, bool* addressOf = nullptr);
 
 bool isLifetimeBorrowed(const Token *tok, const Settings *settings);
 

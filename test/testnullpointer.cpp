@@ -75,6 +75,7 @@ private:
         TEST_CASE(nullpointer33);
         TEST_CASE(nullpointer34);
         TEST_CASE(nullpointer35);
+        TEST_CASE(nullpointer36); // #9264
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1423,6 +1424,18 @@ private:
               "}\n"
               "void h() {\n"
               "    g(0);\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer36() {
+        check("char* f(char* s) {\n"
+              "    char* start = s;\n"
+              "    if (!s)\n"
+              "        return (s);\n"
+              "    while (isspace(*start))\n"
+              "        start++;\n"
+              "    return (start);\n"
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
     }

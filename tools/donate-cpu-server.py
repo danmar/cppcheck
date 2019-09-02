@@ -18,9 +18,9 @@ import operator
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.1.4"
+SERVER_VERSION = "1.1.5"
 
-OLD_VERSION = '1.88'
+OLD_VERSION = '1.89'
 
 
 # Set up logging
@@ -258,6 +258,8 @@ def diffReport(resultsPath):
         uploadedToday = data['date'] == today
         for messageId in data['sums']:
             sums = data['sums'][messageId]
+            if OLD_VERSION not in sums:
+                continue
             if messageId not in out:
                 out[messageId] = [0, 0]
             out[messageId][0] += sums[OLD_VERSION]
