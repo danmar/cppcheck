@@ -3912,10 +3912,67 @@ private:
               true);
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:4]: (error) Using pointer to local variable 'v' that may be invalid.\n", errout.str());
 
+        check("void f() {\n"
+              "    std::vector<int> v = {1};\n"
+              "    int &v0 = v.front();\n"
+              "    v.push_back(123);\n"
+              "    std::cout << v0 << std::endl;\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:3] -> [test.cpp:4] -> [test.cpp:5]: (error) Reference to v that may be invalid.\n",
+            errout.str());
+
+        check("void f() {\n"
+              "    std::vector<int> v = {1};\n"
+              "    int &v0 = v[0];\n"
+              "    v.push_back(123);\n"
+              "    std::cout << v0 << std::endl;\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4] -> [test.cpp:5]: (error) Reference to v that may be invalid.\n",
+                      errout.str());
+
+        check("void f(std::vector<int> &v) {\n"
+              "    int &v0 = v.front();\n"
+              "    v.push_back(123);\n"
+              "    std::cout << v0 << std::endl;\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:2] -> [test.cpp:1] -> [test.cpp:3] -> [test.cpp:4]: (error) Reference to v that may be invalid.\n",
+            errout.str());
+
+        check("void f(std::vector<int> &v) {\n"
+              "    int &v0 = v[0];\n"
+              "    v.push_back(123);\n"
+              "    std::cout << v0 << std::endl;\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:1] -> [test.cpp:3] -> [test.cpp:4]: (error) Reference to v that may be invalid.\n",
+            errout.str());
+
         check("void f(std::vector<int> &v) {\n"
               "    std::vector<int> *v0 = &v;\n"
               "    v.push_back(123);\n"
               "    std::cout << (*v0)[0] << std::endl;\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("const std::vector<int> * g(int);\n"
+              "void f() {\n"
+              "    const std::vector<int> *v = g(1);\n"
+              "    if (v && v->size() == 1U) {\n"
+              "        const int &m = v->front();\n"
+              "    }\n"
+              "\n"
+              "    v = g(2);\n"
+              "    if (v && v->size() == 1U) {\n"
+              "        const int &m = v->front();\n"
+              "        if (m == 0) {}\n"
+              "    }\n"
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
