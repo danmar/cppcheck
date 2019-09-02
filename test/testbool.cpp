@@ -1040,14 +1040,14 @@ private:
     }
 
     void comparisonOfBoolWithInt9() { // #9304
-		check("bool f(int a, bool b)\n"
-			  "{\n"
-			  "    if ((a == 0 ? false : true) != b) {\n"
-			  "        b = !b;\n"
-			  "    }\n"
-			  "    return b;\n"
-			  "}");
-		ASSERT_EQUALS("", errout.str());
+        check("bool f(int a, bool b)\n"
+              "{\n"
+              "    if ((a == 0 ? false : true) != b) {\n"
+              "        b = !b;\n"
+              "    }\n"
+              "    return b;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
