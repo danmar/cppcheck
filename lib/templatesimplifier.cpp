@@ -820,7 +820,7 @@ void TemplateSimplifier::getTemplateInstantiations()
             Token *tok2 = Token::findsimplematch(tok->tokAt(2), ";");
             if (tok2)
                 tok = tok2;
-        } else if (Token::Match(tok->previous(), "(|{|}|;|=|>|<<|:|.|*|&|return|<|, %name% ::|<|(") ||
+        } else if (Token::Match(tok->previous(), "(|{|}|;|=|>|<<|:|.|*|&|return|<|,|! %name% ::|<|(") ||
                    Token::Match(tok->previous(), "%type% %name% ::|<") ||
                    Token::Match(tok->tokAt(-2), "[,:] private|protected|public %name% ::|<")) {
             std::string scopeName = tok->scopeInfo()->name;
@@ -2081,11 +2081,26 @@ void TemplateSimplifier::expandTemplate(
                 }
 
                 std::string scope;
-                for (const Token *prev = tok3->tokAt(-2); Token::Match(prev, "%name% ::"); prev = prev->tokAt(-2)) {
+                const Token *prev = tok3;
+                for (; Token::Match(prev->tokAt(-2), "%name% ::"); prev = prev->tokAt(-2)) {
                     if (scope.empty())
-                        scope = prev->str();
+                        scope = prev->strAt(-2);
                     else
-                        scope = prev->str() + " :: " + scope;
+                        scope = prev->strAt(-2) + " :: " + scope;
+                }
+
+                // check for global scope
+                if (prev->strAt(-1) != "::") {
+                    // adjust for current scope
+                    std::string token_scope = tok3->scopeInfo()->name;
+                    std::string::size_type end = token_scope.find_last_of(" :: ");
+                    if (end != std::string::npos) {
+                        token_scope.resize(end);
+                        if (scope.empty())
+                            scope = token_scope;
+                        else
+                            scope = token_scope + " :: " + scope;
+                    }
                 }
 
                 // don't add instantiations in template definitions
@@ -2136,8 +2151,14 @@ void TemplateSimplifier::expandTemplate(
     }
 
     // add new instantiations
-    for (const auto & inst : newInstantiations)
-        addInstantiation(inst.token, inst.scope);
+    for (const auto & inst : newInstantiations) {
+        std::string fullName = inst.scope + (inst.scope.empty() ? "" : " :: ") + inst.token->str();
+        simplifyTemplateArgs(inst.token->tokAt(2), inst.token->next()->findClosingBracket());
+        // only add recursive instantiation if its arguments are a constant expression
+        if (templateDeclaration.fullName() != fullName ||
+            (inst.token->tokAt(2)->isNumber() || inst.token->tokAt(2)->isStandardType()))
+            mTemplateInstantiations.emplace_back(inst.token, inst.scope);
+    }
 }
 
 static bool isLowerThanLogicalAnd(const Token *lower)
