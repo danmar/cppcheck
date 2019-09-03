@@ -1225,8 +1225,12 @@ public:
     void scopeInfo(std::shared_ptr<ScopeInfo2> newScopeInfo);
     std::shared_ptr<ScopeInfo2> scopeInfo() const;
 
-    void setCpp11init(bool cpp11init) const { mImpl->mCpp11init=cpp11init ? TokenImpl::Cpp11init::CPP11INIT : TokenImpl::Cpp11init::NOINIT; }
-    TokenImpl::Cpp11init isCpp11init() const { return mImpl->mCpp11init; }
+    void setCpp11init(bool cpp11init) const {
+        mImpl->mCpp11init=cpp11init ? TokenImpl::Cpp11init::CPP11INIT : TokenImpl::Cpp11init::NOINIT;
+    }
+    TokenImpl::Cpp11init isCpp11init() const {
+        return mImpl->mCpp11init;
+    }
 };
 
 /// @}
