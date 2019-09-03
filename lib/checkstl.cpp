@@ -839,7 +839,7 @@ void CheckStl::invalidContainer()
                     bool addressOf = false;
                     const Variable* var = getLifetimeVariable(info.tok, ep, &addressOf);
                     // Check the reference is created before the change
-                    if (var && !addressOf) {
+                    if (var && var->declarationId() == tok->varId() && !addressOf) {
                         // An argument always reaches
                         if (var->isArgument() || (!var->isReference() && !var->isRValueReference() &&
                                                   !isVariableDecl(tok) && reaches(var->nameToken(), tok, library, &ep))) {
