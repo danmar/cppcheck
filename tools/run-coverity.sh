@@ -1,5 +1,5 @@
 #!/bin/bash
-PATH=$PATH:/home/danielmarjamaki/cov-analysis-linux64-2017.07/bin
+PATH=$PATH:/home/danielmarjamaki/cov-analysis-linux64-2019.03/bin
 cd /home/danielmarjamaki/cppcheck-cov
 git pull
 
