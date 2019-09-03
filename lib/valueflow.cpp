@@ -5249,6 +5249,18 @@ static void valueFlowContainerForward(Token *tok, nonneg int containerId, ValueF
             if (isContainerSizeChanged(containerId, start, start->link()))
                 break;
         }
+        if (Token::simpleMatch(tok, ") {") && Token::Match(tok->link()->previous(), "while|for|if (")) {
+            const Token *start = tok->next();
+            if (isContainerSizeChanged(containerId, start, start->link()))
+                break;
+            tok = start->link();
+            if (Token::simpleMatch(tok, "} else {")) {
+                start = tok->tokAt(2);
+                if (isContainerSizeChanged(containerId, start, start->link()))
+                    break;
+                tok = start->link();
+            }
+        }
         if (tok->varId() != containerId)
             continue;
         if (Token::Match(tok, "%name% ="))
@@ -5292,7 +5304,7 @@ static bool isContainerSizeChanged(nonneg int varId, const Token *start, const T
             continue;
         if (!tok->valueType() || !tok->valueType()->container)
             return true;
-        if (Token::Match(tok, "%name% ="))
+        if (Token::Match(tok, "%name% %assign%|<<"))
             return true;
         if (Token::Match(tok, "%name% . %name% (")) {
             Library::Container::Action action = tok->valueType()->container->getAction(tok->strAt(2));
