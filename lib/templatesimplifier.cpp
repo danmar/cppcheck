@@ -113,7 +113,7 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *token, const std::string &
         isClass(Token::Match(next, "class|struct|union %name% <|{|:|;|::"));
         if (mToken->strAt(1) == "<" && !isSpecialization()) {
             const Token *end = mToken->next()->findClosingBracket();
-            isVariadic(end && Token::findmatch(mToken->tokAt(2), "typename|class . . .", end));
+            isVariadic(end && Token::findmatch(mToken->tokAt(2), "typename|class ...", end));
         }
         const Token *tok1 = mNameToken->next();
         if (tok1->str() == "<") {
@@ -455,11 +455,11 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
             tok = tok->next();
 
         // Skip variadic types (Ticket #5774, #6059, #6172)
-        if (Token::simpleMatch(tok, ". . .")) {
+        if (Token::simpleMatch(tok, "...")) {
             if ((tok->previous()->isName() && !Token::Match(tok->tokAt(-2), "<|,|::")) ||
                 (!tok->previous()->isName() && tok->strAt(-1) != ">"))
                 return 0; // syntax error
-            tok = tok->tokAt(3);
+            tok = tok->next();
             if (!tok)
                 return 0;
             if (tok->str() == ">") {
@@ -726,7 +726,7 @@ bool TemplateSimplifier::getTemplateDeclarations()
         if (!tok->tokAt(2))
             syntaxError(tok->next());
         if (tok->strAt(2)=="typename" &&
-            !Token::Match(tok->tokAt(3), "%name%|.|,|=|>"))
+            !Token::Match(tok->tokAt(3), "%name%|...|,|=|>"))
             syntaxError(tok->next());
         codeWithTemplates = true;
         const Token * const parmEnd = tok1->next()->findClosingBracket();
@@ -1630,10 +1630,8 @@ void TemplateSimplifier::expandTemplate(
                 for (const Token *typetok = mTypesUsedInTemplateInstantiation[itype].token();
                      typetok && (typeindentlevel > 0 || !Token::Match(typetok, ",|>"));
                      typetok = typetok->next()) {
-                    if (Token::simpleMatch(typetok, ". . .")) {
-                        typetok = typetok->tokAt(2);
+                    if (Token::simpleMatch(typetok, "..."))
                         continue;
-                    }
                     if (Token::Match(typetok, "%name% <") && (typetok->strAt(2) == ">" || templateParameters(typetok->next())))
                         ++typeindentlevel;
                     else if (typeindentlevel > 0 && typetok->str() == ">")
@@ -1856,9 +1854,7 @@ void TemplateSimplifier::expandTemplate(
                             for (const Token *typetok = mTypesUsedInTemplateInstantiation[itype].token();
                                  typetok && (typeindentlevel>0 || !Token::Match(typetok, ",|>"));
                                  typetok = typetok->next()) {
-                                if (Token::simpleMatch(typetok, ". . .")) {
-                                    typetok = typetok->tokAt(2);
-                                } else {
+                                if (!Token::simpleMatch(typetok, "...")) {
                                     if (Token::Match(typetok, "%name% <") && (typetok->strAt(2) == ">" || templateParameters(typetok->next())))
                                         ++typeindentlevel;
                                     else if (typeindentlevel > 0 && typetok->str() == ">")
@@ -1960,10 +1956,8 @@ void TemplateSimplifier::expandTemplate(
                     for (const Token *typetok = mTypesUsedInTemplateInstantiation[itype].token();
                          typetok && (typeindentlevel > 0 || !Token::Match(typetok, ",|>"));
                          typetok = typetok->next()) {
-                        if (Token::simpleMatch(typetok, ". . .")) {
-                            typetok = typetok->tokAt(2);
+                        if (Token::simpleMatch(typetok, "..."))
                             continue;
-                        }
                         if (Token::Match(typetok, "%name% <") &&
                             (typetok->strAt(2) == ">" || templateParameters(typetok->next()))) {
                             brackets1.push(typetok->next());
