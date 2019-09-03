@@ -2927,69 +2927,93 @@ ValueFlow::Value getLifetimeObjValue(const Token *tok)
     return result;
 }
 
-static const Token* getLifetimeToken(const Token* tok,
-                                     ValueFlow::Value::ErrorPath& errorPath,
-                                     bool* addressOf = nullptr,
+struct LifetimeToken
+{
+    const Token * token;
+    bool addressOf;
+    ValueFlow::Value::ErrorPath errorPath;
+
+    LifetimeToken()
+    : token(nullptr), addressOf(false), errorPath()
+    {}
+
+    LifetimeToken(const Token * token, ValueFlow::Value::ErrorPath errorPath)
+    : token(token), addressOf(false), errorPath(std::move(errorPath))
+    {}
+
+    LifetimeToken(const Token * token, bool addressOf, ValueFlow::Value::ErrorPath errorPath)
+    : token(token), addressOf(addressOf), errorPath(std::move(errorPath))
+    {}
+
+    static std::vector<LifetimeToken> setAddressOf(std::vector<LifetimeToken> v, bool b)
+    {
+        for(LifetimeToken& x:v)
+            x.addressOf = b;
+        return v;
+    }
+};
+
+static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
+                                     ValueFlow::Value::ErrorPath errorPath = {},
                                      int depth = 20)
 {
     if (!tok)
-        return nullptr;
+        return {};
     const Variable *var = tok->variable();
     if (depth < 0)
-        return tok;
+        return {{tok, std::move(errorPath)}};
     if (var && var->declarationId() == tok->varId()) {
         if (var->isReference() || var->isRValueReference()) {
-            if (addressOf)
-                *addressOf = true;
             if (!var->declEndToken())
-                return tok;
+                return {{tok, true, std::move(errorPath)}};
             if (var->isArgument()) {
                 errorPath.emplace_back(var->declEndToken(), "Passed to reference.");
-                return tok;
+                return {{tok, true, std::move(errorPath)}};
             } else if (Token::simpleMatch(var->declEndToken(), "=")) {
                 errorPath.emplace_back(var->declEndToken(), "Assigned to reference.");
                 const Token *vartok = var->declEndToken()->astOperand2();
                 if (vartok == tok)
-                    return tok;
+                    return {{tok, true, std::move(errorPath)}};
                 if (vartok)
-                    return getLifetimeToken(vartok, errorPath, addressOf, depth - 1);
+                    return getLifetimeTokens(vartok, std::move(errorPath), depth - 1);
             } else {
-                return nullptr;
+                return {};
             }
         }
     } else if (Token::Match(tok->previous(), "%name% (")) {
         const Function *f = tok->previous()->function();
         if (f) {
             if (!Function::returnsReference(f))
-                return tok;
+                return {{tok, std::move(errorPath)}};
             const Token* returnTok = findSimpleReturn(f);
             if (!returnTok)
-                return tok;
+                return {{tok, std::move(errorPath)}};
             if (returnTok == tok)
-                return tok;
-            const Token* argvarTok = getLifetimeToken(returnTok, errorPath, addressOf, depth - 1);
-            if (!argvarTok)
-                return tok;
-            const Variable* argvar = argvarTok->variable();
-            if (!argvar)
-                return tok;
-            if (argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
-                int n = getArgumentPos(argvar, f);
-                if (n < 0)
-                    return nullptr;
-                const Token* argTok = getArguments(tok->previous()).at(n);
-                errorPath.emplace_back(returnTok, "Return reference.");
-                errorPath.emplace_back(tok->previous(), "Called function passing '" + argTok->str() + "'.");
-                return getLifetimeToken(argTok, errorPath, addressOf, depth - 1);
+                return {{tok, std::move(errorPath)}};
+            std::vector<LifetimeToken> result;
+            for(LifetimeToken& lt:getLifetimeTokens(returnTok, std::move(errorPath), depth - 1)) {
+                const Token* argvarTok = lt.token;
+                const Variable* argvar = argvarTok->variable();
+                if (!argvar)
+                    continue;
+                if (argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
+                    int n = getArgumentPos(argvar, f);
+                    if (n < 0)
+                        return {};
+                    const Token* argTok = getArguments(tok->previous()).at(n);
+                    lt.errorPath.emplace_back(returnTok, "Return reference.");
+                    lt.errorPath.emplace_back(tok->previous(), "Called function passing '" + argTok->str() + "'.");
+                    std::vector<LifetimeToken> arglts = getLifetimeTokens(argTok, std::move(lt.errorPath), depth - 1);
+                    result.insert(result.end(), arglts.begin(), arglts.end());
+                }
             }
+            return result;
         } else if (Token::Match(tok->tokAt(-2), ". %name% (") && astIsContainer(tok->tokAt(-2)->astOperand1())) {
             const Library::Container* library = getLibraryContainer(tok->tokAt(-2)->astOperand1());
             Library::Container::Yield y = library->getYield(tok->previous()->str());
             if (y == Library::Container::Yield::AT_INDEX || y == Library::Container::Yield::ITEM) {
                 errorPath.emplace_back(tok->previous(), "Accessing container.");
-                if (addressOf)
-                    *addressOf = false;
-                return getLifetimeToken(tok->tokAt(-2)->astOperand1(), errorPath, nullptr, depth - 1);
+                return LifetimeToken::setAddressOf(getLifetimeTokens(tok->tokAt(-2)->astOperand1(), std::move(errorPath), depth - 1), false);
             }
         }
     } else if (Token::Match(tok, ".|::|[")) {
@@ -3004,7 +3028,7 @@ static const Token* getLifetimeToken(const Token* tok,
         }
 
         if (!vartok)
-            return tok;
+            return {{tok, std::move(errorPath)}};
         const Variable *tokvar = vartok->variable();
         if (!astIsContainer(vartok) && !(tokvar && tokvar->isArray()) &&
             (Token::Match(vartok->astParent(), "[|*") || vartok->astParent()->originalName() == "->")) {
@@ -3012,17 +3036,27 @@ static const Token* getLifetimeToken(const Token* tok,
                 if (!v.isLocalLifetimeValue())
                     continue;
                 errorPath.insert(errorPath.end(), v.errorPath.begin(), v.errorPath.end());
-                return getLifetimeToken(v.tokvalue, errorPath, addressOf);
+                return getLifetimeTokens(v.tokvalue, std::move(errorPath));
             }
         } else {
-            if (addressOf && astIsContainer(vartok) && Token::simpleMatch(vartok->astParent(), "[")) {
-                *addressOf = false;
-                addressOf = nullptr;
-            }
-            return getLifetimeToken(vartok, errorPath, addressOf);
+            return LifetimeToken::setAddressOf(getLifetimeTokens(vartok, std::move(errorPath)), !(astIsContainer(vartok) && Token::simpleMatch(vartok->astParent(), "[")));
         }
     }
-    return tok;
+    return {{tok, std::move(errorPath)}};
+}
+
+static const Token* getLifetimeToken(const Token* tok,
+                                     ValueFlow::Value::ErrorPath& errorPath,
+                                     bool* addressOf = nullptr,
+                                     int depth = 20)
+{
+    std::vector<LifetimeToken> lts = getLifetimeTokens(tok);
+    if (lts.size() != 1)
+        return nullptr;
+    if (addressOf)
+        *addressOf = lts.front().addressOf;
+    errorPath.insert(errorPath.end(), lts.front().errorPath.begin(), lts.front().errorPath.end());
+    return lts.front().token;
 }
 
 const Variable* getLifetimeVariable(const Token* tok, ValueFlow::Value::ErrorPath& errorPath, bool* addressOf)
