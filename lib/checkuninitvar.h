@@ -64,7 +64,6 @@ public:
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         CheckUninitVar checkUninitVar(tokenizer, settings, errorLogger);
         checkUninitVar.check();
-        checkUninitVar.deadPointer();
         checkUninitVar.valueFlowUninit();
     }
 
@@ -81,10 +80,6 @@ public:
     int isFunctionParUsage(const Token *vartok, bool pointer, Alloc alloc) const;
     bool isMemberVariableAssignment(const Token *tok, const std::string &membervar) const;
     bool isMemberVariableUsage(const Token *tok, bool isPointer, Alloc alloc, const std::string &membervar) const;
-
-    /** ValueFlow-based checking for dead pointer usage */
-    void deadPointer();
-    void deadPointerError(const Token *pointer, const Token *alias);
 
     /** ValueFlow-based checking for uninitialized variables */
     void valueFlowUninit();
@@ -134,7 +129,6 @@ private:
         c.uninitdataError(nullptr, "varname");
         c.uninitvarError(nullptr, "varname");
         c.uninitStructMemberError(nullptr, "a.b");
-        c.deadPointerError(nullptr, nullptr);
     }
 
     static std::string myName() {
@@ -144,8 +138,7 @@ private:
     std::string classInfo() const OVERRIDE {
         return "Uninitialized variables\n"
                "- using uninitialized local variables\n"
-               "- using allocated data before it has been initialized\n"
-               "- using dead pointer\n";
+               "- using allocated data before it has been initialized\n";
     }
 };
 /// @}

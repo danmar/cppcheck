@@ -127,6 +127,7 @@ private:
         TEST_CASE(danglingLifetimeInitList);
         TEST_CASE(danglingLifetimeImplicitConversion);
         TEST_CASE(invalidLifetime);
+        TEST_CASE(deadPointer);
     }
 
 
@@ -2190,6 +2191,82 @@ private:
         check("int &a[];\n"
               "void b(){int *c = a};\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void deadPointer() {
+        check("void f() {\n"
+              "  int *p = p1;\n"
+              "  if (cond) {\n"
+              "    int x;\n"
+              "    p = &x;\n"
+              "  }\n"
+              "  *p = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4] -> [test.cpp:7]: (error) Using pointer to local variable 'x' that is out of scope.\n", errout.str());
+
+        // FP: don't warn in subfunction
+        check("void f(struct KEY *key) {\n"
+              "  key->x = 0;\n"
+              "}\n"
+              "\n"
+              "int main() {\n"
+              "  struct KEY *tmp = 0;\n"
+              "  struct KEY k;\n"
+              "\n"
+              "  if (condition) {\n"
+              "    tmp = &k;\n"
+              "  } else {\n"
+              "  }\n"
+              "  f(tmp);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // Don't warn about references (#6399)
+        check("void f() {\n"
+              "    wxAuiToolBarItem* former_hover = NULL;\n"
+              "    for (i = 0, count = m_items.GetCount(); i < count; ++i) {\n"
+              "        wxAuiToolBarItem& item = m_items.Item(i);\n"
+              "        former_hover = &item;\n"
+              "    }\n"
+              "    if (former_hover != pitem)\n"
+              "        dosth();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    wxAuiToolBarItem* former_hover = NULL;\n"
+              "    for (i = 0, count = m_items.GetCount(); i < count; ++i) {\n"
+              "        wxAuiToolBarItem item = m_items.Item(i);\n"
+              "        former_hover = &item;\n"
+              "    }\n"
+              "    if (former_hover != pitem)\n"
+              "        dosth();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4] -> [test.cpp:7]: (error) Using pointer to local variable 'item' that is out of scope.\n", errout.str());
+
+        // #6575
+        check("void trp_deliver_signal()  {\n"
+              "    union {\n"
+              "        Uint32 theData[25];\n"
+              "        EventReport repData;\n"
+              "    };\n"
+              "    EventReport * rep = &repData;\n"
+              "    rep->setEventType(NDB_LE_Connected);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #8785
+        check("int f(bool a, bool b) {\n"
+              "    int *iPtr = 0;\n"
+              "    if(b) {\n"
+              "        int x = 42;\n"
+              "        iPtr = &x;\n"
+              "    }\n"
+              "    if(b && a)\n"
+              "        return *iPtr;\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4] -> [test.cpp:8]: (error) Using pointer to local variable 'x' that is out of scope.\n", errout.str());
     }
 
 };
