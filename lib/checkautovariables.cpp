@@ -549,10 +549,10 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
         // Return reference from function
         if (returnRef && Token::simpleMatch(tok->astParent(), "return")) {
             std::vector<LifetimeToken> lts = getLifetimeTokens(tok);
-            for(const LifetimeToken& lt:lts) {
+            for (const LifetimeToken& lt : lts) {
                 if (!mSettings->inconclusive && lt.inconclusive)
                     continue;
-                const Variable *var = lt.token->variable();
+                const Variable* var = lt.token->variable();
                 if (!var)
                     continue;
                 if (!var->isGlobal() && !var->isStatic() && !var->isReference() && !var->isRValueReference() &&
@@ -664,10 +664,11 @@ void CheckAutoVariables::errorDanglngLifetime(const Token *tok, const ValueFlow:
     reportError(errorPath, Severity::error, "danglingLifetime", msg + ".", CWE562, false);
 }
 
-void CheckAutoVariables::errorReturnReference(const Token *tok, ErrorPath errorPath, bool inconclusive)
+void CheckAutoVariables::errorReturnReference(const Token* tok, ErrorPath errorPath, bool inconclusive)
 {
     errorPath.emplace_back(tok, "");
-    reportError(errorPath, Severity::error, "returnReference", "Reference to local variable returned.", CWE562, inconclusive);
+    reportError(
+        errorPath, Severity::error, "returnReference", "Reference to local variable returned.", CWE562, inconclusive);
 }
 
 void CheckAutoVariables::errorDanglingReference(const Token *tok, const Variable *var, ErrorPath errorPath)

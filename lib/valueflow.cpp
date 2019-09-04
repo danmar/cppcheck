@@ -2842,13 +2842,13 @@ static const Token *findSimpleReturn(const Function *f)
     return returnTok;
 }
 
-static std::vector<const Token *> findReturns(const Function *f)
+static std::vector<const Token*> findReturns(const Function* f)
 {
-    std::vector<const Token *> result;
-    const Scope *scope = f->functionScope;
+    std::vector<const Token*> result;
+    const Scope* scope = f->functionScope;
     if (!scope)
         return result;
-    for (const Token *tok = scope->bodyStart->next(); tok && tok != scope->bodyEnd; tok = tok->next()) {
+    for (const Token* tok = scope->bodyStart->next(); tok && tok != scope->bodyEnd; tok = tok->next()) {
         if (tok->str() == "{" && tok->scope() &&
             (tok->scope()->type == Scope::eLambda || tok->scope()->type == Scope::eClass)) {
             tok = tok->link();
@@ -2858,7 +2858,7 @@ static std::vector<const Token *> findReturns(const Function *f)
             result.push_back(tok);
         }
         // Skip lambda functions since the scope may not be set correctly
-        const Token *lambdaEndToken = findLambdaEndToken(tok);
+        const Token* lambdaEndToken = findLambdaEndToken(tok);
         if (lambdaEndToken) {
             tok = lambdaEndToken;
         }
@@ -2951,9 +2951,7 @@ ValueFlow::Value getLifetimeObjValue(const Token *tok)
     return result;
 }
 
-std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
-                                     ValueFlow::Value::ErrorPath errorPath,
-                                     int depth)
+std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, ValueFlow::Value::ErrorPath errorPath, int depth)
 {
     if (!tok)
         return {};
@@ -2985,10 +2983,10 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
                 return {{tok, std::move(errorPath)}};
             std::vector<LifetimeToken> result;
             std::vector<const Token*> returns = findReturns(f);
-            for(const Token* returnTok:returns) {
+            for (const Token* returnTok : returns) {
                 if (returnTok == tok)
                     continue;
-                for(LifetimeToken& lt:getLifetimeTokens(returnTok, std::move(errorPath), depth - 1)) {
+                for (LifetimeToken& lt : getLifetimeTokens(returnTok, std::move(errorPath), depth - 1)) {
                     const Token* argvarTok = lt.token;
                     const Variable* argvar = argvarTok->variable();
                     if (!argvar)
@@ -3000,7 +2998,8 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
                         const Token* argTok = getArguments(tok->previous()).at(n);
                         lt.errorPath.emplace_back(returnTok, "Return reference.");
                         lt.errorPath.emplace_back(tok->previous(), "Called function passing '" + argTok->str() + "'.");
-                        std::vector<LifetimeToken> arglts = LifetimeToken::setInconclusive(getLifetimeTokens(argTok, std::move(lt.errorPath), depth - 1), returns.size() > 1);
+                        std::vector<LifetimeToken> arglts = LifetimeToken::setInconclusive(
+                            getLifetimeTokens(argTok, std::move(lt.errorPath), depth - 1), returns.size() > 1);
                         result.insert(result.end(), arglts.begin(), arglts.end());
                     }
                 }
@@ -3011,7 +3010,8 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
             Library::Container::Yield y = library->getYield(tok->previous()->str());
             if (y == Library::Container::Yield::AT_INDEX || y == Library::Container::Yield::ITEM) {
                 errorPath.emplace_back(tok->previous(), "Accessing container.");
-                return LifetimeToken::setAddressOf(getLifetimeTokens(tok->tokAt(-2)->astOperand1(), std::move(errorPath), depth - 1), false);
+                return LifetimeToken::setAddressOf(
+                    getLifetimeTokens(tok->tokAt(-2)->astOperand1(), std::move(errorPath), depth - 1), false);
             }
         }
     } else if (Token::Match(tok, ".|::|[")) {
@@ -3037,15 +3037,14 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
                 return getLifetimeTokens(v.tokvalue, std::move(errorPath));
             }
         } else {
-            return LifetimeToken::setAddressOf(getLifetimeTokens(vartok, std::move(errorPath)), !(astIsContainer(vartok) && Token::simpleMatch(vartok->astParent(), "[")));
+            return LifetimeToken::setAddressOf(getLifetimeTokens(vartok, std::move(errorPath)),
+                                               !(astIsContainer(vartok) && Token::simpleMatch(vartok->astParent(), "[")));
         }
     }
     return {{tok, std::move(errorPath)}};
 }
 
-static const Token* getLifetimeToken(const Token* tok,
-                                     ValueFlow::Value::ErrorPath& errorPath,
-                                     bool* addressOf = nullptr)
+static const Token* getLifetimeToken(const Token* tok, ValueFlow::Value::ErrorPath& errorPath, bool* addressOf = nullptr)
 {
     std::vector<LifetimeToken> lts = getLifetimeTokens(tok);
     if (lts.size() != 1)

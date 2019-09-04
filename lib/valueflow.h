@@ -25,9 +25,9 @@
 #include "utils.h"
 
 #include <list>
-#include <vector>
 #include <string>
 #include <utility>
+#include <vector>
 
 class ErrorLogger;
 class Settings;
@@ -250,35 +250,32 @@ namespace ValueFlow {
     std::string eitherTheConditionIsRedundant(const Token *condition);
 }
 
-struct LifetimeToken
-{
-    const Token * token;
+struct LifetimeToken {
+    const Token* token;
     bool addressOf;
     ValueFlow::Value::ErrorPath errorPath;
     bool inconclusive;
 
-    LifetimeToken()
-    : token(nullptr), addressOf(false), errorPath(), inconclusive(false)
+    LifetimeToken() : token(nullptr), addressOf(false), errorPath(), inconclusive(false) {}
+
+    LifetimeToken(const Token* token, ValueFlow::Value::ErrorPath errorPath)
+        : token(token), addressOf(false), errorPath(std::move(errorPath)), inconclusive(false)
     {}
 
-    LifetimeToken(const Token * token, ValueFlow::Value::ErrorPath errorPath)
-    : token(token), addressOf(false), errorPath(std::move(errorPath)), inconclusive(false)
-    {}
-
-    LifetimeToken(const Token * token, bool addressOf, ValueFlow::Value::ErrorPath errorPath)
-    : token(token), addressOf(addressOf), errorPath(std::move(errorPath)), inconclusive(false)
+    LifetimeToken(const Token* token, bool addressOf, ValueFlow::Value::ErrorPath errorPath)
+        : token(token), addressOf(addressOf), errorPath(std::move(errorPath)), inconclusive(false)
     {}
 
     static std::vector<LifetimeToken> setAddressOf(std::vector<LifetimeToken> v, bool b)
     {
-        for(LifetimeToken& x:v)
+        for (LifetimeToken& x : v)
             x.addressOf = b;
         return v;
     }
 
     static std::vector<LifetimeToken> setInconclusive(std::vector<LifetimeToken> v, bool b)
     {
-        for(LifetimeToken& x:v)
+        for (LifetimeToken& x : v)
             x.inconclusive = b;
         return v;
     }
