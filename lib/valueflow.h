@@ -60,7 +60,7 @@ namespace ValueFlow {
         {}
         Value(const Token *c, long long val);
 
-        bool operator==(const Value &rhs) const {
+        bool equalValue(const ValueFlow::Value& rhs) const {
             if (valueType != rhs.valueType)
                 return false;
             switch (valueType) {
@@ -95,6 +95,12 @@ namespace ValueFlow {
                 if (tokvalue != rhs.tokvalue)
                     return false;
             }
+            return true;
+        }
+
+        bool operator==(const Value &rhs) const {
+            if (!equalValue(rhs))
+                return false;
 
             return varvalue == rhs.varvalue &&
                    condition == rhs.condition &&
@@ -103,6 +109,10 @@ namespace ValueFlow {
                    defaultArg == rhs.defaultArg &&
                    indirect == rhs.indirect &&
                    valueKind == rhs.valueKind;
+        }
+
+        bool operator!=(const Value &rhs) const {
+            return !(*this == rhs);
         }
 
         std::string infoString() const;
