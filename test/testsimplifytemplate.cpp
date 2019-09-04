@@ -2908,11 +2908,11 @@ private:
                             "struct b<c<f...>, d<>>;\n"
                             "}\n"
                             "void e() { using c = a<>; }";
-        const char exp[] = "template < class . . . > struct a ; "
+        const char exp[] = "template < class ... > struct a ; "
                            "namespace { "
                            "template < class , class > struct b ; "
-                           "template < template < class > class c , class . . . f , template < class . . . > class d > "
-                           "struct b < c < f . . . > , d < > > ; "
+                           "template < template < class > class c , class ... f , template < class ... > class d > "
+                           "struct b < c < f ... > , d < > > ; "
                            "} "
                            "void e ( ) { }";
         ASSERT_EQUALS(exp, tok(code));
@@ -2930,12 +2930,12 @@ private:
                             "  using c = a<>;\n"
                             "  using e = a<>;\n"
                             "}";
-        const char exp[] = "template < class . . . > struct a ; "
+        const char exp[] = "template < class ... > struct a ; "
                            "namespace { "
                            "template < class , class , class , class > "
                            "struct b ; "
-                           "template < template < class > class c , class . . . d , template < class > class e , class . . . f > "
-                           "struct b < c < d . . . > , e < f . . . > > ; "
+                           "template < template < class > class c , class ... d , template < class > class e , class ... f > "
+                           "struct b < c < d ... > , e < f ... > > ; "
                            "} "
                            "void fn1 ( ) { "
                            "}";
@@ -2953,7 +2953,7 @@ private:
                            "template < bool b > using c = typename a < b > :: d ; "
                            "template < typename > struct e ; "
                            "template < typename > struct h { "
-                           "template < typename . . . f , c < h < e < typename f :: d . . . > > :: g > > void i ( ) ; "
+                           "template < typename ... f , c < h < e < typename f :: d ... > > :: g > > void i ( ) ; "
                            "} ;";
         ASSERT_EQUALS(exp, tok(code));
     }
@@ -3271,9 +3271,9 @@ private:
         const char exp[] = "template < bool > struct a ; "
                            "template < bool b , class > using c = typename a < b > :: d ; "
                            "template < class , template < class > class , class > struct e ; "
-                           "template < class f , class g , class . . . h > "
-                           "using i = typename e < f , g :: template fn , h . . . > :: d ; "
-                           "template < class . . . j > struct k : c < sizeof . . . ( j ) , int > :: template fn < j . . . > { } ;";
+                           "template < class f , class g , class ... h > "
+                           "using i = typename e < f , g :: template fn , h ... > :: d ; "
+                           "template < class ... j > struct k : c < sizeof ... ( j ) , int > :: template fn < j ... > { } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 

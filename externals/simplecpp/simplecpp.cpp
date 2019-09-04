@@ -745,10 +745,14 @@ void simplecpp::TokenList::combineOperators()
         }
 
         if (tok->op == '.') {
-            if (tok->previous && tok->previous->op == '.')
+            // ellipsis ...
+            if (tok->next && tok->next->op == '.' && tok->next->location.col == (tok->location.col + 1) &&
+                tok->next->next && tok->next->next->op == '.' && tok->next->next->location.col == (tok->location.col + 2)) {
+                tok->setstr("...");
+                deleteToken(tok->next);
+                deleteToken(tok->next);
                 continue;
-            if (tok->next && tok->next->op == '.')
-                continue;
+            }
             // float literals..
             if (tok->previous && tok->previous->number) {
                 tok->setstr(tok->previous->str() + '.');
@@ -1376,14 +1380,12 @@ namespace simplecpp {
                 args.clear();
                 const Token *argtok = nameTokDef->next->next;
                 while (sameline(nametoken, argtok) && argtok->op != ')') {
-                    if (argtok->op == '.' &&
-                        argtok->next && argtok->next->op == '.' &&
-                        argtok->next->next && argtok->next->next->op == '.' &&
-                        argtok->next->next->next && argtok->next->next->next->op == ')') {
+                    if (argtok->str() == "..." &&
+                        argtok->next && argtok->next->op == ')') {
                         variadic = true;
                         if (!argtok->previous->name)
                             args.push_back("__VA_ARGS__");
-                        argtok = argtok->next->next->next; // goto ')'
+                        argtok = argtok->next; // goto ')'
                         break;
                     }
                     if (argtok->op != ',')

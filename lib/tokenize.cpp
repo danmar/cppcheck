@@ -2797,29 +2797,27 @@ void Tokenizer::simplifyLabelsCaseDefault()
 void Tokenizer::simplifyCaseRange()
 {
     for (Token* tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "case %num% . . . %num% :")) {
+        if (Token::Match(tok, "case %num% ... %num% :")) {
             const MathLib::bigint start = MathLib::toLongNumber(tok->strAt(1));
-            MathLib::bigint end = MathLib::toLongNumber(tok->strAt(5));
+            MathLib::bigint end = MathLib::toLongNumber(tok->strAt(3));
             end = std::min(start + 50, end); // Simplify it 50 times at maximum
             if (start < end) {
                 tok = tok->tokAt(2);
                 tok->str(":");
-                tok->deleteNext();
-                tok->next()->str("case");
+                tok->insertToken("case");
                 for (MathLib::bigint i = end-1; i > start; i--) {
                     tok->insertToken(":");
                     tok->insertToken(MathLib::toString(i));
                     tok->insertToken("case");
                 }
             }
-        } else if (Token::Match(tok, "case %char% . . . %char% :")) {
+        } else if (Token::Match(tok, "case %char% ... %char% :")) {
             const char start = tok->strAt(1)[1];
-            const char end = tok->strAt(5)[1];
+            const char end = tok->strAt(3)[1];
             if (start < end) {
                 tok = tok->tokAt(2);
                 tok->str(":");
-                tok->deleteNext();
-                tok->next()->str("case");
+                tok->insertToken("case");
                 for (char i = end - 1; i > start; i--) {
                     tok->insertToken(":");
                     if (i == '\\') {
@@ -3970,13 +3968,13 @@ void Tokenizer::createLinks2()
                     continue;
                 if (token->next() &&
                     !Token::Match(token->next(), "%name%|%comp%|&|&&|*|::|,|(|)|{|}|;|[|:|.|=") &&
-                    !Token::simpleMatch(token->next(), ". . .") &&
+                    !Token::simpleMatch(token->next(), "...") &&
                     !Token::Match(token->next(), "&& %name% ="))
                     continue;
             }
             // if > is followed by [ .. "new a<b>[" is expected
             // unless this is from varidiac expansion
-            if (token->strAt(1) == "[" && !Token::simpleMatch(token->tokAt(-3), ". . . >")) {
+            if (token->strAt(1) == "[" && !Token::simpleMatch(token->tokAt(-1), "... >")) {
                 Token *prev = type.top()->previous();
                 while (prev && Token::Match(prev->previous(), ":: %name%"))
                     prev = prev->tokAt(-2);
@@ -4088,8 +4086,9 @@ bool Tokenizer::simplifySizeof()
         if (tok->str() != "sizeof")
             continue;
 
-        if (Token::simpleMatch(tok->next(), ". . .")) {
-            tok->deleteNext(3);
+        if (Token::simpleMatch(tok->next(), "...")) {
+            //tok->deleteNext(3);
+            tok->deleteNext();
         }
 
         // sizeof('x')
@@ -4991,9 +4990,9 @@ void Tokenizer::simplifyHeaders()
             if (removeUnusedTemplates || (isIncluded && removeUnusedIncludedTemplates)) {
                 if (Token::Match(tok->next(), "template < %name%")) {
                     const Token *tok2 = tok->tokAt(3);
-                    while (Token::Match(tok2, "%name% %name% [,=>]") || Token::Match(tok2, "typename . . . %name% [,>]")) {
-                        if (Token::simpleMatch(tok2, "typename . . ."))
-                            tok2 = tok2->tokAt(5);
+                    while (Token::Match(tok2, "%name% %name% [,=>]") || Token::Match(tok2, "typename ... %name% [,>]")) {
+                        if (Token::simpleMatch(tok2, "typename ..."))
+                            tok2 = tok2->tokAt(3);
                         else
                             tok2 = tok2->tokAt(2);
                         if (Token::Match(tok2, "= %name% [,>]"))
