@@ -548,12 +548,18 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
         // Return reference from function
         if (returnRef && Token::simpleMatch(tok->astParent(), "return")) {
-            ErrorPath errorPath;
-            const Variable *var = getLifetimeVariable(tok, errorPath);
-            if (var && !var->isGlobal() && !var->isStatic() && !var->isReference() && !var->isRValueReference() &&
-                isInScope(var->nameToken(), tok->scope())) {
-                errorReturnReference(tok, errorPath);
-                continue;
+            std::vector<LifetimeToken> lts = getLifetimeTokens(tok);
+            for(const LifetimeToken& lt:lts) {
+                if (!mSettings->inconclusive && lt.inconclusive)
+                    continue;
+                const Variable *var = lt.token->variable();
+                if (!var)
+                    continue;
+                if (!var->isGlobal() && !var->isStatic() && !var->isReference() && !var->isRValueReference() &&
+                    isInScope(var->nameToken(), tok->scope())) {
+                    errorReturnReference(tok, lt.errorPath, lt.inconclusive);
+                    break;
+                }
             }
             // Assign reference to non-local variable
         } else if (Token::Match(tok->previous(), "&|&& %var% =") && tok->astParent() == tok->next() &&
@@ -658,10 +664,10 @@ void CheckAutoVariables::errorDanglngLifetime(const Token *tok, const ValueFlow:
     reportError(errorPath, Severity::error, "danglingLifetime", msg + ".", CWE562, false);
 }
 
-void CheckAutoVariables::errorReturnReference(const Token *tok, ErrorPath errorPath)
+void CheckAutoVariables::errorReturnReference(const Token *tok, ErrorPath errorPath, bool inconclusive)
 {
     errorPath.emplace_back(tok, "");
-    reportError(errorPath, Severity::error, "returnReference", "Reference to local variable returned.", CWE562, false);
+    reportError(errorPath, Severity::error, "returnReference", "Reference to local variable returned.", CWE562, inconclusive);
 }
 
 void CheckAutoVariables::errorDanglingReference(const Token *tok, const Variable *var, ErrorPath errorPath)

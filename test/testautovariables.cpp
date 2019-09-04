@@ -1227,6 +1227,18 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Reference to local variable returned.\n", errout.str());
 
+        check("template <class T, class K, class V>\n"
+              "const V& get_default(const T& t, const K& k, const V& v) {\n"
+              "    auto it = t.find(k);\n"
+              "    if (it == t.end()) return v;\n"
+              "    return it->second;\n"
+              "}\n"
+              "const int& bar(const std::unordered_map<int, int>& m, int k) {\n"
+              "    auto x = 0;\n"
+              "    return get_default(m, k, x);\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4] -> [test.cpp:9] -> [test.cpp:9]: (error, inconclusive) Reference to local variable returned.\n", errout.str());
+
         check("struct A { int foo; };\n"
               "int& f(std::vector<A>& v) {\n"
               "    auto it = v.begin();\n"

@@ -85,7 +85,7 @@ private:
     void errorReturnDanglingLifetime(const Token *tok, const ValueFlow::Value* val);
     void errorInvalidLifetime(const Token *tok, const ValueFlow::Value* val);
     void errorDanglngLifetime(const Token *tok, const ValueFlow::Value *val);
-    void errorReturnReference(const Token *tok, ErrorPath errorPath);
+    void errorReturnReference(const Token *tok, ErrorPath errorPath, bool inconclusive);
     void errorDanglingReference(const Token *tok, const Variable *var, ErrorPath errorPath);
     void errorReturnTempReference(const Token *tok);
     void errorInvalidDeallocation(const Token *tok, const ValueFlow::Value *val);
@@ -99,7 +99,7 @@ private:
         c.errorAutoVariableAssignment(nullptr, false);
         c.errorReturnAddressToAutoVariable(nullptr);
         c.errorReturnPointerToLocalArray(nullptr);
-        c.errorReturnReference(nullptr, errorPath);
+        c.errorReturnReference(nullptr, errorPath, false);
         c.errorDanglingReference(nullptr, nullptr, errorPath);
         c.errorReturnTempReference(nullptr);
         c.errorInvalidDeallocation(nullptr, nullptr);
