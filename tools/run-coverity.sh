@@ -1,6 +1,6 @@
 #!/bin/bash
 PATH=$PATH:/home/danielmarjamaki/cov-analysis-linux64-2019.03/bin
-cd /home/danielmarjamaki/cppcheck-cov
+cd /home/danielmarjamaki/cppcheck-devinfo
 git pull
 
 echo Analyze
