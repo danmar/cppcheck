@@ -1776,7 +1776,7 @@ void Variable::evaluate(const Settings* settings)
         std::string strtype = mTypeStartToken->str();
         for (const Token *typeToken = mTypeStartToken; Token::Match(typeToken, "%type% :: %type%"); typeToken = typeToken->tokAt(2))
             strtype += "::" + typeToken->strAt(2);
-        setFlag(fIsClass, !lib->podtype(strtype) && !mTypeStartToken->isStandardType() && !isEnumType() && !isPointer() && !isReference());
+        setFlag(fIsClass, !lib->podtype(strtype) && !mTypeStartToken->isStandardType() && !isEnumType() && !isPointer() && !isReference() && strtype != "...");
         setFlag(fIsStlType, Token::simpleMatch(mTypeStartToken, "std ::"));
         setFlag(fIsStlString, isStlType() && (Token::Match(mTypeStartToken->tokAt(2), "string|wstring|u16string|u32string !!::") || (Token::simpleMatch(mTypeStartToken->tokAt(2), "basic_string <") && !Token::simpleMatch(mTypeStartToken->linkAt(3), "> ::"))));
         setFlag(fIsSmartPointer, lib->isSmartPointer(mTypeStartToken));
@@ -3306,7 +3306,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
 
         if (tok->str() == ")") {
             // check for a variadic function
-            if (Token::simpleMatch(startTok, ". . ."))
+            if (Token::simpleMatch(startTok, "..."))
                 isVariadic(true);
 
             break;

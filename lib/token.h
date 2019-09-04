@@ -176,6 +176,7 @@ public:
         eArithmeticalOp, eComparisonOp, eAssignmentOp, eLogicalOp, eBitOp, eIncDecOp, eExtendedOp, // Operators: Arithmetical, Comparison, Assignment, Logical, Bitwise, ++/--, Extended
         eBracket, // {, }, <, >: < and > only if link() is set. Otherwise they are comparison operators.
         eLambda, // A function without a name
+        eEllipsis, // "..."
         eOther,
         eNone
     };
