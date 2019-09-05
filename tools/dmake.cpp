@@ -194,7 +194,7 @@ int main(int argc, char **argv)
     // use match compiler..
     fout << "# use match compiler\n";
     fout << "ifeq ($(SRCDIR),build)\n"
-         << "    $(warning Usage of SRCDIR to acticate match compiler is deprecated. Use MATCHCOMPILER=yes instead.)\n"
+         << "    $(warning Usage of SRCDIR to activate match compiler is deprecated. Use MATCHCOMPILER=yes instead.)\n"
          << "    MATCHCOMPILER:=yes\n"
          << "endif\n";
     fout << "ifeq ($(MATCHCOMPILER),yes)\n"
