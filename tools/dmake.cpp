@@ -455,6 +455,8 @@ int main(int argc, char **argv)
     compilefiles(fout, testfiles, "${INCLUDE_FOR_TEST}");
     compilefiles(fout, extfiles, "");
     compilefiles(fout, toolsfiles, "${INCLUDE_FOR_LIB}");
-
+    
+    fout.close();
+    
     return 0;
 }
