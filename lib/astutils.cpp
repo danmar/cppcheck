@@ -933,16 +933,9 @@ static bool isScopeBracket(const Token *tok)
     return false;
 }
 
-bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Settings *settings, bool *inconclusive)
+const Token * getTokenArgumentFunction(const Token * tok, int& argn)
 {
-    if (!tok)
-        return false;
-
-    const Token * const tok1 = tok;
-
-    // address of variable
-    const bool addressOf = tok->astParent() && tok->astParent()->isUnaryOp("&");
-
+    argn = -1;
     {
         const Token *parent = tok->astParent();
         if (parent && parent->isUnaryOp("&"))
@@ -959,16 +952,16 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
             while (Token::simpleMatch(parent, ","))
                 parent = parent->astParent();
             if (!parent || parent->str() != "(")
-                return false;
+                return nullptr;
         } else
-            return false;
+            return nullptr;
     }
 
-    // goto start of function call and get argnr
-    int argnr = 0;
+    // goto start of function call and get argn
+    argn = 0;
     while (tok && !Token::simpleMatch(tok, ";") && !isScopeBracket(tok)) {
         if (tok->str() == ",")
-            ++argnr;
+            ++argn;
         else if (tok->str() == ")")
             tok = tok->link();
         else if (Token::Match(tok->previous(), "%name% (|{"))
@@ -978,13 +971,33 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
         tok = tok->previous();
     }
     if (!Token::Match(tok, "{|("))
-        return false;
-    const bool possiblyPassedByReference = (tok->next() == tok1 || Token::Match(tok1->previous(), ", %name% [,)}]"));
+        return nullptr;
     tok = tok->previous();
     if (tok && tok->link() && tok->str() == ">")
         tok = tok->link()->previous();
     if (!Token::Match(tok, "%name% [({<]"))
+        return nullptr;
+    return tok;
+}
+
+bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Settings *settings, bool *inconclusive)
+{
+    if (!tok)
+        return false;
+
+    const Token * const tok1 = tok;
+
+    // address of variable
+    const bool addressOf = tok->astParent() && tok->astParent()->isUnaryOp("&");
+
+    int argnr;
+    tok = getTokenArgumentFunction(tok, argnr);
+    if (!tok)
         return false; // not a function => variable not changed
+    const Token * parenTok = tok->next();
+    if (Token::simpleMatch(parenTok, "<") && parenTok->link())
+        parenTok = parenTok->link()->next();
+    const bool possiblyPassedByReference = (parenTok->next() == tok1 || Token::Match(tok1->previous(), ", %name% [,)}]"));
 
     // Constructor call
     if (tok->variable() && tok->variable()->nameToken() == tok) {

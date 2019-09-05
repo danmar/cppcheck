@@ -5297,23 +5297,40 @@ static bool isContainerEmpty(const Token* tok)
     return false;
 }
 
-static bool isContainerSizeChanged(nonneg int varId, const Token *start, const Token *end);
+static bool isContainerSizeChanged(nonneg int varId, const Token *start, const Token *end, int depth = 20);
 
-static bool isContainerSizeChangedByFunction(const Token *tok)
+static bool isContainerSizeChangedByFunction(const Token *tok, int depth = 20)
 {
-    const Token *parent = tok->astParent();
-    if (parent && parent->str() == "&")
-        parent = parent->astParent();
-    while (parent && parent->str() == ",")
-        parent = parent->astParent();
-    if (!parent)
+    if (!tok->valueType() || !tok->valueType()->container)
         return false;
-    if (Token::Match(parent->previous(), "%name% ("))
-        return true;
-    // some unsimplified template function, assume it modifies the container.
-    if (Token::simpleMatch(parent->previous(), ">") && parent->linkAt(-1))
-        return true;
-    return false;
+    // If we are accessing an element then we are not changing the container size
+    if (Token::Match(tok, "%name% . %name% (")) {
+        Library::Container::Yield yield = tok->valueType()->container->getYield(tok->strAt(2));
+        if (yield != Library::Container::Yield::NO_YIELD)
+            return false;
+    }
+    if (Token::simpleMatch(tok->astParent(), "["))
+        return false;
+
+    int narg;
+    const Token * ftok = getTokenArgumentFunction(tok, narg);
+    if (!ftok)
+        return false; // not a function => variable not changed
+    const Function * fun = ftok->function();
+    if (fun) {
+        const Variable *arg = fun->getArgumentVar(narg);
+        if (!arg->isReference())
+            return false;
+        if (arg->isConst())
+            return false;
+        const Scope * scope = fun->functionScope;
+        if (scope && depth > 0 && isContainerSizeChanged(arg->declarationId(), scope->bodyStart, scope->bodyEnd, depth - 1))
+            return true;
+    }
+
+    bool inconclusive = false;
+    const bool isChanged = isVariableChangedByFunctionCall(tok, 0, nullptr, &inconclusive);
+    return (isChanged || inconclusive);
 }
 
 static void valueFlowContainerReverse(Token *tok, nonneg int containerId, const ValueFlow::Value &value, const Settings *settings)
@@ -5398,7 +5415,7 @@ static void valueFlowContainerForward(Token *tok, nonneg int containerId, ValueF
     }
 }
 
-static bool isContainerSizeChanged(nonneg int varId, const Token *start, const Token *end)
+static bool isContainerSizeChanged(nonneg int varId, const Token *start, const Token *end, int depth)
 {
     for (const Token *tok = start; tok != end; tok = tok->next()) {
         if (tok->varId() != varId)
@@ -5426,6 +5443,8 @@ static bool isContainerSizeChanged(nonneg int varId, const Token *start, const T
                 break;
             };
         }
+        if (isContainerSizeChangedByFunction(tok, depth))
+            return true;
     }
     return false;
 }
