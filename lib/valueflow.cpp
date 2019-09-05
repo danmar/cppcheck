@@ -5426,6 +5426,8 @@ static bool isContainerSizeChanged(nonneg int varId, const Token *start, const T
                 break;
             };
         }
+        if (isContainerSizeChangedByFunction(tok))
+            return true;
     }
     return false;
 }
