@@ -445,6 +445,36 @@ static void followVariableExpressionError(const Token *tok1, const Token *tok2, 
     errors->push_back(item);
 }
 
+template<class Predicate, class F>
+static void findTokenValue(const Token* const tok, Predicate pred, F f)
+{
+    auto x = std::find_if(tok->values().begin(), tok->values().end(), pred);
+    if (x != tok->values().end())
+        f(*x);
+}
+
+bool isEqualKnownValue(const Token * const tok1, const Token * const tok2)
+{
+    bool result = false;
+    findTokenValue(tok1, std::mem_fn(&ValueFlow::Value::isKnown), [&](const ValueFlow::Value& v1) {
+        findTokenValue(tok2, std::mem_fn(&ValueFlow::Value::isKnown), [&](const ValueFlow::Value& v2) {
+            result = v1.equalValue(v2);
+        });
+    });
+    return result;
+}
+
+bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2)
+{
+    bool result = false;
+    findTokenValue(tok1, std::mem_fn(&ValueFlow::Value::isKnown), [&](const ValueFlow::Value& v1) {
+        findTokenValue(tok2, std::mem_fn(&ValueFlow::Value::isKnown), [&](const ValueFlow::Value& v2) {
+            result = !v1.equalValue(v2);
+        });
+    });
+    return result;
+}
+
 bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors)
 {
     if (tok1 == nullptr && tok2 == nullptr)
@@ -464,6 +494,8 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     if (Token::simpleMatch(tok2, "!") && Token::simpleMatch(tok2->astOperand1(), "!") && !Token::simpleMatch(tok2->astParent(), "=")) {
         return isSameExpression(cpp, macro, tok1, tok2->astOperand1()->astOperand1(), library, pure, followVar, errors);
     }
+    if (tok1->str() != tok2->str() && isDifferentKnownValues(tok1, tok2))
+        return false;
     // Follow variable
     if (followVar && tok1->str() != tok2->str() && (Token::Match(tok1, "%var%") || Token::Match(tok2, "%var%"))) {
         const Token * varTok1 = followVariableExpression(tok1, cpp, tok2);
@@ -594,16 +626,6 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
 
 
     return commutativeEquals;
-}
-
-bool isEqualKnownValue(const Token * const tok1, const Token * const tok2)
-{
-    return tok1->hasKnownValue() && tok2->hasKnownValue() && tok1->values() == tok2->values();
-}
-
-bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2)
-{
-    return tok1->hasKnownValue() && tok2->hasKnownValue() && tok1->values() != tok2->values();
 }
 
 static bool isZeroBoundCond(const Token * const cond)
