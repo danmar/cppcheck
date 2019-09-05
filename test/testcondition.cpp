@@ -3216,6 +3216,19 @@ private:
               "        return 1;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9319
+        check("struct S {\n"
+              "  int a;\n"
+              "  int b;\n"
+              "};\n"
+              "void g(S s, bool& x);\n"
+              "void f() {\n"
+              "  bool x = false;\n"
+              "  g({0, 1}, x);\n"
+              "  if (x) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueContainer() {
