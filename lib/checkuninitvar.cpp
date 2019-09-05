@@ -1338,68 +1338,40 @@ void CheckUninitVar::valueFlowUninit()
                 tok = tok->linkAt(1);
                 continue;
             }
-            if (!tok->variable())
+            if (!tok->variable() && !tok->isUnaryOp("*"))
                 continue;
             auto v = std::find_if(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isUninitValue));
             if (v == tok->values().end())
                 continue;
             if (v->isInconclusive())
                 continue;
-            if (!isVariableUsage(tok, tok->variable()->isPointer(), tok->variable()->isArray() ? ARRAY : NO_ALLOC))
-                continue;
             if (v->indirect > 1 || v->indirect < 0)
                 continue;
-            bool unknown;
-            const bool deref = CheckNullPointer::isPointerDeRef(tok, unknown, mSettings);
-            if (v->indirect == 1 && !deref)
-                continue;
-            const bool uninitderef = deref && v->indirect == 0;
-            const bool isleaf = isLeafDot(tok) || uninitderef;
-            if (Token::Match(tok->astParent(), ". %var%") && !isleaf)
-                continue;
+            bool uninitderef = false;
+            if (tok->variable()) {
+                if (!isVariableUsage(tok, tok->variable()->isPointer(), tok->variable()->isArray() ? ARRAY : NO_ALLOC))
+                    continue;
+                bool unknown;
+                const bool deref = CheckNullPointer::isPointerDeRef(tok, unknown, mSettings);
+                if (v->indirect == 1 && !deref)
+                    continue;
+                uninitderef = deref && v->indirect == 0;
+                const bool isleaf = isLeafDot(tok) || uninitderef;
+                if (Token::Match(tok->astParent(), ". %var%") && !isleaf)
+                    continue;
+            }
             if (!Token::Match(tok->astParent(), ". %name% (") && !uninitderef && isVariableChanged(tok, v->indirect, mSettings, mTokenizer->isCPP()))
                 continue;
-            uninitvarError(tok, tok->str(), v->errorPath);
+            uninitvarError(tok, tok->expressionString(), v->errorPath);
             const Token * nextTok = tok;
             while (Token::simpleMatch(nextTok->astParent(), "."))
                 nextTok = nextTok->astParent();
             nextTok = nextAfterAstRightmostLeaf(nextTok);
+            if (nextTok == scope.bodyEnd)
+                break;
             tok = nextTok ? nextTok : tok;
         }
     }
-}
-
-void CheckUninitVar::deadPointer()
-{
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-
-    // check every executable scope
-    for (const Scope &scope : symbolDatabase->scopeList) {
-        if (!scope.isExecutable())
-            continue;
-        // Dead pointers..
-        for (const Token* tok = scope.bodyStart; tok != scope.bodyEnd; tok = tok->next()) {
-            if (tok->variable() &&
-                tok->variable()->isPointer() &&
-                isVariableUsage(tok, true, NO_ALLOC)) {
-                const Token *alias = tok->getValueTokenDeadPointer();
-                if (alias) {
-                    deadPointerError(tok,alias);
-                }
-            }
-        }
-    }
-}
-
-void CheckUninitVar::deadPointerError(const Token *pointer, const Token *alias)
-{
-    const std::string strpointer(pointer ? pointer->str() : std::string("pointer"));
-    const std::string stralias(alias ? alias->expressionString() : std::string("&x"));
-
-    reportError(pointer,
-                Severity::error,
-                "deadpointer",
-                "$symbol:" + strpointer + "\nDead pointer usage. Pointer '$symbol' is dead if it has been assigned '" + stralias + "' at line " + MathLib::toString(alias ? alias->linenr() : 0U) + ".", CWE825, false);
 }
 
 std::string CheckUninitVar::MyFileInfo::toString() const

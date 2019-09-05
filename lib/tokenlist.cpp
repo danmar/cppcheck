@@ -540,10 +540,20 @@ static Token * findCppTypeInitPar(Token *tok)
 }
 
 // X{} X<Y>{} etc
+static bool iscpp11init_impl(const Token * const tok);
 static bool iscpp11init(const Token * const tok)
+{
+    if (tok->isCpp11init() == TokenImpl::Cpp11init::UNKNOWN)
+        tok->setCpp11init(iscpp11init_impl(tok));
+    return tok->isCpp11init() == TokenImpl::Cpp11init::CPP11INIT;
+}
+
+static bool iscpp11init_impl(const Token * const tok)
 {
     const Token *nameToken = tok;
     while (nameToken && nameToken->str() == "{") {
+        if (nameToken->isCpp11init() != TokenImpl::Cpp11init::UNKNOWN)
+            return nameToken->isCpp11init() == TokenImpl::Cpp11init::CPP11INIT;
         nameToken = nameToken->previous();
         if (nameToken && nameToken->str() == "," && Token::simpleMatch(nameToken->previous(), "} ,"))
             nameToken = nameToken->linkAt(-1);
@@ -678,8 +688,8 @@ static void compileTerm(Token *&tok, AST_state& state)
             state.op.push(tok);
             if (Token::Match(tok, "%name% <") && tok->linkAt(1))
                 tok = tok->linkAt(1);
-            else if (Token::Match(tok, "%name% . . ."))
-                tok = tok->tokAt(3);
+            else if (Token::Match(tok, "%name% ..."))
+                tok = tok->next();
             tok = tok->next();
             if (Token::Match(tok, "%str%")) {
                 while (Token::Match(tok, "%name%|%str%"))
@@ -757,6 +767,9 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
     while (tok) {
         if (tok->tokType() == Token::eIncDecOp && !isPrefixUnary(tok, state.cpp)) {
             compileUnaryOp(tok, state, compileScope);
+        } else if (tok->str() == "...") {
+            state.op.push(tok);
+            break;
         } else if (tok->str() == "." && tok->strAt(1) != "*") {
             if (tok->strAt(1) == ".") {
                 state.op.push(tok);

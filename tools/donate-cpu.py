@@ -281,13 +281,13 @@ def scan_package(work_path, cppcheck_path, jobs):
                        'googletest': ['<gtest/gtest.h>'],
                        'gtk': ['<gtk/gtk.h>', '<glib.h>', '<glib/', '<gnome.h>'],
                        'libcerror': ['<libcerror.h>'],
-                       # 'libcurl': ['<curl/curl.h>'], <= enable after release of version 1.89
-                       # 'lua': ['<lua.h>', '"lua.h"'], <= enable after release of version 1.89
+                       'libcurl': ['<curl/curl.h>'],
+                       'lua': ['<lua.h>', '"lua.h"'],
                        'microsoft_sal': ['<sal.h>'],
                        'motif': ['<X11/', '<Xm/'],
                        'nspr': ['<prtypes.h>', '"prtypes.h"'],
                        'opengl': ['<GL/gl.h>', '<GL/glu.h>', '<GL/glut.h>'],
-                       # 'openmp': ['<omp.h>'], <= enable after release of version 1.89
+                       'openmp': ['<omp.h>'],
                        'python': ['<Python.h>', '"Python.h"'],
                        'qt': ['<QApplication>', '<QList>', '<QObject>', '<QString>', '<QWidget>', '<QtWidgets>', '<QtGui'],
                        'ruby': ['<ruby.h>', '<ruby/'],

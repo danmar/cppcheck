@@ -1488,7 +1488,7 @@ private:
                             "    for(;;) try { } catch (...) { }\n"
                             "}";
         const char expected[] = "void f ( ) {\n"
-                                "for ( ; ; ) { try { } catch ( . . . ) { } }\n"
+                                "for ( ; ; ) { try { } catch ( ... ) { } }\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
@@ -5277,27 +5277,27 @@ private:
     void cpp0xtemplate5() { // #9154
         {
             const char *code = "struct s<x<u...>>;";
-            ASSERT_EQUALS("struct s < x < u . . . > > ;",
+            ASSERT_EQUALS("struct s < x < u ... > > ;",
                           tokenizeAndStringify(code));
         }
         {
             const char *code = "template <class f> using c = e<i<q<f,r>,b...>>;";
-            ASSERT_EQUALS("template < class f > using c = e < i < q < f , r > , b . . . > > ;",
+            ASSERT_EQUALS("template < class f > using c = e < i < q < f , r > , b ... > > ;",
                           tokenizeAndStringify(code));
         }
         {
             const char *code = "struct s<x<u...>> { };";
-            ASSERT_EQUALS("struct s < x < u . . . > > { } ;",
+            ASSERT_EQUALS("struct s < x < u ... > > { } ;",
                           tokenizeAndStringify(code));
         }
         {
             const char *code = "struct q : s<x<u...>> { };";
-            ASSERT_EQUALS("struct q : s < x < u . . . > > { } ;",
+            ASSERT_EQUALS("struct q : s < x < u ... > > { } ;",
                           tokenizeAndStringify(code));
         }
         {
             const char *code = "struct q : private s<x<u...>> { };";
-            ASSERT_EQUALS("struct q : private s < x < u . . . > > { } ;",
+            ASSERT_EQUALS("struct q : private s < x < u ... > > { } ;",
                           tokenizeAndStringify(code));
         }
     }
@@ -7115,11 +7115,11 @@ private:
 
     void simplifyCaseRange() {
         ASSERT_EQUALS("void f ( ) { switch ( x ) { case 1 : case 2 : case 3 : case 4 : ; } }", tokenizeAndStringify("void f() { switch(x) { case 1 ... 4: } }"));
-        ASSERT_EQUALS("void f ( ) { switch ( x ) { case 4 . . . 1 : ; } }", tokenizeAndStringify("void f() { switch(x) { case 4 ... 1: } }"));
+        ASSERT_EQUALS("void f ( ) { switch ( x ) { case 4 ... 1 : ; } }", tokenizeAndStringify("void f() { switch(x) { case 4 ... 1: } }"));
         tokenizeAndStringify("void f() { switch(x) { case 1 ... 1000000: } }"); // Do not run out of memory
 
         ASSERT_EQUALS("void f ( ) { switch ( x ) { case 'a' : case 'b' : case 'c' : ; } }", tokenizeAndStringify("void f() { switch(x) { case 'a' ... 'c': } }"));
-        ASSERT_EQUALS("void f ( ) { switch ( x ) { case 'c' . . . 'a' : ; } }", tokenizeAndStringify("void f() { switch(x) { case 'c' ... 'a': } }"));
+        ASSERT_EQUALS("void f ( ) { switch ( x ) { case 'c' ... 'a' : ; } }", tokenizeAndStringify("void f() { switch(x) { case 'c' ... 'a': } }"));
 
         ASSERT_EQUALS("void f ( ) { switch ( x ) { case '[' : case '\\\\' : case ']' : ; } }", tokenizeAndStringify("void f() { switch(x) { case '[' ... ']': } }"));
     }
@@ -7275,7 +7275,7 @@ private:
 
         ASSERT_EQUALS("abc.1:?1+bd.1:?+=", testAst("a =(b.c ? : 1) + 1 + (b.d ? : 1);"));
 
-        ASSERT_EQUALS("catch.(", testAst("try {} catch (...) {}"));
+        ASSERT_EQUALS("catch...(", testAst("try {} catch (...) {}"));
 
         ASSERT_EQUALS("FooBar(", testAst("void Foo(Bar&);"));
         ASSERT_EQUALS("FooBar(", testAst("void Foo(Bar& &);")); // Rvalue reference - simplified from && to & & by real tokenizer
@@ -7536,7 +7536,7 @@ private:
         ASSERT_EQUALS("1f2a&,(+", testAst("1+f(2,&a)"));
         ASSERT_EQUALS("fargv[(", testAst("int f(char argv[]);"));
         ASSERT_EQUALS("fchar(", testAst("extern unsigned f(const char *);"));
-        ASSERT_EQUALS("fcharformat*.,(", testAst("extern void f(const char *format, ...);"));
+        ASSERT_EQUALS("fcharformat*...,(", testAst("extern void f(const char *format, ...);"));
         ASSERT_EQUALS("for_each_commit_graftint((void,(", testAst("extern int for_each_commit_graft(int (*)(int*), void *);"));
         ASSERT_EQUALS("for;;(", testAst("for (;;) {}"));
         ASSERT_EQUALS("xsizeofvoid(=", testAst("x=sizeof(void*)"));

@@ -104,7 +104,7 @@ def ellipsisStructArg(data):
             for argnr, argvar in tok.astOperand1.function.argument.items():
                 if argnr < 1:
                     continue
-                if not simpleMatch(argvar.typeStartToken, '. . .'):
+                if not simpleMatch(argvar.typeStartToken, '...'):
                     continue
                 callArgs = getArguments(tok)
                 for i in range(argnr-1, len(callArgs)):
