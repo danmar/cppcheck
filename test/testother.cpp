@@ -137,6 +137,7 @@ private:
         TEST_CASE(duplicateExpression6); // ticket #4639
         TEST_CASE(duplicateExpression7);
         TEST_CASE(duplicateExpression8);
+        TEST_CASE(duplicateExpression9); // #9320
         TEST_CASE(duplicateExpressionLoop);
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateExpressionTernary); // #6391
@@ -4580,6 +4581,16 @@ private:
               "    c.a = &a;\n"
               "    g(&c);\n"
               "    if (a == 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateExpression9() {
+        // #9320
+        check("void f() {\n"
+              "  uint16_t x = 1000;\n"
+              "  uint8_t y = x;\n"
+              "  if (x != y) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
