@@ -969,7 +969,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
     while (tok && !Token::simpleMatch(tok, ";") && !isScopeBracket(tok)) {
         if (tok->str() == ",")
             ++argnr;
-        else if (tok->str() == ")")
+        else if (Token::Match(tok, ")|}"))
             tok = tok->link();
         else if (Token::Match(tok->previous(), "%name% (|{"))
             break;
