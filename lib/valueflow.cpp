@@ -2880,10 +2880,15 @@ static bool valueFlowForward(Token * const               startToken,
                     });
                 }
                 if (inconclusive) {
-                    for (ValueFlow::Value &v : values) {
-                        if (v.indirect != i)
-                            continue;
-                        v.setInconclusive();
+                    if (settings->inconclusive) {
+                        for (ValueFlow::Value &v : values) {
+                            if (v.indirect != i)
+                                continue;
+                            v.setInconclusive();
+                        }
+                    } else {
+                        // If inconclusive flag not enable then remove the values
+                        values.remove_if([&](const ValueFlow::Value &v) { return v.indirect == i; });
                     }
                 }
             }
