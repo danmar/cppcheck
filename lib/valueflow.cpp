@@ -5312,6 +5312,9 @@ static bool isContainerSizeChangedByFunction(const Token *tok, int depth = 20)
     if (Token::simpleMatch(tok->astParent(), "["))
         return false;
 
+    // address of variable
+    const bool addressOf = tok->astParent() && tok->astParent()->isUnaryOp("&");
+
     int narg;
     const Token * ftok = getTokenArgumentFunction(tok, narg);
     if (!ftok)
@@ -5319,7 +5322,7 @@ static bool isContainerSizeChangedByFunction(const Token *tok, int depth = 20)
     const Function * fun = ftok->function();
     if (fun) {
         const Variable *arg = fun->getArgumentVar(narg);
-        if (!arg->isReference())
+        if (!arg->isReference() && !addressOf)
             return false;
         if (arg->isConst())
             return false;

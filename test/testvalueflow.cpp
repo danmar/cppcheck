@@ -3945,6 +3945,14 @@ private:
                "}";
         ASSERT(tokenValues(code, "x . front").empty());
 
+        code = "void g(std::list<int>*);\n"
+               "void f() {\n"
+               "  std::list<int> x;\n"
+               "  g(&x);\n"
+               "  x.front();\n"
+               "}";
+        ASSERT(tokenValues(code, "x . front").empty());
+
         code = "void g(const std::list<int>&);\n"
                "void f() {\n"
                "  std::list<int> x;\n"
@@ -3989,6 +3997,22 @@ private:
                "void f() {\n"
                "  std::list<int> x;\n"
                "  g(x);\n"
+               "  x.front();\n"
+               "}";
+        ASSERT(tokenValues(code, "x . front").empty());
+
+        code = "void g(std::list<int>*) {}\n"
+               "void f() {\n"
+               "  std::list<int> x;\n"
+               "  g(&x);\n"
+               "  x.front();\n"
+               "}";
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "x . front"), 0));
+
+        code = "void g(std::list<int>* y) { y->push_back(1); }\n"
+               "void f() {\n"
+               "  std::list<int> x;\n"
+               "  g(&x);\n"
                "  x.front();\n"
                "}";
         ASSERT(tokenValues(code, "x . front").empty());
