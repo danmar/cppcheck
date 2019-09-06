@@ -298,14 +298,10 @@ bool isAliasOf(const Token *tok, nonneg int varid)
         return false;
     if (tok->varId() == 0)
         return false;
-    if (!astIsPointer(tok))
-        return false;
     for (const ValueFlow::Value &val : tok->values()) {
         if (!val.isLocalLifetimeValue())
             continue;
         if (val.isInconclusive())
-            continue;
-        if (val.lifetimeKind != ValueFlow::Value::LifetimeKind::Address)
             continue;
         if (val.tokvalue->varId() == varid)
             return true;
