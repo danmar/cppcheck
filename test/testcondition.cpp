@@ -3216,6 +3216,46 @@ private:
               "        return 1;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9319
+        check("struct S {\n"
+              "  int a;\n"
+              "  int b;\n"
+              "};\n"
+              "void g(S s, bool& x);\n"
+              "void f() {\n"
+              "  bool x = false;\n"
+              "  g({0, 1}, x);\n"
+              "  if (x) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void alwaysTrueContainer() {
+        // #9329
+        check("void c1(std::vector<double>&);\n"
+              "void c2(std::vector<double>&);\n"
+              "void foo(int flag) {\n"
+              "    std::vector<double> g;\n"
+              "    if (flag)\n"
+              "        c1(g );\n"
+              "    else\n"
+              "        c2(g );\n"
+              "    if ( !g.empty() )\n"
+              "        return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int flag) {\n"
+              "    std::vector<double> g;\n"
+              "    if (flag)\n"
+              "        c1(g );\n"
+              "    else\n"
+              "        c2(g );\n"
+              "    if ( !g.empty() )\n"
+              "        return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void multiConditionAlwaysTrue() {

@@ -137,6 +137,7 @@ private:
         TEST_CASE(duplicateExpression6); // ticket #4639
         TEST_CASE(duplicateExpression7);
         TEST_CASE(duplicateExpression8);
+        TEST_CASE(duplicateExpression9); // #9320
         TEST_CASE(duplicateExpressionLoop);
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateExpressionTernary); // #6391
@@ -4584,6 +4585,16 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void duplicateExpression9() {
+        // #9320
+        check("void f() {\n"
+              "  uint16_t x = 1000;\n"
+              "  uint8_t y = x;\n"
+              "  if (x != y) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void duplicateExpressionLoop() {
         check("void f() {\n"
               "    int a = 1;\n"
@@ -5985,13 +5996,16 @@ private:
     }
 
     void redundantVarAssignment() {
+        setMultiline();
+
         // Simple tests
         check("void f(int i) {\n"
               "    i = 1;\n"
               "    i = 1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
-
+        ASSERT_EQUALS("test.cpp:3:style:Variable 'i' is reassigned a value before the old one has been used.\n"
+                      "test.cpp:2:note:i is assigned\n"
+                      "test.cpp:3:note:i is overwritten\n", errout.str());
 
         // non-local variable => only show warning when inconclusive is used
         check("int i;\n"
@@ -5999,14 +6013,18 @@ private:
               "    i = 1;\n"
               "    i = 1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("test.cpp:4:style:Variable 'i' is reassigned a value before the old one has been used.\n"
+                      "test.cpp:3:note:i is assigned\n"
+                      "test.cpp:4:note:i is overwritten\n", errout.str());
 
         check("void f() {\n"
               "    int i;\n"
               "    i = 1;\n"
               "    i = 1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("test.cpp:4:style:Variable 'i' is reassigned a value before the old one has been used.\n"
+                      "test.cpp:3:note:i is assigned\n"
+                      "test.cpp:4:note:i is overwritten\n", errout.str());
 
         check("void f() {\n"
               "    static int i;\n"
@@ -6020,7 +6038,9 @@ private:
               "    i[2] = 1;\n"
               "    i[2] = 1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Variable 'i[2]' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("test.cpp:4:style:Variable 'i[2]' is reassigned a value before the old one has been used.\n"
+                      "test.cpp:3:note:i[2] is assigned\n"
+                      "test.cpp:4:note:i[2] is overwritten\n", errout.str());
 
         check("void f(int x) {\n"
               "    int i[10];\n"
@@ -6035,7 +6055,9 @@ private:
               "    i[x] = 1;\n"
               "    i[x] = 1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Variable 'i[x]' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("test.cpp:4:style:Variable 'i[x]' is reassigned a value before the old one has been used.\n"
+                      "test.cpp:3:note:i[x] is assigned\n"
+                      "test.cpp:4:note:i[x] is overwritten\n", errout.str());
 
         // Testing different types
         check("void f() {\n"
@@ -6065,7 +6087,9 @@ private:
               "    bar();\n"
               "    i = 1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("test.cpp:4:style:Variable 'i' is reassigned a value before the old one has been used.\n"
+                      "test.cpp:2:note:i is assigned\n"
+                      "test.cpp:4:note:i is overwritten\n", errout.str());
 
         check("int i;\n"
               "void f() {\n"
@@ -6089,7 +6113,9 @@ private:
               "    bar();\n"
               "    i = 1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("test.cpp:5:style:Variable 'i' is reassigned a value before the old one has been used.\n"
+                      "test.cpp:3:note:i is assigned\n"
+                      "test.cpp:5:note:i is overwritten\n", errout.str());
 
         check("void bar(int i) {}\n"
               "void f(int i) {\n"
@@ -6120,7 +6146,9 @@ private:
               "    i = 1;\n"
               "    i = 2;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (style) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("test.cpp:5:style:Variable 'i' is reassigned a value before the old one has been used.\n"
+                      "test.cpp:4:note:i is assigned\n"
+                      "test.cpp:5:note:i is overwritten\n", errout.str());
 
         // #4513
         check("int x;\n"
@@ -6140,7 +6168,9 @@ private:
               "    x = 2;\n"
               "    x = g();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:6]: (style) Variable 'x' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("test.cpp:6:style:Variable 'x' is reassigned a value before the old one has been used.\n"
+                      "test.cpp:5:note:x is assigned\n"
+                      "test.cpp:6:note:x is overwritten\n", errout.str());
 
         check("void f() {\n"
               "    Foo& bar = foo();\n"
@@ -6188,7 +6218,9 @@ private:
               "    x = 1;\n"
               "    return x + 1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Variable 'x' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("test.cpp:4:style:Variable 'x' is reassigned a value before the old one has been used.\n"
+                      "test.cpp:3:note:x is assigned\n"
+                      "test.cpp:4:note:x is overwritten\n", errout.str());
 
         // from #3103 (avoid a false positive)
         check("int foo(){\n"
@@ -6237,7 +6269,9 @@ private:
               "    ab.a = 2;\n"
               "    return ab.a;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:6]: (style) Variable 'ab.a' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("test.cpp:6:style:Variable 'ab.a' is reassigned a value before the old one has been used.\n"
+                      "test.cpp:5:note:ab.a is assigned\n"
+                      "test.cpp:6:note:ab.a is overwritten\n", errout.str());
 
         check("struct AB { int a; int b; };\n"
               "\n"
@@ -6349,7 +6383,7 @@ private:
               "        barney(x);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) The scope of the variable 'p' can be reduced.\n",
+        ASSERT_EQUALS("test.cpp:2:style:The scope of the variable 'p' can be reduced.\n",
                       errout.str());
 
         check("void foo() {\n"
@@ -6374,7 +6408,9 @@ private:
               "    if (memptr)\n"
               "        memptr = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Variable 'memptr' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("test.cpp:4:style:Variable 'memptr' is reassigned a value before the old one has been used.\n"
+                      "test.cpp:3:note:memptr is assigned\n"
+                      "test.cpp:4:note:memptr is overwritten\n", errout.str());
 
         // Pointer function argument (#3857)
         check("void f(float * var)\n"
@@ -6382,14 +6418,18 @@ private:
               "  var[0] = 0.2f;\n"
               "  var[0] = 0.2f;\n" // <-- is initialized twice
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Variable 'var[0]' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("test.cpp:4:style:Variable 'var[0]' is reassigned a value before the old one has been used.\n"
+                      "test.cpp:3:note:var[0] is assigned\n"
+                      "test.cpp:4:note:var[0] is overwritten\n", errout.str());
 
         check("void f(float * var)\n"
               "{\n"
               "  *var = 0.2f;\n"
               "  *var = 0.2f;\n" // <-- is initialized twice
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Variable '*var' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("test.cpp:4:style:Variable '*var' is reassigned a value before the old one has been used.\n"
+                      "test.cpp:3:note:*var is assigned\n"
+                      "test.cpp:4:note:*var is overwritten\n", errout.str());
     }
 
     void redundantVarAssignment_struct() {
@@ -6550,17 +6590,25 @@ private:
     }
 
     void redundantInitialization() {
+        setMultiline();
+
         check("void f() {\n"
               "    int err = -ENOMEM;\n"
               "    err = dostuff();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style) Redundant initialization for 'err'. The initialized value is overwritten before it is read.\n", errout.str());
+        ASSERT_EQUALS("test.cpp:3:style:Redundant initialization for 'err'. The initialized value is overwritten before it is read.\n"
+                      "test.cpp:2:note:err is initialized\n"
+                      "test.cpp:3:note:err is overwritten\n",
+                      errout.str());
 
         check("void f() {\n"
               "    struct S s = {1,2,3};\n"
               "    s = dostuff();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style) Redundant initialization for 's'. The initialized value is overwritten before it is read.\n", errout.str());
+        ASSERT_EQUALS("test.cpp:3:style:Redundant initialization for 's'. The initialized value is overwritten before it is read.\n"
+                      "test.cpp:2:note:s is initialized\n"
+                      "test.cpp:3:note:s is overwritten\n",
+                      errout.str());
 
         check("void f() {\n"
               "    int *p = NULL;\n"

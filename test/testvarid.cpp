@@ -2225,7 +2225,7 @@ private:
     }
 
     void varid_variadicFunc() {
-        ASSERT_EQUALS("1: int foo ( . . . ) ;\n", tokenize("int foo(...);"));
+        ASSERT_EQUALS("1: int foo ( ... ) ;\n", tokenize("int foo(...);"));
     }
 
     void varid_typename() {

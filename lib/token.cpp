@@ -128,6 +128,8 @@ void Token::update_property_info()
             tokType(eIncDecOp);
         else if (mStr.size() == 1 && (mStr.find_first_of("{}") != std::string::npos || (mLink && mStr.find_first_of("<>") != std::string::npos)))
             tokType(eBracket);
+        else if (mStr == "...")
+            tokType(eEllipsis);
         else
             tokType(eOther);
     } else {

@@ -312,6 +312,15 @@ private:
                     "}");
         ASSERT_EQUALS("", errout.str());
 
+        // # 9274
+        checkNormal("char f(bool b) {\n"
+                    "    const std::string s = \"<a><b>\";\n"
+                    "    int x = 6;\n"
+                    "    if(b) ++x;\n"
+                    "    return s[x];\n"
+                    "}\n");
+        ASSERT_EQUALS("test.cpp:5:error:Out of bounds access in 's[x]', if 's' size is 6 and 'x' is 6\n", errout.str());
+
         checkNormal("void f() {\n"
                     "    static const int N = 4;\n"
                     "    std::array<int, N> x;\n"
@@ -3975,6 +3984,16 @@ private:
               "    }\n"
               "}\n",
               true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::vector<std::string> g();\n"
+              "void f() {\n"
+              "    std::vector<std::string> x = g();\n"
+              "    const std::string& y = x[1];\n"
+              "    std::string z;\n"
+              "    z += \"\";\n"
+              "    z += y;\n"
+              "}\n",true);
         ASSERT_EQUALS("", errout.str());
     }
 
