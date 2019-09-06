@@ -851,8 +851,6 @@ void CheckStl::invalidContainer()
                 for (const ValueFlow::Value& val:info.tok->values()) {
                     if (!val.isLocalLifetimeValue())
                         continue;
-                    if (val.isInconclusive())
-                        continue;
                     if (val.lifetimeKind == ValueFlow::Value::LifetimeKind::Address)
                         continue;
                     if (!val.tokvalue->variable())
@@ -883,13 +881,14 @@ void CheckStl::invalidContainer()
 
 void CheckStl::invalidContainerError(const Token *tok, const Token * contTok, const ValueFlow::Value *val, ErrorPath errorPath)
 {
+    const bool inconclusive = val ? val->isInconclusive() : false;
     std::string method = contTok ? contTok->strAt(2) : "erase";
     errorPath.emplace_back(contTok, "After calling '" + method + "', iterators or references to the container's data may be invalid .");
     if (val)
         errorPath.insert(errorPath.begin(), val->errorPath.begin(), val->errorPath.end());
     std::string msg = "Using " + lifetimeMessage(tok, val, errorPath);
     errorPath.emplace_back(tok, "");
-    reportError(errorPath, Severity::error, "invalidContainer", msg + " that may be invalid.", CWE664, false);
+    reportError(errorPath, Severity::error, "invalidContainer", msg + " that may be invalid.", CWE664, inconclusive);
 }
 
 void CheckStl::invalidContainerReferenceError(const Token* tok, const Token* contTok, ErrorPath errorPath)
