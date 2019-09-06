@@ -3331,7 +3331,7 @@ struct LifetimeStore {
             if (!v.isLifetimeValue())
                 continue;
             const Token *tok3 = v.tokvalue;
-            for (const LifetimeToken& lt : getLifetimeTokens(argtok)) {
+            for (const LifetimeToken& lt : getLifetimeTokens(tok3)) {
                 if (!settings->inconclusive && lt.inconclusive)
                     continue;
                 ErrorPath er = v.errorPath;
