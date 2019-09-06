@@ -64,6 +64,11 @@ void validCode(va_list valist_arg1, va_list valist_arg2)
     syslog(LOG_WARNING, "warn %d %d", 5, 1);
     vsyslog(LOG_EMERG, "emerg %d", valist_arg1);
     vsyslog(LOG_INFO, "test %s %d %p", valist_arg2);
+
+    void* handle = dlopen("/lib.so", RTLD_NOW);
+    if (handle) {
+        dlclose(handle);
+    }
 }
 
 void bufferAccessOutOfBounds(int fd)
