@@ -151,6 +151,9 @@ bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp,
 const Token* findVariableChanged(const Token *start, const Token *end, int indirect, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
 Token* findVariableChanged(Token *start, const Token *end, int indirect, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
 
+/// If token is an alias if another variable
+bool isAliasOf(const Token *tok, nonneg int varid);
+
 bool isAliased(const Variable *var);
 
 /** Determines the number of arguments - if token is a function call or macro

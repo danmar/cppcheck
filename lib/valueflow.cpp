@@ -2027,25 +2027,6 @@ static bool evalAssignment(ValueFlow::Value &lhsValue, const std::string &assign
     return true;
 }
 
-static bool isAliasOf(const Token *tok, nonneg int varid)
-{
-    if (tok->varId() == varid)
-        return false;
-    if (tok->varId() == 0)
-        return false;
-    if (!astIsPointer(tok))
-        return false;
-    for (const ValueFlow::Value &val : tok->values()) {
-        if (!val.isLocalLifetimeValue())
-            continue;
-        if (val.lifetimeKind != ValueFlow::Value::LifetimeKind::Address)
-            continue;
-        if (val.tokvalue->varId() == varid)
-            return true;
-    }
-    return false;
-}
-
 // Check if its an alias of the variable or is being aliased to this variable
 static bool isAliasOf(const Variable * var, const Token *tok, nonneg int varid, const std::list<ValueFlow::Value>& values)
 {
@@ -2060,6 +2041,8 @@ static bool isAliasOf(const Variable * var, const Token *tok, nonneg int varid, 
     // Search through non value aliases
     for (const ValueFlow::Value &val : values) {
         if (!val.isNonValue())
+            continue;
+        if (val.isInconclusive())
             continue;
         if (val.isLifetimeValue() && !val.isLocalLifetimeValue())
             continue;
@@ -2937,6 +2920,8 @@ ValueFlow::Value getLifetimeObjValue(const Token *tok)
     auto pred = [](const ValueFlow::Value &v) {
         if (!v.isLocalLifetimeValue())
             return false;
+        if (v.isInconclusive())
+            return false;
         if (!v.tokvalue->variable())
             return false;
         return true;
@@ -3289,25 +3274,29 @@ struct LifetimeStore {
     void byRef(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings, Predicate pred) const {
         if (!argtok)
             return;
-        ErrorPath er = errorPath;
-        const Token *lifeTok = getLifetimeToken(argtok, er);
-        if (!lifeTok)
-            return;
-        if (!pred(lifeTok))
-            return;
-        er.emplace_back(argtok, message);
+        for (const LifetimeToken& lt : getLifetimeTokens(argtok)) {
+            if (!settings->inconclusive && lt.inconclusive)
+                continue;
+            ErrorPath er = lt.errorPath;
+            if (!lt.token)
+                return;
+            if (!pred(lt.token))
+                return;
+            er.emplace_back(argtok, message);
 
-        ValueFlow::Value value;
-        value.valueType = ValueFlow::Value::LIFETIME;
-        value.lifetimeScope = ValueFlow::Value::LifetimeScope::Local;
-        value.tokvalue = lifeTok;
-        value.errorPath = er;
-        value.lifetimeKind = type;
-        // Don't add the value a second time
-        if (std::find(tok->values().begin(), tok->values().end(), value) != tok->values().end())
-            return;
-        setTokenValue(tok, value, tokenlist->getSettings());
-        valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
+            ValueFlow::Value value;
+            value.valueType = ValueFlow::Value::LIFETIME;
+            value.lifetimeScope = ValueFlow::Value::LifetimeScope::Local;
+            value.tokvalue = lt.token;
+            value.errorPath = std::move(er);
+            value.lifetimeKind = type;
+            value.setInconclusive(lt.inconclusive);
+            // Don't add the value a second time
+            if (std::find(tok->values().begin(), tok->values().end(), value) != tok->values().end())
+                return;
+            setTokenValue(tok, value, tokenlist->getSettings());
+            valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
+        }
     }
 
     void byRef(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings) const {
@@ -3342,26 +3331,31 @@ struct LifetimeStore {
             if (!v.isLifetimeValue())
                 continue;
             const Token *tok3 = v.tokvalue;
-            ErrorPath er = v.errorPath;
-            const Token *lifeTok = getLifetimeToken(tok3, er);
-            if (!lifeTok)
-                return;
-            if (!pred(lifeTok))
-                return;
-            er.emplace_back(argtok, message);
-            er.insert(er.end(), errorPath.begin(), errorPath.end());
+            for (const LifetimeToken& lt : getLifetimeTokens(argtok)) {
+                if (!settings->inconclusive && lt.inconclusive)
+                    continue;
+                ErrorPath er = v.errorPath;
+                er.insert(er.end(), lt.errorPath.begin(), lt.errorPath.end());
+                if (!lt.token)
+                    return;
+                if (!pred(lt.token))
+                    return;
+                er.emplace_back(argtok, message);
+                er.insert(er.end(), errorPath.begin(), errorPath.end());
 
-            ValueFlow::Value value;
-            value.valueType = ValueFlow::Value::LIFETIME;
-            value.lifetimeScope = v.lifetimeScope;
-            value.tokvalue = lifeTok;
-            value.errorPath = er;
-            value.lifetimeKind = type;
-            // Don't add the value a second time
-            if (std::find(tok->values().begin(), tok->values().end(), value) != tok->values().end())
-                continue;
-            setTokenValue(tok, value, tokenlist->getSettings());
-            valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
+                ValueFlow::Value value;
+                value.valueType = ValueFlow::Value::LIFETIME;
+                value.lifetimeScope = v.lifetimeScope;
+                value.tokvalue = lt.token;
+                value.errorPath = std::move(er);
+                value.lifetimeKind = type;
+                value.setInconclusive(lt.inconclusive || v.isInconclusive());
+                // Don't add the value a second time
+                if (std::find(tok->values().begin(), tok->values().end(), value) != tok->values().end())
+                    continue;
+                setTokenValue(tok, value, tokenlist->getSettings());
+                valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
+            }
         }
     }
 
@@ -3592,23 +3586,24 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
         }
         // address of
         else if (tok->isUnaryOp("&")) {
-            ErrorPath errorPath;
-            const Token *lifeTok = getLifetimeToken(tok->astOperand1(), errorPath);
-            if (!lifeTok)
-                continue;
+            for (const LifetimeToken& lt : getLifetimeTokens(tok->astOperand1())) {
+                if (!settings->inconclusive && lt.inconclusive)
+                    continue;
+                ErrorPath errorPath = lt.errorPath;
+                errorPath.emplace_back(tok, "Address of variable taken here.");
 
-            errorPath.emplace_back(tok, "Address of variable taken here.");
+                ValueFlow::Value value;
+                value.valueType = ValueFlow::Value::ValueType::LIFETIME;
+                value.lifetimeScope = ValueFlow::Value::LifetimeScope::Local;
+                value.tokvalue = lt.token;
+                value.errorPath = std::move(errorPath);
+                if (astIsPointer(lt.token) || !Token::Match(lt.token->astParent(), ".|["))
+                    value.lifetimeKind = ValueFlow::Value::LifetimeKind::Address;
+                value.setInconclusive(lt.inconclusive);
+                setTokenValue(tok, value, tokenlist->getSettings());
 
-            ValueFlow::Value value;
-            value.valueType = ValueFlow::Value::ValueType::LIFETIME;
-            value.lifetimeScope = ValueFlow::Value::LifetimeScope::Local;
-            value.tokvalue = lifeTok;
-            value.errorPath = errorPath;
-            if (astIsPointer(lifeTok) || !Token::Match(lifeTok->astParent(), ".|["))
-                value.lifetimeKind = ValueFlow::Value::LifetimeKind::Address;
-            setTokenValue(tok, value, tokenlist->getSettings());
-
-            valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
+                valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
+            }
         }
         // container lifetimes
         else if (astIsContainer(tok)) {

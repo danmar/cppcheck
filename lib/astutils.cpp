@@ -292,6 +292,27 @@ bool precedes(const Token * tok1, const Token * tok2)
     return tok1->index() < tok2->index();
 }
 
+bool isAliasOf(const Token *tok, nonneg int varid)
+{
+    if (tok->varId() == varid)
+        return false;
+    if (tok->varId() == 0)
+        return false;
+    if (!astIsPointer(tok))
+        return false;
+    for (const ValueFlow::Value &val : tok->values()) {
+        if (!val.isLocalLifetimeValue())
+            continue;
+        if (val.isInconclusive())
+            continue;
+        if (val.lifetimeKind != ValueFlow::Value::LifetimeKind::Address)
+            continue;
+        if (val.tokvalue->varId() == varid)
+            return true;
+    }
+    return false;
+}
+
 static bool isAliased(const Token *startTok, const Token *endTok, nonneg int varid)
 {
     if (!precedes(startTok, endTok))
@@ -299,18 +320,8 @@ static bool isAliased(const Token *startTok, const Token *endTok, nonneg int var
     for (const Token *tok = startTok; tok != endTok; tok = tok->next()) {
         if (Token::Match(tok, "= & %varid% ;", varid))
             return true;
-        if (tok->varId() == varid)
-            continue;
-        if (tok->varId() == 0)
-            continue;
-        if (!astIsPointer(tok))
-            continue;
-        for (const ValueFlow::Value &val : tok->values()) {
-            if (!val.isLocalLifetimeValue())
-                continue;
-            if (val.tokvalue->varId() == varid)
-                return true;
-        }
+        if (isAliasOf(tok, varid))
+            return true;
     }
     return false;
 }
