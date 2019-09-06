@@ -40,7 +40,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.34"
+CLIENT_VERSION = "1.1.35"
 
 
 def check_requirements():
@@ -455,7 +455,7 @@ jobs = '-j1'
 stop_time = None
 work_path = os.path.expanduser('~/cppcheck-donate-cpu-workfolder')
 package_url = None
-server_address = ('cppcheck.osuosl.org', 8000)
+server_address = ('cppcheck1.osuosl.org', 8000)
 bandwidth_limit = None
 max_packages = None
 do_upload = True
@@ -521,7 +521,7 @@ print('Thank you!')
 if not check_requirements():
     sys.exit(1)
 if bandwidth_limit and isinstance(bandwidth_limit, str):
-    if subprocess.call(['wget', '--limit-rate=' + bandwidth_limit, '-q', '--spider', 'cppcheck.osuosl.org']) is 2:
+    if subprocess.call(['wget', '--limit-rate=' + bandwidth_limit, '-q', '--spider', 'cppcheck1.osuosl.org']) is 2:
         print('Error: Bandwidth limit value "' + bandwidth_limit + '" is invalid.')
         sys.exit(1)
     else:
