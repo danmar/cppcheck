@@ -20,6 +20,8 @@
 #include <time.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <syslog.h>
+#include <stdarg.h>
 
 void memleak_scandir(void)
 {
@@ -53,11 +55,15 @@ void no_memleak_scandir(void)
     free(namelist);
 }
 
-void validCode()
+void validCode(va_list valist_arg1, va_list valist_arg2)
 {
     void *ptr;
     if (posix_memalign(&ptr, sizeof(void *), sizeof(void *)) == 0)
         free(ptr);
+    syslog(LOG_ERR, "err %u", 0U);
+    syslog(LOG_WARNING, "warn %d %d", 5, 1);
+    vsyslog(LOG_EMERG, "emerg %d", valist_arg1);
+    vsyslog(LOG_INFO, "test %s %d %p", valist_arg2);
 }
 
 void bufferAccessOutOfBounds(int fd)
