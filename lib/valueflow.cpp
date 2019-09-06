@@ -3416,7 +3416,8 @@ struct LifetimeStore {
         for (const LifetimeToken& lt : getLifetimeTokens(argtok)) {
             if (!settings->inconclusive && lt.inconclusive)
                 continue;
-            ErrorPath er = lt.errorPath;
+            ErrorPath er = errorPath;
+            er.insert(er.end(), lt.errorPath.begin(), lt.errorPath.end());
             if (!lt.token)
                 return;
             if (!pred(lt.token))
