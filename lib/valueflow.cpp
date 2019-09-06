@@ -5324,8 +5324,13 @@ static bool isContainerSizeChangedByFunction(const Token *tok, int depth = 20)
         if (arg->isConst())
             return false;
         const Scope * scope = fun->functionScope;
-        if (scope && depth > 0 && isContainerSizeChanged(arg->declarationId(), scope->bodyStart, scope->bodyEnd, depth - 1))
-            return true;
+        if (scope) {
+            // Argument not used
+            if (!arg->nameToken())
+                return false;
+            if (depth > 0)
+                return isContainerSizeChanged(arg->declarationId(), scope->bodyStart, scope->bodyEnd, depth - 1);
+        }
     }
 
     bool inconclusive = false;
