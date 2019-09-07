@@ -66,4 +66,62 @@ if (BUILD_TESTS)
     fixture_cost(TestLeakAutoVar 4)
     fixture_cost(TestTokenizer 4)
 
+    function(add_cfg CFG_TEST)
+        set(options INCONCLUSIVE)
+        set(oneValueArgs PLATFORM NAME)
+        set(multiValueArgs LIBRARY)
+
+        cmake_parse_arguments(PARSE "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+        if(PARSE_LIBRARY)
+            string(REPLACE ";" "," LIBRARY "${PARSE_LIBRARY}")
+        else()
+            get_filename_component(LIBRARY ${CFG_TEST} NAME_WE)
+        endif()
+        set(PLATFORM unix64)
+        if(PARSE_PLATFORM)
+            set(PLATFORM ${PARSE_PLATFORM})
+        endif()
+        if(PARSE_NAME)
+            set(TEST_NAME ${PARSE_NAME})
+        else()
+            string(MAKE_C_IDENTIFIER ${CFG_TEST} TEST_NAME)
+        endif()
+        set(INCONCLUSIVE)
+        if(PARSE_INCONCLUSIVE)
+            set(INCONCLUSIVE "--inconclusive")
+        endif()
+        if (${TEST_NAME} IN_LIST SKIP_TESTS)
+        else()
+            add_test(NAME cfg-${TEST_NAME} 
+                    COMMAND $<TARGET_FILE:cppcheck>
+                    --check-library
+                    --platform=${PLATFORM}
+                    --library=${LIBRARY}
+                    --enable=information
+                    --enable=style
+                    --error-exitcode=1
+                    --suppress=missingIncludeSystem
+                    --inline-suppr 
+                    ${INCONCLUSIVE}
+                    ${CMAKE_CURRENT_SOURCE_DIR}/cfg/${CFG_TEST}
+            )
+        endif()
+    endfunction()
+    add_cfg(boost.cpp INCONCLUSIVE)
+    add_cfg(bsd.c)
+    add_cfg(gnu.c LIBRARY posix gnu)
+    add_cfg(gtk.c)
+    add_cfg(libcurl.c)
+    add_cfg(lua.c)
+    add_cfg(openmp.c)
+    add_cfg(posix.c)
+    add_cfg(python.c)
+    add_cfg(qt.cpp)
+    add_cfg(sqlite3.c INCONCLUSIVE)
+    add_cfg(std.c)
+    add_cfg(std.cpp)
+    add_cfg(windows.cpp INCONCLUSIVE NAME windows32A PLATFORM win32A)
+    add_cfg(windows.cpp INCONCLUSIVE NAME windows32W PLATFORM win32W)
+    add_cfg(windows.cpp INCONCLUSIVE NAME windows64 PLATFORM win64)
+    add_cfg(wxwidgets.cpp INCONCLUSIVE)
 endif()
