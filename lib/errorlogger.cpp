@@ -365,7 +365,7 @@ std::string ErrorLogger::ErrorMessage::getXMLHeader()
 
 std::string ErrorLogger::ErrorMessage::getXMLFooter()
 {
-    return "    </errors>\n</results>";
+    return "</errors>\n</results>";
 }
 
 // There is no utf-8 support around but the strings should at least be safe for to tinyxml2.
@@ -392,8 +392,8 @@ std::string ErrorLogger::ErrorMessage::fixInvalidChars(const std::string& raw)
 
 std::string ErrorLogger::ErrorMessage::toXML() const
 {
-    tinyxml2::XMLPrinter printer(nullptr, false, 2);
-    printer.OpenElement("error", false);
+    tinyxml2::XMLPrinter printer(nullptr, true, 2);
+    printer.OpenElement("error", true);
     printer.PushAttribute("id", id.c_str());
     printer.PushAttribute("severity", Severity::toString(severity).c_str());
     printer.PushAttribute("msg", fixInvalidChars(mShortMessage).c_str());
@@ -404,7 +404,7 @@ std::string ErrorLogger::ErrorMessage::toXML() const
         printer.PushAttribute("inconclusive", "true");
 
     for (std::list<FileLocation>::const_reverse_iterator it = callStack.rbegin(); it != callStack.rend(); ++it) {
-        printer.OpenElement("location", false);
+        printer.OpenElement("location", true);
         if (!file0.empty() && (*it).getfile() != file0)
             printer.PushAttribute("file0", Path::toNativeSeparators(file0).c_str());
         printer.PushAttribute("file", (*it).getfile().c_str());
@@ -412,7 +412,7 @@ std::string ErrorLogger::ErrorMessage::toXML() const
         printer.PushAttribute("column", (*it).column);
         if (!it->getinfo().empty())
             printer.PushAttribute("info", fixInvalidChars(it->getinfo()).c_str());
-        printer.CloseElement(false);
+        printer.CloseElement(true);
     }
     for (std::string::size_type pos = 0; pos < mSymbolNames.size();) {
         const std::string::size_type pos2 = mSymbolNames.find('\n', pos);
@@ -424,11 +424,11 @@ std::string ErrorLogger::ErrorMessage::toXML() const
             symbolName = mSymbolNames.substr(pos, pos2-pos);
             pos = pos2 + 1;
         }
-        printer.OpenElement("symbol", false);
+        printer.OpenElement("symbol", true);
         printer.PushText(symbolName.c_str());
-        printer.CloseElement(false);
+        printer.CloseElement(true);
     }
-    printer.CloseElement(false);
+    printer.CloseElement(true);
     return printer.CStr();
 }
 
@@ -670,62 +670,62 @@ std::string ErrorLogger::toxml(const std::string &str)
 std::string ErrorLogger::plistHeader(const std::string &version, const std::vector<std::string> &files)
 {
     std::ostringstream ostr;
-    ostr << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
-         << "<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\r\n"
-         << "<plist version=\"1.0\">\r\n"
-         << "<dict>\r\n"
-         << " <key>clang_version</key>\r\n"
-         << "<string>cppcheck version " << version << "</string>\r\n"
-         << " <key>files</key>\r\n"
-         << " <array>\r\n";
+    ostr << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+         << "<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
+         << "<plist version=\"1.0\">\n"
+         << "<dict>\n"
+         << "<key>clang_version</key>\n"
+         << "<string>cppcheck version " << version << "</string>\n"
+         << "<key>files</key>\n"
+         << "<array>\n";
     for (unsigned int i = 0; i < files.size(); ++i)
-        ostr << "  <string>" << ErrorLogger::toxml(files[i]) << "</string>\r\n";
-    ostr       << " </array>\r\n"
-               << " <key>diagnostics</key>\r\n"
-               << " <array>\r\n";
+        ostr << "<string>" << ErrorLogger::toxml(files[i]) << "</string>\n";
+    ostr       << "</array>\n"
+               << "<key>diagnostics</key>\n"
+               << "<array>\n";
     return ostr.str();
 }
 
 static std::string plistLoc(const char indent[], const ErrorLogger::ErrorMessage::FileLocation &loc)
 {
     std::ostringstream ostr;
-    ostr << indent << "<dict>\r\n"
-         << indent << ' ' << "<key>line</key><integer>" << loc.line << "</integer>\r\n"
-         << indent << ' ' << "<key>col</key><integer>" << loc.column << "</integer>\r\n"
-         << indent << ' ' << "<key>file</key><integer>" << loc.fileIndex << "</integer>\r\n"
-         << indent << "</dict>\r\n";
+    ostr << indent << "<dict>\n"
+         << indent << ' ' << "<key>line</key><integer>" << loc.line << "</integer>\n"
+         << indent << ' ' << "<key>col</key><integer>" << loc.column << "</integer>\n"
+         << indent << ' ' << "<key>file</key><integer>" << loc.fileIndex << "</integer>\n"
+         << indent << "</dict>\n";
     return ostr.str();
 }
 
 std::string ErrorLogger::plistData(const ErrorLogger::ErrorMessage &msg)
 {
     std::ostringstream plist;
-    plist << "  <dict>\r\n"
-          << "   <key>path</key>\r\n"
-          << "   <array>\r\n";
+    plist << "<dict>\n"
+          << "<key>path</key>\n"
+          << "<array>\n";
 
     std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator prev = msg.callStack.begin();
 
     for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator it = msg.callStack.begin(); it != msg.callStack.end(); ++it) {
         if (prev != it) {
-            plist << "    <dict>\r\n"
-                  << "     <key>kind</key><string>control</string>\r\n"
-                  << "     <key>edges</key>\r\n"
-                  << "      <array>\r\n"
-                  << "       <dict>\r\n"
-                  << "        <key>start</key>\r\n"
-                  << "         <array>\r\n"
-                  << plistLoc("          ", *prev)
-                  << plistLoc("          ", *prev)
-                  << "         </array>\r\n"
-                  << "        <key>end</key>\r\n"
-                  << "         <array>\r\n"
-                  << plistLoc("          ", *it)
-                  << plistLoc("          ", *it)
-                  << "         </array>\r\n"
-                  << "       </dict>\r\n"
-                  << "      </array>\r\n"
-                  << "    </dict>\r\n";
+            plist << "<dict>\n"
+                  << "<key>kind</key><string>control</string>\n"
+                  << "<key>edges</key>\n"
+                  << "<array>\n"
+                  << "<dict>\n"
+                  << "<key>start</key>\n"
+                  << "<array>\n"
+                  << plistLoc("", *prev)
+                  << plistLoc("", *prev)
+                  << "</array>\n"
+                  << "<key>end</key>\n"
+                  << "<array>\n"
+                  << plistLoc("", *it)
+                  << plistLoc("", *it)
+                  << "</array>\n"
+                  << "</dict>\n"
+                  << "</array>\n"
+                  << "</dict>\n";
             prev = it;
         }
 
@@ -733,38 +733,38 @@ std::string ErrorLogger::plistData(const ErrorLogger::ErrorMessage &msg)
         ++next;
         const std::string message = (it->getinfo().empty() && next == msg.callStack.end() ? msg.shortMessage() : it->getinfo());
 
-        plist << "    <dict>\r\n"
-              << "     <key>kind</key><string>event</string>\r\n"
-              << "     <key>location</key>\r\n"
-              << plistLoc("     ", *it)
-              << "     <key>ranges</key>\r\n"
-              << "     <array>\r\n"
-              << "       <array>\r\n"
-              << plistLoc("        ", *it)
-              << plistLoc("        ", *it)
-              << "       </array>\r\n"
-              << "     </array>\r\n"
-              << "     <key>depth</key><integer>0</integer>\r\n"
-              << "     <key>extended_message</key>\r\n"
-              << "     <string>" << ErrorLogger::toxml(message) << "</string>\r\n"
-              << "     <key>message</key>\r\n"
-              << "     <string>" << ErrorLogger::toxml(message) << "</string>\r\n"
-              << "    </dict>\r\n";
+        plist << "<dict>\n"
+              << "<key>kind</key><string>event</string>\n"
+              << "<key>location</key>\n"
+              << plistLoc("", *it)
+              << "<key>ranges</key>\n"
+              << "<array>\n"
+              << "<array>\n"
+              << plistLoc("", *it)
+              << plistLoc("", *it)
+              << "</array>\n"
+              << "</array>\n"
+              << "<key>depth</key><integer>0</integer>\n"
+              << "<key>extended_message</key>\n"
+              << "<string>" << ErrorLogger::toxml(message) << "</string>\n"
+              << "<key>message</key>\n"
+              << "<string>" << ErrorLogger::toxml(message) << "</string>\n"
+              << "</dict>\n";
     }
 
-    plist << "   </array>\r\n"
-          << "   <key>description</key><string>" << ErrorLogger::toxml(msg.shortMessage()) << "</string>\r\n"
-          << "   <key>category</key><string>" << Severity::toString(msg.severity) << "</string>\r\n"
-          << "   <key>type</key><string>" << ErrorLogger::toxml(msg.shortMessage()) << "</string>\r\n"
-          << "   <key>check_name</key><string>" << msg.id << "</string>\r\n"
-          << "   <!-- This hash is experimental and going to change! -->\r\n"
-          << "   <key>issue_hash_content_of_line_in_context</key><string>" << 0 << "</string>\r\n"
-          << "  <key>issue_context_kind</key><string></string>\r\n"
-          << "  <key>issue_context</key><string></string>\r\n"
-          << "  <key>issue_hash_function_offset</key><string></string>\r\n"
-          << "  <key>location</key>\r\n"
-          << plistLoc("  ", msg.callStack.back())
-          << "  </dict>\r\n";
+    plist << "</array>\n"
+          << "<key>description</key><string>" << ErrorLogger::toxml(msg.shortMessage()) << "</string>\n"
+          << "<key>category</key><string>"<< Severity::toString(msg.severity) << "</string>\n"
+          << "<key>type</key><string>" << ErrorLogger::toxml(msg.shortMessage()) << "</string>\n"
+          << "<key>check_name</key><string>" << msg.id << "</string>\n"
+          << "<!-- This hash is experimental and going to change! -->\n"
+          << "<key>issue_hash_content_of_line_in_context</key><string>" << 0 << "</string>\n"
+          << "<key>issue_context_kind</key><string></string>\n"
+          << "<key>issue_context</key><string></string>\n"
+          << "<key>issue_hash_function_offset</key><string></string>\n"
+          << "<key>location</key>\n"
+          << plistLoc("", msg.callStack.back())
+          << "</dict>\n";
     return plist.str();
 }
 

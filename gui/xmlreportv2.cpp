@@ -81,7 +81,7 @@ bool XmlReportV2::open()
 
 void XmlReportV2::writeHeader()
 {
-    mXmlWriter->setAutoFormatting(true);
+    mXmlWriter->setAutoFormatting(false);
     mXmlWriter->writeStartDocument();
     mXmlWriter->writeStartElement(ResultElementName);
     mXmlWriter->writeAttribute(VersionAttribute, QString::number(2));

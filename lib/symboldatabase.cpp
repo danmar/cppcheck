@@ -3095,9 +3095,9 @@ void SymbolDatabase::printXml(std::ostream &out) const
     std::set<const Variable *> variables;
 
     // Scopes..
-    out << "  <scopes>" << std::endl;
+    out << "<scopes>" << std::endl;
     for (std::list<Scope>::const_iterator scope = scopeList.begin(); scope != scopeList.end(); ++scope) {
-        out << "    <scope";
+        out << "<scope";
         out << " id=\"" << &*scope << "\"";
         out << " type=\"" << scope->type << "\"";
         if (!scope->className.empty())
@@ -3115,9 +3115,9 @@ void SymbolDatabase::printXml(std::ostream &out) const
         else {
             out << '>' << std::endl;
             if (!scope->functionList.empty()) {
-                out << "      <functionList>" << std::endl;
+                out << "<functionList>" << std::endl;
                 for (std::list<Function>::const_iterator function = scope->functionList.begin(); function != scope->functionList.end(); ++function) {
-                    out << "        <function id=\"" << &*function << "\" tokenDef=\"" << function->tokenDef << "\" name=\"" << ErrorLogger::toxml(function->name()) << '\"';
+                    out << "<function id=\"" << &*function << "\" tokenDef=\"" << function->tokenDef << "\" name=\"" << ErrorLogger::toxml(function->name()) << '\"';
                     out << " type=\"" << (function->type == Function::eConstructor? "Constructor" :
                                           function->type == Function::eCopyConstructor ? "CopyConstructor" :
                                           function->type == Function::eMoveConstructor ? "MoveConstructor" :
@@ -3138,33 +3138,33 @@ void SymbolDatabase::printXml(std::ostream &out) const
                         out << ">" << std::endl;
                         for (unsigned int argnr = 0; argnr < function->argCount(); ++argnr) {
                             const Variable *arg = function->getArgumentVar(argnr);
-                            out << "          <arg nr=\"" << argnr+1 << "\" variable=\"" << arg << "\"/>" << std::endl;
+                            out << "<arg nr=\"" << argnr+1 << "\" variable=\"" << arg << "\"/>" << std::endl;
                             variables.insert(arg);
                         }
-                        out << "        </function>" << std::endl;
+                        out << "</function>" << std::endl;
                     }
                 }
-                out << "      </functionList>" << std::endl;
+                out << "</functionList>" << std::endl;
             }
             if (!scope->varlist.empty()) {
-                out << "      <varlist>" << std::endl;
+                out << "<varlist>" << std::endl;
                 for (std::list<Variable>::const_iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var)
-                    out << "        <var id=\""   << &*var << "\"/>" << std::endl;
-                out << "      </varlist>" << std::endl;
+                    out << "<var id=\""   << &*var << "\"/>" << std::endl;
+                out << "</varlist>" << std::endl;
             }
-            out << "    </scope>" << std::endl;
+            out << "</scope>" << std::endl;
         }
     }
-    out << "  </scopes>" << std::endl;
+    out << "</scopes>" << std::endl;
 
     // Variables..
     for (const Variable *var : mVariableList)
         variables.insert(var);
-    out << "  <variables>" << std::endl;
+    out << "<variables>" << std::endl;
     for (const Variable *var : variables) {
         if (!var)
             continue;
-        out << "    <var id=\""   << var << '\"';
+        out << "<var id=\""   << var << '\"';
         out << " nameToken=\""      << var->nameToken() << '\"';
         out << " typeStartToken=\"" << var->typeStartToken() << '\"';
         out << " typeEndToken=\""   << var->typeEndToken() << '\"';
@@ -3182,7 +3182,7 @@ void SymbolDatabase::printXml(std::ostream &out) const
         out << " isStatic=\""       << var->isStatic() << '\"';
         out << "/>" << std::endl;
     }
-    out << "  </variables>" << std::endl;
+    out << "</variables>" << std::endl;
     out << std::resetiosflags(std::ios::boolalpha);
 }
 

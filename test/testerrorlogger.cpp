@@ -189,10 +189,10 @@ private:
         header += CppCheck::version();
         header += "\"/>\n    <errors>";
         ASSERT_EQUALS(header, ErrorLogger::ErrorMessage::getXMLHeader());
-        ASSERT_EQUALS("    </errors>\n</results>", ErrorLogger::ErrorMessage::getXMLFooter());
-        std::string message("        <error id=\"errorId\" severity=\"error\"");
-        message += " msg=\"Programming error.\" verbose=\"Verbose error\">\n";
-        message += "            <location file=\"foo.cpp\" line=\"5\" column=\"1\"/>\n        </error>";
+        ASSERT_EQUALS("</errors>\n</results>", ErrorLogger::ErrorMessage::getXMLFooter());
+        std::string message("<error id=\"errorId\" severity=\"error\"");
+        message += " msg=\"Programming error.\" verbose=\"Verbose error\">";
+        message += "<location file=\"foo.cpp\" line=\"5\" column=\"1\"/></error>";
         ASSERT_EQUALS(message, msg.toXML());
     }
 
@@ -205,11 +205,11 @@ private:
         header += CppCheck::version();
         header += "\"/>\n    <errors>";
         ASSERT_EQUALS(header, ErrorLogger::ErrorMessage::getXMLHeader());
-        ASSERT_EQUALS("    </errors>\n</results>", ErrorLogger::ErrorMessage::getXMLFooter());
-        std::string message("        <error id=\"errorId\" severity=\"error\"");
-        message += " msg=\"Programming error.\" verbose=\"Verbose error\">\n";
-        message += "            <location file=\"bar.cpp\" line=\"8\" column=\"1\" info=\"\\303\\244\"/>\n";
-        message += "            <location file=\"foo.cpp\" line=\"5\" column=\"1\"/>\n        </error>";
+        ASSERT_EQUALS("</errors>\n</results>", ErrorLogger::ErrorMessage::getXMLFooter());
+        std::string message("<error id=\"errorId\" severity=\"error\"");
+        message += " msg=\"Programming error.\" verbose=\"Verbose error\">";
+        message += "<location file=\"bar.cpp\" line=\"8\" column=\"1\" info=\"\\303\\244\"/>";
+        message += "<location file=\"foo.cpp\" line=\"5\" column=\"1\"/></error>";
         ASSERT_EQUALS(message, msg.toXML());
     }
 
@@ -217,7 +217,7 @@ private:
         {
             std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
             ErrorMessage msg(locs, emptyString, Severity::error, "Programming error.\nComparing \"\203\" with \"\003\"", "errorId", false);
-            const std::string expected("        <error id=\"errorId\" severity=\"error\" msg=\"Programming error.\" verbose=\"Comparing &quot;\\203&quot; with &quot;\\003&quot;\"/>");
+            const std::string expected("<error id=\"errorId\" severity=\"error\" msg=\"Programming error.\" verbose=\"Comparing &quot;\\203&quot; with &quot;\\003&quot;\"/>");
             ASSERT_EQUALS(expected, msg.toXML());
         }
         {
@@ -225,9 +225,9 @@ private:
             const char code2[]="\x12\x00\x00\x01";
             std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
             ErrorMessage msg1(locs, emptyString, Severity::error, std::string("Programming error.\nReading \"")+code1+"\"", "errorId", false);
-            ASSERT_EQUALS("        <error id=\"errorId\" severity=\"error\" msg=\"Programming error.\" verbose=\"Reading &quot;\\303\\244\\303\\266\\303\\274&quot;\"/>", msg1.toXML());
+            ASSERT_EQUALS("<error id=\"errorId\" severity=\"error\" msg=\"Programming error.\" verbose=\"Reading &quot;\\303\\244\\303\\266\\303\\274&quot;\"/>", msg1.toXML());
             ErrorMessage msg2(locs, emptyString, Severity::error, std::string("Programming error.\nReading \"")+code2+"\"", "errorId", false);
-            ASSERT_EQUALS("        <error id=\"errorId\" severity=\"error\" msg=\"Programming error.\" verbose=\"Reading &quot;\\022&quot;\"/>", msg2.toXML());
+            ASSERT_EQUALS("<error id=\"errorId\" severity=\"error\" msg=\"Programming error.\" verbose=\"Reading &quot;\\022&quot;\"/>", msg2.toXML());
         }
     }
 
@@ -239,9 +239,9 @@ private:
         ErrorMessage msg(locs, emptyString, Severity::error, "Programming error", "errorId", true);
 
         // xml version 2 error message
-        ASSERT_EQUALS("        <error id=\"errorId\" severity=\"error\" msg=\"Programming error\" verbose=\"Programming error\" inconclusive=\"true\">\n"
-                      "            <location file=\"foo.cpp\" line=\"5\" column=\"1\"/>\n"
-                      "        </error>",
+        ASSERT_EQUALS("<error id=\"errorId\" severity=\"error\" msg=\"Programming error\" verbose=\"Programming error\" inconclusive=\"true\">"
+                      "<location file=\"foo.cpp\" line=\"5\" column=\"1\"/>"
+                      "</error>",
                       msg.toXML());
     }
 

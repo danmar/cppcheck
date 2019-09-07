@@ -629,7 +629,7 @@ bool ProjectFile::write(const QString &filename)
         return false;
 
     QXmlStreamWriter xmlWriter(&file);
-    xmlWriter.setAutoFormatting(true);
+    xmlWriter.setAutoFormatting(false);
     xmlWriter.writeStartDocument("1.0");
     xmlWriter.writeStartElement(CppcheckXml::ProjectElementName);
     xmlWriter.writeAttribute(CppcheckXml::ProjectVersionAttrib, CppcheckXml::ProjectFileVersion);

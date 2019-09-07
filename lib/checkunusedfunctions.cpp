@@ -368,12 +368,12 @@ std::string CheckUnusedFunctions::analyzerInfo() const
 {
     std::ostringstream ret;
     for (const FunctionDecl &functionDecl : mFunctionDecl) {
-        ret << "    <functiondecl"
+        ret << "<functiondecl"
             << " functionName=\"" << ErrorLogger::toxml(functionDecl.functionName) << '\"'
             << " lineNumber=\"" << functionDecl.lineNumber << "\"/>\n";
     }
     for (const std::string &fc : mFunctionCalls) {
-        ret << "    <functioncall functionName=\"" << ErrorLogger::toxml(fc) << "\"/>\n";
+        ret << "<functioncall functionName=\"" << ErrorLogger::toxml(fc) << "\"/>\n";
     }
     return ret.str();
 }

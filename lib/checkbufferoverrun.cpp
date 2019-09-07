@@ -738,9 +738,9 @@ std::string CheckBufferOverrun::MyFileInfo::toString() const
 {
     std::string xml;
     if (!unsafeArrayIndex.empty())
-        xml = "    <array-index>\n" + CTU::toString(unsafeArrayIndex) + "    </array-index>\n";
+        xml = "<array-index>\n" + CTU::toString(unsafeArrayIndex) + "</array-index>\n";
     if (!unsafePointerArith.empty())
-        xml += "    <pointer-arith>\n" + CTU::toString(unsafePointerArith) + "    </pointer-arith>\n";
+        xml += "<pointer-arith>\n" + CTU::toString(unsafePointerArith) + "</pointer-arith>\n";
     return xml;
 }
 

@@ -321,7 +321,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             if (fdump.is_open()) {
                 fdump << "<?xml version=\"1.0\"?>" << std::endl;
                 fdump << "<dumps>" << std::endl;
-                fdump << "  <platform"
+                fdump << "<platform"
                       << " name=\"" << mSettings.platformString() << '\"'
                       << " char_bit=\"" << mSettings.char_bit << '\"'
                       << " short_bit=\"" << mSettings.short_bit << '\"'
@@ -330,18 +330,18 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                       << " long_long_bit=\"" << mSettings.long_long_bit << '\"'
                       << " pointer_bit=\"" << (mSettings.sizeof_pointer * mSettings.char_bit) << '\"'
                       << "/>\n";
-                fdump << "  <rawtokens>" << std::endl;
+                fdump << "<rawtokens>" << std::endl;
                 for (unsigned int i = 0; i < files.size(); ++i)
-                    fdump << "    <file index=\"" << i << "\" name=\"" << ErrorLogger::toxml(files[i]) << "\"/>" << std::endl;
+                    fdump << "<file index=\"" << i << "\" name=\"" << ErrorLogger::toxml(files[i]) << "\"/>" << std::endl;
                 for (const simplecpp::Token *tok = tokens1.cfront(); tok; tok = tok->next) {
-                    fdump << "    <tok "
+                    fdump << "<tok "
                           << "fileIndex=\"" << tok->location.fileIndex << "\" "
                           << "linenr=\"" << tok->location.line << "\" "
                           << "column=\"" << tok->location.col << "\" "
                           << "str=\"" << ErrorLogger::toxml(tok->str()) << "\""
                           << "/>" << std::endl;
                 }
-                fdump << "  </rawtokens>" << std::endl;
+                fdump << "</rawtokens>" << std::endl;
             }
         }
 
@@ -511,10 +511,10 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 // dump xml if --dump
                 if ((mSettings.dump || !mSettings.addons.empty()) && fdump.is_open()) {
                     fdump << "<dump cfg=\"" << ErrorLogger::toxml(mCurrentConfig) << "\">" << std::endl;
-                    fdump << "  <standards>" << std::endl;
-                    fdump << "    <c version=\"" << mSettings.standards.getC() << "\"/>" << std::endl;
-                    fdump << "    <cpp version=\"" << mSettings.standards.getCPP() << "\"/>" << std::endl;
-                    fdump << "  </standards>" << std::endl;
+                    fdump << "<standards>" << std::endl;
+                    fdump << "<c version=\"" << mSettings.standards.getC() << "\"/>" << std::endl;
+                    fdump << "<cpp version=\"" << mSettings.standards.getCPP() << "\"/>" << std::endl;
+                    fdump << "</standards>" << std::endl;
                     preprocessor.dump(fdump);
                     mTokenizer.dump(fdump);
                     fdump << "</dump>" << std::endl;

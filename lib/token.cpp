@@ -1539,14 +1539,14 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
 {
     int line = 0;
     if (xml)
-        out << "  <valueflow>" << std::endl;
+        out << "<valueflow>" << std::endl;
     else
         out << "\n\n##Value flow" << std::endl;
     for (const Token *tok = this; tok; tok = tok->next()) {
         if (!tok->mImpl->mValues)
             continue;
         if (xml)
-            out << "    <values id=\"" << tok->mImpl->mValues << "\">" << std::endl;
+            out << "<values id=\"" << tok->mImpl->mValues << "\">" << std::endl;
         else if (line != tok->linenr())
             out << "Line " << tok->linenr() << std::endl;
         line = tok->linenr();
@@ -1557,7 +1557,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
         }
         for (const ValueFlow::Value &value : *tok->mImpl->mValues) {
             if (xml) {
-                out << "      <value ";
+                out << "<value ";
                 switch (value.valueType) {
                 case ValueFlow::Value::INT:
                     if (tok->valueType() && tok->valueType()->sign == ValueType::UNSIGNED)
@@ -1634,14 +1634,14 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
             }
         }
         if (xml)
-            out << "    </values>" << std::endl;
+            out << "</values>" << std::endl;
         else if (tok->mImpl->mValues->size() > 1U)
             out << '}' << std::endl;
         else
             out << std::endl;
     }
     if (xml)
-        out << "  </valueflow>" << std::endl;
+        out << "</valueflow>" << std::endl;
 }
 
 const ValueFlow::Value * Token::getValueLE(const MathLib::bigint val, const Settings *settings) const

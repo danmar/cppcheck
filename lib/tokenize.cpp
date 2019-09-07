@@ -4830,9 +4830,9 @@ void Tokenizer::dump(std::ostream &out) const
     // data dump that 3rd party tools could load and get useful info from.
 
     // tokens..
-    out << "  <tokenlist>" << std::endl;
+    out << "<tokenlist>" << std::endl;
     for (const Token *tok = list.front(); tok; tok = tok->next()) {
-        out << "    <token id=\"" << tok << "\" file=\"" << ErrorLogger::toxml(list.file(tok)) << "\" linenr=\"" << tok->linenr() << "\" column=\"" << tok->column() << "\"";
+        out << "<token id=\"" << tok << "\" file=\"" << ErrorLogger::toxml(list.file(tok)) << "\" linenr=\"" << tok->linenr() << "\" column=\"" << tok->column() << "\"";
         out << " str=\"" << ErrorLogger::toxml(tok->str()) << '\"';
         out << " scope=\"" << tok->scope() << '\"';
         if (tok->isName()) {
@@ -4893,7 +4893,7 @@ void Tokenizer::dump(std::ostream &out) const
         }
         out << "/>" << std::endl;
     }
-    out << "  </tokenlist>" << std::endl;
+    out << "</tokenlist>" << std::endl;
 
     mSymbolDatabase->printXml(out);
     if (list.front())

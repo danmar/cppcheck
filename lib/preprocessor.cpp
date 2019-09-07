@@ -829,17 +829,17 @@ void Preprocessor::dump(std::ostream &out) const
     // Create a xml directive dump.
     // The idea is not that this will be readable for humans. It's a
     // data dump that 3rd party tools could load and get useful info from.
-    out << "  <directivelist>" << std::endl;
+    out << "<directivelist>" << std::endl;
 
     for (const Directive &dir : mDirectives) {
-        out << "    <directive "
+        out << "<directive "
             << "file=\"" << ErrorLogger::toxml(dir.file) << "\" "
             << "linenr=\"" << dir.linenr << "\" "
             // str might contain characters such as '"', '<' or '>' which
             // could result in invalid XML, so run it through toxml().
             << "str=\"" << ErrorLogger::toxml(dir.str) << "\"/>" << std::endl;
     }
-    out << "  </directivelist>" << std::endl;
+    out << "</directivelist>" << std::endl;
 }
 
 static const std::uint32_t crc32Table[] = {

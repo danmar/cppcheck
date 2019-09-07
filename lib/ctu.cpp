@@ -96,7 +96,7 @@ std::string CTU::FileInfo::FunctionCall::toXmlString() const
     else {
         out << ">\n";
         for (const ErrorLogger::ErrorMessage::FileLocation &loc : callValuePath)
-            out << "  <path"
+            out << "<path"
                 << " " << ATTR_LOC_FILENAME << "=\"" << loc.getfile() << "\""
                 << " " << ATTR_LOC_LINENR << "=\"" << loc.line << "\""
                 << " " << ATTR_INFO << "=\"" << loc.getinfo() << "\"/>\n";
@@ -119,7 +119,7 @@ std::string CTU::FileInfo::NestedCall::toXmlString() const
 std::string CTU::FileInfo::UnsafeUsage::toString() const
 {
     std::ostringstream out;
-    out << "    <unsafe-usage"
+    out << "<unsafe-usage"
         << " " << ATTR_MY_ID << "=\"" << myId << '\"'
         << " " << ATTR_MY_ARGNR << "=\"" << myArgNr << '\"'
         << " " << ATTR_MY_ARGNAME << "=\"" << myArgumentName << '\"'

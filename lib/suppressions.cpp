@@ -308,9 +308,9 @@ bool Suppressions::isSuppressedLocal(const Suppressions::ErrorMessage &errmsg)
 
 void Suppressions::dump(std::ostream & out) const
 {
-    out << "  <suppressions>" << std::endl;
+    out << "<suppressions>" << std::endl;
     for (const Suppression &suppression : mSuppressions) {
-        out << "    <suppression";
+        out << "<suppression";
         out << " errorId=\"" << ErrorLogger::toxml(suppression.errorId) << '"';
         if (!suppression.fileName.empty())
             out << " fileName=\"" << ErrorLogger::toxml(suppression.fileName) << '"';
@@ -320,7 +320,7 @@ void Suppressions::dump(std::ostream & out) const
             out << " symbolName=\"" << ErrorLogger::toxml(suppression.symbolName) << '\"';
         out << " />" << std::endl;
     }
-    out << "  </suppressions>" << std::endl;
+    out << "</suppressions>" << std::endl;
 }
 
 #include <iostream>

@@ -153,5 +153,5 @@ void AnalyzerInformation::reportErr(const ErrorLogger::ErrorMessage &msg, bool /
 void AnalyzerInformation::setFileInfo(const std::string &check, const std::string &fileInfo)
 {
     if (mOutputStream.is_open() && !fileInfo.empty())
-        mOutputStream << "  <FileInfo check=\"" << check << "\">\n" << fileInfo << "  </FileInfo>\n";
+        mOutputStream << "<FileInfo check=\"" << check << "\">\n" << fileInfo << "</FileInfo>\n";
 }
