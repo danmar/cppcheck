@@ -3496,7 +3496,7 @@ void TemplateSimplifier::simplifyTemplates(
 {
     // convert "sizeof ..." to "sizeof..."
     for (Token *tok = mTokenList.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "sizeof ...")) {
+        if (Token::simpleMatch(tok, "sizeof ...")) {
             tok->str("sizeof...");
             tok->deleteNext();
         }
