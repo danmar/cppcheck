@@ -366,7 +366,7 @@ void TemplateSimplifier::checkComplicatedSyntaxErrorsInTemplates()
                         ;
                     else if (level == 0 && Token::Match(tok2->previous(), "%type%")) {
                         // @todo add better expression detection
-                        if (!Token::Match(tok2->next(), "%type%|%num% ;"))
+                        if (!Token::Match(tok2->next(), "*| %type%|%num% ;"))
                             inclevel = true;
                     } else if (tok2->next() && tok2->next()->isStandardType())
                         inclevel = true;

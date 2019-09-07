@@ -178,6 +178,7 @@ private:
         TEST_CASE(template138);
         TEST_CASE(template139);
         TEST_CASE(template140);
+        TEST_CASE(template141); // #9337
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -3426,6 +3427,18 @@ private:
                                "const bool a :: e<f<char>> ( ) { return false ; }";
             ASSERT_EQUALS(exp, tok(code));
         }
+    }
+
+    void template141() { // #9337
+        const char code[] = "struct a {\n"
+                            "  int c;\n"
+                            "  template <typename b> void d(b e) const { c < *e; }\n"
+                            "};";
+        const char exp[] = "struct a { "
+                           "int c ; "
+                           "template < typename b > void d ( b e ) const { c < * e ; } "
+                           "} ;";
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
