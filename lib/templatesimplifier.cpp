@@ -3494,6 +3494,14 @@ void TemplateSimplifier::simplifyTemplates(
     const std::time_t maxtime,
     bool &codeWithTemplates)
 {
+    // convert "sizeof ..." to "sizeof..."
+    for (Token *tok = mTokenList.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "sizeof ...")) {
+            tok->str("sizeof...");
+            tok->deleteNext();
+        }
+    }
+
     // split ">>" into "> >"
     fixAngleBrackets();
 
