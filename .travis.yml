@@ -134,6 +134,7 @@ matrix:
         - mkdir cmake.output
         - cd cmake.output
         - cmake -G "Unix Makefiles" ..
+        - make -j2 check
         - cd ..
 
 # check if dmake needs to be rerun (this job may fail)
