@@ -11,9 +11,21 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <sys/time.h>
 #ifndef __CYGWIN__
 #include <sys/epoll.h>
 #endif
+
+// #9323, #9331
+void verify_timercmp(struct timeval t)
+{
+    (void)timercmp(&t, &t, <);
+    (void)timercmp(&t, &t, <=);
+    (void)timercmp(&t, &t, ==);
+    (void)timercmp(&t, &t, !=);
+    (void)timercmp(&t, &t, >=);
+    (void)timercmp(&t, &t, >);
+}
 
 // Declaration necessary because there is no specific / portable header.
 extern void *xcalloc(size_t nmemb, size_t size);
