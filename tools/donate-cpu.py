@@ -40,7 +40,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.35"
+CLIENT_VERSION = "1.1.36"
 
 
 def check_requirements():
@@ -271,38 +271,16 @@ def run_command(cmd):
     return p.returncode, stdout, stderr, elapsed_time
 
 
-def scan_package(work_path, cppcheck_path, jobs):
+def scan_package(work_path, cppcheck_path, jobs, libraries):
     print('Analyze..')
     os.chdir(work_path)
-    libraries = ' --library=posix --library=gnu'
-
-    library_includes = {'boost': ['<boost/'],
-                       'cppunit': ['<cppunit/'],
-                       'googletest': ['<gtest/gtest.h>'],
-                       'gtk': ['<gtk/gtk.h>', '<glib.h>', '<glib/', '<gnome.h>'],
-                       'libcerror': ['<libcerror.h>'],
-                       'libcurl': ['<curl/curl.h>'],
-                       'lua': ['<lua.h>', '"lua.h"'],
-                       'microsoft_sal': ['<sal.h>'],
-                       'motif': ['<X11/', '<Xm/'],
-                       'nspr': ['<prtypes.h>', '"prtypes.h"'],
-                       'opengl': ['<GL/gl.h>', '<GL/glu.h>', '<GL/glut.h>'],
-                       'openmp': ['<omp.h>'],
-                       'python': ['<Python.h>', '"Python.h"'],
-                       'qt': ['<QApplication>', '<QList>', '<QObject>', '<QString>', '<QWidget>', '<QtWidgets>', '<QtGui'],
-                       'ruby': ['<ruby.h>', '<ruby/', '"ruby.h"'],
-                       'sdl': ['<SDL.h>', '<SDL/SDL.h>', '<SDL2/SDL.h>'],
-                       'sqlite3': ['<sqlite3.h>', '"sqlite3.h"'],
-                       'tinyxml2': ['<tinyxml2', '"tinyxml2'],
-                       'wxwidgets': ['<wx/', '"wx/'],
-                       'zlib': ['<zlib.h>'],
-                      }
-    for library, includes in library_includes.items():
-        if os.path.exists(os.path.join(cppcheck_path, 'cfg', library + '.cfg')) and has_include('temp', includes):
-            libraries += ' --library=' + library
+    libs = ''
+    for library in libraries:
+        if os.path.exists(os.path.join(cppcheck_path, 'cfg', library + '.cfg')):
+            libs += ' --library=' + library
 
     # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
-    options = jobs + libraries + ' -D__GNUC__ --check-library --inconclusive --enable=style,information --platform=unix64 --template=daca2 -rp=temp temp'
+    options = jobs + libs + ' -D__GNUC__ --check-library --inconclusive --enable=style,information --platform=unix64 --template=daca2 -rp=temp temp'
     cppcheck_cmd = cppcheck_path + '/cppcheck' + ' ' + options
     cmd = 'nice ' + cppcheck_cmd
     returncode, stdout, stderr, elapsed_time = run_command(cmd)
@@ -451,6 +429,35 @@ def upload_info(package, info_output, server_address):
     return False
 
 
+def get_libraries():
+    libraries = ['posix', 'gnu']
+    library_includes = {'boost': ['<boost/'],
+                       'cppunit': ['<cppunit/'],
+                       'googletest': ['<gtest/gtest.h>'],
+                       'gtk': ['<gtk/gtk.h>', '<glib.h>', '<glib/', '<gnome.h>'],
+                       'libcerror': ['<libcerror.h>'],
+                       'libcurl': ['<curl/curl.h>'],
+                       'lua': ['<lua.h>', '"lua.h"'],
+                       'microsoft_sal': ['<sal.h>'],
+                       'motif': ['<X11/', '<Xm/'],
+                       'nspr': ['<prtypes.h>', '"prtypes.h"'],
+                       'opengl': ['<GL/gl.h>', '<GL/glu.h>', '<GL/glut.h>'],
+                       'openmp': ['<omp.h>'],
+                       'python': ['<Python.h>', '"Python.h"'],
+                       'qt': ['<QApplication>', '<QList>', '<QObject>', '<QString>', '<QWidget>', '<QtWidgets>', '<QtGui'],
+                       'ruby': ['<ruby.h>', '<ruby/', '"ruby.h"'],
+                       'sdl': ['<SDL.h>', '<SDL/SDL.h>', '<SDL2/SDL.h>'],
+                       'sqlite3': ['<sqlite3.h>', '"sqlite3.h"'],
+                       'tinyxml2': ['<tinyxml2', '"tinyxml2'],
+                       'wxwidgets': ['<wx/', '"wx/'],
+                       'zlib': ['<zlib.h>'],
+                      }
+    for library, includes in library_includes.items():
+        if has_include('temp', includes):
+            libraries.append(library)
+    return libraries
+
+
 jobs = '-j1'
 stop_time = None
 work_path = os.path.expanduser('~/cppcheck-donate-cpu-workfolder')
@@ -587,13 +594,15 @@ while True:
     cppcheck_options = ''
     head_info_msg = ''
     cppcheck_head_info = '';
+    libraries = get_libraries();
+
     for ver in cppcheck_versions:
         if ver == 'head':
             current_cppcheck_dir = 'cppcheck'
             cppcheck_head_info = get_cppcheck_info(work_path + '/cppcheck')
         else:
             current_cppcheck_dir = ver
-        c, errout, info, t, cppcheck_options = scan_package(work_path, current_cppcheck_dir, jobs)
+        c, errout, info, t, cppcheck_options = scan_package(work_path, current_cppcheck_dir, jobs, libraries)
         if c < 0:
             if c == -101 and 'error: could not find or open any of the paths given.' in errout:
                 # No sourcefile found (for example only headers present)
