@@ -9,6 +9,18 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <sys/time.h>
+
+// #9323, #9331
+void verify_timercmp(struct timeval t)
+{
+    (void)timercmp(&t, &t, <);
+    (void)timercmp(&t, &t, <=);
+    (void)timercmp(&t, &t, ==);
+    (void)timercmp(&t, &t, !=);
+    (void)timercmp(&t, &t, >=);
+    (void)timercmp(&t, &t, >);
+}
 
 // size_t strlcat(char *dst, const char *src, size_t size);
 void uninitvar_strlcat(char *Ct, const char *S, size_t N)

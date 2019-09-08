@@ -12,7 +12,6 @@
 #include <dirent.h>
 #include <sys/mman.h>
 #include <sys/socket.h>
-#include <sys/time.h>
 #include <dlfcn.h>
 #include <fcntl.h>
 // unavailable on some linux systems #include <ndbm.h>
@@ -23,14 +22,6 @@
 #include <pthread.h>
 #include <syslog.h>
 #include <stdarg.h>
-
-// #9323, #9331
-void verify_timercmp(struct timeval t)
-{
-    (void)timercmp(&t, &t, <);
-    (void)timercmp(&t, &t, >);
-    (void)timercmp(&t, &t, !=);
-}
 
 void memleak_scandir(void)
 {
