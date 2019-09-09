@@ -18,7 +18,7 @@ import operator
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.1.5"
+SERVER_VERSION = "1.1.6"
 
 OLD_VERSION = '1.89'
 
@@ -138,13 +138,13 @@ def latestReport(latestResults):
     return html
 
 
-def crashReport():
+def crashReport(results_path):
     html = '<html><head><title>Crash report</title></head><body>\n'
     html += '<h1>Crash report</h1>\n'
     html += '<pre>\n'
     html += '<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', None) + '</b>\n'
     current_year = datetime.date.today().year
-    for filename in sorted(glob.glob(os.path.expanduser('~/daca@home/donated-results/*'))):
+    for filename in sorted(glob.glob(os.path.expanduser(results_path + '/*'))):
         if not os.path.isfile(filename):
             continue
         datestr = ''
@@ -179,13 +179,13 @@ def crashReport():
     return html
 
 
-def staleReport():
+def staleReport(results_path):
     html = '<html><head><title>Stale report</title></head><body>\n'
     html += '<h1>Stale report</h1>\n'
     html += '<pre>\n'
     html += '<b>' + fmt('Package', 'Date       Time', None, None, None) + '</b>\n'
     current_year = datetime.date.today().year
-    for filename in sorted(glob.glob(os.path.expanduser('~/daca@home/donated-results/*'))):
+    for filename in sorted(glob.glob(os.path.expanduser(results_path + '/*'))):
         if not os.path.isfile(filename):
             continue
         for line in open(filename, 'rt'):
@@ -729,10 +729,10 @@ class HttpClientThread(Thread):
                 html = latestReport(self.latestResults)
                 httpGetResponse(self.connection, html, 'text/html')
             elif url == 'crash.html':
-                html = crashReport()
+                html = crashReport(self.resultPath)
                 httpGetResponse(self.connection, html, 'text/html')
             elif url == 'stale.html':
-                html = staleReport()
+                html = staleReport(self.resultPath)
                 httpGetResponse(self.connection, html, 'text/html')
             elif url == 'diff.html':
                 html = diffReport(self.resultPath)
