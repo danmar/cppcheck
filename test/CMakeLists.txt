@@ -59,13 +59,6 @@ if (BUILD_TESTS)
         endif()
     endforeach()
 
-    # Set cost of the more expensive tests to help improve parallel scheduling
-    # of tests
-    fixture_cost(TestIO 20)
-    fixture_cost(TestThreadExecutor 5)
-    fixture_cost(TestLeakAutoVar 4)
-    fixture_cost(TestTokenizer 4)
-
     function(add_cfg CFG_TEST)
         set(options INCONCLUSIVE)
         set(oneValueArgs PLATFORM NAME)
@@ -124,4 +117,12 @@ if (BUILD_TESTS)
     add_cfg(windows.cpp INCONCLUSIVE NAME windows32W PLATFORM win32W)
     add_cfg(windows.cpp INCONCLUSIVE NAME windows64 PLATFORM win64)
     add_cfg(wxwidgets.cpp INCONCLUSIVE)
+
+    # Set cost of the more expensive tests to help improve parallel scheduling
+    # of tests
+    fixture_cost(TestIO 20)
+    fixture_cost(cfg-std_c 8)
+    fixture_cost(TestThreadExecutor 5)
+    fixture_cost(TestLeakAutoVar 4)
+    fixture_cost(TestTokenizer 4)
 endif()
