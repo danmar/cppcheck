@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include <sys/time.h>
 #ifndef __CYGWIN__
 #include <sys/epoll.h>
@@ -87,7 +88,7 @@ int no_resourceLeak_mkostemp_02(char *template, int flags)
     return mkostemp(template, flags);
 }
 
-void valid_code(int argInt1)
+void valid_code(int argInt1, va_list valist_arg)
 {
     char *p;
 
@@ -111,6 +112,11 @@ void valid_code(int argInt1)
     __builtin_prefetch(p, 0, 1);
 
     if (__builtin_types_compatible_p(int, char)) {}
+
+    char * pStr = NULL;
+    if (vasprintf(&pStr, "%d %d", valist_arg) != -1) {
+        free(pStr);
+    }
 }
 
 void ignoreleak(void)
