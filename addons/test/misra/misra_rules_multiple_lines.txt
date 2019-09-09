@@ -18,7 +18,7 @@ Rule 1.5
 Should
  starts from lowercase letter.
 Rule 1.6
-Should
+Can
 
-not contain empty lines.
+contain empty lines.
 
