@@ -132,7 +132,8 @@ matrix:
 # try CMake
         - mkdir cmake.output
         - cd cmake.output
-        - cmake -G "Unix Makefiles" ..
+        - cmake -G "Unix Makefiles" -DBUILD_TESTS=On ..
+        - make -j2 check
         - cd ..
 
 # check if dmake needs to be rerun (this job may fail)
