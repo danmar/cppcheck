@@ -133,7 +133,7 @@ matrix:
 # try CMake
         - mkdir cmake.output
         - cd cmake.output
-        - cmake -G "Unix Makefiles" ..
+        - cmake -G "Unix Makefiles" -DBUILD_TESTING=On ..
         - make -j2 check
         - cd ..
 
