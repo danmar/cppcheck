@@ -4252,6 +4252,18 @@ private:
                         "  return (*sink)[0];\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+
+        // Ticket #8755
+        valueFlowUninit("void f(int b) {\n"
+                        "    int a;\n"
+                        "    if (b == 10)\n"
+                        "        a = 1;\n"
+                        "    if (b == 13)\n"
+                        "        a = 1;\n"
+                        "    if (b == 'x') {}\n"
+                        "    if (a) {}\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Uninitialized variable: a\n", errout.str());
     }
 
     void uninitvar_ipa() {
