@@ -86,7 +86,6 @@ matrix:
         - python -m compileall ./addons
         - python3 -m compileall ./addons
 # run pylint
-#        - pylint --rcfile=pylintrc_travis addons/y2038/*.py ! First resolve https://trac.cppcheck.net/ticket/9210 "y2038 addon no longer working"
         - pylint --rcfile=pylintrc_travis addons/*.py
         - pylint --rcfile=pylintrc_travis htmlreport/*.py
         - pylint --rcfile=pylintrc_travis tools/*.py
@@ -133,7 +132,8 @@ matrix:
 # try CMake
         - mkdir cmake.output
         - cd cmake.output
-        - cmake -G "Unix Makefiles" ..
+        - cmake -G "Unix Makefiles" -DBUILD_TESTS=On ..
+        - make -j2 check
         - cd ..
 
 # check if dmake needs to be rerun (this job may fail)

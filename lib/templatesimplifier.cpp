@@ -366,7 +366,7 @@ void TemplateSimplifier::checkComplicatedSyntaxErrorsInTemplates()
                         ;
                     else if (level == 0 && Token::Match(tok2->previous(), "%type%")) {
                         // @todo add better expression detection
-                        if (!Token::Match(tok2->next(), "%type%|%num% ;"))
+                        if (!Token::Match(tok2->next(), "*| %type%|%num% ;"))
                             inclevel = true;
                     } else if (tok2->next() && tok2->next()->isStandardType())
                         inclevel = true;
@@ -3494,6 +3494,14 @@ void TemplateSimplifier::simplifyTemplates(
     const std::time_t maxtime,
     bool &codeWithTemplates)
 {
+    // convert "sizeof ..." to "sizeof..."
+    for (Token *tok = mTokenList.front(); tok; tok = tok->next()) {
+        if (Token::simpleMatch(tok, "sizeof ...")) {
+            tok->str("sizeof...");
+            tok->deleteNext();
+        }
+    }
+
     // split ">>" into "> >"
     fixAngleBrackets();
 

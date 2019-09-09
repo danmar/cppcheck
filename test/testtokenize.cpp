@@ -7840,6 +7840,15 @@ private:
                             "};\n"
                             "template <class> struct F;\n"
                             "int main() { using T = void (*)(a<j<F, char[]>>); }\n"))
+
+        // #9340
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "struct a {\n"
+                            "  template <class... b> void c(b... p1) {\n"
+                            "    using d = a;\n"
+                            "    d e = {(p1)...};\n"
+                            "  }\n"
+                            "};\n"))
     }
 
     void checkNamespaces() {

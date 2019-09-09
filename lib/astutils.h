@@ -120,6 +120,9 @@ bool isUniqueExpression(const Token* tok);
 /** Is scope a return scope (scope will unconditionally return) */
 bool isReturnScope(const Token *endToken, const Settings * settings = nullptr, bool functionScope=false);
 
+/// Return the token to the function and the argument number
+const Token * getTokenArgumentFunction(const Token * tok, int& argn);
+
 /** Is variable changed by function call?
  * In case the answer of the question is inconclusive, e.g. because the function declaration is not known
  * the return value is false and the output parameter inconclusive is set to true

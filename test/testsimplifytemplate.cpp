@@ -178,6 +178,8 @@ private:
         TEST_CASE(template138);
         TEST_CASE(template139);
         TEST_CASE(template140);
+        TEST_CASE(template141); // #9337
+        TEST_CASE(template142); // #9338
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -3273,7 +3275,7 @@ private:
                            "template < class , template < class > class , class > struct e ; "
                            "template < class f , class g , class ... h > "
                            "using i = typename e < f , g :: template fn , h ... > :: d ; "
-                           "template < class ... j > struct k : c < sizeof ... ( j ) , int > :: template fn < j ... > { } ;";
+                           "template < class ... j > struct k : c < sizeof... ( j ) , int > :: template fn < j ... > { } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
@@ -3426,6 +3428,32 @@ private:
                                "const bool a :: e<f<char>> ( ) { return false ; }";
             ASSERT_EQUALS(exp, tok(code));
         }
+    }
+
+    void template141() { // #9337
+        const char code[] = "struct a {\n"
+                            "  int c;\n"
+                            "  template <typename b> void d(b e) const { c < *e; }\n"
+                            "};";
+        const char exp[] = "struct a { "
+                           "int c ; "
+                           "template < typename b > void d ( b e ) const { c < * e ; } "
+                           "} ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template142() { // #9338
+        const char code[] = "template <typename...> struct a;\n"
+                            "template <typename b, typename c, typename... d> struct a<b c::*, d...> {\n"
+                            "  using typename b ::e;\n"
+                            "  static_assert(e::f ? sizeof...(d) : sizeof...(d), \"\");\n"
+                            "};";
+        const char exp[] = "template < typename ... > struct a ; "
+                           "template < typename b , typename c , typename ... d > struct a < b c :: * , d ... > { "
+                           "using b :: e ; "
+                           "static_assert ( e :: f ? sizeof... ( d ) : sizeof... ( d ) , \"\" ) ; "
+                           "} ;";
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};

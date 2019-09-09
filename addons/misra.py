@@ -2205,7 +2205,7 @@ class MisraChecker:
         expect_more = False
 
         Rule_pattern = re.compile(r'^Rule ([0-9]+).([0-9]+)')
-        Choice_pattern = re.compile(r'.*[ ]*(Advisory|Required|Mandatory)$')
+        severity_pattern = re.compile(r'.*[ ]*(Advisory|Required|Mandatory)$')
         xA_Z_pattern = re.compile(r'^[#A-Z].*')
         a_z_pattern = re.compile(r'^[a-z].*')
         # Try to detect the file encoding
@@ -2231,8 +2231,13 @@ class MisraChecker:
                 file_stream = open(filename, 'rt')
 
         rule = None
+        have_severity = False
+        severity_loc  = 0
+
         for line in file_stream:
+
             line = line.replace('\r', '').replace('\n', '')
+
             if not appendixA:
                 if line.find('Appendix A') >= 0 and line.find('Summary of guidelines') >= 10:
                     appendixA = True
@@ -2240,21 +2245,39 @@ class MisraChecker:
             if line.find('Appendix B') >= 0:
                 break
             if len(line) == 0:
-                expect_more = False
-                rule = None
                 continue
 
             # Parse rule declaration.
             res = Rule_pattern.match(line)
+
             if res:
+                have_severity = False
+                expect_more = False
+                severity_loc = 0
                 num1 = int(res.group(1))
                 num2 = int(res.group(2))
                 rule = Rule(num1, num2)
-                res = Choice_pattern.match(line)
+
+            if not have_severity and rule is not None:
+                res = severity_pattern.match(line)
+
                 if res:
                     rule.misra_severity = res.group(1)
-                expect_more = False
-                continue
+                    have_severity = True
+                else:
+                    severity_loc += 1;
+
+                # Only look for severity on the Rule line
+                # or the next non-blank line after
+                # If it's not in either of those locations then
+                # assume a severity was not provided.
+
+                if severity_loc < 2:
+                    continue
+                else:
+                    rule.misra_severity = ''
+                    have_severity = True
+
             if rule is None:
                 continue
 
@@ -2263,7 +2286,7 @@ class MisraChecker:
                 if a_z_pattern.match(line):
                     self.ruleTexts[rule.num].text += ' ' + line
                     continue
-                rule = None
+
                 expect_more = False
                 continue
 
@@ -2272,8 +2295,6 @@ class MisraChecker:
                 rule.text = line
                 self.ruleTexts[rule.num] = rule
                 expect_more = True
-            else:
-                rule = None
 
     def verifyRuleTexts(self):
         """Prints rule numbers without rule text."""

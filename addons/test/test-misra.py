@@ -49,7 +49,7 @@ def test_loadRuleTexts_mutiple_lines(checker):
     assert(checker.ruleTexts[103].text == "Multiple lines text.")
     assert(checker.ruleTexts[104].text == "Should")
     assert(checker.ruleTexts[105].text == "Should")
-    assert(checker.ruleTexts[106].text == "Should")
+    assert(checker.ruleTexts[106].text == "Can contain empty lines.")
 
 
 def test_verifyRuleTexts(checker, capsys):

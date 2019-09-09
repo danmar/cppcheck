@@ -769,6 +769,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
             compileUnaryOp(tok, state, compileScope);
         } else if (tok->str() == "...") {
             state.op.push(tok);
+            tok = tok->next();
             break;
         } else if (tok->str() == "." && tok->strAt(1) != "*") {
             if (tok->strAt(1) == ".") {
