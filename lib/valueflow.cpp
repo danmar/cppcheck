@@ -3380,15 +3380,17 @@ struct LifetimeStore {
     std::string message;
     ValueFlow::Value::LifetimeKind type;
     ErrorPath errorPath;
+    bool inconclusive;
 
     LifetimeStore()
-        : argtok(nullptr), message(), type(), errorPath()
+        : argtok(nullptr), message(), type(), errorPath(), inconclusive(false)
     {}
 
     LifetimeStore(const Token *argtok,
                   const std::string &message,
-                  ValueFlow::Value::LifetimeKind type = ValueFlow::Value::LifetimeKind::Object)
-        : argtok(argtok), message(message), type(type), errorPath()
+                  ValueFlow::Value::LifetimeKind type = ValueFlow::Value::LifetimeKind::Object,
+                  bool inconclusive = false)
+        : argtok(argtok), message(message), type(type), errorPath(), inconclusive(inconclusive)
     {}
 
     static LifetimeStore fromFunctionArg(const Function * f, Token *tok, const Variable *var, TokenList *tokenlist, ErrorLogger *errorLogger) {
@@ -3416,6 +3418,8 @@ struct LifetimeStore {
 
     template <class Predicate>
     void byRef(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings, Predicate pred) const {
+        if (!settings->inconclusive && inconclusive)
+            return;
         if (!argtok)
             return;
         for (const LifetimeToken& lt : getLifetimeTokens(argtok)) {
@@ -3435,7 +3439,7 @@ struct LifetimeStore {
             value.tokvalue = lt.token;
             value.errorPath = std::move(er);
             value.lifetimeKind = type;
-            value.setInconclusive(lt.inconclusive);
+            value.setInconclusive(lt.inconclusive || inconclusive);
             // Don't add the value a second time
             if (std::find(tok->values().begin(), tok->values().end(), value) != tok->values().end())
                 return;
@@ -3452,6 +3456,8 @@ struct LifetimeStore {
 
     template <class Predicate>
     void byVal(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings, Predicate pred) const {
+        if (!settings->inconclusive && inconclusive)
+            return;
         if (!argtok)
             return;
         if (argtok->values().empty()) {
@@ -3465,6 +3471,7 @@ struct LifetimeStore {
                 value.tokvalue = var->nameToken();
                 value.errorPath = er;
                 value.lifetimeKind = type;
+                value.setInconclusive(inconclusive);
                 // Don't add the value a second time
                 if (std::find(tok->values().begin(), tok->values().end(), value) != tok->values().end())
                     return;
@@ -3494,7 +3501,7 @@ struct LifetimeStore {
                 value.tokvalue = lt.token;
                 value.errorPath = std::move(er);
                 value.lifetimeKind = type;
-                value.setInconclusive(lt.inconclusive || v.isInconclusive());
+                value.setInconclusive(lt.inconclusive || v.isInconclusive() || inconclusive);
                 // Don't add the value a second time
                 if (std::find(tok->values().begin(), tok->values().end(), value) != tok->values().end())
                     continue;
@@ -3512,6 +3519,8 @@ struct LifetimeStore {
 
     template <class Predicate>
     void byDerefCopy(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings, Predicate pred) const {
+        if (!settings->inconclusive && inconclusive)
+            return;
         if (!argtok)
             return;
         for (const ValueFlow::Value &v : argtok->values()) {
@@ -3525,7 +3534,7 @@ struct LifetimeStore {
                 continue;
             for (const Token *tok3 = tok; tok3 && tok3 != var->declEndToken(); tok3 = tok3->previous()) {
                 if (tok3->varId() == var->declarationId()) {
-                    LifetimeStore{tok3, message, type} .byVal(tok, tokenlist, errorLogger, settings, pred);
+                    LifetimeStore{tok3, message, type, inconclusive} .byVal(tok, tokenlist, errorLogger, settings, pred);
                     break;
                 }
             }
@@ -3571,29 +3580,34 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
         const Function *f = tok->function();
         if (Function::returnsReference(f))
             return;
-        const Token *returnTok = findSimpleReturn(f);
-        if (!returnTok)
-            return;
-        const Variable *returnVar = returnTok->variable();
-        if (returnVar && returnVar->isArgument() && (returnVar->isConst() || !isVariableChanged(returnVar, settings, tokenlist->isCPP()))) {
-            LifetimeStore ls = LifetimeStore::fromFunctionArg(f, tok, returnVar, tokenlist, errorLogger);
-            ls.byVal(tok->next(), tokenlist, errorLogger, settings);
-        }
-        for (const ValueFlow::Value &v : returnTok->values()) {
-            if (!v.isLifetimeValue())
+        std::vector<const Token*> returns = findReturns(f);
+        const bool inconclusive = returns.size() > 1;
+        for (const Token* returnTok : returns) {
+            if (returnTok == tok)
                 continue;
-            if (!v.tokvalue)
-                continue;
-            const Variable *var = v.tokvalue->variable();
-            LifetimeStore ls = LifetimeStore::fromFunctionArg(f, tok, var, tokenlist, errorLogger);
-            if (!ls.argtok)
-                continue;
-            ls.errorPath = v.errorPath;
-            ls.errorPath.emplace_front(returnTok, "Return " + lifetimeType(returnTok, &v) + ".");
-            if (var->isReference() || var->isRValueReference()) {
-                ls.byRef(tok->next(), tokenlist, errorLogger, settings);
-            } else if (v.isArgumentLifetimeValue()) {
+            const Variable *returnVar = returnTok->variable();
+            if (returnVar && returnVar->isArgument() && (returnVar->isConst() || !isVariableChanged(returnVar, settings, tokenlist->isCPP()))) {
+                LifetimeStore ls = LifetimeStore::fromFunctionArg(f, tok, returnVar, tokenlist, errorLogger);
+                ls.inconclusive = inconclusive;
                 ls.byVal(tok->next(), tokenlist, errorLogger, settings);
+            }
+            for (const ValueFlow::Value &v : returnTok->values()) {
+                if (!v.isLifetimeValue())
+                    continue;
+                if (!v.tokvalue)
+                    continue;
+                const Variable *var = v.tokvalue->variable();
+                LifetimeStore ls = LifetimeStore::fromFunctionArg(f, tok, var, tokenlist, errorLogger);
+                if (!ls.argtok)
+                    continue;
+                ls.inconclusive = inconclusive;
+                ls.errorPath = v.errorPath;
+                ls.errorPath.emplace_front(returnTok, "Return " + lifetimeType(returnTok, &v) + ".");
+                if (var->isReference() || var->isRValueReference()) {
+                    ls.byRef(tok->next(), tokenlist, errorLogger, settings);
+                } else if (v.isArgumentLifetimeValue()) {
+                    ls.byVal(tok->next(), tokenlist, errorLogger, settings);
+                }
             }
         }
     }
