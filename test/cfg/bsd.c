@@ -22,6 +22,26 @@ void verify_timercmp(struct timeval t)
     (void)timercmp(&t, &t, >);
 }
 
+// False negative: #9346
+void uninitvar_timercmp(struct timeval t)
+{
+    struct timeval uninit;
+    (void)timercmp(&t, &uninit, <);
+    (void)timercmp(&uninit, &t, <=);
+    (void)timercmp(&uninit, &uninit, ==);
+}
+
+void nullPointer_timercmp(struct timeval t)
+{
+    struct timeval *p=0;
+    // cppcheck-suppress nullPointer
+    (void)timercmp(&t, p, <);
+    // cppcheck-suppress nullPointer
+    (void)timercmp(p, &t, <=);
+    // cppcheck-suppress nullPointer
+    (void)timercmp(p, p, ==);
+}
+
 // size_t strlcat(char *dst, const char *src, size_t size);
 void uninitvar_strlcat(char *Ct, const char *S, size_t N)
 {
