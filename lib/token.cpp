@@ -1936,6 +1936,8 @@ const ::Type *Token::typeOf(const Token *tok)
         return Token::typeOf(tok->astOperand1());
     } else if (Token::simpleMatch(tok, ".")) {
         return Token::typeOf(tok->astOperand2());
+    } else if (Token::simpleMatch(tok, "[")) {
+        return Token::typeOf(tok->astOperand1());
     }
     return nullptr;
 }
