@@ -191,7 +191,7 @@ bool isConstVarExpression(const Token *tok);
 
 const Variable *getLHSVariable(const Token *tok);
 
-bool isScopeBracket(const Token *tok);
+bool isScopeBracket(const Token* tok);
 
 struct PathAnalysis {
     enum class Progress {

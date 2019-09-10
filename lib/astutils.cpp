@@ -942,7 +942,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, nonneg int 
            isVariableChangedByFunctionCall(tok->astOperand2(), indirect, varid, settings, inconclusive);
 }
 
-bool isScopeBracket(const Token *tok)
+bool isScopeBracket(const Token* tok)
 {
     if (!Token::Match(tok, "{|}"))
         return false;
@@ -1224,7 +1224,7 @@ int numberOfArguments(const Token *start)
 
 std::vector<const Token *> getArguments(const Token *ftok)
 {
-    const Token *tok = ftok;
+    const Token* tok = ftok;
     if (Token::Match(tok, "%name% (|{"))
         tok = ftok->next();
     if (!Token::Match(tok, "(|{|["))
