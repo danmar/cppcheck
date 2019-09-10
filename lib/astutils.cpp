@@ -1051,7 +1051,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
                      argDirection == Library::ArgumentChecks::Direction::DIR_INOUT) {
                 // With out or inout the direction of the content is specified, not a pointer itself, so ignore pointers for now
                 const ValueType * const valueType = tok1->valueType();
-                if (valueType && !valueType->pointer) {
+                if (valueType && valueType->pointer == indirect) {
                     return true;
                 }
             }

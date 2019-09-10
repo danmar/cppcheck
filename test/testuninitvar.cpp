@@ -4448,6 +4448,17 @@ private:
                         "        return;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // # 9348
+        valueFlowUninit("void f(int *a) {\n"
+                        "  int b = 0;\n"
+                        "  memcpy(a, &b, sizeof(b));\n"
+                        "}\n"
+                        "void g() {\n"
+                        "  int i;\n"
+                        "  f(&i);\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_memberfunction() {
