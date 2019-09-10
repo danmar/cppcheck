@@ -3570,10 +3570,10 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
 }
 
 static void valueFlowLifetimeConstructor(Token* tok,
-                                         const Type* t,
-                                         TokenList* tokenlist,
-                                         ErrorLogger* errorLogger,
-                                         const Settings* settings)
+        const Type* t,
+        TokenList* tokenlist,
+        ErrorLogger* errorLogger,
+        const Settings* settings)
 {
     if (!t)
         return;
