@@ -35,7 +35,7 @@ if (BUILD_TESTS)
     endif()
 
     add_dependencies(testrunner copy_cfg)
-    add_dependencies(check testrunner)
+    add_dependencies(check testrunner cppcheck)
 
     set(SKIP_TESTS "" CACHE STRING "A list of tests to skip")
 
