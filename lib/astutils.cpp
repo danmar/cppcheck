@@ -1228,7 +1228,7 @@ std::vector<const Token *> getArguments(const Token *ftok)
     if (Token::Match(tok, "%name% (|{"))
         tok = ftok->next();
     if (!Token::Match(tok, "(|{|["))
-        return {};
+        return std::vector<const Token *>{};
     const Token *startTok = tok->astOperand2();
     if (!startTok && tok->next() != tok->link())
         startTok = tok->astOperand1();
