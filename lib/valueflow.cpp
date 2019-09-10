@@ -5322,17 +5322,19 @@ static bool isContainerSizeChangedByFunction(const Token *tok, int depth = 20)
     const Function * fun = ftok->function();
     if (fun) {
         const Variable *arg = fun->getArgumentVar(narg);
-        if (!arg->isReference() && !addressOf)
-            return false;
-        if (arg->isConst())
-            return false;
-        const Scope * scope = fun->functionScope;
-        if (scope) {
-            // Argument not used
-            if (!arg->nameToken())
+        if (arg) {
+            if (!arg->isReference() && !addressOf)
                 return false;
-            if (depth > 0)
-                return isContainerSizeChanged(arg->declarationId(), scope->bodyStart, scope->bodyEnd, depth - 1);
+            if (arg->isConst())
+                return false;
+            const Scope * scope = fun->functionScope;
+            if (scope) {
+                // Argument not used
+                if (!arg->nameToken())
+                    return false;
+                if (depth > 0)
+                    return isContainerSizeChanged(arg->declarationId(), scope->bodyStart, scope->bodyEnd, depth - 1);
+            }
         }
     }
 
