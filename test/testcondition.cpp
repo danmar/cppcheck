@@ -3351,6 +3351,21 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // #9311
+        check("struct c {\n"
+              "  int* p;\n"
+              "};\n"
+              "void g(struct c* v);\n"
+              "void f() {\n"
+              "  int a = 0;\n"
+              "  int b = 0;\n"
+              "  struct c d[] = {{&a}, {&b}};\n"
+              "  g(d);\n"
+              "  if (a) {}\n"
+              "  if (b) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // #8993
         check("void f(const std::string& x) {\n"
               "  auto y = x;\n"

@@ -942,7 +942,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, nonneg int 
            isVariableChangedByFunctionCall(tok->astOperand2(), indirect, varid, settings, inconclusive);
 }
 
-static bool isScopeBracket(const Token *tok)
+bool isScopeBracket(const Token *tok)
 {
     if (!Token::Match(tok, "{|}"))
         return false;
@@ -1222,30 +1222,17 @@ int numberOfArguments(const Token *start)
     return arguments;
 }
 
-static void getArgumentsRecursive(const Token *tok, std::vector<const Token *> *arguments, nonneg int depth)
-{
-    ++depth;
-    if (!tok || depth >= 100)
-        return;
-    if (tok->str() == ",") {
-        getArgumentsRecursive(tok->astOperand1(), arguments, depth);
-        getArgumentsRecursive(tok->astOperand2(), arguments, depth);
-    } else {
-        arguments->push_back(tok);
-    }
-}
-
 std::vector<const Token *> getArguments(const Token *ftok)
 {
-    std::vector<const Token *> arguments;
-    const Token *tok = ftok->next();
-    if (!Token::Match(tok, "(|{"))
-        tok = ftok;
+    const Token *tok = ftok;
+    if (Token::Match(tok, "%name% (|{"))
+        tok = ftok->next();
+    if (!Token::Match(tok, "(|{|["))
+        return {};
     const Token *startTok = tok->astOperand2();
-    if (!startTok && Token::simpleMatch(tok->astOperand1(), ","))
+    if (!startTok && tok->next() != tok->link())
         startTok = tok->astOperand1();
-    getArgumentsRecursive(startTok, &arguments, 0);
-    return arguments;
+    return astFlatten(startTok, ",");
 }
 
 const Token *findLambdaStartToken(const Token *last)
