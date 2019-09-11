@@ -1831,7 +1831,7 @@ public:
     /// A (trivial) utility function that prints the ErrorStr() to stdout.
     void PrintError() const;
 
-    /// Return the line where the error occured, or zero if unknown.
+    /// Return the line where the error occurred, or zero if unknown.
     int ErrorLineNum() const
     {
         return _errorLineNum;
