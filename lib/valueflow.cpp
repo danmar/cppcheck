@@ -3102,7 +3102,7 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, ValueFlow::Value:
                 if (vartok)
                     return getLifetimeTokens(vartok, std::move(errorPath), depth - 1);
             } else {
-                return {};
+                return std::vector<LifetimeToken>{};
             }
         }
     } else if (Token::Match(tok->previous(), "%name% (")) {
@@ -3123,7 +3123,7 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, ValueFlow::Value:
                     if (argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
                         int n = getArgumentPos(argvar, f);
                         if (n < 0)
-                            return {};
+                            return std::vector<LifetimeToken>{};
                         const Token* argTok = getArguments(tok->previous()).at(n);
                         lt.errorPath.emplace_back(returnTok, "Return reference.");
                         lt.errorPath.emplace_back(tok->previous(), "Called function passing '" + argTok->str() + "'.");
