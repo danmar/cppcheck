@@ -522,7 +522,7 @@ private:
         ASSERT_EQUALS("",errout.str());
     }
 
-    void suppressingSyntaxErrors() { // syntaxErrors should be suppressable (#7076)
+    void suppressingSyntaxErrors() { // syntaxErrors should be suppressible (#7076)
         std::map<std::string, std::string> files;
         files["test.cpp"] = "if if\n";
 
@@ -530,7 +530,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void suppressingSyntaxErrorsInline() { // syntaxErrors should be suppressable (#5917)
+    void suppressingSyntaxErrorsInline() { // syntaxErrors should be suppressible (#5917)
         std::map<std::string, std::string> files;
         files["test.cpp"] = "double result(0.0);\n"
                             "_asm\n"
@@ -546,7 +546,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void suppressingSyntaxErrorsWhileFileRead() { // syntaxError while file read should be suppressable (PR #1333)
+    void suppressingSyntaxErrorsWhileFileRead() { // syntaxError while file read should be suppressible (PR #1333)
         std::map<std::string, std::string> files;
         files["test.cpp"] = "CONST (genType, KS_CONST) genService[KS_CFG_NR_OF_NVM_BLOCKS] =\n"
                             "{\n"

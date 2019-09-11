@@ -1450,7 +1450,7 @@ void CheckOther::unknownSignCharArrayIndexError(const Token *tok)
                 Severity::portability,
                 "unknownSignCharArrayIndex",
                 "'char' type used as array index.\n"
-                "'char' type used as array index. Values greater that 127 will be "
+                "'char' type used as array index. Values greater than 127 will be "
                 "treated depending on whether 'char' is signed or unsigned on target platform.", CWE758, false);
 }
 

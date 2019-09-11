@@ -109,7 +109,7 @@
  * Returns the path of specified type if not empty. Otherwise returns last check
  * path if valid or user's home directory.
  * @param type Type of path to obtain
- * @return Best path fo provided type
+ * @return Best path for provided type
  */
 QString getPath(const QString &type);
 

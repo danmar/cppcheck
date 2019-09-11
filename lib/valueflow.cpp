@@ -2921,7 +2921,7 @@ static bool valueFlowForward(Token * const               startToken,
             }
             // Variable changed
             for (int i:getIndirections(values)) {
-                // Remove unintialized values if modified
+                // Remove uninitialized values if modified
                 if (isVariableChanged(tok2, i, settings, tokenlist->isCPP()))
                     values.remove_if([&](const ValueFlow::Value& v) {
                     return v.isUninitValue() && v.indirect <= i;
