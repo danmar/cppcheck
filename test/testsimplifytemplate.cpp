@@ -180,6 +180,7 @@ private:
         TEST_CASE(template140);
         TEST_CASE(template141); // #9337
         TEST_CASE(template142); // #9338
+        TEST_CASE(template143);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -3453,6 +3454,28 @@ private:
                            "using b :: e ; "
                            "static_assert ( e :: f ? sizeof... ( d ) : sizeof... ( d ) , \"\" ) ; "
                            "} ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template143() {
+        const char code[] = "template<int N>\n"
+                            "using A1 = struct B1 { static auto constexpr value = N; };\n"
+                            "A1<0> a1;\n"
+                            "template<class T>\n"
+                            "using A2 = struct B2 { void f(T){} };\n"
+                            "A2<bool> a2;\n"
+                            "template<class T>\n"
+                            "using A3 = enum B3 {b = 0;};\n"
+                            "A3<int> a3;";
+        const char exp[] = "template < int N > "
+                           "using A1 = struct B1 { static const auto value = N ; } ; "
+                           "A1 < 0 > a1 ; "
+                           "template < class T > "
+                           "using A2 = struct B2 { void f ( T ) { } } ; "
+                           "A2 < bool > a2 ; "
+                           "template < class T > "
+                           "using A3 = enum B3 { b = 0 ; } ; "
+                           "A3 < int > a3 ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 

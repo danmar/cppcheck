@@ -1441,9 +1441,11 @@ int TemplateSimplifier::getTemplateNamePosition(const Token *tok)
     int namepos = 0;
     if (getTemplateNamePositionTemplateClass(tok, namepos))
         ;
-    else if (Token::Match(tok, "> using %name% ="))
-        namepos = 2;
-    else if (getTemplateNamePositionTemplateVariable(tok, namepos))
+    else if (Token::Match(tok, "> using %name% =")) {
+        // types may not be defined in alias template declarations
+        if (!Token::Match(tok->tokAt(4), "class|struct|union|enum %name%| {"))
+            namepos = 2;
+    } else if (getTemplateNamePositionTemplateVariable(tok, namepos))
         ;
     else if (!getTemplateNamePositionTemplateFunction(tok, namepos))
         namepos = -1; // Name not found
