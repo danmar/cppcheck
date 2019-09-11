@@ -63,9 +63,9 @@ ${CPPCHECK} ${CPPCHECK_OPT} --library=bsd ${DIR}bsd.c
 
 # std.c
 ${CC} ${CC_OPT} ${DIR}std.c
-${CPPCHECK} ${CPPCHECK_OPT} ${DIR}std.c
+${CPPCHECK} ${CPPCHECK_OPT} --inconclusive ${DIR}std.c
 ${CXX} ${CXX_OPT} ${DIR}std.cpp
-${CPPCHECK} ${CPPCHECK_OPT} ${DIR}std.cpp
+${CPPCHECK} ${CPPCHECK_OPT} --inconclusive ${DIR}std.cpp
 
 # windows.cpp
 # Syntax check via g++ does not work because it can not find a valid windows.h

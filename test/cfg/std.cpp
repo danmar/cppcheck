@@ -78,6 +78,7 @@ void bufferAccessOutOfBounds(void)
     // TODO cppcheck-suppress redundantCopy
     std::strcpy(a, "abcde");
     // TODO cppcheck-suppress redundantCopy
+    // cppcheck-suppress terminateStrncpy
     std::strncpy(a,"abcde",5);
     // cppcheck-suppress bufferAccessOutOfBounds
     // TODO cppcheck-suppress redundantCopy

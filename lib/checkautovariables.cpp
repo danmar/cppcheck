@@ -548,12 +548,15 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
         // Return reference from function
         if (returnRef && Token::simpleMatch(tok->astParent(), "return")) {
-            ErrorPath errorPath;
-            const Variable *var = getLifetimeVariable(tok, errorPath);
-            if (var && !var->isGlobal() && !var->isStatic() && !var->isReference() && !var->isRValueReference() &&
-                isInScope(var->nameToken(), tok->scope())) {
-                errorReturnReference(tok, errorPath);
-                continue;
+            for (const LifetimeToken& lt : getLifetimeTokens(tok)) {
+                const Variable* var = lt.token->variable();
+                if (!var)
+                    continue;
+                if (!var->isGlobal() && !var->isStatic() && !var->isReference() && !var->isRValueReference() &&
+                    isInScope(var->nameToken(), tok->scope())) {
+                    errorReturnReference(tok, lt.errorPath, lt.inconclusive);
+                    break;
+                }
             }
             // Assign reference to non-local variable
         } else if (Token::Match(tok->previous(), "&|&& %var% =") && tok->astParent() == tok->next() &&
@@ -635,33 +638,37 @@ void CheckAutoVariables::checkVarLifetime()
 
 void CheckAutoVariables::errorReturnDanglingLifetime(const Token *tok, const ValueFlow::Value *val)
 {
+    const bool inconclusive = val ? val->isInconclusive() : false;
     ErrorPath errorPath = val ? val->errorPath : ErrorPath();
     std::string msg = "Returning " + lifetimeMessage(tok, val, errorPath);
     errorPath.emplace_back(tok, "");
-    reportError(errorPath, Severity::error, "returnDanglingLifetime", msg + " that will be invalid when returning.", CWE562, false);
+    reportError(errorPath, Severity::error, "returnDanglingLifetime", msg + " that will be invalid when returning.", CWE562, inconclusive);
 }
 
 void CheckAutoVariables::errorInvalidLifetime(const Token *tok, const ValueFlow::Value* val)
 {
+    const bool inconclusive = val ? val->isInconclusive() : false;
     ErrorPath errorPath = val ? val->errorPath : ErrorPath();
     std::string msg = "Using " + lifetimeMessage(tok, val, errorPath);
     errorPath.emplace_back(tok, "");
-    reportError(errorPath, Severity::error, "invalidLifetime", msg + " that is out of scope.", CWE562, false);
+    reportError(errorPath, Severity::error, "invalidLifetime", msg + " that is out of scope.", CWE562, inconclusive);
 }
 
 void CheckAutoVariables::errorDanglngLifetime(const Token *tok, const ValueFlow::Value *val)
 {
+    const bool inconclusive = val ? val->isInconclusive() : false;
     ErrorPath errorPath = val ? val->errorPath : ErrorPath();
     std::string tokName = tok ? tok->expressionString() : "x";
     std::string msg = "Non-local variable '" + tokName + "' will use " + lifetimeMessage(tok, val, errorPath);
     errorPath.emplace_back(tok, "");
-    reportError(errorPath, Severity::error, "danglingLifetime", msg + ".", CWE562, false);
+    reportError(errorPath, Severity::error, "danglingLifetime", msg + ".", CWE562, inconclusive);
 }
 
-void CheckAutoVariables::errorReturnReference(const Token *tok, ErrorPath errorPath)
+void CheckAutoVariables::errorReturnReference(const Token* tok, ErrorPath errorPath, bool inconclusive)
 {
     errorPath.emplace_back(tok, "");
-    reportError(errorPath, Severity::error, "returnReference", "Reference to local variable returned.", CWE562, false);
+    reportError(
+        errorPath, Severity::error, "returnReference", "Reference to local variable returned.", CWE562, inconclusive);
 }
 
 void CheckAutoVariables::errorDanglingReference(const Token *tok, const Variable *var, ErrorPath errorPath)
