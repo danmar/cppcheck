@@ -3083,7 +3083,7 @@ ValueFlow::Value getLifetimeObjValue(const Token *tok)
 std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, ValueFlow::Value::ErrorPath errorPath, int depth)
 {
     if (!tok)
-        return {};
+        return std::vector<LifetimeToken>{};
     const Variable *var = tok->variable();
     if (depth < 0)
         return {{tok, std::move(errorPath)}};
