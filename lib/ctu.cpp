@@ -546,18 +546,12 @@ std::list<ErrorLogger::ErrorMessage::FileLocation> CTU::FileInfo::getErrorPath(I
             std::copy(functionCall->callValuePath.cbegin(), functionCall->callValuePath.cend(), std::back_inserter(locationList));
         }
 
-        ErrorLogger::ErrorMessage::FileLocation fileLoc;
-        fileLoc.setfile(path[index]->location.fileName);
-        fileLoc.line = path[index]->location.lineNumber;
-        fileLoc.column = path[index]->location.column;
+        ErrorLogger::ErrorMessage::FileLocation fileLoc(path[index]->location.fileName, path[index]->location.lineNumber, path[index]->location.column);
         fileLoc.setinfo("Calling function " + path[index]->callFunctionName + ", " + MathLib::toString(path[index]->callArgNr) + getOrdinalText(path[index]->callArgNr) + " argument is " + value1);
         locationList.push_back(fileLoc);
     }
 
-    ErrorLogger::ErrorMessage::FileLocation fileLoc2;
-    fileLoc2.setfile(unsafeUsage.location.fileName);
-    fileLoc2.line = unsafeUsage.location.lineNumber;
-    fileLoc2.column = unsafeUsage.location.column;
+    ErrorLogger::ErrorMessage::FileLocation fileLoc2(unsafeUsage.location.fileName, unsafeUsage.location.lineNumber, unsafeUsage.location.column);
     fileLoc2.setinfo(replaceStr(info, "ARG", unsafeUsage.myArgumentName));
     locationList.push_back(fileLoc2);
 
