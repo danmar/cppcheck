@@ -982,7 +982,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
         if (possibleParent && possibleParent->isUnaryOp("*")) {
             while (possibleParent && possibleParent->isUnaryOp("*"))
                 possibleParent = getAstParentSkipPossibleCastAndAddressOf(possibleParent, &unknown);
-            if (possibleParent && Token::Match(possibleParent->previous(), "sizeof ("))
+            if (possibleParent && Token::Match(possibleParent->previous(), "decltype|sizeof ("))
                 return false;
         }
         if (Token::Match(possibleParent, "[(,]")) {
