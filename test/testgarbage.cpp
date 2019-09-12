@@ -1554,7 +1554,7 @@ private:
         ASSERT_THROW(checkCode("{((()))(return 1||);}"), InternalError);
     }
 
-    // #8709 - no garbarge but to avoid stability regression
+    // #8709 - no garbage but to avoid stability regression
     void garbageCode195() {
         checkCode("a b;\n"
                   "void c() {\n"
