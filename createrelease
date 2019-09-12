@@ -23,7 +23,6 @@
 # sed -i "s/1.[0-9][0-9].99/1.89/" cli/main.cpp
 # sed -i "s/1.[0-9][0-9].99/1.89/" cmake/versions.cmake
 # sed -i "s/MINOR [0-9][0-9]/MINOR 89/" lib/version.h
-# sed -i "s/1.[0-9][0-9] dev/1.89/" man/manual.docbook
 # sed -i "s/1.[0-9][0-9] dev/1.89/" win_installer/productInfo.wxi
 # sed -i "s/1.[0-9][0-9].99/1.89/" win_installer/productInfo.wxi
 # sed -i "s/Version 1.[0-9][0-9]/Version 1.89/" */*.md
