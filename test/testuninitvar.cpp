@@ -4583,6 +4583,14 @@ private:
             "}");
         ASSERT_EQUALS("", errout.str());
 
+        ctu("void f(int *p) {\n"
+            "    a = sizeof(*p);\n"
+            "}\n"
+            "int main() {\n"
+            "  int x;\n"
+            "  f(&x);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
