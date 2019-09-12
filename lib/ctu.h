@@ -40,9 +40,10 @@ namespace CTU {
         struct Location {
             Location() = default;
             Location(const Tokenizer *tokenizer, const Token *tok);
-            Location(const std::string &fileName, nonneg int linenr) : fileName(fileName), linenr(linenr) {}
+            Location(const std::string &fileName, nonneg int lineNumber, nonneg int column) : fileName(fileName), lineNumber(lineNumber), column(column) {}
             std::string fileName;
-            nonneg int linenr;
+            nonneg int lineNumber;
+            nonneg int column;
         };
 
         struct UnsafeUsage {
