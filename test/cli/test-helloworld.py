@@ -179,3 +179,9 @@ def test_suppress_project():
     assert stderr == ''
 
 
+def test_exclude():
+    prjpath = getRelativeProjectPath()
+    ret, stdout, stderr = cppcheck(['-i' + prjpath, '--platform=win64', '--project=' + os.path.join(prjpath, 'helloworld.cppcheck')])
+    assert stdout == 'cppcheck: No C or C++ source files found.\n'
+
+
