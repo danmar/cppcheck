@@ -40,7 +40,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.36"
+CLIENT_VERSION = "1.1.37"
 
 
 def check_requirements():
@@ -444,7 +444,7 @@ def get_libraries():
                        'opengl': ['<GL/gl.h>', '<GL/glu.h>', '<GL/glut.h>'],
                        'openmp': ['<omp.h>'],
                        'python': ['<Python.h>', '"Python.h"'],
-                       'qt': ['<QApplication>', '<QList>', '<QObject>', '<QString>', '<QWidget>', '<QtWidgets>', '<QtGui'],
+                       'qt': ['<QApplication>', '<QList>', '<qlist.h>', '<QObject>', '<QString>', '<qstring.h>', '<QWidget>', '<QtWidgets>', '<QtGui'],
                        'ruby': ['<ruby.h>', '<ruby/', '"ruby.h"'],
                        'sdl': ['<SDL.h>', '<SDL/SDL.h>', '<SDL2/SDL.h>'],
                        'sqlite3': ['<sqlite3.h>', '"sqlite3.h"'],
