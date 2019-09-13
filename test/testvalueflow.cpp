@@ -158,7 +158,7 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 for (const ValueFlow::Value &v : tok->values()) {
-                    if (v.isIntValue() && v.intvalue == value)
+                    if (v.isIntValue() && !v.isImpossible() && v.intvalue == value)
                         return true;
                 }
             }
@@ -176,7 +176,7 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 for (const ValueFlow::Value &v : tok->values()) {
-                    if (v.isFloatValue() && v.floatValue >= value - diff && v.floatValue <= value + diff)
+                    if (v.isFloatValue() && !v.isImpossible() && v.floatValue >= value - diff && v.floatValue <= value + diff)
                         return true;
                 }
             }

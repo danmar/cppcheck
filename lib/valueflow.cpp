@@ -189,6 +189,19 @@ static void changeKnownToPossible(std::list<ValueFlow::Value> &values, int indir
     }
 }
 
+static void changePossibleToKnown(std::list<ValueFlow::Value> &values, int indirect=-1)
+{
+    for (ValueFlow::Value& v: values) {
+        if (indirect >= 0 && v.indirect != indirect)
+            continue;
+        if (!v.isPossible())
+            continue;
+        if (v.bound != ValueFlow::Value::Bound::Point)
+            continue;
+        v.setKnown();
+    }
+}
+
 /**
  * Is condition always false when variable has given value?
  * \param condition   top ast token in condition
@@ -4124,9 +4137,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
 
 static void valueFlowSetConditionToKnown(const Token* tok, std::list<ValueFlow::Value>& values, bool then)
 {
-    if (values.size() != 1U)
-        return;
-    if (values.front().isKnown())
+    if (values.empty())
         return;
     if (then && !Token::Match(tok, "==|!|("))
         return;
@@ -4139,7 +4150,7 @@ static void valueFlowSetConditionToKnown(const Token* tok, std::list<ValueFlow::
     while (parent && parent->str() == op)
         parent = parent->astParent();
     if (parent && parent->str() == "(")
-        values.front().setKnown();
+        changePossibleToKnown(values);
 }
 
 static bool isBreakScope(const Token* const endToken)
@@ -4239,17 +4250,6 @@ struct ValueFlowConditionHandler {
                     // start token of conditional code
                     Token *startTokens[] = {nullptr, nullptr};
 
-                    // based on the comparison, should we check the if or while?
-                    bool check_if = false;
-                    bool check_else = false;
-                    if (Token::Match(tok, "==|>=|<=|!|>|<|("))
-                        check_if = true;
-                    if (Token::Match(tok, "%name%|!=|>|<"))
-                        check_else = true;
-
-                    if (!check_if && !check_else)
-                        continue;
-
                     // if astParent is "!" we need to invert codeblock
                     {
                         const Token *tok2 = tok;
@@ -4258,26 +4258,19 @@ struct ValueFlowConditionHandler {
                             while (parent && parent->str() == "&&")
                                 parent = parent->astParent();
                             if (parent && (parent->str() == "!" || Token::simpleMatch(parent, "== false"))) {
-                                check_if = !check_if;
-                                check_else = !check_else;
                                 std::swap(cond.true_values, cond.false_values);
                             }
                             tok2 = parent;
                         }
                     }
-                    if (cond.true_values != cond.false_values) {
-                        check_if = true;
-                        check_else = true;
-                    }
 
                     // determine startToken(s)
-                    if (check_if && Token::simpleMatch(top->link(), ") {"))
+                    if (Token::simpleMatch(top->link(), ") {"))
                         startTokens[0] = top->link()->next();
-                    if (check_else && Token::simpleMatch(top->link()->linkAt(1), "} else {"))
+                    if (Token::simpleMatch(top->link()->linkAt(1), "} else {"))
                         startTokens[1] = top->link()->linkAt(1)->tokAt(2);
 
                     bool bail = false;
-                    const bool bothCanBeKnown = check_if && check_else && !Token::Match(tok->astParent(), "&&|%oror%");
 
                     for (int i = 0; i < 2; i++) {
                         const Token *const startToken = startTokens[i];
@@ -4285,11 +4278,9 @@ struct ValueFlowConditionHandler {
                             continue;
                         std::list<ValueFlow::Value> &values = (i == 0 ? cond.true_values : cond.false_values);
                         valueFlowSetConditionToKnown(tok, values, i == 0);
-                        if (bothCanBeKnown)
-                            valueFlowSetConditionToKnown(tok, values, i != 0);
 
                         bool changed = forward(startTokens[i], startTokens[i]->link(), var, values, true);
-                        values.front().setPossible();
+                        changeKnownToPossible(values);
                         if (changed) {
                             // TODO: The endToken should not be startTokens[i]->link() in the valueFlowForward call
                             if (settings->debugwarnings)
@@ -4329,9 +4320,9 @@ struct ValueFlowConditionHandler {
                         }
 
                         std::list<ValueFlow::Value> *values = nullptr;
-                        if (!dead_if && check_if)
+                        if (!dead_if)
                             values = &cond.true_values;
-                        else if (!dead_else && check_else)
+                        else if (!dead_else)
                             values = &cond.false_values;
 
                         if (values) {
@@ -4376,15 +4367,23 @@ static void valueFlowAfterCondition(TokenList *tokenlist,
                 vartok = vartok->astOperand1();
             if (!vartok->isName())
                 return cond;
-            if (astIsPointer(vartok) && true_value.intvalue == 0) {
-                if (Token::simpleMatch(tok, "=="))
-                    false_value.intvalue = 1;
-                if (Token::simpleMatch(tok, "!="))
-                    true_value.intvalue = 1;
+            if (Token::simpleMatch(tok, "==")) {
+                cond.true_values.push_back(true_value);
+                false_value.setImpossible();
+                cond.false_values.push_back(false_value);
+            } else if (Token::simpleMatch(tok, "!=")) {
+                true_value.setImpossible();
+                cond.true_values.push_back(true_value);
+                cond.false_values.push_back(false_value);
+            } else {
+                cond.true_values.push_back(true_value);
+                cond.false_values.push_back(false_value);
+                true_value.setImpossible();
+                false_value.setImpossible();
+                cond.true_values.push_back(true_value);
+                cond.false_values.push_back(false_value);
             }
 
-            cond.true_values.push_back(true_value);
-            cond.false_values.push_back(false_value);
             cond.vartok = vartok;
             return cond;
         }
