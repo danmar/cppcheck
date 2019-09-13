@@ -1593,6 +1593,8 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     out << " known=\"true\"";
                 else if (value.isPossible())
                     out << " possible=\"true\"";
+                else if (value.isImpossible())
+                    out << " impossible=\"true\"";
                 else if (value.isInconclusive())
                     out << " inconclusive=\"true\"";
                 out << "/>" << std::endl;
@@ -1601,6 +1603,8 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
             else {
                 if (&value != &tok->mImpl->mValues->front())
                     out << ",";
+                if (value.isImpossible())
+                    out << "!";
                 switch (value.valueType) {
                 case ValueFlow::Value::INT:
                     if (tok->valueType() && tok->valueType()->sign == ValueType::UNSIGNED)
