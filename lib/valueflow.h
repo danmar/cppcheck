@@ -44,6 +44,7 @@ namespace ValueFlow {
 
         explicit Value(long long val = 0)
             : valueType(ValueType::INT),
+              bound(Bound::Point),    
               intvalue(val),
               tokvalue(nullptr),
               floatValue(0.0),
@@ -116,6 +117,15 @@ namespace ValueFlow {
             return !(*this == rhs);
         }
 
+        bool replaceValue(const ValueFlow::Value& rhs)
+        {
+            if (bound == rhs.bound || equalValue(rhs)) {
+                *this = rhs;
+                return true;
+            }
+            
+        }
+
         std::string infoString() const;
 
         enum ValueType { INT, TOK, FLOAT, MOVED, UNINIT, CONTAINER_SIZE, LIFETIME, BUFFER_SIZE } valueType;
@@ -155,6 +165,9 @@ namespace ValueFlow {
         bool isNonValue() const {
             return isMovedValue() || isUninitValue() || isLifetimeValue();
         }
+
+        /** The value bound  */
+        enum class Bound {Upper, Lower, Point} bound;
 
         /** int value */
         long long intvalue;
@@ -213,7 +226,9 @@ namespace ValueFlow {
             /** Only listed values are possible */
             Known,
             /** Inconclusive */
-            Inconclusive
+            Inconclusive,
+            /** Listed values are impossible */
+            Impossible
         } valueKind;
 
         void setKnown() {
@@ -230,6 +245,14 @@ namespace ValueFlow {
 
         bool isPossible() const {
             return valueKind == ValueKind::Possible;
+        }
+
+        bool isImpossible() const {
+            return valueKind == ValueKind::Impossible;
+        }
+
+        void setImpossible() {
+            valueKind = ValueKind::Impossible;
         }
 
         void setInconclusive(bool inconclusive = true) {

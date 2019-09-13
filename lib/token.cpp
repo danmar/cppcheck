@@ -1843,6 +1843,14 @@ bool Token::addValue(const ValueFlow::Value &value)
             if ((value.isTokValue() || value.isLifetimeValue()) && (it->tokvalue != value.tokvalue) && (it->tokvalue->str() != value.tokvalue->str()))
                 continue;
 
+            // same value, but old value is possible so replace it
+            if (!it->isImpossible() && value.isImpossible()) {
+                *it = value;
+                if (it->varId == 0)
+                    it->varId = mImpl->mVarId;
+                break;
+            }
+            
             // same value, but old value is inconclusive so replace it
             if (it->isInconclusive() && !value.isInconclusive()) {
                 *it = value;
@@ -1850,6 +1858,7 @@ bool Token::addValue(const ValueFlow::Value &value)
                     it->varId = mImpl->mVarId;
                 break;
             }
+
 
             // Same value already exists, don't  add new value
             return false;

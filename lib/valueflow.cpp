@@ -229,6 +229,24 @@ static bool conditionIsTrue(const Token *condition, const ProgramMemory &program
     return !error && result == 1;
 }
 
+void setValueUpperBound(ValueFlow::Value& value, bool upper)
+{
+    if (upper)
+        value.bound = ValueFlow::Value::Bound::Upper;
+    else
+        value.bound = ValueFlow::Value::Bound::Lower;
+
+}
+
+void setValueBound(ValueFlow::Value& value, const Token* tok, bool invert)
+{
+    if (Token::Match(tok, "<|<=")) {
+        setValueUpperBound(value, !invert);
+    } else if (Token::Match(tok, ">|>=")) {
+        setValueUpperBound(value, invert);
+    }
+}
+
 static void setConditionalValues(const Token *tok,
                                  bool invert,
                                  MathLib::bigint value,
@@ -238,19 +256,21 @@ static void setConditionalValues(const Token *tok,
     if (Token::Match(tok, "==|!=|>=|<=")) {
         true_value = ValueFlow::Value{tok, value};
         false_value = ValueFlow::Value{tok, value};
-        return;
+    } else {
+        const char *greaterThan = ">";
+        const char *lessThan = "<";
+        if (invert)
+            std::swap(greaterThan, lessThan);
+        if (Token::simpleMatch(tok, greaterThan)) {
+            true_value = ValueFlow::Value{tok, value + 1};
+            false_value = ValueFlow::Value{tok, value};
+        } else if (Token::simpleMatch(tok, lessThan)) {
+            true_value = ValueFlow::Value{tok, value - 1};
+            false_value = ValueFlow::Value{tok, value};
+        }
     }
-    const char *greaterThan = ">";
-    const char *lessThan = "<";
-    if (invert)
-        std::swap(greaterThan, lessThan);
-    if (Token::simpleMatch(tok, greaterThan)) {
-        true_value = ValueFlow::Value{tok, value + 1};
-        false_value = ValueFlow::Value{tok, value};
-    } else if (Token::simpleMatch(tok, lessThan)) {
-        true_value = ValueFlow::Value{tok, value - 1};
-        false_value = ValueFlow::Value{tok, value};
-    }
+    setValueBound(true_value, tok, invert);
+    setValueBound(false_value, tok, !invert);
 }
 
 static const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value)
@@ -673,6 +693,10 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
     else if ((parent->isArithmeticalOp() || parent->isComparisonOp() || (parent->tokType() == Token::eBitOp) || (parent->tokType() == Token::eLogicalOp)) &&
              parent->astOperand1() &&
              parent->astOperand2()) {
+
+        // Dont compare impossible values
+        if (parent->isComparisonOp() && value.isImpossible())
+            return;
 
         // known result when a operand is 0.
         if (Token::Match(parent, "[&*]") && value.isKnown() && value.isIntValue() && value.intvalue==0) {
