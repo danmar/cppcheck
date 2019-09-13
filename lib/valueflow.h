@@ -37,6 +37,22 @@ class TokenList;
 class Variable;
 
 namespace ValueFlow {
+    struct increment
+    {
+        template<class T>
+        void operator()(T& x) const
+        {
+            x++;
+        }
+    };
+    struct decrement
+    {
+        template<class T>
+        void operator()(T& x) const
+        {
+            x--;
+        }
+    };
     class CPPCHECKLIB Value {
     public:
         typedef std::pair<const Token *, std::string> ErrorPathItem;
@@ -100,6 +116,28 @@ namespace ValueFlow {
             return true;
         }
 
+        template<class F>
+        void visitValue(F f)
+        {
+            switch (valueType) {
+            case ValueType::INT:
+            case ValueType::BUFFER_SIZE:
+            case ValueType::CONTAINER_SIZE: {
+                f(intvalue);
+                break;
+            }
+            case ValueType::FLOAT: {
+                f(floatValue);
+                break;
+            }
+            case ValueType::UNINIT:
+            case ValueType::TOK:
+            case ValueType::LIFETIME:
+            case ValueType::MOVED:
+                break;
+            }
+        }
+
         bool operator==(const Value &rhs) const {
             if (!equalValue(rhs))
                 return false;
@@ -119,11 +157,17 @@ namespace ValueFlow {
 
         bool replaceValue(const ValueFlow::Value& rhs)
         {
-            if (bound == rhs.bound || equalValue(rhs)) {
+            if (bound == rhs.bound || bound == Bound::Point || equalValue(rhs)) {
                 *this = rhs;
                 return true;
             }
-            
+            if (bound == Bound::Lower) {
+                visitValue(increment{});
+            }
+            if (bound == Bound::Upper) {
+                visitValue(decrement{});
+            }
+            return false;
         }
 
         std::string infoString() const;

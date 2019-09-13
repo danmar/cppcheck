@@ -1845,18 +1845,20 @@ bool Token::addValue(const ValueFlow::Value &value)
 
             // same value, but old value is possible so replace it
             if (!it->isImpossible() && value.isImpossible()) {
-                *it = value;
+                bool b = it->replaceValue(value);
                 if (it->varId == 0)
                     it->varId = mImpl->mVarId;
-                break;
+                if (b)
+                    break;
             }
             
             // same value, but old value is inconclusive so replace it
             if (it->isInconclusive() && !value.isInconclusive()) {
-                *it = value;
+                bool b = it->replaceValue(value);
                 if (it->varId == 0)
                     it->varId = mImpl->mVarId;
-                break;
+                if (b)
+                    break;
             }
 
 
