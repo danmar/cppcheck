@@ -5037,6 +5037,9 @@ void Tokenizer::removeMacrosInGlobalScope()
             if (tok2 && tok2->str() == "(")
                 tok2 = tok2->link()->next();
 
+            if (Token::Match(tok, "%name% (") && Token::Match(tok2, "%name% *|&|::|<| %name%") && !Token::Match(tok2, "namespace|class|struct|union"))
+                unknownMacroError(tok);
+
             if (Token::Match(tok, "%type% (") && Token::Match(tok2, "%type% (") && !Token::Match(tok2, "noexcept|throw") && isFunctionHead(tok2->next(), ":;{"))
                 unknownMacroError(tok);
 

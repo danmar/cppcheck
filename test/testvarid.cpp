@@ -115,7 +115,6 @@ private:
         TEST_CASE(varid_in_class5);     // #3584 - std::vector<::FOO::B> b;
         TEST_CASE(varid_in_class6);     // #3755
         TEST_CASE(varid_in_class7);     // set variable id for struct members
-        TEST_CASE(varid_in_class8);     // unknown macro in class
         TEST_CASE(varid_in_class9);     // #4291 - id for variables accessed through 'this'
         TEST_CASE(varid_in_class10);
         TEST_CASE(varid_in_class11);    // #4277 - anonymous union
@@ -1505,20 +1504,6 @@ private:
                       "4: }\n"
                       "5: struct ABC abc@1 ;\n"
                       "6: } ;\n",
-                      tokenize(code));
-    }
-
-    void varid_in_class8() {  // #3776 - unknown macro
-        const char code[] = "class A {\n"
-                            "  UNKNOWN_MACRO(A)\n"
-                            "private:\n"
-                            "  int x;\n"
-                            "};";
-        ASSERT_EQUALS("1: class A {\n"
-                      "2: UNKNOWN_MACRO ( A )\n"
-                      "3: private:\n"
-                      "4: int x@1 ;\n"
-                      "5: } ;\n",
                       tokenize(code));
     }
 

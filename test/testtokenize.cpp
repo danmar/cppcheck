@@ -152,7 +152,6 @@ private:
         TEST_CASE(simplifyKnownVariables9);
         TEST_CASE(simplifyKnownVariables10);
         TEST_CASE(simplifyKnownVariables11);
-        TEST_CASE(simplifyKnownVariables12);
         TEST_CASE(simplifyKnownVariables13);
         TEST_CASE(simplifyKnownVariables14);
         TEST_CASE(simplifyKnownVariables15);
@@ -1715,15 +1714,6 @@ private:
             simplifyKnownVariables(code));
     }
 
-    void simplifyKnownVariables12() {
-        const char code[] = "ENTER_NAMESPACE(project_namespace)\n"
-                            "const double pi = 3.14;\n"
-                            "int main(){}\n";
-        ASSERT_EQUALS(
-            "ENTER_NAMESPACE ( project_namespace ) const double pi = 3.14 ; int main ( ) { }",
-            simplifyKnownVariables(code));
-    }
-
     void simplifyKnownVariables13() {
         const char code[] = "void f()\n"
                             "{\n"
@@ -3150,19 +3140,6 @@ private:
                                 "    { }"
                                 "}";
             ASSERT_EQUALS("void foo ( ) { if ( x ) { } { } }", tokenizeAndStringify(code, true));
-        }
-
-        // #3770 - Don't segfault and don't change macro argument as if it's a K&R function argument
-        {
-            const char code[] = "MACRO(a)"
-                                ""
-                                "void f()"
-                                "{"
-                                "    SetLanguage();"
-                                "    {"
-                                "    }"
-                                "}";
-            ASSERT_EQUALS("MACRO ( a ) void f ( ) { SetLanguage ( ) ; { } }", tokenizeAndStringify(code));
         }
     }
 
@@ -6424,8 +6401,7 @@ private:
         ASSERT_EQUALS("namespace { }", tokenizeAndStringify("ABA() namespace { }"));
 
         // #3750
-        ASSERT_EQUALS("; foo :: foo ( ) { }",
-                      tokenizeAndStringify("; AB(foo*) foo::foo() { }"));
+        ASSERT_THROW(tokenizeAndStringify("; AB(foo*) foo::foo() { }"), InternalError);
 
         // #4834 - syntax error
         ASSERT_THROW(tokenizeAndStringify("A(B) foo() {}"), InternalError);
@@ -6435,6 +6411,14 @@ private:
                       tokenizeAndStringify("; AB class foo { }"));
         ASSERT_EQUALS("; CONST struct ABC abc ;",
                       tokenizeAndStringify("; CONST struct ABC abc ;"));
+
+        ASSERT_THROW(tokenizeAndStringify("class A {\n"
+                                          "  UNKNOWN_MACRO(A)\n"
+                                          "private:\n"
+                                          "  int x;\n"
+                                          "};"), InternalError);
+
+        ASSERT_THROW(tokenizeAndStringify("MACRO(test) void test() { }"), InternalError); // #7931
     }
 
     void removeMacroInVarDecl() { // #4304
