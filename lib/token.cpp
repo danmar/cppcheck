@@ -1818,6 +1818,9 @@ bool Token::addValue(const ValueFlow::Value &value)
             if (it->valueType != value.valueType)
                 continue;
 
+            if (it->isImpossible() != value.isImpossible())
+                continue;
+
             // different value => continue
             bool differentValue = true;
             switch (it->valueType) {
@@ -1846,15 +1849,6 @@ bool Token::addValue(const ValueFlow::Value &value)
 
             if ((value.isTokValue() || value.isLifetimeValue()) && (it->tokvalue != value.tokvalue) && (it->tokvalue->str() != value.tokvalue->str()))
                 continue;
-
-            // same value, but old value is possible so replace it
-            if (!it->isImpossible() && value.isImpossible()) {
-                bool b = it->replaceValue(value);
-                if (it->varId == 0)
-                    it->varId = mImpl->mVarId;
-                if (b)
-                    break;
-            }
             
             // same value, but old value is inconclusive so replace it
             if (it->isInconclusive() && !value.isInconclusive()) {
