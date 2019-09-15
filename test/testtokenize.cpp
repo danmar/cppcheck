@@ -6419,6 +6419,13 @@ private:
                                           "};"), InternalError);
 
         ASSERT_THROW(tokenizeAndStringify("MACRO(test) void test() { }"), InternalError); // #7931
+
+        ASSERT_THROW(tokenizeAndStringify("BEGIN_MESSAGE_MAP(CSetProgsAdvDlg, CResizableStandAloneDialog)\n"
+                                          "    ON_BN_CLICKED(IDC_ADDTOOL, OnBnClickedAddtool)\n"
+                                          "END_MESSAGE_MAP()\n"
+                                          "\n"
+                                          "BOOL CSetProgsAdvDlg::OnInitDialog() {}"),
+                     InternalError);
     }
 
     void removeMacroInVarDecl() { // #4304

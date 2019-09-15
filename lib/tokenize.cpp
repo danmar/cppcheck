@@ -5037,6 +5037,10 @@ void Tokenizer::removeMacrosInGlobalScope()
             if (tok2 && tok2->str() == "(")
                 tok2 = tok2->link()->next();
 
+            // Several unknown macros...
+            while (Token::Match(tok2, "%type% (") && tok2->isUpperCaseName())
+                tok2 = tok2->linkAt(1)->next();
+
             if (Token::Match(tok, "%name% (") && Token::Match(tok2, "%name% *|&|::|<| %name%") && !Token::Match(tok2, "namespace|class|struct|union"))
                 unknownMacroError(tok);
 
