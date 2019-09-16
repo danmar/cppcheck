@@ -4346,25 +4346,25 @@ struct ValueFlowConditionHandler {
                         if (dead_if && dead_else)
                             continue;
 
-                        std::list<ValueFlow::Value> *values = nullptr;
-                        if (dead_if)
-                            values = &elseValues;
-                        else if (dead_else)
-                            values = &thenValues;
-                        else if (!thenValues.empty())
-                            values = &thenValues;
-                        else if (!elseValues.empty())
-                            values = &elseValues;
+                        std::list<ValueFlow::Value> values;
+                        if (dead_if) {
+                            values = elseValues;
+                        } else if (dead_else) {
+                            values = thenValues;
+                        } else {
+                            std::copy_if(thenValues.begin(), thenValues.end(), std::back_inserter(values), std::mem_fn(&ValueFlow::Value::isPossible));
+                            std::copy_if(elseValues.begin(), elseValues.end(), std::back_inserter(values), std::mem_fn(&ValueFlow::Value::isPossible));
+                        }
 
-                        if (values) {
+                        if (!values.empty()) {
                             if ((dead_if || dead_else) && !Token::Match(tok->astParent(), "&&|&")) {
-                                valueFlowSetConditionToKnown(tok, *values, true);
-                                valueFlowSetConditionToKnown(tok, *values, false);
+                                valueFlowSetConditionToKnown(tok, values, true);
+                                valueFlowSetConditionToKnown(tok, values, false);
                             }
                             // TODO: constValue could be true if there are no assignments in the conditional blocks and
                             //       perhaps if there are no && and no || in the condition
                             bool constValue = false;
-                            forward(after, top->scope()->bodyEnd, var, *values, constValue);
+                            forward(after, top->scope()->bodyEnd, var, values, constValue);
                         }
                     }
                 }
