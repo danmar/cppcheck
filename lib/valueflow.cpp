@@ -4266,7 +4266,7 @@ struct ValueFlowConditionHandler {
                         thenValues = cond.true_values;
                         insertImpossible(elseValues, cond.false_values);
                     }
-                    if (!Token::Match(tok, "==|!")) {
+                    if (!Token::Match(tok, "==|!") && !Token::Match(tok->previous(), "%name% (")) {
                         elseValues = cond.false_values;
                         insertImpossible(thenValues, cond.true_values);
                     }
