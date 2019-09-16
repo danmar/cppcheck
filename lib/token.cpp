@@ -1655,6 +1655,8 @@ const ValueFlow::Value * Token::getValueLE(const MathLib::bigint val, const Sett
     const ValueFlow::Value *ret = nullptr;
     std::list<ValueFlow::Value>::const_iterator it;
     for (it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
+        if (it->isImpossible())
+            continue;
         if (it->isIntValue() && it->intvalue <= val) {
             if (!ret || ret->isInconclusive() || (ret->condition && !it->isInconclusive()))
                 ret = &(*it);
@@ -1678,6 +1680,8 @@ const ValueFlow::Value * Token::getValueGE(const MathLib::bigint val, const Sett
     const ValueFlow::Value *ret = nullptr;
     std::list<ValueFlow::Value>::const_iterator it;
     for (it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
+        if (it->isImpossible())
+            continue;
         if (it->isIntValue() && it->intvalue >= val) {
             if (!ret || ret->isInconclusive() || (ret->condition && !it->isInconclusive()))
                 ret = &(*it);

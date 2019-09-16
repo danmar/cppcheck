@@ -540,6 +540,8 @@ static void combineValueProperties(const ValueFlow::Value &value1, const ValueFl
 {
     if (value1.isKnown() && value2.isKnown())
         result->setKnown();
+    else if (value1.isImpossible() || value2.isImpossible())
+        result->setImpossible();
     else if (value1.isInconclusive() || value2.isInconclusive())
         result->setInconclusive();
     else
