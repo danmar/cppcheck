@@ -4294,7 +4294,7 @@ struct ValueFlowConditionHandler {
                     if (Token::simpleMatch(top->link()->linkAt(1), "} else {"))
                         startTokens[1] = top->link()->linkAt(1)->tokAt(2);
 
-                    bool bail = false;
+                    int changeBlock = -1;
 
                     for (int i = 0; i < 2; i++) {
                         const Token *const startToken = startTokens[i];
@@ -4303,20 +4303,20 @@ struct ValueFlowConditionHandler {
                         std::list<ValueFlow::Value> &values = (i == 0 ? thenValues : elseValues);
                         valueFlowSetConditionToKnown(tok, values, i == 0);
 
-                        bool changed = forward(startTokens[i], startTokens[i]->link(), var, values, true);
+                        // TODO: The endToken should not be startTokens[i]->link() in the valueFlowForward call
+                        if (forward(startTokens[i], startTokens[i]->link(), var, values, true))
+                            changeBlock = i;
                         changeKnownToPossible(values);
-                        if (changed) {
-                            // TODO: The endToken should not be startTokens[i]->link() in the valueFlowForward call
-                            if (settings->debugwarnings)
-                                bailout(tokenlist,
-                                        errorLogger,
-                                        startTokens[i]->link(),
-                                        "valueFlowAfterCondition: " + var->name() + " is changed in conditional block");
-                            bail = true;
-                        }
                     }
-                    if (bail)
+                    // TODO: Values changed in noreturn blocks should not bail
+                    if (changeBlock >= 0 && !Token::Match(top->previous(), "while (")) {
+                        if (settings->debugwarnings)
+                            bailout(tokenlist,
+                                    errorLogger,
+                                    startTokens[changeBlock]->link(),
+                                    "valueFlowAfterCondition: " + var->name() + " is changed in conditional block");
                         continue;
+                    }
 
                     // After conditional code..
                     if (Token::simpleMatch(top->link(), ") {")) {
