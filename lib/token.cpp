@@ -1796,6 +1796,44 @@ const Token *Token::getValueTokenDeadPointer() const
     return nullptr;
 }
 
+static bool removeContradiction(std::list<ValueFlow::Value>& values)
+{
+    bool result = false;
+    for(ValueFlow::Value& x:values) {
+        if (x.isNonValue())
+            continue;
+        for(ValueFlow::Value& y:values) {
+            if (x == y)
+                continue;
+            if (x.isNonValue())
+                continue;
+            if (x.isImpossible() == y.isImpossible())
+                continue;
+            if (!x.equalValue(y))
+                continue;
+            if (x.bound == y.bound || (x.bound != ValueFlow::Value::Bound::Point && y.bound != ValueFlow::Value::Bound::Point)) {
+                values.remove(x);
+                values.remove(y);
+                return true;
+            } else if (x.bound == ValueFlow::Value::Bound::Point) {
+                y.decreaseBound();
+                result = true;
+            }
+        }
+    }
+    return result;
+}
+
+// Removing contradictions is an NP-hard problem. Instead we run multiple
+// passes to try to catch most contradictions
+static void removeContradictions(std::list<ValueFlow::Value>& values)
+{
+    for(int i=0;i<4;i++) {
+        if (!removeContradiction(values))
+            return;
+    }
+}
+
 bool Token::addValue(const ValueFlow::Value &value)
 {
     if (value.isKnown() && mImpl->mValues) {
@@ -1851,12 +1889,11 @@ bool Token::addValue(const ValueFlow::Value &value)
                 continue;
             
             // same value, but old value is inconclusive so replace it
-            if (it->isInconclusive() && !value.isInconclusive()) {
-                bool b = it->replaceValue(value);
+            if (it->isInconclusive() && !value.isInconclusive() && !value.isImpossible()) {
+                *it = value;
                 if (it->varId == 0)
                     it->varId = mImpl->mVarId;
-                if (b)
-                    break;
+                break;
             }
 
 
@@ -1880,6 +1917,8 @@ bool Token::addValue(const ValueFlow::Value &value)
             v.varId = mImpl->mVarId;
         mImpl->mValues = new std::list<ValueFlow::Value>(1, v);
     }
+
+    removeContradictions(*mImpl->mValues);
 
     return true;
 }

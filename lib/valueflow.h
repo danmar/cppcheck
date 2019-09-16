@@ -60,7 +60,7 @@ namespace ValueFlow {
 
         explicit Value(long long val = 0)
             : valueType(ValueType::INT),
-              bound(Bound::Point),    
+              bound(Bound::Point),
               intvalue(val),
               tokvalue(nullptr),
               floatValue(0.0),
@@ -155,19 +155,21 @@ namespace ValueFlow {
             return !(*this == rhs);
         }
 
-        bool replaceValue(const ValueFlow::Value& rhs)
+        void decreaseBound()
         {
-            if (bound == rhs.bound || bound == Bound::Point || equalValue(rhs)) {
-                *this = rhs;
-                return true;
-            }
-            if (bound == Bound::Lower) {
+            if (bound == Bound::Lower)
                 visitValue(increment{});
-            }
-            if (bound == Bound::Upper) {
+            if (bound == Bound::Upper)
                 visitValue(decrement{});
-            }
-            return false;
+        }
+
+        void invertBound()
+        {
+            if (bound == Bound::Lower)
+                bound = Bound::Upper;
+            if (bound == Bound::Upper)
+                bound = Bound::Lower;
+            decreaseBound();
         }
 
         std::string infoString() const;
