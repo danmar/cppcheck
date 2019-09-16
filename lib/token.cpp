@@ -1807,13 +1807,17 @@ static bool removeContradiction(std::list<ValueFlow::Value>& values)
                 continue;
             if (x.isNonValue())
                 continue;
+            if (x.valueType != y.valueType)
+                continue;
             if (x.isImpossible() == y.isImpossible())
                 continue;
             if (!x.equalValue(y))
                 continue;
             if (x.bound == y.bound || (x.bound != ValueFlow::Value::Bound::Point && y.bound != ValueFlow::Value::Bound::Point)) {
-                values.remove(x);
-                values.remove(y);
+                if (!x.isImpossible() || y.isKnown())
+                    values.remove(x);
+                if (!y.isImpossible() || x.isKnown())
+                    values.remove(y);
                 return true;
             } else if (x.bound == ValueFlow::Value::Bound::Point) {
                 y.decreaseBound();
