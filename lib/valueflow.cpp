@@ -4351,6 +4351,10 @@ struct ValueFlowConditionHandler {
                             values = &elseValues;
                         else if (dead_else)
                             values = &thenValues;
+                        else if (!thenValues.empty())
+                            values = &thenValues;
+                        else if (!elseValues.empty())
+                            values = &elseValues;
 
                         if (values) {
                             if ((dead_if || dead_else) && !Token::Match(tok->astParent(), "&&|&")) {
