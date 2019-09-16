@@ -402,6 +402,8 @@ void validCode(int * pIntPtr)
     printf(QT_TR_NOOP("Hi"));
 
     Q_DECLARE_LOGGING_CATEGORY(logging_category_test);
+    QT_FORWARD_DECLARE_CLASS(forwardDeclaredClass);
+    QT_FORWARD_DECLARE_STRUCT(forwardDeclaredStruct);
 }
 
 void ignoredReturnValue()
