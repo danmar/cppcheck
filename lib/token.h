@@ -989,7 +989,7 @@ public:
         if (!mImpl->mValues)
             return nullptr;
         const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value &value) {
-            return value.isIntValue() && value.intvalue == val;
+            return value.isIntValue() && !value.isImpossible() && value.intvalue == val;
         });
         return it == mImpl->mValues->end() ? nullptr : &*it;;
     }
@@ -1000,6 +1000,8 @@ public:
         const ValueFlow::Value *ret = nullptr;
         for (const ValueFlow::Value &value : *mImpl->mValues) {
             if (!value.isIntValue())
+                continue;
+            if (value.isImpossible())
                 continue;
             if ((!ret || value.intvalue > ret->intvalue) &&
                 ((value.condition != nullptr) == condition))
@@ -1012,7 +1014,7 @@ public:
         if (!mImpl->mValues)
             return nullptr;
         const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value &value) {
-            return value.isMovedValue() && value.moveKind != ValueFlow::Value::MoveKind::NonMovedVariable;
+            return value.isMovedValue() && !value.isImpossible() && value.moveKind != ValueFlow::Value::MoveKind::NonMovedVariable;
         });
         return it == mImpl->mValues->end() ? nullptr : &*it;;
     }
@@ -1026,7 +1028,7 @@ public:
         if (!mImpl->mValues)
             return nullptr;
         const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value &value) {
-            return value.isContainerSizeValue() && value.intvalue == val;
+            return value.isContainerSizeValue() && !value.isImpossible() && value.intvalue == val;
         });
         return it == mImpl->mValues->end() ? nullptr : &*it;
     }
