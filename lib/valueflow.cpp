@@ -189,6 +189,21 @@ static void changeKnownToPossible(std::list<ValueFlow::Value> &values, int indir
     }
 }
 
+static void removeImpossible(std::list<ValueFlow::Value> &values, int indirect=-1)
+{
+    values.remove_if([&](ValueFlow::Value& v) {
+        if (indirect >= 0 && v.indirect != indirect)
+            return false;
+        return v.isImpossible();
+    });
+}
+
+static void lowerToPossible(std::list<ValueFlow::Value> &values, int indirect=-1)
+{
+    changeKnownToPossible(values, indirect);
+    removeImpossible(values, indirect);
+}
+
 static void changePossibleToKnown(std::list<ValueFlow::Value> &values, int indirect=-1)
 {
     for (ValueFlow::Value& v: values) {
@@ -2263,6 +2278,8 @@ static bool valueFlowForward(Token * const               startToken,
         return true;
 
     for (Token *tok2 = startToken; tok2 && tok2 != endToken; tok2 = tok2->next()) {
+        if (values.empty())
+            return true;
         if (indentlevel >= 0 && tok2->str() == "{")
             ++indentlevel;
         else if (indentlevel >= 0 && tok2->str() == "}") {
@@ -2310,7 +2327,7 @@ static bool valueFlowForward(Token * const               startToken,
                        Token::simpleMatch(tok2->link()->previous(), "else {") &&
                        !isReturnScope(tok2->link()->tokAt(-2), settings) &&
                        isVariableChanged(tok2->link(), tok2, varid, var->isGlobal(), settings, tokenlist->isCPP())) {
-                changeKnownToPossible(values);
+                lowerToPossible(values);
             }
         }
 
@@ -2328,7 +2345,7 @@ static bool valueFlowForward(Token * const               startToken,
         }
 
         if (Token::Match(tok2, "[;{}] %name% :") || tok2->str() == "case") {
-            changeKnownToPossible(values);
+            lowerToPossible(values);
             tok2 = tok2->tokAt(2);
             continue;
         }
@@ -2457,7 +2474,7 @@ static bool valueFlowForward(Token * const               startToken,
 
                 if (!condAlwaysFalse && isVariableChanged(startToken1, startToken1->link(), varid, var->isGlobal(), settings, tokenlist->isCPP())) {
                     removeValues(values, truevalues);
-                    changeKnownToPossible(values);
+                    lowerToPossible(values);
                 }
 
                 // goto '}'
@@ -2485,7 +2502,7 @@ static bool valueFlowForward(Token * const               startToken,
 
                     if (!condAlwaysTrue && isVariableChanged(startTokenElse, startTokenElse->link(), varid, var->isGlobal(), settings, tokenlist->isCPP())) {
                         removeValues(values, falsevalues);
-                        changeKnownToPossible(values);
+                        lowerToPossible(values);
                     }
 
                     // goto '}'
@@ -2558,7 +2575,7 @@ static bool valueFlowForward(Token * const               startToken,
                 // Remove conditional values
                 std::list<ValueFlow::Value>::iterator it;
                 for (it = values.begin(); it != values.end();) {
-                    if (it->condition || it->conditional)
+                    if (it->condition || it->conditional || it->isImpossible())
                         values.erase(it++);
                     else {
                         it->changeKnownToPossible();
@@ -2646,6 +2663,7 @@ static bool valueFlowForward(Token * const               startToken,
             ++number_of_if;
 
             // Set "conditional" flag for all values
+            removeImpossible(values);
             std::list<ValueFlow::Value>::iterator it;
             for (it = values.begin(); it != values.end(); ++it) {
                 it->conditional = true;
@@ -2680,7 +2698,7 @@ static bool valueFlowForward(Token * const               startToken,
                     if (tok2 == endToken)
                         break;
                     --indentlevel;
-                    changeKnownToPossible(values);
+                    lowerToPossible(values);
                     continue;
                 }
             }
@@ -2714,9 +2732,9 @@ static bool valueFlowForward(Token * const               startToken,
                 for (const ValueFlow::Value &v : values)
                     valueFlowAST(expr, varid, v, settings);
                 if (isVariableChangedByFunctionCall(expr, 0, varid, settings, nullptr))
-                    changeKnownToPossible(values, 0);
+                    lowerToPossible(values, 0);
                 if (isVariableChangedByFunctionCall(expr, 1, varid, settings, nullptr))
-                    changeKnownToPossible(values, 1);
+                    lowerToPossible(values, 1);
             } else {
                 for (const ValueFlow::Value &v : values) {
                     const ProgramMemory programMemory(getProgramMemory(tok2, varid, v));
@@ -2743,7 +2761,7 @@ static bool valueFlowForward(Token * const               startToken,
                 }
 
                 if (changed0 || changed1)
-                    changeKnownToPossible(values);
+                    lowerToPossible(values);
             }
 
             // Skip conditional expressions..
@@ -3354,7 +3372,7 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
 
         // Static variable initialisation?
         if (var->isStatic() && var->nameToken() == parent->astOperand1())
-            changeKnownToPossible(values);
+            lowerToPossible(values);
 
         // Skip RHS
         const Token *nextExpression = nextAfterAstRightmostLeaf(parent);
@@ -4043,7 +4061,7 @@ static void valueFlowForwardAssign(Token * const               tok,
 
     // Static variable initialisation?
     if (var->isStatic() && init)
-        changeKnownToPossible(values);
+        lowerToPossible(values);
 
     // Skip RHS
     const Token * nextExpression = tok->astParent() ? nextAfterAstRightmostLeaf(tok->astParent()) : tok->next();
@@ -5201,7 +5219,7 @@ static void valueFlowSubFunction(TokenList* tokenlist, ErrorLogger* errorLogger,
             }
 
             // passed values are not "known"..
-            changeKnownToPossible(argvalues);
+            lowerToPossible(argvalues);
 
             valueFlowInjectParameter(tokenlist, errorLogger, settings, argvar, calledFunctionScope, argvalues);
             // FIXME: We need to rewrite the valueflow analysis to better handle multiple arguments
