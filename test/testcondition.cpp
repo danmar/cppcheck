@@ -3229,6 +3229,17 @@ private:
               "  if (x) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9318
+        check("class A {};\n"
+              "class B : public A {};\n"
+              "void f(A* x) {\n"
+              "  if (!x)\n"
+              "    return;\n"
+              "  auto b = dynamic_cast<B*>(x);\n"
+              "  if (b) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueContainer() {
