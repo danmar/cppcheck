@@ -76,6 +76,7 @@ private:
         TEST_CASE(nullpointer34);
         TEST_CASE(nullpointer35);
         TEST_CASE(nullpointer36); // #9264
+        TEST_CASE(nullpointer37); // #9315
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1436,6 +1437,24 @@ private:
               "    while (isspace(*start))\n"
               "        start++;\n"
               "    return (start);\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+    
+    void nullpointer37() {
+        check("void f(int value, char *string) {\n"
+              "    char *ptr1 = NULL, *ptr2 = NULL;\n"
+              "    unsigned long count = 0;\n"
+              "    if(!string)\n"
+              "        return;\n"
+              "    ptr1 = string;\n"
+              "    ptr2 = strrchr(string, 'a');\n"
+              "    if(ptr2 == NULL)\n"
+              "        return;\n"
+              "    while(ptr1 < ptr2) {\n"
+              "        count++;\n"
+              "        ptr1++;\n"
+              "    }\n"
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
     }
