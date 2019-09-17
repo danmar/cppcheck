@@ -27,6 +27,7 @@
 std::string ExprEngine::str(int128_t value)
 {
     std::ostringstream ostr;
+#ifdef __GNUC__
     if (value == (int)value) {
         ostr << (int) value;
         return ostr.str();
@@ -41,6 +42,9 @@ std::string ExprEngine::str(int128_t value)
     if (high > 0)
         ostr << "h" << std::hex << high << "l";
     ostr << std::hex << low;
+#else
+    ostr << value;
+#endif
     return ostr.str();
 }
 

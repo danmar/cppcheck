@@ -135,7 +135,7 @@ namespace ExprEngine {
 
     class StructValue: public Value {
     public:
-        StructValue(const std::string &name) : Value(name) {}
+        explicit StructValue(const std::string &name) : Value(name) {}
         ValueType type() const override {
             return ValueType::StructValue;
         }
