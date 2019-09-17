@@ -152,10 +152,20 @@ private:
               "    return 0;\n"
               "  return rm>> k;\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (warning) Shifting signed 32-bit value by 31 bits is undefined behaviour. See condition at line 4.\n", errout.str());
 
         check("int f(int k, int rm) {\n"
               "  if (k == 0 || k == 32)\n"
+              "    return 0;\n"
+              "  else if (k > 32)\n"
+              "    return 0;\n"
+              "  else\n"
+              "    return rm>> k;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:7]: (warning) Shifting signed 32-bit value by 31 bits is undefined behaviour. See condition at line 4.\n", errout.str());
+
+        check("int f(int k, int rm) {\n"
+              "  if (k == 0 || k == 32 || k == 31)\n"
               "    return 0;\n"
               "  else if (k > 32)\n"
               "    return 0;\n"
