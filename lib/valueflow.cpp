@@ -4155,6 +4155,17 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
     }
 }
 
+static bool isConditionKnown(const Token* tok, bool then)
+{
+    const char * op = "||";
+    if (then)
+        op = "&&";
+    const Token* parent = tok->astParent();
+    while (parent && parent->str() == op)
+        parent = parent->astParent();
+    return (parent && parent->str() == "(");
+}
+
 static void valueFlowSetConditionToKnown(const Token* tok, std::list<ValueFlow::Value>& values, bool then)
 {
     if (values.empty())
@@ -4163,13 +4174,7 @@ static void valueFlowSetConditionToKnown(const Token* tok, std::list<ValueFlow::
         return;
     if (!then && !Token::Match(tok, "!=|%var%|("))
         return;
-    const char * op = "||";
-    if (then)
-        op = "&&";
-    const Token* parent = tok->astParent();
-    while (parent && parent->str() == op)
-        parent = parent->astParent();
-    if (parent && parent->str() == "(")
+    if (isConditionKnown(tok, then))
         changePossibleToKnown(values);
 }
 
@@ -4284,11 +4289,13 @@ struct ValueFlowConditionHandler {
 
                     if (!Token::Match(tok, "!=|%var%")) {
                         thenValues = cond.true_values;
-                        insertImpossible(elseValues, cond.false_values);
+                        if (isConditionKnown(tok, false))
+                            insertImpossible(elseValues, cond.false_values);
                     }
                     if (!Token::Match(tok, "==|!") && !Token::Match(tok->previous(), "%name% (")) {
                         elseValues = cond.false_values;
-                        insertImpossible(thenValues, cond.true_values);
+                        if (isConditionKnown(tok, true))
+                            insertImpossible(thenValues, cond.true_values);
                     }
 
                     // start token of conditional code
@@ -4634,6 +4641,67 @@ static void execute(const Token *expr,
 
     else
         *error = true;
+}
+
+static bool isInBounds(const ValueFlow::Value& value, MathLib::bigint x)
+{
+    if (value.intvalue == x)
+        return true;
+    if (value.bound == ValueFlow::Value::Bound::Lower && value.intvalue < x)
+        return false;
+    if (value.bound == ValueFlow::Value::Bound::Upper && value.intvalue > x)
+        return false;
+    // Checking for equality is not necessary since we already know the value is not equal
+    if (value.bound == ValueFlow::Value::Bound::Point)
+        return false;
+    return true;
+}
+
+static const ValueFlow::Value* proveNotEqual(const std::list<ValueFlow::Value> &values, MathLib::bigint x)
+{
+    const ValueFlow::Value* result = nullptr;
+    for(const ValueFlow::Value& value:values) {
+        if (value.valueType != ValueFlow::Value::INT)
+            continue;
+        if (result && !isInBounds(value, result->intvalue))
+            continue;
+        if (value.isImpossible()) {
+            if (value.intvalue == x)
+                return &value;
+            if (!isInBounds(value, x))
+                continue;
+            result = &value;
+        } else {
+            if (value.intvalue == x)
+                return nullptr;
+            if (!isInBounds(value, x))
+                continue;
+            result = nullptr;
+        }
+    }
+    return result;
+}
+
+static void valueFlowInferCondition(TokenList *tokenlist,
+                                    SymbolDatabase *symboldatabase,
+                                    ErrorLogger *errorLogger,
+                                    const Settings *settings)
+{
+    for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+        if (!tok->astParent())
+            continue;
+        if (tok->hasKnownValue())
+            continue;
+        if (Token::Match(tok, "%var%") && (Token::Match(tok->astParent(), "&&|!|%oror%") || Token::Match(tok->astParent()->previous(), "if|while ("))) {
+            const ValueFlow::Value* result = proveNotEqual(tok->values(), 0);
+            if (!result)
+                continue;
+            ValueFlow::Value value = *result;
+            value.intvalue = 1;
+            value.setKnown();
+            setTokenValue(tok, value, settings);
+        }
+    }
 }
 
 static bool valueFlowForLoop1(const Token *tok, int * const varid, MathLib::bigint * const num1, MathLib::bigint * const num2, MathLib::bigint * const numAfter)
@@ -6187,6 +6255,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
         valueFlowAfterMove(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowAfterCondition(tokenlist, symboldatabase, errorLogger, settings);
+        valueFlowInferCondition(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowSwitchVariable(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowForLoop(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowSubFunction(tokenlist, errorLogger, settings);
