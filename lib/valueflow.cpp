@@ -191,7 +191,7 @@ static void changeKnownToPossible(std::list<ValueFlow::Value> &values, int indir
 
 static void removeImpossible(std::list<ValueFlow::Value> &values, int indirect=-1)
 {
-    values.remove_if([&](ValueFlow::Value& v) {
+    values.remove_if([&](const ValueFlow::Value& v) {
         if (indirect >= 0 && v.indirect != indirect)
             return false;
         return v.isImpossible();
@@ -202,6 +202,25 @@ static void lowerToPossible(std::list<ValueFlow::Value> &values, int indirect=-1
 {
     changeKnownToPossible(values, indirect);
     removeImpossible(values, indirect);
+}
+
+static void lowerToInconclusive(std::list<ValueFlow::Value> &values, const Settings* settings, int indirect=-1)
+{
+    if (settings->inconclusive) {
+        removeImpossible(values, indirect);
+        for (ValueFlow::Value& v: values) {
+            if (indirect >= 0 && v.indirect != indirect)
+                continue;
+            v.setInconclusive();
+        }
+    } else {
+        // Remove all values if the inconclusive flags is not set
+        values.remove_if([&](const ValueFlow::Value& v) {
+            if (indirect >= 0 && v.indirect != indirect)
+                return false;
+            return true;
+        });
+    }
 }
 
 static void changePossibleToKnown(std::list<ValueFlow::Value> &values, int indirect=-1)
@@ -1891,6 +1910,9 @@ static void valueFlowReverse(TokenList *tokenlist,
                     bailout(tokenlist, errorLogger, tok2, "possible assignment of " + tok2->str() + " by subfunction");
                 break;
             }
+            // Impossible values cant be inconclusive
+            if (val.isImpossible() || val2.isImpossible())
+                break;
             val.setInconclusive(inconclusive);
             val2.setInconclusive(inconclusive);
 
@@ -2938,20 +2960,8 @@ static bool valueFlowForward(Token * const               startToken,
                         return v.indirect <= i;
                     });
                 }
-                if (inconclusive) {
-                    if (settings->inconclusive) {
-                        for (ValueFlow::Value &v : values) {
-                            if (v.indirect != i)
-                                continue;
-                            v.setInconclusive();
-                        }
-                    } else {
-                        // If inconclusive flag not enable then remove the values
-                        values.remove_if([&](const ValueFlow::Value &v) {
-                            return v.indirect == i;
-                        });
-                    }
-                }
+                if (inconclusive)
+                    lowerToInconclusive(values, settings, i);
             }
             if (values.empty()) {
                 if (settings->debugwarnings)
@@ -2959,10 +2969,8 @@ static bool valueFlowForward(Token * const               startToken,
                 return false;
             }
             if (tok2->strAt(1) == "." && tok2->next()->originalName() != "->") {
-                if (settings->inconclusive) {
-                    for (ValueFlow::Value &v : values)
-                        v.setInconclusive();
-                } else {
+                lowerToInconclusive(values, settings);
+                if (!settings->inconclusive) {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "possible assignment of " + tok2->str() + " by member function");
                     return false;

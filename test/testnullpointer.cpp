@@ -77,6 +77,7 @@ private:
         TEST_CASE(nullpointer35);
         TEST_CASE(nullpointer36); // #9264
         TEST_CASE(nullpointer37); // #9315
+        TEST_CASE(nullpointer38);
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1454,6 +1455,17 @@ private:
               "    while(ptr1 < ptr2) {\n"
               "        count++;\n"
               "        ptr1++;\n"
+              "    }\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer38() {
+        check("void f(int * x) {\n"
+              "    std::vector<int*> v;\n"
+              "    if (x) {\n"
+              "        v.push_back(x);\n"
+              "        *x;\n"
               "    }\n"
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
