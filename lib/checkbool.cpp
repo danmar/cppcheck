@@ -436,15 +436,8 @@ void CheckBool::checkAssignBoolToFloat()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
-            if (tok->str() == "=" && astIsBool(tok->astOperand2())) {
-                const Token *lhs = tok->astOperand1();
-                while (lhs && (lhs->str() == "." || lhs->str() == "::"))
-                    lhs = lhs->astOperand2();
-                if (!lhs || !lhs->variable())
-                    continue;
-                const Variable* var = lhs->variable();
-                if (var && var->isFloatingType() && !var->isArrayOrPointer())
-                    assignBoolToFloatError(tok->next());
+            if (tok->str() == "=" && astIsFloat(tok->astOperand1(), false) && astIsBool(tok->astOperand2())) {
+                assignBoolToFloatError(tok->next());
             }
         }
     }

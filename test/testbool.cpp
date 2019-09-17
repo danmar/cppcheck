@@ -212,6 +212,15 @@ private:
               "    s.p = true;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (style) Boolean value assigned to floating point variable.\n", errout.str());
+
+        check("struct S {\n"
+              "    float* p[1];\n"
+              "};\n"
+              "void f() {\n"
+              "    S s = {0};\n"
+              "    *s.p[0] = true;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Boolean value assigned to floating point variable.\n", errout.str());
     }
 
     void comparisonOfBoolExpressionWithInt1() {
