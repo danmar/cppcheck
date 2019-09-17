@@ -896,6 +896,24 @@ error_t nullPointer__strncpy_s_l(char *strDest, size_t numberOfElements, const c
     return _strncpy_s_l(strDest, numberOfElements, strSource, count, locale);
 }
 
+void GetShortPathName_validCode(TCHAR* lpszPath)
+{
+    long length = GetShortPathName(lpszPath, NULL, 0);
+    if (length == 0) {
+        _tprintf(TEXT("error"));
+        return;
+    }
+    TCHAR* buffer = new TCHAR[length];
+    length = GetShortPathName(lpszPath, buffer, length);
+    if (length == 0) {
+        delete [] buffer;
+        _tprintf(TEXT("error"));
+        return;
+    }
+    _tprintf(TEXT("long name = %s short name = %s"), lpszPath, buffer);
+    delete [] buffer;
+}
+
 class MyClass :public CObject {
     DECLARE_DYNAMIC(MyClass)
     DECLARE_DYNCREATE(MyClass)
