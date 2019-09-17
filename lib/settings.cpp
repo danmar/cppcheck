@@ -45,6 +45,7 @@ Settings::Settings()
       experimental(false),
       force(false),
       inconclusive(false),
+      verification(false),
       inlineSuppressions(false),
       jobs(1),
       jointSuppressionReport(false),

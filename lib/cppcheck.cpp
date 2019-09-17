@@ -32,6 +32,8 @@
 #include "tokenlist.h"
 #include "version.h"
 
+#include "exprengine.h"
+
 #define PICOJSON_USE_INT64
 #include <picojson.h>
 #include <simplecpp.h>
@@ -723,6 +725,11 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
 
         Timer timerRunChecks(check->name() + "::runChecks", mSettings.showtime, &S_timerResults);
         check->runChecks(&tokenizer, &mSettings, this);
+    }
+
+    // Verification using ExprEngine..
+    if (mSettings.verification) {
+        ExprEngine::runChecks(this, &tokenizer, &mSettings);
     }
 
     // Analyse the tokens..
