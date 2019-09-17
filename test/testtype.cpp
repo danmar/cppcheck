@@ -143,6 +143,26 @@ private:
               "    UINFO(x << 1234);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #8885
+        check("int f(int k, int rm) {\n"
+              "  if (k == 32)\n"
+              "    return 0;\n"
+              "  if (k > 32)\n"
+              "    return 0;\n"
+              "  return rm>> k;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(int k, int rm) {\n"
+              "  if (k == 0 || k == 32)\n"
+              "    return 0;\n"
+              "  else if (k > 32)\n"
+              "    return 0;\n"
+              "  else\n"
+              "    return rm>> k;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkIntegerOverflow() {
