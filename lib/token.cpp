@@ -1605,6 +1605,10 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     out << ",";
                 if (value.isImpossible())
                     out << "!";
+                if (value.bound == ValueFlow::Value::Bound::Lower)
+                    out << ">";
+                if (value.bound == ValueFlow::Value::Bound::Upper)
+                    out << "<";
                 switch (value.valueType) {
                 case ValueFlow::Value::INT:
                     if (tok->valueType() && tok->valueType()->sign == ValueType::UNSIGNED)
@@ -1807,9 +1811,9 @@ static bool removeContradiction(std::list<ValueFlow::Value>& values)
         if (x.isNonValue())
             continue;
         for(ValueFlow::Value& y:values) {
-            if (x == y)
+            if (y.isNonValue())
                 continue;
-            if (x.isNonValue())
+            if (x == y)
                 continue;
             if (x.valueType != y.valueType)
                 continue;
@@ -1834,6 +1838,31 @@ static bool removeContradiction(std::list<ValueFlow::Value>& values)
     return result;
 }
 
+static void removeOverlaps(std::list<ValueFlow::Value>& values)
+{
+    for(ValueFlow::Value& x:values) {
+        if (x.isNonValue())
+            continue;
+        values.remove_if([&](ValueFlow::Value& y) {
+            if (y.isNonValue())
+                return false;
+            if (&x == &y)
+                return false;
+            if (x.valueType != y.valueType)
+                return false;
+            if (x.valueKind != y.valueKind)
+                return false;
+            // TODO: Remove points coverd in a lower or upper bound
+            // TODO: Remove lower or upper bound already covered by a lower and upper bound
+            if (!x.equalValue(y))
+                return false;
+            if (x.bound != y.bound)
+                return false;
+            return true;
+        });
+    }
+}
+
 // Removing contradictions is an NP-hard problem. Instead we run multiple
 // passes to try to catch most contradictions
 static void removeContradictions(std::list<ValueFlow::Value>& values)
@@ -1841,6 +1870,7 @@ static void removeContradictions(std::list<ValueFlow::Value>& values)
     for(int i=0;i<4;i++) {
         if (!removeContradiction(values))
             return;
+        removeOverlaps(values);
     }
 }
 
