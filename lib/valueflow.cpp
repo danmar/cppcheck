@@ -668,6 +668,8 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
 
     // cast..
     if (const Token *castType = getCastTypeStartToken(parent)) {
+        if (astIsPointer(tok) && value.valueType == ValueFlow::Value::INT && Token::Match(parent->astOperand1(), "dynamic_cast"))
+            return;
         const ValueType &valueType = ValueType::parseDecl(castType, settings);
         setTokenValueCast(parent, valueType, value, settings);
     }
