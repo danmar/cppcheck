@@ -189,6 +189,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--safe-functions") == 0)
                 mSettings->safeChecks.externalFunctions = mSettings->safeChecks.internalFunctions = true;
 
+            // Experimental: Verify
+            else if (std::strcmp(argv[i], "--verify") == 0)
+                mSettings->verification = true;
+
             // Enforce language (--language=, -x)
             else if (std::strncmp(argv[i], "--language=", 11) == 0 || std::strcmp(argv[i], "-x") == 0) {
                 std::string str;

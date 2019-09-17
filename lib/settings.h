@@ -187,6 +187,9 @@ public:
 
     SafeChecks safeChecks;
 
+    /** @brief Enable verification analysis */
+    bool verification;
+
     /** @brief check unknown function return values */
     std::set<std::string> checkUnknownFunctionReturn;
 
