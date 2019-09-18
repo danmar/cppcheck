@@ -190,6 +190,8 @@ void validCode()
     void * pAlloc1 = _aligned_malloc(100, 2);
     _aligned_free(pAlloc1);
 
+    ::PostMessage(nullptr, WM_QUIT, 0, 0);
+
     // Valid Library usage, no leaks, valid arguments
     HINSTANCE hInstLib = LoadLibrary(L"My.dll");
     FreeLibrary(hInstLib);
