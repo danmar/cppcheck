@@ -1561,8 +1561,8 @@ bool CheckIO::ArgumentInfo::isStdVectorOrString()
         return true;
     } else if (variableInfo->type() && !variableInfo->type()->derivedFrom.empty()) {
         const std::vector<Type::BaseInfo>& derivedFrom = variableInfo->type()->derivedFrom;
-        for (std::size_t i = 0, size = derivedFrom.size(); i < size; ++i) {
-            const Token* nameTok = derivedFrom[i].nameTok;
+        for (const Type::BaseInfo & i : derivedFrom) {
+            const Token* nameTok = i.nameTok;
             if (Token::Match(nameTok, "std :: vector|array <")) {
                 typeToken = nameTok->tokAt(4);
                 _template = true;
