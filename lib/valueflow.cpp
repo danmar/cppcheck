@@ -697,7 +697,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
 
     // cast..
     if (const Token *castType = getCastTypeStartToken(parent)) {
-        if (astIsPointer(tok) && value.valueType == ValueFlow::Value::INT && Token::Match(parent->astOperand1(), "dynamic_cast"))
+        if (astIsPointer(tok) && value.valueType == ValueFlow::Value::INT && Token::simpleMatch(parent->astOperand1(), "dynamic_cast"))
             return;
         const ValueType &valueType = ValueType::parseDecl(castType, settings);
         setTokenValueCast(parent, valueType, value, settings);
@@ -4352,7 +4352,7 @@ struct ValueFlowConditionHandler {
                         changeKnownToPossible(values);
                     }
                     // TODO: Values changed in noreturn blocks should not bail
-                    if (changeBlock >= 0 && !Token::Match(top->previous(), "while (")) {
+                    if (changeBlock >= 0 && !Token::simpleMatch(top->previous(), "while (")) {
                         if (settings->debugwarnings)
                             bailout(tokenlist,
                                     errorLogger,
