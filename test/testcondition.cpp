@@ -3240,6 +3240,13 @@ private:
               "  if (b) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // handleKnownValuesInLoop
+        check("bool g();\n"
+              "void f(bool x) {\n"
+              "    if (x) while(x) x = g();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueContainer() {

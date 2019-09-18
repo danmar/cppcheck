@@ -2201,11 +2201,7 @@ static bool handleKnownValuesInLoop(const Token                 *startToken,
     const bool isChanged = isVariableChanged(startToken, endToken, varid, globalvar, settings, true);
     if (!isChanged)
         return false;
-    for (std::list<ValueFlow::Value>::iterator it = values->begin(); it != values->end(); ++it) {
-        if (it->isKnown()) {
-            it->setPossible();
-        }
-    }
+    lowerToPossible(*values);
     return isChanged;
 }
 
