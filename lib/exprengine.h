@@ -39,7 +39,11 @@ class Token;
 typedef __int128_t   int128_t;
 #else
 typedef long long    int128_t;
+#ifdef _MSC_VER
+#pragma message(__FILE__ "(" _CRT_STRINGIZE(__LINE__) ")" ": warning: TODO No 128-bit integer type is available => Limited analysis of large integers...")
+#else
 #warning TODO No 128-bit integer type is available => Limited analysis of large integers
+#endif
 #endif
 
 namespace ExprEngine {
