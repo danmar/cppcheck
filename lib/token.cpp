@@ -869,9 +869,8 @@ const Token * Token::findClosingBracket() const
         } else if (Token::Match(closing, "}|]|)|;"))
             return nullptr;
         // we can make some guesses for template parameters
-        else if (closing->str() == "<" &&
-                 (!templateParameter || (closing->previous() && closing->previous()->isName() &&
-                                         templateParameters.find(closing->strAt(-1)) == templateParameters.end())))
+        else if (closing->str() == "<" && closing->previous() && closing->previous()->isName() &&
+                 (templateParameter ? templateParameters.find(closing->strAt(-1)) == templateParameters.end() : true))
             ++depth;
         else if (closing->str() == ">") {
             if (--depth == 0)

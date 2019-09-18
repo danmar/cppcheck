@@ -181,6 +181,7 @@ private:
         TEST_CASE(template141); // #9337
         TEST_CASE(template142); // #9338
         TEST_CASE(template143);
+        TEST_CASE(template144); // #9046
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -3476,6 +3477,28 @@ private:
                            "template < class T > "
                            "using A3 = enum B3 { b = 0 ; } ; "
                            "A3 < int > a3 ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template144() { // #9046
+        const char code[] = "namespace a {\n"
+                            "template <typename T, typename enable = void>\n"
+                            "struct promote {\n"
+                            "  using type = T;\n"
+                            "};\n"
+                            "template <typename T>\n"
+                            "struct promote <T, typename std::enable_if< std::is_integral<T>::value && sizeof(T) < sizeof(int) >::type>{\n"
+                            "};\n"
+                            "}";
+        const char exp[] = "namespace a { "
+                           "template < typename T , typename enable = void > "
+                           "struct promote { "
+                           "using type = T ; "
+                           "} ; "
+                           "template < typename T > "
+                           "struct promote < T , std :: enable_if < std :: is_integral < T > :: value && sizeof ( T ) < sizeof ( int ) > :: type > { "
+                           "} ; "
+                           "}";
         ASSERT_EQUALS(exp, tok(code));
     }
 
