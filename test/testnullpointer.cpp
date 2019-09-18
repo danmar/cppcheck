@@ -94,6 +94,7 @@ private:
         TEST_CASE(nullpointer_in_typeid);
         TEST_CASE(nullpointer_in_for_loop);
         TEST_CASE(nullpointerDelete);
+        TEST_CASE(nullpointerSubFunction);
         TEST_CASE(nullpointerExit);
         TEST_CASE(nullpointerStdString);
         TEST_CASE(nullpointerStdStream);
@@ -2138,6 +2139,16 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void nullpointerSubFunction() {
+        check("void g(int* x) { *x; }\n"
+              "void f(int* x) {\n"
+              "    if (x)\n"
+              "        g(x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+
     void nullpointerExit() {
         check("void f() {\n"
               "  K *k = getK();\n"
@@ -2945,6 +2956,13 @@ private:
             "void f() {\n"
             "  dostuff(0, 0);\n"
             "}");
+        ASSERT_EQUALS("", errout.str());
+
+        ctu("void g(int* x) { *x; }\n"
+            "void f(int* x) {\n"
+            "    if (x)\n"
+            "        g(x);\n"
+            "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };
