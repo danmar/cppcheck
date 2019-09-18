@@ -159,7 +159,7 @@ namespace ValueFlow {
         {
             if (bound == Bound::Lower)
                 visitValue(increment{});
-            if (bound == Bound::Upper)
+            else if (bound == Bound::Upper)
                 visitValue(decrement{});
         }
 
@@ -167,7 +167,7 @@ namespace ValueFlow {
         {
             if (bound == Bound::Lower)
                 bound = Bound::Upper;
-            if (bound == Bound::Upper)
+            else if (bound == Bound::Upper)
                 bound = Bound::Lower;
             decreaseBound();
         }

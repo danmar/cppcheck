@@ -302,7 +302,17 @@ static void setConditionalValues(const Token *tok,
 {
     if (Token::Match(tok, "==|!=|>=|<=")) {
         true_value = ValueFlow::Value{tok, value};
-        false_value = ValueFlow::Value{tok, value};
+        const char *greaterThan = ">=";
+        const char *lessThan = "<=";
+        if (invert)
+            std::swap(greaterThan, lessThan);
+        if (Token::simpleMatch(tok, greaterThan)) {
+            false_value = ValueFlow::Value{tok, value - 1};
+        } else if (Token::simpleMatch(tok, lessThan)) {
+            false_value = ValueFlow::Value{tok, value + 1};
+        } else {
+            false_value = ValueFlow::Value{tok, value};
+        }
     } else {
         const char *greaterThan = ">";
         const char *lessThan = "<";
@@ -4298,12 +4308,12 @@ struct ValueFlowConditionHandler {
                     std::list<ValueFlow::Value> elseValues;
 
                     if (!Token::Match(tok, "!=|%var%")) {
-                        thenValues = cond.true_values;
+                        thenValues.insert(thenValues.end(), cond.true_values.begin(), cond.true_values.end());
                         if (isConditionKnown(tok, false))
                             insertImpossible(elseValues, cond.false_values);
                     }
                     if (!Token::Match(tok, "==|!") && !Token::Match(tok->previous(), "%name% (")) {
-                        elseValues = cond.false_values;
+                        elseValues.insert(elseValues.end(), cond.false_values.begin(), cond.false_values.end());
                         if (isConditionKnown(tok, true))
                             insertImpossible(thenValues, cond.true_values);
                     }

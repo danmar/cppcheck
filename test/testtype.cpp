@@ -173,6 +173,13 @@ private:
               "    return rm>> k;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("static long long f(int x, long long y) {\n"
+              "    if (x >= 64)\n"
+              "        return 0;\n"
+              "    return -(y << (x-1));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkIntegerOverflow() {
