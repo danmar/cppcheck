@@ -432,6 +432,7 @@ def upload_info(package, info_output, server_address):
 def get_libraries():
     libraries = ['posix', 'gnu']
     library_includes = {'boost': ['<boost/'],
+                       # 'cairo': ['<cairo.h>'], <= enable after release of version 1.90
                        'cppunit': ['<cppunit/'],
                        'googletest': ['<gtest/gtest.h>'],
                        'gtk': ['<gtk/gtk.h>', '<glib.h>', '<glib/', '<gnome.h>'],
