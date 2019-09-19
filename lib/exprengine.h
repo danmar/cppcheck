@@ -21,6 +21,8 @@
 #define exprengineH
 //---------------------------------------------------------------------------
 
+#include "config.h"
+
 #include <functional>
 #include <map>
 #include <memory>
