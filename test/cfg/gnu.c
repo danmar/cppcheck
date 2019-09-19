@@ -137,6 +137,9 @@ void valid_code(int argInt1, va_list valist_arg)
     if (vasprintf(&pStr, "%d %d", valist_arg) != -1) {
         free(pStr);
     }
+
+    printf("%d", 0b010);
+    printf("%d", __extension__ 0b10001000);
 }
 
 void ignoreleak(void)
