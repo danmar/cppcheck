@@ -119,7 +119,7 @@ namespace {
 #else
 #define NOINLINE __attribute__((noinline))
 #endif
-		
+
         std::string NOINLINE dump() const {
             std::ostringstream ret;
             for (Memory::const_iterator mem = memory.cbegin(); mem != memory.cend(); ++mem) {
