@@ -3273,6 +3273,18 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Condition 'x!=1' is always true\n", errout.str());
+
+        // #9332
+        check("struct A { void* g(); };\n"
+              "void f() {\n"
+              "    A a;\n"
+              "    void* b = a.g();\n"
+              "    if (!b) return;\n"
+              "    void* c = a.g();\n"
+              "    if (!c) return;\n"
+              "    bool compare = c == b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueContainer() {
