@@ -114,19 +114,6 @@ namespace {
                 memory[varId] = value;
             return value;
         }
-#ifdef _MSC_VER
-#define NOINLINE __declspec(noinline)
-#else
-#define NOINLINE __attribute__((noinline))
-#endif
-
-        std::string NOINLINE dump() const {
-            std::ostringstream ret;
-            for (Memory::const_iterator mem = memory.cbegin(); mem != memory.cend(); ++mem) {
-                ret << mem->first << "=" << mem->second->name << " " << mem->second->getRange() << "\n";
-            }
-            return ret.str();
-        }
     };
 }
 
