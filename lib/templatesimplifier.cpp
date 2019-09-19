@@ -3641,8 +3641,8 @@ void TemplateSimplifier::simplifyTemplates(
         }
 
         // remove explicit instantiations
-        for (size_t j = 0; j < mExplicitInstantiationsToDelete.size(); ++j) {
-            Token * start = mExplicitInstantiationsToDelete[j].token();
+        for (TokenAndName & j : mExplicitInstantiationsToDelete) {
+            Token * start = j.token();
             if (start) {
                 Token * end = start->next();
                 while (end && end->str() != ";")

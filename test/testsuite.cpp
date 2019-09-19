@@ -347,8 +347,8 @@ std::size_t TestFixture::runTests(const options& args)
 
     if (!missingLibs.empty()) {
         std::cerr << "Missing libraries: ";
-        for (std::set<std::string>::const_iterator i = missingLibs.begin(); i != missingLibs.end(); ++i)
-            std::cerr << *i << "  ";
+        for (const std::string & missingLib : missingLibs)
+            std::cerr << missingLib << "  ";
         std::cerr << std::endl << std::endl;
     }
     std::cerr.flush();

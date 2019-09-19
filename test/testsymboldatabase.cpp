@@ -96,9 +96,9 @@ private:
                 currScope = currScope->nestedIn;
         }
         while (currScope) {
-            for (std::list<Function>::const_iterator i = currScope->functionList.begin(); i != currScope->functionList.end(); ++i) {
-                if (i->tokenDef->str() == str)
-                    return &*i;
+            for (const Function & i : currScope->functionList) {
+                if (i.tokenDef->str() == str)
+                    return &i;
             }
             currScope = currScope->nestedIn;
         }
@@ -1483,8 +1483,8 @@ private:
 
         if (db) {
             bool seen_something = false;
-            for (std::list<Scope>::const_iterator scope = db->scopeList.begin(); scope != db->scopeList.end(); ++scope) {
-                for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+            for (const Scope & scope : db->scopeList) {
+                for (std::list<Function>::const_iterator func = scope.functionList.begin(); func != scope.functionList.end(); ++func) {
                     ASSERT_EQUALS("Sub", func->token->str());
                     ASSERT_EQUALS(true, func->hasBody());
                     ASSERT_EQUALS(Function::eConstructor, func->type);
@@ -2256,9 +2256,9 @@ private:
 
         // Locate the scope for the class..
         const Scope *scope = nullptr;
-        for (std::list<Scope>::const_iterator it = db->scopeList.begin(); it != db->scopeList.end(); ++it) {
-            if (it->isClassOrStruct()) {
-                scope = &(*it);
+        for (const Scope & it : db->scopeList) {
+            if (it.isClassOrStruct()) {
+                scope = &it;
                 break;
             }
         }
@@ -2290,9 +2290,9 @@ private:
 
         // Locate the scope for the class..
         const Scope *scope = nullptr;
-        for (std::list<Scope>::const_iterator it = db->scopeList.begin(); it != db->scopeList.end(); ++it) {
-            if (it->isClassOrStruct()) {
-                scope = &(*it);
+        for (const Scope & it : db->scopeList) {
+            if (it.isClassOrStruct()) {
+                scope = &it;
                 break;
             }
         }
@@ -2580,9 +2580,9 @@ private:
 
         // Find the scope for the Fred struct..
         const Scope *fredScope = nullptr;
-        for (std::list<Scope>::const_iterator scope = db->scopeList.begin(); scope != db->scopeList.end(); ++scope) {
-            if (scope->isClassOrStruct() && scope->className == "Fred")
-                fredScope = &(*scope);
+        for (const Scope & scope : db->scopeList) {
+            if (scope.isClassOrStruct() && scope.className == "Fred")
+                fredScope = &scope;
         }
         ASSERT(fredScope != nullptr);
         if (fredScope == nullptr)
@@ -2594,11 +2594,11 @@ private:
         // Get linenumbers where the bodies for the constructor and destructor are..
         unsigned int constructor = 0;
         unsigned int destructor = 0;
-        for (std::list<Function>::const_iterator it = fredScope->functionList.begin(); it != fredScope->functionList.end(); ++it) {
-            if (it->type == Function::eConstructor)
-                constructor = it->token->linenr();  // line number for constructor body
-            if (it->type == Function::eDestructor)
-                destructor = it->token->linenr();  // line number for destructor body
+        for (const Function & it : fredScope->functionList) {
+            if (it.type == Function::eConstructor)
+                constructor = it.token->linenr();  // line number for constructor body
+            if (it.type == Function::eDestructor)
+                destructor = it.token->linenr();  // line number for destructor body
         }
 
         // The body for the constructor is located at line 5..

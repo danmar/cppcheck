@@ -563,23 +563,23 @@ void CheckClass::initVar(nonneg int varid, const Scope *scope, std::vector<Usage
 
 void CheckClass::assignAllVar(std::vector<Usage> &usage)
 {
-    for (int i = 0; i < usage.size(); ++i)
-        usage[i].assign = true;
+    for (Usage & i : usage)
+        i.assign = true;
 }
 
 void CheckClass::clearAllVar(std::vector<Usage> &usage)
 {
-    for (int i = 0; i < usage.size(); ++i) {
-        usage[i].assign = false;
-        usage[i].init = false;
+    for (Usage & i : usage) {
+        i.assign = false;
+        i.init = false;
     }
 }
 
 bool CheckClass::isBaseClassFunc(const Token *tok, const Scope *scope)
 {
     // Iterate through each base class...
-    for (int i = 0; i < scope->definedType->derivedFrom.size(); ++i) {
-        const Type *derivedFrom = scope->definedType->derivedFrom[i].type;
+    for (const Type::BaseInfo & i : scope->definedType->derivedFrom) {
+        const Type *derivedFrom = i.type;
 
         // Check if base class exists in database
         if (derivedFrom && derivedFrom->classScope) {
@@ -1222,8 +1222,8 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
     const bool printPortability = mSettings->isEnabled(Settings::PORTABILITY);
 
     // recursively check all parent classes
-    for (int i = 0; i < type->definedType->derivedFrom.size(); i++) {
-        const Type* derivedFrom = type->definedType->derivedFrom[i].type;
+    for (const Type::BaseInfo & i : type->definedType->derivedFrom) {
+        const Type* derivedFrom = i.type;
         if (derivedFrom && derivedFrom->classScope)
             checkMemsetType(start, tok, derivedFrom->classScope, allocation, parsedTypes);
     }
@@ -1680,10 +1680,10 @@ void CheckClass::virtualDestructor()
         const Token *derivedClass = derived->next();
 
         // Iterate through each base class...
-        for (int j = 0; j < scope->definedType->derivedFrom.size(); ++j) {
+        for (const Type::BaseInfo & j : scope->definedType->derivedFrom) {
             // Check if base class is public and exists in database
-            if (scope->definedType->derivedFrom[j].access != AccessControl::Private && scope->definedType->derivedFrom[j].type) {
-                const Type *derivedFrom = scope->definedType->derivedFrom[j].type;
+            if (j.access != AccessControl::Private && j.type) {
+                const Type *derivedFrom = j.type;
                 const Scope *derivedFromScope = derivedFrom->classScope;
                 if (!derivedFromScope)
                     continue;
@@ -1937,9 +1937,9 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
     // not found in this class
     if (!scope->definedType->derivedFrom.empty()) {
         // check each base class
-        for (int i = 0; i < scope->definedType->derivedFrom.size(); ++i) {
+        for (const Type::BaseInfo & i : scope->definedType->derivedFrom) {
             // find the base class
-            const Type *derivedFrom = scope->definedType->derivedFrom[i].type;
+            const Type *derivedFrom = i.type;
 
             // find the function in the base class
             if (derivedFrom && derivedFrom->classScope) {
@@ -1976,9 +1976,9 @@ bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok) const
     // not found in this class
     if (!scope->definedType->derivedFrom.empty()) {
         // check each base class
-        for (int i = 0; i < scope->definedType->derivedFrom.size(); ++i) {
+        for (const Type::BaseInfo & i : scope->definedType->derivedFrom) {
             // find the base class
-            const Type *derivedFrom = scope->definedType->derivedFrom[i].type;
+            const Type *derivedFrom = i.type;
 
             // find the function in the base class
             if (derivedFrom && derivedFrom->classScope) {
@@ -2001,9 +2001,9 @@ bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok) const
     // not found in this class
     if (!scope->definedType->derivedFrom.empty()) {
         // check each base class
-        for (int i = 0; i < scope->definedType->derivedFrom.size(); ++i) {
+        for (const Type::BaseInfo & i : scope->definedType->derivedFrom) {
             // find the base class
-            const Type *derivedFrom = scope->definedType->derivedFrom[i].type;
+            const Type *derivedFrom = i.type;
 
             // find the function in the base class
             if (derivedFrom && derivedFrom->classScope) {
