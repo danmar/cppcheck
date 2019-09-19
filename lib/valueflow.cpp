@@ -2958,6 +2958,13 @@ static bool valueFlowForward(Token * const               startToken,
                 return false;
             }
 
+            // bailout if its stream..
+            if (isLikelyStream(tokenlist->isCPP(), tok2)) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok2, "Stream used: " + tok2->str());
+                return false;
+            }
+
             // assigned by subfunction?
             for (int i:getIndirections(values)) {
                 bool inconclusive = false;

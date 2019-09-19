@@ -3247,6 +3247,16 @@ private:
               "    if (x) while(x) x = g();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // isLikelyStream
+        check("void f(std::istringstream& iss) {\n"
+              "   std::string x;\n"
+              "   while (iss) {\n"
+              "       iss >> x;\n"
+              "       if (!iss) break;\n"
+              "   }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueContainer() {
