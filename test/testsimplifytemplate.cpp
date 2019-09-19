@@ -182,7 +182,9 @@ private:
         TEST_CASE(template142); // #9338
         TEST_CASE(template143);
         TEST_CASE(template144); // #9046
-        TEST_CASE(template145);
+        TEST_CASE(template145); // syntax error
+        TEST_CASE(template146); // syntax error
+        TEST_CASE(template147); // syntax error
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -3503,9 +3505,29 @@ private:
         ASSERT_EQUALS(exp, tok(code));
     }
 
-    void template145() {
+    void template145() { // syntax error
         const char code[] = "template<template<typename, Ts = 0> class ...Cs, Cs<Ts> ...Vs> struct B { };";
         const char exp[] = "template < template < typename , Ts = 0 > class ... Cs , Cs < Ts > ... Vs > struct B { } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template146() { // syntax error
+        const char code[] = "template<class T> struct C { };\n"
+                            "template<class T, template<class TT_T0, template<class TT_T1> class TT_TT> class TT, class U = TT<int, C> >\n"
+                            "struct S {\n"
+                            "  void foo(TT<T, C>);\n"
+                            "};";
+        const char exp[] = "template < class T > struct C { } ; "
+                           "template < class T , template < class TT_T0 , template < class TT_T1 > class TT_TT > class TT , class U = TT < int , C > > "
+                           "struct S { "
+                           "void foo ( TT < T , C > ) ; "
+                           "} ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template147() { // syntax error
+        const char code[] = "template <template <typename> class C, typename X, C<X>*> struct b { };";
+        const char exp[] = "template < template < typename > class C , typename X , C < X > * > struct b { } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 

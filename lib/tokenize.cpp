@@ -9409,7 +9409,8 @@ void Tokenizer::findGarbageCode() const
             if (!tok)
                 syntaxError(tok1);
             if (!Token::Match(tok, ">|>> ::|...| %name%") &&
-                !Token::Match(tok, ">|>> [ [ %name%"))
+                !Token::Match(tok, ">|>> [ [ %name%") &&
+                !Token::Match(tok, "> >|*"))
                 syntaxError(tok->next() ? tok->next() : tok1);
         }
     }
