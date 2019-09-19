@@ -9408,7 +9408,7 @@ void Tokenizer::findGarbageCode() const
             tok = tok->next()->findClosingBracket();
             if (!tok)
                 syntaxError(tok1);
-            if (!Token::Match(tok, ">|>> ::| %name%") &&
+            if (!Token::Match(tok, ">|>> ::|...| %name%") &&
                 !Token::Match(tok, ">|>> [ [ %name%"))
                 syntaxError(tok->next() ? tok->next() : tok1);
         }

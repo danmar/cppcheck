@@ -182,6 +182,7 @@ private:
         TEST_CASE(template142); // #9338
         TEST_CASE(template143);
         TEST_CASE(template144); // #9046
+        TEST_CASE(template145);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -3499,6 +3500,12 @@ private:
                            "struct promote < T , std :: enable_if < std :: is_integral < T > :: value && sizeof ( T ) < sizeof ( int ) > :: type > { "
                            "} ; "
                            "}";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template145() {
+        const char code[] = "template<template<typename, Ts = 0> class ...Cs, Cs<Ts> ...Vs> struct B { };";
+        const char exp[] = "template < template < typename , Ts = 0 > class ... Cs , Cs < Ts > ... Vs > struct B { } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
