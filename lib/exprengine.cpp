@@ -17,6 +17,7 @@
  */
 
 #include "exprengine.h"
+#include "astutils.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "tokenize.h"
@@ -51,29 +52,71 @@ std::string ExprEngine::str(int128_t value)
 static ExprEngine::ValuePtr getValueRangeFromValueType(const std::string &name, const ValueType *vt, const cppcheck::Platform &platform);
 
 namespace {
+    class TrackExecution {
+    public:
+        TrackExecution() : dataIndex(0) {}
+        std::map<const Token *, std::vector<std::string>> map;
+        int getNewDataIndex() {
+            return dataIndex++;
+        }
+
+        void newValue(const Token *tok, ExprEngine::ValuePtr value) {
+            if (!tok)
+                return;
+            if (!value)
+                map[tok].push_back(tok->expressionString() + "=TODO_NO_VALUE");
+            /*
+                        else if (value->name[0] == '$')
+                            map[tok].push_back(tok->expressionString() + "=(" + value->name + "," + value->getRange() + ")");
+                        else
+                            map[tok].push_back(tok->expressionString() + "=" + value->name);
+            */
+        }
+
+        void state(const Token *tok, const std::string &s) {
+            map[tok].push_back(s);
+        }
+
+        void print() {
+            std::set<std::pair<int,int>> locations;
+            for (auto it : map) {
+                locations.emplace(it.first->linenr(), it.first->column());
+            }
+            for (const std::pair<int,int> &loc : locations) {
+                int lineNumber = loc.first;
+                int column = loc.second;
+                for (auto &it : map) {
+                    const Token *tok = it.first;
+                    if (lineNumber != tok->linenr())
+                        continue;
+                    const std::vector<std::string> &dumps = it.second;
+                    for (const std::string &dump : dumps)
+                        std::cout << lineNumber << ":" << column << ": " << dump << "\n";
+                }
+            }
+        }
+    private:
+        int dataIndex;
+    };
+
     class Data {
     public:
-        Data(int *symbolValueIndex, const Tokenizer *tokenizer, const Settings *settings, const std::vector<ExprEngine::Callback> &callbacks)
+        Data(int *symbolValueIndex, const Tokenizer *tokenizer, const Settings *settings, const std::vector<ExprEngine::Callback> &callbacks, TrackExecution *trackExecution)
             : symbolValueIndex(symbolValueIndex)
             , tokenizer(tokenizer)
             , settings(settings)
-            , callbacks(callbacks) {}
+            , callbacks(callbacks)
+            , mTrackExecution(trackExecution)
+            , dataIndex(trackExecution->getNewDataIndex()) {}
         typedef std::map<nonneg int, std::shared_ptr<ExprEngine::Value>> Memory;
         Memory memory;
-        int *symbolValueIndex;
-        const Tokenizer *tokenizer;
-        const Settings *settings;
+        int * const symbolValueIndex;
+        const Tokenizer * const tokenizer;
+        const Settings * const settings;
         const std::vector<ExprEngine::Callback> &callbacks;
 
-        void printMemory() const {
-            const SymbolDatabase *symbolDatabase = tokenizer->getSymbolDatabase();
-            for (Memory::const_iterator mem = memory.cbegin(); mem != memory.cend(); ++mem) {
-                std::cout << symbolDatabase->getVariableFromVarId(mem->first)->name() << " name:" << mem->second->name << " range:" << mem->second->getRange() << "\n";
-            }
-        }
-
         Data getData(const Token *cond, bool trueData) {
-            Data ret(symbolValueIndex, tokenizer, settings, callbacks);
+            Data ret(symbolValueIndex, tokenizer, settings, callbacks, mTrackExecution);
             for (Memory::const_iterator mem = memory.cbegin(); mem != memory.cend(); ++mem) {
                 ret.memory[mem->first] = mem->second;
 
@@ -81,10 +124,15 @@ namespace {
                     const int128_t rhsValue = MathLib::toLongNumber(cond->astOperand2()->str());
                     if (auto intRange = std::dynamic_pointer_cast<ExprEngine::IntRange>(mem->second)) {
                         if (cond->str() == ">") {
-                            if (trueData && intRange->minValue <= rhsValue)
-                                ret.memory[mem->first] = std::make_shared<ExprEngine::IntRange>(getNewSymbolName(), rhsValue + 1, intRange->maxValue);
-                            else if (!trueData && intRange->maxValue > rhsValue)
-                                ret.memory[mem->first] = std::make_shared<ExprEngine::IntRange>(getNewSymbolName(), intRange->minValue, rhsValue);
+                            if (trueData && intRange->minValue <= rhsValue) {
+                                auto val = std::make_shared<ExprEngine::IntRange>(getNewSymbolName(), rhsValue + 1, intRange->maxValue);
+                                ret.trackAssignment(cond, val);
+                                ret.memory[mem->first] = val;
+                            } else if (!trueData && intRange->maxValue > rhsValue) {
+                                auto val = std::make_shared<ExprEngine::IntRange>(getNewSymbolName(), intRange->minValue, rhsValue);
+                                ret.trackAssignment(cond, val);
+                                ret.memory[mem->first] = val;
+                            }
                         }
                     }
                 }
@@ -103,17 +151,45 @@ namespace {
             return std::shared_ptr<ExprEngine::ArrayValue>();
         }
 
-        ExprEngine::ValuePtr getValue(unsigned int varId, const ValueType *valueType) {
+        ExprEngine::ValuePtr getValue(unsigned int varId, const ValueType *valueType, const Token *tok) {
             const Memory::const_iterator it = memory.find(varId);
             if (it != memory.end())
                 return it->second;
             if (!valueType)
                 return ExprEngine::ValuePtr();
             ExprEngine::ValuePtr value = getValueRangeFromValueType(getNewSymbolName(), valueType, *settings);
-            if (value)
+            if (value) {
+                if (tok)
+                    trackAssignment(tok, value);
                 memory[varId] = value;
+            }
             return value;
         }
+
+        void trackAssignment(const Token *tok, ExprEngine::ValuePtr value) {
+            return mTrackExecution->newValue(tok, value);
+        }
+
+        void trackProgramState(const Token *tok) {
+            if (memory.empty())
+                return;
+            const SymbolDatabase * const symbolDatabase = tokenizer->getSymbolDatabase();
+            std::ostringstream s;
+            s << "{"; // << dataIndex << ":";
+            for (auto mem : memory) {
+                ExprEngine::ValuePtr value = mem.second;
+                s << " " << symbolDatabase->getVariableFromVarId(mem.first)->name() << "=";
+                if (value->name[0] == '$')
+                    s << "(" << value->name << "," << value->getRange() << ")";
+                else
+                    s << value->name;
+            }
+            s << "}";
+            mTrackExecution->state(tok, s.str());
+        }
+    private:
+        TrackExecution * const mTrackExecution;
+        const int dataIndex;
     };
 }
 
@@ -290,6 +366,7 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
     call(data.callbacks, tok, rhsValue);
 
     const Token *lhsToken = tok->astOperand1();
+    data.trackAssignment(lhsToken, rhsValue);
     if (lhsToken->varId() > 0) {
         data.memory[lhsToken->varId()] = rhsValue;
     } else if (lhsToken->str() == "[") {
@@ -311,7 +388,8 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
 
 static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
 {
-    (void)executeExpression(tok->astOperand2(), data);
+    for (const Token *argtok : getArguments(tok))
+        (void)executeExpression(argtok, data);
     auto val = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
     call(data.callbacks, tok, val);
     return val;
@@ -333,7 +411,7 @@ static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
 {
     if (!tok->astOperand1() || !tok->astOperand1()->varId())
         return ExprEngine::ValuePtr();
-    std::shared_ptr<ExprEngine::StructValue> structValue = std::dynamic_pointer_cast<ExprEngine::StructValue>(data.getValue(tok->astOperand1()->varId(), nullptr));
+    std::shared_ptr<ExprEngine::StructValue> structValue = std::dynamic_pointer_cast<ExprEngine::StructValue>(data.getValue(tok->astOperand1()->varId(), nullptr, nullptr));
     if (!structValue)
         return ExprEngine::ValuePtr();
     return structValue->getValueOfMember(tok->astOperand2()->str());
@@ -364,7 +442,7 @@ static ExprEngine::ValuePtr executeDeref(const Token *tok, Data &data)
     if (pval) {
         auto addressOf = std::dynamic_pointer_cast<ExprEngine::AddressOfValue>(pval);
         if (addressOf) {
-            auto val = data.getValue(addressOf->varId, tok->valueType());
+            auto val = data.getValue(addressOf->varId, tok->valueType(), tok);
             call(data.callbacks, tok, val);
             return val;
         }
@@ -380,7 +458,7 @@ static ExprEngine::ValuePtr executeDeref(const Token *tok, Data &data)
 
 static ExprEngine::ValuePtr executeVariable(const Token *tok, Data &data)
 {
-    auto val = data.getValue(tok->varId(), tok->valueType());
+    auto val = data.getValue(tok->varId(), tok->valueType(), tok);
     call(data.callbacks, tok, val);
     return val;
 }
@@ -429,6 +507,8 @@ static ExprEngine::ValuePtr executeExpression(const Token *tok, Data &data)
 static void execute(const Token *start, const Token *end, Data &data)
 {
     for (const Token *tok = start; tok != end; tok = tok->next()) {
+        if (tok->str() == ";")
+            data.trackProgramState(tok);
         if (tok->variable() && tok->variable()->nameToken() == tok) {
             if (tok->variable()->isArray() && tok->variable()->dimensions().size() == 1 && tok->variable()->dimensions()[0].known) {
                 data.memory[tok->varId()] = std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), tok->variable()->dimension(0));
@@ -504,16 +584,23 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
         return;
 
     int symbolValueIndex = 0;
-    Data data(&symbolValueIndex, tokenizer, settings, callbacks);
-    data.printMemory();
+    TrackExecution trackExecution;
+    Data data(&symbolValueIndex, tokenizer, settings, callbacks, &trackExecution);
 
     for (const Variable &arg : function->argumentList) {
         ValuePtr val = createVariableValue(arg, data);
-        if (val)
+        if (val) {
+            data.trackAssignment(arg.nameToken(), val);
             data.memory[arg.declarationId()] = val;
+        }
     }
 
     execute(functionScope->bodyStart, functionScope->bodyEnd, data);
+
+    if (settings->verification) {
+        // TODO generate better output!!
+        trackExecution.print();
+    }
 }
 
 void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings)
