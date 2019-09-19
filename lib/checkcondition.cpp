@@ -223,6 +223,8 @@ bool CheckCondition::assignIfParseScope(const Token * const assignTok,
 
 void CheckCondition::assignIfError(const Token *tok1, const Token *tok2, const std::string &condition, bool result)
 {
+    if (diag(tok2->tokAt(2)))
+        return;
     std::list<const Token *> locations = { tok1, tok2 };
     reportError(locations,
                 Severity::style,
@@ -520,6 +522,8 @@ void CheckCondition::multiCondition()
 
 void CheckCondition::overlappingElseIfConditionError(const Token *tok, nonneg int line1)
 {
+    if (diag(tok))
+        return;
     std::ostringstream errmsg;
     errmsg << "Expression is always false because 'else if' condition matches previous condition at line "
            << line1 << ".";
@@ -529,6 +533,8 @@ void CheckCondition::overlappingElseIfConditionError(const Token *tok, nonneg in
 
 void CheckCondition::oppositeElseIfConditionError(const Token *ifCond, const Token *elseIfCond, ErrorPath errorPath)
 {
+    if (diag(ifCond) & diag(elseIfCond))
+        return;
     std::ostringstream errmsg;
     errmsg << "Expression is always true because 'else if' condition is opposite to previous condition at line "
            << ifCond->linenr() << ".";

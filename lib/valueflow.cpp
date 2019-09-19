@@ -2136,8 +2136,9 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symbo
                     val2.varId = varid;
                 }
             }
+            Token * startTok = tok->astParent() ? tok->astParent() : tok->previous();
             valueFlowReverse(tokenlist,
-                             tok,
+                             startTok,
                              vartok,
                              val,
                              val2,
@@ -4670,9 +4671,9 @@ static bool isInBounds(const ValueFlow::Value& value, MathLib::bigint x)
 {
     if (value.intvalue == x)
         return true;
-    if (value.bound == ValueFlow::Value::Bound::Lower && value.intvalue < x)
+    if (value.bound == ValueFlow::Value::Bound::Lower && value.intvalue > x)
         return false;
-    if (value.bound == ValueFlow::Value::Bound::Upper && value.intvalue > x)
+    if (value.bound == ValueFlow::Value::Bound::Upper && value.intvalue < x)
         return false;
     // Checking for equality is not necessary since we already know the value is not equal
     if (value.bound == ValueFlow::Value::Bound::Point)
@@ -4721,6 +4722,27 @@ static void valueFlowInferCondition(TokenList *tokenlist,
                 continue;
             ValueFlow::Value value = *result;
             value.intvalue = 1;
+            value.setKnown();
+            setTokenValue(tok, value, settings);
+        } else if (Token::Match(tok, "==|!=")) {
+            MathLib::bigint val = 0;
+            const Token* varTok = nullptr;
+            if (tok->astOperand1()->hasKnownIntValue()) {
+                val = tok->astOperand1()->values().front().intvalue;
+                varTok = tok->astOperand2();
+            } else if (tok->astOperand2()->hasKnownIntValue()) {
+                val = tok->astOperand2()->values().front().intvalue;
+                varTok = tok->astOperand1();
+            }
+            if (!varTok)
+                continue;
+            if (varTok->hasKnownIntValue())
+                continue;
+            const ValueFlow::Value* result = proveNotEqual(varTok->values(), val);
+            if (!result)
+                continue;
+            ValueFlow::Value value = *result;
+            value.intvalue = tok->str() == "!=";
             value.setKnown();
             setTokenValue(tok, value, settings);
         }

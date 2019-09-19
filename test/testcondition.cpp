@@ -244,7 +244,7 @@ private:
               "        while (y != 0) g(y);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (style) Condition 'y!=0' is always true\n[test.cpp:5] -> [test.cpp:6]: (style) Mismatching assignment and comparison, comparison 'y!=0' is always true.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:6]: (style) Mismatching assignment and comparison, comparison 'y!=0' is always true.\n", errout.str());
 
         check("void g(int &x);\n"
               "void f(int x) {\n"
@@ -538,14 +538,14 @@ private:
               "    else { if (a == 2) { b = 2; }\n"
               "    else { if (a == 1) { b = 3; } } }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Condition 'a==1' is always false\n", errout.str());
 
         check("void f(int a, int &b) {\n"
               "    if (a == 1) { b = 1; }\n"
               "    else { if (a == 2) { b = 2; }\n"
               "    else { if (a == 2) { b = 3; } } }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Expression is always false because 'else if' condition matches previous condition at line 3.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Condition 'a==2' is always false\n", errout.str());
 
         check("void f(int a, int &b) {\n"
               "    if (a++) { b = 1; }\n"
@@ -2062,10 +2062,10 @@ private:
         check("void f(int x) {\n"
               "\n"
               "  if (x<4) {\n"
-              "    if (x!=5) {}\n" // <- TODO
+              "    if (x!=5) {}\n"
               "  }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Condition 'x!=5' is always true\n", errout.str());
         check("void f(int x) {\n"
               "\n"
               "  if (x<4) {\n"
@@ -3257,6 +3257,22 @@ private:
               "   }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (x > 5) {\n"
+              "        x++;\n"
+              "        if (x == 1) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Condition 'x==1' is always false\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (x > 5) {\n"
+              "        x++;\n"
+              "        if (x != 1) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Condition 'x!=1' is always true\n", errout.str());
     }
 
     void alwaysTrueContainer() {
