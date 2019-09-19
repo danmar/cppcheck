@@ -21,6 +21,8 @@
 #define exprengineH
 //---------------------------------------------------------------------------
 
+#include "config.h"
+
 #include <functional>
 #include <map>
 #include <memory>
@@ -209,7 +211,7 @@ namespace ExprEngine {
     typedef std::function<void(const Token *, const ExprEngine::Value &)> Callback;
 
     /** Execute all functions */
-    void executeAllFunctions(const Tokenizer *tokenizer, const Settings *settings, const std::vector<Callback> &callbacks);
+    void CPPCHECKLIB executeAllFunctions(const Tokenizer *tokenizer, const Settings *settings, const std::vector<Callback> &callbacks);
     void executeFunction(const Scope *functionScope, const Tokenizer *tokenizer, const Settings *settings, const std::vector<Callback> &callbacks);
 
     void runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings);
