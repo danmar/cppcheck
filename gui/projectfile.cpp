@@ -168,10 +168,10 @@ bool ProjectFile::read(const QString &filename)
                 mClangTidy = tools.contains(CLANG_TIDY);
             }
 
-            if (insideProject && xmlReader.name() == CppcheckXml::TagsElementName)
+            if (xmlReader.name() == CppcheckXml::TagsElementName)
                 readStringList(mTags, xmlReader, CppcheckXml::TagElementName);
 
-            if (insideProject && xmlReader.name() == CppcheckXml::MaxCtuDepthElementName)
+            if (xmlReader.name() == CppcheckXml::MaxCtuDepthElementName)
                 mMaxCtuDepth = readInt(xmlReader, mMaxCtuDepth);
 
             break;
