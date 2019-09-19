@@ -223,7 +223,7 @@ bool CheckCondition::assignIfParseScope(const Token * const assignTok,
 
 void CheckCondition::assignIfError(const Token *tok1, const Token *tok2, const std::string &condition, bool result)
 {
-    if (diag(tok2->tokAt(2)))
+    if (tok2 && diag(tok2->tokAt(2)))
         return;
     std::list<const Token *> locations = { tok1, tok2 };
     reportError(locations,
