@@ -330,16 +330,27 @@ static void setConditionalValues(const Token *tok,
     setValueBound(false_value, tok, !invert);
 }
 
+static bool isSaturated(MathLib::bigint value)
+{
+    return value == std::numeric_limits<MathLib::bigint>::max() || value == std::numeric_limits<MathLib::bigint>::min();
+}
+
 static const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value)
 {
     if (!tok->astOperand1() || !tok->astOperand2())
         return nullptr;
     if (Token::Match(tok, "%comp%")) {
         if (tok->astOperand1()->hasKnownIntValue()) {
-            setConditionalValues(tok, true, tok->astOperand1()->values().front().intvalue, true_value, false_value);
+            MathLib::bigint value = tok->astOperand1()->values().front().intvalue;
+            if (isSaturated(value))
+                return nullptr;
+            setConditionalValues(tok, true, value, true_value, false_value);
             return tok->astOperand2();
         } else if (tok->astOperand2()->hasKnownIntValue()) {
-            setConditionalValues(tok, false, tok->astOperand2()->values().front().intvalue, true_value, false_value);
+            MathLib::bigint value = tok->astOperand2()->values().front().intvalue;
+            if (isSaturated(value))
+                return nullptr;
+            setConditionalValues(tok, false, value, true_value, false_value);
             return tok->astOperand1();
         }
     }
