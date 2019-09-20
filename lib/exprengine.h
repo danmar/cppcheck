@@ -88,7 +88,7 @@ namespace ExprEngine {
             , minValue(minValue)
             , maxValue(maxValue) {
         }
-        ~IntRange() {}
+        ~IntRange() OVERRIDE {}
 
         ValueType type() const override {
             return ValueType::IntRange;

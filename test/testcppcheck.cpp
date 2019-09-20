@@ -37,10 +37,10 @@ private:
     public:
         std::list<std::string> id;
 
-        void reportOut(const std::string & /*outmsg*/) {
+        void reportOut(const std::string & /*outmsg*/) OVERRIDE {
         }
 
-        void reportErr(const ErrorLogger::ErrorMessage &msg) {
+        void reportErr(const ErrorLogger::ErrorMessage &msg) OVERRIDE {
             id.push_back(msg.id);
         }
     };
