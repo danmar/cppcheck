@@ -189,7 +189,7 @@ private:
         settings.jointSuppressionReport = true;
         if (!suppression.empty()) {
             std::string r = settings.nomsg.addSuppressionLine(suppression);
-            ASSERT_EQUALS("", r);
+            EXPECT_EQ("", r);
         }
 
         unsigned int exitCode = 0;
@@ -216,7 +216,7 @@ private:
         settings.inlineSuppressions = true;
         settings.addEnabled("information");
         if (!suppression.empty()) {
-            ASSERT_EQUALS("", settings.nomsg.addSuppressionLine(suppression));
+            EXPECT_EQ("", settings.nomsg.addSuppressionLine(suppression));
         }
         ThreadExecutor executor(files, settings, *this);
         for (std::map<std::string, std::size_t>::const_iterator i = files.begin(); i != files.end(); ++i)

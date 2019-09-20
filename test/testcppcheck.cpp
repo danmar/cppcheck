@@ -94,12 +94,10 @@ private:
         // Check for error ids from this class.
         bool foundPurgedConfiguration = false;
         bool foundTooManyConfigs = false;
-        for (std::list<std::string>::iterator it = errorLogger.id.begin();
-             it != errorLogger.id.end();
-             ++it) {
-            if (*it == "purgedConfiguration")
+        for (const std::string & it : errorLogger.id) {
+            if (it == "purgedConfiguration")
                 foundPurgedConfiguration = true;
-            else if (*it == "toomanyconfigs")
+            else if (it == "toomanyconfigs")
                 foundTooManyConfigs = true;
         }
         ASSERT(foundPurgedConfiguration);

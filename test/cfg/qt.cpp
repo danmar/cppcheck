@@ -18,6 +18,7 @@
 #include <QFile>
 #include <cstdio>
 #include <QCoreApplication>
+#include <QLoggingCategory>
 
 
 void QString1(QString s)
@@ -399,6 +400,10 @@ void validCode(int * pIntPtr)
     if (Q_UNLIKELY(!pIntPtr)) {}
 
     printf(QT_TR_NOOP("Hi"));
+
+    Q_DECLARE_LOGGING_CATEGORY(logging_category_test);
+    QT_FORWARD_DECLARE_CLASS(forwardDeclaredClass);
+    QT_FORWARD_DECLARE_STRUCT(forwardDeclaredStruct);
 }
 
 void ignoredReturnValue()

@@ -81,10 +81,11 @@ private:
         CheckUnusedFunctions checkUnusedFunctions(&tokenizer, &settings, this);
         checkUnusedFunctions.parseTokens(tokenizer,  "someFile.c", &settings);
         // check() returns error if and only if errout is not empty.
-        if (checkUnusedFunctions.check(this, settings))
+        if (checkUnusedFunctions.check(this, settings)) {
             ASSERT(errout.str() != "");
-        else
+        } else {
             ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void incondition() {

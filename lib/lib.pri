@@ -34,6 +34,7 @@ HEADERS += $${PWD}/analyzerinfo.h \
            $${PWD}/cppcheck.h \
            $${PWD}/ctu.h \
            $${PWD}/errorlogger.h \
+           $${PWD}/exprengine.h \
            $${PWD}/importproject.h \
            $${PWD}/library.h \
            $${PWD}/mathlib.h \
@@ -82,6 +83,7 @@ SOURCES += $${PWD}/analyzerinfo.cpp \
            $${PWD}/cppcheck.cpp \
            $${PWD}/ctu.cpp \
            $${PWD}/errorlogger.cpp \
+           $${PWD}/exprengine.cpp \
            $${PWD}/importproject.cpp \
            $${PWD}/library.cpp \
            $${PWD}/mathlib.cpp \

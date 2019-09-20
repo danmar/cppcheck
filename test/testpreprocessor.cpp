@@ -258,12 +258,12 @@ private:
         preprocessor0.simplifyPragmaAsm(&tokens);
         const std::set<std::string> configs(preprocessor0.getConfigs(tokens));
         preprocessor0.setDirectives(tokens);
-        for (std::set<std::string>::const_iterator it = configs.begin(); it != configs.end(); ++it) {
+        for (const std::string & config : configs) {
             try {
-                const std::string &cfgcode = preprocessor0.getcode(tokens, *it, files, std::string(code).find("#file") != std::string::npos);
-                actual[*it] = cfgcode;
+                const std::string &cfgcode = preprocessor0.getcode(tokens, config, files, std::string(code).find("#file") != std::string::npos);
+                actual[config] = cfgcode;
             } catch (const simplecpp::Output &) {
-                actual[*it] = "";
+                actual[config] = "";
             } catch (...) {
             }
         }
@@ -282,8 +282,8 @@ private:
         tokens.removeComments();
         const std::set<std::string> configs = preprocessor.getConfigs(tokens);
         std::string ret;
-        for (std::set<std::string>::const_iterator it = configs.begin(); it != configs.end(); ++it)
-            ret += *it + '\n';
+        for (const std::string & config : configs)
+            ret += config + '\n';
         return ret;
     }
 

@@ -158,6 +158,9 @@
     <ClCompile Include="ctu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="exprengine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="checkbufferoverrun.h">

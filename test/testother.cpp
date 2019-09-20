@@ -1916,6 +1916,13 @@ private:
               "};\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(bool b, int& x, int& y) {\n"
+              "  auto& z = x;\n"
+              "  auto& w = b ? y : z;\n"
+              "  w = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void e();\n"
               "void g(void);\n"
               "void h(void);\n"
