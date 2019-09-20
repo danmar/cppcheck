@@ -96,12 +96,12 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
     if (success) {
         if (parser.getShowVersion() && !parser.getShowErrorMessages()) {
-            const char * const extraVersion = cppcheck->extraVersion();
+            const char * const extraVersion = CppCheck::extraVersion();
             if (*extraVersion != 0)
-                std::cout << "Cppcheck " << cppcheck->version() << " ("
+                std::cout << "Cppcheck " << CppCheck::version() << " ("
                           << extraVersion << ')' << std::endl;
             else
-                std::cout << "Cppcheck " << cppcheck->version() << std::endl;
+                std::cout << "Cppcheck " << CppCheck::version() << std::endl;
         }
 
         if (parser.getShowErrorMessages()) {
@@ -112,7 +112,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         }
 
         if (parser.exitAfterPrinting()) {
-            settings.terminate();
+            Settings::terminate();
             return true;
         }
     } else {
@@ -189,7 +189,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     if (!parseFromArgs(&cppCheck, argc, argv)) {
         return EXIT_FAILURE;
     }
-    if (settings.terminated()) {
+    if (Settings::terminated()) {
         return EXIT_SUCCESS;
     }
     if (cppCheck.settings().exceptionHandling) {

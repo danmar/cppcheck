@@ -554,7 +554,7 @@ void Tokenizer::simplifyTypedef()
         if (mErrorLogger && !list.getFiles().empty())
             mErrorLogger->reportProgress(list.getFiles()[0], "Tokenize (typedef)", tok->progressValue());
 
-        if (mSettings->terminated())
+        if (Settings::terminated())
             return;
 
         if (isMaxTime())
@@ -1026,7 +1026,7 @@ void Tokenizer::simplifyTypedef()
             int classLevel = spaceInfo.size();
 
             for (Token *tok2 = tok; tok2; tok2 = tok2->next()) {
-                if (mSettings->terminated())
+                if (Settings::terminated())
                     return;
 
                 if (tok2->link()) { // Pre-check for performance
@@ -1892,7 +1892,7 @@ bool Tokenizer::simplifyUsing()
         if (mErrorLogger && !list.getFiles().empty())
             mErrorLogger->reportProgress(list.getFiles()[0], "Tokenize (using)", tok->progressValue());
 
-        if (mSettings->terminated())
+        if (Settings::terminated())
             return substitute;
 
         if (Token::Match(tok, "{|}|namespace|class|struct|union") ||
@@ -1937,7 +1937,7 @@ bool Tokenizer::simplifyUsing()
             if (start->strAt(1) != "{") {
                 Token *structEnd = start->linkAt(2);
                 structEnd->insertToken(";", "");
-                list.copyTokens(structEnd->next(), tok, start->next());
+                TokenList::copyTokens(structEnd->next(), tok, start->next());
                 usingStart = structEnd->tokAt(2);
                 nameToken = usingStart->next();
                 if (usingStart->strAt(2) == "=")
@@ -1957,7 +1957,7 @@ bool Tokenizer::simplifyUsing()
                     newName = name;
                 else
                     newName = "Unnamed" + MathLib::toString(mUnnamedCount++);
-                list.copyTokens(structEnd->next(), tok, start);
+                TokenList::copyTokens(structEnd->next(), tok, start);
                 structEnd->tokAt(5)->insertToken(newName, "");
                 start->insertToken(newName, "");
 
@@ -2137,14 +2137,14 @@ bool Tokenizer::simplifyUsing()
                 // check for array syntax and add type around variable
                 if (arrayStart) {
                     if (Token::Match(tok1->next(), "%name%")) {
-                        list.copyTokens(tok1->next(), arrayStart, usingEnd->previous());
-                        list.copyTokens(tok1, start, arrayStart->previous());
+                        TokenList::copyTokens(tok1->next(), arrayStart, usingEnd->previous());
+                        TokenList::copyTokens(tok1, start, arrayStart->previous());
                         tok1->deleteThis();
                         substitute = true;
                     }
                 } else {
                     // just replace simple type aliases
-                    list.copyTokens(tok1, start, usingEnd->previous());
+                    TokenList::copyTokens(tok1, start, usingEnd->previous());
                     tok1->deleteThis();
                     substitute = true;
                 }
@@ -3361,7 +3361,7 @@ void Tokenizer::setVarIdPass1()
                 continue;
             }
 
-            if (mSettings->terminated())
+            if (Settings::terminated())
                 return;
 
             // locate the variable name..
@@ -4222,7 +4222,7 @@ bool Tokenizer::simplifySizeof()
 
 bool Tokenizer::simplifyTokenList1(const char FileName[])
 {
-    if (mSettings->terminated())
+    if (Settings::terminated())
         return false;
 
     // if MACRO
@@ -4282,7 +4282,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
         }
     }
 
-    if (mSettings->terminated())
+    if (Settings::terminated())
         return false;
 
     // convert C++17 style nested namespaces to old style namespaces
@@ -4341,7 +4341,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
         }
     }
 
-    if (mSettings->terminated())
+    if (Settings::terminated())
         return false;
 
     // Remove __declspec()
@@ -4363,7 +4363,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
                 const Token * const end = tok;
                 for (tok = lt; tok != end; tok = tok->next()) {
                     if (tok->isNumber())
-                        mTemplateSimplifier->simplifyNumericCalculations(tok);
+                        TemplateSimplifier::simplifyNumericCalculations(tok);
                 }
                 lt = tok->next();
             }
@@ -4387,7 +4387,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
         findComplicatedSyntaxErrorsInTemplates();
     }
 
-    if (mSettings->terminated())
+    if (Settings::terminated())
         return false;
 
     // remove calling conventions __cdecl, __stdcall..
@@ -4414,7 +4414,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // convert Microsoft string functions
     simplifyMicrosoftStringFunctions();
 
-    if (mSettings->terminated())
+    if (Settings::terminated())
         return false;
 
     // Remove Qt signals and slots
@@ -4476,7 +4476,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     validate();
 
     // The simplify enum have inner loops
-    if (mSettings->terminated())
+    if (Settings::terminated())
         return false;
 
     // Put ^{} statements in asm()
@@ -4509,25 +4509,25 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // unsigned long long int => long (with _isUnsigned=true,_isLong=true)
     list.simplifyStdType();
 
-    if (mSettings->terminated())
+    if (Settings::terminated())
         return false;
 
     // simplify bit fields..
     simplifyBitfields();
 
-    if (mSettings->terminated())
+    if (Settings::terminated())
         return false;
 
     // struct simplification "struct S {} s; => struct S { } ; S s ;
     simplifyStructDecl();
 
-    if (mSettings->terminated())
+    if (Settings::terminated())
         return false;
 
     // x = ({ 123; });  =>   { x = 123; }
     simplifyAssignmentBlock();
 
-    if (mSettings->terminated())
+    if (Settings::terminated())
         return false;
 
     simplifyVariableMultipleAssign();
@@ -4552,7 +4552,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
         }
 
         // The simplifyTemplates have inner loops
-        if (mSettings->terminated())
+        if (Settings::terminated())
             return false;
 
         // sometimes the "simplifyTemplates" fail and then unsimplified
@@ -4590,7 +4590,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     arraySize();
 
     // The simplify enum might have inner loops
-    if (mSettings->terminated())
+    if (Settings::terminated())
         return false;
 
     // Add std:: in front of std classes, when using namespace std; was given
@@ -4651,7 +4651,7 @@ bool Tokenizer::simplifyTokenList2()
 
     simplifyStd();
 
-    if (mSettings->terminated())
+    if (Settings::terminated())
         return false;
 
     simplifySizeof();
@@ -4664,7 +4664,7 @@ bool Tokenizer::simplifyTokenList2()
     // e.g. const static int value = sizeof(X)/sizeof(Y);
     simplifyCalculations();
 
-    if (mSettings->terminated())
+    if (Settings::terminated())
         return false;
 
     // Replace "*(ptr + num)" => "ptr[num]"
@@ -4701,7 +4701,7 @@ bool Tokenizer::simplifyTokenList2()
 
     bool modified = true;
     while (modified) {
-        if (mSettings->terminated())
+        if (Settings::terminated())
             return false;
 
         modified = false;
@@ -4764,7 +4764,7 @@ bool Tokenizer::simplifyTokenList2()
 
     ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings);
 
-    if (mSettings->terminated())
+    if (Settings::terminated())
         return false;
 
     printDebugOutput(2);
@@ -5929,7 +5929,7 @@ bool Tokenizer::simplifyConstTernaryOp()
     bool ret = false;
     const Token *templateParameterEnd = nullptr; // The end of the current template parameter list, if any
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str() == "<" && mTemplateSimplifier->templateParameters(tok))
+        if (tok->str() == "<" && TemplateSimplifier::templateParameters(tok))
             templateParameterEnd = tok->findClosingBracket();
         if (tok == templateParameterEnd)
             templateParameterEnd = nullptr; // End of the current template parameter list
@@ -5943,7 +5943,7 @@ bool Tokenizer::simplifyConstTernaryOp()
         const int offset = (tok->previous()->str() == ")") ? 2 : 1;
 
         if (tok->strAt(-2*offset) == "<") {
-            if (isC() || !mTemplateSimplifier->templateParameters(tok->tokAt(-2*offset)))
+            if (isC() || !TemplateSimplifier::templateParameters(tok->tokAt(-2*offset)))
                 continue; // '<' is less than; the condition is not a constant
         }
 
@@ -5983,7 +5983,7 @@ bool Tokenizer::simplifyConstTernaryOp()
             for (const Token *endTok = colon; endTok; endTok = endTok->next()) {
                 if (Token::Match(endTok, "(|[|{"))
                     endTok = endTok->link();
-                else if (endTok->str() == "<" && (endTok->strAt(1) == ">" || mTemplateSimplifier->templateParameters(endTok)))
+                else if (endTok->str() == "<" && (endTok->strAt(1) == ">" || TemplateSimplifier::templateParameters(endTok)))
                     endTok = endTok->findClosingBracket();
                 else if (endTok->str() == "?")
                     ++ternaryOplevel;
@@ -6305,7 +6305,7 @@ void Tokenizer::simplifyPointerToStandardType()
             continue;
 
         // Remove '[ 0 ]' suffix
-        tok->next()->eraseTokens(tok->next(), tok->tokAt(5));
+        Token::eraseTokens(tok->next(), tok->tokAt(5));
         // Remove '&' prefix
         tok = tok->previous();
         if (!tok)
@@ -6561,7 +6561,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
 
         //skip combinations of templates and namespaces
         while (!isC() && (Token::Match(tok2, "%type% <") || Token::Match(tok2, "%type% ::"))) {
-            if (tok2->next()->str() == "<" && !mTemplateSimplifier->templateParameters(tok2->next())) {
+            if (tok2->next()->str() == "<" && !TemplateSimplifier::templateParameters(tok2->next())) {
                 tok2 = nullptr;
                 break;
             }
@@ -6639,7 +6639,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
                         while (tok2 && tok2->str() != "," && tok2->str() != ";") {
                             if (Token::Match(tok2, "{|(|["))
                                 tok2 = tok2->link();
-                            if (!isC() && tok2->str() == "<" && mTemplateSimplifier->templateParameters(tok2) > 0) {
+                            if (!isC() && tok2->str() == "<" && TemplateSimplifier::templateParameters(tok2) > 0) {
                                 tok2 = tok2->findClosingBracket();
                             }
                             if (!tok2)
@@ -6704,7 +6704,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
         if (tok2->str() == ",") {
             tok2->str(";");
             //TODO: should we have to add also template '<>' links?
-            list.insertTokens(tok2, type0, typelen);
+            TokenList::insertTokens(tok2, type0, typelen);
         }
 
         else {
@@ -6724,13 +6724,13 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
                         varTok = varTok->next();
                     if (!varTok)
                         syntaxError(tok2); // invalid code
-                    list.insertTokens(eq, varTok, 2);
+                    TokenList::insertTokens(eq, varTok, 2);
                     eq->str(";");
 
                     // "= x, "   =>   "= x; type "
                     if (tok2->str() == ",") {
                         tok2->str(";");
-                        list.insertTokens(tok2, type0, typelen);
+                        TokenList::insertTokens(tok2, type0, typelen);
                     }
                     break;
                 }
@@ -7048,7 +7048,7 @@ void Tokenizer::simplifyInitVar()
             tok1->str(";");
 
             const int numTokens = (Token::Match(tok, "class|struct|union")) ? 2U : 1U;
-            list.insertTokens(tok1, tok, numTokens);
+            TokenList::insertTokens(tok1, tok, numTokens);
             tok = initVar(tok);
         }
     }
@@ -7327,7 +7327,7 @@ bool Tokenizer::simplifyKnownVariables()
                 bool valueIsPointer = false;
 
                 // there could be a hang here if tok2 is moved back by the function calls below for some reason
-                if (mSettings->terminated())
+                if (Settings::terminated())
                     return false;
 
                 if (!simplifyKnownVariablesGetData(varid, &tok2, &tok3, value, valueVarId, valueIsPointer, floatvars.find(tok2->varId()) != floatvars.end()))
@@ -7360,7 +7360,7 @@ bool Tokenizer::simplifyKnownVariables()
                 ret |= simplifyKnownVariablesSimplify(&tok2, tok3, varid, emptyString, value, valueVarId, valueIsPointer, valueToken, indentlevel);
 
                 // there could be a hang here if tok2 was moved back by the function call above for some reason
-                if (mSettings->terminated())
+                if (Settings::terminated())
                     return false;
             }
         }
