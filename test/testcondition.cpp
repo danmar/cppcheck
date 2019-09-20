@@ -244,7 +244,9 @@ private:
               "        while (y != 0) g(y);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (style) Condition 'y!=0' is always true\n[test.cpp:5] -> [test.cpp:6]: (style) Mismatching assignment and comparison, comparison 'y!=0' is always true.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:5] -> [test.cpp:6]: (style) Mismatching assignment and comparison, comparison 'y!=0' is always true.\n",
+            errout.str());
 
         check("void g(int &x);\n"
               "void f(int x) {\n"
@@ -538,14 +540,14 @@ private:
               "    else { if (a == 2) { b = 2; }\n"
               "    else { if (a == 1) { b = 3; } } }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Condition 'a==1' is always false\n", errout.str());
 
         check("void f(int a, int &b) {\n"
               "    if (a == 1) { b = 1; }\n"
               "    else { if (a == 2) { b = 2; }\n"
               "    else { if (a == 2) { b = 3; } } }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Expression is always false because 'else if' condition matches previous condition at line 3.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Condition 'a==2' is always false\n", errout.str());
 
         check("void f(int a, int &b) {\n"
               "    if (a++) { b = 1; }\n"
@@ -2062,10 +2064,10 @@ private:
         check("void f(int x) {\n"
               "\n"
               "  if (x<4) {\n"
-              "    if (x!=5) {}\n" // <- TODO
+              "    if (x!=5) {}\n"
               "  }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Condition 'x!=5' is always true\n", errout.str());
         check("void f(int x) {\n"
               "\n"
               "  if (x<4) {\n"
@@ -3227,6 +3229,62 @@ private:
               "  bool x = false;\n"
               "  g({0, 1}, x);\n"
               "  if (x) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #9318
+        check("class A {};\n"
+              "class B : public A {};\n"
+              "void f(A* x) {\n"
+              "  if (!x)\n"
+              "    return;\n"
+              "  auto b = dynamic_cast<B*>(x);\n"
+              "  if (b) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // handleKnownValuesInLoop
+        check("bool g();\n"
+              "void f(bool x) {\n"
+              "    if (x) while(x) x = g();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // isLikelyStream
+        check("void f(std::istringstream& iss) {\n"
+              "   std::string x;\n"
+              "   while (iss) {\n"
+              "       iss >> x;\n"
+              "       if (!iss) break;\n"
+              "   }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (x > 5) {\n"
+              "        x++;\n"
+              "        if (x == 1) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Condition 'x==1' is always false\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (x > 5) {\n"
+              "        x++;\n"
+              "        if (x != 1) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Condition 'x!=1' is always true\n", errout.str());
+
+        // #9332
+        check("struct A { void* g(); };\n"
+              "void f() {\n"
+              "    A a;\n"
+              "    void* b = a.g();\n"
+              "    if (!b) return;\n"
+              "    void* c = a.g();\n"
+              "    if (!c) return;\n"
+              "    bool compare = c == b;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

@@ -321,6 +321,9 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
                 for (const ValueFlow::Value &value : argtok->values()) {
                     if ((!value.isIntValue() || value.intvalue != 0 || value.isInconclusive()) && !value.isBufferSizeValue())
                         continue;
+                    // Skip impossible values since they cannot be represented
+                    if (value.isImpossible())
+                        continue;
                     FileInfo::FunctionCall functionCall;
                     functionCall.callValueType = value.valueType;
                     functionCall.callId = getFunctionId(tokenizer, tok->astOperand1()->function());

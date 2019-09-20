@@ -50,6 +50,7 @@ private:
         "  <function name=\"abort\"> <noreturn>true</noreturn> </function>\n" // abort is a noreturn function
         "</def>";
         settings.library.loadxmldata(cfg, sizeof(cfg));
+        LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(valueFlowNumber);
         TEST_CASE(valueFlowString);
@@ -158,7 +159,7 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 for (const ValueFlow::Value &v : tok->values()) {
-                    if (v.isIntValue() && v.intvalue == value)
+                    if (v.isIntValue() && !v.isImpossible() && v.intvalue == value)
                         return true;
                 }
             }
@@ -176,7 +177,8 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 for (const ValueFlow::Value &v : tok->values()) {
-                    if (v.isFloatValue() && v.floatValue >= value - diff && v.floatValue <= value + diff)
+                    if (v.isFloatValue() && !v.isImpossible() && v.floatValue >= value - diff &&
+                        v.floatValue <= value + diff)
                         return true;
                 }
             }
@@ -3714,6 +3716,19 @@ private:
         return "";
     }
 
+    static std::string isImpossibleContainerSizeValue(const std::list<ValueFlow::Value>& values, MathLib::bigint i)
+    {
+        if (values.size() != 1)
+            return "values.size():" + std::to_string(values.size());
+        if (!values.front().isContainerSizeValue())
+            return "ContainerSizeValue";
+        if (!values.front().isImpossible())
+            return "Impossible";
+        if (values.front().intvalue != i)
+            return "intvalue:" + std::to_string(values.front().intvalue);
+        return "";
+    }
+
     static std::string isKnownContainerSizeValue(const std::list<ValueFlow::Value> &values, MathLib::bigint i) {
         if (values.size() != 1)
             return "values.size():" + std::to_string(values.size());
@@ -3788,7 +3803,7 @@ private:
                "  if (ints.empty()) { continue; }\n"
                "  ints.front();\n" // <- no container size
                "}";
-        ASSERT(tokenValues(code, "ints . front").empty());
+        ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "ints . front"), 0));
 
         code = "void f(const std::list<int> &ints) {\n"
                "  if (ints.empty()) { ints.push_back(0); }\n"
@@ -3912,7 +3927,7 @@ private:
                "    if (s != \"hello\")\n"
                "        s[40] = c;\n"
                "}";
-        ASSERT(tokenValues(code, "s [").empty());
+        ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "s ["), 5));
 
         // valueFlowContainerForward, loop
         code = "void f() {\n"

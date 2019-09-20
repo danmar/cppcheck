@@ -37,6 +37,20 @@ class TokenList;
 class Variable;
 
 namespace ValueFlow {
+struct increment {
+    template <class T>
+    void operator()(T& x) const
+    {
+        x++;
+    }
+};
+struct decrement {
+    template <class T>
+    void operator()(T& x) const
+    {
+        x--;
+    }
+};
     class CPPCHECKLIB Value {
     public:
         typedef std::pair<const Token *, std::string> ErrorPathItem;
@@ -44,6 +58,7 @@ namespace ValueFlow {
 
         explicit Value(long long val = 0)
             : valueType(ValueType::INT),
+              bound(Bound::Point),
               intvalue(val),
               tokvalue(nullptr),
               floatValue(0.0),
@@ -99,6 +114,28 @@ namespace ValueFlow {
             return true;
         }
 
+        template <class F>
+        void visitValue(F f)
+        {
+            switch (valueType) {
+            case ValueType::INT:
+            case ValueType::BUFFER_SIZE:
+            case ValueType::CONTAINER_SIZE: {
+                f(intvalue);
+                break;
+            }
+            case ValueType::FLOAT: {
+                f(floatValue);
+                break;
+            }
+            case ValueType::UNINIT:
+            case ValueType::TOK:
+            case ValueType::LIFETIME:
+            case ValueType::MOVED:
+                break;
+            }
+        }
+
         bool operator==(const Value &rhs) const {
             if (!equalValue(rhs))
                 return false;
@@ -114,6 +151,23 @@ namespace ValueFlow {
 
         bool operator!=(const Value &rhs) const {
             return !(*this == rhs);
+        }
+
+        void decreaseRange()
+        {
+            if (bound == Bound::Lower)
+                visitValue(increment{});
+            else if (bound == Bound::Upper)
+                visitValue(decrement{});
+        }
+
+        void invertRange()
+        {
+            if (bound == Bound::Lower)
+                bound = Bound::Upper;
+            else if (bound == Bound::Upper)
+                bound = Bound::Lower;
+            decreaseRange();
         }
 
         std::string infoString() const;
@@ -155,6 +209,9 @@ namespace ValueFlow {
         bool isNonValue() const {
             return isMovedValue() || isUninitValue() || isLifetimeValue();
         }
+
+        /** The value bound  */
+        enum class Bound { Upper, Lower, Point } bound;
 
         /** int value */
         long long intvalue;
@@ -213,7 +270,9 @@ namespace ValueFlow {
             /** Only listed values are possible */
             Known,
             /** Inconclusive */
-            Inconclusive
+            Inconclusive,
+            /** Listed values are impossible */
+            Impossible
         } valueKind;
 
         void setKnown() {
@@ -231,6 +290,10 @@ namespace ValueFlow {
         bool isPossible() const {
             return valueKind == ValueKind::Possible;
         }
+
+        bool isImpossible() const { return valueKind == ValueKind::Impossible; }
+
+        void setImpossible() { valueKind = ValueKind::Impossible; }
 
         void setInconclusive(bool inconclusive = true) {
             if (inconclusive)
