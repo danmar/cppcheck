@@ -1226,7 +1226,7 @@ public:
 
     void printValueFlow(bool xml, std::ostream &out) const;
 
-    void scopeInfo(std::shared_ptr<ScopeInfo2> newScopeInfo);
+    void scopeInfo(const std::shared_ptr<ScopeInfo2>& newScopeInfo);
     std::shared_ptr<ScopeInfo2> scopeInfo() const;
 
     void setCpp11init(bool cpp11init) const {

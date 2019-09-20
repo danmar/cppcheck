@@ -106,7 +106,7 @@ namespace ExprEngine {
 
     class PointerValue: public Value {
     public:
-        PointerValue(const std::string &name, ValuePtr data) : Value(name), data(data) {}
+        PointerValue(const std::string &name, const ValuePtr& data) : Value(name), data(data) {}
         ValueType type() const override {
             return ValueType::PointerValue;
         }
@@ -133,8 +133,8 @@ namespace ExprEngine {
             return "[" + std::to_string(data.size()) + "]";
         }
 
-        void assign(ValuePtr index, ValuePtr value);
-        ValuePtr read(ValuePtr index);
+        void assign(const ValuePtr& index, const ValuePtr& value);
+        ValuePtr read(const ValuePtr& index);
 
         std::vector<ValuePtr> data;
     };
@@ -174,7 +174,7 @@ namespace ExprEngine {
 
     class BinOpResult : public Value {
     public:
-        BinOpResult(const std::string &binop, ValuePtr op1, ValuePtr op2)
+        BinOpResult(const std::string &binop, const ValuePtr& op1, const ValuePtr& op2)
             : Value("(" + op1->name + ")" + binop + "(" + op2->name + ")")
             , binop(binop)
             , op1(op1)
@@ -204,7 +204,7 @@ namespace ExprEngine {
         ValuePtr op2;
     private:
         int128_t evaluate(int test, const std::map<ValuePtr, int> &valueBit) const;
-        int128_t evaluateOperand(int test, const std::map<ValuePtr, int> &valueBit, ValuePtr value) const;
+        int128_t evaluateOperand(int test, const std::map<ValuePtr, int> &valueBit, const ValuePtr &value) const;
         std::set<ValuePtr> mLeafs;
     };
 

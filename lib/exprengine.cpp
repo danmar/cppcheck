@@ -60,7 +60,7 @@ namespace {
             return mDataIndex++;
         }
 
-        void newValue(const Token *tok, ExprEngine::ValuePtr value) {
+        void newValue(const Token *tok, const ExprEngine::ValuePtr& value) {
             if (!tok)
                 return;
             if (!value)
@@ -166,7 +166,7 @@ namespace {
             return value;
         }
 
-        void trackAssignment(const Token *tok, ExprEngine::ValuePtr value) {
+        void trackAssignment(const Token *tok, const ExprEngine::ValuePtr& value) {
             return mTrackExecution->newValue(tok, value);
         }
 
@@ -193,7 +193,7 @@ namespace {
     };
 }
 
-void ExprEngine::ArrayValue::assign(ExprEngine::ValuePtr index, ExprEngine::ValuePtr value)
+void ExprEngine::ArrayValue::assign(const ExprEngine::ValuePtr& index, const ExprEngine::ValuePtr& value)
 {
     auto i1 = std::dynamic_pointer_cast<ExprEngine::IntRange>(index);
     if (i1) {
@@ -202,7 +202,7 @@ void ExprEngine::ArrayValue::assign(ExprEngine::ValuePtr index, ExprEngine::Valu
     }
 }
 
-ExprEngine::ValuePtr ExprEngine::ArrayValue::read(ExprEngine::ValuePtr index)
+ExprEngine::ValuePtr ExprEngine::ArrayValue::read(const ExprEngine::ValuePtr& index)
 {
     auto i1 = std::dynamic_pointer_cast<ExprEngine::IntRange>(index);
     if (i1) {
@@ -283,7 +283,7 @@ int128_t ExprEngine::BinOpResult::evaluate(int test, const std::map<ExprEngine::
     throw std::runtime_error("Internal error: Unhandled operator;" + binop);
 }
 
-int128_t ExprEngine::BinOpResult::evaluateOperand(int test, const std::map<ExprEngine::ValuePtr, int> &valueBit, ExprEngine::ValuePtr value) const
+int128_t ExprEngine::BinOpResult::evaluateOperand(int test, const std::map<ExprEngine::ValuePtr, int> &valueBit, const ExprEngine::ValuePtr& value) const
 {
     auto binOpResult = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(value);
     if (binOpResult)
@@ -342,7 +342,7 @@ static ExprEngine::ValuePtr getValueRangeFromValueType(const std::string &name, 
     return ExprEngine::ValuePtr();
 }
 
-static void call(const std::vector<ExprEngine::Callback> &callbacks, const Token *tok, ExprEngine::ValuePtr value)
+static void call(const std::vector<ExprEngine::Callback> &callbacks, const Token *tok, const ExprEngine::ValuePtr &value)
 {
     if (value) {
         for (ExprEngine::Callback f : callbacks) {

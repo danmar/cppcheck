@@ -427,7 +427,7 @@ static void fillProgramMemoryFromConditions(ProgramMemory& pm, const Token* tok,
     fillProgramMemoryFromConditions(pm, tok->scope(), tok, settings);
 }
 
-static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok, const ProgramMemory& state, std::unordered_map<nonneg int, ValueFlow::Value> vars)
+static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok, const ProgramMemory& state, const std::unordered_map<nonneg int, ValueFlow::Value>& vars)
 {
     int indentlevel = 0;
     for (const Token *tok2 = tok; tok2; tok2 = tok2->previous()) {

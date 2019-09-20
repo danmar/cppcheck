@@ -2080,7 +2080,7 @@ std::string Token::typeStr(const Token* tok)
     return r.first->stringifyList(r.second, false);
 }
 
-void Token::scopeInfo(std::shared_ptr<ScopeInfo2> newScopeInfo)
+void Token::scopeInfo(const std::shared_ptr<ScopeInfo2>& newScopeInfo)
 {
     mImpl->mScopeInfo = newScopeInfo;
 }

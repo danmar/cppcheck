@@ -31,7 +31,7 @@
 #include <stack>
 
 
-void visitAstNodes(const Token *ast, std::function<ChildrenToVisit(const Token *)> visitor)
+void visitAstNodes(const Token *ast, const std::function<ChildrenToVisit(const Token *)>& visitor)
 {
     std::stack<const Token *> tokens;
     tokens.push(ast);
