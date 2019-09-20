@@ -37,20 +37,18 @@ class TokenList;
 class Variable;
 
 namespace ValueFlow {
-struct increment {
-    template <class T>
-    void operator()(T& x) const
-    {
-        x++;
-    }
-};
-struct decrement {
-    template <class T>
-    void operator()(T& x) const
-    {
-        x--;
-    }
-};
+    struct increment {
+        template <class T>
+        void operator()(T& x) const {
+            x++;
+        }
+    };
+    struct decrement {
+        template <class T>
+        void operator()(T& x) const {
+            x--;
+        }
+    };
     class CPPCHECKLIB Value {
     public:
         typedef std::pair<const Token *, std::string> ErrorPathItem;
@@ -115,8 +113,7 @@ struct decrement {
         }
 
         template <class F>
-        void visitValue(F f)
-        {
+        void visitValue(F f) {
             switch (valueType) {
             case ValueType::INT:
             case ValueType::BUFFER_SIZE:
@@ -153,16 +150,14 @@ struct decrement {
             return !(*this == rhs);
         }
 
-        void decreaseRange()
-        {
+        void decreaseRange() {
             if (bound == Bound::Lower)
                 visitValue(increment{});
             else if (bound == Bound::Upper)
                 visitValue(decrement{});
         }
 
-        void invertRange()
-        {
+        void invertRange() {
             if (bound == Bound::Lower)
                 bound = Bound::Upper;
             else if (bound == Bound::Upper)
@@ -291,9 +286,13 @@ struct decrement {
             return valueKind == ValueKind::Possible;
         }
 
-        bool isImpossible() const { return valueKind == ValueKind::Impossible; }
+        bool isImpossible() const {
+            return valueKind == ValueKind::Impossible;
+        }
 
-        void setImpossible() { valueKind = ValueKind::Impossible; }
+        void setImpossible() {
+            valueKind = ValueKind::Impossible;
+        }
 
         void setInconclusive(bool inconclusive = true) {
             if (inconclusive)

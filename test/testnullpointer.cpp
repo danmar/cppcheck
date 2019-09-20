@@ -1443,8 +1443,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void nullpointer37()
-    {
+    void nullpointer37() {
         check("void f(int value, char *string) {\n"
               "    char *ptr1 = NULL, *ptr2 = NULL;\n"
               "    unsigned long count = 0;\n"
@@ -1463,8 +1462,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void nullpointer38()
-    {
+    void nullpointer38() {
         check("void f(int * x) {\n"
               "    std::vector<int*> v;\n"
               "    if (x) {\n"
@@ -2143,8 +2141,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void nullpointerSubFunction()
-    {
+    void nullpointerSubFunction() {
         check("void g(int* x) { *x; }\n"
               "void f(int* x) {\n"
               "    if (x)\n"
