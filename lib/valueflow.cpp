@@ -189,7 +189,7 @@ static void changeKnownToPossible(std::list<ValueFlow::Value> &values, int indir
     }
 }
 
-static void removeImpossible(std::list<ValueFlow::Value> &values, int indirect=-1)
+static void removeImpossible(std::list<ValueFlow::Value>& values, int indirect = -1)
 {
     values.remove_if([&](const ValueFlow::Value& v) {
         if (indirect >= 0 && v.indirect != indirect)
@@ -198,17 +198,17 @@ static void removeImpossible(std::list<ValueFlow::Value> &values, int indirect=-
     });
 }
 
-static void lowerToPossible(std::list<ValueFlow::Value> &values, int indirect=-1)
+static void lowerToPossible(std::list<ValueFlow::Value>& values, int indirect = -1)
 {
     changeKnownToPossible(values, indirect);
     removeImpossible(values, indirect);
 }
 
-static void lowerToInconclusive(std::list<ValueFlow::Value> &values, const Settings* settings, int indirect=-1)
+static void lowerToInconclusive(std::list<ValueFlow::Value>& values, const Settings* settings, int indirect = -1)
 {
     if (settings->inconclusive) {
         removeImpossible(values, indirect);
-        for (ValueFlow::Value& v: values) {
+        for (ValueFlow::Value& v : values) {
             if (indirect >= 0 && v.indirect != indirect)
                 continue;
             v.setInconclusive();
@@ -223,9 +223,9 @@ static void lowerToInconclusive(std::list<ValueFlow::Value> &values, const Setti
     }
 }
 
-static void changePossibleToKnown(std::list<ValueFlow::Value> &values, int indirect=-1)
+static void changePossibleToKnown(std::list<ValueFlow::Value>& values, int indirect = -1)
 {
-    for (ValueFlow::Value& v: values) {
+    for (ValueFlow::Value& v : values) {
         if (indirect >= 0 && v.indirect != indirect)
             continue;
         if (!v.isPossible())
@@ -282,7 +282,6 @@ void setValueUpperBound(ValueFlow::Value& value, bool upper)
         value.bound = ValueFlow::Value::Bound::Upper;
     else
         value.bound = ValueFlow::Value::Bound::Lower;
-
 }
 
 void setValueBound(ValueFlow::Value& value, const Token* tok, bool invert)
@@ -302,8 +301,8 @@ static void setConditionalValues(const Token *tok,
 {
     if (Token::Match(tok, "==|!=|>=|<=")) {
         true_value = ValueFlow::Value{tok, value};
-        const char *greaterThan = ">=";
-        const char *lessThan = "<=";
+        const char* greaterThan = ">=";
+        const char* lessThan = "<=";
         if (invert)
             std::swap(greaterThan, lessThan);
         if (Token::simpleMatch(tok, greaterThan)) {
@@ -314,8 +313,8 @@ static void setConditionalValues(const Token *tok,
             false_value = ValueFlow::Value{tok, value};
         }
     } else {
-        const char *greaterThan = ">";
-        const char *lessThan = "<";
+        const char* greaterThan = ">";
+        const char* lessThan = "<";
         if (invert)
             std::swap(greaterThan, lessThan);
         if (Token::simpleMatch(tok, greaterThan)) {
@@ -708,7 +707,8 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
 
     // cast..
     if (const Token *castType = getCastTypeStartToken(parent)) {
-        if (astIsPointer(tok) && value.valueType == ValueFlow::Value::INT && Token::simpleMatch(parent->astOperand1(), "dynamic_cast"))
+        if (astIsPointer(tok) && value.valueType == ValueFlow::Value::INT &&
+            Token::simpleMatch(parent->astOperand1(), "dynamic_cast"))
             return;
         const ValueType &valueType = ValueType::parseDecl(castType, settings);
         setTokenValueCast(parent, valueType, value, settings);
@@ -2147,15 +2147,8 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symbo
                     val2.varId = varid;
                 }
             }
-            Token * startTok = tok->astParent() ? tok->astParent() : tok->previous();
-            valueFlowReverse(tokenlist,
-                             startTok,
-                             vartok,
-                             val,
-                             val2,
-                             errorLogger,
-                             settings);
-
+            Token* startTok = tok->astParent() ? tok->astParent() : tok->previous();
+            valueFlowReverse(tokenlist, startTok, vartok, val, val2, errorLogger, settings);
         }
     }
 }
@@ -4334,7 +4327,7 @@ struct ValueFlowConditionHandler {
                     }
 
                     // start token of conditional code
-                    Token *startTokens[] = {nullptr, nullptr};
+                    Token* startTokens[] = {nullptr, nullptr};
 
                     // if astParent is "!" we need to invert codeblock
                     {
@@ -4362,7 +4355,7 @@ struct ValueFlowConditionHandler {
                         const Token *const startToken = startTokens[i];
                         if (!startToken)
                             continue;
-                        std::list<ValueFlow::Value> &values = (i == 0 ? thenValues : elseValues);
+                        std::list<ValueFlow::Value>& values = (i == 0 ? thenValues : elseValues);
                         valueFlowSetConditionToKnown(tok, values, i == 0);
 
                         // TODO: The endToken should not be startTokens[i]->link() in the valueFlowForward call
@@ -4414,8 +4407,14 @@ struct ValueFlowConditionHandler {
                         } else if (dead_else) {
                             values = thenValues;
                         } else {
-                            std::copy_if(thenValues.begin(), thenValues.end(), std::back_inserter(values), std::mem_fn(&ValueFlow::Value::isPossible));
-                            std::copy_if(elseValues.begin(), elseValues.end(), std::back_inserter(values), std::mem_fn(&ValueFlow::Value::isPossible));
+                            std::copy_if(thenValues.begin(),
+                                         thenValues.end(),
+                                         std::back_inserter(values),
+                                         std::mem_fn(&ValueFlow::Value::isPossible));
+                            std::copy_if(elseValues.begin(),
+                                         elseValues.end(),
+                                         std::back_inserter(values),
+                                         std::mem_fn(&ValueFlow::Value::isPossible));
                         }
 
                         if (!values.empty()) {
@@ -4692,10 +4691,10 @@ static bool isInBounds(const ValueFlow::Value& value, MathLib::bigint x)
     return true;
 }
 
-static const ValueFlow::Value* proveNotEqual(const std::list<ValueFlow::Value> &values, MathLib::bigint x)
+static const ValueFlow::Value* proveNotEqual(const std::list<ValueFlow::Value>& values, MathLib::bigint x)
 {
     const ValueFlow::Value* result = nullptr;
-    for(const ValueFlow::Value& value:values) {
+    for (const ValueFlow::Value& value : values) {
         if (value.valueType != ValueFlow::Value::INT)
             continue;
         if (result && !isInBounds(value, result->intvalue))
@@ -4717,17 +4716,18 @@ static const ValueFlow::Value* proveNotEqual(const std::list<ValueFlow::Value> &
     return result;
 }
 
-static void valueFlowInferCondition(TokenList *tokenlist,
-                                    SymbolDatabase *symboldatabase,
-                                    ErrorLogger *errorLogger,
-                                    const Settings *settings)
+static void valueFlowInferCondition(TokenList* tokenlist,
+                                    SymbolDatabase* symboldatabase,
+                                    ErrorLogger* errorLogger,
+                                    const Settings* settings)
 {
-    for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+    for (Token* tok = tokenlist->front(); tok; tok = tok->next()) {
         if (!tok->astParent())
             continue;
         if (tok->hasKnownValue())
             continue;
-        if (Token::Match(tok, "%var%") && (Token::Match(tok->astParent(), "&&|!|%oror%") || Token::Match(tok->astParent()->previous(), "if|while ("))) {
+        if (Token::Match(tok, "%var%") && (Token::Match(tok->astParent(), "&&|!|%oror%") ||
+                                           Token::Match(tok->astParent()->previous(), "if|while ("))) {
             const ValueFlow::Value* result = proveNotEqual(tok->values(), 0);
             if (!result)
                 continue;
@@ -6218,7 +6218,7 @@ static void valueFlowUnknownFunctionReturn(TokenList *tokenlist, const Settings 
     }
 }
 
-ValueFlow::Value::Value(const Token *c, long long val)
+ValueFlow::Value::Value(const Token* c, long long val)
     : valueType(INT),
       bound(Bound::Point),
       intvalue(val),

@@ -1809,10 +1809,10 @@ const Token *Token::getValueTokenDeadPointer() const
 static bool removeContradiction(std::list<ValueFlow::Value>& values)
 {
     bool result = false;
-    for(ValueFlow::Value& x:values) {
+    for (ValueFlow::Value& x : values) {
         if (x.isNonValue())
             continue;
-        for(ValueFlow::Value& y:values) {
+        for (ValueFlow::Value& y : values) {
             if (y.isNonValue())
                 continue;
             if (x == y)
@@ -1823,7 +1823,8 @@ static bool removeContradiction(std::list<ValueFlow::Value>& values)
                 continue;
             if (!x.equalValue(y))
                 continue;
-            if (x.bound == y.bound || (x.bound != ValueFlow::Value::Bound::Point && y.bound != ValueFlow::Value::Bound::Point)) {
+            if (x.bound == y.bound ||
+                (x.bound != ValueFlow::Value::Bound::Point && y.bound != ValueFlow::Value::Bound::Point)) {
                 const bool removex = !x.isImpossible() || y.isKnown();
                 const bool removey = !y.isImpossible() || x.isKnown();
                 if (removex)
@@ -1842,7 +1843,7 @@ static bool removeContradiction(std::list<ValueFlow::Value>& values)
 
 static void removeOverlaps(std::list<ValueFlow::Value>& values)
 {
-    for(ValueFlow::Value& x:values) {
+    for (ValueFlow::Value& x : values) {
         if (x.isNonValue())
             continue;
         values.remove_if([&](ValueFlow::Value& y) {
@@ -1869,7 +1870,7 @@ static void removeOverlaps(std::list<ValueFlow::Value>& values)
 // passes to try to catch most contradictions
 static void removeContradictions(std::list<ValueFlow::Value>& values)
 {
-    for(int i=0;i<4;i++) {
+    for (int i = 0; i < 4; i++) {
         if (!removeContradiction(values))
             return;
         removeOverlaps(values);
@@ -1929,7 +1930,7 @@ bool Token::addValue(const ValueFlow::Value &value)
 
             if ((value.isTokValue() || value.isLifetimeValue()) && (it->tokvalue != value.tokvalue) && (it->tokvalue->str() != value.tokvalue->str()))
                 continue;
-            
+
             // same value, but old value is inconclusive so replace it
             if (it->isInconclusive() && !value.isInconclusive() && !value.isImpossible()) {
                 *it = value;
@@ -1937,7 +1938,6 @@ bool Token::addValue(const ValueFlow::Value &value)
                     it->varId = mImpl->mVarId;
                 break;
             }
-
 
             // Same value already exists, don't  add new value
             return false;

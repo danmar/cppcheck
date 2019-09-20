@@ -37,22 +37,20 @@ class TokenList;
 class Variable;
 
 namespace ValueFlow {
-    struct increment
+struct increment {
+    template <class T>
+    void operator()(T& x) const
     {
-        template<class T>
-        void operator()(T& x) const
-        {
-            x++;
-        }
-    };
-    struct decrement
+        x++;
+    }
+};
+struct decrement {
+    template <class T>
+    void operator()(T& x) const
     {
-        template<class T>
-        void operator()(T& x) const
-        {
-            x--;
-        }
-    };
+        x--;
+    }
+};
     class CPPCHECKLIB Value {
     public:
         typedef std::pair<const Token *, std::string> ErrorPathItem;
@@ -116,7 +114,7 @@ namespace ValueFlow {
             return true;
         }
 
-        template<class F>
+        template <class F>
         void visitValue(F f)
         {
             switch (valueType) {
@@ -213,7 +211,7 @@ namespace ValueFlow {
         }
 
         /** The value bound  */
-        enum class Bound {Upper, Lower, Point} bound;
+        enum class Bound { Upper, Lower, Point } bound;
 
         /** int value */
         long long intvalue;
@@ -293,13 +291,9 @@ namespace ValueFlow {
             return valueKind == ValueKind::Possible;
         }
 
-        bool isImpossible() const {
-            return valueKind == ValueKind::Impossible;
-        }
+        bool isImpossible() const { return valueKind == ValueKind::Impossible; }
 
-        void setImpossible() {
-            valueKind = ValueKind::Impossible;
-        }
+        void setImpossible() { valueKind = ValueKind::Impossible; }
 
         void setInconclusive(bool inconclusive = true) {
             if (inconclusive)

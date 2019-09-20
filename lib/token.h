@@ -988,7 +988,7 @@ public:
     const ValueFlow::Value * getValue(const MathLib::bigint val) const {
         if (!mImpl->mValues)
             return nullptr;
-        const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value &value) {
+        const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value& value) {
             return value.isIntValue() && !value.isImpossible() && value.intvalue == val;
         });
         return it == mImpl->mValues->end() ? nullptr : &*it;;
@@ -1013,8 +1013,9 @@ public:
     const ValueFlow::Value * getMovedValue() const {
         if (!mImpl->mValues)
             return nullptr;
-        const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value &value) {
-            return value.isMovedValue() && !value.isImpossible() && value.moveKind != ValueFlow::Value::MoveKind::NonMovedVariable;
+        const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value& value) {
+            return value.isMovedValue() && !value.isImpossible() &&
+                   value.moveKind != ValueFlow::Value::MoveKind::NonMovedVariable;
         });
         return it == mImpl->mValues->end() ? nullptr : &*it;;
     }
@@ -1027,7 +1028,7 @@ public:
     const ValueFlow::Value * getContainerSizeValue(const MathLib::bigint val) const {
         if (!mImpl->mValues)
             return nullptr;
-        const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value &value) {
+        const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value& value) {
             return value.isContainerSizeValue() && !value.isImpossible() && value.intvalue == val;
         });
         return it == mImpl->mValues->end() ? nullptr : &*it;
