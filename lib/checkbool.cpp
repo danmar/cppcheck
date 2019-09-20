@@ -437,7 +437,7 @@ void CheckBool::checkAssignBoolToFloat()
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->str() == "=" && astIsFloat(tok->astOperand1(), false) && astIsBool(tok->astOperand2())) {
-                assignBoolToFloatError(tok->next());
+                assignBoolToFloatError(tok);
             }
         }
     }
