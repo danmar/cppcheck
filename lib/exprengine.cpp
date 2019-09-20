@@ -54,10 +54,10 @@ static ExprEngine::ValuePtr getValueRangeFromValueType(const std::string &name, 
 namespace {
     class TrackExecution {
     public:
-        TrackExecution() : dataIndex(0) {}
+        TrackExecution() : mDataIndex(0) {}
         std::map<const Token *, std::vector<std::string>> map;
         int getNewDataIndex() {
-            return dataIndex++;
+            return mDataIndex++;
         }
 
         void newValue(const Token *tok, ExprEngine::ValuePtr value) {
@@ -80,7 +80,7 @@ namespace {
         void print() {
             std::set<std::pair<int,int>> locations;
             for (auto it : map) {
-                locations.emplace(it.first->linenr(), it.first->column());
+                locations.insert(std::pair<int,int>(it.first->linenr(), it.first->column()));
             }
             for (const std::pair<int,int> &loc : locations) {
                 int lineNumber = loc.first;
@@ -96,7 +96,7 @@ namespace {
             }
         }
     private:
-        int dataIndex;
+        int mDataIndex;
     };
 
     class Data {
