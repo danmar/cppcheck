@@ -7993,7 +7993,6 @@ bool Tokenizer::simplifyRedundantParentheses()
             tok->deleteNext();
             tok2->deleteThis();
             ret = true;
-            continue;
         }
 
         if (Token::simpleMatch(tok->previous(), "? (") && Token::simpleMatch(tok->link(), ") :")) {
