@@ -79,8 +79,7 @@ public:
 private:
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
-        CheckUnusedFunctions c(nullptr, settings, errorLogger);
-        c.unusedFunctionError(errorLogger, emptyString, 0, "funcName");
+        CheckUnusedFunctions::unusedFunctionError(errorLogger, emptyString, 0, "funcName");
     }
 
     void runChecks(const Tokenizer * /*tokenizer*/, const Settings * /*settings*/, ErrorLogger * /*errorLogger*/) OVERRIDE {}
