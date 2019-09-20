@@ -384,7 +384,8 @@ void TemplateSimplifier::checkComplicatedSyntaxErrorsInTemplates()
                             tok3 = tok3->tokAt(2);
                         if (Token::Match(tok3, "%type% <"))
                             inclevel = true;
-                    }
+                    } else if (tok2->strAt(-1) == ">")
+                        syntaxError(tok);
 
                     if (inclevel) {
                         ++level;
