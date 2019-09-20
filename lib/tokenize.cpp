@@ -2837,7 +2837,7 @@ void Tokenizer::calculateScopes()
     for (auto tok = list.front(); tok; tok = tok->next())
         tok->scopeInfo(nullptr);
 
-    std::string nextScopeNameAddition = "";
+    std::string nextScopeNameAddition;
     std::shared_ptr<ScopeInfo2> primaryScope = std::make_shared<ScopeInfo2>("", nullptr);
     list.front()->scopeInfo(primaryScope);
 
@@ -2847,7 +2847,7 @@ void Tokenizer::calculateScopes()
                 tok->scopeInfo(tok->previous()->scopeInfo());
 
             if (Token::Match(tok, "using namespace %name% ::|<|;")) {
-                std::string usingNamespaceName = "";
+                std::string usingNamespaceName;
                 for (const Token* namespaceNameToken = tok->tokAt(2);
                      !Token::simpleMatch(namespaceNameToken, ";");
                      namespaceNameToken = namespaceNameToken->next()) {
