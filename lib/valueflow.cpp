@@ -4224,7 +4224,7 @@ static bool isBreakScope(const Token* const endToken)
 
 static ValueFlow::Value asImpossible(ValueFlow::Value v)
 {
-    v.invertBound();
+    v.invertRange();
     v.setImpossible();
     return v;
 }

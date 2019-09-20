@@ -155,7 +155,7 @@ namespace ValueFlow {
             return !(*this == rhs);
         }
 
-        void decreaseBound()
+        void decreaseRange()
         {
             if (bound == Bound::Lower)
                 visitValue(increment{});
@@ -163,13 +163,13 @@ namespace ValueFlow {
                 visitValue(decrement{});
         }
 
-        void invertBound()
+        void invertRange()
         {
             if (bound == Bound::Lower)
                 bound = Bound::Upper;
             else if (bound == Bound::Upper)
                 bound = Bound::Lower;
-            decreaseBound();
+            decreaseRange();
         }
 
         std::string infoString() const;

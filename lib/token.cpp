@@ -1832,7 +1832,7 @@ static bool removeContradiction(std::list<ValueFlow::Value>& values)
                     values.remove(y);
                 return true;
             } else if (x.bound == ValueFlow::Value::Bound::Point) {
-                y.decreaseBound();
+                y.decreaseRange();
                 result = true;
             }
         }
