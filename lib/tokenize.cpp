@@ -867,7 +867,7 @@ void Tokenizer::simplifyTypedef()
             if (tokOffset->next()->str() == "(")
                 tokOffset = tokOffset->next();
             else if (Token::simpleMatch(tokOffset, "( * (")) {
-                pointers.push_back("*");
+                pointers.emplace_back("*");
                 tokOffset = tokOffset->tokAt(2);
             }
 

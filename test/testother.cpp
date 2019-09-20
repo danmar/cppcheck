@@ -305,7 +305,7 @@ private:
     void checkposix(const char code[]) {
         static Settings settings;
         settings.addEnabled("warning");
-        settings.libraries.push_back("posix");
+        settings.libraries.emplace_back("posix");
 
         check(code,
               nullptr, // filename

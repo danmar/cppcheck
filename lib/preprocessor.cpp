@@ -543,7 +543,7 @@ static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cf
     }
 
     if (Path::isCPP(filename))
-        dui.defines.push_back("__cplusplus");
+        dui.defines.emplace_back("__cplusplus");
 
     dui.undefined = mSettings.userUndefs; // -U
     dui.includePaths = mSettings.includePaths; // -I

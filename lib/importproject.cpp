@@ -626,7 +626,7 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                     if (std::strcmp(e->Name(), "ClCompile") == 0) {
                         const char *include = e->Attribute("Include");
                         if (include && Path::acceptFile(include))
-                            compileList.push_back(include);
+                            compileList.emplace_back(include);
                     }
                 }
             }
@@ -700,7 +700,7 @@ void ImportProject::importBcb6Prj(const std::string &projectFilename)
                 if (std::strcmp(f->Name(), "FILE") == 0) {
                     const char *filename = f->Attribute("FILENAME");
                     if (filename && Path::acceptFile(filename))
-                        compileList.push_back(filename);
+                        compileList.emplace_back(filename);
                 }
             }
         } else if (std::strcmp(node->Name(), "MACROS") == 0) {

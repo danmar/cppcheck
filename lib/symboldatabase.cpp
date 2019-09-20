@@ -842,7 +842,7 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                 Scope *scope = &(*it);
 
                 if (!scope->definedType) {
-                    mBlankTypes.push_back(Type());
+                    mBlankTypes.emplace_back();
                     scope->definedType = &mBlankTypes.back();
                 }
 
