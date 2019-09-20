@@ -4336,7 +4336,7 @@ private:
         for (unsigned i = 0 ; i < offset ; ++i)
             _tok = _tok->next();
 
-        const Token *tok1 = tokenizer.mTemplateSimplifier->findTemplateDeclarationEnd(_tok);
+        const Token *tok1 = TemplateSimplifier::findTemplateDeclarationEnd(_tok);
 
         return (tok1 == Token::findsimplematch(tokenizer.list.front(), pattern));
     }

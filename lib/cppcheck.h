@@ -113,7 +113,7 @@ public:
      * @brief Terminate checking. The checking will be terminated as soon as possible.
      */
     void terminate() {
-        mSettings.terminate();
+        Settings::terminate();
     }
 
     /**

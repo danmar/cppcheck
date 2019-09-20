@@ -223,7 +223,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     if (!Path::acceptFile(filename))
         mSettings.debugwarnings = false;
 
-    if (mSettings.terminated())
+    if (Settings::terminated())
         return mExitCode;
 
     if (!mSettings.quiet) {
@@ -432,7 +432,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         std::list<std::string> configurationError;
         for (const std::string &currCfg : configurations) {
             // bail out if terminated
-            if (mSettings.terminated())
+            if (Settings::terminated())
                 break;
 
             // Check only a few configurations (default 12), after that bail out, unless --force
@@ -549,7 +549,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     if (!result)
                         continue;
 
-                    if (!mSettings.terminated())
+                    if (!Settings::terminated())
                         executeRules("simple", mTokenizer);
                 }
 
@@ -717,10 +717,10 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
 {
     // call all "runChecks" in all registered Check classes
     for (Check *check : Check::instances()) {
-        if (mSettings.terminated())
+        if (Settings::terminated())
             return;
 
-        if (tokenizer.isMaxTime())
+        if (Tokenizer::isMaxTime())
             return;
 
         Timer timerRunChecks(check->name() + "::runChecks", mSettings.showtime, &S_timerResults);
