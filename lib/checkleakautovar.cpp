@@ -930,13 +930,21 @@ void CheckLeakAutoVar::ret(const Token *tok, const VarInfo &varInfo)
         if (var) {
             bool used = false;
             for (const Token *tok2 = tok; tok2; tok2 = tok2->next()) {
-                if (tok2->str() == ";")
+                if (tok2->str() == ";" || Token::simpleMatch(tok2, "return ;"))
                     break;
-                if (Token::Match(tok2, "return|(|{|, %varid% [});,]", varid)) {
-                    used = true;
-                    break;
-                }
-                if (Token::Match(tok2, "return|(|{|, & %varid% . %name% [});,]", varid)) {
+                if (!Token::Match(tok2, "return|(|{|,"))
+                    continue;
+
+                tok2 = tok2->next();
+                while (tok2 && tok2->isCast() && (tok2->valueType()->pointer || (tok2->valueType()->typeSize(*mSettings) >= mSettings->sizeof_pointer)))
+                    tok2 = tok2->astOperand2() ? tok2->astOperand2() : tok2->astOperand1();
+                if (Token::Match(tok2, "%varid%", varid))
+                    tok2 = tok2->next();
+                else if (Token::Match(tok2, "& %varid% . %name%", varid))
+                    tok2 = tok2->tokAt(4);
+                else
+                    continue;
+                if (Token::Match(tok2, "[});,]")) {
                     used = true;
                     break;
                 }
