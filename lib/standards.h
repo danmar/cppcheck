@@ -56,7 +56,7 @@ struct Standards {
         }
         return false;
     }
-    const std::string getC(void) const {
+    const std::string getC() const {
         switch (c) {
         case C89:
             return "c89";
@@ -90,7 +90,7 @@ struct Standards {
         }
         return false;
     }
-    const std::string getCPP(void) const {
+    const std::string getCPP() const {
         switch (cpp) {
         case CPP03:
             return "c++03";
