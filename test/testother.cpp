@@ -660,6 +660,16 @@ private:
               "  if (a == 0) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("int g();\n"
+              "void f(int b) {\n"
+              "  int x = g();\n"
+              "  if (x == 0) {}\n"
+              "  else if (x > 0) {}\n"
+              "  else\n"
+              "    a = b / -x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nanInArithmeticExpression() {

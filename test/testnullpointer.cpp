@@ -76,6 +76,8 @@ private:
         TEST_CASE(nullpointer34);
         TEST_CASE(nullpointer35);
         TEST_CASE(nullpointer36); // #9264
+        TEST_CASE(nullpointer37); // #9315
+        TEST_CASE(nullpointer38);
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -92,6 +94,7 @@ private:
         TEST_CASE(nullpointer_in_typeid);
         TEST_CASE(nullpointer_in_for_loop);
         TEST_CASE(nullpointerDelete);
+        TEST_CASE(nullpointerSubFunction);
         TEST_CASE(nullpointerExit);
         TEST_CASE(nullpointerStdString);
         TEST_CASE(nullpointerStdStream);
@@ -1440,6 +1443,39 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void nullpointer37()
+    {
+        check("void f(int value, char *string) {\n"
+              "    char *ptr1 = NULL, *ptr2 = NULL;\n"
+              "    unsigned long count = 0;\n"
+              "    if(!string)\n"
+              "        return;\n"
+              "    ptr1 = string;\n"
+              "    ptr2 = strrchr(string, 'a');\n"
+              "    if(ptr2 == NULL)\n"
+              "        return;\n"
+              "    while(ptr1 < ptr2) {\n"
+              "        count++;\n"
+              "        ptr1++;\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer38()
+    {
+        check("void f(int * x) {\n"
+              "    std::vector<int*> v;\n"
+              "    if (x) {\n"
+              "        v.push_back(x);\n"
+              "        *x;\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void nullpointer_addressOf() { // address of
         check("void f() {\n"
               "  struct X *x = 0;\n"
@@ -2104,6 +2140,16 @@ private:
               "  delete [] k;\n"
               "  k = new K[10];\n"
               "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointerSubFunction()
+    {
+        check("void g(int* x) { *x; }\n"
+              "void f(int* x) {\n"
+              "    if (x)\n"
+              "        g(x);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2914,6 +2960,13 @@ private:
             "void f() {\n"
             "  dostuff(0, 0);\n"
             "}");
+        ASSERT_EQUALS("", errout.str());
+
+        ctu("void g(int* x) { *x; }\n"
+            "void f(int* x) {\n"
+            "    if (x)\n"
+            "        g(x);\n"
+            "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };

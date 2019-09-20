@@ -62,6 +62,8 @@ void CheckStl::outOfBounds()
             for (const ValueFlow::Value &value : tok->values()) {
                 if (!value.isContainerSizeValue())
                     continue;
+                if (value.isImpossible())
+                    continue;
                 if (value.isInconclusive() && !mSettings->inconclusive)
                     continue;
                 if (!value.errorSeverity() && !mSettings->isEnabled(Settings::WARNING))

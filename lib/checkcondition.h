@@ -58,11 +58,11 @@ public:
         checkCondition.multiCondition2();
         checkCondition.checkIncorrectLogicOperator();
         checkCondition.checkInvalidTestForOverflow();
-        checkCondition.alwaysTrueFalse();
         checkCondition.duplicateCondition();
         checkCondition.checkPointerAdditionResultNotNull();
         checkCondition.checkDuplicateConditionalAssign();
         checkCondition.assignIf();
+        checkCondition.alwaysTrueFalse();
         checkCondition.checkBadBitmaskCheck();
         checkCondition.comparison();
         checkCondition.checkModuloAlwaysTrueFalse();

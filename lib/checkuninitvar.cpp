@@ -953,7 +953,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
         if (!pointer)
             return false;
 
-        if (pointer && alloc != CTOR_CALL && Token::Match(vartok, "%name% . %name% ("))
+        if (alloc != CTOR_CALL && Token::Match(vartok, "%name% . %name% ("))
             return true;
 
         bool assignment = false;

@@ -1152,7 +1152,6 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
             "[test.cpp:28]: (debug) valueflow.cpp:3109:valueFlowFunctionReturn bailout: function return; nontrivial function body\n"
-            "[test.cpp:26]: (debug) valueflow.cpp::valueFlowForward bailout: possible assignment of s by subfunction\n"
             , errout.str());
     }
 

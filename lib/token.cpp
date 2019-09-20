@@ -1592,6 +1592,8 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     out << " known=\"true\"";
                 else if (value.isPossible())
                     out << " possible=\"true\"";
+                else if (value.isImpossible())
+                    out << " impossible=\"true\"";
                 else if (value.isInconclusive())
                     out << " inconclusive=\"true\"";
                 out << "/>" << std::endl;
@@ -1600,6 +1602,12 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
             else {
                 if (&value != &tok->mImpl->mValues->front())
                     out << ",";
+                if (value.isImpossible())
+                    out << "!";
+                if (value.bound == ValueFlow::Value::Bound::Lower)
+                    out << ">";
+                if (value.bound == ValueFlow::Value::Bound::Upper)
+                    out << "<";
                 switch (value.valueType) {
                 case ValueFlow::Value::INT:
                     if (tok->valueType() && tok->valueType()->sign == ValueType::UNSIGNED)
@@ -1650,6 +1658,8 @@ const ValueFlow::Value * Token::getValueLE(const MathLib::bigint val, const Sett
     const ValueFlow::Value *ret = nullptr;
     std::list<ValueFlow::Value>::const_iterator it;
     for (it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
+        if (it->isImpossible())
+            continue;
         if (it->isIntValue() && it->intvalue <= val) {
             if (!ret || ret->isInconclusive() || (ret->condition && !it->isInconclusive()))
                 ret = &(*it);
@@ -1673,6 +1683,8 @@ const ValueFlow::Value * Token::getValueGE(const MathLib::bigint val, const Sett
     const ValueFlow::Value *ret = nullptr;
     std::list<ValueFlow::Value>::const_iterator it;
     for (it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
+        if (it->isImpossible())
+            continue;
         if (it->isIntValue() && it->intvalue >= val) {
             if (!ret || ret->isInconclusive() || (ret->condition && !it->isInconclusive()))
                 ret = &(*it);
@@ -1696,6 +1708,8 @@ const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, nonneg int ar
     const ValueFlow::Value *ret = nullptr;
     std::list<ValueFlow::Value>::const_iterator it;
     for (it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
+        if (it->isImpossible())
+            continue;
         if ((it->isIntValue() && !settings->library.isIntArgValid(ftok, argnr, it->intvalue)) ||
             (it->isFloatValue() && !settings->library.isFloatArgValid(ftok, argnr, it->floatValue))) {
             if (!ret || ret->isInconclusive() || (ret->condition && !it->isInconclusive()))
@@ -1791,6 +1805,77 @@ const Token *Token::getValueTokenDeadPointer() const
     return nullptr;
 }
 
+static bool removeContradiction(std::list<ValueFlow::Value>& values)
+{
+    bool result = false;
+    for (ValueFlow::Value& x : values) {
+        if (x.isNonValue())
+            continue;
+        for (ValueFlow::Value& y : values) {
+            if (y.isNonValue())
+                continue;
+            if (x == y)
+                continue;
+            if (x.valueType != y.valueType)
+                continue;
+            if (x.isImpossible() == y.isImpossible())
+                continue;
+            if (!x.equalValue(y))
+                continue;
+            if (x.bound == y.bound ||
+                (x.bound != ValueFlow::Value::Bound::Point && y.bound != ValueFlow::Value::Bound::Point)) {
+                const bool removex = !x.isImpossible() || y.isKnown();
+                const bool removey = !y.isImpossible() || x.isKnown();
+                if (removex)
+                    values.remove(x);
+                if (removey)
+                    values.remove(y);
+                return true;
+            } else if (x.bound == ValueFlow::Value::Bound::Point) {
+                y.decreaseRange();
+                result = true;
+            }
+        }
+    }
+    return result;
+}
+
+static void removeOverlaps(std::list<ValueFlow::Value>& values)
+{
+    for (ValueFlow::Value& x : values) {
+        if (x.isNonValue())
+            continue;
+        values.remove_if([&](ValueFlow::Value& y) {
+            if (y.isNonValue())
+                return false;
+            if (&x == &y)
+                return false;
+            if (x.valueType != y.valueType)
+                return false;
+            if (x.valueKind != y.valueKind)
+                return false;
+            // TODO: Remove points coverd in a lower or upper bound
+            // TODO: Remove lower or upper bound already covered by a lower and upper bound
+            if (!x.equalValue(y))
+                return false;
+            if (x.bound != y.bound)
+                return false;
+            return true;
+        });
+    }
+}
+
+// Removing contradictions is an NP-hard problem. Instead we run multiple
+// passes to try to catch most contradictions
+static void removeContradictions(std::list<ValueFlow::Value>& values)
+{
+    for (int i = 0; i < 4; i++) {
+        if (!removeContradiction(values))
+            return;
+        removeOverlaps(values);
+    }
+}
+
 bool Token::addValue(const ValueFlow::Value &value)
 {
     if (value.isKnown() && mImpl->mValues) {
@@ -1811,6 +1896,9 @@ bool Token::addValue(const ValueFlow::Value &value)
         for (it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
             // different types => continue
             if (it->valueType != value.valueType)
+                continue;
+
+            if (it->isImpossible() != value.isImpossible())
                 continue;
 
             // different value => continue
@@ -1843,7 +1931,7 @@ bool Token::addValue(const ValueFlow::Value &value)
                 continue;
 
             // same value, but old value is inconclusive so replace it
-            if (it->isInconclusive() && !value.isInconclusive()) {
+            if (it->isInconclusive() && !value.isInconclusive() && !value.isImpossible()) {
                 *it = value;
                 if (it->varId == 0)
                     it->varId = mImpl->mVarId;
@@ -1870,6 +1958,8 @@ bool Token::addValue(const ValueFlow::Value &value)
             v.varId = mImpl->mVarId;
         mImpl->mValues = new std::list<ValueFlow::Value>(1, v);
     }
+
+    removeContradictions(*mImpl->mValues);
 
     return true;
 }
