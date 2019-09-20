@@ -54,7 +54,7 @@ public:
     }
 
     /** run checks, the token list is not simplified */
-    virtual void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         if (!tokenizer->isCPP()) {
             return;
         }
