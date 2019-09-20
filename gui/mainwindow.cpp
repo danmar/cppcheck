@@ -626,7 +626,7 @@ void MainWindow::updateVariableContractsTab()
 {
     QStringList added;
     if (mProjectFile) {
-        for (auto vc: mProjectFile->getVariableContracts()) {
+        for (const auto &vc: mProjectFile->getVariableContracts()) {
             QString line = vc.first;
             if (!vc.second.minValue.empty())
                 line += " min:" + QString::fromStdString(vc.second.minValue);

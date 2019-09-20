@@ -56,7 +56,7 @@ static QString getHelpFile()
     paths << (filesdir + "/help")
           << filesdir;
 #endif
-    for (QString p: paths) {
+    for (const QString &p: paths) {
         QString filename = p + "/online-help.qhc";
         if (QFileInfo(filename).exists())
             return filename;

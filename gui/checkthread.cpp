@@ -33,7 +33,7 @@ static bool executeCommand(std::string exe, std::vector<std::string> args, std::
     output->clear();
 
     QStringList args2;
-    for (std::string arg: args)
+    for (const std::string &arg: args)
         args2 << QString::fromStdString(arg);
 
     QProcess process;

@@ -298,7 +298,7 @@ namespace {
 
         void print(std::ostream &out) {
             std::set<std::pair<int,int>> locations;
-            for (auto it : mMap) {
+            for (const auto& it : mMap) {
                 locations.insert(std::pair<int,int>(it.first->linenr(), it.first->column()));
             }
             for (const std::pair<int,int> &loc : locations) {
@@ -554,7 +554,7 @@ namespace {
             std::ostringstream s;
             s << "D" << mDataIndex << ":" << "memory:{";
             bool first = true;
-            for (auto mem : memory) {
+            for (const auto &mem : memory) {
                 ExprEngine::ValuePtr value = mem.second;
                 const Variable *var = symbolDatabase->getVariableFromVarId(mem.first);
                 if (!var)
@@ -575,7 +575,7 @@ namespace {
             if (!constraints.empty()) {
                 s << " constraints:{";
                 first = true;
-                for (auto constraint: constraints) {
+                for (const auto &constraint: constraints) {
                     if (!first)
                         s << " ";
                     first = false;
@@ -694,7 +694,7 @@ namespace {
                 return;
 
             std::map<std::string, ExprEngine::ValuePtr> symbols;
-            for (auto mem: memory) {
+            for (const auto &mem: memory) {
                 getSymbols(symbols, mem.second);
             }
 
@@ -812,15 +812,15 @@ namespace {
                 return;
             symbols[val->name] = val;
             if (auto arrayValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(val)) {
-                for (auto sizeValue: arrayValue->size)
+                for (const auto &sizeValue: arrayValue->size)
                     getSymbols(symbols, sizeValue);
-                for (auto indexValue: arrayValue->data) {
+                for (const auto &indexValue: arrayValue->data) {
                     getSymbols(symbols, indexValue.index);
                     getSymbols(symbols, indexValue.value);
                 }
             }
             if (auto structValue = std::dynamic_pointer_cast<ExprEngine::StructValue>(val)) {
-                for (auto memberNameValue: structValue->member)
+                for (const auto &memberNameValue: structValue->member)
                     getSymbols(symbols, memberNameValue.second);
             }
         }
@@ -1054,7 +1054,7 @@ std::string ExprEngine::ConditionalValue::getSymbolicExpression() const
     std::ostringstream ostr;
     ostr << "{";
     bool first = true;
-    for (auto condvalue : values) {
+    for (const auto& condvalue : values) {
         ValuePtr cond = condvalue.first;
         ValuePtr value = condvalue.second;
 
@@ -1135,12 +1135,12 @@ public:
     AssertionList assertionList;
 
     void addAssertions(z3::solver &solver) const {
-        for (auto assertExpr : assertionList)
+        for (const auto &assertExpr : assertionList)
             solver.add(assertExpr);
     }
 
     void addConstraints(z3::solver &solver, const Data* data) {
-        for (auto constraint : data->constraints) {
+        for (const auto &constraint : data->constraints) {
             try {
                 solver.add(getConstraintExpr(constraint));
             } catch (const BailoutValueException &) {}
@@ -1766,7 +1766,7 @@ static ExprEngine::ValuePtr getValueRangeFromValueType(const ValueType *valueTyp
 static void call(const std::vector<ExprEngine::Callback> &callbacks, const Token *tok, ExprEngine::ValuePtr value, Data *dataBase)
 {
     if (value) {
-        for (ExprEngine::Callback f : callbacks) {
+        for (const ExprEngine::Callback& f : callbacks) {
             try {
                 f(tok, *value, dataBase);
             } catch (const ExprEngineException &e) {
@@ -2015,7 +2015,7 @@ static void checkContract(Data &data, const Token *tok, const Function *function
         }
 
         if (!bailoutValue) {
-            for (auto constraint : data.constraints)
+            for (const auto &constraint : data.constraints)
                 solver.add(exprData.getConstraintExpr(constraint));
 
             exprData.addAssertions(solver);
@@ -2193,7 +2193,7 @@ static ExprEngine::ValuePtr executeArrayIndex(const Token *tok, Data &data)
     if (arrayValue) {
         auto indexValue = calculateArrayIndex(tok, data, *arrayValue);
         auto conditionalValues = arrayValue->read(indexValue);
-        for (auto value: conditionalValues)
+        for (const auto& value: conditionalValues)
             call(data.callbacks, tok, value.second, &data);
         if (conditionalValues.size() == 1 && !conditionalValues[0].first)
             return conditionalValues[0].second;
@@ -2258,7 +2258,7 @@ static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
                 call(data.callbacks, tok->astOperand1(), pointerValue, &data);
                 auto indexValue = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
                 ExprEngine::ValuePtr ret;
-                for (auto val: pointerValue->read(indexValue)) {
+                for (const auto& val: pointerValue->read(indexValue)) {
                     structValue = std::dynamic_pointer_cast<ExprEngine::StructValue>(val.second);
                     if (structValue) {
                         auto memberValue = structValue->getValueOfMember(tok->astOperand2()->str());
@@ -2387,7 +2387,7 @@ static ExprEngine::ValuePtr executeDeref(const Token *tok, Data &data)
     if (pointer) {
         auto indexValue = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
         auto conditionalValues = pointer->read(indexValue);
-        for (auto value: conditionalValues)
+        for (const auto& value: conditionalValues)
             call(data.callbacks, tok, value.second, &data);
         if (conditionalValues.size() == 1 && !conditionalValues[0].first)
             return conditionalValues[0].second;
@@ -2804,7 +2804,7 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                                 if (auto structPtr = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(structVal1)) {
                                     if (structPtr->pointer && !structPtr->data.empty()) {
                                         auto indexValue = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
-                                        for (auto val: structPtr->read(indexValue)) {
+                                        for (const auto &val: structPtr->read(indexValue)) {
                                             structVal = std::dynamic_pointer_cast<ExprEngine::StructValue>(val.second);
                                         }
                                     }
@@ -3132,7 +3132,7 @@ static void dumpRecursive(ExprEngine::ValuePtr val)
     case ExprEngine::ValueType::FunctionCallArgumentValues: {
         std::cout << "FunctionCallArgumentValues(";
         const char *sep = "";
-        for (auto arg: std::dynamic_pointer_cast<ExprEngine::FunctionCallArgumentValues>(val)->argValues) {
+        for (const auto &arg: std::dynamic_pointer_cast<ExprEngine::FunctionCallArgumentValues>(val)->argValues) {
             std::cout << sep;
             sep = ",";
             if (!arg)
