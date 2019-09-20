@@ -360,7 +360,7 @@ Here is a sample report:
 
     <?xml version="1.0" encoding="UTF-8"?>
     <results version="2">
-      <cppcheck version="1.66">
+      <cppcheck version="1.66"/>
       <errors>
         <error id="someError" severity="error" msg="short error text"
            verbose="long error text" inconclusive="true" cwe="312">
