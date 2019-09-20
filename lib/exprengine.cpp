@@ -107,7 +107,7 @@ namespace {
             , settings(settings)
             , callbacks(callbacks)
             , mTrackExecution(trackExecution)
-            , dataIndex(trackExecution->getNewDataIndex()) {}
+            , mDataIndex(trackExecution->getNewDataIndex()) {}
         typedef std::map<nonneg int, std::shared_ptr<ExprEngine::Value>> Memory;
         Memory memory;
         int * const symbolValueIndex;
@@ -189,7 +189,7 @@ namespace {
         }
     private:
         TrackExecution * const mTrackExecution;
-        const int dataIndex;
+        const int mDataIndex;
     };
 }
 
