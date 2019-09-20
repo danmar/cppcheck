@@ -1862,7 +1862,7 @@ namespace {
                 if (scopeList1.back().usingNamespaces.find(scope) != scopeList1.back().usingNamespaces.end())
                     return true;
             } else {
-                for (auto ns : scopeList1.back().usingNamespaces) {
+                for (const auto& ns : scopeList1.back().usingNamespaces) {
                     if (scope == ns + " :: " + qualification)
                         return true;
                 }

@@ -94,7 +94,7 @@ namespace {
 
         void print(std::ostream &out) {
             std::set<std::pair<int,int>> locations;
-            for (auto it : map) {
+            for (const auto& it : map) {
                 locations.insert(std::pair<int,int>(it.first->linenr(), it.first->column()));
             }
             for (const std::pair<int,int> &loc : locations) {
@@ -247,7 +247,7 @@ namespace {
             const SymbolDatabase * const symbolDatabase = tokenizer->getSymbolDatabase();
             std::ostringstream s;
             s << "{"; // << mDataIndex << ":";
-            for (auto mem : memory) {
+            for (const auto& mem : memory) {
                 ExprEngine::ValuePtr value = mem.second;
                 const Variable *var = symbolDatabase->getVariableFromVarId(mem.first);
                 if (!var)
@@ -1053,7 +1053,7 @@ static ExprEngine::ValuePtr getValueRangeFromValueType(const std::string &name, 
 static void call(const std::vector<ExprEngine::Callback> &callbacks, const Token *tok, ExprEngine::ValuePtr value, Data *dataBase)
 {
     if (value) {
-        for (ExprEngine::Callback f : callbacks) {
+        for (const ExprEngine::Callback& f : callbacks) {
             try {
                 f(tok, *value, dataBase);
             } catch (const VerifyException &e) {
