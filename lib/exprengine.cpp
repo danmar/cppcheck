@@ -115,24 +115,61 @@ namespace {
         const Settings * const settings;
         const std::vector<ExprEngine::Callback> &callbacks;
 
-        Data getData(const Token *cond, bool trueData) {
-            Data ret(symbolValueIndex, tokenizer, settings, callbacks, mTrackExecution);
+        std::vector<Data> getData(const Token *cond, bool trueData) {
+            std::vector<Data> ret;
+            ret.push_back(Data(symbolValueIndex, tokenizer, settings, callbacks, mTrackExecution));
             for (Memory::const_iterator mem = memory.cbegin(); mem != memory.cend(); ++mem) {
-                ret.memory[mem->first] = mem->second;
+                for (Data &data : ret)
+                    data.memory[mem->first] = mem->second;
 
                 if (cond->isComparisonOp() && cond->astOperand1()->varId() == mem->first && cond->astOperand2()->isNumber()) {
                     const int128_t rhsValue = MathLib::toLongNumber(cond->astOperand2()->str());
                     if (auto intRange = std::dynamic_pointer_cast<ExprEngine::IntRange>(mem->second)) {
                         if (cond->str() == ">") {
-                            if (trueData && intRange->minValue <= rhsValue) {
+                            if (trueData) {
+                                if (intRange->maxValue <= rhsValue)
+                                    return std::vector<Data>();
                                 auto val = std::make_shared<ExprEngine::IntRange>(getNewSymbolName(), rhsValue + 1, intRange->maxValue);
-                                ret.trackAssignment(cond, val);
-                                ret.memory[mem->first] = val;
-                            } else if (!trueData && intRange->maxValue > rhsValue) {
+                                trackAssignment(cond, val);
+                                ret[0].memory[mem->first] = val;
+                            } else { /* if (!trueData) */
+                                if (intRange->maxValue <= rhsValue)
+                                    return std::vector<Data>();
                                 auto val = std::make_shared<ExprEngine::IntRange>(getNewSymbolName(), intRange->minValue, rhsValue);
-                                ret.trackAssignment(cond, val);
-                                ret.memory[mem->first] = val;
+                                trackAssignment(cond, val);
+                                ret[0].memory[mem->first] = val;
                             }
+                        }
+                    }
+                }
+
+                else if (cond->varId() == mem->first) {
+                    if (auto intRange = std::dynamic_pointer_cast<ExprEngine::IntRange>(mem->second)) {
+                        if (trueData) {
+                            if (intRange->minValue == 0 && intRange->maxValue == 0)
+                                return std::vector<Data>();
+                            if (intRange->minValue < 0) {
+                                auto val = std::make_shared<ExprEngine::IntRange>(getNewSymbolName(), intRange->minValue, -1);
+                                trackAssignment(cond, val);
+                                ret[0].memory[mem->first] = val;
+                            }
+                            if (intRange->maxValue > 0) {
+                                auto val = std::make_shared<ExprEngine::IntRange>(getNewSymbolName(), 1, intRange->maxValue);
+                                trackAssignment(cond, val);
+                                if (intRange->minValue < 0) {
+                                    // create additional intrange..
+                                    ret.push_back(Data(symbolValueIndex, tokenizer, settings, callbacks, mTrackExecution));
+                                    ret.back().memory = ret[0].memory;
+                                }
+                                ret[0].memory[mem->first] = val;
+                            }
+                        } else { /* if (!trueData) */
+                            if (intRange->maxValue < 0 || intRange->minValue > 0)
+                                return std::vector<Data>();
+
+                            auto val = std::make_shared<ExprEngine::IntRange>(getNewSymbolName(), 0, 0);
+                            trackAssignment(cond, val);
+                            ret[0].memory[mem->first] = val;
                         }
                     }
                 }
@@ -179,7 +216,9 @@ namespace {
             for (auto mem : memory) {
                 ExprEngine::ValuePtr value = mem.second;
                 s << " " << symbolDatabase->getVariableFromVarId(mem.first)->name() << "=";
-                if (value->name[0] == '$')
+                if (!value)
+                    s << "(null)";
+                else if (value->name[0] == '$')
                     s << "(" << value->name << "," << value->getRange() << ")";
                 else
                     s << value->name;
@@ -522,16 +561,19 @@ static void execute(const Token *start, const Token *end, Data &data)
         if (Token::simpleMatch(tok, "if (")) {
             const Token *cond = tok->next()->astOperand2();
             /*const ExprEngine::ValuePtr condValue =*/ executeExpression(cond,data);
-            Data trueData = data.getData(cond, true);
-            Data falseData = data.getData(cond, false);
+            std::vector<Data> trueData = data.getData(cond, true);
+            std::vector<Data> falseData = data.getData(cond, false);
             const Token *thenStart = tok->linkAt(1)->next();
             const Token *thenEnd = thenStart->link();
-            execute(thenStart->next(), end, trueData);
+            for (Data &d : trueData)
+                execute(thenStart->next(), end, d);
             if (Token::simpleMatch(thenEnd, "} else {")) {
                 const Token *elseStart = thenEnd->tokAt(2);
-                execute(elseStart->next(), end, falseData);
+                for (Data &d : falseData)
+                    execute(elseStart->next(), end, d);
             } else {
-                execute(thenEnd->next(), end, falseData);
+                for (Data &d : falseData)
+                    execute(thenEnd->next(), end, d);
             }
             return;
         }
@@ -553,6 +595,8 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
 
 static ExprEngine::ValuePtr createStructVal(const Scope *structScope, Data &data)
 {
+    if (!structScope)
+        return ExprEngine::ValuePtr();
     std::shared_ptr<ExprEngine::StructValue> structValue = std::make_shared<ExprEngine::StructValue>(data.getNewSymbolName());
     for (const Variable &member : structScope->varlist) {
         ExprEngine::ValuePtr memberValue = createVariableValue(member, data);

@@ -43,6 +43,8 @@ private:
         TEST_CASE(if1);
         TEST_CASE(if2);
         TEST_CASE(if3);
+        TEST_CASE(if4);
+        TEST_CASE(if5);
 
         TEST_CASE(ifelse1);
 
@@ -117,6 +119,14 @@ private:
 
     void if3() {
         ASSERT_EQUALS("[1:1][-2147483648:2147483647][-2147483648:2147483647]", getRange("void f() { int x; if (a) { if (b) x=1; } a=x; }", "a=x"));
+    }
+
+    void if4() {
+        ASSERT_EQUALS("[1:2147483647][-2147483648:-1]", getRange("int x; void f() { if (x) { a=x; }}", "a=x"));
+    }
+
+    void if5() {
+        ASSERT_EQUALS("[0:0]", getRange("int x; void f() { if (x) {} else { a=x; }}", "a=x"));
     }
 
     void ifelse1() {
