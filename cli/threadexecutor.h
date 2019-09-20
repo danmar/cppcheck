@@ -47,13 +47,13 @@ class ThreadExecutor : public ErrorLogger {
 public:
     ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger);
     ThreadExecutor(const ThreadExecutor &) = delete;
-    virtual ~ThreadExecutor();
+    ~ThreadExecutor() OVERRIDE;
     void operator=(const ThreadExecutor &) = delete;
     unsigned int check();
 
-    virtual void reportOut(const std::string &outmsg) OVERRIDE;
-    virtual void reportErr(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
-    virtual void reportInfo(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
+    void reportOut(const std::string &outmsg) OVERRIDE;
+    void reportErr(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
+    void reportInfo(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
 
     /**
      * @brief Add content to a file, to be used in unit testing.

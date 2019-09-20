@@ -82,14 +82,14 @@ protected:
 
     void processOptions(const options& args);
 public:
-    virtual void reportOut(const std::string &outmsg) OVERRIDE;
-    virtual void reportErr(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
+    void reportOut(const std::string &outmsg) OVERRIDE;
+    void reportErr(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
     void run(const std::string &str);
     static void printHelp();
     const std::string classname;
 
     explicit TestFixture(const char * const _name);
-    virtual ~TestFixture() { }
+    ~TestFixture() OVERRIDE { }
 
     static std::size_t runTests(const options& args);
 };
