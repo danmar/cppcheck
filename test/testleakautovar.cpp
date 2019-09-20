@@ -24,6 +24,7 @@
 #include "tokenize.h"
 
 #include <simplecpp.h>
+#include <tinyxml2.h>
 #include <vector>
 
 class TestLeakAutoVar : public TestFixture {
@@ -46,6 +47,14 @@ private:
         settings.library.setdealloc("fclose", id, 1);
         settings.library.smartPointers.insert("std::shared_ptr");
         settings.library.smartPointers.insert("std::unique_ptr");
+
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+        "<def>\n"
+        "  <podtype name=\"uint8_t\" sign=\"u\" size=\"1\"/>\n"
+        "</def>";
+        tinyxml2::XMLDocument doc;
+        doc.Parse(xmldata, sizeof(xmldata));
+        settings.library.load(doc);
 
         // Assign
         TEST_CASE(assign1);
@@ -1733,6 +1742,18 @@ private:
         check("void* f() {\n"
               "    void *x = malloc(1);\n"
               "    return (void*)(short)x;\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: x\n", errout.str());
+
+        check("void* f() {\n"
+              "    void *x = malloc(1);\n"
+              "    return (mytype)x;\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void* f() {\n" // Do not crash
+              "    void *x = malloc(1);\n"
+              "    return (mytype)y;\n"
               "}", true);
         ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: x\n", errout.str());
     }
