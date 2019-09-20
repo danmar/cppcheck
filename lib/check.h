@@ -184,12 +184,12 @@ protected:
      * will call this method
      */
     bool wrongData(const Token *tok, bool condition, const char *str);
-private:
-    const std::string mName;
 
     /** disabled assignment operator and copy constructor */
     void operator=(const Check &) = delete;
     Check(const Check &) = delete;
+private:
+    const std::string mName;
 };
 
 /// @}
