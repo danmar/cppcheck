@@ -37,6 +37,7 @@ private:
         TEST_CASE(expr3);
         TEST_CASE(expr4);
         TEST_CASE(expr5);
+        TEST_CASE(exprAssign1);
 
         TEST_CASE(functionCall1);
 
@@ -108,6 +109,10 @@ private:
 
     void expr5() {
         ASSERT_EQUALS("-65536:65534", getRange("void f(short a, short b, short c, short d) { if (a+b<c+d) {} }", "a+b"));
+    }
+
+    void exprAssign1() {
+        ASSERT_EQUALS("1:256", getRange("void f(unsigned char a) { a += 1; }", "a+=1"));
     }
 
     void functionCall1() {

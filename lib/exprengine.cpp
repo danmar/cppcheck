@@ -422,7 +422,17 @@ static ExprEngine::ValuePtr executeReturn(const Token *tok, Data &data)
 static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
 {
     ExprEngine::ValuePtr rhsValue = executeExpression(tok->astOperand2(), data);
-    call(data.callbacks, tok, rhsValue);
+    if (tok->str() == "=")
+        call(data.callbacks, tok, rhsValue);
+    else {
+        // "+=" => "+"
+        std::string binop(tok->str());
+        binop = binop.substr(0, binop.size() - 1);
+        ExprEngine::ValuePtr lhsValue = executeExpression(tok->astOperand1(), data);
+        auto newValue = std::make_shared<ExprEngine::BinOpResult>(binop, lhsValue, rhsValue);
+        call(data.callbacks, tok, newValue);
+        rhsValue = newValue;
+    }
 
     const Token *lhsToken = tok->astOperand1();
     data.trackAssignment(lhsToken, rhsValue);
@@ -561,7 +571,8 @@ static ExprEngine::ValuePtr executeExpression(const Token *tok, Data &data)
     if (tok->str() == "return")
         return executeReturn(tok, data);
 
-    if (tok->str() == "=")
+    if (tok->isAssignmentOp())
+        // TODO: Handle more operators
         return executeAssign(tok, data);
 
     if (tok->astOperand1() && tok->astOperand2() && tok->str() == "[")
@@ -597,7 +608,7 @@ static ExprEngine::ValuePtr executeExpression(const Token *tok, Data &data)
 static void execute(const Token *start, const Token *end, Data &data)
 {
     for (const Token *tok = start; tok != end; tok = tok->next()) {
-        if (tok->str() == ";")
+        if (Token::Match(tok, "[;{}]"))
             data.trackProgramState(tok);
         if (tok->variable() && tok->variable()->nameToken() == tok) {
             if (tok->variable()->isArray() && tok->variable()->dimensions().size() == 1 && tok->variable()->dimensions()[0].known) {
