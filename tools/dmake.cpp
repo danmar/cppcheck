@@ -473,6 +473,9 @@ int main(int argc, char **argv)
     fout << "\txmllint --noout --relaxng cppcheck-errors.rng /tmp/example.xml\n";
     fout << "\ncheckCWEEntries: /tmp/errorlist.xml\n";
     fout << "\t./tools/listErrorsWithoutCWE.py -F /tmp/errorlist.xml\n";
+    fout << ".PHONY: validateRules\n",
+         fout << "validateRules:\n";
+    fout << "\txmllint --noout rules/*.xml\n";
 
     fout << "\n###### Build\n\n";
 
