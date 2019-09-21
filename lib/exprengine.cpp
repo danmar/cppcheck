@@ -461,8 +461,16 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
 
 static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
 {
-    for (const Token *argtok : getArguments(tok))
-        (void)executeExpression(argtok, data);
+    for (const Token *argtok : getArguments(tok)) {
+        auto val = executeExpression(argtok, data);
+        if (auto arrayValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(val)) {
+            ValueType vt(*argtok->valueType());
+            vt.pointer = 0;
+            auto anyVal = getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings);
+            for (int i = 0; i < arrayValue->data.size(); ++i)
+                arrayValue->data[i] = anyVal;
+        }
+    }
     auto val = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
     call(data.callbacks, tok, val);
     return val;
@@ -668,6 +676,9 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
         return;
     const Function *function = functionScope->function;
     if (!function)
+        return;
+    if (functionScope->bodyStart->fileIndex() > 0)
+        // TODO.. what about functions in headers?
         return;
 
     int symbolValueIndex = 0;
