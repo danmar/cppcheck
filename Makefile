@@ -369,6 +369,9 @@ validateXML: createXMLExamples
 
 checkCWEEntries: /tmp/errorlist.xml
 	./tools/listErrorsWithoutCWE.py -F /tmp/errorlist.xml
+.PHONY: validateRules
+validateRules:
+	xmllint --noout rules/*.xml
 
 ###### Build
 
