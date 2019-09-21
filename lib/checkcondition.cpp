@@ -1357,8 +1357,9 @@ void CheckCondition::alwaysTrueFalse()
             const bool compExpr = Token::Match(tok, "%comp%|!"); // a compare expression
             const bool returnStatement = Token::simpleMatch(tok->astTop(), "return") &&
                                          Token::Match(tok->astParent(), "%oror%|&&|return");
+            const bool ternaryExpression = Token::simpleMatch(tok->astParent(), "?");
 
-            if (!(constIfWhileExpression || constValExpr || compExpr || returnStatement))
+            if (!(constIfWhileExpression || constValExpr || compExpr || returnStatement || ternaryExpression))
                 continue;
 
             if (returnStatement && (!scope->function || !Token::simpleMatch(scope->function->retDef, "bool")))
