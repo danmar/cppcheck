@@ -49,6 +49,7 @@ private:
         TEST_CASE(ifelse1);
 
         TEST_CASE(localArray1);
+        TEST_CASE(localArray2);
         TEST_CASE(localArrayUninit);
 
         TEST_CASE(pointerAlias1);
@@ -135,6 +136,10 @@ private:
 
     void localArray1() {
         ASSERT_EQUALS("[5:5]", getRange("inf f() { int arr[10]; arr[4] = 5; return arr[4]; }", "arr[4]"));
+    }
+
+    void localArray2() {
+        ASSERT_EQUALS("[0:0]", getRange("inf f() { char arr[10] = \"\"; return arr[4]; }", "arr[4]"));
     }
 
     void localArrayUninit() {

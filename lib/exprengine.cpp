@@ -411,8 +411,22 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
     } else if (lhsToken->str() == "[") {
         auto arrayValue = data.getArrayValue(lhsToken->astOperand1());
         if (arrayValue) {
-            auto indexValue = executeExpression(lhsToken->astOperand2(), data);
-            arrayValue->assign(indexValue, rhsValue);
+            // Is it array initialization?
+            const Token *arrayInit = lhsToken->astOperand1();
+            if (arrayInit && arrayInit->variable() && arrayInit->variable()->nameToken() == arrayInit) {
+                if (auto strval = std::dynamic_pointer_cast<ExprEngine::StringLiteralValue>(rhsValue)) {
+                    for (size_t i = 0; i < strval->size(); ++i) {
+                        uint8_t c = strval->string[i];
+                        arrayValue->data[i] = std::make_shared<ExprEngine::IntRange>(std::to_string(int(c)),c,c);
+                    }
+                    auto v0 = std::make_shared<ExprEngine::IntRange>("0",0,0);
+                    for (size_t i = strval->size(); i < arrayValue->data.size(); ++i)
+                        arrayValue->data[i] = v0;
+                }
+            } else {
+                auto indexValue = executeExpression(lhsToken->astOperand2(), data);
+                arrayValue->assign(indexValue, rhsValue);
+            }
         }
     } else if (lhsToken->isUnaryOp("*")) {
         auto pval = executeExpression(lhsToken->astOperand1(), data);
@@ -508,6 +522,12 @@ static ExprEngine::ValuePtr executeNumber(const Token *tok)
     return std::make_shared<ExprEngine::IntRange>(tok->str(), value, value);
 }
 
+static ExprEngine::ValuePtr executeStringLiteral(const Token *tok, Data &data)
+{
+    std::string s = tok->str();
+    return std::make_shared<ExprEngine::StringLiteralValue>(data.getNewSymbolName(), s.substr(1, s.size()-2));
+}
+
 static ExprEngine::ValuePtr executeExpression(const Token *tok, Data &data)
 {
     if (tok->str() == "return")
@@ -539,6 +559,9 @@ static ExprEngine::ValuePtr executeExpression(const Token *tok, Data &data)
 
     if (tok->isNumber())
         return executeNumber(tok);
+
+    if (tok->tokType() == Token::Type::eString)
+        return executeStringLiteral(tok, data);
 
     return ExprEngine::ValuePtr();
 }
