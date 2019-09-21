@@ -3294,6 +3294,16 @@ private:
               "    else if (isdigit(c) != 0) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9362
+        check("uint8_t g();\n"
+              "void f() {\n"
+              "    const uint8_t v = g();\n"
+              "    if((v != 0x00)) {\n"
+              "        if( (v & 0x01) == 0x00) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueContainer() {
