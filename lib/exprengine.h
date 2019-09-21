@@ -94,7 +94,9 @@ namespace ExprEngine {
             return ValueType::IntRange;
         }
         std::string getRange() const override {
-            return "[" + str(minValue) + ":" + str(maxValue) + "]";
+            if (minValue == maxValue)
+                return str(minValue);
+            return str(minValue) + ":" + str(maxValue);
         }
         bool isIntValueInRange(int value) const override {
             return value >= minValue && value <= maxValue;
@@ -129,9 +131,7 @@ namespace ExprEngine {
         ValueType type() const override {
             return ValueType::ArrayValue;
         }
-        std::string getRange() const override {
-            return "[" + std::to_string(data.size()) + "]";
-        }
+        std::string getRange() const override;
 
         void assign(ValuePtr index, ValuePtr value);
         ValuePtr read(ValuePtr index);

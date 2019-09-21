@@ -185,7 +185,14 @@ namespace {
             const Memory::iterator it = memory.find(tok->varId());
             if (it != memory.end())
                 return std::dynamic_pointer_cast<ExprEngine::ArrayValue>(it->second);
-            return std::shared_ptr<ExprEngine::ArrayValue>();
+            if (tok->varId() == 0)
+                return std::shared_ptr<ExprEngine::ArrayValue>();
+            unsigned int size = 1;
+            for (const auto &dim : tok->variable()->dimensions())
+                size *= dim.num;
+            auto val = std::make_shared<ExprEngine::ArrayValue>(getNewSymbolName(), size);
+            memory[tok->varId()] = val;
+            return val;
         }
 
         ExprEngine::ValuePtr getValue(unsigned int varId, const ValueType *valueType, const Token *tok) {
@@ -251,11 +258,24 @@ ExprEngine::ValuePtr ExprEngine::ArrayValue::read(ExprEngine::ValuePtr index)
     return ExprEngine::ValuePtr();
 }
 
+std::string ExprEngine::ArrayValue::getRange() const
+{
+    std::ostringstream r;
+    r << "[";
+    for (size_t i = 0; i < data.size(); ++i) {
+        r << (i==0?"":",") << data[i]->getRange();
+    }
+    r << "]";
+    return r.str();
+}
+
 std::string ExprEngine::BinOpResult::getRange() const
 {
     int128_t minValue, maxValue;
     getRange(&minValue, &maxValue);
-    return "[" + str(minValue) + ":" + str(maxValue) + "]";
+    if (minValue == maxValue)
+        return str(minValue);
+    return str(minValue) + ":" + str(maxValue);
 }
 
 void ExprEngine::BinOpResult::getRange(int128_t *minValue, int128_t *maxValue) const
