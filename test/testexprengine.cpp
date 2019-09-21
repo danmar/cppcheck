@@ -43,10 +43,13 @@ private:
         TEST_CASE(if1);
         TEST_CASE(if2);
         TEST_CASE(if3);
+        TEST_CASE(if4);
+        TEST_CASE(if5);
 
         TEST_CASE(ifelse1);
 
         TEST_CASE(localArray1);
+        TEST_CASE(localArray2);
         TEST_CASE(localArrayUninit);
 
         TEST_CASE(pointerAlias1);
@@ -119,12 +122,24 @@ private:
         ASSERT_EQUALS("[1:1][-2147483648:2147483647][-2147483648:2147483647]", getRange("void f() { int x; if (a) { if (b) x=1; } a=x; }", "a=x"));
     }
 
+    void if4() {
+        ASSERT_EQUALS("[1:2147483647][-2147483648:-1]", getRange("int x; void f() { if (x) { a=x; }}", "a=x"));
+    }
+
+    void if5() {
+        ASSERT_EQUALS("[0:0]", getRange("int x; void f() { if (x) {} else { a=x; }}", "a=x"));
+    }
+
     void ifelse1() {
         ASSERT_EQUALS("[-32767:6]", getRange("inf f(short x) { if (x > 5) ; else a = x + 1; }", "x+1"));
     }
 
     void localArray1() {
         ASSERT_EQUALS("[5:5]", getRange("inf f() { int arr[10]; arr[4] = 5; return arr[4]; }", "arr[4]"));
+    }
+
+    void localArray2() {
+        ASSERT_EQUALS("[0:0]", getRange("inf f() { char arr[10] = \"\"; return arr[4]; }", "arr[4]"));
     }
 
     void localArrayUninit() {

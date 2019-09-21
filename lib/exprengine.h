@@ -52,7 +52,7 @@ namespace ExprEngine {
     std::string str(int128_t);
 
     // TODO we need to handle floats, containers, pointers, aliases and structs and stuff
-    enum class ValueType { UninitValue, IntRange, PointerValue, ArrayValue, StructValue, AddressOfValue, BinOpResult };
+    enum class ValueType { UninitValue, IntRange, PointerValue, ArrayValue, StringLiteralValue, StructValue, AddressOfValue, BinOpResult };
 
     class Value;
     typedef std::shared_ptr<Value> ValuePtr;
@@ -88,7 +88,7 @@ namespace ExprEngine {
             , minValue(minValue)
             , maxValue(maxValue) {
         }
-        ~IntRange() {}
+        ~IntRange() OVERRIDE {}
 
         ValueType type() const override {
             return ValueType::IntRange;
@@ -137,6 +137,26 @@ namespace ExprEngine {
         ValuePtr read(ValuePtr index);
 
         std::vector<ValuePtr> data;
+    };
+
+    class StringLiteralValue: public Value {
+    public:
+        StringLiteralValue(const std::string &name, const std::string &s)
+            : Value(name)
+            , string(s) {
+        }
+
+        ValueType type() const override {
+            return ValueType::StringLiteralValue;
+        }
+        std::string getRange() const override {
+            return "\"" + string + "\"";
+        }
+
+        int size() const {
+            return string.size();
+        }
+        const std::string string;
     };
 
     class StructValue: public Value {

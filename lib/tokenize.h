@@ -884,13 +884,13 @@ public:
 
     void calculateScopes();
 
-private:
     /** Disable copy constructor */
     Tokenizer(const Tokenizer &) = delete;
 
     /** Disable assignment operator */
     Tokenizer &operator=(const Tokenizer &) = delete;
 
+private:
     Token *processFunc(Token *tok2, bool inOperator) const;
 
     /**

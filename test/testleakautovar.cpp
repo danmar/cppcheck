@@ -37,11 +37,11 @@ private:
 
     void run() OVERRIDE {
         int id = 0;
-        while (!settings.library.ismemory(++id));
+        while (!Library::ismemory(++id));
         settings.library.setalloc("malloc", id, -1);
         settings.library.setrealloc("realloc", id, -1);
         settings.library.setdealloc("free", id, 1);
-        while (!settings.library.isresource(++id));
+        while (!Library::isresource(++id));
         settings.library.setalloc("fopen", id, -1);
         settings.library.setrealloc("freopen", id, -1, 3);
         settings.library.setdealloc("fclose", id, 1);
