@@ -3287,6 +3287,13 @@ private:
               "    bool compare = c == b;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9361
+        check("void f(char c) {\n"
+              "    if (c == '.') {}\n"
+              "    else if (isdigit(c) != 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueContainer() {
