@@ -930,21 +930,21 @@ void CheckLeakAutoVar::ret(const Token *tok, const VarInfo &varInfo)
         if (var) {
             bool used = false;
             for (const Token *tok2 = tok; tok2; tok2 = tok2->next()) {
-                if (tok2->str() == ";" || Token::simpleMatch(tok2, "return ;"))
+                if (tok2->str() == ";")
                     break;
                 if (!Token::Match(tok2, "return|(|{|,"))
                     continue;
 
-                tok2 = tok2->next();
-                while (tok2 && tok2->isCast() && tok2->valueType() &&
-                       (tok2->valueType()->pointer ||
-                        (tok2->valueType()->typeSize(*mSettings) == 0) ||
-                        (tok2->valueType()->typeSize(*mSettings) >= mSettings->sizeof_pointer)))
-                    tok2 = tok2->astOperand2() ? tok2->astOperand2() : tok2->astOperand1();
-                if (Token::Match(tok2, "%varid%", varid))
-                    tok2 = tok2->next();
-                else if (Token::Match(tok2, "& %varid% . %name%", varid))
-                    tok2 = tok2->tokAt(4);
+                const Token* tok3 = tok2->next();
+                while (tok3 && tok3->isCast() && tok3->valueType() &&
+                       (tok3->valueType()->pointer ||
+                        (tok3->valueType()->typeSize(*mSettings) == 0) ||
+                        (tok3->valueType()->typeSize(*mSettings) >= mSettings->sizeof_pointer)))
+                    tok3 = tok3->astOperand2() ? tok3->astOperand2() : tok3->astOperand1();
+                if (Token::Match(tok3, "%varid%", varid))
+                    tok2 = tok3->next();
+                else if (Token::Match(tok3, "& %varid% . %name%", varid))
+                    tok2 = tok3->tokAt(4);
                 else
                     continue;
                 if (Token::Match(tok2, "[});,]")) {

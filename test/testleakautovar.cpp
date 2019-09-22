@@ -154,6 +154,7 @@ private:
         TEST_CASE(return5);
         TEST_CASE(return6); // #8282 return {p, p}
         TEST_CASE(return7); // #9343 return (uint8_t*)x
+        TEST_CASE(return8);
 
         // General tests: variable type, allocation type, etc
         TEST_CASE(test1);
@@ -1756,6 +1757,32 @@ private:
               "    return (mytype)y;\n"
               "}", true);
         ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: x\n", errout.str());
+    }
+
+    void return8() {
+        check("void* f() {\n"
+              "    void *x = malloc(1);\n"
+              "    return (x);\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void* f() {\n"
+              "    void *x = malloc(1);\n"
+              "    return ((x));\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void* f() {\n"
+              "    void *x = malloc(1);\n"
+              "    return ((((x))));\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("char* f() {\n"
+              "    void *x = malloc(1);\n"
+              "    return (char*)(x);\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void test1() { // 3809
