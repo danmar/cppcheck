@@ -606,7 +606,7 @@ static ExprEngine::ValuePtr executeExpression(const Token *tok, Data &data)
     if (tok->astOperand1() && tok->astOperand2() && tok->str() == "[")
         return executeArrayIndex(tok, data);
 
-    if (tok->str() == "(" && tok->astOperand2())
+    if (tok->str() == "(" && !tok->isCast())
         return executeFunctionCall(tok, data);
 
     if (tok->str() == ".")

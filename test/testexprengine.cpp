@@ -41,6 +41,7 @@ private:
         TEST_CASE(exprAssign1);
 
         TEST_CASE(functionCall1);
+        TEST_CASE(functionCall2);
 
         TEST_CASE(if1);
         TEST_CASE(if2);
@@ -125,6 +126,17 @@ private:
 
     void functionCall1() {
         ASSERT_EQUALS("-2147483648:2147483647", getRange("int atoi(const char *p); void f() { int x = atoi(a); x = x; }", "x=x"));
+    }
+
+    void functionCall2() {
+        const char code[] = "namespace NS {\n"
+                            "    short getValue();\n"
+                            "}"
+                            "void f() {\n"
+                            "    short value = NS::getValue();\n"
+                            "    value = value;\n"
+                            "}";
+        ASSERT_EQUALS("-32768:32767", getRange(code, "value=value"));
     }
 
     void if1() {
