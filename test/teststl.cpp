@@ -3241,6 +3241,20 @@ private:
               "    void shift() { EffectivityRangeData<int>::iterator it;  } \n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        // test for crash in z3
+        check("struct explain::imp {\n"
+              "    solver &m_solver;\n"
+              "\n"
+              "    void project(var x, unsigned num, literal const *ls,\n"
+              "                 const scoped_literal_vector &result) {\n"
+              "        DEBUG_CODE(TRACE(\"nlsat\",\n"
+              "                         for (literal l\n"
+              "                              : result) { m_solver.display(tout << \" \", l); });\n"
+              "                        );\n"
+              "    }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void dereferenceInvalidIterator() {

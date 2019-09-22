@@ -2036,6 +2036,8 @@ static const Token *singleMemberCallInScope(const Token *start, nonneg int varid
     if (!Token::findmatch(dotTok->tokAt(2), "%varid%", endStatement, varid))
         return nullptr;
     input = Token::Match(start->next(), "%var% . %name% ( %varid% )", varid);
+    if (!dotTok->astOperand1()) // incomplete code
+        return nullptr;
     if (isVariableChanged(dotTok->next(), endStatement, dotTok->astOperand1()->varId(), false, nullptr, true))
         return nullptr;
     return dotTok;
