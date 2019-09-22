@@ -22,6 +22,9 @@
 #include "tokenize.h"
 #include "testsuite.h"
 
+#include <limits>
+#include <string>
+
 class TestExprEngine : public TestFixture {
 public:
     TestExprEngine() : TestFixture("TestExprEngine") {
@@ -39,6 +42,9 @@ private:
         TEST_CASE(expr4);
         TEST_CASE(expr5);
         TEST_CASE(exprAssign1);
+
+        TEST_CASE(floatValue1);
+        TEST_CASE(floatValue2);
 
         TEST_CASE(functionCall1);
         TEST_CASE(functionCall2);
@@ -122,6 +128,14 @@ private:
 
     void exprAssign1() {
         ASSERT_EQUALS("1:256", getRange("void f(unsigned char a) { a += 1; }", "a+=1"));
+    }
+
+    void floatValue1() {
+        ASSERT_EQUALS(std::to_string(std::numeric_limits<float>::min()) + ":" + std::to_string(std::numeric_limits<float>::max()), getRange("float f; void func() { f=f; }", "f=f"));
+    }
+
+    void floatValue2() {
+        ASSERT_EQUALS("14.500000", getRange("void func() { float f = 29.0; f = f / 2.0; }", "f/2.0"));
     }
 
     void functionCall1() {
