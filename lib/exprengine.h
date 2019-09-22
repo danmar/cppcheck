@@ -108,14 +108,19 @@ namespace ExprEngine {
 
     class PointerValue: public Value {
     public:
-        PointerValue(const std::string &name, ValuePtr data) : Value(name), data(data) {}
+        PointerValue(const std::string &name, ValuePtr data, bool null, bool uninitData)
+            : Value(name)
+            , data(data)
+            , null(null)
+            , uninitData(uninitData) {
+        }
         ValueType type() const override {
             return ValueType::PointerValue;
         }
-        std::string getRange() const override {
-            return "*" + data->getRange();
-        }
+        std::string getRange() const override;
         ValuePtr data;
+        bool null;
+        bool uninitData;
     };
 
     class ArrayValue: public Value {

@@ -269,6 +269,18 @@ std::string ExprEngine::ArrayValue::getRange() const
     return r.str();
 }
 
+std::string ExprEngine::PointerValue::getRange() const
+{
+    std::string r;
+    if (data)
+        r = "->" + data->getRange();
+    if (null)
+        r += std::string(r.empty() ? "" : ",") + "null";
+    if (uninitData)
+        r += std::string(r.empty() ? "" : ",") + "->?";
+    return r;
+}
+
 std::string ExprEngine::BinOpResult::getRange() const
 {
     int128_t minValue, maxValue;
@@ -670,14 +682,28 @@ static ExprEngine::ValuePtr createStructVal(const Scope *structScope, Data &data
 
 static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
 {
-    if (!var.nameToken() || !var.valueType())
+    if (!var.nameToken())
         return ExprEngine::ValuePtr();
-    if (var.valueType()->pointer > 0)
-        return std::make_shared<ExprEngine::PointerValue>(data.getNewSymbolName(), std::make_shared<ExprEngine::UninitValue>());
-    if (var.valueType()->isIntegral())
-        return getValueRangeFromValueType(data.getNewSymbolName(), var.valueType(), *data.settings);
-    if (var.valueType()->type == ValueType::Type::RECORD)
-        return createStructVal(var.valueType()->typeScope, data);
+    const ValueType *valueType = var.valueType();
+    if (!valueType || valueType->type == ValueType::Type::UNKNOWN_TYPE)
+        valueType = var.nameToken()->valueType();
+    if (!valueType || valueType->type == ValueType::Type::UNKNOWN_TYPE)
+        return ExprEngine::ValuePtr();
+
+    if (valueType->pointer > 0) {
+        ValueType vt(*valueType);
+        vt.pointer = 0;
+        auto intRange = getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings);
+        return std::make_shared<ExprEngine::PointerValue>(data.getNewSymbolName(), intRange, true, true);
+    }
+    if (valueType->isIntegral())
+        return getValueRangeFromValueType(data.getNewSymbolName(), valueType, *data.settings);
+    if (valueType->type == ValueType::Type::RECORD)
+        return createStructVal(valueType->typeScope, data);
+    if (valueType->smartPointerType) {
+        auto structValue = createStructVal(valueType->smartPointerType->classScope, data);
+        return std::make_shared<ExprEngine::PointerValue>(data.getNewSymbolName(), structValue, true, false);
+    }
     return ExprEngine::ValuePtr();
 }
 

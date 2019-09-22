@@ -30,6 +30,7 @@ public:
 private:
     void run() OVERRIDE {
         TEST_CASE(argPointer);
+        TEST_CASE(argSmartPointer);
         TEST_CASE(argStruct);
 
         TEST_CASE(expr1);
@@ -61,6 +62,7 @@ private:
     std::string getRange(const char code[], const std::string &str) {
         Settings settings;
         settings.platform(cppcheck::Platform::Unix64);
+        settings.library.smartPointers.insert("std::shared_ptr");
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
@@ -79,7 +81,11 @@ private:
     }
 
     void argPointer() {
-        ASSERT_EQUALS("?", getRange("void f(unsigned char *p) { a = *p; }", "*p"));
+        ASSERT_EQUALS("->0:255,null,->?", getRange("void f(unsigned char *p) { a = *p; }", "p"));
+    }
+
+    void argSmartPointer() {
+        ASSERT_EQUALS("->$1,null", getRange("struct S { int x; }; void f(std::shared_ptr<S> ptr) { x = ptr; }", "ptr"));
     }
 
     void argStruct() {
