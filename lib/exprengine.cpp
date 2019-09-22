@@ -476,6 +476,22 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
             auto val = std::dynamic_pointer_cast<ExprEngine::AddressOfValue>(pval);
             if (val)
                 data.memory[val->varId] = rhsValue;
+        } else if (pval && pval->type() == ExprEngine::ValueType::BinOpResult) {
+            auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(pval);
+            if (b && b->binop == "+") {
+                std::shared_ptr<ExprEngine::ArrayValue> arr;
+                ExprEngine::ValuePtr offset;
+                if (b->op1->type() == ExprEngine::ValueType::ArrayValue) {
+                    arr = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(b->op1);
+                    offset = b->op2;
+                } else {
+                    arr = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(b->op2);
+                    offset = b->op1;
+                }
+                if (arr && offset) {
+                    arr->assign(offset, rhsValue);
+                }
+            }
         }
     }
     return rhsValue;
