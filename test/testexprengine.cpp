@@ -57,9 +57,11 @@ private:
 
         TEST_CASE(pointerAlias1);
         TEST_CASE(pointerAlias2);
+        TEST_CASE(pointerAlias3);
+        TEST_CASE(pointerAlias4);
     }
 
-    std::string getRange(const char code[], const std::string &str) {
+    std::string getRange(const char code[], const std::string &str, int linenr = 0) {
         Settings settings;
         settings.platform(cppcheck::Platform::Unix64);
         settings.library.smartPointers.insert("std::shared_ptr");
@@ -68,7 +70,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
         std::string ret;
         std::function<void(const Token *, const ExprEngine::Value &)> f = [&](const Token *tok, const ExprEngine::Value &value) {
-            if (tok->expressionString() == str) {
+            if ((linenr == 0 || linenr == tok->linenr()) && tok->expressionString() == str) {
                 if (!ret.empty())
                     ret += ",";
                 ret += value.getRange();
@@ -162,15 +164,28 @@ private:
     }
 
     void localArrayUninit() {
-        ASSERT_EQUALS("?", getRange("inf f() { int arr[10]; return arr[4]; }", "arr[4]"));
+        ASSERT_EQUALS("?", getRange("int f() { int arr[10]; return arr[4]; }", "arr[4]"));
     }
 
     void pointerAlias1() {
-        ASSERT_EQUALS("3", getRange("inf f() { int x; int *p = &x; x = 3; return *p; }", "return*p"));
+        ASSERT_EQUALS("3", getRange("int f() { int x; int *p = &x; x = 3; return *p; }", "return*p"));
     }
 
     void pointerAlias2() {
-        ASSERT_EQUALS("1", getRange("inf f() { int x; int *p = &x; *p = 1; return *p; }", "return*p"));
+        ASSERT_EQUALS("1", getRange("int f() { int x; int *p = &x; *p = 1; return *p; }", "return*p"));
+    }
+
+    void pointerAlias3() {
+        ASSERT_EQUALS("7", getRange("int f() {\n"
+                                    "  int x = 18;\n"
+                                    "  int *p = &x;\n"
+                                    "  *p = 7;\n"
+                                    "  return x;\n"
+                                    "}", "x", 5));
+    }
+
+    void pointerAlias4() {
+        ASSERT_EQUALS("71", getRange("int f() { int x[10]; int *p = x+3; *p = 71; return x[3]; }", "x[3]"));
     }
 };
 
