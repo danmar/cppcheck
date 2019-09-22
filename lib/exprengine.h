@@ -52,7 +52,7 @@ namespace ExprEngine {
     std::string str(int128_t);
 
     // TODO we need to handle floats, containers, pointers, aliases and structs and stuff
-    enum class ValueType { UninitValue, IntRange, PointerValue, ArrayValue, StringLiteralValue, StructValue, AddressOfValue, BinOpResult };
+    enum class ValueType { UninitValue, IntRange, FloatRange, PointerValue, ArrayValue, StringLiteralValue, StructValue, AddressOfValue, BinOpResult };
 
     class Value;
     typedef std::shared_ptr<Value> ValuePtr;
@@ -104,6 +104,26 @@ namespace ExprEngine {
 
         int128_t minValue;
         int128_t maxValue;
+    };
+
+    class FloatRange : public Value {
+    public:
+        FloatRange(const std::string &name, long double minValue, long double maxValue)
+            : Value(name)
+            , minValue(minValue)
+            , maxValue(maxValue) {
+        }
+        ~FloatRange() OVERRIDE {}
+
+        ValueType type() const override {
+            return ValueType::FloatRange;
+        }
+        std::string getRange() const override {
+            return std::to_string(minValue) + ":" + std::to_string(maxValue);
+        }
+
+        long double minValue;
+        long double maxValue;
     };
 
     class PointerValue: public Value {
@@ -221,15 +241,36 @@ namespace ExprEngine {
             return ValueType::BinOpResult;
         }
         std::string getRange() const override;
-        void getRange(int128_t *minValue, int128_t *maxValue) const;
+
+        struct IntOrFloatValue {
+            void setIntValue(int128_t v) {
+                type = INT;
+                intValue = v;
+                floatValue = 0;
+            }
+            void setFloatValue(long double v) {
+                type = FLOAT;
+                intValue = 0;
+                floatValue = v;
+            }
+            enum {INT,FLOAT} type;
+            bool isFloat() const {
+                return type == FLOAT;
+            }
+            int128_t intValue;
+            long double floatValue;
+        };
+
+        void getRange(IntOrFloatValue *minValue, IntOrFloatValue *maxValue) const;
         bool isIntValueInRange(int value) const override;
 
         std::string binop;
         ValuePtr op1;
         ValuePtr op2;
     private:
-        int128_t evaluate(int test, const std::map<ValuePtr, int> &valueBit) const;
-        int128_t evaluateOperand(int test, const std::map<ValuePtr, int> &valueBit, ValuePtr value) const;
+
+        IntOrFloatValue evaluate(int test, const std::map<ValuePtr, int> &valueBit) const;
+        IntOrFloatValue evaluateOperand(int test, const std::map<ValuePtr, int> &valueBit, ValuePtr value) const;
         std::set<ValuePtr> mLeafs;
     };
 

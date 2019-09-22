@@ -22,6 +22,7 @@
 #include "symboldatabase.h"
 #include "tokenize.h"
 
+#include <limits>
 #include <memory>
 #include <iostream>
 
@@ -283,14 +284,21 @@ std::string ExprEngine::PointerValue::getRange() const
 
 std::string ExprEngine::BinOpResult::getRange() const
 {
-    int128_t minValue, maxValue;
+    IntOrFloatValue minValue, maxValue;
     getRange(&minValue, &maxValue);
-    if (minValue == maxValue)
-        return str(minValue);
-    return str(minValue) + ":" + str(maxValue);
+    const std::string s1 = minValue.isFloat()
+                           ? std::to_string(minValue.floatValue)
+                           : str(minValue.intValue);
+    const std::string s2 = maxValue.isFloat()
+                           ? std::to_string(maxValue.floatValue)
+                           : str(maxValue.intValue);
+
+    if (s1 == s2)
+        return s1;
+    return s1 + ":" + s2;
 }
 
-void ExprEngine::BinOpResult::getRange(int128_t *minValue, int128_t *maxValue) const
+void ExprEngine::BinOpResult::getRange(ExprEngine::BinOpResult::IntOrFloatValue *minValue, ExprEngine::BinOpResult::IntOrFloatValue *maxValue) const
 {
     std::map<ValuePtr, int> valueBit;
     // Assign a bit number for each leaf
@@ -310,51 +318,83 @@ void ExprEngine::BinOpResult::getRange(int128_t *minValue, int128_t *maxValue) c
         throw std::runtime_error("Internal error: bits");
 
     for (int test = 0; test < (1 << bit); ++test) {
-        int128_t result = evaluate(test, valueBit);
+        auto result = evaluate(test, valueBit);
         if (test == 0)
             *minValue = *maxValue = result;
-        else if (result < *minValue)
-            *minValue = result;
-        else if (result > *maxValue)
-            *maxValue = result;
+        else if (result.isFloat()) {
+            if (result.floatValue < minValue->floatValue)
+                *minValue = result;
+            else if (result.floatValue > maxValue->floatValue)
+                *maxValue = result;
+        } else {
+            if (result.intValue < minValue->intValue)
+                *minValue = result;
+            else if (result.intValue > maxValue->intValue)
+                *maxValue = result;
+        }
     }
 }
 
 bool ExprEngine::BinOpResult::isIntValueInRange(int value) const
 {
-    int128_t minValue, maxValue;
+    IntOrFloatValue minValue, maxValue;
     getRange(&minValue, &maxValue);
-    return value >= minValue && value <= maxValue;
+    return value >= minValue.intValue && value <= maxValue.intValue;
 }
 
-int128_t ExprEngine::BinOpResult::evaluate(int test, const std::map<ExprEngine::ValuePtr, int> &valueBit) const
+#define BINARY_OP(OP) \
+    if (binop == #OP) { \
+        struct ExprEngine::BinOpResult::IntOrFloatValue result(lhs); \
+        if (lhs.isFloat()) \
+        { result.type = lhs.type; result.floatValue = lhs.floatValue OP (rhs.isFloat() ? rhs.floatValue : rhs.intValue); } \
+        else if (rhs.isFloat()) \
+        { result.type = rhs.type; result.floatValue = lhs.intValue OP rhs.floatValue; } \
+        else { result.type = lhs.type; result.intValue = lhs.intValue OP rhs.intValue; } \
+        return result; \
+    }
+
+#define BINARY_INT_OP(OP) \
+    if (binop == #OP) { \
+        struct ExprEngine::BinOpResult::IntOrFloatValue result; \
+        result.setIntValue(lhs.intValue OP rhs.intValue); \
+        return result; \
+    }
+
+#define BINARY_OP_DIV(OP) \
+    if (binop == #OP) { \
+        struct ExprEngine::BinOpResult::IntOrFloatValue result(lhs); \
+        if (lhs.isFloat()) \
+        { result.type = lhs.type; result.floatValue = lhs.floatValue OP (rhs.isFloat() ? rhs.floatValue : rhs.intValue); } \
+        else if (rhs.isFloat()) \
+        { result.type = rhs.type; result.floatValue = lhs.intValue OP rhs.floatValue; } \
+        else if (rhs.intValue != 0) { result.type = lhs.type; result.intValue = lhs.intValue OP rhs.intValue; } \
+        return result; \
+    }
+
+ExprEngine::BinOpResult::IntOrFloatValue ExprEngine::BinOpResult::evaluate(int test, const std::map<ExprEngine::ValuePtr, int> &valueBit) const
 {
-    const int128_t lhs = evaluateOperand(test, valueBit, op1);
-    const int128_t rhs = evaluateOperand(test, valueBit, op2);
-    if (binop == "+")
-        return lhs + rhs;
-    if (binop == "-")
-        return lhs - rhs;
-    if (binop == "*")
-        return lhs * rhs;
-    if (binop == "/" && rhs != 0)
-        return lhs / rhs;
-    if (binop == "%" && rhs != 0)
-        return lhs % rhs;
-    if (binop == "&")
-        return lhs & rhs;
-    if (binop == "|")
-        return lhs | rhs;
-    if (binop == "^")
-        return lhs ^ rhs;
-    if (binop == "<<")
-        return lhs << rhs;
-    if (binop == ">>")
-        return lhs >> rhs;
+    const ExprEngine::BinOpResult::IntOrFloatValue lhs = evaluateOperand(test, valueBit, op1);
+    const ExprEngine::BinOpResult::IntOrFloatValue rhs = evaluateOperand(test, valueBit, op2);
+    BINARY_OP(+)
+    BINARY_OP(-)
+    BINARY_OP(*)
+    BINARY_OP_DIV(/)
+    BINARY_INT_OP(&)
+    BINARY_INT_OP(|)
+    BINARY_INT_OP(^)
+    BINARY_INT_OP(<<)
+    BINARY_INT_OP(>>)
+
+    if (binop == "%" && rhs.intValue != 0) {
+        struct ExprEngine::BinOpResult::IntOrFloatValue result;
+        result.setIntValue(lhs.intValue % rhs.intValue);
+        return result;
+    }
+
     throw std::runtime_error("Internal error: Unhandled operator;" + binop);
 }
 
-int128_t ExprEngine::BinOpResult::evaluateOperand(int test, const std::map<ExprEngine::ValuePtr, int> &valueBit, ExprEngine::ValuePtr value) const
+ExprEngine::BinOpResult::IntOrFloatValue ExprEngine::BinOpResult::evaluateOperand(int test, const std::map<ExprEngine::ValuePtr, int> &valueBit, ExprEngine::ValuePtr value) const
 {
     auto binOpResult = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(value);
     if (binOpResult)
@@ -365,15 +405,23 @@ int128_t ExprEngine::BinOpResult::evaluateOperand(int test, const std::map<ExprE
         throw std::runtime_error("Internal error: valueBit not set properly");
 
     bool valueType = test & (1 << it->second);
-    if (auto intRange = std::dynamic_pointer_cast<IntRange>(value))
-        return valueType ? intRange->minValue : intRange->maxValue;
+    if (auto intRange = std::dynamic_pointer_cast<IntRange>(value)) {
+        ExprEngine::BinOpResult::IntOrFloatValue result;
+        result.setIntValue(valueType ? intRange->minValue : intRange->maxValue);
+        return result;
+    }
+    if (auto floatRange = std::dynamic_pointer_cast<FloatRange>(value)) {
+        ExprEngine::BinOpResult::IntOrFloatValue result;
+        result.setFloatValue(valueType ? floatRange->minValue : floatRange->maxValue);
+        return result;
+    }
     throw std::runtime_error("Internal error: Unhandled value:" + std::to_string((int)value->type()));
 }
 
 // Todo: This is taken from ValueFlow and modified.. we should reuse it
 static ExprEngine::ValuePtr getValueRangeFromValueType(const std::string &name, const ValueType *vt, const cppcheck::Platform &platform)
 {
-    if (!vt || !vt->isIntegral() || vt->pointer)
+    if (!vt || !(vt->isIntegral() || vt->isFloat()) || vt->pointer)
         return ExprEngine::ValuePtr();
 
     int bits;
@@ -396,6 +444,12 @@ static ExprEngine::ValuePtr getValueRangeFromValueType(const std::string &name, 
     case ValueType::Type::LONGLONG:
         bits = platform.long_long_bit;
         break;
+    case ValueType::Type::FLOAT:
+        return std::make_shared<ExprEngine::FloatRange>(name, std::numeric_limits<float>::min(), std::numeric_limits<float>::max());
+    case ValueType::Type::DOUBLE:
+        return std::make_shared<ExprEngine::FloatRange>(name, std::numeric_limits<double>::min(), std::numeric_limits<double>::max());
+    case ValueType::Type::LONGDOUBLE:
+        return std::make_shared<ExprEngine::FloatRange>(name, std::numeric_limits<long double>::min(), std::numeric_limits<long double>::max());
     default:
         return ExprEngine::ValuePtr();
     };
@@ -584,6 +638,10 @@ static ExprEngine::ValuePtr executeVariable(const Token *tok, Data &data)
 
 static ExprEngine::ValuePtr executeNumber(const Token *tok)
 {
+    if (tok->valueType()->isFloat()) {
+        long double value = MathLib::toDoubleNumber(tok->str());
+        return std::make_shared<ExprEngine::FloatRange>(tok->str(), value, value);
+    }
     int128_t value = MathLib::toLongNumber(tok->str());
     return std::make_shared<ExprEngine::IntRange>(tok->str(), value, value);
 }
@@ -709,8 +767,8 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
     if (valueType->pointer > 0) {
         ValueType vt(*valueType);
         vt.pointer = 0;
-        auto intRange = getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings);
-        return std::make_shared<ExprEngine::PointerValue>(data.getNewSymbolName(), intRange, true, true);
+        auto range = getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings);
+        return std::make_shared<ExprEngine::PointerValue>(data.getNewSymbolName(), range, true, true);
     }
     if (valueType->isIntegral())
         return getValueRangeFromValueType(data.getNewSymbolName(), valueType, *data.settings);
@@ -766,23 +824,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
         }
     };
 
-    std::function<void(const Token *, const ExprEngine::Value &)> integerOverflow = [&](const Token *tok, const ExprEngine::Value &value) {
-        // Integer overflow..
-        if (value.type() != ExprEngine::ValueType::BinOpResult)
-            return;
-        if (!tok->valueType() || tok->valueType()->pointer != 0 || tok->valueType()->type != ::ValueType::Type::INT)
-            return;
-        const ExprEngine::BinOpResult &b = static_cast<const ExprEngine::BinOpResult &>(value);
-        int128_t minValue, maxValue;
-        b.getRange(&minValue, &maxValue);
-        if (tok->valueType()->sign == ::ValueType::Sign::UNSIGNED && (minValue < 0 || maxValue >= (1LL << 32))) {
-            std::list<const Token*> callstack{tok};
-            ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::warning, "verificationIntegerOverflow", "Unsigned integer overflow", false);
-            errorLogger->reportErr(errmsg);
-        }
-    };
     std::vector<ExprEngine::Callback> callbacks;
     callbacks.push_back(divByZero);
-    callbacks.push_back(integerOverflow);
     ExprEngine::executeAllFunctions(tokenizer, settings, callbacks);
 }
