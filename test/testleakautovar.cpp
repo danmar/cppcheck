@@ -1777,6 +1777,12 @@ private:
               "    return ((((x))));\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
+
+        check("char* f() {\n"
+              "    void *x = malloc(1);\n"
+              "    return (char*)(x);\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void test1() { // 3809
