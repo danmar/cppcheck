@@ -42,6 +42,7 @@ private:
         TEST_CASE(expr4);
         TEST_CASE(expr5);
         TEST_CASE(exprAssign1);
+        TEST_CASE(exprAssign2); // Truncation
 
         TEST_CASE(floatValue1);
         TEST_CASE(floatValue2);
@@ -129,6 +130,10 @@ private:
 
     void exprAssign1() {
         ASSERT_EQUALS("1:256", getRange("void f(unsigned char a) { a += 1; }", "a+=1"));
+    }
+
+    void exprAssign2() {
+        ASSERT_EQUALS("2", getRange("void f(unsigned char x) { x = 258; int a = x }", "a=x"));
     }
 
     void floatValue1() {
