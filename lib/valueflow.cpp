@@ -4730,7 +4730,7 @@ static void valueFlowInferCondition(TokenList* tokenlist,
             continue;
         if (tok->hasKnownValue())
             continue;
-        if (Token::Match(tok, "%var%") && (Token::Match(tok->astParent(), "&&|!|%oror%") ||
+        if (Token::Match(tok, "%var%") && (Token::Match(tok->astParent(), "?|&&|!|%oror%") ||
                                            Token::Match(tok->astParent()->previous(), "if|while ("))) {
             const ValueFlow::Value* result = proveNotEqual(tok->values(), 0);
             if (!result)
