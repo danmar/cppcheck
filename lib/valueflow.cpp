@@ -605,6 +605,12 @@ static void combineValueProperties(const ValueFlow::Value &value1, const ValueFl
     result->varvalue = (result->varId == value1.varId) ? value1.varvalue : value2.varvalue;
     result->errorPath = (value1.errorPath.empty() ? value2 : value1).errorPath;
     result->safe = value1.safe || value2.safe;
+    if (value1.bound == ValueFlow::Value::Bound::Point || value2.bound == ValueFlow::Value::Bound::Point) {
+        if (value1.bound == ValueFlow::Value::Bound::Upper || value2.bound == ValueFlow::Value::Bound::Upper)
+            result->bound = ValueFlow::Value::Bound::Upper;
+        if (value1.bound == ValueFlow::Value::Bound::Lower || value2.bound == ValueFlow::Value::Bound::Lower)
+            result->bound = ValueFlow::Value::Bound::Lower;
+    }
 }
 
 
