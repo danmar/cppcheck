@@ -3302,6 +3302,16 @@ private:
               "    return 42;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (style) Condition 'b' is always true\n", errout.str());
+
+        // #9362
+        check("uint8_t g();\n"
+              "void f() {\n"
+              "    const uint8_t v = g();\n"
+              "    if((v != 0x00)) {\n"
+              "        if( (v & 0x01) == 0x00) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueContainer() {
