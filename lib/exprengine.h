@@ -52,7 +52,18 @@ namespace ExprEngine {
     std::string str(int128_t);
 
     // TODO we need to handle floats, containers, pointers, aliases and structs and stuff
-    enum class ValueType { UninitValue, IntRange, FloatRange, PointerValue, ArrayValue, StringLiteralValue, StructValue, AddressOfValue, BinOpResult };
+    enum class ValueType {
+        UninitValue,
+        IntRange,
+        FloatRange,
+        PointerValue,
+        ArrayValue,
+        StringLiteralValue,
+        StructValue,
+        AddressOfValue,
+        BinOpResult,
+        IntegerTruncation
+    };
 
     class Value;
     typedef std::shared_ptr<Value> ValuePtr;
@@ -272,6 +283,25 @@ namespace ExprEngine {
         IntOrFloatValue evaluate(int test, const std::map<ValuePtr, int> &valueBit) const;
         IntOrFloatValue evaluateOperand(int test, const std::map<ValuePtr, int> &valueBit, ValuePtr value) const;
         std::set<ValuePtr> mLeafs;
+    };
+
+    class IntegerTruncation : public Value {
+    public:
+        IntegerTruncation(const std::string &name, ValuePtr inputValue, int bits, char sign)
+            : Value(name)
+            , inputValue(inputValue)
+            , bits(bits)
+            , sign(sign) {
+        }
+
+        ValueType type() const override {
+            return ValueType::IntegerTruncation;
+        }
+        std::string getRange() const override;
+
+        ExprEngine::ValuePtr inputValue;
+        int bits;
+        char sign;
     };
 
     typedef std::function<void(const Token *, const ExprEngine::Value &)> Callback;
