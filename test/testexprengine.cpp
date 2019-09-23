@@ -66,6 +66,7 @@ private:
         TEST_CASE(pointerAlias2);
         TEST_CASE(pointerAlias3);
         TEST_CASE(pointerAlias4);
+        TEST_CASE(pointerNull1);
     }
 
     std::string getRange(const char code[], const std::string &str, int linenr = 0) {
@@ -212,6 +213,10 @@ private:
 
     void pointerAlias4() {
         ASSERT_EQUALS("71", getRange("int f() { int x[10]; int *p = x+3; *p = 71; return x[3]; }", "x[3]"));
+    }
+
+    void pointerNull1() {
+        ASSERT_EQUALS("1", getRange("void f(void *p) { p = NULL; p += 1; }", "p+=1"));
     }
 };
 
