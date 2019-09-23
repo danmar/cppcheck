@@ -3295,6 +3295,14 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // #9351
+        check("int f(int x) {\n"
+              "    const bool b = x < 42;\n"
+              "    if(b) return b?0:-1;\n"
+              "    return 42;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (style) Condition 'b' is always true\n", errout.str());
+
         // #9362
         check("uint8_t g();\n"
               "void f() {\n"
