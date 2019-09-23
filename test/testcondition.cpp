@@ -3304,6 +3304,18 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #6890
+        check("void f(int i) {\n"
+              "    int x = i;\n"
+              "    if (x >= 1) {}\n"
+              "    else {\n"
+              "        x = 8 - x; \n"
+              "        if (x == -1) {}\n"
+              "        else {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (style) Condition 'x==-1' is always false\n", errout.str());
     }
 
     void alwaysTrueContainer() {
