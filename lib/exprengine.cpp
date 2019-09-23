@@ -636,6 +636,13 @@ static ExprEngine::ValuePtr executeVariable(const Token *tok, Data &data)
     return val;
 }
 
+static ExprEngine::ValuePtr executeKnownMacro(const Token *tok, Data &data)
+{
+    auto val = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), tok->getKnownIntValue(), tok->getKnownIntValue());
+    call(data.callbacks, tok, val);
+    return val;
+}
+
 static ExprEngine::ValuePtr executeNumber(const Token *tok)
 {
     if (tok->valueType()->isFloat()) {
@@ -681,6 +688,9 @@ static ExprEngine::ValuePtr executeExpression(const Token *tok, Data &data)
 
     if (tok->varId())
         return executeVariable(tok, data);
+
+    if (tok->isName() && tok->hasKnownIntValue())
+        return executeKnownMacro(tok, data);
 
     if (tok->isNumber())
         return executeNumber(tok);
