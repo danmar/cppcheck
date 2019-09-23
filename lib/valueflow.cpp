@@ -776,6 +776,10 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
         if (parent->isComparisonOp() && value.isImpossible())
             return;
 
+        // Skip operators with impossible values that are not invertible
+        if (Token::Match(parent, "%|/|&|%or%") && value.isImpossible())
+            return;
+
         // known result when a operand is 0.
         if (Token::Match(parent, "[&*]") && value.isKnown() && value.isIntValue() && value.intvalue==0) {
             setTokenValue(parent, value, settings);

@@ -22,6 +22,9 @@
 #include "tokenize.h"
 #include "testsuite.h"
 
+#include <limits>
+#include <string>
+
 class TestExprEngine : public TestFixture {
 public:
     TestExprEngine() : TestFixture("TestExprEngine") {
@@ -30,6 +33,7 @@ public:
 private:
     void run() OVERRIDE {
         TEST_CASE(argPointer);
+        TEST_CASE(argSmartPointer);
         TEST_CASE(argStruct);
 
         TEST_CASE(expr1);
@@ -37,8 +41,13 @@ private:
         TEST_CASE(expr3);
         TEST_CASE(expr4);
         TEST_CASE(expr5);
+        TEST_CASE(exprAssign1);
+
+        TEST_CASE(floatValue1);
+        TEST_CASE(floatValue2);
 
         TEST_CASE(functionCall1);
+        TEST_CASE(functionCall2);
 
         TEST_CASE(if1);
         TEST_CASE(if2);
@@ -50,21 +59,25 @@ private:
 
         TEST_CASE(localArray1);
         TEST_CASE(localArray2);
+        TEST_CASE(localArray3);
         TEST_CASE(localArrayUninit);
 
         TEST_CASE(pointerAlias1);
         TEST_CASE(pointerAlias2);
+        TEST_CASE(pointerAlias3);
+        TEST_CASE(pointerAlias4);
     }
 
-    std::string getRange(const char code[], const std::string &str) {
+    std::string getRange(const char code[], const std::string &str, int linenr = 0) {
         Settings settings;
         settings.platform(cppcheck::Platform::Unix64);
+        settings.library.smartPointers.insert("std::shared_ptr");
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         std::string ret;
         std::function<void(const Token *, const ExprEngine::Value &)> f = [&](const Token *tok, const ExprEngine::Value &value) {
-            if (tok->expressionString() == str) {
+            if ((linenr == 0 || linenr == tok->linenr()) && tok->expressionString() == str) {
                 if (!ret.empty())
                     ret += ",";
                 ret += value.getRange();
@@ -77,7 +90,11 @@ private:
     }
 
     void argPointer() {
-        ASSERT_EQUALS("?", getRange("void f(unsigned char *p) { a = *p; }", "*p"));
+        ASSERT_EQUALS("->0:255,null,->?", getRange("void f(unsigned char *p) { a = *p; }", "p"));
+    }
+
+    void argSmartPointer() {
+        ASSERT_EQUALS("->$1,null", getRange("struct S { int x; }; void f(std::shared_ptr<S> ptr) { x = ptr; }", "ptr"));
     }
 
     void argStruct() {
@@ -109,8 +126,31 @@ private:
         ASSERT_EQUALS("-65536:65534", getRange("void f(short a, short b, short c, short d) { if (a+b<c+d) {} }", "a+b"));
     }
 
+    void exprAssign1() {
+        ASSERT_EQUALS("1:256", getRange("void f(unsigned char a) { a += 1; }", "a+=1"));
+    }
+
+    void floatValue1() {
+        ASSERT_EQUALS(std::to_string(std::numeric_limits<float>::min()) + ":" + std::to_string(std::numeric_limits<float>::max()), getRange("float f; void func() { f=f; }", "f=f"));
+    }
+
+    void floatValue2() {
+        ASSERT_EQUALS("14.500000", getRange("void func() { float f = 29.0; f = f / 2.0; }", "f/2.0"));
+    }
+
     void functionCall1() {
         ASSERT_EQUALS("-2147483648:2147483647", getRange("int atoi(const char *p); void f() { int x = atoi(a); x = x; }", "x=x"));
+    }
+
+    void functionCall2() {
+        const char code[] = "namespace NS {\n"
+                            "    short getValue();\n"
+                            "}"
+                            "void f() {\n"
+                            "    short value = NS::getValue();\n"
+                            "    value = value;\n"
+                            "}";
+        ASSERT_EQUALS("-32768:32767", getRange(code, "value=value"));
     }
 
     void if1() {
@@ -145,16 +185,33 @@ private:
         ASSERT_EQUALS("0", getRange("inf f() { char arr[10] = \"\"; return arr[4]; }", "arr[4]"));
     }
 
+    void localArray3() {
+        ASSERT_EQUALS("0:255", getRange("int f() { unsigned char arr[10] = \"\"; dostuff(arr); return arr[4]; }", "arr[4]"));
+    }
+
     void localArrayUninit() {
-        ASSERT_EQUALS("?", getRange("inf f() { int arr[10]; return arr[4]; }", "arr[4]"));
+        ASSERT_EQUALS("?", getRange("int f() { int arr[10]; return arr[4]; }", "arr[4]"));
     }
 
     void pointerAlias1() {
-        ASSERT_EQUALS("3", getRange("inf f() { int x; int *p = &x; x = 3; return *p; }", "return*p"));
+        ASSERT_EQUALS("3", getRange("int f() { int x; int *p = &x; x = 3; return *p; }", "return*p"));
     }
 
     void pointerAlias2() {
-        ASSERT_EQUALS("1", getRange("inf f() { int x; int *p = &x; *p = 1; return *p; }", "return*p"));
+        ASSERT_EQUALS("1", getRange("int f() { int x; int *p = &x; *p = 1; return *p; }", "return*p"));
+    }
+
+    void pointerAlias3() {
+        ASSERT_EQUALS("7", getRange("int f() {\n"
+                                    "  int x = 18;\n"
+                                    "  int *p = &x;\n"
+                                    "  *p = 7;\n"
+                                    "  return x;\n"
+                                    "}", "x", 5));
+    }
+
+    void pointerAlias4() {
+        ASSERT_EQUALS("71", getRange("int f() { int x[10]; int *p = x+3; *p = 71; return x[3]; }", "x[3]"));
     }
 };
 
