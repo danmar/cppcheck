@@ -42,6 +42,7 @@ private:
         TEST_CASE(expr4);
         TEST_CASE(expr5);
         TEST_CASE(exprAssign1);
+        TEST_CASE(exprAssign2); // Truncation
 
         TEST_CASE(floatValue1);
         TEST_CASE(floatValue2);
@@ -66,6 +67,7 @@ private:
         TEST_CASE(pointerAlias2);
         TEST_CASE(pointerAlias3);
         TEST_CASE(pointerAlias4);
+        TEST_CASE(pointerNull1);
     }
 
     std::string getRange(const char code[], const std::string &str, int linenr = 0) {
@@ -128,6 +130,10 @@ private:
 
     void exprAssign1() {
         ASSERT_EQUALS("1:256", getRange("void f(unsigned char a) { a += 1; }", "a+=1"));
+    }
+
+    void exprAssign2() {
+        ASSERT_EQUALS("2", getRange("void f(unsigned char x) { x = 258; int a = x }", "a=x"));
     }
 
     void floatValue1() {
@@ -212,6 +218,10 @@ private:
 
     void pointerAlias4() {
         ASSERT_EQUALS("71", getRange("int f() { int x[10]; int *p = x+3; *p = 71; return x[3]; }", "x[3]"));
+    }
+
+    void pointerNull1() {
+        ASSERT_EQUALS("1", getRange("void f(void *p) { p = NULL; p += 1; }", "p+=1"));
     }
 };
 

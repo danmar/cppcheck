@@ -4785,7 +4785,7 @@ static void valueFlowInferCondition(TokenList* tokenlist,
             continue;
         if (tok->hasKnownValue())
             continue;
-        if (Token::Match(tok, "%var%") && (Token::Match(tok->astParent(), "&&|!|%oror%") ||
+        if (Token::Match(tok, "%var%") && (Token::Match(tok->astParent(), "?|&&|!|%oror%") ||
                                            Token::Match(tok->astParent()->previous(), "if|while ("))) {
             const ValueFlow::Value* result = proveNotEqual(tok->values(), 0);
             if (!result)
@@ -6378,10 +6378,9 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowSameExpressions(tokenlist);
     valueFlowFwdAnalysis(tokenlist, settings);
 
-    // Temporary hack.. run valueflow until there is nothing to update or timeout expires
-    const std::time_t timeout = std::time(nullptr) + TIMEOUT;
     std::size_t values = 0;
-    while (std::time(nullptr) < timeout && values < getTotalValues(tokenlist)) {
+    std::size_t n = 4;
+    while (n > 0 && values < getTotalValues(tokenlist)) {
         values = getTotalValues(tokenlist);
         valueFlowPointerAliasDeref(tokenlist);
         valueFlowArrayBool(tokenlist);
@@ -6404,6 +6403,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
             valueFlowContainerAfterCondition(tokenlist, symboldatabase, errorLogger, settings);
         }
         valueFlowSafeFunctions(tokenlist, symboldatabase, errorLogger, settings);
+        n--;
     }
 
     valueFlowDynamicBufferSize(tokenlist, symboldatabase, errorLogger, settings);

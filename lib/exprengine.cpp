@@ -335,6 +335,11 @@ void ExprEngine::BinOpResult::getRange(ExprEngine::BinOpResult::IntOrFloatValue 
     }
 }
 
+std::string ExprEngine::IntegerTruncation::getRange() const
+{
+    return sign + std::to_string(bits) + "(" + inputValue->getRange() + ")";
+}
+
 bool ExprEngine::BinOpResult::isIntValueInRange(int value) const
 {
     IntOrFloatValue minValue, maxValue;
@@ -419,31 +424,46 @@ ExprEngine::BinOpResult::IntOrFloatValue ExprEngine::BinOpResult::evaluateOperan
 }
 
 // Todo: This is taken from ValueFlow and modified.. we should reuse it
+static int getIntBitsFromValueType(const ValueType *vt, const cppcheck::Platform &platform)
+{
+    if (!vt)
+        return 0;
+
+    switch (vt->type) {
+    case ValueType::Type::BOOL:
+        return 1;
+    case ValueType::Type::CHAR:
+        return platform.char_bit;
+    case ValueType::Type::SHORT:
+        return platform.short_bit;
+    case ValueType::Type::INT:
+        return platform.int_bit;
+    case ValueType::Type::LONG:
+        return platform.long_bit;
+    case ValueType::Type::LONGLONG:
+        return platform.long_long_bit;
+    default:
+        return 0;
+    };
+}
+
 static ExprEngine::ValuePtr getValueRangeFromValueType(const std::string &name, const ValueType *vt, const cppcheck::Platform &platform)
 {
     if (!vt || !(vt->isIntegral() || vt->isFloat()) || vt->pointer)
         return ExprEngine::ValuePtr();
 
-    int bits;
+    int bits = getIntBitsFromValueType(vt, platform);
+    if (bits == 1) {
+        return std::make_shared<ExprEngine::IntRange>(name, 0, 1);
+    } else if (bits > 1) {
+        if (vt->sign == ValueType::Sign::UNSIGNED) {
+            return std::make_shared<ExprEngine::IntRange>(name, 0, ((int128_t)1 << bits) - 1);
+        } else {
+            return std::make_shared<ExprEngine::IntRange>(name, -((int128_t)1 << (bits - 1)), ((int128_t)1 << (bits - 1)) - 1);
+        }
+    }
+
     switch (vt->type) {
-    case ValueType::Type::BOOL:
-        bits = 1;
-        break;
-    case ValueType::Type::CHAR:
-        bits = platform.char_bit;
-        break;
-    case ValueType::Type::SHORT:
-        bits = platform.short_bit;
-        break;
-    case ValueType::Type::INT:
-        bits = platform.int_bit;
-        break;
-    case ValueType::Type::LONG:
-        bits = platform.long_bit;
-        break;
-    case ValueType::Type::LONGLONG:
-        bits = platform.long_long_bit;
-        break;
     case ValueType::Type::FLOAT:
         return std::make_shared<ExprEngine::FloatRange>(name, std::numeric_limits<float>::min(), std::numeric_limits<float>::max());
     case ValueType::Type::DOUBLE:
@@ -453,18 +473,6 @@ static ExprEngine::ValuePtr getValueRangeFromValueType(const std::string &name, 
     default:
         return ExprEngine::ValuePtr();
     };
-
-    if (bits == 1) {
-        return std::make_shared<ExprEngine::IntRange>(name, 0, 1);
-    } else {
-        if (vt->sign == ValueType::Sign::UNSIGNED) {
-            return std::make_shared<ExprEngine::IntRange>(name, 0, ((int128_t)1 << bits) - 1);
-        } else {
-            return std::make_shared<ExprEngine::IntRange>(name, -((int128_t)1 << (bits - 1)), ((int128_t)1 << (bits - 1)) - 1);
-        }
-    }
-
-    return ExprEngine::ValuePtr();
 }
 
 static void call(const std::vector<ExprEngine::Callback> &callbacks, const Token *tok, ExprEngine::ValuePtr value)
@@ -485,6 +493,42 @@ static ExprEngine::ValuePtr executeReturn(const Token *tok, Data &data)
     return retval;
 }
 
+static ExprEngine::ValuePtr truncateValue(ExprEngine::ValuePtr val, const ValueType *valueType, Data &data)
+{
+    if (valueType->pointer != 0)
+        return val;
+    if (!valueType->isIntegral())
+        return val; // TODO
+
+    int bits = getIntBitsFromValueType(valueType, *data.settings);
+    if (bits == 0)
+        // TODO
+        return val;
+
+    if (auto range = std::dynamic_pointer_cast<ExprEngine::IntRange>(val)) {
+
+        if (range->minValue == range->maxValue) {
+            int128_t newValue = range->minValue;
+            newValue = newValue & (((int128_t)1 << bits) - 1);
+            // TODO: Sign extension
+            if (newValue == range->minValue)
+                return val;
+            return std::make_shared<ExprEngine::IntRange>(ExprEngine::str(newValue), newValue, newValue);
+        }
+        if (auto typeRange = getValueRangeFromValueType("", valueType, *data.settings)) {
+            auto typeIntRange = std::dynamic_pointer_cast<ExprEngine::IntRange>(typeRange);
+            if (typeIntRange) {
+                if (range->minValue >= typeIntRange->minValue && range->maxValue <= typeIntRange->maxValue)
+                    return val;
+            }
+        }
+
+        return std::make_shared<ExprEngine::IntegerTruncation>(data.getNewSymbolName(), val, bits, valueType->sign == ValueType::Sign::SIGNED ? 's' : 'u');
+    }
+    // TODO
+    return val;
+}
+
 static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
 {
     ExprEngine::ValuePtr rhsValue = executeExpression(tok->astOperand2(), data);
@@ -503,7 +547,7 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
     const Token *lhsToken = tok->astOperand1();
     data.trackAssignment(lhsToken, rhsValue);
     if (lhsToken->varId() > 0) {
-        data.memory[lhsToken->varId()] = rhsValue;
+        data.memory[lhsToken->varId()] = truncateValue(rhsValue, lhsToken->valueType(), data);
     } else if (lhsToken->str() == "[") {
         auto arrayValue = data.getArrayValue(lhsToken->astOperand1());
         if (arrayValue) {
@@ -636,6 +680,13 @@ static ExprEngine::ValuePtr executeVariable(const Token *tok, Data &data)
     return val;
 }
 
+static ExprEngine::ValuePtr executeKnownMacro(const Token *tok, Data &data)
+{
+    auto val = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), tok->getKnownIntValue(), tok->getKnownIntValue());
+    call(data.callbacks, tok, val);
+    return val;
+}
+
 static ExprEngine::ValuePtr executeNumber(const Token *tok)
 {
     if (tok->valueType()->isFloat()) {
@@ -681,6 +732,9 @@ static ExprEngine::ValuePtr executeExpression(const Token *tok, Data &data)
 
     if (tok->varId())
         return executeVariable(tok, data);
+
+    if (tok->isName() && tok->hasKnownIntValue())
+        return executeKnownMacro(tok, data);
 
     if (tok->isNumber())
         return executeNumber(tok);
