@@ -10,6 +10,8 @@
 #include <boost/config.hpp>
 #include <boost/math/special_functions/round.hpp>
 #include <boost/endian/conversion.hpp>
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
 
 
 BOOST_FORCEINLINE void boost_forceinline_test()
@@ -24,7 +26,12 @@ BOOST_NORETURN void boost_noreturn_test()
 {
 }
 
-void valid_code()
+void print_hello()
+{
+    printf("hello");
+}
+
+void valid_code(boost::function<void(void)> &pf_print_hello)
 {
     if (BOOST_LIKELY(1)) {
     }
@@ -33,6 +40,8 @@ void valid_code()
 
     int int1 = 5;
     boost::endian::endian_reverse_inplace(int1);
+    boost::bind(print_hello)();
+    pf_print_hello = boost::bind(print_hello);
 }
 
 void ignoredReturnValue(char * buf)
