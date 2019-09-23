@@ -4260,6 +4260,10 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Remove __asm..
     simplifyAsm();
 
+    // foo < bar < >> => foo < bar < > >
+    if (isCPP())
+        mTemplateSimplifier->fixAngleBrackets();
+
     // Bail out if code is garbage
     if (mTimerResults) {
         Timer t("Tokenizer::tokenize::findGarbageCode", mSettings->showtime, mTimerResults);

@@ -830,7 +830,7 @@ void simplecpp::TokenList::combineOperators()
         } else if ((tok->op == '<' || tok->op == '>') && tok->op == tok->next->op) {
             tok->setstr(tok->str() + tok->next->str());
             deleteToken(tok->next);
-            if (tok->next && tok->next->op == '=') {
+            if (tok->next && tok->next->op == '=' && tok->next->next && tok->next->next->op != '=') {
                 tok->setstr(tok->str() + tok->next->str());
                 deleteToken(tok->next);
             }

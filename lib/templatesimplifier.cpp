@@ -419,7 +419,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
     if (Token::Match(tok->previous(), "%var% <"))
         return 0;
     tok = tok->next();
-    if (tok->str() == ">")
+    if (!tok || tok->str() == ">")
         return 0;
 
     unsigned int level = 0;
@@ -3504,9 +3504,6 @@ void TemplateSimplifier::simplifyTemplates(
             tok->deleteNext();
         }
     }
-
-    // split ">>" into "> >"
-    fixAngleBrackets();
 
     // Remove "typename" unless used in template arguments or using type alias..
     for (Token *tok = mTokenList.front(); tok; tok = tok->next()) {
