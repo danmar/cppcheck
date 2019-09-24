@@ -68,6 +68,7 @@ int misra_5_2_field_hides_field1_31y;//5.2
 };
 const char *s41_1 = "\x41g"; // 4.1
 const char *s41_2 = "\x41\x42";
+const char *s41_3 = "\x41" "g";
 int c41_3         = '\141t'; // 4.1
 int c41_4         = '\141\t';
 
