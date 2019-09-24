@@ -26,6 +26,7 @@
 #include <fstream>
 #include <vector>
 #include <cstdarg>
+#include <functional>
 
 void returnValue_std_isgreater(void)
 {
@@ -3400,4 +3401,22 @@ void stdvector()
     v.back();
     // cppcheck-suppress ignoredReturnValue
     v.front();
+}
+
+void stdbind_helper(int a)
+{
+    printf("%d", a);
+}
+
+void stdbind()
+{
+    using namespace std::placeholders;
+
+    // TODO cppcheck-suppress ignoredReturnValue #9369
+    std::bind(stdbind_helper, 1);
+
+    // cppcheck-suppress unreadVariable
+    auto f1 = std::bind(stdbind_helper, _1);
+    // cppcheck-suppress unreadVariable
+    auto f2 = std::bind(stdbind_helper, 10);
 }
