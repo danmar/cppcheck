@@ -233,7 +233,8 @@ private:
         TEST_CASE(templateTypeDeduction1); // #8962
         TEST_CASE(templateTypeDeduction2);
 
-        TEST_CASE(simplifyTemplateArgs);
+        TEST_CASE(simplifyTemplateArgs1);
+        TEST_CASE(simplifyTemplateArgs2);
 
         TEST_CASE(template_variadic_1); // #9144
 
@@ -4729,7 +4730,7 @@ private:
         TODO_ASSERT_EQUALS(expected, actual, tok(code));
     }
 
-    void simplifyTemplateArgs() {
+    void simplifyTemplateArgs1() {
         ASSERT_EQUALS("foo<2> = 2 ; foo<2> ;", tok("template<int N> foo = N; foo < ( 2 ) >;"));
         ASSERT_EQUALS("foo<2> = 2 ; foo<2> ;", tok("template<int N> foo = N; foo < 1 + 1 >;"));
         ASSERT_EQUALS("foo<2> = 2 ; foo<2> ;", tok("template<int N> foo = N; foo < ( 1 + 1 ) >;"));
@@ -4744,6 +4745,16 @@ private:
         ASSERT_EQUALS("foo<false> = false ; foo<false> ;", tok("template<bool N> foo = N; foo < 0 ? true : false >;"));
         ASSERT_EQUALS("foo<true> = true ; foo<true> ;", tok("template<bool N> foo = N; foo < (1 + 1 ) ? true : false >;"));
         ASSERT_EQUALS("foo<false> = false ; foo<false> ;", tok("template<bool N> foo = N; foo < ( 1 - 1) ? true : false >;"));
+    }
+
+    void simplifyTemplateArgs2() {
+        const char code[] = "template<bool T> struct a_t { static const bool t = T; };\n"
+                            "typedef a_t<sizeof(void*) == sizeof(int)> a;\n"
+                            "void foo() { bool b = a::t; }";
+        const char expected[] = "struct a_t<false> ; "
+                                "void foo ( ) { bool b ; b = a_t<false> :: t ; } "
+                                "struct a_t<false> { static const bool t = false ; } ;";
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template_variadic_1() { // #9144
