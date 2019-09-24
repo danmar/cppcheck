@@ -21,6 +21,7 @@ import re
 import os
 import argparse
 import codecs
+import string
 
 
 typeBits = {
@@ -456,15 +457,15 @@ def getArguments(ftok):
 
 
 def isalnum(c):
-    return (c >= '0' and c <= '9') or (c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z')
+    return c in string.digits or c in string.ascii_letters
 
 
 def isHexDigit(c):
-    return (c >= '0' and c <= '9') or (c >= 'a' and c <= 'f') or (c >= 'A' and c <= 'F')
+    return c in string.hexdigits
 
 
 def isOctalDigit(c):
-    return c >= '0' and c <= '7'
+    return c in string.octdigits
 
 
 def isNoReturnScope(tok):
