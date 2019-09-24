@@ -460,12 +460,27 @@ def isalnum(c):
     return c in string.digits or c in string.ascii_letters
 
 
-def isHexDigit(c):
-    return c in string.hexdigits
+def isHexEscapeSequence(symbols):
+    """Checks that given symbols are valid hex escape sequence.
+    Reference: n1570 6.4.4.4"""
+    if len(symbols) < 3 or symbols[0] != '\\' or symbols[1] != 'x':
+        return False
+    return all([s in string.hexdigits for s in symbols[2:]])
 
 
-def isOctalDigit(c):
-    return c in string.octdigits
+def isOctalEscapeSequence(symbols):
+    """Checks that given symbols are valid octal escape sequence.
+    Reference: n1570 6.4.4.4"""
+    if len(symbols) < 2 or symbols[0] != '\\':
+        return False
+    return all([s in string.octdigits for s in symbols[1:]])
+
+def isSimpleEscapeSequence(symbols):
+    """Checks that given symbols are simple escape sequence.
+    Reference: n1570 6.4.4.4"""
+    if len(symbols) != 2 or symbols[0] != '\\':
+        return False
+    return symbols[1] in ("'", '"', '?', '\\', 'a', 'b', 'f', 'n', 'r', 't', 'v')
 
 
 def isNoReturnScope(tok):
@@ -701,37 +716,30 @@ class MisraChecker:
 
     def misra_4_1(self, rawTokens):
         for token in rawTokens:
-            if ((token.str[0] != '"') and (token.str[0] != '\'')):
+            if (token.str[0] != '"') and (token.str[0] != '\''):
                 continue
-            pos = 1
-            while pos < len(token.str) - 2:
-                pos1 = pos
-                pos = pos + 1
-                if token.str[pos1] != '\\':
-                    continue
-                if token.str[pos1 + 1] == '\\':
-                    pos = pos1 + 2
-                    continue
-                if token.str[pos1 + 1] == 'x':
-                    if not isHexDigit(token.str[pos1 + 2]):
-                        self.reportError(token, 4, 1)
-                        continue
-                    if not isHexDigit(token.str[pos1 + 3]):
-                        self.reportError(token, 4, 1)
-                        continue
-                elif isOctalDigit(token.str[pos1 + 1]):
-                    if not isOctalDigit(token.str[pos1 + 2]):
-                        self.reportError(token, 4, 1)
-                        continue
-                    if not isOctalDigit(token.str[pos1 + 2]):
-                        self.reportError(token, 4, 1)
-                        continue
-                else:
-                    continue
+            if len(token.str) < 3:
+                continue
 
-                c = token.str[pos1 + 4]
-                if c != '"' and c != '\\':
-                    self.reportError(token, 4, 1)
+            # Examine only assignment operations
+            if not token.previous:
+                continue
+            if token.previous.str != '=':
+                continue
+
+            delimiter = token.str[0]
+
+            # No closing delimiter. This will not compile.
+            if token.str[-1] != delimiter:
+                continue
+
+            for sequence in ['\\' + t for t in token.str[1:-1].split('\\')]:
+                if sequence.startswith('\\') and len(sequence) > 1:
+                    if isHexEscapeSequence(sequence) or isOctalEscapeSequence(sequence) or isSimpleEscapeSequence(sequence):
+                        continue
+                    else:
+                        self.reportError(token, 4, 1)
+
 
     def misra_5_1(self, data):
         long_vars = {}
