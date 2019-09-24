@@ -495,6 +495,8 @@ static ExprEngine::ValuePtr executeReturn(const Token *tok, Data &data)
 
 static ExprEngine::ValuePtr truncateValue(ExprEngine::ValuePtr val, const ValueType *valueType, Data &data)
 {
+    if (!valueType)
+        return val;
     if (valueType->pointer != 0)
         return val;
     if (!valueType->isIntegral())
@@ -532,29 +534,31 @@ static ExprEngine::ValuePtr truncateValue(ExprEngine::ValuePtr val, const ValueT
 static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
 {
     ExprEngine::ValuePtr rhsValue = executeExpression(tok->astOperand2(), data);
+    ExprEngine::ValuePtr assignValue;
     if (tok->str() == "=")
-        call(data.callbacks, tok, rhsValue);
+        assignValue = rhsValue;
     else {
         // "+=" => "+"
         std::string binop(tok->str());
         binop = binop.substr(0, binop.size() - 1);
         ExprEngine::ValuePtr lhsValue = executeExpression(tok->astOperand1(), data);
-        auto newValue = std::make_shared<ExprEngine::BinOpResult>(binop, lhsValue, rhsValue);
-        call(data.callbacks, tok, newValue);
-        rhsValue = newValue;
+        assignValue = std::make_shared<ExprEngine::BinOpResult>(binop, lhsValue, rhsValue);
     }
 
     const Token *lhsToken = tok->astOperand1();
-    data.trackAssignment(lhsToken, rhsValue);
+    assignValue = truncateValue(assignValue, lhsToken->valueType(), data);
+    call(data.callbacks, tok, assignValue);
+
+    data.trackAssignment(lhsToken, assignValue);
     if (lhsToken->varId() > 0) {
-        data.memory[lhsToken->varId()] = truncateValue(rhsValue, lhsToken->valueType(), data);
+        data.memory[lhsToken->varId()] = assignValue;
     } else if (lhsToken->str() == "[") {
         auto arrayValue = data.getArrayValue(lhsToken->astOperand1());
         if (arrayValue) {
             // Is it array initialization?
             const Token *arrayInit = lhsToken->astOperand1();
             if (arrayInit && arrayInit->variable() && arrayInit->variable()->nameToken() == arrayInit) {
-                if (auto strval = std::dynamic_pointer_cast<ExprEngine::StringLiteralValue>(rhsValue)) {
+                if (auto strval = std::dynamic_pointer_cast<ExprEngine::StringLiteralValue>(assignValue)) {
                     for (size_t i = 0; i < strval->size(); ++i) {
                         uint8_t c = strval->string[i];
                         arrayValue->data[i] = std::make_shared<ExprEngine::IntRange>(std::to_string(int(c)),c,c);
@@ -565,7 +569,7 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
                 }
             } else {
                 auto indexValue = executeExpression(lhsToken->astOperand2(), data);
-                arrayValue->assign(indexValue, rhsValue);
+                arrayValue->assign(indexValue, assignValue);
             }
         }
     } else if (lhsToken->isUnaryOp("*")) {
@@ -573,7 +577,7 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
         if (pval && pval->type() == ExprEngine::ValueType::AddressOfValue) {
             auto val = std::dynamic_pointer_cast<ExprEngine::AddressOfValue>(pval);
             if (val)
-                data.memory[val->varId] = rhsValue;
+                data.memory[val->varId] = assignValue;
         } else if (pval && pval->type() == ExprEngine::ValueType::BinOpResult) {
             auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(pval);
             if (b && b->binop == "+") {
@@ -587,12 +591,12 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
                     offset = b->op1;
                 }
                 if (arr && offset) {
-                    arr->assign(offset, rhsValue);
+                    arr->assign(offset, assignValue);
                 }
             }
         }
     }
-    return rhsValue;
+    return assignValue;
 }
 
 static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
