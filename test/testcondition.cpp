@@ -3312,6 +3312,15 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9367
+        check("void f(long x) {\n"
+              "    if (x <= 0L)\n"
+              "        return;\n"
+              "    if (x % 360L == 0)\n"
+              "        return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueContainer() {
