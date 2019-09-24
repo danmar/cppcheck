@@ -158,10 +158,16 @@ namespace ExprEngine {
     public:
         const int MAXSIZE = 0x100000;
 
-        ArrayValue(const std::string &name, size_t size)
-            : Value(name) {
-            data.resize((size < MAXSIZE) ? size : MAXSIZE,
-                        std::make_shared<UninitValue>());
+        ArrayValue(const std::string &name, int minSize, int maxSize)
+            : Value(name)
+            , minSize(minSize)
+            , maxSize(maxSize) {
+            if (minSize < 1)
+                minSize = 1;
+            // Known size..
+            if (minSize == maxSize)
+                data.resize((minSize < MAXSIZE) ? minSize : MAXSIZE,
+                            std::make_shared<UninitValue>());
         }
 
         ValueType type() const override {
@@ -170,9 +176,12 @@ namespace ExprEngine {
         std::string getRange() const override;
 
         void assign(ValuePtr index, ValuePtr value);
+        void clear();
         ValuePtr read(ValuePtr index);
 
         std::vector<ValuePtr> data;
+        int minSize;
+        int maxSize;
     };
 
     class StringLiteralValue: public Value {

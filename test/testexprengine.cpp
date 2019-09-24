@@ -36,6 +36,8 @@ private:
         TEST_CASE(argSmartPointer);
         TEST_CASE(argStruct);
 
+        TEST_CASE(dynamicAllocation1);
+
         TEST_CASE(expr1);
         TEST_CASE(expr2);
         TEST_CASE(expr3);
@@ -108,6 +110,10 @@ private:
                                "    unsigned char b;\n"
                                "};\n"
                                "void f(struct S s) { return s.a + s.b; }", "s.a+s.b"));
+    }
+
+    void dynamicAllocation1() {
+        ASSERT_EQUALS("[0]", getRange("char *f() { char *p = calloc(1,1); return p; }", "p"));
     }
 
     void expr1() {

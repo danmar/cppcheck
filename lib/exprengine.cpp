@@ -191,7 +191,7 @@ namespace {
             unsigned int size = 1;
             for (const auto &dim : tok->variable()->dimensions())
                 size *= dim.num;
-            auto val = std::make_shared<ExprEngine::ArrayValue>(getNewSymbolName(), size);
+            auto val = std::make_shared<ExprEngine::ArrayValue>(getNewSymbolName(), size, size);
             memory[tok->varId()] = val;
             return val;
         }
@@ -247,6 +247,13 @@ void ExprEngine::ArrayValue::assign(ExprEngine::ValuePtr index, ExprEngine::Valu
         if (i1->minValue == i1->maxValue && i1->minValue >= 0 && i1->maxValue < data.size())
             data[i1->minValue] = value;
     }
+}
+
+void ExprEngine::ArrayValue::clear()
+{
+    auto zero = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
+    for (int i = 0; i < data.size(); ++i)
+        data[i] = zero;
 }
 
 ExprEngine::ValuePtr ExprEngine::ArrayValue::read(ExprEngine::ValuePtr index)
@@ -602,8 +609,10 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
 
 static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
 {
+    std::vector<ExprEngine::ValuePtr> argValues;
     for (const Token *argtok : getArguments(tok)) {
         auto val = executeExpression(argtok, data);
+        argValues.push_back(val);
         if (!argtok->valueType() || (argtok->valueType()->constness & 1) == 1)
             continue;
         if (auto arrayValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(val)) {
@@ -619,6 +628,20 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
                 data.memory[addressOf->varId] = getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings);
         }
     }
+
+    // TODO Fix this hardcoding..
+    if (Token::simpleMatch(tok->astOperand1(), "calloc (") && argValues.size() == 2 && argValues[0] && argValues[1]) {
+        auto bufferSize = std::make_shared<ExprEngine::BinOpResult>("*", argValues[0], argValues[1]);
+        ExprEngine::BinOpResult::IntOrFloatValue minValue, maxValue;
+        bufferSize->getRange(&minValue, &maxValue);
+        if (!minValue.isFloat()) {
+            auto buffer = std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), minValue.intValue, maxValue.intValue);
+            buffer->clear();
+            call(data.callbacks, tok, buffer);
+            return buffer;
+        }
+    }
+
     auto val = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
     call(data.callbacks, tok, val);
     return val;
@@ -764,7 +787,7 @@ static void execute(const Token *start, const Token *end, Data &data)
             data.trackProgramState(tok);
         if (tok->variable() && tok->variable()->nameToken() == tok) {
             if (tok->variable()->isArray() && tok->variable()->dimensions().size() == 1 && tok->variable()->dimensions()[0].known) {
-                data.memory[tok->varId()] = std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), tok->variable()->dimension(0));
+                data.memory[tok->varId()] = std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), tok->variable()->dimension(0), tok->variable()->dimension(0));
             }
             if (Token::Match(tok, "%name% ["))
                 tok = tok->linkAt(1);
