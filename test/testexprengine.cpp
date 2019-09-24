@@ -49,6 +49,7 @@ private:
 
         TEST_CASE(functionCall1);
         TEST_CASE(functionCall2);
+        TEST_CASE(functionCall3);
 
         TEST_CASE(if1);
         TEST_CASE(if2);
@@ -157,6 +158,10 @@ private:
                             "    value = value;\n"
                             "}";
         ASSERT_EQUALS("-32768:32767", getRange(code, "value=value"));
+    }
+
+    void functionCall3() {
+        ASSERT_EQUALS("-2147483648:2147483647", getRange("void f() { int x = -1; fgets(stdin, \"%d\", &x); x=x; }", "x=x"));
     }
 
     void if1() {
