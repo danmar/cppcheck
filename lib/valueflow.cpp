@@ -766,12 +766,10 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
              parent->astOperand1() &&
              parent->astOperand2()) {
 
-        // Dont compare impossible values
-        if (parent->isComparisonOp() && value.isImpossible())
-            return;
+        const bool noninvertible = parent->isComparisonOp() || Token::Match(parent, "%|/|&|%or%");
 
         // Skip operators with impossible values that are not invertible
-        if (Token::Match(parent, "%|/|&|%or%") && value.isImpossible())
+        if (noninvertible && value.isImpossible())
             return;
 
         // known result when a operand is 0.
@@ -793,11 +791,15 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
         }
 
         for (const ValueFlow::Value &value1 : parent->astOperand1()->values()) {
+            if (noninvertible && value1.isImpossible())
+                continue;
             if (!value1.isIntValue() && !value1.isFloatValue() && !value1.isTokValue())
                 continue;
             if (value1.isTokValue() && (!parent->isComparisonOp() || value1.tokvalue->tokType() != Token::eString))
                 continue;
             for (const ValueFlow::Value &value2 : parent->astOperand2()->values()) {
+                if (noninvertible && value2.isImpossible())
+                    continue;
                 if (!value2.isIntValue() && !value2.isFloatValue() && !value2.isTokValue())
                     continue;
                 if (value2.isTokValue() && (!parent->isComparisonOp() || value2.tokvalue->tokType() != Token::eString || value1.isTokValue()))
