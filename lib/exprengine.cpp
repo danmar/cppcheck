@@ -603,12 +603,19 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
 {
     for (const Token *argtok : getArguments(tok)) {
         auto val = executeExpression(argtok, data);
+        if (!argtok->valueType() || (argtok->valueType()->constness & 1) == 1)
+            continue;
         if (auto arrayValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(val)) {
             ValueType vt(*argtok->valueType());
             vt.pointer = 0;
             auto anyVal = getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings);
             for (int i = 0; i < arrayValue->data.size(); ++i)
                 arrayValue->data[i] = anyVal;
+        } else if (auto addressOf = std::dynamic_pointer_cast<ExprEngine::AddressOfValue>(val)) {
+            ValueType vt(*argtok->valueType());
+            vt.pointer = 0;
+            if (vt.isIntegral() && argtok->valueType()->pointer == 1)
+                data.memory[addressOf->varId] = getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings);
         }
     }
     auto val = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
