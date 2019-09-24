@@ -508,11 +508,12 @@ static ExprEngine::ValuePtr truncateValue(ExprEngine::ValuePtr val, const ValueT
         return val;
 
     if (auto range = std::dynamic_pointer_cast<ExprEngine::IntRange>(val)) {
-
         if (range->minValue == range->maxValue) {
             int128_t newValue = range->minValue;
             newValue = newValue & (((int128_t)1 << bits) - 1);
-            // TODO: Sign extension
+            // Sign extension
+            if (valueType->sign == ValueType::Sign::SIGNED && newValue & (1ULL << (bits - 1)))
+                newValue |= ~(((int128_t)1 << bits) - 1);
             if (newValue == range->minValue)
                 return val;
             return std::make_shared<ExprEngine::IntRange>(ExprEngine::str(newValue), newValue, newValue);
