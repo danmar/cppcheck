@@ -3412,7 +3412,7 @@ void stdbind()
 {
     using namespace std::placeholders;
 
-    // TODO cppcheck-suppress ignoredReturnValue
+    // TODO cppcheck-suppress ignoredReturnValue #9369
     std::bind(stdbind_helper, 1);
 
     // cppcheck-suppress unreadVariable
