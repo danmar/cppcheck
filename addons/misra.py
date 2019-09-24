@@ -715,21 +715,33 @@ class MisraChecker:
                     if not isHexDigit(token.str[pos1 + 2]):
                         self.reportError(token, 4, 1)
                         continue
+                    # Check for next or end of escape sequence. 
+                    # To match sequence which consists of single hexadecimal digit.
+                    if (token.str[pos1 + 3] == '\\') or (token.str[pos1 + 3] == '"'):
+                        continue
                     if not isHexDigit(token.str[pos1 + 3]):
                         self.reportError(token, 4, 1)
                         continue
                 elif isOctalDigit(token.str[pos1 + 1]):
+                    # Check for next or end of escape sequence.
+                    # To match sequence which consists of single octal digit.
+                    if (token.str[pos1 + 2] == '\\') or (token.str[pos1 + 2] == '\''):
+                        continue
                     if not isOctalDigit(token.str[pos1 + 2]):
                         self.reportError(token, 4, 1)
                         continue
-                    if not isOctalDigit(token.str[pos1 + 2]):
+                    # Check for next or end of escape sequence.
+                    # To match sequence which consists of two octal digits.
+                    if (token.str[pos1 + 3] == '\\') or (token.str[pos1 + 3] == '\''):
+                        continue
+                    if not isOctalDigit(token.str[pos1 + 3]):
                         self.reportError(token, 4, 1)
                         continue
                 else:
                     continue
 
                 c = token.str[pos1 + 4]
-                if c != '"' and c != '\\':
+                if c != '"' and c != '\'' and c != '\\':
                     self.reportError(token, 4, 1)
 
     def misra_5_1(self, data):
