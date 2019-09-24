@@ -747,7 +747,7 @@ static ExprEngine::ValuePtr executeExpression(const Token *tok, Data &data)
     if (tok->isName() && tok->hasKnownIntValue())
         return executeKnownMacro(tok, data);
 
-    if (tok->isNumber())
+    if (tok->isNumber() || tok->tokType() == Token::Type::eChar)
         return executeNumber(tok);
 
     if (tok->tokType() == Token::Type::eString)
