@@ -38,7 +38,7 @@ private:
         settings.addEnabled("style");
         settings.addEnabled("warning");
         settings.addEnabled("portability");
-        settings.libraries.push_back("posix");
+        settings.libraries.emplace_back("posix");
         settings.standards.c = Standards::C11;
         settings.standards.cpp = Standards::CPP11;
         LOAD_LIB_2(settings.library, "std.cfg");
