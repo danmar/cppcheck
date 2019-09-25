@@ -72,6 +72,8 @@ const char *s41_3 = "\x41" "\x42";
 const char *s41_4 = "\x41" "g";
 const char *s41_5 = "\x41\xA";
 const char *s41_6 = "\xA\x41";
+const char *s41_7 = "\xAA\xg\x41"; // 4.1
+const char *s41_8 = "\xAA\x\x41"; // 4.1
 int c41_3         = '\141t'; // 4.1
 int c41_4         = '\141\t';
 int c41_5         = '\0';
@@ -81,6 +83,8 @@ int c41_8         = '\0t';   // 4.1
 int c41_9         = '\12';
 int c41_10        = '\12\n';
 int c41_11        = '\12n';  // 4.1
+int c41_12         = '\12323';
+int c41_13         = '\1232\3';
 
 extern int misra_5_3_var_hides_var______31x;
 void misra_5_3_var_hides_function_31x (void) {}
