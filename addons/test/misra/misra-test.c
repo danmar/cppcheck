@@ -73,15 +73,38 @@ const char *s41_4 = "\x8g";  // 4.1
 const char *s41_5 = "\x8";
 const char *s41_6 = "\x41\xA";
 const char *s41_7 = "\xA\x41";
-int c41_3         = '\141t'; // 4.1
+const char *s41_8 = "hello\xAg\x41";  //4.1
+int c41_3         = '\141t';   // 4.1
 int c41_4         = '\141\t';
 int c41_5         = '\141';
 int c41_6         = '\0';
 int c41_7         = '\0\t';
-int c41_8         = '\0t';   // 4.1
+int c41_8         = '\0t';     // 4.1
 int c41_9         = '\12';
 int c41_10        = '\12\n';
-int c41_11        = '\12n';  // 4.1
+int c41_11        = '\12n';    // 4.1
+int c41_12        = '\12323';  // 4.1
+int c41_13        = '\1232\3'; // 4.1
+
+void misra_4_1()
+{
+    (void)printf("\x41g");         // 4.1
+    (void)printf("\x8g");          // 4.1
+    (void)printf("hello\xAg\x41"); // 4.1
+    (void)printf("\x41\x42");
+    (void)printf("\x41" "g");
+    (void)printf("%i", '\141t');   // 4.1
+    (void)printf("%i", '\141\t');
+    (void)printf("%i", '\141');
+    (void)printf("%i", '\0t');     // 4.1
+    (void)printf("%i", '\0\t');
+    (void)printf("%i", '\0');
+    (void)printf("%i", '\12t');    // 4.1
+    (void)printf("%i", '\12\t');
+    (void)printf("%i", '\12');
+    (void)printf("%i", '\12323');  // 4.1
+    (void)printf("%i", '\1232\3'); // 4.1
+}
 
 extern int misra_5_3_var_hides_var______31x;
 void misra_5_3_var_hides_function_31x (void) {}
