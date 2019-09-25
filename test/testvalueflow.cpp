@@ -2309,6 +2309,7 @@ private:
 
     void valueFlowAfterConditionExpr() {
         const char *code;
+        
         code = "void f(int* p) {\n"
                "    if (p[0] == 123) {\n"
                "        int x = p[0];\n"
@@ -2316,6 +2317,24 @@ private:
                "    }\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 123));
+
+        code = "void f(int y) {\n"
+               "    if (y+1 == 123) {\n"
+               "        int x = y+1;\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 123));
+
+        code = "void f(int y) {\n"
+               "    if (y++ == 123) {\n"
+               "        int x = y++;\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 123));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 124));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 125));
     }
 
     void valueFlowAfterConditionSeveralNot() {

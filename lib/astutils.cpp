@@ -1738,7 +1738,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             const Token *parent = tok;
             bool other = false;
             bool same = tok->astParent() && isSameExpression(mCpp, false, expr, tok, mLibrary, false, false, nullptr);
-            while (!same && Token::Match(parent->astParent(), "*|.|::|[")) {
+            while (!same && Token::Match(parent->astParent(), "*|.|::|[|%cop%")) {
                 parent = parent->astParent();
                 if (parent && isSameExpression(mCpp, false, expr, parent, mLibrary, false, false, nullptr)) {
                     same = true;
