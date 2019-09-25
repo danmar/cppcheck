@@ -74,6 +74,8 @@ const char *s41_5 = "\x41\xA";
 const char *s41_6 = "\xA\x41";
 const char *s41_7 = "\xAA\xg\x41"; // 4.1
 const char *s41_8 = "\xAA\x\x41"; // 4.1
+const char *s41_9 = "unknown\gsequence";
+const char *s41_10 = "simple\nsequence";
 int c41_3         = '\141t'; // 4.1
 int c41_4         = '\141\t';
 int c41_5         = '\0';
@@ -83,8 +85,16 @@ int c41_8         = '\0t';   // 4.1
 int c41_9         = '\12';
 int c41_10        = '\12\n';
 int c41_11        = '\12n';  // 4.1
-int c41_12         = '\12323';
-int c41_13         = '\1232\3';
+int c41_12         = '\12323'; // 4.1
+int c41_13         = '\123\3';
+int c41_14         = '\777\777';
+
+void misra_4_1()
+{
+    (void)printf("\x41g"); // 4.1
+    (void)printf("\x41\x42");
+    (void)printf("\x41" "g");
+}
 
 extern int misra_5_3_var_hides_var______31x;
 void misra_5_3_var_hides_function_31x (void) {}

@@ -23,6 +23,13 @@ import argparse
 import codecs
 import string
 
+from itertools import izip
+
+
+def grouped(iterable, n):
+    "s -> (s0,s1,s2,...sn-1), (sn,sn+1,sn+2,...s2n-1), (s2n,s2n+1,s2n+2,...s3n-1), ..."
+    return izip(*[iter(iterable)]*n)
+
 
 typeBits = {
     'CHAR': None,
@@ -462,6 +469,11 @@ def isalnum(c):
 
 def isHexEscapeSequence(symbols):
     """Checks that given symbols are valid hex escape sequence.
+
+    hexademical-escape-sequence:
+            \\x hexademical-digit
+            hexademical-escape-sequence hexademical-digit
+
     Reference: n1570 6.4.4.4"""
     if len(symbols) < 3 or symbols[0] != '\\' or symbols[1] != 'x':
         return False
@@ -469,11 +481,18 @@ def isHexEscapeSequence(symbols):
 
 
 def isOctalEscapeSequence(symbols):
-    """Checks that given symbols are valid octal escape sequence.
+    """Checks that given symbols are valid octal escape sequence:
+
+     octal-escape-sequence:
+             \ octal-digit
+             \ octal-digit octal-digit
+             \ octal-digit octal-digit octal-digit
+
     Reference: n1570 6.4.4.4"""
-    if len(symbols) < 2 or symbols[0] != '\\':
+    if len(symbols) not in range(2, 5) or symbols[0] != '\\':
         return False
     return all([s in string.octdigits for s in symbols[1:]])
+
 
 def isSimpleEscapeSequence(symbols):
     """Checks that given symbols are simple escape sequence.
@@ -481,6 +500,16 @@ def isSimpleEscapeSequence(symbols):
     if len(symbols) != 2 or symbols[0] != '\\':
         return False
     return symbols[1] in ("'", '"', '?', '\\', 'a', 'b', 'f', 'n', 'r', 't', 'v')
+
+
+def hasNumericEscapeSequence(symbols):
+    """Check that given string contains octal or hexademical escape sequences."""
+    if '\\' not in symbols:
+        return False
+    for c, cn in grouped(symbols, 2):
+        if c == '\\' and cn in ('x' + string.octdigits):
+            return True
+    return False
 
 
 def isNoReturnScope(tok):
@@ -721,24 +750,27 @@ class MisraChecker:
             if len(token.str) < 3:
                 continue
 
-            # Examine only assignment operations
-            if not token.previous:
-                continue
-            if token.previous.str != '=':
-                continue
-
             delimiter = token.str[0]
+            symbols = token.str[1:-1]
 
             # No closing delimiter. This will not compile.
             if token.str[-1] != delimiter:
                 continue
 
-            for sequence in ['\\' + t for t in token.str[1:-1].split('\\')]:
-                if sequence.startswith('\\') and len(sequence) > 1:
-                    if isHexEscapeSequence(sequence) or isOctalEscapeSequence(sequence) or isSimpleEscapeSequence(sequence):
-                        continue
-                    else:
-                        self.reportError(token, 4, 1)
+            if len(symbols) < 2:
+                continue
+
+            if not hasNumericEscapeSequence(symbols):
+                continue
+
+            # String literals that contains one or more escape sequences. All of them should be
+            # terminated.
+            for sequence in ['\\' + t for t in symbols.split('\\')][1:]:
+                if (isHexEscapeSequence(sequence) or isOctalEscapeSequence(sequence) or
+                    isSimpleEscapeSequence(sequence)):
+                    continue
+                else:
+                    self.reportError(token, 4, 1)
 
 
     def misra_5_1(self, data):
