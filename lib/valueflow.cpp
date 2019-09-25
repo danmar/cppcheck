@@ -4724,17 +4724,17 @@ static const ValueFlow::Value* getCompareIntValue(const std::list<ValueFlow::Val
 }
 
 template<class Compare>
-static const ValueFlow::Value* proveCompare(const std::list<ValueFlow::Value>& values, MathLib::bigint x, Compare compare)
+static const ValueFlow::Value* proveCompare(const std::list<ValueFlow::Value>& values, MathLib::bigint x, Compare compare, bool as)
 {
     const ValueFlow::Value* result = nullptr;
     const ValueFlow::Value* maxValue = getCompareIntValue(values, std::greater<MathLib::bigint>{});
     if (maxValue && maxValue->isImpossible() && maxValue->bound == ValueFlow::Value::Bound::Lower) {
-        if (!compare(maxValue->intvalue, x))
+        if (compare(maxValue->intvalue, x) == as)
             result = maxValue;
     }
     const ValueFlow::Value* minValue = getCompareIntValue(values, std::less<MathLib::bigint>{});
     if (minValue && minValue->isImpossible() && minValue->bound == ValueFlow::Value::Bound::Upper) {
-        if (compare(minValue->intvalue, x))
+        if (compare(minValue->intvalue, x) == !as)
             result = minValue;
     }
     return result;
@@ -4742,12 +4742,12 @@ static const ValueFlow::Value* proveCompare(const std::list<ValueFlow::Value>& v
 
 static const ValueFlow::Value* proveLessThan(const std::list<ValueFlow::Value>& values, MathLib::bigint x)
 {
-    return proveCompare(values, x, std::less<MathLib::bigint>{});
+    return proveCompare(values, x, std::less<MathLib::bigint>{}, true);
 }
 
 static const ValueFlow::Value* proveGreaterThan(const std::list<ValueFlow::Value>& values, MathLib::bigint x)
 {
-    return proveCompare(values, x, std::greater<MathLib::bigint>{});
+    return proveCompare(values, x, std::greater<MathLib::bigint>{}, false);
 }
 
 static const ValueFlow::Value* proveNotEqual(const std::list<ValueFlow::Value>& values, MathLib::bigint x)
@@ -4792,6 +4792,7 @@ static void valueFlowInferCondition(TokenList* tokenlist,
                 continue;
             ValueFlow::Value value = *result;
             value.intvalue = 1;
+            value.bound = ValueFlow::Value::Bound::Point;
             value.setKnown();
             setTokenValue(tok, value, settings);
         } else if (Token::Match(tok, "%comp%")) {
@@ -4834,6 +4835,7 @@ static void valueFlowInferCondition(TokenList* tokenlist,
                 continue;
             ValueFlow::Value value = *result;
             value.intvalue = known;
+            value.bound = ValueFlow::Value::Bound::Point;
             value.setKnown();
             setTokenValue(tok, value, settings);
         }
