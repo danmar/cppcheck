@@ -4303,6 +4303,12 @@ struct ValueFlowConditionHandler {
             for (Token *tok = const_cast<Token *>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
                 if (Token::Match(tok, "= & %var% ;"))
                     aliased.insert(tok->tokAt(2)->varId());
+                const Token *top = tok->astTop();
+                if (!top)
+                    continue;
+
+                if (!Token::Match(top->previous(), "if|while|for (") && !Token::Match(tok->astParent(), "&&|%oror%"))
+                    continue;
 
                 Condition cond = parse(tok);
                 if (!cond.vartok)
@@ -4355,7 +4361,6 @@ struct ValueFlowConditionHandler {
                     }
                 }
 
-                const Token *top = tok->astTop();
                 if (top && Token::Match(top->previous(), "if|while (") && !top->previous()->isExpandedMacro()) {
                     // does condition reassign variable?
                     if (tok != top->astOperand2() && Token::Match(top->astOperand2(), "%oror%|&&") &&
@@ -4368,12 +4373,12 @@ struct ValueFlowConditionHandler {
                     std::list<ValueFlow::Value> thenValues;
                     std::list<ValueFlow::Value> elseValues;
 
-                    if (!Token::Match(tok, "!=|%var%")) {
+                    if (!Token::Match(tok, "!=|=") && tok != cond.vartok) {
                         thenValues.insert(thenValues.end(), cond.true_values.begin(), cond.true_values.end());
                         if (isConditionKnown(tok, false))
                             insertImpossible(elseValues, cond.false_values);
                     }
-                    if (!Token::Match(tok, "==|!") && !Token::Match(tok->previous(), "%name% (")) {
+                    if (!Token::Match(tok, "==|!")) {
                         elseValues.insert(elseValues.end(), cond.false_values.begin(), cond.false_values.end());
                         if (isConditionKnown(tok, true))
                             insertImpossible(thenValues, cond.true_values);
@@ -4511,8 +4516,6 @@ static void valueFlowAfterCondition(TokenList *tokenlist,
         if (vartok) {
             if (vartok->str() == "=" && vartok->astOperand1() && vartok->astOperand2())
                 vartok = vartok->astOperand1();
-            if (!vartok->isName())
-                return cond;
             cond.true_values.push_back(true_value);
             cond.false_values.push_back(false_value);
             cond.vartok = vartok;
@@ -4522,12 +4525,15 @@ static void valueFlowAfterCondition(TokenList *tokenlist,
         if (tok->str() == "!") {
             vartok = tok->astOperand1();
 
-        } else if (tok->isName() && (Token::Match(tok->astParent(), "%oror%|&&") ||
-                                     Token::Match(tok->tokAt(-2), "if|while ( %var% [)=]"))) {
-            vartok = tok;
+        } else if (tok->astParent() && (Token::Match(tok->astParent(), "%oror%|&&") ||
+                                     Token::Match(tok->astParent()->previous(), "if|while ("))) {
+            if (Token::simpleMatch(tok, "="))
+                vartok = tok->astOperand1();
+            else if (!Token::Match(tok, "%comp%|%assign%"))
+                vartok = tok;
         }
 
-        if (!vartok || !vartok->isName())
+        if (!vartok)
             return cond;
         cond.true_values.emplace_back(tok, 0LL);
         cond.false_values.emplace_back(tok, 0LL);

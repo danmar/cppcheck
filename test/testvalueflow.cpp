@@ -82,6 +82,7 @@ private:
 
         TEST_CASE(valueFlowAfterAssign);
         TEST_CASE(valueFlowAfterCondition);
+        TEST_CASE(valueFlowAfterConditionExpr);
         TEST_CASE(valueFlowAfterConditionSeveralNot);
         TEST_CASE(valueFlowForwardCompoundAssign);
         TEST_CASE(valueFlowForwardCorrelatedVariables);
@@ -2304,6 +2305,17 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, 0));
         ASSERT_EQUALS(true, testValueOfX(code, 6U, 0));
+    }
+
+    void valueFlowAfterConditionExpr() {
+        const char *code;
+        code = "void f(int* p) {\n"
+               "    if (p[0] == 123) {\n"
+               "        int x = p[0];\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 123));
     }
 
     void valueFlowAfterConditionSeveralNot() {
