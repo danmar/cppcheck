@@ -1387,7 +1387,7 @@ private:
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
                                           "[test.cpp:4]: (debug) valueflow.cpp:1131:valueFlowReverse bailout: variable x stopping on goto label\n"
-                                          "[test.cpp:2]: (debug) valueflow.cpp:1813:valueFlowForward bailout: variable x. noreturn conditional scope.\n"
+                                          "[test.cpp:2]: (debug) valueflow.cpp:1813:valueFlowForwardVariable bailout: variable x. noreturn conditional scope.\n"
                                           , errout.str());
 
         // #5721 - FP
@@ -1403,7 +1403,7 @@ private:
                 "}\n");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:2]: (debug) valueflow.cpp:1035:valueFlowReverse bailout: assignment of abc\n"
                                           "[test.cpp:8]: (debug) valueflow.cpp:1131:valueFlowReverse bailout: variable abc stopping on goto label\n"
-                                          "[test.cpp:3]: (debug) valueflow.cpp:1813:valueFlowForward bailout: variable abc. noreturn conditional scope.\n",
+                                          "[test.cpp:3]: (debug) valueflow.cpp:1813:valueFlowForwardVariable bailout: variable abc. noreturn conditional scope.\n",
                                           errout.str());
     }
 
