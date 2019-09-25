@@ -113,7 +113,7 @@ private:
     }
 
     void dynamicAllocation1() {
-        ASSERT_EQUALS("[0]", getRange("char *f() { char *p = calloc(1,1); return p; }", "p"));
+        ASSERT_EQUALS("size=1,[:]=0", getRange("char *f() { char *p = calloc(1,1); return p; }", "p"));
     }
 
     void expr1() {
@@ -180,7 +180,7 @@ private:
     }
 
     void if3() {
-        ASSERT_EQUALS("1,-2147483648:2147483647,-2147483648:2147483647", getRange("void f() { int x; if (a) { if (b) x=1; } a=x; }", "a=x"));
+        ASSERT_EQUALS("1,-2147483648:2147483647,-2147483648:2147483647", getRange("void f() { int x; if (a) { if (b) x=1; } x=x; }", "x=x"));
     }
 
     void if4() {
@@ -237,7 +237,7 @@ private:
     }
 
     void pointerNull1() {
-        ASSERT_EQUALS("1", getRange("void f(void *p) { p = NULL; p += 1; }", "p+=1"));
+        ASSERT_EQUALS("0", getRange("void f(void *p) { p = NULL; p += 1; }", "p+=1"));
     }
 };
 

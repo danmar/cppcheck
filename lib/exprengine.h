@@ -36,6 +36,7 @@ class Tokenizer;
 class Scope;
 class Settings;
 class Token;
+class Variable;
 
 #ifdef __GNUC__
 typedef __int128_t   int128_t;
@@ -158,17 +159,8 @@ namespace ExprEngine {
     public:
         const int MAXSIZE = 0x100000;
 
-        ArrayValue(const std::string &name, int minSize, int maxSize)
-            : Value(name)
-            , minSize(minSize)
-            , maxSize(maxSize) {
-            if (minSize < 1)
-                minSize = 1;
-            // Known size..
-            if (minSize == maxSize)
-                data.resize((minSize < MAXSIZE) ? minSize : MAXSIZE,
-                            std::make_shared<UninitValue>());
-        }
+        ArrayValue(const std::string &name, ValuePtr size, ValuePtr value);
+        ArrayValue(const std::string &name, const Variable *var);
 
         ValueType type() const override {
             return ValueType::ArrayValue;
@@ -177,11 +169,14 @@ namespace ExprEngine {
 
         void assign(ValuePtr index, ValuePtr value);
         void clear();
-        ValuePtr read(ValuePtr index);
+        std::vector<ExprEngine::ValuePtr> read(ValuePtr index);
 
-        std::vector<ValuePtr> data;
-        int minSize;
-        int maxSize;
+        struct IndexAndValue {
+            ValuePtr index;
+            ValuePtr value;
+        };
+        std::vector<IndexAndValue> data;
+        ValuePtr size;
     };
 
     class StringLiteralValue: public Value {

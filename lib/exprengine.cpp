@@ -188,10 +188,7 @@ namespace {
                 return std::dynamic_pointer_cast<ExprEngine::ArrayValue>(it->second);
             if (tok->varId() == 0)
                 return std::shared_ptr<ExprEngine::ArrayValue>();
-            unsigned int size = 1;
-            for (const auto &dim : tok->variable()->dimensions())
-                size *= dim.num;
-            auto val = std::make_shared<ExprEngine::ArrayValue>(getNewSymbolName(), size, size);
+            auto val = std::make_shared<ExprEngine::ArrayValue>(getNewSymbolName(), tok->variable());
             memory[tok->varId()] = val;
             return val;
         }
@@ -240,41 +237,148 @@ namespace {
     };
 }
 
+static ExprEngine::ValuePtr simplifyValue(ExprEngine::ValuePtr origValue)
+{
+    auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(origValue);
+    if (!b)
+        return origValue;
+    if (!b->op1 || !b->op2)
+        return origValue;
+    auto intRange1 = std::dynamic_pointer_cast<ExprEngine::IntRange>(b->op1);
+    auto intRange2 = std::dynamic_pointer_cast<ExprEngine::IntRange>(b->op1);
+    if (intRange1 && intRange2 && intRange1->minValue == intRange1->maxValue && intRange2->minValue == intRange2->maxValue) {
+        const std::string &binop = b->binop;
+        int128_t v;
+        if (binop == "+")
+            v = intRange1->minValue + intRange2->minValue;
+        else if (binop == "-")
+            v = intRange1->minValue - intRange2->minValue;
+        else if (binop == "*")
+            v = intRange1->minValue * intRange2->minValue;
+        else if (binop == "/" && intRange2->minValue != 0)
+            v = intRange1->minValue / intRange2->minValue;
+        else if (binop == "%" && intRange2->minValue != 0)
+            v = intRange1->minValue % intRange2->minValue;
+        else
+            return origValue;
+        return std::make_shared<ExprEngine::IntRange>(ExprEngine::str(v), v, v);
+    }
+    return origValue;
+}
+
+
+ExprEngine::ArrayValue::ArrayValue(const std::string &name, ExprEngine::ValuePtr size, ExprEngine::ValuePtr value)
+    : Value(name)
+    , size(size)
+{
+    assign(ExprEngine::ValuePtr(), value);
+}
+
+ExprEngine::ArrayValue::ArrayValue(const std::string &name, const Variable *var)
+    : Value(name)
+{
+    if (var) {
+        int sz = 1;
+        for (const auto &dim : var->dimensions()) {
+            if (!dim.known) {
+                sz = -1;
+                break;
+            }
+            sz *= dim.num;
+        }
+        if (sz >= 1)
+            size = std::make_shared<ExprEngine::IntRange>(std::to_string(sz), sz, sz);
+    }
+    assign(ExprEngine::ValuePtr(), std::make_shared<ExprEngine::UninitValue>());
+}
+
 void ExprEngine::ArrayValue::assign(ExprEngine::ValuePtr index, ExprEngine::ValuePtr value)
 {
-    auto i1 = std::dynamic_pointer_cast<ExprEngine::IntRange>(index);
-    if (i1) {
-        if (i1->minValue == i1->maxValue && i1->minValue >= 0 && i1->maxValue < data.size())
-            data[i1->minValue] = value;
+    if (!index)
+        data.clear();
+    if (value) {
+        ExprEngine::ArrayValue::IndexAndValue indexAndValue = {index, value};
+        data.push_back(indexAndValue);
     }
 }
 
 void ExprEngine::ArrayValue::clear()
 {
-    auto zero = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
-    for (int i = 0; i < data.size(); ++i)
-        data[i] = zero;
+    data.clear();
+    ExprEngine::ArrayValue::IndexAndValue indexAndValue = {
+        ExprEngine::ValuePtr(), std::make_shared<ExprEngine::IntRange>("0", 0, 0)
+    };
+    data.push_back(indexAndValue);
 }
 
-ExprEngine::ValuePtr ExprEngine::ArrayValue::read(ExprEngine::ValuePtr index)
+static bool isEqual(ExprEngine::ValuePtr v1, ExprEngine::ValuePtr v2)
 {
-    auto i1 = std::dynamic_pointer_cast<ExprEngine::IntRange>(index);
-    if (i1) {
-        if (i1->minValue == i1->maxValue && i1->minValue >= 0 && i1->maxValue < data.size())
-            return data[i1->minValue];
+    if (!v1 || !v2)
+        return !v1 && !v2;
+    // TODO: Maybe we need better logic here:
+    return v1->getRange() == v2->getRange();
+}
+
+static bool isNonOverlapping(ExprEngine::ValuePtr v1, ExprEngine::ValuePtr v2)
+{
+    if (!v1 || !v2)
+        return false; // Don't know!
+    auto intRange1 = std::dynamic_pointer_cast<ExprEngine::IntRange>(v1);
+    auto intRange2 = std::dynamic_pointer_cast<ExprEngine::IntRange>(v2);
+    if (intRange1 && intRange2 && (intRange1->minValue > intRange2->maxValue || intRange1->maxValue < intRange2->maxValue))
+        return true;
+    return false;
+}
+
+std::vector<ExprEngine::ValuePtr> ExprEngine::ArrayValue::read(ExprEngine::ValuePtr index)
+{
+    std::vector<ExprEngine::ValuePtr> ret;
+    for (const auto indexAndValue : data) {
+        if (isEqual(index, indexAndValue.index))
+            ret.clear();
+        if (isNonOverlapping(index, indexAndValue.index))
+            continue;
+        if (!indexAndValue.index && indexAndValue.value->type() == ExprEngine::ValueType::StringLiteralValue) {
+            auto stringLiteral = std::dynamic_pointer_cast<ExprEngine::StringLiteralValue>(indexAndValue.value);
+            if (!stringLiteral) {
+                ret.push_back(std::make_shared<ExprEngine::IntRange>("", -128, 128));
+                continue;
+            }
+            if (auto i = std::dynamic_pointer_cast<ExprEngine::IntRange>(index)) {
+                if (stringLiteral && i->minValue >= 0 && i->minValue == i->maxValue) {
+                    int c = 0;
+                    if (i->minValue < stringLiteral->size())
+                        c = stringLiteral->string[i->minValue];
+                    ret.push_back(std::make_shared<ExprEngine::IntRange>(std::to_string(c), c, c));
+                    continue;
+                }
+            }
+            int cmin = 0, cmax = 0;
+            for (char c : stringLiteral->string) {
+                if (c < cmin)
+                    cmin = c;
+                else if (c > cmax)
+                    cmax = c;
+            }
+            ret.push_back(std::make_shared<ExprEngine::IntRange>("", cmin, cmax));
+            continue;
+        }
+        ret.push_back(indexAndValue.value);
     }
-    return ExprEngine::ValuePtr();
+    return ret;
 }
 
 std::string ExprEngine::ArrayValue::getRange() const
 {
-    std::ostringstream r;
-    r << "[";
-    for (size_t i = 0; i < data.size(); ++i) {
-        r << (i==0?"":",") << data[i]->getRange();
+    std::ostringstream ostr;
+    ostr << "size=" << (size ? size->name : std::string("(null)"));
+    for (const auto indexAndValue : data) {
+        ostr << ",["
+             << (!indexAndValue.index ? std::string(":") : indexAndValue.index->name)
+             << "]="
+             << indexAndValue.value->name;
     }
-    r << "]";
-    return r.str();
+    return ostr.str();
 }
 
 std::string ExprEngine::PointerValue::getRange() const
@@ -550,7 +654,7 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
         std::string binop(tok->str());
         binop = binop.substr(0, binop.size() - 1);
         ExprEngine::ValuePtr lhsValue = executeExpression(tok->astOperand1(), data);
-        assignValue = std::make_shared<ExprEngine::BinOpResult>(binop, lhsValue, rhsValue);
+        assignValue = simplifyValue(std::make_shared<ExprEngine::BinOpResult>(binop, lhsValue, rhsValue));
     }
 
     const Token *lhsToken = tok->astOperand1();
@@ -566,15 +670,8 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
             // Is it array initialization?
             const Token *arrayInit = lhsToken->astOperand1();
             if (arrayInit && arrayInit->variable() && arrayInit->variable()->nameToken() == arrayInit) {
-                if (auto strval = std::dynamic_pointer_cast<ExprEngine::StringLiteralValue>(assignValue)) {
-                    for (size_t i = 0; i < strval->size(); ++i) {
-                        uint8_t c = strval->string[i];
-                        arrayValue->data[i] = std::make_shared<ExprEngine::IntRange>(std::to_string(int(c)),c,c);
-                    }
-                    auto v0 = std::make_shared<ExprEngine::IntRange>("0",0,0);
-                    for (size_t i = strval->size(); i < arrayValue->data.size(); ++i)
-                        arrayValue->data[i] = v0;
-                }
+                if (assignValue->type() == ExprEngine::ValueType::StringLiteralValue)
+                    arrayValue->assign(ExprEngine::ValuePtr(), assignValue);
             } else {
                 auto indexValue = executeExpression(lhsToken->astOperand2(), data);
                 arrayValue->assign(indexValue, assignValue);
@@ -619,8 +716,7 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
             ValueType vt(*argtok->valueType());
             vt.pointer = 0;
             auto anyVal = getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings);
-            for (int i = 0; i < arrayValue->data.size(); ++i)
-                arrayValue->data[i] = anyVal;
+            arrayValue->assign(ExprEngine::ValuePtr(), anyVal);
         } else if (auto addressOf = std::dynamic_pointer_cast<ExprEngine::AddressOfValue>(val)) {
             ValueType vt(*argtok->valueType());
             vt.pointer = 0;
@@ -631,15 +727,10 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
 
     // TODO Fix this hardcoding..
     if (Token::simpleMatch(tok->astOperand1(), "calloc (") && argValues.size() == 2 && argValues[0] && argValues[1]) {
-        auto bufferSize = std::make_shared<ExprEngine::BinOpResult>("*", argValues[0], argValues[1]);
-        ExprEngine::BinOpResult::IntOrFloatValue minValue, maxValue;
-        bufferSize->getRange(&minValue, &maxValue);
-        if (!minValue.isFloat()) {
-            auto buffer = std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), minValue.intValue, maxValue.intValue);
-            buffer->clear();
-            call(data.callbacks, tok, buffer);
-            return buffer;
-        }
+        auto bufferSize = simplifyValue(std::make_shared<ExprEngine::BinOpResult>("*", argValues[0], argValues[1]));
+        auto zero = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
+        auto buffer = std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), bufferSize, zero);
+        return buffer;
     }
 
     auto val = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
@@ -652,9 +743,10 @@ static ExprEngine::ValuePtr executeArrayIndex(const Token *tok, Data &data)
     auto arrayValue = data.getArrayValue(tok->astOperand1());
     if (arrayValue) {
         auto indexValue = executeExpression(tok->astOperand2(), data);
-        auto value = arrayValue->read(indexValue);
-        call(data.callbacks, tok, value);
-        return value;
+        auto values = arrayValue->read(indexValue);
+        for (auto value: values)
+            call(data.callbacks, tok, value);
+        return values[0]; // FIXME we need to split the programstate here
     }
     return ExprEngine::ValuePtr();
 }
@@ -674,7 +766,7 @@ static ExprEngine::ValuePtr executeBinaryOp(const Token *tok, Data &data)
     ExprEngine::ValuePtr v1 = executeExpression(tok->astOperand1(), data);
     ExprEngine::ValuePtr v2 = executeExpression(tok->astOperand2(), data);
     if (v1 && v2) {
-        auto result = std::make_shared<ExprEngine::BinOpResult>(tok->str(), v1, v2);
+        auto result = simplifyValue(std::make_shared<ExprEngine::BinOpResult>(tok->str(), v1, v2));
         call(data.callbacks, tok, result);
         return result;
     }
@@ -785,10 +877,8 @@ static void execute(const Token *start, const Token *end, Data &data)
     for (const Token *tok = start; tok != end; tok = tok->next()) {
         if (Token::Match(tok, "[;{}]"))
             data.trackProgramState(tok);
-        if (tok->variable() && tok->variable()->nameToken() == tok) {
-            if (tok->variable()->isArray() && tok->variable()->dimensions().size() == 1 && tok->variable()->dimensions()[0].known) {
-                data.memory[tok->varId()] = std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), tok->variable()->dimension(0), tok->variable()->dimension(0));
-            }
+        if (tok->variable() && tok->variable()->nameToken() == tok && tok->variable()->isArray()) {
+            data.memory[tok->varId()] = std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), tok->variable());
             if (Token::Match(tok, "%name% ["))
                 tok = tok->linkAt(1);
         }
