@@ -475,7 +475,7 @@ def isHexEscapeSequence(symbols):
             hexademical-escape-sequence hexademical-digit
 
     Reference: n1570 6.4.4.4"""
-    if len(symbols) < 3 or symbols[0] != '\\' or symbols[1] != 'x':
+    if len(symbols) < 3 or symbols[:2] != '\\x':
         return False
     return all([s in string.hexdigits for s in symbols[2:]])
 
