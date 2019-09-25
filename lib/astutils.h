@@ -292,6 +292,8 @@ public:
     /** Is there some possible alias for given expression */
     bool possiblyAliased(const Token *expr, const Token *startToken) const;
 
+    std::set<int> getExprVarIds(const Token* expr, bool* localOut = nullptr, bool* unknownVarIdOut = nullptr) const;
+
     static bool isNullOperand(const Token *expr);
 private:
     static bool isEscapedAlias(const Token* expr);

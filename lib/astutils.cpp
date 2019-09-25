@@ -1860,7 +1860,7 @@ bool FwdAnalysis::isGlobalData(const Token *expr) const
     return globalData;
 }
 
-FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToken, const Token *endToken)
+std::set<int> FwdAnalysis::getExprVarIds(const Token* expr, bool* localOut, bool* unknownVarIdOut) const
 {
     // all variable ids in expr.
     std::set<int> exprVarIds;
@@ -1885,6 +1885,19 @@ FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToke
         }
         return ChildrenToVisit::op1_and_op2;
     });
+    if (localOut)
+        *localOut = local;
+    if (unknownVarIdOut)
+        *unknownVarIdOut = unknownVarId;
+    return exprVarIds;
+}
+
+FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToken, const Token *endToken)
+{
+    // all variable ids in expr.
+    bool local = true;
+    bool unknownVarId = false;
+    std::set<int> exprVarIds = getExprVarIds(expr, &local, &unknownVarId);
 
     if (unknownVarId)
         return Result(FwdAnalysis::Result::Type::BAILOUT);
