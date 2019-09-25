@@ -1016,7 +1016,7 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
         if (mImpl->mScopeInfo) {
             // If the brace is immediately closed there is no point opening a new scope for it
             if (tokenStr == "{") {
-                std::string nextScopeNameAddition = "";
+                std::string nextScopeNameAddition;
                 // This might be the opening of a member function
                 Token *tok1 = newToken;
                 while (Token::Match(tok1->previous(), "const|volatile|final|override|&|&&|noexcept"))

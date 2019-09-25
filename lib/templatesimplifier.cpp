@@ -3420,7 +3420,7 @@ void TemplateSimplifier::printOut(const std::string & text) const
         unsigned int decl1Index = 0;
         for (const auto & decl1 : mTemplateDeclarations) {
             if (decl1.isSpecialization() && mapItem.first == decl1.token()) {
-                bool found = 0;
+                bool found = false;
                 unsigned int decl2Index = 0;
                 for (const auto & decl2 : mTemplateDeclarations) {
                     if (mapItem.second == decl2.token()) {
@@ -3455,7 +3455,7 @@ void TemplateSimplifier::printOut(const std::string & text) const
         unsigned int decl1Index = 0;
         for (const auto & decl1 : mTemplateDeclarations) {
             if (mapItem.first == decl1.token()) {
-                bool found = 0;
+                bool found = false;
                 unsigned int decl2Index = 0;
                 for (const auto & decl2 : mTemplateDeclarations) {
                     if (mapItem.second == decl2.token()) {

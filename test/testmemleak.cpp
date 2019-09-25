@@ -2066,7 +2066,7 @@ private:
 
     void run() OVERRIDE {
         settings.inconclusive = true;
-        settings.libraries.push_back("posix");
+        settings.libraries.emplace_back("posix");
         settings.addEnabled("warning");
 
         LOAD_LIB_2(settings.library, "std.cfg");
