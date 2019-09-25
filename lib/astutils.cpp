@@ -1218,6 +1218,28 @@ bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp,
     return isVariableChanged(start->next(), var->scope()->bodyEnd, var->declarationId(), var->isGlobal(), settings, cpp, depth);
 }
 
+bool isVariablesChanged(const Token *start, const Token *end, int indirect, std::vector<const Variable*> vars, const Settings *settings, bool cpp)
+{
+    std::set<int> varids;
+    std::transform(vars.begin(), vars.end(), std::inserter(varids, varids.begin()), [](const Variable* var) {
+        return var->declarationId();
+    });
+    const bool globalvar = std::any_of(vars.begin(), vars.end(), [](const Variable* var) {
+        return var->isGlobal();
+    });
+    for (const Token *tok = start; tok != end; tok = tok->next()) {
+        if (tok->varId() == 0 || varids.count(tok->varId()) == 0) {
+            if (globalvar && Token::Match(tok, "%name% ("))
+                // TODO: Is global variable really changed by function call?
+                return true;
+            continue;
+        }
+        if (isVariableChanged(tok, indirect, settings, cpp))
+            return true;
+    }
+    return false;
+}
+
 int numberOfArguments(const Token *start)
 {
     int arguments=0;

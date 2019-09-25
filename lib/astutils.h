@@ -151,6 +151,8 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
 
 bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp, int depth = 20);
 
+bool isVariablesChanged(const Token *start, const Token *end, int indirect, std::vector<const Variable*> vars, const Settings *settings, bool cpp);
+
 const Token* findVariableChanged(const Token *start, const Token *end, int indirect, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
 Token* findVariableChanged(Token *start, const Token *end, int indirect, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
 
