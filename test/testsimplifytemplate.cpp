@@ -185,6 +185,7 @@ private:
         TEST_CASE(template145); // syntax error
         TEST_CASE(template146); // syntax error
         TEST_CASE(template147); // syntax error
+        TEST_CASE(template148); // syntax error
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -3529,6 +3530,16 @@ private:
     void template147() { // syntax error
         const char code[] = "template <template <typename> class C, typename X, C<X>*> struct b { };";
         const char exp[] = "template < template < typename > class C , typename X , C < X > * > struct b { } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template148() { // syntax error
+        const char code[] = "static_assert(var<S1<11, 100>> == var<S1<199, 23>> / 2\n"
+                            "  && var<S1<50, 120>> == var<S1<150, var<S1<10, 10>>>>\n"
+                            "  && var<S1<53, 23>> != 222, \"\");";
+        const char exp[] = "static_assert ( var < S1 < 11 , 100 > > == var < S1 < 199 , 23 > > / 2 "
+                           "&& var < S1 < 50 , 120 > > == var < S1 < 150 , var < S1 < 10 , 10 > > > > "
+                           "&& var < S1 < 53 , 23 > > != 222 , \"\" ) ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
