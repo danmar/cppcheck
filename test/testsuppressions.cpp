@@ -509,7 +509,7 @@ private:
         settings.addEnabled("style");
         settings.inlineSuppressions = true;
         settings.relativePaths = true;
-        settings.basePaths.push_back("/somewhere");
+        settings.basePaths.emplace_back("/somewhere");
         const char code[] =
             "struct Point\n"
             "{\n"

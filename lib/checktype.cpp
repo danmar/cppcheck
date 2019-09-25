@@ -57,11 +57,6 @@ void CheckType::checkTooBigBitwiseShift()
     if (mSettings->platformType == Settings::Unspecified)
         return;
 
-    const bool cpp14 = mSettings->standards.cpp >= Standards::CPP14;
-
-    if (cpp14 && !mSettings->isEnabled(Settings::PORTABILITY))
-        return;
-
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         // C++ and macro: OUT(x<<y)
         if (mTokenizer->isCPP() && Token::Match(tok, "[;{}] %name% (") && Token::simpleMatch(tok->linkAt(2), ") ;") && tok->next()->isUpperCaseName() && !tok->next()->function())
@@ -96,7 +91,7 @@ void CheckType::checkTooBigBitwiseShift()
 
         // Get biggest rhs value. preferably a value which doesn't have 'condition'.
         const ValueFlow::Value * value = tok->astOperand2()->getValueGE(lhsbits, mSettings);
-        if (value && mSettings->isEnabled(value, false) && !cpp14)
+        if (value && mSettings->isEnabled(value, false))
             tooBigBitwiseShiftError(tok, lhsbits, *value);
         else if (lhstype->sign == ValueType::Sign::SIGNED) {
             value = tok->astOperand2()->getValueGE(lhsbits-1, mSettings);
@@ -150,6 +145,8 @@ void CheckType::tooBigSignedBitwiseShiftError(const Token *tok, int lhsbits, con
     if (cpp14)
         severity = Severity::portability;
 
+    if ((severity == Severity::portability) && !mSettings->isEnabled(Settings::PORTABILITY))
+        return;
     reportError(errorPath, severity, id, errmsg.str(), CWE758, rhsbits.isInconclusive());
 }
 

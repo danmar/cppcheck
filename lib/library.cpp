@@ -39,7 +39,7 @@ static std::vector<std::string> getnames(const char *names)
         ret.emplace_back(names, p-names);
         names = p + 1;
     }
-    ret.push_back(names);
+    ret.emplace_back(names);
     return ret;
 }
 
@@ -96,7 +96,7 @@ Library::Error Library::load(const char exename[], const char path[])
 
         std::list<std::string> cfgfolders;
 #ifdef FILESDIR
-        cfgfolders.push_back(FILESDIR "/cfg");
+        cfgfolders.emplace_back(FILESDIR "/cfg");
 #endif
         if (exename) {
             const std::string exepath(Path::fromNativeSeparators(Path::getPathFromFilename(exename)));

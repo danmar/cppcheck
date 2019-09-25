@@ -57,10 +57,8 @@ void CheckBool::checkIncrementBoolean()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            if (Token::Match(tok, "%var% ++")) {
-                const Variable *var = tok->variable();
-                if (isBool(var))
-                    incrementBooleanError(tok);
+            if (astIsBool(tok) && tok->astParent() && tok->astParent()->str() == "++") {
+                incrementBooleanError(tok);
             }
         }
     }
@@ -442,7 +440,7 @@ void CheckBool::assignBoolToFloatError(const Token *tok)
                 "Boolean value assigned to floating point variable.", CWE704, false);
 }
 
-void CheckBool::returnValueOfFunctionReturningBool(void)
+void CheckBool::returnValueOfFunctionReturningBool()
 {
     if (!mSettings->isEnabled(Settings::STYLE))
         return;

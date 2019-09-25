@@ -2362,7 +2362,7 @@ void TemplateSimplifier::simplifyTemplateArgs(Token *start, Token *end)
             } else if (Token::Match(tok, "%num% %comp% %num%") &&
                        MathLib::isInt(tok->str()) &&
                        MathLib::isInt(tok->strAt(2))) {
-                if ((Token::Match(tok->previous(), "(|&&|%oror%|,") || tok->previous() == start) &&
+                if ((Token::Match(tok->previous(), "(|&&|%oror%|,") || tok == start) &&
                     (Token::Match(tok->tokAt(3), ")|&&|%oror%|?") || tok->tokAt(3) == end)) {
                     const MathLib::bigint op1(MathLib::toLongNumber(tok->str()));
                     const std::string &cmp(tok->next()->str());
@@ -3420,7 +3420,7 @@ void TemplateSimplifier::printOut(const std::string & text) const
         unsigned int decl1Index = 0;
         for (const auto & decl1 : mTemplateDeclarations) {
             if (decl1.isSpecialization() && mapItem.first == decl1.token()) {
-                bool found = 0;
+                bool found = false;
                 unsigned int decl2Index = 0;
                 for (const auto & decl2 : mTemplateDeclarations) {
                     if (mapItem.second == decl2.token()) {
@@ -3455,7 +3455,7 @@ void TemplateSimplifier::printOut(const std::string & text) const
         unsigned int decl1Index = 0;
         for (const auto & decl1 : mTemplateDeclarations) {
             if (mapItem.first == decl1.token()) {
-                bool found = 0;
+                bool found = false;
                 unsigned int decl2Index = 0;
                 for (const auto & decl2 : mTemplateDeclarations) {
                     if (mapItem.second == decl2.token()) {
