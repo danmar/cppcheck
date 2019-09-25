@@ -2362,7 +2362,7 @@ void TemplateSimplifier::simplifyTemplateArgs(Token *start, Token *end)
             } else if (Token::Match(tok, "%num% %comp% %num%") &&
                        MathLib::isInt(tok->str()) &&
                        MathLib::isInt(tok->strAt(2))) {
-                if ((Token::Match(tok->previous(), "(|&&|%oror%|,") || tok->previous() == start) &&
+                if ((Token::Match(tok->previous(), "(|&&|%oror%|,") || tok == start) &&
                     (Token::Match(tok->tokAt(3), ")|&&|%oror%|?") || tok->tokAt(3) == end)) {
                     const MathLib::bigint op1(MathLib::toLongNumber(tok->str()));
                     const std::string &cmp(tok->next()->str());
