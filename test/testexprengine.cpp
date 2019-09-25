@@ -36,6 +36,8 @@ private:
         TEST_CASE(argSmartPointer);
         TEST_CASE(argStruct);
 
+        TEST_CASE(dynamicAllocation1);
+
         TEST_CASE(expr1);
         TEST_CASE(expr2);
         TEST_CASE(expr3);
@@ -49,6 +51,7 @@ private:
 
         TEST_CASE(functionCall1);
         TEST_CASE(functionCall2);
+        TEST_CASE(functionCall3);
 
         TEST_CASE(if1);
         TEST_CASE(if2);
@@ -60,7 +63,8 @@ private:
 
         TEST_CASE(localArray1);
         TEST_CASE(localArray2);
-        TEST_CASE(localArray3);
+        TEST_CASE(localArrayInit1);
+        TEST_CASE(localArrayInit2);
         TEST_CASE(localArrayUninit);
 
         TEST_CASE(pointerAlias1);
@@ -106,6 +110,10 @@ private:
                                "    unsigned char b;\n"
                                "};\n"
                                "void f(struct S s) { return s.a + s.b; }", "s.a+s.b"));
+    }
+
+    void dynamicAllocation1() {
+        ASSERT_EQUALS("[0]", getRange("char *f() { char *p = calloc(1,1); return p; }", "p"));
     }
 
     void expr1() {
@@ -159,6 +167,10 @@ private:
         ASSERT_EQUALS("-32768:32767", getRange(code, "value=value"));
     }
 
+    void functionCall3() {
+        ASSERT_EQUALS("-2147483648:2147483647", getRange("void f() { int x = -1; fgets(stdin, \"%d\", &x); x=x; }", "x=x"));
+    }
+
     void if1() {
         ASSERT_EQUALS("7:32768", getRange("inf f(short x) { if (x > 5) a = x + 1; }", "x+1"));
     }
@@ -188,11 +200,15 @@ private:
     }
 
     void localArray2() {
+        ASSERT_EQUALS("0:255", getRange("int f() { unsigned char arr[10] = \"\"; dostuff(arr); return arr[4]; }", "arr[4]"));
+    }
+
+    void localArrayInit1() {
         ASSERT_EQUALS("0", getRange("inf f() { char arr[10] = \"\"; return arr[4]; }", "arr[4]"));
     }
 
-    void localArray3() {
-        ASSERT_EQUALS("0:255", getRange("int f() { unsigned char arr[10] = \"\"; dostuff(arr); return arr[4]; }", "arr[4]"));
+    void localArrayInit2() {
+        ASSERT_EQUALS("66", getRange("void f() { char str[] = \"hello\"; str[0] = \'B\'; }", "str[0]=\'B\'"));
     }
 
     void localArrayUninit() {
