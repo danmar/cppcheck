@@ -610,6 +610,7 @@ while True:
     cppcheck_options = ''
     head_info_msg = ''
     head_timing_info = ''
+    old_timing_info = ''
     cppcheck_head_info = ''
     libraries = get_libraries()
 
@@ -634,6 +635,8 @@ while True:
         if ver == 'head':
             head_info_msg = info
             head_timing_info = timing_info
+        else:
+            old_timing_info = timing_info
 
     output = 'cppcheck-options: ' + cppcheck_options + '\n'
     output += 'platform: ' + platform.platform() + '\n'
@@ -644,6 +647,7 @@ while True:
     output += 'count:' + count + '\n'
     output += 'elapsed-time:' + elapsed_time + '\n'
     output += 'head-timing-info:\n' + head_timing_info + '\n'
+    output += 'old-timing-info:\n' + old_timing_info + '\n'
     info_output = output
     info_output += 'info messages:\n' + head_info_msg
     if 'head' in cppcheck_versions:
