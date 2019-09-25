@@ -2326,6 +2326,23 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 123));
 
+        code = "void f(int y, int z) {\n"
+               "    if (y+z == 123) {\n"
+               "        int x = y+z;\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 123));
+
+        code = "void f(int y, int z) {\n"
+               "    if (y+z == 123) {\n"
+               "        y++;\n"
+               "        int x = y+z;\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 123));
+
         code = "void f(int y) {\n"
                "    if (y++ == 123) {\n"
                "        int x = y++;\n"
