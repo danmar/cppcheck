@@ -3055,21 +3055,81 @@ static bool valueFlowForwardVariable(Token * const               startToken,
     return true;
 }
 
+const Token* parseBinaryIntOp(const Token* expr, MathLib::bigint& known)
+{
+    if (!expr)
+        return nullptr;
+    if (!expr->astOperand1() || !expr->astOperand2())
+        return nullptr;
+    const Token* knownTok = nullptr;
+    const Token * varTok = nullptr;
+    if (expr->astOperand1()->hasKnownIntValue() && !expr->astOperand2()->hasKnownIntValue()) {
+        varTok = expr->astOperand2();
+        knownTok = expr->astOperand1();
+    } else if (expr->astOperand2()->hasKnownIntValue() && !expr->astOperand1()->hasKnownIntValue()) {
+        varTok = expr->astOperand1();
+        knownTok = expr->astOperand2();
+    }
+    if (knownTok)
+        known = knownTok->values().front().intvalue;
+    return varTok;
+}
+
+template<class F>
+void transformIntValues(std::list<ValueFlow::Value>& values, F f)
+{
+    std::transform(values.begin(), values.end(), values.begin(), [&](ValueFlow::Value x) {
+        if (x.isIntValue())
+            x.intvalue = f(x.intvalue);
+        return x;
+    });
+}
+
+const Token* solveExprValues(const Token* expr, std::list<ValueFlow::Value>& values)
+{
+    MathLib::bigint intval;
+    const Token* binaryTok = parseBinaryIntOp(expr, intval);
+    if (binaryTok && expr->str().size() == 1) {
+        switch (expr->str()[0]) {
+            case '+': {
+                transformIntValues(values, [&](MathLib::bigint x) {
+                    return x - intval;
+                });
+                return solveExprValues(binaryTok, values);
+            }
+            case '*': {
+                transformIntValues(values, [&](MathLib::bigint x) {
+                    return x / intval;
+                });
+                return solveExprValues(binaryTok, values);
+            }
+            case '^': {
+                transformIntValues(values, [&](MathLib::bigint x) {
+                    return x ^ intval;
+                });
+                return solveExprValues(binaryTok, values);
+            }
+        }
+    }
+    return expr;
+}
+
 static void valueFlowForward(
     Token* startToken,
     const Token* endToken,
     const Token* exprTok,
-    const std::list<ValueFlow::Value>& values,
+    std::list<ValueFlow::Value> values,
     const bool                  constValue,
     const bool                  subFunction,
     TokenList * const tokenlist,
     ErrorLogger * const errorLogger,
     const Settings* settings)
 {
-    if (Token::Match(exprTok, "%var%")) {
-        valueFlowForwardVariable(startToken, endToken, exprTok->variable(), exprTok->varId(), values, constValue, subFunction, tokenlist, errorLogger, settings);
+    const Token* expr = solveExprValues(exprTok, values);
+    if (Token::Match(expr, "%var%")) {
+        valueFlowForwardVariable(startToken, endToken, expr->variable(), expr->varId(), values, constValue, subFunction, tokenlist, errorLogger, settings);
     } else {
-        valueFlowForwardExpression(startToken, endToken, exprTok, values, tokenlist, settings);
+        valueFlowForwardExpression(startToken, endToken, expr, values, tokenlist, settings);
     }
 }
 
