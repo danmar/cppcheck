@@ -217,7 +217,7 @@ namespace {
                 s << " " << symbolDatabase->getVariableFromVarId(mem.first)->name() << "=";
                 if (!value)
                     s << "(null)";
-                else if (value->name[0] == '$')
+                else if (value->name[0] == '$' && value->getSymbolicExpression() != value->name)
                     s << "(" << value->name << "," << value->getSymbolicExpression() << ")";
                 else
                     s << value->name;
