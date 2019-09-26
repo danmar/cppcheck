@@ -124,6 +124,11 @@ namespace {
             memory[varId] = value;
         }
 
+        void assignStructMember(const Token *tok, ExprEngine::StructValue *structVal, const std::string &memberName, ExprEngine::ValuePtr value) {
+            mTrackExecution->symbolRange(tok, value);
+            structVal->member[memberName] = value;
+        }
+
         std::vector<Data> getData(const Token *cond, bool trueData) {
             std::vector<Data> ret;
             ret.push_back(Data(symbolValueIndex, tokenizer, settings, callbacks, mTrackExecution));
@@ -770,6 +775,10 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
                 }
             }
         }
+    } else if (Token::Match(lhsToken, ". %name%")) {
+        auto structVal = executeExpression(lhsToken->astOperand1(), data);
+        if (structVal && structVal->type == ExprEngine::ValueType::StructValue)
+            data.assignStructMember(tok, &*std::static_pointer_cast<ExprEngine::StructValue>(structVal), lhsToken->strAt(1), assignValue);
     }
     return assignValue;
 }
