@@ -2309,8 +2309,7 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 6U, 0));
     }
 
-    void valueFlowAfterConditionExpr()
-    {
+    void valueFlowAfterConditionExpr() {
         const char* code;
 
         code = "void f(int* p) {\n"

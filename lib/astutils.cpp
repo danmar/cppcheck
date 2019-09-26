@@ -1229,7 +1229,9 @@ bool isVariablesChanged(const Token* start,
     std::transform(vars.begin(), vars.end(), std::inserter(varids, varids.begin()), [](const Variable* var) {
         return var->declarationId();
     });
-    const bool globalvar = std::any_of(vars.begin(), vars.end(), [](const Variable* var) { return var->isGlobal(); });
+    const bool globalvar = std::any_of(vars.begin(), vars.end(), [](const Variable* var) {
+        return var->isGlobal();
+    });
     for (const Token* tok = start; tok != end; tok = tok->next()) {
         if (tok->varId() == 0 || varids.count(tok->varId()) == 0) {
             if (globalvar && Token::Match(tok, "%name% ("))
