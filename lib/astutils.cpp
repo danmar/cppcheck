@@ -1218,16 +1218,19 @@ bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp,
     return isVariableChanged(start->next(), var->scope()->bodyEnd, var->declarationId(), var->isGlobal(), settings, cpp, depth);
 }
 
-bool isVariablesChanged(const Token *start, const Token *end, int indirect, std::vector<const Variable*> vars, const Settings *settings, bool cpp)
+bool isVariablesChanged(const Token* start,
+                        const Token* end,
+                        int indirect,
+                        std::vector<const Variable*> vars,
+                        const Settings* settings,
+                        bool cpp)
 {
     std::set<int> varids;
     std::transform(vars.begin(), vars.end(), std::inserter(varids, varids.begin()), [](const Variable* var) {
         return var->declarationId();
     });
-    const bool globalvar = std::any_of(vars.begin(), vars.end(), [](const Variable* var) {
-        return var->isGlobal();
-    });
-    for (const Token *tok = start; tok != end; tok = tok->next()) {
+    const bool globalvar = std::any_of(vars.begin(), vars.end(), [](const Variable* var) { return var->isGlobal(); });
+    for (const Token* tok = start; tok != end; tok = tok->next()) {
         if (tok->varId() == 0 || varids.count(tok->varId()) == 0) {
             if (globalvar && Token::Match(tok, "%name% ("))
                 // TODO: Is global variable really changed by function call?
@@ -1914,7 +1917,7 @@ std::set<int> FwdAnalysis::getExprVarIds(const Token* expr, bool* localOut, bool
     return exprVarIds;
 }
 
-FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToken, const Token *endToken)
+FwdAnalysis::Result FwdAnalysis::check(const Token* expr, const Token* startToken, const Token* endToken)
 {
     // all variable ids in expr.
     bool local = true;

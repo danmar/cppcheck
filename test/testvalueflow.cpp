@@ -1386,10 +1386,11 @@ private:
                 "out:"
                 "    if (x==123){}\n"
                 "}");
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
-                                          "[test.cpp:4]: (debug) valueflow.cpp:1131:valueFlowReverse bailout: variable x stopping on goto label\n"
-                                          "[test.cpp:2]: (debug) valueflow.cpp:1813:valueFlowForwardVariable bailout: variable x. noreturn conditional scope.\n"
-                                          , errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS(
+            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
+            "[test.cpp:4]: (debug) valueflow.cpp:1131:valueFlowReverse bailout: variable x stopping on goto label\n"
+            "[test.cpp:2]: (debug) valueflow.cpp:1813:valueFlowForwardVariable bailout: variable x. noreturn conditional scope.\n",
+            errout.str());
 
         // #5721 - FP
         bailout("static void f(int rc) {\n"
@@ -1402,10 +1403,11 @@ private:
                 "out:\n"
                 "    if (abc) {}\n"
                 "}\n");
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:2]: (debug) valueflow.cpp:1035:valueFlowReverse bailout: assignment of abc\n"
-                                          "[test.cpp:8]: (debug) valueflow.cpp:1131:valueFlowReverse bailout: variable abc stopping on goto label\n"
-                                          "[test.cpp:3]: (debug) valueflow.cpp:1813:valueFlowForwardVariable bailout: variable abc. noreturn conditional scope.\n",
-                                          errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS(
+            "[test.cpp:2]: (debug) valueflow.cpp:1035:valueFlowReverse bailout: assignment of abc\n"
+            "[test.cpp:8]: (debug) valueflow.cpp:1131:valueFlowReverse bailout: variable abc stopping on goto label\n"
+            "[test.cpp:3]: (debug) valueflow.cpp:1813:valueFlowForwardVariable bailout: variable abc. noreturn conditional scope.\n",
+            errout.str());
     }
 
     void valueFlowAfterAssign() {
@@ -2307,9 +2309,10 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 6U, 0));
     }
 
-    void valueFlowAfterConditionExpr() {
-        const char *code;
-        
+    void valueFlowAfterConditionExpr()
+    {
+        const char* code;
+
         code = "void f(int* p) {\n"
                "    if (p[0] == 123) {\n"
                "        int x = p[0];\n"
