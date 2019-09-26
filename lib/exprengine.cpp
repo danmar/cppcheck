@@ -496,6 +496,24 @@ bool ExprEngine::BinOpResult::isIntValueInRange(int value) const
         return result; \
     }
 
+#define BINARY_RELATIONAL_COMPARISON(OP) \
+    if (binop == #OP) { \
+        struct ExprEngine::BinOpResult::IntOrFloatValue result(lhs); \
+        if (lhs.isFloat()) \
+        { result.setIntValue(lhs.floatValue OP (rhs.isFloat() ? rhs.floatValue : rhs.intValue)); } \
+        else if (rhs.isFloat()) \
+        { result.setIntValue(lhs.intValue OP rhs.floatValue); } \
+        else { result.setIntValue(lhs.intValue OP rhs.intValue); } \
+        return result; \
+    }
+
+#define BINARY_EQ_COMPARISON(OP) \
+    if (binop == #OP && !lhs.isFloat() && !rhs.isFloat()) { \
+        struct ExprEngine::BinOpResult::IntOrFloatValue result; \
+        result.setIntValue(lhs.intValue OP rhs.intValue); \
+        return result; \
+    }
+
 #define BINARY_INT_OP(OP) \
     if (binop == #OP) { \
         struct ExprEngine::BinOpResult::IntOrFloatValue result; \
@@ -527,12 +545,12 @@ ExprEngine::BinOpResult::IntOrFloatValue ExprEngine::BinOpResult::evaluate(int t
     BINARY_INT_OP(^)
     BINARY_INT_OP(<<)
     BINARY_INT_OP(>>)
-    BINARY_INT_OP(==)
-    BINARY_INT_OP(!=)
-    BINARY_OP(>=)
-    BINARY_OP(>)
-    BINARY_OP(<=)
-    BINARY_OP(<)
+    BINARY_EQ_COMPARISON(==)
+    BINARY_EQ_COMPARISON(!=)
+    BINARY_RELATIONAL_COMPARISON(>=)
+    BINARY_RELATIONAL_COMPARISON(>)
+    BINARY_RELATIONAL_COMPARISON(<=)
+    BINARY_RELATIONAL_COMPARISON(<)
 
     if (binop == "%" && rhs.intValue != 0) {
         struct ExprEngine::BinOpResult::IntOrFloatValue result;
