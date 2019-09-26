@@ -193,6 +193,8 @@ namespace ExprEngine {
     public:
         explicit StructValue(const std::string &name) : Value(name, ValueType::StructValue) {}
 
+        std::string getSymbolicExpression() const override;
+
         ValuePtr getValueOfMember(const std::string &name) const {
             auto it = member.find(name);
             return (it == member.end()) ? ValuePtr() : it->second;
