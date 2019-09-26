@@ -318,13 +318,23 @@ public:
     static nonneg int getStrLength(const Token *tok);
 
     /**
-     * @return sizeof of C-string.
+     * @return array length of C-string.
      *
      * Should be called for %%str%% tokens only.
      *
      * @param tok token with C-string
      **/
-    static nonneg int getStrSize(const Token *tok);
+    static nonneg int getStrArraySize(const Token *tok);
+
+    /**
+     * @return sizeof of C-string.
+     *
+     * Should be called for %%str%% tokens only.
+     *
+     * @param tok token with C-string
+     * @param settings Settings
+     **/
+    static nonneg int getStrSize(const Token *tok, const Settings *const);
 
     /**
      * @return char of C-string at index (possible escaped "\\n")
@@ -602,6 +612,30 @@ public:
         mImpl->mBits = b;
     }
 
+    bool isUtf8() const {
+        return (((mTokType == eString) && isPrefixStringCharLiteral(mStr, '"', "u8")) ||
+                ((mTokType == eChar) && isPrefixStringCharLiteral(mStr, '\'', "u8")));
+    }
+
+    bool isUtf16() const {
+        return (((mTokType == eString) && isPrefixStringCharLiteral(mStr, '"', "u")) ||
+                ((mTokType == eChar) && isPrefixStringCharLiteral(mStr, '\'', "u")));
+    }
+
+    bool isUtf32() const {
+        return (((mTokType == eString) && isPrefixStringCharLiteral(mStr, '"', "U")) ||
+                ((mTokType == eChar) && isPrefixStringCharLiteral(mStr, '\'', "U")));
+    }
+
+    bool isCChar() const {
+        return (((mTokType == eString) && isPrefixStringCharLiteral(mStr, '"', "")) ||
+                ((mTokType ==  eChar) && isPrefixStringCharLiteral(mStr, '\'', "") && mStr.length() == 3));
+    }
+
+    bool isCMultiChar() const {
+        return (((mTokType ==  eChar) && isPrefixStringCharLiteral(mStr, '\'', "")) &&
+                (mStr.length() > 3));
+    }
     /**
      * @brief Is current token a template argument?
      *
@@ -1042,7 +1076,7 @@ public:
     }
 
     const Token *getValueTokenMaxStrLength() const;
-    const Token *getValueTokenMinStrSize() const;
+    const Token *getValueTokenMinStrSize(const Settings *settings) const;
 
     const Token *getValueTokenDeadPointer() const;
 

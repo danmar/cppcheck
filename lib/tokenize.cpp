@@ -2679,7 +2679,7 @@ void Tokenizer::arraySize()
 
         if (addlength || Token::Match(tok, "%var% [ ] = %str% ;")) {
             tok = tok->next();
-            const int sz = Token::getStrSize(tok->tokAt(3));
+            const int sz = Token::getStrArraySize(tok->tokAt(3));
             tok->insertToken(MathLib::toString(sz));
             tok = tok->tokAt(5);
         }
