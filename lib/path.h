@@ -127,7 +127,7 @@ public:
 
     /**
      * @brief Check if the file extension indicates that it's a C/C++ source file.
-     * Check if the file has source file extension: *.c;*.cpp;*.cxx;*.c++;*.cc;*.txx
+     * Check if the file has source file extension: *.c;*.cpp;*.cxx;*.c++;*.cc;*.txx;*.tpp
      * @param filename filename to check. path info is optional
      * @return true if the file extension indicates it should be checked
      */
@@ -138,7 +138,7 @@ public:
 
     /**
      * @brief Check if the file extension indicates that it's a C/C++ source file.
-     * Check if the file has source file extension: *.c;*.cpp;*.cxx;*.c++;*.cc;*.txx
+     * Check if the file has source file extension: *.c;*.cpp;*.cxx;*.c++;*.cc;*.txx;*.tpp
      * @param path filename to check. path info is optional
      * @param extra    extra file extensions
      * @return true if the file extension indicates it should be checked

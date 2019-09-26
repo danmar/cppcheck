@@ -117,8 +117,8 @@ def removeLargeFiles(path):
                 os.remove(g)
 
             # remove non-source files
-            elif g[-2:] not in {'.C', '.c', '.H', '.h'} and g[-3:] != '.cc' and\
-                    g[-4:] not in {'.cpp', '.cxx', '.c++', '.hpp', '.tpp', '.t++'}:
+            elif g[-2:] not in {'.C', '.c', '.H', '.h'} and g[-3:] not in { '.cc', '.hh' } and\
+                    g[-4:] not in {'.cpp', '.cxx', '.c++', '.hpp', '.hxx', '.tpp', '.txx'}:
                 os.remove(g)
 
 

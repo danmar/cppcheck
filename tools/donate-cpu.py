@@ -40,7 +40,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.37"
+CLIENT_VERSION = "1.1.38"
 
 
 def check_requirements():
@@ -219,11 +219,11 @@ def unpack_package(work_path, tgz):
             if member.name.startswith(('/', '..')):
                 # Skip dangerous file names
                 continue
-            elif member.name.lower().endswith(('.c', '.cpp', '.cxx', '.cc', '.c++', '.h', '.hpp',
-                                               '.h++', '.hxx', '.hh', '.tpp', '.txx', '.qml')):
+            elif member.name.lower().endswith(('.c', '.cpp', '.cxx', '.cc', '.c++', '.tpp', '.txx',
+                                               '.h', '.hpp', '.hxx', '.hh', '.qml')):
                 try:
                     tf.extract(member.name)
-                    found = True
+                    found = member.name.lower().endswith(('.c', '.cpp', '.cxx', '.cc', '.c++', '.tpp', '.txx'))
                 except OSError:
                     pass
                 except AttributeError:
@@ -605,12 +605,8 @@ while True:
             current_cppcheck_dir = ver
         c, errout, info, t, cppcheck_options = scan_package(work_path, current_cppcheck_dir, jobs, libraries)
         if c < 0:
-            if c == -101 and 'error: could not find or open any of the paths given.' in errout:
-                # No sourcefile found (for example only headers present)
-                count += ' 0'
-            else:
-                crash = True
-                count += ' Crash!'
+            crash = True
+            count += ' Crash!'
         else:
             count += ' ' + str(c)
         elapsed_time += " {:.1f}".format(t)

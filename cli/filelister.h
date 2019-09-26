@@ -36,7 +36,7 @@ public:
      * @brief Recursively add source files to a map.
      * Add source files from given directory and all subdirectries to the
      * given map. Only files with accepted extensions
-     * (*.c;*.cpp;*.cxx;*.c++;*.cc;*.txx) are added.
+     * (*.c;*.cpp;*.cxx;*.c++;*.cc;*.txx;*.tpp) are added.
      * @param files output map that associates the size of each file with its name
      * @param path root path
      * @param ignored ignored paths
@@ -50,7 +50,7 @@ public:
      * @brief Recursively add source files to a map.
      * Add source files from given directory and all subdirectries to the
      * given map. Only files with accepted extensions
-     * (*.c;*.cpp;*.cxx;*.c++;*.cc;*.txx) are added.
+     * (*.c;*.cpp;*.cxx;*.c++;*.cc;*.txx*.tpp) are added.
      * @param files output map that associates the size of each file with its name
      * @param path root path
      * @param extra Extra file extensions
