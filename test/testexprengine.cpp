@@ -36,8 +36,6 @@ private:
         TEST_CASE(argSmartPointer);
         TEST_CASE(argStruct);
 
-        TEST_CASE(dynamicAllocation1);
-
         TEST_CASE(expr1);
         TEST_CASE(expr2);
         TEST_CASE(expr3);
@@ -101,7 +99,7 @@ private:
     }
 
     void argSmartPointer() {
-        ASSERT_EQUALS("->$1,null", getRange("struct S { int x; }; void f(std::shared_ptr<S> ptr) { x = ptr; }", "ptr"));
+        ASSERT_EQUALS("->{x=$2},null", getRange("struct S { int x; }; void f(std::shared_ptr<S> ptr) { x = ptr; }", "ptr"));
     }
 
     void argStruct() {
@@ -111,10 +109,6 @@ private:
                                "    unsigned char b;\n"
                                "};\n"
                                "void f(struct S s) { return s.a + s.b; }", "s.a+s.b"));
-    }
-
-    void dynamicAllocation1() {
-        ASSERT_EQUALS("$2", getRange("char *f() { char *p = calloc(1,1); return p; }", "p"));
     }
 
     void expr1() {

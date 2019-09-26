@@ -408,6 +408,23 @@ std::string ExprEngine::ArrayValue::getSymbolicExpression() const
     return ostr.str();
 }
 
+std::string ExprEngine::StructValue::getSymbolicExpression() const
+{
+    std::ostringstream ostr;
+    ostr << "{";
+    bool first = true;
+    for (const auto& m: member) {
+        const std::string &memberName = m.first;
+        auto memberValue = m.second;
+        if (!first)
+            ostr << ",";
+        first = false;
+        ostr << memberName << "=" << (memberValue ? memberValue->getSymbolicExpression() : std::string("(null)"));
+    }
+    ostr << "}";
+    return ostr.str();
+}
+
 std::string ExprEngine::PointerValue::getRange() const
 {
     std::string r;
@@ -776,14 +793,6 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
         }
     }
 
-    // TODO Fix this hardcoding..
-    if (Token::simpleMatch(tok->astOperand1(), "calloc (") && argValues.size() == 2 && argValues[0] && argValues[1]) {
-        auto bufferSize = simplifyValue(std::make_shared<ExprEngine::BinOpResult>("*", argValues[0], argValues[1]));
-        auto zero = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
-        auto buffer = std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), bufferSize, zero);
-        return buffer;
-    }
-
     auto val = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
     call(data.callbacks, tok, val);
     return val;
@@ -923,20 +932,24 @@ static ExprEngine::ValuePtr executeExpression(const Token *tok, Data &data)
     return ExprEngine::ValuePtr();
 }
 
+static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data);
+
 static void execute(const Token *start, const Token *end, Data &data)
 {
     for (const Token *tok = start; tok != end; tok = tok->next()) {
         if (Token::Match(tok, "[;{}]"))
             data.trackProgramState(tok);
-        if (tok->variable() && tok->variable()->nameToken() == tok && tok->variable()->isArray()) {
-            data.memory[tok->varId()] = std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), tok->variable());
-            if (Token::Match(tok, "%name% ["))
-                tok = tok->linkAt(1);
-        }
-        if (!tok->astParent() && (tok->astOperand1() || tok->astOperand2()))
+        if (tok->variable() && tok->variable()->nameToken() == tok) {
+            if (tok->variable()->isArray()) {
+                data.memory[tok->varId()] = std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), tok->variable());
+                if (Token::Match(tok, "%name% ["))
+                    tok = tok->linkAt(1);
+            } else if (Token::Match(tok, "%var% ;"))
+                data.memory[tok->varId()] = createVariableValue(*tok->variable(), data);
+        } else if (!tok->astParent() && (tok->astOperand1() || tok->astOperand2()))
             executeExpression(tok, data);
 
-        if (Token::simpleMatch(tok, "if (")) {
+        else if (Token::simpleMatch(tok, "if (")) {
             const Token *cond = tok->next()->astOperand2();
             /*const ExprEngine::ValuePtr condValue =*/ executeExpression(cond,data);
             std::vector<Data> trueData = data.getData(cond, true);
@@ -969,14 +982,23 @@ void ExprEngine::executeAllFunctions(const Tokenizer *tokenizer, const Settings 
     }
 }
 
-static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data);
-
-static ExprEngine::ValuePtr createStructVal(const Scope *structScope, Data &data)
+static ExprEngine::ValuePtr createStructVal(const Scope *structScope, bool uninitData, Data &data)
 {
     if (!structScope)
         return ExprEngine::ValuePtr();
     std::shared_ptr<ExprEngine::StructValue> structValue = std::make_shared<ExprEngine::StructValue>(data.getNewSymbolName());
+    auto uninitValue = std::make_shared<ExprEngine::UninitValue>();
     for (const Variable &member : structScope->varlist) {
+        if (uninitData) {
+            if (member.isPointer()) {
+                structValue->member[member.name()] = uninitValue;
+                continue;
+            }
+            if (member.valueType() && member.valueType()->type >= ::ValueType::Type::CHAR) {
+                structValue->member[member.name()] = uninitValue;
+                continue;
+            }
+        }
         ExprEngine::ValuePtr memberValue = createVariableValue(member, data);
         if (memberValue)
             structValue->member[member.name()] = memberValue;
@@ -1003,9 +1025,9 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
     if (valueType->isIntegral())
         return getValueRangeFromValueType(data.getNewSymbolName(), valueType, *data.settings);
     if (valueType->type == ValueType::Type::RECORD)
-        return createStructVal(valueType->typeScope, data);
+        return createStructVal(valueType->typeScope, var.isLocal() && !var.isStatic(), data);
     if (valueType->smartPointerType) {
-        auto structValue = createStructVal(valueType->smartPointerType->classScope, data);
+        auto structValue = createStructVal(valueType->smartPointerType->classScope, var.isLocal() && !var.isStatic(), data);
         return std::make_shared<ExprEngine::PointerValue>(data.getNewSymbolName(), structValue, true, false);
     }
     return ExprEngine::ValuePtr();
