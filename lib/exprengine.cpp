@@ -56,7 +56,6 @@ namespace {
     class TrackExecution {
     public:
         TrackExecution() : mDataIndex(0) {}
-        std::set<std::string> symbols;
         std::map<const Token *, std::vector<std::string>> map;
         int getNewDataIndex() {
             return mDataIndex++;
@@ -91,6 +90,8 @@ namespace {
                     const Token *tok = it.first;
                     if (lineNumber != tok->linenr())
                         continue;
+                    if (column != tok->column())
+                        continue;
                     const std::vector<std::string> &dumps = it.second;
                     for (const std::string &dump : dumps)
                         std::cout << lineNumber << ":" << column << ": " << dump << "\n";
@@ -99,6 +100,7 @@ namespace {
         }
     private:
         int mDataIndex;
+        std::set<std::string> symbols;
     };
 
     class Data {
