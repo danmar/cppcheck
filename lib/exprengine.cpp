@@ -56,16 +56,23 @@ namespace {
     class TrackExecution {
     public:
         TrackExecution() : mDataIndex(0) {}
+        std::set<std::string> symbols;
         std::map<const Token *, std::vector<std::string>> map;
         int getNewDataIndex() {
             return mDataIndex++;
         }
 
-        void newValue(const Token *tok, ExprEngine::ValuePtr value) {
+        void symbolRange(const Token *tok, ExprEngine::ValuePtr value) {
             if (!tok)
                 return;
-            if (!value)
-                map[tok].push_back(tok->expressionString() + "=TODO_NO_VALUE");
+            const std::string &symbolicExpression = value->getSymbolicExpression();
+            if (symbolicExpression[0] != '$')
+                return;
+            if (symbols.find(symbolicExpression) != symbols.end())
+                return;
+            symbols.insert(symbolicExpression);
+            map[tok].push_back(symbolicExpression + "=" + value->getRange());
+
         }
 
         void state(const Token *tok, const std::string &s) {
@@ -110,6 +117,11 @@ namespace {
         const Settings * const settings;
         const std::vector<ExprEngine::Callback> &callbacks;
 
+        void assignValue(const Token *tok, unsigned int varId, ExprEngine::ValuePtr value) {
+            mTrackExecution->symbolRange(tok, value);
+            memory[varId] = value;
+        }
+
         std::vector<Data> getData(const Token *cond, bool trueData) {
             std::vector<Data> ret;
             ret.push_back(Data(symbolValueIndex, tokenizer, settings, callbacks, mTrackExecution));
@@ -125,14 +137,12 @@ namespace {
                                 if (intRange->maxValue <= rhsValue)
                                     return std::vector<Data>();
                                 auto val = std::make_shared<ExprEngine::IntRange>(getNewSymbolName(), rhsValue + 1, intRange->maxValue);
-                                trackAssignment(cond, val);
-                                ret[0].memory[mem->first] = val;
+                                ret[0].assignValue(cond, mem->first, val);
                             } else { /* if (!trueData) */
                                 if (intRange->maxValue <= rhsValue)
                                     return std::vector<Data>();
                                 auto val = std::make_shared<ExprEngine::IntRange>(getNewSymbolName(), intRange->minValue, rhsValue);
-                                trackAssignment(cond, val);
-                                ret[0].memory[mem->first] = val;
+                                ret[0].assignValue(cond, mem->first, val);
                             }
                         }
                     }
@@ -145,26 +155,23 @@ namespace {
                                 return std::vector<Data>();
                             if (intRange->minValue < 0) {
                                 auto val = std::make_shared<ExprEngine::IntRange>(getNewSymbolName(), intRange->minValue, -1);
-                                trackAssignment(cond, val);
-                                ret[0].memory[mem->first] = val;
+                                ret[0].assignValue(cond, mem->first, val);
                             }
                             if (intRange->maxValue > 0) {
                                 auto val = std::make_shared<ExprEngine::IntRange>(getNewSymbolName(), 1, intRange->maxValue);
-                                trackAssignment(cond, val);
                                 if (intRange->minValue < 0) {
                                     // create additional intrange..
                                     ret.push_back(Data(symbolValueIndex, tokenizer, settings, callbacks, mTrackExecution));
                                     ret.back().memory = ret[0].memory;
                                 }
-                                ret[0].memory[mem->first] = val;
+                                ret[0].assignValue(cond, mem->first, val);
                             }
                         } else { /* if (!trueData) */
                             if (intRange->maxValue < 0 || intRange->minValue > 0)
                                 return std::vector<Data>();
 
                             auto val = std::make_shared<ExprEngine::IntRange>(getNewSymbolName(), 0, 0);
-                            trackAssignment(cond, val);
-                            ret[0].memory[mem->first] = val;
+                            ret[0].assignValue(cond, mem->first, val);
                         }
                     }
                 }
@@ -195,15 +202,9 @@ namespace {
                 return ExprEngine::ValuePtr();
             ExprEngine::ValuePtr value = getValueRangeFromValueType(getNewSymbolName(), valueType, *settings);
             if (value) {
-                if (tok)
-                    trackAssignment(tok, value);
-                memory[varId] = value;
+                assignValue(tok, varId, value);
             }
             return value;
-        }
-
-        void trackAssignment(const Token *tok, ExprEngine::ValuePtr value) {
-            return mTrackExecution->newValue(tok, value);
         }
 
         void trackProgramState(const Token *tok) {
@@ -729,9 +730,8 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
     assignValue = truncateValue(assignValue, lhsToken->valueType(), data);
     call(data.callbacks, tok, assignValue);
 
-    data.trackAssignment(lhsToken, assignValue);
     if (lhsToken->varId() > 0) {
-        data.memory[lhsToken->varId()] = assignValue;
+        data.assignValue(lhsToken, lhsToken->varId(), assignValue);
     } else if (lhsToken->str() == "[") {
         auto arrayValue = data.getArrayValue(lhsToken->astOperand1());
         if (arrayValue) {
@@ -750,7 +750,7 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
         if (pval && pval->type == ExprEngine::ValueType::AddressOfValue) {
             auto val = std::dynamic_pointer_cast<ExprEngine::AddressOfValue>(pval);
             if (val)
-                data.memory[val->varId] = assignValue;
+                data.assignValue(lhsToken, val->varId, assignValue);
         } else if (pval && pval->type == ExprEngine::ValueType::BinOpResult) {
             auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(pval);
             if (b && b->binop == "+") {
@@ -789,7 +789,7 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
             ValueType vt(*argtok->valueType());
             vt.pointer = 0;
             if (vt.isIntegral() && argtok->valueType()->pointer == 1)
-                data.memory[addressOf->varId] = getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings);
+                data.assignValue(argtok, addressOf->varId, getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings));
         }
     }
 
@@ -941,11 +941,11 @@ static void execute(const Token *start, const Token *end, Data &data)
             data.trackProgramState(tok);
         if (tok->variable() && tok->variable()->nameToken() == tok) {
             if (tok->variable()->isArray()) {
-                data.memory[tok->varId()] = std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), tok->variable());
+                data.assignValue(tok, tok->varId(), std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), tok->variable()));
                 if (Token::Match(tok, "%name% ["))
                     tok = tok->linkAt(1);
             } else if (Token::Match(tok, "%var% ;"))
-                data.memory[tok->varId()] = createVariableValue(*tok->variable(), data);
+                data.assignValue(tok, tok->varId(), createVariableValue(*tok->variable(), data));
         } else if (!tok->astParent() && (tok->astOperand1() || tok->astOperand2()))
             executeExpression(tok, data);
 
@@ -1048,13 +1048,8 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
     TrackExecution trackExecution;
     Data data(&symbolValueIndex, tokenizer, settings, callbacks, &trackExecution);
 
-    for (const Variable &arg : function->argumentList) {
-        ValuePtr val = createVariableValue(arg, data);
-        if (val) {
-            data.trackAssignment(arg.nameToken(), val);
-            data.memory[arg.declarationId()] = val;
-        }
-    }
+    for (const Variable &arg : function->argumentList)
+        data.assignValue(functionScope->bodyStart, arg.declarationId(), createVariableValue(arg, data));
 
     execute(functionScope->bodyStart, functionScope->bodyEnd, data);
 
