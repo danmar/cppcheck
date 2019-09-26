@@ -63,6 +63,7 @@ private:
 
         TEST_CASE(localArray1);
         TEST_CASE(localArray2);
+        TEST_CASE(localArray3);
         TEST_CASE(localArrayInit1);
         TEST_CASE(localArrayInit2);
         TEST_CASE(localArrayUninit);
@@ -96,7 +97,7 @@ private:
     }
 
     void argPointer() {
-        ASSERT_EQUALS("->0:255,null,->?", getRange("void f(unsigned char *p) { a = *p; }", "p"));
+        ASSERT_EQUALS("->$1,null,->?", getRange("void f(unsigned char *p) { a = *p; }", "p"));
     }
 
     void argSmartPointer() {
@@ -113,7 +114,7 @@ private:
     }
 
     void dynamicAllocation1() {
-        ASSERT_EQUALS("size=1,[:]=0", getRange("char *f() { char *p = calloc(1,1); return p; }", "p"));
+        ASSERT_EQUALS("$2", getRange("char *f() { char *p = calloc(1,1); return p; }", "p"));
     }
 
     void expr1() {
@@ -201,6 +202,10 @@ private:
 
     void localArray2() {
         ASSERT_EQUALS("0:255", getRange("int f() { unsigned char arr[10] = \"\"; dostuff(arr); return arr[4]; }", "arr[4]"));
+    }
+
+    void localArray3() {
+        ASSERT_EQUALS("?,43", getRange("int f(unsigned char x) { int arr[10]; arr[4] = 43; int vx = arr[x]; }", "arr[x]"));
     }
 
     void localArrayInit1() {

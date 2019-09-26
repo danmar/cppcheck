@@ -66,12 +66,6 @@ namespace {
                 return;
             if (!value)
                 map[tok].push_back(tok->expressionString() + "=TODO_NO_VALUE");
-            /*
-                        else if (value->name[0] == '$')
-                            map[tok].push_back(tok->expressionString() + "=(" + value->name + "," + value->getRange() + ")");
-                        else
-                            map[tok].push_back(tok->expressionString() + "=" + value->name);
-            */
         }
 
         void state(const Token *tok, const std::string &s) {
@@ -224,7 +218,7 @@ namespace {
                 if (!value)
                     s << "(null)";
                 else if (value->name[0] == '$')
-                    s << "(" << value->name << "," << value->getRange() << ")";
+                    s << "(" << value->name << "," << value->getSymbolicExpression() << ")";
                 else
                     s << value->name;
             }
@@ -268,14 +262,14 @@ static ExprEngine::ValuePtr simplifyValue(ExprEngine::ValuePtr origValue)
 
 
 ExprEngine::ArrayValue::ArrayValue(const std::string &name, ExprEngine::ValuePtr size, ExprEngine::ValuePtr value)
-    : Value(name)
+    : Value(name, ExprEngine::ValueType::ArrayValue)
     , size(size)
 {
     assign(ExprEngine::ValuePtr(), value);
 }
 
 ExprEngine::ArrayValue::ArrayValue(const std::string &name, const Variable *var)
-    : Value(name)
+    : Value(name, ExprEngine::ValueType::ArrayValue)
 {
     if (var) {
         int sz = 1;
@@ -315,8 +309,7 @@ static bool isEqual(ExprEngine::ValuePtr v1, ExprEngine::ValuePtr v2)
 {
     if (!v1 || !v2)
         return !v1 && !v2;
-    // TODO: Maybe we need better logic here:
-    return v1->getRange() == v2->getRange();
+    return v1->name == v2->name;
 }
 
 static bool isNonOverlapping(ExprEngine::ValuePtr v1, ExprEngine::ValuePtr v2)
@@ -330,18 +323,19 @@ static bool isNonOverlapping(ExprEngine::ValuePtr v1, ExprEngine::ValuePtr v2)
     return false;
 }
 
-std::vector<ExprEngine::ValuePtr> ExprEngine::ArrayValue::read(ExprEngine::ValuePtr index)
+ExprEngine::ConditionalValue::Vector ExprEngine::ArrayValue::read(ExprEngine::ValuePtr index) const
 {
-    std::vector<ExprEngine::ValuePtr> ret;
+    ExprEngine::ConditionalValue::Vector ret;
     for (const auto indexAndValue : data) {
         if (isEqual(index, indexAndValue.index))
             ret.clear();
         if (isNonOverlapping(index, indexAndValue.index))
             continue;
-        if (!indexAndValue.index && indexAndValue.value->type() == ExprEngine::ValueType::StringLiteralValue) {
+        // Array contains string literal data...
+        if (!indexAndValue.index && indexAndValue.value->type == ExprEngine::ValueType::StringLiteralValue) {
             auto stringLiteral = std::dynamic_pointer_cast<ExprEngine::StringLiteralValue>(indexAndValue.value);
             if (!stringLiteral) {
-                ret.push_back(std::make_shared<ExprEngine::IntRange>("", -128, 128));
+                ret.push_back(std::pair<ValuePtr,ValuePtr>(indexAndValue.index, std::make_shared<ExprEngine::IntRange>("", -128, 128)));
                 continue;
             }
             if (auto i = std::dynamic_pointer_cast<ExprEngine::IntRange>(index)) {
@@ -349,7 +343,7 @@ std::vector<ExprEngine::ValuePtr> ExprEngine::ArrayValue::read(ExprEngine::Value
                     int c = 0;
                     if (i->minValue < stringLiteral->size())
                         c = stringLiteral->string[i->minValue];
-                    ret.push_back(std::make_shared<ExprEngine::IntRange>(std::to_string(c), c, c));
+                    ret.push_back(std::pair<ValuePtr,ValuePtr>(indexAndValue.index, std::make_shared<ExprEngine::IntRange>(std::to_string(c), c, c)));
                     continue;
                 }
             }
@@ -360,15 +354,48 @@ std::vector<ExprEngine::ValuePtr> ExprEngine::ArrayValue::read(ExprEngine::Value
                 else if (c > cmax)
                     cmax = c;
             }
-            ret.push_back(std::make_shared<ExprEngine::IntRange>("", cmin, cmax));
+            ret.push_back(std::pair<ValuePtr,ValuePtr>(indexAndValue.index, std::make_shared<ExprEngine::IntRange>("", cmin, cmax)));
             continue;
         }
-        ret.push_back(indexAndValue.value);
+        ret.push_back(std::pair<ValuePtr,ValuePtr>(indexAndValue.index, indexAndValue.value));
     }
+
+    if (ret.size() == 1)
+        ret[0].first = ExprEngine::ValuePtr();
+    else if (ret.size() == 2 && !ret[0].first) {
+        ret[0].first = std::make_shared<ExprEngine::BinOpResult>("!=", index, ret[1].first);
+        ret[1].first = std::make_shared<ExprEngine::BinOpResult>("==", index, ret[1].first);
+    } else {
+        // FIXME!!
+        ret.clear();
+    }
+
     return ret;
 }
 
-std::string ExprEngine::ArrayValue::getRange() const
+std::string ExprEngine::ConditionalValue::getSymbolicExpression() const
+{
+    std::ostringstream ostr;
+    ostr << "{";
+    bool first = true;
+    for (auto condvalue : values) {
+        ValuePtr cond = condvalue.first;
+        ValuePtr value = condvalue.second;
+
+        if (!first)
+            ostr << ",";
+        first = false;
+        ostr << "{"
+             << (cond ? cond->getSymbolicExpression() : std::string("(null)"))
+             << ","
+             << value->getSymbolicExpression()
+             << "}";
+    }
+    ostr << "}";
+    return ostr.str();
+}
+
+std::string ExprEngine::ArrayValue::getSymbolicExpression() const
 {
     std::ostringstream ostr;
     ostr << "size=" << (size ? size->name : std::string("(null)"));
@@ -385,7 +412,7 @@ std::string ExprEngine::PointerValue::getRange() const
 {
     std::string r;
     if (data)
-        r = "->" + data->getRange();
+        r = "->" + data->getSymbolicExpression();
     if (null)
         r += std::string(r.empty() ? "" : ",") + "null";
     if (uninitData)
@@ -446,9 +473,9 @@ void ExprEngine::BinOpResult::getRange(ExprEngine::BinOpResult::IntOrFloatValue 
     }
 }
 
-std::string ExprEngine::IntegerTruncation::getRange() const
+std::string ExprEngine::IntegerTruncation::getSymbolicExpression() const
 {
-    return sign + std::to_string(bits) + "(" + inputValue->getRange() + ")";
+    return sign + std::to_string(bits) + "(" + inputValue->getSymbolicExpression() + ")";
 }
 
 bool ExprEngine::BinOpResult::isIntValueInRange(int value) const
@@ -500,6 +527,12 @@ ExprEngine::BinOpResult::IntOrFloatValue ExprEngine::BinOpResult::evaluate(int t
     BINARY_INT_OP(^)
     BINARY_INT_OP(<<)
     BINARY_INT_OP(>>)
+    BINARY_INT_OP(==)
+    BINARY_INT_OP(!=)
+    BINARY_OP(>=)
+    BINARY_OP(>)
+    BINARY_OP(<=)
+    BINARY_OP(<)
 
     if (binop == "%" && rhs.intValue != 0) {
         struct ExprEngine::BinOpResult::IntOrFloatValue result;
@@ -531,7 +564,7 @@ ExprEngine::BinOpResult::IntOrFloatValue ExprEngine::BinOpResult::evaluateOperan
         result.setFloatValue(valueType ? floatRange->minValue : floatRange->maxValue);
         return result;
     }
-    throw std::runtime_error("Internal error: Unhandled value:" + std::to_string((int)value->type()));
+    throw std::runtime_error("Internal error: Unhandled value:" + std::to_string((int)value->type));
 }
 
 // Todo: This is taken from ValueFlow and modified.. we should reuse it
@@ -670,7 +703,7 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
             // Is it array initialization?
             const Token *arrayInit = lhsToken->astOperand1();
             if (arrayInit && arrayInit->variable() && arrayInit->variable()->nameToken() == arrayInit) {
-                if (assignValue->type() == ExprEngine::ValueType::StringLiteralValue)
+                if (assignValue->type == ExprEngine::ValueType::StringLiteralValue)
                     arrayValue->assign(ExprEngine::ValuePtr(), assignValue);
             } else {
                 auto indexValue = executeExpression(lhsToken->astOperand2(), data);
@@ -679,16 +712,16 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
         }
     } else if (lhsToken->isUnaryOp("*")) {
         auto pval = executeExpression(lhsToken->astOperand1(), data);
-        if (pval && pval->type() == ExprEngine::ValueType::AddressOfValue) {
+        if (pval && pval->type == ExprEngine::ValueType::AddressOfValue) {
             auto val = std::dynamic_pointer_cast<ExprEngine::AddressOfValue>(pval);
             if (val)
                 data.memory[val->varId] = assignValue;
-        } else if (pval && pval->type() == ExprEngine::ValueType::BinOpResult) {
+        } else if (pval && pval->type == ExprEngine::ValueType::BinOpResult) {
             auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(pval);
             if (b && b->binop == "+") {
                 std::shared_ptr<ExprEngine::ArrayValue> arr;
                 ExprEngine::ValuePtr offset;
-                if (b->op1->type() == ExprEngine::ValueType::ArrayValue) {
+                if (b->op1->type == ExprEngine::ValueType::ArrayValue) {
                     arr = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(b->op1);
                     offset = b->op2;
                 } else {
@@ -743,10 +776,10 @@ static ExprEngine::ValuePtr executeArrayIndex(const Token *tok, Data &data)
     auto arrayValue = data.getArrayValue(tok->astOperand1());
     if (arrayValue) {
         auto indexValue = executeExpression(tok->astOperand2(), data);
-        auto values = arrayValue->read(indexValue);
-        for (auto value: values)
-            call(data.callbacks, tok, value);
-        return values[0]; // FIXME we need to split the programstate here
+        auto conditionalValues = arrayValue->read(indexValue);
+        for (auto value: conditionalValues)
+            call(data.callbacks, tok, value.second);
+        return std::make_shared<ExprEngine::ConditionalValue>(data.getNewSymbolName(), conditionalValues);
     }
     return ExprEngine::ValuePtr();
 }
