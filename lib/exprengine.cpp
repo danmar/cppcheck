@@ -62,7 +62,7 @@ namespace {
         }
 
         void symbolRange(const Token *tok, ExprEngine::ValuePtr value) {
-            if (!tok)
+            if (!tok || !value)
                 return;
             const std::string &symbolicExpression = value->getSymbolicExpression();
             if (symbolicExpression[0] != '$')
