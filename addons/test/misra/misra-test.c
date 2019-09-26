@@ -76,6 +76,7 @@ const char *s41_7 = "\xAA\xg\x41"; // 4.1
 const char *s41_8 = "\xAA\x\x41"; // 4.1
 const char *s41_9 = "unknown\gsequence";
 const char *s41_10 = "simple\nsequence";
+const char *s41_11 = "string";
 int c41_3         = '\141t'; // 4.1
 int c41_4         = '\141\t';
 int c41_5         = '\0';
@@ -88,6 +89,7 @@ int c41_11        = '\12n';  // 4.1
 int c41_12         = '\12323'; // 4.1
 int c41_13         = '\123\3';
 int c41_14         = '\777\777';
+int c41_15         = 'a';
 
 void misra_4_1()
 {
