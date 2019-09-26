@@ -104,6 +104,7 @@ extern std::ostringstream output;
 #define ASSERT_EQUALS_DOUBLE( EXPECTED , ACTUAL, TOLERANCE )  assertEqualsDouble(__FILE__, __LINE__, EXPECTED, ACTUAL, TOLERANCE)
 #define ASSERT_EQUALS_MSG( EXPECTED , ACTUAL, MSG )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL, MSG)
 #define ASSERT_THROW( CMD, EXCEPTION ) try { CMD ; assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&) { } catch (...) { assertThrowFail(__FILE__, __LINE__); }
+#define ASSERT_THROW_EQUALS( CMD, EXCEPTION, EXPECTED ) try { CMD ; assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&e) { assertEquals(__FILE__, __LINE__, EXPECTED, e.errorMessage); } catch (...) { assertThrowFail(__FILE__, __LINE__); }
 #define ASSERT_NO_THROW( CMD ) try { CMD ; } catch (...) { assertNoThrowFail(__FILE__, __LINE__); }
 #define TODO_ASSERT_THROW( CMD, EXCEPTION ) try { CMD ; } catch (const EXCEPTION&) { } catch (...) { assertThrow(__FILE__, __LINE__); }
 #define TODO_ASSERT( CONDITION ) { const bool condition=(CONDITION); todoAssertEquals(__FILE__, __LINE__, true, false, condition); }

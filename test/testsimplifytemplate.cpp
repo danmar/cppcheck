@@ -186,6 +186,7 @@ private:
         TEST_CASE(template146); // syntax error
         TEST_CASE(template147); // syntax error
         TEST_CASE(template148); // syntax error
+        TEST_CASE(template149); // unknown macro
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -3541,6 +3542,13 @@ private:
                            "&& var < S1 < 50 , 120 > > == var < S1 < 150 , var < S1 < 10 , 10 > > > > "
                            "&& var < S1 < 53 , 23 > > != 222 , \"\" ) ;";
         ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template149() { // unknown macro
+        const char code[] = "BEGIN_VERSIONED_NAMESPACE_DECL\n"
+                            "template<typename T> class Fred { };\n"
+                            "END_VERSIONED_NAMESPACE_DECL";
+        ASSERT_THROW_EQUALS(tok(code), InternalError, "There is an unknown macro here somewhere. Configuration is required. If BEGIN_VERSIONED_NAMESPACE_DECL is a macro then please configure it.");
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
