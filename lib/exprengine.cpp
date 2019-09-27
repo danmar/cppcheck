@@ -1108,9 +1108,6 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
     };
 
     std::function<void(const Token *, const ExprEngine::Value &)> integerOverflow = [&](const Token *tok, const ExprEngine::Value &value) {
-        // Disable this check.. it's very noisy
-        return;
-
         if (!tok->isArithmeticalOp() || !tok->valueType() || !tok->valueType()->isIntegral() || tok->valueType()->pointer > 0)
             return;
 
@@ -1145,6 +1142,8 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
 
     std::vector<ExprEngine::Callback> callbacks;
     callbacks.push_back(divByZero);
+#ifdef VERIFY_INTEGEROVERFLOW
     callbacks.push_back(integerOverflow);
+#endif
     ExprEngine::executeAllFunctions(tokenizer, settings, callbacks);
 }
