@@ -229,7 +229,7 @@ namespace {
                 return;
             const SymbolDatabase * const symbolDatabase = tokenizer->getSymbolDatabase();
             std::ostringstream s;
-            s << "{"; // << dataIndex << ":";
+            s << "{"; // << mDataIndex << ":";
             for (auto mem : memory) {
                 ExprEngine::ValuePtr value = mem.second;
                 const Variable *var = symbolDatabase->getVariableFromVarId(mem.first);
@@ -967,6 +967,10 @@ static void execute(const Token *start, const Token *end, Data &data)
         if (Token::Match(tok, "[;{}]"))
             data.trackProgramState(tok);
         if (tok->variable() && tok->variable()->nameToken() == tok) {
+            if (Token::Match(tok, "%varid% ; %varid% =", tok->varId())) {
+                tok = tok->tokAt(2);
+                continue;
+            }
             if (tok->variable()->isArray()) {
                 data.assignValue(tok, tok->varId(), std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), tok->variable()));
                 if (Token::Match(tok, "%name% ["))
