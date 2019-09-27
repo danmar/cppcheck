@@ -67,9 +67,9 @@ namespace {
             const std::string &symbolicExpression = value->getSymbolicExpression();
             if (symbolicExpression[0] != '$')
                 return;
-            if (symbols.find(symbolicExpression) != symbols.end())
+            if (mSymbols.find(symbolicExpression) != mSymbols.end())
                 return;
-            symbols.insert(symbolicExpression);
+            mSymbols.insert(symbolicExpression);
             map[tok].push_back(symbolicExpression + "=" + value->getRange());
 
         }
@@ -100,7 +100,7 @@ namespace {
         }
     private:
         int mDataIndex;
-        std::set<std::string> symbols;
+        std::set<std::string> mSymbols;
     };
 
     class Data {
