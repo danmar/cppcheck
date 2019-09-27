@@ -1639,7 +1639,7 @@ void CheckClass::virtualDestructor()
 {
     // This error should only be given if:
     // * base class doesn't have virtual destructor
-    // * derived class has non-empty destructor
+    // * derived class has non-empty destructor (only c++03, in c++11 it's UB see paragraph 3 in [expr.delete])
     // * base class is deleted
     // unless inconclusive in which case:
     // * base class has virtual members but doesn't have virtual destructor
@@ -1665,16 +1665,19 @@ void CheckClass::virtualDestructor()
             continue;
         }
 
-        // Find the destructor
-        const Function *destructor = scope->getDestructor();
+        // Check if destructor is empty and non-empty ..
+        if (mSettings->standards.cpp <= Standards::CPP03) {
+            // Find the destructor
+            const Function *destructor = scope->getDestructor();
 
-        // Check for destructor with implementation
-        if (!destructor || !destructor->hasBody())
-            continue;
+            // Check for destructor with implementation
+            if (!destructor || !destructor->hasBody())
+                continue;
 
-        // Empty destructor
-        if (destructor->token->linkAt(3) == destructor->token->tokAt(4))
-            continue;
+            // Empty destructor
+            if (destructor->token->linkAt(3) == destructor->token->tokAt(4))
+                continue;
+        }
 
         const Token *derived = scope->classDef;
         const Token *derivedClass = derived->next();

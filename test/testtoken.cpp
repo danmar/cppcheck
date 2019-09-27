@@ -833,14 +833,14 @@ private:
 
     void isStandardType() const {
         std::vector<std::string> standard_types;
-        standard_types.push_back("bool");
-        standard_types.push_back("char");
-        standard_types.push_back("short");
-        standard_types.push_back("int");
-        standard_types.push_back("long");
-        standard_types.push_back("float");
-        standard_types.push_back("double");
-        standard_types.push_back("size_t");
+        standard_types.emplace_back("bool");
+        standard_types.emplace_back("char");
+        standard_types.emplace_back("short");
+        standard_types.emplace_back("int");
+        standard_types.emplace_back("long");
+        standard_types.emplace_back("float");
+        standard_types.emplace_back("double");
+        standard_types.emplace_back("size_t");
 
         std::vector<std::string>::const_iterator test_op, test_ops_end = standard_types.end();
         for (test_op = standard_types.begin(); test_op != test_ops_end; ++test_op) {

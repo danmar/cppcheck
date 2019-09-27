@@ -78,7 +78,7 @@ public:
 
 private:
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings * /*settings*/) const OVERRIDE {
         CheckUnusedFunctions::unusedFunctionError(errorLogger, emptyString, 0, "funcName");
     }
 

@@ -867,7 +867,7 @@ void Tokenizer::simplifyTypedef()
             if (tokOffset->next()->str() == "(")
                 tokOffset = tokOffset->next();
             else if (Token::simpleMatch(tokOffset, "( * (")) {
-                pointers.push_back("*");
+                pointers.emplace_back("*");
                 tokOffset = tokOffset->tokAt(2);
             }
 
@@ -2837,7 +2837,7 @@ void Tokenizer::calculateScopes()
     for (auto tok = list.front(); tok; tok = tok->next())
         tok->scopeInfo(nullptr);
 
-    std::string nextScopeNameAddition = "";
+    std::string nextScopeNameAddition;
     std::shared_ptr<ScopeInfo2> primaryScope = std::make_shared<ScopeInfo2>("", nullptr);
     list.front()->scopeInfo(primaryScope);
 
@@ -2847,7 +2847,7 @@ void Tokenizer::calculateScopes()
                 tok->scopeInfo(tok->previous()->scopeInfo());
 
             if (Token::Match(tok, "using namespace %name% ::|<|;")) {
-                std::string usingNamespaceName = "";
+                std::string usingNamespaceName;
                 for (const Token* namespaceNameToken = tok->tokAt(2);
                      !Token::simpleMatch(namespaceNameToken, ";");
                      namespaceNameToken = namespaceNameToken->next()) {
@@ -4259,6 +4259,10 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // Remove __asm..
     simplifyAsm();
+
+    // foo < bar < >> => foo < bar < > >
+    if (isCPP())
+        mTemplateSimplifier->fixAngleBrackets();
 
     // Bail out if code is garbage
     if (mTimerResults) {
@@ -7993,7 +7997,6 @@ bool Tokenizer::simplifyRedundantParentheses()
             tok->deleteNext();
             tok2->deleteThis();
             ret = true;
-            continue;
         }
 
         if (Token::simpleMatch(tok->previous(), "? (") && Token::simpleMatch(tok->link(), ") :")) {
@@ -9402,8 +9405,12 @@ void Tokenizer::findGarbageCode() const
         for (const Token *tok = tokens(); tok; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "template <"))
                 continue;
-            if (tok->previous() && !Token::Match(tok->previous(), "[:;{})>]"))
-                syntaxError(tok);
+            if (tok->previous() && !Token::Match(tok->previous(), "[:;{})>]")) {
+                if (tok->previous()->isUpperCaseName())
+                    unknownMacroError(tok->previous());
+                else
+                    syntaxError(tok);
+            }
             const Token * const tok1 = tok;
             tok = tok->next()->findClosingBracket();
             if (!tok)

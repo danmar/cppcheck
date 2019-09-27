@@ -1218,6 +1218,33 @@ bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp,
     return isVariableChanged(start->next(), var->scope()->bodyEnd, var->declarationId(), var->isGlobal(), settings, cpp, depth);
 }
 
+bool isVariablesChanged(const Token* start,
+                        const Token* end,
+                        int indirect,
+                        std::vector<const Variable*> vars,
+                        const Settings* settings,
+                        bool cpp)
+{
+    std::set<int> varids;
+    std::transform(vars.begin(), vars.end(), std::inserter(varids, varids.begin()), [](const Variable* var) {
+        return var->declarationId();
+    });
+    const bool globalvar = std::any_of(vars.begin(), vars.end(), [](const Variable* var) {
+        return var->isGlobal();
+    });
+    for (const Token* tok = start; tok != end; tok = tok->next()) {
+        if (tok->varId() == 0 || varids.count(tok->varId()) == 0) {
+            if (globalvar && Token::Match(tok, "%name% ("))
+                // TODO: Is global variable really changed by function call?
+                return true;
+            continue;
+        }
+        if (isVariableChanged(tok, indirect, settings, cpp))
+            return true;
+    }
+    return false;
+}
+
 int numberOfArguments(const Token *start)
 {
     int arguments=0;
@@ -1716,7 +1743,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             const Token *parent = tok;
             bool other = false;
             bool same = tok->astParent() && isSameExpression(mCpp, false, expr, tok, mLibrary, false, false, nullptr);
-            while (!same && Token::Match(parent->astParent(), "*|.|::|[")) {
+            while (!same && Token::Match(parent->astParent(), "*|.|::|[|%cop%")) {
                 parent = parent->astParent();
                 if (parent && isSameExpression(mCpp, false, expr, parent, mLibrary, false, false, nullptr)) {
                     same = true;
@@ -1860,7 +1887,7 @@ bool FwdAnalysis::isGlobalData(const Token *expr) const
     return globalData;
 }
 
-FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToken, const Token *endToken)
+std::set<int> FwdAnalysis::getExprVarIds(const Token* expr, bool* localOut, bool* unknownVarIdOut) const
 {
     // all variable ids in expr.
     std::set<int> exprVarIds;
@@ -1885,6 +1912,19 @@ FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToke
         }
         return ChildrenToVisit::op1_and_op2;
     });
+    if (localOut)
+        *localOut = local;
+    if (unknownVarIdOut)
+        *unknownVarIdOut = unknownVarId;
+    return exprVarIds;
+}
+
+FwdAnalysis::Result FwdAnalysis::check(const Token* expr, const Token* startToken, const Token* endToken)
+{
+    // all variable ids in expr.
+    bool local = true;
+    bool unknownVarId = false;
+    std::set<int> exprVarIds = getExprVarIds(expr, &local, &unknownVarId);
 
     if (unknownVarId)
         return Result(FwdAnalysis::Result::Type::BAILOUT);

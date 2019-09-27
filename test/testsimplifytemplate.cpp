@@ -185,6 +185,8 @@ private:
         TEST_CASE(template145); // syntax error
         TEST_CASE(template146); // syntax error
         TEST_CASE(template147); // syntax error
+        TEST_CASE(template148); // syntax error
+        TEST_CASE(template149); // unknown macro
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -233,7 +235,8 @@ private:
         TEST_CASE(templateTypeDeduction1); // #8962
         TEST_CASE(templateTypeDeduction2);
 
-        TEST_CASE(simplifyTemplateArgs);
+        TEST_CASE(simplifyTemplateArgs1);
+        TEST_CASE(simplifyTemplateArgs2);
 
         TEST_CASE(template_variadic_1); // #9144
 
@@ -3531,6 +3534,23 @@ private:
         ASSERT_EQUALS(exp, tok(code));
     }
 
+    void template148() { // syntax error
+        const char code[] = "static_assert(var<S1<11, 100>> == var<S1<199, 23>> / 2\n"
+                            "  && var<S1<50, 120>> == var<S1<150, var<S1<10, 10>>>>\n"
+                            "  && var<S1<53, 23>> != 222, \"\");";
+        const char exp[] = "static_assert ( var < S1 < 11 , 100 > > == var < S1 < 199 , 23 > > / 2 "
+                           "&& var < S1 < 50 , 120 > > == var < S1 < 150 , var < S1 < 10 , 10 > > > > "
+                           "&& var < S1 < 53 , 23 > > != 222 , \"\" ) ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template149() { // unknown macro
+        const char code[] = "BEGIN_VERSIONED_NAMESPACE_DECL\n"
+                            "template<typename T> class Fred { };\n"
+                            "END_VERSIONED_NAMESPACE_DECL";
+        ASSERT_THROW_EQUALS(tok(code), InternalError, "There is an unknown macro here somewhere. Configuration is required. If BEGIN_VERSIONED_NAMESPACE_DECL is a macro then please configure it.");
+    }
+
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         const char code[] = "template <typename T> struct C {};\n"
                             "template <typename T> struct S {a};\n"
@@ -4729,7 +4749,7 @@ private:
         TODO_ASSERT_EQUALS(expected, actual, tok(code));
     }
 
-    void simplifyTemplateArgs() {
+    void simplifyTemplateArgs1() {
         ASSERT_EQUALS("foo<2> = 2 ; foo<2> ;", tok("template<int N> foo = N; foo < ( 2 ) >;"));
         ASSERT_EQUALS("foo<2> = 2 ; foo<2> ;", tok("template<int N> foo = N; foo < 1 + 1 >;"));
         ASSERT_EQUALS("foo<2> = 2 ; foo<2> ;", tok("template<int N> foo = N; foo < ( 1 + 1 ) >;"));
@@ -4744,6 +4764,16 @@ private:
         ASSERT_EQUALS("foo<false> = false ; foo<false> ;", tok("template<bool N> foo = N; foo < 0 ? true : false >;"));
         ASSERT_EQUALS("foo<true> = true ; foo<true> ;", tok("template<bool N> foo = N; foo < (1 + 1 ) ? true : false >;"));
         ASSERT_EQUALS("foo<false> = false ; foo<false> ;", tok("template<bool N> foo = N; foo < ( 1 - 1) ? true : false >;"));
+    }
+
+    void simplifyTemplateArgs2() {
+        const char code[] = "template<bool T> struct a_t { static const bool t = T; };\n"
+                            "typedef a_t<sizeof(void*) == sizeof(char)> a;\n"
+                            "void foo() { bool b = a::t; }";
+        const char expected[] = "struct a_t<false> ; "
+                                "void foo ( ) { bool b ; b = a_t<false> :: t ; } "
+                                "struct a_t<false> { static const bool t = false ; } ;";
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template_variadic_1() { // #9144

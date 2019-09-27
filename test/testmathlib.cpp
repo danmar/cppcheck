@@ -704,7 +704,7 @@ private:
         ASSERT_EQUALS(false, MathLib::isIntHex(""));
     }
 
-    void isValidIntegerSuffix(void) const {
+    void isValidIntegerSuffix() const {
         // negative testing
         ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(""));
         ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix("ux"));
@@ -889,7 +889,7 @@ private:
         ASSERT_EQUALS("-inf.0", MathLib::divide("-3.0", "-0.0f")); // inf (#5142)
     }
 
-    void isdec(void) const {
+    void isdec() const {
         // positive testing
         ASSERT_EQUALS(true, MathLib::isDec("1"));
         ASSERT_EQUALS(true, MathLib::isDec("+1"));

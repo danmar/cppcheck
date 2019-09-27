@@ -36,8 +36,6 @@ private:
         TEST_CASE(argSmartPointer);
         TEST_CASE(argStruct);
 
-        TEST_CASE(dynamicAllocation1);
-
         TEST_CASE(expr1);
         TEST_CASE(expr2);
         TEST_CASE(expr3);
@@ -63,6 +61,7 @@ private:
 
         TEST_CASE(localArray1);
         TEST_CASE(localArray2);
+        TEST_CASE(localArray3);
         TEST_CASE(localArrayInit1);
         TEST_CASE(localArrayInit2);
         TEST_CASE(localArrayUninit);
@@ -96,11 +95,11 @@ private:
     }
 
     void argPointer() {
-        ASSERT_EQUALS("->0:255,null,->?", getRange("void f(unsigned char *p) { a = *p; }", "p"));
+        ASSERT_EQUALS("->$1,null,->?", getRange("void f(unsigned char *p) { a = *p; }", "p"));
     }
 
     void argSmartPointer() {
-        ASSERT_EQUALS("->$1,null", getRange("struct S { int x; }; void f(std::shared_ptr<S> ptr) { x = ptr; }", "ptr"));
+        ASSERT_EQUALS("->{x=$2},null", getRange("struct S { int x; }; void f(std::shared_ptr<S> ptr) { x = ptr; }", "ptr"));
     }
 
     void argStruct() {
@@ -110,10 +109,6 @@ private:
                                "    unsigned char b;\n"
                                "};\n"
                                "void f(struct S s) { return s.a + s.b; }", "s.a+s.b"));
-    }
-
-    void dynamicAllocation1() {
-        ASSERT_EQUALS("[0]", getRange("char *f() { char *p = calloc(1,1); return p; }", "p"));
     }
 
     void expr1() {
@@ -180,7 +175,7 @@ private:
     }
 
     void if3() {
-        ASSERT_EQUALS("1,-2147483648:2147483647,-2147483648:2147483647", getRange("void f() { int x; if (a) { if (b) x=1; } a=x; }", "a=x"));
+        ASSERT_EQUALS("1,-2147483648:2147483647,-2147483648:2147483647", getRange("void f() { int x; if (a) { if (b) x=1; } x=x; }", "x=x"));
     }
 
     void if4() {
@@ -201,6 +196,10 @@ private:
 
     void localArray2() {
         ASSERT_EQUALS("0:255", getRange("int f() { unsigned char arr[10] = \"\"; dostuff(arr); return arr[4]; }", "arr[4]"));
+    }
+
+    void localArray3() {
+        ASSERT_EQUALS("?,43", getRange("int f(unsigned char x) { int arr[10]; arr[4] = 43; int vx = arr[x]; }", "arr[x]"));
     }
 
     void localArrayInit1() {
@@ -237,7 +236,7 @@ private:
     }
 
     void pointerNull1() {
-        ASSERT_EQUALS("1", getRange("void f(void *p) { p = NULL; p += 1; }", "p+=1"));
+        ASSERT_EQUALS("0", getRange("void f(void *p) { p = NULL; p += 1; }", "p+=1"));
     }
 };
 
