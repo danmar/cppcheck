@@ -598,6 +598,9 @@ ExprEngine::BinOpResult::IntOrFloatValue ExprEngine::BinOpResult::evaluate(int t
 
 ExprEngine::BinOpResult::IntOrFloatValue ExprEngine::BinOpResult::evaluateOperand(int test, const std::map<ExprEngine::ValuePtr, int> &valueBit, ExprEngine::ValuePtr value) const
 {
+    if (!value)
+        throw std::runtime_error("Internal error: null value");
+
     auto binOpResult = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(value);
     if (binOpResult)
         return binOpResult->evaluate(test, valueBit);
@@ -1097,7 +1100,41 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
         }
     };
 
+    std::function<void(const Token *, const ExprEngine::Value &)> integerOverflow = [&](const Token *tok, const ExprEngine::Value &value) {
+        if (!tok->isArithmeticalOp() || !tok->valueType() || !tok->valueType()->isIntegral() || tok->valueType()->pointer > 0)
+            return;
+
+        const ExprEngine::BinOpResult *b = dynamic_cast<const ExprEngine::BinOpResult *>(&value);
+        if (!b)
+            return;
+
+        ExprEngine::BinOpResult::IntOrFloatValue minValue,maxValue;
+        b->getRange(&minValue, &maxValue);
+        if (minValue.isFloat() || maxValue.isFloat())
+            return;
+
+        int bits = getIntBitsFromValueType(tok->valueType(), *settings);
+        if (tok->valueType()->sign == ::ValueType::Sign::SIGNED) {
+            int128_t v = (int128_t)1 << (bits - 1);
+            if (minValue.intValue >= -v && maxValue.intValue < v)
+                return;
+        } else {
+            int128_t v = (int128_t)1 << bits;
+            if (minValue.intValue >= 0 && maxValue.intValue < v)
+                return;
+        }
+
+        std::string note;
+        if (tok->valueType()->sign == ::ValueType::Sign::UNSIGNED)
+            note = " Note that unsigned integer overflow is defined and will wrap around.";
+
+        std::list<const Token*> callstack{tok};
+        ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationIntegerOverflow", "Integer overflow, " + tok->valueType()->str() + " result." + note, false);
+        errorLogger->reportErr(errmsg);
+    };
+
     std::vector<ExprEngine::Callback> callbacks;
     callbacks.push_back(divByZero);
+    callbacks.push_back(integerOverflow);
     ExprEngine::executeAllFunctions(tokenizer, settings, callbacks);
 }

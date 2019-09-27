@@ -219,7 +219,7 @@ namespace ExprEngine {
     class BinOpResult : public Value {
     public:
         BinOpResult(const std::string &binop, ValuePtr op1, ValuePtr op2)
-            : Value("(" + op1->name + ")" + binop + "(" + op2->name + ")", ValueType::BinOpResult)
+            : Value(getName(binop, op1, op2), ValueType::BinOpResult)
             , binop(binop)
             , op1(op1)
             , op2(op2) {
@@ -264,6 +264,11 @@ namespace ExprEngine {
         ValuePtr op1;
         ValuePtr op2;
     private:
+        std::string getName(const std::string &binop, ValuePtr op1, ValuePtr op2) const {
+            std::string name1 = op1 ? op1->name : std::string("null");
+            std::string name2 = op2 ? op2->name : std::string("null");
+            return "(" + name1 + ")" + binop + "(" + name2 + ")";
+        }
 
         IntOrFloatValue evaluate(int test, const std::map<ValuePtr, int> &valueBit) const;
         IntOrFloatValue evaluateOperand(int test, const std::map<ValuePtr, int> &valueBit, ValuePtr value) const;
