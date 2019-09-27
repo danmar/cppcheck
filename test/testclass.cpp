@@ -2497,35 +2497,35 @@ private:
     }
 
     void virtualDestructor4() {
-        // Derived class doesn't have a destructor => no error
+        // Derived class doesn't have a destructor => undefined behaviour according to paragraph 3 in [expr.delete]
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : public Base { };"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : private Fred, public Base { };"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
     }
 
     void virtualDestructor5() {
-        // Derived class has empty destructor => no error
+        // Derived class has empty destructor => undefined behaviour according to paragraph 3 in [expr.delete]
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : public Base { public: ~Derived() {} };"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : public Base { public: ~Derived(); }; Derived::~Derived() {}"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
     }
 
     void virtualDestructor6() {
