@@ -121,6 +121,13 @@ namespace {
 
         void assignValue(const Token *tok, unsigned int varId, ExprEngine::ValuePtr value) {
             mTrackExecution->symbolRange(tok, value);
+            if (value) {
+                if (auto arr = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(value)) {
+                    mTrackExecution->symbolRange(tok, arr->size);
+                    for (const auto &indexAndValue: arr->data)
+                        mTrackExecution->symbolRange(tok, indexAndValue.value);
+                }
+            }
             memory[varId] = value;
         }
 
@@ -1040,6 +1047,11 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
     if (valueType->smartPointerType) {
         auto structValue = createStructVal(valueType->smartPointerType->classScope, var.isLocal() && !var.isStatic(), data);
         return std::make_shared<ExprEngine::PointerValue>(data.getNewSymbolName(), structValue, true, false);
+    }
+    if (valueType->container && valueType->container->stdStringLike) {
+        auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 0, ~0ULL);
+        auto value = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), -128, 127);
+        return std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), size, value);
     }
     return ExprEngine::ValuePtr();
 }
