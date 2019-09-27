@@ -232,7 +232,10 @@ namespace {
             s << "{"; // << dataIndex << ":";
             for (auto mem : memory) {
                 ExprEngine::ValuePtr value = mem.second;
-                s << " " << symbolDatabase->getVariableFromVarId(mem.first)->name() << "=";
+                const Variable *var = symbolDatabase->getVariableFromVarId(mem.first);
+                if (!var)
+                    continue;
+                s << " " << var->name() << "=";
                 if (!value)
                     s << "(null)";
                 else if (value->name[0] == '$' && value->getSymbolicExpression() != value->name)
@@ -1002,7 +1005,11 @@ void ExprEngine::executeAllFunctions(const Tokenizer *tokenizer, const Settings 
 {
     const SymbolDatabase *symbolDatabase = tokenizer->getSymbolDatabase();
     for (const Scope *functionScope : symbolDatabase->functionScopes) {
-        executeFunction(functionScope, tokenizer, settings, callbacks);
+        try {
+            executeFunction(functionScope, tokenizer, settings, callbacks);
+        } catch (const std::exception &) {
+            // FIXME.. there should not be exceptions
+        }
     }
 }
 
@@ -1091,7 +1098,7 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
 void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings)
 {
     std::function<void(const Token *, const ExprEngine::Value &)> divByZero = [&](const Token *tok, const ExprEngine::Value &value) {
-        if (!Token::simpleMatch(tok->astParent(), "/"))
+        if (!Token::Match(tok->astParent(), "[/%]"))
             return;
         if (tok->astParent()->astOperand2() == tok && value.isIntValueInRange(0)) {
             std::list<const Token*> callstack{tok->astParent()};
