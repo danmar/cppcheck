@@ -126,6 +126,9 @@ namespace {
                     mTrackExecution->symbolRange(tok, arr->size);
                     for (const auto &indexAndValue: arr->data)
                         mTrackExecution->symbolRange(tok, indexAndValue.value);
+                } else if (auto s = std::dynamic_pointer_cast<ExprEngine::StructValue>(value)) {
+                    for (const auto &m: s->member)
+                        mTrackExecution->symbolRange(tok, m.second);
                 }
             }
             memory[varId] = value;
