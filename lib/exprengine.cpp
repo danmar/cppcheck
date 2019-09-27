@@ -1053,6 +1053,8 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
         auto range = getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings);
         return std::make_shared<ExprEngine::PointerValue>(data.getNewSymbolName(), range, true, true);
     }
+    if (var.isArray())
+        return std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), &var);
     if (valueType->isIntegral())
         return getValueRangeFromValueType(data.getNewSymbolName(), valueType, *data.settings);
     if (valueType->type == ValueType::Type::RECORD)
