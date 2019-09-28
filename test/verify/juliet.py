@@ -10,10 +10,9 @@ import subprocess
 JULIET_PATH = os.path.expanduser('~/juliet')
 CPPCHECK_PATH = '../../cppcheck'
 
-def get_files(juliet_path:str):
+def get_files(juliet_path:str, test_cases:str):
     ret = []
-    pattern = 'C/testcases/CWE369_Divide_by_Zero/s01/CWE369_Divide_by_Zero__int_*divide*.c'
-    g = os.path.join(juliet_path, pattern)
+    g = os.path.join(juliet_path, test_cases)
     print(g)
     for f in sorted(glob.glob(g)):
         res = re.match(r'(.*[0-9][0-9])[a-x]?.(cp*)$', f)
@@ -25,23 +24,42 @@ def get_files(juliet_path:str):
             ret.append(f)
     return ret
 
-num_ok = 0
-num_failed = 0
 
-for f in get_files(JULIET_PATH):
-    inc = '-I' + os.path.join(JULIET_PATH, 'C/testcasesupport')
-    cmd = f'{CPPCHECK_PATH} {inc} -DOMIT_GOOD --library=posix --verify --platform=unix64 ' + ' '.join(glob.glob(f))
-    p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    comm = p.communicate()
-    stdout = comm[0].decode(encoding='utf-8', errors='ignore')
-    stderr = comm[1].decode(encoding='utf-8', errors='ignore')
+def check(tc:str, warning_id:str):
+    num_ok = 0
+    num_failed = 0
 
-    if 'verificationDivByZero' in stderr:
-        num_ok += 1
-    else:
-        print(f'fail: {cmd}')
-        #print(stdout)
-        num_failed += 1
+    for f in get_files(JULIET_PATH, tc):
+        cmd = [CPPCHECK_PATH,
+               '-I' + os.path.join(JULIET_PATH, 'C/testcasesupport'),
+               '-DOMIT_GOOD',
+               '--library=posix',
+               '--verify',
+               '--platform=unix64']
+        cmd += glob.glob(f)
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        comm = p.communicate()
+        stdout = comm[0].decode(encoding='utf-8', errors='ignore')
+        stderr = comm[1].decode(encoding='utf-8', errors='ignore')
 
-print(f'ok:{num_ok}, fail:{num_failed}')
+        if warning_id in stderr:
+            num_ok += 1
+        else:
+            print(f'fail: ' + ' '.join(cmd))
+            num_failed += 1
+
+    cwepos = tc.find('CWE')
+    cwe = tc[cwepos:cwepos+6]
+
+    return f'{cwe} ok:{num_ok}, fail:{num_failed}\n'
+
+
+final_report = ''
+final_report += check('C/testcases/CWE369_Divide_by_Zero/s*/*_int_*.c', 'verificationDivByZero')
+final_report += check('C/testcases/CWE476_*/*.c', 'verificationNullPointerDereference')
+
+print(final_report)
+
+assert final_report == ('CWE369 ok:456, fail:0\n'
+                        'CWE476 ok:186, fail:84\n')
 

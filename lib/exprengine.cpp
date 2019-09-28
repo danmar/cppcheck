@@ -300,6 +300,15 @@ static ExprEngine::ValuePtr translateUninitValueToRange(ExprEngine::ValuePtr val
     return value;
 }
 
+static int128_t truncateInt(int128_t value, int bits, char sign)
+{
+    value = value & (((int128_t)1 << bits) - 1);
+    // Sign extension
+    if (sign == 's' && value & (1ULL << (bits - 1)))
+        value |= ~(((int128_t)1 << bits) - 1);
+    return value;
+}
+
 ExprEngine::ArrayValue::ArrayValue(const std::string &name, ExprEngine::ValuePtr size, ExprEngine::ValuePtr value)
     : Value(name, ExprEngine::ValueType::ArrayValue)
     , size(size)
@@ -641,6 +650,14 @@ ExprEngine::BinOpResult::IntOrFloatValue ExprEngine::BinOpResult::evaluateOperan
         result.setFloatValue(valueType ? floatRange->minValue : floatRange->maxValue);
         return result;
     }
+    if (auto integerTruncation = std::dynamic_pointer_cast<IntegerTruncation>(value)) {
+        ExprEngine::BinOpResult::IntOrFloatValue result(evaluateOperand(test, valueBit, integerTruncation->inputValue));
+        if (result.isFloat())
+            result.setIntValue(truncateInt(result.floatValue, integerTruncation->bits, integerTruncation->sign));
+        else
+            result.setIntValue(truncateInt(result.intValue, integerTruncation->bits, integerTruncation->sign));
+        return result;
+    }
     throw std::runtime_error("Internal error: Unhandled value:" + std::to_string((int)value->type));
 }
 
@@ -730,11 +747,7 @@ static ExprEngine::ValuePtr truncateValue(ExprEngine::ValuePtr val, const ValueT
 
     if (auto range = std::dynamic_pointer_cast<ExprEngine::IntRange>(val)) {
         if (range->minValue == range->maxValue) {
-            int128_t newValue = range->minValue;
-            newValue = newValue & (((int128_t)1 << bits) - 1);
-            // Sign extension
-            if (valueType->sign == ValueType::Sign::SIGNED && newValue & (1ULL << (bits - 1)))
-                newValue |= ~(((int128_t)1 << bits) - 1);
+            int128_t newValue = truncateInt(range->minValue, bits, valueType->sign == ValueType::Sign::SIGNED ? 's' : 'u');
             if (newValue == range->minValue)
                 return val;
             return std::make_shared<ExprEngine::IntRange>(ExprEngine::str(newValue), newValue, newValue);
@@ -856,6 +869,11 @@ static ExprEngine::ValuePtr executeArrayIndex(const Token *tok, Data &data)
             call(data.callbacks, tok, value.second);
         return std::make_shared<ExprEngine::ConditionalValue>(data.getNewSymbolName(), conditionalValues);
     }
+
+    // TODO: Pointer value..
+    executeExpression(tok->astOperand1(), data);
+    executeExpression(tok->astOperand2(), data);
+
     return ExprEngine::ValuePtr();
 }
 
@@ -1164,7 +1182,7 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
 
 void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings)
 {
-    std::function<void(const Token *, const ExprEngine::Value &)> divByZero = [&](const Token *tok, const ExprEngine::Value &value) {
+    std::function<void(const Token *, const ExprEngine::Value &)> divByZero = [=](const Token *tok, const ExprEngine::Value &value) {
         if (!Token::Match(tok->astParent(), "[/%]"))
             return;
         if (tok->astParent()->astOperand2() == tok && value.isIntValueInRange(0)) {
@@ -1172,6 +1190,33 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationDivByZero", "There is division, cannot determine that there can't be a division by zero.", CWE(369), false);
             errorLogger->reportErr(errmsg);
         }
+    };
+
+    std::function<void(const Token *, const ExprEngine::Value &)> nullPointerDereference = [=](const Token *tok, const ExprEngine::Value &value) {
+        if (!tok->astParent())
+            return;
+
+        // Is pointer dereferenced?
+        bool deref = false;
+        deref |= tok->astParent()->isUnaryOp("*");
+        deref |= Token::simpleMatch(tok->astParent(), "[");
+        if (!deref)
+            return;
+
+        // Is this a null pointer value?
+        try {
+            if (auto pointerValue = dynamic_cast<const ExprEngine::PointerValue*>(&value)) {
+                if (!pointerValue->null)
+                    return;
+            } else if (!value.isIntValueInRange(0))
+                return;
+        } catch (const std::exception &) {
+            return;
+        }
+
+        std::list<const Token*> callstack{tok->astParent()};
+        ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationNullPointerDereference", "There is pointer dereference, cannot determine that the pointer can't be NULL.", CWE(476), false);
+        errorLogger->reportErr(errmsg);
     };
 
     std::function<void(const Token *, const ExprEngine::Value &)> integerOverflow = [&](const Token *tok, const ExprEngine::Value &value) {
@@ -1212,6 +1257,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
 
     std::vector<ExprEngine::Callback> callbacks;
     callbacks.push_back(divByZero);
+    callbacks.push_back(nullPointerDereference);
 #ifdef VERIFY_INTEGEROVERFLOW
     callbacks.push_back(integerOverflow);
 #endif
