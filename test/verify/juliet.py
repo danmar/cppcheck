@@ -30,7 +30,7 @@ num_failed = 0
 
 for f in get_files(JULIET_PATH):
     inc = '-I' + os.path.join(JULIET_PATH, 'C/testcasesupport')
-    cmd = f'{CPPCHECK_PATH} {inc} --verify --platform=unix64 ' + ' '.join(glob.glob(f))
+    cmd = f'{CPPCHECK_PATH} {inc} -DOMIT_GOOD --library=posix --verify --platform=unix64 ' + ' '.join(glob.glob(f))
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     comm = p.communicate()
     stdout = comm[0].decode(encoding='utf-8', errors='ignore')
