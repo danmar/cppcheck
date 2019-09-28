@@ -163,7 +163,7 @@ private:
     }
 
     void functionCall3() {
-        ASSERT_EQUALS("-2147483648:2147483647", getRange("void f() { int x = -1; fgets(stdin, \"%d\", &x); x=x; }", "x=x"));
+        ASSERT_EQUALS("-2147483648:2147483647", getRange("int fgets(int, const char *, void *); void f() { int x = -1; fgets(stdin, \"%d\", &x); x=x; }", "x=x"));
     }
 
     void if1() {
@@ -195,7 +195,7 @@ private:
     }
 
     void localArray2() {
-        ASSERT_EQUALS("0:255", getRange("int f() { unsigned char arr[10] = \"\"; dostuff(arr); return arr[4]; }", "arr[4]"));
+        ASSERT_EQUALS("0:255", getRange("void dostuff(unsigned char *); int f() { unsigned char arr[10] = \"\"; dostuff(arr); return arr[4]; }", "arr[4]"));
     }
 
     void localArray3() {
