@@ -820,7 +820,7 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
         }
     }
 
-    if (!tok->valueType())
+    if (!tok->valueType() && tok->astParent())
         throw std::runtime_error("Expression '" + tok->expressionString() + "' has unknown type!");
 
     auto val = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
