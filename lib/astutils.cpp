@@ -27,6 +27,7 @@
 #include "token.h"
 #include "valueflow.h"
 
+#include <iterator>
 #include <list>
 #include <stack>
 
