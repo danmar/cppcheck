@@ -281,6 +281,24 @@ static ExprEngine::ValuePtr simplifyValue(ExprEngine::ValuePtr origValue)
     return origValue;
 }
 
+static ExprEngine::ValuePtr translateUninitValueToRange(ExprEngine::ValuePtr value, const ::ValueType *valueType, Data &data)
+{
+    if (!value)
+        return value;
+    if (value->type == ExprEngine::ValueType::UninitValue) {
+        auto rangeValue = getValueRangeFromValueType(data.getNewSymbolName(), valueType, *data.settings);
+        if (rangeValue)
+            return rangeValue;
+    }
+    if (auto conditionalValue = std::dynamic_pointer_cast<ExprEngine::ConditionalValue>(value)) {
+        if (conditionalValue->values.size() == 1 && conditionalValue->values[0].second && conditionalValue->values[0].second->type == ExprEngine::ValueType::UninitValue) {
+            auto rangeValue = getValueRangeFromValueType(data.getNewSymbolName(), valueType, *data.settings);
+            if (rangeValue)
+                return rangeValue;
+        }
+    }
+    return value;
+}
 
 ExprEngine::ArrayValue::ArrayValue(const std::string &name, ExprEngine::ValuePtr size, ExprEngine::ValuePtr value)
     : Value(name, ExprEngine::ValueType::ArrayValue)
@@ -950,7 +968,7 @@ static ExprEngine::ValuePtr executeStringLiteral(const Token *tok, Data &data)
     return std::make_shared<ExprEngine::StringLiteralValue>(data.getNewSymbolName(), s.substr(1, s.size()-2));
 }
 
-static ExprEngine::ValuePtr executeExpression(const Token *tok, Data &data)
+static ExprEngine::ValuePtr executeExpression1(const Token *tok, Data &data)
 {
     if (tok->str() == "return")
         return executeReturn(tok, data);
@@ -993,6 +1011,11 @@ static ExprEngine::ValuePtr executeExpression(const Token *tok, Data &data)
         return executeStringLiteral(tok, data);
 
     return ExprEngine::ValuePtr();
+}
+
+static ExprEngine::ValuePtr executeExpression(const Token *tok, Data &data)
+{
+    return translateUninitValueToRange(executeExpression1(tok, data), tok->valueType(), data);
 }
 
 static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data);
