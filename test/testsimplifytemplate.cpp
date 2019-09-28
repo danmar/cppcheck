@@ -187,6 +187,7 @@ private:
         TEST_CASE(template147); // syntax error
         TEST_CASE(template148); // syntax error
         TEST_CASE(template149); // unknown macro
+        TEST_CASE(template150); // syntax error
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -3549,6 +3550,25 @@ private:
                             "template<typename T> class Fred { };\n"
                             "END_VERSIONED_NAMESPACE_DECL";
         ASSERT_THROW_EQUALS(tok(code), InternalError, "There is an unknown macro here somewhere. Configuration is required. If BEGIN_VERSIONED_NAMESPACE_DECL is a macro then please configure it.");
+    }
+
+    void template150() { // syntax error
+        const char code[] = "struct Test {\n"
+                            "  template <typename T>\n"
+                            "  T &operator[] (T) {}\n"
+                            "};\n"
+                            "void foo() {\n"
+                            "  Test test;\n"
+                            "  const string type = test.operator[]<string>(\"type\");\n"
+                            "}";
+        const char exp[] = "struct Test { "
+                           "string & operator[]<string> ( string ) ; "
+                           "} ; "
+                           "void foo ( ) { "
+                           "Test test ; "
+                           "const string type = test . operator[]<string> ( \"type\" ) ; "
+                           "} string & Test :: operator[]<string> ( string ) { }";
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};

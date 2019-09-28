@@ -6643,11 +6643,12 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
                         while (tok2 && tok2->str() != "," && tok2->str() != ";") {
                             if (Token::Match(tok2, "{|(|["))
                                 tok2 = tok2->link();
+                            const Token *tok3 = tok2;
                             if (!isC() && tok2->str() == "<" && TemplateSimplifier::templateParameters(tok2) > 0) {
                                 tok2 = tok2->findClosingBracket();
                             }
                             if (!tok2)
-                                syntaxError(nullptr); // #6881 invalid code
+                                syntaxError(tok3); // #6881 invalid code
                             tok2 = tok2->next();
                         }
                         if (tok2 && tok2->str() == ";")
