@@ -5316,7 +5316,7 @@ static bool evaluate(const Token *expr, const std::vector<std::list<ValueFlow::V
                 res.valueType = ValueFlow::Value::INT;
                 res.tokvalue = nullptr;
                 res.intvalue = Token::getStrLength(argvalue.tokvalue);
-                result->emplace_back(res);
+                result->emplace_back(std::move(res));
             }
         }
         return !result->empty();
@@ -5335,7 +5335,7 @@ static bool evaluate(const Token *expr, const std::vector<std::list<ValueFlow::V
             for (ValueFlow::Value v: opvalues) {
                 if (v.isIntValue()) {
                     v.intvalue = -v.intvalue;
-                    result->emplace_back(v);
+                    result->emplace_back(std::move(v));
                 }
             }
             return true;
@@ -6097,7 +6097,7 @@ static void valueFlowContainerAfterCondition(TokenList *tokenlist,
             ValueFlow::Value value(tok, 0LL);
             value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
             cond.true_values.emplace_back(value);
-            cond.false_values.emplace_back(value);
+            cond.false_values.emplace_back(std::move(value));
             cond.vartok = vartok;
             return cond;
         }
@@ -6118,7 +6118,7 @@ static void valueFlowContainerAfterCondition(TokenList *tokenlist,
             ValueFlow::Value value(tok, Token::getStrLength(strtok));
             value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
             cond.false_values.emplace_back(value);
-            cond.true_values.emplace_back(value);
+            cond.true_values.emplace_back(std::move(value));
             cond.vartok = vartok;
             return cond;
         }

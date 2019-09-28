@@ -745,10 +745,10 @@ bool TemplateSimplifier::getTemplateDeclarations()
                     TokenAndName decl(tok, tok->scopeInfo()->name, parmEnd->tokAt(namepos), parmEnd);
                     if (decl.isForwardDeclaration()) {
                         // Declaration => add to mTemplateForwardDeclarations
-                        mTemplateForwardDeclarations.emplace_back(decl);
+                        mTemplateForwardDeclarations.emplace_back(std::move(decl));
                     } else {
                         // Implementation => add to mTemplateDeclarations
-                        mTemplateDeclarations.emplace_back(decl);
+                        mTemplateDeclarations.emplace_back(std::move(decl));
                     }
                     break;
                 }
