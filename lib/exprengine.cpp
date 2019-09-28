@@ -1127,6 +1127,9 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             return;
 
         int bits = getIntBitsFromValueType(tok->valueType(), *settings);
+        if (bits == 0)
+            return;
+
         if (tok->valueType()->sign == ::ValueType::Sign::SIGNED) {
             int128_t v = (int128_t)1 << (bits - 1);
             if (minValue.intValue >= -v && maxValue.intValue < v)
