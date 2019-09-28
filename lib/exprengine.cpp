@@ -841,6 +841,36 @@ static ExprEngine::ValuePtr executeArrayIndex(const Token *tok, Data &data)
     return ExprEngine::ValuePtr();
 }
 
+static ExprEngine::ValuePtr executeCast(const Token *tok, Data &data)
+{
+    const Token *expr = tok->astOperand2() ? tok->astOperand2() : tok->astOperand1();
+
+    auto val = executeExpression(expr, data);
+
+    if (expr->valueType() && expr->valueType()->type == ::ValueType::Type::VOID && expr->valueType()->pointer > 0) {
+        ::ValueType vt(*tok->valueType());
+        vt.pointer = 0;
+        auto range = getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings);
+
+        if (tok->valueType()->pointer == 0)
+            return range;
+
+        bool uninit = false, null = false;
+        if (val && val->type == ExprEngine::ValueType::PointerValue) {
+            null = std::static_pointer_cast<ExprEngine::PointerValue>(val)->null;
+            uninit = std::static_pointer_cast<ExprEngine::PointerValue>(val)->uninitData;
+        }
+
+        return std::make_shared<ExprEngine::PointerValue>(data.getNewSymbolName(), range, null, uninit);
+    }
+
+    if (val)
+        // TODO: Cast this..
+        return val;
+
+    return getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
+}
+
 static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
 {
     if (!tok->astOperand1() || !tok->astOperand1()->varId())
@@ -932,8 +962,11 @@ static ExprEngine::ValuePtr executeExpression(const Token *tok, Data &data)
     if (tok->astOperand1() && tok->astOperand2() && tok->str() == "[")
         return executeArrayIndex(tok, data);
 
-    if (tok->str() == "(" && !tok->isCast())
-        return executeFunctionCall(tok, data);
+    if (tok->str() == "(") {
+        if (!tok->isCast())
+            return executeFunctionCall(tok, data);
+        return executeCast(tok, data);
+    }
 
     if (tok->str() == ".")
         return executeDot(tok, data);
