@@ -276,7 +276,7 @@ static bool conditionIsTrue(const Token *condition, const ProgramMemory &program
     return !error && result == 1;
 }
 
-void setValueUpperBound(ValueFlow::Value& value, bool upper)
+static void setValueUpperBound(ValueFlow::Value& value, bool upper)
 {
     if (upper)
         value.bound = ValueFlow::Value::Bound::Upper;
@@ -284,7 +284,7 @@ void setValueUpperBound(ValueFlow::Value& value, bool upper)
         value.bound = ValueFlow::Value::Bound::Lower;
 }
 
-void setValueBound(ValueFlow::Value& value, const Token* tok, bool invert)
+static void setValueBound(ValueFlow::Value& value, const Token* tok, bool invert)
 {
     if (Token::Match(tok, "<|<=")) {
         setValueUpperBound(value, !invert);
@@ -3087,7 +3087,7 @@ static bool valueFlowForwardVariable(Token* const startToken,
     return true;
 }
 
-const Token* parseBinaryIntOp(const Token* expr, MathLib::bigint& known)
+static const Token* parseBinaryIntOp(const Token* expr, MathLib::bigint& known)
 {
     if (!expr)
         return nullptr;
@@ -3117,7 +3117,7 @@ void transformIntValues(std::list<ValueFlow::Value>& values, F f)
     });
 }
 
-const Token* solveExprValues(const Token* expr, std::list<ValueFlow::Value>& values)
+static const Token* solveExprValues(const Token* expr, std::list<ValueFlow::Value>& values)
 {
     MathLib::bigint intval;
     const Token* binaryTok = parseBinaryIntOp(expr, intval);
@@ -3171,33 +3171,6 @@ static void valueFlowForward(Token* startToken,
     } else {
         valueFlowForwardExpression(startToken, endToken, expr, values, tokenlist, settings);
     }
-}
-
-static const Token *findSimpleReturn(const Function *f)
-{
-    const Scope *scope = f->functionScope;
-    if (!scope)
-        return nullptr;
-    const Token *returnTok = nullptr;
-    for (const Token *tok = scope->bodyStart->next(); tok && tok != scope->bodyEnd; tok = tok->next()) {
-        if (tok->str() == "{" && tok->scope() &&
-            (tok->scope()->type == Scope::eLambda || tok->scope()->type == Scope::eClass)) {
-            tok = tok->link();
-            continue;
-        }
-        if (Token::simpleMatch(tok->astParent(), "return")) {
-            // Multiple returns
-            if (returnTok)
-                return nullptr;
-            returnTok = tok;
-        }
-        // Skip lambda functions since the scope may not be set correctly
-        const Token *lambdaEndToken = findLambdaEndToken(tok);
-        if (lambdaEndToken) {
-            tok = lambdaEndToken;
-        }
-    }
-    return returnTok;
 }
 
 static std::vector<const Token*> findReturns(const Function* f)
@@ -4377,7 +4350,7 @@ static ValueFlow::Value asImpossible(ValueFlow::Value v)
     return v;
 }
 
-void insertImpossible(std::list<ValueFlow::Value>& values, const std::list<ValueFlow::Value>& input)
+static void insertImpossible(std::list<ValueFlow::Value>& values, const std::list<ValueFlow::Value>& input)
 {
     std::transform(input.begin(), input.end(), std::back_inserter(values), &asImpossible);
 }
@@ -4901,8 +4874,6 @@ static const ValueFlow::Value* proveNotEqual(const std::list<ValueFlow::Value>& 
 }
 
 static void valueFlowInferCondition(TokenList* tokenlist,
-                                    SymbolDatabase* symboldatabase,
-                                    ErrorLogger* errorLogger,
                                     const Settings* settings)
 {
     for (Token* tok = tokenlist->front(); tok; tok = tok->next()) {
@@ -6513,7 +6484,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
         valueFlowAfterMove(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowAfterCondition(tokenlist, symboldatabase, errorLogger, settings);
-        valueFlowInferCondition(tokenlist, symboldatabase, errorLogger, settings);
+        valueFlowInferCondition(tokenlist, settings);
         valueFlowSwitchVariable(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowForLoop(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowSubFunction(tokenlist, errorLogger, settings);
