@@ -24,6 +24,7 @@ void validCode()
 
     {
         char * buf = sqlite3_malloc(10);
+        // cppcheck-suppress invalidPrintfArgType_uint
         printf("size: %ull\n", sqlite3_msize(buf));
         sqlite3_free(buf);
     }
