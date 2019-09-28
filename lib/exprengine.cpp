@@ -1017,7 +1017,7 @@ void ExprEngine::executeAllFunctions(const Tokenizer *tokenizer, const Settings 
         } catch (const std::exception &e) {
             // FIXME.. there should not be exceptions
             std::string functionName = functionScope->function->name();
-            std::cout << "Verify: Aborted analysis of function '" << functionName << "': " << e.what();
+            std::cout << "Verify: Aborted analysis of function '" << functionName << "': " << e.what() << std::endl;
         }
     }
 }
@@ -1113,7 +1113,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             return;
         if (tok->astParent()->astOperand2() == tok && value.isIntValueInRange(0)) {
             std::list<const Token*> callstack{tok->astParent()};
-            ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationDivByZero", "Division by zero", false);
+            ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationDivByZero", "There is division, cannot determine that there can't be a division by zero.", CWE(369), false);
             errorLogger->reportErr(errmsg);
         }
     };
