@@ -820,6 +820,9 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
         }
     }
 
+    if (!tok->valueType())
+        throw std::runtime_error("Expression '" + tok->expressionString() + "' has unknown type!");
+
     auto val = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
     call(data.callbacks, tok, val);
     return val;
@@ -1011,8 +1014,10 @@ void ExprEngine::executeAllFunctions(const Tokenizer *tokenizer, const Settings 
     for (const Scope *functionScope : symbolDatabase->functionScopes) {
         try {
             executeFunction(functionScope, tokenizer, settings, callbacks);
-        } catch (const std::exception &) {
+        } catch (const std::exception &e) {
             // FIXME.. there should not be exceptions
+            std::string functionName = functionScope->function->name();
+            std::cout << "Verify: Aborted analysis of function '" << functionName << "': " << e.what();
         }
     }
 }
