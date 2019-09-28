@@ -5532,6 +5532,13 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings)
             // library function
             else if (tok->previous()) {
                 const std::string& typestr(mSettings->library.returnValueType(tok->previous()));
+                if (!typestr.empty()) {
+                    ValueType valuetype;
+                    if (valuetype.fromLibraryType(typestr, mSettings)) {
+                        setValueType(tok, valuetype);
+                    }
+                }
+
                 if (typestr.empty() || typestr == "iterator") {
                     if (Token::simpleMatch(tok->astOperand1(), ".") &&
                         tok->astOperand1()->astOperand1() &&
