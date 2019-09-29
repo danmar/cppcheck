@@ -473,9 +473,9 @@ def isalnum(c):
 def isHexEscapeSequence(symbols):
     """Checks that given symbols are valid hex escape sequence.
 
-    hexademical-escape-sequence:
-            \\x hexademical-digit
-            hexademical-escape-sequence hexademical-digit
+    hexadecimal-escape-sequence:
+            \\x hexadecimal-digit
+            hexadecimal-escape-sequence hexadecimal-digit
 
     Reference: n1570 6.4.4.4"""
     if len(symbols) < 3 or symbols[:2] != '\\x':
@@ -506,7 +506,7 @@ def isSimpleEscapeSequence(symbols):
 
 
 def hasNumericEscapeSequence(symbols):
-    """Check that given string contains octal or hexademical escape sequences."""
+    """Check that given string contains octal or hexadecimal escape sequences."""
     if '\\' not in symbols:
         return False
     for c, cn in grouped(symbols, 2):
