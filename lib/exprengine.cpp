@@ -331,14 +331,12 @@ ExprEngine::ArrayValue::ArrayValue(DataBase *data, const Variable *var)
             size = std::make_shared<ExprEngine::IntRange>(std::to_string(sz), sz, sz);
     }
     ValuePtr val;
-    if (!var->isGlobal() && !var->isStatic())
+    if (var && !var->isGlobal() && !var->isStatic())
         val = std::make_shared<ExprEngine::UninitValue>();
-    else {
-        if (var->valueType()) {
-            ::ValueType vt(*var->valueType());
-            vt.pointer = 0;
-            val = getValueRangeFromValueType(data->getNewSymbolName(), &vt, *data->settings);
-        }
+    else if (var && var->valueType()) {
+        ::ValueType vt(*var->valueType());
+        vt.pointer = 0;
+        val = getValueRangeFromValueType(data->getNewSymbolName(), &vt, *data->settings);
     }
     assign(ExprEngine::ValuePtr(), val);
 }
