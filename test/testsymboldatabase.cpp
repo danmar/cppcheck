@@ -6271,12 +6271,17 @@ private:
             Settings settingsWin64;
             settingsWin64.platformType = Settings::Win64;
             const Library::PodType u32 = { 4, 'u' };
+            const Library::PodType podtype2 = { 0, 'u', Library::PodType::INT };
             settingsWin64.library.mPodTypes["u32"] = u32;
             settingsWin64.library.mPodTypes["xyz::x"] = u32;
+            settingsWin64.library.mPodTypes["podtype2"] = podtype2;
             ValueType vt;
             ASSERT_EQUALS(true, vt.fromLibraryType("u32", &settingsWin64));
             ASSERT_EQUALS(true, vt.fromLibraryType("xyz::x", &settingsWin64));
             ASSERT_EQUALS(ValueType::Type::INT, vt.type);
+            ValueType vt2;
+            ASSERT_EQUALS(true, vt2.fromLibraryType("podtype2", &settingsWin64));
+            ASSERT_EQUALS(ValueType::Type::INT, vt2.type);
             ASSERT_EQUALS("unsigned int *", typeOf(";void *data = new u32[10];", "new", "test.cpp", &settingsWin64));
             ASSERT_EQUALS("unsigned int *", typeOf(";void *data = new xyz::x[10];", "new", "test.cpp", &settingsWin64));
             ASSERT_EQUALS("unsigned int", typeOf("; x = (xyz::x)12;", "(", "test.cpp", &settingsWin64));
