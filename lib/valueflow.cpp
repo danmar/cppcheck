@@ -3579,7 +3579,7 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
         // Variable
     } else if (tok->variable()) {
         const Variable *var = tok->variable();
-        if (!var->typeStartToken() && !var->typeStartToken()->scope())
+        if (!var->typeStartToken() || !var->typeStartToken()->scope())
             return;
         const Token *endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
 
