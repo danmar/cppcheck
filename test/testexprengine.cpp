@@ -157,7 +157,6 @@ private:
         ASSERT_EQUALS("2", getRange("void f(unsigned char x) { x = 258; int a = x }", "a=x"));
     }
 
-
     void if1() {
         ASSERT_EQUALS("7:32768", getRange("inf f(short x) { if (x > 5) a = x + 1; }", "x+1"));
     }
@@ -198,8 +197,9 @@ private:
     void array4() {
         const char code[] = "int buf[10];\n"
                             "void f() { int x = buf[0]; }";
-        ASSERT_EQUALS("2:20: $2=-2147483648:2147483647\n"
-                      "2:26: { buf=($1,size=10,[:]=$2) x=($3,{{(null),$2}})}\n",
+        ASSERT_EQUALS("2:16: $2:0=-2147483648:2147483647\n"
+                      "2:20: $2=-2147483648:2147483647\n"
+                      "2:26: { buf=($1,size=10,[:]=$2) x=$2:0}\n",
                       trackExecution(code));
     }
 
