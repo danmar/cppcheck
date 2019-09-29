@@ -1145,7 +1145,7 @@ public:
           container(nullptr),
           containerTypeToken(nullptr)
     {}
-    ValueType(const ValueType &vt) : sign(vt.sign), type(vt.type), bits(vt.bits), pointer(vt.pointer), constness(vt.constness), typeScope(vt.typeScope), smartPointerType(vt.smartPointerType), container(vt.container), containerTypeToken(vt.containerTypeToken), originalTypeName(vt.originalTypeName) {}
+    ValueType(const ValueType &vt) : sign(vt.sign), type(vt.type), bits(vt.bits), pointer(vt.pointer), constness(vt.constness), typeScope(vt.typeScope), smartPointerType(vt.smartPointerType), smartPointerTypeToken(vt.smartPointerTypeToken), container(vt.container), containerTypeToken(vt.containerTypeToken), originalTypeName(vt.originalTypeName) {}
     ValueType(enum Sign s, enum Type t, nonneg int p)
         : sign(s),
           type(t),
