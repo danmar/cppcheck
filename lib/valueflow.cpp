@@ -4415,6 +4415,9 @@ struct ValueFlowConditionHandler {
         for (const Scope *scope : symboldatabase->functionScopes) {
             std::set<unsigned> aliased;
             for (Token *tok = const_cast<Token *>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
+                if (Token::Match(tok, "if|while|for ("))
+                    continue;
+
                 if (Token::Match(tok, "= & %var% ;"))
                     aliased.insert(tok->tokAt(2)->varId());
                 const Token* top = tok->astTop();
@@ -4430,13 +4433,16 @@ struct ValueFlowConditionHandler {
                 if (cond.true_values.empty() || cond.false_values.empty())
                     continue;
 
+                if (exprDependsOnThis(cond.vartok))
+                    continue;
                 std::vector<const Variable*> vars = getExprVariables(cond.vartok, tokenlist, symboldatabase, settings);
                 if (std::any_of(vars.begin(), vars.end(), [](const Variable* var) {
-                return !var || !(var->isLocal() || var->isGlobal() || var->isArgument());
+                return !var;
                 }))
                 continue;
+                if (!vars.empty() && (vars.front()))
                 if (std::any_of(vars.begin(), vars.end(), [&](const Variable* var) {
-                return aliased.find(var->declarationId()) != aliased.end();
+                return var && aliased.find(var->declarationId()) != aliased.end();
                 })) {
                     if (settings->debugwarnings)
                         bailout(tokenlist,

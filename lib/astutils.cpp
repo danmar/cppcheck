@@ -137,6 +137,11 @@ bool astIsPointer(const Token *tok)
     return tok && tok->valueType() && tok->valueType()->pointer;
 }
 
+bool astIsSmartPointer(const Token *tok)
+{
+    return tok && tok->valueType() && tok->valueType()->smartPointerTypeToken;
+}
+
 bool astIsIterator(const Token *tok)
 {
     return tok && tok->valueType() && tok->valueType()->type == ValueType::Type::ITERATOR;
@@ -334,7 +339,7 @@ bool isAliased(const Variable *var)
     return isAliased(start, var->scope()->bodyEnd, var->declarationId());
 }
 
-static bool exprDependsOnThis(const Token *expr, nonneg int depth)
+bool exprDependsOnThis(const Token *expr, nonneg int depth)
 {
     if (!expr)
         return false;
@@ -352,7 +357,12 @@ static bool exprDependsOnThis(const Token *expr, nonneg int depth)
             nestedIn = nestedIn->nestedIn;
         }
         return nestedIn == expr->function()->nestedIn;
+    } else if (Token::Match(expr, "%var%") && expr->variable()) {
+        const Variable* var = expr->variable();
+        return (var->isPrivate() || var->isPublic() || var->isProtected());
     }
+    if (Token::simpleMatch(expr, "."))
+        return exprDependsOnThis(expr->astOperand1(), depth);
     return exprDependsOnThis(expr->astOperand1(), depth) || exprDependsOnThis(expr->astOperand2(), depth);
 }
 
@@ -380,7 +390,7 @@ static const Token * followVariableExpression(const Token * tok, bool cpp, const
     if (!varTok)
         return tok;
     // Bailout. If variable value depends on value of "this".
-    if (exprDependsOnThis(varTok, 0))
+    if (exprDependsOnThis(varTok))
         return tok;
     // Skip array access
     if (Token::simpleMatch(varTok, "["))
@@ -1742,10 +1752,10 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
         if (exprVarIds.find(tok->varId()) != exprVarIds.end()) {
             const Token *parent = tok;
             bool other = false;
-            bool same = tok->astParent() && isSameExpression(mCpp, false, expr, tok, mLibrary, false, false, nullptr);
-            while (!same && Token::Match(parent->astParent(), "*|.|::|[|%cop%")) {
+            bool same = tok->astParent() && isSameExpression(mCpp, false, expr, tok, mLibrary, true, false, nullptr);
+            while (!same && Token::Match(parent->astParent(), "*|.|::|[|(|%cop%")) {
                 parent = parent->astParent();
-                if (parent && isSameExpression(mCpp, false, expr, parent, mLibrary, false, false, nullptr)) {
+                if (parent && isSameExpression(mCpp, false, expr, parent, mLibrary, true, false, nullptr)) {
                     same = true;
                     if (mWhat == What::ValueFlow) {
                         KnownAndToken v;
