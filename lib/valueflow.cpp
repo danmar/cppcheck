@@ -1937,7 +1937,7 @@ static void valueFlowReverse(TokenList *tokenlist,
                     bailout(tokenlist, errorLogger, tok2, "possible assignment of " + tok2->str() + " by subfunction");
                 break;
             }
-            // Impossible values cant be inconclusive
+            // Impossible values can't be inconclusive
             if (val.isImpossible() || val2.isImpossible())
                 break;
             val.setInconclusive(inconclusive);
@@ -2308,7 +2308,7 @@ static void valueFlowForwardExpression(Token* startToken,
     FwdAnalysis fwdAnalysis(tokenlist->isCPP(), settings->library);
     for (const FwdAnalysis::KnownAndToken read : fwdAnalysis.valueFlow(exprTok, startToken, endToken)) {
         for (const ValueFlow::Value& value : values) {
-            // Dont set inconclusive values
+            // Don't set inconclusive values
             if (value.isInconclusive())
                 continue;
             ValueFlow::Value v = value;
