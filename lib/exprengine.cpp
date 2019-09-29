@@ -1064,6 +1064,12 @@ static void execute(const Token *start, const Token *end, Data &data)
     for (const Token *tok = start; tok != end; tok = tok->next()) {
         if (Token::Match(tok, "[;{}]"))
             data.trackProgramState(tok);
+
+        if (Token::Match(tok, "for|while|switch ("))
+            // TODO this is a bailout
+            return;
+
+        // Variable declaration..
         if (tok->variable() && tok->variable()->nameToken() == tok) {
             if (Token::Match(tok, "%varid% ; %varid% =", tok->varId())) {
                 // if variable is not used in assignment rhs then we do not need to create a "confusing" variable value..
