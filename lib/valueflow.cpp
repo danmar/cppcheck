@@ -1887,9 +1887,9 @@ static void valueFlowReverse(TokenList *tokenlist,
                         setTokenValue(assignTok, val2, settings);
                         values.push_back(val2);
                     }
-                    const Token * startToken = nextAfterAstRightmostLeaf(tok2->next());
-                    const Token * endToken = tok->scope() ? tok->scope()->bodyEnd : tok;
-                    valueFlowForward(const_cast<Token*>(startToken), endToken, assignTok, values, false, false, tokenlist, errorLogger, settings);
+                    const Token * startForwardToken = nextAfterAstRightmostLeaf(tok2->next());
+                    const Token * endForwardToken = tok->scope() ? tok->scope()->bodyEnd : tok;
+                    valueFlowForward(const_cast<Token*>(startForwardToken), endForwardToken, assignTok, values, false, false, tokenlist, errorLogger, settings);
                 }
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "assignment of " + tok2->str());
