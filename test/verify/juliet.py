@@ -8,7 +8,10 @@ import sys
 import subprocess
 
 JULIET_PATH = os.path.expanduser('~/juliet')
-CPPCHECK_PATH = '../../cppcheck'
+if sys.argv[0] in ('test/verify/juliet.py', './test/verify/juliet.py'):
+    CPPCHECK_PATH = './cppcheck'
+else:
+    CPPCHECK_PATH = '../../cppcheck'
 
 def get_files(juliet_path:str, test_cases:str):
     ret = []
@@ -61,5 +64,5 @@ final_report += check('C/testcases/CWE476_*/*.c', 'verificationNullPointerDerefe
 print(final_report)
 
 assert final_report == ('CWE369 ok:456, fail:0\n'
-                        'CWE476 ok:186, fail:84\n')
+                        'CWE476 ok:234, fail:36\n')
 
