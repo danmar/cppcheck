@@ -70,6 +70,13 @@ namespace ExprEngine {
     class Value;
     typedef std::shared_ptr<Value> ValuePtr;
 
+    class DataBase {
+    public:
+        explicit DataBase(const Settings *settings) : settings(settings) {}
+        virtual std::string getNewSymbolName() = 0;
+        const Settings * const settings;
+    };
+
     class Value {
     public:
         Value(const std::string &name, const ValueType type) : name(name), type(type) {}
@@ -159,7 +166,7 @@ namespace ExprEngine {
         const int MAXSIZE = 0x100000;
 
         ArrayValue(const std::string &name, ValuePtr size, ValuePtr value);
-        ArrayValue(const std::string &name, const Variable *var);
+        ArrayValue(DataBase *data, const Variable *var);
 
         std::string getSymbolicExpression() const override;
 
@@ -294,8 +301,8 @@ namespace ExprEngine {
     typedef std::function<void(const Token *, const ExprEngine::Value &)> Callback;
 
     /** Execute all functions */
-    void CPPCHECKLIB executeAllFunctions(const Tokenizer *tokenizer, const Settings *settings, const std::vector<Callback> &callbacks);
-    void executeFunction(const Scope *functionScope, const Tokenizer *tokenizer, const Settings *settings, const std::vector<Callback> &callbacks);
+    void CPPCHECKLIB executeAllFunctions(const Tokenizer *tokenizer, const Settings *settings, const std::vector<Callback> &callbacks, std::ostream &trace);
+    void executeFunction(const Scope *functionScope, const Tokenizer *tokenizer, const Settings *settings, const std::vector<Callback> &callbacks, std::ostream &trace);
 
     void runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings);
 }

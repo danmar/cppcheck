@@ -190,6 +190,8 @@ public:
     /** @brief Enable verification analysis */
     bool verification;
 
+    bool debugVerification;
+
     /** @brief check unknown function return values */
     std::set<std::string> checkUnknownFunctionReturn;
 
