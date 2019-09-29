@@ -329,7 +329,7 @@ static bool isNullablePointer(const Token* tok, const Settings* settings)
     // TODO: Move this logic into ValueType
     if (Token::simpleMatch(tok, "."))
         return isNullablePointer(tok->astOperand2(), settings);
-    if (const Variable *var = tok->variable()) {
+    if (const Variable* var = tok->variable()) {
         return (var->isPointer() || var->isSmartPointer());
     }
     if (Token::Match(tok->previous(), "%name% (")) {
@@ -339,7 +339,6 @@ static bool isNullablePointer(const Token* tok, const Settings* settings)
                 return vt.smartPointerTypeToken || vt.pointer > 0;
             }
         }
-
     }
     return false;
 }

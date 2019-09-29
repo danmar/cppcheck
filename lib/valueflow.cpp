@@ -4436,21 +4436,19 @@ struct ValueFlowConditionHandler {
                 if (exprDependsOnThis(cond.vartok))
                     continue;
                 std::vector<const Variable*> vars = getExprVariables(cond.vartok, tokenlist, symboldatabase, settings);
-                if (std::any_of(vars.begin(), vars.end(), [](const Variable* var) {
-                return !var;
-                }))
-                continue;
-                if (!vars.empty() && (vars.front()))
-                if (std::any_of(vars.begin(), vars.end(), [&](const Variable* var) {
-                return var && aliased.find(var->declarationId()) != aliased.end();
-                })) {
-                    if (settings->debugwarnings)
-                        bailout(tokenlist,
-                                errorLogger,
-                                cond.vartok,
-                                "variable is aliased so we just skip all valueflow after condition");
+                if (std::any_of(vars.begin(), vars.end(), [](const Variable* var) { return !var; }))
                     continue;
-                }
+                if (!vars.empty() && (vars.front()))
+                    if (std::any_of(vars.begin(), vars.end(), [&](const Variable* var) {
+                            return var && aliased.find(var->declarationId()) != aliased.end();
+                        })) {
+                        if (settings->debugwarnings)
+                            bailout(tokenlist,
+                                    errorLogger,
+                                    cond.vartok,
+                                    "variable is aliased so we just skip all valueflow after condition");
+                        continue;
+                    }
 
                 if (Token::Match(tok->astParent(), "%oror%|&&")) {
                     Token *parent = tok->astParent();

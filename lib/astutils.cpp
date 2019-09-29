@@ -137,10 +137,7 @@ bool astIsPointer(const Token *tok)
     return tok && tok->valueType() && tok->valueType()->pointer;
 }
 
-bool astIsSmartPointer(const Token *tok)
-{
-    return tok && tok->valueType() && tok->valueType()->smartPointerTypeToken;
-}
+bool astIsSmartPointer(const Token* tok) { return tok && tok->valueType() && tok->valueType()->smartPointerTypeToken; }
 
 bool astIsIterator(const Token *tok)
 {
@@ -339,7 +336,7 @@ bool isAliased(const Variable *var)
     return isAliased(start, var->scope()->bodyEnd, var->declarationId());
 }
 
-bool exprDependsOnThis(const Token *expr, nonneg int depth)
+bool exprDependsOnThis(const Token* expr, nonneg int depth)
 {
     if (!expr)
         return false;

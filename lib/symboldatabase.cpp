@@ -5325,7 +5325,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             }
             continue;
         } else if (settings->library.isSmartPointer(type)) {
-            const Token * argTok = Token::findsimplematch(type, "<");
+            const Token* argTok = Token::findsimplematch(type, "<");
             if (!argTok)
                 continue;
             valuetype->smartPointerTypeToken = argTok->next();
