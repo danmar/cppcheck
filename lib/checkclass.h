@@ -79,6 +79,7 @@ public:
         checkClass.checkCopyCtorAndEqOperator();
         checkClass.checkOverride();
         checkClass.checkUnsafeClassRefMember();
+        checkClass.checkAccessModifierVirtualFunctions();
     }
 
     /** @brief %Check that all class constructors are ok */
@@ -146,6 +147,8 @@ public:
     /** @brief Unsafe class check - const reference member */
     void checkUnsafeClassRefMember();
 
+    /** @brief Check that virtuial function has not least access in derived class */
+    void checkAccessModifierVirtualFunctions();
 private:
     const SymbolDatabase *mSymbolDatabase;
 

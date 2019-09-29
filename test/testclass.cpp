@@ -221,6 +221,8 @@ private:
         TEST_CASE(overrideCVRefQualifiers);
 
         TEST_CASE(unsafeClassRefMember);
+
+        TEST_CASE(accessModifierVirtualFunctions);
     }
 
     void checkCopyCtorAndEqOperator(const char code[]) {
@@ -7143,6 +7145,32 @@ private:
 
         checkOverride("class Base { virtual void f(); };\n"
                       "class Derived : Base { void f() &&; }");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkAccessModifierVirtualFunctions(const char code[]) {
+        // Clear the error log
+        errout.str("");
+        Settings settings;
+        settings.addEnabled("style");
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Check..
+        CheckClass checkClass(&tokenizer, &settings, this);
+        checkClass.checkAccessModifierVirtualFunctions();
+    }
+
+    void accessModifierVirtualFunctions() {
+        checkAccessModifierVirtualFunctions("struct Base { virtual void f(); };\n"
+                                            "struct Derived : Base { private: virtual void f(); };");
+        ASSERT_EQUALS("[test.cpp:2]: (style) The function 'f' has more narrow access modifier in a derived class. It could violate a LSP principle.\n", errout.str());
+
+        checkAccessModifierVirtualFunctions("struct Base { virtual void f(); };\n"
+                                            "struct Derived : Base { virtual void f(); };");
         ASSERT_EQUALS("", errout.str());
     }
 
