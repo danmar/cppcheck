@@ -1879,7 +1879,7 @@ static void valueFlowReverse(TokenList *tokenlist,
                 break;
             // bailout: assignment
             if (Token::Match(tok2->previous(), "!!* %name% =")) {
-                Token * assignTok = const_cast<Token*>(tok2->next()->astOperand2());
+                Token* assignTok = const_cast<Token*>(tok2->next()->astOperand2());
                 if (!assignTok->hasKnownValue()) {
                     std::list<ValueFlow::Value> values = {val};
                     setTokenValue(assignTok, val, settings);
@@ -1887,9 +1887,17 @@ static void valueFlowReverse(TokenList *tokenlist,
                         setTokenValue(assignTok, val2, settings);
                         values.push_back(val2);
                     }
-                    const Token * startForwardToken = nextAfterAstRightmostLeaf(tok2->next());
-                    const Token * endForwardToken = tok->scope() ? tok->scope()->bodyEnd : tok;
-                    valueFlowForward(const_cast<Token*>(startForwardToken), endForwardToken, assignTok, values, false, false, tokenlist, errorLogger, settings);
+                    const Token* startForwardToken = nextAfterAstRightmostLeaf(tok2->next());
+                    const Token* endForwardToken = tok->scope() ? tok->scope()->bodyEnd : tok;
+                    valueFlowForward(const_cast<Token*>(startForwardToken),
+                                     endForwardToken,
+                                     assignTok,
+                                     values,
+                                     false,
+                                     false,
+                                     tokenlist,
+                                     errorLogger,
+                                     settings);
                 }
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "assignment of " + tok2->str());
@@ -2088,7 +2096,7 @@ static void valueFlowReverse(TokenList *tokenlist,
 
 static bool isConditionKnown(const Token* tok, bool then)
 {
-    const char * op = "||";
+    const char* op = "||";
     if (then)
         op = "&&";
     const Token* parent = tok->astParent();
