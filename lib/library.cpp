@@ -513,6 +513,22 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             if (!name)
                 return Error(MISSING_ATTRIBUTE, "name");
             PodType podType = {0};
+            podType.stdtype = PodType::NO;
+            const char * const stdtype = node->Attribute("stdtype");
+            if (stdtype) {
+                if (std::strcmp(stdtype, "bool") == 0)
+                    podType.stdtype = PodType::BOOL;
+                else if (std::strcmp(stdtype, "char") == 0)
+                    podType.stdtype = PodType::CHAR;
+                else if (std::strcmp(stdtype, "short") == 0)
+                    podType.stdtype = PodType::SHORT;
+                else if (std::strcmp(stdtype, "int") == 0)
+                    podType.stdtype = PodType::INT;
+                else if (std::strcmp(stdtype, "long") == 0)
+                    podType.stdtype = PodType::LONG;
+                else if (std::strcmp(stdtype, "long long") == 0)
+                    podType.stdtype = PodType::LONGLONG;
+            }
             const char * const size = node->Attribute("size");
             if (size)
                 podType.size = atoi(size);

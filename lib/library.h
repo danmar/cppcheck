@@ -412,6 +412,7 @@ public:
     struct PodType {
         unsigned int   size;
         char           sign;
+        enum { NO, BOOL, CHAR, SHORT, INT, LONG, LONGLONG } stdtype;
     };
     const struct PodType *podtype(const std::string &name) const {
         const std::map<std::string, struct PodType>::const_iterator it = mPodTypes.find(name);

@@ -443,6 +443,18 @@
       <element name="podtype">
         <attribute name="name"><ref name="DATA-EXTNAME"/></attribute>
         <optional>
+          <attribute name="stdtype">
+            <choice>
+              <value>bool</value>
+              <value>char</value>
+              <value>short</value>
+              <value>int</value>
+              <value>long</value>
+              <value>long long</value>
+            </choice>
+          </attribute>
+        </optional>
+        <optional>
           <attribute name="size">
             <choice>
               <value>1</value>
