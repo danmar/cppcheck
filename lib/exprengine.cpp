@@ -412,6 +412,13 @@ ExprEngine::ConditionalValue::Vector ExprEngine::ArrayValue::read(ExprEngine::Va
             ret.push_back(std::pair<ValuePtr,ValuePtr>(indexAndValue.index, std::make_shared<ExprEngine::IntRange>("", cmin, cmax)));
             continue;
         }
+
+        // Rename IntRange
+        if (auto i = std::dynamic_pointer_cast<ExprEngine::IntRange>(indexAndValue.value)) {
+            ret.push_back(std::pair<ValuePtr,ValuePtr>(indexAndValue.index, std::make_shared<ExprEngine::IntRange>(indexAndValue.value->name + ":" + index->name, i->minValue, i->maxValue)));
+            continue;
+        }
+
         ret.push_back(std::pair<ValuePtr,ValuePtr>(indexAndValue.index, indexAndValue.value));
     }
 
@@ -874,6 +881,8 @@ static ExprEngine::ValuePtr executeArrayIndex(const Token *tok, Data &data)
         auto conditionalValues = arrayValue->read(indexValue);
         for (auto value: conditionalValues)
             call(data.callbacks, tok, value.second);
+        if (conditionalValues.size() == 1 && !conditionalValues[0].first)
+            return conditionalValues[0].second;
         return std::make_shared<ExprEngine::ConditionalValue>(data.getNewSymbolName(), conditionalValues);
     }
 
