@@ -66,6 +66,9 @@ private:
         TEST_CASE(localArrayInit2);
         TEST_CASE(localArrayUninit);
 
+        TEST_CASE(pointer1);
+        TEST_CASE(pointer2);
+
         TEST_CASE(pointerAlias1);
         TEST_CASE(pointerAlias2);
         TEST_CASE(pointerAlias3);
@@ -212,6 +215,14 @@ private:
 
     void localArrayUninit() {
         ASSERT_EQUALS("?", getRange("int f() { int arr[10]; return arr[4]; }", "arr[4]"));
+    }
+
+    void pointer1() {
+        ASSERT_EQUALS("?", getRange("int f() { int *x; x = x; }", "x=x"));
+    }
+
+    void pointer2() {
+        ASSERT_EQUALS("?", getRange("int f() { sometype *x; x = x; }", "x=x"));
     }
 
     void pointerAlias1() {

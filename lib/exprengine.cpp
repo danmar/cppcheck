@@ -912,8 +912,20 @@ static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
     if (!tok->astOperand1() || !tok->astOperand1()->varId())
         return ExprEngine::ValuePtr();
     std::shared_ptr<ExprEngine::StructValue> structValue = std::dynamic_pointer_cast<ExprEngine::StructValue>(data.getValue(tok->astOperand1()->varId(), nullptr, nullptr));
-    if (!structValue)
-        return ExprEngine::ValuePtr();
+    if (!structValue) {
+        if (tok->originalName() == "->") {
+            std::shared_ptr<ExprEngine::PointerValue> pointerValue = std::dynamic_pointer_cast<ExprEngine::PointerValue>(data.getValue(tok->astOperand1()->varId(), nullptr, nullptr));
+            if (pointerValue) {
+                call(data.callbacks, tok->astOperand1(), pointerValue);
+                structValue = std::dynamic_pointer_cast<ExprEngine::StructValue>(pointerValue->data);
+            } else {
+                call(data.callbacks, tok->astOperand1(), data.getValue(tok->astOperand1()->varId(), nullptr, nullptr));
+            }
+        }
+        if (!structValue)
+            return ExprEngine::ValuePtr();
+    }
+    call(data.callbacks, tok->astOperand1(), structValue);
     return structValue->getValueOfMember(tok->astOperand2()->str());
 }
 
@@ -1045,8 +1057,19 @@ static void execute(const Token *start, const Token *end, Data &data)
             data.trackProgramState(tok);
         if (tok->variable() && tok->variable()->nameToken() == tok) {
             if (Token::Match(tok, "%varid% ; %varid% =", tok->varId())) {
-                tok = tok->tokAt(2);
-                continue;
+                // if variable is not used in assignment rhs then we do not need to create a "confusing" variable value..
+                bool foundInRhs = false;
+                visitAstNodes(tok->tokAt(3)->astOperand2(), [&](const Token *rhs) {
+                    if (rhs->varId()==tok->varId()) {
+                        foundInRhs = true;
+                        return ChildrenToVisit::done;
+                    }
+                    return ChildrenToVisit::op1_and_op2;
+                });
+                if (!foundInRhs) {
+                    tok = tok->tokAt(2);
+                    continue;
+                }
             }
             if (tok->variable()->isArray()) {
                 data.assignValue(tok, tok->varId(), std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), tok->variable()));
@@ -1127,10 +1150,16 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
     const ValueType *valueType = var.valueType();
     if (!valueType || valueType->type == ValueType::Type::UNKNOWN_TYPE)
         valueType = var.nameToken()->valueType();
-    if (!valueType || valueType->type == ValueType::Type::UNKNOWN_TYPE)
+    if (!valueType || valueType->type == ValueType::Type::UNKNOWN_TYPE) {
+        // variable with unknown type
+        if (var.isLocal() && var.isPointer() && !var.isArray())
+            return std::make_shared<ExprEngine::UninitValue>();
         return ExprEngine::ValuePtr();
+    }
 
     if (valueType->pointer > 0) {
+        if (var.isLocal())
+            return std::make_shared<ExprEngine::UninitValue>();
         ValueType vt(*valueType);
         vt.pointer = 0;
         auto range = getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings);
@@ -1200,6 +1229,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
         bool deref = false;
         deref |= tok->astParent()->isUnaryOp("*");
         deref |= Token::simpleMatch(tok->astParent(), "[");
+        deref |= Token::simpleMatch(tok->astParent(), ".") && tok == tok->astParent()->astOperand1();
         if (!deref)
             return;
 
