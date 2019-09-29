@@ -192,6 +192,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             // Experimental: Verify
             else if (std::strcmp(argv[i], "--verify") == 0)
                 mSettings->verification = true;
+            else if (std::strcmp(argv[i], "--debug-verify") == 0)
+                mSettings->debugVerification = true;
 
             // Enforce language (--language=, -x)
             else if (std::strncmp(argv[i], "--language=", 11) == 0 || std::strcmp(argv[i], "-x") == 0) {

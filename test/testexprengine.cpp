@@ -44,27 +44,27 @@ private:
         TEST_CASE(exprAssign1);
         TEST_CASE(exprAssign2); // Truncation
 
+        TEST_CASE(if1);
+        TEST_CASE(if2);
+        TEST_CASE(if3);
+        TEST_CASE(if4);
+        TEST_CASE(if5);
+        TEST_CASE(ifelse1);
+
+        TEST_CASE(array1);
+        TEST_CASE(array2);
+        TEST_CASE(array3);
+        TEST_CASE(array4);
+        TEST_CASE(arrayInit1);
+        TEST_CASE(arrayInit2);
+        TEST_CASE(arrayUninit);
+
         TEST_CASE(floatValue1);
         TEST_CASE(floatValue2);
 
         TEST_CASE(functionCall1);
         TEST_CASE(functionCall2);
         TEST_CASE(functionCall3);
-
-        TEST_CASE(if1);
-        TEST_CASE(if2);
-        TEST_CASE(if3);
-        TEST_CASE(if4);
-        TEST_CASE(if5);
-
-        TEST_CASE(ifelse1);
-
-        TEST_CASE(localArray1);
-        TEST_CASE(localArray2);
-        TEST_CASE(localArray3);
-        TEST_CASE(localArrayInit1);
-        TEST_CASE(localArrayInit2);
-        TEST_CASE(localArrayUninit);
 
         TEST_CASE(pointer1);
         TEST_CASE(pointer2);
@@ -93,8 +93,23 @@ private:
         };
         std::vector<ExprEngine::Callback> callbacks;
         callbacks.push_back(f);
-        ExprEngine::executeAllFunctions(&tokenizer, &settings, callbacks);
+        std::ostringstream dummy;
+        ExprEngine::executeAllFunctions(&tokenizer, &settings, callbacks, dummy);
         return ret;
+    }
+
+    std::string trackExecution(const char code[]) {
+        Settings settings;
+        settings.debugVerification = true;
+        settings.platform(cppcheck::Platform::Unix64);
+        settings.library.smartPointers.insert("std::shared_ptr");
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        std::vector<ExprEngine::Callback> dummy;
+        std::ostringstream ret;
+        ExprEngine::executeAllFunctions(&tokenizer, &settings, dummy, ret);
+        return ret.str();
     }
 
     void argPointer() {
@@ -142,32 +157,6 @@ private:
         ASSERT_EQUALS("2", getRange("void f(unsigned char x) { x = 258; int a = x }", "a=x"));
     }
 
-    void floatValue1() {
-        ASSERT_EQUALS(std::to_string(std::numeric_limits<float>::min()) + ":" + std::to_string(std::numeric_limits<float>::max()), getRange("float f; void func() { f=f; }", "f=f"));
-    }
-
-    void floatValue2() {
-        ASSERT_EQUALS("14.500000", getRange("void func() { float f = 29.0; f = f / 2.0; }", "f/2.0"));
-    }
-
-    void functionCall1() {
-        ASSERT_EQUALS("-2147483648:2147483647", getRange("int atoi(const char *p); void f() { int x = atoi(a); x = x; }", "x=x"));
-    }
-
-    void functionCall2() {
-        const char code[] = "namespace NS {\n"
-                            "    short getValue();\n"
-                            "}"
-                            "void f() {\n"
-                            "    short value = NS::getValue();\n"
-                            "    value = value;\n"
-                            "}";
-        ASSERT_EQUALS("-32768:32767", getRange(code, "value=value"));
-    }
-
-    void functionCall3() {
-        ASSERT_EQUALS("-2147483648:2147483647", getRange("int fgets(int, const char *, void *); void f() { int x = -1; fgets(stdin, \"%d\", &x); x=x; }", "x=x"));
-    }
 
     void if1() {
         ASSERT_EQUALS("7:32768", getRange("inf f(short x) { if (x > 5) a = x + 1; }", "x+1"));
@@ -193,28 +182,64 @@ private:
         ASSERT_EQUALS("-32767:6", getRange("inf f(short x) { if (x > 5) ; else a = x + 1; }", "x+1"));
     }
 
-    void localArray1() {
+
+    void array1() {
         ASSERT_EQUALS("5", getRange("inf f() { int arr[10]; arr[4] = 5; return arr[4]; }", "arr[4]"));
     }
 
-    void localArray2() {
+    void array2() {
         ASSERT_EQUALS("0:255", getRange("void dostuff(unsigned char *); int f() { unsigned char arr[10] = \"\"; dostuff(arr); return arr[4]; }", "arr[4]"));
     }
 
-    void localArray3() {
+    void array3() {
         ASSERT_EQUALS("?,43", getRange("int f(unsigned char x) { int arr[10]; arr[4] = 43; int vx = arr[x]; }", "arr[x]"));
     }
 
-    void localArrayInit1() {
+    void array4() {
+        const char code[] = "int buf[10];\n"
+                            "void f() { int x = buf[0]; }";
+        ASSERT_EQUALS("2:20: $2=-2147483648:2147483647\n"
+                      "2:26: { buf=($1,size=10,[:]=$2) x=($3,{{(null),$2}})}\n",
+                      trackExecution(code));
+    }
+
+    void arrayInit1() {
         ASSERT_EQUALS("0", getRange("inf f() { char arr[10] = \"\"; return arr[4]; }", "arr[4]"));
     }
 
-    void localArrayInit2() {
+    void arrayInit2() {
         ASSERT_EQUALS("66", getRange("void f() { char str[] = \"hello\"; str[0] = \'B\'; }", "str[0]=\'B\'"));
     }
 
-    void localArrayUninit() {
+    void arrayUninit() {
         ASSERT_EQUALS("?", getRange("int f() { int arr[10]; return arr[4]; }", "arr[4]"));
+    }
+
+    void floatValue1() {
+        ASSERT_EQUALS(std::to_string(std::numeric_limits<float>::min()) + ":" + std::to_string(std::numeric_limits<float>::max()), getRange("float f; void func() { f=f; }", "f=f"));
+    }
+
+    void floatValue2() {
+        ASSERT_EQUALS("14.500000", getRange("void func() { float f = 29.0; f = f / 2.0; }", "f/2.0"));
+    }
+
+    void functionCall1() {
+        ASSERT_EQUALS("-2147483648:2147483647", getRange("int atoi(const char *p); void f() { int x = atoi(a); x = x; }", "x=x"));
+    }
+
+    void functionCall2() {
+        const char code[] = "namespace NS {\n"
+                            "    short getValue();\n"
+                            "}"
+                            "void f() {\n"
+                            "    short value = NS::getValue();\n"
+                            "    value = value;\n"
+                            "}";
+        ASSERT_EQUALS("-32768:32767", getRange(code, "value=value"));
+    }
+
+    void functionCall3() {
+        ASSERT_EQUALS("-2147483648:2147483647", getRange("int fgets(int, const char *, void *); void f() { int x = -1; fgets(stdin, \"%d\", &x); x=x; }", "x=x"));
     }
 
     void pointer1() {

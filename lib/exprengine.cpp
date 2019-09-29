@@ -78,7 +78,7 @@ namespace {
             map[tok].push_back(s);
         }
 
-        void print() {
+        void print(std::ostream &out) {
             std::set<std::pair<int,int>> locations;
             for (auto it : map) {
                 locations.insert(std::pair<int,int>(it.first->linenr(), it.first->column()));
@@ -94,7 +94,7 @@ namespace {
                         continue;
                     const std::vector<std::string> &dumps = it.second;
                     for (const std::string &dump : dumps)
-                        std::cout << lineNumber << ":" << column << ": " << dump << "\n";
+                        out << lineNumber << ":" << column << ": " << dump << "\n";
                 }
             }
         }
@@ -103,12 +103,12 @@ namespace {
         std::set<std::string> mSymbols;
     };
 
-    class Data {
+    class Data : public ExprEngine::DataBase {
     public:
         Data(int *symbolValueIndex, const Tokenizer *tokenizer, const Settings *settings, const std::vector<ExprEngine::Callback> &callbacks, TrackExecution *trackExecution)
-            : symbolValueIndex(symbolValueIndex)
+            : DataBase(settings)
+            , symbolValueIndex(symbolValueIndex)
             , tokenizer(tokenizer)
-            , settings(settings)
             , callbacks(callbacks)
             , mTrackExecution(trackExecution)
             , mDataIndex(trackExecution->getNewDataIndex()) {}
@@ -116,7 +116,6 @@ namespace {
         Memory memory;
         int * const symbolValueIndex;
         const Tokenizer * const tokenizer;
-        const Settings * const settings;
         const std::vector<ExprEngine::Callback> &callbacks;
 
         void assignValue(const Token *tok, unsigned int varId, ExprEngine::ValuePtr value) {
@@ -196,7 +195,7 @@ namespace {
             return ret;
         }
 
-        std::string getNewSymbolName() {
+        std::string getNewSymbolName() override {
             return "$" + std::to_string(++(*symbolValueIndex));
         }
 
@@ -206,8 +205,8 @@ namespace {
                 return std::dynamic_pointer_cast<ExprEngine::ArrayValue>(it->second);
             if (tok->varId() == 0)
                 return std::shared_ptr<ExprEngine::ArrayValue>();
-            auto val = std::make_shared<ExprEngine::ArrayValue>(getNewSymbolName(), tok->variable());
-            memory[tok->varId()] = val;
+            auto val = std::make_shared<ExprEngine::ArrayValue>(this, tok->variable());
+            assignValue(tok, tok->varId(), val);
             return val;
         }
 
@@ -316,8 +315,8 @@ ExprEngine::ArrayValue::ArrayValue(const std::string &name, ExprEngine::ValuePtr
     assign(ExprEngine::ValuePtr(), value);
 }
 
-ExprEngine::ArrayValue::ArrayValue(const std::string &name, const Variable *var)
-    : Value(name, ExprEngine::ValueType::ArrayValue)
+ExprEngine::ArrayValue::ArrayValue(DataBase *data, const Variable *var)
+    : Value(data->getNewSymbolName(), ExprEngine::ValueType::ArrayValue)
 {
     if (var) {
         int sz = 1;
@@ -331,7 +330,17 @@ ExprEngine::ArrayValue::ArrayValue(const std::string &name, const Variable *var)
         if (sz >= 1)
             size = std::make_shared<ExprEngine::IntRange>(std::to_string(sz), sz, sz);
     }
-    assign(ExprEngine::ValuePtr(), std::make_shared<ExprEngine::UninitValue>());
+    ValuePtr val;
+    if (!var->isGlobal() && !var->isStatic())
+        val = std::make_shared<ExprEngine::UninitValue>();
+    else {
+        if (var->valueType()) {
+            ::ValueType vt(*var->valueType());
+            vt.pointer = 0;
+            val = getValueRangeFromValueType(data->getNewSymbolName(), &vt, *data->settings);
+        }
+    }
+    assign(ExprEngine::ValuePtr(), val);
 }
 
 void ExprEngine::ArrayValue::assign(ExprEngine::ValuePtr index, ExprEngine::ValuePtr value)
@@ -1072,7 +1081,7 @@ static void execute(const Token *start, const Token *end, Data &data)
                 }
             }
             if (tok->variable()->isArray()) {
-                data.assignValue(tok, tok->varId(), std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), tok->variable()));
+                data.assignValue(tok, tok->varId(), std::make_shared<ExprEngine::ArrayValue>(&data, tok->variable()));
                 if (Token::Match(tok, "%name% ["))
                     tok = tok->linkAt(1);
             } else if (Token::Match(tok, "%var% ;"))
@@ -1105,12 +1114,12 @@ static void execute(const Token *start, const Token *end, Data &data)
     }
 }
 
-void ExprEngine::executeAllFunctions(const Tokenizer *tokenizer, const Settings *settings, const std::vector<ExprEngine::Callback> &callbacks)
+void ExprEngine::executeAllFunctions(const Tokenizer *tokenizer, const Settings *settings, const std::vector<ExprEngine::Callback> &callbacks, std::ostream &trace)
 {
     const SymbolDatabase *symbolDatabase = tokenizer->getSymbolDatabase();
     for (const Scope *functionScope : symbolDatabase->functionScopes) {
         try {
-            executeFunction(functionScope, tokenizer, settings, callbacks);
+            executeFunction(functionScope, tokenizer, settings, callbacks, trace);
         } catch (const std::exception &e) {
             // FIXME.. there should not be exceptions
             std::string functionName = functionScope->function->name();
@@ -1166,7 +1175,7 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
         return std::make_shared<ExprEngine::PointerValue>(data.getNewSymbolName(), range, true, true);
     }
     if (var.isArray())
-        return std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), &var);
+        return std::make_shared<ExprEngine::ArrayValue>(&data, &var);
     if (valueType->isIntegral())
         return getValueRangeFromValueType(data.getNewSymbolName(), valueType, *data.settings);
     if (valueType->type == ValueType::Type::RECORD)
@@ -1183,7 +1192,7 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
     return ExprEngine::ValuePtr();
 }
 
-void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *tokenizer, const Settings *settings, const std::vector<ExprEngine::Callback> &callbacks)
+void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *tokenizer, const Settings *settings, const std::vector<ExprEngine::Callback> &callbacks, std::ostream &trace)
 {
     if (!functionScope->bodyStart)
         return;
@@ -1203,9 +1212,9 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
 
     execute(functionScope->bodyStart, functionScope->bodyEnd, data);
 
-    if (settings->verification) {
+    if (settings->debugVerification) {
         // TODO generate better output!!
-        trackExecution.print();
+        trackExecution.print(trace);
     }
 }
 
@@ -1291,5 +1300,5 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
 #ifdef VERIFY_INTEGEROVERFLOW
     callbacks.push_back(integerOverflow);
 #endif
-    ExprEngine::executeAllFunctions(tokenizer, settings, callbacks);
+    ExprEngine::executeAllFunctions(tokenizer, settings, callbacks, std::cout);
 }
