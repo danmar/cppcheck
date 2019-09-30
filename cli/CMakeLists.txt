@@ -20,7 +20,7 @@ if (WIN32 AND NOT BORLAND)
 endif()
 
 install(TARGETS cppcheck
-    RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR}
+    RUNTIME DESTINATION bin/cppcheck
     COMPONENT applications)
 
 install(FILES ${addons}
