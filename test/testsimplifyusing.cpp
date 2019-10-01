@@ -65,6 +65,7 @@ private:
         TEST_CASE(simplifyUsing9040);
         TEST_CASE(simplifyUsing9042);
         TEST_CASE(simplifyUsing9191);
+        TEST_CASE(simplifyUsing9381);
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
@@ -519,6 +520,30 @@ private:
                            "void f2 ( ) { "
                            "using namespace NS1 :: NS2 ; "
                            "signed long long A ; "
+                           "}";
+
+        ASSERT_EQUALS(exp, tok(code, false));
+    }
+
+    void simplifyUsing9381() {
+        const char code[] = "namespace ns {\n"
+                            "    class Result;\n"
+                            "    using UniqueResultPtr = std::unique_ptr<Result>;\n"
+                            "    class A {\n"
+                            "    public:\n"
+                            "        void func(UniqueResultPtr);\n"
+                            "    };\n"
+                            "    void A::func(UniqueResultPtr) {\n"
+                            "    }\n"
+                            "}";
+        const char exp[] = "namespace ns { "
+                           "class Result ; "
+                           "class A { "
+                           "public: "
+                           "void func ( std :: unique_ptr < Result > ) ; "
+                           "} ; "
+                           "void A :: func ( std :: unique_ptr < Result > ) { "
+                           "} "
                            "}";
 
         ASSERT_EQUALS(exp, tok(code, false));
