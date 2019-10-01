@@ -31,10 +31,11 @@ ADD_SUBDIRECTORY(tools/triage)   # Triage tool
 
 include(cmake/printInfo.cmake REQUIRED)
 
+if (ENABLE_PACKAGING)
 include(cmake/PkgInfo.cmake )
 set(CPACK_PACKAGE_CONTACT "${PKG_USERNAME}")
 set(CPACK_PACKAGE_VERSION "${VERSION}")
 
 include(CPack)
 cpack_add_component(cppcheck)
-
+endif()
