@@ -4233,13 +4233,24 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
 
     // find all the possible functions that could match
     const std::size_t args = arguments.size();
-    for (std::multimap<std::string, const Function *>::const_iterator it = functionMap.find(tok->str()); it != functionMap.cend() && it->first == tok->str(); ++it) {
-        const Function *func = it->second;
-        if (args == func->argCount() ||
-            (func->isVariadic() && args >= (func->argCount() - 1)) ||
-            (args < func->argCount() && args >= func->minArgCount())) {
-            matches.push_back(func);
+
+    auto addMatchingFunctions = [&](const Scope *scope) {
+        for (std::multimap<std::string, const Function *>::const_iterator it = scope->functionMap.find(tok->str()); it != scope->functionMap.cend() && it->first == tok->str(); ++it) {
+            const Function *func = it->second;
+            if (args == func->argCount() ||
+                (func->isVariadic() && args >= (func->argCount() - 1)) ||
+                (args < func->argCount() && args >= func->minArgCount())) {
+                matches.push_back(func);
+            }
         }
+    };
+
+    addMatchingFunctions(this);
+
+    // check in anonumous namespaces
+    for (const Scope *nestedScope : nestedList) {
+        if (nestedScope->type == eNamespace && nestedScope->className.empty())
+            addMatchingFunctions(nestedScope);
     }
 
     // check in base classes

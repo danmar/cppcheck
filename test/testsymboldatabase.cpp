@@ -344,6 +344,7 @@ private:
         TEST_CASE(findFunction24); // smart pointer
         TEST_CASE(findFunction25); // std::vector<std::shared_ptr<Fred>>
         TEST_CASE(findFunction26); // #8668 - pointer parameter in function call, const pointer function argument
+        TEST_CASE(findFunction27);
         TEST_CASE(findFunctionContainer);
 
         TEST_CASE(valueTypeMatchParameter); // ValueType::matchParameter
@@ -5566,6 +5567,14 @@ private:
         ASSERT(dostuff1->function());
         ASSERT(dostuff1->function() && dostuff1->function()->token);
         ASSERT(dostuff1->function() && dostuff1->function()->token && dostuff1->function()->token->linenr() == 1);
+    }
+
+    void findFunction27() {
+        GET_SYMBOL_DB("namespace { void a(int); }\n"
+                      "void f() { a(9); }");
+        const Token *a = Token::findmatch(tokenizer.tokens(), "a ( 9 )");
+        ASSERT(a);
+        ASSERT(a->function());
     }
 
     void findFunctionContainer() {
