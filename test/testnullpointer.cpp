@@ -1478,8 +1478,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void nullpointer39()
-    {
+    void nullpointer39() {
         check("struct A { int * x; };\n"
               "void f(struct A *a) {\n"
               "    if (a->x == NULL) {}\n"
@@ -1490,8 +1489,7 @@ private:
             errout.str());
     }
 
-    void nullpointer40()
-    {
+    void nullpointer40() {
         check("struct A { std::unique_ptr<int> x; };\n"
               "void f(struct A *a) {\n"
               "    if (a->x == nullptr) {}\n"
@@ -1502,8 +1500,7 @@ private:
             errout.str());
     }
 
-    void nullpointer41()
-    {
+    void nullpointer41() {
         check("struct A { int * g() const; };\n"
               "void f(struct A *a) {\n"
               "    if (a->g() == nullptr) {}\n"
@@ -1521,8 +1518,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void nullpointer42()
-    {
+    void nullpointer42() {
         check("struct A { std::unique_ptr<int> g() const; };\n"
               "void f(struct A *a) {\n"
               "    if (a->g() == nullptr) {}\n"
