@@ -1611,14 +1611,6 @@ void CheckOther::checkZeroDivision()
             continue;
         if (!tok->valueType() || !tok->valueType()->isIntegral())
             continue;
-        if (tok->astOperand1()->isNumber()) {
-            if (MathLib::isFloat(tok->astOperand1()->str()))
-                continue;
-        } else if (tok->astOperand1()->isName()) {
-            if (!tok->astOperand1()->valueType()->isIntegral())
-                continue;
-        } else if (!tok->astOperand1()->isArithmeticalOp())
-            continue;
 
         // Value flow..
         const ValueFlow::Value *value = tok->astOperand2()->getValue(0LL);
