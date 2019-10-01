@@ -138,7 +138,10 @@ bool astIsPointer(const Token *tok)
     return tok && tok->valueType() && tok->valueType()->pointer;
 }
 
-bool astIsSmartPointer(const Token* tok) { return tok && tok->valueType() && tok->valueType()->smartPointerTypeToken; }
+bool astIsSmartPointer(const Token* tok)
+{
+    return tok && tok->valueType() && tok->valueType()->smartPointerTypeToken;
+}
 
 bool astIsIterator(const Token *tok)
 {
