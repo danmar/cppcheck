@@ -5572,7 +5572,7 @@ private:
     void findFunction27() {
         GET_SYMBOL_DB("namespace { void a(int); }\n"
                       "void f() { a(9); }");
-        const Token *a = Token::findmatch(tokenizer.tokens(), "a ( 9 )");
+        const Token *a = Token::findsimplematch(tokenizer.tokens(), "a ( 9 )");
         ASSERT(a);
         ASSERT(a->function());
     }
