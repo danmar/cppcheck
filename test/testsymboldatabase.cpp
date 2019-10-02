@@ -154,6 +154,7 @@ private:
         TEST_CASE(findVariableType1);
         TEST_CASE(findVariableType2);
         TEST_CASE(findVariableType3);
+        TEST_CASE(findVariableTypeExternC);
 
         TEST_CASE(rangeBasedFor);
 
@@ -346,6 +347,7 @@ private:
         TEST_CASE(findFunction26); // #8668 - pointer parameter in function call, const pointer function argument
         TEST_CASE(findFunction27);
         TEST_CASE(findFunctionContainer);
+        TEST_CASE(findFunctionExternC);
 
         TEST_CASE(valueTypeMatchParameter); // ValueType::matchParameter
 
@@ -946,6 +948,18 @@ private:
         const Variable* avar = Token::findsimplematch(tokenizer.tokens(), "a")->variable();
         ASSERT(avar);
         ASSERT(avar && avar->type() != nullptr);
+    }
+
+    void findVariableTypeExternC() {
+        GET_SYMBOL_DB("extern \"C\" { typedef int INT; }\n"
+                      "void bar() {\n"
+                      "    INT x = 3;\n"
+                      "}");
+        (void)db;
+        const Variable* avar = Token::findsimplematch(tokenizer.tokens(), "x")->variable();
+        ASSERT(avar);
+        ASSERT(avar->valueType() != nullptr);
+        ASSERT(avar->valueType()->str() == "signed int");
     }
 
     void rangeBasedFor() {
@@ -5599,6 +5613,16 @@ private:
             const Token *dostuff = Token::findsimplematch(tokenizer.tokens(), "dostuff ( v ) ;");
             ASSERT(!dostuff->function());
         }
+    }
+
+    void findFunctionExternC() {
+        GET_SYMBOL_DB("extern \"C\" { void foo(int); }\n"
+                      "void bar() {\n"
+                      "    foo(42);\n"
+                      "}");
+        const Token *a = Token::findsimplematch(tokenizer.tokens(), "foo ( 42 )");
+        ASSERT(a);
+        ASSERT(a->function());
     }
 
     void valueTypeMatchParameter() {

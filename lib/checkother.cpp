@@ -1232,6 +1232,10 @@ void CheckOther::checkPassByReference()
         if (var->scope() && var->scope()->function->arg->link()->strAt(-1) == "...")
             continue; // references could not be used as va_start parameters (#5824)
 
+        if ((var->declEndToken() && var->declEndToken()->isExternC()) ||
+            (var->scope() && var->scope()->function && var->scope()->function->tokenDef && var->scope()->function->tokenDef->isExternC()))
+            continue; // references cannot be used in functions in extern "C" blocks
+
         bool inconclusive = false;
 
         if (var->valueType()->type == ValueType::Type::CONTAINER) {
