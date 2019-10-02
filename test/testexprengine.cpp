@@ -32,10 +32,7 @@ public:
 
 private:
     void run() OVERRIDE {
-        TEST_CASE(argPointer);
-        TEST_CASE(argSmartPointer);
-        TEST_CASE(argStruct);
-
+#ifdef USE_Z3
         TEST_CASE(expr1);
         TEST_CASE(expr2);
         TEST_CASE(expr3);
@@ -66,14 +63,39 @@ private:
         TEST_CASE(functionCall2);
         TEST_CASE(functionCall3);
 
-        TEST_CASE(pointer1);
-        TEST_CASE(pointer2);
+        TEST_CASE(int1);
 
+        TEST_CASE(pointer1);
         TEST_CASE(pointerAlias1);
         TEST_CASE(pointerAlias2);
         TEST_CASE(pointerAlias3);
         TEST_CASE(pointerAlias4);
         TEST_CASE(pointerNull1);
+
+        TEST_CASE(structMember);
+#endif
+    }
+
+    std::string expr(const char code[], const std::string &binop) {
+        Settings settings;
+        settings.platform(cppcheck::Platform::Unix64);
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        std::string ret;
+        std::function<void(const Token *, const ExprEngine::Value &)> f = [&](const Token *tok, const ExprEngine::Value &value) {
+            if (tok->str() != binop)
+                return;
+            auto b = dynamic_cast<const ExprEngine::BinOpResult *>(&value);
+            if (!b)
+                return;
+            ret = b->getExpr();
+        };
+        std::vector<ExprEngine::Callback> callbacks;
+        callbacks.push_back(f);
+        std::ostringstream dummy;
+        ExprEngine::executeAllFunctions(&tokenizer, &settings, callbacks, dummy);
+        return ret;
     }
 
     std::string getRange(const char code[], const std::string &str, int linenr = 0) {
@@ -112,45 +134,28 @@ private:
         return ret.str();
     }
 
-    void argPointer() {
-        ASSERT_EQUALS("->$1,null,->?", getRange("void f(unsigned char *p) { a = *p; }", "p"));
-    }
-
-    void argSmartPointer() {
-        ASSERT_EQUALS("->{x=$2},null", getRange("struct S { int x; }; void f(std::shared_ptr<S> ptr) { x = ptr; }", "ptr"));
-    }
-
-    void argStruct() {
-        ASSERT_EQUALS("0:510",
-                      getRange("struct S {\n"
-                               "    unsigned char a;\n"
-                               "    unsigned char b;\n"
-                               "};\n"
-                               "void f(struct S s) { return s.a + s.b; }", "s.a+s.b"));
-    }
-
     void expr1() {
         ASSERT_EQUALS("-32768:32767", getRange("void f(short x) { a = x; }", "x"));
     }
 
     void expr2() {
-        ASSERT_EQUALS("-65536:65534", getRange("void f(short x) { a = x + x; }", "x+x"));
+        ASSERT_EQUALS("($1)+($1)", getRange("void f(short x) { a = x + x; }", "x+x"));
     }
 
     void expr3() {
-        ASSERT_EQUALS("-65536:65534", getRange("int f(short x) { int a = x + x; return a; }", "return a"));
+        ASSERT_EQUALS("($1)+($1)", getRange("int f(short x) { int a = x + x; return a; }", "return a"));
     }
 
     void expr4() {
-        ASSERT_EQUALS("0", getRange("int f(short x) { int a = x - x; return a; }", "return a"));
+        ASSERT_EQUALS("($1)-($1)", getRange("int f(short x) { int a = x - x; return a; }", "return a"));
     }
 
     void expr5() {
-        ASSERT_EQUALS("-65536:65534", getRange("void f(short a, short b, short c, short d) { if (a+b<c+d) {} }", "a+b"));
+        ASSERT_EQUALS("($1)+($2)", getRange("void f(short a, short b, short c, short d) { if (a+b<c+d) {} }", "a+b"));
     }
 
     void exprAssign1() {
-        ASSERT_EQUALS("1:256", getRange("void f(unsigned char a) { a += 1; }", "a+=1"));
+        ASSERT_EQUALS("($1)+(1)", getRange("void f(unsigned char a) { a += 1; }", "a+=1"));
     }
 
     void exprAssign2() {
@@ -158,11 +163,11 @@ private:
     }
 
     void if1() {
-        ASSERT_EQUALS("7:32768", getRange("inf f(short x) { if (x > 5) a = x + 1; }", "x+1"));
+        ASSERT_EQUALS("($2)+(1)", getRange("inf f(short x) { if (x > 5) a = x + 1; }", "x+1"));
     }
 
     void if2() {
-        ASSERT_EQUALS("7:32768,-32767:6", getRange("inf f(short x) { if (x > 5) {} a = x + 1; }", "x+1"));
+        ASSERT_EQUALS("($2)+(1),($3)+(1)", getRange("inf f(short x) { if (x > 5) {} a = x + 1; }", "x+1"));
     }
 
     void if3() {
@@ -178,20 +183,27 @@ private:
     }
 
     void ifelse1() {
-        ASSERT_EQUALS("-32767:6", getRange("inf f(short x) { if (x > 5) ; else a = x + 1; }", "x+1"));
+        ASSERT_EQUALS("($3)+(1)", getRange("inf f(short x) { if (x > 5) ; else a = x + 1; }", "x+1"));
     }
 
 
     void array1() {
-        ASSERT_EQUALS("5", getRange("inf f() { int arr[10]; arr[4] = 5; return arr[4]; }", "arr[4]"));
+        ASSERT_EQUALS("(assert (= 5 0))\n",
+                      expr("int f() { int arr[10]; arr[4] = 5; return arr[4]==0; }", "=="));
     }
 
     void array2() {
-        ASSERT_EQUALS("0:255", getRange("void dostuff(unsigned char *); int f() { unsigned char arr[10] = \"\"; dostuff(arr); return arr[4]; }", "arr[4]"));
+        ASSERT_EQUALS("(declare-fun v0 () Int)\n"
+                      "(assert (= v0 365))\n"
+                      "(assert (<= v0 255))\n"
+                      "(assert (>= v0 0))\n",
+                      expr("void dostuff(unsigned char *); int f() { unsigned char arr[10] = \"\"; dostuff(arr); return arr[4] == 365; }", "=="));
     }
 
     void array3() {
-        ASSERT_EQUALS("?,43", getRange("int f(unsigned char x) { int arr[10]; arr[4] = 43; int vx = arr[x]; }", "arr[x]"));
+        const char code[] = "void f(unsigned char x) { int arr[10]; arr[4] = 43; return arr[x] == 12; }";
+        ASSERT_EQUALS("?,43", getRange(code, "arr[x]"));
+        // TODO: ASSERT_EQUALS("", expr(code, "=="));
     }
 
     void array4() {
@@ -215,13 +227,15 @@ private:
         ASSERT_EQUALS("?", getRange("int f() { int arr[10]; return arr[4]; }", "arr[4]"));
     }
 
+
     void floatValue1() {
         ASSERT_EQUALS(std::to_string(std::numeric_limits<float>::min()) + ":" + std::to_string(std::numeric_limits<float>::max()), getRange("float f; void func() { f=f; }", "f=f"));
     }
 
     void floatValue2() {
-        ASSERT_EQUALS("14.500000", getRange("void func() { float f = 29.0; f = f / 2.0; }", "f/2.0"));
+        ASSERT_EQUALS("(29.0)/(2.0)", getRange("void func() { float f = 29.0; f = f / 2.0; }", "f/2.0"));
     }
+
 
     void functionCall1() {
         ASSERT_EQUALS("-2147483648:2147483647", getRange("int atoi(const char *p); void f() { int x = atoi(a); x = x; }", "x=x"));
@@ -242,12 +256,20 @@ private:
         ASSERT_EQUALS("-2147483648:2147483647", getRange("int fgets(int, const char *, void *); void f() { int x = -1; fgets(stdin, \"%d\", &x); x=x; }", "x=x"));
     }
 
-    void pointer1() {
-        ASSERT_EQUALS("?", getRange("int f() { int *x; x = x; }", "x=x"));
+
+    void int1() {
+        ASSERT_EQUALS("(declare-fun v0 () Int)\n"
+                      "(assert (= (+ 2 v0) 3))\n"
+                      "(assert (<= v0 2147483647))\n"
+                      "(assert (>= v0 (- 2147483648)))\n",
+                      expr("void f(int x) { return 2+x==3; }", "=="));
     }
 
-    void pointer2() {
-        ASSERT_EQUALS("?", getRange("int f() { sometype *x; x = x; }", "x=x"));
+
+    void pointer1() {
+        const char code[] = "void f(unsigned char *p) { a = *p; }";
+        ASSERT_EQUALS("->$1,null,->?", getRange(code, "p"));
+        // TODO expr
     }
 
     void pointerAlias1() {
@@ -272,8 +294,25 @@ private:
     }
 
     void pointerNull1() {
-        ASSERT_EQUALS("0", getRange("void f(void *p) { p = NULL; p += 1; }", "p+=1"));
+        ASSERT_EQUALS("1", getRange("void f(void *p) { p = NULL; p += 1; }", "p+=1"));
     }
+
+
+    void structMember() {
+        ASSERT_EQUALS("(declare-fun v1 () Int)\n"
+                      "(declare-fun v0 () Int)\n"
+                      "(assert (= (+ v0 v1) 0))\n"
+                      "(assert (<= v0 255))\n"
+                      "(assert (>= v0 0))\n"
+                      "(assert (<= v1 255))\n"
+                      "(assert (>= v1 0))\n",
+                      expr("struct S {\n"
+                           "    unsigned char a;\n"
+                           "    unsigned char b;\n"
+                           "};\n"
+                           "void f(struct S s) { return s.a + s.b == 0; }", "=="));
+    }
+
 };
 
 REGISTER_TEST(TestExprEngine)

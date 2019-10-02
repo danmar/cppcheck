@@ -230,42 +230,10 @@ namespace ExprEngine {
             , binop(binop)
             , op1(op1)
             , op2(op2) {
-            auto b1 = std::dynamic_pointer_cast<BinOpResult>(op1);
-            if (b1)
-                mLeafs = b1->mLeafs;
-            else
-                mLeafs.insert(op1);
-
-            auto b2 = std::dynamic_pointer_cast<BinOpResult>(op2);
-            if (b2)
-                mLeafs.insert(b2->mLeafs.begin(), b2->mLeafs.end());
-            else
-                mLeafs.insert(op2);
         }
 
-        std::string getRange() const override;
-
-        struct IntOrFloatValue {
-            void setIntValue(int128_t v) {
-                type = INT;
-                intValue = v;
-                floatValue = 0;
-            }
-            void setFloatValue(long double v) {
-                type = FLOAT;
-                intValue = 0;
-                floatValue = v;
-            }
-            enum {INT,FLOAT} type;
-            bool isFloat() const {
-                return type == FLOAT;
-            }
-            int128_t intValue;
-            long double floatValue;
-        };
-
-        void getRange(IntOrFloatValue *minValue, IntOrFloatValue *maxValue) const;
-        bool isIntValueInRange(int value) const override;
+        bool isIntValueInRange(int value) const;
+        std::string getExpr() const;
 
         std::string binop;
         ValuePtr op1;
@@ -276,10 +244,6 @@ namespace ExprEngine {
             std::string name2 = op2 ? op2->name : std::string("null");
             return "(" + name1 + ")" + binop + "(" + name2 + ")";
         }
-
-        IntOrFloatValue evaluate(int test, const std::map<ValuePtr, int> &valueBit) const;
-        IntOrFloatValue evaluateOperand(int test, const std::map<ValuePtr, int> &valueBit, ValuePtr value) const;
-        std::set<ValuePtr> mLeafs;
     };
 
     class IntegerTruncation : public Value {
