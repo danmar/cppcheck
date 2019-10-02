@@ -1855,6 +1855,7 @@ namespace {
         std::string newScope1 = scope1;
 
         // scopes didn't match so try higher scopes
+        index = newScope1.size();
         while (!newScope1.empty()) {
             std::string::size_type separator = newScope1.rfind(" :: ", index - 1);
             if (separator != std::string::npos)
