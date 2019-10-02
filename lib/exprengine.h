@@ -87,7 +87,8 @@ namespace ExprEngine {
         virtual std::string getSymbolicExpression() const {
             return name;
         }
-        virtual bool isIntValueInRange(int value) const {
+        virtual bool isIntValueInRange(DataBase *dataBase, int value) const {
+            (void)dataBase;
             (void)value;
             return false;
         }
@@ -112,7 +113,8 @@ namespace ExprEngine {
                 return str(minValue);
             return str(minValue) + ":" + str(maxValue);
         }
-        bool isIntValueInRange(int value) const override {
+        bool isIntValueInRange(DataBase *dataBase, int value) const override {
+            (void)dataBase;
             return value >= minValue && value <= maxValue;
         }
 
@@ -232,8 +234,8 @@ namespace ExprEngine {
             , op2(op2) {
         }
 
-        bool isIntValueInRange(int value) const;
-        std::string getExpr() const;
+        bool isIntValueInRange(DataBase *dataBase, int value) const;
+        std::string getExpr(DataBase *dataBase) const;
 
         std::string binop;
         ValuePtr op1;
@@ -262,7 +264,7 @@ namespace ExprEngine {
         char sign;
     };
 
-    typedef std::function<void(const Token *, const ExprEngine::Value &)> Callback;
+    typedef std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> Callback;
 
     /** Execute all functions */
     void CPPCHECKLIB executeAllFunctions(const Tokenizer *tokenizer, const Settings *settings, const std::vector<Callback> &callbacks, std::ostream &trace);

@@ -121,6 +121,7 @@ namespace {
         int * const symbolValueIndex;
         const Tokenizer * const tokenizer;
         const std::vector<ExprEngine::Callback> &callbacks;
+        std::vector<ExprEngine::ValuePtr> conditions;
 
         void assignValue(const Token *tok, unsigned int varId, ExprEngine::ValuePtr value) {
             mTrackExecution->symbolRange(tok, value);
@@ -140,63 +141,6 @@ namespace {
         void assignStructMember(const Token *tok, ExprEngine::StructValue *structVal, const std::string &memberName, ExprEngine::ValuePtr value) {
             mTrackExecution->symbolRange(tok, value);
             structVal->member[memberName] = value;
-        }
-
-        std::vector<Data> getData(const Token *cond, bool trueData) {
-            std::vector<Data> ret;
-            ret.push_back(Data(symbolValueIndex, tokenizer, settings, callbacks, mTrackExecution));
-            for (Memory::const_iterator mem = memory.cbegin(); mem != memory.cend(); ++mem) {
-                for (Data &data : ret)
-                    data.memory[mem->first] = mem->second;
-
-                if (cond->isComparisonOp() && cond->astOperand1()->varId() == mem->first && cond->astOperand2()->isNumber()) {
-                    const int128_t rhsValue = MathLib::toLongNumber(cond->astOperand2()->str());
-                    if (auto intRange = std::dynamic_pointer_cast<ExprEngine::IntRange>(mem->second)) {
-                        if (cond->str() == ">") {
-                            if (trueData) {
-                                if (intRange->maxValue <= rhsValue)
-                                    return std::vector<Data>();
-                                auto val = std::make_shared<ExprEngine::IntRange>(getNewSymbolName(), rhsValue + 1, intRange->maxValue);
-                                ret[0].assignValue(cond, mem->first, val);
-                            } else { /* if (!trueData) */
-                                if (intRange->maxValue <= rhsValue)
-                                    return std::vector<Data>();
-                                auto val = std::make_shared<ExprEngine::IntRange>(getNewSymbolName(), intRange->minValue, rhsValue);
-                                ret[0].assignValue(cond, mem->first, val);
-                            }
-                        }
-                    }
-                }
-
-                else if (cond->varId() == mem->first) {
-                    if (auto intRange = std::dynamic_pointer_cast<ExprEngine::IntRange>(mem->second)) {
-                        if (trueData) {
-                            if (intRange->minValue == 0 && intRange->maxValue == 0)
-                                return std::vector<Data>();
-                            if (intRange->minValue < 0) {
-                                auto val = std::make_shared<ExprEngine::IntRange>(getNewSymbolName(), intRange->minValue, -1);
-                                ret[0].assignValue(cond, mem->first, val);
-                            }
-                            if (intRange->maxValue > 0) {
-                                auto val = std::make_shared<ExprEngine::IntRange>(getNewSymbolName(), 1, intRange->maxValue);
-                                if (intRange->minValue < 0) {
-                                    // create additional intrange..
-                                    ret.push_back(Data(symbolValueIndex, tokenizer, settings, callbacks, mTrackExecution));
-                                    ret.back().memory = ret[0].memory;
-                                }
-                                ret[0].assignValue(cond, mem->first, val);
-                            }
-                        } else { /* if (!trueData) */
-                            if (intRange->maxValue < 0 || intRange->minValue > 0)
-                                return std::vector<Data>();
-
-                            auto val = std::make_shared<ExprEngine::IntRange>(getNewSymbolName(), 0, 0);
-                            ret[0].assignValue(cond, mem->first, val);
-                        }
-                    }
-                }
-            }
-            return ret;
         }
 
         std::string getNewSymbolName() override {
@@ -248,6 +192,36 @@ namespace {
             }
             s << "}";
             mTrackExecution->state(tok, s.str());
+        }
+
+        ExprEngine::ValuePtr notValue(ExprEngine::ValuePtr v) {
+            auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(v);
+            if (b) {
+                std::string binop;
+                if (b->binop == "==")
+                    binop = "!=";
+                else if (b->binop == "!=")
+                    binop = "==";
+                else if (b->binop == ">=")
+                    binop = "<";
+                else if (b->binop == "<=")
+                    binop = ">";
+                else if (b->binop == ">")
+                    binop = "<=";
+                else if (b->binop == "<")
+                    binop = ">=";
+                if (!binop.empty())
+                    return std::make_shared<ExprEngine::BinOpResult>(binop, b->op1, b->op2);
+            }
+            auto zero = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
+            return std::make_shared<ExprEngine::BinOpResult>("==", v, zero);
+        }
+
+        void addCondition(ExprEngine::ValuePtr condValue, bool trueCond) {
+            if (trueCond)
+                conditions.push_back(condValue);
+            else
+                conditions.push_back(notValue(condValue));
         }
     private:
         TrackExecution * const mTrackExecution;
@@ -542,6 +516,20 @@ static z3::expr getExpr(const ExprEngine::BinOpResult *b, ExprData &exprData)
         return op1 % op2;
     if (b->binop == "==")
         return op1 == op2;
+    if (b->binop == "!=")
+        return op1 != op2;
+    if (b->binop == ">=")
+        return op1 >= op2;
+    if (b->binop == "<=")
+        return op1 <= op2;
+    if (b->binop == ">")
+        return op1 > op2;
+    if (b->binop == "<")
+        return op1 < op2;
+    if (b->binop == "&&")
+        return op1 && op2;
+    if (b->binop == "||")
+        return op1 || op2;
     throw std::runtime_error("Internal error: Unhandled operator");
 }
 
@@ -569,30 +557,39 @@ static z3::expr getExpr(ExprEngine::ValuePtr v, ExprData &exprData)
     throw std::runtime_error("Internal error: Unhandled value type");
 }
 #endif
-bool ExprEngine::BinOpResult::isIntValueInRange(int value) const
+bool ExprEngine::BinOpResult::isIntValueInRange(ExprEngine::DataBase *dataBase, int value) const
 {
 #ifdef USE_Z3
     ExprData exprData;
-    z3::solver s(exprData.c);
-    s.add(::getExpr(this, exprData) == value);
-    return s.check() == z3::sat;
+    z3::solver solver(exprData.c);
+    z3::expr e = ::getExpr(this, exprData);
+    exprData.addAssertions(solver);
+    for (auto condition : dynamic_cast<const Data *>(dataBase)->conditions)
+        solver.add(::getExpr(condition, exprData));
+    solver.add(e == value);
+    return solver.check() == z3::sat;
 #else
+    (void)dataBase;
     (void)value;
     return false;
 #endif
 }
 
-std::string ExprEngine::BinOpResult::getExpr() const
+std::string ExprEngine::BinOpResult::getExpr(ExprEngine::DataBase *dataBase) const
 {
 #ifdef USE_Z3
     ExprData exprData;
-    z3::solver s(exprData.c);
-    s.add(::getExpr(this, exprData));
-    exprData.addAssertions(s);
+    z3::solver solver(exprData.c);
+    z3::expr e = ::getExpr(this, exprData);
+    exprData.addAssertions(solver);
+    for (auto condition : dynamic_cast<const Data *>(dataBase)->conditions)
+        solver.add(::getExpr(condition, exprData));
+    solver.add(e);
     std::ostringstream os;
-    os << s;
+    os << solver;
     return os.str();
 #else
+    (void)dataBase;
     return "";
 #endif
 }
@@ -650,11 +647,11 @@ static ExprEngine::ValuePtr getValueRangeFromValueType(const std::string &name, 
     };
 }
 
-static void call(const std::vector<ExprEngine::Callback> &callbacks, const Token *tok, ExprEngine::ValuePtr value)
+static void call(const std::vector<ExprEngine::Callback> &callbacks, const Token *tok, ExprEngine::ValuePtr value, Data *dataBase)
 {
     if (value) {
         for (ExprEngine::Callback f : callbacks) {
-            f(tok, *value);
+            f(tok, *value, dataBase);
         }
     }
 }
@@ -664,7 +661,7 @@ static ExprEngine::ValuePtr executeExpression(const Token *tok, Data &data);
 static ExprEngine::ValuePtr executeReturn(const Token *tok, Data &data)
 {
     ExprEngine::ValuePtr retval = executeExpression(tok->astOperand1(), data);
-    call(data.callbacks, tok, retval);
+    call(data.callbacks, tok, retval, &data);
     return retval;
 }
 
@@ -719,7 +716,7 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
 
     const Token *lhsToken = tok->astOperand1();
     assignValue = truncateValue(assignValue, lhsToken->valueType(), data);
-    call(data.callbacks, tok, assignValue);
+    call(data.callbacks, tok, assignValue, &data);
 
     if (lhsToken->varId() > 0) {
         data.assignValue(lhsToken, lhsToken->varId(), assignValue);
@@ -792,7 +789,7 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
         throw std::runtime_error("Expression '" + tok->expressionString() + "' has unknown type!");
 
     auto val = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
-    call(data.callbacks, tok, val);
+    call(data.callbacks, tok, val, &data);
     return val;
 }
 
@@ -803,7 +800,7 @@ static ExprEngine::ValuePtr executeArrayIndex(const Token *tok, Data &data)
         auto indexValue = executeExpression(tok->astOperand2(), data);
         auto conditionalValues = arrayValue->read(indexValue);
         for (auto value: conditionalValues)
-            call(data.callbacks, tok, value.second);
+            call(data.callbacks, tok, value.second, &data);
         if (conditionalValues.size() == 1 && !conditionalValues[0].first)
             return conditionalValues[0].second;
         return std::make_shared<ExprEngine::ConditionalValue>(data.getNewSymbolName(), conditionalValues);
@@ -855,16 +852,16 @@ static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
         if (tok->originalName() == "->") {
             std::shared_ptr<ExprEngine::PointerValue> pointerValue = std::dynamic_pointer_cast<ExprEngine::PointerValue>(data.getValue(tok->astOperand1()->varId(), nullptr, nullptr));
             if (pointerValue) {
-                call(data.callbacks, tok->astOperand1(), pointerValue);
+                call(data.callbacks, tok->astOperand1(), pointerValue, &data);
                 structValue = std::dynamic_pointer_cast<ExprEngine::StructValue>(pointerValue->data);
             } else {
-                call(data.callbacks, tok->astOperand1(), data.getValue(tok->astOperand1()->varId(), nullptr, nullptr));
+                call(data.callbacks, tok->astOperand1(), data.getValue(tok->astOperand1()->varId(), nullptr, nullptr), &data);
             }
         }
         if (!structValue)
             return ExprEngine::ValuePtr();
     }
-    call(data.callbacks, tok->astOperand1(), structValue);
+    call(data.callbacks, tok->astOperand1(), structValue, &data);
     return structValue->getValueOfMember(tok->astOperand2()->str());
 }
 
@@ -874,7 +871,7 @@ static ExprEngine::ValuePtr executeBinaryOp(const Token *tok, Data &data)
     ExprEngine::ValuePtr v2 = executeExpression(tok->astOperand2(), data);
     if (v1 && v2) {
         auto result = simplifyValue(std::make_shared<ExprEngine::BinOpResult>(tok->str(), v1, v2));
-        call(data.callbacks, tok, result);
+        call(data.callbacks, tok, result, &data);
         return result;
     }
     return ExprEngine::ValuePtr();
@@ -883,7 +880,7 @@ static ExprEngine::ValuePtr executeBinaryOp(const Token *tok, Data &data)
 static ExprEngine::ValuePtr executeAddressOf(const Token *tok, Data &data)
 {
     auto addr = std::make_shared<ExprEngine::AddressOfValue>(data.getNewSymbolName(), tok->astOperand1()->varId());
-    call(data.callbacks, tok, addr);
+    call(data.callbacks, tok, addr, &data);
     return addr;
 }
 
@@ -894,13 +891,13 @@ static ExprEngine::ValuePtr executeDeref(const Token *tok, Data &data)
         auto addressOf = std::dynamic_pointer_cast<ExprEngine::AddressOfValue>(pval);
         if (addressOf) {
             auto val = data.getValue(addressOf->varId, tok->valueType(), tok);
-            call(data.callbacks, tok, val);
+            call(data.callbacks, tok, val, &data);
             return val;
         }
         auto pointer = std::dynamic_pointer_cast<ExprEngine::PointerValue>(pval);
         if (pointer) {
             auto val = pointer->data;
-            call(data.callbacks, tok, val);
+            call(data.callbacks, tok, val, &data);
             return val;
         }
     }
@@ -910,14 +907,14 @@ static ExprEngine::ValuePtr executeDeref(const Token *tok, Data &data)
 static ExprEngine::ValuePtr executeVariable(const Token *tok, Data &data)
 {
     auto val = data.getValue(tok->varId(), tok->valueType(), tok);
-    call(data.callbacks, tok, val);
+    call(data.callbacks, tok, val, &data);
     return val;
 }
 
 static ExprEngine::ValuePtr executeKnownMacro(const Token *tok, Data &data)
 {
     auto val = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), tok->getKnownIntValue(), tok->getKnownIntValue());
-    call(data.callbacks, tok, val);
+    call(data.callbacks, tok, val, &data);
     return val;
 }
 
@@ -1027,20 +1024,23 @@ static void execute(const Token *start, const Token *end, Data &data)
 
         else if (Token::simpleMatch(tok, "if (")) {
             const Token *cond = tok->next()->astOperand2();
-            /*const ExprEngine::ValuePtr condValue =*/ executeExpression(cond,data);
-            std::vector<Data> trueData = data.getData(cond, true);
-            std::vector<Data> falseData = data.getData(cond, false);
+            const ExprEngine::ValuePtr condValue = executeExpression(cond, data);
+            Data ifData(data);
+            Data elseData(data);
+            ifData.addCondition(condValue, true);
+            elseData.addCondition(condValue, false);
+
             const Token *thenStart = tok->linkAt(1)->next();
             const Token *thenEnd = thenStart->link();
-            for (Data &d : trueData)
-                execute(thenStart->next(), end, d);
+            execute(thenStart->next(), thenEnd, ifData);
             if (Token::simpleMatch(thenEnd, "} else {")) {
                 const Token *elseStart = thenEnd->tokAt(2);
-                for (Data &d : falseData)
-                    execute(elseStart->next(), end, d);
+                execute(elseStart->next(), end, elseData);
+                execute(elseStart->link()->next(), end, ifData);
             } else {
-                for (Data &d : falseData)
-                    execute(thenEnd->next(), end, d);
+                // TODO: Merge ifData and elseData
+                execute(thenEnd->next(), end, ifData);
+                execute(thenEnd->next(), end, elseData);
             }
             return;
         }
@@ -1156,17 +1156,17 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
 
 void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings)
 {
-    std::function<void(const Token *, const ExprEngine::Value &)> divByZero = [=](const Token *tok, const ExprEngine::Value &value) {
+    std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> divByZero = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
         if (!Token::Match(tok->astParent(), "[/%]"))
             return;
-        if (tok->astParent()->astOperand2() == tok && value.isIntValueInRange(0)) {
+        if (tok->astParent()->astOperand2() == tok && value.isIntValueInRange(dataBase, 0)) {
             std::list<const Token*> callstack{tok->astParent()};
             ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationDivByZero", "There is division, cannot determine that there can't be a division by zero.", CWE(369), false);
             errorLogger->reportErr(errmsg);
         }
     };
 
-    std::function<void(const Token *, const ExprEngine::Value &)> nullPointerDereference = [=](const Token *tok, const ExprEngine::Value &value) {
+    std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> nullPointerDereference = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
         if (!tok->astParent())
             return;
 
@@ -1183,7 +1183,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             if (auto pointerValue = dynamic_cast<const ExprEngine::PointerValue*>(&value)) {
                 if (!pointerValue->null)
                     return;
-            } else if (!value.isIntValueInRange(0))
+            } else if (!value.isIntValueInRange(dataBase, 0))
                 return;
         } catch (const std::exception &) {
             return;
@@ -1195,7 +1195,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
     };
 
 #ifdef VERIFY_INTEGEROVERFLOW
-    std::function<void(const Token *, const ExprEngine::Value &)> integerOverflow = [&](const Token *tok, const ExprEngine::Value &value) {
+    std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> integerOverflow = [&](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
         if (!tok->isArithmeticalOp() || !tok->valueType() || !tok->valueType()->isIntegral() || tok->valueType()->pointer > 0)
             return;
 

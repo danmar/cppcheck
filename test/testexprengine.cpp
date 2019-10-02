@@ -42,10 +42,6 @@ private:
         TEST_CASE(exprAssign2); // Truncation
 
         TEST_CASE(if1);
-        TEST_CASE(if2);
-        TEST_CASE(if3);
-        TEST_CASE(if4);
-        TEST_CASE(if5);
         TEST_CASE(ifelse1);
 
         TEST_CASE(array1);
@@ -83,13 +79,13 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         std::string ret;
-        std::function<void(const Token *, const ExprEngine::Value &)> f = [&](const Token *tok, const ExprEngine::Value &value) {
+        std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> f = [&](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
             if (tok->str() != binop)
                 return;
             auto b = dynamic_cast<const ExprEngine::BinOpResult *>(&value);
             if (!b)
                 return;
-            ret = b->getExpr();
+            ret = b->getExpr(dataBase);
         };
         std::vector<ExprEngine::Callback> callbacks;
         callbacks.push_back(f);
@@ -106,7 +102,8 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         std::string ret;
-        std::function<void(const Token *, const ExprEngine::Value &)> f = [&](const Token *tok, const ExprEngine::Value &value) {
+        std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> f = [&](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
+            (void)dataBase;
             if ((linenr == 0 || linenr == tok->linenr()) && tok->expressionString() == str) {
                 if (!ret.empty())
                     ret += ",";
@@ -163,27 +160,24 @@ private:
     }
 
     void if1() {
-        ASSERT_EQUALS("($2)+(1)", getRange("inf f(short x) { if (x > 5) a = x + 1; }", "x+1"));
-    }
-
-    void if2() {
-        ASSERT_EQUALS("($2)+(1),($3)+(1)", getRange("inf f(short x) { if (x > 5) {} a = x + 1; }", "x+1"));
-    }
-
-    void if3() {
-        ASSERT_EQUALS("1,-2147483648:2147483647,-2147483648:2147483647", getRange("void f() { int x; if (a) { if (b) x=1; } x=x; }", "x=x"));
-    }
-
-    void if4() {
-        ASSERT_EQUALS("1:2147483647,-2147483648:-1", getRange("int x; void f() { if (x) { a=x; }}", "a=x"));
-    }
-
-    void if5() {
-        ASSERT_EQUALS("0", getRange("int x; void f() { if (x) {} else { a=x; }}", "a=x"));
+        ASSERT_EQUALS("(declare-fun v0 () Int)\n"
+                      "(declare-fun v1 () Int)\n"
+                      "(assert (<= v0 2147483647))\n"
+                      "(assert (>= v0 (- 2147483648)))\n"
+                      "(assert (<= v1 2147483647))\n"
+                      "(assert (>= v1 (- 2147483648)))\n"
+                      "(assert (< v0 v1))\n"
+                      "(assert (= v0 v1))\n",
+                      expr("void f(int x, int y) { if (x < y) return x == y; }", "=="));
     }
 
     void ifelse1() {
-        ASSERT_EQUALS("($3)+(1)", getRange("inf f(short x) { if (x > 5) ; else a = x + 1; }", "x+1"));
+        ASSERT_EQUALS("(declare-fun v0 () Int)\n"
+                      "(assert (<= v0 32767))\n"
+                      "(assert (>= v0 (- 32768)))\n"
+                      "(assert (<= v0 5))\n"
+                      "(assert (= (+ v0 2) 40))\n",
+                      expr("void f(short x) { if (x > 5) ; else if (x+2==40); }", "=="));
     }
 
 
@@ -194,9 +188,9 @@ private:
 
     void array2() {
         ASSERT_EQUALS("(declare-fun v0 () Int)\n"
-                      "(assert (= v0 365))\n"
                       "(assert (<= v0 255))\n"
-                      "(assert (>= v0 0))\n",
+                      "(assert (>= v0 0))\n"
+                      "(assert (= v0 365))\n",
                       expr("void dostuff(unsigned char *); int f() { unsigned char arr[10] = \"\"; dostuff(arr); return arr[4] == 365; }", "=="));
     }
 
@@ -259,9 +253,9 @@ private:
 
     void int1() {
         ASSERT_EQUALS("(declare-fun v0 () Int)\n"
-                      "(assert (= (+ 2 v0) 3))\n"
                       "(assert (<= v0 2147483647))\n"
-                      "(assert (>= v0 (- 2147483648)))\n",
+                      "(assert (>= v0 (- 2147483648)))\n"
+                      "(assert (= (+ 2 v0) 3))\n",
                       expr("void f(int x) { return 2+x==3; }", "=="));
     }
 
@@ -299,13 +293,13 @@ private:
 
 
     void structMember() {
-        ASSERT_EQUALS("(declare-fun v1 () Int)\n"
-                      "(declare-fun v0 () Int)\n"
-                      "(assert (= (+ v0 v1) 0))\n"
+        ASSERT_EQUALS("(declare-fun v0 () Int)\n"
+                      "(declare-fun v1 () Int)\n"
                       "(assert (<= v0 255))\n"
                       "(assert (>= v0 0))\n"
                       "(assert (<= v1 255))\n"
-                      "(assert (>= v1 0))\n",
+                      "(assert (>= v1 0))\n"
+                      "(assert (= (+ v0 v1) 0))\n",
                       expr("struct S {\n"
                            "    unsigned char a;\n"
                            "    unsigned char b;\n"
