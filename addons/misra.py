@@ -1209,7 +1209,7 @@ class MisraChecker:
                 continue
             if (vt2.pointer > 0 and vt1.pointer == 0 and
                     not vt1.isIntegral() and not vt1.isEnum() and
-                    vt2.type != 'void'):
+                    vt1.type != 'void'):
                 self.reportError(token, 11, 7)
             elif (vt1.pointer > 0 and vt2.pointer == 0 and
                     not vt2.isIntegral() and not vt2.isEnum() and
