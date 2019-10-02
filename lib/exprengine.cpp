@@ -22,9 +22,13 @@
 #include "symboldatabase.h"
 #include "tokenize.h"
 
+#include <cstdlib>
 #include <limits>
 #include <memory>
 #include <iostream>
+#ifdef USE_Z3
+#include <z3++.h>
+#endif
 
 std::string ExprEngine::str(int128_t value)
 {
@@ -259,7 +263,7 @@ static ExprEngine::ValuePtr simplifyValue(ExprEngine::ValuePtr origValue)
     if (!b->op1 || !b->op2)
         return origValue;
     auto intRange1 = std::dynamic_pointer_cast<ExprEngine::IntRange>(b->op1);
-    auto intRange2 = std::dynamic_pointer_cast<ExprEngine::IntRange>(b->op1);
+    auto intRange2 = std::dynamic_pointer_cast<ExprEngine::IntRange>(b->op2);
     if (intRange1 && intRange2 && intRange1->minValue == intRange1->maxValue && intRange2->minValue == intRange2->maxValue) {
         const std::string &binop = b->binop;
         int128_t v;
@@ -499,181 +503,100 @@ std::string ExprEngine::PointerValue::getRange() const
     return r;
 }
 
-std::string ExprEngine::BinOpResult::getRange() const
-{
-    IntOrFloatValue minValue, maxValue;
-    getRange(&minValue, &maxValue);
-    const std::string s1 = minValue.isFloat()
-                           ? std::to_string(minValue.floatValue)
-                           : str(minValue.intValue);
-    const std::string s2 = maxValue.isFloat()
-                           ? std::to_string(maxValue.floatValue)
-                           : str(maxValue.intValue);
-
-    if (s1 == s2)
-        return s1;
-    return s1 + ":" + s2;
-}
-
-void ExprEngine::BinOpResult::getRange(ExprEngine::BinOpResult::IntOrFloatValue *minValue, ExprEngine::BinOpResult::IntOrFloatValue *maxValue) const
-{
-    std::map<ValuePtr, int> valueBit;
-    // Assign a bit number for each leaf
-    int bit = 0;
-    for (ValuePtr v : mLeafs) {
-        if (auto intRange = std::dynamic_pointer_cast<IntRange>(v)) {
-            if (intRange->minValue == intRange->maxValue) {
-                valueBit[v] = 30;
-                continue;
-            }
-        }
-
-        valueBit[v] = bit++;
-    }
-
-    if (bit > 24)
-        throw std::runtime_error("Internal error: bits");
-
-    for (int test = 0; test < (1 << bit); ++test) {
-        auto result = evaluate(test, valueBit);
-        if (test == 0)
-            *minValue = *maxValue = result;
-        else if (result.isFloat()) {
-            if (result.floatValue < minValue->floatValue)
-                *minValue = result;
-            else if (result.floatValue > maxValue->floatValue)
-                *maxValue = result;
-        } else {
-            if (result.intValue < minValue->intValue)
-                *minValue = result;
-            else if (result.intValue > maxValue->intValue)
-                *maxValue = result;
-        }
-    }
-}
-
 std::string ExprEngine::IntegerTruncation::getSymbolicExpression() const
 {
     return sign + std::to_string(bits) + "(" + inputValue->getSymbolicExpression() + ")";
 }
 
+#ifdef USE_Z3
+struct ExprData {
+    typedef std::map<ExprEngine::ValuePtr, z3::expr> ValueExpr;
+    typedef std::vector<z3::expr> AssertionList;
+
+    z3::context c;
+    ValueExpr valueExpr;
+    AssertionList assertionList;
+
+    void addAssertions(z3::solver &solver) const {
+        for (auto assertExpr : assertionList)
+            solver.add(assertExpr);
+    }
+};
+
+static z3::expr getExpr(ExprEngine::ValuePtr v, ExprData &exprData);
+
+static z3::expr getExpr(const ExprEngine::BinOpResult *b, ExprData &exprData)
+{
+    auto op1 = getExpr(b->op1, exprData);
+    auto op2 = getExpr(b->op2, exprData);
+
+    if (b->binop == "+")
+        return op1 + op2;
+    if (b->binop == "-")
+        return op1 - op2;
+    if (b->binop == "*")
+        return op1 * op2;
+    if (b->binop == "/")
+        return op1 / op2;
+    if (b->binop == "%")
+        return op1 % op2;
+    if (b->binop == "==")
+        return op1 == op2;
+    throw std::runtime_error("Internal error: Unhandled operator");
+}
+
+static z3::expr getExpr(ExprEngine::ValuePtr v, ExprData &exprData)
+{
+    if (auto intRange = std::dynamic_pointer_cast<ExprEngine::IntRange>(v)) {
+        if (intRange->name[0] != '$')
+            return exprData.c.int_val(int64_t(intRange->minValue));
+        auto it = exprData.valueExpr.find(v);
+        if (it != exprData.valueExpr.end())
+            return it->second;
+        auto e = exprData.c.int_const(("v" + std::to_string(exprData.valueExpr.size())).c_str());
+        exprData.valueExpr.emplace(v, e);
+        if (intRange->maxValue <= INT_MAX)
+            exprData.assertionList.push_back(e <= int(intRange->maxValue));
+        if (intRange->minValue >= INT_MIN)
+            exprData.assertionList.push_back(e >= int(intRange->minValue));
+        return e;
+    }
+
+    if (auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(v)) {
+        return getExpr(b.get(), exprData);
+    }
+
+    throw std::runtime_error("Internal error: Unhandled value type");
+}
+#endif
 bool ExprEngine::BinOpResult::isIntValueInRange(int value) const
 {
-    IntOrFloatValue minValue, maxValue;
-    getRange(&minValue, &maxValue);
-    return value >= minValue.intValue && value <= maxValue.intValue;
+#ifdef USE_Z3
+    ExprData exprData;
+    z3::solver s(exprData.c);
+    s.add(::getExpr(this, exprData) == value);
+    return s.check() == z3::sat;
+#else
+    (void)value;
+    return false;
+#endif
 }
 
-#define BINARY_OP(OP) \
-    if (binop == #OP) { \
-        struct ExprEngine::BinOpResult::IntOrFloatValue result(lhs); \
-        if (lhs.isFloat()) \
-        { result.type = lhs.type; result.floatValue = lhs.floatValue OP (rhs.isFloat() ? rhs.floatValue : rhs.intValue); } \
-        else if (rhs.isFloat()) \
-        { result.type = rhs.type; result.floatValue = lhs.intValue OP rhs.floatValue; } \
-        else { result.type = lhs.type; result.intValue = lhs.intValue OP rhs.intValue; } \
-        return result; \
-    }
-
-#define BINARY_RELATIONAL_COMPARISON(OP) \
-    if (binop == #OP) { \
-        struct ExprEngine::BinOpResult::IntOrFloatValue result(lhs); \
-        if (lhs.isFloat()) \
-        { result.setIntValue(lhs.floatValue OP (rhs.isFloat() ? rhs.floatValue : rhs.intValue)); } \
-        else if (rhs.isFloat()) \
-        { result.setIntValue(lhs.intValue OP rhs.floatValue); } \
-        else { result.setIntValue(lhs.intValue OP rhs.intValue); } \
-        return result; \
-    }
-
-#define BINARY_EQ_COMPARISON(OP) \
-    if (binop == #OP && !lhs.isFloat() && !rhs.isFloat()) { \
-        struct ExprEngine::BinOpResult::IntOrFloatValue result; \
-        result.setIntValue(lhs.intValue OP rhs.intValue); \
-        return result; \
-    }
-
-#define BINARY_INT_OP(OP) \
-    if (binop == #OP) { \
-        struct ExprEngine::BinOpResult::IntOrFloatValue result; \
-        result.setIntValue(lhs.intValue OP rhs.intValue); \
-        return result; \
-    }
-
-#define BINARY_OP_DIV(OP) \
-    if (binop == #OP) { \
-        struct ExprEngine::BinOpResult::IntOrFloatValue result(lhs); \
-        if (lhs.isFloat()) \
-        { result.type = lhs.type; result.floatValue = lhs.floatValue OP (rhs.isFloat() ? rhs.floatValue : rhs.intValue); } \
-        else if (rhs.isFloat()) \
-        { result.type = rhs.type; result.floatValue = lhs.intValue OP rhs.floatValue; } \
-        else if (rhs.intValue != 0) { result.type = lhs.type; result.intValue = lhs.intValue OP rhs.intValue; } \
-        return result; \
-    }
-
-ExprEngine::BinOpResult::IntOrFloatValue ExprEngine::BinOpResult::evaluate(int test, const std::map<ExprEngine::ValuePtr, int> &valueBit) const
+std::string ExprEngine::BinOpResult::getExpr() const
 {
-    const ExprEngine::BinOpResult::IntOrFloatValue lhs = evaluateOperand(test, valueBit, op1);
-    const ExprEngine::BinOpResult::IntOrFloatValue rhs = evaluateOperand(test, valueBit, op2);
-    BINARY_OP(+)
-    BINARY_OP(-)
-    BINARY_OP(*)
-    BINARY_OP_DIV(/)
-    BINARY_INT_OP(&)
-    BINARY_INT_OP(|)
-    BINARY_INT_OP(^)
-    BINARY_INT_OP(<<)
-    BINARY_INT_OP(>>)
-    BINARY_EQ_COMPARISON(==)
-    BINARY_EQ_COMPARISON(!=)
-    BINARY_RELATIONAL_COMPARISON(>=)
-    BINARY_RELATIONAL_COMPARISON(>)
-    BINARY_RELATIONAL_COMPARISON(<=)
-    BINARY_RELATIONAL_COMPARISON(<)
-
-    if (binop == "%" && rhs.intValue != 0) {
-        struct ExprEngine::BinOpResult::IntOrFloatValue result;
-        result.setIntValue(lhs.intValue % rhs.intValue);
-        return result;
-    }
-
-    throw std::runtime_error("Internal error: Unhandled operator;" + binop);
+#ifdef USE_Z3
+    ExprData exprData;
+    z3::solver s(exprData.c);
+    s.add(::getExpr(this, exprData));
+    exprData.addAssertions(s);
+    std::ostringstream os;
+    os << s;
+    return os.str();
+#else
+    return "";
+#endif
 }
 
-ExprEngine::BinOpResult::IntOrFloatValue ExprEngine::BinOpResult::evaluateOperand(int test, const std::map<ExprEngine::ValuePtr, int> &valueBit, ExprEngine::ValuePtr value) const
-{
-    if (!value)
-        throw std::runtime_error("Internal error: null value");
-
-    auto binOpResult = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(value);
-    if (binOpResult)
-        return binOpResult->evaluate(test, valueBit);
-
-    auto it = valueBit.find(value);
-    if (it == valueBit.end())
-        throw std::runtime_error("Internal error: valueBit not set properly");
-
-    bool valueType = test & (1 << it->second);
-    if (auto intRange = std::dynamic_pointer_cast<IntRange>(value)) {
-        ExprEngine::BinOpResult::IntOrFloatValue result;
-        result.setIntValue(valueType ? intRange->minValue : intRange->maxValue);
-        return result;
-    }
-    if (auto floatRange = std::dynamic_pointer_cast<FloatRange>(value)) {
-        ExprEngine::BinOpResult::IntOrFloatValue result;
-        result.setFloatValue(valueType ? floatRange->minValue : floatRange->maxValue);
-        return result;
-    }
-    if (auto integerTruncation = std::dynamic_pointer_cast<IntegerTruncation>(value)) {
-        ExprEngine::BinOpResult::IntOrFloatValue result(evaluateOperand(test, valueBit, integerTruncation->inputValue));
-        if (result.isFloat())
-            result.setIntValue(truncateInt(result.floatValue, integerTruncation->bits, integerTruncation->sign));
-        else
-            result.setIntValue(truncateInt(result.intValue, integerTruncation->bits, integerTruncation->sign));
-        return result;
-    }
-    throw std::runtime_error("Internal error: Unhandled value:" + std::to_string((int)value->type));
-}
 
 // Todo: This is taken from ValueFlow and modified.. we should reuse it
 static int getIntBitsFromValueType(const ValueType *vt, const cppcheck::Platform &platform)
@@ -1271,6 +1194,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
         errorLogger->reportErr(errmsg);
     };
 
+#ifdef VERIFY_INTEGEROVERFLOW
     std::function<void(const Token *, const ExprEngine::Value &)> integerOverflow = [&](const Token *tok, const ExprEngine::Value &value) {
         if (!tok->isArithmeticalOp() || !tok->valueType() || !tok->valueType()->isIntegral() || tok->valueType()->pointer > 0)
             return;
@@ -1306,6 +1230,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
         ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationIntegerOverflow", "Integer overflow, " + tok->valueType()->str() + " result." + note, false);
         errorLogger->reportErr(errmsg);
     };
+#endif
 
     std::vector<ExprEngine::Callback> callbacks;
     callbacks.push_back(divByZero);

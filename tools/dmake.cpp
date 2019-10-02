@@ -217,6 +217,13 @@ int main(int argc, char **argv)
     fout << "# To compile with rules, use 'make HAVE_RULES=yes'\n";
     makeConditionalVariable(fout, "HAVE_RULES", "no");
 
+    // Z3 is an optional dependency now..
+    makeConditionalVariable(fout, "USE_Z3", "no");
+    fout << "ifeq ($(USE_Z3),yes)\n"
+         << "    CPPFLAGS += -DUSE_Z3\n"
+         << "    LIBS += -lz3\n"
+         << "endif\n";
+
     // use match compiler..
     fout << "# use match compiler\n";
     fout << "ifeq ($(SRCDIR),build)\n"
