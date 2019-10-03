@@ -121,7 +121,7 @@ namespace {
         int * const symbolValueIndex;
         const Tokenizer * const tokenizer;
         const std::vector<ExprEngine::Callback> &callbacks;
-        std::vector<ExprEngine::ValuePtr> conditions;
+        std::vector<ExprEngine::ValuePtr> constraints;
 
         void assignValue(const Token *tok, unsigned int varId, ExprEngine::ValuePtr value) {
             mTrackExecution->symbolRange(tok, value);
@@ -217,11 +217,11 @@ namespace {
             return std::make_shared<ExprEngine::BinOpResult>("==", v, zero);
         }
 
-        void addCondition(ExprEngine::ValuePtr condValue, bool trueCond) {
+        void addConstraint(ExprEngine::ValuePtr condValue, bool trueCond) {
             if (trueCond)
-                conditions.push_back(condValue);
+                constraints.push_back(condValue);
             else
-                conditions.push_back(notValue(condValue));
+                constraints.push_back(notValue(condValue));
         }
     private:
         TrackExecution * const mTrackExecution;
@@ -564,8 +564,8 @@ bool ExprEngine::BinOpResult::isIntValueInRange(ExprEngine::DataBase *dataBase, 
     z3::solver solver(exprData.c);
     z3::expr e = ::getExpr(this, exprData);
     exprData.addAssertions(solver);
-    for (auto condition : dynamic_cast<const Data *>(dataBase)->conditions)
-        solver.add(::getExpr(condition, exprData));
+    for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
+        solver.add(::getExpr(constraint, exprData));
     solver.add(e == value);
     return solver.check() == z3::sat;
 #else
@@ -582,8 +582,8 @@ std::string ExprEngine::BinOpResult::getExpr(ExprEngine::DataBase *dataBase) con
     z3::solver solver(exprData.c);
     z3::expr e = ::getExpr(this, exprData);
     exprData.addAssertions(solver);
-    for (auto condition : dynamic_cast<const Data *>(dataBase)->conditions)
-        solver.add(::getExpr(condition, exprData));
+    for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
+        solver.add(::getExpr(constraint, exprData));
     solver.add(e);
     std::ostringstream os;
     os << solver;
@@ -1027,8 +1027,8 @@ static void execute(const Token *start, const Token *end, Data &data)
             const ExprEngine::ValuePtr condValue = executeExpression(cond, data);
             Data ifData(data);
             Data elseData(data);
-            ifData.addCondition(condValue, true);
-            elseData.addCondition(condValue, false);
+            ifData.addConstraint(condValue, true);
+            elseData.addConstraint(condValue, false);
 
             const Token *thenStart = tok->linkAt(1)->next();
             const Token *thenEnd = thenStart->link();
