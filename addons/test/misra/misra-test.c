@@ -258,6 +258,11 @@ void misra_11_7(int *p, float f) {
   y = ( int * ) f; //11.7
 }
 
+void misra_11_7_extra(int *p, float f, bool b) {
+  (void) p; // no-warning
+  (void) f; // no-warning
+}
+
 char * misra_11_8_const(const char *str) {  }
 char * misra_11_8(const char *str) {
   (void)misra_11_8_const(str); // no-warning
