@@ -554,6 +554,18 @@ static z3::expr getExpr(ExprEngine::ValuePtr v, ExprData &exprData)
         return getExpr(b.get(), exprData);
     }
 
+    if (auto c = std::dynamic_pointer_cast<ExprEngine::ConditionalValue>(v)) {
+        if (c->values.size() == 1)
+            return ::getExpr(c->values[0].second, exprData);
+
+        return z3::ite(::getExpr(c->values[1].first, exprData),
+                       ::getExpr(c->values[1].second, exprData),
+                       ::getExpr(c->values[0].second, exprData));
+    }
+
+    if (v->type == ExprEngine::ValueType::UninitValue)
+        return exprData.c.int_val(0);
+
     throw std::runtime_error("Internal error: Unhandled value type");
 }
 #endif

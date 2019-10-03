@@ -197,7 +197,11 @@ private:
     void array3() {
         const char code[] = "void f(unsigned char x) { int arr[10]; arr[4] = 43; return arr[x] == 12; }";
         ASSERT_EQUALS("?,43", getRange(code, "arr[x]"));
-        // TODO: ASSERT_EQUALS("", expr(code, "=="));
+        ASSERT_EQUALS("(declare-fun v0 () Int)\n"
+                      "(assert (<= v0 255))\n"
+                      "(assert (>= v0 0))\n"
+                      "(assert (= (ite (= v0 4) 43 0) 12))\n",
+                      expr(code, "=="));
     }
 
     void array4() {
