@@ -1625,7 +1625,8 @@ static bool isUnchanged(const Token *startToken, const Token *endToken, const st
 struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<int> &exprVarIds, bool local, bool inInnerClass)
 {
     // Parse the given tokens
-    for (const Token *tok = startToken; tok != endToken; tok = tok->next()) {
+
+    for (const Token* tok = startToken; precedes(tok, endToken); tok = tok->next()) {
         if (Token::simpleMatch(tok, "try {")) {
             // TODO: handle try
             return Result(Result::Type::BAILOUT);
