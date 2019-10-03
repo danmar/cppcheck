@@ -2007,6 +2007,22 @@ bool Tokenizer::simplifyUsing()
                 continue;
             }
 
+            // check for member function
+            if (Token::Match(tok1->tokAt(-2), ":: %name% (") && isFunctionHead(tok1, "{")) {
+                std::string qualification;
+                const Token *qualTok = tok1->tokAt(-3);
+                while (Token::Match(qualTok, "%type% ::")) {
+                    if (!qualification.empty())
+                        qualification = " :: " + qualification;
+                    qualification = qualTok->str() + qualification;
+                    qualTok = qualTok->tokAt(-2);
+                }
+
+                if (!scope1.empty())
+                    scope1 += " :: ";
+                scope1 += qualification;
+            }
+
             if (!usingMatch(nameToken, scope, &tok1, scope1, scopeList1))
                 continue;
 
