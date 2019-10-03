@@ -345,6 +345,7 @@ private:
         TEST_CASE(findFunction25); // std::vector<std::shared_ptr<Fred>>
         TEST_CASE(findFunction26); // #8668 - pointer parameter in function call, const pointer function argument
         TEST_CASE(findFunction27);
+        TEST_CASE(findFunction28);
         TEST_CASE(findFunctionContainer);
 
         TEST_CASE(valueTypeMatchParameter); // ValueType::matchParameter
@@ -5575,6 +5576,19 @@ private:
         const Token *a = Token::findsimplematch(tokenizer.tokens(), "a ( 9 )");
         ASSERT(a);
         ASSERT(a->function());
+    }
+
+    void findFunction28() {
+        GET_SYMBOL_DB("namespace { void a(int); }\n"
+                      "struct S {\n"
+                      "  void foo() { a(7); }\n"
+                      "  void a(int);\n"
+                      "};");
+        const Token *a = Token::findsimplematch(tokenizer.tokens(), "a ( 7 )");
+        ASSERT(a);
+        ASSERT(a->function());
+        ASSERT(a->function()->token);
+        ASSERT_EQUALS(4, a->function()->token->linenr());
     }
 
     void findFunctionContainer() {
