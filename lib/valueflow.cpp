@@ -1841,6 +1841,16 @@ static void valueFlowGlobalStaticVar(TokenList *tokenList, const Settings *setti
     }
 }
 
+static void valueFlowForward(Token* startToken,
+                             const Token* endToken,
+                             const Token* exprTok,
+                             std::list<ValueFlow::Value> values,
+                             const bool constValue,
+                             const bool subFunction,
+                             TokenList* const tokenlist,
+                             ErrorLogger* const errorLogger,
+                             const Settings* settings);
+
 static void valueFlowReverse(TokenList *tokenlist,
                              Token *tok,
                              const Token * const varToken,
@@ -1865,8 +1875,30 @@ static void valueFlowReverse(TokenList *tokenlist,
         }
 
         if (tok2->varId() == varid) {
+            if (tok2->hasKnownValue())
+                break;
             // bailout: assignment
             if (Token::Match(tok2->previous(), "!!* %name% =")) {
+                Token* assignTok = const_cast<Token*>(tok2->next()->astOperand2());
+                if (!assignTok->hasKnownValue()) {
+                    std::list<ValueFlow::Value> values = {val};
+                    setTokenValue(assignTok, val, settings);
+                    if (val2.condition) {
+                        setTokenValue(assignTok, val2, settings);
+                        values.push_back(val2);
+                    }
+                    const Token* startForwardToken = nextAfterAstRightmostLeaf(tok2->next());
+                    const Token* endForwardToken = tok->scope() ? tok->scope()->bodyEnd : tok;
+                    valueFlowForward(const_cast<Token*>(startForwardToken),
+                                     endForwardToken,
+                                     assignTok,
+                                     values,
+                                     false,
+                                     false,
+                                     tokenlist,
+                                     errorLogger,
+                                     settings);
+                }
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "assignment of " + tok2->str());
                 break;
@@ -2060,6 +2092,17 @@ static void valueFlowReverse(TokenList *tokenlist,
             }
         }
     }
+}
+
+static bool isConditionKnown(const Token* tok, bool then)
+{
+    const char* op = "||";
+    if (then)
+        op = "&&";
+    const Token* parent = tok->astParent();
+    while (parent && parent->str() == op)
+        parent = parent->astParent();
+    return (parent && parent->str() == "(");
 }
 
 static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
@@ -4309,17 +4352,6 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             valueFlowForwardAssign(tok->astOperand2(), var, values, constValue, init, tokenlist, errorLogger, settings);
         }
     }
-}
-
-static bool isConditionKnown(const Token* tok, bool then)
-{
-    const char * op = "||";
-    if (then)
-        op = "&&";
-    const Token* parent = tok->astParent();
-    while (parent && parent->str() == op)
-        parent = parent->astParent();
-    return (parent && parent->str() == "(");
 }
 
 static void valueFlowSetConditionToKnown(const Token* tok, std::list<ValueFlow::Value>& values, bool then)

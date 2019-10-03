@@ -79,6 +79,7 @@ private:
         TEST_CASE(valueFlowBeforeConditionSizeof);
         TEST_CASE(valueFlowBeforeConditionSwitch);
         TEST_CASE(valueFlowBeforeConditionTernaryOp);
+        TEST_CASE(valueFlowBeforeConditionForward);
 
         TEST_CASE(valueFlowAfterAssign);
         TEST_CASE(valueFlowAfterCondition);
@@ -1408,6 +1409,25 @@ private:
             "[test.cpp:8]: (debug) valueflow.cpp:1131:valueFlowReverse bailout: variable abc stopping on goto label\n"
             "[test.cpp:3]: (debug) valueflow.cpp:1813:valueFlowForwardVariable bailout: variable abc. noreturn conditional scope.\n",
             errout.str());
+    }
+
+    void valueFlowBeforeConditionForward()
+    {
+        const char* code;
+
+        code = "void f(int a) {\n"
+               "    int x = a;\n"
+               "    if (a == 123) {}\n"
+               "    int b = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 123));
+
+        code = "void f(int a) {\n"
+               "    int x = a;\n"
+               "    if (a != 123) {}\n"
+               "    int b = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 123));
     }
 
     void valueFlowAfterAssign() {
