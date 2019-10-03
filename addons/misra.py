@@ -743,7 +743,7 @@ class MisraChecker:
             starts_with_double_slash = token.str.startswith('//')
             if token.str.startswith('/*') or starts_with_double_slash:
                 s = token.str.lstrip('/')
-                if (not starts_with_double_slash and '//' in s) or '/*' in s:
+                if ((not starts_with_double_slash) and '//' in s) or '/*' in s:
                     self.reportError(token, 3, 1)
 
 
