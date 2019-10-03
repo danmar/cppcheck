@@ -265,9 +265,13 @@ private:
 
 
     void pointer1() {
-        const char code[] = "void f(unsigned char *p) { a = *p; }";
+        const char code[] = "void f(unsigned char *p) { return *p == 7; }";
         ASSERT_EQUALS("->$1,null,->?", getRange(code, "p"));
-        // TODO expr
+        ASSERT_EQUALS("(declare-fun v0 () Int)\n"
+                      "(assert (<= v0 255))\n"
+                      "(assert (>= v0 0))\n"
+                      "(assert (= v0 7))\n",
+                      expr(code, "=="));
     }
 
     void pointerAlias1() {
