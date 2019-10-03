@@ -851,6 +851,14 @@ Token* Token::nextTemplateArgument() const
     return nullptr;
 }
 
+static bool isOperator(const Token *tok)
+{
+    if (tok->link())
+        tok = tok->link();
+    // TODO handle multi token operators
+    return tok->strAt(-1) == "operator";
+}
+
 const Token * Token::findClosingBracket() const
 {
     if (mStr != "<")
@@ -869,7 +877,8 @@ const Token * Token::findClosingBracket() const
         } else if (Token::Match(closing, "}|]|)|;"))
             return nullptr;
         // we can make some guesses for template parameters
-        else if (closing->str() == "<" && closing->previous() && closing->previous()->isName() &&
+        else if (closing->str() == "<" && closing->previous() &&
+                 (closing->previous()->isName() || isOperator(closing->previous())) &&
                  (templateParameter ? templateParameters.find(closing->strAt(-1)) == templateParameters.end() : true))
             ++depth;
         else if (closing->str() == ">") {
