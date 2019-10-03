@@ -1166,34 +1166,6 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
         }
     };
 
-    std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> nullPointerDereference = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
-        if (!tok->astParent())
-            return;
-
-        // Is pointer dereferenced?
-        bool deref = false;
-        deref |= tok->astParent()->isUnaryOp("*");
-        deref |= Token::simpleMatch(tok->astParent(), "[");
-        deref |= Token::simpleMatch(tok->astParent(), ".") && tok == tok->astParent()->astOperand1();
-        if (!deref)
-            return;
-
-        // Is this a null pointer value?
-        try {
-            if (auto pointerValue = dynamic_cast<const ExprEngine::PointerValue*>(&value)) {
-                if (!pointerValue->null)
-                    return;
-            } else if (!value.isIntValueInRange(dataBase, 0))
-                return;
-        } catch (const std::exception &) {
-            return;
-        }
-
-        std::list<const Token*> callstack{tok->astParent()};
-        ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationNullPointerDereference", "There is pointer dereference, cannot determine that the pointer can't be NULL.", CWE(476), false);
-        errorLogger->reportErr(errmsg);
-    };
-
 #ifdef VERIFY_INTEGEROVERFLOW
     std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> integerOverflow = [&](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
         if (!tok->isArithmeticalOp() || !tok->valueType() || !tok->valueType()->isIntegral() || tok->valueType()->pointer > 0)
@@ -1234,7 +1206,6 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
 
     std::vector<ExprEngine::Callback> callbacks;
     callbacks.push_back(divByZero);
-    callbacks.push_back(nullPointerDereference);
 #ifdef VERIFY_INTEGEROVERFLOW
     callbacks.push_back(integerOverflow);
 #endif
