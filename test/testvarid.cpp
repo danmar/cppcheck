@@ -2222,18 +2222,18 @@ private:
     }
 
     void varid_rvalueref() {
-        ASSERT_EQUALS("1: int & & a@1 ;\n", tokenize("int&& a;"));
+        ASSERT_EQUALS("1: int && a@1 ;\n", tokenize("int&& a;"));
 
-        ASSERT_EQUALS("1: void foo ( int & & a@1 ) { }\n", tokenize("void foo(int&& a) {}"));
+        ASSERT_EQUALS("1: void foo ( int && a@1 ) { }\n", tokenize("void foo(int&& a) {}"));
 
         ASSERT_EQUALS("1: class C {\n"
-                      "2: C ( int & & a@1 ) ;\n"
+                      "2: C ( int && a@1 ) ;\n"
                       "3: } ;\n",
                       tokenize("class C {\n"
                                "    C(int&& a);\n"
                                "};"));
 
-        ASSERT_EQUALS("1: void foo ( int & & ) ;\n", tokenize("void foo(int&&);"));
+        ASSERT_EQUALS("1: void foo ( int && ) ;\n", tokenize("void foo(int&&);"));
     }
 
     void varid_arrayFuncPar() {

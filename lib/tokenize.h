@@ -154,8 +154,6 @@ public:
     */
     bool simplifyTokenList1(const char FileName[]);
 
-    void SimplifyNamelessRValueReferences();
-
     /**
     * Most aggressive simplification of tokenlist
     *
