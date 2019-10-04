@@ -150,6 +150,7 @@ private:
         TEST_CASE(array_index_valueflow_pointer);
         TEST_CASE(array_index_function_parameter);
         TEST_CASE(array_index_enum_array); // #8439
+        TEST_CASE(array_index_container); // #9386
 
         TEST_CASE(buffer_overrun_2_struct);
         TEST_CASE(buffer_overrun_3);
@@ -2142,6 +2143,14 @@ private:
               "    arrE[sizeof(arrE)] = e1;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'arrE[2]' accessed at index 8, which is out of bounds.\n", errout.str());
+    }
+
+    void array_index_container() { // #9386
+        check("constexpr int blockLen = 10;\n"
+              "void foo(std::array<uint8_t, blockLen * 2>& a) {\n"
+              "    a[2] = 2;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void buffer_overrun_2_struct() {
