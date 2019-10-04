@@ -1034,6 +1034,15 @@ static void compileLogicAnd(Token *&tok, AST_state& state)
     compileOr(tok, state);
     while (tok) {
         if (tok->str() == "&&") {
+            if (!tok->astOperand1()) {
+                Token* tok2 = tok->next();
+                if (!tok2)
+                    break;
+                if (state.cpp && Token::Match(tok2, ",|)")) {
+                    tok = tok2;
+                    break; // rValue reference
+                }
+            }
             compileBinOp(tok, state, compileOr);
         } else break;
     }

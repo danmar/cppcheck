@@ -3000,19 +3000,19 @@ private:
                                "a<int> c ; "
                                "template < typename d > "
                                "template < typename b > "
-                               "const decltype ( auto ) a < d > :: operator() ( b & & ) const { } "
+                               "const decltype ( auto ) a < d > :: operator() ( b && ) const { } "
                                "struct a<int> { "
-                               "template < typename b > const decltype ( auto ) operator() ( b & & ) const ; "
+                               "template < typename b > const decltype ( auto ) operator() ( b && ) const ; "
                                "} ;";
             const char act[] = "struct a<int> ; "
                                "a<int> c ; "
                                "template < typename d > "
                                "template < typename b > "
-                               "const decltype ( auto ) a < d > :: operator() ( b & & ) const { } "
+                               "const decltype ( auto ) a < d > :: operator() ( b && ) const { } "
                                "struct a<int> { "
-                               "template < typename b > const decltype ( auto ) operator() ( b & & ) const ; "
+                               "template < typename b > const decltype ( auto ) operator() ( b && ) const ; "
                                "} ; "
-                               "const decltype ( auto ) a<int> :: operator() ( b & & ) const { }";
+                               "const decltype ( auto ) a<int> :: operator() ( b && ) const { }";
             TODO_ASSERT_EQUALS(exp, act, tok(code));
         }
         {
