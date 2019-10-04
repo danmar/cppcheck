@@ -2318,18 +2318,6 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
         createSymbolDatabase();
     }
 
-    // Use symbol database to identify rvalue references. Split && to & &. This is safe, since it doesn't delete any tokens (which might be referenced by symbol database)
-    for (const Variable* var : mSymbolDatabase->variableList()) {
-        if (var && var->isRValueReference()) {
-            Token* endTok = const_cast<Token*>(var->typeEndToken());
-            endTok->str("&");
-            endTok->astOperand1(nullptr);
-            endTok->astOperand2(nullptr);
-            endTok->insertToken("&");
-            endTok->next()->scope(endTok->scope());
-        }
-    }
-
     if (mTimerResults) {
         Timer t("Tokenizer::simplifyTokens1::setValueType", mSettings->showtime, mTimerResults);
         mSymbolDatabase->setValueTypeInTokenList(true);
@@ -4635,8 +4623,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     simplifyEmptyNamespaces();
 
     elseif();
-
-    SimplifyNamelessRValueReferences();
 
     validate();
 
@@ -11236,17 +11222,6 @@ void Tokenizer::setPodTypes()
             if (prev && !Token::Match(prev, ";|{|}|,|("))
                 continue;
             tok->isStandardType(true);
-        }
-    }
-}
-
-void Tokenizer::SimplifyNamelessRValueReferences()
-{
-    // Simplify nameless rValue references - named ones are simplified later
-    for (Token* tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "&& [,)]")) {
-            tok->str("&");
-            tok->insertToken("&");
         }
     }
 }
