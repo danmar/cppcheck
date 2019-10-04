@@ -359,6 +359,8 @@ static bool isNonOverlapping(ExprEngine::ValuePtr v1, ExprEngine::ValuePtr v2)
 ExprEngine::ConditionalValue::Vector ExprEngine::ArrayValue::read(ExprEngine::ValuePtr index) const
 {
     ExprEngine::ConditionalValue::Vector ret;
+    if (!index)
+        return ret;
     for (const auto indexAndValue : data) {
         if (isEqual(index, indexAndValue.index))
             ret.clear();
@@ -1006,7 +1008,7 @@ static void execute(const Token *start, const Token *end, Data &data)
 
         if (Token::Match(tok, "for|while|switch ("))
             // TODO this is a bailout
-            return;
+            throw std::runtime_error("Unhandled:" + tok->str());
 
         // Variable declaration..
         if (tok->variable() && tok->variable()->nameToken() == tok) {
@@ -1044,15 +1046,10 @@ static void execute(const Token *start, const Token *end, Data &data)
 
             const Token *thenStart = tok->linkAt(1)->next();
             const Token *thenEnd = thenStart->link();
-            execute(thenStart->next(), thenEnd, ifData);
+            execute(thenStart->next(), end, ifData);
             if (Token::simpleMatch(thenEnd, "} else {")) {
                 const Token *elseStart = thenEnd->tokAt(2);
                 execute(elseStart->next(), end, elseData);
-                execute(elseStart->link()->next(), end, ifData);
-            } else {
-                // TODO: Merge ifData and elseData
-                execute(thenEnd->next(), end, ifData);
-                execute(thenEnd->next(), end, elseData);
             }
             return;
         }
