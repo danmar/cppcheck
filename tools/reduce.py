@@ -57,8 +57,12 @@ def runtool():
             return True
     elif p.returncode == 0:
         out = comm[0] + '\n' + comm[1]
-        if 'error:' not in out and EXPECTED in out:
+        if EXPECTED in out:
             return True
+    else:
+        # Something could be wrong, for example the command line for Cppcheck (CMD).
+        # Print the output to give a hint how to fix it.
+        print('Error: {}\n{}'.format(comm[0], comm[1]))
     return False
 
 
