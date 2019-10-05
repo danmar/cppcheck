@@ -5056,6 +5056,11 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         setValueType(parent, vt);
         return;
     }
+    // std::move
+    if (vt2 && parent->str() == "(" && Token::simpleMatch(parent->tokAt(-3), "std :: move (")) {
+        setValueType(parent, valuetype);
+        return;
+    }
     if (parent->str() == "*" && !parent->astOperand2() && valuetype.pointer > 0U) {
         ValueType vt(valuetype);
         vt.pointer -= 1U;
