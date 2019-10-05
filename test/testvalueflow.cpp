@@ -1411,8 +1411,7 @@ private:
             errout.str());
     }
 
-    void valueFlowBeforeConditionForward()
-    {
+    void valueFlowBeforeConditionForward() {
         const char* code;
 
         code = "void f(int a) {\n"
