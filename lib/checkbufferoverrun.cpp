@@ -286,6 +286,9 @@ void CheckBufferOverrun::arrayIndex()
                 continue;
         }
 
+        if (astIsContainer(array))
+            continue;
+
         std::vector<const Token *> indexTokens;
         for (const Token *tok2 = tok; tok2 && tok2->str() == "["; tok2 = tok2->link()->next()) {
             if (!tok2->astOperand2()) {
