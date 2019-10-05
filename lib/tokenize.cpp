@@ -2008,7 +2008,7 @@ bool Tokenizer::simplifyUsing()
             }
 
             // check for member function
-            if (Token::Match(tok1->tokAt(-2), ":: %name% (") && isFunctionHead(tok1, "{")) {
+            if (Token::Match(tok1->tokAt(-2), ":: %name% (") && isFunctionHead(tok1, "{|:")) {
                 std::string qualification;
                 const Token *qualTok = tok1->tokAt(-3);
                 while (Token::Match(qualTok, "%type% ::")) {
