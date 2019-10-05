@@ -6,6 +6,7 @@ noValidConfiguration
 shadowFunction
 functionConst
 functionStatic
+bitwiseOnBoolean
 
 # temporary suppressions - fix the warnings!
 duplicateBranch:lib/checkunusedvar.cpp
