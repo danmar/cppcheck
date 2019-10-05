@@ -2156,6 +2156,22 @@ private:
               "   return v;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("std::string f(const std::string& x) {\n"
+              "  const char c[] = \"\";\n"
+              "  if (!x.empty())\n"
+              "    return x + c;\n"
+              "  return \"\";\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::string f(const std::string& x) {\n"
+              "  const char c[] = \"123\";\n"
+              "  if (!x.empty())\n"
+              "    return c + 1;\n"
+              "  return \"\";\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void invalidLifetime() {
