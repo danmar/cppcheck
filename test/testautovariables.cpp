@@ -1186,7 +1186,7 @@ private:
               "    int x = 0;\n"
               "    return f(x);\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Reference to temporary returned.\n", errout.str());
 
         check("int& f(int a) {\n"
               "    return a;\n"
@@ -1204,7 +1204,7 @@ private:
               "    int x = 0;\n"
               "    return f(x);\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Reference to temporary returned.\n", errout.str());
 
         check("template<class T>\n"
               "int& f(int& x, T y) {\n"
@@ -1220,6 +1220,23 @@ private:
               "    return x[0];\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Reference to local variable returned.\n", errout.str());
+
+        check("auto& f() {\n"
+              "    std::vector<int> x;\n"
+              "    return x.front();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (error) Reference to local variable returned.\n", errout.str());
+
+        check("std::vector<int> g();\n"
+              "auto& f() {\n"
+              "    return g().front();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (error) Reference to temporary returned.\n", errout.str());
+
+        check("auto& f() {\n"
+              "    return std::vector<int>{1}.front();\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (error) Reference to temporary returned.\n", "", errout.str());
 
         check("struct A { int foo; };\n"
               "int& f(std::vector<A> v) {\n"
@@ -1243,6 +1260,20 @@ private:
             "[test.cpp:2] -> [test.cpp:4] -> [test.cpp:9] -> [test.cpp:9]: (error, inconclusive) Reference to local variable returned.\n",
             errout.str());
 
+        check("template <class T, class K, class V>\n"
+              "const V& get_default(const T& t, const K& k, const V& v) {\n"
+              "    auto it = t.find(k);\n"
+              "    if (it == t.end()) return v;\n"
+              "    return it->second;\n"
+              "}\n"
+              "const int& bar(const std::unordered_map<int, int>& m, int k) {\n"
+              "    return get_default(m, k, 0);\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:4] -> [test.cpp:8] -> [test.cpp:8]: (error, inconclusive) Reference to temporary returned.\n",
+            errout.str());
+
         check("struct A { int foo; };\n"
               "int& f(std::vector<A>& v) {\n"
               "    auto it = v.begin();\n"
@@ -1261,6 +1292,18 @@ private:
               "    return \"foo\";\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("const std::string& f(const std::string& x) { return x; }\n"
+              "const std::string &a() {\n"
+              "    return f(\"foo\");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1] -> [test.cpp:3] -> [test.cpp:3]: (error) Reference to temporary returned.\n", errout.str());
+
+        check("const char * f(const char * x) { return x; }\n"
+              "const std::string &a() {\n"
+              "    return f(\"foo\");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Reference to temporary returned.\n", errout.str());
     }
 
     void returnReferenceCalculation() {

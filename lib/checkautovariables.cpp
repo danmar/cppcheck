@@ -470,18 +470,19 @@ void CheckAutoVariables::returnReference()
                 if (tok2->str() != "return")
                     continue;
 
+                ErrorPath errorPath;
                 // return reference to temporary..
                 if (Token::Match(tok2, "return %name% (") && Token::simpleMatch(tok2->linkAt(2), ") ;")) {
                     if (returnTemporary(tok2->next())) {
                         // report error..
-                        errorReturnTempReference(tok2);
+                        errorReturnTempReference(tok2, errorPath, false);
                     }
                 }
 
                 // Return reference to a literal or the result of a calculation
                 else if (tok2->astOperand1() && (tok2->astOperand1()->isCalculation() || tok2->next()->isLiteral()) &&
                          astHasAutoResult(tok2->astOperand1())) {
-                    errorReturnTempReference(tok2);
+                    errorReturnTempReference(tok2, errorPath, false);
                 }
             }
         }
@@ -534,6 +535,23 @@ static int getPointerDepth(const Token *tok)
     return tok->valueType() ? tok->valueType()->pointer : 0;
 }
 
+static bool isTemporary(bool cpp, const Token* tok, const Token* expr)
+{
+    if (!tok)
+        return false;
+    if (Token::simpleMatch(tok, ","))
+        return isTemporary(cpp, tok->astOperand2(), expr);
+    if (Token::Match(tok, ".|++|--|%var%|%assign%"))
+        return false;
+    if (Token::Match(tok, "&|<<|>>") && isLikelyStream(cpp, tok->astOperand1()))
+        return false;
+    if (expr && !precedes(nextAfterAstRightmostLeaf(tok), nextAfterAstRightmostLeaf(expr)))
+        return false;
+    if (Token::Match(tok->previous(), "%name% ("))
+        return tok->previous()->function() && !Function::returnsReference(tok->previous()->function());
+    return true;
+}
+
 void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token * end)
 {
     if (!start)
@@ -550,11 +568,12 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
         if (returnRef && Token::simpleMatch(tok->astParent(), "return")) {
             for (const LifetimeToken& lt : getLifetimeTokens(tok)) {
                 const Variable* var = lt.token->variable();
-                if (!var)
-                    continue;
-                if (!var->isGlobal() && !var->isStatic() && !var->isReference() && !var->isRValueReference() &&
+                if (var && !var->isGlobal() && !var->isStatic() && !var->isReference() && !var->isRValueReference() &&
                     isInScope(var->nameToken(), tok->scope())) {
                     errorReturnReference(tok, lt.errorPath, lt.inconclusive);
+                    break;
+                } else if (isTemporary(mTokenizer->isCPP(), lt.token, nullptr)) {
+                    errorReturnTempReference(tok, lt.errorPath, lt.inconclusive);
                     break;
                 }
             }
@@ -680,9 +699,10 @@ void CheckAutoVariables::errorDanglingReference(const Token *tok, const Variable
     reportError(errorPath, Severity::error, "danglingReference", msg, CWE562, false);
 }
 
-void CheckAutoVariables::errorReturnTempReference(const Token *tok)
+void CheckAutoVariables::errorReturnTempReference(const Token *tok, ErrorPath errorPath, bool inconclusive)
 {
-    reportError(tok, Severity::error, "returnTempReference", "Reference to temporary returned.", CWE562, false);
+    errorPath.emplace_back(tok, "");
+    reportError(errorPath, Severity::error, "returnTempReference", "Reference to temporary returned.", CWE562, inconclusive);
 }
 
 void CheckAutoVariables::errorInvalidDeallocation(const Token *tok, const ValueFlow::Value *val)
