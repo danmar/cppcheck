@@ -3503,7 +3503,7 @@ bool isLifetimeBorrowed(const Token *tok, const Settings *settings)
             // TODO: Move logic to ValueType
             if (!vtParent && Token::simpleMatch(tok->astParent(), "return")) {
                 const Scope* fscope = tok->scope();
-                while(fscope && !fscope->function)
+                while (fscope && !fscope->function)
                     fscope = fscope->nestedIn;
                 if (fscope && fscope->function && fscope->function->retDef) {
                     svt = ValueType::parseDecl(fscope->function->retDef, settings);
