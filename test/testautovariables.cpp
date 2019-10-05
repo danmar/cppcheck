@@ -100,6 +100,7 @@ private:
         TEST_CASE(returnReference5);
         TEST_CASE(returnReference6);
         TEST_CASE(returnReference7);
+        TEST_CASE(returnReference8);
         TEST_CASE(returnReferenceFunction);
         TEST_CASE(returnReferenceContainer);
         TEST_CASE(returnReferenceLiteral);
@@ -1137,6 +1138,15 @@ private:
               "std::string &b() {\n"
               "    return a(12);\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void returnReference8() {
+        check("int& f(std::vector<int> &v) {\n"
+              "    std::vector<int>::iterator it = v.begin();\n"
+              "    int& value = *it;\n"
+              "    return value;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -448,6 +448,8 @@ static bool isDeadTemporary(bool cpp, const Token* tok, const Token* expr)
         return isDeadTemporary(cpp, tok->astOperand2(), expr);
     if (Token::Match(tok, ".|[|++|--|%var%|%assign%"))
         return false;
+    if (tok->isUnaryOp("*"))
+        return false;
     if (Token::Match(tok, "&|<<|>>") && isLikelyStream(cpp, tok->astOperand1()))
         return false;
     if (expr && !precedes(nextAfterAstRightmostLeaf(tok->astTop()), nextAfterAstRightmostLeaf(expr->astTop())))
