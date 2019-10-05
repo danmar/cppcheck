@@ -548,7 +548,7 @@ static bool isDeadTemporary(bool cpp, const Token* tok, const Token* expr)
     if (expr && !precedes(nextAfterAstRightmostLeaf(tok->astTop()), nextAfterAstRightmostLeaf(expr->astTop())))
         return false;
     if (Token::Match(tok->previous(), "%name% ("))
-        return tok->previous()->function() && !Function::returnsReference(tok->previous()->function());
+        return tok->previous()->function() && !Function::returnsReference(tok->previous()->function(), true);
     return true;
 }
 
