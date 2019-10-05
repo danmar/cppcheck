@@ -357,48 +357,6 @@ void CheckAutoVariables::errorUselessAssignmentPtrArg(const Token *tok)
 
 //---------------------------------------------------------------------------
 
-// return temporary?
-bool CheckAutoVariables::returnTemporary(const Token *tok)
-{
-    bool func = false;     // Might it be a function call?
-    bool retref = false;   // is there such a function that returns a reference?
-    bool retvalue = false; // is there such a function that returns a value?
-
-    const Function *function = tok->function();
-    if (function) {
-        // Ticket #5478: Only functions or operator equal might return a temporary
-        if (function->type != Function::eOperatorEqual && function->type != Function::eFunction)
-            return false;
-        retref = function->tokenDef->strAt(-1) == "&";
-        if (!retref) {
-            const Token *start = function->retDef;
-            if (start->str() == "const")
-                start = start->next();
-            if (start->str() == "::")
-                start = start->next();
-
-            if (Token::simpleMatch(start, "std ::")) {
-                if (start->strAt(3) != "<" || !Token::simpleMatch(start->linkAt(3), "> ::"))
-                    retvalue = true;
-                else
-                    retref = true; // Assume that a reference is returned
-            } else {
-                if (start->type())
-                    retvalue = true;
-                else
-                    retref = true;
-            }
-        }
-        func = true;
-    }
-    if (!func && tok->type())
-        return true;
-
-    return (!retref && retvalue);
-}
-
-//---------------------------------------------------------------------------
-
 static bool astHasAutoResult(const Token *tok)
 {
     if (tok->astOperand1() && !astHasAutoResult(tok->astOperand1()))
@@ -434,59 +392,6 @@ static bool astHasAutoResult(const Token *tok)
     }
 
     return false;
-}
-
-void CheckAutoVariables::returnReference()
-{
-    if (mTokenizer->isC())
-        return;
-
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-
-    for (const Scope * scope : symbolDatabase->functionScopes) {
-        if (!scope->function)
-            continue;
-
-        const Token *tok = scope->function->tokenDef;
-
-        // have we reached a function that returns a reference?
-        if (tok->previous() && tok->previous()->str() == "&") {
-            for (const Token *tok2 = scope->bodyStart->next(); tok2 && tok2 != scope->bodyEnd; tok2 = tok2->next()) {
-                if (!tok2->scope()->isExecutable()) {
-                    tok2 = tok2->scope()->bodyEnd;
-                    if (!tok2)
-                        break;
-                    continue;
-                }
-
-                // Skip over lambdas
-                const Token *lambdaEndToken = findLambdaEndToken(tok2);
-                if (lambdaEndToken)
-                    tok2 = lambdaEndToken->next();
-
-                if (tok2->str() == "(")
-                    tok2 = tok2->link();
-
-                if (tok2->str() != "return")
-                    continue;
-
-                ErrorPath errorPath;
-                // return reference to temporary..
-                if (Token::Match(tok2, "return %name% (") && Token::simpleMatch(tok2->linkAt(2), ") ;")) {
-                    if (returnTemporary(tok2->next())) {
-                        // report error..
-                        errorReturnTempReference(tok2, errorPath, false);
-                    }
-                }
-
-                // Return reference to a literal or the result of a calculation
-                else if (tok2->astOperand1() && (tok2->astOperand1()->isCalculation() || tok2->next()->isLiteral()) &&
-                         astHasAutoResult(tok2->astOperand1())) {
-                    errorReturnTempReference(tok2, errorPath, false);
-                }
-            }
-        }
-    }
 }
 
 static bool isInScope(const Token * tok, const Scope * scope)

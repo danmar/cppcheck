@@ -52,7 +52,6 @@ public:
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         CheckAutoVariables checkAutoVariables(tokenizer, settings, errorLogger);
         checkAutoVariables.assignFunctionArg();
-        checkAutoVariables.returnReference();
         checkAutoVariables.checkVarLifetime();
         checkAutoVariables.autoVariables();
     }
@@ -63,21 +62,11 @@ public:
     /** Check auto variables */
     void autoVariables();
 
-    /** Returning reference to local/temporary variable */
-    void returnReference();
-
     void checkVarLifetime();
 
     void checkVarLifetimeScope(const Token * start, const Token * end);
 
 private:
-    /**
-     * Returning a temporary object?
-     * @param tok pointing at the "return" token
-     * @return true if a temporary object is returned
-     */
-    static bool returnTemporary(const Token *tok);
-
     void errorReturnAddressToAutoVariable(const Token *tok);
     void errorReturnAddressToAutoVariable(const Token *tok, const ValueFlow::Value *value);
     void errorReturnPointerToLocalArray(const Token *tok);
