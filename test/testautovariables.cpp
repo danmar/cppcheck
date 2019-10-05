@@ -1298,7 +1298,9 @@ private:
               "const std::string &a() {\n"
               "    return f(\"foo\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1] -> [test.cpp:3] -> [test.cpp:3]: (error) Reference to temporary returned.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1] -> [test.cpp:1] -> [test.cpp:3] -> [test.cpp:3]: (error) Reference to temporary returned.\n",
+            errout.str());
 
         check("const char * f(const char * x) { return x; }\n"
               "const std::string &a() {\n"
@@ -1744,7 +1746,10 @@ private:
               "auto f() {\n"
               "    return g().begin();\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (error) Returning iterator that will be invalid when returning.\n", "", errout.str());
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:3]: (error) Returning iterator that will be invalid when returning.\n",
+            "",
+            errout.str());
 
         check("std::vector<int> f();\n"
               "auto f() {\n"
@@ -1752,7 +1757,7 @@ private:
               "    return it;\n"
               "}\n");
         TODO_ASSERT_EQUALS("error", "", errout.str());
-        
+
         check("std::vector<int> f();\n"
               "int& f() {\n"
               "    return *g().begin();\n"
@@ -2221,7 +2226,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void danglingTemporaryLifetime() {
+    void danglingTemporaryLifetime()
+    {
         check("const int& g(const int& x) {\n"
               "    return x;\n"
               "}\n"
@@ -2229,7 +2235,9 @@ private:
               "    int* x = &g(0);\n"
               "    i += *x;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2] -> [test.cpp:5] -> [test.cpp:5] -> [test.cpp:6]: (error) Using pointer to temporary.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1] -> [test.cpp:2] -> [test.cpp:5] -> [test.cpp:5] -> [test.cpp:6]: (error) Using pointer to temporary.\n",
+            errout.str());
     }
 
     void invalidLifetime() {

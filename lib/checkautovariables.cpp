@@ -502,7 +502,8 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                     continue;
                 if (!isLifetimeBorrowed(tok, mSettings))
                     continue;
-                if ((val.tokvalue->variable() && isInScope(val.tokvalue->variable()->nameToken(), scope)) || isDeadTemporary(mTokenizer->isCPP(), val.tokvalue, tok)) {
+                if ((val.tokvalue->variable() && isInScope(val.tokvalue->variable()->nameToken(), scope)) ||
+                    isDeadTemporary(mTokenizer->isCPP(), val.tokvalue, tok)) {
                     errorReturnDanglingLifetime(tok, &val);
                     break;
                 }
@@ -579,7 +580,7 @@ void CheckAutoVariables::errorInvalidLifetime(const Token *tok, const ValueFlow:
     reportError(errorPath, Severity::error, "invalidLifetime", msg + " that is out of scope.", CWE562, inconclusive);
 }
 
-void CheckAutoVariables::errorDanglingTemporaryLifetime(const Token *tok, const ValueFlow::Value* val)
+void CheckAutoVariables::errorDanglingTemporaryLifetime(const Token* tok, const ValueFlow::Value* val)
 {
     const bool inconclusive = val ? val->isInconclusive() : false;
     ErrorPath errorPath = val ? val->errorPath : ErrorPath();
@@ -614,10 +615,11 @@ void CheckAutoVariables::errorDanglingReference(const Token *tok, const Variable
     reportError(errorPath, Severity::error, "danglingReference", msg, CWE562, false);
 }
 
-void CheckAutoVariables::errorReturnTempReference(const Token *tok, ErrorPath errorPath, bool inconclusive)
+void CheckAutoVariables::errorReturnTempReference(const Token* tok, ErrorPath errorPath, bool inconclusive)
 {
     errorPath.emplace_back(tok, "");
-    reportError(errorPath, Severity::error, "returnTempReference", "Reference to temporary returned.", CWE562, inconclusive);
+    reportError(
+        errorPath, Severity::error, "returnTempReference", "Reference to temporary returned.", CWE562, inconclusive);
 }
 
 void CheckAutoVariables::errorInvalidDeallocation(const Token *tok, const ValueFlow::Value *val)
