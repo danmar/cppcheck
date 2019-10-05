@@ -1145,19 +1145,6 @@ public:
           container(nullptr),
           containerTypeToken(nullptr)
     {}
-    ValueType(const ValueType& vt)
-        : sign(vt.sign),
-          type(vt.type),
-          bits(vt.bits),
-          pointer(vt.pointer),
-          constness(vt.constness),
-          typeScope(vt.typeScope),
-          smartPointerType(vt.smartPointerType),
-          smartPointerTypeToken(vt.smartPointerTypeToken),
-          container(vt.container),
-          containerTypeToken(vt.containerTypeToken),
-          originalTypeName(vt.originalTypeName)
-    {}
     ValueType(enum Sign s, enum Type t, nonneg int p)
         : sign(s),
           type(t),
@@ -1195,8 +1182,6 @@ public:
           containerTypeToken(nullptr),
           originalTypeName(otn)
     {}
-    ValueType &operator=(const ValueType &other) = delete;
-
     static ValueType parseDecl(const Token *type, const Settings *settings);
 
     static Type typeFromString(const std::string &typestr, bool longType);

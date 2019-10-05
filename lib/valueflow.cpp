@@ -676,6 +676,8 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
     }
 
     if (value.isLifetimeValue()) {
+        if (!isLifetimeBorrowed(parent, settings))
+            return;
         if (value.lifetimeKind == ValueFlow::Value::LifetimeKind::Iterator && astIsIterator(parent)) {
             setTokenValue(parent,value,settings);
         } else if (astIsPointer(tok) && astIsPointer(parent) &&
@@ -3497,6 +3499,17 @@ bool isLifetimeBorrowed(const Token *tok, const Settings *settings)
         if (!Token::simpleMatch(tok, "{")) {
             const ValueType *vt = tok->valueType();
             const ValueType *vtParent = tok->astParent()->valueType();
+            ValueType svt;
+            // TODO: Move logic to ValueType
+            if (!vtParent && Token::simpleMatch(tok->astParent(), "return")) {
+                const Scope* fscope = tok->scope();
+                while(fscope && !fscope->function)
+                    fscope = fscope->nestedIn;
+                if (fscope && fscope->function && fscope->function->retDef) {
+                    svt = ValueType::parseDecl(fscope->function->retDef, settings);
+                    vtParent = &svt;
+                }
+            }
             if (isLifetimeBorrowed(vt, vtParent))
                 return true;
             if (isLifetimeOwned(vt, vtParent))
