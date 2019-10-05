@@ -67,6 +67,7 @@ private:
         TEST_CASE(simplifyUsing9191);
         TEST_CASE(simplifyUsing9381);
         TEST_CASE(simplifyUsing9385);
+        TEST_CASE(simplifyUsing9388);
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
@@ -583,6 +584,23 @@ private:
                                "void A :: B :: func ( Bar ) { }";
             ASSERT_EQUALS(exp, tok(code, false));
         }
+    }
+
+    void simplifyUsing9388() {
+        const char code[] = "class A {\n"
+                            "public:\n"
+                            "    using Type = int;\n"
+                            "    A(Type&);\n"
+                            "    Type& t_;\n"
+                            "};\n"
+                            "A::A(Type& t) : t_(t) { }";
+        const char exp[] = "class A { "
+                           "public: "
+                           "A ( int & ) ; "
+                           "int & t_ ; "
+                           "} ; "
+                           "A :: A ( int & t ) : t_ ( t ) { }";
+        ASSERT_EQUALS(exp, tok(code, false));
     }
 
 };
