@@ -85,6 +85,7 @@ private:
     void errorReturnDanglingLifetime(const Token *tok, const ValueFlow::Value* val);
     void errorInvalidLifetime(const Token *tok, const ValueFlow::Value* val);
     void errorDanglngLifetime(const Token *tok, const ValueFlow::Value *val);
+    void errorDanglingTemporaryLifetime(const Token *tok, const ValueFlow::Value *val);
     void errorReturnReference(const Token* tok, ErrorPath errorPath, bool inconclusive);
     void errorDanglingReference(const Token *tok, const Variable *var, ErrorPath errorPath);
     void errorReturnTempReference(const Token *tok, ErrorPath errorPath, bool inconclusive);
@@ -109,6 +110,7 @@ private:
         c.errorReturnDanglingLifetime(nullptr, nullptr);
         c.errorInvalidLifetime(nullptr, nullptr);
         c.errorDanglngLifetime(nullptr, nullptr);
+        c.errorDanglingTemporaryLifetime(nullptr, nullptr);
     }
 
     static std::string myName() {

@@ -126,6 +126,7 @@ private:
         TEST_CASE(danglingLifetimeAggegrateConstructor);
         TEST_CASE(danglingLifetimeInitList);
         TEST_CASE(danglingLifetimeImplicitConversion);
+        TEST_CASE(danglingTemporaryLifetime);
         TEST_CASE(invalidLifetime);
         TEST_CASE(deadPointer);
     }
@@ -1739,6 +1740,25 @@ private:
             "[test.cpp:9] -> [test.cpp:9] -> [test.cpp:8] -> [test.cpp:9]: (error, inconclusive) Returning pointer to local variable 'x' that will be invalid when returning.\n",
             errout.str());
 
+        check("std::vector<int> g();\n"
+              "auto f() {\n"
+              "    return g().begin();\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (error) Returning iterator that will be invalid when returning.\n", "", errout.str());
+
+        check("std::vector<int> f();\n"
+              "auto f() {\n"
+              "    auto it = g().begin();\n"
+              "    return it;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
+        
+        check("std::vector<int> f();\n"
+              "int& f() {\n"
+              "    return *g().begin();\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
+
         check("struct A {\n"
               "    std::vector<std::string> v;\n"
               "    void f() {\n"
@@ -2199,6 +2219,17 @@ private:
               "   return v;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void danglingTemporaryLifetime() {
+        check("const int& g(const int& x) {\n"
+              "    return x;\n"
+              "}\n"
+              "void f(int& i) {\n"
+              "    int* x = &g(0);\n"
+              "    i += *x;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2] -> [test.cpp:5] -> [test.cpp:5] -> [test.cpp:6]: (error) Using pointer to temporary.\n", errout.str());
     }
 
     void invalidLifetime() {

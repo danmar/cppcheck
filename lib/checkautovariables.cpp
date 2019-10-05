@@ -535,17 +535,17 @@ static int getPointerDepth(const Token *tok)
     return tok->valueType() ? tok->valueType()->pointer : 0;
 }
 
-static bool isTemporary(bool cpp, const Token* tok, const Token* expr)
+static bool isDeadTemporary(bool cpp, const Token* tok, const Token* expr)
 {
     if (!tok)
         return false;
     if (Token::simpleMatch(tok, ","))
-        return isTemporary(cpp, tok->astOperand2(), expr);
-    if (Token::Match(tok, ".|++|--|%var%|%assign%"))
+        return isDeadTemporary(cpp, tok->astOperand2(), expr);
+    if (Token::Match(tok, ".|[|++|--|%var%|%assign%"))
         return false;
     if (Token::Match(tok, "&|<<|>>") && isLikelyStream(cpp, tok->astOperand1()))
         return false;
-    if (expr && !precedes(nextAfterAstRightmostLeaf(tok), nextAfterAstRightmostLeaf(expr)))
+    if (expr && !precedes(nextAfterAstRightmostLeaf(tok->astTop()), nextAfterAstRightmostLeaf(expr->astTop())))
         return false;
     if (Token::Match(tok->previous(), "%name% ("))
         return tok->previous()->function() && !Function::returnsReference(tok->previous()->function());
@@ -572,7 +572,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                     isInScope(var->nameToken(), tok->scope())) {
                     errorReturnReference(tok, lt.errorPath, lt.inconclusive);
                     break;
-                } else if (isTemporary(mTokenizer->isCPP(), lt.token, nullptr)) {
+                } else if (isDeadTemporary(mTokenizer->isCPP(), lt.token, nullptr)) {
                     errorReturnTempReference(tok, lt.errorPath, lt.inconclusive);
                     break;
                 }
@@ -592,21 +592,22 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
         for (const ValueFlow::Value& val:tok->values()) {
             if (!val.isLocalLifetimeValue())
                 continue;
-            if (!val.tokvalue->variable())
-                continue;
             if (Token::Match(tok->astParent(), "return|throw")) {
                 if (getPointerDepth(tok) < getPointerDepth(val.tokvalue))
                     continue;
                 if (!isLifetimeBorrowed(tok, mSettings))
                     continue;
-                if (isInScope(val.tokvalue->variable()->nameToken(), scope)) {
+                if ((val.tokvalue->variable() && isInScope(val.tokvalue->variable()->nameToken(), scope)) || isDeadTemporary(mTokenizer->isCPP(), val.tokvalue, tok)) {
                     errorReturnDanglingLifetime(tok, &val);
                     break;
                 }
-            } else if (isDeadScope(val.tokvalue->variable()->nameToken(), tok->scope())) {
+            } else if (val.tokvalue->variable() && isDeadScope(val.tokvalue->variable()->nameToken(), tok->scope())) {
                 errorInvalidLifetime(tok, &val);
                 break;
-            } else if (isInScope(val.tokvalue->variable()->nameToken(), tok->scope())) {
+            } else if (!val.tokvalue->variable() && isDeadTemporary(mTokenizer->isCPP(), val.tokvalue, tok)) {
+                errorDanglingTemporaryLifetime(tok, &val);
+                break;
+            } else if (val.tokvalue->variable() && isInScope(val.tokvalue->variable()->nameToken(), tok->scope())) {
                 const Variable * var = nullptr;
                 const Token * tok2 = tok;
                 if (Token::simpleMatch(tok->astParent(), "=")) {
@@ -671,6 +672,15 @@ void CheckAutoVariables::errorInvalidLifetime(const Token *tok, const ValueFlow:
     std::string msg = "Using " + lifetimeMessage(tok, val, errorPath);
     errorPath.emplace_back(tok, "");
     reportError(errorPath, Severity::error, "invalidLifetime", msg + " that is out of scope.", CWE562, inconclusive);
+}
+
+void CheckAutoVariables::errorDanglingTemporaryLifetime(const Token *tok, const ValueFlow::Value* val)
+{
+    const bool inconclusive = val ? val->isInconclusive() : false;
+    ErrorPath errorPath = val ? val->errorPath : ErrorPath();
+    std::string msg = "Using " + lifetimeMessage(tok, val, errorPath);
+    errorPath.emplace_back(tok, "");
+    reportError(errorPath, Severity::error, "danglingTemporaryLifetime", msg + " to temporary.", CWE562, inconclusive);
 }
 
 void CheckAutoVariables::errorDanglngLifetime(const Token *tok, const ValueFlow::Value *val)
