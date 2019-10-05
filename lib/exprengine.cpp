@@ -486,10 +486,10 @@ std::string ExprEngine::IntegerTruncation::getSymbolicExpression() const
 
 #ifdef USE_Z3
 struct ExprData {
-    typedef std::map<ExprEngine::ValuePtr, z3::expr> ValueExpr;
+    typedef std::map<std::string, z3::expr> ValueExpr;
     typedef std::vector<z3::expr> AssertionList;
 
-    z3::context c;
+    z3::context context;
     ValueExpr valueExpr;
     AssertionList assertionList;
 
@@ -539,12 +539,12 @@ static z3::expr getExpr(ExprEngine::ValuePtr v, ExprData &exprData)
 {
     if (auto intRange = std::dynamic_pointer_cast<ExprEngine::IntRange>(v)) {
         if (intRange->name[0] != '$')
-            return exprData.c.int_val(int64_t(intRange->minValue));
-        auto it = exprData.valueExpr.find(v);
+            return exprData.context.int_val(int64_t(intRange->minValue));
+        auto it = exprData.valueExpr.find(v->name);
         if (it != exprData.valueExpr.end())
             return it->second;
-        auto e = exprData.c.int_const(("v" + std::to_string(exprData.valueExpr.size())).c_str());
-        exprData.valueExpr.emplace(v, e);
+        auto e = exprData.context.int_const(v->name.c_str());
+        exprData.valueExpr.emplace(v->name, e);
         if (intRange->maxValue <= INT_MAX)
             exprData.assertionList.push_back(e <= int(intRange->maxValue));
         if (intRange->minValue >= INT_MIN)
@@ -566,16 +566,41 @@ static z3::expr getExpr(ExprEngine::ValuePtr v, ExprData &exprData)
     }
 
     if (v->type == ExprEngine::ValueType::UninitValue)
-        return exprData.c.int_val(0);
+        return exprData.context.int_val(0);
 
     throw std::runtime_error("Internal error: Unhandled value type");
 }
 #endif
+
+bool ExprEngine::IntRange::isIntValueInRange(DataBase *dataBase, int value) const
+{
+    if (value < minValue || value > maxValue)
+        return false;
+
+    const Data *data = dynamic_cast<Data *>(dataBase);
+    if (data->constraints.empty())
+        return true;
+#ifdef USE_Z3
+    // Check the value against the constraints
+    ExprData exprData;
+    z3::solver solver(exprData.context);
+    z3::expr e = exprData.context.int_const(name.c_str());
+    exprData.valueExpr.emplace(name, e);
+    for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
+        solver.add(::getExpr(constraint, exprData));
+    solver.add(e == value);
+    return solver.check() == z3::sat;
+#else
+    // The value may or may not be in range
+    return false;
+#endif
+}
+
 bool ExprEngine::BinOpResult::isIntValueInRange(ExprEngine::DataBase *dataBase, int value) const
 {
 #ifdef USE_Z3
     ExprData exprData;
-    z3::solver solver(exprData.c);
+    z3::solver solver(exprData.context);
     z3::expr e = ::getExpr(this, exprData);
     exprData.addAssertions(solver);
     for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
@@ -593,7 +618,7 @@ std::string ExprEngine::BinOpResult::getExpr(ExprEngine::DataBase *dataBase) con
 {
 #ifdef USE_Z3
     ExprData exprData;
-    z3::solver solver(exprData.c);
+    z3::solver solver(exprData.context);
     z3::expr e = ::getExpr(this, exprData);
     exprData.addAssertions(solver);
     for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)

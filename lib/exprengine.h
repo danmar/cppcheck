@@ -113,10 +113,7 @@ namespace ExprEngine {
                 return str(minValue);
             return str(minValue) + ":" + str(maxValue);
         }
-        bool isIntValueInRange(DataBase *dataBase, int value) const override {
-            (void)dataBase;
-            return value >= minValue && value <= maxValue;
-        }
+        bool isIntValueInRange(DataBase *dataBase, int value) const override;
 
         int128_t minValue;
         int128_t maxValue;

@@ -160,23 +160,23 @@ private:
     }
 
     void if1() {
-        ASSERT_EQUALS("(declare-fun v0 () Int)\n"
-                      "(declare-fun v1 () Int)\n"
-                      "(assert (<= v0 2147483647))\n"
-                      "(assert (>= v0 (- 2147483648)))\n"
-                      "(assert (<= v1 2147483647))\n"
-                      "(assert (>= v1 (- 2147483648)))\n"
-                      "(assert (< v0 v1))\n"
-                      "(assert (= v0 v1))\n",
+        ASSERT_EQUALS("(declare-fun $1 () Int)\n"
+                      "(declare-fun $2 () Int)\n"
+                      "(assert (<= $1 2147483647))\n"
+                      "(assert (>= $1 (- 2147483648)))\n"
+                      "(assert (<= $2 2147483647))\n"
+                      "(assert (>= $2 (- 2147483648)))\n"
+                      "(assert (< $1 $2))\n"
+                      "(assert (= $1 $2))\n",
                       expr("void f(int x, int y) { if (x < y) return x == y; }", "=="));
     }
 
     void ifelse1() {
-        ASSERT_EQUALS("(declare-fun v0 () Int)\n"
-                      "(assert (<= v0 32767))\n"
-                      "(assert (>= v0 (- 32768)))\n"
-                      "(assert (<= v0 5))\n"
-                      "(assert (= (+ v0 2) 40))\n",
+        ASSERT_EQUALS("(declare-fun $1 () Int)\n"
+                      "(assert (<= $1 32767))\n"
+                      "(assert (>= $1 (- 32768)))\n"
+                      "(assert (<= $1 5))\n"
+                      "(assert (= (+ $1 2) 40))\n",
                       expr("void f(short x) { if (x > 5) ; else if (x+2==40); }", "=="));
     }
 
@@ -187,20 +187,20 @@ private:
     }
 
     void array2() {
-        ASSERT_EQUALS("(declare-fun v0 () Int)\n"
-                      "(assert (<= v0 255))\n"
-                      "(assert (>= v0 0))\n"
-                      "(assert (= v0 365))\n",
+        ASSERT_EQUALS("(declare-fun |$3:4| () Int)\n"
+                      "(assert (<= |$3:4| 255))\n"
+                      "(assert (>= |$3:4| 0))\n"
+                      "(assert (= |$3:4| 365))\n",
                       expr("void dostuff(unsigned char *); int f() { unsigned char arr[10] = \"\"; dostuff(arr); return arr[4] == 365; }", "=="));
     }
 
     void array3() {
         const char code[] = "void f(unsigned char x) { int arr[10]; arr[4] = 43; return arr[x] == 12; }";
         ASSERT_EQUALS("?,43", getRange(code, "arr[x]"));
-        ASSERT_EQUALS("(declare-fun v0 () Int)\n"
-                      "(assert (<= v0 255))\n"
-                      "(assert (>= v0 0))\n"
-                      "(assert (= (ite (= v0 4) 43 0) 12))\n",
+        ASSERT_EQUALS("(declare-fun $1 () Int)\n"
+                      "(assert (<= $1 255))\n"
+                      "(assert (>= $1 0))\n"
+                      "(assert (= (ite (= $1 4) 43 0) 12))\n",
                       expr(code, "=="));
     }
 
@@ -256,10 +256,10 @@ private:
 
 
     void int1() {
-        ASSERT_EQUALS("(declare-fun v0 () Int)\n"
-                      "(assert (<= v0 2147483647))\n"
-                      "(assert (>= v0 (- 2147483648)))\n"
-                      "(assert (= (+ 2 v0) 3))\n",
+        ASSERT_EQUALS("(declare-fun $1 () Int)\n"
+                      "(assert (<= $1 2147483647))\n"
+                      "(assert (>= $1 (- 2147483648)))\n"
+                      "(assert (= (+ 2 $1) 3))\n",
                       expr("void f(int x) { return 2+x==3; }", "=="));
     }
 
@@ -267,10 +267,10 @@ private:
     void pointer1() {
         const char code[] = "void f(unsigned char *p) { return *p == 7; }";
         ASSERT_EQUALS("->$1,null,->?", getRange(code, "p"));
-        ASSERT_EQUALS("(declare-fun v0 () Int)\n"
-                      "(assert (<= v0 255))\n"
-                      "(assert (>= v0 0))\n"
-                      "(assert (= v0 7))\n",
+        ASSERT_EQUALS("(declare-fun $1 () Int)\n"
+                      "(assert (<= $1 255))\n"
+                      "(assert (>= $1 0))\n"
+                      "(assert (= $1 7))\n",
                       expr(code, "=="));
     }
 
@@ -301,13 +301,13 @@ private:
 
 
     void structMember() {
-        ASSERT_EQUALS("(declare-fun v0 () Int)\n"
-                      "(declare-fun v1 () Int)\n"
-                      "(assert (<= v0 255))\n"
-                      "(assert (>= v0 0))\n"
-                      "(assert (<= v1 255))\n"
-                      "(assert (>= v1 0))\n"
-                      "(assert (= (+ v0 v1) 0))\n",
+        ASSERT_EQUALS("(declare-fun $2 () Int)\n"
+                      "(declare-fun $3 () Int)\n"
+                      "(assert (<= $2 255))\n"
+                      "(assert (>= $2 0))\n"
+                      "(assert (<= $3 255))\n"
+                      "(assert (>= $3 0))\n"
+                      "(assert (= (+ $2 $3) 0))\n",
                       expr("struct S {\n"
                            "    unsigned char a;\n"
                            "    unsigned char b;\n"
