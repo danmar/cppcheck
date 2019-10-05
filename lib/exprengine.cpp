@@ -1115,9 +1115,11 @@ static ExprEngine::ValuePtr createStructVal(const Scope *structScope, bool unini
                 continue;
             }
         }
-        ExprEngine::ValuePtr memberValue = createVariableValue(member, data);
-        if (memberValue)
-            structValue->member[member.name()] = memberValue;
+        if (member.valueType() && member.valueType()->isIntegral()) {
+            ExprEngine::ValuePtr memberValue = createVariableValue(member, data);
+            if (memberValue)
+                structValue->member[member.name()] = memberValue;
+        }
     }
     return structValue;
 }
