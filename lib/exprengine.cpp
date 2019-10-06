@@ -225,6 +225,13 @@ namespace {
             else
                 constraints.push_back(notValue(condValue));
         }
+
+        void addConstraint(ExprEngine::ValuePtr lhsValue, ExprEngine::ValuePtr rhsValue, bool equals) {
+            if (!lhsValue || !rhsValue)
+                return;
+            constraints.push_back(std::make_shared<ExprEngine::BinOpResult>(equals?"==":"!=", lhsValue, rhsValue));
+        }
+
     private:
         TrackExecution * const mTrackExecution;
         const int mDataIndex;
@@ -1051,10 +1058,18 @@ static void execute(const Token *start, const Token *end, Data &data)
             continue;
         }
 
-        if (tok->str() == "break")
-            return;
+        if (tok->str() == "break") {
+            const Scope *scope = tok->scope();
+            while (scope->type == Scope::eIf || scope->type == Scope::eElse)
+                scope = scope->nestedIn;
+            tok = scope->bodyEnd;
+        }
 
-        if (Token::Match(tok, "for|while|switch ("))
+        if (Token::simpleMatch(tok, "try"))
+            // TODO this is a bailout
+            throw std::runtime_error("Unhandled:" + tok->str());
+
+        if (Token::Match(tok, "for|while ("))
             // TODO this is a bailout
             throw std::runtime_error("Unhandled:" + tok->str());
 
@@ -1081,11 +1096,14 @@ static void execute(const Token *start, const Token *end, Data &data)
                     tok = tok->linkAt(1);
             } else if (Token::Match(tok, "%var% ;"))
                 data.assignValue(tok, tok->varId(), createVariableValue(*tok->variable(), data));
-        } else if (!tok->astParent() && (tok->astOperand1() || tok->astOperand2()))
+        } else if (!tok->astParent() && (tok->astOperand1() || tok->astOperand2())) {
             executeExpression(tok, data);
+            if (Token::Match(tok, "throw|return"))
+                return;
+        }
 
         else if (Token::simpleMatch(tok, "if (")) {
-            const Token *cond = tok->next()->astOperand2();
+            const Token *cond = tok->next()->astOperand2(); // TODO: C++17 condition
             const ExprEngine::ValuePtr condValue = executeExpression(cond, data);
             Data ifData(data);
             Data elseData(data);
@@ -1101,6 +1119,28 @@ static void execute(const Token *start, const Token *end, Data &data)
             } else {
                 execute(thenEnd, end, elseData);
             }
+            return;
+        }
+
+        else if (Token::simpleMatch(tok, "switch (")) {
+            auto condValue = executeExpression(tok->next()->astOperand2(), data); // TODO: C++17 condition
+            const Token *bodyStart = tok->linkAt(1)->next();
+            const Token *bodyEnd = bodyStart->link();
+            const Token *defaultStart = nullptr;
+            Data defaultData(data);
+            for (const Token *tok2 = bodyStart->next(); tok2 != bodyEnd; tok2 = tok2->next()) {
+                if (tok2->str() == "{")
+                    tok2 = tok2->link();
+                else if (Token::Match(tok2, "case %num% :")) {
+                    auto caseValue = std::make_shared<ExprEngine::IntRange>(tok2->strAt(1), MathLib::toLongNumber(tok2->strAt(1)), MathLib::toLongNumber(tok2->strAt(1)));
+                    Data caseData(data);
+                    caseData.addConstraint(condValue, caseValue, true);
+                    defaultData.addConstraint(condValue, caseValue, false);
+                    execute(tok2->tokAt(2), end, caseData);
+                } else if (Token::simpleMatch(tok2, "default :"))
+                    defaultStart = tok2;
+            }
+            execute(defaultStart ? defaultStart : bodyEnd, end, defaultData);
             return;
         }
 
