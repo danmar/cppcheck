@@ -299,6 +299,7 @@ private:
         TEST_CASE(symboldatabase76); // #9056
         TEST_CASE(symboldatabase77); // #8663
         TEST_CASE(symboldatabase78); // #9147
+        TEST_CASE(symboldatabase79); // #9392
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
 
@@ -4244,6 +4245,14 @@ private:
                       "void e() { using c = a<>; }");
         ASSERT(db != nullptr);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase79() { // #9392
+        GET_SYMBOL_DB("class C { C(); };\n"
+                      "C::C() = default;");
+        ASSERT(db->scopeList.size() == 2);
+        ASSERT(db->scopeList.back().functionList.size() == 1);
+        ASSERT(db->scopeList.back().functionList.front().isDefault() == true);
     }
 
     void createSymbolDatabaseFindAllScopes1() {
