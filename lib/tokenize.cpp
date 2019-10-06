@@ -3002,7 +3002,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
             bracket = true; // Skip: Seems to be valid pointer to array or function pointer
         } else if (tok2->str() == "::") {
             singleNameCount = 0;
-        } else if (tok2->str() != "*" && tok2->str() != "::") {
+        } else if (tok2->str() != "*" && tok2->str() != "::" && tok2->str() != "...") {
             break;
         }
         tok2 = tok2->next();
