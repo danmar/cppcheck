@@ -563,6 +563,11 @@ struct ExprData {
                            getExpr(c->values[0].second));
         }
 
+        if (auto integerTruncation = std::dynamic_pointer_cast<ExprEngine::IntegerTruncation>(v)) {
+            return getExpr(integerTruncation->inputValue);
+            //return getExpr(integerTruncation->inputValue) & ((1 << integerTruncation->bits) - 1);
+        }
+
         if (v->type == ExprEngine::ValueType::UninitValue)
             return context.int_val(0);
 
@@ -1035,6 +1040,14 @@ static void execute(const Token *start, const Token *end, Data &data)
     for (const Token *tok = start; tok != end; tok = tok->next()) {
         if (Token::Match(tok, "[;{}]"))
             data.trackProgramState(tok);
+
+        if (Token::simpleMatch(tok, "while ( 0 ) ;")) {
+            tok = tok->tokAt(4);
+            continue;
+        }
+
+        if (tok->str() == "break")
+            return;
 
         if (Token::Match(tok, "for|while|switch ("))
             // TODO this is a bailout
