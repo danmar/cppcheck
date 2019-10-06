@@ -5380,11 +5380,7 @@ private:
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v2 ) ) ;");
         ASSERT(f);
         ASSERT(f->function());
-        if (std::numeric_limits<char>::is_signed) {
-            ASSERT_EQUALS(5, f->function()->tokenDef->linenr());
-        } else {
-            ASSERT_EQUALS(10, f->function()->tokenDef->linenr());
-        }
+        ASSERT_EQUALS(5, f->function()->tokenDef->linenr());
 
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v3 ) ) ;");
         ASSERT(f);
@@ -5409,7 +5405,11 @@ private:
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v7 ) ) ;");
         ASSERT(f);
         ASSERT(f->function());
-        ASSERT_EQUALS(10, f->function()->tokenDef->linenr());
+        if (std::numeric_limits<char>::is_signed) {
+            ASSERT_EQUALS(10, f->function()->tokenDef->linenr());
+        } else {
+            ASSERT_EQUALS(5, f->function()->tokenDef->linenr());
+        }
 
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v8 ) ) ;");
         ASSERT(f);
@@ -5417,7 +5417,7 @@ private:
         if (std::numeric_limits<char>::is_signed) {
             ASSERT_EQUALS(5, f->function()->tokenDef->linenr());
         } else {
-            ASSERT_EQUALS(10, f->function()->tokenDef->linenr());
+            ASSERT_EQUALS(11, f->function()->tokenDef->linenr());
         }
 
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v9 ) ) ;");
