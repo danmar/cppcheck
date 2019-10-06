@@ -102,6 +102,7 @@ private:
         TEST_CASE(returnReference7);
         TEST_CASE(returnReference8);
         TEST_CASE(returnReference9);
+        TEST_CASE(returnReference10);
         TEST_CASE(returnReferenceFunction);
         TEST_CASE(returnReferenceContainer);
         TEST_CASE(returnReferenceLiteral);
@@ -1156,6 +1157,15 @@ private:
               "    return b ? x : y;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void returnReference10() {
+        check("class A { int f() const; };\n"
+              "int& g() {\n"
+              "    A a;\n"
+              "    return a.f();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Reference to temporary returned.\n", errout.str());
     }
 
     void returnReferenceFunction() {
