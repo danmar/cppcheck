@@ -44,6 +44,8 @@ private:
         TEST_CASE(if1);
         TEST_CASE(ifelse1);
 
+        TEST_CASE(switch1);
+
         TEST_CASE(array1);
         TEST_CASE(array2);
         TEST_CASE(array3);
@@ -85,7 +87,9 @@ private:
             auto b = dynamic_cast<const ExprEngine::BinOpResult *>(&value);
             if (!b)
                 return;
-            ret = b->getExpr(dataBase);
+            if (!ret.empty())
+                ret += "\n";
+            ret += b->getExpr(dataBase);
         };
         std::vector<ExprEngine::Callback> callbacks;
         callbacks.push_back(f);
@@ -178,6 +182,23 @@ private:
                       "(assert (<= $1 5))\n"
                       "(assert (= (+ $1 2) 40))\n",
                       expr("void f(short x) { if (x > 5) ; else if (x+2==40); }", "=="));
+    }
+
+
+    void switch1() {
+        const char code[] = "void f(int x) {\n"
+                            "    switch (x) {\n"
+                            "    case 1: x==3; break;\n"
+                            "    case 2: x>0; break;\n"
+                            "    };\n"
+                            "    x<=4;\n"
+                            "}";
+        ASSERT_EQUALS("(declare-fun $1 () Int)\n"
+                      "(assert (<= $1 2147483647))\n"
+                      "(assert (>= $1 (- 2147483648)))\n"
+                      "(assert (= $1 1))\n"
+                      "(assert (= $1 3))\n",
+                      expr(code, "=="));
     }
 
 
