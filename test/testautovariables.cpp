@@ -101,6 +101,7 @@ private:
         TEST_CASE(returnReference6);
         TEST_CASE(returnReference7);
         TEST_CASE(returnReference8);
+        TEST_CASE(returnReference9);
         TEST_CASE(returnReferenceFunction);
         TEST_CASE(returnReferenceContainer);
         TEST_CASE(returnReferenceLiteral);
@@ -1146,6 +1147,13 @@ private:
               "    std::vector<int>::iterator it = v.begin();\n"
               "    int& value = *it;\n"
               "    return value;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void returnReference9() {
+        check("int& f(bool b, int& x, int& y) {\n"
+              "    return b ? x : y;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
