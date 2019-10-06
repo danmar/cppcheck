@@ -444,9 +444,9 @@ static bool isDeadTemporary(bool cpp, const Token* tok, const Token* expr)
 {
     if (!tok)
         return false;
-    if (Token::Match(tok, ",|."))
+    if (Token::Match(tok, ",|.|::"))
         return isDeadTemporary(cpp, tok->astOperand2(), expr);
-    if (Token::Match(tok, "?|.|[|++|--|%var%|%assign%"))
+    if (Token::Match(tok, "?|.|[|++|--|%name%|%assign%"))
         return false;
     if (tok->isUnaryOp("*"))
         return false;

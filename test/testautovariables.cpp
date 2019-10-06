@@ -103,6 +103,8 @@ private:
         TEST_CASE(returnReference8);
         TEST_CASE(returnReference9);
         TEST_CASE(returnReference10);
+        TEST_CASE(returnReference11);
+        TEST_CASE(returnReference12);
         TEST_CASE(returnReferenceFunction);
         TEST_CASE(returnReferenceContainer);
         TEST_CASE(returnReferenceLiteral);
@@ -1166,6 +1168,48 @@ private:
               "    return a.f();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Reference to temporary returned.\n", errout.str());
+
+        check("class A { int& f() const; };\n"
+              "int& g() {\n"
+              "    A a;\n"
+              "    return a.f();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void returnReference11() {
+        check("class A { static int f(); };\n"
+              "int& g() {\n"
+              "    return A::f();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Reference to temporary returned.\n", errout.str());
+
+        check("class A { static int& f(); };\n"
+              "int& g() {\n"
+              "    return A::f();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("namespace A { int& f(); }\n"
+              "int& g() {\n"
+              "    return A::f();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void returnReference12() {
+        check("class A { static int& f(); };\n"
+              "auto g() {\n"
+              "    return &A::f;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class A { static int& f(); };\n"
+              "auto g() {\n"
+              "    auto x = &A::f;\n"
+              "    return x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void returnReferenceFunction() {
