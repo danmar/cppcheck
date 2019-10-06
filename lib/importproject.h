@@ -61,7 +61,7 @@ public:
 
     /** File settings. Multiple configurations for a file is allowed. */
     struct CPPCHECKLIB FileSettings {
-        FileSettings() : platformType(cppcheck::Platform::Unspecified), msc(false), useMfc(false) {}
+        FileSettings() : platformType(cppcheck::Platform::Unspecified), msc(false), useMfc(false), definesSet(false) {}
         std::string cfg;
         std::string filename;
         std::string defines;
@@ -75,6 +75,7 @@ public:
         cppcheck::Platform::PlatformType platformType;
         bool msc;
         bool useMfc;
+        bool definesSet;
 
         void parseCommand(const std::string &command);
         void setDefines(std::string defs);

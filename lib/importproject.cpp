@@ -107,6 +107,7 @@ void ImportProject::FileSettings::setDefines(std::string defs)
     if (!eq && !defs.empty())
         defs += "=1";
     defines.swap(defs);
+    definesSet = true;
 }
 
 static bool simplifyPathWithVariables(std::string &s, std::map<std::string, std::string, cppcheck::stricmp> &variables)

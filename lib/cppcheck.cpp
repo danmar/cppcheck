@@ -205,6 +205,7 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
     if (!temp.mSettings.userDefines.empty())
         temp.mSettings.userDefines += ';';
     temp.mSettings.userDefines += fs.cppcheckDefines();
+    temp.mSettings.userDefinesSet = fs.definesSet;
     temp.mSettings.includePaths = fs.includePaths;
     temp.mSettings.userUndefs = fs.undefs;
     if (fs.platformType != Settings::Unspecified) {
@@ -386,7 +387,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         preprocessor.setPlatformInfo(&tokens1);
 
         // Get configurations..
-        if (mSettings.userDefines.empty() || mSettings.force) {
+        if ((mSettings.userDefines.empty() && !mSettings.userDefinesSet) || mSettings.force) {
             Timer t("Preprocessor::getConfigs", mSettings.showtime, &S_timerResults);
             configurations = preprocessor.getConfigs(tokens1);
         } else {

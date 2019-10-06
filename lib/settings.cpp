@@ -60,7 +60,8 @@ Settings::Settings()
       showtime(SHOWTIME_MODES::SHOWTIME_NONE),
       verbose(false),
       xml(false),
-      xml_version(2)
+      xml_version(2),
+      userDefinesSet(false)
 {
 }
 
