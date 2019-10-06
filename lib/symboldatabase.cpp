@@ -5992,7 +5992,7 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
         return ValueType::MatchResult::UNKNOWN;
 
     if (call->isIntegral() && func->isIntegral() && call->sign != ValueType::Sign::UNKNOWN_SIGN && func->sign != ValueType::Sign::UNKNOWN_SIGN && call->sign != func->sign)
-        return ValueType::MatchResult::UNKNOWN; // TODO
+        return ValueType::MatchResult::FALLBACK1;
 
     return ValueType::MatchResult::SAME;
 }
