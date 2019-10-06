@@ -218,6 +218,8 @@ namespace {
         }
 
         void addConstraint(ExprEngine::ValuePtr condValue, bool trueCond) {
+            if (!condValue)
+                return;
             if (trueCond)
                 constraints.push_back(condValue);
             else
@@ -485,6 +487,7 @@ std::string ExprEngine::IntegerTruncation::getSymbolicExpression() const
 }
 
 #ifdef USE_Z3
+
 struct ExprData {
     typedef std::map<std::string, z3::expr> ValueExpr;
     typedef std::vector<z3::expr> AssertionList;
@@ -497,79 +500,81 @@ struct ExprData {
         for (auto assertExpr : assertionList)
             solver.add(assertExpr);
     }
+
+    z3::expr getExpr(const ExprEngine::BinOpResult *b) {
+        auto op1 = getExpr(b->op1);
+        auto op2 = getExpr(b->op2);
+
+        if (b->binop == "+")
+            return op1 + op2;
+        if (b->binop == "-")
+            return op1 - op2;
+        if (b->binop == "*")
+            return op1 * op2;
+        if (b->binop == "/")
+            return op1 / op2;
+        if (b->binop == "%")
+            return op1 % op2;
+        if (b->binop == "==")
+            return op1 == op2;
+        if (b->binop == "!=")
+            return op1 != op2;
+        if (b->binop == ">=")
+            return op1 >= op2;
+        if (b->binop == "<=")
+            return op1 <= op2;
+        if (b->binop == ">")
+            return op1 > op2;
+        if (b->binop == "<")
+            return op1 < op2;
+        if (b->binop == "&&")
+            return op1 && op2;
+        if (b->binop == "||")
+            return op1 || op2;
+        throw std::runtime_error("Internal error: Unhandled operator");
+    }
+
+    z3::expr getExpr(ExprEngine::ValuePtr v) {
+        if (auto intRange = std::dynamic_pointer_cast<ExprEngine::IntRange>(v)) {
+            if (intRange->name[0] != '$')
+                return context.int_val(int64_t(intRange->minValue));
+            auto it = valueExpr.find(v->name);
+            if (it != valueExpr.end())
+                return it->second;
+            auto e = context.int_const(v->name.c_str());
+            valueExpr.emplace(v->name, e);
+            if (intRange->maxValue <= INT_MAX)
+                assertionList.push_back(e <= int(intRange->maxValue));
+            if (intRange->minValue >= INT_MIN)
+                assertionList.push_back(e >= int(intRange->minValue));
+            return e;
+        }
+
+        if (auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(v)) {
+            return getExpr(b.get());
+        }
+
+        if (auto c = std::dynamic_pointer_cast<ExprEngine::ConditionalValue>(v)) {
+            if (c->values.size() == 1)
+                return getExpr(c->values[0].second);
+
+            return z3::ite(getExpr(c->values[1].first),
+                           getExpr(c->values[1].second),
+                           getExpr(c->values[0].second));
+        }
+
+        if (v->type == ExprEngine::ValueType::UninitValue)
+            return context.int_val(0);
+
+        throw std::runtime_error("Internal error: Unhandled value type");
+    }
+
+    z3::expr getConstraintExpr(ExprEngine::ValuePtr v) {
+        if (v->type == ExprEngine::ValueType::IntRange)
+            return (getExpr(v) != 0);
+        return getExpr(v);
+    }
 };
-
-static z3::expr getExpr(ExprEngine::ValuePtr v, ExprData &exprData);
-
-static z3::expr getExpr(const ExprEngine::BinOpResult *b, ExprData &exprData)
-{
-    auto op1 = getExpr(b->op1, exprData);
-    auto op2 = getExpr(b->op2, exprData);
-
-    if (b->binop == "+")
-        return op1 + op2;
-    if (b->binop == "-")
-        return op1 - op2;
-    if (b->binop == "*")
-        return op1 * op2;
-    if (b->binop == "/")
-        return op1 / op2;
-    if (b->binop == "%")
-        return op1 % op2;
-    if (b->binop == "==")
-        return op1 == op2;
-    if (b->binop == "!=")
-        return op1 != op2;
-    if (b->binop == ">=")
-        return op1 >= op2;
-    if (b->binop == "<=")
-        return op1 <= op2;
-    if (b->binop == ">")
-        return op1 > op2;
-    if (b->binop == "<")
-        return op1 < op2;
-    if (b->binop == "&&")
-        return op1 && op2;
-    if (b->binop == "||")
-        return op1 || op2;
-    throw std::runtime_error("Internal error: Unhandled operator");
-}
-
-static z3::expr getExpr(ExprEngine::ValuePtr v, ExprData &exprData)
-{
-    if (auto intRange = std::dynamic_pointer_cast<ExprEngine::IntRange>(v)) {
-        if (intRange->name[0] != '$')
-            return exprData.context.int_val(int64_t(intRange->minValue));
-        auto it = exprData.valueExpr.find(v->name);
-        if (it != exprData.valueExpr.end())
-            return it->second;
-        auto e = exprData.context.int_const(v->name.c_str());
-        exprData.valueExpr.emplace(v->name, e);
-        if (intRange->maxValue <= INT_MAX)
-            exprData.assertionList.push_back(e <= int(intRange->maxValue));
-        if (intRange->minValue >= INT_MIN)
-            exprData.assertionList.push_back(e >= int(intRange->minValue));
-        return e;
-    }
-
-    if (auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(v)) {
-        return getExpr(b.get(), exprData);
-    }
-
-    if (auto c = std::dynamic_pointer_cast<ExprEngine::ConditionalValue>(v)) {
-        if (c->values.size() == 1)
-            return ::getExpr(c->values[0].second, exprData);
-
-        return z3::ite(::getExpr(c->values[1].first, exprData),
-                       ::getExpr(c->values[1].second, exprData),
-                       ::getExpr(c->values[0].second, exprData));
-    }
-
-    if (v->type == ExprEngine::ValueType::UninitValue)
-        return exprData.context.int_val(0);
-
-    throw std::runtime_error("Internal error: Unhandled value type");
-}
 #endif
 
 bool ExprEngine::IntRange::isIntValueInRange(DataBase *dataBase, int value) const
@@ -587,7 +592,7 @@ bool ExprEngine::IntRange::isIntValueInRange(DataBase *dataBase, int value) cons
     z3::expr e = exprData.context.int_const(name.c_str());
     exprData.valueExpr.emplace(name, e);
     for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
-        solver.add(::getExpr(constraint, exprData));
+        solver.add(exprData.getConstraintExpr(constraint));
     solver.add(e == value);
     return solver.check() == z3::sat;
 #else
@@ -601,10 +606,10 @@ bool ExprEngine::BinOpResult::isIntValueInRange(ExprEngine::DataBase *dataBase, 
 #ifdef USE_Z3
     ExprData exprData;
     z3::solver solver(exprData.context);
-    z3::expr e = ::getExpr(this, exprData);
+    z3::expr e = exprData.getExpr(this);
     exprData.addAssertions(solver);
     for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
-        solver.add(::getExpr(constraint, exprData));
+        solver.add(exprData.getConstraintExpr(constraint));
     solver.add(e == value);
     return solver.check() == z3::sat;
 #else
@@ -619,10 +624,10 @@ std::string ExprEngine::BinOpResult::getExpr(ExprEngine::DataBase *dataBase) con
 #ifdef USE_Z3
     ExprData exprData;
     z3::solver solver(exprData.context);
-    z3::expr e = ::getExpr(this, exprData);
+    z3::expr e = exprData.getExpr(this);
     exprData.addAssertions(solver);
     for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
-        solver.add(::getExpr(constraint, exprData));
+        solver.add(exprData.getConstraintExpr(constraint));
     solver.add(e);
     std::ostringstream os;
     os << solver;
