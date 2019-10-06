@@ -93,27 +93,20 @@ void CheckBool::checkBitwiseOnBoolean()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            if (Token::Match(tok, "(|.|return|&&|%oror%|throw|, %var% [&|]")) {
-                const Variable *var = tok->next()->variable();
-                if (isBool(var)) {
-                    bitwiseOnBooleanError(tok->next(), var->name(), tok->strAt(2) == "&" ? "&&" : "||");
-                    tok = tok->tokAt(2);
-                }
-            } else if (Token::Match(tok, "[&|] %var% )|.|return|&&|%oror%|throw|,") && (!tok->previous() || !tok->previous()->isExtendedOp() || tok->strAt(-1) == ")" || tok->strAt(-1) == "]")) {
-                const Variable *var = tok->next()->variable();
-                if (isBool(var)) {
-                    bitwiseOnBooleanError(tok->next(), var->name(), tok->str() == "&" ? "&&" : "||");
-                    tok = tok->tokAt(2);
+            if (tok->isBinaryOp() && (tok->str() == "&" || tok->str() == "|")) {
+                if (astIsBool(tok->astOperand1()) || astIsBool(tok->astOperand2())) {
+                    const std::string expression = astIsBool(tok->astOperand1()) ? tok->astOperand1()->expressionString() : tok->astOperand2()->expressionString();
+                    bitwiseOnBooleanError(tok, expression, tok->str() == "&" ? "&&" : "||");
                 }
             }
         }
     }
 }
 
-void CheckBool::bitwiseOnBooleanError(const Token *tok, const std::string &varname, const std::string &op)
+void CheckBool::bitwiseOnBooleanError(const Token *tok, const std::string &expression, const std::string &op)
 {
     reportError(tok, Severity::style, "bitwiseOnBoolean",
-                "Boolean variable '" + varname + "' is used in bitwise operation. Did you mean '" + op + "'?",
+                "Boolean expression '" + expression + "' is used in bitwise operation. Did you mean '" + op + "'?",
                 CWE398,
                 true);
 }
