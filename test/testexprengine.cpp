@@ -46,6 +46,9 @@ private:
 
         TEST_CASE(switch1);
 
+        TEST_CASE(while1);
+        TEST_CASE(while2);
+
         TEST_CASE(array1);
         TEST_CASE(array2);
         TEST_CASE(array3);
@@ -198,6 +201,34 @@ private:
                       "(assert (>= $1 (- 2147483648)))\n"
                       "(assert (= $1 1))\n"
                       "(assert (= $1 3))\n",
+                      expr(code, "=="));
+    }
+
+    void while1() {
+        const char code[] = "void f(int y) {\n"
+                            "  int x = 0;\n"
+                            "  while (x < y)\n"
+                            "    x = x + 34;\n"
+                            "  x == 1;\n"
+                            "}";
+        ASSERT_EQUALS("(declare-fun $2 () Int)\n"
+                      "(assert (<= $2 2147483647))\n"
+                      "(assert (>= $2 (- 2147483648)))\n"
+                      "(assert (= (+ $2 34) 1))\n",
+                      expr(code, "=="));
+    }
+
+    void while2() {
+        const char code[] = "void f(int y) {\n"
+                            "  int x = 0;\n"
+                            "  while (x < y)\n"
+                            "    x++;\n"
+                            "  x == 1;\n"
+                            "}";
+        ASSERT_EQUALS("(declare-fun $2 () Int)\n"
+                      "(assert (<= $2 2147483647))\n"
+                      "(assert (>= $2 (- 2147483648)))\n"
+                      "(assert (= $2 1))\n",
                       expr(code, "=="));
     }
 
