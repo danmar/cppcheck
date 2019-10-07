@@ -78,6 +78,10 @@ private:
         TEST_CASE(nullpointer36); // #9264
         TEST_CASE(nullpointer37); // #9315
         TEST_CASE(nullpointer38);
+        TEST_CASE(nullpointer39); // #2153
+        TEST_CASE(nullpointer40);
+        TEST_CASE(nullpointer41);
+        TEST_CASE(nullpointer42);
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1472,6 +1476,57 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer39() {
+        check("struct A { int * x; };\n"
+              "void f(struct A *a) {\n"
+              "    if (a->x == NULL) {}\n"
+              "    *(a->x);\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:4]: (warning) Either the condition 'a->x==NULL' is redundant or there is possible null pointer dereference: a->x.\n",
+            errout.str());
+    }
+
+    void nullpointer40() {
+        check("struct A { std::unique_ptr<int> x; };\n"
+              "void f(struct A *a) {\n"
+              "    if (a->x == nullptr) {}\n"
+              "    *(a->x);\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:4]: (warning) Either the condition 'a->x==nullptr' is redundant or there is possible null pointer dereference: a->x.\n",
+            errout.str());
+    }
+
+    void nullpointer41() {
+        check("struct A { int * g() const; };\n"
+              "void f(struct A *a) {\n"
+              "    if (a->g() == nullptr) {}\n"
+              "    *(a->g());\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:4]: (warning) Either the condition 'a->g()==nullptr' is redundant or there is possible null pointer dereference: a->g().\n",
+            errout.str());
+
+        check("struct A { int * g(); };\n"
+              "void f(struct A *a) {\n"
+              "    if (a->g() == nullptr) {}\n"
+              "    *(a->g());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer42() {
+        check("struct A { std::unique_ptr<int> g() const; };\n"
+              "void f(struct A *a) {\n"
+              "    if (a->g() == nullptr) {}\n"
+              "    *(a->g());\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:4]: (warning) Either the condition 'a->g()==nullptr' is redundant or there is possible null pointer dereference: a->g().\n",
+            errout.str());
     }
 
     void nullpointer_addressOf() { // address of

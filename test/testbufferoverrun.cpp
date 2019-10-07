@@ -144,12 +144,13 @@ private:
         TEST_CASE(array_index_vla_for);      // #3221: access VLA inside for
         TEST_CASE(array_index_extern);       // FP when using 'extern'. #1684
         TEST_CASE(array_index_cast);         // FP after cast. #2841
-        // TODO string pointer TEST_CASE(array_index_string_literal);
+        TEST_CASE(array_index_string_literal);
         TEST_CASE(array_index_same_struct_and_var_name); // #4751 - not handled well when struct name and var name is same
         TEST_CASE(array_index_valueflow);
         TEST_CASE(array_index_valueflow_pointer);
         TEST_CASE(array_index_function_parameter);
         TEST_CASE(array_index_enum_array); // #8439
+        TEST_CASE(array_index_container); // #9386
 
         TEST_CASE(buffer_overrun_2_struct);
         TEST_CASE(buffer_overrun_3);
@@ -173,7 +174,7 @@ private:
         TEST_CASE(buffer_overrun_30); // #6367
         TEST_CASE(buffer_overrun_31);
         TEST_CASE(buffer_overrun_errorpath);
-        // TODO CTU TEST_CASE(buffer_overrun_bailoutIfSwitch);  // ticket #2378 : bailoutIfSwitch
+        TEST_CASE(buffer_overrun_bailoutIfSwitch);  // ticket #2378 : bailoutIfSwitch
         // TODO TEST_CASE(buffer_overrun_function_array_argument);
         // TODO alloca TEST_CASE(possible_buffer_overrun_1); // #3035
         TEST_CASE(buffer_overrun_readSizeFromCfg);
@@ -1058,7 +1059,7 @@ private:
               "    }\n"
               "    int m_x[1];\n"
               "};");
-        // TODO [1] ASSERT_EQUALS("[test.cpp:7]: (error) Array 'm_x[1]' accessed at index 1, which is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Array 'm_x[1]' accessed at index 1, which is out of bounds.\n", errout.str());
     }
 
     void array_index_33() {
@@ -1126,14 +1127,14 @@ private:
               "    struct Struct { unsigned m_Var[1]; } s;\n"
               "    s.m_Var[1] = 1;\n"
               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:3]: (error) Array 's.m_Var[1]' accessed at index 1, which is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 's.m_Var[1]' accessed at index 1, which is out of bounds.\n", errout.str());
 
         check("struct Struct { unsigned m_Var[1]; };\n"
               "void f() {\n"
               "    struct Struct s;\n"
               "    s.m_Var[1] = 1;\n"
               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:4]: (error) Array 's.m_Var[1]' accessed at index 1, which is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 's.m_Var[1]' accessed at index 1, which is out of bounds.\n", errout.str());
 
         check("struct Struct { unsigned m_Var[1]; };\n"
               "void f() {\n"
@@ -1375,7 +1376,7 @@ private:
               "    int * p = &ab[10].a[0]; \n"
               "    return 0;\n"
               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:4]: (error) Array 'ab[1]' accessed at index 10, which is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'ab[1]' accessed at index 10, which is out of bounds.\n", errout.str());
     }
 
     void array_index_44() { // #3979 (false positive)
@@ -1690,7 +1691,7 @@ private:
               "    char data[8][4];\n"
               "    data[5][-1] = 0;\n"
               "}");
-        // TODO multidim ASSERT_EQUALS("[test.cpp:4]: (error) Array index -1 is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'data[8][4]' accessed at index data[*][-1], which is out of bounds.\n", errout.str());
 
         // #1614 - negative index is ok for pointers
         check("void foo(char *p)\n"
@@ -2144,6 +2145,14 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'arrE[2]' accessed at index 8, which is out of bounds.\n", errout.str());
     }
 
+    void array_index_container() { // #9386
+        check("constexpr int blockLen = 10;\n"
+              "void foo(std::array<uint8_t, blockLen * 2>& a) {\n"
+              "    a[2] = 2;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void buffer_overrun_2_struct() {
         check("struct ABC\n"
               "{\n"
@@ -2561,7 +2570,7 @@ private:
               "    char a[10];\n"
               "    f1(a);"
               "}");
-        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:3]: (error) Array 'a[10]' accessed at index 100, which is out of bounds.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:3]: (error) Array 'a[10]' accessed at index 100, which is out of bounds.\n", "", errout.str());
     }
 
     void buffer_overrun_function_array_argument() {
@@ -2725,7 +2734,7 @@ private:
               "  if (cond) x = \"abcde\";\n"
               "  return x[20];\n" // <- array index out of bounds when x is "abcde"
               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:4]: (error) Array 'x[6]' accessed at index 20, which is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'x[6]' accessed at index 20, which is out of bounds.\n", errout.str());
     }
 
     void pointer_out_of_bounds_1() {
@@ -3250,11 +3259,17 @@ private:
               "    char b[5][6];\n"
               "    mymemset(b, 0, 5 * 6);\n"
               "}", settings);
-        // TODO ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("int main() {\n"
               "    char b[5][6];\n"
               "    mymemset(b, 0, 6 * 6);\n"
+              "}", settings);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: b\n", errout.str());
+
+        check("int main() {\n"
+              "    char b[5][6];\n"
+              "    mymemset(b, 0, 31);\n"
               "}", settings);
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: b\n", errout.str());
 

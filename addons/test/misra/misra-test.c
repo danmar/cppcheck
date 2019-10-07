@@ -19,8 +19,11 @@ typedef unsigned int       u32;
 typedef signed int         s32;
 typedef unsigned long long u64;
 
-//   // 3.1
+/* // */   // 3.1
+/* /* */   // 3.1
 ////
+
+// http://example.com // no warning
 
 extern int misra_5_1_extern_var_hides_var_x;
 extern int misra_5_1_extern_var_hides_var_y; //5.1
@@ -68,9 +71,35 @@ int misra_5_2_field_hides_field1_31y;//5.2
 };
 const char *s41_1 = "\x41g"; // 4.1
 const char *s41_2 = "\x41\x42";
-const char *s41_3 = "\x41" "g";
+const char *s41_3 = "\x41" "\x42";
+const char *s41_4 = "\x41" "g";
+const char *s41_5 = "\x41\xA";
+const char *s41_6 = "\xA\x41";
+const char *s41_7 = "\xAA\xg\x41"; // 4.1
+const char *s41_8 = "\xAA\x\x41"; // 4.1
+const char *s41_9 = "unknown\gsequence";
+const char *s41_10 = "simple\nsequence";
+const char *s41_11 = "string";
 int c41_3         = '\141t'; // 4.1
 int c41_4         = '\141\t';
+int c41_5         = '\0';
+int c41_6         = '\0\t';
+int c41_7         = '\12\t';
+int c41_8         = '\0t';   // 4.1
+int c41_9         = '\12';
+int c41_10        = '\12\n';
+int c41_11        = '\12n';  // 4.1
+int c41_12         = '\12323'; // 4.1
+int c41_13         = '\123\3';
+int c41_14         = '\777\777';
+int c41_15         = 'a';
+
+void misra_4_1()
+{
+    (void)printf("\x41g"); // 4.1
+    (void)printf("\x41\x42");
+    (void)printf("\x41" "g");
+}
 
 extern int misra_5_3_var_hides_var______31x;
 void misra_5_3_var_hides_function_31x (void) {}
@@ -230,6 +259,11 @@ void misra_11_6() {
 void misra_11_7(int *p, float f) {
   x = ( float ) p; //11.7
   y = ( int * ) f; //11.7
+}
+
+void misra_11_7_extra(int *p, float f, bool b) {
+  (void) p; // no-warning
+  (void) f; // no-warning
 }
 
 char * misra_11_8_const(const char *str) {  }

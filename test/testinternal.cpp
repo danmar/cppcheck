@@ -445,13 +445,13 @@ private:
 
         check("void f() {\n"
               "    const Token *tok;\n"
-              "    if(a && b && && c && tok && Token::Match(tok, \"5str% foobar\")) {};\n"
+              "    if(a && b && c && tok && Token::Match(tok, \"5str% foobar\")) {};\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Unnecessary check of \"tok\", match-function already checks if it is null.\n", errout.str());
 
         check("void f() {\n"
               "    const Token *tok;\n"
-              "    if(a && b && && c && tok && d && Token::Match(tok, \"5str% foobar\")) {};\n"
+              "    if(a && b && c && tok && d && Token::Match(tok, \"5str% foobar\")) {};\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 

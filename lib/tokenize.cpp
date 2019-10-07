@@ -867,7 +867,7 @@ void Tokenizer::simplifyTypedef()
             if (tokOffset->next()->str() == "(")
                 tokOffset = tokOffset->next();
             else if (Token::simpleMatch(tokOffset, "( * (")) {
-                pointers.push_back("*");
+                pointers.emplace_back("*");
                 tokOffset = tokOffset->tokAt(2);
             }
 
@@ -1855,6 +1855,7 @@ namespace {
         std::string newScope1 = scope1;
 
         // scopes didn't match so try higher scopes
+        index = newScope1.size();
         while (!newScope1.empty()) {
             std::string::size_type separator = newScope1.rfind(" :: ", index - 1);
             if (separator != std::string::npos)
@@ -2004,6 +2005,22 @@ bool Tokenizer::simplifyUsing()
                 if (endToken)
                     tok1 = endToken;
                 continue;
+            }
+
+            // check for member function
+            if (Token::Match(tok1->tokAt(-2), ":: %name% (") && isFunctionHead(tok1, "{|:")) {
+                std::string qualification;
+                const Token *qualTok = tok1->tokAt(-3);
+                while (Token::Match(qualTok, "%type% ::")) {
+                    if (!qualification.empty())
+                        qualification = " :: " + qualification;
+                    qualification = qualTok->str() + qualification;
+                    qualTok = qualTok->tokAt(-2);
+                }
+
+                if (!scope1.empty())
+                    scope1 += " :: ";
+                scope1 += qualification;
             }
 
             if (!usingMatch(nameToken, scope, &tok1, scope1, scopeList1))
@@ -2299,18 +2316,6 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
         createSymbolDatabase();
     } else {
         createSymbolDatabase();
-    }
-
-    // Use symbol database to identify rvalue references. Split && to & &. This is safe, since it doesn't delete any tokens (which might be referenced by symbol database)
-    for (const Variable* var : mSymbolDatabase->variableList()) {
-        if (var && var->isRValueReference()) {
-            Token* endTok = const_cast<Token*>(var->typeEndToken());
-            endTok->str("&");
-            endTok->astOperand1(nullptr);
-            endTok->astOperand2(nullptr);
-            endTok->insertToken("&");
-            endTok->next()->scope(endTok->scope());
-        }
     }
 
     if (mTimerResults) {
@@ -2837,7 +2842,7 @@ void Tokenizer::calculateScopes()
     for (auto tok = list.front(); tok; tok = tok->next())
         tok->scopeInfo(nullptr);
 
-    std::string nextScopeNameAddition = "";
+    std::string nextScopeNameAddition;
     std::shared_ptr<ScopeInfo2> primaryScope = std::make_shared<ScopeInfo2>("", nullptr);
     list.front()->scopeInfo(primaryScope);
 
@@ -2847,7 +2852,7 @@ void Tokenizer::calculateScopes()
                 tok->scopeInfo(tok->previous()->scopeInfo());
 
             if (Token::Match(tok, "using namespace %name% ::|<|;")) {
-                std::string usingNamespaceName = "";
+                std::string usingNamespaceName;
                 for (const Token* namespaceNameToken = tok->tokAt(2);
                      !Token::simpleMatch(namespaceNameToken, ";");
                      namespaceNameToken = namespaceNameToken->next()) {
@@ -2997,7 +3002,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
             bracket = true; // Skip: Seems to be valid pointer to array or function pointer
         } else if (tok2->str() == "::") {
             singleNameCount = 0;
-        } else if (tok2->str() != "*" && tok2->str() != "::") {
+        } else if (tok2->str() != "*" && tok2->str() != "::" && tok2->str() != "...") {
             break;
         }
         tok2 = tok2->next();
@@ -4260,6 +4265,10 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Remove __asm..
     simplifyAsm();
 
+    // foo < bar < >> => foo < bar < > >
+    if (isCPP())
+        mTemplateSimplifier->fixAngleBrackets();
+
     // Bail out if code is garbage
     if (mTimerResults) {
         Timer t("Tokenizer::tokenize::findGarbageCode", mSettings->showtime, mTimerResults);
@@ -4614,8 +4623,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     simplifyEmptyNamespaces();
 
     elseif();
-
-    SimplifyNamelessRValueReferences();
 
     validate();
 
@@ -6639,11 +6646,12 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
                         while (tok2 && tok2->str() != "," && tok2->str() != ";") {
                             if (Token::Match(tok2, "{|(|["))
                                 tok2 = tok2->link();
+                            const Token *tok3 = tok2;
                             if (!isC() && tok2->str() == "<" && TemplateSimplifier::templateParameters(tok2) > 0) {
                                 tok2 = tok2->findClosingBracket();
                             }
                             if (!tok2)
-                                syntaxError(nullptr); // #6881 invalid code
+                                syntaxError(tok3); // #6881 invalid code
                             tok2 = tok2->next();
                         }
                         if (tok2 && tok2->str() == ";")
@@ -7993,7 +8001,6 @@ bool Tokenizer::simplifyRedundantParentheses()
             tok->deleteNext();
             tok2->deleteThis();
             ret = true;
-            continue;
         }
 
         if (Token::simpleMatch(tok->previous(), "? (") && Token::simpleMatch(tok->link(), ") :")) {
@@ -9402,8 +9409,12 @@ void Tokenizer::findGarbageCode() const
         for (const Token *tok = tokens(); tok; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "template <"))
                 continue;
-            if (tok->previous() && !Token::Match(tok->previous(), "[:;{})>]"))
-                syntaxError(tok);
+            if (tok->previous() && !Token::Match(tok->previous(), "[:;{})>]")) {
+                if (tok->previous()->isUpperCaseName())
+                    unknownMacroError(tok->previous());
+                else
+                    syntaxError(tok);
+            }
             const Token * const tok1 = tok;
             tok = tok->next()->findClosingBracket();
             if (!tok)
@@ -11211,17 +11222,6 @@ void Tokenizer::setPodTypes()
             if (prev && !Token::Match(prev, ";|{|}|,|("))
                 continue;
             tok->isStandardType(true);
-        }
-    }
-}
-
-void Tokenizer::SimplifyNamelessRValueReferences()
-{
-    // Simplify nameless rValue references - named ones are simplified later
-    for (Token* tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "&& [,)]")) {
-            tok->str("&");
-            tok->insertToken("&");
         }
     }
 }

@@ -36,6 +36,7 @@ class Tokenizer;
 class Scope;
 class Settings;
 class Token;
+class Variable;
 
 #ifdef __GNUC__
 typedef __int128_t   int128_t;
@@ -57,6 +58,7 @@ namespace ExprEngine {
         IntRange,
         FloatRange,
         PointerValue,
+        ConditionalValue,
         ArrayValue,
         StringLiteralValue,
         StructValue,
@@ -68,50 +70,50 @@ namespace ExprEngine {
     class Value;
     typedef std::shared_ptr<Value> ValuePtr;
 
+    class DataBase {
+    public:
+        explicit DataBase(const Settings *settings) : settings(settings) {}
+        virtual std::string getNewSymbolName() = 0;
+        const Settings * const settings;
+    };
+
     class Value {
     public:
-        Value(const std::string &name) : name(name) {}
+        Value(const std::string &name, const ValueType type) : name(name), type(type) {}
         virtual ~Value() {}
-        virtual ValueType type() const = 0;
-        virtual std::string getRange() const = 0;
-        virtual bool isIntValueInRange(int value) const {
+        virtual std::string getRange() const {
+            return name;
+        }
+        virtual std::string getSymbolicExpression() const {
+            return name;
+        }
+        virtual bool isIntValueInRange(DataBase *dataBase, int value) const {
+            (void)dataBase;
             (void)value;
             return false;
         }
         const std::string name;
+        ValueType type;
     };
 
     class UninitValue: public Value {
     public:
-        UninitValue() : Value("?") {}
-        ValueType type() const override {
-            return ValueType::UninitValue;
-        }
-        std::string getRange() const override {
-            return "?";
-        }
+        UninitValue() : Value("?", ValueType::UninitValue) {}
     };
 
     class IntRange : public Value {
     public:
         IntRange(const std::string &name, int128_t minValue, int128_t maxValue)
-            : Value(name)
+            : Value(name, ValueType::IntRange)
             , minValue(minValue)
             , maxValue(maxValue) {
-        }
-        ~IntRange() OVERRIDE {}
-
-        ValueType type() const override {
-            return ValueType::IntRange;
         }
         std::string getRange() const override {
             if (minValue == maxValue)
                 return str(minValue);
             return str(minValue) + ":" + str(maxValue);
         }
-        bool isIntValueInRange(int value) const override {
-            return value >= minValue && value <= maxValue;
-        }
+        bool isIntValueInRange(DataBase *dataBase, int value) const override;
 
         int128_t minValue;
         int128_t maxValue;
@@ -120,15 +122,11 @@ namespace ExprEngine {
     class FloatRange : public Value {
     public:
         FloatRange(const std::string &name, long double minValue, long double maxValue)
-            : Value(name)
+            : Value(name, ValueType::FloatRange)
             , minValue(minValue)
             , maxValue(maxValue) {
         }
-        ~FloatRange() OVERRIDE {}
 
-        ValueType type() const override {
-            return ValueType::FloatRange;
-        }
         std::string getRange() const override {
             return std::to_string(minValue) + ":" + std::to_string(maxValue);
         }
@@ -140,13 +138,10 @@ namespace ExprEngine {
     class PointerValue: public Value {
     public:
         PointerValue(const std::string &name, ValuePtr data, bool null, bool uninitData)
-            : Value(name)
+            : Value(name, ValueType::PointerValue)
             , data(data)
             , null(null)
             , uninitData(uninitData) {
-        }
-        ValueType type() const override {
-            return ValueType::PointerValue;
         }
         std::string getRange() const override;
         ValuePtr data;
@@ -154,46 +149,42 @@ namespace ExprEngine {
         bool uninitData;
     };
 
+    class ConditionalValue : public Value {
+    public:
+        typedef std::vector<std::pair<ValuePtr,ValuePtr>> Vector;
+
+        ConditionalValue(const std::string &name, const Vector &values) : Value(name, ValueType::ConditionalValue), values(values) {}
+
+        std::string getSymbolicExpression() const override;
+
+        Vector values;
+    };
+
     class ArrayValue: public Value {
     public:
         const int MAXSIZE = 0x100000;
 
-        ArrayValue(const std::string &name, int minSize, int maxSize)
-            : Value(name)
-            , minSize(minSize)
-            , maxSize(maxSize) {
-            if (minSize < 1)
-                minSize = 1;
-            // Known size..
-            if (minSize == maxSize)
-                data.resize((minSize < MAXSIZE) ? minSize : MAXSIZE,
-                            std::make_shared<UninitValue>());
-        }
+        ArrayValue(const std::string &name, ValuePtr size, ValuePtr value);
+        ArrayValue(DataBase *data, const Variable *var);
 
-        ValueType type() const override {
-            return ValueType::ArrayValue;
-        }
-        std::string getRange() const override;
+        std::string getSymbolicExpression() const override;
 
         void assign(ValuePtr index, ValuePtr value);
         void clear();
-        ValuePtr read(ValuePtr index);
+        ConditionalValue::Vector read(ValuePtr index) const;
 
-        std::vector<ValuePtr> data;
-        int minSize;
-        int maxSize;
+        struct IndexAndValue {
+            ValuePtr index;
+            ValuePtr value;
+        };
+        std::vector<IndexAndValue> data;
+        ValuePtr size;
     };
 
     class StringLiteralValue: public Value {
     public:
-        StringLiteralValue(const std::string &name, const std::string &s)
-            : Value(name)
-            , string(s) {
-        }
+        StringLiteralValue(const std::string &name, const std::string &s) : Value(name, ValueType::StringLiteralValue), string(s) {}
 
-        ValueType type() const override {
-            return ValueType::StringLiteralValue;
-        }
         std::string getRange() const override {
             return "\"" + string + "\"";
         }
@@ -206,13 +197,10 @@ namespace ExprEngine {
 
     class StructValue: public Value {
     public:
-        explicit StructValue(const std::string &name) : Value(name) {}
-        ValueType type() const override {
-            return ValueType::StructValue;
-        }
-        std::string getRange() const override {
-            return name;
-        }
+        explicit StructValue(const std::string &name) : Value(name, ValueType::StructValue) {}
+
+        std::string getSymbolicExpression() const override;
+
         ValuePtr getValueOfMember(const std::string &name) const {
             auto it = member.find(name);
             return (it == member.end()) ? ValuePtr() : it->second;
@@ -223,15 +211,12 @@ namespace ExprEngine {
     class AddressOfValue: public Value {
     public:
         AddressOfValue(const std::string &name, int varId)
-            : Value(name)
+            : Value(name, ValueType::AddressOfValue)
             , varId(varId)
         {}
 
-        ValueType type() const override {
-            return ValueType::AddressOfValue;
-        }
         std::string getRange() const override {
-            return "(&@" + std::to_string(varId);
+            return "&@" + std::to_string(varId);
         }
 
         int varId;
@@ -240,84 +225,47 @@ namespace ExprEngine {
     class BinOpResult : public Value {
     public:
         BinOpResult(const std::string &binop, ValuePtr op1, ValuePtr op2)
-            : Value("(" + op1->name + ")" + binop + "(" + op2->name + ")")
+            : Value(getName(binop, op1, op2), ValueType::BinOpResult)
             , binop(binop)
             , op1(op1)
             , op2(op2) {
-            auto b1 = std::dynamic_pointer_cast<BinOpResult>(op1);
-            if (b1)
-                mLeafs = b1->mLeafs;
-            else
-                mLeafs.insert(op1);
-
-            auto b2 = std::dynamic_pointer_cast<BinOpResult>(op2);
-            if (b2)
-                mLeafs.insert(b2->mLeafs.begin(), b2->mLeafs.end());
-            else
-                mLeafs.insert(op2);
         }
 
-        ValueType type() const override {
-            return ValueType::BinOpResult;
-        }
-        std::string getRange() const override;
-
-        struct IntOrFloatValue {
-            void setIntValue(int128_t v) {
-                type = INT;
-                intValue = v;
-                floatValue = 0;
-            }
-            void setFloatValue(long double v) {
-                type = FLOAT;
-                intValue = 0;
-                floatValue = v;
-            }
-            enum {INT,FLOAT} type;
-            bool isFloat() const {
-                return type == FLOAT;
-            }
-            int128_t intValue;
-            long double floatValue;
-        };
-
-        void getRange(IntOrFloatValue *minValue, IntOrFloatValue *maxValue) const;
-        bool isIntValueInRange(int value) const override;
+        bool isIntValueInRange(DataBase *dataBase, int value) const;
+        std::string getExpr(DataBase *dataBase) const;
 
         std::string binop;
         ValuePtr op1;
         ValuePtr op2;
     private:
-
-        IntOrFloatValue evaluate(int test, const std::map<ValuePtr, int> &valueBit) const;
-        IntOrFloatValue evaluateOperand(int test, const std::map<ValuePtr, int> &valueBit, ValuePtr value) const;
-        std::set<ValuePtr> mLeafs;
+        std::string getName(const std::string &binop, ValuePtr op1, ValuePtr op2) const {
+            std::string name1 = op1 ? op1->name : std::string("null");
+            std::string name2 = op2 ? op2->name : std::string("null");
+            return "(" + name1 + ")" + binop + "(" + name2 + ")";
+        }
     };
 
     class IntegerTruncation : public Value {
     public:
         IntegerTruncation(const std::string &name, ValuePtr inputValue, int bits, char sign)
-            : Value(name)
+            : Value(name, ValueType::IntegerTruncation)
             , inputValue(inputValue)
             , bits(bits)
             , sign(sign) {
         }
 
-        ValueType type() const override {
-            return ValueType::IntegerTruncation;
-        }
-        std::string getRange() const override;
+        std::string getSymbolicExpression() const override;
 
         ExprEngine::ValuePtr inputValue;
         int bits;
         char sign;
     };
 
-    typedef std::function<void(const Token *, const ExprEngine::Value &)> Callback;
+    typedef std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> Callback;
 
     /** Execute all functions */
-    void CPPCHECKLIB executeAllFunctions(const Tokenizer *tokenizer, const Settings *settings, const std::vector<Callback> &callbacks);
-    void executeFunction(const Scope *functionScope, const Tokenizer *tokenizer, const Settings *settings, const std::vector<Callback> &callbacks);
+    void CPPCHECKLIB executeAllFunctions(const Tokenizer *tokenizer, const Settings *settings, const std::vector<Callback> &callbacks, std::ostream &trace);
+    void executeFunction(const Scope *functionScope, const Tokenizer *tokenizer, const Settings *settings, const std::vector<Callback> &callbacks, std::ostream &trace);
 
     void runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings);
 }

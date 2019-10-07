@@ -140,6 +140,10 @@ matrix:
         - cmake -G "Unix Makefiles" -DBUILD_TESTS=On ..
         - make -j2 check
         - cd ..
+# -funsigned-char
+        - make clean
+        - make -j2 CXXFLAGS=-funsigned-char testrunner
+        - ./testrunner TestSymbolDatabase
 
 # check if dmake needs to be rerun (this job may fail)
     - name: "rerun dmake?"

@@ -40,7 +40,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.37"
+CLIENT_VERSION = "1.1.38"
 
 
 def check_requirements():
@@ -280,7 +280,7 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
             libs += ' --library=' + library
 
     # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
-    options = jobs + libs + ' -D__GNUC__ --check-library --inconclusive --enable=style,information --platform=unix64 --template=daca2 -rp=temp temp'
+    options = jobs + libs + ' -D__GNUC__ --showtime=top5 --check-library --inconclusive --enable=style,information --platform=unix64 --template=daca2 -rp=temp temp'
     cppcheck_cmd = cppcheck_path + '/cppcheck' + ' ' + options
     cmd = 'nice ' + cppcheck_cmd
     returncode, stdout, stderr, elapsed_time = run_command(cmd)
@@ -306,22 +306,22 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
                     stacktrace = stdout[gdb_pos:]
                 else:
                     stacktrace = stdout[last_check_pos:]
-        return returncode, stacktrace, '', returncode, options
+        return returncode, stacktrace, '', returncode, options, ''
     if returncode != 0:
         print('Error!')
         if returncode > 0:
             returncode = -100-returncode
-        return returncode, stdout, '', returncode, options
+        return returncode, stdout, '', returncode, options, ''
     if stderr.find('Internal error: Child process crashed with signal ') > 0:
         print('Error!')
         s = 'Internal error: Child process crashed with signal '
         pos1 = stderr.find(s)
         pos2 = stderr.find(' [cppcheckError]', pos1)
         signr = int(stderr[pos1+len(s):pos2])
-        return -signr, '', '', -signr, options
+        return -signr, '', '', -signr, options, ''
     if stderr.find('#### ThreadExecutor') > 0:
         print('Thread!')
-        return -222, '', '', -222, options
+        return -222, '', '', -222, options, ''
     information_messages_list = []
     issue_messages_list = []
     count = 0
@@ -333,7 +333,22 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
             if re.match(r'.*:[0-9]+:.*\]$', line):
                 count += 1
     print('Number of issues: ' + str(count))
-    return count, ''.join(issue_messages_list), ''.join(information_messages_list), elapsed_time, options
+    # Collect timing information
+    stdout_lines = stdout.split('\n')
+    timing_info_list = []
+    overall_time_found = False
+    max_timing_lines = 6
+    current_timing_lines = 0
+    for reverse_line in reversed(stdout_lines):
+        if reverse_line.startswith('Overall time:'):
+            overall_time_found = True
+        if overall_time_found:
+            if not reverse_line or current_timing_lines >= max_timing_lines:
+                break
+            timing_info_list.insert(0, ' ' + reverse_line + '\n')
+            current_timing_lines += 1
+    timing_str = ''.join(timing_info_list)
+    return count, ''.join(issue_messages_list), ''.join(information_messages_list), elapsed_time, options, timing_str
 
 
 def split_results(results):
@@ -594,8 +609,10 @@ while True:
     results_to_diff = []
     cppcheck_options = ''
     head_info_msg = ''
-    cppcheck_head_info = '';
-    libraries = get_libraries();
+    head_timing_info = ''
+    old_timing_info = ''
+    cppcheck_head_info = ''
+    libraries = get_libraries()
 
     for ver in cppcheck_versions:
         if ver == 'head':
@@ -603,7 +620,7 @@ while True:
             cppcheck_head_info = get_cppcheck_info(work_path + '/cppcheck')
         else:
             current_cppcheck_dir = ver
-        c, errout, info, t, cppcheck_options = scan_package(work_path, current_cppcheck_dir, jobs, libraries)
+        c, errout, info, t, cppcheck_options, timing_info = scan_package(work_path, current_cppcheck_dir, jobs, libraries)
         if c < 0:
             if c == -101 and 'error: could not find or open any of the paths given.' in errout:
                 # No sourcefile found (for example only headers present)
@@ -617,6 +634,9 @@ while True:
         results_to_diff.append(errout)
         if ver == 'head':
             head_info_msg = info
+            head_timing_info = timing_info
+        else:
+            old_timing_info = timing_info
 
     output = 'cppcheck-options: ' + cppcheck_options + '\n'
     output += 'platform: ' + platform.platform() + '\n'
@@ -626,6 +646,8 @@ while True:
     output += 'head-info: ' + cppcheck_head_info + '\n'
     output += 'count:' + count + '\n'
     output += 'elapsed-time:' + elapsed_time + '\n'
+    output += 'head-timing-info:\n' + head_timing_info + '\n'
+    output += 'old-timing-info:\n' + old_timing_info + '\n'
     info_output = output
     info_output += 'info messages:\n' + head_info_msg
     if 'head' in cppcheck_versions:

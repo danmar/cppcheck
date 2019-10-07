@@ -2221,8 +2221,8 @@ private:
 
     void simplifyTypedef109() {
         const char code[] = "typedef int&& rref;\n"
-                            "rref var;";
-        const char expected[] = "int & & var ;";
+                            "rref var = 0;";
+        const char expected[] = "int && var ; var = 0 ;";
         ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout.str());
     }

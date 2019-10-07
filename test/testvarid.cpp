@@ -164,6 +164,7 @@ private:
         TEST_CASE(varid_lambda_mutable);
         TEST_CASE(varid_trailing_return1); // #8889
         TEST_CASE(varid_trailing_return2); // #9066
+        TEST_CASE(varid_parameter_pack); // #9383
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -2222,18 +2223,18 @@ private:
     }
 
     void varid_rvalueref() {
-        ASSERT_EQUALS("1: int & & a@1 ;\n", tokenize("int&& a;"));
+        ASSERT_EQUALS("1: int && a@1 ;\n", tokenize("int&& a;"));
 
-        ASSERT_EQUALS("1: void foo ( int & & a@1 ) { }\n", tokenize("void foo(int&& a) {}"));
+        ASSERT_EQUALS("1: void foo ( int && a@1 ) { }\n", tokenize("void foo(int&& a) {}"));
 
         ASSERT_EQUALS("1: class C {\n"
-                      "2: C ( int & & a@1 ) ;\n"
+                      "2: C ( int && a@1 ) ;\n"
                       "3: } ;\n",
                       tokenize("class C {\n"
                                "    C(int&& a);\n"
                                "};"));
 
-        ASSERT_EQUALS("1: void foo ( int & & ) ;\n", tokenize("void foo(int&&);"));
+        ASSERT_EQUALS("1: void foo ( int && ) ;\n", tokenize("void foo(int&&);"));
     }
 
     void varid_arrayFuncPar() {
@@ -2532,6 +2533,18 @@ private:
     void varid_trailing_return2() { // #9066
         const char code1[] = "auto func(int arg) -> bar::quux {}";
         const char exp1[] = "1: auto func ( int arg@1 ) . bar :: quux { }\n";
+        ASSERT_EQUALS(exp1, tokenize(code1));
+    }
+
+    void varid_parameter_pack() { // #9383
+        const char code1[] = "template <typename... Rest>\n"
+                             "void func(Rest... parameters) {\n"
+                             "    foo(parameters...);\n"
+                             "}\n";
+        const char exp1[] = "1: template < typename ... Rest >\n"
+                            "2: void func ( Rest ... parameters@1 ) {\n"
+                            "3: foo ( parameters@1 ... ) ;\n"
+                            "4: }\n";
         ASSERT_EQUALS(exp1, tokenize(code1));
     }
 

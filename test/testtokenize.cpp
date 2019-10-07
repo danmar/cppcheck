@@ -489,7 +489,7 @@ private:
         // filter out ValueFlow messages..
         const std::string debugwarnings = errout.str();
         errout.str("");
-        std::istringstream istr2(debugwarnings.c_str());
+        std::istringstream istr2(debugwarnings);
         std::string line;
         while (std::getline(istr2,line)) {
             if (line.find("valueflow.cpp") == std::string::npos)
@@ -519,7 +519,7 @@ private:
         // filter out ValueFlow messages..
         const std::string debugwarnings = errout.str();
         errout.str("");
-        std::istringstream istr2(debugwarnings.c_str());
+        std::istringstream istr2(debugwarnings);
         std::string line;
         while (std::getline(istr2,line)) {
             if (line.find("valueflow.cpp") == std::string::npos)
@@ -7269,7 +7269,11 @@ private:
         ASSERT_EQUALS("catch...(", testAst("try {} catch (...) {}"));
 
         ASSERT_EQUALS("FooBar(", testAst("void Foo(Bar&);"));
-        ASSERT_EQUALS("FooBar(", testAst("void Foo(Bar& &);")); // Rvalue reference - simplified from && to & & by real tokenizer
+        ASSERT_EQUALS("FooBar(", testAst("void Foo(Bar&&);"));
+
+        ASSERT_EQUALS("FooBarb&(", testAst("void Foo(Bar& b);"));
+        ASSERT_EQUALS("FooBarb&&(", testAst("void Foo(Bar&& b);"));
+
         ASSERT_EQUALS("DerivedDerived::(", testAst("Derived::~Derived() {}"));
 
         ASSERT_EQUALS("ifCA_FarReadfilenew(,sizeofobjtype(,(!(", testAst("if (!CA_FarRead(file, (void far *)new, sizeof(objtype)))")); // #5910 - don't hang if C code is parsed as C++
@@ -7422,8 +7426,9 @@ private:
         ASSERT_EQUALS("ac5[new(=", testAst("a = (b*)(new c[5]);")); // #8786
         ASSERT_EQUALS("a(4+", testAst("(int)(a) + 4;"));
 
-        // TODO: This AST is incomplete however it's very weird syntax (taken from clang test suite)
-        ASSERT_EQUALS("a&(", testAst("(int (**)[i]){&a}[0][1][5] = 0;"));
+        // (cast){data}[index]
+        ASSERT_EQUALS("a&{(0[1[5[0=", testAst("(int (**)[i]){&a}[0][1][5] = 0;"));
+        ASSERT_EQUALS("ab12,{(0[,(", testAst("a(b, (int []){1,2}[0]);"));
         ASSERT_EQUALS("n0=", testAst("TrivialDefCtor{[2][2]}[1][1].n = 0;"));
         ASSERT_EQUALS("aT12,3,{1[=", testAst("a = T{1, 2, 3}[1];"));
 

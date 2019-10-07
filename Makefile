@@ -5,6 +5,14 @@ ifndef HAVE_RULES
     HAVE_RULES=no
 endif
 
+ifndef USE_Z3
+    USE_Z3=no
+endif
+
+ifeq ($(USE_Z3),yes)
+    CPPFLAGS += -DUSE_Z3
+    LIBS += -lz3
+endif
 # use match compiler
 ifeq ($(SRCDIR),build)
     $(warning Usage of SRCDIR to activate match compiler is deprecated. Use MATCHCOMPILER=yes instead.)

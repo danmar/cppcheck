@@ -21,6 +21,17 @@ import re
 import os
 import argparse
 import codecs
+import string
+
+try:
+    from itertools import izip as zip
+except ImportError:
+    pass
+
+
+def grouped(iterable, n):
+    "s -> (s0,s1,s2,...sn-1), (sn,sn+1,sn+2,...s2n-1), (s2n,s2n+1,s2n+2,...s3n-1), ..."
+    return zip(*[iter(iterable)]*n)
 
 
 typeBits = {
@@ -456,15 +467,52 @@ def getArguments(ftok):
 
 
 def isalnum(c):
-    return (c >= '0' and c <= '9') or (c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z')
+    return c in string.digits or c in string.ascii_letters
 
 
-def isHexDigit(c):
-    return (c >= '0' and c <= '9') or (c >= 'a' and c <= 'f') or (c >= 'A' and c <= 'F')
+def isHexEscapeSequence(symbols):
+    """Checks that given symbols are valid hex escape sequence.
+
+    hexadecimal-escape-sequence:
+            \\x hexadecimal-digit
+            hexadecimal-escape-sequence hexadecimal-digit
+
+    Reference: n1570 6.4.4.4"""
+    if len(symbols) < 3 or symbols[:2] != '\\x':
+        return False
+    return all([s in string.hexdigits for s in symbols[2:]])
 
 
-def isOctalDigit(c):
-    return c >= '0' and c <= '7'
+def isOctalEscapeSequence(symbols):
+    """Checks that given symbols are valid octal escape sequence:
+
+     octal-escape-sequence:
+             \ octal-digit
+             \ octal-digit octal-digit
+             \ octal-digit octal-digit octal-digit
+
+    Reference: n1570 6.4.4.4"""
+    if len(symbols) not in range(2, 5) or symbols[0] != '\\':
+        return False
+    return all([s in string.octdigits for s in symbols[1:]])
+
+
+def isSimpleEscapeSequence(symbols):
+    """Checks that given symbols are simple escape sequence.
+    Reference: n1570 6.4.4.4"""
+    if len(symbols) != 2 or symbols[0] != '\\':
+        return False
+    return symbols[1] in ("'", '"', '?', '\\', 'a', 'b', 'f', 'n', 'r', 't', 'v')
+
+
+def hasNumericEscapeSequence(symbols):
+    """Check that given string contains octal or hexadecimal escape sequences."""
+    if '\\' not in symbols:
+        return False
+    for c, cn in grouped(symbols, 2):
+        if c == '\\' and cn in ('x' + string.octdigits):
+            return True
+    return False
 
 
 def isNoReturnScope(tok):
@@ -692,45 +740,42 @@ class MisraChecker:
 
     def misra_3_1(self, rawTokens):
         for token in rawTokens:
-            if token.str.startswith('/*') or token.str.startswith('//'):
+            starts_with_double_slash = token.str.startswith('//')
+            if token.str.startswith('/*') or starts_with_double_slash:
                 s = token.str.lstrip('/')
-                if '//' in s or '/*' in s:
+                if ((not starts_with_double_slash) and '//' in s) or '/*' in s:
                     self.reportError(token, 3, 1)
 
 
     def misra_4_1(self, rawTokens):
         for token in rawTokens:
-            if ((token.str[0] != '"') and (token.str[0] != '\'')):
+            if (token.str[0] != '"') and (token.str[0] != '\''):
                 continue
-            pos = 1
-            while pos < len(token.str) - 2:
-                pos1 = pos
-                pos = pos + 1
-                if token.str[pos1] != '\\':
-                    continue
-                if token.str[pos1 + 1] == '\\':
-                    pos = pos1 + 2
-                    continue
-                if token.str[pos1 + 1] == 'x':
-                    if not isHexDigit(token.str[pos1 + 2]):
-                        self.reportError(token, 4, 1)
-                        continue
-                    if not isHexDigit(token.str[pos1 + 3]):
-                        self.reportError(token, 4, 1)
-                        continue
-                elif isOctalDigit(token.str[pos1 + 1]):
-                    if not isOctalDigit(token.str[pos1 + 2]):
-                        self.reportError(token, 4, 1)
-                        continue
-                    if not isOctalDigit(token.str[pos1 + 2]):
-                        self.reportError(token, 4, 1)
-                        continue
-                else:
-                    continue
+            if len(token.str) < 3:
+                continue
 
-                c = token.str[pos1 + 4]
-                if c != '"' and c != '\\':
+            delimiter = token.str[0]
+            symbols = token.str[1:-1]
+
+            # No closing delimiter. This will not compile.
+            if token.str[-1] != delimiter:
+                continue
+
+            if len(symbols) < 2:
+                continue
+
+            if not hasNumericEscapeSequence(symbols):
+                continue
+
+            # String literals that contains one or more escape sequences. All of them should be
+            # terminated.
+            for sequence in ['\\' + t for t in symbols.split('\\')][1:]:
+                if (isHexEscapeSequence(sequence) or isOctalEscapeSequence(sequence) or
+                    isSimpleEscapeSequence(sequence)):
+                    continue
+                else:
                     self.reportError(token, 4, 1)
+
 
     def misra_5_1(self, data):
         long_vars = {}
@@ -1165,7 +1210,7 @@ class MisraChecker:
                 continue
             if (vt2.pointer > 0 and vt1.pointer == 0 and
                     not vt1.isIntegral() and not vt1.isEnum() and
-                    vt2.type != 'void'):
+                    vt1.type != 'void'):
                 self.reportError(token, 11, 7)
             elif (vt1.pointer > 0 and vt2.pointer == 0 and
                     not vt2.isIntegral() and not vt2.isEnum() and

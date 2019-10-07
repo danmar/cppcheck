@@ -79,9 +79,11 @@ private:
         TEST_CASE(valueFlowBeforeConditionSizeof);
         TEST_CASE(valueFlowBeforeConditionSwitch);
         TEST_CASE(valueFlowBeforeConditionTernaryOp);
+        TEST_CASE(valueFlowBeforeConditionForward);
 
         TEST_CASE(valueFlowAfterAssign);
         TEST_CASE(valueFlowAfterCondition);
+        TEST_CASE(valueFlowAfterConditionExpr);
         TEST_CASE(valueFlowAfterConditionSeveralNot);
         TEST_CASE(valueFlowForwardCompoundAssign);
         TEST_CASE(valueFlowForwardCorrelatedVariables);
@@ -1385,10 +1387,11 @@ private:
                 "out:"
                 "    if (x==123){}\n"
                 "}");
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
-                                          "[test.cpp:4]: (debug) valueflow.cpp:1131:valueFlowReverse bailout: variable x stopping on goto label\n"
-                                          "[test.cpp:2]: (debug) valueflow.cpp:1813:valueFlowForward bailout: variable x. noreturn conditional scope.\n"
-                                          , errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS(
+            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
+            "[test.cpp:4]: (debug) valueflow.cpp:1131:valueFlowReverse bailout: variable x stopping on goto label\n"
+            "[test.cpp:2]: (debug) valueflow.cpp:1813:valueFlowForwardVariable bailout: variable x. noreturn conditional scope.\n",
+            errout.str());
 
         // #5721 - FP
         bailout("static void f(int rc) {\n"
@@ -1401,10 +1404,29 @@ private:
                 "out:\n"
                 "    if (abc) {}\n"
                 "}\n");
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:2]: (debug) valueflow.cpp:1035:valueFlowReverse bailout: assignment of abc\n"
-                                          "[test.cpp:8]: (debug) valueflow.cpp:1131:valueFlowReverse bailout: variable abc stopping on goto label\n"
-                                          "[test.cpp:3]: (debug) valueflow.cpp:1813:valueFlowForward bailout: variable abc. noreturn conditional scope.\n",
-                                          errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS(
+            "[test.cpp:2]: (debug) valueflow.cpp:1035:valueFlowReverse bailout: assignment of abc\n"
+            "[test.cpp:8]: (debug) valueflow.cpp:1131:valueFlowReverse bailout: variable abc stopping on goto label\n"
+            "[test.cpp:3]: (debug) valueflow.cpp:1813:valueFlowForwardVariable bailout: variable abc. noreturn conditional scope.\n",
+            errout.str());
+    }
+
+    void valueFlowBeforeConditionForward() {
+        const char* code;
+
+        code = "void f(int a) {\n"
+               "    int x = a;\n"
+               "    if (a == 123) {}\n"
+               "    int b = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 123));
+
+        code = "void f(int a) {\n"
+               "    int x = a;\n"
+               "    if (a != 123) {}\n"
+               "    int b = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 123));
     }
 
     void valueFlowAfterAssign() {
@@ -2304,6 +2326,61 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, 0));
         ASSERT_EQUALS(true, testValueOfX(code, 6U, 0));
+    }
+
+    void valueFlowAfterConditionExpr() {
+        const char* code;
+
+        code = "void f(int* p) {\n"
+               "    if (p[0] == 123) {\n"
+               "        int x = p[0];\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 123));
+
+        code = "void f(int y) {\n"
+               "    if (y+1 == 123) {\n"
+               "        int x = y+1;\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 123));
+
+        code = "void f(int y) {\n"
+               "    if (y+1 == 123) {\n"
+               "        int x = y+2;\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 124));
+
+        code = "void f(int y, int z) {\n"
+               "    if (y+z == 123) {\n"
+               "        int x = y+z;\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 123));
+
+        code = "void f(int y, int z) {\n"
+               "    if (y+z == 123) {\n"
+               "        y++;\n"
+               "        int x = y+z;\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 5U, 123));
+
+        code = "void f(int y) {\n"
+               "    if (y++ == 123) {\n"
+               "        int x = y++;\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 123));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 124));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 125));
     }
 
     void valueFlowAfterConditionSeveralNot() {

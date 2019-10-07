@@ -299,6 +299,7 @@ private:
         TEST_CASE(symboldatabase76); // #9056
         TEST_CASE(symboldatabase77); // #8663
         TEST_CASE(symboldatabase78); // #9147
+        TEST_CASE(symboldatabase79); // #9392
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
 
@@ -344,6 +345,8 @@ private:
         TEST_CASE(findFunction24); // smart pointer
         TEST_CASE(findFunction25); // std::vector<std::shared_ptr<Fred>>
         TEST_CASE(findFunction26); // #8668 - pointer parameter in function call, const pointer function argument
+        TEST_CASE(findFunction27);
+        TEST_CASE(findFunction28);
         TEST_CASE(findFunctionContainer);
 
         TEST_CASE(valueTypeMatchParameter); // ValueType::matchParameter
@@ -1557,7 +1560,7 @@ private:
             ASSERT(ctor && ctor->retDef == nullptr);
         }
         {
-            GET_SYMBOL_DB("class Foo { Foo(Foo & & f, int default = 1, bool defaultToo = true); };");
+            GET_SYMBOL_DB("class Foo { Foo(Foo&& f, int default = 1, bool defaultToo = true); };");
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
             ASSERT(db && ctor && ctor->type == Function::eMoveConstructor);
             ASSERT(ctor && ctor->retDef == nullptr);
@@ -4244,6 +4247,14 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void symboldatabase79() { // #9392
+        GET_SYMBOL_DB("class C { C(); };\n"
+                      "C::C() = default;");
+        ASSERT(db->scopeList.size() == 2);
+        ASSERT(db->scopeList.back().functionList.size() == 1);
+        ASSERT(db->scopeList.back().functionList.front().isDefault() == true);
+    }
+
     void createSymbolDatabaseFindAllScopes1() {
         GET_SYMBOL_DB("void f() { union {int x; char *p;} a={0}; }");
         ASSERT(db->scopeList.size() == 3);
@@ -5369,11 +5380,7 @@ private:
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v2 ) ) ;");
         ASSERT(f);
         ASSERT(f->function());
-        if (std::numeric_limits<char>::is_signed) {
-            ASSERT_EQUALS(5, f->function()->tokenDef->linenr());
-        } else {
-            ASSERT_EQUALS(10, f->function()->tokenDef->linenr());
-        }
+        ASSERT_EQUALS(5, f->function()->tokenDef->linenr());
 
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v3 ) ) ;");
         ASSERT(f);
@@ -5398,7 +5405,11 @@ private:
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v7 ) ) ;");
         ASSERT(f);
         ASSERT(f->function());
-        ASSERT_EQUALS(10, f->function()->tokenDef->linenr());
+        if (std::numeric_limits<char>::is_signed) {
+            ASSERT_EQUALS(10, f->function()->tokenDef->linenr());
+        } else {
+            ASSERT_EQUALS(5, f->function()->tokenDef->linenr());
+        }
 
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v8 ) ) ;");
         ASSERT(f);
@@ -5406,7 +5417,7 @@ private:
         if (std::numeric_limits<char>::is_signed) {
             ASSERT_EQUALS(5, f->function()->tokenDef->linenr());
         } else {
-            ASSERT_EQUALS(10, f->function()->tokenDef->linenr());
+            ASSERT_EQUALS(11, f->function()->tokenDef->linenr());
         }
 
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v9 ) ) ;");
@@ -5566,6 +5577,27 @@ private:
         ASSERT(dostuff1->function());
         ASSERT(dostuff1->function() && dostuff1->function()->token);
         ASSERT(dostuff1->function() && dostuff1->function()->token && dostuff1->function()->token->linenr() == 1);
+    }
+
+    void findFunction27() {
+        GET_SYMBOL_DB("namespace { void a(int); }\n"
+                      "void f() { a(9); }");
+        const Token *a = Token::findsimplematch(tokenizer.tokens(), "a ( 9 )");
+        ASSERT(a);
+        ASSERT(a->function());
+    }
+
+    void findFunction28() {
+        GET_SYMBOL_DB("namespace { void a(int); }\n"
+                      "struct S {\n"
+                      "  void foo() { a(7); }\n"
+                      "  void a(int);\n"
+                      "};");
+        const Token *a = Token::findsimplematch(tokenizer.tokens(), "a ( 7 )");
+        ASSERT(a);
+        ASSERT(a->function());
+        ASSERT(a->function()->token);
+        ASSERT_EQUALS(4, a->function()->token->linenr());
     }
 
     void findFunctionContainer() {
@@ -6238,6 +6270,8 @@ private:
         ASSERT_EQUALS("signed int", typeOf("auto a(int) -> int; a(5);", "( 5"));
         ASSERT_EQUALS("unsigned long", typeOf("sizeof(x);", "("));
         ASSERT_EQUALS("signed int", typeOf("int (*a)(int); a(5);", "( 5"));
+        // Some standard template functions.. TODO library configuration
+        ASSERT_EQUALS("signed int", typeOf("std::move(5);", "( 5 )"));
 
         // struct member..
         ASSERT_EQUALS("signed int", typeOf("struct AB { int a; int b; } ab; x = ab.a;", "."));
@@ -6271,12 +6305,17 @@ private:
             Settings settingsWin64;
             settingsWin64.platformType = Settings::Win64;
             const Library::PodType u32 = { 4, 'u' };
+            const Library::PodType podtype2 = { 0, 'u', Library::PodType::INT };
             settingsWin64.library.mPodTypes["u32"] = u32;
             settingsWin64.library.mPodTypes["xyz::x"] = u32;
+            settingsWin64.library.mPodTypes["podtype2"] = podtype2;
             ValueType vt;
             ASSERT_EQUALS(true, vt.fromLibraryType("u32", &settingsWin64));
             ASSERT_EQUALS(true, vt.fromLibraryType("xyz::x", &settingsWin64));
             ASSERT_EQUALS(ValueType::Type::INT, vt.type);
+            ValueType vt2;
+            ASSERT_EQUALS(true, vt2.fromLibraryType("podtype2", &settingsWin64));
+            ASSERT_EQUALS(ValueType::Type::INT, vt2.type);
             ASSERT_EQUALS("unsigned int *", typeOf(";void *data = new u32[10];", "new", "test.cpp", &settingsWin64));
             ASSERT_EQUALS("unsigned int *", typeOf(";void *data = new xyz::x[10];", "new", "test.cpp", &settingsWin64));
             ASSERT_EQUALS("unsigned int", typeOf("; x = (xyz::x)12;", "(", "test.cpp", &settingsWin64));

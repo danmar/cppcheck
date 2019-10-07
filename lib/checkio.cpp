@@ -956,7 +956,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                 if (argListTok->tokType() != Token::eString &&
                                     argInfo.isKnownType() && !argInfo.isArrayOrPointer()) {
                                     if (!Token::Match(argInfo.typeToken, "char|wchar_t")) {
-                                        if (!(!argInfo.isArrayOrPointer() && argInfo.element))
+                                        if (!argInfo.element)
                                             invalidPrintfArgTypeError_s(tok, numFormat, &argInfo);
                                     }
                                 }
