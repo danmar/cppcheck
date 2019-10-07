@@ -124,6 +124,8 @@ namespace {
         std::vector<ExprEngine::ValuePtr> constraints;
 
         void assignValue(const Token *tok, unsigned int varId, ExprEngine::ValuePtr value) {
+            if (varId == 0)
+                return;
             mTrackExecution->symbolRange(tok, value);
             if (value) {
                 if (auto arr = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(value)) {
@@ -1069,10 +1071,6 @@ static void execute(const Token *start, const Token *end, Data &data)
             // TODO this is a bailout
             throw std::runtime_error("Unhandled:" + tok->str());
 
-        if (Token::Match(tok, "for|while ("))
-            // TODO this is a bailout
-            throw std::runtime_error("Unhandled:" + tok->str());
-
         // Variable declaration..
         if (tok->variable() && tok->variable()->nameToken() == tok) {
             if (Token::Match(tok, "%varid% ; %varid% =", tok->varId())) {
@@ -1142,6 +1140,32 @@ static void execute(const Token *start, const Token *end, Data &data)
             }
             execute(defaultStart ? defaultStart : bodyEnd, end, defaultData);
             return;
+        }
+
+        if (Token::Match(tok, "for|while (") && Token::simpleMatch(tok->linkAt(1), ") {")) {
+            const Token *bodyStart = tok->linkAt(1)->next();
+            const Token *bodyEnd = bodyStart->link();
+
+            // TODO this is very rough code
+            std::set<int> changedVariables;
+            for (const Token *tok2 = tok; tok2 != bodyEnd; tok2 = tok2->next()) {
+                if (Token::Match(tok2, "%var% %assign%")) {
+                    // give variable "any" value
+                    int varid = tok2->varId();
+                    if (changedVariables.find(varid) != changedVariables.end())
+                        continue;
+                    changedVariables.insert(varid);
+                    data.assignValue(tok2->next(), varid, createVariableValue(*tok2->variable(), data));
+                } else if (Token::Match(tok2, "++|--") && tok2->astOperand1() && tok2->astOperand1()->variable()) {
+                    // give variable "any" value
+                    const Token *vartok = tok2->astOperand1();
+                    int varid = vartok->varId();
+                    if (changedVariables.find(varid) != changedVariables.end())
+                        continue;
+                    changedVariables.insert(varid);
+                    data.assignValue(tok2, varid, createVariableValue(*vartok->variable(), data));
+                }
+            }
         }
 
         if (Token::simpleMatch(tok, "} else {"))
