@@ -442,20 +442,10 @@ static int getPointerDepth(const Token *tok)
 
 static bool isDeadTemporary(bool cpp, const Token* tok, const Token* expr)
 {
-    if (!tok)
-        return false;
-    if (Token::Match(tok, ",|.|::"))
-        return isDeadTemporary(cpp, tok->astOperand2(), expr);
-    if (Token::Match(tok, "?|.|[|++|--|%name%|%assign%"))
-        return false;
-    if (tok->isUnaryOp("*"))
-        return false;
-    if (Token::Match(tok, "&|<<|>>") && isLikelyStream(cpp, tok->astOperand1()))
+    if (!isTemporary(cpp, tok))
         return false;
     if (expr && !precedes(nextAfterAstRightmostLeaf(tok->astTop()), nextAfterAstRightmostLeaf(expr->astTop())))
         return false;
-    if (Token::Match(tok->previous(), "%name% ("))
-        return tok->previous()->function() && !Function::returnsReference(tok->previous()->function(), true);
     return true;
 }
 

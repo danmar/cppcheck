@@ -87,6 +87,8 @@ std::string astCanonicalType(const Token *expr);
 /** Is given syntax tree a variable comparison against value */
 const Token * astIsVariableComparison(const Token *tok, const std::string &comp, const std::string &rhs, const Token **vartok=nullptr);
 
+bool isTemporary(bool cpp, const Token* tok);
+
 const Token * nextAfterAstRightmostLeaf(const Token * tok);
 
 Token* astParentSkipParens(Token* tok);

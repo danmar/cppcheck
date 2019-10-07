@@ -112,6 +112,7 @@ private:
         TEST_CASE(returnReferenceLambda);
         TEST_CASE(returnReferenceInnerScope);
         TEST_CASE(returnReferenceRecursive);
+        TEST_CASE(extendedLifetime);
 
         TEST_CASE(danglingReference);
 
@@ -1479,6 +1480,40 @@ private:
 
         check("int& g(int& i) { return i; }\n"
               "int& f() { return g(f()); }\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void extendedLifetime() {
+        check("void g(int*);\n"
+              "int h();\n"
+              "auto f() {\n"
+              "    const int& x = h();\n"
+              "    return [&] { return x; };\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5] -> [test.cpp:4] -> [test.cpp:5]: (error) Returning lambda that captures local variable 'x' that will be invalid when returning.\n", errout.str());
+
+        check("void g(int*);\n"
+              "int h();\n"
+              "int* f() {\n"
+              "    const int& x = h();\n"
+              "    return &x;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5] -> [test.cpp:4] -> [test.cpp:5]: (error) Returning pointer to local variable 'x' that will be invalid when returning.\n", errout.str());
+
+        check("void g(int*);\n"
+              "int h();\n"
+              "void f() {\n"
+              "    int& x = h();\n"
+              "    g(&x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5] -> [test.cpp:5]: (error) Using pointer to temporary.\n", errout.str());
+
+        check("void g(int*);\n"
+              "int h();\n"
+              "void f() {\n"
+              "    const int& x = h();\n"
+              "    g(&x);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
