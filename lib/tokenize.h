@@ -376,6 +376,10 @@ public:
 
     /**
      */
+    bool isMemberFunction(const Token *openParen) const;
+
+    /**
+     */
     bool simplifyUsing();
 
     /**
