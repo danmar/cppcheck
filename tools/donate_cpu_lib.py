@@ -453,6 +453,7 @@ def get_libraries():
                        'nspr': ['<prtypes.h>', '"prtypes.h"'],
                        'opengl': ['<GL/gl.h>', '<GL/glu.h>', '<GL/glut.h>'],
                        'openmp': ['<omp.h>'],
+                       # 'openssl': ['<openssl/'], <= enable after release of version 1.90
                        'python': ['<Python.h>', '"Python.h"'],
                        'qt': ['<QApplication>', '<QList>', '<qlist.h>', '<QObject>', '<QString>', '<qstring.h>', '<QWidget>', '<QtWidgets>', '<QtGui'],
                        'ruby': ['<ruby.h>', '<ruby/', '"ruby.h"'],
