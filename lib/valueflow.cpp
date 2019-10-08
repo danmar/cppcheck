@@ -2880,8 +2880,8 @@ static bool valueFlowForwardVariable(Token* const startToken,
 
                 const std::pair<const Token *, const Token *> startEnd0 = expr0->findExpressionStartEndTokens();
                 const std::pair<const Token *, const Token *> startEnd1 = expr1->findExpressionStartEndTokens();
-                const bool changed0 = isVariableChanged(startEnd0.first, startEnd0.second->next(), varid, var->isGlobal(), settings, tokenlist->isCPP());
-                const bool changed1 = isVariableChanged(startEnd1.first, startEnd1.second->next(), varid, var->isGlobal(), settings, tokenlist->isCPP());
+                const bool changed0 = (var && startEnd0.second ? isVariableChanged(startEnd0.first, startEnd0.second->next(), varid, var->isGlobal(), settings, tokenlist->isCPP()) : 0);
+                const bool changed1 = (var && startEnd1.second ? isVariableChanged(startEnd1.first, startEnd1.second->next(), varid, var->isGlobal(), settings, tokenlist->isCPP()) : 0);
 
                 if (changed0 && changed1) {
                     if (settings->debugwarnings)
