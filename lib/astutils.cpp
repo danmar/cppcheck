@@ -1662,7 +1662,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             // TODO: Handle these better
             // Is expr variable used in expression?
             const Token *end = tok->findExpressionStartEndTokens().second->next();
-            for (const Token *tok2 = tok; tok2 != end; tok2 = tok2->next()) {
+            for (const Token *tok2 = tok; tok2 && tok2 != end; tok2 = tok2->next()) {
                 if (!local && Token::Match(tok2, "%name% ("))
                     return Result(Result::Type::READ);
                 if (tok2->varId() && exprVarIds.find(tok2->varId()) != exprVarIds.end())
