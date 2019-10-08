@@ -548,6 +548,10 @@ struct ExprData {
             return op1 && op2;
         if (b->binop == "||")
             return op1 || op2;
+        if (b->binop == "<<")
+            return z3::shl(op1, op2);
+        if (b->binop == ">>")
+            return z3::lshr(op1, op2);
         throw std::runtime_error("Internal error: Unhandled operator");
     }
 

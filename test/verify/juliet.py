@@ -63,6 +63,4 @@ final_report += check('C/testcases/CWE369_Divide_by_Zero/s*/*_int_*.c', 'verific
 
 print(final_report)
 
-assert final_report == ('CWE369 ok:456, fail:0\n'
-                        'CWE476 ok:234, fail:36\n')
 
