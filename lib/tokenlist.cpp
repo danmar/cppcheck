@@ -1319,7 +1319,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
                 decl = true;
             typetok = typetok->next();
         }
-        if (decl && Token::Match(typetok->previous(), "[*&] %var% ="))
+        if (decl && typetok && Token::Match(typetok->previous(), "[*&] %var% ="))
             tok = typetok;
     }
 
