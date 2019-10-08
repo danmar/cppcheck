@@ -68,7 +68,7 @@ static const Token *getAstParentSkipPossibleCastAndAddressOf(const Token *vartok
         return nullptr;
     if (parent->isUnaryOp("&"))
         parent = parent->astParent();
-    else if (parent->str() == "&" && vartok == parent->astOperand2() && Token::Match(parent->astOperand1()->previous(), "( %type% )")) {
+    else if (parent->astOperand1() && parent->str() == "&" && vartok == parent->astOperand2() && Token::Match(parent->astOperand1()->previous(), "( %type% )")) {
         parent = parent->astParent();
         if (unknown)
             *unknown = true;
