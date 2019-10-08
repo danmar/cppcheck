@@ -5559,6 +5559,11 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings)
             // function style cast
             else if (tok->previous() && tok->previous()->isStandardType()) {
                 ValueType valuetype;
+                if (valuetype.fromLibraryType(tok->astOperand1()->expressionString(), mSettings)) {
+                    setValueType(tok, valuetype);
+                    continue;
+                }
+
                 valuetype.type = ValueType::typeFromString(tok->previous()->str(), tok->previous()->isLong());
                 if (tok->previous()->isUnsigned())
                     valuetype.sign = ValueType::Sign::UNSIGNED;
@@ -5575,8 +5580,19 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings)
                 setValueType(tok, valuetype);
             }
 
-            // library function
+            // library type/function
             else if (tok->previous()) {
+                if (tok->astParent() && Token::Match(tok->astOperand1(), "%name%|::")) {
+                    if (const Library::Container *c = mSettings->library.detectContainer(tok->astOperand1())) {
+                        ValueType vt;
+                        vt.pointer = 0;
+                        vt.container = c;
+                        vt.type = ValueType::Type::CONTAINER;
+                        setValueType(tok, vt);
+                        continue;
+                    }
+                }
+
                 const std::string& typestr(mSettings->library.returnValueType(tok->previous()));
                 if (!typestr.empty()) {
                     ValueType valuetype;
