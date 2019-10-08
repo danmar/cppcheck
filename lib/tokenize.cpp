@@ -2499,14 +2499,23 @@ void Tokenizer::simplifyExternC()
 {
     if (isC())
         return;
+
+    // Add attributes to all tokens within `extern "C"` inlines and blocks, and remove the `extern "C"` tokens.
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "extern \"C\"")) {
+            Token *tok2 = tok->next();
             if (tok->strAt(2) == "{") {
-                tok->linkAt(2)->deleteThis();
-                tok->deleteNext(2);
-            } else
-                tok->deleteNext();
-            tok->deleteThis();
+                tok2 = tok2->next(); // skip {
+                while ((tok2 = tok2->next()) && tok2 != tok->linkAt(2))
+                    tok2->isExternC(true);
+                tok->linkAt(2)->deleteThis(); // }
+                tok->deleteNext(2); // "C" {
+            } else {
+                while ((tok2 = tok2->next()) && !Token::simpleMatch(tok2, ";"))
+                    tok2->isExternC(true);
+                tok->deleteNext(); // "C"
+            }
+            tok->deleteThis(); // extern
         }
     }
 }

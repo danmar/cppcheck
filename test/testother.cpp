@@ -92,6 +92,7 @@ private:
 
         TEST_CASE(passedByValue);
         TEST_CASE(passedByValue_nonConst);
+        TEST_CASE(passedByValue_externC);
 
         TEST_CASE(constVariable);
 
@@ -1705,6 +1706,26 @@ private:
             check(code, &s64);
             ASSERT_EQUALS("", errout.str());
         }
+    }
+
+    void passedByValue_externC() {
+        check("struct X { int a[5]; }; void f(X v) { }");
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'v' should be passed by const reference.\n", errout.str());
+
+        check("extern \"C\" { struct X { int a[5]; }; void f(X v) { } }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct X { int a[5]; }; extern \"C\" void f(X v) { }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct X { int a[5]; }; void f(const X v);");
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'v' should be passed by const reference.\n", errout.str());
+
+        check("extern \"C\" { struct X { int a[5]; }; void f(const X v); }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct X { int a[5]; }; extern \"C\" void f(const X v) { }");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void constVariable() {
