@@ -87,11 +87,22 @@ namespace ExprEngine {
         virtual std::string getSymbolicExpression() const {
             return name;
         }
-        virtual bool isIntValueInRange(DataBase *dataBase, int value) const {
+        virtual bool isEqual(DataBase *dataBase, int value) const {
             (void)dataBase;
             (void)value;
             return false;
         }
+        virtual bool isGreaterThan(DataBase *dataBase, int value) const {
+            (void)dataBase;
+            (void)value;
+            return false;
+        }
+        virtual bool isLessThan(DataBase *dataBase, int value) const {
+            (void)dataBase;
+            (void)value;
+            return false;
+        }
+
         const std::string name;
         ValueType type;
     };
@@ -113,7 +124,7 @@ namespace ExprEngine {
                 return str(minValue);
             return str(minValue) + ":" + str(maxValue);
         }
-        bool isIntValueInRange(DataBase *dataBase, int value) const override;
+        bool isEqual(DataBase *dataBase, int value) const override;
 
         int128_t minValue;
         int128_t maxValue;
@@ -231,7 +242,10 @@ namespace ExprEngine {
             , op2(op2) {
         }
 
-        bool isIntValueInRange(DataBase *dataBase, int value) const;
+        bool isEqual(DataBase *dataBase, int value) const override;
+        bool isGreaterThan(DataBase *dataBase, int value) const override;
+        virtual bool isLessThan(DataBase *dataBase, int value) const override;
+
         std::string getExpr(DataBase *dataBase) const;
 
         std::string binop;
