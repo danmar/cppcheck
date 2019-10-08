@@ -145,7 +145,7 @@ void CheckClass::constructors()
         std::vector<Usage> usage(scope->varlist.size());
 
         for (const Function &func : scope->functionList) {
-            if (!func.hasBody() || !(func.isConstructor() || func.type == Function::eOperatorEqual))
+            if (!(func.hasBody() || func.isDefault()) || !(func.isConstructor() || func.type == Function::eOperatorEqual))
                 continue;
 
             // Bail: If initializer list is not recognized as a variable or type then skip since parsing is incomplete
@@ -159,7 +159,8 @@ void CheckClass::constructors()
             clearAllVar(usage);
 
             std::list<const Function *> callstack;
-            initializeVarList(func, callstack, scope, usage);
+            if (func.hasBody())
+                initializeVarList(func, callstack, scope, usage);
 
             // Check if any variables are uninitialized
             int count = -1;
