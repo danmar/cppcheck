@@ -30,6 +30,14 @@
 #include <z3++.h>
 #endif
 
+namespace {
+    struct VerifyException {
+        VerifyException(const Token *tok, const std::string &what) : tok(tok), what(what) {}
+        const Token *tok;
+        const std::string what;
+    };
+}
+
 std::string ExprEngine::str(int128_t value)
 {
     std::ostringstream ostr;
@@ -373,7 +381,7 @@ ExprEngine::ConditionalValue::Vector ExprEngine::ArrayValue::read(ExprEngine::Va
     if (!index)
         return ret;
     for (const auto indexAndValue : data) {
-        if (isEqual(index, indexAndValue.index))
+        if (::isEqual(index, indexAndValue.index))
             ret.clear();
         if (isNonOverlapping(index, indexAndValue.index))
             continue;
@@ -591,7 +599,7 @@ struct ExprData {
 };
 #endif
 
-bool ExprEngine::IntRange::isIntValueInRange(DataBase *dataBase, int value) const
+bool ExprEngine::IntRange::isEqual(DataBase *dataBase, int value) const
 {
     if (value < minValue || value > maxValue)
         return false;
@@ -620,7 +628,7 @@ bool ExprEngine::IntRange::isIntValueInRange(DataBase *dataBase, int value) cons
 #endif
 }
 
-bool ExprEngine::BinOpResult::isIntValueInRange(ExprEngine::DataBase *dataBase, int value) const
+bool ExprEngine::BinOpResult::isEqual(ExprEngine::DataBase *dataBase, int value) const
 {
 #ifdef USE_Z3
     ExprData exprData;
@@ -630,6 +638,42 @@ bool ExprEngine::BinOpResult::isIntValueInRange(ExprEngine::DataBase *dataBase, 
     for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
         solver.add(exprData.getConstraintExpr(constraint));
     solver.add(e == value);
+    return solver.check() == z3::sat;
+#else
+    (void)dataBase;
+    (void)value;
+    return false;
+#endif
+}
+
+bool ExprEngine::BinOpResult::isGreaterThan(ExprEngine::DataBase *dataBase, int value) const
+{
+#ifdef USE_Z3
+    ExprData exprData;
+    z3::solver solver(exprData.context);
+    z3::expr e = exprData.getExpr(this);
+    exprData.addAssertions(solver);
+    for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
+        solver.add(exprData.getConstraintExpr(constraint));
+    solver.add(e > value);
+    return solver.check() == z3::sat;
+#else
+    (void)dataBase;
+    (void)value;
+    return false;
+#endif
+}
+
+bool ExprEngine::BinOpResult::isLessThan(ExprEngine::DataBase *dataBase, int value) const
+{
+#ifdef USE_Z3
+    ExprData exprData;
+    z3::solver solver(exprData.context);
+    z3::expr e = exprData.getExpr(this);
+    exprData.addAssertions(solver);
+    for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
+        solver.add(exprData.getConstraintExpr(constraint));
+    solver.add(e < value);
     return solver.check() == z3::sat;
 #else
     (void)dataBase;
@@ -849,7 +893,7 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
     }
 
     if (!tok->valueType() && tok->astParent())
-        throw std::runtime_error("Expression '" + tok->expressionString() + "' has unknown type!");
+        throw VerifyException(tok, "Expression '" + tok->expressionString() + "' has unknown type!");
 
     auto val = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
     call(data.callbacks, tok, val, &data);
@@ -1069,7 +1113,7 @@ static void execute(const Token *start, const Token *end, Data &data)
 
         if (Token::simpleMatch(tok, "try"))
             // TODO this is a bailout
-            throw std::runtime_error("Unhandled:" + tok->str());
+            throw VerifyException(tok, "Unhandled:" + tok->str());
 
         // Variable declaration..
         if (tok->variable() && tok->variable()->nameToken() == tok) {
@@ -1179,6 +1223,10 @@ void ExprEngine::executeAllFunctions(const Tokenizer *tokenizer, const Settings 
     for (const Scope *functionScope : symbolDatabase->functionScopes) {
         try {
             executeFunction(functionScope, tokenizer, settings, callbacks, trace);
+        } catch (const VerifyException &e) {
+            // FIXME.. there should not be exceptions
+            std::string functionName = functionScope->function->name();
+            std::cout << "Verify: Aborted analysis of function '" << functionName << "':" << e.tok->linenr() << ": " << e.what << std::endl;
         } catch (const std::exception &e) {
             // FIXME.. there should not be exceptions
             std::string functionName = functionScope->function->name();
@@ -1284,7 +1332,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
     std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> divByZero = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
         if (!Token::Match(tok->astParent(), "[/%]"))
             return;
-        if (tok->astParent()->astOperand2() == tok && value.isIntValueInRange(dataBase, 0)) {
+        if (tok->astParent()->astOperand2() == tok && value.isEqual(dataBase, 0)) {
             std::list<const Token*> callstack{tok->astParent()};
             ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationDivByZero", "There is division, cannot determine that there can't be a division by zero.", CWE(369), false);
             errorLogger->reportErr(errmsg);
@@ -1300,31 +1348,42 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
         if (!b)
             return;
 
-        ExprEngine::BinOpResult::IntOrFloatValue minValue,maxValue;
-        b->getRange(&minValue, &maxValue);
-        if (minValue.isFloat() || maxValue.isFloat())
-            return;
-
         int bits = getIntBitsFromValueType(tok->valueType(), *settings);
-        if (bits == 0)
+        if (bits == 0 || bits >= 60)
             return;
 
+        std::string errorMessage;
         if (tok->valueType()->sign == ::ValueType::Sign::SIGNED) {
-            int128_t v = (int128_t)1 << (bits - 1);
-            if (minValue.intValue >= -v && maxValue.intValue < v)
-                return;
+            MathLib::bigint v = 1LL << (bits - 1);
+            if (b->isGreaterThan(dataBase, v))
+                errorMessage = "greater than " + std::to_string(v);
+            if (b->isLessThan(dataBase, -v)) {
+                if (!errorMessage.empty())
+                    errorMessage += " or ";
+                errorMessage += "less than " + std::to_string(v);
+            }
         } else {
-            int128_t v = (int128_t)1 << bits;
-            if (minValue.intValue >= 0 && maxValue.intValue < v)
-                return;
+            MathLib::bigint maxValue = (1LL << bits) - 1;
+            if (b->isGreaterThan(dataBase, maxValue))
+                errorMessage = "greater than " + std::to_string(maxValue);
+            if (b->isLessThan(dataBase, 0)) {
+                if (!errorMessage.empty())
+                    errorMessage += " or ";
+                errorMessage += "less than 0";
+            }
         }
 
-        std::string note;
+        if (errorMessage.empty())
+            return;
+
+
+        errorMessage = "There is integer arithmetic, cannot determine that there can't be overflow (if result is " + errorMessage + ").";
+
         if (tok->valueType()->sign == ::ValueType::Sign::UNSIGNED)
-            note = " Note that unsigned integer overflow is defined and will wrap around.";
+            errorMessage += " Note that unsigned integer overflow is defined and will wrap around.";
 
         std::list<const Token*> callstack{tok};
-        ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationIntegerOverflow", "Integer overflow, " + tok->valueType()->str() + " result." + note, false);
+        ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationIntegerOverflow", errorMessage, false);
         errorLogger->reportErr(errmsg);
     };
 #endif
