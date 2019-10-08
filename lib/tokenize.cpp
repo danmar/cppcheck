@@ -1723,8 +1723,11 @@ namespace {
                     }
                     if (tok1->strAt(-1) == ">")
                         tok1 = tok1->previous()->findOpeningBracket();
-                    if (tok1 && Token::Match(tok1->tokAt(-3), "%name% :: %name%")) {
+                    if (tok1 && (Token::Match(tok1->tokAt(-3), "%name% :: %name%") ||
+                                 Token::Match(tok1->tokAt(-4), "%name% :: ~ %name%"))) {
                         tok1 = tok1->tokAt(-2);
+                        if (tok1->str() == "~")
+                            tok1 = tok1->previous();
                         std::string scope = tok1->strAt(-1);
                         while (Token::Match(tok1->tokAt(-2), ":: %name%")) {
                             scope = tok1->strAt(-3) + " :: " + scope;
@@ -1874,7 +1877,27 @@ namespace {
 
         return false;
     }
+
+    std::string memberFunctionScope(const Token *tok)
+    {
+        std::string qualification;
+        const Token *qualTok = tok->strAt(-2) == "~" ? tok->tokAt(-4) : tok->tokAt(-3);
+        while (Token::Match(qualTok, "%type% ::")) {
+            if (!qualification.empty())
+                qualification = " :: " + qualification;
+            qualification = qualTok->str() + qualification;
+            qualTok = qualTok->tokAt(-2);
+        }
+        return qualification;
+    }
 } // namespace
+
+bool Tokenizer::isMemberFunction(const Token *openParen) const
+{
+    return (Token::Match(openParen->tokAt(-2), ":: %name% (") ||
+            Token::Match(openParen->tokAt(-3), ":: ~ %name% (")) &&
+           isFunctionHead(openParen, "{|:");
+}
 
 bool Tokenizer::simplifyUsing()
 {
@@ -2007,20 +2030,11 @@ bool Tokenizer::simplifyUsing()
                 continue;
             }
 
-            // check for member function
-            if (Token::Match(tok1->tokAt(-2), ":: %name% (") && isFunctionHead(tok1, "{|:")) {
-                std::string qualification;
-                const Token *qualTok = tok1->tokAt(-3);
-                while (Token::Match(qualTok, "%type% ::")) {
-                    if (!qualification.empty())
-                        qualification = " :: " + qualification;
-                    qualification = qualTok->str() + qualification;
-                    qualTok = qualTok->tokAt(-2);
-                }
-
+            // check for member function and adjust scope
+            if (isMemberFunction(tok1)) {
                 if (!scope1.empty())
                     scope1 += " :: ";
-                scope1 += qualification;
+                scope1 += memberFunctionScope(tok1);
             }
 
             if (!usingMatch(nameToken, scope, &tok1, scope1, scopeList1))

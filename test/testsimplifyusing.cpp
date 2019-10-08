@@ -555,33 +555,49 @@ private:
         {
             const char code[] = "class A {\n"
                                 "public:\n"
-                                "    using Foo = Bar;\n"
+                                "    using Foo = int;\n"
+                                "    A(Foo foo);\n"
+                                "    ~A();\n"
                                 "    void func(Foo foo);\n"
                                 "};\n"
+                                "A::A(Foo) { }\n"
+                                "A::~A() { Foo foo; }\n"
                                 "void A::func(Foo) { }";
             const char exp[] = "class A { "
                                "public: "
-                               "void func ( Bar foo ) ; "
+                               "A ( int foo ) ; "
+                               "~ A ( ) ; "
+                               "void func ( int foo ) ; "
                                "} ; "
-                               "void A :: func ( Bar ) { }";
+                               "A :: A ( int ) { } "
+                               "A :: ~ A ( ) { int foo ; } "
+                               "void A :: func ( int ) { }";
             ASSERT_EQUALS(exp, tok(code, false));
         }
         {
             const char code[] = "class A {\n"
                                 "public:\n"
                                 "    struct B {\n"
-                                "       using Foo = Bar;\n"
-                                "       void func(Foo foo);\n"
+                                "        using Foo = int;\n"
+                                "        B(Foo foo);\n"
+                                "        ~B();\n"
+                                "        void func(Foo foo);\n"
                                 "    };\n"
                                 "};\n"
+                                "A::B::B(Foo) { }\n"
+                                "A::B::~B() { Foo foo; }\n"
                                 "void A::B::func(Foo) { }";
             const char exp[] = "class A { "
                                "public: "
                                "struct B { "
-                               "void func ( Bar foo ) ; "
+                               "B ( int foo ) ; "
+                               "~ B ( ) ; "
+                               "void func ( int foo ) ; "
                                "} ; "
                                "} ; "
-                               "void A :: B :: func ( Bar ) { }";
+                               "A :: B :: B ( int ) { } "
+                               "A :: B :: ~ B ( ) { int foo ; } "
+                               "void A :: B :: func ( int ) { }";
             ASSERT_EQUALS(exp, tok(code, false));
         }
     }
