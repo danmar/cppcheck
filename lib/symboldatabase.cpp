@@ -2186,13 +2186,22 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
     return false;
 }
 
-bool Function::returnsReference(const Function *function)
+bool Function::returnsReference(const Function* function, bool unknown)
 {
     if (!function)
         return false;
     if (function->type != Function::eFunction)
         return false;
-    return function->tokenDef->strAt(-1) == "&";
+    const Token* defEnd = function->returnDefEnd();
+    if (defEnd->strAt(-1) == "&")
+        return true;
+    // Check for unknown types, which could be a reference
+    const Token* start = function->retDef;
+    while (Token::Match(start, "const|volatile"))
+        start = start->next();
+    if (start->tokAt(1) == defEnd && !start->type() && !start->isStandardType())
+        return unknown;
+    return false;
 }
 
 const Token * Function::constructorMemberInitialization() const
