@@ -5591,6 +5591,19 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings)
                         setValueType(tok, vt);
                         continue;
                     }
+
+                    const std::string e = tok->astOperand1()->expressionString();
+
+                    if ((e == "std::make_shared" || e == "std::make_unique") && Token::Match(tok->astOperand1(), ":: %name% < %name%")) {
+                        ValueType vt;
+                        parsedecl(tok->astOperand1()->tokAt(3), &vt, mDefaultSignedness, mSettings);
+                        if (vt.typeScope) {
+                            vt.smartPointerType = vt.typeScope->definedType;
+                            vt.typeScope = nullptr;
+                            setValueType(tok, vt);
+                            continue;
+                        }
+                    }
                 }
 
                 const std::string& typestr(mSettings->library.returnValueType(tok->previous()));

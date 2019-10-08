@@ -2349,8 +2349,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void danglingTemporaryLifetime()
-    {
+    void danglingTemporaryLifetime() {
         check("const int& g(const int& x) {\n"
               "    return x;\n"
               "}\n"
