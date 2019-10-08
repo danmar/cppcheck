@@ -5437,8 +5437,10 @@ static bool evaluate(const Token *expr, const std::vector<std::list<ValueFlow::V
         return !result->empty();
     }
     if (expr->str().compare(0,3,"arg")==0) {
-        *result = values[expr->str()[3] - '1'];
-        return true;
+        if (values.size() > expr->str()[3] - '1') {
+            *result = values[expr->str()[3] - '1'];
+            return true;
+        }
     }
     if (expr->isNumber()) {
         result->emplace_back(ValueFlow::Value(MathLib::toLongNumber(expr->str())));
