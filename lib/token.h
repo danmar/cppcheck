@@ -578,6 +578,13 @@ public:
         setFlag(fConstexpr, b);
     }
 
+    bool isExternC() const {
+        return getFlag(fExternC);
+    }
+    void isExternC(bool b) {
+        setFlag(fExternC, b);
+    }
+
 
     bool isBitfield() const {
         return mImpl->mBits > 0;
@@ -1114,6 +1121,7 @@ private:
         fAtAddress              = (1 << 24), // @ 0x4000
         fIncompleteVar          = (1 << 25),
         fConstexpr              = (1 << 26),
+        fExternC                = (1 << 27),
     };
 
     Token::Type mTokType;
