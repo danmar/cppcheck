@@ -6382,6 +6382,9 @@ private:
         // Variable declaration
         ASSERT_EQUALS("char *", typeOf("; char abc[] = \"abc\";", "["));
         ASSERT_EQUALS("", typeOf("; int x[10] = { [3]=1 };", "[ 3 ]"));
+
+        // std::make_shared
+        ASSERT_EQUALS("smart-pointer<C>", typeOf("class C {}; x = std::make_shared<C>();", "("));
     }
 
     void variadic1() { // #7453
