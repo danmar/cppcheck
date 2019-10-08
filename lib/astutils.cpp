@@ -220,6 +220,25 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
     return ret;
 }
 
+bool isTemporary(bool cpp, const Token* tok)
+{
+    if (!tok)
+        return false;
+    if (Token::simpleMatch(tok, "."))
+        return isTemporary(cpp, tok->astOperand1()) || isTemporary(cpp, tok->astOperand2());
+    if (Token::Match(tok, ",|::"))
+        return isTemporary(cpp, tok->astOperand2());
+    if (Token::Match(tok, "?|.|[|++|--|%name%|%assign%"))
+        return false;
+    if (tok->isUnaryOp("*"))
+        return false;
+    if (Token::Match(tok, "&|<<|>>") && isLikelyStream(cpp, tok->astOperand1()))
+        return false;
+    if (Token::Match(tok->previous(), "%name% ("))
+        return tok->previous()->function() && !Function::returnsReference(tok->previous()->function(), true);
+    return true;
+}
+
 static bool isFunctionCall(const Token* tok)
 {
     if (Token::Match(tok, "%name% ("))
