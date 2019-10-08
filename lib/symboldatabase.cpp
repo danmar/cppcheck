@@ -5559,7 +5559,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings)
             // function style cast
             else if (tok->previous() && tok->previous()->isStandardType()) {
                 ValueType valuetype;
-                if (valuetype.fromLibraryType(tok->astOperand1()->expressionString(), mSettings)) {
+                if (tok->astOperand1() && valuetype.fromLibraryType(tok->astOperand1()->expressionString(), mSettings)) {
                     setValueType(tok, valuetype);
                     continue;
                 }
