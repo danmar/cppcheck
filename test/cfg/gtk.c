@@ -401,3 +401,16 @@ void g_once_init_enter_leave_test()
         g_once_init_leave(init_val4, 1);
     }
 }
+
+void g_strchug_g_strchomp_test(gchar * str1)
+{
+    g_strchug(str1);
+    g_strchomp(str1);
+    g_strchug(g_strchomp(str1));
+    gchar * str2;
+    // cppcheck-suppress uninitvar
+    g_strchug(str2);
+    gchar * str3;
+    // cppcheck-suppress uninitvar
+    g_strchomp(str3);
+}
