@@ -280,6 +280,8 @@ else
 fi
 ${CPPCHECK} ${CPPCHECK_OPT} --library=cairo ${DIR}cairo.c
 
+${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=googletest ${DIR}googletest.cpp
+
 # Check the syntax of the defines in the configuration files
 set +e
 xmlstarlet --version
