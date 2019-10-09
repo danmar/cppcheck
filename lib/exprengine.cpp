@@ -552,10 +552,12 @@ struct ExprData {
             return z3::shl(op1, op2);
         if (b->binop == ">>")
             return z3::lshr(op1, op2);
-        throw std::runtime_error("Internal error: Unhandled operator");
+        throw VerifyException(nullptr, "Internal error: Unhandled operator");
     }
 
     z3::expr getExpr(ExprEngine::ValuePtr v) {
+        if (!v)
+            throw VerifyException(nullptr, "Can not solve expressions, operand value is null");
         if (auto intRange = std::dynamic_pointer_cast<ExprEngine::IntRange>(v)) {
             if (intRange->name[0] != '$')
                 return context.int_val(int64_t(intRange->minValue));
@@ -594,7 +596,7 @@ struct ExprData {
         if (v->type == ExprEngine::ValueType::UninitValue)
             return context.int_val(0);
 
-        throw std::runtime_error("Internal error: Unhandled value type");
+        throw VerifyException(nullptr, "Internal error: Unhandled value type");
     }
 
     z3::expr getConstraintExpr(ExprEngine::ValuePtr v) {
@@ -806,7 +808,11 @@ static void call(const std::vector<ExprEngine::Callback> &callbacks, const Token
 {
     if (value) {
         for (ExprEngine::Callback f : callbacks) {
-            f(tok, *value, dataBase);
+            try {
+                f(tok, *value, dataBase);
+            } catch (const VerifyException &e) {
+                throw VerifyException(tok, e.what);
+            }
         }
     }
 }
