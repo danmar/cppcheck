@@ -533,7 +533,7 @@ struct ExprData {
         if (b->binop == "%")
             return op1 % op2;
         if (b->binop == "==")
-            return op1 == op2;
+            return int_expr(op1) == int_expr(op2);
         if (b->binop == "!=")
             return op1 != op2;
         if (b->binop == ">=")
@@ -545,9 +545,9 @@ struct ExprData {
         if (b->binop == "<")
             return op1 < op2;
         if (b->binop == "&&")
-            return op1 && op2;
+            return bool_expr(op1) && bool_expr(op2);
         if (b->binop == "||")
-            return op1 || op2;
+            return bool_expr(op1) || bool_expr(op2);
         if (b->binop == "<<")
             return z3::shl(op1, op2);
         if (b->binop == ">>")
@@ -602,6 +602,21 @@ struct ExprData {
             return (getExpr(v) != 0);
         return getExpr(v);
     }
+
+private:
+
+    z3::expr bool_expr(z3::expr e) {
+        if (e.is_bool())
+            return e;
+        return e != 0;
+    }
+
+    z3::expr int_expr(z3::expr e) {
+        if (e.is_bool())
+            return z3::ite(e, context.int_val(1), context.int_val(0));
+        return e;
+    }
+
 };
 #endif
 
@@ -701,27 +716,33 @@ bool ExprEngine::BinOpResult::isLessThan(ExprEngine::DataBase *dataBase, int val
 std::string ExprEngine::BinOpResult::getExpr(ExprEngine::DataBase *dataBase) const
 {
 #ifdef USE_Z3
-    ExprData exprData;
-    z3::solver solver(exprData.context);
-    z3::expr e = exprData.getExpr(this);
-    exprData.addAssertions(solver);
-    for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
-        solver.add(exprData.getConstraintExpr(constraint));
-    solver.add(e);
-    std::ostringstream os;
-    os << solver;
-    switch (solver.check()) {
-    case z3::sat:
-        os << "z3::sat";
-        break;
-    case z3::unsat:
-        os << "z3::unsat";
-        break;
-    case z3::unknown:
-        os << "z3::unknown";
-        break;
+    try {
+        ExprData exprData;
+        z3::solver solver(exprData.context);
+        z3::expr e = exprData.getExpr(this);
+        exprData.addAssertions(solver);
+        for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
+            solver.add(exprData.getConstraintExpr(constraint));
+        solver.add(e);
+        std::ostringstream os;
+        os << solver;
+        switch (solver.check()) {
+        case z3::sat:
+            os << "z3::sat";
+            break;
+        case z3::unsat:
+            os << "z3::unsat";
+            break;
+        case z3::unknown:
+            os << "z3::unknown";
+            break;
+        }
+        return os.str();
+    } catch (const z3::exception &exception) {
+        std::ostringstream os;
+        os << "z3:" << exception;
+        return os.str();
     }
-    return os.str();
 #else
     (void)dataBase;
     return "";
