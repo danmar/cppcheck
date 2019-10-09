@@ -564,9 +564,11 @@ struct ExprData {
                 return it->second;
             auto e = context.int_const(v->name.c_str());
             valueExpr.emplace(v->name, e);
-            if (intRange->maxValue <= INT_MAX)
+            if (intRange->minValue >= INT_MIN && intRange->maxValue <= INT_MAX)
+                assertionList.push_back(e >= int(intRange->minValue) && e <= int(intRange->maxValue));
+            else if (intRange->maxValue <= INT_MAX)
                 assertionList.push_back(e <= int(intRange->maxValue));
-            if (intRange->minValue >= INT_MIN)
+            else if (intRange->minValue >= INT_MIN)
                 assertionList.push_back(e >= int(intRange->minValue));
             return e;
         }
@@ -708,6 +710,17 @@ std::string ExprEngine::BinOpResult::getExpr(ExprEngine::DataBase *dataBase) con
     solver.add(e);
     std::ostringstream os;
     os << solver;
+    switch (solver.check()) {
+    case z3::sat:
+        os << "z3::sat";
+        break;
+    case z3::unsat:
+        os << "z3::unsat";
+        break;
+    case z3::unknown:
+        os << "z3::unknown";
+        break;
+    }
     return os.str();
 #else
     (void)dataBase;
@@ -1369,7 +1382,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
         std::string errorMessage;
         if (tok->valueType()->sign == ::ValueType::Sign::SIGNED) {
             MathLib::bigint v = 1LL << (bits - 1);
-            if (b->isGreaterThan(dataBase, v))
+            if (b->isGreaterThan(dataBase, v-1))
                 errorMessage = "greater than " + std::to_string(v);
             if (b->isLessThan(dataBase, -v)) {
                 if (!errorMessage.empty())

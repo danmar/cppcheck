@@ -38,6 +38,7 @@ private:
         TEST_CASE(expr3);
         TEST_CASE(expr4);
         TEST_CASE(expr5);
+        TEST_CASE(expr6);
         TEST_CASE(exprAssign1);
         TEST_CASE(exprAssign2); // Truncation
 
@@ -158,6 +159,21 @@ private:
         ASSERT_EQUALS("($1)+($2)", getRange("void f(short a, short b, short c, short d) { if (a+b<c+d) {} }", "a+b"));
     }
 
+    void expr6() {
+        const char code[] = "void f(unsigned char x) {\n"
+                            "    unsigned char result = 8 - x;\n"
+                            "    result > 1000;"
+                            "}";
+
+        ASSERT_EQUALS("(8)-($1)", getRange(code, "8-x"));
+
+        ASSERT_EQUALS("(declare-fun $1 () Int)\n"
+                      "(assert (and (>= $1 0) (<= $1 255)))\n"
+                      "(assert (> (- 8 $1) 1000))\n"
+                      "z3::unsat",
+                      expr(code, ">"));
+    }
+
     void exprAssign1() {
         ASSERT_EQUALS("($1)+(1)", getRange("void f(unsigned char a) { a += 1; }", "a+=1"));
     }
@@ -169,21 +185,20 @@ private:
     void if1() {
         ASSERT_EQUALS("(declare-fun $1 () Int)\n"
                       "(declare-fun $2 () Int)\n"
-                      "(assert (<= $1 2147483647))\n"
-                      "(assert (>= $1 (- 2147483648)))\n"
-                      "(assert (<= $2 2147483647))\n"
-                      "(assert (>= $2 (- 2147483648)))\n"
+                      "(assert (and (>= $1 (- 2147483648)) (<= $1 2147483647)))\n"
+                      "(assert (and (>= $2 (- 2147483648)) (<= $2 2147483647)))\n"
                       "(assert (< $1 $2))\n"
-                      "(assert (= $1 $2))\n",
+                      "(assert (= $1 $2))\n"
+                      "z3::unsat",
                       expr("void f(int x, int y) { if (x < y) return x == y; }", "=="));
     }
 
     void ifelse1() {
         ASSERT_EQUALS("(declare-fun $1 () Int)\n"
-                      "(assert (<= $1 32767))\n"
-                      "(assert (>= $1 (- 32768)))\n"
+                      "(assert (and (>= $1 (- 32768)) (<= $1 32767)))\n"
                       "(assert (<= $1 5))\n"
-                      "(assert (= (+ $1 2) 40))\n",
+                      "(assert (= (+ $1 2) 40))\n"
+                      "z3::unsat",
                       expr("void f(short x) { if (x > 5) ; else if (x+2==40); }", "=="));
     }
 
@@ -197,10 +212,10 @@ private:
                             "    x<=4;\n"
                             "}";
         ASSERT_EQUALS("(declare-fun $1 () Int)\n"
-                      "(assert (<= $1 2147483647))\n"
-                      "(assert (>= $1 (- 2147483648)))\n"
+                      "(assert (and (>= $1 (- 2147483648)) (<= $1 2147483647)))\n"
                       "(assert (= $1 1))\n"
-                      "(assert (= $1 3))\n",
+                      "(assert (= $1 3))\n"
+                      "z3::unsat",
                       expr(code, "=="));
     }
 
@@ -209,12 +224,12 @@ private:
                             "  int x = 0;\n"
                             "  while (x < y)\n"
                             "    x = x + 34;\n"
-                            "  x == 1;\n"
+                            "  x == 340;\n"
                             "}";
         ASSERT_EQUALS("(declare-fun $2 () Int)\n"
-                      "(assert (<= $2 2147483647))\n"
-                      "(assert (>= $2 (- 2147483648)))\n"
-                      "(assert (= (+ $2 34) 1))\n",
+                      "(assert (and (>= $2 (- 2147483648)) (<= $2 2147483647)))\n"
+                      "(assert (= (+ $2 34) 340))\n"
+                      "z3::sat",
                       expr(code, "=="));
     }
 
@@ -226,23 +241,23 @@ private:
                             "  x == 1;\n"
                             "}";
         ASSERT_EQUALS("(declare-fun $2 () Int)\n"
-                      "(assert (<= $2 2147483647))\n"
-                      "(assert (>= $2 (- 2147483648)))\n"
-                      "(assert (= $2 1))\n",
+                      "(assert (and (>= $2 (- 2147483648)) (<= $2 2147483647)))\n"
+                      "(assert (= $2 1))\n"
+                      "z3::sat",
                       expr(code, "=="));
     }
 
 
     void array1() {
-        ASSERT_EQUALS("(assert (= 5 0))\n",
+        ASSERT_EQUALS("(assert (= 5 0))\nz3::unsat",
                       expr("int f() { int arr[10]; arr[4] = 5; return arr[4]==0; }", "=="));
     }
 
     void array2() {
         ASSERT_EQUALS("(declare-fun |$3:4| () Int)\n"
-                      "(assert (<= |$3:4| 255))\n"
-                      "(assert (>= |$3:4| 0))\n"
-                      "(assert (= |$3:4| 365))\n",
+                      "(assert (and (>= |$3:4| 0) (<= |$3:4| 255)))\n"
+                      "(assert (= |$3:4| 365))\n"
+                      "z3::unsat",
                       expr("void dostuff(unsigned char *); int f() { unsigned char arr[10] = \"\"; dostuff(arr); return arr[4] == 365; }", "=="));
     }
 
@@ -250,9 +265,9 @@ private:
         const char code[] = "void f(unsigned char x) { int arr[10]; arr[4] = 43; return arr[x] == 12; }";
         ASSERT_EQUALS("?,43", getRange(code, "arr[x]"));
         ASSERT_EQUALS("(declare-fun $1 () Int)\n"
-                      "(assert (<= $1 255))\n"
-                      "(assert (>= $1 0))\n"
-                      "(assert (= (ite (= $1 4) 43 0) 12))\n",
+                      "(assert (and (>= $1 0) (<= $1 255)))\n"
+                      "(assert (= (ite (= $1 4) 43 0) 12))\n"
+                      "z3::unsat",
                       expr(code, "=="));
     }
 
@@ -309,9 +324,9 @@ private:
 
     void int1() {
         ASSERT_EQUALS("(declare-fun $1 () Int)\n"
-                      "(assert (<= $1 2147483647))\n"
-                      "(assert (>= $1 (- 2147483648)))\n"
-                      "(assert (= (+ 2 $1) 3))\n",
+                      "(assert (and (>= $1 (- 2147483648)) (<= $1 2147483647)))\n"
+                      "(assert (= (+ 2 $1) 3))\n"
+                      "z3::sat",
                       expr("void f(int x) { return 2+x==3; }", "=="));
     }
 
@@ -320,9 +335,9 @@ private:
         const char code[] = "void f(unsigned char *p) { return *p == 7; }";
         ASSERT_EQUALS("->$1,null,->?", getRange(code, "p"));
         ASSERT_EQUALS("(declare-fun $1 () Int)\n"
-                      "(assert (<= $1 255))\n"
-                      "(assert (>= $1 0))\n"
-                      "(assert (= $1 7))\n",
+                      "(assert (and (>= $1 0) (<= $1 255)))\n"
+                      "(assert (= $1 7))\n"
+                      "z3::sat",
                       expr(code, "=="));
     }
 
@@ -355,11 +370,10 @@ private:
     void structMember() {
         ASSERT_EQUALS("(declare-fun $2 () Int)\n"
                       "(declare-fun $3 () Int)\n"
-                      "(assert (<= $2 255))\n"
-                      "(assert (>= $2 0))\n"
-                      "(assert (<= $3 255))\n"
-                      "(assert (>= $3 0))\n"
-                      "(assert (= (+ $2 $3) 0))\n",
+                      "(assert (and (>= $2 0) (<= $2 255)))\n"
+                      "(assert (and (>= $3 0) (<= $3 255)))\n"
+                      "(assert (= (+ $2 $3) 0))\n"
+                      "z3::sat",
                       expr("struct S {\n"
                            "    unsigned char a;\n"
                            "    unsigned char b;\n"
