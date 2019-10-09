@@ -101,6 +101,16 @@ void misra_4_1()
     (void)printf("\x41" "g");
 }
 
+const char *s42_1 = "String containing trigraphs ??-??-??";   // 4.2
+const char *s42_2 = "String containing trigraph???=preceeded by questionmark";   // 4.2
+const char *s42_3 = "No trigraph?(?'?)";
+
+void misra_4_2()
+{
+    (void)printf("??=Trigraph\n");   // 4.2
+    (void)printf("No?/Trigraph\n");
+}
+
 extern int misra_5_3_var_hides_var______31x;
 void misra_5_3_var_hides_function_31x (void) {}
 enum misra_5_3_Enum {

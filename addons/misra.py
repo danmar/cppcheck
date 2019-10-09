@@ -776,6 +776,16 @@ class MisraChecker:
                 else:
                     self.reportError(token, 4, 1)
 
+    def misra_4_2(self, rawTokens):
+        for token in rawTokens:
+            if (token.str[0] != '"') or (token.str[-1] != '"'):
+                continue
+            # Check for trigraph sequence as defined by ISO/IEC 9899:1999
+            for sequence in ['??=', '??(', '??/', '??)', '??\'', '??<', '??!', '??>', '??-']:
+                if sequence in token.str[1:-1]:
+                    # First trigraph sequence match, report error and leave loop.
+                    self.reportError(token, 4, 2)
+                    break
 
     def misra_5_1(self, data):
         long_vars = {}
@@ -2395,6 +2405,7 @@ class MisraChecker:
             if cfgNumber == 1:
                 self.misra_3_1(data.rawTokens)
                 self.misra_4_1(data.rawTokens)
+                self.misra_4_2(data.rawTokens)
             self.misra_5_1(cfg)
             self.misra_5_2(cfg)
             self.misra_5_3(cfg)
