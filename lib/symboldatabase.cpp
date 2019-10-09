@@ -3543,8 +3543,12 @@ void Scope::getVariableList(const Settings* settings)
 {
     const Token *start;
 
-    if (type == eIf)
+    bool beforeBody = false;
+
+    if (type == eIf) {
+        beforeBody = true;
         start = classDef;
+    }
 
     else if (bodyStart)
         start = bodyStart->next();
@@ -3565,7 +3569,10 @@ void Scope::getVariableList(const Settings* settings)
 
         // Is it a function?
         else if (tok->str() == "{") {
-            tok = tok->link();
+            if (beforeBody && tok == bodyStart)
+                beforeBody = false;
+            else
+                tok = tok->link();
             continue;
         }
 
@@ -3645,7 +3652,9 @@ void Scope::getVariableList(const Settings* settings)
         }
 
         // Search for start of statement..
-        else if (tok->previous() && !Token::Match(tok->previous(), ";|{|}|(|public:|protected:|private:"))
+        else if (beforeBody && !Token::simpleMatch(tok->previous(), "("))
+            continue;
+        else if (!beforeBody && tok->previous() && !Token::Match(tok->previous(), ";|{|}|public:|protected:|private:"))
             continue;
         else if (tok->str() == ";")
             continue;
