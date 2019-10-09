@@ -623,7 +623,7 @@ bool ExprEngine::IntRange::isEqual(DataBase *dataBase, int value) const
         solver.add(e == value);
         return solver.check() == z3::sat;
     } catch (const z3::exception &exception) {
-        //std::cout << exception << std::endl;
+        std::cerr << "z3: " << exception << std::endl;
         return true;  // Safe option is to return true
     }
 #else
@@ -653,14 +653,19 @@ bool ExprEngine::BinOpResult::isEqual(ExprEngine::DataBase *dataBase, int value)
 bool ExprEngine::BinOpResult::isGreaterThan(ExprEngine::DataBase *dataBase, int value) const
 {
 #ifdef USE_Z3
-    ExprData exprData;
-    z3::solver solver(exprData.context);
-    z3::expr e = exprData.getExpr(this);
-    exprData.addAssertions(solver);
-    for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
-        solver.add(exprData.getConstraintExpr(constraint));
-    solver.add(e > value);
-    return solver.check() == z3::sat;
+    try {
+        ExprData exprData;
+        z3::solver solver(exprData.context);
+        z3::expr e = exprData.getExpr(this);
+        exprData.addAssertions(solver);
+        for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
+            solver.add(exprData.getConstraintExpr(constraint));
+        solver.add(e > value);
+        return solver.check() == z3::sat;
+    } catch (const z3::exception &exception) {
+        std::cerr << "z3:" << exception << std::endl;
+        return true;  // Safe option is to return true
+    }
 #else
     (void)dataBase;
     (void)value;
@@ -671,14 +676,19 @@ bool ExprEngine::BinOpResult::isGreaterThan(ExprEngine::DataBase *dataBase, int 
 bool ExprEngine::BinOpResult::isLessThan(ExprEngine::DataBase *dataBase, int value) const
 {
 #ifdef USE_Z3
-    ExprData exprData;
-    z3::solver solver(exprData.context);
-    z3::expr e = exprData.getExpr(this);
-    exprData.addAssertions(solver);
-    for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
-        solver.add(exprData.getConstraintExpr(constraint));
-    solver.add(e < value);
-    return solver.check() == z3::sat;
+    try {
+        ExprData exprData;
+        z3::solver solver(exprData.context);
+        z3::expr e = exprData.getExpr(this);
+        exprData.addAssertions(solver);
+        for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
+            solver.add(exprData.getConstraintExpr(constraint));
+        solver.add(e < value);
+        return solver.check() == z3::sat;
+    } catch (const z3::exception &exception) {
+        std::cerr << "z3:" << exception << std::endl;
+        return true;  // Safe option is to return true
+    }
 #else
     (void)dataBase;
     (void)value;
