@@ -3543,7 +3543,10 @@ void Scope::getVariableList(const Settings* settings)
 {
     const Token *start;
 
-    if (bodyStart)
+    if (type == eIf)
+        start = classDef;
+
+    else if (bodyStart)
         start = bodyStart->next();
 
     // global scope
@@ -3642,7 +3645,7 @@ void Scope::getVariableList(const Settings* settings)
         }
 
         // Search for start of statement..
-        else if (tok->previous() && !Token::Match(tok->previous(), ";|{|}|public:|protected:|private:"))
+        else if (tok->previous() && !Token::Match(tok->previous(), ";|{|}|(|public:|protected:|private:"))
             continue;
         else if (tok->str() == ";")
             continue;

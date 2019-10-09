@@ -141,6 +141,7 @@ private:
         TEST_CASE(isVariableDeclarationPointerConst);
         TEST_CASE(isVariableDeclarationRValueRef);
         TEST_CASE(isVariableDeclarationDoesNotIdentifyCase);
+        TEST_CASE(isVariableDeclarationIf);
         TEST_CASE(isVariableStlType);
         TEST_CASE(isVariablePointerToConstPointer);
         TEST_CASE(isVariablePointerToVolatilePointer);
@@ -829,6 +830,18 @@ private:
         const Variable* b = db->getVariableFromVarId(1);
         ASSERT_EQUALS("b", b->name());
         ASSERT_EQUALS("a", b->typeStartToken()->str());
+    }
+
+    void isVariableDeclarationIf() {
+        GET_SYMBOL_DB("void foo() {\n"
+                      "    for (auto& elem : items) {\n"
+                      "        if (auto x = bar()) {}\n"
+                      "    }\n"
+                      "}");
+        const Token *x = Token::findsimplematch(tokenizer.tokens(), "x");
+        ASSERT(x);
+        ASSERT(x->varId());
+        ASSERT(x->variable());
     }
 
     void VariableValueType1() {
