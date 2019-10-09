@@ -813,6 +813,19 @@ private:
         CHECK("int", settings.sizeof_int);
         CHECK("long", settings.sizeof_long);
         CHECK("wchar_t", settings.sizeof_wchar_t);
+
+        // string/char literals
+        CHECK("\"asdf\"", 5);
+        CHECK("L\"asdf\"", 5 * settings.sizeof_wchar_t);
+        CHECK("u8\"asdf\"", 5); // char8_t
+        CHECK("u\"asdf\"", 5 * 2); // char16_t
+        CHECK("U\"asdf\"", 5 * 4); // char32_t
+        CHECK("'a'", 1U);
+        CHECK("'ab'", settings.sizeof_int);
+        CHECK("L'a'", settings.sizeof_wchar_t);
+        CHECK("u8'a'", 1U); // char8_t
+        CHECK("u'a'", 2U); // char16_t
+        CHECK("U'a'", 4U); // char32_t
 #undef CHECK
 
         // array size
