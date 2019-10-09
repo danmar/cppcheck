@@ -1995,6 +1995,46 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f() {\n"
+              "    const wchar_t *str = L\"abc\";\n"
+              "    bar(str[10]);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'str[4]' accessed at index 10, which is out of bounds.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    const wchar_t *str = L\"abc\";\n"
+              "    bar(str[4]);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'str[4]' accessed at index 4, which is out of bounds.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    const wchar_t *str = L\"abc\";\n"
+              "    bar(str[3]);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    const char32_t *str = U\"abc\";\n"
+              "    bar(str[10]);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'str[4]' accessed at index 10, which is out of bounds.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    const wchar_t *str = U\"abc\";\n"
+              "    bar(str[4]);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'str[4]' accessed at index 4, which is out of bounds.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    const wchar_t *str = U\"abc\";\n"
+              "    bar(str[3]);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f()\n"
               "{\n"
               "    const char *str = \"a\tc\";\n"
@@ -2735,6 +2775,34 @@ private:
               "  return x[20];\n" // <- array index out of bounds when x is "abcde"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'x[6]' accessed at index 20, which is out of bounds.\n", errout.str());
+
+        check("char f() {\n"
+              "  const wchar_t *x = s;\n"
+              "  if (cond) x = L\"abcde\";\n"
+              "  return x[8];\n" // <- array index out of bounds when x is L"abcde"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'x[6]' accessed at index 8, which is out of bounds.\n", errout.str());
+
+        check("char f() {\n"
+              "  const char8_t *x = s;\n"
+              "  if (cond) x = u8\"abcde\";\n"
+              "  return x[8];\n" // <- array index out of bounds when x is u8"abcde"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'x[6]' accessed at index 8, which is out of bounds.\n", errout.str());
+
+        check("char f() {\n"
+              "  const char16_t *x = s;\n"
+              "  if (cond) x = u\"abcde\";\n"
+              "  return x[8];\n" // <- array index out of bounds when x is u"abcde"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'x[6]' accessed at index 8, which is out of bounds.\n", errout.str());
+
+        check("char f() {\n"
+              "  const char32_t *x = s;\n"
+              "  if (cond) x = U\"abcde\";\n"
+              "  return x[8];\n" // <- array index out of bounds when x is U"abcde"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'x[6]' accessed at index 8, which is out of bounds.\n", errout.str());
     }
 
     void pointer_out_of_bounds_1() {

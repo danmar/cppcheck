@@ -400,8 +400,23 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Char literal compared with pointer 'c'. Did you intend to dereference it?\n", errout.str());
 
+        check("bool foo(char16_t* c) {\n"
+              "    return c == u'x';\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Char literal compared with pointer 'c'. Did you intend to dereference it?\n", errout.str());
+
+        check("bool foo(char32_t* c) {\n"
+              "    return c == U'x';\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Char literal compared with pointer 'c'. Did you intend to dereference it?\n", errout.str());
+
         check("bool foo(char* c) {\n"
               "    return '\\0' != c;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Char literal compared with pointer 'c'. Did you intend to dereference it?\n", errout.str());
+
+        check("bool foo(char8_t* c) {\n"
+              "    return 'u\\0' != c;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Char literal compared with pointer 'c'. Did you intend to dereference it?\n", errout.str());
 
@@ -411,6 +426,11 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("bool foo(char c) {\n"
+              "    return c == 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool foo(wchar_t c) {\n"
               "    return c == 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -606,7 +626,17 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) String literal \"Hello\" doesn't match length argument for substr().\n", errout.str());
 
         check("int f() {\n"
+              "    return test.substr( 0 , 4 ) == U\"Hello\" ? 0 : 1 ;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) String literal \"Hello\" doesn't match length argument for substr().\n", errout.str());
+
+        check("int f() {\n"
               "    return test.substr( 0 , 5 ) == \"Hello\" ? 0 : 1 ;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              "    return test.substr( 0 , 5 ) == U\"Hello\" ? 0 : 1 ;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -621,7 +651,17 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) String literal \"Hello\" doesn't match length argument for substr().\n", errout.str());
 
         check("int f() {\n"
+              "    return u\"Hello\" == foo.bar<int>().z[1].substr(i+j*4, 4) ? 0 : 1 ;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) String literal \"Hello\" doesn't match length argument for substr().\n", errout.str());
+
+        check("int f() {\n"
               "    return \"Hello\" == test.substr( 0 , 5 ) ? 0 : 1 ;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              "    return u\"Hello\" == test.substr( 0 , 5 ) ? 0 : 1 ;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -632,6 +672,11 @@ private:
 
         check("int f() {\n"
               "    if (\"Hello\" && test) { }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of string literal \"Hello\" to bool always evaluates to true.\n", errout.str());
+
+        check("int f() {\n"
+              "    if (u8\"Hello\" && test) { }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of string literal \"Hello\" to bool always evaluates to true.\n", errout.str());
 
@@ -661,6 +706,11 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("int f() {\n"
+              "    assert (test && L\"Hello\");\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
               "    assert (\"Hello\" || test);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of string literal \"Hello\" to bool always evaluates to true.\n", errout.str());
@@ -684,13 +734,19 @@ private:
         check("void f() {\n"
               "  if('a'){}\n"
               "  if(L'b'){}\n"
+              "  if(u8'b'){}\n"
+              "  if(u'b'){}\n"
+              "  if(U'b'){}\n"
               "  if(1 && 'c'){}\n"
               "  int x = 'd' ? 1 : 2;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of char literal 'a' to bool always evaluates to true.\n"
                       "[test.cpp:3]: (warning) Conversion of char literal 'b' to bool always evaluates to true.\n"
-                      "[test.cpp:4]: (warning) Conversion of char literal 'c' to bool always evaluates to true.\n"
-                      "[test.cpp:5]: (warning) Conversion of char literal 'd' to bool always evaluates to true.\n"
+                      "[test.cpp:4]: (warning) Conversion of char literal 'b' to bool always evaluates to true.\n"
+                      "[test.cpp:5]: (warning) Conversion of char literal 'b' to bool always evaluates to true.\n"
+                      "[test.cpp:6]: (warning) Conversion of char literal 'b' to bool always evaluates to true.\n"
+                      "[test.cpp:7]: (warning) Conversion of char literal 'c' to bool always evaluates to true.\n"
+                      "[test.cpp:8]: (warning) Conversion of char literal 'd' to bool always evaluates to true.\n"
                       , errout.str());
 
         check("void f() {\n"
@@ -701,10 +757,16 @@ private:
 
         check("void f() {\n"
               "  if('\\0' || cond){}\n"
+              "  if(u8'\\0' || cond){}\n"
+              "  if(u'\\0' || cond){}\n"
+              "  if(U'\\0' || cond){}\n"
               "  if(L'\\0' || cond){}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of char literal '\\0' to bool always evaluates to false.\n"
-                      "[test.cpp:3]: (warning) Conversion of char literal '\\0' to bool always evaluates to false.\n", errout.str());
+                      "[test.cpp:3]: (warning) Conversion of char literal '\\0' to bool always evaluates to false.\n"
+                      "[test.cpp:4]: (warning) Conversion of char literal '\\0' to bool always evaluates to false.\n"
+                      "[test.cpp:5]: (warning) Conversion of char literal '\\0' to bool always evaluates to false.\n"
+                      "[test.cpp:6]: (warning) Conversion of char literal '\\0' to bool always evaluates to false.\n", errout.str());
     }
 
     void deadStrcmp() {
