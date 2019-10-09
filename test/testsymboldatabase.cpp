@@ -835,13 +835,18 @@ private:
     void isVariableDeclarationIf() {
         GET_SYMBOL_DB("void foo() {\n"
                       "    for (auto& elem : items) {\n"
-                      "        if (auto x = bar()) {}\n"
+                      "        if (auto x = bar()) { int y = 3; }\n"
                       "    }\n"
                       "}");
         const Token *x = Token::findsimplematch(tokenizer.tokens(), "x");
         ASSERT(x);
         ASSERT(x->varId());
         ASSERT(x->variable());
+
+        const Token *y = Token::findsimplematch(tokenizer.tokens(), "y");
+        ASSERT(y);
+        ASSERT(y->varId());
+        ASSERT(y->variable());
     }
 
     void VariableValueType1() {
