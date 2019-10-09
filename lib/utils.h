@@ -36,6 +36,56 @@ inline bool endsWith(const std::string &str, const char end[], std::size_t endle
     return (str.size() >= endlen) && (str.compare(str.size()-endlen, endlen, end)==0);
 }
 
+inline static bool isPrefixStringCharLiteral(const std::string &str, char q, const std::string& p)
+{
+    if (!endsWith(str, q))
+        return false;
+    if ((str.length() + 1) > p.length() && (str.compare(0, p.size() + 1, p + q) == 0))
+        return true;
+    return false;
+}
+
+inline static bool isStringCharLiteral(const std::string &str, char q)
+{
+    for (const std::string & p: {
+    "", "u8", "u", "U", "L"
+}) {
+        if (isPrefixStringCharLiteral(str, q, p))
+            return true;
+    }
+    return false;
+}
+
+inline static bool isStringLiteral(const std::string &str)
+{
+    return isStringCharLiteral(str, '"');
+}
+
+inline static bool isCharLiteral(const std::string &str)
+{
+    return isStringCharLiteral(str, '\'');
+}
+
+inline static std::string getStringCharLiteral(const std::string &str, char q)
+{
+    const std::size_t quotePos = str.find(q);
+    return str.substr(quotePos + 1U, str.size() - quotePos - 2U);
+}
+
+inline static std::string getStringLiteral(const std::string &str)
+{
+    if (isStringLiteral(str))
+        return getStringCharLiteral(str, '"');
+    return "";
+}
+
+inline static std::string getCharLiteral(const std::string &str)
+{
+    if (isCharLiteral(str))
+        return getStringCharLiteral(str, '\'');
+    return "";
+}
+
 inline static const char *getOrdinalText(int i)
 {
     if (i == 1)

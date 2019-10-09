@@ -531,8 +531,8 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
             return static_cast<bigint>(doubleval);
     }
 
-    if (str[0] == '\'' && str.size() >= 3U && endsWith(str,'\'')) {
-        return characterLiteralToLongNumber(str.substr(1,str.size()-2));
+    if (isCharLiteral(str)) {
+        return characterLiteralToLongNumber(getCharLiteral(str));
     }
 
     if (str[0] == '-') {
@@ -600,8 +600,8 @@ static double FloatHexToDoubleNumber(const std::string& str)
 
 double MathLib::toDoubleNumber(const std::string &str)
 {
-    if (str[0] == '\'' && str.size() >= 3U && endsWith(str,'\''))
-        return characterLiteralToLongNumber(str.substr(1,str.size()-2));
+    if (isCharLiteral(str))
+        return characterLiteralToLongNumber(getCharLiteral(str));
     if (isIntHex(str))
         return static_cast<double>(toLongNumber(str));
     // nullcheck

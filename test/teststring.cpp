@@ -603,7 +603,7 @@ private:
         check("int f() {\n"
               "    return test.substr( 0 , 4 ) == L\"Hello\" ? 0 : 1 ;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) String literal \"Hello\" doesn't match length argument for substr().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) String literal L\"Hello\" doesn't match length argument for substr().\n", errout.str());
 
         check("int f() {\n"
               "    return test.substr( 0 , 5 ) == \"Hello\" ? 0 : 1 ;\n"
@@ -688,7 +688,7 @@ private:
               "  int x = 'd' ? 1 : 2;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of char literal 'a' to bool always evaluates to true.\n"
-                      "[test.cpp:3]: (warning) Conversion of char literal 'b' to bool always evaluates to true.\n"
+                      "[test.cpp:3]: (warning) Conversion of char literal L'b' to bool always evaluates to true.\n"
                       "[test.cpp:4]: (warning) Conversion of char literal 'c' to bool always evaluates to true.\n"
                       "[test.cpp:5]: (warning) Conversion of char literal 'd' to bool always evaluates to true.\n"
                       , errout.str());
@@ -704,7 +704,7 @@ private:
               "  if(L'\\0' || cond){}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of char literal '\\0' to bool always evaluates to false.\n"
-                      "[test.cpp:3]: (warning) Conversion of char literal '\\0' to bool always evaluates to false.\n", errout.str());
+                      "[test.cpp:3]: (warning) Conversion of char literal L'\\0' to bool always evaluates to false.\n", errout.str());
     }
 
     void deadStrcmp() {
