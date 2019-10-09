@@ -38,7 +38,7 @@ class Settings;
 class Token;
 class Variable;
 
-#ifdef __GNUC__
+#if defined(__GNUC__) && defined (__SIZEOF_INT128__)
 typedef __int128_t   int128_t;
 #else
 typedef long long    int128_t;
