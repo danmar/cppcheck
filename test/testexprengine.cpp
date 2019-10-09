@@ -39,6 +39,7 @@ private:
         TEST_CASE(expr4);
         TEST_CASE(expr5);
         TEST_CASE(expr6);
+        TEST_CASE(expr7);
         TEST_CASE(exprAssign1);
         TEST_CASE(exprAssign2); // Truncation
 
@@ -171,6 +172,29 @@ private:
                       "(assert (and (>= $1 0) (<= $1 255)))\n"
                       "(assert (> (- 8 $1) 1000))\n"
                       "z3::unsat",
+                      expr(code, ">"));
+    }
+
+    void expr7() {
+        const char code[] = "void f(bool a, bool b, int c) {\n"
+                            "    if (a||b) {}\n"
+                            "    c > 1000;"
+                            "}";
+
+        ASSERT_EQUALS("(declare-fun $3 () Int)\n"
+                      "(declare-fun $2 () Int)\n"
+                      "(declare-fun $1 () Int)\n"
+                      "(assert (and (>= $3 (- 2147483648)) (<= $3 2147483647)))\n"
+                      "(assert (or (distinct $1 0) (distinct $2 0)))\n"
+                      "(assert (> $3 1000))\n"
+                      "z3::sat\n"
+                      "(declare-fun $3 () Int)\n"
+                      "(declare-fun $2 () Int)\n"
+                      "(declare-fun $1 () Int)\n"
+                      "(assert (and (>= $3 (- 2147483648)) (<= $3 2147483647)))\n"
+                      "(assert (= (ite (or (distinct $1 0) (distinct $2 0)) 1 0) 0))\n"
+                      "(assert (> $3 1000))\n"
+                      "z3::sat",
                       expr(code, ">"));
     }
 
