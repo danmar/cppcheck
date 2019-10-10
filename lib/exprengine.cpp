@@ -1247,13 +1247,15 @@ static void execute(const Token *start, const Token *end, Data &data)
             // TODO this is very rough code
             std::set<int> changedVariables;
             for (const Token *tok2 = tok; tok2 != bodyEnd; tok2 = tok2->next()) {
-                if (Token::Match(tok2, "%var% %assign%")) {
+                if (Token::Match(tok2, "%assign%")) {
+                    if (!Token::Match(tok2->astOperand1(), "%var%"))
+                        throw VerifyException(tok2, "Unhandled assignment in loop");
                     // give variable "any" value
-                    int varid = tok2->varId();
+                    int varid = tok2->astOperand1()->varId();
                     if (changedVariables.find(varid) != changedVariables.end())
                         continue;
                     changedVariables.insert(varid);
-                    data.assignValue(tok2->next(), varid, createVariableValue(*tok2->variable(), data));
+                    data.assignValue(tok2, varid, createVariableValue(*tok2->astOperand1()->variable(), data));
                 } else if (Token::Match(tok2, "++|--") && tok2->astOperand1() && tok2->astOperand1()->variable()) {
                     // give variable "any" value
                     const Token *vartok = tok2->astOperand1();
