@@ -3568,7 +3568,7 @@ void Scope::getVariableList(const Settings* settings)
         // Is it a function?
         else if (tok->str() == "{") {
 
-                tok = tok->link();
+            tok = tok->link();
             continue;
         }
 
