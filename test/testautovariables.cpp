@@ -105,6 +105,7 @@ private:
         TEST_CASE(returnReference10);
         TEST_CASE(returnReference11);
         TEST_CASE(returnReference12);
+        TEST_CASE(returnReference13);
         TEST_CASE(returnReferenceFunction);
         TEST_CASE(returnReferenceContainer);
         TEST_CASE(returnReferenceLiteral);
@@ -1209,6 +1210,22 @@ private:
               "auto g() {\n"
               "    auto x = &A::f;\n"
               "    return x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void returnReference13() {
+        check("std::vector<int> v;\n"
+              "void* vp = &v;\n"
+              "int& foo(size_t i) {\n"
+              "    return ((std::vector<int>*)vp)->at(i);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::vector<int> v;\n"
+              "void* vp = &v;\n"
+              "int& foo(size_t i) {\n"
+              "    return static_cast<std::vector<int>*>(vp)->at(i);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

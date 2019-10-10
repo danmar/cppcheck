@@ -228,6 +228,8 @@ bool isTemporary(bool cpp, const Token* tok)
         return isTemporary(cpp, tok->astOperand1()) || isTemporary(cpp, tok->astOperand2());
     if (Token::Match(tok, ",|::"))
         return isTemporary(cpp, tok->astOperand2());
+    if (tok->isCast() || (cpp && isCPPCast(tok)))
+        return isTemporary(cpp, tok->astOperand2());
     if (Token::Match(tok, "?|.|[|++|--|%name%|%assign%"))
         return false;
     if (tok->isUnaryOp("*"))
