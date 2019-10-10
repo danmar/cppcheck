@@ -2001,45 +2001,43 @@ Function::Function(const Tokenizer *mTokenizer,
     }
 }
 
-namespace {
-    std::string qualifiedName(const Scope *scope)
-    {
-        std::string name = scope->className;
-        while (scope->nestedIn) {
-            if (!scope->nestedIn->className.empty())
-                name = (scope->nestedIn->className + " :: ") + name;
+static std::string qualifiedName(const Scope *scope)
+{
+    std::string name = scope->className;
+    while (scope->nestedIn) {
+        if (!scope->nestedIn->className.empty())
+            name = (scope->nestedIn->className + " :: ") + name;
+        scope = scope->nestedIn;
+    }
+    return name;
+}
+
+static bool usingNamespace(const Scope *scope, const Token *first, const Token *second, int &offset)
+{
+    offset = 0;
+    std::string name = first->str();
+
+    while (Token::Match(first, "%type% :: %type%")) {
+        if (offset)
+            name += (" :: " + first->str());
+        offset += 2;
+        first = first->tokAt(2);
+        if (first->str() == second->str()) {
+            break;
+        }
+    }
+
+    if (offset) {
+        while (scope) {
+            for (const auto & info : scope->usingList) {
+                if (name == qualifiedName(info.scope))
+                    return true;
+            }
             scope = scope->nestedIn;
         }
-        return name;
     }
 
-    bool usingNamespace(const Scope *scope, const Token *first, const Token *second, int &offset)
-    {
-        offset = 0;
-        std::string name = first->str();
-
-        while (Token::Match(first, "%type% :: %type%")) {
-            if (offset)
-                name += (" :: " + first->str());
-            offset += 2;
-            first = first->tokAt(2);
-            if (first->str() == second->str()) {
-                break;
-            }
-        }
-
-        if (offset) {
-            while (scope) {
-                for (const auto & info : scope->usingList) {
-                    if (name == qualifiedName(info.scope))
-                        return true;
-                }
-                scope = scope->nestedIn;
-            }
-        }
-
-        return false;
-    }
+    return false;
 }
 
 bool Function::argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, nonneg int path_length)
