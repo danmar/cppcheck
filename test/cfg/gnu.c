@@ -108,12 +108,16 @@ int no_resourceLeak_mkostemp_02(char *template, int flags)
     return mkostemp(template, flags);
 }
 
-void valid_code(int argInt1, va_list valist_arg)
+void valid_code(int argInt1, va_list valist_arg, int * parg)
 {
     char *p;
 
     if (__builtin_expect(argInt1, 0)) {}
     if (__builtin_expect_with_probability(argInt1 + 1, 2, 0.5)) {}
+    void *ax1 = __builtin_assume_aligned(parg, 16);
+    printf("%p", ax1);
+    void *ax2 = __builtin_assume_aligned(parg, 32, 8);
+    printf("%p", ax2);
 
     p = (char *)malloc(10);
     free(p);
