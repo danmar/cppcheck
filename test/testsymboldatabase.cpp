@@ -302,6 +302,7 @@ private:
         TEST_CASE(symboldatabase77); // #8663
         TEST_CASE(symboldatabase78); // #9147
         TEST_CASE(symboldatabase79); // #9392
+        TEST_CASE(symboldatabase80); // #9389
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
 
@@ -4285,6 +4286,67 @@ private:
         ASSERT(db->scopeList.size() == 2);
         ASSERT(db->scopeList.back().functionList.size() == 1);
         ASSERT(db->scopeList.back().functionList.front().isDefault() == true);
+    }
+
+    void symboldatabase80() { // #9389
+        {
+            GET_SYMBOL_DB("namespace ns {\n"
+                          "class A {};\n"
+                          "}\n"
+                          "class AA {\n"
+                          "private:\n"
+                          "    void f(const ns::A&);\n"
+                          "};\n"
+                          "using namespace ns;\n"
+                          "void AA::f(const A&) { }");
+            ASSERT(db->scopeList.size() == 5);
+            ASSERT(db->functionScopes.size() == 1);
+            const Scope *scope = db->findScopeByName("AA");
+            ASSERT(scope);
+            ASSERT(scope->functionList.size() == 1);
+            ASSERT(scope->functionList.front().name() == "f");
+            ASSERT(scope->functionList.front().hasBody() == true);
+        }
+        {
+            GET_SYMBOL_DB("namespace ns {\n"
+                          "namespace ns1 {\n"
+                          "class A {};\n"
+                          "}\n"
+                          "}\n"
+                          "class AA {\n"
+                          "private:\n"
+                          "    void f(const ns::ns1::A&);\n"
+                          "};\n"
+                          "using namespace ns::ns1;\n"
+                          "void AA::f(const A&) { }");
+            ASSERT(db->scopeList.size() == 6);
+            ASSERT(db->functionScopes.size() == 1);
+            const Scope *scope = db->findScopeByName("AA");
+            ASSERT(scope);
+            ASSERT(scope->functionList.size() == 1);
+            ASSERT(scope->functionList.front().name() == "f");
+            ASSERT(scope->functionList.front().hasBody() == true);
+        }
+        {
+            GET_SYMBOL_DB("namespace ns {\n"
+                          "namespace ns1 {\n"
+                          "class A {};\n"
+                          "}\n"
+                          "}\n"
+                          "class AA {\n"
+                          "private:\n"
+                          "    void f(const ns::ns1::A&);\n"
+                          "};\n"
+                          "using namespace ns;\n"
+                          "void AA::f(const ns1::A&) { }");
+            ASSERT(db->scopeList.size() == 6);
+            ASSERT(db->functionScopes.size() == 1);
+            const Scope *scope = db->findScopeByName("AA");
+            ASSERT(scope);
+            ASSERT(scope->functionList.size() == 1);
+            ASSERT(scope->functionList.front().name() == "f");
+            ASSERT(scope->functionList.front().hasBody() == true);
+        }
     }
 
     void createSymbolDatabaseFindAllScopes1() {

@@ -2001,6 +2001,47 @@ Function::Function(const Tokenizer *mTokenizer,
     }
 }
 
+namespace {
+    std::string qualifiedName(const Scope *scope)
+    {
+        std::string name = scope->className;
+        while (scope->nestedIn) {
+            if (!scope->nestedIn->className.empty())
+                name = (scope->nestedIn->className + " :: ") + name;
+            scope = scope->nestedIn;
+        }
+        return name;
+    }
+
+    bool usingNamespace(const Scope *scope, const Token *first, const Token *second, int &offset)
+    {
+        offset = 0;
+        std::string name = first->str();
+
+        while (Token::Match(first, "%type% :: %type%")) {
+            if (offset)
+                name += (" :: " + first->str());
+            offset += 2;
+            first = first->tokAt(2);
+            if (first->str() == second->str()) {
+                break;
+            }
+        }
+
+        if (offset) {
+            while (scope) {
+                for (const auto & info : scope->usingList) {
+                    if (name == qualifiedName(info.scope))
+                        return true;
+                }
+                scope = scope->nestedIn;
+            }
+        }
+
+        return false;
+    }
+}
+
 bool Function::argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, nonneg int path_length)
 {
     const bool isCPP = scope->check->isCPP();
@@ -2008,6 +2049,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
         return true;
 
     int arg_path_length = path_length;
+    int offset = 0;
 
     while (first->str() == second->str() &&
            first->isLong() == second->isLong() &&
@@ -2119,6 +2161,10 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
                 } while (!Token::Match(first->next(), ",|)"));
             }
         }
+
+        // using namespace
+        else if (usingNamespace(scope, first->next(), second->next(), offset))
+            first = first->tokAt(offset);
 
         // variable with class path
         else if (arg_path_length && Token::Match(first->next(), "%name%") && first->strAt(1) != "const") {
