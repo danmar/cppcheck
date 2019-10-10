@@ -580,6 +580,9 @@ struct ExprData {
         }
 
         if (auto c = std::dynamic_pointer_cast<ExprEngine::ConditionalValue>(v)) {
+            if (c->values.empty())
+                throw VerifyException(nullptr, "ConditionalValue is empty");
+
             if (c->values.size() == 1)
                 return getExpr(c->values[0].second);
 
