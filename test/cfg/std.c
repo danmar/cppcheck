@@ -347,6 +347,26 @@ void nullPointer_wmemcmp(wchar_t *p)
     (void)wmemcmp(p, 0, 123);
 }
 
+void nullPointer_vsnprintf(const char * format, ...)
+{
+    va_list args;
+    // valid
+    char buffer[256];
+    va_start(args, format);
+    vsnprintf(buffer, 256, format, args);
+    printf("%s", buffer);
+    va_end(args);
+    // valid
+    va_start(args, format);
+    vsnprintf(NULL, 0, format, args);
+    va_end(args);
+    // invalid
+    va_start(args, format);
+    // TODO #9410 cppcheck-suppress nullPointer
+    vsnprintf(NULL, 10, format, args);
+    va_end(args);
+}
+
 // uninit pointers
 
 void uninitvar_abs(void)
