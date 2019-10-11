@@ -2559,20 +2559,10 @@ private:
         {
            const char code[] = "class c {\n"
                               "  typedef char foo[4];\n"
-                              "  foo &f const;\n"
+                              "  const foo &f;\n"
                               "};";
 
-            const char exp [] = "class c { char ( & f const ) [ 4 ] ; } ;";
-            ASSERT_EQUALS(exp, tok(code, false));
-        }
-
-        {
-           const char code[] = "class c {\n"
-                              "  typedef char foo[4];\n"
-                              "  foo &f const noexcept;\n"
-                              "};";
-
-            const char exp [] = "class c { char ( & f const noexcept ) [ 4 ] ; } ;";
+            const char exp [] = "class c { const char ( & f ) [ 4 ] ; } ;";
             ASSERT_EQUALS(exp, tok(code, false));
         }
 
