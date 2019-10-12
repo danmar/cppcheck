@@ -5420,6 +5420,9 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
                 continue;
             valuetype->smartPointerTypeToken = argTok->next();
             valuetype->smartPointerType = argTok->next()->type();
+            valuetype->type = ValueType::Type::NONSTD;
+            type = argTok->link();
+            continue;
         } else if (Token::Match(type, "%name% :: %name%")) {
             std::string typestr;
             const Token *end = type;
