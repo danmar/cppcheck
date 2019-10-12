@@ -3499,17 +3499,6 @@ bool isLifetimeBorrowed(const Token *tok, const Settings *settings)
         if (!Token::simpleMatch(tok, "{")) {
             const ValueType *vt = tok->valueType();
             const ValueType *vtParent = tok->astParent()->valueType();
-            ValueType svt;
-            // TODO: Move logic to ValueType
-            if (!vtParent && Token::simpleMatch(tok->astParent(), "return")) {
-                const Scope* fscope = tok->scope();
-                while (fscope && !fscope->function)
-                    fscope = fscope->nestedIn;
-                if (fscope && fscope->function && fscope->function->retDef) {
-                    svt = ValueType::parseDecl(fscope->function->retDef, settings);
-                    vtParent = &svt;
-                }
-            }
             if (isLifetimeBorrowed(vt, vtParent))
                 return true;
             if (isLifetimeOwned(vt, vtParent))
@@ -3958,17 +3947,7 @@ static bool isDecayedPointer(const Token *tok, const Settings *settings)
         return true;
     if (!Token::simpleMatch(tok->astParent(), "return"))
         return false;
-    if (!tok->scope())
-        return false;
-    if (!tok->scope()->function)
-        return false;
-    if (!tok->scope()->function->retDef)
-        return false;
-    // TODO: Add valuetypes to return types of functions
-    ValueType vt = ValueType::parseDecl(tok->scope()->function->retDef, settings);
-    if (vt.pointer > 0)
-        return true;
-    return false;
+    return astIsPointer(tok->astParent());
 }
 
 static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger *errorLogger, const Settings *settings)
