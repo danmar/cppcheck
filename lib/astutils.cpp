@@ -225,7 +225,8 @@ bool isTemporary(bool cpp, const Token* tok)
     if (!tok)
         return false;
     if (Token::simpleMatch(tok, "."))
-        return (tok->originalName() != "->" && isTemporary(cpp, tok->astOperand1())) || isTemporary(cpp, tok->astOperand2());
+        return (tok->originalName() != "->" && isTemporary(cpp, tok->astOperand1())) ||
+               isTemporary(cpp, tok->astOperand2());
     if (Token::Match(tok, ",|::"))
         return isTemporary(cpp, tok->astOperand2());
     if (tok->isCast() || (cpp && isCPPCast(tok)))
