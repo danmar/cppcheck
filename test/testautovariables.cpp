@@ -106,6 +106,7 @@ private:
         TEST_CASE(returnReference11);
         TEST_CASE(returnReference12);
         TEST_CASE(returnReference13);
+        TEST_CASE(returnReference14);
         TEST_CASE(returnReferenceFunction);
         TEST_CASE(returnReferenceContainer);
         TEST_CASE(returnReferenceLiteral);
@@ -1226,6 +1227,19 @@ private:
               "void* vp = &v;\n"
               "int& foo(size_t i) {\n"
               "    return static_cast<std::vector<int>*>(vp)->at(i);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void returnReference14() {
+        check("struct C { void* m; };\n"
+              "struct A { void* &f(); };\n"
+              "C* g() {\n"
+              "    static C c;\n"
+              "    return &c;\n"
+              "}\n"
+              "void* &A::f() {\n"
+              "    return g()->m;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
