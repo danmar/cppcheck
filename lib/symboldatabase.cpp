@@ -5743,10 +5743,12 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings)
             }
             setValueType(tok, vt);
         } else if (tok->str() == "return" && tok->scope()) {
-            const Function *function = tok->scope()->function;
-            if (function && function->retDef) {
+            const Scope* fscope = tok->scope();
+            while (fscope && !fscope->function)
+                fscope = fscope->nestedIn;
+            if (fscope && fscope->function && fscope->function->retDef) {
                 ValueType vt;
-                parsedecl(function->retDef, &vt, mDefaultSignedness, mSettings);
+                parsedecl(fscope->function->retDef, &vt, mDefaultSignedness, mSettings);
                 setValueType(tok, vt);
             }
         }
