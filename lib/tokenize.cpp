@@ -1533,7 +1533,7 @@ void Tokenizer::simplifyTypedef()
                                 Token *tok3 = tok2->next();
 
                                 // handle missing variable name
-                                if (tok2->strAt(3) == ")" || tok2->strAt(3) == ",")
+                                if (tok2->strAt(3) == ")" || tok2->strAt(3) == "," || tok2->strAt(3) == "(")
                                     tok2 = tok2->tokAt(2);
                                 else
                                     tok2 = tok2->tokAt(3);
@@ -1544,12 +1544,15 @@ void Tokenizer::simplifyTypedef()
                                     tok2 = tok2->tokAt(2);
 
                                 // skip over function parameters
-                                if (tok2->strAt(1) == "(") {
-                                    tok2 = tok2->linkAt(1);
+                                if (tok2->str() == "(" )
+                                   tok2 = tok2->link();
 
-                                    if (tok2->strAt(1) == "const")
-                                        tok2 = tok2->next();
-                                }
+                                if (tok2->strAt(1) == "(")
+                                   tok2 = tok2->linkAt(1);
+
+                                // skip over const/noexcept
+                                while (Token::Match(tok2->next(), "const|noexcept"))
+                                    tok2 = tok2->next();
 
                                 tok2->insertToken(")");
                                 tok2 = tok2->next();
