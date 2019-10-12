@@ -2877,7 +2877,7 @@ void Tokenizer::calculateScopes()
             if (Token::Match(tok, "using namespace %name% ::|<|;")) {
                 std::string usingNamespaceName;
                 for (const Token* namespaceNameToken = tok->tokAt(2);
-                     !Token::simpleMatch(namespaceNameToken, ";");
+                     namespaceNameToken && namespaceNameToken->str() != ";";
                      namespaceNameToken = namespaceNameToken->next()) {
                     usingNamespaceName += namespaceNameToken->str();
                     usingNamespaceName += " ";

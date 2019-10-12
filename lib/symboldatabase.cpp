@@ -2030,8 +2030,23 @@ static bool usingNamespace(const Scope *scope, const Token *first, const Token *
     if (offset) {
         while (scope) {
             for (const auto & info : scope->usingList) {
-                if (name == qualifiedName(info.scope))
-                    return true;
+                if (info.scope) {
+                    if (name == qualifiedName(info.scope))
+                        return true;
+                }
+                // no scope so get name from using
+                else {
+                    const Token *start = info.start->tokAt(2);
+                    std::string nsName;
+                    while (start && start->str() != ";") {
+                        if (!nsName.empty())
+                            nsName += " ";
+                        nsName += start->str();
+                        start = start->next();
+                    }
+                    if (nsName == name)
+                        return true;
+                }
             }
             scope = scope->nestedIn;
         }
