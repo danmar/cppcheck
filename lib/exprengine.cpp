@@ -1250,6 +1250,31 @@ static void execute(const Token *start, const Token *end, Data &data)
             std::set<int> changedVariables;
             for (const Token *tok2 = tok; tok2 != bodyEnd; tok2 = tok2->next()) {
                 if (Token::Match(tok2, "%assign%")) {
+                    if (Token::Match(tok2->astOperand1(), ". %name% =") && tok2->astOperand1()->astOperand1() && tok2->astOperand1()->astOperand1()->valueType()) {
+                        const Token *structToken = tok2->astOperand1()->astOperand1();
+                        if (!structToken || !structToken->valueType() || !structToken->varId())
+                            throw VerifyException(tok2, "Unhandled assignment in loop");
+                        const Scope *structScope = structToken->valueType()->typeScope;
+                        if (!structScope)
+                            throw VerifyException(tok2, "Unhandled assignment in loop");
+                        const std::string &memberName = tok2->previous()->str();
+                        ExprEngine::ValuePtr structVal1 = data.getValue(structToken->varId(), structToken->valueType(), structToken);
+                        auto structVal = std::dynamic_pointer_cast<ExprEngine::StructValue>(structVal1);
+                        if (!structVal)
+                            throw VerifyException(tok2, "Unhandled assignment in loop");
+                        ExprEngine::ValuePtr memberValue;
+                        for (const Variable &member : structScope->varlist) {
+                            if (memberName == member.name() && member.valueType()) {
+                                memberValue = createVariableValue(member, data);
+                                break;
+                            }
+                        }
+                        if (!memberValue)
+                            throw VerifyException(tok2, "Unhandled assignment in loop");
+
+                        data.assignStructMember(tok2, &*structVal, memberName, memberValue);
+                        continue;
+                    }
                     if (!Token::Match(tok2->astOperand1(), "%var%"))
                         throw VerifyException(tok2, "Unhandled assignment in loop");
                     // give variable "any" value
