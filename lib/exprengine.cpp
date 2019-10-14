@@ -1258,10 +1258,6 @@ static void execute(const Token *start, const Token *end, Data &data)
                         if (!structScope)
                             throw VerifyException(tok2, "Unhandled assignment in loop");
                         const std::string &memberName = tok2->previous()->str();
-                        ExprEngine::ValuePtr structVal1 = data.getValue(structToken->varId(), structToken->valueType(), structToken);
-                        auto structVal = std::dynamic_pointer_cast<ExprEngine::StructValue>(structVal1);
-                        if (!structVal)
-                            throw VerifyException(tok2, "Unhandled assignment in loop");
                         ExprEngine::ValuePtr memberValue;
                         for (const Variable &member : structScope->varlist) {
                             if (memberName == member.name() && member.valueType()) {
@@ -1270,6 +1266,13 @@ static void execute(const Token *start, const Token *end, Data &data)
                             }
                         }
                         if (!memberValue)
+                            throw VerifyException(tok2, "Unhandled assignment in loop");
+
+                        ExprEngine::ValuePtr structVal1 = data.getValue(structToken->varId(), structToken->valueType(), structToken);
+                        if (!structVal1)
+                            structVal1 = createVariableValue(*structToken->variable(), data);
+                        auto structVal = std::dynamic_pointer_cast<ExprEngine::StructValue>(structVal1);
+                        if (!structVal)
                             throw VerifyException(tok2, "Unhandled assignment in loop");
 
                         data.assignStructMember(tok2, &*structVal, memberName, memberValue);
