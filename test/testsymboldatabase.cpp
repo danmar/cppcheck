@@ -6416,6 +6416,7 @@ private:
         ASSERT_EQUALS("signed int", typeOf("auto a(int) -> int; a(5);", "( 5"));
         ASSERT_EQUALS("unsigned long", typeOf("sizeof(x);", "("));
         ASSERT_EQUALS("signed int", typeOf("int (*a)(int); a(5);", "( 5"));
+        ASSERT_EQUALS("s", typeOf("struct s { s foo(); s(int, int); }; s s::foo() { return s(1, 2); } ", "( 1 , 2 )"));
         // Some standard template functions.. TODO library configuration
         ASSERT_EQUALS("signed int", typeOf("std::move(5);", "( 5 )"));
 
