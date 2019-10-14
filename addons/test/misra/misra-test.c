@@ -27,18 +27,18 @@ typedef unsigned long long u64;
 
 void misra_3_2(int enable)
 {
-	// This won't generate a violation because of subsequent blank line \
+    // This won't generate a violation because of subsequent blank line \
 	
-	int y = 0;
+    int y = 0;
     int x = 0;  // 3.2 non-compliant comment ends with backslash \
     if (enable != 0)
     {
         ++x;    // This is always executed
-		// 3.2 potentially non-compliant comment ends with trigraph resolved to backslash ??/
-		++y;	// This is hidden if trigraph replacement is active
+        // 3.2 potentially non-compliant comment ends with trigraph resolved to backslash ??/
+        ++y;    // This is hidden if trigraph replacement is active
     }
 
-	(void)printf("x=%i, y=%i\n", x, y);
+    (void)printf("x=%i, y=%i\n", x, y);
 }
 
 extern int misra_5_1_extern_var_hides_var_x;
