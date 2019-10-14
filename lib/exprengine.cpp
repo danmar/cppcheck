@@ -548,11 +548,7 @@ struct ExprData {
             return bool_expr(op1) && bool_expr(op2);
         if (b->binop == "||")
             return bool_expr(op1) || bool_expr(op2);
-        if (b->binop == "<<")
-            return z3::shl(op1, op2);
-        if (b->binop == ">>")
-            return z3::lshr(op1, op2);
-        throw VerifyException(nullptr, "Internal error: Unhandled operator");
+        throw VerifyException(nullptr, "Internal error: Unhandled operator " + b->binop);
     }
 
     z3::expr getExpr(ExprEngine::ValuePtr v) {
