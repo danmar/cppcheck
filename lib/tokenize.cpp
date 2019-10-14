@@ -842,8 +842,8 @@ void Tokenizer::simplifyTypedef()
             }
         }
 
-        // typeof: typedef __typeof__ ( ... ) type;
-        else if (Token::simpleMatch(tokOffset->previous(), "__typeof__ (") &&
+        // typeof: typedef typeof ( ... ) type;
+        else if (Token::simpleMatch(tokOffset->previous(), "typeof (") &&
                  Token::Match(tokOffset->link(), ") %type% ;")) {
             argStart = tokOffset;
             argEnd = tokOffset->link();

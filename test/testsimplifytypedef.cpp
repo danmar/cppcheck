@@ -1626,10 +1626,10 @@ private:
     }
 
     void simplifyTypedef64() {
-        const char code[] = "typedef __typeof__(__type1() + __type2()) __type;"
+        const char code[] = "typedef typeof(__type1() + __type2()) __type;"
                             "__type t;";
         const std::string actual(tok(code));
-        ASSERT_EQUALS("__typeof__ ( __type1 ( ) + __type2 ( ) ) t ;", actual);
+        ASSERT_EQUALS("typeof ( __type1 ( ) + __type2 ( ) ) t ;", actual);
         ASSERT_EQUALS("", errout.str());
     }
 
