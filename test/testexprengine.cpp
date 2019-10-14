@@ -50,6 +50,7 @@ private:
 
         TEST_CASE(while1);
         TEST_CASE(while2);
+        TEST_CASE(while3);
 
         TEST_CASE(array1);
         TEST_CASE(array2);
@@ -271,6 +272,18 @@ private:
                       expr(code, "=="));
     }
 
+    void while3() {
+        const char code[] = "struct AB {int a; int b;};\n"
+                            "void f() {\n"
+                            "  struct AB ab;\n"
+                            "  while (1)\n"
+                            "    ab.a = 3;\n"
+                            "  ab.a == 0;\n"
+                            "}";
+        ASSERT_EQUALS("(assert (= 3 0))\n"
+                      "z3::unsat",
+                      expr(code, "=="));
+    }
 
     void array1() {
         ASSERT_EQUALS("(assert (= 5 0))\nz3::unsat",
