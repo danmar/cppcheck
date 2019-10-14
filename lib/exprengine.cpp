@@ -548,6 +548,10 @@ struct ExprData {
             return bool_expr(op1) && bool_expr(op2);
         if (b->binop == "||")
             return bool_expr(op1) || bool_expr(op2);
+        if (b->binop == "<<")
+            return op1 * z3::pw(context.int_val(2), op2);
+        if (b->binop == ">>")
+            return op1 / z3::pw(context.int_val(2), op2);
         throw VerifyException(nullptr, "Internal error: Unhandled operator " + b->binop);
     }
 
@@ -617,7 +621,6 @@ private:
             return z3::ite(e, context.int_val(1), context.int_val(0));
         return e;
     }
-
 };
 #endif
 
