@@ -1415,11 +1415,11 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
         if (tok->valueType()->sign == ::ValueType::Sign::SIGNED) {
             MathLib::bigint v = 1LL << (bits - 1);
             if (b->isGreaterThan(dataBase, v-1))
-                errorMessage = "greater than " + std::to_string(v);
+                errorMessage = "greater than " + std::to_string(v - 1);
             if (b->isLessThan(dataBase, -v)) {
                 if (!errorMessage.empty())
                     errorMessage += " or ";
-                errorMessage += "less than " + std::to_string(v);
+                errorMessage += "less than " + std::to_string(-v);
             }
         } else {
             MathLib::bigint maxValue = (1LL << bits) - 1;
