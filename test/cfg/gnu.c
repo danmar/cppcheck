@@ -146,6 +146,8 @@ void valid_code(int argInt1, va_list valist_arg, int * parg)
 
     printf("%d", 0b010);
     printf("%d", __extension__ 0b10001000);
+
+    if (__alignof__(int) == 4) {}
 }
 
 void ignoreleak(void)
