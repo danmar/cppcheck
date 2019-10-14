@@ -1231,8 +1231,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void returnReference14()
-    {
+    void returnReference14() {
         check("struct C { void* m; };\n"
               "struct A { void* &f(); };\n"
               "C* g() {\n"

@@ -2545,44 +2545,44 @@ private:
         ASSERT_EQUALS(exp, tok(code, false));
     }
 
-    void simplifyTypedef129() { 
+    void simplifyTypedef129() {
         {
-           const char code[] = "class c {\n"
-                              "  typedef char foo[4];\n"
-                              "  foo &f ;\n"
-                              "};";
+            const char code[] = "class c {\n"
+                                "  typedef char foo[4];\n"
+                                "  foo &f ;\n"
+                                "};";
 
             const char exp [] = "class c { char ( & f ) [ 4 ] ; } ;";
             ASSERT_EQUALS(exp, tok(code, false));
         }
 
         {
-           const char code[] = "class c {\n"
-                              "  typedef char foo[4];\n"
-                              "  const foo &f;\n"
-                              "};";
+            const char code[] = "class c {\n"
+                                "  typedef char foo[4];\n"
+                                "  const foo &f;\n"
+                                "};";
 
             const char exp [] = "class c { const char ( & f ) [ 4 ] ; } ;";
             ASSERT_EQUALS(exp, tok(code, false));
         }
 
         {
-           const char code[] = "class c {\n"
-                              "  typedef char foo[4];\n"
-                              "  foo _a;\n"
-                              "  constexpr const foo &c_str() const noexcept { return _a; }\n"
-                              "};";
+            const char code[] = "class c {\n"
+                                "  typedef char foo[4];\n"
+                                "  foo _a;\n"
+                                "  constexpr const foo &c_str() const noexcept { return _a; }\n"
+                                "};";
 
             const char exp [] = "class c { char _a [ 4 ] ; const const char ( & c_str ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
             ASSERT_EQUALS(exp, tok(code, false));
         }
 
         {
-           const char code[] = "class c {\n"
-                              "  typedef char foo[4];\n"
-                              "  foo _a;\n"
-                              "  constexpr operator foo &() const noexcept { return _a; }\n"
-                              "};";
+            const char code[] = "class c {\n"
+                                "  typedef char foo[4];\n"
+                                "  foo _a;\n"
+                                "  constexpr operator foo &() const noexcept { return _a; }\n"
+                                "};";
 
             const char actual [] = "class c { char _a [ 4 ] ; const operatorchar ( & ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
             const char exp [] = "class c { char _a [ 4 ] ; const operator char ( & ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
@@ -2590,11 +2590,11 @@ private:
         }
 
         {
-           const char code[] = "class c {\n"
-                              "  typedef char foo[4];\n"
-                              "  foo _a;\n"
-                              "  constexpr operator const foo &() const noexcept { return _a; }\n"
-                              "};";
+            const char code[] = "class c {\n"
+                                "  typedef char foo[4];\n"
+                                "  foo _a;\n"
+                                "  constexpr operator const foo &() const noexcept { return _a; }\n"
+                                "};";
 
             const char actual [] = "class c { char _a [ 4 ] ; const operatorconstchar ( & ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
             const char exp [] = "class c { char _a [ 4 ] ; const operator const char ( & ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
