@@ -4547,6 +4547,9 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
         if (tok1->strAt(-1) == "::") {
             currScope = &scopeList.front();
 
+            if (Token::Match(tok1, "%name% ("))
+                return currScope->findFunction(tok);
+
             currScope = currScope->findRecordInNestedList(tok1->str());
         }
 
