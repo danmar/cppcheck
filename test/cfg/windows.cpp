@@ -192,6 +192,9 @@ void validCode()
 
     ::PostMessage(nullptr, WM_QUIT, 0, 0);
 
+    printf("%zu", __alignof(int));
+    printf("%zu", _alignof(double));
+
     // Valid Library usage, no leaks, valid arguments
     HINSTANCE hInstLib = LoadLibrary(L"My.dll");
     FreeLibrary(hInstLib);
