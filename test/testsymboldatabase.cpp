@@ -353,6 +353,7 @@ private:
         TEST_CASE(findFunction28);
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
+        TEST_CASE(findFunctionGlobalScope); // ::foo
 
         TEST_CASE(valueTypeMatchParameter); // ValueType::matchParameter
 
@@ -5768,6 +5769,22 @@ private:
         const Token *a = Token::findsimplematch(tokenizer.tokens(), "foo ( 42 )");
         ASSERT(a);
         ASSERT(a->function());
+    }
+
+    void findFunctionGlobalScope() {
+        GET_SYMBOL_DB("struct S {\n"
+                      "    void foo();\n"
+                      "    int x;\n"
+                      "};\n"
+                      "\n"
+                      "int bar(int x);\n"
+                      "\n"
+                      "void S::foo() {\n"
+                      "    x = ::bar(x);\n"
+                      "}");
+        const Token *bar = Token::findsimplematch(tokenizer.tokens(), "bar ( x )");
+        ASSERT(bar);
+        ASSERT(bar->function());
     }
 
     void valueTypeMatchParameter() {
