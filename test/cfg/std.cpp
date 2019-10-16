@@ -28,6 +28,12 @@
 #include <cstdarg>
 #include <functional>
 
+void valid_code()
+{
+    std::vector<int> vecInt{0, 1, 2};
+    std::fill_n(vecInt.begin(), 2, 0);
+}
+
 void returnValue_std_isgreater(void)
 {
     // cppcheck-suppress knownConditionTrueFalse
