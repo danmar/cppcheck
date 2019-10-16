@@ -86,7 +86,8 @@ def fmt(a, b, c=None, d=None, e=None, link=True):
     while len(ret) < (column_width[0] + 1 + column_width[1]):
         ret += ' '
     ret += ' '
-    ret += b[-5:].rjust(column_width[2]) + ' '
+    if len(b) > 10:
+        ret += b[-5:].rjust(column_width[2]) + ' '
     if not c is None:
         ret += c.rjust(column_width[3]) + ' '
     if not d is None:
@@ -144,35 +145,53 @@ def crashReport(results_path):
     html += '<pre>\n'
     html += '<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', link=False) + '</b>\n'
     current_year = datetime.date.today().year
+    crash_locations = {}
     for filename in sorted(glob.glob(os.path.expanduser(results_path + '/*'))):
         if not os.path.isfile(filename):
             continue
         datestr = ''
-        for line in open(filename, 'rt'):
-            line = line.strip()
-            if line.startswith('cppcheck: '):
-                if OLD_VERSION not in line:
-                    # Package results seem to be too old, skip
+        with open(filename, 'rt') as file:
+            for line in file:
+                line = line.strip()
+                if line.startswith('cppcheck: '):
+                    if OLD_VERSION not in line:
+                        # Package results seem to be too old, skip
+                        break
+                    else:
+                        # Current package, parse on
+                        continue
+                if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
+                    datestr = line
+                if line.startswith('count:'):
+                    if line.find('Crash') < 0:
+                        break
+                    package = filename[filename.rfind('/')+1:]
+                    counts = line.strip().split(' ')
+                    c2 = ''
+                    if counts[2] == 'Crash!':
+                        c2 = 'Crash'
+                    c1 = ''
+                    if counts[1] == 'Crash!':
+                        c1 = 'Crash'
+                    html += fmt(package, datestr, c2, c1) + '\n'
+                    if c1 != 'Crash':
+                        break
+                if line.startswith('Program received signal '):
+                    crash_line = next(file, '')
+                    location_index = crash_line.rindex(' at ')
+                    if location_index > 0:
+                        crash_location = crash_line[location_index+3:].strip()
+                        if crash_location in crash_locations:
+                            crash_locations[crash_location] += 1
+                        else:
+                            crash_locations[crash_location] = 1
                     break
-                else:
-                    # Current package, parse on
-                    continue
-            if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
-                datestr = line
-            if not line.startswith('count:'):
-                continue
-            if line.find('Crash') < 0:
-                break
-            package = filename[filename.rfind('/')+1:]
-            counts = line.strip().split(' ')
-            c2 = ''
-            if counts[2] == 'Crash!':
-                c2 = 'Crash'
-            c1 = ''
-            if counts[1] == 'Crash!':
-                c1 = 'Crash'
-            html += fmt(package, datestr, c2, c1) + '\n'
-            break
+
+    html += '</pre>\n'
+    html += '<pre>\n'
+    html += '<b>' + fmt('HEAD Crash locations', 'Count', link=False) + '</b>\n'
+    for crash_location in sorted(crash_locations.items(), key=lambda (l, c): (-c, l)):
+        html += fmt(crash_location[0], str(crash_location[1]), link=False) + '\n'
     html += '</pre>\n'
 
     html += '</body></html>\n'
