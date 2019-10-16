@@ -76,7 +76,7 @@ def overviewReport():
     return html
 
 
-def fmt(a, b, c=None, d=None, e=None):
+def fmt(a, b, c=None, d=None, e=None, link=True):
     column_width = [40, 10, 5, 6, 6, 8]
     ret = a
     while len(ret) < column_width[0]:
@@ -93,7 +93,7 @@ def fmt(a, b, c=None, d=None, e=None):
         ret += d.rjust(column_width[4]) + ' '
     if not e is None:
         ret += e.rjust(column_width[5])
-    if a != 'Package':
+    if link:
         pos = ret.find(' ')
         ret = '<a href="' + a + '">' + a + '</a>' + ret[pos:]
     return ret
@@ -102,7 +102,7 @@ def fmt(a, b, c=None, d=None, e=None):
 def latestReport(latestResults):
     html = '<html><head><title>Latest daca@home results</title></head><body>\n'
     html += '<h1>Latest daca@home results</h1>\n'
-    html += '<pre>\n<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', 'Diff') + '</b>\n'
+    html += '<pre>\n<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', 'Diff', link=False) + '</b>\n'
 
     # Write report for latest results
     for filename in latestResults:
@@ -142,7 +142,7 @@ def crashReport(results_path):
     html = '<html><head><title>Crash report</title></head><body>\n'
     html += '<h1>Crash report</h1>\n'
     html += '<pre>\n'
-    html += '<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head') + '</b>\n'
+    html += '<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', link=False) + '</b>\n'
     current_year = datetime.date.today().year
     for filename in sorted(glob.glob(os.path.expanduser(results_path + '/*'))):
         if not os.path.isfile(filename):
@@ -183,7 +183,7 @@ def staleReport(results_path):
     html = '<html><head><title>Stale report</title></head><body>\n'
     html += '<h1>Stale report</h1>\n'
     html += '<pre>\n'
-    html += '<b>' + fmt('Package', 'Date       Time') + '</b>\n'
+    html += '<b>' + fmt('Package', 'Date       Time', link=False) + '</b>\n'
     current_year = datetime.date.today().year
     for filename in sorted(glob.glob(os.path.expanduser(results_path + '/*'))):
         if not os.path.isfile(filename):
