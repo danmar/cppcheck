@@ -76,7 +76,7 @@ def overviewReport():
     return html
 
 
-def fmt(a, b, c, d, e):
+def fmt(a, b, c=None, d=None, e=None):
     column_width = [40, 10, 5, 6, 6, 8]
     ret = a
     while len(ret) < column_width[0]:
@@ -142,7 +142,7 @@ def crashReport(results_path):
     html = '<html><head><title>Crash report</title></head><body>\n'
     html += '<h1>Crash report</h1>\n'
     html += '<pre>\n'
-    html += '<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', None) + '</b>\n'
+    html += '<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head') + '</b>\n'
     current_year = datetime.date.today().year
     for filename in sorted(glob.glob(os.path.expanduser(results_path + '/*'))):
         if not os.path.isfile(filename):
@@ -171,7 +171,7 @@ def crashReport(results_path):
             c1 = ''
             if counts[1] == 'Crash!':
                 c1 = 'Crash'
-            html += fmt(package, datestr, c2, c1, None) + '\n'
+            html += fmt(package, datestr, c2, c1) + '\n'
             break
     html += '</pre>\n'
 
@@ -183,7 +183,7 @@ def staleReport(results_path):
     html = '<html><head><title>Stale report</title></head><body>\n'
     html += '<h1>Stale report</h1>\n'
     html += '<pre>\n'
-    html += '<b>' + fmt('Package', 'Date       Time', None, None, None) + '</b>\n'
+    html += '<b>' + fmt('Package', 'Date       Time') + '</b>\n'
     current_year = datetime.date.today().year
     for filename in sorted(glob.glob(os.path.expanduser(results_path + '/*'))):
         if not os.path.isfile(filename):
@@ -199,7 +199,7 @@ def staleReport(results_path):
             if diff.days < 30:
                 continue
             package = filename[filename.rfind('/')+1:]
-            html += fmt(package, datestr, None, None, None) + '\n'
+            html += fmt(package, datestr) + '\n'
             break
     html += '</pre>\n'
 
