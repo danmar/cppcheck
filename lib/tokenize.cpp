@@ -2484,7 +2484,7 @@ void Tokenizer::combineStringAndCharLiterals()
     for (Token *tok = list.front();
          tok;
          tok = tok->next()) {
-        if (tok->str()[0] != '"')
+        if (!isStringLiteral(tok->str()))
             continue;
 
         tok->str(simplifyString(tok->str()));
@@ -10637,8 +10637,11 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
             tok->deleteNext();
             tok->deleteThis();
             tok->deleteNext();
-            if (!ansi)
+            if (!ansi) {
                 tok->isLong(true);
+                if (tok->str()[0] != 'L')
+                    tok->str("L" + tok->str());
+            }
             while (Token::Match(tok->next(), "_T|_TEXT|TEXT ( %char%|%str% )")) {
                 tok->next()->deleteNext();
                 tok->next()->deleteThis();

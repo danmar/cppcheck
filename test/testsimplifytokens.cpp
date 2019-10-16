@@ -1804,7 +1804,7 @@ private:
     void combine_wstrings() {
         const char code[] =  "a = L\"hello \"  L\"world\" ;\n";
 
-        const char expected[] =  "a = \"hello world\" ;";
+        const char expected[] =  "a = L\"hello world\" ;";
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
@@ -1817,33 +1817,33 @@ private:
     void combine_ustrings() {
         const char code[] =  "abcd = u\"ab\" u\"cd\";";
 
-        const char expected[] =  "abcd = \"abcd\" ;";
+        const char expected[] =  "abcd = u\"abcd\" ;";
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
-        ASSERT_EQUALS(true, tokenizer.tokens()->tokAt(2)->isLong());
+        ASSERT_EQUALS(false, tokenizer.tokens()->tokAt(2)->isLong());
     }
 
     void combine_Ustrings() {
         const char code[] =  "abcd = U\"ab\" U\"cd\";";
 
-        const char expected[] =  "abcd = \"abcd\" ;";
+        const char expected[] =  "abcd = U\"abcd\" ;";
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
-        ASSERT_EQUALS(true, tokenizer.tokens()->tokAt(2)->isLong());
+        ASSERT_EQUALS(false, tokenizer.tokens()->tokAt(2)->isLong());
     }
 
     void combine_u8strings() {
         const char code[] =  "abcd = u8\"ab\" u8\"cd\";";
 
-        const char expected[] =  "abcd = \"abcd\" ;";
+        const char expected[] =  "abcd = u8\"abcd\" ;";
 
 
         Tokenizer tokenizer(&settings0, this);

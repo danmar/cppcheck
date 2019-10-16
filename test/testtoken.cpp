@@ -887,7 +887,7 @@ private:
         tok.concatStr("123");
 
         ASSERT_EQUALS(false, tok.isBoolean());
-        ASSERT_EQUALS("tru23", tok.str());
+        ASSERT_EQUALS("tru\"", tok.str());
     }
 
     void isNameGuarantees1() const {
@@ -990,6 +990,9 @@ private:
 
         givenACodeSampleToTokenize data4("return L\"a\";");
         ASSERT_EQUALS("returnL\"a\"", data4.tokens()->expressionString());
+
+        givenACodeSampleToTokenize data5("return U\"a\";");
+        ASSERT_EQUALS("returnU\"a\"", data5.tokens()->expressionString());
     }
 
     void hasKnownIntValue() {
