@@ -3202,7 +3202,7 @@ static void valueFlowForward(Token* startToken,
                              const Settings* settings)
 {
     const Token* expr = solveExprValues(exprTok, values);
-    if (Token::Match(expr, "%var%")) {
+    if (Token::Match(expr, "%var%") && expr->variable()) {
         valueFlowForwardVariable(startToken,
                                  endToken,
                                  expr->variable(),
