@@ -128,6 +128,8 @@ private:
         TEST_CASE(valueFlowUnknownFunctionReturn);
 
         TEST_CASE(valueFlowPointerAliasDeref);
+
+        TEST_CASE(valueFlowCrashIncompleteCode);
     }
 
     static bool isNotTokValue(const ValueFlow::Value &val) {
@@ -4276,6 +4278,17 @@ private:
                "  return x;\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 5U, 123));
+    }
+
+    void valueFlowCrashIncompleteCode() {
+        const char* code;
+
+        code = "void SlopeFloor::setAttr(const Value &val) {\n"
+               "    int x = val;\n"
+               "    if (x >= -1)\n"
+               "        state = x;\n"
+               "}\n";
+        valueOfTok(code, "=");
     }
 };
 
