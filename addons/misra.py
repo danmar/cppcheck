@@ -746,6 +746,19 @@ class MisraChecker:
                 if ((not starts_with_double_slash) and '//' in s) or '/*' in s:
                     self.reportError(token, 3, 1)
 
+    def misra_3_2(self, rawTokens):
+        for token in rawTokens:
+            if token.str.startswith('//'):
+                # Check for comment ends with trigraph which might be replaced
+                # by a backslash.
+                if token.str.endswith('??/'):
+                    self.reportError(token, 3, 2)
+                # Check for comment which has been merged with subsequent line
+                # because it ends with backslash.
+                # The last backslash is no more part of the comment token thus
+                # check if next token exists and compare line numbers.
+                elif (token.next != None) and (token.linenr == token.next.linenr):
+                    self.reportError(token, 3, 2)
 
     def misra_4_1(self, rawTokens):
         for token in rawTokens:
@@ -2404,6 +2417,7 @@ class MisraChecker:
 
             if cfgNumber == 1:
                 self.misra_3_1(data.rawTokens)
+                self.misra_3_2(data.rawTokens)
                 self.misra_4_1(data.rawTokens)
                 self.misra_4_2(data.rawTokens)
             self.misra_5_1(cfg)
