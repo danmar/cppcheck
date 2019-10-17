@@ -451,6 +451,7 @@ def get_libraries():
                        'cppunit': ['<cppunit/'],
                        'googletest': ['<gtest/gtest.h>'],
                        'gtk': ['<gtk/gtk.h>', '<glib.h>', '<glib/', '<gnome.h>'],
+                       # 'kde': ['<KGlobal>', '<KApplication>', '<KDE/'], <= enable after release of version 1.90
                        'libcerror': ['<libcerror.h>'],
                        'libcurl': ['<curl/curl.h>'],
                        'lua': ['<lua.h>', '"lua.h"'],
