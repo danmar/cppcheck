@@ -2879,6 +2879,10 @@ void uninitvar_scanf(void)
     char str[42];
     // cppcheck-suppress uninitvar
     (void)scanf(format, str);
+
+    // no warning is expected (#9347)
+    int i;
+    sscanf("0", "%d", &i);
 }
 
 void uninitvar_vsscanf(void)
