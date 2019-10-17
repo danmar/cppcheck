@@ -4278,7 +4278,7 @@ private:
                         "    someType_t gVar;\n"
                         "    bar(&gVar);\n"
                         "}\n");
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:5]: (error) Uninitialized variable: flags\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:5]: (error) Uninitialized variable: p->flags\n", "", errout.str());
 
         valueFlowUninit("typedef struct \n"
                         "{\n"

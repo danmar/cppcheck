@@ -5520,6 +5520,9 @@ static void valueFlowSubFunction(TokenList* tokenlist, ErrorLogger* errorLogger,
             // Don't forward lifetime values
             argvalues.remove_if(std::mem_fn(&ValueFlow::Value::isLifetimeValue));
 
+            // Don't forward <Uninit> values, this is handled by CTU. We also had a FP #9347
+            argvalues.remove_if(std::mem_fn(&ValueFlow::Value::isUninitValue));
+
             if (argvalues.empty())
                 continue;
 
