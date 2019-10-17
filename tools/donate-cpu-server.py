@@ -145,7 +145,7 @@ def crashReport(results_path):
     html += '<pre>\n'
     html += '<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', link=False) + '</b>\n'
     current_year = datetime.date.today().year
-    crash_locations = {}
+    stack_traces = {}
     for filename in sorted(glob.glob(os.path.expanduser(results_path + '/*'))):
         if not os.path.isfile(filename):
             continue
@@ -177,21 +177,36 @@ def crashReport(results_path):
                     if c1 != 'Crash':
                         break
                 if line.find(' received signal ') != -1:
-                    crash_line = next(file, '')
+                    crash_line = next(file, '').strip()
                     location_index = crash_line.rindex(' at ')
                     if location_index > 0:
-                        crash_location = crash_line[location_index+3:].strip()
-                        if crash_location in crash_locations:
-                            crash_locations[crash_location] += 1
+                        code_line = next(file, '').strip();
+                        stack_trace = []
+                        while True:
+                            l = next(file, '')
+                            m = re.search('(?P<number>#\d+) .* (?P<function>.+)\(.*\) at (?P<location>.*)$', l)
+                            if not m:
+                                break
+                            stack_trace.append(m.group('number') + ' ' + m.group('function') + '(...) at ' + m.group('location'))
+                        key = hash(' '.join(stack_trace))
+
+                        if key in stack_traces:
+                            stack_traces[key]['code_line'] = code_line
+                            stack_traces[key]['stack_trace'] = stack_trace
+                            stack_traces[key]['n'] += 1
+                            stack_traces[key]['packages'].append(package)
                         else:
-                            crash_locations[crash_location] = 1
+                            stack_traces[key] = {'stack_trace': stack_trace, 'n': 1, 'code_line': code_line, 'packages': [package], 'crash_line': crash_line}
                     break
 
     html += '</pre>\n'
     html += '<pre>\n'
-    html += '<b>' + fmt('HEAD Crash locations', 'Count', link=False) + '</b>\n'
-    for crash_location in sorted(crash_locations.items(), key=lambda x: (-x[1], x[0])):
-        html += fmt(crash_location[0], str(crash_location[1]), link=False) + '\n'
+    html += '<b>Stack traces</b>\n'
+    for stack_trace in sorted(stack_traces.values(), key=lambda x: x['n'], reverse=True):
+        html += 'Packages: ' + ' '.join(['<a href="' + p + '">' + p + '</a>' for p in stack_trace['packages']]) + '\n'
+        html += stack_trace['crash_line'] + '\n'
+        html += stack_trace['code_line'] + '\n'
+        html += '\n'.join(stack_trace['stack_trace']) + '\n\n'
     html += '</pre>\n'
 
     html += '</body></html>\n'
