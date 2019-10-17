@@ -173,6 +173,7 @@ private:
         TEST_CASE(redundantVarAssignment_after_switch);
         TEST_CASE(redundantVarAssignment_pointer);
         TEST_CASE(redundantVarAssignment_pointer_parameter);
+        TEST_CASE(redundantVarAssignment_array);
         TEST_CASE(redundantInitialization);
         TEST_CASE(redundantMemWrite);
 
@@ -6623,6 +6624,18 @@ private:
               "    *p = 1;\n"
               "    if (condition) return;\n"
               "    *p = 2;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void redundantVarAssignment_array() {
+        check("void f() {\n"
+              "    int arr[10];\n"
+              "    int i = 0;\n"
+              "    arr[i] = 1;\n"
+              "    i += 2;\n"
+              "    arr[i] = 3;\n"
+              "    dostuff(arr);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
