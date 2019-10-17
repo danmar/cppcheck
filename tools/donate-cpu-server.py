@@ -176,7 +176,7 @@ def crashReport(results_path):
                     html += fmt(package, datestr, c2, c1) + '\n'
                     if c1 != 'Crash':
                         break
-                if line.startswith('Program received signal '):
+                if line.find(' received signal ') != -1:
                     crash_line = next(file, '')
                     location_index = crash_line.rindex(' at ')
                     if location_index > 0:
