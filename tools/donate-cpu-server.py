@@ -190,7 +190,7 @@ def crashReport(results_path):
     html += '</pre>\n'
     html += '<pre>\n'
     html += '<b>' + fmt('HEAD Crash locations', 'Count', link=False) + '</b>\n'
-    for crash_location in sorted(crash_locations.items(), key=lambda (l, c): (-c, l)):
+    for crash_location in sorted(crash_locations.items(), key=lambda x: (-x[1], x[0])):
         html += fmt(crash_location[0], str(crash_location[1]), link=False) + '\n'
     html += '</pre>\n'
 
