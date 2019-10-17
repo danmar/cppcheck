@@ -282,6 +282,36 @@ ${CPPCHECK} ${CPPCHECK_OPT} --library=cairo ${DIR}cairo.c
 
 ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=googletest ${DIR}googletest.cpp
 
+# kde.cpp
+set +e
+set -x
+KDECONFIG=$(kde4-config --path include)
+KDECONFIG_RETURNCODE=$?
+set -e
+if [ $KDECONFIG_RETURNCODE -ne 0 ]; then
+    echo "kde4-config does not work, skipping syntax check."
+else
+    set +e
+    KDEQTCONFIG=$(pkg-config --cflags QtCore)
+    KDEQTCONFIG_RETURNCODE=$?
+    set -e
+    if [ $KDEQTCONFIG_RETURNCODE -ne 0 ]; then
+        echo "Suitable Qt not present, Qt is necessary for KDE. Skipping syntax check."
+    else
+        set +e
+        echo -e "#include <KDE/KGlobal>\n" | ${CXX} ${CXX_OPT} -I${KDECONFIG} ${KDEQTCONFIG} -x c++ -
+        KDECHECK_RETURNCODE=$?
+        set -e
+        if [ $KDECHECK_RETURNCODE -ne 0 ]; then
+            echo "KDE headers not completely present or not working, skipping syntax check with ${CXX}."
+        else
+            echo "KDE found, checking syntax with ${CXX} now."
+            ${CXX} ${CXX_OPT} -I${KDECONFIG} ${KDEQTCONFIG} ${DIR}kde.cpp
+        fi
+    fi
+fi
+${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=kde ${DIR}kde.cpp
+
 # Check the syntax of the defines in the configuration files
 set +e
 xmlstarlet --version
