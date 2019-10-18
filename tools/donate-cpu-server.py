@@ -18,7 +18,7 @@ import operator
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.1.7"
+SERVER_VERSION = "1.1.8"
 
 OLD_VERSION = '1.89'
 
@@ -58,6 +58,7 @@ def strDateTime():
 def dateTimeFromStr(datestr):
     return datetime.datetime.strptime(datestr, '%Y-%m-%d %H:%M')
 
+
 def overviewReport():
     html = '<html><head><title>daca@home</title></head><body>\n'
     html += '<h1>daca@home</h1>\n'
@@ -88,11 +89,11 @@ def fmt(a, b, c=None, d=None, e=None, link=True):
     ret += ' '
     if len(b) > 10:
         ret += b[-5:].rjust(column_width[2]) + ' '
-    if not c is None:
+    if c is not None:
         ret += c.rjust(column_width[3]) + ' '
-    if not d is None:
+    if d is not None:
         ret += d.rjust(column_width[4]) + ' '
-    if not e is None:
+    if e is not None:
         ret += e.rjust(column_width[5])
     if link:
         pos = ret.find(' ')
@@ -150,8 +151,8 @@ def crashReport(results_path):
         if not os.path.isfile(filename):
             continue
         datestr = ''
-        with open(filename, 'rt') as file:
-            for line in file:
+        with open(filename, 'rt') as file_:
+            for line in file_:
                 line = line.strip()
                 if line.startswith('cppcheck: '):
                     if OLD_VERSION not in line:
@@ -177,13 +178,13 @@ def crashReport(results_path):
                     if c1 != 'Crash':
                         break
                 if line.find(' received signal ') != -1:
-                    crash_line = next(file, '').strip()
+                    crash_line = next(file_, '').strip()
                     location_index = crash_line.rindex(' at ')
                     if location_index > 0:
-                        code_line = next(file, '').strip();
+                        code_line = next(file_, '').strip()
                         stack_trace = []
                         while True:
-                            l = next(file, '')
+                            l = next(file_, '')
                             m = re.search(r'(?P<number>#\d+) .* (?P<function>.+)\(.*\) at (?P<location>.*)$', l)
                             if not m:
                                 break
@@ -340,11 +341,11 @@ def generate_package_diff_statistics(filename):
         messageId = line[line.rfind('[')+1:len(line)-1]
 
         if messageId not in sums:
-            sums[messageId] = { OLD_VERSION: 0, 'head': 0 }
+            sums[messageId] = {OLD_VERSION: 0, 'head': 0}
 
         sums[messageId][version] += 1
 
-    output = { 'date': strDateTime()[:10], 'sums': sums }
+    output = {'date': strDateTime()[:10], 'sums': sums}
 
     filename_diff = filename + '.diff'
     if sums:
@@ -361,9 +362,9 @@ def diffMessageIdReport(resultPath, messageId):
         if not os.path.isfile(filename):
             continue
         with open(filename, 'rt') as f:
-          diff_stats = f.read()
-        if not messageId in diff_stats:
-          continue
+            diff_stats = f.read()
+        if messageId not in diff_stats:
+            continue
         url = None
         diff = False
         for line in open(filename[:-5], 'rt'):
@@ -389,11 +390,11 @@ def diffMessageIdTodayReport(resultPath, messageId):
         if not os.path.isfile(filename):
             continue
         with open(filename, 'rt') as f:
-          diff_stats = f.read()
-        if not messageId in diff_stats:
-          continue
-        if not today in diff_stats:
-          continue
+            diff_stats = f.read()
+        if messageId not in diff_stats:
+            continue
+        if today not in diff_stats:
+            continue
         url = None
         diff = False
         firstLine = True
