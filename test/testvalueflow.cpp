@@ -4144,6 +4144,22 @@ private:
                "}";
         ASSERT(tokenValues(code, "ints [").empty());
 
+        code = "struct A {\n"  // forward, nested function call, #9424
+               "    double getMessage( std::vector<unsigned char> *message );\n"
+               "};\n"
+               "\n"
+               "struct B {\n"
+               "    A *a;\n"
+               "    double getMessage( std::vector<unsigned char> *message ) { return a->getMessage( message ); }\n"
+               "};\n"
+               "\n"
+               "void foo(B *ptr) {\n"
+               "    std::vector<unsigned char> v;\n"
+               "    ptr->getMessage (&v);\n"
+               "    if (v.size () > 0) {}\n" // <- v has unknown size!
+               "}";
+        ASSERT_EQUALS(0U, tokenValues(code, "v . size ( )").size());
+
         // container size => yields
         code = "void f() {\n"
                "  std::string s = \"abcd\";\n"
