@@ -184,7 +184,7 @@ def crashReport(results_path):
                         stack_trace = []
                         while True:
                             l = next(file, '')
-                            m = re.search('(?P<number>#\d+) .* (?P<function>.+)\(.*\) at (?P<location>.*)$', l)
+                            m = re.search(r'(?P<number>#\d+) .* (?P<function>.+)\(.*\) at (?P<location>.*)$', l)
                             if not m:
                                 break
                             stack_trace.append(m.group('number') + ' ' + m.group('function') + '(...) at ' + m.group('location'))
