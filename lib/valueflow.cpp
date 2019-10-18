@@ -5273,6 +5273,9 @@ static void valueFlowSwitchVariable(TokenList *tokenlist, SymbolDatabase* symbol
                 if (vartok->variable()->scope()) {
                     if (known)
                         values.back().setKnown();
+
+                    // FIXME We must check if there is a return. See #9276
+                    /*
                     valueFlowForwardVariable(tok->tokAt(3),
                                              vartok->variable()->scope()->bodyEnd,
                                              vartok->variable(),
@@ -5283,6 +5286,7 @@ static void valueFlowSwitchVariable(TokenList *tokenlist, SymbolDatabase* symbol
                                              tokenlist,
                                              errorLogger,
                                              settings);
+                    */
                 }
             }
         }
