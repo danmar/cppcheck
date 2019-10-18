@@ -18,7 +18,7 @@ import operator
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.1.6"
+SERVER_VERSION = "1.1.7"
 
 OLD_VERSION = '1.89'
 
@@ -76,7 +76,7 @@ def overviewReport():
     return html
 
 
-def fmt(a, b, c, d, e):
+def fmt(a, b, c=None, d=None, e=None, link=True):
     column_width = [40, 10, 5, 6, 6, 8]
     ret = a
     while len(ret) < column_width[0]:
@@ -86,14 +86,15 @@ def fmt(a, b, c, d, e):
     while len(ret) < (column_width[0] + 1 + column_width[1]):
         ret += ' '
     ret += ' '
-    ret += b[-5:].rjust(column_width[2]) + ' '
+    if len(b) > 10:
+        ret += b[-5:].rjust(column_width[2]) + ' '
     if not c is None:
         ret += c.rjust(column_width[3]) + ' '
     if not d is None:
         ret += d.rjust(column_width[4]) + ' '
     if not e is None:
         ret += e.rjust(column_width[5])
-    if a != 'Package':
+    if link:
         pos = ret.find(' ')
         ret = '<a href="' + a + '">' + a + '</a>' + ret[pos:]
     return ret
@@ -102,7 +103,7 @@ def fmt(a, b, c, d, e):
 def latestReport(latestResults):
     html = '<html><head><title>Latest daca@home results</title></head><body>\n'
     html += '<h1>Latest daca@home results</h1>\n'
-    html += '<pre>\n<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', 'Diff') + '</b>\n'
+    html += '<pre>\n<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', 'Diff', link=False) + '</b>\n'
 
     # Write report for latest results
     for filename in latestResults:
@@ -142,37 +143,70 @@ def crashReport(results_path):
     html = '<html><head><title>Crash report</title></head><body>\n'
     html += '<h1>Crash report</h1>\n'
     html += '<pre>\n'
-    html += '<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', None) + '</b>\n'
+    html += '<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', link=False) + '</b>\n'
     current_year = datetime.date.today().year
+    stack_traces = {}
     for filename in sorted(glob.glob(os.path.expanduser(results_path + '/*'))):
         if not os.path.isfile(filename):
             continue
         datestr = ''
-        for line in open(filename, 'rt'):
-            line = line.strip()
-            if line.startswith('cppcheck: '):
-                if OLD_VERSION not in line:
-                    # Package results seem to be too old, skip
+        with open(filename, 'rt') as file:
+            for line in file:
+                line = line.strip()
+                if line.startswith('cppcheck: '):
+                    if OLD_VERSION not in line:
+                        # Package results seem to be too old, skip
+                        break
+                    else:
+                        # Current package, parse on
+                        continue
+                if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
+                    datestr = line
+                if line.startswith('count:'):
+                    if line.find('Crash') < 0:
+                        break
+                    package = filename[filename.rfind('/')+1:]
+                    counts = line.strip().split(' ')
+                    c2 = ''
+                    if counts[2] == 'Crash!':
+                        c2 = 'Crash'
+                    c1 = ''
+                    if counts[1] == 'Crash!':
+                        c1 = 'Crash'
+                    html += fmt(package, datestr, c2, c1) + '\n'
+                    if c1 != 'Crash':
+                        break
+                if line.find(' received signal ') != -1:
+                    crash_line = next(file, '').strip()
+                    location_index = crash_line.rindex(' at ')
+                    if location_index > 0:
+                        code_line = next(file, '').strip();
+                        stack_trace = []
+                        while True:
+                            l = next(file, '')
+                            m = re.search(r'(?P<number>#\d+) .* (?P<function>.+)\(.*\) at (?P<location>.*)$', l)
+                            if not m:
+                                break
+                            stack_trace.append(m.group('number') + ' ' + m.group('function') + '(...) at ' + m.group('location'))
+                        key = hash(' '.join(stack_trace))
+
+                        if key in stack_traces:
+                            stack_traces[key]['code_line'] = code_line
+                            stack_traces[key]['stack_trace'] = stack_trace
+                            stack_traces[key]['n'] += 1
+                            stack_traces[key]['packages'].append(package)
+                        else:
+                            stack_traces[key] = {'stack_trace': stack_trace, 'n': 1, 'code_line': code_line, 'packages': [package], 'crash_line': crash_line}
                     break
-                else:
-                    # Current package, parse on
-                    continue
-            if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
-                datestr = line
-            if not line.startswith('count:'):
-                continue
-            if line.find('Crash') < 0:
-                break
-            package = filename[filename.rfind('/')+1:]
-            counts = line.strip().split(' ')
-            c2 = ''
-            if counts[2] == 'Crash!':
-                c2 = 'Crash'
-            c1 = ''
-            if counts[1] == 'Crash!':
-                c1 = 'Crash'
-            html += fmt(package, datestr, c2, c1, None) + '\n'
-            break
+
+    html += '</pre>\n'
+    html += '<pre>\n'
+    html += '<b>Stack traces</b>\n'
+    for stack_trace in sorted(stack_traces.values(), key=lambda x: x['n'], reverse=True):
+        html += 'Packages: ' + ' '.join(['<a href="' + p + '">' + p + '</a>' for p in stack_trace['packages']]) + '\n'
+        html += stack_trace['crash_line'] + '\n'
+        html += stack_trace['code_line'] + '\n'
+        html += '\n'.join(stack_trace['stack_trace']) + '\n\n'
     html += '</pre>\n'
 
     html += '</body></html>\n'
@@ -183,7 +217,7 @@ def staleReport(results_path):
     html = '<html><head><title>Stale report</title></head><body>\n'
     html += '<h1>Stale report</h1>\n'
     html += '<pre>\n'
-    html += '<b>' + fmt('Package', 'Date       Time', None, None, None) + '</b>\n'
+    html += '<b>' + fmt('Package', 'Date       Time', link=False) + '</b>\n'
     current_year = datetime.date.today().year
     for filename in sorted(glob.glob(os.path.expanduser(results_path + '/*'))):
         if not os.path.isfile(filename):
@@ -199,7 +233,7 @@ def staleReport(results_path):
             if diff.days < 30:
                 continue
             package = filename[filename.rfind('/')+1:]
-            html += fmt(package, datestr, None, None, None) + '\n'
+            html += fmt(package, datestr) + '\n'
             break
     html += '</pre>\n'
 
