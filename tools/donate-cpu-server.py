@@ -18,7 +18,7 @@ import operator
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.1.8"
+SERVER_VERSION = "1.1.9"
 
 OLD_VERSION = '1.89'
 
@@ -987,8 +987,11 @@ def server(server_address_port, packages, packageIndex, resultPath):
 
 
 if __name__ == "__main__":
-    workPath = os.path.expanduser('~/daca@home')
+    workPath = '/var/daca@home'
+    if not os.path.isdir(workPath):
+        workPath = os.path.expanduser('~/daca@home')
     os.chdir(workPath)
+    print('work path: ' + workPath)
     resultPath = workPath + '/donated-results'
 
     f = open('packages.txt', 'rt')
