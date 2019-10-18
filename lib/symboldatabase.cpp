@@ -2394,6 +2394,13 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
                     Function * func = findFunctionInScope(tok1, it2->scope, path, path_length);
                     if (func) {
                         if (!func->hasBody()) {
+                            const Token *closeParen = (*tok)->next()->link();
+                            if (closeParen) {
+                                if (Token::simpleMatch(closeParen, ") = default ;")) {
+                                    func->isDefault(true);
+                                    return;
+                                }
+                            }
                             func->hasBody(true);
                             func->token = *tok;
                             func->arg = argStart;
@@ -2461,11 +2468,8 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
                             // normal function?
                             const Token *closeParen = (*tok)->next()->link();
                             if (closeParen) {
-                                if (Token::Match(closeParen, ") = default|delete ;")) {
-                                    if (closeParen->strAt(2) == "default")
-                                        func->isDefault(true);
-                                    else
-                                        func->isDelete(true);
+                                if (Token::simpleMatch(closeParen, ") = default ;")) {
+                                    func->isDefault(true);
                                     return;
                                 }
 
