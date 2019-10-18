@@ -5770,7 +5770,7 @@ static bool isContainerSizeChangedByFunction(const Token *tok, int depth = 20)
         return false;
 
     // address of variable
-    const bool addressOf = tok->astParent() && tok->astParent()->isUnaryOp("&");
+    const bool addressOf = tok->valueType()->pointer || (tok->astParent() && tok->astParent()->isUnaryOp("&"));
 
     int narg;
     const Token * ftok = getTokenArgumentFunction(tok, narg);
@@ -5792,6 +5792,8 @@ static bool isContainerSizeChangedByFunction(const Token *tok, int depth = 20)
                 if (depth > 0)
                     return isContainerSizeChanged(arg->declarationId(), scope->bodyStart, scope->bodyEnd, depth - 1);
             }
+            // Don't know => Safe guess
+            return true;
         }
     }
 
