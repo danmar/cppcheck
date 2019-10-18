@@ -32,6 +32,8 @@ void valid_code()
 {
     std::vector<int> vecInt{0, 1, 2};
     std::fill_n(vecInt.begin(), 2, 0);
+    vecInt.push_back(1);
+    vecInt.pop_back();
 }
 
 void returnValue_std_isgreater(void)
