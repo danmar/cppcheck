@@ -169,7 +169,7 @@ private:
         TEST_CASE(redundantVarAssignment_7133);
         TEST_CASE(redundantVarAssignment_stackoverflow);
         TEST_CASE(redundantVarAssignment_lambda);
-        TEST_CASE(redundantVarAssignment_for);
+        TEST_CASE(redundantVarAssignment_loop);
         TEST_CASE(redundantVarAssignment_after_switch);
         TEST_CASE(redundantVarAssignment_pointer);
         TEST_CASE(redundantVarAssignment_pointer_parameter);
@@ -4586,7 +4586,9 @@ private:
               "    const bool y = a.f(A::C);\n"
               "    if(!x && !y) return;\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (style) Argument 'A::B' to function f is always 0\n"
+                      "[test.cpp:9]: (style) Argument 'A::C' to function f is always 1\n",
+                      errout.str());
 
         check("void foo() { \n"
               "    const bool x = a.f(A::B);\n"
@@ -6575,13 +6577,23 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void redundantVarAssignment_for() {
+    void redundantVarAssignment_loop() {
         check("void f() {\n"
               "    char buf[10];\n"
               "    int i;\n"
               "    for (i = 0; i < 4; i++)\n"
               "        buf[i] = 131;\n"
               "    buf[i] = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void bar() {\n" // #9262 do-while with break
+              "    int x = 0;\n"
+              "    x = 432;\n"
+              "    do {\n"
+              "        if (foo()) break;\n"
+              "        x = 1;\n"
+              "     } while (false);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
