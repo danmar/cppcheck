@@ -331,6 +331,13 @@ private:
         ASSERT_EQUALS((int)('a'), valueOfTok("x='a';", "'a'").intvalue);
         ASSERT_EQUALS((int)('\n'), valueOfTok("x='\\n';", "'\\n'").intvalue);
         ASSERT_EQUALS(0xFFFFFFFF00000000, valueOfTok("x=0xFFFFFFFF00000000;","18446744069414584320U").intvalue); // #7701
+
+        // scope
+        {
+            const char code[] = "namespace N { enum E {e0,e1}; }\n"
+                                "void foo() { x = N::e1; }";
+            ASSERT_EQUALS(1, valueOfTok(code, "::").intvalue);
+        }
     }
 
     void valueFlowString() {
