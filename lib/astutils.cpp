@@ -1827,8 +1827,8 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             }
         }
 
-        if (Token::simpleMatch(tok, ") {")) {
-            if (Token::simpleMatch(tok->link()->previous(), "switch ("))
+        if (Token::Match(tok, ")|do {")) {
+            if (tok->str() == ")" && Token::simpleMatch(tok->link()->previous(), "switch ("))
                 // TODO: parse switch
                 return Result(Result::Type::BAILOUT);
             const Result &result1 = checkRecursive(expr, tok->tokAt(2), tok->linkAt(1), exprVarIds, local, inInnerClass);
