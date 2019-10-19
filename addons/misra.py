@@ -2030,6 +2030,20 @@ class MisraChecker:
             self.reportError(directive, 21, 11)
 
 
+    def misra_21_12(self, data):
+        if findInclude(data.directives, '<fenv.h>'):
+            for token in data.tokenlist:
+                if token.str == 'fexcept_t' and token.isName:
+                    self.reportError(token, 21, 12)
+                if isFunctionCall(token) and (token.astOperand1.str in (
+                    'feclearexcept',
+                    'fegetexceptflag',
+                    'feraiseexcept',
+                    'fesetexceptflag',
+                    'fetestexcept')):
+                    self.reportError(token, 21, 12)
+
+
     def get_verify_expected(self):
         """Return the list of expected violations in the verify test"""
         return self.verify_expected
@@ -2537,6 +2551,7 @@ class MisraChecker:
             self.misra_21_9(cfg)
             self.misra_21_10(cfg)
             self.misra_21_11(cfg)
+            self.misra_21_12(cfg)
             # 22.4 is already covered by Cppcheck writeReadOnlyFile
 
 

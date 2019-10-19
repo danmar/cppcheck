@@ -11,6 +11,7 @@
 #include <wchar.h> //21.6
 #include <time.h> // 21.10
 #include <tgmath.h> // 21.11
+#include <fenv.h>
 
 
 typedef unsigned char      u8;
@@ -765,3 +766,14 @@ void misra_21_9() {
   (void)bsearch(key,base,num,size,cmp); // 21.9
   qsort(base,num,size,cmp); // 21.9
 }
+
+void misra_21_12() {
+    int rc;
+    fexcept_t f; // 21.12
+    rc = feclearexcept(1); // 21.12
+    rc = fegetexceptflag(&f, 1); // 21.12
+    rc = feraiseexcept(1); // 21.12
+    rc = fesetexceptflag(&f, 1); // 21.12
+    rc = fetestexcept(1); // 21.12
+}
+
