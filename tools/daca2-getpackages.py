@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 #
-# 1. Create a folder daca2 in your HOME folder
-# 2. Put cppcheck-head in daca2. It should be built with all optimisations.
-# 3. Optional: Put a file called "suppressions.txt" in the daca2 folder.
-# 4. Optional: tweak FTPSERVER and FTPPATH in this script below.
-# 5. Run the daca2 script:  python daca2.py FOLDER
+# Get list of debian packages
+#
+# Usage:
+#
+# cd cppcheck/tools
+# python daca2-getpackages.py
+#
+
 
 import argparse
 import logging
