@@ -3224,6 +3224,8 @@ void SymbolDatabase::printXml(std::ostream &out) const
                         else if (function->isImplicitlyVirtual())
                             out << " isImplicitlyVirtual=\"true\"";
                     }
+                    if (function->isStatic())
+                        out << " isStatic=\"true\"";
                     if (function->argCount() == 0U)
                         out << "/>" << std::endl;
                     else {

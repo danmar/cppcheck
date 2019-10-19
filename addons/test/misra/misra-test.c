@@ -395,7 +395,7 @@ void misra_14_2() {
 struct {
   unsigned int x:1;
   unsigned int y:1;
-} _14_4_struct;
+} r14_4_struct;
 void misra_14_4(bool b) {
   if (x+4){} // 14.4
   else {}
@@ -403,7 +403,7 @@ void misra_14_4(bool b) {
   if (b) {}
   else {}
 
-  if (_14_4_struct.x) {}
+  if (r14_4_struct.x) {}
 }
 
 void misra_15_1() {
@@ -652,12 +652,12 @@ struct {
     } nested_2;
     uint8_t data_3[]; // 18.7
   } nested_3;
-} _18_7_struct;
+} r18_7_struct;
 struct {
   uint16_t len;
   uint8_t data_1[ 19 ];
   uint8_t data_2[   ]; // 18.7
-} _18_7_struct;
+} r18_7_struct;
 
 void misra_18_8(int x) {
   int buf1[10];
@@ -687,6 +687,58 @@ union misra_19_2 { }; // 19.2
 # definesomethingis 6 // 20.13
 # def fun_2013(v) () // 20.13
 #endif
+
+#define _Incompatible 0xdeadbeef // 21.1
+#define __Incompatible 0xdeadbeef // 21.1
+#define __starts_with_lower 0xdeadbeef // 21.1
+#define __MY_HEADER_ // 21.1
+#define _starts_with_lower 1 // no warning
+static int _file_scope_id_21_1 = 42; // no warning
+static int _file_scope_id_21_1_fn() { return 42; } // no warning
+static int __file_scope_id_21_1 = 42; // 21.1
+static int __file_scope_id_21_1_fn() { return 42; } // 21.1
+static int _File_scope_id_21_1 = 42; // 21.1
+static int _File_scope_id_21_1_fn() { return 42; } // 21.1
+int _external_scope_id_21_1 = 42; // 21.1
+int _external_scope_id_21_1_fn() { return 42; } // 21.1
+int __external_scope_id_21_1 = 42; // 21.1
+int __external_scope_id_21_1_fn() { return 42; } // 21.1
+int _External_scope_id_21_1 = 42; // 21.1
+int _External_scope_id_21_1_fn() { return 42; } // 21.1
+int errno = 42; // 21.1
+int errno() { // 21.1
+    // TODO: 15.5 false positive
+    return 42; // 15.5
+}
+
+struct _struct_21_1 { int a; }; // 21.1
+struct _Struct_21_1 { int a; }; // 21.1
+struct __struct_21_1 { int a; }; // 21.1
+typedef struct { int a; } _struct_21_1_t; // 21.1
+typedef struct { int a; } _Struct_21_1_t; // 21.1
+typedef struct { int a; } __struct_21_1_t; // 21.1
+
+enum _enum_21_1 { ENUM211_1 }; // 21.1
+enum _Enum_21_1 { ENUM211_2 }; // 21.1
+enum __enum_21_1 { ENUM211_3 }; // 21.1
+enum __enum_21_1 { ENUM211_3 }; // 21.1
+typedef enum { ENUM211_4 } _enum_21_1_t; // 21.1
+typedef enum { ENUM211_5 } _Enum_21_1_t; // 21.1
+typedef enum { ENUM211_6 } __enum_21_1_t; // 21.1
+enum enum_21_1_valid_id {
+    ENUM211_7,
+    _ENUM211_8, // 21.1
+    __ENUM211_9, // 21.1
+    _eNUM211_10, // 21.1
+    enum211_11
+};
+
+union _union_21_1 { int a; }; // 21.1 19.2
+union _Union_21_1 { int a; }; // 21.1 19.2
+union __union_21_1 { int a; }; // 21.1 19.2
+typedef union { int a; } _union_21_1_t; // 21.1 19.2
+typedef union { int a; } _Union_21_1_t; // 21.1 19.2
+typedef union { int a; } __union_21_1_t; // 21.1 19.2
 
 void misra_21_3() {
   p1=malloc(10); // 21.3
