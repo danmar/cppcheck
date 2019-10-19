@@ -18,7 +18,7 @@ import operator
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.1.9"
+SERVER_VERSION = "1.2.0"
 
 OLD_VERSION = '1.89'
 
@@ -864,8 +864,7 @@ def server(server_address_port, packages, packageIndex, resultPath):
             connection.send(reply)
             connection.close()
         elif cmd == 'get\n':
-            pkg = packages[packageIndex].strip()
-            packages[packageIndex] = pkg
+            pkg = packages[packageIndex]
             packageIndex += 1
             if packageIndex >= len(packages):
                 packageIndex = 0
@@ -907,10 +906,8 @@ def server(server_address_port, packages, packageIndex, resultPath):
                 print('results not written. res is None.')
                 continue
             if url not in packages:
-                url2 = url + '\n'
-                if url2 not in packages:
-                    print('results not written. url is not in packages.')
-                    continue
+                print('results not written. url is not in packages.')
+                continue
             # Verify that head was compared to correct OLD_VERSION
             versions_found = False
             old_version_wrong = False
@@ -970,10 +967,8 @@ def server(server_address_port, packages, packageIndex, resultPath):
                 print('info output not written. res is None.')
                 continue
             if url not in packages:
-                url2 = url + '\n'
-                if url2 not in packages:
-                    print('info output not written. url is not in packages.')
-                    continue
+                print('info output not written. url is not in packages.')
+                continue
             print('adding info output for package ' + res.group(1))
             info_path = resultPath + '/' + 'info_output'
             if not os.path.exists(info_path):
@@ -981,6 +976,23 @@ def server(server_address_port, packages, packageIndex, resultPath):
             filename = info_path + '/' + res.group(1)
             with open(filename, 'wt') as f:
                 f.write(strDateTime() + '\n' + data)
+        elif cmd == 'getPackagesCount\n':
+            packages_count = str(len(packages))
+            connection.send(packages_count)
+            connection.close()
+            print('[' + strDateTime() + '] getPackagesCount: ' + packages_count)
+            continue
+        elif cmd.startswith('getPackageIdx'):
+            request_idx = abs(int(cmd[len('getPackageIdx:'):]))
+            if request_idx < len(packages):
+                pkg = packages[request_idx]
+                connection.send(pkg)
+                connection.close()
+                print('[' + strDateTime() + '] getPackageIdx: ' + pkg)
+            else:
+                connection.close()
+                print('[' + strDateTime() + '] getPackageIdx: index is out of range')
+            continue
         else:
             print('[' + strDateTime() + '] invalid command: ' + firstLine)
             connection.close()
@@ -995,7 +1007,7 @@ if __name__ == "__main__":
     resultPath = workPath + '/donated-results'
 
     f = open('packages.txt', 'rt')
-    packages = f.readlines()
+    packages = [val.strip() for val in f.readlines()]
     f.close()
 
     print('packages: ' + str(len(packages)))
