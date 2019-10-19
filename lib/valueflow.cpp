@@ -1047,6 +1047,10 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
             }
         }
     }
+
+    else if (Token::Match(parent, ":: %name%") && parent->astOperand2() == tok) {
+        setTokenValue(parent, value, settings);
+    }
 }
 
 static void setTokenValueCast(Token *parent, const ValueType &valueType, const ValueFlow::Value &value, const Settings *settings)
