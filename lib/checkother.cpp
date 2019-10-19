@@ -2921,7 +2921,7 @@ void CheckOther::checkShadowVariables()
         while (functionScope && functionScope->type != Scope::ScopeType::eFunction && functionScope->type != Scope::ScopeType::eLambda)
             functionScope = functionScope->nestedIn;
         for (const Variable &var : scope.varlist) {
-            if (var.nameToken() && var.nameToken()->isExpandedMacro())
+            if (var.nameToken() && var.nameToken()->isExpandedMacro()) // #8903
                 continue;
 
             if (functionScope && functionScope->type == Scope::ScopeType::eFunction && functionScope->function) {
