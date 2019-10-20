@@ -1232,6 +1232,20 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
                     setTokenValue(tok->next(), value, settings);
                 }
             }
+        } else if (tok2->tokType() == Token::eString) {
+            size_t sz = Token::getStrSize(tok2, settings);
+            if (sz > 0) {
+                ValueFlow::Value value(sz);
+                value.setKnown();
+                setTokenValue(const_cast<Token *>(tok->next()), value, settings);
+            }
+        } else if (tok2->tokType() == Token::eChar) {
+            size_t sz = ValueFlow::getSizeOf(*tok2->valueType(), settings);
+            if (sz > 0) {
+                ValueFlow::Value value(sz);
+                value.setKnown();
+                setTokenValue(tok->next(), value, settings);
+            }
         } else if (!tok2->type()) {
             const ValueType &vt = ValueType::parseDecl(tok2,settings);
             const size_t sz = ValueFlow::getSizeOf(vt, settings);
