@@ -443,6 +443,8 @@ void CheckOther::checkRedundantAssignment()
                             return ChildrenToVisit::none;
                         if (Token::Match(rhs, "%str%|%num%|%name%") && !rhs->varId())
                             return ChildrenToVisit::none;
+                        if (Token::Match(rhs, ":: %name%") && rhs->hasKnownIntValue())
+                            return ChildrenToVisit::none;
                         if (rhs->isCast())
                             return ChildrenToVisit::op2;
                         trivial = false;
