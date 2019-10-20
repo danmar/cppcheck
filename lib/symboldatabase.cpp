@@ -1892,7 +1892,7 @@ Function::Function(const Tokenizer *mTokenizer,
     }
 
     // class constructor/destructor
-    else if (tokenDef->str() == scope->className) {
+    else if (tokenDef->str() == scope->className && scope->type != Scope::ScopeType::eNamespace) {
         // destructor
         if (tokenDef->previous()->str() == "~")
             type = Function::eDestructor;
