@@ -2610,7 +2610,7 @@ static bool valueFlowForwardVariable(Token* const startToken,
                 // goto '}'
                 tok2 = startToken1->link();
 
-                if (isReturnScope(tok2, settings) || !vfresult) {
+                if (isEscapeScope(startToken1, tokenlist, true) || !vfresult) {
                     if (condAlwaysTrue)
                         return false;
                     removeValues(values, truevalues);
@@ -2638,7 +2638,7 @@ static bool valueFlowForwardVariable(Token* const startToken,
                     // goto '}'
                     tok2 = startTokenElse->link();
 
-                    if (isReturnScope(tok2, settings) || !vfresult) {
+                    if (isEscapeScope(startTokenElse, tokenlist, true) || !vfresult) {
                         if (condAlwaysFalse)
                             return false;
                         removeValues(values, falsevalues);

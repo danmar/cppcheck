@@ -551,6 +551,14 @@ private:
                "    IF(!fred){}\n"
                "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "  BUFFER *buffer = get_buffer();\n"
+              "  if (!buffer)\n"
+              "    uv_fatal_error();\n"
+              "  buffer->x = 11;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Dereferencing a pointer and then checking if it is null
