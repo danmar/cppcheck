@@ -352,6 +352,7 @@ private:
         TEST_CASE(findFunction27);
         TEST_CASE(findFunction28);
         TEST_CASE(findFunction29);
+        TEST_CASE(findFunction30);
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
@@ -5774,6 +5775,16 @@ private:
         ASSERT(foo->function());
         ASSERT(foo->function()->token);
         ASSERT_EQUALS(2, foo->function()->token->linenr());
+    }
+
+    void findFunction30() {
+        GET_SYMBOL_DB("struct A;\n"
+                      "void foo(std::shared_ptr<A> ptr) {\n"
+                      "    int x = ptr->bar();\n"
+                      "}");
+        const Token *bar = Token::findsimplematch(tokenizer.tokens(), "bar ( ) ;");
+        ASSERT(bar);
+        ASSERT(!bar->function());
     }
 
     void findFunctionContainer() {

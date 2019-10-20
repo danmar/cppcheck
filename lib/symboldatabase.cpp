@@ -1175,7 +1175,8 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
                             fixVarId(varIds, tok, const_cast<Token *>(membertok), membervar);
                     }
                 } else if (const ::Type *type = var ? var->smartPointerType() : nullptr) {
-                    const Variable *membervar = type->classScope->getVariable(membertok->str());
+                    const Scope *classScope = type->classScope;
+                    const Variable *membervar = classScope ? classScope->getVariable(membertok->str()) : nullptr;
                     if (membervar) {
                         membertok->variable(membervar);
                         if (membertok->varId() == 0 || mVariableList[membertok->varId()] == nullptr)
