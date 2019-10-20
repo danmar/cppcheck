@@ -304,6 +304,7 @@ private:
         TEST_CASE(symboldatabase79); // #9392
         TEST_CASE(symboldatabase80); // #9389
         TEST_CASE(symboldatabase81); // #9411
+        TEST_CASE(symboldatabase82);
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
 
@@ -4404,6 +4405,12 @@ private:
             ASSERT(scope->functionList.front().name() == "act");
             ASSERT(scope->functionList.front().hasBody() == true);
         }
+    }
+
+    void symboldatabase82() {
+        GET_SYMBOL_DB("namespace foo { void foo() {} }");
+        ASSERT(db->functionScopes.size() == 1);
+        ASSERT_EQUALS(false, db->functionScopes[0]->function->isConstructor());
     }
 
     void createSymbolDatabaseFindAllScopes1() {
