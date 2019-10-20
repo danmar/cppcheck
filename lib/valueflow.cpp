@@ -2869,6 +2869,15 @@ static bool valueFlowForwardVariable(Token* const startToken,
                 if (isVariableChangedByFunctionCall(expr, 1, varid, settings, nullptr))
                     lowerToPossible(values, 1);
             } else {
+                if (number_of_if >= 1) {
+                    // is variable used in conditional code? the value is not known
+                    if (settings->debugwarnings)
+                        bailout(tokenlist,
+                                errorLogger,
+                                tok2,
+                                "variable " + var->name() + " valueFlowForwardVariable, number_of_if");
+                    return false;
+                }
                 for (const ValueFlow::Value &v : values) {
                     const ProgramMemory programMemory(getProgramMemory(tok2, varid, v));
                     if (conditionIsTrue(condition, programMemory))

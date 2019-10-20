@@ -2535,6 +2535,14 @@ private:
                "  x = *p ? : 1;\n" // <- no explicit expr0
                "}";
         testValueOfX(code, 1U, 0); // do not crash
+
+        code = "void f(int a) {\n" // #8784
+               "    int x = 13;\n"
+               "    if (a == 1) x = 26;\n"
+               "    return a == 1 ? x : 0;\n"  // <- x is 26
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 13));
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 4U, 26));
     }
 
     void valueFlowForwardLambda() {
