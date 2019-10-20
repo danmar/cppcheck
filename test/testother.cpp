@@ -6679,9 +6679,17 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // "trivial" initialization => do not warn
         check("void f() {\n"
               "    struct S s = {0};\n"
               "    s = dostuff();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("namespace N { enum E {e0,e1}; }\n"
+              "void f() {\n"
+              "    N::E e = N::e0;\n" // #9261
+              "    e = dostuff();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
