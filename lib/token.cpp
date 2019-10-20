@@ -722,7 +722,7 @@ nonneg int Token::getStrLength(const Token *tok)
     return len;
 }
 
-nonneg int Token::getStrSize(const Token *tok)
+nonneg int Token::getStrArraySize(const Token *tok)
 {
     assert(tok != nullptr);
     assert(tok->tokType() == eString);
@@ -734,6 +734,18 @@ nonneg int Token::getStrSize(const Token *tok)
         ++sizeofstring;
     }
     return sizeofstring;
+}
+
+nonneg int Token::getStrSize(const Token *tok, const Settings *settings)
+{
+    assert(tok != nullptr && tok->tokType() == eString);
+    nonneg int sizeofType = 1;
+    if (tok->valueType()) {
+        ValueType vt(*tok->valueType());
+        vt.pointer = 0;
+        sizeofType = ValueFlow::getSizeOf(vt, settings);
+    }
+    return getStrArraySize(tok) * sizeofType;
 }
 
 std::string Token::getCharAt(const Token *tok, MathLib::bigint index)
@@ -1713,7 +1725,7 @@ const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, nonneg int ar
     return ret;
 }
 
-const Token *Token::getValueTokenMinStrSize() const
+const Token *Token::getValueTokenMinStrSize(const Settings *settings) const
 {
     if (!mImpl->mValues)
         return nullptr;
@@ -1722,7 +1734,7 @@ const Token *Token::getValueTokenMinStrSize() const
     std::list<ValueFlow::Value>::const_iterator it;
     for (it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
         if (it->isTokValue() && it->tokvalue && it->tokvalue->tokType() == Token::eString) {
-            const int size = getStrSize(it->tokvalue);
+            const int size = getStrSize(it->tokvalue, settings);
             if (!ret || size < minsize) {
                 minsize = size;
                 ret = it->tokvalue;

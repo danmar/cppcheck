@@ -5593,13 +5593,26 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings)
             setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::BOOL, 0U));
         } else if (tok->isBoolean()) {
             setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::BOOL, 0U));
-        } else if (tok->tokType() == Token::eChar) {
-            setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, tok->isLong() ? ValueType::Type::WCHAR_T : ValueType::Type::CHAR, 0U));
-        } else if (tok->tokType() == Token::eString) {
-            ValueType valuetype(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, 1U, 1U);
-            if (tok->isLong()) {
+        } else if (tok->tokType() == Token::eChar || tok->tokType() == Token::eString) {
+            nonneg int pointer = tok->tokType() == Token::eChar ? 0U : 1U;
+            nonneg int constness = tok->tokType() == Token::eChar ? 0U : 1U;
+            ValueType valuetype(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, pointer, constness);
+
+            if (mIsCpp && mSettings->standards.cpp >= Standards::CPP20 && tok->isUtf8()) {
+                valuetype.originalTypeName = "char8_t";
+                valuetype.fromLibraryType(valuetype.originalTypeName, mSettings);
+            } else if (tok->isUtf16()) {
+                valuetype.originalTypeName = "char16_t";
+                valuetype.fromLibraryType(valuetype.originalTypeName, mSettings);
+            } else if (tok->isUtf32()) {
+                valuetype.originalTypeName = "char32_t";
+                valuetype.fromLibraryType(valuetype.originalTypeName, mSettings);
+            } else if (tok->isLong()) {
                 valuetype.originalTypeName = "wchar_t";
                 valuetype.type = ValueType::Type::WCHAR_T;
+            } else if ((tok->tokType() == Token::eChar) && ((tok->isCChar() && !mIsCpp) || (tok->isCMultiChar()))) {
+                valuetype.type = ValueType::Type::INT;
+                valuetype.sign = ValueType::Sign::SIGNED;
             }
             setValueType(tok, valuetype);
         } else if (tok->str() == "(") {

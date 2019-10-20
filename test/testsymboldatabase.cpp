@@ -5361,6 +5361,7 @@ private:
         GET_SYMBOL_DB("void foo1(int, char* a) { }\n"
                       "void foo1(int, char a) { }\n"
                       "void foo1(int, wchar_t a) { }\n"
+                      "void foo1(int, char16_t a) { }\n"
                       "void foo2(int, float a) { }\n"
                       "void foo2(int, wchar_t a) { }\n"
                       "void foo3(int, float a) { }\n"
@@ -5368,10 +5369,11 @@ private:
                       "void func() {\n"
                       "    foo1(1, 'c');\n"
                       "    foo1(2, L'c');\n"
-                      "    foo2(3, 'c');\n"
-                      "    foo2(4, L'c');\n"
-                      "    foo3(5, 'c');\n"
-                      "    foo3(6, L'c');\n"
+                      "    foo1(3, u'c');\n"
+                      "    foo2(4, 'c');\n"
+                      "    foo2(5, L'c');\n"
+                      "    foo3(6, 'c');\n"
+                      "    foo3(7, L'c');\n"
                       "}");
 
         ASSERT_EQUALS("", errout.str());
@@ -5382,18 +5384,21 @@ private:
         f = Token::findsimplematch(tokenizer.tokens(), "foo1 ( 2");
         ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 3);
 
-        f = Token::findsimplematch(tokenizer.tokens(), "foo2 ( 3");
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 5);
+        f = Token::findsimplematch(tokenizer.tokens(), "foo1 ( 3");
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 4);
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo2 ( 4");
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 5);
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 6);
 
-        f = Token::findsimplematch(tokenizer.tokens(), "foo3 ( 5");
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 7);
+        f = Token::findsimplematch(tokenizer.tokens(), "foo2 ( 5");
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 6);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo3 ( 6");
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 8);
 
         // Error: ambiguous function call
-        //f = Token::findsimplematch(tokenizer.tokens(), "foo3 ( 6");
-        //ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 7);
+        //f = Token::findsimplematch(tokenizer.tokens(), "foo3 ( 7");
+        //ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 8);
     }
 
     void findFunction16() {
@@ -6369,6 +6374,14 @@ private:
         ASSERT_EQUALS("signed long", typeOf("(signed long)1 + (unsigned int)2;", "+"));
         ASSERT_EQUALS("unsigned long", typeOf("(unsigned long)1 + (signed int)2;", "+"));
 
+        // char
+        ASSERT_EQUALS("char", typeOf("'a';", "'a'", "test.cpp"));
+        ASSERT_EQUALS("signed int", typeOf("'a';", "'a'", "test.c"));
+        ASSERT_EQUALS("wchar_t", typeOf("L'a';", "L'a'", "test.cpp"));
+        ASSERT_EQUALS("wchar_t", typeOf("L'a';", "L'a'", "test.c"));
+        ASSERT_EQUALS("signed int", typeOf("'aaa';", "'aaa'", "test.cpp"));
+        ASSERT_EQUALS("signed int", typeOf("'aaa';", "'aaa'", "test.c"));
+
         // char *
         ASSERT_EQUALS("const char *", typeOf("\"hello\" + 1;", "+"));
         ASSERT_EQUALS("const char",  typeOf("\"hello\"[1];", "["));
@@ -6498,6 +6511,25 @@ private:
         ASSERT_EQUALS("unsigned long long", typeOf("enum E : unsigned long long { }; void foo() { E e[3]; bar(e[0]); }", "[ 0"));
 
         // Library types
+        {
+            // Char types
+            Settings settings;
+            const Library::PodType char8 = { 1, 'u' };
+            const Library::PodType char16 = { 2, 'u' };
+            const Library::PodType char32 = { 4, 'u' };
+            settings.library.mPodTypes["char8_t"] = char8;
+            settings.library.mPodTypes["char16_t"] = char16;
+            settings.library.mPodTypes["char32_t"] = char32;
+            settings.sizeof_short = 2;
+            settings.sizeof_int = 4;
+
+            ASSERT_EQUALS("unsigned char", typeOf("u8'a';", "u8'a'", "test.cpp", &settings));
+            ASSERT_EQUALS("unsigned short", typeOf("u'a';", "u'a'", "test.cpp", &settings));
+            ASSERT_EQUALS("unsigned int", typeOf("U'a';", "U'a'", "test.cpp", &settings));
+            ASSERT_EQUALS("const unsigned char *", typeOf("u8\"a\";", "u8\"a\"", "test.cpp", &settings));
+            ASSERT_EQUALS("const unsigned short *", typeOf("u\"a\";", "u\"a\"", "test.cpp", &settings));
+            ASSERT_EQUALS("const unsigned int *", typeOf("U\"a\";", "U\"a\"", "test.cpp", &settings));
+        }
         {
             // PodType
             Settings settingsWin64;

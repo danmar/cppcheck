@@ -60,7 +60,7 @@ void CheckString::stringLiteralWrite()
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!tok->variable() || !tok->variable()->isPointer())
                 continue;
-            const Token *str = tok->getValueTokenMinStrSize();
+            const Token *str = tok->getValueTokenMinStrSize(mSettings);
             if (!str)
                 continue;
             if (Token::Match(tok, "%var% [") && Token::simpleMatch(tok->linkAt(1), "] ="))
@@ -80,10 +80,11 @@ void CheckString::stringLiteralWriteError(const Token *tok, const Token *strValu
 
     std::string errmsg("Modifying string literal");
     if (strValue) {
-        std::string s = strValue->strValue();
-        if (s.size() > 15U)
-            s = s.substr(0,13) + "..";
-        errmsg += " \"" + s + "\"";
+        std::string s = strValue->str();
+        // 20 is an arbitrary value, the max string length shown in a warning message
+        if (s.size() > 20U)
+            s = s.substr(0,17) + "..\"";
+        errmsg += " " + s;
     }
     errmsg += " directly or indirectly is undefined behaviour.";
 

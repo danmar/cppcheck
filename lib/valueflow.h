@@ -34,6 +34,7 @@ class Settings;
 class SymbolDatabase;
 class Token;
 class TokenList;
+class ValueType;
 class Variable;
 
 namespace ValueFlow {
@@ -320,6 +321,8 @@ namespace ValueFlow {
     void setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings);
 
     std::string eitherTheConditionIsRedundant(const Token *condition);
+
+    size_t getSizeOf(const ValueType &vt, const Settings *settings);
 }
 
 struct LifetimeToken {
