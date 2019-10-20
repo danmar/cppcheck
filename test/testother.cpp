@@ -4586,9 +4586,7 @@ private:
               "    const bool y = a.f(A::C);\n"
               "    if(!x && !y) return;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (style) Argument 'A::B' to function f is always 0\n"
-                      "[test.cpp:9]: (style) Argument 'A::C' to function f is always 1\n",
-                      errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void foo() { \n"
               "    const bool x = a.f(A::B);\n"
