@@ -2291,8 +2291,8 @@ private:
         GET_SYMBOL_DB("static void fs() {  }");
         (void)db;
         const Function *func = db->scopeList.back().function;
-        ASSERT_EQUALS(true, func != nullptr);
-        ASSERT_EQUALS(true, func ? func->isStatic() : false);
+        ASSERT(func);
+        ASSERT(func->isStatic());
     }
 
     void namespaces1() {
