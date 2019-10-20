@@ -1094,7 +1094,7 @@ static nonneg int getSizeOfType(const Token *typeTok, const Settings *settings)
         return 0;
 }
 
-static size_t getSizeOf(const ValueType &vt, const Settings *settings)
+size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings *settings)
 {
     if (vt.pointer)
         return settings->sizeof_pointer;
@@ -1154,7 +1154,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
         }
         if (Token::simpleMatch(tok, "sizeof ( *")) {
             const ValueType *vt = tok->tokAt(2)->valueType();
-            const size_t sz = vt ? getSizeOf(*vt, settings) : 0;
+            const size_t sz = vt ? ValueFlow::getSizeOf(*vt, settings) : 0;
             if (sz > 0) {
                 ValueFlow::Value value(sz);
                 if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
@@ -1212,7 +1212,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
                     if (var->type()->classScope && var->type()->classScope->enumType)
                         size = getSizeOfType(var->type()->classScope->enumType, settings);
                 } else if (var->valueType()) {
-                    size = getSizeOf(*var->valueType(), settings);
+                    size = ValueFlow::getSizeOf(*var->valueType(), settings);
                 } else if (!var->type()) {
                     size = getSizeOfType(var->typeStartToken(), settings);
                 }
@@ -1234,7 +1234,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
             }
         } else if (!tok2->type()) {
             const ValueType &vt = ValueType::parseDecl(tok2,settings);
-            const size_t sz = getSizeOf(vt, settings);
+            const size_t sz = ValueFlow::getSizeOf(vt, settings);
             if (sz > 0) {
                 ValueFlow::Value value(sz);
                 if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
@@ -4289,7 +4289,7 @@ static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> va
     if (!valueType || !valueType->isIntegral())
         return values;
 
-    const size_t sz = getSizeOf(*valueType, settings);
+    const size_t sz = ValueFlow::getSizeOf(*valueType, settings);
 
     for (ValueFlow::Value &value : values) {
         if (value.isFloatValue()) {

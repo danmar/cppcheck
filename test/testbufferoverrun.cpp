@@ -3198,6 +3198,7 @@ private:
         doc.Parse(xmldata, sizeof(xmldata));
         settings.library.load(doc);
         settings.addEnabled("warning");
+        settings.sizeof_wchar_t = 4;
 
         check("void f() {\n"
               "    char c[10];\n"
@@ -3236,9 +3237,27 @@ private:
         // Ticket #909
         check("void f(void) {\n"
               "    char str[] = \"abcd\";\n"
-              "    mymemset(str, 0, 10);\n"
+              "    mymemset(str, 0, 6);\n"
               "}", settings);
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: str\n", errout.str());
+
+        check("void f(void) {\n"
+              "    char str[] = \"abcd\";\n"
+              "    mymemset(str, 0, 5);\n"
+              "}", settings);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(void) {\n"
+              "    wchar_t str[] = L\"abcd\";\n"
+              "    mymemset(str, 0, 21);\n"
+              "}", settings);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: str\n", errout.str());
+
+        check("void f(void) {\n"
+              "    wchar_t str[] = L\"abcd\";\n"
+              "    mymemset(str, 0, 20);\n"
+              "}", settings);
+        ASSERT_EQUALS("", errout.str());
 
         // ticket #1659 - overflowing variable when using memcpy
         check("void f(void) { \n"
