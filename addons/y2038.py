@@ -228,10 +228,6 @@ def check_y2038_safe(dumpfile, quiet=False):
 
 def get_args():
     parser = cppcheckdata.ArgumentParser()
-    parser.add_argument("dumpfile", nargs='*', help="Path of dump file from cppcheck")
-    parser.add_argument('-q', '--quiet', action='store_true',
-                        help='do not print "Checking ..." lines')
-    parser.add_argument('--cli', help='Addon is executed from Cppcheck', action='store_true')
     return parser.parse_args()
 
 
@@ -241,19 +237,31 @@ if __name__ == '__main__':
     exit_code = 0
     quiet = not any((args.quiet, args.cli))
 
-    if args.dumpfile:
-        for dumpfile in args.dumpfile:
-            if not os.path.isfile(dumpfile):
-                print("Error: File not found: %s" % dumpfile)
-                sys.exit(127)
-            if not os.access(dumpfile, os.R_OK):
-                print("Error: Permission denied: %s" % dumpfile)
-                sys.exit(13)
-            if not args.quiet:
-                print('Checking ' + dumpfile + '...')
+    if not args.dumpfile:
+        if not args.quiet:
+            print("no input files.")
+        sys.exit(0)
 
-            y2038safe = check_y2038_safe(dumpfile, quiet)
-            if not y2038safe and exit_code == 0:
-                exit_code = 1
+    # Generate list to all dumpfiles for check
+    dump_files = []
+    try:
+        dump_files = cppcheckdata.GetDumpFiles(args.dumpfile, args.recursive)
+    except cppcheckdata.CppcheckException as e:
+        print(str(e))
+        sys.exit(e.return_code())
+
+    for dumpfile in dump_files:
+        if not os.path.isfile(dumpfile):
+            print("Error: File not found: %s" % dumpfile)
+            sys.exit(127)
+        if not os.access(dumpfile, os.R_OK):
+            print("Error: Permission denied: %s" % dumpfile)
+            sys.exit(13)
+        if not args.quiet:
+            print('Checking ' + dumpfile + '...')
+
+        y2038safe = check_y2038_safe(dumpfile, quiet)
+        if not y2038safe and exit_code == 0:
+            exit_code = 1
 
     sys.exit(exit_code)
