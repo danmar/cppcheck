@@ -86,7 +86,7 @@ private:
         TEST_CASE(array_index_1);
         TEST_CASE(array_index_2);
         TEST_CASE(array_index_3);
-        // TODO string TEST_CASE(array_index_4);
+        TEST_CASE(array_index_4);
         TEST_CASE(array_index_6);
         TEST_CASE(array_index_7);
         TEST_CASE(array_index_11);
@@ -189,6 +189,7 @@ private:
         TEST_CASE(pointer_out_of_bounds_1);
         // TODO TEST_CASE(pointer_out_of_bounds_2);
         TEST_CASE(pointer_out_of_bounds_3);
+        TEST_CASE(pointer_out_of_bounds_4);
         // TODO TEST_CASE(pointer_out_of_bounds_sub);
 
         // TODO TEST_CASE(strncat1);
@@ -385,13 +386,16 @@ private:
 
     void array_index_4() {
         check("char c = \"abc\"[4];");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Array index out of bounds: \"abc\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Array '\"abc\"[4]' accessed at index 4, which is out of bounds.\n", errout.str());
 
         check("p = &\"abc\"[4];");
         ASSERT_EQUALS("", errout.str());
 
         check("char c = \"\\0abc\"[2];");
         ASSERT_EQUALS("", errout.str());
+
+        check("char c = L\"abc\"[4];");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Array 'L\"abc\"[4]' accessed at index 4, which is out of bounds.\n", errout.str());
     }
 
     void array_index_3() {
@@ -2813,6 +2817,29 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (portability) Undefined behaviour, pointer arithmetic 's->a+100' is out of bounds.\n", errout.str());
     }
+
+    void pointer_out_of_bounds_4() {
+        check("const char* f() {\n"
+              "    g(\"Hello\" + 6);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("const char* f() {\n"
+              "    g(\"Hello\" + 7);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Undefined behaviour, pointer arithmetic '\"Hello\"+7' is out of bounds.\n", errout.str());
+
+        check("const char16_t* f() {\n"
+              "    g(u\"Hello\" + 6);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("const char16_t* f() {\n"
+              "    g(u\"Hello\" + 7);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Undefined behaviour, pointer arithmetic 'u\"Hello\"+7' is out of bounds.\n", errout.str());
+    }
+
 
     void pointer_out_of_bounds_sub() {
         check("void f() {\n"
