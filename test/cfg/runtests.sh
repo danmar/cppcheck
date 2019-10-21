@@ -284,7 +284,6 @@ ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=googletest ${DIR}googletest
 
 # kde.cpp
 set +e
-set -x
 KDECONFIG=$(kde4-config --path include)
 KDECONFIG_RETURNCODE=$?
 set -e
