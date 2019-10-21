@@ -1,4 +1,7 @@
 
+# Run this script from your branch with proposed Cppcheck patch to verify your
+# patch against current master. It will compare output of testing bunch of
+# opensource packages
 
 import donate_cpu_lib as lib
 import argparse
@@ -8,7 +11,7 @@ import random
 import time
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Run this script from your branch with Cppcheck patch to check to verify your patch against current master. It will compare output of testing bunch of opensource packages')
+    parser = argparse.ArgumentParser(description='Run this script from your branch with proposed Cppcheck patch to verify your patch against current master. It will compare output of testing bunch of opensource packages')
     parser.add_argument('-j', default=1, type=int, help='Concurency execution threads')
     parser.add_argument('-p', default=1000, type=int, help='Count of packages to check')
     parser.add_argument('-o', default='my_check_diff.log', help='Filename of result inside a working path dir')
@@ -19,23 +22,23 @@ if __name__ == "__main__":
 
     work_path = args.work_path
     if not os.path.exists(work_path):
-        os.mkdir(work_path)
+        os.makedirs(work_path)
     cppcheck_path = os.path.join(work_path, 'cppcheck')
 
     jobs = '-j' + str(args.j)
     result_file = os.path.join(work_path, args.o)
-    my_root = os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0])))
+    your_repo_dir = os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0])))
 
     if not lib.get_cppcheck(cppcheck_path, work_path):
-        print('Failed to clone clear version of Cppcheck, retry later')
+        print('Failed to clone master of Cppcheck, retry later')
         sys.exit(1)
 
     if not lib.compile(cppcheck_path, jobs):
-        print('Failed to compile clear version of Cppcheck')
+        print('Failed to compile master of Cppcheck')
         sys.exit(1)
 
-    print('Testing your PR from root: ' + my_root)
-    if not lib.compile(my_root, jobs):
+    print('Testing your PR from directory: ' + your_repo_dir)
+    if not lib.compile(your_repo_dir, jobs):
         print('Failed to compile your version of Cppcheck')
         sys.exit(1)
 
@@ -84,7 +87,7 @@ if __name__ == "__main__":
                 master_crashed = True
         results_to_diff.append(errout)
 
-        c, errout, info, time, cppcheck_options, timing_info = lib.scan_package(work_path, my_root, jobs, libraries)
+        c, errout, info, time, cppcheck_options, timing_info = lib.scan_package(work_path, your_repo_dir, jobs, libraries)
         if c < 0:
             if c == -101 and 'error: could not find or open any of the paths given.' in errout:
                 # No sourcefile found (for example only headers present)
@@ -114,3 +117,5 @@ if __name__ == "__main__":
     with open(result_file, 'a') as myfile:
         myfile.write('\n\ncrashes\n')
         myfile.write('\n'.join(crashes))
+
+    print('Result saved to: ' + result_file)
