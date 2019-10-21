@@ -10,6 +10,28 @@
 #include <windows.h>
 #include <direct.h>
 #include <stdlib.h>
+#include <time.h>
+
+
+void uninitvar__putenv(char * envstr)
+{
+    // No warning is expected
+    (void)_putenv(envstr);
+
+    char * p;
+    // cppcheck-suppress uninitvar
+    (void)_putenv(p);
+}
+
+void nullPointer__putenv(char * envstr)
+{
+    // No warning is expected
+    (void)_putenv(envstr);
+
+    char * p=NULL;
+    // cppcheck-suppress nullPointer
+    (void)_putenv(p);
+}
 
 void invalidFunctionArg__getcwd(char * buffer)
 {
@@ -20,6 +42,26 @@ void invalidFunctionArg__getcwd(char * buffer)
         return;
     }
     free(buffer);
+}
+
+void nullPointer__get_timezone(long *sec)
+{
+    // No warning is expected
+    (void)_get_timezone(sec);
+
+    long *pSec = NULL;
+    // cppcheck-suppress nullPointer
+    (void)_get_timezone(pSec);
+}
+
+void nullPointer__get_daylight(int *h)
+{
+    // No warning is expected
+    (void)_get_daylight(h);
+
+    int *pHours = NULL;
+    // cppcheck-suppress nullPointer
+    (void)_get_daylight(pHours);
 }
 
 void validCode()
