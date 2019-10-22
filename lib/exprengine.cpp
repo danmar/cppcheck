@@ -877,6 +877,9 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
         assignValue = simplifyValue(std::make_shared<ExprEngine::BinOpResult>(binop, lhsValue, rhsValue));
     }
 
+    if (!assignValue)
+        throw VerifyException(tok, "Expression '" + tok->expressionString() + "'; No value for LHS!");
+
     const Token *lhsToken = tok->astOperand1();
     assignValue = truncateValue(assignValue, lhsToken->valueType(), data);
     call(data.callbacks, tok, assignValue, &data);
