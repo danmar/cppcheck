@@ -10,7 +10,7 @@ import datetime
 import time
 from threading import Thread
 import sys
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import logging
 import logging.handlers
 import operator
@@ -203,7 +203,7 @@ def crashReport(results_path):
     html += '</pre>\n'
     html += '<pre>\n'
     html += '<b>Stack traces</b>\n'
-    for stack_trace in sorted(stack_traces.values(), key=lambda x: x['n'], reverse=True):
+    for stack_trace in sorted(list(stack_traces.values()), key=lambda x: x['n'], reverse=True):
         html += 'Packages: ' + ' '.join(['<a href="' + p + '">' + p + '</a>' for p in stack_trace['packages']]) + '\n'
         html += stack_trace['crash_line'] + '\n'
         html += stack_trace['code_line'] + '\n'
@@ -676,11 +676,11 @@ def check_library_report(result_path, message_id):
                 function_counts[function_name] = function_counts.setdefault(function_name, 0) + 1
 
     function_details_list = []
-    for function_name, count in sorted(function_counts.items(), key=operator.itemgetter(1), reverse=True):
+    for function_name, count in sorted(list(function_counts.items()), key=operator.itemgetter(1), reverse=True):
         if len(function_details_list) >= functions_shown_max:
             break
         function_details_list.append(str(count).rjust(column_widths[0]) + ' ' +
-                '<a href="check_library-' + urllib.quote_plus(function_name) + '">' + function_name + '</a>\n')
+                '<a href="check_library-' + urllib.parse.quote_plus(function_name) + '">' + function_name + '</a>\n')
 
     html += ''.join(function_details_list)
     html += '</pre>\n'
@@ -692,7 +692,7 @@ def check_library_report(result_path, message_id):
 # Lists all checkLibrary* messages regarding the given function name
 def check_library_function_name(result_path, function_name):
     print('check_library_function_name')
-    function_name = urllib.unquote_plus(function_name)
+    function_name = urllib.parse.unquote_plus(function_name)
     output_lines_list = []
     for filename in glob.glob(result_path + '/*'):
         if not os.path.isfile(filename):
