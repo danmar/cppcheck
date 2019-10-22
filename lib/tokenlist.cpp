@@ -1176,11 +1176,16 @@ static void createAstAtTokenInner(Token * const tok1, const Token *endToken, boo
             const Token * const endToken2 = tok->link();
             for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
                 tok = createAstAtToken(tok, cpp);
-        } else if (tok->str() == "[") {
+        } else if (cpp && tok->str() == "[") {
             if (isLambdaCaptureList(tok)) {
                 tok = tok->astOperand1();
                 if (tok->str() == "(")
                     tok = tok->astOperand1();
+                const Token * const endToken2 = tok->link();
+                for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
+                    tok = createAstAtToken(tok, cpp);
+            } else if (Token::simpleMatch(tok->link(), "] (") && Token::simpleMatch(tok->link()->linkAt(1), ") {")) {
+                tok = tok->link()->linkAt(1)->next();
                 const Token * const endToken2 = tok->link();
                 for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
                     tok = createAstAtToken(tok, cpp);

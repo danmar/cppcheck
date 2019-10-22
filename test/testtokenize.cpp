@@ -7606,6 +7606,13 @@ private:
 
         // 8628
         ASSERT_EQUALS("f{([( switchx( 1case y++", testAst("f([](){switch(x){case 1:{++y;}}});"));
+
+        ASSERT_EQUALS("{return ab=",
+                      testAst("return {\n"
+                              "  [=]() {\n"
+                              "    a = b;\n"
+                              "  }\n"
+                              "};\n"));
     }
 
     void astcase() {
