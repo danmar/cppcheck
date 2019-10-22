@@ -16,7 +16,7 @@ struct struct1 : public sigc::trackable {
 void valid_code()
 {
     const struct1 my_sruct1;
-    sigc::slot<void(int)> sl = sigc::mem_fun(my_sruct1, &struct1::func1);
+    sigc::slot<void, int> sl = sigc::mem_fun(my_sruct1, &struct1::func1);
     if (sl) {}
 }
 
