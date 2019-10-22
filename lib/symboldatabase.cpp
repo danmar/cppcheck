@@ -5700,6 +5700,12 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings)
                             continue;
                         }
                     }
+
+                    ValueType podtype;
+                    if (podtype.fromLibraryType(e, mSettings)) {
+                        setValueType(tok, podtype);
+                        continue;
+                    }
                 }
 
                 const std::string& typestr(mSettings->library.returnValueType(tok->previous()));
