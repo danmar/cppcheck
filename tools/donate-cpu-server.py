@@ -1,5 +1,6 @@
 
 # Server for 'donate-cpu.py'
+# Runs only under Python 3.
 
 import glob
 import json
@@ -10,7 +11,9 @@ import datetime
 import time
 from threading import Thread
 import sys
-import urllib.request, urllib.parse, urllib.error
+import urllib.request
+import urllib.parse
+import urllib.error
 import logging
 import logging.handlers
 import operator
@@ -18,7 +21,7 @@ import operator
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.2.0"
+SERVER_VERSION = "1.3.0"
 
 OLD_VERSION = '1.89'
 
@@ -722,7 +725,8 @@ def check_library_function_name(result_path, function_name):
     return ''.join(output_lines_list)
 
 
-def sendAll(connection, data):
+def sendAll(connection, text):
+    data = text.encode('utf-8', 'ignore')
     while data:
         num = connection.send(data)
         if num < len(data):
@@ -812,7 +816,7 @@ class HttpClientThread(Thread):
                 filename = resultPath + '/' + url
                 if not os.path.isfile(filename):
                     print('HTTP/1.1 404 Not Found')
-                    self.connection.send('HTTP/1.1 404 Not Found\r\n\r\n')
+                    self.connection.send(b'HTTP/1.1 404 Not Found\r\n\r\n')
                 else:
                     f = open(filename, 'rt')
                     data = f.read()
@@ -845,9 +849,14 @@ def server(server_address_port, packages, packageIndex, resultPath):
         print('[' + strDateTime() + '] waiting for a connection')
         connection, client_address = sock.accept()
         try:
-            cmd = connection.recv(128)
+            bytes_received = connection.recv(128)
+            cmd = bytes_received.decode('utf-8', 'ignore')
         except socket.error:
             connection.close()
+            continue
+        except UnicodeDecodeError as e:
+            connection.close()
+            print('Error: Decoding failed: ' + str(e))
             continue
         if cmd.find('\n') < 1:
             continue
@@ -861,7 +870,7 @@ def server(server_address_port, packages, packageIndex, resultPath):
         elif cmd == 'GetCppcheckVersions\n':
             reply = 'head ' + OLD_VERSION
             print('[' + strDateTime() + '] GetCppcheckVersions: ' + reply)
-            connection.send(reply)
+            connection.send(reply.encode('utf-8', 'ignore'))
             connection.close()
         elif cmd == 'get\n':
             pkg = packages[packageIndex]
@@ -874,7 +883,7 @@ def server(server_address_port, packages, packageIndex, resultPath):
             f.close()
 
             print('[' + strDateTime() + '] get:' + pkg)
-            connection.send(pkg)
+            connection.send(pkg.encode('utf-8', 'ignore'))
             connection.close()
         elif cmd.startswith('write\nftp://'):
             # read data
@@ -883,10 +892,16 @@ def server(server_address_port, packages, packageIndex, resultPath):
                 t = 0
                 max_data_size = 2 * 1024 * 1024
                 while (len(data) < max_data_size) and (not data.endswith('\nDONE')) and (t < 10):
-                    d = connection.recv(1024)
-                    if d:
+                    bytes_received = connection.recv(1024)
+                    if bytes_received:
+                        try:
+                            text_received = bytes_received.decode('utf-8', 'ignore')
+                        except UnicodeDecodeError as e:
+                            print('Error: Decoding failed: ' + str(e))
+                            data = ''
+                            break
                         t = 0
-                        data += d
+                        data += text_received
                     else:
                         time.sleep(0.2)
                         t += 0.2
@@ -944,10 +959,16 @@ def server(server_address_port, packages, packageIndex, resultPath):
                 t = 0
                 max_data_size = 1024 * 1024
                 while (len(data) < max_data_size) and (not data.endswith('\nDONE')) and (t < 10):
-                    d = connection.recv(1024)
-                    if d:
+                    bytes_received = connection.recv(1024)
+                    if bytes_received:
+                        try:
+                            text_received = bytes_received.decode('utf-8', 'ignore')
+                        except UnicodeDecodeError as e:
+                            print('Error: Decoding failed: ' + str(e))
+                            data = ''
+                            break
                         t = 0
-                        data += d
+                        data += text_received
                     else:
                         time.sleep(0.2)
                         t += 0.2
@@ -978,7 +999,7 @@ def server(server_address_port, packages, packageIndex, resultPath):
                 f.write(strDateTime() + '\n' + data)
         elif cmd == 'getPackagesCount\n':
             packages_count = str(len(packages))
-            connection.send(packages_count)
+            connection.send(packages_count.encode('utf-8', 'ignore'))
             connection.close()
             print('[' + strDateTime() + '] getPackagesCount: ' + packages_count)
             continue
@@ -986,7 +1007,7 @@ def server(server_address_port, packages, packageIndex, resultPath):
             request_idx = abs(int(cmd[len('getPackageIdx:'):]))
             if request_idx < len(packages):
                 pkg = packages[request_idx]
-                connection.send(pkg)
+                connection.send(pkg.encode('utf-8', 'ignore'))
                 connection.close()
                 print('[' + strDateTime() + '] getPackageIdx: ' + pkg)
             else:
