@@ -690,7 +690,7 @@ def check_library_report(result_path, message_id):
             if not info_messages:
                 continue
             if line.endswith('[' + message_id + ']\n'):
-                if message_id is 'checkLibraryFunction':
+                if message_id == 'checkLibraryFunction':
                     function_name = line[(line.find('for function ') + len('for function ')):line.rfind('[') - 1]
                 else:
                     function_name = line[(line.find(': Function ') + len(': Function ')):line.rfind('should have') - 1]
