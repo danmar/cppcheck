@@ -9,6 +9,7 @@ import os
 import sys
 import random
 import time
+import subprocess
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Run this script from your branch with proposed Cppcheck patch to verify your patch against current master. It will compare output of testing bunch of opensource packages')
@@ -23,17 +24,32 @@ if __name__ == "__main__":
     work_path = args.work_path
     if not os.path.exists(work_path):
         os.makedirs(work_path)
-    cppcheck_path = os.path.join(work_path, 'cppcheck')
+    master_dir = os.path.join(work_path, 'cppcheck')
 
     jobs = '-j' + str(args.j)
     result_file = os.path.join(work_path, args.o)
     your_repo_dir = os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0])))
 
-    if not lib.get_cppcheck(cppcheck_path, work_path):
+    if os.path.exists(result_file):
+        os.remove(result_file)
+
+    if not lib.get_cppcheck(master_dir, work_path):
         print('Failed to clone master of Cppcheck, retry later')
         sys.exit(1)
 
-    if not lib.compile(cppcheck_path, jobs):
+    try:
+        os.chdir(your_repo_dir)
+        commit_id = (subprocess.check_output(['git', 'merge-base', 'master', 'HEAD'])).strip().decode('ascii')
+        with open(result_file, 'a') as myfile:
+            myfile.write('Common ancestor: ' + commit_id + '\n\n')
+
+        os.chdir(master_dir)
+        subprocess.check_call(['git', 'checkout', '-f', commit_id])
+    except:
+        print('Failed to switch to common ancestor of your branch and master')
+        sys.exit(1)
+
+    if not lib.compile(master_dir, jobs):
         print('Failed to compile master of Cppcheck')
         sys.exit(1)
 
@@ -52,9 +68,6 @@ if __name__ == "__main__":
 
     packages_processed = 0
     crashes = []
-
-    if os.path.exists(result_file):
-        os.remove(result_file)
 
     while packages_processed < args.p and len(packages_idxs) > 0:
         package = lib.get_package(lib.server_address, packages_idxs.pop())
@@ -77,7 +90,7 @@ if __name__ == "__main__":
         your_crashed = False
 
         libraries = lib.get_libraries()
-        c, errout, info, time, cppcheck_options, timing_info = lib.scan_package(work_path, cppcheck_path, jobs, libraries)
+        c, errout, info, time, cppcheck_options, timing_info = lib.scan_package(work_path, master_dir, jobs, libraries)
         if c < 0:
             if c == -101 and 'error: could not find or open any of the paths given.' in errout:
                 # No sourcefile found (for example only headers present)

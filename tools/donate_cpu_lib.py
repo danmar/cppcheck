@@ -34,7 +34,7 @@ def get_cppcheck(cppcheck_path, work_path):
         if os.path.exists(cppcheck_path):
             try:
                 os.chdir(cppcheck_path)
-                subprocess.check_call(['git', 'checkout', '-f'])
+                subprocess.check_call(['git', 'checkout', '-f', 'master'])
                 subprocess.check_call(['git', 'pull'])
             except:
                 print('Failed to update Cppcheck sources! Retrying..')
