@@ -1395,9 +1395,16 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
         auto structValue = createStructVal(valueType->smartPointerType->classScope, var.isLocal() && !var.isStatic(), data);
         return std::make_shared<ExprEngine::PointerValue>(data.getNewSymbolName(), structValue, true, false);
     }
-    if (valueType->container && valueType->container->stdStringLike) {
+    if (valueType->container) {
+        ExprEngine::ValuePtr value;
+        if (valueType->container->stdStringLike)
+            value = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), -128, 127);
+        else if (valueType->containerTypeToken) {
+            ValueType vt = ValueType::parseDecl(valueType->containerTypeToken, data.settings);
+            value = getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings);
+        } else
+            return ExprEngine::ValuePtr();
         auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 0, ~0ULL);
-        auto value = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), -128, 127);
         return std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), size, value);
     }
     return ExprEngine::ValuePtr();
