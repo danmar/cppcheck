@@ -877,6 +877,13 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
         assignValue = simplifyValue(std::make_shared<ExprEngine::BinOpResult>(binop, lhsValue, rhsValue));
     }
 
+    if (!assignValue && tok->astOperand2()->valueType() && tok->astOperand2()->valueType()->container && tok->astOperand2()->valueType()->container->stdStringLike) {
+        auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 0, ~0ULL);
+        auto value = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), -128, 127);
+        assignValue = std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), size, value);
+        call(data.callbacks, tok->astOperand2(), assignValue, &data);
+    }
+
     if (!assignValue)
         throw VerifyException(tok, "Expression '" + tok->expressionString() + "'; Failed to evaluate RHS");
 
