@@ -5681,7 +5681,10 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings)
             // library type/function
             else if (tok->previous()) {
                 if (tok->astParent() && Token::Match(tok->astOperand1(), "%name%|::")) {
-                    if (const Library::Container *c = mSettings->library.detectContainer(tok->astOperand1())) {
+                    const Token *typeStartToken = tok->astOperand1();
+                    while (typeStartToken && typeStartToken->str() == "::")
+                        typeStartToken = typeStartToken->astOperand1();
+                    if (const Library::Container *c = mSettings->library.detectContainer(typeStartToken)) {
                         ValueType vt;
                         vt.pointer = 0;
                         vt.container = c;
