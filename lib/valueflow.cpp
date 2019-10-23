@@ -4950,7 +4950,7 @@ static void valueFlowInferCondition(TokenList* tokenlist,
         } else if (Token::Match(tok, "==|!=")) {
             MathLib::bigint val = 0;
             const Token* varTok = nullptr;
-            if (tok->astOperand1()->hasKnownIntValue()) {
+            if (tok->astOperand1() && tok->astOperand1()->hasKnownIntValue()) {
                 val = tok->astOperand1()->values().front().intvalue;
                 varTok = tok->astOperand2();
             } else if (tok->astOperand2()->hasKnownIntValue()) {

@@ -238,6 +238,7 @@ private:
         TEST_CASE(garbageCode203); // #8972
         TEST_CASE(garbageCode204);
         TEST_CASE(garbageCode205);
+        TEST_CASE(garbageCode206);
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -1631,6 +1632,12 @@ private:
                   "CodeSnippetsEvent :: CodeSnippetsEvent ( const CodeSnippetsEvent & Event )\n"
                   ": wxCommandEvent ( Event )\n"
                   ", m_SnippetID ( 0 ) {\n"
+                  "}"); // don't crash
+    }
+
+    void garbageCode206() {
+        checkCode("void foo() {\n"
+                  "   for (a operator== :)\n"
                   "}"); // don't crash
     }
 
