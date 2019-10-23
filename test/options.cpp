@@ -27,7 +27,7 @@ options::options(int argc, const char* const argv[])
         if (!(*it).empty() && (((*it)[0] == '-') || ((*it).find("::") != std::string::npos && mWhichTests.count((*it).substr(0, (*it).find("::"))))))
             it = mWhichTests.erase(it);
         else
-            ++it;
+            ++it; //increments the value of it
     }
 
     if (mWhichTests.empty()) {
@@ -37,7 +37,7 @@ options::options(int argc, const char* const argv[])
 
 bool options::quiet() const
 {
-    return mQuiet;
+    return mQuiet; // returns the value of mQuiet 
 }
 
 bool options::help() const
