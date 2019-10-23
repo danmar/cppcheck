@@ -878,7 +878,7 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
     }
 
     if (!assignValue)
-        throw VerifyException(tok, "Expression '" + tok->expressionString() + "'; No value for LHS!");
+        throw VerifyException(tok, "Expression '" + tok->expressionString() + "'; Failed to evaluate RHS");
 
     const Token *lhsToken = tok->astOperand1();
     assignValue = truncateValue(assignValue, lhsToken->valueType(), data);
