@@ -39,7 +39,7 @@ if __name__ == "__main__":
 
     try:
         os.chdir(your_repo_dir)
-        commit_id = (subprocess.check_output(['git', 'merge-base', 'master', 'HEAD'])).strip().decode('ascii')
+        commit_id = (subprocess.check_output(['git', 'merge-base', 'origin/master', 'HEAD'])).strip().decode('ascii')
         with open(result_file, 'a') as myfile:
             myfile.write('Common ancestor: ' + commit_id + '\n\n')
 
