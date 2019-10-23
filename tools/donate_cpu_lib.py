@@ -470,7 +470,7 @@ def get_libraries():
 my_script_name = os.path.splitext(sys.argv[0])[0]
 jobs = '-j1'
 stop_time = None
-work_path = os.path.expanduser('~/cppcheck-' + my_script_name + '-workfolder')
+work_path = os.path.splitext(os.path.basename(sys.argv[0]))[0]
 package_url = None
 server_address = ('cppcheck1.osuosl.org', 8000)
 bandwidth_limit = None
