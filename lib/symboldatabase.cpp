@@ -5247,30 +5247,27 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
                     break;
             }
 
-            const Token *containerElementType = typeStart;
-            while (Token::Match(containerElementType, "%name%|::"))
-                containerElementType = containerElementType->next();
-
             // Try to determine type of "auto" token.
             // TODO: Get type better
             bool setType = false;
             ValueType autovt;
             const Type *templateArgType = nullptr; // container element type / smart pointer type
-            if (Token::Match(containerElementType, "< %type% *| *| >")) {
-                if (parsedecl(containerElementType->next(), &autovt, mDefaultSignedness, mSettings)) {
+            if (vt2->containerTypeToken) {
+                if (mSettings->library.isSmartPointer(vt2->containerTypeToken)) {
+                    const Token *smartPointerTypeTok = vt2->containerTypeToken;
+                    while (Token::Match(smartPointerTypeTok, "%name%|::"))
+                        smartPointerTypeTok = smartPointerTypeTok->next();
+                    if (Token::Match(smartPointerTypeTok, "< %name% > >") && smartPointerTypeTok->next()->type()) {
+                        setType = true;
+                        templateArgType = smartPointerTypeTok->next()->type();
+                        autovt.smartPointerType = templateArgType;
+                        autovt.type = ValueType::Type::NONSTD;
+                    }
+                } else if (parsedecl(vt2->containerTypeToken, &autovt, mDefaultSignedness, mSettings)) {
                     setType = true;
-                    templateArgType = containerElementType->next()->type();
+                    templateArgType = vt2->containerTypeToken->type();
                 }
-            } else if (mSettings->library.isSmartPointer(containerElementType->next())) {
-                const Token *smartPointerTypeTok = containerElementType->next();
-                while (Token::Match(smartPointerTypeTok, "%name%|::"))
-                    smartPointerTypeTok = smartPointerTypeTok->next();
-                if (Token::Match(smartPointerTypeTok, "< %name% > >") && smartPointerTypeTok->next()->type()) {
-                    setType = true;
-                    templateArgType = smartPointerTypeTok->next()->type();
-                    autovt.smartPointerType = templateArgType;
-                    autovt.type = ValueType::Type::NONSTD;
-                }
+
             }
 
             if (setType) {
