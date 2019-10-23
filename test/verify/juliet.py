@@ -36,6 +36,8 @@ def check(tc:str, warning_id:str):
         cmd = [CPPCHECK_PATH,
                '-I' + os.path.join(JULIET_PATH, 'C/testcasesupport'),
                '-DOMIT_GOOD',
+               '-DAF_INET=1',
+               '-DINADDR_ANY=1',
                '--library=posix',
                '--verify',
                '--platform=unix64']
