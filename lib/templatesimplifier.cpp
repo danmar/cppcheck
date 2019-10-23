@@ -690,7 +690,7 @@ bool TemplateSimplifier::removeTemplate(Token *tok)
         else if (indentlevel >= 2 && tok2->str() == ">")
             --indentlevel;
 
-        else if (Token::Match(tok2, "> class|struct|union %name% [,)]")) {
+        else if (Token::Match(tok2, "class|struct|union %name% [,)]")) {
             tok2 = tok2->next();
             eraseTokens(tok, tok2);
             deleteToken(tok);
