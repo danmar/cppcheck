@@ -866,6 +866,17 @@ static ExprEngine::ValuePtr truncateValue(ExprEngine::ValuePtr val, const ValueT
 static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
 {
     ExprEngine::ValuePtr rhsValue = executeExpression(tok->astOperand2(), data);
+
+    if (!rhsValue && tok->astOperand2()->valueType() && tok->astOperand2()->valueType()->container && tok->astOperand2()->valueType()->container->stdStringLike) {
+        auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 0, ~0ULL);
+        auto value = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), -128, 127);
+        rhsValue = std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), size, value);
+        call(data.callbacks, tok->astOperand2(), rhsValue, &data);
+    }
+
+    if (!rhsValue)
+        throw VerifyException(tok, "Expression '" + tok->expressionString() + "'; Failed to evaluate RHS");
+
     ExprEngine::ValuePtr assignValue;
     if (tok->str() == "=")
         assignValue = rhsValue;
@@ -876,16 +887,6 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
         ExprEngine::ValuePtr lhsValue = executeExpression(tok->astOperand1(), data);
         assignValue = simplifyValue(std::make_shared<ExprEngine::BinOpResult>(binop, lhsValue, rhsValue));
     }
-
-    if (!assignValue && tok->astOperand2()->valueType() && tok->astOperand2()->valueType()->container && tok->astOperand2()->valueType()->container->stdStringLike) {
-        auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 0, ~0ULL);
-        auto value = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), -128, 127);
-        assignValue = std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), size, value);
-        call(data.callbacks, tok->astOperand2(), assignValue, &data);
-    }
-
-    if (!assignValue)
-        throw VerifyException(tok, "Expression '" + tok->expressionString() + "'; Failed to evaluate RHS");
 
     const Token *lhsToken = tok->astOperand1();
     assignValue = truncateValue(assignValue, lhsToken->valueType(), data);
