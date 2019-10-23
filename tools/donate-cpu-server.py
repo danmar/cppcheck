@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 
 # Server for 'donate-cpu.py'
 # Runs only under Python 3.
