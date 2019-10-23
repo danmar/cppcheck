@@ -1128,6 +1128,11 @@ static ExprEngine::ValuePtr executeExpression1(const Token *tok, Data &data)
     if (tok->str() == ".")
         return executeDot(tok, data);
 
+    if (tok->str() == "::" && tok->hasKnownIntValue()) { // TODO handle :: better
+        auto v = tok->getKnownIntValue();
+        return std::make_shared<ExprEngine::IntRange>(std::to_string(v), v, v);
+    }
+
     if (tok->astOperand1() && tok->astOperand2())
         return executeBinaryOp(tok, data);
 
