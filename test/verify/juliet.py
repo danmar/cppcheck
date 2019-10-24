@@ -1,5 +1,6 @@
 # Test if --verify works using the juliet testsuite
-
+# The Juliet test suite can be downloaded from:
+# https://samate.nist.gov/SRD/testsuite.php
 
 import glob
 import os
