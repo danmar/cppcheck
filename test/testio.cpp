@@ -4142,6 +4142,43 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'const void *'.\n"
                       "[test.cpp:2]: (warning) %d in format string (no. 2) requires 'int' but the argument type is 'const void *'.\n", errout.str());
 
+        check("void foo() {\n"
+              "    SSIZE_T s = -2;\n" // In MSVC, SSIZE_T is available in capital letters using #include <BaseTsd.h>
+              "    int i;\n"
+              "    printf(\"%zd\", s);\n"
+              "    printf(\"%zd%i\", s, i);\n"
+              "    printf(\"%zu\", s);\n"
+              "}", false, true, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:6]: (portability) %zu in format string (no. 1) requires 'size_t' but the argument type is 'SSIZE_T {aka signed long}'.\n", errout.str());
+
+        check("void foo() {\n"
+              "    SSIZE_T s = -2;\n" // In MSVC, SSIZE_T is available in capital letters using #include <BaseTsd.h>
+              "    int i;\n"
+              "    printf(\"%zd\", s);\n"
+              "    printf(\"%zd%i\", s, i);\n"
+              "    printf(\"%zu\", s);\n"
+              "}", false, true, Settings::Win64);
+        ASSERT_EQUALS("[test.cpp:6]: (portability) %zu in format string (no. 1) requires 'size_t' but the argument type is 'SSIZE_T {aka signed long long}'.\n", errout.str());
+
+        check("void foo() {\n"
+              "    SSIZE_T s = -2;\n" // Under Unix, ssize_t has to be written in small letters. Not Cppcheck, but the compiler will report this.
+              "    int i;\n"
+              "    printf(\"%zd\", s);\n"
+              "    printf(\"%zd%i\", s, i);\n"
+              "    printf(\"%zu\", s);\n"
+              "}", false, true, Settings::Unix64);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    typedef SSIZE_T ssize_t;\n" // Test using typedef
+              "    ssize_t s = -2;\n"
+              "    int i;\n"
+              "    printf(\"%zd\", s);\n"
+              "    printf(\"%zd%i\", s, i);\n"
+              "    printf(\"%zu\", s);\n"
+              "}", false, true, Settings::Win64);
+        ASSERT_EQUALS("[test.cpp:7]: (portability) %zu in format string (no. 1) requires 'size_t' but the argument type is 'SSIZE_T {aka signed long long}'.\n", errout.str());
+
     }
 
     void testMicrosoftScanfArgument() {
@@ -4225,6 +4262,44 @@ private:
                       "[test.cpp:15]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
                       "[test.cpp:16]: (warning) 'I32' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
                       "[test.cpp:17]: (warning) 'I64' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n", errout.str());
+
+        check("void foo() {\n"
+              "    SSIZE_T s;\n" // In MSVC, SSIZE_T is available in capital letters using #include <BaseTsd.h>
+              "    int i;\n"
+              "    scanf(\"%zd\", &s);\n"
+              "    scanf(\"%zd%i\", &s, &i);\n"
+              "    scanf(\"%zu\", &s);\n"
+              "}", false, true, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:6]: (portability) %zu in format string (no. 1) requires 'size_t *' but the argument type is 'SSIZE_T * {aka signed long *}'.\n", errout.str());
+
+        check("void foo() {\n"
+              "    SSIZE_T s;\n" // In MSVC, SSIZE_T is available in capital letters using #include <BaseTsd.h>
+              "    int i;\n"
+              "    scanf(\"%zd\", &s);\n"
+              "    scanf(\"%zd%i\", &s, &i);\n"
+              "    scanf(\"%zu\", &s);\n"
+              "}", false, true, Settings::Win64);
+        ASSERT_EQUALS("[test.cpp:6]: (portability) %zu in format string (no. 1) requires 'size_t *' but the argument type is 'SSIZE_T * {aka signed long long *}'.\n", errout.str());
+
+        check("void foo() {\n"
+              "    SSIZE_T s;\n" // Under Unix, ssize_t has to be written in small letters. Not Cppcheck, but the compiler will report this.
+              "    int i;\n"
+              "    scanf(\"%zd\", &s);\n"
+              "    scanf(\"%zd%i\", &s, &i);\n"
+              "    scanf(\"%zu\", &s);\n"
+              "}", false, true, Settings::Unix64);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    typedef SSIZE_T ssize_t;\n" // Test using typedef
+              "    ssize_t s;\n"
+              "    int i;\n"
+              "    scanf(\"%zd\", &s);\n"
+              "    scanf(\"%zd%i\", &s, &i);\n"
+              "    scanf(\"%zu\", &s);\n"
+              "}", false, true, Settings::Win64);
+        ASSERT_EQUALS("[test.cpp:7]: (portability) %zu in format string (no. 1) requires 'size_t *' but the argument type is 'SSIZE_T * {aka signed long long *}'.\n", errout.str());
+
     }
 
     void testMicrosoftCStringFormatArguments() { // ticket #4920
