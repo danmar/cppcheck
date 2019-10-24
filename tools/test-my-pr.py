@@ -14,7 +14,7 @@ import subprocess
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Run this script from your branch with proposed Cppcheck patch to verify your patch against current master. It will compare output of testing bunch of opensource packages')
     parser.add_argument('-j', default=1, type=int, help='Concurency execution threads')
-    parser.add_argument('-p', default=1000, type=int, help='Count of packages to check')
+    parser.add_argument('-p', default=256, type=int, help='Count of packages to check')
     parser.add_argument('-o', default='my_check_diff.log', help='Filename of result inside a working path dir')
     parser.add_argument('--work-path', '--work-path=', default=lib.work_path, type=str, help='Working directory for reference repo')
     args = parser.parse_args()
@@ -39,7 +39,7 @@ if __name__ == "__main__":
 
     try:
         os.chdir(your_repo_dir)
-        commit_id = (subprocess.check_output(['git', 'merge-base', 'master', 'HEAD'])).strip().decode('ascii')
+        commit_id = (subprocess.check_output(['git', 'merge-base', 'origin/master', 'HEAD'])).strip().decode('ascii')
         with open(result_file, 'a') as myfile:
             myfile.write('Common ancestor: ' + commit_id + '\n\n')
 
@@ -122,7 +122,9 @@ if __name__ == "__main__":
         
         with open(result_file, 'a') as myfile:
             myfile.write(package + '\n')
-            myfile.write('diff:\n' + lib.diff_results(work_path, 'master', results_to_diff[0], 'your', results_to_diff[1]) + '\n')
+            diff = lib.diff_results(work_path, 'master', results_to_diff[0], 'your', results_to_diff[1])
+            if diff != '':
+                myfile.write('diff:\n' + diff + '\n')
 
         packages_processed += 1
         print(str(packages_processed) + ' of ' + str(args.p) + ' packages processed\n')

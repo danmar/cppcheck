@@ -467,7 +467,7 @@ def get_libraries():
     return libraries
 
 
-my_script_name = os.path.splitext(sys.argv[0])[0]
+my_script_name = os.path.splitext(os.path.basename(sys.argv[0]))[0]
 jobs = '-j1'
 stop_time = None
 work_path = os.path.expanduser('~/cppcheck-' + my_script_name + '-workfolder')
