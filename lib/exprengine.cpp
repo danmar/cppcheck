@@ -1092,14 +1092,18 @@ static ExprEngine::ValuePtr executeKnownMacro(const Token *tok, Data &data)
     return val;
 }
 
-static ExprEngine::ValuePtr executeNumber(const Token *tok)
+static ExprEngine::ValuePtr executeNumber(const Token *tok, Data &data)
 {
     if (tok->valueType()->isFloat()) {
         long double value = MathLib::toDoubleNumber(tok->str());
-        return std::make_shared<ExprEngine::FloatRange>(tok->str(), value, value);
+        auto v = std::make_shared<ExprEngine::FloatRange>(tok->str(), value, value);
+        call(data.callbacks, tok, v, &data);
+        return v;
     }
     int128_t value = MathLib::toLongNumber(tok->str());
-    return std::make_shared<ExprEngine::IntRange>(tok->str(), value, value);
+    auto v = std::make_shared<ExprEngine::IntRange>(tok->str(), value, value);
+    call(data.callbacks, tok, v, &data);
+    return v;
 }
 
 static ExprEngine::ValuePtr executeStringLiteral(const Token *tok, Data &data)
@@ -1150,7 +1154,7 @@ static ExprEngine::ValuePtr executeExpression1(const Token *tok, Data &data)
         return executeKnownMacro(tok, data);
 
     if (tok->isNumber() || tok->tokType() == Token::Type::eChar)
-        return executeNumber(tok);
+        return executeNumber(tok, data);
 
     if (tok->tokType() == Token::Type::eString)
         return executeStringLiteral(tok, data);

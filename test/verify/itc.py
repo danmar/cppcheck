@@ -12,7 +12,7 @@ import subprocess
 ITC_PATH = os.path.expanduser('~/testing')
 ZERO_DIVISION = '000/199/329/zero_division.c'
 
-if sys.argv[0] in ('test/verify/juliet.py', './test/verify/juliet.py'):
+if sys.argv[0] in ('test/verify/itc.py', './test/verify/itc.py'):
     CPPCHECK_PATH = './cppcheck'
 else:
     CPPCHECK_PATH = '../../cppcheck'
