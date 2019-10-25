@@ -55,18 +55,15 @@ def handle_uncaught_exception(exc_type, exc_value, exc_traceback):
 sys.excepthook = handle_uncaught_exception
 
 
-def strDateTime():
-    # type: () -> str
+def strDateTime() -> str:
     return datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
 
 
-def dateTimeFromStr(datestr):
-    # type: (str) -> datetime.datetime
+def dateTimeFromStr(datestr: str) -> datetime.datetime:
     return datetime.datetime.strptime(datestr, '%Y-%m-%d %H:%M')
 
 
-def overviewReport():
-    # type: () -> str
+def overviewReport() -> str:
     html = '<html><head><title>daca@home</title></head><body>\n'
     html += '<h1>daca@home</h1>\n'
     html += '<a href="crash.html">Crash report</a><br>\n'
@@ -84,8 +81,7 @@ def overviewReport():
     return html
 
 
-def fmt(a, b, c=None, d=None, e=None, link=True):
-    # type: (str, str, str, str, str, bool) -> str
+def fmt(a: str, b: str, c: str = None, d: str = None, e: str = None, link: bool = True) -> str:
     column_width = [40, 10, 5, 6, 6, 8]
     ret = a
     while len(ret) < column_width[0]:
@@ -109,8 +105,7 @@ def fmt(a, b, c=None, d=None, e=None, link=True):
     return ret
 
 
-def latestReport(latestResults):
-    # type: (list) -> str
+def latestReport(latestResults: list) -> str:
     html = '<html><head><title>Latest daca@home results</title></head><body>\n'
     html += '<h1>Latest daca@home results</h1>\n'
     html += '<pre>\n<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', 'Diff', link=False) + '</b>\n'
@@ -149,8 +144,7 @@ def latestReport(latestResults):
     return html
 
 
-def crashReport(results_path):
-    # type: (str) -> str
+def crashReport(results_path: str) -> str:
     html = '<html><head><title>Crash report</title></head><body>\n'
     html += '<h1>Crash report</h1>\n'
     html += '<pre>\n'
@@ -224,8 +218,7 @@ def crashReport(results_path):
     return html
 
 
-def staleReport(results_path):
-    # type: (str) -> str
+def staleReport(results_path: str) -> str:
     html = '<html><head><title>Stale report</title></head><body>\n'
     html += '<h1>Stale report</h1>\n'
     html += '<pre>\n'
@@ -253,8 +246,7 @@ def staleReport(results_path):
     return html
 
 
-def diffReportFromDict(out, today):
-    # type: (dict, str) -> str
+def diffReportFromDict(out: dict, today: str) -> str:
     html = '<pre>\n'
     html += '<b>MessageID                           ' + OLD_VERSION + '    Head</b>\n'
     sum0 = 0
@@ -292,8 +284,7 @@ def diffReportFromDict(out, today):
     return html
 
 
-def diffReport(resultsPath):
-    # type: (str) -> str
+def diffReport(resultsPath: str) -> str:
     out = {}
     outToday = {}
     today = strDateTime()[:10]
@@ -328,8 +319,7 @@ def diffReport(resultsPath):
     return html
 
 
-def generate_package_diff_statistics(filename):
-    # type: (str) -> None
+def generate_package_diff_statistics(filename: str) -> None:
     is_diff = False
 
     sums = {}
@@ -369,8 +359,7 @@ def generate_package_diff_statistics(filename):
         os.remove(filename_diff)
 
 
-def diffMessageIdReport(resultPath, messageId):
-    # type: (str, str) -> str
+def diffMessageIdReport(resultPath: str, messageId: str) -> str:
     text = messageId + '\n'
     e = '[' + messageId + ']\n'
     for filename in sorted(glob.glob(resultPath + '/*.diff')):
@@ -397,8 +386,7 @@ def diffMessageIdReport(resultPath, messageId):
     return text
 
 
-def diffMessageIdTodayReport(resultPath, messageId):
-    # type: (str, str) -> str
+def diffMessageIdTodayReport(resultPath: str, messageId: str) -> str:
     text = messageId + '\n'
     e = '[' + messageId + ']\n'
     today = strDateTime()[:10]
@@ -433,8 +421,7 @@ def diffMessageIdTodayReport(resultPath, messageId):
     return text
 
 
-def headReportFromDict(out, today):
-    # type: (dict, str) -> str
+def headReportFromDict(out: dict, today: str) -> str:
     html = '<pre>\n'
     html += '<b>MessageID                                  Count</b>\n'
     sumTotal = 0
@@ -462,8 +449,7 @@ def headReportFromDict(out, today):
     return html
 
 
-def headReport(resultsPath):
-    # type: (str) -> str
+def headReport(resultsPath: str) -> str:
     out = {}
     outToday = {}
     today = strDateTime()[:10]
@@ -527,8 +513,7 @@ def headReport(resultsPath):
     return html
 
 
-def headMessageIdReport(resultPath, messageId):
-    # type: (str, str) -> str
+def headMessageIdReport(resultPath: str, messageId: str) -> str:
     text = messageId + '\n'
     e = '[' + messageId + ']\n'
     for filename in sorted(glob.glob(resultPath + '/*')):
@@ -553,8 +538,7 @@ def headMessageIdReport(resultPath, messageId):
     return text
 
 
-def headMessageIdTodayReport(resultPath, messageId):
-    # type: (str, str) -> str
+def headMessageIdTodayReport(resultPath: str, messageId: str) -> str:
     text = messageId + '\n'
     e = '[' + messageId + ']\n'
     today = strDateTime()[:10]
@@ -585,8 +569,7 @@ def headMessageIdTodayReport(resultPath, messageId):
     return text
 
 
-def timeReport(resultPath):
-    # type: (str) -> str
+def timeReport(resultPath: str) -> str:
     html = '<html><head><title>Time report</title></head><body>\n'
     html += '<h1>Time report</h1>\n'
     html += '<pre>\n'
@@ -655,8 +638,7 @@ def timeReport(resultPath):
     return html
 
 
-def check_library_report(result_path, message_id):
-    # type: (str, str) -> str
+def check_library_report(result_path: str, message_id: str) -> str:
     if message_id not in ('checkLibraryNoReturn', 'checkLibraryFunction', 'checkLibraryUseIgnore'):
         error_message = 'Invalid value ' + message_id + ' for message_id parameter.'
         print(error_message)
@@ -712,8 +694,7 @@ def check_library_report(result_path, message_id):
 
 
 # Lists all checkLibrary* messages regarding the given function name
-def check_library_function_name(result_path, function_name):
-    # type: (str, str) -> str
+def check_library_function_name(result_path: str, function_name: str) -> str:
     print('check_library_function_name')
     function_name = urllib.parse.unquote_plus(function_name)
     output_lines_list = []
@@ -745,8 +726,7 @@ def check_library_function_name(result_path, function_name):
     return ''.join(output_lines_list)
 
 
-def sendAll(connection, text):
-    # type: (socket.socket, str) -> None
+def sendAll(connection: socket.socket, text: str) -> None:
     data = text.encode('utf-8', 'ignore')
     while data:
         num = connection.send(data)
@@ -756,8 +736,7 @@ def sendAll(connection, text):
             data = None
 
 
-def httpGetResponse(connection, data, contentType):
-    # type: (socket.socket, str, str) -> None
+def httpGetResponse(connection: socket.socket, data: str, contentType: str) -> None:
     resp = 'HTTP/1.1 200 OK\r\n'
     resp += 'Connection: close\r\n'
     resp += 'Content-length: ' + str(len(data)) + '\r\n'
@@ -767,7 +746,7 @@ def httpGetResponse(connection, data, contentType):
 
 
 class HttpClientThread(Thread):
-    def __init__(self, connection, cmd, resultPath, latestResults):
+    def __init__(self, connection: socket.socket, cmd: str, resultPath: str, latestResults: list) -> None:
         Thread.__init__(self)
         self.connection = connection
         self.cmd = cmd[:cmd.find('\n')]
@@ -849,8 +828,7 @@ class HttpClientThread(Thread):
             self.connection.close()
 
 
-def server(server_address_port, packages, packageIndex, resultPath):
-    # type: (int, list, int, str) -> None
+def server(server_address_port: int, packages: list, packageIndex: int, resultPath: str) -> None:
     socket.setdefaulttimeout(30)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -1076,4 +1054,3 @@ if __name__ == "__main__":
         server(server_address_port, packages, packageIndex, resultPath)
     except socket.timeout:
         print('Timeout!')
-
