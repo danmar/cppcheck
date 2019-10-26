@@ -25,9 +25,14 @@ before_install:
  - travis_retry python2 -m pip install --user pytest==4.6.4
  - travis_retry python2 -m pip install --user pylint
  - travis_retry python2 -m pip install --user unittest2
- - travis_retry python2 -m pip install --user pexpect
+ - travis_retry python2 -m pip install --user pexpect # imported by tools/ci.py
 # Python 3 modules
+ - travis_retry python3 -m pip install --user setuptools --upgrade
  - travis_retry python3 -m pip install --user pytest
+ - travis_retry python3 -m pip install --user pylint
+ - travis_retry python3 -m pip install --user unittest2
+ - travis_retry python3 -m pip install --user pexpect # imported by tools/ci.py
+ - travis_retry python3 -m pip install --user requests # imported by tools/pr.py
 
 matrix:
 # do notify immediately about it when a job of a build fails.
@@ -95,11 +100,13 @@ matrix:
 # run pylint
         - pylint --rcfile=pylintrc_travis addons/*.py
         - pylint --rcfile=pylintrc_travis htmlreport/*.py
-        - pylint --rcfile=pylintrc_travis tools/*.py
+        - pylint --rcfile=pylintrc_travis --ignore=donate-cpu-server.py tools/*.py
+        - python3 -m pylint --rcfile=pylintrc_travis addons/*.py
+        - python3 -m pylint --rcfile=pylintrc_travis htmlreport/*.py
+        - python3 -m pylint --rcfile=pylintrc_travis tools/*.py
 # check python syntax by compiling some selected scripts
         - python -m py_compile ./tools/donate-cpu.py
         - python3 -m py_compile ./tools/donate-cpu.py
-        - python -m py_compile ./tools/donate-cpu-server.py
         - python3 -m py_compile ./tools/donate-cpu-server.py
 # check addons/misc.py
         - cd addons/test
