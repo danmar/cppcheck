@@ -780,7 +780,10 @@ void simplecpp::TokenList::combineOperators()
         }
         // match: [0-9.]+E [+-] [0-9]+
         const char lastChar = tok->str()[tok->str().size() - 1];
-        if (tok->number && !isHex(tok->str()) && !isOct(tok->str()) && (lastChar == 'E' || lastChar == 'e') && tok->next && tok->next->isOneOf("+-") && tok->next->next && tok->next->next->number) {
+        if (tok->number && !isOct(tok->str()) &&
+            ((!isHex(tok->str()) && (lastChar == 'E' || lastChar == 'e')) ||
+             (isHex(tok->str()) && (lastChar == 'P' || lastChar == 'p'))) &&
+            tok->next && tok->next->isOneOf("+-") && tok->next->next && tok->next->next->number) {
             tok->setstr(tok->str() + tok->next->op + tok->next->next->str());
             deleteToken(tok->next);
             deleteToken(tok->next);
