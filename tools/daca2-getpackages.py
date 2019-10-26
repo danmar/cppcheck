@@ -19,7 +19,7 @@ import os
 import datetime
 import time
 
-DEBIAN = ('ftp://ftp.se.debian.org/debian/',
+DEBIAN = ('ftp://ftp.de.debian.org/debian/',
           'ftp://ftp.debian.org/debian/')
 
 def wget(filepath):
