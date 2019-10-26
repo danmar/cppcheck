@@ -7613,6 +7613,12 @@ private:
                               "    a = b;\n"
                               "  }\n"
                               "};\n"));
+        ASSERT_EQUALS("{return ab={",
+                      testAst("return {\n"
+                              "  [=]() -> int {\n"
+                              "    a=b;\n"
+                              "  }\n"
+                              "}"));
     }
 
     void astcase() {

@@ -1184,11 +1184,21 @@ static void createAstAtTokenInner(Token * const tok1, const Token *endToken, boo
                 const Token * const endToken2 = tok->link();
                 for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
                     tok = createAstAtToken(tok, cpp);
-            } else if (Token::simpleMatch(tok->link(), "] (") && Token::simpleMatch(tok->link()->linkAt(1), ") {")) {
-                tok = tok->link()->linkAt(1)->next();
-                const Token * const endToken2 = tok->link();
-                for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
-                    tok = createAstAtToken(tok, cpp);
+            } else if (Token::simpleMatch(tok->link(), "] (") && Token::Match(tok->link()->linkAt(1), ") .|{")) {
+                Token *bodyStart = tok->link()->linkAt(1)->next();
+                if (Token::Match(bodyStart, ". %name%") && bodyStart->originalName() == "->") {
+                    bodyStart = bodyStart->next();
+                    while (Token::Match(bodyStart, "%name%|::"))
+                        bodyStart = bodyStart->next();
+                    if (Token::simpleMatch(bodyStart, "<") && Token::simpleMatch(bodyStart->link(), "> {"))
+                        bodyStart = bodyStart->link()->next();
+                }
+                if (Token::simpleMatch(bodyStart, "{")) {
+                    tok = bodyStart;
+                    const Token * const endToken2 = tok->link();
+                    for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
+                        tok = createAstAtToken(tok, cpp);
+                }
             }
         }
     }
