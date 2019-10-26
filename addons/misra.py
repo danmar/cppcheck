@@ -1937,6 +1937,38 @@ class MisraChecker:
                     ifStack.pop()
 
 
+    def misra_21_1(self, data):
+        # Reference: n1570 7.1.3 - Reserved identifiers
+        re_forbidden_macro = re.compile(r'#define (errno|_[_A-Z]+)')
+
+        # Search for forbidden identifiers in macro names
+        for directive in data.directives:
+            res = re.search(re_forbidden_macro, directive.str)
+            if res:
+                self.reportError(directive, 21, 1)
+
+        # Search for forbidden identifiers
+        for token in data.tokenlist:
+            if not token.isName:
+                continue
+            if len(token.str) < 2:
+                continue
+            if token.str == 'errno':
+                self.reportError(token, 21, 1)
+            if token.str[0] == '_':
+                if (token.str[1] in string.ascii_uppercase) or (token.str[1] == '_'):
+                    self.reportError(token, 21, 1)
+
+                # Allow identifiers with file scope visibility (static)
+                if token.scope.type == 'Global':
+                    if token.variable and token.variable.isStatic:
+                        continue
+                    if token.function and token.function.isStatic:
+                        continue
+
+                self.reportError(token, 21, 1)
+
+
     def misra_21_3(self, data):
         for token in data.tokenlist:
             if isFunctionCall(token) and (token.astOperand1.str in ('malloc', 'calloc', 'realloc', 'free')):
@@ -1996,6 +2028,20 @@ class MisraChecker:
         directive = findInclude(data.directives, '<tgmath.h>')
         if directive:
             self.reportError(directive, 21, 11)
+
+
+    def misra_21_12(self, data):
+        if findInclude(data.directives, '<fenv.h>'):
+            for token in data.tokenlist:
+                if token.str == 'fexcept_t' and token.isName:
+                    self.reportError(token, 21, 12)
+                if isFunctionCall(token) and (token.astOperand1.str in (
+                    'feclearexcept',
+                    'fegetexceptflag',
+                    'feraiseexcept',
+                    'fesetexceptflag',
+                    'fetestexcept')):
+                    self.reportError(token, 21, 12)
 
 
     def get_verify_expected(self):
@@ -2495,6 +2541,7 @@ class MisraChecker:
             self.misra_20_10(cfg)
             self.misra_20_13(cfg)
             self.misra_20_14(cfg)
+            self.misra_21_1(cfg)
             self.misra_21_3(cfg)
             self.misra_21_4(cfg)
             self.misra_21_5(cfg)
@@ -2504,6 +2551,7 @@ class MisraChecker:
             self.misra_21_9(cfg)
             self.misra_21_10(cfg)
             self.misra_21_11(cfg)
+            self.misra_21_12(cfg)
             # 22.4 is already covered by Cppcheck writeReadOnlyFile
 
 
