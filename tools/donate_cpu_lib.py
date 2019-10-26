@@ -446,6 +446,7 @@ def get_libraries():
                        # 'kde': ['<KGlobal>', '<KApplication>', '<KDE/'], <= enable after release of version 1.90
                        'libcerror': ['<libcerror.h>'],
                        'libcurl': ['<curl/curl.h>'],
+                       # 'libsigc++': ['<sigc++/'], <= enable after release of version 1.90
                        'lua': ['<lua.h>', '"lua.h"'],
                        'microsoft_sal': ['<sal.h>'],
                        'motif': ['<X11/', '<Xm/'],

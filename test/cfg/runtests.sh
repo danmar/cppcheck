@@ -311,6 +311,33 @@ else
 fi
 ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=kde ${DIR}kde.cpp
 
+# libsigc++.cpp
+set +e
+pkg-config --version
+PKGCONFIG_RETURNCODE=$?
+set -e
+if [ $PKGCONFIG_RETURNCODE -ne 0 ]; then
+    echo "pkg-config needed to retrieve libsigc++ configuration is not available, skipping syntax check."
+else
+    set +e
+    LIBSIGCPPCONFIG=$(pkg-config --cflags sigc++-2.0)
+    LIBSIGCPPCONFIG_RETURNCODE=$?
+    set -e
+    if [ $LIBSIGCPPCONFIG_RETURNCODE -eq 0 ]; then
+        set +e
+        echo -e "#include <sigc++/sigc++.h>\n" | ${CXX} ${CXX_OPT} ${LIBSIGCPPCONFIG} -x c++ -
+        LIBSIGCPPCONFIG_RETURNCODE=$?
+        set -e
+        if [ $LIBSIGCPPCONFIG_RETURNCODE -ne 0 ]; then
+            echo "libsigc++ not completely present or not working, skipping syntax check with ${CXX}."
+        else
+            echo "libsigc++ found and working, checking syntax with ${CXX} now."
+            ${CXX} ${CXX_OPT} ${LIBSIGCPPCONFIG} ${DIR}libsigc++.cpp
+        fi
+    fi
+fi
+${CPPCHECK} ${CPPCHECK_OPT} --library=libsigc++ ${DIR}libsigc++.cpp
+
 # Check the syntax of the defines in the configuration files
 set +e
 xmlstarlet --version
