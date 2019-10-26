@@ -1806,6 +1806,9 @@ class MisraChecker:
             typetok = var.nameToken.next
             if not typetok or typetok.str != '[':
                 continue
+            # Unknown define or syntax error
+            if not typetok.astOperand2:
+                continue
             if not isConstantExpression(typetok.astOperand2):
                 self.reportError(var.nameToken, 18, 8)
 

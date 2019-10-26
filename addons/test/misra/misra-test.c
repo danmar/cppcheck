@@ -664,6 +664,7 @@ void misra_18_8(int x) {
   int buf1[10];
   int buf2[sizeof(int)];
   int vla[x]; // 18.8
+  static const unsigned char arr18_8_1[] = UNDEFINED_ID;
 }
 
 union misra_19_2 { }; // 19.2
