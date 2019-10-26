@@ -305,6 +305,7 @@ private:
         TEST_CASE(symboldatabase80); // #9389
         TEST_CASE(symboldatabase81); // #9411
         TEST_CASE(symboldatabase82);
+        TEST_CASE(symboldatabase83); // #9431
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
 
@@ -4411,6 +4412,23 @@ private:
         GET_SYMBOL_DB("namespace foo { void foo() {} }");
         ASSERT(db->functionScopes.size() == 1);
         ASSERT_EQUALS(false, db->functionScopes[0]->function->isConstructor());
+    }
+
+    void symboldatabase83() { // #9431
+        const bool old = settings1.debugwarnings;
+        settings1.debugwarnings = true;
+        GET_SYMBOL_DB("struct a { a() noexcept; };\n"
+                      "a::a() noexcept = default;");
+        settings1.debugwarnings = old;
+        const Scope *scope = db->findScopeByName("a");
+        ASSERT(scope);
+        ASSERT(scope->functionList.size() == 1);
+        ASSERT(scope->functionList.front().name() == "a");
+        ASSERT(scope->functionList.front().hasBody() == false);
+        ASSERT(scope->functionList.front().isConstructor() == true);
+        ASSERT(scope->functionList.front().isDefault() == true);
+        ASSERT(scope->functionList.front().isNoExcept() == true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void createSymbolDatabaseFindAllScopes1() {
