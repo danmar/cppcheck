@@ -709,6 +709,16 @@ static void compileTerm(Token *&tok, AST_state& state)
                 compileBinOp(tok, state, compileExpression);
             if (Token::Match(tok, "} ,|:"))
                 tok = tok->next();
+        } else if (state.cpp && Token::Match(tok->tokAt(-2), "%name% ( {")) {
+            if (Token::simpleMatch(tok, "{ }"))
+                tok = tok->tokAt(2);
+            else {
+                Token *tok1 = tok;
+                state.inArrayAssignment++;
+                compileUnaryOp(tok, state, compileExpression);
+                state.inArrayAssignment--;
+                tok = tok1->link()->next();
+            }
         } else if (!state.inArrayAssignment && !Token::simpleMatch(prev, "=")) {
             state.op.push(tok);
             tok = tok->link()->next();

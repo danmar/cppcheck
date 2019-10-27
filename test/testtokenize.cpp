@@ -7441,12 +7441,12 @@ private:
         // ({..})
         ASSERT_EQUALS("a{+d+ bc+", testAst("a+({b+c;})+d"));
         ASSERT_EQUALS("a{d*+ bc+", testAst("a+({b+c;})*d"));
-        ASSERT_EQUALS("xa{((= bc( yd{((= ef(",
+        ASSERT_EQUALS("xabc({((= ydef({((=",
                       testAst("x=(int)(a({b(c);}));" // don't hang
                               "y=(int)(d({e(f);}));"));
-        ASSERT_EQUALS("QT_WA{{,( x0= QT_WA{{,( x1= x2=",
-                      testAst("QT_WA({},{x=0;});" // don't hang
-                              "QT_WA({x=1;},{x=2;});"));
+        ASSERT_EQUALS("A{,( x0= Bx1={{,( x2=",  // TODO: This is not perfect!!
+                      testAst("A({},{x=0;});" // don't hang
+                              "B({x=1;},{x=2;});"));
         ASSERT_EQUALS("xMACROtype.T=value.1=,{({=",
                       testAst("x = { MACRO( { .type=T, .value=1 } ) }")); // don't hang: MACRO({..})
         ASSERT_EQUALS("fori10=i{;;( i--", testAst("for (i=10;i;({i--;}) ) {}"));
@@ -7486,6 +7486,7 @@ private:
         ASSERT_EQUALS("Abc({newreturn", testAst("return new A {b(c)};"));
         ASSERT_EQUALS("a{{return", testAst("return{{a}};"));
         ASSERT_EQUALS("a{b{,{return", testAst("return{{a},{b}};"));
+        ASSERT_EQUALS("abc{d{,{(=", testAst("a = b({ c{}, d{} });"));
     }
 
     void astbrackets() { // []
