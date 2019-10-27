@@ -1068,19 +1068,26 @@ static ExprEngine::ValuePtr executeAddressOf(const Token *tok, Data &data)
 static ExprEngine::ValuePtr executeDeref(const Token *tok, Data &data)
 {
     ExprEngine::ValuePtr pval = executeExpression(tok->astOperand1(), data);
-    if (pval) {
-        auto addressOf = std::dynamic_pointer_cast<ExprEngine::AddressOfValue>(pval);
-        if (addressOf) {
-            auto val = data.getValue(addressOf->varId, tok->valueType(), tok);
-            call(data.callbacks, tok, val, &data);
-            return val;
+    if (!pval) {
+        auto v = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
+        if (tok->astOperand1()->varId()) {
+            pval = std::make_shared<ExprEngine::PointerValue>(data.getNewSymbolName(), v, false, false);
+            data.assignValue(tok->astOperand1(), tok->astOperand1()->varId(), v);
         }
-        auto pointer = std::dynamic_pointer_cast<ExprEngine::PointerValue>(pval);
-        if (pointer) {
-            auto val = pointer->data;
-            call(data.callbacks, tok, val, &data);
-            return val;
-        }
+        call(data.callbacks, tok, v, &data);
+        return v;
+    }
+    auto addressOf = std::dynamic_pointer_cast<ExprEngine::AddressOfValue>(pval);
+    if (addressOf) {
+        auto val = data.getValue(addressOf->varId, tok->valueType(), tok);
+        call(data.callbacks, tok, val, &data);
+        return val;
+    }
+    auto pointer = std::dynamic_pointer_cast<ExprEngine::PointerValue>(pval);
+    if (pointer) {
+        auto val = pointer->data;
+        call(data.callbacks, tok, val, &data);
+        return val;
     }
     return ExprEngine::ValuePtr();
 }
