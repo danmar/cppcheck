@@ -237,8 +237,14 @@ bool isTemporary(bool cpp, const Token* tok)
         return false;
     if (Token::Match(tok, "&|<<|>>") && isLikelyStream(cpp, tok->astOperand1()))
         return false;
-    if (Token::Match(tok->previous(), "%name% ("))
-        return tok->previous()->function() && !Function::returnsReference(tok->previous()->function(), true);
+    if (Token::Match(tok->previous(), ">|%name% (")) {
+        const Function * f = nullptr;
+        if (tok->previous()->function())
+            f = tok->previous()->function();
+        else if (tok->previous()->link())
+            f = tok->previous()->link()->previous()->function();
+        return f && !Function::returnsReference(tok->previous()->function(), true);
+    }
     return true;
 }
 

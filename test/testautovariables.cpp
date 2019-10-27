@@ -107,6 +107,8 @@ private:
         TEST_CASE(returnReference12);
         TEST_CASE(returnReference13);
         TEST_CASE(returnReference14);
+        TEST_CASE(returnReference15); // #9432
+        TEST_CASE(returnReference16); // #9433
         TEST_CASE(returnReferenceFunction);
         TEST_CASE(returnReferenceContainer);
         TEST_CASE(returnReferenceLiteral);
@@ -1242,6 +1244,39 @@ private:
               "    return g()->m;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void returnReference15() {
+        check("template <class T>\n"
+              "const int& f() {\n"
+              "    static int s;\n"
+              "    return s;\n"
+              "}\n"
+              "template <class T>\n"
+              "const int& f(const T&) {\n"
+              "    return f<T>();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("template <class T>\n"
+              "int g();\n"
+              "template <class T>\n"
+              "const int& f(const T&) {\n"
+              "    return g<T>();\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
+    }
+
+    void returnReference16() {
+        check("int& f(std::tuple<int>& x) {\n"
+              "    return std::get<0>(x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int& f(int x) {\n"
+              "    return std::get<0>(std::make_tuple(x));\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
     }
 
     void returnReferenceFunction() {
