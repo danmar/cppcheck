@@ -23,6 +23,7 @@
 #include "tokenize.h"
 
 #include <cstdlib>
+#include <cstring>
 #include <limits>
 #include <memory>
 #include <iostream>
@@ -1443,7 +1444,7 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
 void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings)
 {
     std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> divByZero = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
-        if (!Token::Match(tok->astParent(), "[/%]"))
+        if (!tok->astParent() || !std::strchr("/%", tok->astParent()->str()[0]))
             return;
         if (tok->astParent()->astOperand2() == tok && value.isEqual(dataBase, 0)) {
             std::list<const Token*> callstack{tok->astParent()};
