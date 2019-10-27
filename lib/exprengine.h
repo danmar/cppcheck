@@ -138,6 +138,11 @@ namespace ExprEngine {
             , maxValue(maxValue) {
         }
 
+        virtual bool isEqual(DataBase *dataBase, int value) const {
+            (void)dataBase;
+            return value >= minValue && value <= maxValue;
+        }
+
         std::string getRange() const override {
             return std::to_string(minValue) + ":" + std::to_string(maxValue);
         }
