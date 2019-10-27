@@ -1020,8 +1020,11 @@ static ExprEngine::ValuePtr executeCast(const Token *tok, Data &data)
 
 static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
 {
-    if (!tok->astOperand1() || !tok->astOperand1()->varId())
-        return ExprEngine::ValuePtr();
+    if (!tok->astOperand1() || !tok->astOperand1()->varId()) {
+        auto v = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
+        call(data.callbacks, tok, v, &data);
+        return v;
+    }
     std::shared_ptr<ExprEngine::StructValue> structValue = std::dynamic_pointer_cast<ExprEngine::StructValue>(data.getValue(tok->astOperand1()->varId(), nullptr, nullptr));
     if (!structValue) {
         if (tok->originalName() == "->") {
@@ -1033,8 +1036,11 @@ static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
                 call(data.callbacks, tok->astOperand1(), data.getValue(tok->astOperand1()->varId(), nullptr, nullptr), &data);
             }
         }
-        if (!structValue)
-            return ExprEngine::ValuePtr();
+        if (!structValue) {
+            auto v = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
+            call(data.callbacks, tok, v, &data);
+            return v;
+        }
     }
     call(data.callbacks, tok->astOperand1(), structValue, &data);
     return structValue->getValueOfMember(tok->astOperand2()->str());
