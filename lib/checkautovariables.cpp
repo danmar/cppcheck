@@ -433,6 +433,22 @@ static bool isDeadScope(const Token * tok, const Scope * scope)
     return false;
 }
 
+static const Token * getParentLifetime(const Token *tok)
+{
+    if (!tok)
+        return tok;
+    const Variable * var = tok->variable();
+    // TODO: Call getLifetimeVariable for deeper analysis
+    if (!var)
+        return tok;
+    if (var->isLocal())
+        return tok;
+    const Token * parent = getParentMember(tok);
+    if (parent != tok)
+        return getParentLifetime(parent);
+    return tok;
+}
+
 static int getPointerDepth(const Token *tok)
 {
     if (!tok)
@@ -489,23 +505,24 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
         for (const ValueFlow::Value& val:tok->values()) {
             if (!val.isLocalLifetimeValue())
                 continue;
+            const Token * tokvalue = getParentLifetime(val.tokvalue);
             if (Token::Match(tok->astParent(), "return|throw")) {
-                if (getPointerDepth(tok) < getPointerDepth(val.tokvalue))
+                if (getPointerDepth(tok) < getPointerDepth(tokvalue))
                     continue;
                 if (!isLifetimeBorrowed(tok, mSettings))
                     continue;
-                if ((val.tokvalue->variable() && isInScope(val.tokvalue->variable()->nameToken(), scope)) ||
-                    isDeadTemporary(mTokenizer->isCPP(), val.tokvalue, tok)) {
+                if ((tokvalue->variable() && isInScope(tokvalue->variable()->nameToken(), scope)) ||
+                    isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok)) {
                     errorReturnDanglingLifetime(tok, &val);
                     break;
                 }
-            } else if (val.tokvalue->variable() && isDeadScope(val.tokvalue->variable()->nameToken(), tok->scope())) {
+            } else if (tokvalue->variable() && isDeadScope(tokvalue->variable()->nameToken(), tok->scope())) {
                 errorInvalidLifetime(tok, &val);
                 break;
-            } else if (!val.tokvalue->variable() && isDeadTemporary(mTokenizer->isCPP(), val.tokvalue, tok)) {
+            } else if (!tokvalue->variable() && isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok)) {
                 errorDanglingTemporaryLifetime(tok, &val);
                 break;
-            } else if (val.tokvalue->variable() && isInScope(val.tokvalue->variable()->nameToken(), tok->scope())) {
+            } else if (tokvalue->variable() && isInScope(tokvalue->variable()->nameToken(), tok->scope())) {
                 const Variable * var = nullptr;
                 const Token * tok2 = tok;
                 if (Token::simpleMatch(tok->astParent(), "=")) {
