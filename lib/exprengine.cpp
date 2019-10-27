@@ -1072,7 +1072,7 @@ static ExprEngine::ValuePtr executeDeref(const Token *tok, Data &data)
         auto v = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
         if (tok->astOperand1()->varId()) {
             pval = std::make_shared<ExprEngine::PointerValue>(data.getNewSymbolName(), v, false, false);
-            data.assignValue(tok->astOperand1(), tok->astOperand1()->varId(), v);
+            data.assignValue(tok->astOperand1(), tok->astOperand1()->varId(), pval);
         }
         call(data.callbacks, tok, v, &data);
         return v;
