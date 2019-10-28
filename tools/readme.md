@@ -81,7 +81,7 @@ Script to generate a `times.log` file that contains timing information of the la
 
 ### * tools/donate-cpu.py
 
-Script to donate a CPU time to Cppcheck project.
+Script to donate CPU time to Cppcheck project by checking current Debian packages.
 
 ### * tools/test-my-pr.py
 
