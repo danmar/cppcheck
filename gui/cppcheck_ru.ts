@@ -297,7 +297,7 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="libraryeditargdialog.ui" line="14"/>
         <source>Edit argument</source>
-        <translation type="unfinished"></translation>
+        <translation>Редактировать аргумент</translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="20"/>
@@ -771,11 +771,11 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Enforce C++</source>
-        <translation type="obsolete">Принудительно C++</translation>
+        <translation>Принудительно C++</translation>
     </message>
     <message>
         <source>Enforce C</source>
-        <translation type="obsolete">Принудительно C</translation>
+        <translation>Принудительно C</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="392"/>
@@ -961,12 +961,12 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="mainwindow.ui" line="777"/>
         <source>&amp;Enforce C++</source>
-        <translation>Установить C++</translation>
+        <translation>Принудительно C++</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="785"/>
         <source>E&amp;nforce C</source>
-        <translation>Установить C</translation>
+        <translation>Принудительно C</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="796"/>
