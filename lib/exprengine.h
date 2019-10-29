@@ -138,7 +138,7 @@ namespace ExprEngine {
             , maxValue(maxValue) {
         }
 
-        virtual bool isEqual(DataBase *dataBase, int value) const {
+        bool isEqual(DataBase *dataBase, int value) const override {
             (void)dataBase;
             return value >= minValue && value <= maxValue;
         }
