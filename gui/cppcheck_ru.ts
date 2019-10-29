@@ -1633,12 +1633,12 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="174"/>
         <source>Undefines:</source>
-        <translation type="unfinished"></translation>
+        <translation>Удаленные макроопределения:</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="184"/>
         <source>Undefines must be separated by a semicolon. Example: UNDEF1;UNDEF2;UNDEF3</source>
-        <translation type="unfinished"></translation>
+        <translation>Удаленные макроопределения должны быть разделены точкой с запятой, например: UNDEF1;UNDEF2;UNDEF3</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="197"/>
@@ -1785,7 +1785,7 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="153"/>
         <source>Defines:</source>
-        <translation>Макросы:</translation>
+        <translation>Объявленные макроопределения:</translation>
     </message>
 </context>
 <context>
@@ -2712,12 +2712,12 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="stats.ui" line="108"/>
         <source>Defines:</source>
-        <translation>Макросы:</translation>
+        <translation>Объявленные макроопределения:</translation>
     </message>
     <message>
         <location filename="stats.ui" line="131"/>
         <source>Undefines:</source>
-        <translation type="unfinished"></translation>
+        <translation>Удаленные макроопределения:</translation>
     </message>
     <message>
         <location filename="stats.ui" line="165"/>
@@ -2863,12 +2863,12 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="statsdialog.cpp" line="178"/>
         <source>Defines</source>
-        <translation>Макросы</translation>
+        <translation>Объявленные макроопределения:</translation>
     </message>
     <message>
         <location filename="statsdialog.cpp" line="179"/>
         <source>Undefines</source>
-        <translation type="unfinished"></translation>
+        <translation>Удаленные макроопределения:</translation>
     </message>
     <message>
         <location filename="statsdialog.cpp" line="181"/>
