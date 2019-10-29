@@ -1,6 +1,6 @@
 ## Cppcheck developer and build tools
 
-##¤ * tools/astyle-client.py
+### * tools/astyle-client.py
 
 With this tool you can astyle-format arbitrary cpp/header files even if you do not have astyle on your computer.
 
@@ -79,4 +79,16 @@ Script that reduces code for a hang/false positive.
 
 Script to generate a `times.log` file that contains timing information of the last 20 revisions.
 
+### * tools/donate-cpu.py
 
+Script to donate CPU time to Cppcheck project by checking current Debian packages.
+
+### * tools/test-my-pr.py
+
+Script to compare result of working Cppcheck from your branch with master branch.
+
+### * tools/triage
+
+This tool lets you comfortably look at Cppcheck analysis results for daca packages. It automatically
+downloads the package, extracts it and jumps to the corresponding source code for a Cppcheck
+message.
