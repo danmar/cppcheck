@@ -999,7 +999,8 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
         if ((mTokenizer->isCPP() && functionName == "delete") ||
             functionName == "free" ||
             functionName == "fclose" ||
-            functionName == "realloc")
+            functionName == "realloc" ||
+            functionName == "return")
             continue;
 
         if (!CheckMemoryLeakInFunction::test_white_list(functionName, mSettings, mTokenizer->isCPP()))
