@@ -790,6 +790,14 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: a\n", errout.str());
 
+        checkUninitVar("int foo() {\n"
+                       "    int i;\n"
+                       "    if (1)\n"
+                       "        i = 11;\n"
+                       "    return i;\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar("int foo()\n"
                        "{\n"
                        "    int i;\n"

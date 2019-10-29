@@ -244,6 +244,14 @@ static void conditionAlwaysTrueOrFalse(const Token *tok, const std::map<int, Var
     if (!tok)
         return;
 
+    if (tok->hasKnownIntValue()) {
+        if (tok->getKnownIntValue() == 0)
+            *alwaysFalse = true;
+        else
+            *alwaysTrue = true;
+        return;
+    }
+
     if (tok->isName() || tok->str() == ".") {
         while (tok && tok->str() == ".")
             tok = tok->astOperand2();
