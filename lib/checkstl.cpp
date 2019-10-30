@@ -26,6 +26,7 @@
 #include "token.h"
 #include "utils.h"
 #include "astutils.h"
+#include "pathanalysis.h"
 
 #include <cstddef>
 #include <list>
