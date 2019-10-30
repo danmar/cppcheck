@@ -7620,6 +7620,12 @@ private:
                               "    a=b;\n"
                               "  }\n"
                               "}"));
+        
+        // daca@home hang
+        ASSERT_EQUALS("a{([= 0return b{([= fori0=i10!=i++;;(",
+                      testAst("a = [&]() -> std::pair<int, int> { return 0; };\n"
+                              "b = [=]() { for (i = 0; i != 10; ++i); };"));
+
     }
 
     void astcase() {

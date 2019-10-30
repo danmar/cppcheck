@@ -804,6 +804,8 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                     if (curlyBracket && curlyBracket->originalName() == "->") {
                         while (Token::Match(curlyBracket, "%name%|.|::|&|*"))
                             curlyBracket = curlyBracket->next();
+                        if (curlyBracket && curlyBracket->str() == "<" && curlyBracket->link())
+                            curlyBracket = curlyBracket->link()->next();
                     }
                     if (curlyBracket && curlyBracket->str() == "{") {
                         squareBracket->astOperand1(roundBracket);
