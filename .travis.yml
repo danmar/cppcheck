@@ -69,12 +69,11 @@ matrix:
         - make validateXML
 # Validate rule files
         - make validateRules
-# note: trusty on travis has python pygments disabled so disable these tests on travis
-## check htmlreport stuff
-#  - ./htmlreport/test_htmlreport.py
-#  - cd htmlreport
-#  - ./check.sh
-#  - cd ../
+# check htmlreport stuff
+        - ./htmlreport/test_htmlreport.py
+        - cd htmlreport
+        - ./check.sh
+        - cd ../
 # check if DESTDIR works  TODO: actually execute this
         - mkdir install_test
         - echo $CXXFLAGS
