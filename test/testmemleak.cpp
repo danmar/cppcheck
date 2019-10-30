@@ -2171,6 +2171,16 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Allocation with calloc, memcmp doesn't release it.\n"
                       "[test.cpp:2]: (error) Allocation with strdup, memcmp doesn't release it.\n", errout.str());
+
+        check("void* f(int size) {\n"
+              "    return (void*) malloc(size);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int* f(int size) {\n"
+              "    return static_cast<int*>(malloc(size));\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void missingAssignment() {
