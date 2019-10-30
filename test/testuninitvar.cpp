@@ -4272,6 +4272,15 @@ private:
                         "    if (a) {}\n"
                         "}");
         ASSERT_EQUALS("[test.cpp:8]: (error) Uninitialized variable: a\n", errout.str());
+
+        valueFlowUninit("void test(int p) {\n"
+                        "    int f;\n"
+                        "    if (p > 0)\n"
+                        "        f = 0;\n"
+                        "    if (p > 1)\n"
+                        "        f += 1;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_ipa() {
