@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <sys/time.h>
+#include <sys/mman.h>
 #ifndef __CYGWIN__
 #include <sys/epoll.h>
 #endif
@@ -148,6 +149,10 @@ void valid_code(int argInt1, va_list valist_arg, int * parg)
     printf("%d", __extension__ 0b10001000);
 
     if (__alignof__(int) == 4) {}
+
+    void * p_mmap = mmap(NULL, 1, PROT_NONE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
+    printf("%p", p_mmap);
+    munmap(p_mmap, 1);
 }
 
 void ignoreleak(void)
@@ -172,6 +177,13 @@ void memleak_xmalloc()
 {
     char *p = (char*)xmalloc(10);
     p[9] = 0;
+    // cppcheck-suppress memleak
+}
+
+void memleak_mmap()
+{
+    void * p_mmap = mmap(NULL, 1, PROT_NONE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
+    printf("%p", p_mmap);
     // cppcheck-suppress memleak
 }
 
