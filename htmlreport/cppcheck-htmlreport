@@ -10,8 +10,9 @@ import operator
 
 from collections import Counter
 from pygments import highlight
-from pygments.lexers import guess_lexer_for_filename
+from pygments.lexers import guess_lexer, guess_lexer_for_filename
 from pygments.formatters import HtmlFormatter
+from pygments.util import ClassNotFound
 from xml.sax import parse as xml_parse
 from xml.sax import SAXParseException as XmlParseException
 from xml.sax.handler import ContentHandler as XmlContentHandler
@@ -523,11 +524,14 @@ if __name__ == '__main__':
             output_file.write(HTML_HEAD_END)
             try:
                 lexer = guess_lexer_for_filename(source_filename, '')
-            except:
-                sys.stderr.write("ERROR: Couldn't determine lexer for the file' " + source_filename + " '. Won't be able to syntax highlight this file.")
-                output_file.write("\n <tr><td colspan='5'> Could not generated content because pygments failed to retrieve the determine code type.</td></tr>")
-                output_file.write("\n <tr><td colspan='5'> Sorry about this.</td></tr>")
-                continue
+            except ClassNotFound:
+                try:
+                    lexer = guess_lexer(content)
+                except ClassNotFound:
+                    sys.stderr.write("ERROR: Couldn't determine lexer for the file' " + source_filename + " '. Won't be able to syntax highlight this file.")
+                    output_file.write("\n <tr><td colspan='5'> Could not generated content because pygments failed to retrieve the determine code type.</td></tr>")
+                    output_file.write("\n <tr><td colspan='5'> Sorry about this.</td></tr>")
+                    continue
 
             if options.source_encoding:
                 lexer.encoding = options.source_encoding
