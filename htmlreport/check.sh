@@ -1,7 +1,6 @@
 #!/bin/bash -ex
 
 
-./cppcheck-htmlreport --file ../gui/test/data/xmlfiles/xmlreport_v1.xml --title "xml1 test" --report-dir . --source-dir ../test/
 ./cppcheck-htmlreport --file ../gui/test/data/xmlfiles/xmlreport_v2.xml --title "xml2 test" --report-dir . --source-dir ../test/
 echo -e "\n"
 
