@@ -6105,6 +6105,8 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
     if (call->pointer != func->pointer) {
         if (call->pointer > 1 && func->pointer == 1 && func->type == ValueType::Type::VOID)
             return ValueType::MatchResult::FALLBACK1;
+        if (call->pointer == 1 && func->pointer == 0 && func->isIntegral() && func->sign != ValueType::Sign::SIGNED)
+            return ValueType::MatchResult::FALLBACK1;
         if (call->pointer == 1 && call->type == ValueType::Type::CHAR && func->pointer == 0 && func->container && func->container->stdStringLike)
             return ValueType::MatchResult::FALLBACK2;
         return ValueType::MatchResult::NOMATCH; // TODO

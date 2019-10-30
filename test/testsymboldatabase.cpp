@@ -357,6 +357,7 @@ private:
         TEST_CASE(findFunction28);
         TEST_CASE(findFunction29);
         TEST_CASE(findFunction30);
+        TEST_CASE(findFunction31);
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
@@ -5375,7 +5376,7 @@ private:
         ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 3);
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo ( ccp ) ;");
-        ASSERT_EQUALS(true, f && f->function() == nullptr);
+        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 5);
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo ( f ) ;");
         ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 4);
@@ -5820,6 +5821,17 @@ private:
         const Token *bar = Token::findsimplematch(tokenizer.tokens(), "bar ( ) ;");
         ASSERT(bar);
         ASSERT(!bar->function());
+    }
+
+    void findFunction31() {
+        GET_SYMBOL_DB("void foo(bool);\n"
+                      "void foo(std::string s);\n"
+                      "void bar() { foo(\"123\"); }");
+        const Token *foo = Token::findsimplematch(tokenizer.tokens(), "foo ( \"123\" ) ;");
+        ASSERT(foo);
+        ASSERT(foo->function());
+        ASSERT(foo->function()->tokenDef);
+        ASSERT_EQUALS(1, foo->function()->tokenDef->linenr());
     }
 
     void findFunctionContainer() {
