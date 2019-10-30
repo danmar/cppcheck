@@ -9270,12 +9270,20 @@ void Tokenizer::findGarbageCode() const
 
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "if|while|for|switch")) { // if|while|for|switch (EXPR) { ... }
-            if (tok->previous() && !Token::Match(tok->previous(), "%name%|:|;|{|}|(|)|,")) {
+            if (tok->previous() && !Token::Match(tok->previous(), "%name%|:|;|{|}|)")) {
+                if (Token::Match(tok->previous(), "[,(]")) {
+                    const Token *prev = tok->previous();
+                    while (prev && prev->str() != "(") {
+                        if (prev->str() == ")")
+                            prev = prev->link();
+                        prev = prev->previous();
+                    }
+                    if (prev && Token::Match(prev->previous(), "%name% ("))
+                        unknownMacroError(prev->previous());
+                }
                 if (!Token::simpleMatch(tok->tokAt(-2), "operator \"\" if"))
                     syntaxError(tok);
             }
-            if (Token::Match(tok->previous(), "[(,]"))
-                continue;
             if (!Token::Match(tok->next(), "( !!)"))
                 syntaxError(tok);
             if (tok->str() != "for") {

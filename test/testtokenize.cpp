@@ -49,7 +49,6 @@ private:
 
         TEST_CASE(tokenize1);
         TEST_CASE(tokenize2);
-        TEST_CASE(tokenize3);
         TEST_CASE(tokenize4);
         TEST_CASE(tokenize5);
         TEST_CASE(tokenize6);   // array access. replace "*(p+1)" => "p[1]"
@@ -123,7 +122,6 @@ private:
         TEST_CASE(ifAddBraces5);
         TEST_CASE(ifAddBraces7);
         TEST_CASE(ifAddBraces9);
-        TEST_CASE(ifAddBraces10);
         TEST_CASE(ifAddBraces11);
         TEST_CASE(ifAddBraces12);
         TEST_CASE(ifAddBraces13);
@@ -571,20 +569,6 @@ private:
     void tokenize2() {
         const char code[] = "{ sizeof a, sizeof b }";
         ASSERT_EQUALS("{ sizeof ( a ) , sizeof ( b ) }", tokenizeAndStringify(code));
-    }
-
-    void tokenize3() {
-        const char code[] = "void foo()\n"
-                            "{\n"
-                            "    int i;\n"
-                            "    ABC(for(i=0;i<10;i++) x());\n"
-                            "}";
-        ASSERT_EQUALS("void foo ( )\n"
-                      "{\n"
-                      "int i ;\n"
-                      "ABC ( for ( i = 0 ; i < 10 ; i ++ ) x ( ) ) ;\n"
-                      "}", tokenizeAndStringify(code));
-        ASSERT_EQUALS("", errout.str());
     }
 
     void tokenize4() {
@@ -1264,13 +1248,6 @@ private:
             "for ( int k = 0 ; k < VectorSize ; k ++ ) "
             "LOG_OUT ( ID_Vector [ k ] ) "
             "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
-    }
-
-    void ifAddBraces10() {
-        // ticket #1361
-        const char code[] = "{ DEBUG(if (x) y; else z); }";
-        const char expected[] = "{ DEBUG ( if ( x ) { y ; } else z ) ; }";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
 
@@ -7708,15 +7685,18 @@ private:
         ASSERT_EQUALS("sizeof ( a ) > sizeof ( & main ) ;", tokenizeAndStringify("sizeof a > sizeof &main;"));
     }
 
-    void findGarbageCode() { // Make sure the Tokenizer::findGarbageCode() does not have FPs
+    void findGarbageCode() { // Test Tokenizer::findGarbageCode()
         // before if|for|while|switch
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { do switch (a) {} while (1); }"))
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { label: switch (a) {} }"));
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { UNKNOWN_MACRO if (a) {} }"))
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { []() -> int * {}; }"));
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { const char* var = \"1\" \"2\"; }"));
-        // TODO ASSERT_NO_THROW(tokenizeAndStringify("void f() { MACRO(switch); }"));
-        // TODO ASSERT_NO_THROW(tokenizeAndStringify("void f() { MACRO(x,switch); }"));
+
+        ASSERT_THROW(tokenizeAndStringify("void f() { MACRO(switch); }"), InternalError);
+        ASSERT_THROW(tokenizeAndStringify("void f() { MACRO(x,switch); }"), InternalError);
+        ASSERT_THROW(tokenizeAndStringify("void foo() { for_chain( if (!done) done = 1); }"), InternalError);
+        ASSERT_THROW(tokenizeAndStringify("void foo() { for_chain( a, b, if (!done) done = 1); }"), InternalError);
 
         // after (expr)
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { switch (a) int b; }"));

@@ -66,7 +66,6 @@ private:
         TEST_CASE(garbageCode10); // #6127
         TEST_CASE(garbageCode12);
         TEST_CASE(garbageCode13); // #2607
-        TEST_CASE(garbageCode14); // #5595
         TEST_CASE(garbageCode15); // #5203
         TEST_CASE(garbageCode16);
         TEST_CASE(garbageCode17);
@@ -484,10 +483,6 @@ private:
 
     void garbageCode13() {
         checkCode("struct C {} {} x");
-    }
-
-    void garbageCode14() {
-        checkCode("static f() { int i; int source[1] = { 1 }; for (i = 0; i < 4; i++) (u, if (y u.x e)) }"); // Garbage code
     }
 
     void garbageCode15() { // Ticket #5203
@@ -1274,10 +1269,6 @@ private:
                            "    (foo(s, , 2, , , 5, , 7)) abort()\n"
                            "}\n";
         ASSERT_THROW(checkCode(code), InternalError);
-
-        // #6106
-        code = " f { int i ; b2 , [ ] ( for ( i = 0 ; ; ) ) }";
-        checkCode(code);
 
         // 6122 survive garbage code
         code = "; { int i ; for ( i = 0 ; = 123 ; ) - ; }";
