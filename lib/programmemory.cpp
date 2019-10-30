@@ -5,11 +5,13 @@
 #include "symboldatabase.h"
 #include <cassert>
 
-void ProgramMemory::setValue(nonneg int varid, const ValueFlow::Value &value) {
+void ProgramMemory::setValue(nonneg int varid, const ValueFlow::Value &value)
+{
     values[varid] = value;
 }
 
-bool ProgramMemory::getIntValue(nonneg int varid, MathLib::bigint* result) const {
+bool ProgramMemory::getIntValue(nonneg int varid, MathLib::bigint* result) const
+{
     const std::map<int, ValueFlow::Value>::const_iterator it = values.find(varid);
     const bool found = it != values.end() && it->second.isIntValue();
     if (found)
@@ -17,11 +19,13 @@ bool ProgramMemory::getIntValue(nonneg int varid, MathLib::bigint* result) const
     return found;
 }
 
-void ProgramMemory::setIntValue(nonneg int varid, MathLib::bigint value) {
+void ProgramMemory::setIntValue(nonneg int varid, MathLib::bigint value)
+{
     values[varid] = ValueFlow::Value(value);
 }
 
-bool ProgramMemory::getTokValue(nonneg int varid, const Token** result) const {
+bool ProgramMemory::getTokValue(nonneg int varid, const Token** result) const
+{
     const std::map<int, ValueFlow::Value>::const_iterator it = values.find(varid);
     const bool found = it != values.end() && it->second.isTokValue();
     if (found)
@@ -29,28 +33,34 @@ bool ProgramMemory::getTokValue(nonneg int varid, const Token** result) const {
     return found;
 }
 
-bool ProgramMemory::hasValue(nonneg int varid) {
+bool ProgramMemory::hasValue(nonneg int varid)
+{
     return values.find(varid) != values.end();
 }
 
-void ProgramMemory::swap(ProgramMemory &pm) {
+void ProgramMemory::swap(ProgramMemory &pm)
+{
     values.swap(pm.values);
 }
 
-void ProgramMemory::clear() {
+void ProgramMemory::clear()
+{
     values.clear();
 }
 
-bool ProgramMemory::empty() const {
+bool ProgramMemory::empty() const
+{
     return values.empty();
 }
 
-void ProgramMemory::replace(const ProgramMemory &pm) {
+void ProgramMemory::replace(const ProgramMemory &pm)
+{
     for (auto&& p:pm.values)
         values[p.first] = p.second;
 }
 
-void ProgramMemory::insert(const ProgramMemory &pm) {
+void ProgramMemory::insert(const ProgramMemory &pm)
+{
     for (auto&& p:pm.values)
         values.insert(p);
 }
@@ -220,9 +230,9 @@ ProgramMemory getProgramMemory(const Token *tok, nonneg int varid, const ValueFl
 }
 
 void execute(const Token *expr,
-                    ProgramMemory * const programMemory,
-                    MathLib::bigint *result,
-                    bool *error)
+             ProgramMemory * const programMemory,
+             MathLib::bigint *result,
+             bool *error)
 {
     if (!expr)
         *error = true;

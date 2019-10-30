@@ -30,9 +30,9 @@ struct ProgramMemory {
 };
 
 void execute(const Token *expr,
-                    ProgramMemory * const programMemory,
-                    MathLib::bigint *result,
-                    bool *error);
+             ProgramMemory * const programMemory,
+             MathLib::bigint *result,
+             bool *error);
 
 /**
  * Is condition always false when variable has given value?
