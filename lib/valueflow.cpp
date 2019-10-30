@@ -5439,11 +5439,7 @@ static void valueFlowContainerForward(Token *tok, nonneg int containerId, ValueF
                 break;
         }
         if (Token::simpleMatch(tok, ") {") && Token::Match(tok->link()->previous(), "while|for|if (")) {
-            const Token * condTok = tok->link()->astOperand2();
             const Token *start = tok->next();
-            ProgramMemory pm = getProgramMemory(tok->link()->previous(), containerId, value);
-            if (conditionIsTrue(condTok, pm))
-                valueFlowContainerForward(start->next(), containerId, value, settings, cpp);
             if (isContainerSizeChanged(containerId, start, start->link()))
                 break;
             tok = start->link();
@@ -5451,8 +5447,6 @@ static void valueFlowContainerForward(Token *tok, nonneg int containerId, ValueF
                 start = tok->tokAt(2);
                 if (isContainerSizeChanged(containerId, start, start->link()))
                     break;
-                if (conditionIsFalse(condTok, pm))
-                    valueFlowContainerForward(start->next(), containerId, value, settings, cpp);
                 tok = start->link();
             }
         }
