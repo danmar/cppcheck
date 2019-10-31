@@ -119,7 +119,7 @@ void misra_4_1()
 }
 
 const char *s42_1 = "String containing trigraphs ??-??-??";   // 4.2
-const char *s42_2 = "String containing trigraph???=preceeded by questionmark";   // 4.2
+const char *s42_2 = "String containing trigraph???=preceded by question mark";   // 4.2
 const char *s42_3 = "No trigraph?(?'?)";
 
 void misra_4_2()
