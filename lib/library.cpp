@@ -663,12 +663,16 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
             }
             for (const tinyxml2::XMLElement *argnode = functionnode->FirstChildElement(); argnode; argnode = argnode->NextSiblingElement()) {
                 const std::string argnodename = argnode->Name();
+                int indirect = 0;
+                const char * const indirectStr = node->Attribute("size");
+                if (indirectStr)
+                    indirect = atoi(indirectStr);
                 if (argnodename == "not-bool")
                     ac.notbool = true;
                 else if (argnodename == "not-null")
                     ac.notnull = true;
                 else if (argnodename == "not-uninit")
-                    ac.notuninit = true;
+                    ac.notuninit = indirect;
                 else if (argnodename == "formatstr")
                     ac.formatstr = true;
                 else if (argnodename == "strz")
@@ -951,7 +955,7 @@ bool Library::isnullargbad(const Token *ftok, int argnr) const
     return arg && arg->notnull;
 }
 
-bool Library::isuninitargbad(const Token *ftok, int argnr) const
+bool Library::isuninitargbad(const Token *ftok, int argnr, int indirect) const
 {
     const ArgumentChecks *arg = getarg(ftok, argnr);
     if (!arg) {
@@ -961,7 +965,7 @@ bool Library::isuninitargbad(const Token *ftok, int argnr) const
         if (it != functions.cend() && it->second.formatstr && !it->second.formatstr_scan)
             return true;
     }
-    return arg && arg->notuninit;
+    return arg && arg->notuninit >= indirect;
 }
 
 
