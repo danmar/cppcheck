@@ -1004,7 +1004,20 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
                 setTokenValue(const_cast<Token *>(tok->next()), value, settings);
             }
         } else if (tok2->tokType() == Token::eChar) {
-            size_t sz = ValueFlow::getSizeOf(*tok2->valueType(), settings);
+            nonneg int sz = 0;
+            if (cpp && settings->standards.cpp >= Standards::CPP20 && tok2->isUtf8())
+                sz = 1;
+            else if (tok2->isUtf16())
+                sz = 2;
+            else if (tok2->isUtf32())
+                sz = 4;
+            else if (tok2->isLong())
+                sz = settings->sizeof_wchar_t;
+            else if ((tok2->isCChar() && !cpp) || (tok2->isCMultiChar()))
+                sz = settings->sizeof_int;
+            else
+                sz = 1;
+
             if (sz > 0) {
                 ValueFlow::Value value(sz);
                 value.setKnown();
