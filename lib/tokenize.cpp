@@ -1446,8 +1446,11 @@ void Tokenizer::simplifyTypedef()
                             tok2->insertToken("&");
                         tok2 = tok2->next();
 
+                        bool hasName = false;
                         // skip over name
-                        if (tok2->next() && tok2->next()->str() != ")") {
+                        if (tok2->next() && tok2->next()->str() != ")" && tok2->next()->str() != "," &&
+                            tok2->next()->str() != ">") {
+                            hasName = true;
                             if (tok2->next()->str() != "(")
                                 tok2 = tok2->next();
 
@@ -1458,12 +1461,13 @@ void Tokenizer::simplifyTypedef()
                             // check for array
                             if (tok2 && tok2->next() && tok2->next()->str() == "[")
                                 tok2 = tok2->next()->link();
-                        } else {
-                            // syntax error
                         }
 
                         tok2->insertToken(")");
                         Token::createMutualLinks(tok2->next(), tok3);
+
+                        if (!hasName)
+                            tok2 = tok2->next();
                     } else if (ptrMember) {
                         if (Token::simpleMatch(tok2, "* (")) {
                             tok2->insertToken("*");
