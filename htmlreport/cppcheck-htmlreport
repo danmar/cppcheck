@@ -685,7 +685,7 @@ if __name__ == '__main__':
                         continue
                 # don't print "0 style" etc, if no style warnings were found
                 if (_sum == 0):
-                    break
+                    continue
             except KeyError:
                 continue
             stats_file.write("<p>Top 10 files for " + sev + " severity, total findings: " + str(_sum) + "</br>\n")
