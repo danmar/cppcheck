@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>daca triage tool</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -122,6 +122,104 @@
       </item>
      </layout>
     </item>
+    <item>
+     <layout class="QVBoxLayout" name="filesNavigatorLayout">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QLineEdit" name="lineEdit">
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="placeholderText">
+           <string>filter</string>
+          </property>
+          <property name="clearButtonEnabled">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="inFilesButton">
+          <property name="text">
+           <string>In files</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QTabWidget" name="tabWidget">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="currentIndex">
+         <number>0</number>
+        </property>
+        <widget class="QWidget" name="fsTab">
+         <attribute name="title">
+          <string>Filesystem</string>
+         </attribute>
+         <widget class="QTreeView" name="directoryTree">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>341</width>
+            <height>381</height>
+           </rect>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="itemsExpandable">
+           <bool>true</bool>
+          </property>
+          <attribute name="headerVisible">
+           <bool>false</bool>
+          </attribute>
+         </widget>
+        </widget>
+        <widget class="QWidget" name="inFilesTab">
+         <attribute name="title">
+          <string>In Files Result</string>
+         </attribute>
+         <widget class="QListWidget" name="inFilesResult">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>341</width>
+            <height>381</height>
+           </rect>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </widget>
+       </widget>
+      </item>
+     </layout>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -130,7 +228,7 @@
      <x>0</x>
      <y>0</y>
      <width>1057</width>
-     <height>25</height>
+     <height>30</height>
     </rect>
    </property>
   </widget>
@@ -234,6 +332,70 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>lineEdit</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>fileTreeFilter(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>940</x>
+     <y>275</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>528</x>
+     <y>268</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>inFilesButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>findInFilesClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>776</x>
+     <y>68</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>413</x>
+     <y>268</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>directoryTree</sender>
+   <signal>doubleClicked(QModelIndex)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>directorytreeDoubleClick()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>780</x>
+     <y>314</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>454</x>
+     <y>268</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>inFilesResult</sender>
+   <signal>doubleClicked(QModelIndex)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>searchResultsDoubleClick()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>755</x>
+     <y>314</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>454</x>
+     <y>268</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>loadFile()</slot>
@@ -241,5 +403,9 @@
   <slot>loadFromClipboard()</slot>
   <slot>filter(QString)</slot>
   <slot>refreshResults()</slot>
+  <slot>fileTreeFilter(QString)</slot>
+  <slot>findInFilesClicked()</slot>
+  <slot>directorytreeDoubleClick()</slot>
+  <slot>searchResultsDoubleClick()</slot>
  </slots>
 </ui>

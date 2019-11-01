@@ -440,7 +440,8 @@ struct AST_state {
     bool cpp;
     int assign;
     bool inCase; // true from case to :
-    explicit AST_state(bool cpp) : depth(0), inArrayAssignment(0), cpp(cpp), assign(0), inCase(false) {}
+    const Token *functionCallEndPar;
+    explicit AST_state(bool cpp) : depth(0), inArrayAssignment(0), cpp(cpp), assign(0), inCase(false), functionCallEndPar(nullptr) {}
 };
 
 static Token * skipDecl(Token *tok)
@@ -1119,6 +1120,8 @@ static void compileComma(Token *&tok, AST_state& state)
                 tok = tok->next();
             else
                 compileBinOp(tok, state, compileAssignTernary);
+        } else if (tok->str() == ";" && state.functionCallEndPar && tok->index() < state.functionCallEndPar->index()) {
+            compileBinOp(tok, state, compileAssignTernary);
         } else break;
     }
 }
@@ -1356,6 +1359,8 @@ static Token * createAstAtToken(Token *tok, bool cpp)
 
         Token * const tok1 = tok;
         AST_state state(cpp);
+        if (Token::Match(tok, "%name% ("))
+            state.functionCallEndPar = tok->linkAt(1);
         compileExpression(tok, state);
         const Token * const endToken = tok;
         if (endToken == tok1 || !endToken)

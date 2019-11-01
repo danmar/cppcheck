@@ -20,12 +20,13 @@ env:
 before_install:
 # install needed deps
  - travis_retry sudo apt-get update -qq
- - travis_retry sudo apt-get install -qq python-pygments python3-pip qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet python3-dev liblua5.3-dev libcurl3 libcairo2-dev libsigc++-2.0-dev tidy
+ - travis_retry sudo apt-get install -qq python3-pip qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet python3-dev liblua5.3-dev libcurl3 libcairo2-dev libsigc++-2.0-dev tidy
 # Python 2 modules 
  - travis_retry python2 -m pip install --user pytest==4.6.4
  - travis_retry python2 -m pip install --user pylint
  - travis_retry python2 -m pip install --user unittest2
  - travis_retry python2 -m pip install --user pexpect # imported by tools/ci.py
+ - travis_retry python2 -m pip install --user pygments
 # Python 3 modules
  - travis_retry python3 -m pip install --user setuptools --upgrade
  - travis_retry python3 -m pip install --user pytest
@@ -33,6 +34,7 @@ before_install:
  - travis_retry python3 -m pip install --user unittest2
  - travis_retry python3 -m pip install --user pexpect # imported by tools/ci.py
  - travis_retry python3 -m pip install --user requests # imported by tools/pr.py
+ - travis_retry python3 -m pip install --user pygments
 
 matrix:
 # do notify immediately about it when a job of a build fails.

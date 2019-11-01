@@ -7122,6 +7122,7 @@ private:
         tokenList.combineOperators();
         tokenList.createLinks();
         tokenList.createLinks2();
+        tokenList.list.front()->assignIndexes();
 
         // set varid..
         for (Token *tok = tokenList.list.front(); tok; tok = tok->next()) {
@@ -7423,7 +7424,7 @@ private:
                               "y=(int)(d({e(f);}));"));
         ASSERT_EQUALS("A{,( x0= Bx1={{,( x2=",  // TODO: This is not perfect!!
                       testAst("A({},{x=0;});" // don't hang
-                              "B({x=1;},{x=2;});"));
+                              "B({x=1},{x=2});"));
         ASSERT_EQUALS("xMACROtype.T=value.1=,{({=",
                       testAst("x = { MACRO( { .type=T, .value=1 } ) }")); // don't hang: MACRO({..})
         ASSERT_EQUALS("fori10=i{;;( i--", testAst("for (i=10;i;({i--;}) ) {}"));
@@ -7520,6 +7521,7 @@ private:
         ASSERT_EQUALS("for_each_commit_graftint((void,(", testAst("extern int for_each_commit_graft(int (*)(int*), void *);"));
         ASSERT_EQUALS("for;;(", testAst("for (;;) {}"));
         ASSERT_EQUALS("xsizeofvoid(=", testAst("x=sizeof(void*)"));
+        ASSERT_EQUALS("abc;(", testAst("a(b;c)"));
     }
 
     void asttemplate() { // uninstantiated templates will have <,>,etc..
