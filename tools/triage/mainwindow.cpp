@@ -264,7 +264,7 @@ void MainWindow::findInFilesClicked() {
     ui->inFilesResult->clear();
     const QString text = ui->lineEdit->text();
 
-    QStringList filter {
+    const QStringList filter {
         "*.cpp","*.cxx","*.cc","*.c++","*.hpp","*.h","*.hxx","*.hh","*.tpp","*.txx","*.C","*.c","*.cl"
     };
 
@@ -300,7 +300,7 @@ void MainWindow::directorytreeDoubleClick() {
     showSrcFile(fsmodel.filePath(ui->directoryTree->currentIndex()), "", 1);
 }
 
-void MainWindow::searchResultsDoubleClick(/*QModelIndex idx*/) {
+void MainWindow::searchResultsDoubleClick() {
     QString filename = ui->inFilesResult->currentItem()->text();
     const auto idx = filename.lastIndexOf(':');
     const int line = filename.midRef(idx + 1).toInt();

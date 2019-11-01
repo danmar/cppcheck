@@ -29,7 +29,7 @@ public slots:
     void fileTreeFilter(QString str);
     void findInFilesClicked();
     void directorytreeDoubleClick();
-    void searchResultsDoubleClick(/*QModelIndex*/);
+    void searchResultsDoubleClick();
 
 private:
     Ui::MainWindow *ui;
