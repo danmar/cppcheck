@@ -165,6 +165,7 @@ private:
         TEST_CASE(simplifyTypedef127); // ticket #8878
         TEST_CASE(simplifyTypedef128); // ticket #9053
         TEST_CASE(simplifyTypedef129);
+        TEST_CASE(simplifyTypedef130); // ticket #9446
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -2600,6 +2601,19 @@ private:
             const char exp [] = "class c { char _a [ 4 ] ; const operator const char ( & ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
             TODO_ASSERT_EQUALS(exp, actual, tok(code, false));
         }
+    }
+
+    void simplifyTypedef130() { // #9446
+        const char code[] = "template <class, class> void a() {\n"
+                            "  typedef int(*b)[10];\n"
+                            "  a<b, b>();\n"
+                            "}";
+
+        const char exp [] = "template < class , class > void a ( ) { "
+                            "a < int ( * ) [ 10 ] , int ( * ) [ 10 ] > ( ) ; "
+                            "}";
+
+        ASSERT_EQUALS(exp, tok(code, false));
     }
 
     void simplifyTypedefFunction1() {
