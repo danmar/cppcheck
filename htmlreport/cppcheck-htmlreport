@@ -90,7 +90,7 @@ div.verbose div.content {
     margin-top: 5px;
     text-align: left;
     width: 150px;
-    height: 75%;
+    /*height: 75%;*/
     position: fixed;
     overflow: auto;
     z-index: 1;
@@ -102,7 +102,7 @@ div.verbose div.content {
     padding-left: 5px;
     text-align: left;
     width: 300px;
-    height: 75%;
+    /*height: 75%;*/
     position: fixed;
     overflow: auto;
     z-index: 1;
@@ -259,7 +259,7 @@ HTML_FOOTER = """
          </br>
          Internet: <a href="http://cppcheck.net">http://cppcheck.net</a></br>
          IRC: <a href="irc://irc.freenode.net/cppcheck">irc://irc.freenode.net/cppcheck</a></br>
-        <p>
+        </p>
       </div>
   </body>
 </html>
@@ -573,24 +573,23 @@ if __name__ == '__main__':
         except IndexError:
             cnt_min = 0
 
-        stat_fmt = "            <tr><td><input type='checkbox' onclick='toggle_class_visibility(this.id)' id='{}' name='{}' checked></td><td>{}</td><td>{}</td></tr>"
+        stat_fmt = "\n            <tr><td><input type='checkbox' onclick='toggle_class_visibility(this.id)' id='{}' name='{}' checked></td><td>{}</td><td>{}</td></tr>"
         for occurrences in reversed(range(cnt_min, cnt_max + 1)):
             for _id in [k for k, v in sorted(counter.items()) if v == occurrences]:
                 stat_html.append(stat_fmt.format(_id, _id, dict(counter.most_common())[_id], _id))
 
         output_file.write(HTML_HEAD.replace('id="menu" dir="rtl"', 'id="menu_index"', 1).replace("Defects:", "Defect summary;", 1) % (options.title, '', options.title, '', ''))
-        output_file.write('       <table>')
-        output_file.write('           <tr><th>Show</th><th>#</th><th>Defect ID</th></tr>')
-        output_file.write('<label><input type="checkbox" onclick="toggle_all()" checked/> Toggle all</label>')
+        output_file.write('\n       <label><input type="checkbox" onclick="toggle_all()" checked> Toggle all</label>')
+        output_file.write('\n       <table>')
+        output_file.write('\n           <tr><th>Show</th><th>#</th><th>Defect ID</th></tr>')
         output_file.write(''.join(stat_html))
-        output_file.write('           <tr><td></td><td>' + str(stats_count) + '</td><td>total</td></tr>')
-        output_file.write('       </table>')
-        output_file.write('       <a href="stats.html">Statistics</a></p>')
+        output_file.write('\n           <tr><td></td><td>' + str(stats_count) + '</td><td>total</td></tr>')
+        output_file.write('\n       </table>')
+        output_file.write('\n       <p><a href="stats.html">Statistics</a></p>')
         output_file.write(HTML_HEAD_END.replace("content", "content_index", 1))
-        output_file.write('       <table>\n')
 
-        output_file.write(
-            '       <tr><th>Line</th><th>Id</th><th>CWE</th><th>Severity</th><th>Message</th></tr>')
+        output_file.write('\n       <table>')
+        output_file.write('\n       <tr><th>Line</th><th>Id</th><th>CWE</th><th>Severity</th><th>Message</th></tr>')
         for filename, data in sorted(files.items()):
             if filename in decode_errors:  # don't print a link but a note
                 output_file.write("\n       <tr><td colspan='5'>%s</td></tr>" % (filename))
@@ -625,18 +624,18 @@ if __name__ == '__main__':
                     if error['id'] == 'missingInclude':
                         output_file.write(
                             '\n         <tr class="%s"><td></td><td>%s</td><td></td><td>%s</td><td>%s</td></tr>' %
-                            (error['id'], error['id'], error['severity'], error['msg']))
+                            (error['id'], error['id'], error['severity'], html_escape(error['msg'])))
                     elif (error['id'] == 'unmatchedSuppression') and filename.endswith('*'):
                         output_file.write(
                             '\n         <tr class="%s"><td></td><td>%s</td><td></td><td>%s</td><td %s>%s</td></tr>' %
                             (error['id'], error['id'], error['severity'], error_class,
-                             error['msg']))
+                             html_escape(error['msg'])))
                     else:
                         output_file.write(
                             '\n       <tr class="%s"><td><a href="%s#line-%d">%d</a></td><td>%s</td><td>%s</td><td>%s</td><td %s>%s</td></tr>' %
                             (error['id'], data['htmlfile'], error['line'], error['line'],
                              error['id'], cwe_url, error['severity'], error_class,
-                             error['msg']))
+                             html_escape(error['msg'])))
 
         output_file.write('\n       </table>')
         output_file.write(HTML_FOOTER % contentHandler.versionCppcheck)
@@ -706,5 +705,7 @@ if __name__ == '__main__':
                 if (it == 10):  # print only the top 10
                     break
             stats_file.write("</p>\n")
+
+        stats_file.write(HTML_FOOTER % contentHandler.versionCppcheck)
 
     print("\nOpen '" + options.report_dir + "/index.html' to see the results.")
