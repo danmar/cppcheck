@@ -621,7 +621,7 @@ def timeReport(resultPath: str) -> str:
             break
 
     html += '\n'
-    html += '(listed above are all suspicious timings with a factor <0.50 or >2.00)\n'
+    html += '(listed above are all suspicious timings with a factor &lt;0.50 or &gt;2.00)\n'
     html += '\n'
     if total_time_base > 0.0:
         total_time_factor = total_time_head / total_time_base
