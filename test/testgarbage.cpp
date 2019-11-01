@@ -316,7 +316,7 @@ private:
     void wrong_syntax1() {
         {
             const char code[] ="TR(kvmpio, PROTO(int rw), ARGS(rw), TP_(aa->rw;))";
-            ASSERT_EQUALS("TR ( kvmpio , PROTO ( int rw ) , ARGS ( rw ) , TP_ ( aa . rw ; ) )", checkCode(code));
+            ASSERT_THROW(checkCode(code), InternalError);
             ASSERT_EQUALS("", errout.str());
         }
 
