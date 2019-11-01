@@ -5,8 +5,10 @@
 #include <QFile>
 #include <QTextStream>
 #include <QDir>
+#include <QDirIterator>
 #include <QFileInfo>
 #include <QFileDialog>
+#include <QMimeDatabase>
 #include <ctime>
 #include <cstdlib>
 
@@ -25,6 +27,14 @@ MainWindow::MainWindow(QWidget *parent) :
     if (!workFolder.exists()) {
         workFolder.mkdir(WORK_FOLDER);
     }
+    fsmodel.setRootPath(WORK_FOLDER);
+    fsmodel.setReadOnly(true);
+    fsmodel.setFilter(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
+    ui->directoryTree->setModel(&fsmodel);
+    QHeaderView * header =  ui->directoryTree->header();
+    for(int i = 1; i < header->length(); ++i)
+        header->hideSection(i);
+    ui->directoryTree->setRootIndex(fsmodel.index(WORK_FOLDER));
 }
 
 MainWindow::~MainWindow()
@@ -220,7 +230,11 @@ void MainWindow::showResult(QListWidgetItem *item)
                 return;
         }
     }
+    showSrcFile(fileName, url, lineNumber);
+}
 
+void MainWindow::showSrcFile(const QString &fileName, const QString &url, const int lineNumber)
+{
     // Open file
     ui->code->setFocus();
     QFile f(fileName);
@@ -236,5 +250,59 @@ void MainWindow::showResult(QListWidgetItem *item)
         ui->edit1->setText(url);
         ui->edit2->setText(fileName);
         f.close();
+        ui->directoryTree->setCurrentIndex(fsmodel.index(fileName));
     }
+}
+
+void MainWindow::fileTreeFilter(QString str) {
+    fsmodel.setNameFilters(QStringList{"*" + str + "*"});
+    fsmodel.setNameFilterDisables(false);
+}
+
+void MainWindow::findInFilesClicked() {
+    ui->tabWidget->setCurrentIndex(1);
+    ui->inFilesResult->clear();
+    const QString text = ui->lineEdit->text();
+
+    QStringList filter {
+        "*.cpp","*.cxx","*.cc","*.c++","*.hpp","*.h","*.hxx","*.hh","*.tpp","*.txx","*.C","*.c","*.cl"
+    };
+
+    QMimeDatabase mimeDatabase;
+    QDirIterator it(WORK_FOLDER, filter, QDir::AllEntries | QDir::NoSymLinks | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+
+    while (it.hasNext()) {
+        const QString fileName = it.next();
+        const QMimeType mimeType = mimeDatabase.mimeTypeForFile(fileName);
+
+        if (mimeType.isValid() && !mimeType.inherits(QStringLiteral("text/plain"))) {
+            continue;
+        }
+
+        QFile file(fileName);
+        if (file.open(QIODevice::ReadOnly)) {
+            QString line;
+            int lineN = 0;
+            QTextStream in(&file);
+            while (!in.atEnd()) {
+                ++lineN;
+                line = in.readLine();
+                if (line.contains(text, Qt::CaseInsensitive)) {
+                    ui->inFilesResult->addItem(fileName + ":" + QString::number(lineN));
+                    break;
+                }
+            }
+        }
+    }
+}
+
+void MainWindow::directorytreeDoubleClick() {
+    showSrcFile(fsmodel.filePath(ui->directoryTree->currentIndex()), "", 1);
+}
+
+void MainWindow::searchResultsDoubleClick(/*QModelIndex idx*/) {
+    QString filename = ui->inFilesResult->currentItem()->text();
+    const auto idx = filename.lastIndexOf(':');
+    const int line = filename.midRef(idx + 1).toInt();
+    showSrcFile(filename.left(idx), "", line);
 }
