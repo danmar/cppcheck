@@ -4432,6 +4432,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // remove calling conventions __cdecl, __stdcall..
     simplifyCallingConvention();
 
+    addSemicolonAfterUnknownMacro();
 
     // remove some unhandled macros in global scope
     removeMacrosInGlobalScope();
@@ -5175,6 +5176,24 @@ void Tokenizer::removeMacroInVarDecl()
             if (tok3 && (tok3->isStandardType() || Token::Match(tok3,"const|static|struct|union|class")))
                 Token::eraseTokens(tok,tok2);
         }
+    }
+}
+//---------------------------------------------------------------------------
+
+void Tokenizer::addSemicolonAfterUnknownMacro()
+{
+    if (!isCPP())
+        return;
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (tok->str() != ")")
+            continue;
+        const Token *macro = tok->link() ? tok->link()->previous() : nullptr;
+        if (!macro || !macro->isName())
+            continue;
+        if (Token::simpleMatch(tok, ") try") && !Token::Match(macro, "if|for|while"))
+            tok->insertToken(";");
+        else if (Token::simpleMatch(tok, ") using"))
+            tok->insertToken(";");
     }
 }
 //---------------------------------------------------------------------------

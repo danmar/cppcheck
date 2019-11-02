@@ -406,6 +406,8 @@ private:
         TEST_CASE(removeMacrosInGlobalScope);
         TEST_CASE(removeMacroInVarDecl);
 
+        TEST_CASE(addSemicolonAfterUnknownMacro);
+
         // a = b = 0;
         TEST_CASE(multipleAssignment);
 
@@ -6422,6 +6424,13 @@ private:
         ASSERT_EQUALS("void f ( ) { const char a [ 4 ] ; }", tokenizeAndStringify("void f() { SECTION(\".data.ro\") const char a[4]; }"));
         ASSERT_EQUALS("void f ( ) { struct ABC abc ; }", tokenizeAndStringify("void f() { SECTION(\".data.ro\") struct ABC abc; }"));
         ASSERT_EQUALS("void f ( ) { CONST struct ABC abc ; }", tokenizeAndStringify("void f() { SECTION(\".data.ro\") CONST struct ABC abc; }"));
+    }
+
+    void addSemicolonAfterUnknownMacro() {
+        // #6975
+        ASSERT_EQUALS("void f ( ) { MACRO ( ) ; try { } }", tokenizeAndStringify("void f() { MACRO() try {} }"));
+        // #9376
+        ASSERT_EQUALS("MACRO ( ) ; using namespace foo ;", tokenizeAndStringify("MACRO() using namespace foo;"));
     }
 
     void multipleAssignment() {
