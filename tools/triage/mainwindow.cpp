@@ -264,12 +264,20 @@ void MainWindow::findInFilesClicked() {
     ui->inFilesResult->clear();
     const QString text = ui->lineEdit->text();
 
-    const QStringList filter {
-        "*.cpp","*.cxx","*.cc","*.c++","*.hpp","*.h","*.hxx","*.hh","*.tpp","*.txx","*.C","*.c","*.cl"
-    };
+    QStringList filter;
+    if(ui->hFilesFilter->isChecked())
+    {
+        filter << "*.hpp" << "*.h" << "*.hxx" << "*.hh" << "*.tpp" << "*.txx";
+    }
+    if(ui->srcFilter->isChecked())
+    {
+        filter << "*.cpp" << "*.cxx" << "*.cc" << "*.c++" << "*.C" << "*.c" << "*.cl";
+    }
 
     QMimeDatabase mimeDatabase;
     QDirIterator it(WORK_FOLDER, filter, QDir::AllEntries | QDir::NoSymLinks | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+
+    const auto common_path_len = WORK_FOLDER.length() + 1;  // let's remove common part of path imporve UI
 
     while (it.hasNext()) {
         const QString fileName = it.next();
@@ -288,7 +296,7 @@ void MainWindow::findInFilesClicked() {
                 ++lineN;
                 line = in.readLine();
                 if (line.contains(text, Qt::CaseInsensitive)) {
-                    ui->inFilesResult->addItem(fileName + ":" + QString::number(lineN));
+                    ui->inFilesResult->addItem(fileName.midRef(common_path_len) + ":" + QString::number(lineN));
                     break;
                 }
             }
@@ -304,5 +312,5 @@ void MainWindow::searchResultsDoubleClick() {
     QString filename = ui->inFilesResult->currentItem()->text();
     const auto idx = filename.lastIndexOf(':');
     const int line = filename.midRef(idx + 1).toInt();
-    showSrcFile(filename.left(idx), "", line);
+    showSrcFile(WORK_FOLDER + "/" + filename.leftRef(idx), "", line);
 }
