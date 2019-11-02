@@ -294,7 +294,7 @@ void MainWindow::findInFilesClicked() {
                 ++lineN;
                 line = in.readLine();
                 if (line.contains(text, Qt::CaseInsensitive)) {
-                    ui->inFilesResult->addItem(fileName.midRef(common_path_len) + QString{":"} + QString::number(lineN));
+                    ui->inFilesResult->addItem(fileName.mid(common_path_len) + QString{":"} + QString::number(lineN));
                     break;
                 }
             }
@@ -310,5 +310,5 @@ void MainWindow::searchResultsDoubleClick() {
     QString filename = ui->inFilesResult->currentItem()->text();
     const auto idx = filename.lastIndexOf(':');
     const int line = filename.midRef(idx + 1).toInt();
-    showSrcFile(WORK_FOLDER + QString{"/"} + filename.leftRef(idx), "", line);
+    showSrcFile(WORK_FOLDER + QString{"/"} + filename.left(idx), "", line);
 }
