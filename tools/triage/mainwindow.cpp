@@ -265,12 +265,10 @@ void MainWindow::findInFilesClicked() {
     const QString text = ui->lineEdit->text();
 
     QStringList filter;
-    if(ui->hFilesFilter->isChecked())
-    {
+    if(ui->hFilesFilter->isChecked()) {
         filter << "*.hpp" << "*.h" << "*.hxx" << "*.hh" << "*.tpp" << "*.txx";
     }
-    if(ui->srcFilter->isChecked())
-    {
+    if(ui->srcFilter->isChecked()) {
         filter << "*.cpp" << "*.cxx" << "*.cc" << "*.c++" << "*.C" << "*.c" << "*.cl";
     }
 
