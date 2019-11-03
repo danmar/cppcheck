@@ -16,6 +16,7 @@ import sys
 import shutil
 import glob
 import os
+import re
 import datetime
 import time
 
@@ -82,13 +83,21 @@ def getpackages():
     #
 
     path = None
+    previous_path = ''
     archives = []
     filename = None
     for line in lines:
         line = line.strip()
         if len(line) < 4:
             if filename:
-                archives.append(DEBIAN[0] + path + '/' + filename)
+                res1 = re.match(r'(.*)[-.][0-9.]+$', path)
+                res2 = re.match(r'(.*)[-.][0-9.]+$', previous_path)
+                if res1 is None or res2 is None or res1.group(1) != res2.group(1):
+                    archives.append(path + '/' + filename)
+                else:
+                    archives[-1] = path + '/' + filename
+            if path:
+                previous_path = path
             path = None
             filename = None
         elif line.startswith('./pool/main/'):
