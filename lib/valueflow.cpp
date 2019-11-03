@@ -3995,6 +3995,8 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
                 const Variable *var = varTok->variable();
                 if (!var)
                     return false;
+                if (!var->isLocal() && !var->isArgument())
+                    return false;
                 const Scope *scope = var->scope();
                 if (!scope)
                     return false;
