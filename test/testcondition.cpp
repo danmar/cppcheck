@@ -2846,6 +2846,16 @@ private:
               "}");
         TODO_ASSERT_EQUALS("function argument is always true? however is code really weird/suspicious?", "", errout.str());
 
+        check("bool foo(int bar) {\n"
+              "  bool ret = false;\n"
+              "  if (bar == 1)\n"
+              "    return ret;\n" // <- #9326 - FP condition is always false
+              "  if (bar == 2)\n"
+              "    ret = true;\n"
+              "  return ret;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f1(const std::string &s) { if(s.empty()) if(s.size() == 0) {}} ");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Condition 's.size()==0' is always true\n", errout.str());
 
