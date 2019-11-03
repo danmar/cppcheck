@@ -1222,8 +1222,11 @@ static void createAstAtTokenInner(Token * const tok1, const Token *endToken, boo
 static Token * findAstTop(Token *tok1, Token *tok2)
 {
     for (Token *tok = tok1; tok && (tok != tok2); tok = tok->next()) {
-        if (tok->astParent() || tok->astOperand1() || tok->astOperand2())
-            return tok->astTop();
+        if (tok->astParent() || tok->astOperand1() || tok->astOperand2()) {
+            while (tok->astParent() && tok->astParent()->index() >= tok1->index() && tok->astParent()->index() <= tok2->index())
+                tok = tok->astParent();
+            return tok;
+        }
         if (Token::simpleMatch(tok, "( {"))
             tok = tok->link();
     }

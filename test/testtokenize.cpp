@@ -7473,7 +7473,6 @@ private:
         ASSERT_EQUALS("Abc({newreturn", testAst("return new A {b(c)};"));
         ASSERT_EQUALS("a{{return", testAst("return{{a}};"));
         ASSERT_EQUALS("a{b{,{return", testAst("return{{a},{b}};"));
-        ASSERT_EQUALS("abc{d{,{(=", testAst("a = b({ c{}, d{} });"));
     }
 
     void astbrackets() { // []
@@ -7530,7 +7529,9 @@ private:
         ASSERT_EQUALS("for_each_commit_graftint((void,(", testAst("extern int for_each_commit_graft(int (*)(int*), void *);"));
         ASSERT_EQUALS("for;;(", testAst("for (;;) {}"));
         ASSERT_EQUALS("xsizeofvoid(=", testAst("x=sizeof(void*)"));
+        ASSERT_EQUALS("abc{d{,{(=", testAst("a = b({ c{}, d{} });"));
         ASSERT_EQUALS("abc;(", testAst("a(b;c)"));
+        ASSERT_THROW(testAst("a({ for(a;b;c){} });"), InternalError);
     }
 
     void asttemplate() { // uninstantiated templates will have <,>,etc..
