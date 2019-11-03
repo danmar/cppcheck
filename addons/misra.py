@@ -727,7 +727,7 @@ class MisraChecker:
         # Prefix to ignore when matching suppression files.
         self.filePrefix = None
 
-        # Statistics of all violations suppressed per rule
+        # Number of all violations suppressed per rule
         self.suppressionStats   = dict()
 
         self.stdversion = stdversion
@@ -2154,10 +2154,13 @@ class MisraChecker:
                 ruleItemList.append(line_symbol)
 
 
-    def isRuleSuppressed(self, location, ruleNum):
+    def isRuleSuppressed(self, file, linenr, ruleNum):
         """
         Check to see if a rule is suppressed.
-        ruleNum is the rule number in hundreds format
+
+        :param ruleNum: is the rule number in hundreds format
+        :param file: File name of checked location
+        :param linenr: Line number of checked location
 
         If the rule exists in the dict then check for a filename
         If the filename is None then rule is suppressed globally
@@ -2172,15 +2175,14 @@ class MisraChecker:
 
         """
         ruleIsSuppressed = False
-        linenr = location.linenr
 
         # Remove any prefix listed in command arguments from the filename.
         filename = None
-        if location.file is not None:
+        if file is not None:
             if self.filePrefix is not None:
-                filename = remove_file_prefix(location.file, self.filePrefix)
+                filename = remove_file_prefix(file, self.filePrefix)
             else:
-                filename = os.path.basename(location.file)
+                filename = os.path.basename(file)
 
         if ruleNum in self.suppressedRules:
             fileDict = self.suppressedRules[ruleNum]
@@ -2255,7 +2257,7 @@ class MisraChecker:
                         else:
                             item_str = str(item[0])
 
-                        outlist.append("%s: %s: %s (%d locations suppressed)" % (float(ruleNum)/100,fname,item_str, len(self.suppressionStats.get(ruleNum, []))))
+                        outlist.append("%s: %s: %s (%d locations suppressed)" % (float(ruleNum)/100,fname,item_str, self.suppressionStats.get(ruleNum, 0)))
 
             for line in sorted(outlist, reverse=True):
                 print("  %s" % line)
@@ -2289,11 +2291,10 @@ class MisraChecker:
 
         if self.settings.verify:
             self.verify_actual.append(str(location.linenr) + ':' + str(num1) + '.' + str(num2))
-        elif self.isRuleSuppressed(location, ruleNum):
+        elif self.isRuleSuppressed(location.file, location.linenr, ruleNum):
             # Error is suppressed. Ignore
-            if not ruleNum in self.suppressionStats:
-                self.suppressionStats[ruleNum] = []
-            self.suppressionStats[ruleNum].append(location)
+            self.suppressionStats.setdefault(ruleNum, 0)
+            self.suppressionStats[ruleNum] += 1
             return
         else:
             errorId = 'c2012-' + str(num1) + '.' + str(num2)
