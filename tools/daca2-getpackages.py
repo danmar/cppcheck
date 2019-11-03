@@ -90,8 +90,12 @@ def getpackages():
         line = line.strip()
         if len(line) < 4:
             if filename:
-                res1 = re.match(r'(.*)[-.][0-9.]+$', path)
-                res2 = re.match(r'(.*)[-.][0-9.]+$', previous_path)
+                res1 = re.match(r'(.*)-[0-9.]+$', path)
+                if res1 is None:
+                    res1 = re.match(r'(.*)[-.][0-9.]+$', path)
+                res2 = re.match(r'(.*)-[0-9.]+$', previous_path)
+                if res2 is None:
+                    res2 = re.match(r'(.*)[-.][0-9.]+$', previous_path)
                 if res1 is None or res2 is None or res1.group(1) != res2.group(1):
                     archives.append(path + '/' + filename)
                 else:
@@ -110,4 +114,5 @@ def getpackages():
 
 
 for p in getpackages():
-    print(p)
+    print(DEBIAN[0] + p)
+
