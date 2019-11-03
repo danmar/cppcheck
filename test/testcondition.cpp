@@ -2833,6 +2833,19 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (style) Condition '!x' is always true\n", errout.str());
 
+        check("bool f(int x) {\n"
+              "  if(x == 0) { x++; return x == 0; } \n"
+              "  return false;\n"
+              "}");
+        TODO_ASSERT_EQUALS("return value is always true?", "", errout.str());
+
+        check("void f() {\n" // #6898 (Token::expressionString)
+              "  int x = 0;\n"
+              "  A(x++ == 1);\n"
+              "  A(x++ == 2);\n"
+              "}");
+        TODO_ASSERT_EQUALS("function argument is always true? however is code really weird/suspicious?", "", errout.str());
+
         check("void f1(const std::string &s) { if(s.empty()) if(s.size() == 0) {}} ");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Condition 's.size()==0' is always true\n", errout.str());
 
