@@ -2154,12 +2154,12 @@ class MisraChecker:
                 ruleItemList.append(line_symbol)
 
 
-    def isRuleSuppressed(self, file, linenr, ruleNum):
+    def isRuleSuppressed(self, file_path, linenr, ruleNum):
         """
         Check to see if a rule is suppressed.
 
         :param ruleNum: is the rule number in hundreds format
-        :param file: File name of checked location
+        :param file_path: File path of checked location
         :param linenr: Line number of checked location
 
         If the rule exists in the dict then check for a filename
@@ -2178,11 +2178,11 @@ class MisraChecker:
 
         # Remove any prefix listed in command arguments from the filename.
         filename = None
-        if file is not None:
+        if file_path is not None:
             if self.filePrefix is not None:
-                filename = remove_file_prefix(file, self.filePrefix)
+                filename = remove_file_prefix(file_path, self.filePrefix)
             else:
-                filename = os.path.basename(file)
+                filename = os.path.basename(file_path)
 
         if ruleNum in self.suppressedRules:
             fileDict = self.suppressedRules[ruleNum]
