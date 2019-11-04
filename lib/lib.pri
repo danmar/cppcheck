@@ -39,9 +39,11 @@ HEADERS += $${PWD}/analyzerinfo.h \
            $${PWD}/library.h \
            $${PWD}/mathlib.h \
            $${PWD}/path.h \
+           $${PWD}/pathanalysis.h \
            $${PWD}/pathmatch.h \
            $${PWD}/platform.h \
            $${PWD}/preprocessor.h \
+           $${PWD}/programmemory.h \
            $${PWD}/settings.h \
            $${PWD}/suppressions.h \
            $${PWD}/symboldatabase.h \
@@ -88,9 +90,11 @@ SOURCES += $${PWD}/analyzerinfo.cpp \
            $${PWD}/library.cpp \
            $${PWD}/mathlib.cpp \
            $${PWD}/path.cpp \
+           $${PWD}/pathanalysis.cpp \
            $${PWD}/pathmatch.cpp \
            $${PWD}/platform.cpp \
            $${PWD}/preprocessor.cpp \
+           $${PWD}/programmemory.cpp \
            $${PWD}/settings.cpp \
            $${PWD}/suppressions.cpp \
            $${PWD}/symboldatabase.cpp \

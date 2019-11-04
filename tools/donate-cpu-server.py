@@ -1,5 +1,7 @@
+#!/usr/bin/env python3
 
 # Server for 'donate-cpu.py'
+# Runs only under Python 3.
 
 import glob
 import json
@@ -10,7 +12,9 @@ import datetime
 import time
 from threading import Thread
 import sys
-import urllib
+import urllib.request
+import urllib.parse
+import urllib.error
 import logging
 import logging.handlers
 import operator
@@ -18,7 +22,7 @@ import operator
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.2.0"
+SERVER_VERSION = "1.3.0"
 
 OLD_VERSION = '1.89'
 
@@ -51,15 +55,15 @@ def handle_uncaught_exception(exc_type, exc_value, exc_traceback):
 sys.excepthook = handle_uncaught_exception
 
 
-def strDateTime():
+def strDateTime() -> str:
     return datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
 
 
-def dateTimeFromStr(datestr):
+def dateTimeFromStr(datestr: str) -> datetime.datetime:
     return datetime.datetime.strptime(datestr, '%Y-%m-%d %H:%M')
 
 
-def overviewReport():
+def overviewReport() -> str:
     html = '<html><head><title>daca@home</title></head><body>\n'
     html += '<h1>daca@home</h1>\n'
     html += '<a href="crash.html">Crash report</a><br>\n'
@@ -77,7 +81,7 @@ def overviewReport():
     return html
 
 
-def fmt(a, b, c=None, d=None, e=None, link=True):
+def fmt(a: str, b: str, c: str = None, d: str = None, e: str = None, link: bool = True) -> str:
     column_width = [40, 10, 5, 6, 6, 8]
     ret = a
     while len(ret) < column_width[0]:
@@ -101,7 +105,7 @@ def fmt(a, b, c=None, d=None, e=None, link=True):
     return ret
 
 
-def latestReport(latestResults):
+def latestReport(latestResults: list) -> str:
     html = '<html><head><title>Latest daca@home results</title></head><body>\n'
     html += '<h1>Latest daca@home results</h1>\n'
     html += '<pre>\n<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', 'Diff', link=False) + '</b>\n'
@@ -140,7 +144,7 @@ def latestReport(latestResults):
     return html
 
 
-def crashReport(results_path):
+def crashReport(results_path: str) -> str:
     html = '<html><head><title>Crash report</title></head><body>\n'
     html += '<h1>Crash report</h1>\n'
     html += '<pre>\n'
@@ -203,7 +207,7 @@ def crashReport(results_path):
     html += '</pre>\n'
     html += '<pre>\n'
     html += '<b>Stack traces</b>\n'
-    for stack_trace in sorted(stack_traces.values(), key=lambda x: x['n'], reverse=True):
+    for stack_trace in sorted(list(stack_traces.values()), key=lambda x: x['n'], reverse=True):
         html += 'Packages: ' + ' '.join(['<a href="' + p + '">' + p + '</a>' for p in stack_trace['packages']]) + '\n'
         html += stack_trace['crash_line'] + '\n'
         html += stack_trace['code_line'] + '\n'
@@ -214,7 +218,7 @@ def crashReport(results_path):
     return html
 
 
-def staleReport(results_path):
+def staleReport(results_path: str) -> str:
     html = '<html><head><title>Stale report</title></head><body>\n'
     html += '<h1>Stale report</h1>\n'
     html += '<pre>\n'
@@ -242,7 +246,7 @@ def staleReport(results_path):
     return html
 
 
-def diffReportFromDict(out, today):
+def diffReportFromDict(out: dict, today: str) -> str:
     html = '<pre>\n'
     html += '<b>MessageID                           ' + OLD_VERSION + '    Head</b>\n'
     sum0 = 0
@@ -280,7 +284,7 @@ def diffReportFromDict(out, today):
     return html
 
 
-def diffReport(resultsPath):
+def diffReport(resultsPath: str) -> str:
     out = {}
     outToday = {}
     today = strDateTime()[:10]
@@ -315,7 +319,7 @@ def diffReport(resultsPath):
     return html
 
 
-def generate_package_diff_statistics(filename):
+def generate_package_diff_statistics(filename: str) -> None:
     is_diff = False
 
     sums = {}
@@ -355,7 +359,7 @@ def generate_package_diff_statistics(filename):
         os.remove(filename_diff)
 
 
-def diffMessageIdReport(resultPath, messageId):
+def diffMessageIdReport(resultPath: str, messageId: str) -> str:
     text = messageId + '\n'
     e = '[' + messageId + ']\n'
     for filename in sorted(glob.glob(resultPath + '/*.diff')):
@@ -382,7 +386,7 @@ def diffMessageIdReport(resultPath, messageId):
     return text
 
 
-def diffMessageIdTodayReport(resultPath, messageId):
+def diffMessageIdTodayReport(resultPath: str, messageId: str) -> str:
     text = messageId + '\n'
     e = '[' + messageId + ']\n'
     today = strDateTime()[:10]
@@ -417,7 +421,7 @@ def diffMessageIdTodayReport(resultPath, messageId):
     return text
 
 
-def headReportFromDict(out, today):
+def headReportFromDict(out: dict, today: str) -> str:
     html = '<pre>\n'
     html += '<b>MessageID                                  Count</b>\n'
     sumTotal = 0
@@ -445,7 +449,7 @@ def headReportFromDict(out, today):
     return html
 
 
-def headReport(resultsPath):
+def headReport(resultsPath: str) -> str:
     out = {}
     outToday = {}
     today = strDateTime()[:10]
@@ -509,7 +513,7 @@ def headReport(resultsPath):
     return html
 
 
-def headMessageIdReport(resultPath, messageId):
+def headMessageIdReport(resultPath: str, messageId: str) -> str:
     text = messageId + '\n'
     e = '[' + messageId + ']\n'
     for filename in sorted(glob.glob(resultPath + '/*')):
@@ -534,7 +538,7 @@ def headMessageIdReport(resultPath, messageId):
     return text
 
 
-def headMessageIdTodayReport(resultPath, messageId):
+def headMessageIdTodayReport(resultPath: str, messageId: str) -> str:
     text = messageId + '\n'
     e = '[' + messageId + ']\n'
     today = strDateTime()[:10]
@@ -565,7 +569,7 @@ def headMessageIdTodayReport(resultPath, messageId):
     return text
 
 
-def timeReport(resultPath):
+def timeReport(resultPath: str) -> str:
     html = '<html><head><title>Time report</title></head><body>\n'
     html += '<h1>Time report</h1>\n'
     html += '<pre>\n'
@@ -617,6 +621,8 @@ def timeReport(resultPath):
             break
 
     html += '\n'
+    html += '(listed above are all suspicious timings with a factor &lt;0.50 or &gt;2.00)\n'
+    html += '\n'
     if total_time_base > 0.0:
         total_time_factor = total_time_head / total_time_base
     else:
@@ -634,7 +640,7 @@ def timeReport(resultPath):
     return html
 
 
-def check_library_report(result_path, message_id):
+def check_library_report(result_path: str, message_id: str) -> str:
     if message_id not in ('checkLibraryNoReturn', 'checkLibraryFunction', 'checkLibraryUseIgnore'):
         error_message = 'Invalid value ' + message_id + ' for message_id parameter.'
         print(error_message)
@@ -669,18 +675,18 @@ def check_library_report(result_path, message_id):
             if not info_messages:
                 continue
             if line.endswith('[' + message_id + ']\n'):
-                if message_id is 'checkLibraryFunction':
+                if message_id == 'checkLibraryFunction':
                     function_name = line[(line.find('for function ') + len('for function ')):line.rfind('[') - 1]
                 else:
                     function_name = line[(line.find(': Function ') + len(': Function ')):line.rfind('should have') - 1]
                 function_counts[function_name] = function_counts.setdefault(function_name, 0) + 1
 
     function_details_list = []
-    for function_name, count in sorted(function_counts.items(), key=operator.itemgetter(1), reverse=True):
+    for function_name, count in sorted(list(function_counts.items()), key=operator.itemgetter(1), reverse=True):
         if len(function_details_list) >= functions_shown_max:
             break
         function_details_list.append(str(count).rjust(column_widths[0]) + ' ' +
-                '<a href="check_library-' + urllib.quote_plus(function_name) + '">' + function_name + '</a>\n')
+                '<a href="check_library-' + urllib.parse.quote_plus(function_name) + '">' + function_name + '</a>\n')
 
     html += ''.join(function_details_list)
     html += '</pre>\n'
@@ -690,9 +696,9 @@ def check_library_report(result_path, message_id):
 
 
 # Lists all checkLibrary* messages regarding the given function name
-def check_library_function_name(result_path, function_name):
+def check_library_function_name(result_path: str, function_name: str) -> str:
     print('check_library_function_name')
-    function_name = urllib.unquote_plus(function_name)
+    function_name = urllib.parse.unquote_plus(function_name)
     output_lines_list = []
     for filename in glob.glob(result_path + '/*'):
         if not os.path.isfile(filename):
@@ -722,7 +728,8 @@ def check_library_function_name(result_path, function_name):
     return ''.join(output_lines_list)
 
 
-def sendAll(connection, data):
+def sendAll(connection: socket.socket, text: str) -> None:
+    data = text.encode('utf-8', 'ignore')
     while data:
         num = connection.send(data)
         if num < len(data):
@@ -731,7 +738,7 @@ def sendAll(connection, data):
             data = None
 
 
-def httpGetResponse(connection, data, contentType):
+def httpGetResponse(connection: socket.socket, data: str, contentType: str) -> None:
     resp = 'HTTP/1.1 200 OK\r\n'
     resp += 'Connection: close\r\n'
     resp += 'Content-length: ' + str(len(data)) + '\r\n'
@@ -741,7 +748,7 @@ def httpGetResponse(connection, data, contentType):
 
 
 class HttpClientThread(Thread):
-    def __init__(self, connection, cmd, resultPath, latestResults):
+    def __init__(self, connection: socket.socket, cmd: str, resultPath: str, latestResults: list) -> None:
         Thread.__init__(self)
         self.connection = connection
         self.cmd = cmd[:cmd.find('\n')]
@@ -812,7 +819,7 @@ class HttpClientThread(Thread):
                 filename = resultPath + '/' + url
                 if not os.path.isfile(filename):
                     print('HTTP/1.1 404 Not Found')
-                    self.connection.send('HTTP/1.1 404 Not Found\r\n\r\n')
+                    self.connection.send(b'HTTP/1.1 404 Not Found\r\n\r\n')
                 else:
                     f = open(filename, 'rt')
                     data = f.read()
@@ -823,7 +830,7 @@ class HttpClientThread(Thread):
             self.connection.close()
 
 
-def server(server_address_port, packages, packageIndex, resultPath):
+def server(server_address_port: int, packages: list, packageIndex: int, resultPath: str) -> None:
     socket.setdefaulttimeout(30)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -845,9 +852,14 @@ def server(server_address_port, packages, packageIndex, resultPath):
         print('[' + strDateTime() + '] waiting for a connection')
         connection, client_address = sock.accept()
         try:
-            cmd = connection.recv(128)
+            bytes_received = connection.recv(128)
+            cmd = bytes_received.decode('utf-8', 'ignore')
         except socket.error:
             connection.close()
+            continue
+        except UnicodeDecodeError as e:
+            connection.close()
+            print('Error: Decoding failed: ' + str(e))
             continue
         if cmd.find('\n') < 1:
             continue
@@ -861,7 +873,7 @@ def server(server_address_port, packages, packageIndex, resultPath):
         elif cmd == 'GetCppcheckVersions\n':
             reply = 'head ' + OLD_VERSION
             print('[' + strDateTime() + '] GetCppcheckVersions: ' + reply)
-            connection.send(reply)
+            connection.send(reply.encode('utf-8', 'ignore'))
             connection.close()
         elif cmd == 'get\n':
             pkg = packages[packageIndex]
@@ -874,19 +886,25 @@ def server(server_address_port, packages, packageIndex, resultPath):
             f.close()
 
             print('[' + strDateTime() + '] get:' + pkg)
-            connection.send(pkg)
+            connection.send(pkg.encode('utf-8', 'ignore'))
             connection.close()
         elif cmd.startswith('write\nftp://'):
             # read data
             data = cmd[cmd.find('ftp'):]
             try:
-                t = 0
+                t = 0.0
                 max_data_size = 2 * 1024 * 1024
                 while (len(data) < max_data_size) and (not data.endswith('\nDONE')) and (t < 10):
-                    d = connection.recv(1024)
-                    if d:
-                        t = 0
-                        data += d
+                    bytes_received = connection.recv(1024)
+                    if bytes_received:
+                        try:
+                            text_received = bytes_received.decode('utf-8', 'ignore')
+                        except UnicodeDecodeError as e:
+                            print('Error: Decoding failed: ' + str(e))
+                            data = ''
+                            break
+                        t = 0.0
+                        data += text_received
                     else:
                         time.sleep(0.2)
                         t += 0.2
@@ -941,13 +959,19 @@ def server(server_address_port, packages, packageIndex, resultPath):
             # read data
             data = cmd[11:]
             try:
-                t = 0
+                t = 0.0
                 max_data_size = 1024 * 1024
                 while (len(data) < max_data_size) and (not data.endswith('\nDONE')) and (t < 10):
-                    d = connection.recv(1024)
-                    if d:
-                        t = 0
-                        data += d
+                    bytes_received = connection.recv(1024)
+                    if bytes_received:
+                        try:
+                            text_received = bytes_received.decode('utf-8', 'ignore')
+                        except UnicodeDecodeError as e:
+                            print('Error: Decoding failed: ' + str(e))
+                            data = ''
+                            break
+                        t = 0.0
+                        data += text_received
                     else:
                         time.sleep(0.2)
                         t += 0.2
@@ -978,7 +1002,7 @@ def server(server_address_port, packages, packageIndex, resultPath):
                 f.write(strDateTime() + '\n' + data)
         elif cmd == 'getPackagesCount\n':
             packages_count = str(len(packages))
-            connection.send(packages_count)
+            connection.send(packages_count.encode('utf-8', 'ignore'))
             connection.close()
             print('[' + strDateTime() + '] getPackagesCount: ' + packages_count)
             continue
@@ -986,7 +1010,7 @@ def server(server_address_port, packages, packageIndex, resultPath):
             request_idx = abs(int(cmd[len('getPackageIdx:'):]))
             if request_idx < len(packages):
                 pkg = packages[request_idx]
-                connection.send(pkg)
+                connection.send(pkg.encode('utf-8', 'ignore'))
                 connection.close()
                 print('[' + strDateTime() + '] getPackageIdx: ' + pkg)
             else:
@@ -1032,4 +1056,3 @@ if __name__ == "__main__":
         server(server_address_port, packages, packageIndex, resultPath)
     except socket.timeout:
         print('Timeout!')
-

@@ -456,9 +456,9 @@ static int getPointerDepth(const Token *tok)
     return tok->valueType() ? tok->valueType()->pointer : 0;
 }
 
-static bool isDeadTemporary(bool cpp, const Token* tok, const Token* expr)
+static bool isDeadTemporary(bool cpp, const Token* tok, const Token* expr, const Library* library)
 {
-    if (!isTemporary(cpp, tok))
+    if (!isTemporary(cpp, tok, library))
         return false;
     if (expr && !precedes(nextAfterAstRightmostLeaf(tok->astTop()), nextAfterAstRightmostLeaf(expr->astTop())))
         return false;
@@ -485,7 +485,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                     isInScope(var->nameToken(), tok->scope())) {
                     errorReturnReference(tok, lt.errorPath, lt.inconclusive);
                     break;
-                } else if (isDeadTemporary(mTokenizer->isCPP(), lt.token, nullptr)) {
+                } else if (isDeadTemporary(mTokenizer->isCPP(), lt.token, nullptr, &mSettings->library)) {
                     errorReturnTempReference(tok, lt.errorPath, lt.inconclusive);
                     break;
                 }
@@ -512,14 +512,14 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                 if (!isLifetimeBorrowed(tok, mSettings))
                     continue;
                 if ((tokvalue->variable() && isInScope(tokvalue->variable()->nameToken(), scope)) ||
-                    isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok)) {
+                    isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok, &mSettings->library)) {
                     errorReturnDanglingLifetime(tok, &val);
                     break;
                 }
             } else if (tokvalue->variable() && isDeadScope(tokvalue->variable()->nameToken(), tok->scope())) {
                 errorInvalidLifetime(tok, &val);
                 break;
-            } else if (!tokvalue->variable() && isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok)) {
+            } else if (!tokvalue->variable() && isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok, &mSettings->library)) {
                 errorDanglingTemporaryLifetime(tok, &val);
                 break;
             } else if (tokvalue->variable() && isInScope(tokvalue->variable()->nameToken(), tok->scope())) {

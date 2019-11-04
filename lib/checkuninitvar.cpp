@@ -244,6 +244,14 @@ static void conditionAlwaysTrueOrFalse(const Token *tok, const std::map<int, Var
     if (!tok)
         return;
 
+    if (tok->hasKnownIntValue()) {
+        if (tok->getKnownIntValue() == 0)
+            *alwaysFalse = true;
+        else
+            *alwaysTrue = true;
+        return;
+    }
+
     if (tok->isName() || tok->str() == ".") {
         while (tok && tok->str() == ".")
             tok = tok->astOperand2();
@@ -712,7 +720,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                     continue;
                 }
             }
-            if (var.isPointer() && (var.typeStartToken()->isStandardType() || var.typeStartToken()->isEnumType() || (var.type() && var.type()->needInitialization == Type::NeedInitialization::True)) && Token::simpleMatch(tok->next(), "= new")) {
+            if (mTokenizer->isCPP() && var.isPointer() && (var.typeStartToken()->isStandardType() || var.typeStartToken()->isEnumType() || (var.type() && var.type()->needInitialization == Type::NeedInitialization::True)) && Token::simpleMatch(tok->next(), "= new")) {
                 *alloc = CTOR_CALL;
 
                 // type has constructor(s)

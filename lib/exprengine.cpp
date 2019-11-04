@@ -23,6 +23,7 @@
 #include "tokenize.h"
 
 #include <cstdlib>
+#include <cstring>
 #include <limits>
 #include <memory>
 #include <iostream>
@@ -1019,8 +1020,11 @@ static ExprEngine::ValuePtr executeCast(const Token *tok, Data &data)
 
 static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
 {
-    if (!tok->astOperand1() || !tok->astOperand1()->varId())
-        return ExprEngine::ValuePtr();
+    if (!tok->astOperand1() || !tok->astOperand1()->varId()) {
+        auto v = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
+        call(data.callbacks, tok, v, &data);
+        return v;
+    }
     std::shared_ptr<ExprEngine::StructValue> structValue = std::dynamic_pointer_cast<ExprEngine::StructValue>(data.getValue(tok->astOperand1()->varId(), nullptr, nullptr));
     if (!structValue) {
         if (tok->originalName() == "->") {
@@ -1032,8 +1036,11 @@ static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
                 call(data.callbacks, tok->astOperand1(), data.getValue(tok->astOperand1()->varId(), nullptr, nullptr), &data);
             }
         }
-        if (!structValue)
-            return ExprEngine::ValuePtr();
+        if (!structValue) {
+            auto v = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
+            call(data.callbacks, tok, v, &data);
+            return v;
+        }
     }
     call(data.callbacks, tok->astOperand1(), structValue, &data);
     return structValue->getValueOfMember(tok->astOperand2()->str());
@@ -1061,19 +1068,26 @@ static ExprEngine::ValuePtr executeAddressOf(const Token *tok, Data &data)
 static ExprEngine::ValuePtr executeDeref(const Token *tok, Data &data)
 {
     ExprEngine::ValuePtr pval = executeExpression(tok->astOperand1(), data);
-    if (pval) {
-        auto addressOf = std::dynamic_pointer_cast<ExprEngine::AddressOfValue>(pval);
-        if (addressOf) {
-            auto val = data.getValue(addressOf->varId, tok->valueType(), tok);
-            call(data.callbacks, tok, val, &data);
-            return val;
+    if (!pval) {
+        auto v = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
+        if (tok->astOperand1()->varId()) {
+            pval = std::make_shared<ExprEngine::PointerValue>(data.getNewSymbolName(), v, false, false);
+            data.assignValue(tok->astOperand1(), tok->astOperand1()->varId(), pval);
         }
-        auto pointer = std::dynamic_pointer_cast<ExprEngine::PointerValue>(pval);
-        if (pointer) {
-            auto val = pointer->data;
-            call(data.callbacks, tok, val, &data);
-            return val;
-        }
+        call(data.callbacks, tok, v, &data);
+        return v;
+    }
+    auto addressOf = std::dynamic_pointer_cast<ExprEngine::AddressOfValue>(pval);
+    if (addressOf) {
+        auto val = data.getValue(addressOf->varId, tok->valueType(), tok);
+        call(data.callbacks, tok, val, &data);
+        return val;
+    }
+    auto pointer = std::dynamic_pointer_cast<ExprEngine::PointerValue>(pval);
+    if (pointer) {
+        auto val = pointer->data;
+        call(data.callbacks, tok, val, &data);
+        return val;
     }
     return ExprEngine::ValuePtr();
 }
@@ -1443,7 +1457,7 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
 void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings)
 {
     std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> divByZero = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
-        if (!Token::Match(tok->astParent(), "[/%]"))
+        if (!tok->astParent() || !std::strchr("/%", tok->astParent()->str()[0]))
             return;
         if (tok->astParent()->astOperand2() == tok && value.isEqual(dataBase, 0)) {
             std::list<const Token*> callstack{tok->astParent()};

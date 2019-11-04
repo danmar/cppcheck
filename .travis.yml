@@ -20,14 +20,21 @@ env:
 before_install:
 # install needed deps
  - travis_retry sudo apt-get update -qq
- - travis_retry sudo apt-get install -qq python-pygments python3-pip qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet python3-dev liblua5.3-dev libcurl3 libcairo2-dev
+ - travis_retry sudo apt-get install -qq python3-pip qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet python3-dev liblua5.3-dev libcurl3 libcairo2-dev libsigc++-2.0-dev tidy
 # Python 2 modules 
  - travis_retry python2 -m pip install --user pytest==4.6.4
  - travis_retry python2 -m pip install --user pylint
  - travis_retry python2 -m pip install --user unittest2
- - travis_retry python2 -m pip install --user pexpect
+ - travis_retry python2 -m pip install --user pexpect # imported by tools/ci.py
+ - travis_retry python2 -m pip install --user pygments
 # Python 3 modules
+ - travis_retry python3 -m pip install --user setuptools --upgrade
  - travis_retry python3 -m pip install --user pytest
+ - travis_retry python3 -m pip install --user pylint
+ - travis_retry python3 -m pip install --user unittest2
+ - travis_retry python3 -m pip install --user pexpect # imported by tools/ci.py
+ - travis_retry python3 -m pip install --user requests # imported by tools/pr.py
+ - travis_retry python3 -m pip install --user pygments
 
 matrix:
 # do notify immediately about it when a job of a build fails.
@@ -64,12 +71,11 @@ matrix:
         - make validateXML
 # Validate rule files
         - make validateRules
-# note: trusty on travis has python pygments disabled so disable these tests on travis
-## check htmlreport stuff
-#  - ./htmlreport/test_htmlreport.py
-#  - cd htmlreport
-#  - ./check.sh
-#  - cd ../
+# check htmlreport stuff
+        - ./htmlreport/test_htmlreport.py
+        - cd htmlreport
+        - ./check.sh
+        - cd ../
 # check if DESTDIR works  TODO: actually execute this
         - mkdir install_test
         - echo $CXXFLAGS
@@ -94,12 +100,16 @@ matrix:
         - python3 -m compileall ./addons
 # run pylint
         - pylint --rcfile=pylintrc_travis addons/*.py
+        - pylint --rcfile=pylintrc_travis htmlreport/cppcheck-htmlreport
         - pylint --rcfile=pylintrc_travis htmlreport/*.py
-        - pylint --rcfile=pylintrc_travis tools/*.py
+        - pylint --rcfile=pylintrc_travis --ignore=donate-cpu-server.py tools/*.py
+        - python3 -m pylint --rcfile=pylintrc_travis addons/*.py
+        - python3 -m pylint --rcfile=pylintrc_travis htmlreport/cppcheck-htmlreport
+        - python3 -m pylint --rcfile=pylintrc_travis htmlreport/*.py
+        - python3 -m pylint --rcfile=pylintrc_travis tools/*.py
 # check python syntax by compiling some selected scripts
         - python -m py_compile ./tools/donate-cpu.py
         - python3 -m py_compile ./tools/donate-cpu.py
-        - python -m py_compile ./tools/donate-cpu-server.py
         - python3 -m py_compile ./tools/donate-cpu-server.py
 # check addons/misc.py
         - cd addons/test

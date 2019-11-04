@@ -192,9 +192,11 @@ LIBOBJ =      $(libcppdir)/analyzerinfo.o \
               $(libcppdir)/library.o \
               $(libcppdir)/mathlib.o \
               $(libcppdir)/path.o \
+              $(libcppdir)/pathanalysis.o \
               $(libcppdir)/pathmatch.o \
               $(libcppdir)/platform.o \
               $(libcppdir)/preprocessor.o \
+              $(libcppdir)/programmemory.o \
               $(libcppdir)/settings.o \
               $(libcppdir)/suppressions.o \
               $(libcppdir)/symboldatabase.o \
@@ -454,7 +456,7 @@ $(libcppdir)/checkpostfixoperator.o: lib/checkpostfixoperator.cpp lib/check.h li
 $(libcppdir)/checksizeof.o: lib/checksizeof.cpp lib/check.h lib/checksizeof.h lib/config.h lib/errorlogger.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(libcppdir)/checksizeof.o $(libcppdir)/checksizeof.cpp
 
-$(libcppdir)/checkstl.o: lib/checkstl.cpp lib/astutils.h lib/check.h lib/checknullpointer.h lib/checkstl.h lib/config.h lib/ctu.h lib/errorlogger.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h
+$(libcppdir)/checkstl.o: lib/checkstl.cpp lib/astutils.h lib/check.h lib/checknullpointer.h lib/checkstl.h lib/config.h lib/ctu.h lib/errorlogger.h lib/importproject.h lib/library.h lib/mathlib.h lib/pathanalysis.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(libcppdir)/checkstl.o $(libcppdir)/checkstl.cpp
 
 $(libcppdir)/checkstring.o: lib/checkstring.cpp lib/astutils.h lib/check.h lib/checkstring.h lib/config.h lib/errorlogger.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h
@@ -499,6 +501,9 @@ $(libcppdir)/mathlib.o: lib/mathlib.cpp lib/config.h lib/errorlogger.h lib/mathl
 $(libcppdir)/path.o: lib/path.cpp externals/simplecpp/simplecpp.h lib/config.h lib/path.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(libcppdir)/path.o $(libcppdir)/path.cpp
 
+$(libcppdir)/pathanalysis.o: lib/pathanalysis.cpp lib/config.h lib/errorlogger.h lib/importproject.h lib/library.h lib/mathlib.h lib/pathanalysis.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/utils.h lib/valueflow.h
+	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(libcppdir)/pathanalysis.o $(libcppdir)/pathanalysis.cpp
+
 $(libcppdir)/pathmatch.o: lib/pathmatch.cpp lib/config.h lib/path.h lib/pathmatch.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(libcppdir)/pathmatch.o $(libcppdir)/pathmatch.cpp
 
@@ -507,6 +512,9 @@ $(libcppdir)/platform.o: lib/platform.cpp externals/tinyxml/tinyxml2.h lib/confi
 
 $(libcppdir)/preprocessor.o: lib/preprocessor.cpp externals/simplecpp/simplecpp.h lib/config.h lib/errorlogger.h lib/importproject.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/preprocessor.h lib/settings.h lib/standards.h lib/suppressions.h lib/timer.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(libcppdir)/preprocessor.o $(libcppdir)/preprocessor.cpp
+
+$(libcppdir)/programmemory.o: lib/programmemory.cpp lib/astutils.h lib/config.h lib/errorlogger.h lib/library.h lib/mathlib.h lib/platform.h lib/programmemory.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/utils.h lib/valueflow.h
+	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(libcppdir)/programmemory.o $(libcppdir)/programmemory.cpp
 
 $(libcppdir)/settings.o: lib/settings.cpp lib/config.h lib/errorlogger.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/timer.h lib/utils.h lib/valueflow.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(libcppdir)/settings.o $(libcppdir)/settings.cpp
@@ -532,7 +540,7 @@ $(libcppdir)/tokenize.o: lib/tokenize.cpp lib/check.h lib/config.h lib/errorlogg
 $(libcppdir)/tokenlist.o: lib/tokenlist.cpp externals/simplecpp/simplecpp.h lib/config.h lib/errorlogger.h lib/importproject.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenlist.h lib/utils.h lib/valueflow.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(libcppdir)/tokenlist.o $(libcppdir)/tokenlist.cpp
 
-$(libcppdir)/valueflow.o: lib/valueflow.cpp lib/astutils.h lib/config.h lib/errorlogger.h lib/importproject.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenlist.h lib/utils.h lib/valueflow.h
+$(libcppdir)/valueflow.o: lib/valueflow.cpp lib/astutils.h lib/config.h lib/errorlogger.h lib/importproject.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/programmemory.h lib/settings.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenlist.h lib/utils.h lib/valueflow.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(libcppdir)/valueflow.o $(libcppdir)/valueflow.cpp
 
 cli/cmdlineparser.o: cli/cmdlineparser.cpp cli/cmdlineparser.h cli/cppcheckexecutor.h cli/filelister.h cli/threadexecutor.h externals/tinyxml/tinyxml2.h lib/check.h lib/config.h lib/errorlogger.h lib/importproject.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h

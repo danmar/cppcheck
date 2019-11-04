@@ -1446,8 +1446,11 @@ void Tokenizer::simplifyTypedef()
                             tok2->insertToken("&");
                         tok2 = tok2->next();
 
+                        bool hasName = false;
                         // skip over name
-                        if (tok2->next() && tok2->next()->str() != ")") {
+                        if (tok2->next() && tok2->next()->str() != ")" && tok2->next()->str() != "," &&
+                            tok2->next()->str() != ">") {
+                            hasName = true;
                             if (tok2->next()->str() != "(")
                                 tok2 = tok2->next();
 
@@ -1458,12 +1461,13 @@ void Tokenizer::simplifyTypedef()
                             // check for array
                             if (tok2 && tok2->next() && tok2->next()->str() == "[")
                                 tok2 = tok2->next()->link();
-                        } else {
-                            // syntax error
                         }
 
                         tok2->insertToken(")");
                         Token::createMutualLinks(tok2->next(), tok3);
+
+                        if (!hasName)
+                            tok2 = tok2->next();
                     } else if (ptrMember) {
                         if (Token::simpleMatch(tok2, "* (")) {
                             tok2->insertToken("*");
@@ -4428,6 +4432,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // remove calling conventions __cdecl, __stdcall..
     simplifyCallingConvention();
 
+    addSemicolonAfterUnknownMacro();
 
     // remove some unhandled macros in global scope
     removeMacrosInGlobalScope();
@@ -5171,6 +5176,24 @@ void Tokenizer::removeMacroInVarDecl()
             if (tok3 && (tok3->isStandardType() || Token::Match(tok3,"const|static|struct|union|class")))
                 Token::eraseTokens(tok,tok2);
         }
+    }
+}
+//---------------------------------------------------------------------------
+
+void Tokenizer::addSemicolonAfterUnknownMacro()
+{
+    if (!isCPP())
+        return;
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (tok->str() != ")")
+            continue;
+        const Token *macro = tok->link() ? tok->link()->previous() : nullptr;
+        if (!macro || !macro->isName())
+            continue;
+        if (Token::simpleMatch(tok, ") try") && !Token::Match(macro, "if|for|while"))
+            tok->insertToken(";");
+        else if (Token::simpleMatch(tok, ") using"))
+            tok->insertToken(";");
     }
 }
 //---------------------------------------------------------------------------
@@ -7036,7 +7059,7 @@ bool Tokenizer::simplifyCAlternativeTokens()
         if (cOpIt != cAlternativeTokens.end()) {
             if (!Token::Match(tok->previous(), "%name%|%num%|%char%|)|]|> %name% %name%|%num%|%char%|%op%|("))
                 continue;
-            if (Token::Match(tok->next(), "%assign%|%or%|%oror%|&&|*|/|%|^"))
+            if (Token::Match(tok->next(), "%assign%|%or%|%oror%|&&|*|/|%|^") && !Token::Match(tok->previous(), "%num%|%char% %name% *"))
                 continue;
             tok->str(cOpIt->second);
             ret = true;
@@ -9270,12 +9293,20 @@ void Tokenizer::findGarbageCode() const
 
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "if|while|for|switch")) { // if|while|for|switch (EXPR) { ... }
-            if (tok->previous() && !Token::Match(tok->previous(), "%name%|:|;|{|}|(|)|,")) {
+            if (tok->previous() && !Token::Match(tok->previous(), "%name%|:|;|{|}|)")) {
+                if (Token::Match(tok->previous(), "[,(]")) {
+                    const Token *prev = tok->previous();
+                    while (prev && prev->str() != "(") {
+                        if (prev->str() == ")")
+                            prev = prev->link();
+                        prev = prev->previous();
+                    }
+                    if (prev && Token::Match(prev->previous(), "%name% ("))
+                        unknownMacroError(prev->previous());
+                }
                 if (!Token::simpleMatch(tok->tokAt(-2), "operator \"\" if"))
                     syntaxError(tok);
             }
-            if (Token::Match(tok->previous(), "[(,]"))
-                continue;
             if (!Token::Match(tok->next(), "( !!)"))
                 syntaxError(tok);
             if (tok->str() != "for") {

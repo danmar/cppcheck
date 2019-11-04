@@ -99,7 +99,7 @@ print('Thank you!')
 if not check_requirements():
     sys.exit(1)
 if bandwidth_limit and isinstance(bandwidth_limit, str):
-    if subprocess.call(['wget', '--limit-rate=' + bandwidth_limit, '-q', '--spider', 'cppcheck1.osuosl.org']) is 2:
+    if subprocess.call(['wget', '--limit-rate=' + bandwidth_limit, '-q', '--spider', 'cppcheck1.osuosl.org']) == 2:
         print('Error: Bandwidth limit value "' + bandwidth_limit + '" is invalid.')
         sys.exit(1)
     else:
@@ -117,8 +117,7 @@ while True:
         if packages_processed >= max_packages:
             print('Processed the specified number of {} package(s). Exiting now.'.format(max_packages))
             break
-        else:
-            print('Processing package {} of the specified {} package(s).'.format(packages_processed + 1, max_packages))
+        print('Processing package {} of the specified {} package(s).'.format(packages_processed + 1, max_packages))
         packages_processed += 1
     if stop_time:
         print('stop_time:' + stop_time + '. Time:' + time.strftime('%H:%M') + '.')
