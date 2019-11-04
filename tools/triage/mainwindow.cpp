@@ -28,14 +28,14 @@ MainWindow::MainWindow(QWidget *parent) :
     if (!workFolder.exists()) {
         workFolder.mkdir(WORK_FOLDER);
     }
-    fsmodel.setRootPath(WORK_FOLDER);
-    fsmodel.setReadOnly(true);
-    fsmodel.setFilter(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
-    ui->directoryTree->setModel(&fsmodel);
+    mFSmodel.setRootPath(WORK_FOLDER);
+    mFSmodel.setReadOnly(true);
+    mFSmodel.setFilter(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
+    ui->directoryTree->setModel(&mFSmodel);
     QHeaderView * header =  ui->directoryTree->header();
     for(int i = 1; i < header->length(); ++i)
         header->hideSection(i);
-    ui->directoryTree->setRootIndex(fsmodel.index(WORK_FOLDER));
+    ui->directoryTree->setRootIndex(mFSmodel.index(WORK_FOLDER));
 }
 
 MainWindow::~MainWindow()
@@ -251,14 +251,14 @@ void MainWindow::showSrcFile(const QString &fileName, const QString &url, const 
 
         ui->urlEdit->setText(url);
         ui->fileEdit->setText(fileName);
-        ui->directoryTree->setCurrentIndex(fsmodel.index(fileName));
+        ui->directoryTree->setCurrentIndex(mFSmodel.index(fileName));
     }
 }
 
 void MainWindow::fileTreeFilter(QString str)
 {
-    fsmodel.setNameFilters(QStringList{"*" + str + "*"});
-    fsmodel.setNameFilterDisables(false);
+    mFSmodel.setNameFilters(QStringList{"*" + str + "*"});
+    mFSmodel.setNameFilterDisables(false);
 }
 
 void MainWindow::findInFilesClicked()
@@ -307,7 +307,7 @@ void MainWindow::findInFilesClicked()
 
 void MainWindow::directorytreeDoubleClick()
 {
-    showSrcFile(fsmodel.filePath(ui->directoryTree->currentIndex()), "", 1);
+    showSrcFile(mFSmodel.filePath(ui->directoryTree->currentIndex()), "", 1);
 }
 
 void MainWindow::searchResultsDoubleClick()
