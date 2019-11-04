@@ -28,12 +28,13 @@ MainWindow::MainWindow(QWidget *parent) :
     if (!workFolder.exists()) {
         workFolder.mkdir(WORK_FOLDER);
     }
+
     mFSmodel.setRootPath(WORK_FOLDER);
     mFSmodel.setReadOnly(true);
     mFSmodel.setFilter(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
     ui->directoryTree->setModel(&mFSmodel);
     QHeaderView * header =  ui->directoryTree->header();
-    for(int i = 1; i < header->length(); ++i)
+    for(int i = 1; i < header->length(); ++i)   // hide all except [0]
         header->hideSection(i);
     ui->directoryTree->setRootIndex(mFSmodel.index(WORK_FOLDER));
 }
@@ -80,7 +81,7 @@ void MainWindow::load(QTextStream &textStream)
             errorMessage.clear();
         } else if (!url.isEmpty() && QRegExp(".*: (error|warning|style|note):.*").exactMatch(line)) {
             if (mVersionRe.exactMatch(line)) {
-                const QString version = line.mid(0,4);
+                const QString version = line.mid(0, 4);
                 if (versions.indexOf(version) < 0)
                     versions << version;
             }
@@ -137,7 +138,7 @@ void MainWindow::filter(QString filter)
                 allErrors.removeAt(i);
         }
         std::random_shuffle(allErrors.begin(), allErrors.end());
-        ui->results->addItems(allErrors.mid(0,MAX_ERRORS));
+        ui->results->addItems(allErrors.mid(0, MAX_ERRORS));
         ui->results->sortItems();
     } else {
         ui->results->addItems(allErrors);
@@ -215,7 +216,7 @@ void MainWindow::showResult(QListWidgetItem *item)
     const int pos1 = msg.indexOf(":");
     const int pos2 = msg.indexOf(":", pos1+1);
     const QString fileName = WORK_FOLDER + '/' + msg.left(msg.indexOf(":"));
-    const int lineNumber = msg.midRef(pos1+1,pos2-pos1-1).toInt();
+    const int lineNumber = msg.midRef(pos1+1, pos2-pos1-1).toInt();
 
     if (!QFileInfo::exists(fileName)) {
         const QString daca2archiveFile {DACA2_PACKAGES + '/' + archiveName.mid(0,archiveName.indexOf(".tar.")) + ".tar.xz"};
