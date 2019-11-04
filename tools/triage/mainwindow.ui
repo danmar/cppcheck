@@ -264,7 +264,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QCheckBox" name="srcFilter">
+              <widget class="QCheckBox" name="srcFilesFilter">
                <property name="text">
                 <string>*.c, *.cpp,...</string>
                </property>

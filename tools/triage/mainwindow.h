@@ -43,6 +43,9 @@ private:
     QStringList mAllErrors;
     QFileSystemModel mFSmodel;
     const QRegExp mVersionRe;
+
+    const QStringList hFiles;
+    const QStringList srcFiles;
 };
 
 #endif // MAINWINDOW_H

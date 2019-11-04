@@ -20,7 +20,9 @@ const int MAX_ERRORS = 100;
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    mVersionRe("^(your|head|1.[0-9][0-9]) .*")
+    mVersionRe("^(your|head|1.[0-9][0-9]) .*"),
+    hFiles{"*.hpp", "*.h", "*.hxx", "*.hh", "*.tpp", "*.txx"},
+    srcFiles{"*.cpp", "*.cxx", "*.cc", "*.c++", "*.C", "*.c", "*.cl"}
 {
     ui->setupUi(this);
     std::srand(static_cast<unsigned int>(std::time(Q_NULLPTR)));
@@ -37,6 +39,9 @@ MainWindow::MainWindow(QWidget *parent) :
     for(int i = 1; i < header->length(); ++i)   // hide all except [0]
         header->hideSection(i);
     ui->directoryTree->setRootIndex(mFSmodel.index(WORK_FOLDER));
+
+    ui->hFilesFilter->setToolTip(hFiles.join(','));
+    ui->srcFilesFilter->setToolTip(srcFiles.join(','));
 }
 
 MainWindow::~MainWindow()
@@ -271,12 +276,10 @@ void MainWindow::findInFilesClicked()
     const QString text = ui->filterEdit->text();
 
     QStringList filter;
-    if(ui->hFilesFilter->isChecked()) {
-        filter << "*.hpp" << "*.h" << "*.hxx" << "*.hh" << "*.tpp" << "*.txx";
-    }
-    if(ui->srcFilter->isChecked()) {
-        filter << "*.cpp" << "*.cxx" << "*.cc" << "*.c++" << "*.C" << "*.c" << "*.cl";
-    }
+    if(ui->hFilesFilter->isChecked())
+        filter.append(hFiles);
+    if(ui->srcFilesFilter->isChecked())
+        filter.append(srcFiles);
 
     QMimeDatabase mimeDatabase;
     QDirIterator it(WORK_FOLDER, filter, QDir::AllEntries | QDir::NoSymLinks | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
