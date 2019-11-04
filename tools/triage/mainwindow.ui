@@ -15,8 +15,14 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <property name="spacing">
+     <number>1</number>
+    </property>
     <item>
      <layout class="QVBoxLayout" name="middleLayout">
+      <property name="spacing">
+       <number>1</number>
+      </property>
       <item>
        <widget class="CodeEditor" name="code">
         <property name="readOnly">
@@ -26,6 +32,9 @@
       </item>
       <item>
        <layout class="QGridLayout" name="urlFileLayout">
+        <property name="spacing">
+         <number>1</number>
+        </property>
         <item row="0" column="0">
          <widget class="QLabel" name="urllabel">
           <property name="text">
@@ -73,10 +82,19 @@
    </attribute>
    <widget class="QWidget" name="leftDockWidgetContents">
     <layout class="QVBoxLayout" name="verticalLayout_3">
+     <property name="spacing">
+      <number>1</number>
+     </property>
      <item>
       <layout class="QVBoxLayout" name="leftDockVerticalLayout">
+       <property name="spacing">
+        <number>1</number>
+       </property>
        <item>
         <layout class="QHBoxLayout" name="loadLayout">
+         <property name="spacing">
+          <number>1</number>
+         </property>
          <item>
           <widget class="QPushButton" name="loadFile">
            <property name="text">
@@ -118,6 +136,9 @@
        </item>
        <item>
         <layout class="QHBoxLayout" name="versionLayout">
+         <property name="spacing">
+          <number>1</number>
+         </property>
          <item>
           <widget class="QLabel" name="versionLabel">
            <property name="text">
@@ -167,10 +188,19 @@
    </attribute>
    <widget class="QWidget" name="rightDockWidgetContents">
     <layout class="QVBoxLayout" name="verticalLayout_4">
+     <property name="spacing">
+      <number>1</number>
+     </property>
      <item>
       <layout class="QVBoxLayout" name="filesNavigatorLayout">
+       <property name="spacing">
+        <number>1</number>
+       </property>
        <item>
         <layout class="QHBoxLayout" name="filterLayout">
+         <property name="spacing">
+          <number>1</number>
+         </property>
          <item>
           <widget class="QLineEdit" name="filterEdit">
            <property name="maximumSize">
@@ -212,6 +242,9 @@
            <string>Filesystem</string>
           </attribute>
           <layout class="QVBoxLayout" name="verticalLayout_5">
+           <property name="spacing">
+            <number>1</number>
+           </property>
            <item>
             <widget class="QTreeView" name="directoryTree">
              <property name="sizePolicy">
@@ -241,6 +274,9 @@
            <string>In Files Result</string>
           </attribute>
           <layout class="QVBoxLayout" name="verticalLayout_6">
+           <property name="spacing">
+            <number>1</number>
+           </property>
            <item>
             <widget class="QListWidget" name="inFilesResult">
              <property name="sizePolicy">
@@ -253,6 +289,9 @@
            </item>
            <item>
             <layout class="QHBoxLayout" name="fileFilterLayout">
+             <property name="spacing">
+              <number>1</number>
+             </property>
              <item>
               <widget class="QCheckBox" name="hFilesFilter">
                <property name="text">
