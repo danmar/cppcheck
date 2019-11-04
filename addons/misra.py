@@ -1570,13 +1570,27 @@ class MisraChecker:
         STATE_NONE = 0   # default state, not in switch case/default block
         STATE_BREAK = 1  # break/comment is seen but not its ';'
         STATE_OK = 2     # a case/default is allowed (we have seen 'break;'/'comment'/'{'/attribute)
+        STATE_SWITCH = 3 # walking through switch statement scope
+
         state = STATE_NONE
+        end_swtich_token = None  # end '}' for the switch scope
         for token in rawTokens:
+            # Find switch scope borders
+            if token.str == 'switch':
+                state = STATE_SWITCH
+            if state == STATE_SWITCH:
+                if token.str == '{':
+                    end_swtich_token = findRawLink(token)
+                else:
+                    continue
+
             if token.str == 'break' or token.str == 'return' or token.str == 'throw':
                 state = STATE_BREAK
             elif token.str == ';':
                 if state == STATE_BREAK:
                     state = STATE_OK
+                elif token.next and token.next == end_swtich_token:
+                    self.reportError(token.next, 16, 3)
                 else:
                     state = STATE_NONE
             elif token.str.startswith('/*') or token.str.startswith('//'):
