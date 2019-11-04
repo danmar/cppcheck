@@ -247,20 +247,22 @@ void MainWindow::showSrcFile(const QString &fileName, const QString &url, const 
         QTextStream textStream(&f);
         const QString fileData = textStream.readAll();
         ui->code->setError(fileData, lineNumber, QStringList());
+        f.close();
 
         ui->urlEdit->setText(url);
         ui->fileEdit->setText(fileName);
-        f.close();
         ui->directoryTree->setCurrentIndex(fsmodel.index(fileName));
     }
 }
 
-void MainWindow::fileTreeFilter(QString str) {
+void MainWindow::fileTreeFilter(QString str)
+{
     fsmodel.setNameFilters(QStringList{"*" + str + "*"});
     fsmodel.setNameFilterDisables(false);
 }
 
-void MainWindow::findInFilesClicked() {
+void MainWindow::findInFilesClicked()
+{
     ui->tabWidget->setCurrentIndex(1);
     ui->inFilesResult->clear();
     const QString text = ui->filterEdit->text();
@@ -303,11 +305,13 @@ void MainWindow::findInFilesClicked() {
     }
 }
 
-void MainWindow::directorytreeDoubleClick() {
+void MainWindow::directorytreeDoubleClick()
+{
     showSrcFile(fsmodel.filePath(ui->directoryTree->currentIndex()), "", 1);
 }
 
-void MainWindow::searchResultsDoubleClick() {
+void MainWindow::searchResultsDoubleClick()
+{
     QString filename = ui->inFilesResult->currentItem()->text();
     const auto idx = filename.lastIndexOf(':');
     const int line = filename.midRef(idx + 1).toInt();
