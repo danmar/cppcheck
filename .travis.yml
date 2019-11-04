@@ -100,9 +100,11 @@ matrix:
         - python3 -m compileall ./addons
 # run pylint
         - pylint --rcfile=pylintrc_travis addons/*.py
+        - pylint --rcfile=pylintrc_travis htmlreport/cppcheck-htmlreport
         - pylint --rcfile=pylintrc_travis htmlreport/*.py
         - pylint --rcfile=pylintrc_travis --ignore=donate-cpu-server.py tools/*.py
         - python3 -m pylint --rcfile=pylintrc_travis addons/*.py
+        - python3 -m pylint --rcfile=pylintrc_travis htmlreport/cppcheck-htmlreport
         - python3 -m pylint --rcfile=pylintrc_travis htmlreport/*.py
         - python3 -m pylint --rcfile=pylintrc_travis tools/*.py
 # check python syntax by compiling some selected scripts
