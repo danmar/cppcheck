@@ -1678,9 +1678,12 @@ static void valueFlowReverse(TokenList *tokenlist,
             if (Token::Match(tok2->previous(), "!!* %name% =")) {
                 Token* assignTok = const_cast<Token*>(tok2->next()->astOperand2());
                 if (!assignTok->hasKnownValue()) {
-                    std::list<ValueFlow::Value> values = {val};
                     setTokenValue(assignTok, val, settings);
+                    const std::string info = "Assignment from '" + assignTok->expressionString() + "'";
+                    val.errorPath.emplace_back(assignTok, info);
+                    std::list<ValueFlow::Value> values = {val};
                     if (val2.condition) {
+                        val2.errorPath.emplace_back(assignTok, info);
                         setTokenValue(assignTok, val2, settings);
                         values.push_back(val2);
                     }

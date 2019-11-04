@@ -1616,6 +1616,29 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 return Result(Result::Type::BAILOUT);
         }
 
+        if (mWhat == What::ValueFlow && Token::simpleMatch(tok, "if (") && Token::simpleMatch(tok->linkAt(1), ") {")) {
+            const Token *bodyStart = tok->linkAt(1)->next();
+            const Token *condTok = tok->next()->astOperand2();
+            if (condTok->hasKnownIntValue()) {
+                bool cond = condTok->values().front().intvalue;
+                if (cond) {
+                    FwdAnalysis::Result result = checkRecursive(expr, bodyStart, bodyStart->link(), exprVarIds, local, true, depth);
+                    if (result.type != Result::Type::NONE)
+                        return result;
+                } else if (Token::Match(bodyStart->link(), "} else {")) {
+                    bodyStart = bodyStart->tokAt(2);
+                    FwdAnalysis::Result result = checkRecursive(expr, bodyStart, bodyStart->link(), exprVarIds, local, true, depth);
+                    if (result.type != Result::Type::NONE)
+                        return result;
+                }
+            }
+            tok = bodyStart->link();
+            if (Token::Match(tok, "} else {"))
+                tok = tok->linkAt(2);
+            if (!tok)
+                return Result(Result::Type::BAILOUT);
+        }
+
         if (!local && Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
             // TODO: this is a quick bailout
             return Result(Result::Type::BAILOUT);
