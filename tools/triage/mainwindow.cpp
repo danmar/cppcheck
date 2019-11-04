@@ -300,7 +300,6 @@ void MainWindow::findInFilesClicked()
                 line = in.readLine();
                 if (line.contains(text, Qt::CaseInsensitive)) {
                     ui->inFilesResult->addItem(fileName.mid(common_path_len) + QString{":"} + QString::number(lineN));
-                    break;
                 }
             }
         }
