@@ -19,7 +19,8 @@ const int MAX_ERRORS = 100;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    ui(new Ui::MainWindow),
+    mVersionRe("^(your|head|1.[0-9][0-9]) .*")
 {
     ui->setupUi(this);
     std::srand(static_cast<unsigned int>(std::time(Q_NULLPTR)));
@@ -78,7 +79,7 @@ void MainWindow::load(QTextStream &textStream)
                 mAllErrors << errorMessage;
             errorMessage.clear();
         } else if (!url.isEmpty() && QRegExp(".*: (error|warning|style|note):.*").exactMatch(line)) {
-            if (QRegExp("^(head|1.[0-9][0-9]) .*").exactMatch(line)) {
+            if (mVersionRe.exactMatch(line)) {
                 const QString version = line.mid(0,4);
                 if (versions.indexOf(version) < 0)
                     versions << version;
@@ -208,7 +209,7 @@ void MainWindow::showResult(QListWidgetItem *item)
         return;
     const QString url = lines[0];
     QString msg = lines[1];
-    if (QRegExp("^(head|1.[0-9][0-9]) .*").exactMatch(msg))
+    if (mVersionRe.exactMatch(msg))
         msg = msg.mid(5);
     const QString archiveName = url.mid(url.lastIndexOf("/") + 1);
     const int pos1 = msg.indexOf(":");
