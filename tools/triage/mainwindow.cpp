@@ -248,8 +248,8 @@ void MainWindow::showSrcFile(const QString &fileName, const QString &url, const 
         const QString fileData = textStream.readAll();
         ui->code->setError(fileData, lineNumber, QStringList());
 
-        ui->edit1->setText(url);
-        ui->edit2->setText(fileName);
+        ui->urlEdit->setText(url);
+        ui->fileEdit->setText(fileName);
         f.close();
         ui->directoryTree->setCurrentIndex(fsmodel.index(fileName));
     }
@@ -263,7 +263,7 @@ void MainWindow::fileTreeFilter(QString str) {
 void MainWindow::findInFilesClicked() {
     ui->tabWidget->setCurrentIndex(1);
     ui->inFilesResult->clear();
-    const QString text = ui->lineEdit->text();
+    const QString text = ui->filterEdit->text();
 
     QStringList filter;
     if(ui->hFilesFilter->isChecked()) {

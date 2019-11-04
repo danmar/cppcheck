@@ -34,7 +34,7 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QLineEdit" name="edit1"/>
+         <widget class="QLineEdit" name="urlEdit"/>
         </item>
         <item row="1" column="0">
          <widget class="QLabel" name="filelabel">
@@ -44,7 +44,7 @@
          </widget>
         </item>
         <item row="1" column="1">
-         <widget class="QLineEdit" name="edit2"/>
+         <widget class="QLineEdit" name="fileEdit"/>
         </item>
        </layout>
       </item>
@@ -71,7 +71,7 @@
    <attribute name="dockWidgetArea">
     <number>1</number>
    </attribute>
-   <widget class="QWidget" name="dockWidgetContents">
+   <widget class="QWidget" name="leftDockWidgetContents">
     <layout class="QVBoxLayout" name="verticalLayout_3">
      <item>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -165,14 +165,14 @@
    <attribute name="dockWidgetArea">
     <number>2</number>
    </attribute>
-   <widget class="QWidget" name="dockWidgetContents_5">
+   <widget class="QWidget" name="rightDockWidgetContents">
     <layout class="QVBoxLayout" name="verticalLayout_4">
      <item>
       <layout class="QVBoxLayout" name="filesNavigatorLayout">
        <item>
         <layout class="QHBoxLayout" name="filterLayout">
          <item>
-          <widget class="QLineEdit" name="lineEdit">
+          <widget class="QLineEdit" name="filterEdit">
            <property name="maximumSize">
             <size>
              <width>16777215</width>
@@ -296,7 +296,7 @@
  <resources/>
  <connections>
   <connection>
-   <sender>lineEdit</sender>
+   <sender>filterEdit</sender>
    <signal>textChanged(QString)</signal>
    <receiver>MainWindow</receiver>
    <slot>fileTreeFilter(QString)</slot>
