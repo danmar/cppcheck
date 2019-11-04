@@ -171,7 +171,7 @@ bool MainWindow::runProcess(const QString &programName, const QStringList &argum
 
 bool MainWindow::wget(const QString &url)
 {
-    return runProcess("wget", QStringList() << url);
+    return runProcess("wget", QStringList{url});
 }
 
 bool MainWindow::unpackArchive(const QString &archiveName)
@@ -218,16 +218,18 @@ void MainWindow::showResult(QListWidgetItem *item)
     const int lineNumber = msg.midRef(pos1+1,pos2-pos1-1).toInt();
 
     if (!QFileInfo::exists(fileName)) {
-        if (QFileInfo::exists(DACA2_PACKAGES + '/' + archiveName.mid(0,archiveName.indexOf(".tar.")) + ".tar.xz")) {
-            if (!unpackArchive(DACA2_PACKAGES + '/' + archiveName.mid(0,archiveName.indexOf(".tar.")) + ".tar.xz"))
+        const QString daca2archiveFile {DACA2_PACKAGES + '/' + archiveName.mid(0,archiveName.indexOf(".tar.")) + ".tar.xz"};
+        if (QFileInfo::exists(daca2archiveFile)) {
+            if (!unpackArchive(daca2archiveFile))
                 return;
         } else {
-            if (!QFileInfo::exists(WORK_FOLDER + '/' + archiveName)) {
+            const QString archiveFullPath {WORK_FOLDER + '/' + archiveName};
+            if (!QFileInfo::exists(archiveFullPath)) {
                 // Download archive
                 if (!wget(url))
                     return;
             }
-            if (!unpackArchive(WORK_FOLDER + '/' + archiveName))
+            if (!unpackArchive(archiveFullPath))
                 return;
         }
     }
