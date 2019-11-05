@@ -2197,6 +2197,14 @@ private:
               "    m = msg;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9201
+        check("int* f() {\n"
+              "    struct a { int m; };\n"
+              "    static a b{0};\n"
+              "    return &b.m;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeFunction() {
@@ -2501,6 +2509,20 @@ private:
 
         check("int &a[];\n"
               "void b(){int *c = a};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    int x;\n"
+              "};\n"
+              "struct B {\n"
+              "    std::function<void()> x;\n"
+              "    void f() {\n"
+              "        this->x = [&] {\n"
+              "            B y;\n"
+              "            return y.x;\n"
+              "        };\n"
+              "    }\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -311,6 +311,23 @@ Token* astParentSkipParens(Token* tok)
     return astParentSkipParens(parent);
 }
 
+const Token* getParentMember(const Token * tok)
+{
+    if (!tok)
+        return tok;
+    const Token * parent = tok->astParent();
+    if (!Token::simpleMatch(parent, "."))
+        return tok;
+    if (tok == parent->astOperand2())
+        return parent->astOperand1();
+    const Token * gparent = parent->astParent();
+    if (!Token::simpleMatch(gparent, ".") || gparent->astOperand2() != parent)
+        return tok;
+    if (gparent->astOperand1())
+        return gparent->astOperand1();
+    return tok;
+}
+
 static const Token * getVariableInitExpression(const Variable * var)
 {
     if (!var || !var->declEndToken())
