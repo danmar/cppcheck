@@ -8,7 +8,6 @@ import socket
 import time
 import re
 import tarfile
-import platform
 
 
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/

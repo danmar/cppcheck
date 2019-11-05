@@ -26,16 +26,37 @@
 #
 # Quick start: just run this script without any arguments
 
-import shutil
 import os
 import subprocess
 import sys
-import socket
 import time
-import re
-import tarfile
 import platform
-from donate_cpu_lib import *
+# Import variables / constants from donate_cpu_lib
+from donate_cpu_lib import bandwidth_limit
+from donate_cpu_lib import CLIENT_VERSION
+from donate_cpu_lib import do_upload
+from donate_cpu_lib import jobs
+from donate_cpu_lib import max_packages
+from donate_cpu_lib import package_url
+from donate_cpu_lib import server_address
+from donate_cpu_lib import stop_time
+from donate_cpu_lib import work_path
+# Import functions from donate_cpu_lib
+from donate_cpu_lib import check_requirements
+from donate_cpu_lib import compile
+from donate_cpu_lib import compile_version
+from donate_cpu_lib import diff_results
+from donate_cpu_lib import download_package
+from donate_cpu_lib import get_cppcheck
+from donate_cpu_lib import get_cppcheck_info
+from donate_cpu_lib import get_cppcheck_versions
+from donate_cpu_lib import get_libraries
+from donate_cpu_lib import get_package
+from donate_cpu_lib import scan_package
+from donate_cpu_lib import unpack_package
+from donate_cpu_lib import upload_info
+from donate_cpu_lib import upload_results
+
 
 for arg in sys.argv[1:]:
     # --stop-time=12:00 => run until ~12:00 and then stop
