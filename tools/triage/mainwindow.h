@@ -41,7 +41,11 @@ private:
     void showSrcFile(const QString &fileName, const QString &url, const int lineNumber);
 
     QStringList mAllErrors;
-    QFileSystemModel fsmodel;
+    QFileSystemModel mFSmodel;
+    const QRegExp mVersionRe;
+
+    const QStringList hFiles;
+    const QStringList srcFiles;
 };
 
 #endif // MAINWINDOW_H

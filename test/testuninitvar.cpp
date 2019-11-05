@@ -1719,6 +1719,12 @@ private:
                        "}");
         ASSERT_EQUALS("", errout.str());
 
+        // new in C code does not allocate..
+        checkUninitVar("int main() {\n"
+                       "    char * pBuf = new(10);\n"
+                       "    a = *pBuf;\n"
+                       "}", "test.c");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // class / struct..
