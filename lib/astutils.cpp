@@ -1659,7 +1659,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 }
             }
             tok = bodyStart->link();
-            if (Token::Match(tok, "} else {"))
+            if (Token::simpleMatch(tok, "} else {"))
                 tok = tok->linkAt(2);
             if (!tok)
                 return Result(Result::Type::BAILOUT);
