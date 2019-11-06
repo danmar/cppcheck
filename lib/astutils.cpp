@@ -1652,7 +1652,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                     FwdAnalysis::Result result = checkRecursive(expr, bodyStart, bodyStart->link(), exprVarIds, local, true, depth);
                     if (result.type != Result::Type::NONE)
                         return result;
-                } else if (Token::Match(bodyStart->link(), "} else {")) {
+                } else if (Token::simpleMatch(bodyStart->link(), "} else {")) {
                     bodyStart = bodyStart->tokAt(2);
                     FwdAnalysis::Result result = checkRecursive(expr, bodyStart, bodyStart->link(), exprVarIds, local, true, depth);
                     if (result.type != Result::Type::NONE)
