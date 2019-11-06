@@ -72,7 +72,7 @@ class Extract:
                 continue
 
             # check
-            res = re.match('\s+check.*\(' + string, line)
+            res = re.match('\\s+check.*\\(' + string, line)
             if res is not None:
                 code = res.group(1)
 
