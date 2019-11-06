@@ -1180,7 +1180,11 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             if (iteratorToken && iteratorToken->variable() && iteratorToken->variable()->typeEndToken()->str().find("iterator") != std::string::npos)
                 continue;
 
-            const Variable *op1Var = tok->astOperand1() ? tok->astOperand1()->variable() : nullptr;
+            const Token *op1tok = tok->astOperand1();
+            while (Token::Match(op1tok, ".|[|*"))
+                op1tok = op1tok->astOperand1();
+
+            const Variable *op1Var = op1tok ? op1tok->variable() : nullptr;
             if (op1Var && op1Var->isReference() && op1Var->nameToken() != tok->astOperand1())
                 // todo: check references
                 continue;

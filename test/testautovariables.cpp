@@ -50,6 +50,7 @@ private:
         settings.addEnabled("warning");
         settings.addEnabled("style");
         LOAD_LIB_2(settings.library, "std.cfg");
+        LOAD_LIB_2(settings.library, "qt.cfg");
 
         TEST_CASE(testautovar1);
         TEST_CASE(testautovar2);
@@ -2196,6 +2197,14 @@ private:
               "    m = msg;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9201
+        check("int* f() {\n"
+              "    struct a { int m; };\n"
+              "    static a b{0};\n"
+              "    return &b.m;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeFunction() {
@@ -2426,6 +2435,16 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:1] -> [test.cpp:2] -> [test.cpp:5] -> [test.cpp:5] -> [test.cpp:6]: (error) Using pointer to temporary.\n",
             errout.str());
+
+        check("QString f() {\n"
+              "    QString a(\"dummyValue\");\n"
+              "    const char* b = a.toStdString().c_str();\n"
+              "    QString c = b;\n"
+              "    return c;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:4]: (error) Using pointer to temporary.\n",
+            errout.str());
     }
 
     void invalidLifetime() {
@@ -2490,6 +2509,20 @@ private:
 
         check("int &a[];\n"
               "void b(){int *c = a};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    int x;\n"
+              "};\n"
+              "struct B {\n"
+              "    std::function<void()> x;\n"
+              "    void f() {\n"
+              "        this->x = [&] {\n"
+              "            B y;\n"
+              "            return y.x;\n"
+              "        };\n"
+              "    }\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 

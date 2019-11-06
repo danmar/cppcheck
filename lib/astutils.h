@@ -87,12 +87,14 @@ std::string astCanonicalType(const Token *expr);
 /** Is given syntax tree a variable comparison against value */
 const Token * astIsVariableComparison(const Token *tok, const std::string &comp, const std::string &rhs, const Token **vartok=nullptr);
 
-bool isTemporary(bool cpp, const Token* tok);
+bool isTemporary(bool cpp, const Token* tok, const Library* library);
 
 const Token * nextAfterAstRightmostLeaf(const Token * tok);
 
 Token* astParentSkipParens(Token* tok);
 const Token* astParentSkipParens(const Token* tok);
+
+const Token* getParentMember(const Token * tok);
 
 bool precedes(const Token * tok1, const Token * tok2);
 

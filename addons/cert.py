@@ -160,7 +160,7 @@ def exp42(data):
 def exp15(data):
     for scope in data.scopes:
         if scope.type in ('If', 'For', 'While'):
-            token = scope.bodyStart.next 
+            token = scope.bodyStart.next
             if token.str==';' and token.linenr==scope.bodyStart.linenr:
                 reportError(token, 'style', 'Do not place a semicolon on the same line as an IF, FOR or WHILE', 'EXP15-C')
 
@@ -232,7 +232,7 @@ def int31(data, platform):
                     'style',
                     'Ensure that integer conversions do not result in lost or misinterpreted data (casting ' + str(value.intvalue) + ' to ' + destType + ')',
                     'INT31-c')
-                break                
+                break
 # MSC24-C
 # Do not use deprecated or obsolescent functions
 def msc24(data):
@@ -321,7 +321,7 @@ def str11(data):
 
         if not parent.isAssignmentOp:
             continue
-            
+
         varToken = parentOp1.astOperand1
         if varToken is None or not varToken.isName:
             continue
@@ -332,7 +332,7 @@ def str11(data):
         valueToken = parentOp1.astOperand2
         if valueToken is None:
             continue
-            
+
         if valueToken.isNumber and int(valueToken.str)==strlen:
             reportError(valueToken, 'style', 'Do not specify the bound of a character array initialized with a string literal', 'STR11-C')
 

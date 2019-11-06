@@ -83,6 +83,8 @@ private:
         TEST_CASE(nullpointer41);
         TEST_CASE(nullpointer42);
         TEST_CASE(nullpointer43); // #9404
+        TEST_CASE(nullpointer44); // #9395, #9423
+        TEST_CASE(nullpointer45);
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1545,6 +1547,68 @@ private:
               "    if (x) {\n"
               "        (void)*a->x;\n"
               "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer44() {
+        // #9395
+        check("int foo( ) {\n"
+              "    const B* b = getB();\n"
+              "    const double w = ( nullptr != b) ? 42. : 0.0;\n"
+              "    if ( w == 0.0 )\n"
+              "        return 0;\n"
+              "    return b->get();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        // #9423
+        check("extern F* GetF();\n"
+              "extern L* GetL();\n"
+              "void Foo() {\n"
+              "    const F* const fPtr = GetF();\n"
+              "    const bool fPtrOk = fPtr != NULL;\n"
+              "    assert(fPtrOk);\n"
+              "    if (!fPtrOk)\n"
+              "        return;\n"
+              "    L* const lPtr = fPtr->l;\n"
+              "    const bool lPtrOk = lPtr != NULL;\n"
+              "    assert(lPtrOk);\n"
+              "    if (!lPtrOk)\n"
+              "        return;\n"
+              "    lPtr->Clear();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer45() {
+        check("struct a {\n"
+              "  a *b() const;\n"
+              "};\n"
+              "void g() { throw 0; }\n"
+              "a h(a * c) {\n"
+              "  if (c && c->b()) {}\n"
+              "  if (!c)\n"
+              "    g();\n"
+              "  if (!c->b())\n"
+              "    g();\n"
+              "  a d = *c->b();\n"
+              "  return d;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct a {\n"
+              "  a *b() const;\n"
+              "};\n"
+              "void e() { throw 0; }\n"
+              "a f() {\n"
+              "  a *c = 0;\n"
+              "  if (0 && c->b()) {}\n"
+              "  if (!c)\n"
+              "    e();\n"
+              "  if (!c->b())\n"
+              "    e();\n"
+              "  a d = *c->b();\n"
+              "  return d;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

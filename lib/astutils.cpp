@@ -220,17 +220,17 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
     return ret;
 }
 
-bool isTemporary(bool cpp, const Token* tok)
+bool isTemporary(bool cpp, const Token* tok, const Library* library)
 {
     if (!tok)
         return false;
     if (Token::simpleMatch(tok, "."))
-        return (tok->originalName() != "->" && isTemporary(cpp, tok->astOperand1())) ||
-               isTemporary(cpp, tok->astOperand2());
+        return (tok->originalName() != "->" && isTemporary(cpp, tok->astOperand1(), library)) ||
+               isTemporary(cpp, tok->astOperand2(), library);
     if (Token::Match(tok, ",|::"))
-        return isTemporary(cpp, tok->astOperand2());
+        return isTemporary(cpp, tok->astOperand2(), library);
     if (tok->isCast() || (cpp && isCPPCast(tok)))
-        return isTemporary(cpp, tok->astOperand2());
+        return isTemporary(cpp, tok->astOperand2(), library);
     if (Token::Match(tok, "?|.|[|++|--|%name%|%assign%"))
         return false;
     if (tok->isUnaryOp("*"))
@@ -238,12 +238,21 @@ bool isTemporary(bool cpp, const Token* tok)
     if (Token::Match(tok, "&|<<|>>") && isLikelyStream(cpp, tok->astOperand1()))
         return false;
     if (Token::Match(tok->previous(), ">|%name% (")) {
-        const Function * f = nullptr;
-        if (tok->previous()->function())
-            f = tok->previous()->function();
-        else if (tok->previous()->link())
-            f = tok->previous()->link()->previous()->function();
-        return f && !Function::returnsReference(tok->previous()->function(), true);
+        const Token* ftok = nullptr;
+        if (tok->previous()->link())
+            ftok = tok->previous()->link()->previous();
+        else
+            ftok = tok->previous();
+        if (!ftok)
+            return false;
+        if (const Function * f = ftok->function()) {
+            return !Function::returnsReference(f, true);
+        } else if (library) {
+            std::string returnType = library->returnValueType(ftok);
+            return !returnType.empty() && returnType.back() != '&';
+        } else {
+            return false;
+        }
     }
     return true;
 }
@@ -300,6 +309,23 @@ Token* astParentSkipParens(Token* tok)
     if (parent->link() != nextAfterAstRightmostLeaf(tok))
         return parent;
     return astParentSkipParens(parent);
+}
+
+const Token* getParentMember(const Token * tok)
+{
+    if (!tok)
+        return tok;
+    const Token * parent = tok->astParent();
+    if (!Token::simpleMatch(parent, "."))
+        return tok;
+    if (tok == parent->astOperand2())
+        return parent->astOperand1();
+    const Token * gparent = parent->astParent();
+    if (!Token::simpleMatch(gparent, ".") || gparent->astOperand2() != parent)
+        return tok;
+    if (gparent->astOperand1())
+        return gparent->astOperand1();
+    return tok;
 }
 
 static const Token * getVariableInitExpression(const Variable * var)
@@ -1634,7 +1660,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 }
             }
             tok = bodyStart->link();
-            if (Token::Match(tok, "} else {"))
+            if (Token::simpleMatch(tok, "} else {"))
                 tok = tok->linkAt(2);
             if (!tok)
                 return Result(Result::Type::BAILOUT);

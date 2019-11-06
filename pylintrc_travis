@@ -1,6 +1,11 @@
-# Just the severe stuff...
 [MESSAGES CONTROL]
 disable=C,R,W
+enable=mixed-indentation,
+       trailing-whitespace,
+       print-statement,
+       literal-comparison,
+       #unnecessary-semicolon,
+       #bad-indentation
 [REPORTS]
 reports=no
 [TYPECHECK]
@@ -8,3 +13,4 @@ reports=no
 ignored-classes=SQLObject,_socketobject
 [MASTER]
 init-hook='import sys; sys.path.append("./addons")'
+suggestion-mode=yes

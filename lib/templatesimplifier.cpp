@@ -723,6 +723,8 @@ bool TemplateSimplifier::getTemplateDeclarations()
         }
         if (!tok1)
             syntaxError(tok);
+        if (!tok1->next())
+            syntaxError(tok);
         // Some syntax checks, see #6865
         if (!tok->tokAt(2))
             syntaxError(tok->next());
