@@ -2205,6 +2205,13 @@ private:
               "    return &b.m;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9453
+        check("int *ptr;\n"
+              "void foo(int arr[]) {\n"
+              "    ptr = &arr[2];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeFunction() {
