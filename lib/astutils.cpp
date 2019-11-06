@@ -1618,7 +1618,8 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
 
         if (mWhat == What::ValueFlow && Token::simpleMatch(tok, "if (") && Token::simpleMatch(tok->linkAt(1), ") {")) {
             const Token *bodyStart = tok->linkAt(1)->next();
-            const Token *condTok = tok->next()->astOperand2();
+            const Token *conditionStart = tok->next();
+            const Token *condTok = conditionStart->astOperand2();
             if (condTok->hasKnownIntValue()) {
                 bool cond = condTok->values().front().intvalue;
                 if (cond) {
@@ -1636,6 +1637,14 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             if (Token::Match(tok, "} else {"))
                 tok = tok->linkAt(2);
             if (!tok)
+                return Result(Result::Type::BAILOUT);
+
+            // Is expr changed in condition?
+            if (!isUnchanged(conditionStart, conditionStart->link(), exprVarIds, local))
+                return Result(Result::Type::BAILOUT);
+
+            // Is expr changed in condition body?
+            if (!isUnchanged(bodyStart, bodyStart->link(), exprVarIds, local))
                 return Result(Result::Type::BAILOUT);
         }
 
