@@ -5,6 +5,13 @@ enable=mixed-indentation,
        print-statement,
        literal-comparison,
        unnecessary-semicolon,
+       mixed-line-endings,
+       bad-open-mode,
+       redundant-unittest-assert,
+       boolean-datetime,
+       deprecated-method,
+       anomalous-unicode-escape-in-string,
+       anomalous-backslash-in-string,
        #bad-indentation
 [REPORTS]
 reports=no

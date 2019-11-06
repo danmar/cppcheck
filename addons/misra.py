@@ -484,7 +484,7 @@ def isHexEscapeSequence(symbols):
 
 
 def isOctalEscapeSequence(symbols):
-    """Checks that given symbols are valid octal escape sequence:
+    r"""Checks that given symbols are valid octal escape sequence:
 
      octal-escape-sequence:
              \ octal-digit
@@ -2699,7 +2699,7 @@ def main():
                             rules_violated[misra_id] = rules_violated.get(misra_id, 0) + 1
                     print("MISRA rules violated:")
                     convert = lambda text: int(text) if text.isdigit() else text
-                    misra_sort = lambda key: [ convert(c) for c in re.split('[\.-]([0-9]*)', key) ]
+                    misra_sort = lambda key: [ convert(c) for c in re.split('[.-]([0-9]*)', key) ]
                     for misra_id in sorted(rules_violated.keys(), key=misra_sort):
                         res = re.match(r'misra-c2012-([0-9]+)\\.([0-9]+)', misra_id)
                         if res is None:
