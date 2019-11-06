@@ -4,7 +4,7 @@ enable=mixed-indentation,
        trailing-whitespace,
        print-statement,
        literal-comparison,
-       #unnecessary-semicolon,
+       unnecessary-semicolon,
        #bad-indentation
 [REPORTS]
 reports=no

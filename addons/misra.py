@@ -2391,7 +2391,7 @@ class MisraChecker:
                     rule.misra_severity = res.group(1)
                     have_severity = True
                 else:
-                    severity_loc += 1;
+                    severity_loc += 1
 
                 # Only look for severity on the Rule line
                 # or the next non-blank line after
