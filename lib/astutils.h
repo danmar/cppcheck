@@ -126,7 +126,7 @@ bool isWithoutSideEffects(bool cpp, const Token* tok);
 bool isUniqueExpression(const Token* tok);
 
 /** Is scope a return scope (scope will unconditionally return) */
-bool isReturnScope(const Token *endToken, const Settings * settings = nullptr, bool functionScope=false);
+bool isReturnScope(const Token * const endToken, const Library * library=nullptr, bool functionScope=false);
 
 /// Return the token to the function and the argument number
 const Token * getTokenArgumentFunction(const Token * tok, int& argn);

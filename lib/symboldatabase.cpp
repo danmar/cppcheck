@@ -1401,7 +1401,7 @@ void SymbolDatabase::createSymbolDatabaseEscapeFunctions()
         Function * function = scope.function;
         if (!function)
             continue;
-        function->isEscapeFunction(isReturnScope(scope.bodyEnd, mSettings, true));
+        function->isEscapeFunction(isReturnScope(scope.bodyEnd, &mSettings->library, true));
     }
 }
 
