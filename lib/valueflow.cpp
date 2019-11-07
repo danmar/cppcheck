@@ -3210,7 +3210,7 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, ValueFlow::Value:
         if (!vartok)
             return {{tok, std::move(errorPath)}};
         const Variable *tokvar = vartok->variable();
-        if (!astIsContainer(vartok) && !(tokvar && tokvar->isArray()) &&
+        if (!astIsContainer(vartok) && !(tokvar && tokvar->isArray() && !tokvar->isArgument()) &&
             (Token::Match(vartok->astParent(), "[|*") || vartok->astParent()->originalName() == "->")) {
             for (const ValueFlow::Value &v : vartok->values()) {
                 if (!v.isLocalLifetimeValue())
