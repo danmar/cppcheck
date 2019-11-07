@@ -21,11 +21,12 @@ namespace ExampleNamespace {
 }
 
 
-TEST(ASSERT, ASSERT) {
-   int *a = (int*)calloc(10,sizeof(int));
-   ASSERT_TRUE(a != nullptr);
+TEST(ASSERT, ASSERT)
+{
+    int *a = (int*)calloc(10,sizeof(int));
+    ASSERT_TRUE(a != nullptr);
 
-   a[0] = 10;
+    a[0] = 10;
 
-   free(a);
+    free(a);
 }
