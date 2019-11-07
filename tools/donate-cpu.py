@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Donate CPU
 #
 # A script a user can run to donate CPU to cppcheck project
@@ -94,6 +96,21 @@ for arg in sys.argv[1:]:
     else:
         print('Unhandled argument: ' + arg)
         sys.exit(1)
+
+if sys.version_info.major < 3:
+    print("#" * 80)
+    print("#" * 80)
+    print("IMPORTANT")
+    print("Please consider switching to Python 3.")
+    print("")
+    print("We plan to completely drop Python 2 support")
+    print("for the Donate CPU client in the near future.")
+    print("")
+    print("For further information and reporting complaints, ideas, ... see:")
+    print("https://sourceforge.net/p/cppcheck/discussion/development/thread/86813a8a53/")
+    print("#" * 80)
+    print("#" * 80)
+    time.sleep(5)
 
 print('Thank you!')
 if not check_requirements():
