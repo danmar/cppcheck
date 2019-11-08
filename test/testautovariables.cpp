@@ -2452,6 +2452,15 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:3] -> [test.cpp:4]: (error) Using pointer to temporary.\n",
             errout.str());
+
+        check("auto f(std::string s) {\n"
+              "    const char *x = s.substr(1,2).c_str();\n"
+              "    auto i = s.substr(4,5).begin();\n"
+              "    return *i;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:4]: (error) Using iterator to temporary.\n",
+            errout.str());
     }
 
     void invalidLifetime() {
