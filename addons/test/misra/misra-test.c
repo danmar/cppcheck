@@ -524,7 +524,46 @@ void misra_16_3() {
     {
         break;
     }
+  }
+
+  switch (x) {
+    case 1:
+        break;
+    default: // 16.5
+        x++;
+    case 19: // 16.3
+        break;
+    case 20:
+        x + 2;
+        x + 3;
+        break;
     }
+    switch (x) { // 16.6
+    default:;
+    } // 16.3
+
+    switch (x) { default:; } // 16.3 16.6
+
+    switch (x) {
+    case 20:
+        x + 2;
+        x + 3;
+        break;
+    case 21:
+        x + 2;
+        x + 3;
+        break;
+    default:
+        ;
+    } // 16.3
+
+    switch (x) { // 16.4 16.6
+    case 1:
+        x++;
+        break;
+    case 2:
+        x++;
+  } // 16.3
 }
 
 void misra_16_4() {
