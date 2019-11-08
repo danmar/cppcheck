@@ -733,7 +733,7 @@ union misra_19_2 { }; // 19.2
 #define __Incompatible 0xdeadbeef // 21.1
 #define __starts_with_lower 0xdeadbeef // 21.1
 #define __MY_HEADER_ // 21.1
-#define _starts_with_lower 1 // no warning
+#define _macro_starts_with_lower 1 // no warning
 static int _file_scope_id_21_1 = 42; // no warning
 static int _file_scope_id_21_1_fn() { return 42; } // no warning
 static int __file_scope_id_21_1 = 42; // 21.1
@@ -746,19 +746,23 @@ int __external_scope_id_21_1 = 42; // 21.1
 int __external_scope_id_21_1_fn() { return 42; } // 21.1
 int _External_scope_id_21_1 = 42; // 21.1
 int _External_scope_id_21_1_fn() { return 42; } // 21.1
-int errno = 42; // 21.1
-int errno() { // 21.1
-    // TODO: 15.5 false positive
-    return 42; // 15.5
+int errno = 42; // 21.1 5.5
+int misra_21_1() {
+    int _a = 42; // 21.1
+    errno = EINVAL; // no warning
+    _a ++; // no warning
+    _exit(1); // no warning
+    return _a; // no warning
 }
-
+int _misra_21_1_1(); // 21.1
+static int _misra_21_1_2(); // no warning
+#define errno 11 // 21.1
 struct _struct_21_1 { int a; }; // 21.1
 struct _Struct_21_1 { int a; }; // 21.1
 struct __struct_21_1 { int a; }; // 21.1
 typedef struct { int a; } _struct_21_1_t; // 21.1
 typedef struct { int a; } _Struct_21_1_t; // 21.1
 typedef struct { int a; } __struct_21_1_t; // 21.1
-
 enum _enum_21_1 { ENUM211_1 }; // 21.1
 enum _Enum_21_1 { ENUM211_2 }; // 21.1
 enum __enum_21_1 { ENUM211_3 }; // 21.1
@@ -773,7 +777,6 @@ enum enum_21_1_valid_id {
     _eNUM211_10, // 21.1
     enum211_11
 };
-
 union _union_21_1 { int a; }; // 21.1 19.2
 union _Union_21_1 { int a; }; // 21.1 19.2
 union __union_21_1 { int a; }; // 21.1 19.2
