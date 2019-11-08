@@ -26,6 +26,17 @@ typedef unsigned long long u64;
 
 // http://example.com // no warning
 
+void misra_2_7_unused_param (int *param1, int unused_param)  // 2.7
+{
+    *param1 = 42U;
+}
+
+void misra_2_7_used_params (int *param1, int param2, int param3)
+{
+    (void)param3;
+    *param1 = param2;
+}
+
 void misra_3_2(int enable)
 {
     // This won't generate a violation because of subsequent blank line \
