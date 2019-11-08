@@ -82,7 +82,9 @@ private:
         TEST_CASE(nullpointer40);
         TEST_CASE(nullpointer41);
         TEST_CASE(nullpointer42);
+        TEST_CASE(nullpointer43); // #9404
         TEST_CASE(nullpointer44); // #9395, #9423
+        TEST_CASE(nullpointer45);
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1538,6 +1540,17 @@ private:
             errout.str());
     }
 
+    void nullpointer43() {
+        check("struct A { int* x; };\n"
+              "void f(A* a) {\n"
+              "    int * x = a->x;\n"
+              "    if (x) {\n"
+              "        (void)*a->x;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void nullpointer44() {
         // #9395
         check("int foo( ) {\n"
@@ -1563,6 +1576,39 @@ private:
               "    if (!lPtrOk)\n"
               "        return;\n"
               "    lPtr->Clear();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer45() {
+        check("struct a {\n"
+              "  a *b() const;\n"
+              "};\n"
+              "void g() { throw 0; }\n"
+              "a h(a * c) {\n"
+              "  if (c && c->b()) {}\n"
+              "  if (!c)\n"
+              "    g();\n"
+              "  if (!c->b())\n"
+              "    g();\n"
+              "  a d = *c->b();\n"
+              "  return d;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct a {\n"
+              "  a *b() const;\n"
+              "};\n"
+              "void e() { throw 0; }\n"
+              "a f() {\n"
+              "  a *c = 0;\n"
+              "  if (0 && c->b()) {}\n"
+              "  if (!c)\n"
+              "    e();\n"
+              "  if (!c->b())\n"
+              "    e();\n"
+              "  a d = *c->b();\n"
+              "  return d;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

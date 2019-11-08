@@ -1678,9 +1678,12 @@ static void valueFlowReverse(TokenList *tokenlist,
             if (Token::Match(tok2->previous(), "!!* %name% =")) {
                 Token* assignTok = const_cast<Token*>(tok2->next()->astOperand2());
                 if (!assignTok->hasKnownValue()) {
-                    std::list<ValueFlow::Value> values = {val};
                     setTokenValue(assignTok, val, settings);
+                    const std::string info = "Assignment from '" + assignTok->expressionString() + "'";
+                    val.errorPath.emplace_back(assignTok, info);
+                    std::list<ValueFlow::Value> values = {val};
                     if (val2.condition) {
+                        val2.errorPath.emplace_back(assignTok, info);
                         setTokenValue(assignTok, val2, settings);
                         values.push_back(val2);
                     }
@@ -2190,7 +2193,7 @@ static bool valueFlowForwardVariable(Token* const startToken,
             ++indentlevel;
         else if (indentlevel >= 0 && tok2->str() == "}") {
             --indentlevel;
-            if (indentlevel <= 0 && isReturnScope(tok2, settings) && Token::Match(tok2->link()->previous(), "else|) {")) {
+            if (indentlevel <= 0 && isReturnScope(tok2, &settings->library) && Token::Match(tok2->link()->previous(), "else|) {")) {
                 const Token *condition = tok2->link();
                 const bool iselse = Token::simpleMatch(condition->tokAt(-2), "} else {");
                 if (iselse)
@@ -2240,7 +2243,7 @@ static bool valueFlowForwardVariable(Token* const startToken,
                     return true;
             } else if (indentlevel <= 0 &&
                        Token::simpleMatch(tok2->link()->previous(), "else {") &&
-                       !isReturnScope(tok2->link()->tokAt(-2), settings) &&
+                       !isReturnScope(tok2->link()->tokAt(-2), &settings->library) &&
                        isVariableChanged(tok2->link(), tok2, varid, var->isGlobal(), settings, tokenlist->isCPP())) {
                 lowerToPossible(values);
             }
@@ -2506,7 +2509,7 @@ static bool valueFlowForwardVariable(Token* const startToken,
             }
 
             // stop after conditional return scopes that are executed
-            if (isReturnScope(end, settings)) {
+            if (isReturnScope(end, &settings->library)) {
                 std::list<ValueFlow::Value>::iterator it;
                 for (it = values.begin(); it != values.end();) {
                     if (conditionIsTrue(tok2->next()->astOperand2(), getProgramMemory(tok2, varid, *it)))
@@ -4375,7 +4378,7 @@ struct ValueFlowConditionHandler {
                             continue;
                         }
 
-                        bool dead_if = isReturnScope(after, settings) ||
+                        bool dead_if = isReturnScope(after, &settings->library) ||
                                        (tok->astParent() && Token::simpleMatch(tok->astParent()->previous(), "while (") &&
                                         !isBreakScope(after));
                         bool dead_else = false;
@@ -4387,7 +4390,7 @@ struct ValueFlowConditionHandler {
                                     bailout(tokenlist, errorLogger, after, "possible noreturn scope");
                                 continue;
                             }
-                            dead_else = isReturnScope(after, settings);
+                            dead_else = isReturnScope(after, &settings->library);
                         }
 
                         if (dead_if && dead_else)

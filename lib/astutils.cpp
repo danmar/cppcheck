@@ -952,7 +952,7 @@ static bool isEscapedOrJump(const Token* tok, bool functionsScope)
         return Token::Match(tok, "return|goto|throw|continue|break");
 }
 
-bool isReturnScope(const Token * const endToken, const Settings * settings, bool functionScope)
+bool isReturnScope(const Token * const endToken, const Library * library, bool functionScope)
 {
     if (!endToken || endToken->str() != "}")
         return false;
@@ -965,7 +965,7 @@ bool isReturnScope(const Token * const endToken, const Settings * settings, bool
 
     if (Token::simpleMatch(prev, "}")) {
         if (Token::simpleMatch(prev->link()->tokAt(-2), "} else {"))
-            return isReturnScope(prev, settings, functionScope) && isReturnScope(prev->link()->tokAt(-2), settings, functionScope);
+            return isReturnScope(prev, library, functionScope) && isReturnScope(prev->link()->tokAt(-2), library, functionScope);
         if (Token::simpleMatch(prev->link()->previous(), ") {") &&
             Token::simpleMatch(prev->link()->linkAt(-1)->previous(), "switch (") &&
             !Token::findsimplematch(prev->link(), "break", prev)) {
@@ -974,7 +974,7 @@ bool isReturnScope(const Token * const endToken, const Settings * settings, bool
         if (isEscaped(prev->link()->astTop(), functionScope))
             return true;
         if (Token::Match(prev->link()->previous(), "[;{}] {"))
-            return isReturnScope(prev, settings, functionScope);
+            return isReturnScope(prev, library, functionScope);
     } else if (Token::simpleMatch(prev, ";")) {
         if (Token::simpleMatch(prev->previous(), ") ;") && Token::Match(prev->linkAt(-1)->tokAt(-2), "[;{}] %name% (")) {
             const Token * ftok = prev->linkAt(-1)->previous();
@@ -984,8 +984,8 @@ bool isReturnScope(const Token * const endToken, const Settings * settings, bool
                     return true;
                 if (function->isAttributeNoreturn())
                     return true;
-            } else if (settings) {
-                if (settings->library.isnoreturn(ftok))
+            } else if (library) {
+                if (library->isnoreturn(ftok))
                     return true;
             }
             return false;
@@ -1638,6 +1638,40 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 return Result(Result::Type::BAILOUT);
 
             // Is expr changed in loop body?
+            if (!isUnchanged(bodyStart, bodyStart->link(), exprVarIds, local))
+                return Result(Result::Type::BAILOUT);
+        }
+
+        if (mWhat == What::ValueFlow && Token::simpleMatch(tok, "if (") && Token::simpleMatch(tok->linkAt(1), ") {")) {
+            const Token *bodyStart = tok->linkAt(1)->next();
+            const Token *conditionStart = tok->next();
+            const Token *condTok = conditionStart->astOperand2();
+            if (condTok->hasKnownIntValue()) {
+                bool cond = condTok->values().front().intvalue;
+                if (cond) {
+                    FwdAnalysis::Result result = checkRecursive(expr, bodyStart, bodyStart->link(), exprVarIds, local, true, depth);
+                    if (result.type != Result::Type::NONE)
+                        return result;
+                } else if (Token::simpleMatch(bodyStart->link(), "} else {")) {
+                    bodyStart = bodyStart->tokAt(2);
+                    FwdAnalysis::Result result = checkRecursive(expr, bodyStart, bodyStart->link(), exprVarIds, local, true, depth);
+                    if (result.type != Result::Type::NONE)
+                        return result;
+                }
+            }
+            tok = bodyStart->link();
+            if (isReturnScope(tok, &mLibrary))
+                return Result(Result::Type::BAILOUT);
+            if (Token::simpleMatch(tok, "} else {"))
+                tok = tok->linkAt(2);
+            if (!tok)
+                return Result(Result::Type::BAILOUT);
+
+            // Is expr changed in condition?
+            if (!isUnchanged(conditionStart, conditionStart->link(), exprVarIds, local))
+                return Result(Result::Type::BAILOUT);
+
+            // Is expr changed in condition body?
             if (!isUnchanged(bodyStart, bodyStart->link(), exprVarIds, local))
                 return Result(Result::Type::BAILOUT);
         }
