@@ -16,6 +16,7 @@
 from __future__ import print_function
 
 import cppcheckdata
+import itertools
 import sys
 import re
 import os
@@ -1964,10 +1965,16 @@ class MisraChecker:
             if res:
                 self.reportError(directive, 21, 1)
 
+        type_name_tokens = (t for t in data.tokenlist if t.typeScopeId)
+        type_fields_tokens = (t for t in data.tokenlist if t.valueType and t.valueType.typeScopeId)
+
         # Search for forbidden identifiers
-        for token in data.tokenlist:
-            if not token.isName:
-                continue
+        for i in itertools.chain(data.variables, data.functions, type_name_tokens, type_fields_tokens):
+            token = i
+            if isinstance(i, cppcheckdata.Variable):
+                token = i.nameToken
+            elif isinstance(i, cppcheckdata.Function):
+                token = i.tokenDef
             if len(token.str) < 2:
                 continue
             if token.str == 'errno':
