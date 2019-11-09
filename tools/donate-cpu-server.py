@@ -888,9 +888,9 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             print('[' + strDateTime() + '] get:' + pkg)
             connection.send(pkg.encode('utf-8', 'ignore'))
             connection.close()
-        elif cmd.startswith('write\nftp://'):
+        elif cmd.startswith('write\nftp://') or cmd.startswith('write\nhttp://'):
             # read data
-            data = cmd[cmd.find('ftp'):]
+            data = cmd[cmd.find('\n')+1:]
             try:
                 t = 0.0
                 max_data_size = 2 * 1024 * 1024
@@ -920,6 +920,8 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
 
             # save data
             res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.(gz|bz2)', url)
+            if res is None:
+                res = re.match(r'http://cppcheck.sf.net/([a-z]+).tgz', url)
             if res is None:
                 print('results not written. res is None.')
                 continue
@@ -955,9 +957,9 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                 f.write(' '.join(latestResults))
             # generate package.diff..
             generate_package_diff_statistics(filename)
-        elif cmd.startswith('write_info\nftp://'):
+        elif cmd.startswith('write_info\nftp://') or cmd.startswith('write_info\nhttp://'):
             # read data
-            data = cmd[11:]
+            data = cmd[cmd.find('\n') + 1:]
             try:
                 t = 0.0
                 max_data_size = 1024 * 1024
@@ -987,6 +989,8 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
 
             # save data
             res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.(gz|bz2)', url)
+            if res is None:
+                res = re.match(r'http://cppcheck.sf.net/([a-z]+).tgz', url)
             if res is None:
                 print('info output not written. res is None.')
                 continue
@@ -1018,7 +1022,14 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                 print('[' + strDateTime() + '] getPackageIdx: index is out of range')
             continue
         else:
-            print('[' + strDateTime() + '] invalid command: ' + firstLine)
+            if cmd.find('\n') < 0:
+                print('[' + strDateTime() + '] invalid command: "' + firstLine + '"')
+            else:
+                lines = cmd.split('\n')
+                s = '\\n'.join(lines[:2])
+                if len(lines) > 2:
+                    s += '...'
+                print('[' + strDateTime() + '] invalid command: "' + s + '"')
             connection.close()
 
 
