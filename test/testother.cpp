@@ -1411,14 +1411,14 @@ private:
                                 "    double *d = (double*)(i);\n"
                                 "    float *f = reinterpret_cast<float*>(i);\n"
                                 "}");
-        ASSERT_EQUALS("[test.cpp:2]: (portability) Casting between integer* and long double* which have an incompatible binary data representation.\n"
-                      "[test.cpp:3]: (portability) Casting between integer* and double* which have an incompatible binary data representation.\n"
-                      "[test.cpp:4]: (portability) Casting between integer* and float* which have an incompatible binary data representation.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Casting between int* and long double* which have an incompatible binary data representation.\n"
+                      "[test.cpp:3]: (portability) Casting between int* and double* which have an incompatible binary data representation.\n"
+                      "[test.cpp:4]: (portability) Casting between int* and float* which have an incompatible binary data representation.\n", errout.str());
 
         checkInvalidPointerCast("float* test(unsigned int* i) {\n"
                                 "    return (float*)i;\n"
                                 "}");
-        ASSERT_EQUALS("[test.cpp:2]: (portability) Casting between integer* and float* which have an incompatible binary data representation.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Casting between unsigned int* and float* which have an incompatible binary data representation.\n", errout.str());
 
         checkInvalidPointerCast("float* test(unsigned int* i) {\n"
                                 "    return (float*)i[0];\n"
@@ -1450,7 +1450,7 @@ private:
                                 "    foo((long long*)f);\n"
                                 "    return reinterpret_cast<long long*>(c);\n"
                                 "}", true);
-        ASSERT_EQUALS("[test.cpp:2]: (portability) Casting from float* to integer* is not portable due to different binary data representations on different platforms.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Casting from float* to long long* is not portable due to different binary data representations on different platforms.\n", errout.str());
 
         checkInvalidPointerCast("Q_DECLARE_METATYPE(int*)"); // #4135 - don't crash
     }

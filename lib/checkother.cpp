@@ -344,24 +344,26 @@ void CheckOther::invalidPointerCast()
             if (fromType->type != toType->type && fromType->type >= ValueType::Type::BOOL && toType->type >= ValueType::Type::BOOL && (toType->type != ValueType::Type::CHAR || printInconclusive)) {
                 if (toType->isIntegral() && fromType->isIntegral())
                     continue;
-                std::string toStr = toType->isIntegral() ? "integer *" : toType->str();
+                std::string toStr = toType->str();
                 toStr.erase(toStr.size()-2);
-                std::string fromStr = fromType->isIntegral() ? "integer *" : fromType->str();
+                if (toStr.rfind("signed ", 0) == 0)
+                    toStr.erase(0, 7);
+                std::string fromStr = fromType->str();
                 fromStr.erase(fromStr.size() - 2);
+                if (fromStr.rfind("signed ", 0) == 0)
+                    fromStr.erase(0, 7);
 
-                invalidPointerCastError(tok, fromStr, toStr, toType->type == ValueType::Type::CHAR);
+                invalidPointerCastError(tok, fromStr, toStr, toType->type == ValueType::Type::CHAR, toType->isIntegral());
             }
         }
     }
 }
 
-void CheckOther::invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive)
+
+void CheckOther::invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive, bool toIsInt)
 {
-    if (to == "integer") { // If we cast something to int*, this can be useful to play with its binary data representation
-        if (!inconclusive)
-            reportError(tok, Severity::portability, "invalidPointerCast", "Casting from " + from + "* to integer* is not portable due to different binary data representations on different platforms.", CWE704, false);
-        else
-            reportError(tok, Severity::portability, "invalidPointerCast", "Casting from " + from + "* to char* is not portable due to different binary data representations on different platforms.", CWE704, true);
+    if (toIsInt) { // If we cast something to int*, this can be useful to play with its binary data representation
+            reportError(tok, Severity::portability, "invalidPointerCast", "Casting from " + from + "* to " + to + "* is not portable due to different binary data representations on different platforms.", CWE704, inconclusive);
     } else
         reportError(tok, Severity::portability, "invalidPointerCast", "Casting between " + from + "* and " + to + "* which have an incompatible binary data representation.", CWE704, false);
 }
