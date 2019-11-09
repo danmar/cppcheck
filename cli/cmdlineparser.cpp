@@ -547,6 +547,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // --project
             else if (std::strncmp(argv[i], "--project=", 10) == 0) {
+                mSettings->checkAllConfigurations = false; // Can be overriden with --max-configs or --force
                 const std::string projectFile = argv[i]+10;
                 ImportProject::Type projType = mSettings->project.import(projectFile, mSettings);
                 if (projType == ImportProject::Type::CPPCHECK_GUI) {
@@ -898,6 +899,9 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
     }
 
     mSettings->project.ignorePaths(mIgnoredPaths);
+
+    if (mSettings->force || maxconfigs)
+        mSettings->checkAllConfigurations = true;
 
     if (mSettings->force)
         mSettings->maxConfigs = ~0U;

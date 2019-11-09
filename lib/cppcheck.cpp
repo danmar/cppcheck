@@ -386,7 +386,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         preprocessor.setPlatformInfo(&tokens1);
 
         // Get configurations..
-        if (mSettings.userDefines.empty() || mSettings.force) {
+        if ((mSettings.checkAllConfigurations && mSettings.userDefines.empty()) || mSettings.force) {
             Timer t("Preprocessor::getConfigs", mSettings.showtime, &S_timerResults);
             configurations = preprocessor.getConfigs(tokens1);
         } else {
