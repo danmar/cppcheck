@@ -237,6 +237,7 @@ private:
         TEST_CASE(garbageCode203); // #8972
         TEST_CASE(garbageCode204);
         TEST_CASE(garbageCode205);
+        TEST_CASE(garbageCode206);
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -1623,6 +1624,15 @@ private:
                   ": wxCommandEvent ( Event )\n"
                   ", m_SnippetID ( 0 ) {\n"
                   "}"); // don't crash
+    }
+
+    void garbageCode206() {
+        {
+            ASSERT_EQUALS("[test.cpp:1] syntax error", getSyntaxError("void foo() { for (auto operator new : int); }"));
+        }
+        {
+            ASSERT_EQUALS("[test.cpp:1] syntax error", getSyntaxError("void foo() { for (a operator== :) }"));
+        }
     }
 
     void syntaxErrorFirstToken() {
