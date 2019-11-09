@@ -185,7 +185,7 @@ void misra_5_3_enum_hidesfunction_31y(void) {} //5.3
 #define misra_5_5_hides_macro________31x 1
 
 int misra_5_5_var_hides_macro____31y; //5.5
-void misra_5_5_functionhides_macro31y(int misra_5_5_param_hides_macro__31y){} //5.5
+void misra_5_5_functionhides_macro31y(int misra_5_5_param_hides_macro__31y){(void)misra_5_5_param_hides_macro__31y;} //5.5
 struct misra_5_5_tag_hides_macro____31y { //5.5
 int x;
 };
@@ -228,7 +228,7 @@ enum misra_8_12_c { misra_c1 = misra_a1, misra_c2 = 1 }; // no-warning
 enum misra_8_12_d { misra_d1 = 1, misra_d2 = 2, misra_d3 = misra_d1 }; // no-warning
 enum misra_8_12_e { misra_e1 = sizeof(int), misra_e2}; // no-crash
 
-void misra_8_14(char * restrict str) {} // 8.14
+void misra_8_14(char * restrict str) {(void)str;} // 8.14
 
 void misra_9_5() {
   int x[] = {[0]=23}; // 9.5
@@ -302,9 +302,10 @@ void misra_11_7(int *p, float f) {
 void misra_11_7_extra(int *p, float f, bool b) {
   (void) p; // no-warning
   (void) f; // no-warning
+  (void) b;
 }
 
-char * misra_11_8_const(const char *str) {  }
+char * misra_11_8_const(const char *str) {(void)str;}
 char * misra_11_8(const char *str) {
   (void)misra_11_8_const(str); // no-warning
   return (char *)str; // 11.8
@@ -662,7 +663,7 @@ void misra_17_2_5(void) {
   misra_17_2_1(); // no-warning
 }
 
-void misra_17_6(int x[static 20]) {} // 17.6
+void misra_17_6(int x[static 20]) {void(x);} // 17.6
 
 int calculation(int x) { return x + 1; }
 void misra_17_7(void) {
