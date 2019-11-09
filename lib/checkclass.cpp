@@ -2625,6 +2625,9 @@ void CheckClass::overrideError(const Function *funcInBase, const Function *funcI
 
 void CheckClass::checkAccessModifierVirtualFunctions()
 {
+    // Motivation:
+    // isocpp.org/wiki/faq/proper-inheritance#hiding-inherited-public
+    // stackoverflow.com/questions/484592/overriding-public-virtual-functions-with-private-functions-in-c
     if (!mSettings->isEnabled(Settings::STYLE))
         return;
     for (const Scope * classScope : mSymbolDatabase->classAndStructScopes) {
