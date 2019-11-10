@@ -229,7 +229,7 @@ private:
 
         Library library;
         ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
-        ASSERT_EQUALS(true, library.functions["foo"].argumentChecks[1].notuninit);
+        ASSERT_EQUALS(0, library.functions["foo"].argumentChecks[1].notuninit);
         ASSERT_EQUALS(true, library.functions["foo"].argumentChecks[2].notnull);
         ASSERT_EQUALS(true, library.functions["foo"].argumentChecks[3].formatstr);
         ASSERT_EQUALS(true, library.functions["foo"].argumentChecks[4].strz);
@@ -248,7 +248,7 @@ private:
 
         Library library;
         ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
-        ASSERT_EQUALS(true, library.functions["foo"].argumentChecks[-1].notuninit);
+        ASSERT_EQUALS(0, library.functions["foo"].argumentChecks[-1].notuninit);
     }
 
     void function_arg_variadic() const {
@@ -262,7 +262,7 @@ private:
 
         Library library;
         ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
-        ASSERT_EQUALS(true, library.functions["foo"].argumentChecks[-1].notuninit);
+        ASSERT_EQUALS(0, library.functions["foo"].argumentChecks[-1].notuninit);
 
         TokenList tokenList(nullptr);
         std::istringstream istr("foo(a,b,c,d,e);");
