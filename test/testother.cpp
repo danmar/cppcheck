@@ -1375,6 +1375,7 @@ private:
             settings.addEnabled("portability");
         settings.inconclusive = inconclusive;
 
+        settings.defaultSign = 's';
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
