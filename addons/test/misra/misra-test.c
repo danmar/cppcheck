@@ -302,7 +302,7 @@ void misra_11_7(int *p, float f) {
 void misra_11_7_extra(int *p, float f, bool b) {
   (void) p; // no-warning
   (void) f; // no-warning
-  (void) b;
+  (void) b; // no-warning
 }
 
 char * misra_11_8_const(const char *str) {(void)str;}
@@ -663,7 +663,7 @@ void misra_17_2_5(void) {
   misra_17_2_1(); // no-warning
 }
 
-void misra_17_6(int x[static 20]) {void(x);} // 17.6
+void misra_17_6(int x[static 20]) {(void)x;} // 17.6
 
 int calculation(int x) { return x + 1; }
 void misra_17_7(void) {
