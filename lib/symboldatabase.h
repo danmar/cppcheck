@@ -872,7 +872,7 @@ public:
 
     const Token* returnDefEnd() const {
         if (this->hasTrailingReturnType()) {
-            return Token::findsimplematch(retDef, "{");
+            return Token::findmatch(retDef, "{|;");
         } else {
             return tokenDef;
         }
