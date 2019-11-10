@@ -4503,7 +4503,7 @@ private:
                         "\n"
                         "int main() {\n"
                         "  Foo* foo;\n"
-                        "  foo.b\n"
+                        "  foo->b\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: foo\n", errout.str());
     }

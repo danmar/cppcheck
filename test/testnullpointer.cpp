@@ -2596,6 +2596,15 @@ private:
               "    var->f();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9439
+        check("char* g();\n"
+              "char* f() {\n"
+              "    std::unique_ptr<char> x(g());\n"
+              "    if( x ) {}\n"
+              "    return x.release();\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void functioncall() {    // #3443 - function calls
