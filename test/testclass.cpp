@@ -217,8 +217,6 @@ private:
         TEST_CASE(explicitConstructors);
         TEST_CASE(copyCtorAndEqOperator);
 
-        TEST_CASE(unsafeClassDivZero);
-
         TEST_CASE(override1);
         TEST_CASE(overrideCVRefQualifiers);
 
@@ -7055,47 +7053,6 @@ private:
                                  "};\n"
                                  "A::A()\n"
                                  "{nonpure(false);}\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void checkUnsafeClassDivZero(const char code[]) {
-        // Clear the error log
-        errout.str("");
-        Settings settings;
-        settings.addEnabled("style");
-
-        // Tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        // Check..
-        CheckClass checkClass(&tokenizer, &settings, this);
-        checkClass.checkUnsafeClassDivZero(true);
-    }
-
-    void unsafeClassDivZero() {
-        checkUnsafeClassDivZero("class A {\n"
-                                "public:\n"
-                                "  void dostuff(int x);\n"
-                                "}\n"
-                                "void A::dostuff(int x) { int a = 1000 / x; }");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Public interface of A is not safe. When calling A::dostuff(), if parameter x is 0 that leads to division by zero.\n", errout.str());
-
-        checkUnsafeClassDivZero("class A {\n"
-                                "public:\n"
-                                "  void f1();\n"
-                                "  void f2(int x);\n"
-                                "}\n"
-                                "void A::f1() {}\n"
-                                "void A::f2(int x) { int a = 1000 / x; }");
-        ASSERT_EQUALS("[test.cpp:7]: (style) Public interface of A is not safe. When calling A::f2(), if parameter x is 0 that leads to division by zero.\n", errout.str());
-
-        checkUnsafeClassDivZero("class A {\n"
-                                "public:\n"
-                                "  void operator/(int x);\n"
-                                "}\n"
-                                "void A::operator/(int x) { int a = 1000 / x; }");
         ASSERT_EQUALS("", errout.str());
     }
 
