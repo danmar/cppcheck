@@ -3388,6 +3388,11 @@ private:
               "}", settings);
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: c\n", errout.str());
 
+        check("void f(unsigned int addr) {\n"
+              "    memset((void *)addr, 0, 1000);\n"
+              "}", settings0);
+        ASSERT_EQUALS("", errout.str());
+
         check("struct AB { char a[10]; };\n"
               "void foo(AB *ab) {\n"
               "    mystrncpy(x, ab->a, 100);\n"

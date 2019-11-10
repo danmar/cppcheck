@@ -588,6 +588,8 @@ void CheckBufferOverrun::bufferOverflow()
                     argtok = argtok->astOperand2();
                 if (!argtok || !argtok->variable())
                     continue;
+                if (argtok->valueType() && argtok->valueType()->pointer == 0)
+                    continue;
                 // TODO: strcpy(buf+10, "hello");
                 const ValueFlow::Value bufferSize = getBufferSize(argtok);
                 if (bufferSize.intvalue <= 1)
