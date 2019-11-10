@@ -428,6 +428,15 @@ private:
               "    std::string *str = new std::string;"
               "}", true);
         TODO_ASSERT_EQUALS("[test.cpp:2]: (error) Memory leak: str\n", "", errout.str());
+
+        check("class TestType {\n" // #9028
+              "public:\n"
+              "    char ca[12];\n"
+              "};\n"
+              "void f() {\n"
+              "    TestType *tt = new TestType();\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: tt\n", errout.str());
     }
 
     void realloc1() {
