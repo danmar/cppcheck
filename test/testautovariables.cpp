@@ -683,6 +683,13 @@ private:
               "    if ((char *)data != stack) free (data);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #8923
+        check("void f(char **args1, char *args2[]) {\n"
+              "    free((char **)args1);\n"
+              "    free((char **)args2);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testinvaliddealloc_C() {
