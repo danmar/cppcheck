@@ -110,6 +110,8 @@ private:
         TEST_CASE(returnReference14);
         TEST_CASE(returnReference15); // #9432
         TEST_CASE(returnReference16); // #9433
+        TEST_CASE(returnReference16); // #9433
+        TEST_CASE(returnReference17); // #9461
         TEST_CASE(returnReferenceFunction);
         TEST_CASE(returnReferenceContainer);
         TEST_CASE(returnReferenceLiteral);
@@ -1278,6 +1280,14 @@ private:
               "    return std::get<0>(std::make_tuple(x));\n"
               "}\n");
         TODO_ASSERT_EQUALS("error", "", errout.str());
+    }
+
+    void returnReference17() {
+        check("auto g() -> int&;\n"
+              "int& f() {\n"
+              "    return g();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void returnReferenceFunction() {
