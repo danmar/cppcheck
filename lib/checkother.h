@@ -276,7 +276,7 @@ private:
         // error
         c.zerodivError(nullptr, nullptr);
         c.misusedScopeObjectError(nullptr, "varname");
-        c.invalidPointerCastError(nullptr,  "float", "double", false, false);
+        c.invalidPointerCastError(nullptr,  "float *", "double *", false, false);
         c.negativeBitwiseShiftError(nullptr, 1);
         c.negativeBitwiseShiftError(nullptr, 2);
         c.checkPipeParameterSizeError(nullptr,  "varname", "dimension");
