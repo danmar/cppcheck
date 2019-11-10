@@ -272,7 +272,11 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
             libs += ' --library=' + library
 
     # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
-    options = jobs + libs + ' -D__GNUC__ --showtime=top5 --check-library --inconclusive --enable=style,information --platform=unix64 --template=daca2 -rp=temp temp'
+    options = jobs + libs + ' --showtime=top5 --check-library --inconclusive --enable=style,information --template=daca2 -rp=temp'
+    if os.path.isfile('temp/TortoiseSVN.sln'):
+        options += ' --platform=win64 --project=temp/TortoiseSVN.sln'
+    else:
+        options += ' -D__GNUC__ --platform=unix64 temp'
     cppcheck_cmd = cppcheck_path + '/cppcheck' + ' ' + options
     cmd = 'nice ' + cppcheck_cmd
     returncode, stdout, stderr, elapsed_time = run_command(cmd)
