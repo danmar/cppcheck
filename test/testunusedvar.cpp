@@ -3726,6 +3726,13 @@ private:
                               "        x++;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo(int value) {\n"
+                              "    static int array[16] = {0};\n"
+                              "    if(array[value]) {}\n"
+                              "    array[value] = 1;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarextern() {

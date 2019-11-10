@@ -175,6 +175,9 @@ void Token::concatStr(std::string const& b)
     mStr.erase(mStr.length() - 1);
     mStr.append(getStringLiteral(b) + "\"");
 
+    if (isCChar() && isStringLiteral(b) && b[0] != '"') {
+        mStr.insert(0, b.substr(0, b.find('"')));
+    }
     update_property_info();
 }
 

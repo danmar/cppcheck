@@ -38,14 +38,12 @@ def test_relative_path():
     ret, stdout, stderr = cppcheck(['--template=cppcheck1', 'helloworld'])
     filename = os.path.join('helloworld', 'main.c')
     assert ret == 0
-    assert stdout == 'Checking %s ...\n' % (filename)
     assert stderr == '[%s:5]: (error) Division by zero.\n' % (filename)
 
 
 def test_local_path():
     ret, stdout, stderr = cppcheck_local(['--template=cppcheck1', '.'])
     assert ret == 0
-    assert stdout == 'Checking main.c ...\n'
     assert stderr == '[main.c:5]: (error) Division by zero.\n'
 
 def test_absolute_path():
@@ -53,13 +51,11 @@ def test_absolute_path():
     ret, stdout, stderr = cppcheck(['--template=cppcheck1', prjpath])
     filename = os.path.join(prjpath, 'main.c')
     assert ret == 0
-    assert stdout == 'Checking %s ...\n' % (filename)
     assert stderr == '[%s:5]: (error) Division by zero.\n' % (filename)
 
 def test_addon_local_path():
     ret, stdout, stderr = cppcheck_local(['--addon=misra', '--template=cppcheck1', '.'])
     assert ret == 0
-    assert stdout == 'Checking main.c ...\n'
     assert stderr == ('[main.c:5]: (error) Division by zero.\n'
                       '[main.c:1]: (style) misra violation (use --rule-texts=<file> to get proper output)\n')
 
@@ -68,7 +64,6 @@ def test_addon_absolute_path():
     ret, stdout, stderr = cppcheck(['--addon=misra', '--template=cppcheck1', prjpath])
     filename = os.path.join(prjpath, 'main.c')
     assert ret == 0
-    assert stdout == 'Checking %s ...\n' % (filename)
     assert stderr == ('[%s:5]: (error) Division by zero.\n'
                       '[%s:1]: (style) misra violation (use --rule-texts=<file> to get proper output)\n' % (filename, filename))
 
@@ -96,7 +91,6 @@ def test_basepath_relative_path():
     ret, stdout, stderr = cppcheck([prjpath, '--template=cppcheck1', '-rp=' + prjpath])
     filename = os.path.join(prjpath, 'main.c')
     assert ret == 0
-    assert stdout == 'Checking %s ...\n' % (filename)
     assert stderr == '[main.c:5]: (error) Division by zero.\n'
 
 def test_basepath_absolute_path():
@@ -104,7 +98,6 @@ def test_basepath_absolute_path():
     ret, stdout, stderr = cppcheck(['--template=cppcheck1', prjpath, '-rp=' + prjpath])
     filename = os.path.join(prjpath, 'main.c')
     assert ret == 0
-    assert stdout == 'Checking %s ...\n' % (filename)
     assert stderr == '[main.c:5]: (error) Division by zero.\n'
 
 def test_vs_project_local_path():

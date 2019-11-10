@@ -446,12 +446,14 @@ def get_libraries():
                        # 'kde': ['<KGlobal>', '<KApplication>', '<KDE/'], <= enable after release of version 1.90
                        'libcerror': ['<libcerror.h>'],
                        'libcurl': ['<curl/curl.h>'],
+                       # 'libsigc++': ['<sigc++/'], <= enable after release of version 1.90
                        'lua': ['<lua.h>', '"lua.h"'],
                        'microsoft_sal': ['<sal.h>'],
                        'motif': ['<X11/', '<Xm/'],
                        'nspr': ['<prtypes.h>', '"prtypes.h"'],
                        'opengl': ['<GL/gl.h>', '<GL/glu.h>', '<GL/glut.h>'],
                        'openmp': ['<omp.h>'],
+                       # 'openssl': ['<openssl/'], <= enable after release of version 1.90
                        'python': ['<Python.h>', '"Python.h"'],
                        'qt': ['<QApplication>', '<QList>', '<qlist.h>', '<QObject>', '<QString>', '<qstring.h>', '<QWidget>', '<QtWidgets>', '<QtGui'],
                        'ruby': ['<ruby.h>', '<ruby/', '"ruby.h"'],

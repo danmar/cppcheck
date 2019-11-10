@@ -52,6 +52,7 @@ Settings::Settings()
       jointSuppressionReport(false),
       loadAverage(0),
       maxConfigs(12),
+      checkAllConfigurations(true),
       maxCtuDepth(2),
       preprocessOnly(false),
       quiet(false),

@@ -66,7 +66,6 @@ private:
         TEST_CASE(garbageCode10); // #6127
         TEST_CASE(garbageCode12);
         TEST_CASE(garbageCode13); // #2607
-        TEST_CASE(garbageCode14); // #5595
         TEST_CASE(garbageCode15); // #5203
         TEST_CASE(garbageCode16);
         TEST_CASE(garbageCode17);
@@ -238,6 +237,7 @@ private:
         TEST_CASE(garbageCode203); // #8972
         TEST_CASE(garbageCode204);
         TEST_CASE(garbageCode205);
+        TEST_CASE(garbageCode206);
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -317,7 +317,7 @@ private:
     void wrong_syntax1() {
         {
             const char code[] ="TR(kvmpio, PROTO(int rw), ARGS(rw), TP_(aa->rw;))";
-            ASSERT_EQUALS("TR ( kvmpio , PROTO ( int rw ) , ARGS ( rw ) , TP_ ( aa . rw ; ) )", checkCode(code));
+            ASSERT_THROW(checkCode(code), InternalError);
             ASSERT_EQUALS("", errout.str());
         }
 
@@ -484,10 +484,6 @@ private:
 
     void garbageCode13() {
         checkCode("struct C {} {} x");
-    }
-
-    void garbageCode14() {
-        checkCode("static f() { int i; int source[1] = { 1 }; for (i = 0; i < 4; i++) (u, if (y u.x e)) }"); // Garbage code
     }
 
     void garbageCode15() { // Ticket #5203
@@ -1275,10 +1271,6 @@ private:
                            "}\n";
         ASSERT_THROW(checkCode(code), InternalError);
 
-        // #6106
-        code = " f { int i ; b2 , [ ] ( for ( i = 0 ; ; ) ) }";
-        checkCode(code);
-
         // 6122 survive garbage code
         code = "; { int i ; for ( i = 0 ; = 123 ; ) - ; }";
         ASSERT_THROW(checkCode(code), InternalError);
@@ -1632,6 +1624,15 @@ private:
                   ": wxCommandEvent ( Event )\n"
                   ", m_SnippetID ( 0 ) {\n"
                   "}"); // don't crash
+    }
+
+    void garbageCode206() {
+        {
+            ASSERT_EQUALS("[test.cpp:1] syntax error", getSyntaxError("void foo() { for (auto operator new : int); }"));
+        }
+        {
+            ASSERT_EQUALS("[test.cpp:1] syntax error", getSyntaxError("void foo() { for (a operator== :) }"));
+        }
     }
 
     void syntaxErrorFirstToken() {

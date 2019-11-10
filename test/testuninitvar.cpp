@@ -790,6 +790,14 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: a\n", errout.str());
 
+        checkUninitVar("int foo() {\n"
+                       "    int i;\n"
+                       "    if (1)\n"
+                       "        i = 11;\n"
+                       "    return i;\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar("int foo()\n"
                        "{\n"
                        "    int i;\n"
@@ -1711,6 +1719,12 @@ private:
                        "}");
         ASSERT_EQUALS("", errout.str());
 
+        // new in C code does not allocate..
+        checkUninitVar("int main() {\n"
+                       "    char * pBuf = new(10);\n"
+                       "    a = *pBuf;\n"
+                       "}", "test.c");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // class / struct..
@@ -4269,6 +4283,15 @@ private:
                         "  int i;\n"
                         "  int* v = &i;\n"
                         "  sscanf(\"0\", \"%d\", v);\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("void test(int p) {\n"
+                        "    int f;\n"
+                        "    if (p > 0)\n"
+                        "        f = 0;\n"
+                        "    if (p > 1)\n"
+                        "        f += 1;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
     }

@@ -87,12 +87,14 @@ std::string astCanonicalType(const Token *expr);
 /** Is given syntax tree a variable comparison against value */
 const Token * astIsVariableComparison(const Token *tok, const std::string &comp, const std::string &rhs, const Token **vartok=nullptr);
 
-bool isTemporary(bool cpp, const Token* tok);
+bool isTemporary(bool cpp, const Token* tok, const Library* library);
 
 const Token * nextAfterAstRightmostLeaf(const Token * tok);
 
 Token* astParentSkipParens(Token* tok);
 const Token* astParentSkipParens(const Token* tok);
+
+const Token* getParentMember(const Token * tok);
 
 bool precedes(const Token * tok1, const Token * tok2);
 
@@ -124,7 +126,7 @@ bool isWithoutSideEffects(bool cpp, const Token* tok);
 bool isUniqueExpression(const Token* tok);
 
 /** Is scope a return scope (scope will unconditionally return) */
-bool isReturnScope(const Token *endToken, const Settings * settings = nullptr, bool functionScope=false);
+bool isReturnScope(const Token * const endToken, const Library * library=nullptr, bool functionScope=false);
 
 /// Return the token to the function and the argument number
 const Token * getTokenArgumentFunction(const Token * tok, int& argn);
@@ -209,62 +211,6 @@ const Variable *getLHSVariable(const Token *tok);
 
 bool isScopeBracket(const Token* tok);
 
-struct PathAnalysis {
-    enum class Progress {
-        Continue,
-        Break
-    };
-    PathAnalysis(const Token* start, const Library& library)
-        : start(start), library(&library)
-    {}
-    const Token * start;
-    const Library * library;
-
-    struct Info {
-        const Token* tok;
-        ErrorPath errorPath;
-        bool known;
-    };
-
-    void forward(const std::function<Progress(const Info&)>& f) const;
-    template<class F>
-    void forwardAll(F f) {
-        forward([&](const Info& info) {
-            f(info);
-            return Progress::Continue;
-        });
-    }
-    template<class Predicate>
-    Info forwardFind(Predicate pred) {
-        Info result{};
-        forward([&](const Info& info) {
-            if (pred(info)) {
-                result = info;
-                return Progress::Break;
-            }
-            return Progress::Continue;
-        });
-        return result;
-    }
-private:
-
-    Progress forwardRecursive(const Token* tok, Info info, const std::function<PathAnalysis::Progress(const Info&)>& f) const;
-    Progress forwardRange(const Token* startToken, const Token* endToken, Info info, const std::function<Progress(const Info&)>& f) const;
-
-    static const Scope* findOuterScope(const Scope * scope);
-
-    static std::pair<bool, bool> checkCond(const Token * tok, bool& known);
-};
-
-/**
- * @brief Returns true if there is a path between the two tokens
- *
- * @param start Starting point of the path
- * @param dest The path destination
- * @param errorPath Adds the path traversal to the errorPath
- */
-bool reaches(const Token * start, const Token * dest, const Library& library, ErrorPath* errorPath);
-
 /**
  * Forward data flow analysis for checks
  *  - unused value
@@ -320,7 +266,7 @@ private:
     };
 
     struct Result check(const Token *expr, const Token *startToken, const Token *endToken);
-    struct Result checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<int> &exprVarIds, bool local, bool inInnerClass);
+    struct Result checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<int> &exprVarIds, bool local, bool inInnerClass, int depth=0);
 
     // Is expression a l-value global data?
     bool isGlobalData(const Token *expr) const;

@@ -14,6 +14,17 @@ Despite the name, Cppcheck is designed for both C and C++.
 
 A manual is available [online](http://cppcheck.sourceforge.net/manual.pdf).
 
+## Donate CPU
+
+Cppcheck is a hobby project with limited resources. You can help us by donating CPU (1 core or as many as you like). It is simple:
+
+ 1. Download (and extract) Cppcheck source code
+ 2. Run script: python cppcheck/tools/donate-cpu.py
+
+The script will analyse debian source code and upload the results to a cppcheck server. We need these results both to improve Cppcheck and to detect regressions.
+
+You can stop the script whenever you like with Ctrl C.
+
 ## Compiling
 
 Any C++11 compiler should work. For compilers with partial C++11 support it may work. If your compiler has the C++11 features that are available in Visual Studio 2013 / GCC 4.6 then it will work.

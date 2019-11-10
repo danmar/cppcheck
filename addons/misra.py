@@ -16,6 +16,7 @@
 from __future__ import print_function
 
 import cppcheckdata
+import itertools
 import sys
 import re
 import os
@@ -484,7 +485,7 @@ def isHexEscapeSequence(symbols):
 
 
 def isOctalEscapeSequence(symbols):
-    """Checks that given symbols are valid octal escape sequence:
+    r"""Checks that given symbols are valid octal escape sequence:
 
      octal-escape-sequence:
              \ octal-digit
@@ -727,7 +728,7 @@ class MisraChecker:
         # Prefix to ignore when matching suppression files.
         self.filePrefix = None
 
-        # Statistics of all violations suppressed per rule
+        # Number of all violations suppressed per rule
         self.suppressionStats   = dict()
 
         self.stdversion = stdversion
@@ -1570,13 +1571,27 @@ class MisraChecker:
         STATE_NONE = 0   # default state, not in switch case/default block
         STATE_BREAK = 1  # break/comment is seen but not its ';'
         STATE_OK = 2     # a case/default is allowed (we have seen 'break;'/'comment'/'{'/attribute)
+        STATE_SWITCH = 3 # walking through switch statement scope
+
         state = STATE_NONE
+        end_swtich_token = None  # end '}' for the switch scope
         for token in rawTokens:
+            # Find switch scope borders
+            if token.str == 'switch':
+                state = STATE_SWITCH
+            if state == STATE_SWITCH:
+                if token.str == '{':
+                    end_swtich_token = findRawLink(token)
+                else:
+                    continue
+
             if token.str == 'break' or token.str == 'return' or token.str == 'throw':
                 state = STATE_BREAK
             elif token.str == ';':
                 if state == STATE_BREAK:
                     state = STATE_OK
+                elif token.next and token.next == end_swtich_token:
+                    self.reportError(token.next, 16, 3)
                 else:
                     state = STATE_NONE
             elif token.str.startswith('/*') or token.str.startswith('//'):
@@ -1806,6 +1821,9 @@ class MisraChecker:
             typetok = var.nameToken.next
             if not typetok or typetok.str != '[':
                 continue
+            # Unknown define or syntax error
+            if not typetok.astOperand2:
+                continue
             if not isConstantExpression(typetok.astOperand2):
                 self.reportError(var.nameToken, 18, 8)
 
@@ -1937,6 +1955,44 @@ class MisraChecker:
                     ifStack.pop()
 
 
+    def misra_21_1(self, data):
+        # Reference: n1570 7.1.3 - Reserved identifiers
+        re_forbidden_macro = re.compile(r'#define (errno|_[_A-Z]+)')
+
+        # Search for forbidden identifiers in macro names
+        for directive in data.directives:
+            res = re.search(re_forbidden_macro, directive.str)
+            if res:
+                self.reportError(directive, 21, 1)
+
+        type_name_tokens = (t for t in data.tokenlist if t.typeScopeId)
+        type_fields_tokens = (t for t in data.tokenlist if t.valueType and t.valueType.typeScopeId)
+
+        # Search for forbidden identifiers
+        for i in itertools.chain(data.variables, data.functions, type_name_tokens, type_fields_tokens):
+            token = i
+            if isinstance(i, cppcheckdata.Variable):
+                token = i.nameToken
+            elif isinstance(i, cppcheckdata.Function):
+                token = i.tokenDef
+            if len(token.str) < 2:
+                continue
+            if token.str == 'errno':
+                self.reportError(token, 21, 1)
+            if token.str[0] == '_':
+                if (token.str[1] in string.ascii_uppercase) or (token.str[1] == '_'):
+                    self.reportError(token, 21, 1)
+
+                # Allow identifiers with file scope visibility (static)
+                if token.scope.type == 'Global':
+                    if token.variable and token.variable.isStatic:
+                        continue
+                    if token.function and token.function.isStatic:
+                        continue
+
+                self.reportError(token, 21, 1)
+
+
     def misra_21_3(self, data):
         for token in data.tokenlist:
             if isFunctionCall(token) and (token.astOperand1.str in ('malloc', 'calloc', 'realloc', 'free')):
@@ -1996,6 +2052,20 @@ class MisraChecker:
         directive = findInclude(data.directives, '<tgmath.h>')
         if directive:
             self.reportError(directive, 21, 11)
+
+
+    def misra_21_12(self, data):
+        if findInclude(data.directives, '<fenv.h>'):
+            for token in data.tokenlist:
+                if token.str == 'fexcept_t' and token.isName:
+                    self.reportError(token, 21, 12)
+                if isFunctionCall(token) and (token.astOperand1.str in (
+                    'feclearexcept',
+                    'fegetexceptflag',
+                    'feraiseexcept',
+                    'fesetexceptflag',
+                    'fetestexcept')):
+                    self.reportError(token, 21, 12)
 
 
     def get_verify_expected(self):
@@ -2105,10 +2175,13 @@ class MisraChecker:
                 ruleItemList.append(line_symbol)
 
 
-    def isRuleSuppressed(self, location, ruleNum):
+    def isRuleSuppressed(self, file_path, linenr, ruleNum):
         """
         Check to see if a rule is suppressed.
-        ruleNum is the rule number in hundreds format
+
+        :param ruleNum: is the rule number in hundreds format
+        :param file_path: File path of checked location
+        :param linenr: Line number of checked location
 
         If the rule exists in the dict then check for a filename
         If the filename is None then rule is suppressed globally
@@ -2123,15 +2196,14 @@ class MisraChecker:
 
         """
         ruleIsSuppressed = False
-        linenr = location.linenr
 
         # Remove any prefix listed in command arguments from the filename.
         filename = None
-        if location.file is not None:
+        if file_path is not None:
             if self.filePrefix is not None:
-                filename = remove_file_prefix(location.file, self.filePrefix)
+                filename = remove_file_prefix(file_path, self.filePrefix)
             else:
-                filename = os.path.basename(location.file)
+                filename = os.path.basename(file_path)
 
         if ruleNum in self.suppressedRules:
             fileDict = self.suppressedRules[ruleNum]
@@ -2162,6 +2234,14 @@ class MisraChecker:
 
         return ruleIsSuppressed
 
+    def isRuleGloballySuppressed(self, rule_num):
+        """
+        Check to see if a rule is globally suppressed.
+        :param rule_num: is the rule number in hundreds format
+        """
+        if rule_num not in self.suppressedRules:
+            return False
+        return None in self.suppressedRules[rule_num]
 
     def parseSuppressions(self):
         """
@@ -2206,7 +2286,7 @@ class MisraChecker:
                         else:
                             item_str = str(item[0])
 
-                        outlist.append("%s: %s: %s (%d locations suppressed)" % (float(ruleNum)/100,fname,item_str, len(self.suppressionStats.get(ruleNum, []))))
+                        outlist.append("%s: %s: %s (%d locations suppressed)" % (float(ruleNum)/100,fname,item_str, self.suppressionStats.get(ruleNum, 0)))
 
             for line in sorted(outlist, reverse=True):
                 print("  %s" % line)
@@ -2240,11 +2320,10 @@ class MisraChecker:
 
         if self.settings.verify:
             self.verify_actual.append(str(location.linenr) + ':' + str(num1) + '.' + str(num2))
-        elif self.isRuleSuppressed(location, ruleNum):
+        elif self.isRuleSuppressed(location.file, location.linenr, ruleNum):
             # Error is suppressed. Ignore
-            if not ruleNum in self.suppressionStats:
-                self.suppressionStats[ruleNum] = []
-            self.suppressionStats[ruleNum].append(location)
+            self.suppressionStats.setdefault(ruleNum, 0)
+            self.suppressionStats[ruleNum] += 1
             return
         else:
             errorId = 'c2012-' + str(num1) + '.' + str(num2)
@@ -2333,7 +2412,7 @@ class MisraChecker:
                     rule.misra_severity = res.group(1)
                     have_severity = True
                 else:
-                    severity_loc += 1;
+                    severity_loc += 1
 
                 # Only look for severity on the Rule line
                 # or the next non-blank line after
@@ -2384,6 +2463,16 @@ class MisraChecker:
         if not self.settings.quiet:
             print(*args, **kwargs)
 
+    def executeCheck(self, rule_num, check_function, arg):
+        """Execute check function for a single MISRA rule.
+
+        :param rule_num: Number of rule in hundreds format
+        :param check_function: Check function to execute
+        :param argv: Check function argument
+        """
+        if not self.isRuleGloballySuppressed(rule_num):
+            check_function(arg)
+
     def parseDump(self, dumpfile):
 
         data = cppcheckdata.parsedump(dumpfile)
@@ -2416,96 +2505,97 @@ class MisraChecker:
                 self.printStatus('Checking ' + dumpfile + ', config "' + cfg.name + '"...')
 
             if cfgNumber == 1:
-                self.misra_3_1(data.rawTokens)
-                self.misra_3_2(data.rawTokens)
-                self.misra_4_1(data.rawTokens)
-                self.misra_4_2(data.rawTokens)
-            self.misra_5_1(cfg)
-            self.misra_5_2(cfg)
-            self.misra_5_3(cfg)
-            self.misra_5_4(cfg)
-            self.misra_5_5(cfg)
+                self.executeCheck(301, self.misra_3_1, data.rawTokens)
+                self.executeCheck(302, self.misra_3_2, data.rawTokens)
+                self.executeCheck(401, self.misra_4_1, data.rawTokens)
+                self.executeCheck(402, self.misra_4_2, data.rawTokens)
+            self.executeCheck(501, self.misra_5_1, cfg)
+            self.executeCheck(502, self.misra_5_2, cfg)
+            self.executeCheck(503, self.misra_5_3, cfg)
+            self.executeCheck(504, self.misra_5_4, cfg)
+            self.executeCheck(505, self.misra_5_5, cfg)
             # 6.1 require updates in Cppcheck (type info for bitfields are lost)
             # 6.2 require updates in Cppcheck (type info for bitfields are lost)
             if cfgNumber == 1:
-                self.misra_7_1(data.rawTokens)
-                self.misra_7_3(data.rawTokens)
-            self.misra_8_11(cfg)
-            self.misra_8_12(cfg)
+                self.executeCheck(701, self.misra_7_1, data.rawTokens)
+                self.executeCheck(703, self.misra_7_3, data.rawTokens)
+            self.executeCheck(811, self.misra_8_11, cfg)
+            self.executeCheck(812, self.misra_8_12, cfg)
             if cfgNumber == 1:
-                self.misra_8_14(data.rawTokens)
-                self.misra_9_5(data.rawTokens)
-            self.misra_10_1(cfg)
-            self.misra_10_4(cfg)
-            self.misra_10_6(cfg)
-            self.misra_10_8(cfg)
-            self.misra_11_3(cfg)
-            self.misra_11_4(cfg)
-            self.misra_11_5(cfg)
-            self.misra_11_6(cfg)
-            self.misra_11_7(cfg)
-            self.misra_11_8(cfg)
-            self.misra_11_9(cfg)
+                self.executeCheck(814, self.misra_8_14, data.rawTokens)
+                self.executeCheck(905, self.misra_9_5, data.rawTokens)
+            self.executeCheck(1001, self.misra_10_1, cfg)
+            self.executeCheck(1004, self.misra_10_4, cfg)
+            self.executeCheck(1006, self.misra_10_6, cfg)
+            self.executeCheck(1008, self.misra_10_8, cfg)
+            self.executeCheck(1103, self.misra_11_3, cfg)
+            self.executeCheck(1104, self.misra_11_4, cfg)
+            self.executeCheck(1105, self.misra_11_5, cfg)
+            self.executeCheck(1106, self.misra_11_6, cfg)
+            self.executeCheck(1107, self.misra_11_7, cfg)
+            self.executeCheck(1108, self.misra_11_8, cfg)
+            self.executeCheck(1109, self.misra_11_9, cfg)
             if cfgNumber == 1:
-                self.misra_12_1_sizeof(data.rawTokens)
-            self.misra_12_1(cfg)
-            self.misra_12_2(cfg)
-            self.misra_12_3(cfg)
-            self.misra_12_4(cfg)
-            self.misra_13_1(cfg)
-            self.misra_13_3(cfg)
-            self.misra_13_4(cfg)
-            self.misra_13_5(cfg)
-            self.misra_13_6(cfg)
-            self.misra_14_1(cfg)
-            self.misra_14_2(cfg)
-            self.misra_14_4(cfg)
-            self.misra_15_1(cfg)
-            self.misra_15_2(cfg)
-            self.misra_15_3(cfg)
-            self.misra_15_5(cfg)
+                self.executeCheck(1201, self.misra_12_1_sizeof, data.rawTokens)
+            self.executeCheck(1201, self.misra_12_1, cfg)
+            self.executeCheck(1202, self.misra_12_2, cfg)
+            self.executeCheck(1203, self.misra_12_3, cfg)
+            self.executeCheck(1204, self.misra_12_4, cfg)
+            self.executeCheck(1301, self.misra_13_1, cfg)
+            self.executeCheck(1303, self.misra_13_3, cfg)
+            self.executeCheck(1304, self.misra_13_4, cfg)
+            self.executeCheck(1305, self.misra_13_5, cfg)
+            self.executeCheck(1306, self.misra_13_6, cfg)
+            self.executeCheck(1401, self.misra_14_1, cfg)
+            self.executeCheck(1402, self.misra_14_2, cfg)
+            self.executeCheck(1404, self.misra_14_4, cfg)
+            self.executeCheck(1501, self.misra_15_1, cfg)
+            self.executeCheck(1502, self.misra_15_2, cfg)
+            self.executeCheck(1503, self.misra_15_3, cfg)
+            self.executeCheck(1505, self.misra_15_5, cfg)
             if cfgNumber == 1:
-                self.misra_15_6(data.rawTokens)
-            self.misra_15_7(cfg)
-            self.misra_16_2(cfg)
+                self.executeCheck(1506, self.misra_15_6, data.rawTokens)
+            self.executeCheck(1507, self.misra_15_7, cfg)
+            self.executeCheck(1602, self.misra_16_2, cfg)
             if cfgNumber == 1:
-                self.misra_16_3(data.rawTokens)
-            self.misra_16_4(cfg)
-            self.misra_16_5(cfg)
-            self.misra_16_6(cfg)
-            self.misra_16_7(cfg)
-            self.misra_17_1(cfg)
-            self.misra_17_2(cfg)
+                self.executeCheck(1603, self.misra_16_3, data.rawTokens)
+            self.executeCheck(1604, self.misra_16_4, cfg)
+            self.executeCheck(1605, self.misra_16_5, cfg)
+            self.executeCheck(1606, self.misra_16_6, cfg)
+            self.executeCheck(1607, self.misra_16_7, cfg)
+            self.executeCheck(1701, self.misra_17_1, cfg)
+            self.executeCheck(1702, self.misra_17_2, cfg)
             if cfgNumber == 1:
-                self.misra_17_6(data.rawTokens)
-            self.misra_17_7(cfg)
-            self.misra_17_8(cfg)
-            self.misra_18_4(cfg)
-            self.misra_18_5(cfg)
-            self.misra_18_7(cfg)
-            self.misra_18_8(cfg)
-            self.misra_19_2(cfg)
-            self.misra_20_1(cfg)
-            self.misra_20_2(cfg)
+                self.executeCheck(1706, self.misra_17_6, data.rawTokens)
+            self.executeCheck(1707, self.misra_17_7, cfg)
+            self.executeCheck(1708, self.misra_17_8, cfg)
+            self.executeCheck(1804, self.misra_18_4, cfg)
+            self.executeCheck(1805, self.misra_18_5, cfg)
+            self.executeCheck(1807, self.misra_18_7, cfg)
+            self.executeCheck(1808, self.misra_18_8, cfg)
+            self.executeCheck(1902, self.misra_19_2, cfg)
+            self.executeCheck(2001, self.misra_20_1, cfg)
+            self.executeCheck(2002, self.misra_20_2, cfg)
             if cfgNumber == 1:
-                self.misra_20_3(data.rawTokens)
-            self.misra_20_4(cfg)
-            self.misra_20_5(cfg)
-            self.misra_20_7(cfg)
-            self.misra_20_10(cfg)
-            self.misra_20_13(cfg)
-            self.misra_20_14(cfg)
-            self.misra_21_3(cfg)
-            self.misra_21_4(cfg)
-            self.misra_21_5(cfg)
-            self.misra_21_6(cfg)
-            self.misra_21_7(cfg)
-            self.misra_21_8(cfg)
-            self.misra_21_9(cfg)
-            self.misra_21_10(cfg)
-            self.misra_21_11(cfg)
+                self.executeCheck(2003, self.misra_20_3, data.rawTokens)
+            self.executeCheck(2004, self.misra_20_4, cfg)
+            self.executeCheck(2005, self.misra_20_5, cfg)
+            self.executeCheck(2006, self.misra_20_7, cfg)
+            self.executeCheck(2010, self.misra_20_10, cfg)
+            self.executeCheck(2013, self.misra_20_13, cfg)
+            self.executeCheck(2014, self.misra_20_14, cfg)
+            self.executeCheck(2101, self.misra_21_1, cfg)
+            self.executeCheck(2103, self.misra_21_3, cfg)
+            self.executeCheck(2104, self.misra_21_4, cfg)
+            self.executeCheck(2105, self.misra_21_5, cfg)
+            self.executeCheck(2106, self.misra_21_6, cfg)
+            self.executeCheck(2107, self.misra_21_7, cfg)
+            self.executeCheck(2108, self.misra_21_8, cfg)
+            self.executeCheck(2109, self.misra_21_9, cfg)
+            self.executeCheck(2110, self.misra_21_10, cfg)
+            self.executeCheck(2111, self.misra_21_11, cfg)
+            self.executeCheck(2112, self.misra_21_12, cfg)
             # 22.4 is already covered by Cppcheck writeReadOnlyFile
-
 
 
 RULE_TEXTS_HELP = '''Path to text file of MISRA rules
@@ -2630,7 +2720,7 @@ def main():
                             rules_violated[misra_id] = rules_violated.get(misra_id, 0) + 1
                     print("MISRA rules violated:")
                     convert = lambda text: int(text) if text.isdigit() else text
-                    misra_sort = lambda key: [ convert(c) for c in re.split('[\.-]([0-9]*)', key) ]
+                    misra_sort = lambda key: [ convert(c) for c in re.split('[.-]([0-9]*)', key) ]
                     for misra_id in sorted(rules_violated.keys(), key=misra_sort):
                         res = re.match(r'misra-c2012-([0-9]+)\\.([0-9]+)', misra_id)
                         if res is None:

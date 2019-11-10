@@ -11,6 +11,7 @@
 #include <wchar.h> //21.6
 #include <time.h> // 21.10
 #include <tgmath.h> // 21.11
+#include <fenv.h>
 
 
 typedef unsigned char      u8;
@@ -118,7 +119,7 @@ void misra_4_1()
 }
 
 const char *s42_1 = "String containing trigraphs ??-??-??";   // 4.2
-const char *s42_2 = "String containing trigraph???=preceeded by questionmark";   // 4.2
+const char *s42_2 = "String containing trigraph???=preceded by question mark";   // 4.2
 const char *s42_3 = "No trigraph?(?'?)";
 
 void misra_4_2()
@@ -395,7 +396,7 @@ void misra_14_2() {
 struct {
   unsigned int x:1;
   unsigned int y:1;
-} _14_4_struct;
+} r14_4_struct;
 void misra_14_4(bool b) {
   if (x+4){} // 14.4
   else {}
@@ -403,7 +404,7 @@ void misra_14_4(bool b) {
   if (b) {}
   else {}
 
-  if (_14_4_struct.x) {}
+  if (r14_4_struct.x) {}
 }
 
 void misra_15_1() {
@@ -523,7 +524,46 @@ void misra_16_3() {
     {
         break;
     }
+  }
+
+  switch (x) {
+    case 1:
+        break;
+    default: // 16.5
+        x++;
+    case 19: // 16.3
+        break;
+    case 20:
+        x + 2;
+        x + 3;
+        break;
     }
+    switch (x) { // 16.6
+    default:;
+    } // 16.3
+
+    switch (x) { default:; } // 16.3 16.6
+
+    switch (x) {
+    case 20:
+        x + 2;
+        x + 3;
+        break;
+    case 21:
+        x + 2;
+        x + 3;
+        break;
+    default:
+        ;
+    } // 16.3
+
+    switch (x) { // 16.4 16.6
+    case 1:
+        x++;
+        break;
+    case 2:
+        x++;
+  } // 16.3
 }
 
 void misra_16_4() {
@@ -652,17 +692,18 @@ struct {
     } nested_2;
     uint8_t data_3[]; // 18.7
   } nested_3;
-} _18_7_struct;
+} r18_7_struct;
 struct {
   uint16_t len;
   uint8_t data_1[ 19 ];
   uint8_t data_2[   ]; // 18.7
-} _18_7_struct;
+} r18_7_struct;
 
 void misra_18_8(int x) {
   int buf1[10];
   int buf2[sizeof(int)];
   int vla[x]; // 18.8
+  static const unsigned char arr18_8_1[] = UNDEFINED_ID;
 }
 
 union misra_19_2 { }; // 19.2
@@ -687,6 +728,61 @@ union misra_19_2 { }; // 19.2
 # definesomethingis 6 // 20.13
 # def fun_2013(v) () // 20.13
 #endif
+
+#define _Incompatible 0xdeadbeef // 21.1
+#define __Incompatible 0xdeadbeef // 21.1
+#define __starts_with_lower 0xdeadbeef // 21.1
+#define __MY_HEADER_ // 21.1
+#define _macro_starts_with_lower 1 // no warning
+static int _file_scope_id_21_1 = 42; // no warning
+static int _file_scope_id_21_1_fn() { return 42; } // no warning
+static int __file_scope_id_21_1 = 42; // 21.1
+static int __file_scope_id_21_1_fn() { return 42; } // 21.1
+static int _File_scope_id_21_1 = 42; // 21.1
+static int _File_scope_id_21_1_fn() { return 42; } // 21.1
+int _external_scope_id_21_1 = 42; // 21.1
+int _external_scope_id_21_1_fn() { return 42; } // 21.1
+int __external_scope_id_21_1 = 42; // 21.1
+int __external_scope_id_21_1_fn() { return 42; } // 21.1
+int _External_scope_id_21_1 = 42; // 21.1
+int _External_scope_id_21_1_fn() { return 42; } // 21.1
+int errno = 42; // 21.1 5.5
+int misra_21_1() {
+    int _a = 42; // 21.1
+    errno = EINVAL; // no warning
+    _a ++; // no warning
+    _exit(1); // no warning
+    return _a; // no warning
+}
+int _misra_21_1_1(); // 21.1
+static int _misra_21_1_2(); // no warning
+#define errno 11 // 21.1
+struct _struct_21_1 { int a; }; // 21.1
+struct _Struct_21_1 { int a; }; // 21.1
+struct __struct_21_1 { int a; }; // 21.1
+typedef struct { int a; } _struct_21_1_t; // 21.1
+typedef struct { int a; } _Struct_21_1_t; // 21.1
+typedef struct { int a; } __struct_21_1_t; // 21.1
+enum _enum_21_1 { ENUM211_1 }; // 21.1
+enum _Enum_21_1 { ENUM211_2 }; // 21.1
+enum __enum_21_1 { ENUM211_3 }; // 21.1
+enum __enum_21_1 { ENUM211_3 }; // 21.1
+typedef enum { ENUM211_4 } _enum_21_1_t; // 21.1
+typedef enum { ENUM211_5 } _Enum_21_1_t; // 21.1
+typedef enum { ENUM211_6 } __enum_21_1_t; // 21.1
+enum enum_21_1_valid_id {
+    ENUM211_7,
+    _ENUM211_8, // 21.1
+    __ENUM211_9, // 21.1
+    _eNUM211_10, // 21.1
+    enum211_11
+};
+union _union_21_1 { int a; }; // 21.1 19.2
+union _Union_21_1 { int a; }; // 21.1 19.2
+union __union_21_1 { int a; }; // 21.1 19.2
+typedef union { int a; } _union_21_1_t; // 21.1 19.2
+typedef union { int a; } _Union_21_1_t; // 21.1 19.2
+typedef union { int a; } __union_21_1_t; // 21.1 19.2
 
 void misra_21_3() {
   p1=malloc(10); // 21.3
@@ -713,3 +809,14 @@ void misra_21_9() {
   (void)bsearch(key,base,num,size,cmp); // 21.9
   qsort(base,num,size,cmp); // 21.9
 }
+
+void misra_21_12() {
+    int rc;
+    fexcept_t f; // 21.12
+    rc = feclearexcept(1); // 21.12
+    rc = fegetexceptflag(&f, 1); // 21.12
+    rc = feraiseexcept(1); // 21.12
+    rc = fesetexceptflag(&f, 1); // 21.12
+    rc = fetestexcept(1); // 21.12
+}
+

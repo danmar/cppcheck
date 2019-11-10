@@ -188,6 +188,7 @@ private:
         TEST_CASE(template148); // syntax error
         TEST_CASE(template149); // unknown macro
         TEST_CASE(template150); // syntax error
+        TEST_CASE(template151); // crash
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -3569,6 +3570,53 @@ private:
                            "const string type = test . operator[]<string> ( \"type\" ) ; "
                            "} string & Test :: operator[]<string> ( string ) { }";
         ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template151() { // crash
+        {
+            const char code[] = "class SimulationComponentGroupGenerator {\n"
+                                "  std::list<int, std::allocator<int>> build() const;\n"
+                                "};\n"
+                                "template <\n"
+                                "  class obj_type,\n"
+                                "  template<class> class allocator = std::allocator,\n"
+                                "  template<class, class> class data_container = std::list>\n"
+                                "class GenericConfigurationHandler {\n"
+                                "  data_container<int, std::allocator<int>> m_target_configurations;\n"
+                                "};\n"
+                                "class TargetConfigurationHandler : public GenericConfigurationHandler<int> { };";
+            const char exp[] = "class SimulationComponentGroupGenerator { "
+                               "std :: list < int , std :: allocator < int > > build ( ) const ; "
+                               "} ; "
+                               "class GenericConfigurationHandler<int,std::allocator,std::list> ; "
+                               "class TargetConfigurationHandler : public GenericConfigurationHandler<int,std::allocator,std::list> { } ; "
+                               "class GenericConfigurationHandler<int,std::allocator,std::list> { "
+                               "std :: list < int , std :: std :: allocator < int > > m_target_configurations ; "
+                               "} ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            const char code[] = "std::list<std::allocator<int>> a;\n"
+                                "template <class, template <class> class allocator = std::allocator> class b {};\n"
+                                "class c : b<int> {};";
+            const char exp[] = "std :: list < std :: allocator < int > > a ; "
+                               "class b<int,std::allocator> ; "
+                               "class c : b<int,std::allocator> { } ; "
+                               "class b<int,std::allocator> { } ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            const char code[] = "template <typename> class a {};\n"
+                                "template class a<char>;\n"
+                                "template <class, template <class> class a = a> class b {};\n"
+                                "class c : b<int> {};";
+            const char exp[] = "class a<char> ; "
+                               "class b<int,a> ; "
+                               "class c : b<int,a> { } ; "
+                               "class b<int,a> { } ; "
+                               "class a<char> { } ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};

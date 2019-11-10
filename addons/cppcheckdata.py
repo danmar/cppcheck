@@ -341,6 +341,7 @@ class Function:
         tokenDef                Token in function definition
         isVirtual               Is this function is virtual
         isImplicitlyVirtual     Is this function is virtual this in the base classes
+        isStatic                Is this function is static
     """
 
     Id = None
@@ -352,6 +353,7 @@ class Function:
     type = None
     isVirtual = None
     isImplicitlyVirtual = None
+    isStatic = None
 
     def __init__(self, element):
         self.Id = element.get('id')
@@ -362,6 +364,8 @@ class Function:
         self.isVirtual = (isVirtual and isVirtual == 'true')
         isImplicitlyVirtual = element.get('isImplicitlyVirtual')
         self.isImplicitlyVirtual = (isImplicitlyVirtual and isImplicitlyVirtual == 'true')
+        isStatic = element.get('isStatic')
+        self.isStatic = (isStatic and isStatic == 'true')
 
         self.argument = {}
         self.argumentId = {}

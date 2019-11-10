@@ -62,6 +62,7 @@ private:
         TEST_CASE(getStrSize);
         TEST_CASE(getCharAt);
         TEST_CASE(strValue);
+        TEST_CASE(concatStr);
 
         TEST_CASE(deleteLast);
         TEST_CASE(deleteFirst);
@@ -92,7 +93,6 @@ private:
         TEST_CASE(operators);
 
         TEST_CASE(updateProperties)
-        TEST_CASE(updatePropertiesConcatStr)
         TEST_CASE(isNameGuarantees1)
         TEST_CASE(isNameGuarantees2)
         TEST_CASE(isNameGuarantees3)
@@ -462,6 +462,44 @@ private:
         ASSERT_EQUALS("a", tok.strValue());
     }
 
+    void concatStr() const {
+        Token tok;
+
+        tok.str("\"\"");
+        tok.concatStr("\"\"");
+        ASSERT_EQUALS("", tok.strValue());
+        ASSERT(tok.isCChar());
+
+        tok.str("\"ab\"");
+        tok.concatStr("\"cd\"");
+        ASSERT_EQUALS("abcd", tok.strValue());
+        ASSERT(tok.isCChar());
+
+        tok.str("L\"ab\"");
+        tok.concatStr("L\"cd\"");
+        ASSERT_EQUALS("abcd", tok.strValue());
+        ASSERT(tok.isLong());
+
+        tok.str("L\"ab\"");
+        tok.concatStr("\"cd\"");
+        ASSERT_EQUALS("abcd", tok.strValue());
+        ASSERT(tok.isLong());
+
+        tok.str("\"ab\"");
+        tok.concatStr("L\"cd\"");
+        ASSERT_EQUALS("abcd", tok.strValue());
+        ASSERT(tok.isLong());
+
+        tok.str("\"ab\"");
+        tok.concatStr("L\"\"");
+        ASSERT_EQUALS("ab", tok.strValue());
+        ASSERT(tok.isLong());
+
+        tok.str("\"ab\"");
+        tok.concatStr("u8\"cd\"");
+        ASSERT_EQUALS("abcd", tok.strValue());
+        ASSERT(tok.isUtf8());
+    }
 
     void deleteLast() const {
         TokensFrontBack listEnds{ nullptr };
@@ -975,18 +1013,6 @@ private:
 
         ASSERT_EQUALS(false, tok.isName());
         ASSERT_EQUALS(true, tok.isNumber());
-    }
-
-    void updatePropertiesConcatStr() const {
-        Token tok;
-        tok.str("true");
-
-        ASSERT_EQUALS(true, tok.isBoolean());
-
-        tok.concatStr("123");
-
-        ASSERT_EQUALS(false, tok.isBoolean());
-        ASSERT_EQUALS("tru\"", tok.str());
     }
 
     void isNameGuarantees1() const {
