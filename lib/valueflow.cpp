@@ -2937,6 +2937,18 @@ static bool valueFlowForwardVariable(Token* const startToken,
                 return false;
         }
 
+        // Function call
+        else if (!var->isLocal() && tok2->function() && Token::Match(tok2, "%name% (")) {
+            if (tok2->function()->functionScope) {
+                const bool c = isVariableChanged(
+                                   tok2->function()->functionScope->bodyStart,
+                                   tok2->function()->functionScope->bodyEnd, varid,
+                                   var->isGlobal(), settings, tokenlist->isCPP());
+                if (c)
+                    lowerToInconclusive(values, settings);
+            }
+        }
+
         // Lambda function
         if (Token::simpleMatch(tok2, "= [") &&
             Token::simpleMatch(tok2->linkAt(1), "] (") &&

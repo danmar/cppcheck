@@ -118,6 +118,8 @@ private:
         TEST_CASE(alwaysTrueFalseInLogicalOperators);
         TEST_CASE(pointerAdditionResultNotNull);
         TEST_CASE(duplicateConditionalAssign);
+
+        TEST_CASE(smartpointer);
     }
 
     void check(const char code[], const char* filename = "test.cpp", bool inconclusive = false) {
@@ -3766,6 +3768,84 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void smartpointer() {
+        check("#include <memory>\n"
+              "\n"
+              "bool h();\n"
+              "\n"
+              "class C\n"
+              "{\n"
+              "public:\n"
+              "  void f();\n"
+              "  void g();\n"
+              "\n"
+              "  std::shared_ptr<int> x;\n"
+              "};\n"
+              "\n"
+              "void C::g()\n"
+              "{\n"
+              "  if (h()) {\n"
+              "    x.reset(new int);\n"
+              "  }\n"
+              "}\n"
+              "\n"
+              "void C::f()\n"
+              "{\n"
+              "  x.reset();\n"
+              "  g();\n"
+              "  if (!x) {\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("#include <memory>\n"
+              "\n"
+              "class C\n"
+              "{\n"
+              "public:\n"
+              "  void f();\n"
+              "  void g();\n"
+              "\n"
+              "  std::shared_ptr<int> x;\n"
+              "};\n"
+              "\n"
+              "void C::g()\n"
+              "{\n"
+              "    x.reset(new int);\n"
+              "}\n"
+              "\n"
+              "void C::f()\n"
+              "{\n"
+              "  x.reset();\n"
+              "  g();\n"
+              "  if (!x) {\n"
+              "  }\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:18]: (style) Condition '!x' is always false\n", "", errout.str());
+
+        check("#include <memory>\n"
+              "\n"
+              "class C\n"
+              "{\n"
+              "public:\n"
+              "  void f();\n"
+              "  void g();\n"
+              "\n"
+              "  std::shared_ptr<int> x;\n"
+              "};\n"
+              "\n"
+              "void C::g(){}\n"
+              "\n"
+              "void C::f()\n"
+              "{\n"
+              "  x.reset();\n"
+              "  g();\n"
+              "  if (!x) {\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:18]: (style) Condition '!x' is always true\n", errout.str());
     }
 };
 
