@@ -4124,6 +4124,12 @@ private:
                             "}");
             ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a\n", errout.str());
 
+            valueFlowUninit("struct S { int x; };\n" // #9417
+                            "void f() {\n"
+                            "    S s;\n"
+                            "    return s(1);\n"
+                            "}");
+            ASSERT_EQUALS("", errout.str());
         }
 
         valueFlowUninit("void a() {\n"   // asm

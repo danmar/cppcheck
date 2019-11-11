@@ -948,7 +948,10 @@ void CheckUninitVar::checkRhs(const Token *tok, const Variable &var, Alloc alloc
 
 bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc alloc) const
 {
-    if (alloc == NO_ALLOC && ((Token::Match(vartok->previous(), "return|delete %var% !!=")) || (vartok->strAt(-1) == "]" && vartok->linkAt(-1)->strAt(-1) == "delete")))
+    if (!pointer && Token::Match(vartok, "%name% ("))
+        return false;
+
+    if (alloc == NO_ALLOC && (Token::Match(vartok->previous(), "return|delete %var% !!=") || (vartok->strAt(-1) == "]" && vartok->linkAt(-1)->strAt(-1) == "delete")))
         return true;
 
     // Passing variable to typeof/__alignof__
