@@ -779,6 +779,8 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                 else
                     unknown_elements.insert(argnodename);
             }
+            if (ac.notuninit == 0)
+                ac.notuninit = ac.notnull ? 1 : 0;
         } else if (functionnodename == "ignorefunction") {
             func.ignore = true;
         } else if (functionnodename == "formatstr") {
