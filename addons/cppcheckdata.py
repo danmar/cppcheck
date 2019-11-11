@@ -6,7 +6,7 @@ This is a Python module that helps you access Cppcheck dump data.
 License: No restrictions, use this as you need.
 """
 
-import xml.etree.ElementTree as ET
+from xml.etree import ElementTree
 import argparse
 from fnmatch import fnmatch
 import json
@@ -321,7 +321,8 @@ class Scope:
         self.nestedInId = element.get('nestedIn')
         self.nestedIn = None
         self.type = element.get('type')
-        self.isExecutable = (self.type in ('Function', 'If', 'Else', 'For', 'While', 'Do', 'Switch', 'Try', 'Catch', 'Unconditional', 'Lambda'))
+        self.isExecutable = (self.type in ('Function', 'If', 'Else', 'For', 'While', 'Do',
+                                           'Switch', 'Try', 'Catch', 'Unconditional', 'Lambda'))
 
     def setId(self, IdMap):
         self.bodyStart = IdMap[self.bodyStartId]
@@ -523,6 +524,7 @@ class ValueFlow:
         for value in element:
             self.values.append(ValueFlow.Value(value))
 
+
 class Suppression:
     """
     Suppression class
@@ -548,12 +550,13 @@ class Suppression:
 
     def isMatch(self, file, line, message, errorId):
         if ((self.fileName is None or fnmatch(file, self.fileName))
-            and (self.lineNumber is None or line == self.lineNumber)
-            and (self.symbolName is None or fnmatch(message, '*'+self.symbolName+'*'))
-            and fnmatch(errorId, self.errorId)):
+                and (self.lineNumber is None or line == self.lineNumber)
+                and (self.symbolName is None or fnmatch(message, '*'+self.symbolName+'*'))
+                and fnmatch(errorId, self.errorId)):
             return True
         else:
             return False
+
 
 class Configuration:
     """
@@ -684,6 +687,7 @@ class Platform:
         self.long_long_bit = int(platformnode.get('long_long_bit'))
         self.pointer_bit = int(platformnode.get('pointer_bit'))
 
+
 class Standards:
     """
     Standards class
@@ -698,7 +702,8 @@ class Standards:
     def __init__(self, standardsnode):
         self.c = standardsnode.find("c").get("version")
         self.cpp = standardsnode.find("cpp").get("version")
-        self.posix = standardsnode.find("posix") != None
+        self.posix = standardsnode.find("posix") is not None
+
 
 class CppcheckData:
     """
@@ -744,7 +749,7 @@ class CppcheckData:
     def __init__(self, filename):
         self.configurations = []
 
-        data = ET.parse(filename)
+        data = ElementTree.parse(filename)
 
         for platformNode in data.getroot():
             if platformNode.tag == 'platform':
@@ -765,12 +770,10 @@ class CppcheckData:
                 self.rawTokens[i + 1].previous = self.rawTokens[i]
                 self.rawTokens[i].next = self.rawTokens[i + 1]
 
-
         for suppressionsNode in data.getroot():
             if suppressionsNode.tag == "suppressions":
                 for suppression in suppressionsNode:
                     self.suppressions.append(Suppression(suppression))
-
 
         # root is 'dumps' node, each config has its own 'dump' subnode.
         for cfgnode in data.getroot():
