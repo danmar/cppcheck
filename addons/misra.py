@@ -2268,28 +2268,28 @@ class MisraChecker:
 
 
     def showSuppressedRules(self):
-            """
-            Print out rules in suppression list sorted by Rule Number
-            """
-            print("Suppressed Rules List:")
-            outlist = list()
+        """
+        Print out rules in suppression list sorted by Rule Number
+        """
+        print("Suppressed Rules List:")
+        outlist = list()
 
-            for ruleNum in self.suppressedRules:
-                fileDict = self.suppressedRules[ruleNum]
+        for ruleNum in self.suppressedRules:
+            fileDict = self.suppressedRules[ruleNum]
 
-                for fname in fileDict:
-                    ruleItemList = fileDict[fname]
+            for fname in fileDict:
+                ruleItemList = fileDict[fname]
 
-                    for item in ruleItemList:
-                        if item is None:
-                            item_str = "None"
-                        else:
-                            item_str = str(item[0])
+                for item in ruleItemList:
+                    if item is None:
+                        item_str = "None"
+                    else:
+                        item_str = str(item[0])
 
-                        outlist.append("%s: %s: %s (%d locations suppressed)" % (float(ruleNum)/100,fname,item_str, self.suppressionStats.get(ruleNum, 0)))
+                    outlist.append("%s: %s: %s (%d locations suppressed)" % (float(ruleNum)/100,fname,item_str, self.suppressionStats.get(ruleNum, 0)))
 
-            for line in sorted(outlist, reverse=True):
-                print("  %s" % line)
+        for line in sorted(outlist, reverse=True):
+            print("  %s" % line)
 
     def setFilePrefix(self, prefix):
         """
