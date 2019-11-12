@@ -172,6 +172,10 @@ Here is the minimal windows.cfg:
       </function>
     </def>
 
+The `indirect` attribute can be set to control the indirection of uninitialized memory allowed. Setting `indirect` to `0` means no uninitialized memory is allowed. Setting it to `1` allows a pointer to uninitialized memory. Setting it to `2` allows a pointer to pointer to uninitialized memory.
+
+By default, cppcheck will use an indirect value of `0` unless `not-null` is used. When `not-null` is used, then `indirect` will default to `1`. 
+
 ### Null pointers
 
 Cppcheck assumes it's ok to pass NULL pointers to functions. Here is an example program:
