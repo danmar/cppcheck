@@ -452,6 +452,8 @@ def get_libraries():
                        'libcurl': ['<curl/curl.h>'],
                        # 'libsigc++': ['<sigc++/'], <= enable after release of version 1.90
                        'lua': ['<lua.h>', '"lua.h"'],
+                       # 'mfc': ['<afx.h>', '<afxwin.h>', '<afxext.h>'], <= enable after release of version 1.90
+                       # 'microsoft_atl': ['<atlbase.h>'], <= enable after release of version 1.90
                        'microsoft_sal': ['<sal.h>'],
                        'motif': ['<X11/', '<Xm/'],
                        'nspr': ['<prtypes.h>', '"prtypes.h"'],
