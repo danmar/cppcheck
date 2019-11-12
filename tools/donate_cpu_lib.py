@@ -8,13 +8,12 @@ import socket
 import time
 import re
 import tarfile
-import platform
 
 
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.39"
+CLIENT_VERSION = "1.1.40"
 
 
 def check_requirements():
@@ -212,7 +211,8 @@ def unpack_package(work_path, tgz):
                 # Skip dangerous file names
                 continue
             elif member.name.lower().endswith(('.c', '.cpp', '.cxx', '.cc', '.c++', '.h', '.hpp',
-                                               '.h++', '.hxx', '.hh', '.tpp', '.txx', '.qml')):
+                                               '.h++', '.hxx', '.hh', '.tpp', '.txx', '.qml',
+                                               '.sln', '.vcproj', '.vcxproj')):
                 try:
                     tf.extract(member.name)
                     found = True
@@ -269,12 +269,15 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
     libs = ''
     for library in libraries:
         if os.path.exists(os.path.join(cppcheck_path, 'cfg', library + '.cfg')):
-            libs += ' --library=' + library
+            libs += '--library=' + library + ' '
 
     # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
-    options = jobs + libs + ' --showtime=top5 --check-library --inconclusive --enable=style,information --template=daca2 -rp=temp'
-    if os.path.isfile('temp/TortoiseSVN.sln'):
-        options += ' --platform=win64 --project=temp/TortoiseSVN.sln'
+    options = libs + jobs + ' --showtime=top5 --check-library --inconclusive --enable=style,information --template=daca2 -rp=temp'
+    if os.path.isfile('temp/tortoisesvn/TortoiseSVN.sln'):
+        options = options.replace('--library=posix ', '')
+        options = options.replace('--library=gnu ', '')
+        options = '--library=windows ' + options
+        options += ' --platform=win64 --project=temp/tortoisesvn/TortoiseSVN.sln'
     else:
         options += ' -D__GNUC__ --platform=unix64 temp'
     cppcheck_cmd = cppcheck_path + '/cppcheck' + ' ' + options
