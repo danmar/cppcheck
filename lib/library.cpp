@@ -664,7 +664,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
             for (const tinyxml2::XMLElement *argnode = functionnode->FirstChildElement(); argnode; argnode = argnode->NextSiblingElement()) {
                 const std::string argnodename = argnode->Name();
                 int indirect = 0;
-                const char * const indirectStr = node->Attribute("size");
+                const char * const indirectStr = node->Attribute("indirect");
                 if (indirectStr)
                     indirect = atoi(indirectStr);
                 if (argnodename == "not-bool")
