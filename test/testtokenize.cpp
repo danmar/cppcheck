@@ -399,6 +399,7 @@ private:
         TEST_CASE(simplifyOperatorName12); // #9110
         TEST_CASE(simplifyOperatorName13); // user defined literal
         TEST_CASE(simplifyOperatorName14); // std::complex operator "" if
+        TEST_CASE(simplifyOperatorName15); // ticket #9468 syntaxError
 
         TEST_CASE(simplifyNullArray);
 
@@ -6376,6 +6377,21 @@ private:
             ASSERT_EQUALS("const std :: complex < float > operator\"\"if ( long double __num ) { }",
                           tokenizeAndStringify(code));
         }
+    }
+
+    void simplifyOperatorName15() { // ticket #9468 syntaxError
+        const char code[] = "template <typename> struct a;"
+                            "template <typename> struct b {"
+                            "  typedef char c;"
+                            "  operator c();"
+                            "};"
+                            "template <> struct a<char> : b<char> { using b::operator char; };";
+        ASSERT_EQUALS("struct a<char> ; template < typename > struct a ; "
+                      "struct b<char> ; "
+                      "struct a<char> : b<char> { using b :: operatorchar ; } ; struct b<char> { "
+                      "operatorchar ( ) ; "
+                      "} ;",
+                      tokenizeAndStringify(code));
     }
 
     void simplifyNullArray() {

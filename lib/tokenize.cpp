@@ -10839,7 +10839,7 @@ void Tokenizer::simplifyOperatorName()
         return;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "using|:: operator %op% ;")) {
+        if (Token::Match(tok, "using|:: operator %op%|%name% ;")) {
             tok->next()->str("operator" + tok->strAt(2));
             tok->next()->deleteNext();
             continue;
