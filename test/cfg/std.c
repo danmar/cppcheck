@@ -1660,11 +1660,11 @@ void uninitvar_mbsrtowcs(wchar_t* d, const char** s, size_t m, mbstate_t *p)
     // cppcheck-suppress uninitvar
     (void)mbsrtowcs(dest,s,m,p);
     // cppcheck-suppress uninitvar
-    (void)mbsrtowcs(dest,&src,m,p);
+    (void)mbsrtowcs(d,&src,m,p);
     // cppcheck-suppress uninitvar
-    (void)mbsrtowcs(dest,s,max,p);
+    (void)mbsrtowcs(d,s,max,p);
     // cppcheck-suppress uninitvar
-    (void)mbsrtowcs(dest,s,m,ps);
+    (void)mbsrtowcs(d,s,m,ps);
 
     // No warning is expected
     (void)mbsrtowcs(d,s,m,p);
