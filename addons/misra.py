@@ -2565,14 +2565,11 @@ def get_args():
     parser.add_argument("--rule-texts", type=str, help=RULE_TEXTS_HELP)
     parser.add_argument("--verify-rule-texts", help="Verify that all supported rules texts are present in given file and exit.", action="store_true")
     parser.add_argument("--suppress-rules", type=str, help=SUPPRESS_RULES_HELP)
-    parser.add_argument("--quiet", help="Only print something when there is an error", action="store_true")
     parser.add_argument("--no-summary", help="Hide summary of violations", action="store_true")
-    parser.add_argument("-verify", help=argparse.SUPPRESS, action="store_true")
-    parser.add_argument("-generate-table", help=argparse.SUPPRESS, action="store_true")
-    parser.add_argument("dumpfile", nargs='*', help="Path of dump file from cppcheck")
     parser.add_argument("--show-suppressed-rules", help="Print rule suppression list", action="store_true")
     parser.add_argument("-P", "--file-prefix", type=str, help="Prefix to strip when matching suppression file rules")
-    parser.add_argument("--cli", help="Addon is executed from Cppcheck", action="store_true")
+    parser.add_argument("-generate-table", help=argparse.SUPPRESS, action="store_true")
+    parser.add_argument("-verify", help=argparse.SUPPRESS, action="store_true")
     return parser.parse_args()
 
 
@@ -2606,63 +2603,76 @@ def main():
     if args.file_prefix:
         checker.setFilePrefix(args.file_prefix)
 
-    if args.dumpfile:
-        exitCode = 0
-        for item in args.dumpfile:
-            checker.parseDump(item)
+    if not args.dumpfile:
+        if not args.quiet:
+            print("No input files.")
+        sys.exit(0)
 
-            if settings.verify:
-                verify_expected = checker.get_verify_expected()
-                verify_actual   = checker.get_verify_actual()
+    # Generate list to all dumpfiles for check
+    dump_files = []
+    try:
+        dump_files = cppcheckdata.GetDumpFiles(args.dumpfile, args.recursive)
+    except cppcheckdata.CppcheckException as e:
+        print(str(e))
+        sys.exit(e.return_code())
 
-                for expected in verify_expected:
-                    if expected not in verify_actual:
-                        print('Expected but not seen: ' + expected)
-                        exitCode = 1
-                for actual in verify_actual:
-                    if actual not in verify_expected:
-                        print('Not expected: ' + actual)
-                        exitCode = 1
+    exitCode = 0
+    for item in dump_files:
+        checker.parseDump(item)
 
-                # Existing behavior of verify mode is to exit
-                # on the first un-expected output.
-                # TODO: Is this required? or can it be moved to after
-                # all input files have been processed
-                if exitCode != 0:
-                    sys.exit(exitCode)
+        if settings.verify:
+            verify_expected = checker.get_verify_expected()
+            verify_actual   = checker.get_verify_actual()
 
-        # Under normal operation exit with a non-zero exit code
-        # if there were any violations.
-        if not settings.verify:
-            number_of_violations = len(checker.get_violations())
-            if number_of_violations > 0:
-                exitCode = 1
+            for expected in verify_expected:
+                if expected not in verify_actual:
+                    print('Expected but not seen: ' + expected)
+                    exitCode = 1
+            for actual in verify_actual:
+                if actual not in verify_expected:
+                    print('Not expected: ' + actual)
+                    exitCode = 1
 
-                if settings.show_summary:
-                    print("\nMISRA rules violations found:\n\t%s\n" % ("\n\t".join([ "%s: %d" % (viol, len(checker.get_violations(viol))) for viol in checker.get_violation_types()])))
+            # Existing behavior of verify mode is to exit
+            # on the first un-expected output.
+            # TODO: Is this required? or can it be moved to after
+            # all input files have been processed
+            if exitCode != 0:
+                sys.exit(exitCode)
 
-                    rules_violated = {}
-                    for severity, ids in checker.get_violations():
-                        for misra_id in ids:
-                            rules_violated[misra_id] = rules_violated.get(misra_id, 0) + 1
-                    print("MISRA rules violated:")
-                    convert = lambda text: int(text) if text.isdigit() else text
-                    misra_sort = lambda key: [ convert(c) for c in re.split('[.-]([0-9]*)', key) ]
-                    for misra_id in sorted(rules_violated.keys(), key=misra_sort):
-                        res = re.match(r'misra-c2012-([0-9]+)\\.([0-9]+)', misra_id)
-                        if res is None:
-                            num = 0
-                        else:
-                            num = int(res.group(1)) * 100 + int(res.group(2))
-                        severity = '-'
-                        if num in checker.ruleTexts:
-                            severity = checker.ruleTexts[num].cppcheck_severity
-                        print("\t%15s (%s): %d" % (misra_id, severity, rules_violated[misra_id]))
+    # Under normal operation exit with a non-zero exit code
+    # if there were any violations.
+    if not settings.verify:
+        number_of_violations = len(checker.get_violations())
+        if number_of_violations > 0:
+            exitCode = 1
 
-        if args.show_suppressed_rules:
-            checker.showSuppressedRules()
+            if settings.show_summary:
+                print("\nMISRA rules violations found:\n\t%s\n" % (
+                    "\n\t".join(["%s: %d" % (viol, len(checker.get_violations(viol))) for viol in checker.get_violation_types()])))
 
-        sys.exit(exitCode)
+                rules_violated = {}
+                for severity, ids in checker.get_violations():
+                    for misra_id in ids:
+                        rules_violated[misra_id] = rules_violated.get(misra_id, 0) + 1
+                print("MISRA rules violated:")
+                convert = lambda text: int(text) if text.isdigit() else text
+                misra_sort = lambda key: [ convert(c) for c in re.split('[\.-]([0-9]*)', key) ]
+                for misra_id in sorted(rules_violated.keys(), key=misra_sort):
+                    res = re.match(r'misra-c2012-([0-9]+)\\.([0-9]+)', misra_id)
+                    if res is None:
+                        num = 0
+                    else:
+                        num = int(res.group(1)) * 100 + int(res.group(2))
+                    severity = '-'
+                    if num in checker.ruleTexts:
+                        severity = checker.ruleTexts[num].cppcheck_severity
+                    print("\t%15s (%s): %d" % (misra_id, severity, rules_violated[misra_id]))
+
+    if args.show_suppressed_rules:
+        checker.showSuppressedRules()
+
+    sys.exit(exitCode)
 
 
 if __name__ == '__main__':
