@@ -1916,6 +1916,8 @@ class MisraChecker:
                 token = i.nameToken
             elif isinstance(i, cppcheckdata.Function):
                 token = i.tokenDef
+            if not token:
+                continue
             if len(token.str) < 2:
                 continue
             if token.str == 'errno':
