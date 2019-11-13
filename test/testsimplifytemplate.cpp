@@ -189,6 +189,7 @@ private:
         TEST_CASE(template149); // unknown macro
         TEST_CASE(template150); // syntax error
         TEST_CASE(template151); // crash
+        TEST_CASE(template152); // #9467
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -3617,6 +3618,38 @@ private:
                                "class a<char> { } ;";
             ASSERT_EQUALS(exp, tok(code));
         }
+    }
+
+    void template152() { // #9467
+        const char code[] = "class Foo {\n"
+                            "  template <unsigned int i>\n"
+                            "  bool bar() {\n"
+                            "    return true;\n"
+                            "  }\n"
+                            "};\n"
+                            "template <>\n"
+                            "bool Foo::bar<9>() {\n"
+                            "  return true;\n"
+                            "}\n"
+                            "int global() {\n"
+                            "  int bar = 1;\n"
+                            "  return bar;\n"
+                            "}";
+        const char exp[] = "class Foo { "
+                           "bool bar<9> ( ) ; "
+                           "template < unsigned int i > "
+                           "bool bar ( ) { "
+                           "return true ; "
+                           "} "
+                           "} ; "
+                           "bool Foo :: bar<9> ( ) { "
+                           "return true ; "
+                           "} "
+                           "int global ( ) { "
+                           "int bar ; bar = 1 ; "
+                           "return bar ; "
+                           "}";
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
