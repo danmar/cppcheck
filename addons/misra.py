@@ -1645,7 +1645,9 @@ class MisraChecker:
 
     def misra_17_2(self, data):
         # find recursions..
-        def find_recursive_call(search_for_function, direct_call, calls_map, visited=set()):
+        def find_recursive_call(search_for_function, direct_call, calls_map, visited=None):
+            if visited is None:
+                visited = set()
             if direct_call == search_for_function:
                 return True
             for indirect_call in calls_map.get(direct_call, []):
