@@ -4285,6 +4285,13 @@ private:
                         "}");
         ASSERT_EQUALS("[test.cpp:8]: (error) Uninitialized variable: a\n", errout.str());
 
+        valueFlowUninit("void h() {\n"
+                        "  int i;\n"
+                        "  int* v = &i;\n"
+                        "  sscanf(\"0\", \"%d\", v);\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         valueFlowUninit("void test(int p) {\n"
                         "    int f;\n"
                         "    if (p > 0)\n"
@@ -4307,7 +4314,7 @@ private:
                         "    someType_t gVar;\n"
                         "    bar(&gVar);\n"
                         "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:5]: (error) Uninitialized variable: p->flags\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:5]: (error) Uninitialized variable: flags\n", errout.str());
 
         valueFlowUninit("typedef struct \n"
                         "{\n"

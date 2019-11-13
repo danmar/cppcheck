@@ -76,8 +76,8 @@ public:
     bool checkIfForWhileHead(const Token *startparentheses, const Variable& var, bool suppressErrors, bool isuninit, Alloc alloc, const std::string &membervar);
     bool checkLoopBody(const Token *tok, const Variable& var, const Alloc alloc, const std::string &membervar, const bool suppressErrors);
     void checkRhs(const Token *tok, const Variable &var, Alloc alloc, nonneg int number_of_if, const std::string &membervar);
-    bool isVariableUsage(const Token *vartok, bool pointer, Alloc alloc) const;
-    int isFunctionParUsage(const Token *vartok, bool pointer, Alloc alloc) const;
+    bool isVariableUsage(const Token *vartok, bool pointer, Alloc alloc, int indirect = 0) const;
+    int isFunctionParUsage(const Token *vartok, bool pointer, Alloc alloc, int indirect = 0) const;
     bool isMemberVariableAssignment(const Token *tok, const std::string &membervar) const;
     bool isMemberVariableUsage(const Token *tok, bool isPointer, Alloc alloc, const std::string &membervar) const;
 
