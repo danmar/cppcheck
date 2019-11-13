@@ -69,6 +69,7 @@ private:
         TEST_CASE(uninitvar2_malloc);    // malloc returns uninitialized data
         TEST_CASE(uninitvar8); // ticket #6230
         TEST_CASE(uninitvar9); // ticket #6424
+        TEST_CASE(uninitvar10); // ticket #9467
         TEST_CASE(uninitvar_unconditionalTry);
         TEST_CASE(uninitvar_funcptr); // #6404
         TEST_CASE(uninitvar_operator); // #6680
@@ -2662,6 +2663,25 @@ private:
         checkUninitVar(code, "test.cpp");
         ASSERT_EQUALS("[test.cpp:2]: (error) Uninitialized variable: p\n"
                       "[test.cpp:4]: (error) Uninitialized variable: p\n", errout.str());
+    }
+
+    void uninitvar10() { // 9467
+        const char code[] = "class Foo {\n"
+                            "    template <unsigned int i>\n"
+                            "    bool bar() {\n"
+                            "        return true;\n"
+                            "    }\n"
+                            "};\n"
+                            "template <>\n"
+                            "bool Foo::bar<9>() {\n"
+                            "    return true;\n"
+                            "}\n"
+                            "int global() {\n"
+                            "    int bar = 1;\n"
+                            "    return bar;\n"
+                            "}";
+        checkUninitVar(code, "test.cpp");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_unconditionalTry() {
