@@ -1651,14 +1651,23 @@ void uninitvar_mbstowcs(void)
     (void)mbstowcs(ws,s,n);
 }
 
-void uninitvar_mbsrtowcs(void)
+void uninitvar_mbsrtowcs(wchar_t* d, const char** s, size_t m, mbstate_t *p)
 {
     wchar_t* dest;
     const char* src;
     size_t max;
     mbstate_t* ps;
     // cppcheck-suppress uninitvar
-    (void)mbsrtowcs(dest,&src,max,ps);
+    (void)mbsrtowcs(dest,s,m,p);
+    // cppcheck-suppress uninitvar
+    (void)mbsrtowcs(dest,&src,m,p);
+    // cppcheck-suppress uninitvar
+    (void)mbsrtowcs(dest,s,max,p);
+    // cppcheck-suppress uninitvar
+    (void)mbsrtowcs(dest,s,m,ps);
+
+    // No warning is expected
+    (void)mbsrtowcs(d,s,m,p);
 }
 
 void uninitvar_wctob(void)
