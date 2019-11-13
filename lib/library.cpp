@@ -105,8 +105,8 @@ Library::Error Library::load(const char exename[], const char path[])
         }
 
         while (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND && !cfgfolders.empty()) {
-            const std::string cfgfolder(cfgfolders.front());
-            cfgfolders.pop_front();
+            const std::string cfgfolder(cfgfolders.back());
+            cfgfolders.pop_back();
             const char *sep = (!cfgfolder.empty() && endsWith(cfgfolder,'/') ? "" : "/");
             const std::string filename(cfgfolder + sep + fullfilename);
             error = doc.LoadFile(filename.c_str());
@@ -663,12 +663,16 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
             }
             for (const tinyxml2::XMLElement *argnode = functionnode->FirstChildElement(); argnode; argnode = argnode->NextSiblingElement()) {
                 const std::string argnodename = argnode->Name();
+                int indirect = 0;
+                const char * const indirectStr = node->Attribute("indirect");
+                if (indirectStr)
+                    indirect = atoi(indirectStr);
                 if (argnodename == "not-bool")
                     ac.notbool = true;
                 else if (argnodename == "not-null")
                     ac.notnull = true;
                 else if (argnodename == "not-uninit")
-                    ac.notuninit = true;
+                    ac.notuninit = indirect;
                 else if (argnodename == "formatstr")
                     ac.formatstr = true;
                 else if (argnodename == "strz")
@@ -775,6 +779,8 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                 else
                     unknown_elements.insert(argnodename);
             }
+            if (ac.notuninit == 0)
+                ac.notuninit = ac.notnull ? 1 : 0;
         } else if (functionnodename == "ignorefunction") {
             func.ignore = true;
         } else if (functionnodename == "formatstr") {
@@ -951,7 +957,7 @@ bool Library::isnullargbad(const Token *ftok, int argnr) const
     return arg && arg->notnull;
 }
 
-bool Library::isuninitargbad(const Token *ftok, int argnr) const
+bool Library::isuninitargbad(const Token *ftok, int argnr, int indirect) const
 {
     const ArgumentChecks *arg = getarg(ftok, argnr);
     if (!arg) {
@@ -961,7 +967,7 @@ bool Library::isuninitargbad(const Token *ftok, int argnr) const
         if (it != functions.cend() && it->second.formatstr && !it->second.formatstr_scan)
             return true;
     }
-    return arg && arg->notuninit;
+    return arg && arg->notuninit >= indirect;
 }
 
 

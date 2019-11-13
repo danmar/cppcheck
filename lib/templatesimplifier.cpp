@@ -708,7 +708,7 @@ bool TemplateSimplifier::getTemplateDeclarations()
         if (!Token::simpleMatch(tok, "template <"))
             continue;
         // ignore template template parameter
-        if (tok->strAt(-1) == "<")
+        if (tok->strAt(-1) == "<" || tok->strAt(-1) == ",")
             continue;
         // ignore nested template
         if (tok->strAt(-1) == ">")
@@ -722,6 +722,8 @@ bool TemplateSimplifier::getTemplateDeclarations()
             tok1 = closing->next();
         }
         if (!tok1)
+            syntaxError(tok);
+        if (!tok1->next())
             syntaxError(tok);
         // Some syntax checks, see #6865
         if (!tok->tokAt(2))
@@ -1606,7 +1608,7 @@ void TemplateSimplifier::expandTemplate(
             }
         }
         unsigned int typeindentlevel = 0;
-        while (!(typeindentlevel == 0 && Token::Match(end, ";|{|:"))) {
+        while (end && !(typeindentlevel == 0 && Token::Match(end, ";|{|:"))) {
             if (Token::Match(end, "<|(|{"))
                 ++typeindentlevel;
             else if (Token::Match(end, ">|)|}"))

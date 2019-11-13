@@ -440,7 +440,8 @@ struct AST_state {
     bool cpp;
     int assign;
     bool inCase; // true from case to :
-    explicit AST_state(bool cpp) : depth(0), inArrayAssignment(0), cpp(cpp), assign(0), inCase(false) {}
+    const Token *functionCallEndPar;
+    explicit AST_state(bool cpp) : depth(0), inArrayAssignment(0), cpp(cpp), assign(0), inCase(false), functionCallEndPar(nullptr) {}
 };
 
 static Token * skipDecl(Token *tok)
@@ -709,6 +710,16 @@ static void compileTerm(Token *&tok, AST_state& state)
                 compileBinOp(tok, state, compileExpression);
             if (Token::Match(tok, "} ,|:"))
                 tok = tok->next();
+        } else if (state.cpp && Token::Match(tok->tokAt(-2), "%name% ( {")) {
+            if (Token::simpleMatch(tok, "{ }"))
+                tok = tok->tokAt(2);
+            else {
+                Token *tok1 = tok;
+                state.inArrayAssignment++;
+                compileUnaryOp(tok, state, compileExpression);
+                state.inArrayAssignment--;
+                tok = tok1->link()->next();
+            }
         } else if (!state.inArrayAssignment && !Token::simpleMatch(prev, "=")) {
             state.op.push(tok);
             tok = tok->link()->next();
@@ -794,6 +805,8 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                     if (curlyBracket && curlyBracket->originalName() == "->") {
                         while (Token::Match(curlyBracket, "%name%|.|::|&|*"))
                             curlyBracket = curlyBracket->next();
+                        if (curlyBracket && curlyBracket->str() == "<" && curlyBracket->link())
+                            curlyBracket = curlyBracket->link()->next();
                     }
                     if (curlyBracket && curlyBracket->str() == "{") {
                         squareBracket->astOperand1(roundBracket);
@@ -1107,6 +1120,8 @@ static void compileComma(Token *&tok, AST_state& state)
                 tok = tok->next();
             else
                 compileBinOp(tok, state, compileAssignTernary);
+        } else if (tok->str() == ";" && state.functionCallEndPar && tok->index() < state.functionCallEndPar->index()) {
+            compileBinOp(tok, state, compileAssignTernary);
         } else break;
     }
 }
@@ -1176,7 +1191,7 @@ static void createAstAtTokenInner(Token * const tok1, const Token *endToken, boo
             const Token * const endToken2 = tok->link();
             for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
                 tok = createAstAtToken(tok, cpp);
-        } else if (tok->str() == "[") {
+        } else if (cpp && tok->str() == "[") {
             if (isLambdaCaptureList(tok)) {
                 tok = tok->astOperand1();
                 if (tok->str() == "(")
@@ -1184,6 +1199,21 @@ static void createAstAtTokenInner(Token * const tok1, const Token *endToken, boo
                 const Token * const endToken2 = tok->link();
                 for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
                     tok = createAstAtToken(tok, cpp);
+            } else if (Token::simpleMatch(tok->link(), "] (") && Token::Match(tok->link()->linkAt(1), ") .|{")) {
+                Token *bodyStart = tok->link()->linkAt(1)->next();
+                if (Token::Match(bodyStart, ". %name%") && bodyStart->originalName() == "->") {
+                    bodyStart = bodyStart->next();
+                    while (Token::Match(bodyStart, "%name%|::"))
+                        bodyStart = bodyStart->next();
+                    if (Token::simpleMatch(bodyStart, "<") && Token::simpleMatch(bodyStart->link(), "> {"))
+                        bodyStart = bodyStart->link()->next();
+                }
+                if (Token::simpleMatch(bodyStart, "{")) {
+                    tok = bodyStart;
+                    const Token * const endToken2 = tok->link();
+                    for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
+                        tok = createAstAtToken(tok, cpp);
+                }
             }
         }
     }
@@ -1192,8 +1222,11 @@ static void createAstAtTokenInner(Token * const tok1, const Token *endToken, boo
 static Token * findAstTop(Token *tok1, Token *tok2)
 {
     for (Token *tok = tok1; tok && (tok != tok2); tok = tok->next()) {
-        if (tok->astParent() || tok->astOperand1() || tok->astOperand2())
-            return tok->astTop();
+        if (tok->astParent() || tok->astOperand1() || tok->astOperand2()) {
+            while (tok->astParent() && tok->astParent()->index() >= tok1->index() && tok->astParent()->index() <= tok2->index())
+                tok = tok->astParent();
+            return tok;
+        }
         if (Token::simpleMatch(tok, "( {"))
             tok = tok->link();
     }
@@ -1329,6 +1362,8 @@ static Token * createAstAtToken(Token *tok, bool cpp)
 
         Token * const tok1 = tok;
         AST_state state(cpp);
+        if (Token::Match(tok, "%name% ("))
+            state.functionCallEndPar = tok->linkAt(1);
         compileExpression(tok, state);
         const Token * const endToken = tok;
         if (endToken == tok1 || !endToken)

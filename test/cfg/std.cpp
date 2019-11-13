@@ -2900,6 +2900,14 @@ void uninitvar_vsprintf(void)
     (void)std::vsprintf(s,format,arg);
 }
 
+void nullPointer_vsprintf(va_list arg,const char *format)
+{
+    char *s = NULL;
+    (void)std::vsprintf(s,format,arg); // Its allowed to provide 's' as NULL pointer
+    // cppcheck-suppress nullPointer
+    (void)std::vsprintf(s,NULL,arg);
+}
+
 void uninitvar_vswprintf(void)
 {
     wchar_t *s;
@@ -3293,6 +3301,12 @@ void stdalgorithm(const std::list<int> &ints1, const std::list<int> &ints2)
     // cppcheck-suppress mismatchingContainers
     if (std::find(ints1.begin(), ints1.end(), 123) == ints2.end()) {}
 
+    // #9455
+    std::list<int>::const_iterator uninitItBegin;
+    std::list<int>::const_iterator uninitItEnd;
+    // @todo cppcheck-suppress uninitvar
+    if (std::find(uninitItBegin, uninitItEnd, 123) == uninitItEnd) {}
+
     // <!-- InputIterator std::find_if(InputIterator first, InputIterator last, UnaryPredicate val) -->
     // cppcheck-suppress mismatchingContainers
     // cppcheck-suppress ignoredReturnValue
@@ -3335,9 +3349,7 @@ void stdalgorithm(const std::list<int> &ints1, const std::list<int> &ints2)
     // <!-- Function std::for_each(InputIterator first, InputIterator last, Function func) -->
     // cppcheck-suppress mismatchingContainers
     std::for_each(ints1.begin(), ints2.end(), [](int i) {});
-
 }
-
 
 void getline()
 {

@@ -746,9 +746,11 @@ private:
               "  void* p = malloc(10);\n"
               "  int* p2 = p + 4;\n"
               "  int* p3 = p - 1;\n"
+              "  int* p4 = 1 + p;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (portability) 'p' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n"
-                      "[test.cpp:4]: (portability) 'p' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout.str());
+                      "[test.cpp:4]: (portability) 'p' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n"
+                      "[test.cpp:5]: (portability) 'p' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout.str());
 
         check("void f() {\n"
               "  void* p1 = malloc(10);\n"

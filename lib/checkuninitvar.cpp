@@ -244,6 +244,14 @@ static void conditionAlwaysTrueOrFalse(const Token *tok, const std::map<int, Var
     if (!tok)
         return;
 
+    if (tok->hasKnownIntValue()) {
+        if (tok->getKnownIntValue() == 0)
+            *alwaysFalse = true;
+        else
+            *alwaysTrue = true;
+        return;
+    }
+
     if (tok->isName() || tok->str() == ".") {
         while (tok && tok->str() == ".")
             tok = tok->astOperand2();
@@ -712,7 +720,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                     continue;
                 }
             }
-            if (var.isPointer() && (var.typeStartToken()->isStandardType() || var.typeStartToken()->isEnumType() || (var.type() && var.type()->needInitialization == Type::NeedInitialization::True)) && Token::simpleMatch(tok->next(), "= new")) {
+            if (mTokenizer->isCPP() && var.isPointer() && (var.typeStartToken()->isStandardType() || var.typeStartToken()->isEnumType() || (var.type() && var.type()->needInitialization == Type::NeedInitialization::True)) && Token::simpleMatch(tok->next(), "= new")) {
                 *alloc = CTOR_CALL;
 
                 // type has constructor(s)
@@ -938,9 +946,12 @@ void CheckUninitVar::checkRhs(const Token *tok, const Variable &var, Alloc alloc
     }
 }
 
-bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc alloc) const
+bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc alloc, int indirect) const
 {
-    if (alloc == NO_ALLOC && ((Token::Match(vartok->previous(), "return|delete %var% !!=")) || (vartok->strAt(-1) == "]" && vartok->linkAt(-1)->strAt(-1) == "delete")))
+    if (!pointer && Token::Match(vartok, "%name% ("))
+        return false;
+
+    if (alloc == NO_ALLOC && (Token::Match(vartok->previous(), "return|delete %var% !!=") || (vartok->strAt(-1) == "]" && vartok->linkAt(-1)->strAt(-1) == "delete")))
         return true;
 
     // Passing variable to typeof/__alignof__
@@ -988,7 +999,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
         if (Token::Match(possibleParent, "[(,]")) {
             if (unknown)
                 return false; // TODO: output some info message?
-            const int use = isFunctionParUsage(vartok, pointer, alloc);
+            const int use = isFunctionParUsage(vartok, pointer, alloc, indirect);
             if (use >= 0)
                 return (use>0);
         }
@@ -1116,7 +1127,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
  * is passed "by reference" then it is not necessarily "used".
  * @return  -1 => unknown   0 => not used   1 => used
  */
-int CheckUninitVar::isFunctionParUsage(const Token *vartok, bool pointer, Alloc alloc) const
+int CheckUninitVar::isFunctionParUsage(const Token *vartok, bool pointer, Alloc alloc, int indirect) const
 {
     bool unknown = false;
     const Token *parent = getAstParentSkipPossibleCastAndAddressOf(vartok, &unknown);
@@ -1172,9 +1183,9 @@ int CheckUninitVar::isFunctionParUsage(const Token *vartok, bool pointer, Alloc 
             return alloc == NO_ALLOC;
         } else {
             const bool isnullbad = mSettings->library.isnullargbad(start->previous(), argumentNumber + 1);
-            if (pointer && !address && isnullbad && alloc == NO_ALLOC)
+            if (indirect == 0 && pointer && !address && isnullbad && alloc == NO_ALLOC)
                 return 1;
-            const bool isuninitbad = mSettings->library.isuninitargbad(start->previous(), argumentNumber + 1);
+            const bool isuninitbad = mSettings->library.isuninitargbad(start->previous(), argumentNumber + 1, indirect);
             if (alloc != NO_ALLOC)
                 return isnullbad && isuninitbad;
             return isuninitbad && (!address || isnullbad);
@@ -1355,7 +1366,7 @@ void CheckUninitVar::valueFlowUninit()
                 continue;
             bool uninitderef = false;
             if (tok->variable()) {
-                if (!isVariableUsage(tok, tok->variable()->isPointer(), tok->variable()->isArray() ? ARRAY : NO_ALLOC))
+                if (!isVariableUsage(tok, tok->variable()->isPointer(), tok->variable()->isArray() ? ARRAY : NO_ALLOC, v->indirect))
                     continue;
                 bool unknown;
                 const bool deref = CheckNullPointer::isPointerDeRef(tok, unknown, mSettings);

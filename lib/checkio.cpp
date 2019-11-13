@@ -566,6 +566,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                 const bool scan,
                                 const bool scanf_s)
 {
+    const bool isWindows = mSettings->isWindowsPlatform();
     const bool printWarning = mSettings->isEnabled(Settings::WARNING);
     const std::string &formatString = formatStringTok->str();
 
@@ -841,7 +842,8 @@ void CheckIO::checkFormatString(const Token * const tok,
                                                 invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
                                             break;
                                         case 'z':
-                                            if (!typesMatch(argInfo.typeToken->originalName(), "ssize_t"))
+                                            if (!(typesMatch(argInfo.typeToken->originalName(), "ssize_t") ||
+                                                  (isWindows && typesMatch(argInfo.typeToken->originalName(), "SSIZE_T"))))
                                                 invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
                                             break;
                                         case 't':
@@ -1095,7 +1097,8 @@ void CheckIO::checkFormatString(const Token * const tok,
                                                 invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
                                             break;
                                         case 'z':
-                                            if (!typesMatch(argInfo.typeToken->originalName(), "ssize_t"))
+                                            if (!(typesMatch(argInfo.typeToken->originalName(), "ssize_t") ||
+                                                  (isWindows && typesMatch(argInfo.typeToken->originalName(), "SSIZE_T"))))
                                                 invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
                                             break;
                                         case 'L':

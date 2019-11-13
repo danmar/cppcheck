@@ -220,7 +220,11 @@
                   <element name="not-null"><empty/></element>
                 </optional>
                 <optional>
-                  <element name="not-uninit"><empty/></element>
+                  <element name="not-uninit">
+                    <optional>
+                      <attribute name="indirect"><ref name="INDIRECT"/></attribute>
+                    </optional>
+                  </element>
                 </optional>
                 <optional>
                   <element name="valid">
@@ -502,6 +506,13 @@
     <data type="integer">
       <param name="minInclusive">1</param>
       <param name="maxInclusive">20</param>
+    </data>
+  </define>
+
+  <define name="INDIRECT">
+    <data type="integer">
+      <param name="minInclusive">0</param>
+      <param name="maxInclusive">2</param>
     </data>
   </define>
   

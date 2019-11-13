@@ -188,10 +188,7 @@ static bool getDimensionsEtc(const Token * const arrayToken, const Settings *set
     while (Token::Match(array, ".|::"))
         array = array->astOperand2();
 
-    if (!array->variable())
-        return false;
-
-    if (array->variable()->isArray() && !array->variable()->dimensions().empty()) {
+    if (array->variable() && array->variable()->isArray() && !array->variable()->dimensions().empty()) {
         *dimensions = array->variable()->dimensions();
         if (dimensions->size() >= 1 && ((*dimensions)[0].num <= 1 || !(*dimensions)[0].tok)) {
             visitAstNodes(arrayToken,
@@ -244,7 +241,7 @@ static std::vector<const ValueFlow::Value *> getOverrunIndexValues(const Token *
                     continue;
                 allKnown = false;
             }
-            if (array->variable()->isArray() && dimensions[i].num == 0)
+            if (array->variable() && array->variable()->isArray() && dimensions[i].num == 0)
                 continue;
             if (value->intvalue == dimensions[i].num)
                 equal = true;
@@ -275,7 +272,7 @@ void CheckBufferOverrun::arrayIndex()
         const Token *array = tok->astOperand1();
         while (Token::Match(array, ".|::"))
             array = array->astOperand2();
-        if (!array|| !array->variable() || array->variable()->nameToken() == array)
+        if (!array || ((!array->variable() || array->variable()->nameToken() == array) && array->tokType() != Token::eString))
             continue;
         if (!array->scope()->isExecutable()) {
             // LHS in non-executable scope => This is just a definition
@@ -590,6 +587,8 @@ void CheckBufferOverrun::bufferOverflow()
                 while (Token::Match(argtok, ".|::"))
                     argtok = argtok->astOperand2();
                 if (!argtok || !argtok->variable())
+                    continue;
+                if (argtok->valueType() && argtok->valueType()->pointer == 0)
                     continue;
                 // TODO: strcpy(buf+10, "hello");
                 const ValueFlow::Value bufferSize = getBufferSize(argtok);

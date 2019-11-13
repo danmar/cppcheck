@@ -40,6 +40,24 @@ def test_local_path():
     assert stdout.find('Checking %s ...' % (file1)) >= 0
     assert stdout.find('Checking %s ...' % (file2)) >= 0
 
+def test_local_path_force():
+    create_compile_commands()
+    ret, stdout, stderr = cppcheck_local(['--project=compile_commands.json', '--force'])
+    cwd = os.getcwd()
+    file1 = os.path.join(cwd, 'proj2', 'a', 'a.c')
+    file2 = os.path.join(cwd, 'proj2', 'b', 'b.c')
+    assert ret == 0
+    assert stdout.find('AAA') >= 0
+
+def test_local_path_maxconfigs():
+    create_compile_commands()
+    ret, stdout, stderr = cppcheck_local(['--project=compile_commands.json', '--max-configs=2'])
+    cwd = os.getcwd()
+    file1 = os.path.join(cwd, 'proj2', 'a', 'a.c')
+    file2 = os.path.join(cwd, 'proj2', 'b', 'b.c')
+    assert ret == 0
+    assert stdout.find('AAA') >= 0
+
 def test_relative_path():
     create_compile_commands()
     ret, stdout, stderr = cppcheck(['--project=' + COMPILE_COMMANDS_JSON])

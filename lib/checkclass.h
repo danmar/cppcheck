@@ -61,7 +61,6 @@ public:
 
         // can't be a simplified check .. the 'sizeof' is used.
         checkClass.checkMemset();
-        checkClass.checkUnsafeClassDivZero();
         checkClass.constructors();
         checkClass.operatorEq();
         checkClass.privateFunctions();
@@ -141,9 +140,6 @@ public:
     /** @brief Check that copy constructor and operator defined together */
     void checkCopyCtorAndEqOperator();
 
-    /** @brief Check that arbitrary usage of the public interface does not result in division by zero */
-    void checkUnsafeClassDivZero(bool test=false);
-
     /** @brief Check that the override keyword is used when overriding virtual functions */
     void checkOverride();
 
@@ -185,7 +181,6 @@ private:
     void virtualFunctionCallInConstructorError(const Function * scopeFunction, const std::list<const Token *> & tokStack, const std::string &funcname);
     void duplInheritedMembersError(const Token* tok1, const Token* tok2, const std::string &derivedName, const std::string &baseName, const std::string &variableName, bool derivedIsStruct, bool baseIsStruct);
     void copyCtorAndEqOperatorError(const Token *tok, const std::string &classname, bool isStruct, bool hasCopyCtor);
-    void unsafeClassDivZeroError(const Token *tok, const std::string &className, const std::string &methodName, const std::string &varName);
     void overrideError(const Function *funcInBase, const Function *funcInDerived);
     void unsafeClassRefMemberError(const Token *tok, const std::string &varname);
 
@@ -221,7 +216,6 @@ private:
         c.selfInitializationError(nullptr, "var");
         c.duplInheritedMembersError(nullptr, nullptr, "class", "class", "variable", false, false);
         c.copyCtorAndEqOperatorError(nullptr, "class", false, false);
-        c.unsafeClassDivZeroError(nullptr, "Class", "dostuff", "x");
         c.pureVirtualFunctionCallInConstructorError(nullptr, std::list<const Token *>(), "f");
         c.virtualFunctionCallInConstructorError(nullptr, std::list<const Token *>(), "f");
         c.overrideError(nullptr, nullptr);

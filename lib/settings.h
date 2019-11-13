@@ -220,6 +220,9 @@ public:
         Default is 12. (--max-configs=N) */
     unsigned int maxConfigs;
 
+    /** @brief --check all configurations */
+    bool checkAllConfigurations;
+
     /** @brief --max-ctu-depth */
     int maxCtuDepth;
 

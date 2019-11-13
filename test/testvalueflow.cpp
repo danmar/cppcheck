@@ -323,6 +323,7 @@ private:
 
     void valueFlowNumber() {
         ASSERT_EQUALS(123, valueOfTok("x=123;", "123").intvalue);
+        ASSERT_EQUALS_DOUBLE(192.0, valueOfTok("x=0x0.3p10;", "0x0.3p10").floatValue, 1e-5); // 3 * 16^-1 * 2^10 = 192
         ASSERT(std::fabs(valueOfTok("x=0.5;", "0.5").floatValue - 0.5f) < 0.1f);
         ASSERT_EQUALS(10, valueOfTok("enum {A=10,B=15}; x=A+0;", "+").intvalue);
         ASSERT_EQUALS(0, valueOfTok("x=false;", "false").intvalue);
@@ -813,6 +814,19 @@ private:
         CHECK("int", settings.sizeof_int);
         CHECK("long", settings.sizeof_long);
         CHECK("wchar_t", settings.sizeof_wchar_t);
+
+        // string/char literals
+        CHECK("\"asdf\"", 5);
+        CHECK("L\"asdf\"", 5 * settings.sizeof_wchar_t);
+        CHECK("u8\"asdf\"", 5); // char8_t
+        CHECK("u\"asdf\"", 5 * 2); // char16_t
+        CHECK("U\"asdf\"", 5 * 4); // char32_t
+        CHECK("'a'", 1U);
+        CHECK("'ab'", settings.sizeof_int);
+        CHECK("L'a'", settings.sizeof_wchar_t);
+        CHECK("u8'a'", 1U); // char8_t
+        CHECK("u'a'", 2U); // char16_t
+        CHECK("U'a'", 4U); // char32_t
 #undef CHECK
 
         // array size

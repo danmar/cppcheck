@@ -221,6 +221,8 @@ private:
 
         TEST_CASE(functionImplicitlyVirtual);
 
+        TEST_CASE(functionStatic);
+
         TEST_CASE(namespaces1);
         TEST_CASE(namespaces2);
         TEST_CASE(namespaces3);  // #3854 - unknown macro
@@ -305,6 +307,7 @@ private:
         TEST_CASE(symboldatabase80); // #9389
         TEST_CASE(symboldatabase81); // #9411
         TEST_CASE(symboldatabase82);
+        TEST_CASE(symboldatabase83); // #9431
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
 
@@ -354,6 +357,7 @@ private:
         TEST_CASE(findFunction28);
         TEST_CASE(findFunction29);
         TEST_CASE(findFunction30);
+        TEST_CASE(findFunction31);
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
@@ -2285,6 +2289,14 @@ private:
         ASSERT_EQUALS(4, db->scopeList.size());
         const Function *function = db->scopeList.back().function;
         ASSERT_EQUALS(true, function && function->isImplicitlyVirtual(false));
+    }
+
+    void functionStatic() {
+        GET_SYMBOL_DB("static void fs() {  }");
+        (void)db;
+        const Function *func = db->scopeList.back().function;
+        ASSERT(func);
+        ASSERT(func->isStatic());
     }
 
     void namespaces1() {
@@ -4413,6 +4425,23 @@ private:
         ASSERT_EQUALS(false, db->functionScopes[0]->function->isConstructor());
     }
 
+    void symboldatabase83() { // #9431
+        const bool old = settings1.debugwarnings;
+        settings1.debugwarnings = true;
+        GET_SYMBOL_DB("struct a { a() noexcept; };\n"
+                      "a::a() noexcept = default;");
+        settings1.debugwarnings = old;
+        const Scope *scope = db->findScopeByName("a");
+        ASSERT(scope);
+        ASSERT(scope->functionList.size() == 1);
+        ASSERT(scope->functionList.front().name() == "a");
+        ASSERT(scope->functionList.front().hasBody() == false);
+        ASSERT(scope->functionList.front().isConstructor() == true);
+        ASSERT(scope->functionList.front().isDefault() == true);
+        ASSERT(scope->functionList.front().isNoExcept() == true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void createSymbolDatabaseFindAllScopes1() {
         GET_SYMBOL_DB("void f() { union {int x; char *p;} a={0}; }");
         ASSERT(db->scopeList.size() == 3);
@@ -5347,7 +5376,7 @@ private:
         ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 3);
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo ( ccp ) ;");
-        ASSERT_EQUALS(true, f && f->function() == nullptr);
+        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 5);
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo ( f ) ;");
         ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 4);
@@ -5792,6 +5821,17 @@ private:
         const Token *bar = Token::findsimplematch(tokenizer.tokens(), "bar ( ) ;");
         ASSERT(bar);
         ASSERT(!bar->function());
+    }
+
+    void findFunction31() {
+        GET_SYMBOL_DB("void foo(bool);\n"
+                      "void foo(std::string s);\n"
+                      "void bar() { foo(\"123\"); }");
+        const Token *foo = Token::findsimplematch(tokenizer.tokens(), "foo ( \"123\" ) ;");
+        ASSERT(foo);
+        ASSERT(foo->function());
+        ASSERT(foo->function()->tokenDef);
+        ASSERT_EQUALS(1, foo->function()->tokenDef->linenr());
     }
 
     void findFunctionContainer() {
@@ -6568,6 +6608,7 @@ private:
             ASSERT_EQUALS("unsigned int *", typeOf(";void *data = new xyz::x[10];", "new", "test.cpp", &settingsWin64));
             ASSERT_EQUALS("unsigned int", typeOf("; x = (xyz::x)12;", "(", "test.cpp", &settingsWin64));
             ASSERT_EQUALS("unsigned int", typeOf(";u32(12);", "(", "test.cpp", &settingsWin64));
+            ASSERT_EQUALS("unsigned int", typeOf("x = u32(y[i]);", "(", "test.cpp", &settingsWin64));
         }
         {
             // PlatformType
@@ -6606,12 +6647,20 @@ private:
             // Container (vector)
             Settings set;
             Library::Container vector;
-            vector.startPattern = "Vector";
+            vector.startPattern = "Vector <";
             vector.startPattern2 = "Vector !!::";
             vector.type_templateArgNo = 0;
             vector.arrayLike_indexOp = true;
             set.library.containers["Vector"] = vector;
+            Library::Container string;
+            string.startPattern = "test :: string";
+            string.startPattern2 = "test :: string !!::";
+            string.arrayLike_indexOp = string.stdStringLike = true;
+            set.library.containers["test::string"] = string;
             ASSERT_EQUALS("signed int", typeOf("Vector<int> v; v[0]=3;", "[", "test.cpp", &set));
+            ASSERT_EQUALS("container(test :: string)", typeOf("return test::string();", "(", "test.cpp", &set));
+            ASSERT_EQUALS("container(test :: string)", typeOf("void foo(Vector<test::string> v) { for (auto s: v) { x=s+s; } }", "s", "test.cpp", &set));
+            ASSERT_EQUALS("container(test :: string)", typeOf("void foo(Vector<test::string> v) { for (auto s: v) { x=s+s; } }", "+", "test.cpp", &set));
         }
 
         // new

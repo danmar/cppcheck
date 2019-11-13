@@ -1333,11 +1333,28 @@ void CheckCondition::alwaysTrueFalse()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-
             if (tok->link()) // don't write false positives when templates are used
                 continue;
             if (!tok->hasKnownIntValue())
                 continue;
+            {
+                // is this a condition..
+                const Token *parent = tok->astParent();
+                while (Token::Match(parent, "%oror%|&&"))
+                    parent = parent->astParent();
+                if (!parent)
+                    continue;
+                const Token *condition = nullptr;
+                if (parent->str() == "?" && precedes(tok, parent))
+                    condition = parent->astOperand1();
+                else if (Token::Match(parent->previous(), "if|while ("))
+                    condition = parent->astOperand2();
+                else if (parent->str() == ";" && parent->astParent() && parent->astParent()->astParent() && Token::simpleMatch(parent->astParent()->astParent()->previous(), "for ("))
+                    condition = parent->astOperand1();
+                else
+                    continue;
+                (void)condition;
+            }
             // Skip already diagnosed values
             if (diag(tok, false))
                 continue;
@@ -1355,38 +1372,9 @@ void CheckCondition::alwaysTrueFalse()
                 (Token::Match(tok->astParent(), "%oror%|&&") || Token::Match(tok->astParent()->astOperand1(), "if|while"));
             const bool constValExpr = tok->isNumber() && Token::Match(tok->astParent(),"%oror%|&&|?"); // just one number in boolean expression
             const bool compExpr = Token::Match(tok, "%comp%|!"); // a compare expression
-            const bool returnStatement = Token::simpleMatch(tok->astTop(), "return") &&
-                                         Token::Match(tok->astParent(), "%oror%|&&|return");
             const bool ternaryExpression = Token::simpleMatch(tok->astParent(), "?");
 
-            if (!(constIfWhileExpression || constValExpr || compExpr || returnStatement || ternaryExpression))
-                continue;
-
-            if (returnStatement && (!scope->function || !Token::simpleMatch(scope->function->retDef, "bool")))
-                continue;
-
-            if (returnStatement && isConstVarExpression(tok))
-                continue;
-
-            if (returnStatement && Token::simpleMatch(tok->astParent(), "return") && tok->variable() && (
-                    !tok->variable()->isLocal() ||
-                    tok->variable()->isReference() ||
-                    tok->variable()->isConst() ||
-                    !isVariableChanged(tok->variable(), mSettings, mTokenizer->isCPP())))
-                continue;
-
-            // Don't warn in assertions. Condition is often 'always true' by intention.
-            // If platform,defines,etc cause 'always false' then that is not dangerous neither.
-            bool assertFound = false;
-            for (const Token * tok2 = tok->astParent(); tok2 ; tok2 = tok2->astParent()) { // move backwards and try to find "assert"
-                if (tok2->str() == "(" && tok2->astOperand2()) {
-                    const std::string& str = tok2->previous()->str();
-                    if ((str.find("assert")!=std::string::npos || str.find("ASSERT")!=std::string::npos))
-                        assertFound = true;
-                    break;
-                }
-            }
-            if (assertFound)
+            if (!(constIfWhileExpression || constValExpr || compExpr || ternaryExpression))
                 continue;
 
             // Don't warn when there are expanded macros..
@@ -1446,15 +1434,15 @@ void CheckCondition::alwaysTrueFalse()
 
 void CheckCondition::alwaysTrueFalseError(const Token *tok, const ValueFlow::Value *value)
 {
-    const bool condvalue = value && (value->intvalue != 0);
+    const bool alwaysTrue = value && (value->intvalue != 0);
     const std::string expr = tok ? tok->expressionString() : std::string("x");
-    const std::string errmsg = "Condition '" + expr + "' is always " + (condvalue ? "true" : "false");
+    const std::string errmsg = "Condition '" + expr + "' is always " + (alwaysTrue ? "true" : "false");
     const ErrorPath errorPath = getErrorPath(tok, value, errmsg);
     reportError(errorPath,
                 Severity::style,
                 "knownConditionTrueFalse",
                 errmsg,
-                (condvalue ? CWE571 : CWE570), false);
+                (alwaysTrue ? CWE571 : CWE570), false);
 }
 
 void CheckCondition::checkInvalidTestForOverflow()

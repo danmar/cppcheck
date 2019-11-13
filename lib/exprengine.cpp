@@ -23,6 +23,7 @@
 #include "tokenize.h"
 
 #include <cstdlib>
+#include <cstring>
 #include <limits>
 #include <memory>
 #include <iostream>
@@ -866,6 +867,17 @@ static ExprEngine::ValuePtr truncateValue(ExprEngine::ValuePtr val, const ValueT
 static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
 {
     ExprEngine::ValuePtr rhsValue = executeExpression(tok->astOperand2(), data);
+
+    if (!rhsValue && tok->astOperand2()->valueType() && tok->astOperand2()->valueType()->container && tok->astOperand2()->valueType()->container->stdStringLike) {
+        auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 0, ~0ULL);
+        auto value = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), -128, 127);
+        rhsValue = std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), size, value);
+        call(data.callbacks, tok->astOperand2(), rhsValue, &data);
+    }
+
+    if (!rhsValue)
+        throw VerifyException(tok, "Expression '" + tok->expressionString() + "'; Failed to evaluate RHS");
+
     ExprEngine::ValuePtr assignValue;
     if (tok->str() == "=")
         assignValue = rhsValue;
@@ -1008,8 +1020,11 @@ static ExprEngine::ValuePtr executeCast(const Token *tok, Data &data)
 
 static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
 {
-    if (!tok->astOperand1() || !tok->astOperand1()->varId())
-        return ExprEngine::ValuePtr();
+    if (!tok->astOperand1() || !tok->astOperand1()->varId()) {
+        auto v = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
+        call(data.callbacks, tok, v, &data);
+        return v;
+    }
     std::shared_ptr<ExprEngine::StructValue> structValue = std::dynamic_pointer_cast<ExprEngine::StructValue>(data.getValue(tok->astOperand1()->varId(), nullptr, nullptr));
     if (!structValue) {
         if (tok->originalName() == "->") {
@@ -1021,8 +1036,11 @@ static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
                 call(data.callbacks, tok->astOperand1(), data.getValue(tok->astOperand1()->varId(), nullptr, nullptr), &data);
             }
         }
-        if (!structValue)
-            return ExprEngine::ValuePtr();
+        if (!structValue) {
+            auto v = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
+            call(data.callbacks, tok, v, &data);
+            return v;
+        }
     }
     call(data.callbacks, tok->astOperand1(), structValue, &data);
     return structValue->getValueOfMember(tok->astOperand2()->str());
@@ -1050,19 +1068,26 @@ static ExprEngine::ValuePtr executeAddressOf(const Token *tok, Data &data)
 static ExprEngine::ValuePtr executeDeref(const Token *tok, Data &data)
 {
     ExprEngine::ValuePtr pval = executeExpression(tok->astOperand1(), data);
-    if (pval) {
-        auto addressOf = std::dynamic_pointer_cast<ExprEngine::AddressOfValue>(pval);
-        if (addressOf) {
-            auto val = data.getValue(addressOf->varId, tok->valueType(), tok);
-            call(data.callbacks, tok, val, &data);
-            return val;
+    if (!pval) {
+        auto v = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
+        if (tok->astOperand1()->varId()) {
+            pval = std::make_shared<ExprEngine::PointerValue>(data.getNewSymbolName(), v, false, false);
+            data.assignValue(tok->astOperand1(), tok->astOperand1()->varId(), pval);
         }
-        auto pointer = std::dynamic_pointer_cast<ExprEngine::PointerValue>(pval);
-        if (pointer) {
-            auto val = pointer->data;
-            call(data.callbacks, tok, val, &data);
-            return val;
-        }
+        call(data.callbacks, tok, v, &data);
+        return v;
+    }
+    auto addressOf = std::dynamic_pointer_cast<ExprEngine::AddressOfValue>(pval);
+    if (addressOf) {
+        auto val = data.getValue(addressOf->varId, tok->valueType(), tok);
+        call(data.callbacks, tok, val, &data);
+        return val;
+    }
+    auto pointer = std::dynamic_pointer_cast<ExprEngine::PointerValue>(pval);
+    if (pointer) {
+        auto val = pointer->data;
+        call(data.callbacks, tok, val, &data);
+        return val;
     }
     return ExprEngine::ValuePtr();
 }
@@ -1081,14 +1106,18 @@ static ExprEngine::ValuePtr executeKnownMacro(const Token *tok, Data &data)
     return val;
 }
 
-static ExprEngine::ValuePtr executeNumber(const Token *tok)
+static ExprEngine::ValuePtr executeNumber(const Token *tok, Data &data)
 {
     if (tok->valueType()->isFloat()) {
         long double value = MathLib::toDoubleNumber(tok->str());
-        return std::make_shared<ExprEngine::FloatRange>(tok->str(), value, value);
+        auto v = std::make_shared<ExprEngine::FloatRange>(tok->str(), value, value);
+        call(data.callbacks, tok, v, &data);
+        return v;
     }
     int128_t value = MathLib::toLongNumber(tok->str());
-    return std::make_shared<ExprEngine::IntRange>(tok->str(), value, value);
+    auto v = std::make_shared<ExprEngine::IntRange>(tok->str(), value, value);
+    call(data.callbacks, tok, v, &data);
+    return v;
 }
 
 static ExprEngine::ValuePtr executeStringLiteral(const Token *tok, Data &data)
@@ -1118,6 +1147,11 @@ static ExprEngine::ValuePtr executeExpression1(const Token *tok, Data &data)
     if (tok->str() == ".")
         return executeDot(tok, data);
 
+    if (tok->str() == "::" && tok->hasKnownIntValue()) { // TODO handle :: better
+        auto v = tok->getKnownIntValue();
+        return std::make_shared<ExprEngine::IntRange>(std::to_string(v), v, v);
+    }
+
     if (tok->astOperand1() && tok->astOperand2())
         return executeBinaryOp(tok, data);
 
@@ -1134,7 +1168,7 @@ static ExprEngine::ValuePtr executeExpression1(const Token *tok, Data &data)
         return executeKnownMacro(tok, data);
 
     if (tok->isNumber() || tok->tokType() == Token::Type::eChar)
-        return executeNumber(tok);
+        return executeNumber(tok, data);
 
     if (tok->tokType() == Token::Type::eString)
         return executeStringLiteral(tok, data);
@@ -1379,9 +1413,16 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
         auto structValue = createStructVal(valueType->smartPointerType->classScope, var.isLocal() && !var.isStatic(), data);
         return std::make_shared<ExprEngine::PointerValue>(data.getNewSymbolName(), structValue, true, false);
     }
-    if (valueType->container && valueType->container->stdStringLike) {
+    if (valueType->container) {
+        ExprEngine::ValuePtr value;
+        if (valueType->container->stdStringLike)
+            value = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), -128, 127);
+        else if (valueType->containerTypeToken) {
+            ValueType vt = ValueType::parseDecl(valueType->containerTypeToken, data.settings);
+            value = getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings);
+        } else
+            return ExprEngine::ValuePtr();
         auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 0, ~0ULL);
-        auto value = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), -128, 127);
         return std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), size, value);
     }
     return ExprEngine::ValuePtr();
@@ -1416,7 +1457,7 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
 void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings)
 {
     std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> divByZero = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
-        if (!Token::Match(tok->astParent(), "[/%]"))
+        if (!tok->astParent() || !std::strchr("/%", tok->astParent()->str()[0]))
             return;
         if (tok->astParent()->astOperand2() == tok && value.isEqual(dataBase, 0)) {
             std::list<const Token*> callstack{tok->astParent()};

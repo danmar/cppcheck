@@ -1,5 +1,6 @@
 # Test if --verify works using the juliet testsuite
-
+# The Juliet test suite can be downloaded from:
+# https://samate.nist.gov/SRD/testsuite.php
 
 import glob
 import os
@@ -36,6 +37,8 @@ def check(tc:str, warning_id:str):
         cmd = [CPPCHECK_PATH,
                '-I' + os.path.join(JULIET_PATH, 'C/testcasesupport'),
                '-DOMIT_GOOD',
+               '-DAF_INET=1',
+               '-DINADDR_ANY=1',
                '--library=posix',
                '--verify',
                '--platform=unix64']

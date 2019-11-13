@@ -1401,7 +1401,7 @@ void SymbolDatabase::createSymbolDatabaseEscapeFunctions()
         Function * function = scope.function;
         if (!function)
             continue;
-        function->isEscapeFunction(isReturnScope(scope.bodyEnd, mSettings, true));
+        function->isEscapeFunction(isReturnScope(scope.bodyEnd, &mSettings->library, true));
     }
 }
 
@@ -2121,7 +2121,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
 
         // definition missing variable name
         else if ((first->next()->str() == "," && second->next()->str() != ",") ||
-                 (first->next()->str() == ")" && second->next()->str() != ")")) {
+                 (Token::Match(first, "!!( )") && second->next()->str() != ")")) {
             second = second->next();
             // skip default value assignment
             if (second->next()->str() == "=") {
@@ -2134,7 +2134,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
 
         // function missing variable name
         else if ((second->next()->str() == "," && first->next()->str() != ",") ||
-                 (second->next()->str() == ")" && first->next()->str() != ")")) {
+                 (Token::Match(second, "!!( )") && first->next()->str() != ")")) {
             first = first->next();
             // skip default value assignment
             if (first->next()->str() == "=") {
@@ -2397,7 +2397,7 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
                         if (!func->hasBody()) {
                             const Token *closeParen = (*tok)->next()->link();
                             if (closeParen) {
-                                if (Token::simpleMatch(closeParen, ") = default ;")) {
+                                if (Token::Match(closeParen, ") noexcept| = default ;")) {
                                     func->isDefault(true);
                                     return;
                                 }
@@ -2469,7 +2469,7 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
                             // normal function?
                             const Token *closeParen = (*tok)->next()->link();
                             if (closeParen) {
-                                if (Token::simpleMatch(closeParen, ") = default ;")) {
+                                if (Token::Match(closeParen, ") noexcept| = default ;")) {
                                     func->isDefault(true);
                                     return;
                                 }
@@ -3225,6 +3225,8 @@ void SymbolDatabase::printXml(std::ostream &out) const
                         else if (function->isImplicitlyVirtual())
                             out << " isImplicitlyVirtual=\"true\"";
                     }
+                    if (function->isStatic())
+                        out << " isStatic=\"true\"";
                     if (function->argCount() == 0U)
                         out << "/>" << std::endl;
                     else {
@@ -5247,30 +5249,27 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
                     break;
             }
 
-            const Token *containerElementType = typeStart;
-            while (Token::Match(containerElementType, "%name%|::"))
-                containerElementType = containerElementType->next();
-
             // Try to determine type of "auto" token.
             // TODO: Get type better
             bool setType = false;
             ValueType autovt;
             const Type *templateArgType = nullptr; // container element type / smart pointer type
-            if (Token::Match(containerElementType, "< %type% *| *| >")) {
-                if (parsedecl(containerElementType->next(), &autovt, mDefaultSignedness, mSettings)) {
+            if (vt2->containerTypeToken) {
+                if (mSettings->library.isSmartPointer(vt2->containerTypeToken)) {
+                    const Token *smartPointerTypeTok = vt2->containerTypeToken;
+                    while (Token::Match(smartPointerTypeTok, "%name%|::"))
+                        smartPointerTypeTok = smartPointerTypeTok->next();
+                    if (Token::Match(smartPointerTypeTok, "< %name% > >") && smartPointerTypeTok->next()->type()) {
+                        setType = true;
+                        templateArgType = smartPointerTypeTok->next()->type();
+                        autovt.smartPointerType = templateArgType;
+                        autovt.type = ValueType::Type::NONSTD;
+                    }
+                } else if (parsedecl(vt2->containerTypeToken, &autovt, mDefaultSignedness, mSettings)) {
                     setType = true;
-                    templateArgType = containerElementType->next()->type();
+                    templateArgType = vt2->containerTypeToken->type();
                 }
-            } else if (mSettings->library.isSmartPointer(containerElementType->next())) {
-                const Token *smartPointerTypeTok = containerElementType->next();
-                while (Token::Match(smartPointerTypeTok, "%name%|::"))
-                    smartPointerTypeTok = smartPointerTypeTok->next();
-                if (Token::Match(smartPointerTypeTok, "< %name% > >") && smartPointerTypeTok->next()->type()) {
-                    setType = true;
-                    templateArgType = smartPointerTypeTok->next()->type();
-                    autovt.smartPointerType = templateArgType;
-                    autovt.type = ValueType::Type::NONSTD;
-                }
+
             }
 
             if (setType) {
@@ -5348,6 +5347,11 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         // iterator +/- integral = iterator
         if (vt1->type == ValueType::Type::ITERATOR && vt2 && vt2->isIntegral() &&
             (parent->str() == "+" || parent->str() == "-")) {
+            setValueType(parent, *vt1);
+            return;
+        }
+
+        if (parent->str() == "+" && vt1->type == ValueType::Type::CONTAINER && vt2 && vt2->type == ValueType::Type::CONTAINER && vt1->container == vt2->container) {
             setValueType(parent, *vt1);
             return;
         }
@@ -5679,7 +5683,10 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings)
             // library type/function
             else if (tok->previous()) {
                 if (tok->astParent() && Token::Match(tok->astOperand1(), "%name%|::")) {
-                    if (const Library::Container *c = mSettings->library.detectContainer(tok->astOperand1())) {
+                    const Token *typeStartToken = tok->astOperand1();
+                    while (typeStartToken && typeStartToken->str() == "::")
+                        typeStartToken = typeStartToken->astOperand1();
+                    if (const Library::Container *c = mSettings->library.detectContainer(typeStartToken)) {
                         ValueType vt;
                         vt.pointer = 0;
                         vt.container = c;
@@ -5699,6 +5706,12 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings)
                             setValueType(tok, vt);
                             continue;
                         }
+                    }
+
+                    ValueType podtype;
+                    if (podtype.fromLibraryType(e, mSettings)) {
+                        setValueType(tok, podtype);
+                        continue;
                     }
                 }
 
@@ -6091,6 +6104,8 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
         return ValueType::MatchResult::UNKNOWN;
     if (call->pointer != func->pointer) {
         if (call->pointer > 1 && func->pointer == 1 && func->type == ValueType::Type::VOID)
+            return ValueType::MatchResult::FALLBACK1;
+        if (call->pointer == 1 && func->pointer == 0 && func->isIntegral() && func->sign != ValueType::Sign::SIGNED)
             return ValueType::MatchResult::FALLBACK1;
         if (call->pointer == 1 && call->type == ValueType::Type::CHAR && func->pointer == 0 && func->container && func->container->stdStringLike)
             return ValueType::MatchResult::FALLBACK2;

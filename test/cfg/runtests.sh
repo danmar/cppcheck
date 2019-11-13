@@ -284,7 +284,6 @@ ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=googletest ${DIR}googletest
 
 # kde.cpp
 set +e
-set -x
 KDECONFIG=$(kde4-config --path include)
 KDECONFIG_RETURNCODE=$?
 set -e
@@ -311,6 +310,60 @@ else
     fi
 fi
 ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=kde ${DIR}kde.cpp
+
+# libsigc++.cpp
+set +e
+pkg-config --version
+PKGCONFIG_RETURNCODE=$?
+set -e
+if [ $PKGCONFIG_RETURNCODE -ne 0 ]; then
+    echo "pkg-config needed to retrieve libsigc++ configuration is not available, skipping syntax check."
+else
+    set +e
+    LIBSIGCPPCONFIG=$(pkg-config --cflags sigc++-2.0)
+    LIBSIGCPPCONFIG_RETURNCODE=$?
+    set -e
+    if [ $LIBSIGCPPCONFIG_RETURNCODE -eq 0 ]; then
+        set +e
+        echo -e "#include <sigc++/sigc++.h>\n" | ${CXX} ${CXX_OPT} ${LIBSIGCPPCONFIG} -x c++ -
+        LIBSIGCPPCONFIG_RETURNCODE=$?
+        set -e
+        if [ $LIBSIGCPPCONFIG_RETURNCODE -ne 0 ]; then
+            echo "libsigc++ not completely present or not working, skipping syntax check with ${CXX}."
+        else
+            echo "libsigc++ found and working, checking syntax with ${CXX} now."
+            ${CXX} ${CXX_OPT} ${LIBSIGCPPCONFIG} ${DIR}libsigc++.cpp
+        fi
+    fi
+fi
+${CPPCHECK} ${CPPCHECK_OPT} --library=libsigc++ ${DIR}libsigc++.cpp
+
+# openssl.c
+set +e
+pkg-config --version
+PKGCONFIG_RETURNCODE=$?
+set -e
+if [ $PKGCONFIG_RETURNCODE -ne 0 ]; then
+    echo "pkg-config needed to retrieve OpenSSL configuration is not available, skipping syntax check."
+else
+    set +e
+    OPENSSLCONFIG=$(pkg-config --cflags libssl)
+    OPENSSLCONFIG_RETURNCODE=$?
+    set -e
+    if [ $OPENSSLCONFIG_RETURNCODE -eq 0 ]; then
+        set +e
+        echo -e "#include <openssl/ssl.h>" | ${CC} ${CC_OPT} ${OPENSSLCONFIG} -x c -
+        OPENSSLCONFIG_RETURNCODE=$?
+        set -e
+        if [ $OPENSSLCONFIG_RETURNCODE -ne 0 ]; then
+            echo "OpenSSL not completely present or not working, skipping syntax check with ${CC}."
+        else
+            echo "OpenSSL found and working, checking syntax with ${CC} now."
+            ${CC} ${CC_OPT} ${OPENSSLCONFIG} ${DIR}openssl.c
+        fi
+    fi
+fi
+${CPPCHECK} ${CPPCHECK_OPT} --library=openssl ${DIR}openssl.c
 
 # Check the syntax of the defines in the configuration files
 set +e

@@ -69,7 +69,11 @@ static std::string generateExpression2_Expr(const uint8_t *data, size_t dataSize
                                 generateExpression2_Expr(data, dataSize, numberOfGlobalConstants, depth);
         const std::string rhs = generateExpression2_Expr(data, dataSize, numberOfGlobalConstants, depth);
 
-        return lhs + op + rhs;
+        std::string ret = lhs + op + rhs;
+        if (depth > 1 && op == '=')
+            ret = "(" + ret + ")";
+
+        return ret;
     }
     case 2: {
         const char *u = unop[getValue(data,dataSize,sizeof(unop)/sizeof(*unop))];

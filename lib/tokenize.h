@@ -248,6 +248,8 @@ public:
     /** Remove macros in global scope */
     void removeMacrosInGlobalScope();
 
+    void addSemicolonAfterUnknownMacro();
+
     /** Remove undefined macro in class definition:
       * class DLLEXPORT Fred { };
       * class Fred FINAL : Base { };

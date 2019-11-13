@@ -160,7 +160,7 @@ def exp42(data):
 def exp15(data):
     for scope in data.scopes:
         if scope.type in ('If', 'For', 'While'):
-            token = scope.bodyStart.next 
+            token = scope.bodyStart.next
             if token.str==';' and token.linenr==scope.bodyStart.linenr:
                 reportError(token, 'style', 'Do not place a semicolon on the same line as an IF, FOR or WHILE', 'EXP15-C')
 
@@ -232,7 +232,7 @@ def int31(data, platform):
                     'style',
                     'Ensure that integer conversions do not result in lost or misinterpreted data (casting ' + str(value.intvalue) + ' to ' + destType + ')',
                     'INT31-c')
-                break                
+                break
 # MSC24-C
 # Do not use deprecated or obsolescent functions
 def msc24(data):
@@ -321,7 +321,6 @@ def str11(data):
 
         if not parent.isAssignmentOp:
             continue
-            
         varToken = parentOp1.astOperand1
         if varToken is None or not varToken.isName:
             continue
@@ -332,7 +331,6 @@ def str11(data):
         valueToken = parentOp1.astOperand2
         if valueToken is None:
             continue
-            
         if valueToken.isNumber and int(valueToken.str)==strlen:
             reportError(valueToken, 'style', 'Do not specify the bound of a character array initialized with a string literal', 'STR11-C')
 
@@ -358,6 +356,10 @@ def api01(data):
 
 def get_args():
     parser = cppcheckdata.ArgumentParser()
+    parser.add_argument("dumpfile", nargs='*', help="Path of dump files from cppcheck")
+    parser.add_argument('-q', '--quiet', action='store_true',
+                        help='do not print "Checking ..." lines')
+    parser.add_argument('--cli', help='Addon is executed from Cppcheck', action='store_true')
     parser.add_argument("-verify", help=argparse.SUPPRESS, action="store_true")
     return parser.parse_args()
 
@@ -367,20 +369,7 @@ if __name__ == '__main__':
     if args.verify:
         VERIFY = True
 
-    if not args.dumpfile:
-        if not args.quiet:
-            print("no input files.")
-        sys.exit(0)
-
-    # Generate list to all dumpfiles for check
-    dump_files = []
-    try:
-        dump_files = cppcheckdata.GetDumpFiles(args.dumpfile, args.recursive)
-    except cppcheckdata.CppcheckException as e:
-        print(str(e))
-        sys.exit(e.return_code())
-
-    for dumpfile in dump_files:
+    for dumpfile in args.dumpfile:
         if not args.quiet:
             print('Checking %s...' % dumpfile)
 

@@ -242,7 +242,7 @@ public:
         ArgumentChecks() :
             notbool(false),
             notnull(false),
-            notuninit(false),
+            notuninit(-1),
             formatstr(false),
             strz(false),
             optional(false),
@@ -253,7 +253,7 @@ public:
 
         bool         notbool;
         bool         notnull;
-        bool         notuninit;
+        int          notuninit;
         bool         formatstr;
         bool         strz;
         bool         optional;
@@ -318,7 +318,7 @@ public:
     }
 
     bool isnullargbad(const Token *ftok, int argnr) const;
-    bool isuninitargbad(const Token *ftok, int argnr) const;
+    bool isuninitargbad(const Token *ftok, int argnr, int indirect = 0) const;
 
     bool isargformatstr(const Token *ftok, int argnr) const {
         const ArgumentChecks *arg = getarg(ftok, argnr);
