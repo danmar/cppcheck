@@ -1647,14 +1647,14 @@ void uninitvar_mbstowcs(wchar_t* d, const char* s, size_t m)
     wchar_t *dest;
     char *src;
     size_t max;
-    
+
     // cppcheck-suppress uninitvar
     (void)mbstowcs(dest,s,m);
     // cppcheck-suppress uninitvar
     (void)mbstowcs(d,src,m);
     // cppcheck-suppress uninitvar
     (void)mbstowcs(d,s,max);
-    
+
     // No warning is expected
     (void)mbstowcs(d,s,m);
 }
@@ -1665,7 +1665,7 @@ void uninitvar_mbsrtowcs(wchar_t* d, const char** s, size_t m, mbstate_t *p)
     const char* src;
     size_t max;
     mbstate_t* ps;
-    
+
     // cppcheck-suppress uninitvar
     (void)mbsrtowcs(dest,s,m,p);
     // cppcheck-suppress uninitvar
@@ -3485,18 +3485,40 @@ void uninitvar_tmpnam(void)
     (void)tmpnam(s);
 }
 
-void uninitvar_tolower(void)
+void uninitvar_tolower(int character)
 {
     int c;
     // cppcheck-suppress uninitvar
     (void)tolower(c);
+
+    int *pc=&c;
+    // cppcheck-suppress uninitvar
+    (void)tolower(*pc);
+
+    // No warning is expected
+    (void)tolower(character);
+
+    int *pChar = &character;
+    // No warning is expected
+    (void)tolower(*pChar);
 }
 
-void uninitvar_toupper(void)
+void uninitvar_toupper(int character)
 {
     int c;
     // cppcheck-suppress uninitvar
     (void)toupper(c);
+
+    int *pc=&c;
+    // cppcheck-suppress uninitvar
+    (void)toupper(*pc);
+
+    // No warning is expected
+    (void)toupper(character);
+
+    int *pChar = &character;
+    // No warning is expected
+    (void)toupper(*pChar);
 }
 
 void uninitvar_wcstof(void)
