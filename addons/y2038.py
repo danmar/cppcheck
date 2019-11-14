@@ -242,15 +242,7 @@ if __name__ == '__main__':
             print("no input files.")
         sys.exit(0)
 
-    # Generate list to all dumpfiles for check
-    dump_files = []
-    try:
-        dump_files = cppcheckdata.GetDumpFiles(args.dumpfile, args.recursive)
-    except cppcheckdata.CppcheckException as e:
-        print(str(e))
-        sys.exit(e.return_code())
-
-    for dumpfile in dump_files:
+    for dumpfile in args.dumpfile:
         if not os.path.isfile(dumpfile):
             print("Error: File not found: %s" % dumpfile)
             sys.exit(127)

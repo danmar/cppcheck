@@ -2608,16 +2608,8 @@ def main():
             print("No input files.")
         sys.exit(0)
 
-    # Generate list to all dumpfiles for check
-    dump_files = []
-    try:
-        dump_files = cppcheckdata.GetDumpFiles(args.dumpfile, args.recursive)
-    except cppcheckdata.CppcheckException as e:
-        print(str(e))
-        sys.exit(e.return_code())
-
     exitCode = 0
-    for item in dump_files:
+    for item in args.dumpfile:
         checker.parseDump(item)
 
         if settings.verify:
