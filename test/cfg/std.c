@@ -3041,28 +3041,52 @@ void uninitvar_wcschr(void)
     (void)wcschr(cs,c);
 }
 
-void uninitvar_strcmp(void)
+void uninitvar_strcmp(char *s1, char *s2)
 {
     char *str1;
     char *str2;
+
+    // cppcheck-suppress uninitvar
+    (void)strcmp(str1,s2);
+    // cppcheck-suppress uninitvar
+    (void)strcmp(s1,str2);
     // cppcheck-suppress uninitvar
     (void)strcmp(str1,str2);
+
+    // No warning is expected
+    (void)strcmp(s1,s2);
 }
 
-void uninitvar_wcscmp(void)
+void uninitvar_wcscmp(wchar_t *s1, wchar_t *s2)
 {
     wchar_t *str1;
     wchar_t *str2;
+
+    // cppcheck-suppress uninitvar
+    (void)wcscmp(str1,s2);
+    // cppcheck-suppress uninitvar
+    (void)wcscmp(s1,str2);
     // cppcheck-suppress uninitvar
     (void)wcscmp(str1,str2);
+
+    // No warning is expected
+    (void)wcscmp(s1,s2);
 }
 
-void uninitvar_strcpy(void)
+void uninitvar_strcpy(char *d, char *s)
 {
-    char *str1;
-    char *str2;
+    char *dest;
+    char *src;
+
     // cppcheck-suppress uninitvar
-    (void)strcpy(str1,str2);
+    (void)strcpy(dest,s);
+    // cppcheck-suppress uninitvar
+    (void)strcpy(d,src);
+    // cppcheck-suppress uninitvar
+    (void)strcpy(dest,src);
+
+    // No warning is expected
+    (void)strcpy(d,s);
 }
 
 void uninitvar_strcpy_s(char * strDest)
