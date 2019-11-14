@@ -3089,22 +3089,37 @@ void uninitvar_strcpy(char *d, char *s)
     (void)strcpy(d,s);
 }
 
-void uninitvar_strcpy_s(char * strDest)
+void uninitvar_strcpy_s(char * strDest, ssize_t s, char *source)
 {
     char *strUninit1;
     char *strUninit2;
+    ssize_t  size;
+
     // cppcheck-suppress uninitvar
     (void)strcpy_s(strUninit1, 1, "a");
     // cppcheck-suppress uninitvar
     (void)strcpy_s(strDest, 1, strUninit2);
+    // cppcheck-suppress uninitvar
+    (void)strcpy_s(strDest, size, "a");
+
+    // No warning is expected
+    (void)strcpy_s(strDest, s, source);
 }
 
-void uninitvar_wcscpy(void)
+void uninitvar_wcscpy(wchar_t *d, wchar_t*s)
 {
-    wchar_t *str1;
-    wchar_t *str2;
+    wchar_t *dest;
+    wchar_t *src;
+
     // cppcheck-suppress uninitvar
-    (void)wcscpy(str1,str2);
+    (void)wcscpy(dest,s);
+    // cppcheck-suppress uninitvar
+    (void)wcscpy(d,src);
+    // cppcheck-suppress uninitvar
+    (void)wcscpy(dest,src);
+
+    // No warning is expected
+    (void)wcscpy(d,s);
 }
 
 void uninitvar_strftime(void)
