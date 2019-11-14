@@ -3136,11 +3136,19 @@ void uninitvar_strftime(void)
     (void)strfxtime(s,max,fmt,px);
 }
 
-void uninitvar_strlen(void)
+void uninitvar_strlen(const char *str)
 {
     char *s;
     // cppcheck-suppress uninitvar
     (void)strlen(s);
+
+    const char x;
+    const char *xPtr = &x;
+    // cppcheck-suppress uninitvar
+    (void)strlen(xPtr);
+
+    // No waring is expected
+    (void)strlen(str);
 }
 
 void uninitvar_wcslen(void)
