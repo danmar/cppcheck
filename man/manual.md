@@ -597,40 +597,59 @@ Carriage return
 
 # Addons
 
-Addons are scripts with extra checks. Cppcheck is distributed with a few addons.
+Addons are scripts that analyses Cppcheck dump files to check compatibility with secure coding standards and to locate various issues.
+
+Cppcheck is distributed with a few addons which are listed below.
+
+## Supported addons
+
+### cert.py
+
+[cert.py](https://github.com/danmar/cppcheck/blob/master/addons/cert.py) checks for compliance with the safe programming standard [SEI CERT](http://www.cert.org/secure-coding/).
+
+### misra.py
+
+[misra.py](https://github.com/danmar/cppcheck/blob/master/addons/misra.py) is used to verify compliance with MISRA C 2012 - a proprietary set of guidelines to avoid such questionable code, developed for embedded systems.
+
+Since this standard is proprietary, cppcheck does not display error text by specifying only the number of violated rules (for example, [c2012-21.3]). If you want to display full texts for violated rules, you will need to create a text file containing MISRA rules, which you will have to pass when calling the script with `--rule-texts` key. Some examples of rule texts files available in [tests directory](https://github.com/danmar/cppcheck/blob/master/addons/test/misra/).
+
+You can also suppress some unwanted rules using `--suppress-rules` option. Suppressed rules should be set as comma-separated listed, for example: `--suppress-rules 21.1,18.7`. The full list of supported rules is available on [Cppcheck](http://cppcheck.sourceforge.net/misra.php) home page.
+
+### y2038.py
+
+[y2038.py](https://github.com/danmar/cppcheck/blob/master/addons/y2038.py) checks Linux system for [year 2038 problem](https://en.wikipedia.org/wiki/Year_2038_problem) safety. This required [modified environment](https://github.com/3adev/y2038). See complete description [here](https://github.com/danmar/cppcheck/blob/master/addons/doc/y2038.txt).
+
+### threadsafety.py
+
+[threadsafety.py](https://github.com/danmar/cppcheck/blob/master/addons/threadsafety.py) analyse Cppcheck dump files to locate threadsafety issues like static local objects used by multiple threads.
 
 ## Running Addons
 
-Addons are standalone scripts that are executed separately.
+Addons could be run through Cppcheck command line utility as follows:
 
-To manually run an addon:
+    cppcheck --addon=misra.py somefile.c
 
-    cppcheck --dump somefile.c
-    python misc.py somefile.c.dump
+This will launch all Cppcheck checks and additionaly calls specific checks provided by selected addon.
 
-To run the same addon through Cppcheck directly:
-
-    cppcheck --addon=misc.py somefile.c
-
-Some addons need extra arguments. For example misra.py can be executed manually like this:
-
-    cppcheck --dump somefile.c
-    python misra.py --rule-texts=misra.txt somefile.c.dump
-
-You can configure how you want to execute an addon in a json file, for example put this in misra.json:
+Some addons need extra arguments. You can configure how you want to execute an addon in a json file. For example put this in misra.json:
 
     {
         "script": "misra.py",
-        "args": [ "--rule-texts=misra.txt" ]
+        "args": [
+            "--rule-texts=misra.txt",
+            "--suppress-rules 17.3,21.12"
+        ]
     }
 
 And then the configuration can be executed on the cppcheck command line:
 
     cppcheck --addon=misra.json somefile.c
 
-## Help about an addon
+By default Cppcheck would search addon at standard path which was specified in installation process. You also can set this path directly, for example:
 
-You can read about how to use a Cppcheck addon by looking in the addon. The comments at the top of the file should have a description.
+    cppcheck --addon=/opt/cppcheck/configurations/my_misra.json somefile.c
+
+This allows you create and manage multiple configuration files for different projects.
 
 # Library configuration
 
