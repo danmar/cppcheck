@@ -3762,15 +3762,26 @@ void uninitvar_wscanf(void)
     (void)wscanf(format,&i);
 }
 
-void uninitvar_sscanf(void)
+void uninitvar_sscanf(char *s, const char *f, int i, int *ip)
 {
     char *string;
     const char * format;
-    int i;
+    int *pInteger;
+
     // cppcheck-suppress uninitvar
-    (void)sscanf(string,format);
+    (void)sscanf(string,f);
     // cppcheck-suppress uninitvar
-    (void)sscanf(string,format,&i);
+    (void)sscanf(string,f,i);
+    // cppcheck-suppress uninitvar
+    (void)sscanf(string,f,ip);
+    // cppcheck-suppress uninitvar
+    (void)sscanf(s,format,&i);
+    // cppcheck-suppress uninitvar
+    (void)sscanf(s,f,pInteger);
+
+    // No warning is expected
+    (void)sscanf(s,f,&i);
+    (void)sscanf(s,f,ip);
 }
 
 void uninitvar_fwscanf(void)
