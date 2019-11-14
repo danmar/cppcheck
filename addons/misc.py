@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Misc: Uncategorized checks that might be moved to some better addon later
 #

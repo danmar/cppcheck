@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # cppcheck addon for Y2038 safeness detection
 #
