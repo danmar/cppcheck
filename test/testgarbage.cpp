@@ -1010,7 +1010,7 @@ private:
     }
 
     void garbageCode132() { // #7022
-        checkCode("() () { } { () () ({}) i() } void i(void(*ptr) ()) { ptr(!) () }");
+        ASSERT_THROW(checkCode("() () { } { () () ({}) i() } void i(void(*ptr) ()) { ptr(!) () }"), InternalError);
     }
 
     void garbageCode133() {
@@ -1247,7 +1247,7 @@ private:
     }
 
     void garbageCode159() { // #7119
-        checkCode("({}typedef typename x;typename x!){({{}()})}"); // don't hang
+        ASSERT_THROW(checkCode("({}typedef typename x;typename x!){({{}()})}"), InternalError);
     }
 
     void garbageCode160() { // #7190
