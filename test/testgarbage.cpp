@@ -1627,12 +1627,8 @@ private:
     }
 
     void garbageCode206() {
-        {
-            ASSERT_EQUALS("[test.cpp:1] syntax error", getSyntaxError("void foo() { for (auto operator new : int); }"));
-        }
-        {
-            ASSERT_EQUALS("[test.cpp:1] syntax error", getSyntaxError("void foo() { for (a operator== :) }"));
-        }
+        ASSERT_EQUALS("[test.cpp:1] syntax error: operator", getSyntaxError("void foo() { for (auto operator new : int); }"));
+        ASSERT_EQUALS("[test.cpp:1] syntax error: operator", getSyntaxError("void foo() { for (a operator== :) }"));
     }
 
     void syntaxErrorFirstToken() {
