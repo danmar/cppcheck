@@ -403,6 +403,7 @@ private:
         TEST_CASE(simplifyOperatorName16); // ticket #9472
         TEST_CASE(simplifyOperatorName17);
         TEST_CASE(simplifyOperatorName18); // global namespace
+        TEST_CASE(simplifyOperatorName19);
 
         TEST_CASE(simplifyNullArray);
 
@@ -6454,6 +6455,30 @@ private:
             ASSERT_EQUALS("struct Fred { operator::std::string ( ) const { return :: std :: string ( \"Fred\" ) ; } } ;",
                           tokenizeAndStringify(code));
         }
+    }
+
+    void simplifyOperatorName19() {
+        const char code[] = "struct v {};"
+                            "enum E { e };"
+                            "struct s {"
+                            "  operator struct v() { return v(); };"
+                            "  operator enum E() { return e; }"
+                            "};"
+                            "void f() {"
+                            "  (void)&s::operator struct v;"
+                            "  (void)&s::operator enum E;"
+                            "}";
+        ASSERT_EQUALS("struct v { } ; "
+                      "enum E { e } ; "
+                      "struct s { "
+                      "operatorstructv ( ) { return v ( ) ; } ; "
+                      "operatorenumE ( ) { return e ; } "
+                      "} ; "
+                      "void f ( ) { "
+                      "( void ) & s :: operatorstructv ; "
+                      "( void ) & s :: operatorenumE ; "
+                      "}",
+                      tokenizeAndStringify(code));
     }
 
     void simplifyNullArray() {
