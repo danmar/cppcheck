@@ -358,10 +358,6 @@ def api01(data):
 
 def get_args():
     parser = cppcheckdata.ArgumentParser()
-    parser.add_argument("dumpfile", nargs='*', help="Path of dump files from cppcheck")
-    parser.add_argument('-q', '--quiet', action='store_true',
-                        help='do not print "Checking ..." lines')
-    parser.add_argument('--cli', help='Addon is executed from Cppcheck', action='store_true')
     parser.add_argument("-verify", help=argparse.SUPPRESS, action="store_true")
     return parser.parse_args()
 
@@ -370,6 +366,11 @@ if __name__ == '__main__':
 
     if args.verify:
         VERIFY = True
+
+    if not args.dumpfile:
+        if not args.quiet:
+            print("no input files.")
+        sys.exit(0)
 
     for dumpfile in args.dumpfile:
         if not args.quiet:

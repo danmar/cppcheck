@@ -10,6 +10,7 @@ from xml.etree import ElementTree
 import argparse
 from fnmatch import fnmatch
 import json
+import os
 import sys
 
 
@@ -849,8 +850,8 @@ class CppCheckFormatter(argparse.HelpFormatter):
 
 def ArgumentParser():
     """
-        Returns an argparse argument parser with an already-added
-        argument definition for -t/--template
+    Returns an argparse argument parser with an already-added
+    argument definition for -t/--template
     """
     parser = argparse.ArgumentParser(formatter_class=CppCheckFormatter)
     parser.add_argument('-t', '--template', metavar='<text>',
@@ -860,6 +861,14 @@ def ArgumentParser():
                         "'{file}({line}):({severity}) {message}' or\n"
                         "'{callstack} {message}'\n"
                         "Pre-defined templates: gcc, vs, edit")
+    parser.add_argument("dumpfile", nargs='*',
+                        help="Path of dump files from cppcheck.")
+    parser.add_argument("--cli",
+                        help="Addon is executed from Cppcheck",
+                        action="store_true")
+    parser.add_argument("-q", "--quiet",
+                        help='do not print "Checking ..." lines',
+                        action="store_true")
     return parser
 
 
