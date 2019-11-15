@@ -400,6 +400,8 @@ private:
         TEST_CASE(simplifyOperatorName13); // user defined literal
         TEST_CASE(simplifyOperatorName14); // std::complex operator "" if
         TEST_CASE(simplifyOperatorName15); // ticket #9468 syntaxError
+        TEST_CASE(simplifyOperatorName16); // ticket #9472
+        TEST_CASE(simplifyOperatorName17);
 
         TEST_CASE(simplifyNullArray);
 
@@ -6392,6 +6394,52 @@ private:
                       "operatorchar ( ) ; "
                       "} ;",
                       tokenizeAndStringify(code));
+    }
+
+    void simplifyOperatorName16() { // ticket #9472
+        {
+            const char code[] = "class I : public A { iterator& operator++() override; };";
+            ASSERT_EQUALS("class I : public A { iterator & operator++ ( ) override ; } ;",
+                          tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "class I : public A { iterator& operator++() override { } };";
+            ASSERT_EQUALS("class I : public A { iterator & operator++ ( ) override { } } ;",
+                          tokenizeAndStringify(code));
+        }
+    }
+
+    void simplifyOperatorName17() {
+        {
+            const char code[] = "template <class a> void b(a c, a d) { c.operator>() == d; }";
+            ASSERT_EQUALS("template < class a > void b ( a c , a d ) { c . operator> ( ) == d ; }",
+                          tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "template <class a> void b(a c, a d) { c.operator>() == (d + 1); }";
+            ASSERT_EQUALS("template < class a > void b ( a c , a d ) { c . operator> ( ) == ( d + 1 ) ; }",
+                          tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "template <class a> void b(a c, a d) { c.operator<() == d; }";
+            ASSERT_EQUALS("template < class a > void b ( a c , a d ) { c . operator< ( ) == d ; }",
+                          tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "template <class a> void b(a c, a d) { c.operator>() == (d + 1); }";
+            ASSERT_EQUALS("template < class a > void b ( a c , a d ) { c . operator> ( ) == ( d + 1 ) ; }",
+                          tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "template <class a> void b(a c, a d) { c.operator++() == d; }";
+            ASSERT_EQUALS("template < class a > void b ( a c , a d ) { c . operator++ ( ) == d ; }",
+                          tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "template <class a> void b(a c, a d) { c.operator++() == (d + 1); }";
+            ASSERT_EQUALS("template < class a > void b ( a c , a d ) { c . operator++ ( ) == ( d + 1 ) ; }",
+                          tokenizeAndStringify(code));
+        }
     }
 
     void simplifyNullArray() {

@@ -10804,12 +10804,15 @@ void Tokenizer::deleteSymbolDatabase()
     mSymbolDatabase = nullptr;
 }
 
-static bool operatorEnd(const Token * tok)
+bool Tokenizer::operatorEnd(const Token * tok) const
 {
     if (tok && tok->str() == ")") {
+        if (isFunctionHead(tok, "{|;"))
+            return true;
+
         tok = tok->next();
         while (tok && !Token::Match(tok, "[=;{),]")) {
-            if (Token::Match(tok, "const|volatile")) {
+            if (Token::Match(tok, "const|volatile|override")) {
                 tok = tok->next();
             } else if (tok->str() == "noexcept") {
                 tok = tok->next();
@@ -10825,7 +10828,10 @@ static bool operatorEnd(const Token * tok)
                 if (tok && tok->str() == "(") {
                     tok = tok->link()->next();
                 }
-            } else
+            } else if (Token::Match(tok, "%op% !!(") ||
+                       (Token::Match(tok, "%op% (") && !isFunctionHead(tok->next(), "{")))
+                break;
+            else
                 return false;
         }
 
@@ -10893,11 +10899,11 @@ void Tokenizer::simplifyOperatorName()
                 par = par->tokAt(2);
                 done = true;
             } else if (par->str() != "(") {
-                syntaxError(par);
+                syntaxError(par, "operator");
             }
         }
 
-        if (par && (Token::Match(par, "<|>") || isFunctionHead(par, "{|;"))) {
+        if (par && !op.empty()) {
             tok->str("operator" + op);
             Token::eraseTokens(tok, par);
         }

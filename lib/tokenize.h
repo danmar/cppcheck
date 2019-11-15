@@ -797,6 +797,8 @@ private:
     /** Find end of SQL (or PL/SQL) block */
     static const Token *findSQLBlockEnd(const Token *tokSQLStart);
 
+    bool operatorEnd(const Token * tok) const;
+
 public:
 
     /** Was there templates in the code? */
