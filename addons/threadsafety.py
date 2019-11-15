@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # This script analyses Cppcheck dump files to locate threadsafety issues
 # - warn about static local objects
