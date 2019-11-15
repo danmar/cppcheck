@@ -9406,8 +9406,16 @@ void Tokenizer::findGarbageCode() const
             if (Token::Match(tok, "> %cop%"))
                 continue;
         }
-        if (Token::Match(tok, "%or%|%oror%|==|!=|+|-|/|!|>=|<=|~|^|++|--|::|sizeof|throw|decltype|typeof {|if|else|try|catch|while|do|for|return|switch|break|namespace"))
-            syntaxError(tok);
+        {
+            bool match1 = Token::Match(tok, "%or%|%oror%|==|!=|+|-|/|!|>=|<=|~|^|++|--|::|sizeof");
+            bool match2 = Token::Match(tok->next(), "{|if|else|while|do|for|return|switch|break");
+            if (isCPP()) {
+                match1 = match1 || Token::Match(tok, "::|throw|decltype|typeof");
+                match2 = match2 || Token::Match(tok->next(), "try|catch|namespace");
+            }
+            if (match1 && match2)
+                syntaxError(tok);
+        }
         if (Token::Match(tok, "( %any% )") && tok->next()->isKeyword() && !Token::simpleMatch(tok->next(), "void"))
             syntaxError(tok);
         if (Token::Match(tok, "%num%|%bool%|%char%|%str% %num%|%bool%|%char%|%str%") && !Token::Match(tok, "%str% %str%"))
