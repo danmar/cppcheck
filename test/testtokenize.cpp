@@ -404,6 +404,7 @@ private:
         TEST_CASE(simplifyOperatorName17);
         TEST_CASE(simplifyOperatorName18); // global namespace
         TEST_CASE(simplifyOperatorName19);
+        TEST_CASE(simplifyOperatorName20);
 
         TEST_CASE(simplifyNullArray);
 
@@ -6477,6 +6478,20 @@ private:
                       "void f ( ) { "
                       "( void ) & s :: operatorstructv ; "
                       "( void ) & s :: operatorenumE ; "
+                      "}",
+                      tokenizeAndStringify(code));
+    }
+
+    void simplifyOperatorName20() {
+        const char code[] = "void operator \"\" _a(const char *);"
+                            "namespace N {"
+                            "  using ::operator \"\" _a;"
+                            "  void operator \"\" _b(const char *);"
+                            "}";
+        ASSERT_EQUALS("void operator\"\"_a ( const char * ) ; "
+                      "namespace N { "
+                      "using :: operator\"\"_a ; "
+                      "void operator\"\"_b ( const char * ) ; "
                       "}",
                       tokenizeAndStringify(code));
     }
