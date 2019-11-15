@@ -10893,7 +10893,7 @@ void Tokenizer::simplifyOperatorName()
                 op += ")";
                 par = par->next();
                 done = false;
-            } else if (Token::Match(par, "\"\" %name% (|;")) {
+            } else if (Token::Match(par, "\"\" %name% (|;|<")) {
                 op += "\"\"";
                 op += par->strAt(1);
                 par = par->tokAt(2);
