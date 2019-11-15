@@ -10902,7 +10902,7 @@ void Tokenizer::simplifyOperatorName()
                 op += par->str();
                 par = par->next();
                 done = false;
-            } else if (par->str() == ";") {
+            } else if (par->str() == ";" || par->str() == ")") {
                 done = true;
             } else if (par->str() != "(") {
                 syntaxError(par, "operator");

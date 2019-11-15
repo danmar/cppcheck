@@ -406,6 +406,7 @@ private:
         TEST_CASE(simplifyOperatorName19);
         TEST_CASE(simplifyOperatorName20);
         TEST_CASE(simplifyOperatorName21);
+        TEST_CASE(simplifyOperatorName22);
 
         TEST_CASE(simplifyNullArray);
 
@@ -6505,6 +6506,18 @@ private:
                       "void operator\"\"_h<'a','b','c','d'> ( ) ; "
                       "void operator\"\"_h<'a','b','c'> ( ) { } "
                       "void operator\"\"_h<'a','b','c','d'> ( ) { }",
+                      tokenizeAndStringify(code));
+    }
+
+    void simplifyOperatorName22() {
+        const char code[] = "static RSLRelOp convertOperator(const Software::ComparisonOperator& op) {"
+                            "  if (op == &Software::operator==) return RSLEqual;"
+                            "return RSLNotEqual;"
+                            "}";
+        ASSERT_EQUALS("static RSLRelOp convertOperator ( const Software :: ComparisonOperator & op ) { "
+                      "if ( op == & Software :: operator== ) { return RSLEqual ; } "
+                      "return RSLNotEqual ; "
+                      "}",
                       tokenizeAndStringify(code));
     }
 
