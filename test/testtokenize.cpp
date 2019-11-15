@@ -402,6 +402,7 @@ private:
         TEST_CASE(simplifyOperatorName15); // ticket #9468 syntaxError
         TEST_CASE(simplifyOperatorName16); // ticket #9472
         TEST_CASE(simplifyOperatorName17);
+        TEST_CASE(simplifyOperatorName18); // global namespace
 
         TEST_CASE(simplifyNullArray);
 
@@ -6438,6 +6439,19 @@ private:
         {
             const char code[] = "template <class a> void b(a c, a d) { c.operator++() == (d + 1); }";
             ASSERT_EQUALS("template < class a > void b ( a c , a d ) { c . operator++ ( ) == ( d + 1 ) ; }",
+                          tokenizeAndStringify(code));
+        }
+    }
+
+    void simplifyOperatorName18() { // global namespace
+        {
+            const char code[] = "struct Fred { operator std::string() const { return std::string(\"Fred\"); } };";
+            ASSERT_EQUALS("struct Fred { operatorstd::string ( ) const { return std :: string ( \"Fred\" ) ; } } ;",
+                          tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "struct Fred { operator ::std::string() const { return ::std::string(\"Fred\"); } };";
+            ASSERT_EQUALS("struct Fred { operator::std::string ( ) const { return :: std :: string ( \"Fred\" ) ; } } ;",
                           tokenizeAndStringify(code));
         }
     }
