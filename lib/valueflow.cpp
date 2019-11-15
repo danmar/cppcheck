@@ -3695,6 +3695,20 @@ static void valueFlowLifetimeConstructor(Token* tok,
         }
     }
 }
+
+static bool hasInitList(const Token* tok)
+{
+    if (astIsPointer(tok))
+        return true;
+    if (astIsContainer(tok)) {
+        const Library::Container * library = getLibraryContainer(tok);
+        if (!library)
+            return false;
+        return library->hasInitializerListConstructor;
+    }
+    return false;
+}
+
 static void valueFlowLifetimeConstructor(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings)
 {
     if (!Token::Match(tok, "(|{"))
@@ -3702,9 +3716,9 @@ static void valueFlowLifetimeConstructor(Token* tok, TokenList* tokenlist, Error
     Token* parent = tok->astParent();
     while (Token::simpleMatch(parent, ","))
         parent = parent->astParent();
-    if (Token::simpleMatch(parent, "{") && (astIsContainer(parent->astParent()) || astIsPointer(parent->astParent()))) {
+    if (Token::simpleMatch(parent, "{") && hasInitList(parent->astParent())) {
         valueFlowLifetimeConstructor(tok, Token::typeOf(parent->previous()), tokenlist, errorLogger, settings);
-    } else if (Token::simpleMatch(tok, "{") && (astIsContainer(parent) || astIsPointer(parent))) {
+    } else if (Token::simpleMatch(tok, "{") && hasInitList(parent)) {
         std::vector<const Token *> args = getArguments(tok);
         for (const Token *argtok : args) {
             LifetimeStore ls{argtok, "Passed to initializer list.", ValueFlow::Value::LifetimeKind::Object};
