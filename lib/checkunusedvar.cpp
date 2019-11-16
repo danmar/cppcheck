@@ -1185,16 +1185,25 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 op1tok = op1tok->astOperand1();
 
             const Variable *op1Var = op1tok ? op1tok->variable() : nullptr;
-            if (op1Var && op1Var->isReference() && op1Var->nameToken() != tok->astOperand1())
-                // todo: check references
-                continue;
+            if (op1Var) {
+                if (op1Var->isReference() && op1Var->nameToken() != tok->astOperand1())
+                    // todo: check references
+                    continue;
 
-            if (op1Var && op1Var->isStatic())
-                // todo: check static variables
-                continue;
+                if (op1Var->isStatic())
+                    // todo: check static variables
+                    continue;
 
-            if (op1Var && op1Var->nameToken()->isAttributeUnused())
-                continue;
+                if (op1Var->nameToken()->isAttributeUnused())
+                    continue;
+
+                // Bailout for unknown template classes, we have no idea what side effects such assignments have
+                if (mTokenizer->isCPP() &&
+                    op1Var->isClass() &&
+                    (!op1Var->valueType() || op1Var->valueType()->type == ValueType::Type::UNKNOWN_TYPE) &&
+                    Token::findsimplematch(op1Var->typeStartToken(), "<", op1Var->typeEndToken()))
+                    continue;
+            }
 
             // Is there a redundant assignment?
             const Token *start = tok->findExpressionStartEndTokens().second->next();

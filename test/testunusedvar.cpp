@@ -201,6 +201,7 @@ private:
         TEST_CASE(bracesInitCpp11);// #7895 - "int var{123}" initialization
 
         TEST_CASE(argument);
+        TEST_CASE(argumentClass);
         TEST_CASE(escapeAlias); // #9150
     }
 
@@ -4576,6 +4577,14 @@ private:
             "}"
         );
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'foo.x' is assigned a value that is never used.\n", errout.str());
+    }
+
+    void argumentClass() {
+        functionVariableUsage(
+            "void foo(std::insert_iterator<C> it) {\n"
+            "  it = 123;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void escapeAlias() {
