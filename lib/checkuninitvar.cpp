@@ -1093,16 +1093,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
     }
 
     if (mTokenizer->isCPP() && Token::simpleMatch(vartok->next(), "<<")) {
-        // Is this calculation done in rhs?
-        const Token *tok = vartok;
-        while (Token::Match(tok, "%name%|.|::"))
-            tok = tok->previous();
-        if (Token::Match(tok, "[;{}]"))
-            return false;
-
-        // Is variable a known POD type then this is a variable usage,
-        // otherwise we assume it's not.
-        return (vartok->valueType() && vartok->valueType()->isIntegral());
+        return false;
     }
 
     if (alloc == NO_ALLOC && vartok->next() && vartok->next()->isOp() && !vartok->next()->isAssignmentOp())

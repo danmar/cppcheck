@@ -475,6 +475,39 @@ private:
                            "    os << 1 << a;\n"
                            "}");
             ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
+
+            {
+                // #9422
+                checkUninitVar("void f() {\n"
+                               "  char *p = new char[10];\n"
+                               "  std::cout << (void *)p << 1;\n"
+                               "}");
+                ASSERT_EQUALS("", errout.str());
+
+                checkUninitVar("void f() {\n"
+                               "  char p[10];\n"
+                               "  std::cout << (void *)p << 1;\n"
+                               "}");
+                ASSERT_EQUALS("", errout.str());
+
+                checkUninitVar("void f() {\n"
+                               "  char *p = new char[10];\n"
+                               "  std::cout << p << 1;\n"
+                               "}");
+                ASSERT_EQUALS("[test.cpp:3]: (error) Memory is allocated but not initialized: p\n", errout.str());
+
+                checkUninitVar("void f() {\n"
+                               "  char p[10];\n"
+                               "  std::cout << p << 1;\n"
+                               "}");
+                ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: p\n", errout.str());
+
+                checkUninitVar("void f() {\n"
+                               "  char p[10];\n"
+                               "  std::cout << *p << 1;\n"
+                               "}");
+                ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: p\n", errout.str());
+            }
         }
 
         // #8494 : Overloaded & operator
