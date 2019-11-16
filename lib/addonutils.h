@@ -30,10 +30,13 @@
  * Addons can be configured through JSON files which contains path to script and additional arguments.
  */
 class CPPCHECKLIB Addon {
+
+    friend class TestAddonUtils;
+
 public:
     /**
-     * @param fileName Path to the file to check.
-     * @param exename Addon file extension
+     * @param fileName Path to addon script file with .py or .json extension
+     * @param exename Path to Cppcheck executable
      */
     Addon(const std::string &fileName, const std::string &exename);
     ~Addon();
@@ -54,18 +57,24 @@ public:
      */
     std::unique_ptr<ErrorLogger::ErrorMessage> getErrorMessage(const std::string &line) const;
 
+    /**
+     * @brief Add command line arguments to addon execution
+     * @param arg Argument to add
+     */
+    void appendArgs(const std::string &arg);
+
 private:
     /**
      * @brief Initialization helper used to set addon configuration properely.
      * @param fileName Path to addon file. Both .py and .json addons are supported.
-     * @param exename Addon file extension
+     * @param exename Path to Cppcheck executable
      */
     void getAddonInfo(const std::string &fileName, const std::string &exename);
 
     /**
      * @brief Return absolute path to a addon file with respect of addons configuration.
      * @param fileName Path to the file to check.
-     * @param exename Addon file extension
+     * @param exename Path to Cppcheck executable
      * @return Absolute path to a addon file if success, empty string otherwise
      */
     std::string getFullPath(const std::string &fileName, const std::string &exename) const;
@@ -77,7 +86,7 @@ private:
     /** @brief Absolute path to addon script file */
     std::string mScriptFile;
 
-    /** @brief Additional addon arguments */
+    /** @brief Additional command line arguments */
     std::string mArgs;
 };
 

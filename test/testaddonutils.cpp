@@ -35,6 +35,7 @@ private:
         TEST_CASE(testConstructors);
         TEST_CASE(testConstructorsJson);
         // TEST_CASE(testJSONConfiguration);
+        TEST_CASE(testAppendArgs);
     }
 
     void testConstructors() const
@@ -73,6 +74,19 @@ private:
 
     void testJSONConfiguration()
     {
+    }
+
+    void testAppendArgs() const
+    {
+        std::string args = "--cli ";
+        auto addon = Addon("misra.py", settings.exename);
+        auto saved_args = addon.mArgs;
+
+        addon.appendArgs("");
+        ASSERT_EQUALS(saved_args, addon.mArgs);
+
+        addon.appendArgs("--arg1");
+        ASSERT_EQUALS(addon.mArgs[0], ' ');
     }
 };
 

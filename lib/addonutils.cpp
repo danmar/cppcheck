@@ -33,6 +33,7 @@ static inline void throwAddonError(const std::string &msg)
 }
 
 Addon::Addon(const std::string &addonFileName, const std::string &exename)
+    : mArgs("")
 {
     getAddonInfo(addonFileName, exename);
 }
@@ -82,6 +83,17 @@ void Addon::getAddonInfo(const std::string &fileName, const std::string &exename
 
         return getAddonInfo(obj["script"].get<std::string>(), exename);
     }
+}
+
+void Addon::appendArgs(const std::string &arg)
+{
+    if (arg.empty())
+        return;
+
+    if (arg[0] != ' ')
+        mArgs.append(' ' + arg);
+    else
+        mArgs.append(arg);
 }
 
 std::string Addon::getFullPath(const std::string &fileName, const std::string &exename) const
