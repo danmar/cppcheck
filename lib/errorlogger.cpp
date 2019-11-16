@@ -55,6 +55,9 @@ InternalError::InternalError(const Token *tok, const std::string &errorMsg, Type
     case INSTANTIATION:
         id = "instantiationError";
         break;
+    case ADDON_ERROR:
+        id = "addonError";
+        break;
     }
 }
 

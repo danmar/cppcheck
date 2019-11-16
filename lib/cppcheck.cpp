@@ -17,6 +17,7 @@
  */
 #include "cppcheck.h"
 
+#include "addonutils.h"
 #include "check.h"
 #include "checkunusedfunctions.h"
 #include "ctu.h"
@@ -34,8 +35,6 @@
 
 #include "exprengine.h"
 
-#define PICOJSON_USE_INT64
-#include <picojson.h>
 #include <simplecpp.h>
 #include <tinyxml2.h>
 #include <algorithm>
@@ -59,95 +58,6 @@ static TimerResults S_timerResults;
 
 // CWE ids used
 static const CWE CWE398(398U);  // Indicator of Poor Code Quality
-
-namespace {
-    struct AddonInfo {
-        std::string name;
-        std::string scriptFile;
-        std::string args;
-
-        static std::string getFullPath(const std::string &fileName, const std::string &exename) {
-            if (Path::fileExists(fileName))
-                return fileName;
-
-            const std::string exepath = Path::getPathFromFilename(exename);
-            if (Path::fileExists(exepath + fileName))
-                return exepath + fileName;
-            if (Path::fileExists(exepath + "addons/" + fileName))
-                return exepath + "addons/" + fileName;
-
-#ifdef FILESDIR
-            if (Path::fileExists(FILESDIR + ("/" + fileName)))
-                return FILESDIR + ("/" + fileName);
-            if (Path::fileExists(FILESDIR + ("/addons/" + fileName)))
-                return FILESDIR + ("/addons/" + fileName);
-#endif
-            return "";
-        }
-
-        std::string getAddonInfo(const std::string &fileName, const std::string &exename) {
-            if (fileName.find(".") == std::string::npos)
-                return getAddonInfo(fileName + ".py", exename);
-
-            if (endsWith(fileName, ".py", 3)) {
-                scriptFile = getFullPath(fileName, exename);
-                if (scriptFile.empty())
-                    return "Did not find addon " + fileName;
-
-                std::string::size_type pos1 = scriptFile.rfind("/");
-                if (pos1 == std::string::npos)
-                    pos1 = 0;
-                else
-                    pos1++;
-                std::string::size_type pos2 = scriptFile.rfind(".");
-                if (pos2 < pos1)
-                    pos2 = std::string::npos;
-                name = scriptFile.substr(pos1, pos2 - pos1);
-
-                return "";
-            }
-
-            if (!endsWith(fileName, ".json", 5))
-                return "Failed to open addon " + fileName;
-
-            std::ifstream fin(fileName);
-            if (!fin.is_open())
-                return "Failed to open " + fileName;
-            picojson::value json;
-            fin >> json;
-            if (!json.is<picojson::object>())
-                return "Loading " + fileName + " failed. Bad json.";
-            picojson::object obj = json.get<picojson::object>();
-            if (obj.count("args")) {
-                if (!obj["args"].is<picojson::array>())
-                    return "Loading " + fileName + " failed. args must be array.";
-                for (const picojson::value &v : obj["args"].get<picojson::array>())
-                    args += " " + v.get<std::string>();
-            }
-
-            return getAddonInfo(obj["script"].get<std::string>(), exename);
-        }
-    };
-}
-
-static std::string executeAddon(const AddonInfo &addonInfo, const std::string &dumpFile)
-{
-    const std::string cmd = "python \"" + addonInfo.scriptFile + "\" --cli" + addonInfo.args + " \"" + dumpFile + "\"";
-
-#ifdef _WIN32
-    std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
-#else
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
-#endif
-    if (!pipe)
-        return "";
-    char buffer[1024];
-    std::string result;
-    while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr) {
-        result += buffer;
-    }
-    return result;
-}
 
 static std::vector<std::string> split(const std::string &str, const std::string &sep)
 {
@@ -609,47 +519,20 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         if (!mSettings.addons.empty()) {
             fdump.close();
 
-            for (const std::string &addon : mSettings.addons) {
-                struct AddonInfo addonInfo;
-                const std::string &failedToGetAddonInfo = addonInfo.getAddonInfo(addon, mSettings.exename);
-                if (!failedToGetAddonInfo.empty()) {
-                    reportOut(failedToGetAddonInfo);
+            for (const std::string &addon_file : mSettings.addons) {
+                try {
+                    auto addon = Addon(addon_file, mSettings.exename);
+                    const std::string results = addon.execute(dumpFile);
+                    std::istringstream istr(results);
+                    std::string line;
+                    while (std::getline(istr, line)) {
+                        auto errmsg = addon.getErrorMessage(line);
+                        if (errmsg)
+                            reportErr(*errmsg);
+                    }
+                } catch (const InternalError &e) {
+                    reportOut(e.errorMessage);
                     continue;
-                }
-                const std::string results = executeAddon(addonInfo, dumpFile);
-                std::istringstream istr(results);
-                std::string line;
-
-                while (std::getline(istr, line)) {
-                    if (line.compare(0,1,"{") != 0)
-                        continue;
-
-                    picojson::value res;
-                    std::istringstream istr2(line);
-                    istr2 >> res;
-                    if (!res.is<picojson::object>())
-                        continue;
-
-                    picojson::object obj = res.get<picojson::object>();
-
-                    const std::string fileName = obj["file"].get<std::string>();
-                    const int64_t lineNumber = obj["linenr"].get<int64_t>();
-                    const int64_t column = obj["column"].get<int64_t>();
-
-                    ErrorLogger::ErrorMessage errmsg;
-
-                    errmsg.callStack.emplace_back(ErrorLogger::ErrorMessage::FileLocation(fileName, lineNumber, column));
-
-                    errmsg.id = obj["addon"].get<std::string>() + "-" + obj["errorId"].get<std::string>();
-                    const std::string text = obj["message"].get<std::string>();
-                    errmsg.setmsg(text);
-                    const std::string severity = obj["severity"].get<std::string>();
-                    errmsg.severity = Severity::fromString(severity);
-                    if (errmsg.severity == Severity::SeverityType::none)
-                        continue;
-                    errmsg.file0 = fileName;
-
-                    reportErr(errmsg);
                 }
             }
         }
