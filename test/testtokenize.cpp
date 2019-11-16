@@ -402,6 +402,11 @@ private:
         TEST_CASE(simplifyOperatorName15); // ticket #9468 syntaxError
         TEST_CASE(simplifyOperatorName16); // ticket #9472
         TEST_CASE(simplifyOperatorName17);
+        TEST_CASE(simplifyOperatorName18); // global namespace
+        TEST_CASE(simplifyOperatorName19);
+        TEST_CASE(simplifyOperatorName20);
+        TEST_CASE(simplifyOperatorName21);
+        TEST_CASE(simplifyOperatorName22);
 
         TEST_CASE(simplifyNullArray);
 
@@ -6440,6 +6445,80 @@ private:
             ASSERT_EQUALS("template < class a > void b ( a c , a d ) { c . operator++ ( ) == ( d + 1 ) ; }",
                           tokenizeAndStringify(code));
         }
+    }
+
+    void simplifyOperatorName18() { // global namespace
+        {
+            const char code[] = "struct Fred { operator std::string() const { return std::string(\"Fred\"); } };";
+            ASSERT_EQUALS("struct Fred { operatorstd::string ( ) const { return std :: string ( \"Fred\" ) ; } } ;",
+                          tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "struct Fred { operator ::std::string() const { return ::std::string(\"Fred\"); } };";
+            ASSERT_EQUALS("struct Fred { operator::std::string ( ) const { return :: std :: string ( \"Fred\" ) ; } } ;",
+                          tokenizeAndStringify(code));
+        }
+    }
+
+    void simplifyOperatorName19() {
+        const char code[] = "struct v {};"
+                            "enum E { e };"
+                            "struct s {"
+                            "  operator struct v() { return v(); };"
+                            "  operator enum E() { return e; }"
+                            "};"
+                            "void f() {"
+                            "  (void)&s::operator struct v;"
+                            "  (void)&s::operator enum E;"
+                            "}";
+        ASSERT_EQUALS("struct v { } ; "
+                      "enum E { e } ; "
+                      "struct s { "
+                      "operatorstructv ( ) { return v ( ) ; } ; "
+                      "operatorenumE ( ) { return e ; } "
+                      "} ; "
+                      "void f ( ) { "
+                      "( void ) & s :: operatorstructv ; "
+                      "( void ) & s :: operatorenumE ; "
+                      "}",
+                      tokenizeAndStringify(code));
+    }
+
+    void simplifyOperatorName20() {
+        const char code[] = "void operator \"\" _a(const char *);"
+                            "namespace N {"
+                            "  using ::operator \"\" _a;"
+                            "  void operator \"\" _b(const char *);"
+                            "}";
+        ASSERT_EQUALS("void operator\"\"_a ( const char * ) ; "
+                      "namespace N { "
+                      "using :: operator\"\"_a ; "
+                      "void operator\"\"_b ( const char * ) ; "
+                      "}",
+                      tokenizeAndStringify(code));
+    }
+
+    void simplifyOperatorName21() {
+        const char code[] = "template<char...> void operator \"\" _h() {}"
+                            "template<> void operator \"\" _h<'a', 'b', 'c'>() {}"
+                            "template void operator \"\" _h<'a', 'b', 'c', 'd'>();";
+        ASSERT_EQUALS("void operator\"\"_h<'a','b','c'> ( ) ; "
+                      "void operator\"\"_h<'a','b','c','d'> ( ) ; "
+                      "void operator\"\"_h<'a','b','c'> ( ) { } "
+                      "void operator\"\"_h<'a','b','c','d'> ( ) { }",
+                      tokenizeAndStringify(code));
+    }
+
+    void simplifyOperatorName22() {
+        const char code[] = "static RSLRelOp convertOperator(const Software::ComparisonOperator& op) {"
+                            "  if (op == &Software::operator==) return RSLEqual;"
+                            "return RSLNotEqual;"
+                            "}";
+        ASSERT_EQUALS("static RSLRelOp convertOperator ( const Software :: ComparisonOperator & op ) { "
+                      "if ( op == & Software :: operator== ) { return RSLEqual ; } "
+                      "return RSLNotEqual ; "
+                      "}",
+                      tokenizeAndStringify(code));
     }
 
     void simplifyNullArray() {

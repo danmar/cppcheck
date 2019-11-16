@@ -10901,10 +10901,16 @@ void Tokenizer::simplifyOperatorName()
                 op += ")";
                 par = par->next();
                 done = false;
-            } else if (Token::Match(par, "\"\" %name% (")) {
+            } else if (Token::Match(par, "\"\" %name% (|;|<")) {
                 op += "\"\"";
                 op += par->strAt(1);
                 par = par->tokAt(2);
+                done = true;
+            } else if (par->str() == "::") {
+                op += par->str();
+                par = par->next();
+                done = false;
+            } else if (par->str() == ";" || par->str() == ")") {
                 done = true;
             } else if (par->str() != "(") {
                 syntaxError(par, "operator");
