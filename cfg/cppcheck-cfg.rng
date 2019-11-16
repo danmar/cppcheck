@@ -370,6 +370,9 @@
           <attribute name="opLessAllowed"><ref name="DATA-BOOL"/></attribute>
         </optional>
         <optional>
+          <attribute name="hasInitializerListConstructor"><ref name="DATA-BOOL"/></attribute>
+        </optional>
+        <optional>
           <attribute name="itEndPattern"><text/></attribute>
         </optional>
         <zeroOrMore>
