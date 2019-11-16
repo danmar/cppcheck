@@ -25,6 +25,8 @@
 #include <QJsonObject>
 #include <QProcess>
 #include <QSettings>
+
+#include "addonutils.h"
 #include "checkthread.h"
 #include "erroritem.h"
 #include "threadresult.h"
@@ -113,8 +115,8 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
 {
     QString dumpFile;
 
-    foreach (const QString addon, mAddonsAndTools) {
-        if (addon == CLANG_ANALYZER || addon == CLANG_TIDY) {
+    foreach (const QString addon_name, mAddonsAndTools) {
+        if (addon_name == CLANG_ANALYZER || addon_name == CLANG_TIDY) {
             if (!fileSettings)
                 continue;
 
@@ -196,15 +198,15 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
                 const QByteArray &ba = process.readAllStandardOutput();
                 const quint16 chksum = qChecksum(ba.data(), ba.length());
 
-                QFile f1(analyzerInfoFile + '.' + addon + "-E");
+                QFile f1(analyzerInfoFile + '.' + addon_name + "-E");
                 if (f1.open(QIODevice::ReadOnly | QIODevice::Text)) {
                     QTextStream in1(&f1);
                     const quint16 oldchksum = in1.readAll().toInt();
                     if (oldchksum == chksum) {
-                        QFile f2(analyzerInfoFile + '.' + addon + "-results");
+                        QFile f2(analyzerInfoFile + '.' + addon_name + "-results");
                         if (f2.open(QIODevice::ReadOnly | QIODevice::Text)) {
                             QTextStream in2(&f2);
-                            parseClangErrors(addon, fileName, in2.readAll());
+                            parseClangErrors(addon_name, fileName, in2.readAll());
                             continue;
                         }
                     }
@@ -214,10 +216,10 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
                 QTextStream out1(&f1);
                 out1 << chksum;
 
-                QFile::remove(analyzerInfoFile + '.' + addon + "-results");
+                QFile::remove(analyzerInfoFile + '.' + addon_name + "-results");
             }
 
-            if (addon == CLANG_ANALYZER) {
+            if (addon_name == CLANG_ANALYZER) {
                 /*
                 // Using clang
                 args.insert(0,"--analyze");
@@ -247,7 +249,7 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
                 qDebug() << debug;
 
                 if (!analyzerInfoFile.isEmpty()) {
-                    QFile f(analyzerInfoFile + '.' + addon + "-cmd");
+                    QFile f(analyzerInfoFile + '.' + addon_name + "-cmd");
                     if (f.open(QIODevice::WriteOnly | QIODevice::Text)) {
                         QTextStream out(&f);
                         out << debug;
@@ -260,20 +262,20 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
             process.waitForFinished(600*1000);
             const QString errout(process.readAllStandardOutput() + "\n\n\n" + process.readAllStandardError());
             if (!analyzerInfoFile.isEmpty()) {
-                QFile f(analyzerInfoFile + '.' + addon + "-results");
+                QFile f(analyzerInfoFile + '.' + addon_name + "-results");
                 if (f.open(QIODevice::WriteOnly | QIODevice::Text)) {
                     QTextStream out(&f);
                     out << errout;
                 }
             }
 
-            parseClangErrors(addon, fileName, errout);
+            parseClangErrors(addon_name, fileName, errout);
         } else {
             const QString python = CheckThread::pythonCmd();
             if (python.isEmpty())
                 continue;
 
-            const QString addonFilePath = CheckThread::getAddonFilePath(mDataDir, addon + ".py");
+            const QString addonFilePath = CheckThread::getAddonFilePath(mDataDir, addon_name + ".py");
             if (addonFilePath.isEmpty())
                 continue;
 
@@ -296,29 +298,17 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
                 mCppcheck.settings().buildDir = buildDir;
             }
 
-            QStringList args;
-            args << addonFilePath << "--cli" << dumpFile;
-            if (addon == "misra" && !mMisraFile.isEmpty() && QFileInfo(mMisraFile).exists()) {
-                args << "--rule-texts=" + mMisraFile;
+            try {
+                auto addon = Addon(addonFilePath.toStdString(), mCppcheck.settings().exename);
+                if (addon_name == "misra" && !mMisraFile.isEmpty() && QFileInfo(mMisraFile).exists())
+                    addon.appendArgs("--rule-texts=" + mMisraFile.toStdString());
+                auto results = QString::fromStdString(addon.execute(dumpFile.toStdString()));
+                parseAddonErrors(results, addon_name);
+            } catch (const InternalError &e) {
+                // TODO: Send error message
+                // reportOut(e.errorMessage);
+                continue;
             }
-            qDebug() << python << args;
-
-            QProcess process;
-            QProcessEnvironment env = process.processEnvironment();
-            if (!env.contains("PYTHONHOME") && !python.startsWith("python")) {
-                env.insert("PYTHONHOME", QFileInfo(python).canonicalPath());
-                process.setProcessEnvironment(env);
-            }
-            process.start(python, args);
-            process.waitForFinished();
-            const QString output(process.readAllStandardOutput());
-            QFile f(dumpFile + '-' + addon + "-results");
-            if (f.open(QIODevice::WriteOnly | QIODevice::Text)) {
-                QTextStream out(&f);
-                out << output;
-                f.close();
-            }
-            parseAddonErrors(output, addon);
         }
     }
 }
@@ -329,7 +319,7 @@ void CheckThread::stop()
     mCppcheck.terminate();
 }
 
-void CheckThread::parseAddonErrors(QString err, const QString &tool)
+void CheckThread::parseAddonErrors(QString &err, const QString &tool)
 {
     Q_UNUSED(tool);
     QTextStream in(&err, QIODevice::ReadOnly);

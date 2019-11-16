@@ -144,7 +144,13 @@ protected:
 private:
     void runAddonsAndTools(const ImportProject::FileSettings *fileSettings, const QString &fileName);
 
-    void parseAddonErrors(QString err, const QString &tool);
+    /**
+     * @brief Fill GUI representation with errors from addon output
+     * @param err Addon output
+     * @param tool Name of addon
+     */
+    void parseAddonErrors(QString &err, const QString &tool);
+
     void parseClangErrors(const QString &tool, const QString &file0, QString err);
 
     bool isSuppressed(const Suppressions::ErrorMessage &errorMessage) const;
