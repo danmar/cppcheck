@@ -156,7 +156,8 @@ MAN_SOURCE=man/cppcheck.1.xml
 
 ###### Object Files
 
-LIBOBJ =      $(libcppdir)/analyzerinfo.o \
+LIBOBJ =      $(libcppdir)/addonutils.o \
+              $(libcppdir)/analyzerinfo.o \
               $(libcppdir)/astutils.o \
               $(libcppdir)/check.o \
               $(libcppdir)/check64bit.o \
@@ -218,6 +219,7 @@ CLIOBJ =      cli/cmdlineparser.o \
 
 TESTOBJ =     test/options.o \
               test/test64bit.o \
+              test/testaddonutils.o \
               test/testassert.o \
               test/testastutils.o \
               test/testautovariables.o \
@@ -393,6 +395,9 @@ validateRules:
 
 ###### Build
 
+$(libcppdir)/addonutils.o: lib/addonutils.cpp externals/picojson.h lib/addonutils.h lib/config.h lib/errorlogger.h lib/path.h lib/suppressions.h lib/utils.h
+	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(libcppdir)/addonutils.o $(libcppdir)/addonutils.cpp
+
 $(libcppdir)/analyzerinfo.o: lib/analyzerinfo.cpp externals/tinyxml/tinyxml2.h lib/analyzerinfo.h lib/config.h lib/errorlogger.h lib/importproject.h lib/path.h lib/platform.h lib/suppressions.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(libcppdir)/analyzerinfo.o $(libcppdir)/analyzerinfo.cpp
 
@@ -477,7 +482,7 @@ $(libcppdir)/checkunusedvar.o: lib/checkunusedvar.cpp lib/astutils.h lib/check.h
 $(libcppdir)/checkvaarg.o: lib/checkvaarg.cpp lib/astutils.h lib/check.h lib/checkvaarg.h lib/config.h lib/errorlogger.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(libcppdir)/checkvaarg.o $(libcppdir)/checkvaarg.cpp
 
-$(libcppdir)/cppcheck.o: lib/cppcheck.cpp externals/picojson.h externals/simplecpp/simplecpp.h externals/tinyxml/tinyxml2.h lib/analyzerinfo.h lib/check.h lib/checkunusedfunctions.h lib/config.h lib/cppcheck.h lib/ctu.h lib/errorlogger.h lib/exprengine.h lib/importproject.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/preprocessor.h lib/settings.h lib/standards.h lib/suppressions.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h lib/version.h
+$(libcppdir)/cppcheck.o: lib/cppcheck.cpp externals/simplecpp/simplecpp.h externals/tinyxml/tinyxml2.h lib/addonutils.h lib/analyzerinfo.h lib/check.h lib/checkunusedfunctions.h lib/config.h lib/cppcheck.h lib/ctu.h lib/errorlogger.h lib/exprengine.h lib/importproject.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/preprocessor.h lib/settings.h lib/standards.h lib/suppressions.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h lib/version.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(libcppdir)/cppcheck.o $(libcppdir)/cppcheck.cpp
 
 $(libcppdir)/ctu.o: lib/ctu.cpp externals/tinyxml/tinyxml2.h lib/astutils.h lib/check.h lib/config.h lib/ctu.h lib/errorlogger.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h
@@ -563,6 +568,9 @@ test/options.o: test/options.cpp test/options.h
 
 test/test64bit.o: test/test64bit.cpp lib/check.h lib/check64bit.h lib/config.h lib/errorlogger.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h test/testsuite.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/test64bit.o test/test64bit.cpp
+
+test/testaddonutils.o: test/testaddonutils.cpp lib/addonutils.h lib/config.h lib/errorlogger.h lib/importproject.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/timer.h lib/utils.h test/testsuite.h
+	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testaddonutils.o test/testaddonutils.cpp
 
 test/testassert.o: test/testassert.cpp lib/check.h lib/checkassert.h lib/config.h lib/errorlogger.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h test/testsuite.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testassert.o test/testassert.cpp
