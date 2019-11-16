@@ -299,10 +299,7 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
             QStringList args;
             args << addonFilePath << "--cli" << dumpFile;
             if (addon == "misra" && !mMisraFile.isEmpty() && QFileInfo(mMisraFile).exists()) {
-                if (mMisraFile.endsWith(".pdf", Qt::CaseInsensitive))
-                    args << "--misra-pdf=" + mMisraFile;
-                else
-                    args << "--rule-texts=" + mMisraFile;
+                args << "--rule-texts=" + mMisraFile;
             }
             qDebug() << python << args;
 
