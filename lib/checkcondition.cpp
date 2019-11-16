@@ -830,11 +830,23 @@ void CheckCondition::identicalConditionAfterEarlyExitError(const Token *cond1, c
 {
     if (diag(cond1) & diag(cond2))
         return;
-    const std::string cond(cond1 ? cond1->expressionString() : "x");
-    errorPath.emplace_back(ErrorPathItem(cond1, "first condition"));
-    errorPath.emplace_back(ErrorPathItem(cond2, "second condition"));
 
-    reportError(errorPath, Severity::warning, "identicalConditionAfterEarlyExit", "Identical condition '" + cond + "', second condition is always false", CWE398, false);
+    const bool isReturnValue = cond2 && Token::simpleMatch(cond2->astParent(), "return");
+
+    const std::string cond(cond1 ? cond1->expressionString() : "x");
+    const std::string value = (cond2 && cond2->valueType() && cond2->valueType()->type == ValueType::Type::BOOL) ? "false" : "0";
+
+    errorPath.emplace_back(ErrorPathItem(cond1, "If condition '" + cond + "' is true, the function will return/exit"));
+    errorPath.emplace_back(ErrorPathItem(cond2, (isReturnValue ? "Returning identical expression '" : "Testing identical condition '") + cond + "'"));
+
+    reportError(errorPath,
+                Severity::warning,
+                "identicalConditionAfterEarlyExit",
+                isReturnValue
+                ? ("Identical condition and return expression '" + cond + "', return value is always " + value)
+                : ("Identical condition '" + cond + "', second condition is always false"),
+                CWE398,
+                false);
 }
 
 //---------------------------------------------------------------------------
