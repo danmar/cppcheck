@@ -34,7 +34,7 @@ private:
 
         TEST_CASE(testConstructors);
         TEST_CASE(testConstructorsJson);
-        // TEST_CASE(testJSONConfiguration);
+        TEST_CASE(testBrokenJson);
         TEST_CASE(testAppendArgs);
     }
 
@@ -72,8 +72,21 @@ private:
         ASSERT_THROW(Addon("test_addon.json", settings.exename), InternalError);
     }
 
-    void testJSONConfiguration()
+    void testBrokenJson() const
     {
+        {
+            std::ofstream test_addon { "test_addon_broken.json" };
+            test_addon << "{ \"script\": \"addons/misra.py }" << std::endl; // missing quote
+            ASSERT_THROW(Addon("test_addon_broken.json", settings.exename), InternalError);
+            std::remove("test_addon_broken.json");
+        }
+
+        {
+            std::ofstream test_addon { "test_addon_broken.json" };
+            test_addon << "{ \"script\": \"addons/misra.py \"" << std::endl; // missing }
+            ASSERT_THROW(Addon("test_addon_broken.json", settings.exename), InternalError);
+            std::remove("test_addon_broken.json");
+        }
     }
 
     void testAppendArgs() const
