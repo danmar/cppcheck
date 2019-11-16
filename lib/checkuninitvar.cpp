@@ -734,12 +734,8 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                         return true;
 
                     // array new
-                    if (Token::Match(tok->next(), "= new %type% [")) {
-                        const Token* tokClosingBracket=tok->linkAt(4);
-                        // array new with initialization
-                        if (tokClosingBracket && Token::simpleMatch(tokClosingBracket->next(), "( )"))
-                            return true;
-                    }
+                    if (Token::Match(tok->next(), "= new %type% [") && Token::simpleMatch(tok->linkAt(4), "] ("))
+                        return true;
                 }
 
                 continue;
