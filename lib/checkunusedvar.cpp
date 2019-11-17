@@ -1223,7 +1223,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
 
             FwdAnalysis fwdAnalysis(mTokenizer->isCPP(), mSettings->library);
             if (fwdAnalysis.unusedValue(expr, start, scope->bodyEnd)) {
-                if (!bailoutTypeName.empty()) {
+                if (!bailoutTypeName.empty() && bailoutTypeName != "auto") {
                     if (mSettings->checkLibrary && mSettings->isEnabled(Settings::INFORMATION)) {
                         reportError(tok,
                                     Severity::information,
