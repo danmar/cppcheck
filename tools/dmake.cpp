@@ -468,7 +468,8 @@ int main(int argc, char **argv)
     fout << ".PHONY: validateCFG\n";
     fout << "%.checked:%.cfg\n";
     fout << "\txmllint --noout --relaxng cfg/cppcheck-cfg.rng $<\n";
-    fout << "validateCFG: ${ConfigFilesCHECKED}\n\n";
+    fout << "validateCFG: ${ConfigFilesCHECKED}\n";
+    fout << "\txmllint --noout cfg/cppcheck-cfg.rng\n\n";
     fout << "# Validation of platforms files:\n";
     fout << "PlatformFiles := $(wildcard platforms/*.xml)\n";
     fout << "PlatformFilesCHECKED := $(patsubst %.xml,%.checked,$(PlatformFiles))\n";

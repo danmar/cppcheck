@@ -365,6 +365,7 @@ ConfigFilesCHECKED := $(patsubst %.cfg,%.checked,$(ConfigFiles))
 %.checked:%.cfg
 	xmllint --noout --relaxng cfg/cppcheck-cfg.rng $<
 validateCFG: ${ConfigFilesCHECKED}
+	xmllint --noout cfg/cppcheck-cfg.rng
 
 # Validation of platforms files:
 PlatformFiles := $(wildcard platforms/*.xml)
