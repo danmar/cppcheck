@@ -208,6 +208,9 @@
     <ClCompile Include="testastutils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="testaddonutils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\lib\astutils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

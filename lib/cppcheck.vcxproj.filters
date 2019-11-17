@@ -137,6 +137,9 @@
     <ClCompile Include="astutils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="addonutils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="checkfunctions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -299,6 +302,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="astutils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="addonutils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="utils.h">
