@@ -10880,6 +10880,8 @@ void Tokenizer::simplifyOperatorName()
                 done = false;
             } else if (Token::Match(par, ".|%op%|,")) {
                 // check for operator in template
+                if (par->str() == "," && !op.empty())
+                    break;
                 if (!(Token::Match(par, "<|>") && !op.empty())) {
                     op += par->str();
                     par = par->next();
