@@ -19,6 +19,10 @@
 #include "settings.h"
 #include "testsuite.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#endif // _WIN32
+
 #include <fstream>
 #include <cstdio>
 
@@ -67,7 +71,13 @@ private:
         std::ofstream test_addon { "test_addon.json" };
         test_addon << "{ \"script\": \"addons/misra.py\" }" << std::endl;
         ASSERT_NO_THROW(Addon("test_addon.json", settings.exename));
+#ifdef _WIN32
+        std::string file_name = "test_addon.json";
+        std::wstring wfile_name(file_name.begin(),file_name.end());
+        DeleteFile(wfile_name.c_str());
+#else
         std::remove("test_addon.json");
+#endif // _WIN32
 
         ASSERT_THROW(Addon("test_addon.json", settings.exename), InternalError);
     }
