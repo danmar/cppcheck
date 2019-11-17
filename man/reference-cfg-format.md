@@ -487,6 +487,24 @@ The first argument that the function takes is a pointer. It must not be a null p
 
 The second argument the function takes is a pointer. It must not be null. And it must point at initialized data. Using `<not-null>` and `<not-uninit>` is correct. Moreover it must point at a zero-terminated string so `<strz>` is also used.
 
+# `<type-checks>`; check or suppress
+
+The `<type-checks>`configuration tells Cppcheck to show or suppress warnings for a certain type.
+
+Example:
+
+    <?xml version="1.0"?>
+    <def>
+      <type-checks>
+        <unusedvar>
+          <check>foo</check>
+          <suppress>bar</suppress>
+        </unusedvar>
+      </type-checks>
+    </def>
+
+In the `unusedvar` checking the `foo` type will be checked. Warnings for `bar` type variables will be suppressed.
+
 # `<define>`
 
 Libraries can be used to define preprocessor macros as well. For example:

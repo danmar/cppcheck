@@ -33,6 +33,8 @@ private:
 
     void run() OVERRIDE {
         settings.addEnabled("style");
+        settings.addEnabled("information");
+        settings.checkLibrary = true;
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(emptyclass);  // #5355 - False positive: Variable is not assigned a value.
@@ -3535,13 +3537,18 @@ private:
                               "}");
         ASSERT_EQUALS("", errout.str());
 
-        // FIXME : this is probably inconclusive
-        functionVariableUsage("void f() {\n"
+        functionVariableUsage("void f() {\n"  // unknown class => library configuration is needed
                               "  Fred fred;\n"
                               "  int *a; a = b;\n"
                               "  fred += a;\n"
                               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'fred' is assigned a value that is never used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (information) --check-library: Provide <type-checks><unusedvar> configuration for Fred\n", errout.str());
+
+        functionVariableUsage("void f() {\n"
+                              "  std::pair<int,int> fred;\n"  // class with library configuration
+                              "  fred = x;\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'fred' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvarFor() {

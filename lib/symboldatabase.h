@@ -616,6 +616,8 @@ public:
         return mAccess;
     }
 
+    std::string getTypeName() const;
+
 private:
     // only symbol database can change the type
     friend class SymbolDatabase;

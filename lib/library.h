@@ -478,6 +478,10 @@ public:
 
     static bool isContainerYield(const Token * const cond, Library::Container::Yield y, const std::string& fallback="");
 
+    /** Suppress/check a type */
+    enum class TypeCheck { def, check, suppress };
+    TypeCheck getTypeCheck(const std::string &check, const std::string &typeName) const;
+
 private:
     // load a <function> xml node
     Error loadFunction(const tinyxml2::XMLElement * const node, const std::string &name, std::set<std::string> &unknown_elements);
@@ -557,6 +561,7 @@ private:
     std::map<std::string, struct PodType> mPodTypes; // pod types
     std::map<std::string, PlatformType> mPlatformTypes; // platform independent typedefs
     std::map<std::string, Platform> mPlatforms; // platform dependent typedefs
+    std::map<std::pair<std::string,std::string>, TypeCheck> mTypeChecks;
 
     const ArgumentChecks * getarg(const Token *ftok, int argnr) const;
 

@@ -447,6 +447,23 @@
         <attribute name="class-name"><ref name="DATA-EXTNAME"/></attribute>
       </element>
 
+      <element name="type-checks">
+        <optional>
+          <element name="unusedvar">
+            <zeroOrMore>
+              <choice>
+                <element name="check">
+                  <ref name="DATA-EXTNAME"/>
+                </element>
+                <element name="suppress">
+                  <ref name="DATA-EXTNAME"/>
+                </element>
+              <choice>
+            </zeroOrMore>
+          </element>
+        </optional>
+      </element>
+
       <element name="podtype">
         <attribute name="name"><ref name="DATA-EXTNAME"/></attribute>
         <optional>

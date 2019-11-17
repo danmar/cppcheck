@@ -1185,6 +1185,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 op1tok = op1tok->astOperand1();
 
             const Variable *op1Var = op1tok ? op1tok->variable() : nullptr;
+            std::string bailoutTypeName;
             if (op1Var) {
                 if (op1Var->isReference() && op1Var->nameToken() != tok->astOperand1())
                     // todo: check references
@@ -1200,9 +1201,21 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 // Bailout for unknown template classes, we have no idea what side effects such assignments have
                 if (mTokenizer->isCPP() &&
                     op1Var->isClass() &&
-                    (!op1Var->valueType() || op1Var->valueType()->type == ValueType::Type::UNKNOWN_TYPE) &&
-                    Token::findsimplematch(op1Var->typeStartToken(), "<", op1Var->typeEndToken()))
-                    continue;
+                    (!op1Var->valueType() || op1Var->valueType()->type == ValueType::Type::UNKNOWN_TYPE)) {
+                    // Check in the library if we should bailout or not..
+                    const std::string typeName = op1Var->getTypeName();
+                    switch (mSettings->library.getTypeCheck("unusedvar", typeName)) {
+                    case Library::TypeCheck::def:
+                        if (!mSettings->checkLibrary)
+                            continue;
+                        bailoutTypeName = typeName;
+                        break;
+                    case Library::TypeCheck::check:
+                        break;
+                    case Library::TypeCheck::suppress:
+                        continue;
+                    };
+                }
             }
 
             // Is there a redundant assignment?
@@ -1211,9 +1224,20 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             const Token *expr = varDecl ? varDecl : tok->astOperand1();
 
             FwdAnalysis fwdAnalysis(mTokenizer->isCPP(), mSettings->library);
-            if (fwdAnalysis.unusedValue(expr, start, scope->bodyEnd))
+            if (fwdAnalysis.unusedValue(expr, start, scope->bodyEnd)) {
+                if (!bailoutTypeName.empty()) {
+                    if (mSettings->checkLibrary && mSettings->isEnabled(Settings::INFORMATION)) {
+                        reportError(tok,
+                                    Severity::information,
+                                    "checkLibraryCheckType",
+                                    "--check-library: Provide <type-checks><unusedvar> configuration for " + bailoutTypeName);
+                    }
+                    continue;
+                }
+
                 // warn
                 unreadVariableError(tok, expr->expressionString(), false);
+            }
         }
 
         // varId, usage {read, write, modified}

@@ -1857,6 +1857,15 @@ const Type *Variable::smartPointerType() const
     return nullptr;
 }
 
+std::string Variable::getTypeName() const
+{
+    std::string ret;
+    // TODO: For known types, generate the full type name
+    for (const Token *typeTok = mTypeStartToken; Token::Match(typeTok, "%name%|::") && typeTok->varId() == 0; typeTok = typeTok->next())
+        ret += typeTok->str();
+    return ret;
+}
+
 Function::Function(const Tokenizer *mTokenizer,
                    const Token *tok,
                    const Scope *scope,

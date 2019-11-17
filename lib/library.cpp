@@ -511,6 +511,22 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                 smartPointers.insert(className);
         }
 
+        else if (nodename == "type-checks") {
+            for (const tinyxml2::XMLElement *checkNode = node->FirstChildElement(); checkNode; checkNode = checkNode->NextSiblingElement()) {
+                const std::string &checkName = checkNode->Name();
+                for (const tinyxml2::XMLElement *checkTypeNode = checkNode->FirstChildElement(); checkTypeNode; checkTypeNode = checkTypeNode->NextSiblingElement()) {
+                    const std::string checkTypeName = checkTypeNode->Name();
+                    const char *typeName = checkTypeNode->GetText();
+                    if (!typeName)
+                        continue;
+                    if (checkTypeName == "check")
+                        mTypeChecks[std::pair<std::string,std::string>(checkName, typeName)] = TypeCheck::check;
+                    else if (checkTypeName == "suppress")
+                        mTypeChecks[std::pair<std::string,std::string>(checkName, typeName)] = TypeCheck::suppress;
+                }
+            }
+        }
+
         else if (nodename == "podtype") {
             const char * const name = node->Attribute("name");
             if (!name)
@@ -1405,3 +1421,8 @@ CPPCHECKLIB const Library::Container * getLibraryContainer(const Token * tok)
     return tok->valueType()->container;
 }
 
+Library::TypeCheck Library::getTypeCheck(const std::string &check, const std::string &typeName) const
+{
+    auto it = mTypeChecks.find(std::pair<std::string, std::string>(check, typeName));
+    return it == mTypeChecks.end() ? TypeCheck::def : it->second;
+}
