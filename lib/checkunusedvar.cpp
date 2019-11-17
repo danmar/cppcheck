@@ -1206,8 +1206,6 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                     const std::string typeName = op1Var->getTypeName();
                     switch (mSettings->library.getTypeCheck("unusedvar", typeName)) {
                     case Library::TypeCheck::def:
-                        if (!mSettings->checkLibrary)
-                            continue;
                         bailoutTypeName = typeName;
                         break;
                     case Library::TypeCheck::check:
@@ -1231,8 +1229,8 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                                     Severity::information,
                                     "checkLibraryCheckType",
                                     "--check-library: Provide <type-checks><unusedvar> configuration for " + bailoutTypeName);
+                        continue;
                     }
-                    continue;
                 }
 
                 // warn
