@@ -458,7 +458,7 @@
                 <element name="suppress">
                   <ref name="DATA-EXTNAME"/>
                 </element>
-              <choice>
+              </choice>
             </zeroOrMore>
           </element>
         </optional>
