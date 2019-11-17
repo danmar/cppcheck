@@ -1299,6 +1299,8 @@ static bool isVariableMutableInInitializer(const Token* start, const Token * end
             const Token * memberTok = tok->astParent()->previous();
             if (Token::Match(memberTok, "%var% (") && memberTok->variable()) {
                 const Variable * memberVar = memberTok->variable();
+                if(memberVar->isClass())
+                    return true;
                 if (!memberVar->isReference())
                     continue;
                 if (memberVar->isConst())
