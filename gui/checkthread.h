@@ -114,6 +114,10 @@ signals:
     void done();
 
     void fileChecked(const QString &file);
+
+    /** @brief Show error occurred during check. */
+    void showCheckError(const QString &id, const QString &title, const QString &text, bool once = true);
+
 protected:
 
     /**

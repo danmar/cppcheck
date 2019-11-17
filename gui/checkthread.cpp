@@ -114,8 +114,12 @@ void CheckThread::run()
 void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSettings, const QString &fileName)
 {
     QString dumpFile;
+    auto disabled_addons = QStringList();
 
     foreach (const QString addon_name, mAddonsAndTools) {
+        if (disabled_addons.contains(addon_name))
+            continue;
+
         if (addon_name == CLANG_ANALYZER || addon_name == CLANG_TIDY) {
             if (!fileSettings)
                 continue;
@@ -272,12 +276,22 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
             parseClangErrors(addon_name, fileName, errout);
         } else {
             const QString python = CheckThread::pythonCmd();
-            if (python.isEmpty())
+            if (python.isEmpty()) {
+                emit showCheckError("python-error",
+                                    tr("Addon error").arg(addon_name),
+                                    tr("Python is not available.\nAddons will be disabled for current check.").arg(addon_name));
+                disabled_addons.append(addon_name);
                 continue;
+            }
 
             const QString addonFilePath = CheckThread::getAddonFilePath(mDataDir, addon_name + ".py");
-            if (addonFilePath.isEmpty())
+            if (addonFilePath.isEmpty()) {
+                emit showCheckError(addon_name + "-error",
+                                    tr("Addon error"),
+                                    tr("Addon file %1 is not available.\n%2 addon will be disabled for current check.").arg(addonFilePath).arg(addon_name));
+                disabled_addons.append(addon_name);
                 continue;
+            }
 
             if (dumpFile.isEmpty()) {
                 const std::string buildDir = mCppcheck.settings().buildDir;
@@ -305,8 +319,11 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
                 auto results = QString::fromStdString(addon.execute(dumpFile.toStdString()));
                 parseAddonErrors(results, addon_name);
             } catch (const InternalError &e) {
-                // TODO: Send error message
-                // reportOut(e.errorMessage);
+                emit showCheckError(addon_name + "-error",
+                                    tr("Addon error"),
+
+                                    tr("There is some problems with '%1' addon: %2.\nIt will be disabled for current check.").arg(QString::fromStdString(e.errorMessage)));
+                disabled_addons.append(addon_name);
                 continue;
             }
         }

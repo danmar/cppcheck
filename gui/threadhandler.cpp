@@ -131,6 +131,8 @@ void ThreadHandler::setThreadCount(const int count)
                 this, &ThreadHandler::threadDone);
         connect(mThreads.last(), &CheckThread::fileChecked,
                 &mResults, &ThreadResult::fileChecked);
+        connect(mThreads.last(), &CheckThread::showCheckError,
+                &mResults, &ThreadResult::showCheckError);
     }
 }
 
@@ -143,6 +145,8 @@ void ThreadHandler::removeThreads()
                    this, &ThreadHandler::threadDone);
         disconnect(mThreads[i], &CheckThread::fileChecked,
                    &mResults, &ThreadResult::fileChecked);
+        disconnect(mThreads[i], &CheckThread::showCheckError,
+                   &mResults, &ThreadResult::showCheckError);
         delete mThreads[i];
     }
 

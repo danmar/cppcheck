@@ -22,6 +22,8 @@
 #include <QList>
 #include <QStringList>
 #include <QDebug>
+#include <QMessageBox>
+#include <QSet>
 #include "common.h"
 #include "erroritem.h"
 #include "errorlogger.h"
@@ -54,6 +56,14 @@ void ThreadResult::fileChecked(const QString &file)
         const QString description = tr("%1 of %2 files checked").arg(mFilesChecked).arg(mTotalFiles);
 
         emit progress(value, description);
+    }
+}
+
+void ThreadResult::showCheckError(const QString &id, const QString &title, const QString &text, bool once)
+{
+    if (!mShownErrorIds.contains(id) || !once) {
+        mShownErrorIds.insert(id);
+        QMessageBox::critical(NULL, title, text);
     }
 }
 

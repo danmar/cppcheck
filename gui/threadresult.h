@@ -23,6 +23,7 @@
 #include <QMutex>
 #include <QObject>
 #include <QStringList>
+#include <QSet>
 #include "errorlogger.h"
 #include "importproject.h"
 
@@ -82,6 +83,16 @@ public slots:
     * @param file File that is checked
     */
     void fileChecked(const QString &file);
+
+    /**
+     * @brief Display an error occurred during check.
+     * @param id Unique error identifier
+     * @param title Error title
+     * @param text Error text
+     * @param once If true, show error with this identifier only once
+     */
+    void showCheckError(const QString &id, const QString &title, const QString &text, bool once = true);
+
 signals:
     /**
     * @brief Progress signal
@@ -150,6 +161,11 @@ protected:
     *
     */
     unsigned long mTotalFiles;
+
+    /**
+     * @brief Identifiers of errors occurred during check that has been shown.
+     */
+    QSet<QString> mShownErrorIds;
 };
 /// @}
 #endif // THREADRESULT_H
