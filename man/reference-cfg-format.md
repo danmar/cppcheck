@@ -531,6 +531,8 @@ The size of the type is specified in bytes. Possible values for the "sign" attri
 
 A lot of C++ libraries, among those the STL itself, provide containers with very similar functionality. Libraries can be used to tell cppcheck about their behaviour. Each container needs a unique ID. It can optionally have a startPattern, which must be a valid Token::Match pattern and an endPattern that is compared to the linked token of the first token with such a link. The optional attribute "inherits" takes an ID from a previously defined container.
 
+The `hasInitializerListConstructor` attribute can be set when the container has a constructor taking an initializer list.
+
 Inside the `<container>` tag, functions can be defined inside of the tags `<size>`, `<access>` and `<other>` (on your choice). Each of them can specify an action like "resize" and/or the result it yields, for example "end-iterator".
 
 The following example provides a definition for std::vector, based on the definition of "stdContainer" (not shown):
