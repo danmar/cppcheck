@@ -3771,9 +3771,7 @@ private:
     }
 
     void smartpointer() {
-        check("#include <memory>\n"
-              "\n"
-              "bool h();\n"
+        check("bool h();\n"
               "\n"
               "class C\n"
               "{\n"
@@ -3791,18 +3789,14 @@ private:
               "  }\n"
               "}\n"
               "\n"
-              "void C::f()\n"
-              "{\n"
+              "void C::f() {\n"
               "  x.reset();\n"
               "  g();\n"
-              "  if (!x) {\n"
-              "  }\n"
+              "  if (!x) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("#include <memory>\n"
-              "\n"
-              "class C\n"
+        check("class C\n"
               "{\n"
               "public:\n"
               "  void f();\n"
@@ -3816,18 +3810,14 @@ private:
               "    x.reset(new int);\n"
               "}\n"
               "\n"
-              "void C::f()\n"
-              "{\n"
+              "void C::f() {\n"
               "  x.reset();\n"
               "  g();\n"
-              "  if (!x) {\n"
-              "  }\n"
+              "  if (!x) {}\n"
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:18]: (style) Condition '!x' is always false\n", "", errout.str());
 
-        check("#include <memory>\n"
-              "\n"
-              "class C\n"
+        check("class C\n"
               "{\n"
               "public:\n"
               "  void f();\n"
@@ -3838,12 +3828,10 @@ private:
               "\n"
               "void C::g(){}\n"
               "\n"
-              "void C::f()\n"
-              "{\n"
+              "void C::f() {\n"
               "  x.reset();\n"
               "  g();\n"
-              "  if (!x) {\n"
-              "  }\n"
+              "  if (!x) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:18]: (style) Condition '!x' is always true\n", errout.str());
     }
