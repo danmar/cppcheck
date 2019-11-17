@@ -405,6 +405,9 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             const char* const opLessAllowed = node->Attribute("opLessAllowed");
             if (opLessAllowed)
                 container.opLessAllowed = std::string(opLessAllowed) == "true";
+            const char* const hasInitializerListConstructor = node->Attribute("hasInitializerListConstructor");
+            if (hasInitializerListConstructor)
+                container.hasInitializerListConstructor = std::string(hasInitializerListConstructor) == "true";
 
             for (const tinyxml2::XMLElement *containerNode = node->FirstChildElement(); containerNode; containerNode = containerNode->NextSiblingElement()) {
                 const std::string containerNodeName = containerNode->Name();

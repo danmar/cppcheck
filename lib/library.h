@@ -196,7 +196,8 @@ public:
             arrayLike_indexOp(false),
             stdStringLike(false),
             stdAssociativeLike(false),
-            opLessAllowed(true) {
+            opLessAllowed(true),
+            hasInitializerListConstructor(false) {
         }
 
         enum class Action {
@@ -219,6 +220,7 @@ public:
         bool stdStringLike;
         bool stdAssociativeLike;
         bool opLessAllowed;
+        bool hasInitializerListConstructor;
 
         Action getAction(const std::string& function) const {
             const std::map<std::string, Function>::const_iterator i = functions.find(function);

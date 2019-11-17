@@ -2071,6 +2071,19 @@ private:
               "    return var->c_str();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("std::string f() {\n"
+              "    std::vector<char> data{};\n"
+              "    data.push_back('a');\n"
+              "    return std::string{ data.data(), data.size() };\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::vector<char*> f() {\n"
+              "    char a = 0;\n"
+              "    return std::vector<char*>{&a};\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning object that points to local variable 'a' that will be invalid when returning.\n", errout.str());
     }
 
     void danglingLifetime() {
