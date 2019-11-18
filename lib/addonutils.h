@@ -21,6 +21,7 @@
 #include "errorlogger.h"
 #include "path.h"
 
+#include <map>
 #include <memory>
 #include <string>
 
@@ -63,6 +64,18 @@ public:
      */
     void appendArgs(const std::string &arg);
 
+    /**
+     * @brief Set value for environment variable used in addon execution
+     * @param variable environment variable
+     * @param value value to set
+     */
+    void setEnv(const std::string &variable, const std::string &value);
+
+    /**
+     * @brief Remove all environment settings
+     */
+    void clearEnv();
+
 private:
     /**
      * @brief Initialization helper used to set addon configuration properely.
@@ -79,6 +92,12 @@ private:
      */
     std::string getFullPath(const std::string &fileName, const std::string &exename) const;
 
+    /**
+     * @brief Generate string with environment variables
+     * @return Space-separated string with variables in following format: "VAR1=21 VAR2=42"
+     */
+    std::string getEnvString() const;
+
 private:
     /** @brief Name of addon. */
     std::string mName;
@@ -88,6 +107,9 @@ private:
 
     /** @brief Additional command line arguments */
     std::string mArgs;
+
+    /** @brief Environment variables for addons execution. */
+    std::map<std::string, std::string> mEnv;
 };
 
 #endif // ADDONUTILS_H

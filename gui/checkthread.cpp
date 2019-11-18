@@ -316,6 +316,13 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
                 auto addon = Addon(addonFilePath.toStdString(), mCppcheck.settings().exename);
                 if (addon_name == "misra" && !mMisraFile.isEmpty() && QFileInfo(mMisraFile).exists())
                     addon.appendArgs("--rule-texts=" + mMisraFile.toStdString());
+
+                // Set appropriate PYTHONPATH if user was choice non-standard value in settings
+                QProcess process;
+                QProcessEnvironment env = process.processEnvironment();
+                if (!env.contains("PYTHONHOME") && !python.startsWith("python"))
+                    addon.setEnv("PYTHONHOME", QFileInfo(python).canonicalPath().toStdString());
+
                 auto results = QString::fromStdString(addon.execute(dumpFile.toStdString()));
                 parseAddonErrors(results, addon_name);
             } catch (const InternalError &e) {

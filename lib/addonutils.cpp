@@ -96,6 +96,18 @@ void Addon::appendArgs(const std::string &arg)
         mArgs.append(arg);
 }
 
+void Addon::setEnv(const std::string &variable, const std::string &value)
+{
+    if (variable.empty())
+        return;
+    mEnv[variable] = value;
+}
+
+void Addon::clearEnv()
+{
+    mEnv.clear();
+}
+
 std::string Addon::getFullPath(const std::string &fileName, const std::string &exename) const
 {
     if (Path::fileExists(fileName))
@@ -116,9 +128,17 @@ std::string Addon::getFullPath(const std::string &fileName, const std::string &e
     return "";
 }
 
+std::string Addon::getEnvString() const
+{
+    std::string result = "";
+    for (auto const &var : mEnv)
+        result += (var.first + "=" + var.second + " ");
+    return result;
+}
+
 std::string Addon::execute(const std::string &dumpFile) const
 {
-    const std::string cmd = "python \"" + mScriptFile + "\" --cli" + mArgs + " \"" + dumpFile + "\"";
+    const std::string cmd = getEnvString() + "python \"" + mScriptFile + "\" --cli" + mArgs + " \"" + dumpFile + "\"";
 
 #ifdef _WIN32
     std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);

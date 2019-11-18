@@ -40,6 +40,7 @@ private:
         TEST_CASE(testConstructorsJson);
         TEST_CASE(testBrokenJson);
         TEST_CASE(testAppendArgs);
+        TEST_CASE(testEnv);
     }
 
     void testConstructors() const
@@ -119,6 +120,23 @@ private:
 
         addon.appendArgs("--arg1");
         ASSERT_EQUALS(addon.mArgs[0], ' ');
+    }
+
+    void testEnv() const
+    {
+        auto addon = Addon("misra.py", settings.exename);
+
+        ASSERT_EQUALS(addon.getEnvString(), "");
+
+        addon.setEnv("VAR1", "21");
+        ASSERT_EQUALS(addon.getEnvString(), "VAR1=21 ");
+        addon.setEnv("VAR2", "42");
+        ASSERT_EQUALS(addon.getEnvString(), "VAR1=21 VAR2=42 ");
+        addon.setEnv("VAR1", "42");
+        ASSERT_EQUALS(addon.getEnvString(), "VAR1=42 VAR2=42 ");
+
+        addon.clearEnv();
+        ASSERT_EQUALS(addon.getEnvString(), "");
     }
 };
 
