@@ -1946,6 +1946,14 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("struct S {\n"
+              "  int i;\n"
+              "};\n"
+              "int& f(S& s) {\n"
+              "  return s.i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void e();\n"
               "void g(void);\n"
               "void h(void);\n"
