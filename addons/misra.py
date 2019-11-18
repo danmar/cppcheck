@@ -739,6 +739,28 @@ class MisraChecker:
         else:
             return 31
 
+    def misra_2_7(self, data):
+        for func in data.functions:
+            # Skip function with no parameter
+            if (len(func.argument) == 0):
+                continue
+            # Setup list of function parameters
+            func_param_list = list()
+            for arg in func.argument:
+                func_param_list.append(func.argument[arg])
+            # Search for scope of current function
+            for scope in data.scopes:
+                if (scope.type == "Function") and (scope.function == func):
+                    # Search function body: remove referenced function parameter from list
+                    token = scope.bodyStart
+                    while (token.next != None and token != scope.bodyEnd and len(func_param_list) > 0):
+                        if (token.variable != None and token.variable in func_param_list):
+                            func_param_list.remove(token.variable)
+                        token = token.next
+                    if (len(func_param_list) > 0):
+                        # At least one parameter has not been referenced in function body
+                        self.reportError(func.tokenDef, 2, 7)
+
     def misra_3_1(self, rawTokens):
         for token in rawTokens:
             starts_with_double_slash = token.str.startswith('//')
@@ -2431,6 +2453,7 @@ class MisraChecker:
             if len(data.configurations) > 1:
                 self.printStatus('Checking ' + dumpfile + ', config "' + cfg.name + '"...')
 
+            self.executeCheck(207, self.misra_2_7, cfg)
             if cfgNumber == 1:
                 self.executeCheck(301, self.misra_3_1, data.rawTokens)
                 self.executeCheck(302, self.misra_3_2, data.rawTokens)
