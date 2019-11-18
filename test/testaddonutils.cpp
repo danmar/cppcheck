@@ -56,17 +56,17 @@ private:
 
         ASSERT_NO_THROW(Addon("naming.json", settings.exename));
 
-        ASSERT_THROW(Addon("misra.foo", settings.exename), InternalError);
-        ASSERT_THROW(Addon("misra.", settings.exename), InternalError);
-        ASSERT_THROW(Addon(".py", settings.exename), InternalError);
-        ASSERT_THROW(Addon(".", settings.exename), InternalError);
-        ASSERT_THROW(Addon("", settings.exename), InternalError);
-        ASSERT_THROW(Addon("/dev/null", settings.exename), InternalError);
+        ASSERT_THROW(Addon("misra.foo", settings.exename), InternalError); // cppcheck-suppress unusedScopedObject
+        ASSERT_THROW(Addon("misra.", settings.exename), InternalError); // cppcheck-suppress unusedScopedObject
+        ASSERT_THROW(Addon(".py", settings.exename), InternalError); // cppcheck-suppress unusedScopedObject
+        ASSERT_THROW(Addon(".", settings.exename), InternalError); // cppcheck-suppress unusedScopedObject
+        ASSERT_THROW(Addon("", settings.exename), InternalError); // cppcheck-suppress unusedScopedObject
+        ASSERT_THROW(Addon("/dev/null", settings.exename), InternalError); // cppcheck-suppress unusedScopedObject
     }
 
     void testConstructorsJson() const
     {
-        ASSERT_THROW(Addon("test_addon.json", settings.exename), InternalError);
+        ASSERT_THROW(Addon("test_addon.json", settings.exename), InternalError); // cppcheck-suppress unusedScopedObject
 
         std::ofstream test_addon { "test_addon.json" };
         test_addon << "{ \"script\": \"addons/misra.py\" }" << std::endl;
@@ -79,7 +79,7 @@ private:
         std::remove("test_addon.json");
 #endif // _WIN32
 
-        ASSERT_THROW(Addon("test_addon.json", settings.exename), InternalError);
+        ASSERT_THROW(Addon("test_addon.json", settings.exename), InternalError); // cppcheck-suppress unusedScopedObject
     }
 
     void testBrokenJson() const
@@ -87,21 +87,20 @@ private:
         {
             std::ofstream test_addon { "test_addon_broken.json" };
             test_addon << "{ \"script\": \"addons/misra.py }" << std::endl; // missing quote
-            ASSERT_THROW(Addon("test_addon_broken.json", settings.exename), InternalError);
+            ASSERT_THROW(Addon("test_addon_broken.json", settings.exename), InternalError); // cppcheck-suppress unusedScopedObject
             std::remove("test_addon_broken.json");
         }
 
         {
             std::ofstream test_addon { "test_addon_broken.json" };
             test_addon << "{ \"script\": \"addons/misra.py \"" << std::endl; // missing }
-            ASSERT_THROW(Addon("test_addon_broken.json", settings.exename), InternalError);
+            ASSERT_THROW(Addon("test_addon_broken.json", settings.exename), InternalError); // cppcheck-suppress unusedScopedObject
             std::remove("test_addon_broken.json");
         }
     }
 
     void testAppendArgs() const
     {
-        std::string args = "--cli ";
         auto addon = Addon("misra.py", settings.exename);
         auto saved_args = addon.mArgs;
 
