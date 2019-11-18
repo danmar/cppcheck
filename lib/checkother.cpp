@@ -1357,7 +1357,7 @@ void CheckOther::checkConstVariable()
         if (isVariableChanged(var, mSettings, mTokenizer->isCPP()))
             continue;
         if (Function::returnsReference(function) &&
-            Token::findmatch(var->nameToken(), "return %varid% ;|[", scope->bodyEnd, var->declarationId()))
+            Token::findmatch(var->nameToken(), "return %varid% ;|[|.", scope->bodyEnd, var->declarationId()))
             continue;
         // Skip if address is taken
         if (Token::findmatch(var->nameToken(), "& %varid%", scope->bodyEnd, var->declarationId()))
