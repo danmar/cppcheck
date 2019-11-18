@@ -35,10 +35,10 @@ class CPPCHECKLIB Addon {
 
 public:
     /**
-     * @param fileName Path to addon script file with .py or .json extension
+     * @param addonFileName Path to addon script file with .py or .json extension
      * @param exename Path to Cppcheck executable
      */
-    Addon(const std::string &fileName, const std::string &exename);
+    Addon(const std::string &addonFileName, const std::string &exename);
     ~Addon();
 
     /**
