@@ -80,9 +80,7 @@ private:
         test_addon << "{ \"script\": \"addons/misra.py\" }" << std::endl;
         ASSERT_NO_THROW(Addon("test_addon.json", settings.exename));
 #ifdef _WIN32
-        std::string file_name = "test_addon.json";
-        std::wstring wfile_name(file_name.begin(),file_name.end());
-        DeleteFile(wfile_name.c_str());
+        DeleteFile("test_addon.json");
 #else
         std::remove("test_addon.json");
 #endif // _WIN32
