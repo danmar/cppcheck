@@ -34,8 +34,10 @@ for arg in sys.argv[1:]:
         RE_FUNCTIONNAME = arg[11:]
         validate_regex(RE_FUNCTIONNAME)
 
+
 def reportError(token, severity, msg, errorId):
     cppcheckdata.reportError(token, severity, msg, 'naming', errorId)
+
 
 for arg in sys.argv[1:]:
     if not arg.endswith('.dump'):
@@ -63,6 +65,9 @@ for arg in sys.argv[1:]:
         if RE_FUNCTIONNAME:
             for scope in cfg.scopes:
                 if scope.type == 'Function':
+                    function = scope.function
+                    if function is not None and function.type in ('Constructor', 'Destructor'):
+                        continue
                     res = re.match(RE_FUNCTIONNAME, scope.className)
                     if not res:
                         reportError(
