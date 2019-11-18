@@ -569,6 +569,8 @@ static bool iscpp11init_impl(const Token * const tok)
         endtok = nameToken->linkAt(1);
     else if (Token::Match(nameToken,"%name% <") && Token::simpleMatch(nameToken->linkAt(1),"> {"))
         endtok = nameToken->linkAt(1)->linkAt(1);
+    else if (Token::Match(nameToken->previous(), "]|)|%name% (|["))
+        endtok = nameToken->link();
     else
         return false;
     if (Token::Match(nameToken, "else|try|do|const|override|volatile|&|&&"))
