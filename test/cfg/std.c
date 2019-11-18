@@ -3158,13 +3158,22 @@ void uninitvar_wcslen(void)
     (void)wcslen(s);
 }
 
-void uninitvar_strncpy(void)
+//char * strncpy ( char * destination, const char * source, size_t num );
+void uninitvar_strncpy(char * dest, const char * src, size_t num)
 {
+    char *d;
     char *s;
-    char *ct;
     size_t n;
+
     // cppcheck-suppress uninitvar
-    (void)strncpy(s,ct,n);
+    (void)strncpy(d,src,num);
+    // cppcheck-suppress uninitvar
+    (void)strncpy(dest,s,num);
+    // cppcheck-suppress uninitvar
+    (void)strncpy(dest,src,n);
+
+    // No warning is expected for
+    (void)strncpy(dest,src,num);
 }
 
 void uninitvar_strncpy_s(char *Ct, size_t N1, char *S, size_t N2)
@@ -3445,12 +3454,20 @@ void uninitvar_wcscoll(void)
     (void)wcscoll(cs,ct);
 }
 
-void uninitvar_strrchr(void)
+//const char * strrchr ( const char * str, int character );
+//      char * strrchr (       char * str, int character );
+void uninitvar_strrchr(const char * s, int c)
 {
     char * str;
-    int c;
+    int character;
+
     // cppcheck-suppress uninitvar
     (void)strrchr(str,c);
+    // cppcheck-suppress uninitvar
+    (void)strrchr(s,character);
+
+    // No warning is expected for
+    (void)strrchr(s,c);
 }
 
 void uninitvar_wcsrchr(void)
