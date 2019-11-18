@@ -407,6 +407,7 @@ private:
         TEST_CASE(simplifyOperatorName20);
         TEST_CASE(simplifyOperatorName21);
         TEST_CASE(simplifyOperatorName22);
+        TEST_CASE(simplifyOperatorName23);
 
         TEST_CASE(simplifyNullArray);
 
@@ -6519,6 +6520,31 @@ private:
                       "return RSLNotEqual ; "
                       "}",
                       tokenizeAndStringify(code));
+    }
+
+    void simplifyOperatorName23() {
+        {
+            const char code[] = "double *vtkMatrix3x3::operator[](const unsigned int i) {"
+                                "  VTK_LEGACY_BODY(vtkMatrix3x3::operator[], \"VTK 7.0\");"
+                                "  return &(this->Element[i][0]);"
+                                "}";
+            ASSERT_EQUALS("double * vtkMatrix3x3 :: operator[] ( const unsigned int i ) { "
+                          "VTK_LEGACY_BODY ( vtkMatrix3x3 :: operator[] , \"VTK 7.0\" ) ; "
+                          "return & ( this . Element [ i ] [ 0 ] ) ; "
+                          "}",
+                          tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "double *vtkMatrix3x3::operator,(const unsigned int i) {"
+                                "  VTK_LEGACY_BODY(vtkMatrix3x3::operator,, \"VTK 7.0\");"
+                                "  return &(this->Element[i][0]);"
+                                "}";
+            ASSERT_EQUALS("double * vtkMatrix3x3 :: operator, ( const unsigned int i ) { "
+                          "VTK_LEGACY_BODY ( vtkMatrix3x3 :: operator, , \"VTK 7.0\" ) ; "
+                          "return & ( this . Element [ i ] [ 0 ] ) ; "
+                          "}",
+                          tokenizeAndStringify(code));
+        }
     }
 
     void simplifyNullArray() {
