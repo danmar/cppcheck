@@ -10,7 +10,7 @@ class misra_21_1_C {
        misra_21_1_C operator=(const misra_21_1_C &);
 };
 
-static bool test_misra_21_1_crash(const C* cc)
+static bool test_misra_21_1_crash()
 {
     auto misra_21_1_C a, b;
     a = b;
