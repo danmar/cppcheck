@@ -115,6 +115,10 @@ namespace {
                 return "Failed to open " + fileName;
             picojson::value json;
             fin >> json;
+            std::string json_error = picojson::get_last_error();
+            if (!json_error.empty()) {
+                return "Loading " + fileName + " failed. " + json_error;
+            }
             if (!json.is<picojson::object>())
                 return "Loading " + fileName + " failed. Bad json.";
             picojson::object obj = json.get<picojson::object>();
@@ -614,6 +618,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 const std::string &failedToGetAddonInfo = addonInfo.getAddonInfo(addon, mSettings.exename);
                 if (!failedToGetAddonInfo.empty()) {
                     reportOut(failedToGetAddonInfo);
+                    mExitCode = 1;
                     continue;
                 }
                 const std::string results = executeAddon(addonInfo, dumpFile);
