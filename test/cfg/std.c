@@ -3198,22 +3198,22 @@ void uninitvar_strpbrk(void)
     (void)strpbrk(cs,ct);
 }
 
-void uninitvar_strncat(char *Ct, char *S, size_t N)
+// char * strncat ( char * destination, const char * source, size_t num );
+void uninitvar_strncat(char *d, char *s, size_t n)
 {
-    char *ct_1, *ct_2;
-    char *s;
-    size_t n1, n2;
+    char *dest;
+    char *src;
+    size_t num;
+
     // cppcheck-suppress uninitvar
-    (void)strncat(ct_1,s,n1);
+    (void)strncat(dest,s,n);
     // cppcheck-suppress uninitvar
-    (void)strncat(ct_2,S,N);
+    (void)strncat(d,src,n);
     // cppcheck-suppress uninitvar
-    (void)strncat(Ct,s,N);
-    // cppcheck-suppress uninitvar
-    (void)strncat(Ct,S,n2);
+    (void)strncat(d,s,num);
 
     // no warning is expected for
-    (void)strncat(Ct,S,N);
+    (void)strncat(d,s,n);
 }
 
 // errno_t strcat_s(char *restrict dest, rsize_t destsz, const char *restrict src); // since C11
@@ -3300,15 +3300,14 @@ void uninitvar_strncmp(char *Ct, char *S, size_t N)
 {
     char *ct;
     char *s;
-    size_t n1, n2;
-    // cppcheck-suppress uninitvar
-    (void)strncmp(ct,s,n1);
+    size_t n1;
+
     // cppcheck-suppress uninitvar
     (void)strncmp(ct,S,N);
     // cppcheck-suppress uninitvar
     (void)strncmp(Ct,s,N);
     // cppcheck-suppress uninitvar
-    (void)strncmp(Ct,S,n2);
+    (void)strncmp(Ct,S,n1);
 
     // no warning is expected for
     (void)strncmp(Ct,S,N);
