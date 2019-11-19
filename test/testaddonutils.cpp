@@ -35,6 +35,9 @@ private:
 
     void run() OVERRIDE {
         settings.exename = "cppcheck";
+#ifdef _WIN32
+        settings.exename += ".exe";
+#endif // _WIN32
 
         TEST_CASE(testConstructors);
         TEST_CASE(testConstructorsJson);
@@ -96,7 +99,11 @@ private:
             test_addon << "{ \"script\": \"addons/misra.py }" << std::endl; // missing quote
             // cppcheck-suppress unusedScopedObject
             ASSERT_THROW(Addon("test_addon_broken.json", settings.exename), InternalError);
-            std::remove("test_addon_broken.json");
+#ifdef _WIN32
+        DeleteFile("test_addon_broken.json");
+#else
+        std::remove("test_addon_broken.json");
+#endif // _WIN32
         }
 
         {
@@ -104,7 +111,11 @@ private:
             test_addon << "{ \"script\": \"addons/misra.py \"" << std::endl; // missing }
             // cppcheck-suppress unusedScopedObject
             ASSERT_THROW(Addon("test_addon_broken.json", settings.exename), InternalError);
-            std::remove("test_addon_broken.json");
+#ifdef _WIN32
+        DeleteFile("test_addon_broken.json");
+#else
+        std::remove("test_addon_broken.json");
+#endif // _WIN32
         }
     }
 
