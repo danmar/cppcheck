@@ -36,7 +36,7 @@
  * See https://cwe.mitre.org/ for further reference.
  * */
 struct CWE {
-    explicit CWE(unsigned short ID) : id(ID) {}
+    explicit CWE(unsigned short cweId) : id(cweId) {}
     unsigned short id;
 };
 

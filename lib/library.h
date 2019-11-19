@@ -423,32 +423,32 @@ public:
 
     struct PlatformType {
         PlatformType()
-            : _signed(false)
-            , _unsigned(false)
-            , _long(false)
-            , _pointer(false)
-            , _ptr_ptr(false)
-            , _const_ptr(false) {
+            : mSigned(false)
+            , mUnsigned(false)
+            , mLong(false)
+            , mPointer(false)
+            , mPtrPtr(false)
+            , mConstPtr(false) {
         }
         bool operator == (const PlatformType & type) const {
-            return (_signed == type._signed &&
-                    _unsigned == type._unsigned &&
-                    _long == type._long &&
-                    _pointer == type._pointer &&
-                    _ptr_ptr == type._ptr_ptr &&
-                    _const_ptr == type._const_ptr &&
+            return (mSigned == type.mSigned &&
+                    mUnsigned == type.mUnsigned &&
+                    mLong == type.mLong &&
+                    mPointer == type.mPointer &&
+                    mPtrPtr == type.mPtrPtr &&
+                    mConstPtr == type.mConstPtr &&
                     mType == type.mType);
         }
         bool operator != (const PlatformType & type) const {
             return !(*this == type);
         }
         std::string mType;
-        bool _signed;
-        bool _unsigned;
-        bool _long;
-        bool _pointer;
-        bool _ptr_ptr;
-        bool _const_ptr;
+        bool mSigned;
+        bool mUnsigned;
+        bool mLong;
+        bool mPointer;
+        bool mPtrPtr;
+        bool mConstPtr;
     };
 
     struct Platform {

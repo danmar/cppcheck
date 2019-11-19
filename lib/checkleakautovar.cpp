@@ -637,7 +637,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             if (allocation.status == VarInfo::NOALLOC && Token::simpleMatch(tok, ") ; }")) {
                 const std::string &functionName(tok->link()->previous()->str());
                 bool unknown = false;
-                if (mTokenizer->IsScopeNoReturn(tok->tokAt(2), &unknown)) {
+                if (mTokenizer->isScopeNoReturn(tok->tokAt(2), &unknown)) {
                     if (!unknown)
                         varInfo->clear();
                     else if (!mSettings->library.isLeakIgnore(functionName) && !mSettings->library.isUse(functionName))

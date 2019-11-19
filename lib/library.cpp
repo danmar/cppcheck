@@ -576,17 +576,17 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                         return Error(MISSING_ATTRIBUTE, "type");
                     platform.insert(type_attribute);
                 } else if (typenodename == "signed")
-                    type._signed = true;
+                    type.mSigned = true;
                 else if (typenodename == "unsigned")
-                    type._unsigned = true;
+                    type.mUnsigned = true;
                 else if (typenodename == "long")
-                    type._long = true;
+                    type.mLong = true;
                 else if (typenodename == "pointer")
-                    type._pointer= true;
+                    type.mPointer= true;
                 else if (typenodename == "ptr_ptr")
-                    type._ptr_ptr = true;
+                    type.mPtrPtr = true;
                 else if (typenodename == "const_ptr")
-                    type._const_ptr = true;
+                    type.mConstPtr = true;
                 else
                     unknown_elements.insert(typenodename);
             }

@@ -1565,16 +1565,16 @@ void TokenList::simplifyPlatformTypes()
                 tok->deleteThis();
             }
             Token *typeToken;
-            if (platformtype->_const_ptr) {
+            if (platformtype->mConstPtr) {
                 tok->str("const");
                 tok->insertToken("*");
                 tok->insertToken(platformtype->mType);
                 typeToken = tok;
-            } else if (platformtype->_pointer) {
+            } else if (platformtype->mPointer) {
                 tok->str(platformtype->mType);
                 typeToken = tok;
                 tok->insertToken("*");
-            } else if (platformtype->_ptr_ptr) {
+            } else if (platformtype->mPtrPtr) {
                 tok->str(platformtype->mType);
                 typeToken = tok;
                 tok->insertToken("*");
@@ -1584,11 +1584,11 @@ void TokenList::simplifyPlatformTypes()
                 tok->str(platformtype->mType);
                 typeToken = tok;
             }
-            if (platformtype->_signed)
+            if (platformtype->mSigned)
                 typeToken->isSigned(true);
-            if (platformtype->_unsigned)
+            if (platformtype->mUnsigned)
                 typeToken->isUnsigned(true);
-            if (platformtype->_long)
+            if (platformtype->mLong)
                 typeToken->isLong(true);
         }
     }
