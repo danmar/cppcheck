@@ -620,7 +620,7 @@ You can also suppress some unwanted rules using `--suppress-rules` option. Suppr
 
 ### threadsafety.py
 
-[threadsafety.py](https://github.com/danmar/cppcheck/blob/master/addons/threadsafety.py) analyse Cppcheck dump files to locate threadsafety issues like static local objects used by multiple threads.
+[threadsafety.py](https://github.com/danmar/cppcheck/blob/master/addons/threadsafety.py) analyse Cppcheck dump files to locate thread safety issues like static local objects used by multiple threads.
 
 ## Running Addons
 
@@ -628,7 +628,7 @@ Addons could be run through Cppcheck command line utility as follows:
 
     cppcheck --addon=misra.py somefile.c
 
-This will launch all Cppcheck checks and additionaly calls specific checks provided by selected addon.
+This will launch all Cppcheck checks and additionally calls specific checks provided by selected addon.
 
 Some addons need extra arguments. You can configure how you want to execute an addon in a json file. For example put this in misra.json:
 

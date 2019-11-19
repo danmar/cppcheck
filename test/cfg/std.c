@@ -3147,7 +3147,7 @@ void uninitvar_strlen(const char *str)
     // cppcheck-suppress uninitvar
     (void)strlen(xPtr);
 
-    // No waring is expected
+    // No warning is expected
     (void)strlen(str);
 }
 
