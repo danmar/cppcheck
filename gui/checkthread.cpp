@@ -122,12 +122,12 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
                 continue;
 
             QStringList args;
-            for (std::list<std::string>::const_iterator I = fileSettings->includePaths.begin(); I != fileSettings->includePaths.end(); ++I)
-                args << ("-I" + QString::fromStdString(*I));
+            for (std::list<std::string>::const_iterator incIt = fileSettings->includePaths.begin(); incIt != fileSettings->includePaths.end(); ++incIt)
+                args << ("-I" + QString::fromStdString(*incIt));
             for (std::list<std::string>::const_iterator i = fileSettings->systemIncludePaths.begin(); i != fileSettings->systemIncludePaths.end(); ++i)
                 args << "-isystem" << QString::fromStdString(*i);
-            foreach (QString D, QString::fromStdString(fileSettings->defines).split(";")) {
-                args << ("-D" + D);
+            foreach (QString def, QString::fromStdString(fileSettings->defines).split(";")) {
+                args << ("-D" + def);
             }
             foreach (const std::string& U, fileSettings->undefs) {
                 args << QString::fromStdString("-U" + U);
