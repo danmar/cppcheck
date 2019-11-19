@@ -233,6 +233,16 @@ def int31(data, platform):
                     'Ensure that integer conversions do not result in lost or misinterpreted data (casting ' + str(value.intvalue) + ' to ' + destType + ')',
                     'INT31-c')
                 break
+
+
+# ENV33-C
+# Do not call system()
+def env33(data):
+    for token in data.tokenlist:
+        if isFunctionCall(token, ('system',), 1):
+            reportError(token, 'style', 'Do not call system()', 'ENV33-C')
+
+
 # MSC24-C
 # Do not use deprecated or obsolescent functions
 def msc24(data):
@@ -399,6 +409,7 @@ if __name__ == '__main__':
             str05(cfg)
             str07(cfg)
             str11(cfg)
+            env33(cfg)
             msc24(cfg)
             msc30(cfg)
             api01(cfg)
