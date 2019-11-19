@@ -238,6 +238,12 @@ private:
         TEST_CASE(garbageCode204);
         TEST_CASE(garbageCode205);
         TEST_CASE(garbageCode206);
+        TEST_CASE(garbageCode207); // #8750
+        TEST_CASE(garbageCode208); // #8753
+        TEST_CASE(garbageCode209); // #8756
+        TEST_CASE(garbageCode210); // #8762
+        TEST_CASE(garbageCode211); // #8764
+        TEST_CASE(garbageCode212); // #8765
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -1629,6 +1635,30 @@ private:
     void garbageCode206() {
         ASSERT_EQUALS("[test.cpp:1] syntax error: operator", getSyntaxError("void foo() { for (auto operator new : int); }"));
         ASSERT_EQUALS("[test.cpp:1] syntax error: operator", getSyntaxError("void foo() { for (a operator== :) }"));
+    }
+
+    void garbageCode207() { // #8750
+        ASSERT_THROW(checkCode("d f(){(.n00e0(return%n00e0''('')));}"), InternalError);
+    }
+
+    void garbageCode208() { // #8753
+        ASSERT_THROW(checkCode("d f(){(for(((((0{t b;((((((((()))))))))}))))))}"), InternalError);
+    }
+
+    void garbageCode209() { // #8756
+        ASSERT_THROW(checkCode("{(- -##0xf/-1 0)[]}"), InternalError);
+    }
+
+    void garbageCode210() { // #8762
+        ASSERT_THROW(checkCode("{typedef typedef c n00e0[]c000(;n00e0&c000)}"), InternalError);
+    }
+
+    void garbageCode211() { // #8764
+        ASSERT_THROW(checkCode("{typedef f typedef[]({typedef e e,>;typedef(((typedef<typedef|)))})}"), InternalError);
+    }
+
+    void garbageCode212() { // #8765
+        ASSERT_THROW(checkCode("{(){}[]typedef r n00e0[](((n00e0 0((;()))))){(0 typedef n00e0 bre00 n00e0())}[]();typedef n n00e0()[],(bre00)}"), InternalError);
     }
 
     void syntaxErrorFirstToken() {
