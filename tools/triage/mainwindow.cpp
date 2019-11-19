@@ -284,7 +284,7 @@ void MainWindow::findInFilesClicked()
     QMimeDatabase mimeDatabase;
     QDirIterator it(WORK_FOLDER, filter, QDir::AllEntries | QDir::NoSymLinks | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
 
-    const auto common_path_len = WORK_FOLDER.length() + 1;  // let's remove common part of path imporve UI
+    const auto common_path_len = WORK_FOLDER.length() + 1;  // let's remove common part of path improve UI
 
     while (it.hasNext()) {
         const QString fileName = it.next();
