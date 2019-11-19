@@ -158,7 +158,33 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 #else
     const bool caseSensitive = true;
 #endif
-    if (!pathnames.empty()) {
+    if (!mSettings->project.fileSettings.empty()) {
+        // filter only for the selected filenames from all project files
+        std::list<ImportProject::FileSettings> newList;
+
+        for (const std::string fname : pathnames) {
+            for (const ImportProject::FileSettings fsetting : settings.project.fileSettings)
+            {
+                const std::string *firstName = &fname;
+                const std::string *secondName = &fsetting.filename;
+                if (firstName->size() < secondName->size())
+                {
+                    secondName = &fname;
+                    firstName = &fsetting.filename;
+                }
+
+                if (firstName->find(*secondName) != std::string::npos)
+                {
+                    newList.push_back(fsetting);
+                }
+            }
+        }
+        if (!newList.empty())
+        {
+            settings.project.fileSettings = newList;
+        }
+    }
+    else if (!pathnames.empty()) {
         // Execute recursiveAddFiles() to each given file parameter
         const PathMatch matcher(ignored, caseSensitive);
         for (const std::string &pathname : pathnames)
@@ -866,7 +892,6 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     }
 
     unsigned int returnValue = 0;
-    bool         checkSelectedFiles = false;
     if (settings.jobs == 1) {
         // Single process
         settings.jointSuppressionReport = true;
@@ -890,38 +915,13 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
                 }
             }
         } else {
-
-            // filesettings
-            c = 0;
-            if (!mFiles.empty()) {
-                // check only selected files from the project
-                checkSelectedFiles = true;
-                for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i) {
-                    for (const ImportProject::FileSettings &fs : settings.project.fileSettings) {
-                        const std::string *firstName = &i->first;
-                        const std::string *secondName = &fs.filename;
-                        if (firstName->size() < secondName->size()) {
-                            secondName = &i->first;
-                            firstName = &fs.filename;
-                        }
-
-                        if (firstName->find(*secondName) != std::string::npos) {
-                            returnValue += cppcheck.check(fs);
-                            ++c;
-                            if (!settings.quiet)
-                                reportStatus(c, mFiles.size(), c, mFiles.size());
-                        }
-                    }
-                }
-            }
-            else {
-                // check all files of the project
-                for (const ImportProject::FileSettings &fs : settings.project.fileSettings) {
-                    returnValue += cppcheck.check(fs);
-                    ++c;
-                    if (!settings.quiet)
-                        reportStatus(c, settings.project.fileSettings.size(), c, settings.project.fileSettings.size());
-                }
+        // filesettings
+            // check all files of the project
+            for (const ImportProject::FileSettings &fs : settings.project.fileSettings) {
+                returnValue += cppcheck.check(fs);
+                ++c;
+                if (!settings.quiet)
+                    reportStatus(c, settings.project.fileSettings.size(), c, settings.project.fileSettings.size());
             }
         }
 
@@ -936,7 +936,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
                 c++;
             }
         }
-        if ( !checkSelectedFiles && cppcheck.analyseWholeProgram())
+        if ( cppcheck.analyseWholeProgram())
             returnValue++;
     } else if (!ThreadExecutor::isEnabled()) {
         std::cout << "No thread support yet implemented for this platform." << std::endl;
@@ -946,8 +946,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         returnValue = executor.check();
     }
 
-    if(!checkSelectedFiles)
-        cppcheck.analyseWholeProgram(mSettings->buildDir, mFiles);
+    cppcheck.analyseWholeProgram(mSettings->buildDir, mFiles);
 
     if (settings.isEnabled(Settings::INFORMATION) || settings.checkConfiguration) {
         const bool enableUnusedFunctionCheck = cppcheck.isUnusedFunctionCheckEnabled();
