@@ -7603,12 +7603,14 @@ private:
         ASSERT_EQUALS("xabc({((= ydef({((=",
                       testAst("x=(int)(a({b(c);}));" // don't hang
                               "y=(int)(d({e(f);}));"));
-        ASSERT_EQUALS("A{,( x0= Bx1={{,( x2=",  // TODO: This is not perfect!!
+        ASSERT_EQUALS("A{{,( x0= Bx1={x2={,(",  // TODO: This is not perfect!!
                       testAst("A({},{x=0;});" // don't hang
                               "B({x=1},{x=2});"));
         ASSERT_EQUALS("xMACROtype.T=value.1=,{({=",
                       testAst("x = { MACRO( { .type=T, .value=1 } ) }")); // don't hang: MACRO({..})
         ASSERT_EQUALS("fori10=i{;;( i--", testAst("for (i=10;i;({i--;}) ) {}"));
+        ASSERT_EQUALS("c{0{,{(",
+                      testAst("c({{}, {0}}, {0.0f});"));
 
         // function pointer
         TODO_ASSERT_EQUALS("todo", "va_argapvoid((,(*0=", testAst("*va_arg(ap, void(**) ()) = 0;"));
@@ -7703,7 +7705,7 @@ private:
         ASSERT_EQUALS("xsizeofvoid(=", testAst("x=sizeof(void*)"));
         ASSERT_EQUALS("abc{d{,{(=", testAst("a = b({ c{}, d{} });"));
         ASSERT_EQUALS("abc;(", testAst("a(b;c)"));
-        ASSERT_THROW(testAst("a({ for(a;b;c){} });"), InternalError);
+        ASSERT_EQUALS("aforab;c;({(", testAst("a({ for(a;b;c){} });"));
     }
 
     void asttemplate() { // uninstantiated templates will have <,>,etc..
@@ -7775,7 +7777,7 @@ private:
                               "    a = b;\n"
                               "  }\n"
                               "};\n"));
-        ASSERT_EQUALS("{return ab={",
+        ASSERT_EQUALS("{return ab=",
                       testAst("return {\n"
                               "  [=]() -> int {\n"
                               "    a=b;\n"

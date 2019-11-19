@@ -551,6 +551,8 @@ static bool iscpp11init(const Token * const tok)
 
 static bool iscpp11init_impl(const Token * const tok)
 {
+    if (Token::simpleMatch(tok, "{") && Token::simpleMatch(tok->link()->previous(), "; }"))
+        return false;
     const Token *nameToken = tok;
     while (nameToken && nameToken->str() == "{") {
         if (nameToken->isCpp11init() != TokenImpl::Cpp11init::UNKNOWN)
@@ -569,8 +571,8 @@ static bool iscpp11init_impl(const Token * const tok)
         endtok = nameToken->linkAt(1);
     else if (Token::Match(nameToken,"%name% <") && Token::simpleMatch(nameToken->linkAt(1),"> {"))
         endtok = nameToken->linkAt(1)->linkAt(1);
-    else if (Token::Match(nameToken->previous(), "]|)|%name% (|["))
-        endtok = nameToken->link();
+    else if (Token::Match(nameToken->previous(), "%name% ( {"))
+        endtok = nameToken->linkAt(1);
     else
         return false;
     if (Token::Match(nameToken, "else|try|do|const|override|volatile|&|&&"))
@@ -706,7 +708,7 @@ static void compileTerm(Token *&tok, AST_state& state)
         if (Token::simpleMatch(tok->link(),"} [")) {
             tok = tok->next();
         } else if (state.cpp && iscpp11init(tok)) {
-            if (state.op.empty() || Token::Match(tok->previous(), "[{,]"))
+            if (state.op.empty() || Token::Match(tok->previous(), "[{,]") || Token::Match(tok->tokAt(-2), "%name% ("))
                 compileUnaryOp(tok, state, compileExpression);
             else
                 compileBinOp(tok, state, compileExpression);
