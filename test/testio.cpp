@@ -1825,7 +1825,7 @@ private:
 
         TEST_SCANF_WARN("%I32d", "__int32", "bool");
         TEST_SCANF_WARN("%I32d", "__int32", "void *");
-        //TODO TEST_SCANF_WARN_AKA("%I32d", "__int32", "size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%I32d", "__int32", "size_t", "unsigned long", "unsigned long long");
         //TODO TEST_SCANF_WARN_AKA_WIN32("%I32d", "__int32", "ssize_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%I32d", "__int32", "ptrdiff_t", "signed long", "signed long long");
         TEST_SCANF_NOWARN("%I32d", "__int32", "__int32");
