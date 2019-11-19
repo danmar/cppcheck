@@ -866,6 +866,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     }
 
     unsigned int returnValue = 0;
+    bool         checkSelectedFiles = false;
     if (settings.jobs == 1) {
         // Single process
         settings.jointSuppressionReport = true;
@@ -892,11 +893,35 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
 
             // filesettings
             c = 0;
-            for (const ImportProject::FileSettings &fs : settings.project.fileSettings) {
-                returnValue += cppcheck.check(fs);
-                ++c;
-                if (!settings.quiet)
-                    reportStatus(c, settings.project.fileSettings.size(), c, settings.project.fileSettings.size());
+            if (!mFiles.empty()) {
+                // check only selected files from the project
+                checkSelectedFiles = true;
+                for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i) {
+                    for (const ImportProject::FileSettings &fs : settings.project.fileSettings) {
+                        const std::string *firstName = &i->first;
+                        const std::string *secondName = &fs.filename;
+                        if (firstName->size() < secondName->size()) {
+                            secondName = &i->first;
+                            firstName = &fs.filename;
+                        }
+
+                        if (firstName->find(*secondName) != std::string::npos) {
+                            returnValue += cppcheck.check(fs);
+                            ++c;
+                            if (!settings.quiet)
+                                reportStatus(c, mFiles.size(), c, mFiles.size());
+                        }
+                    }
+                }
+            }
+            else {
+                // check all files of the project
+                for (const ImportProject::FileSettings &fs : settings.project.fileSettings) {
+                    returnValue += cppcheck.check(fs);
+                    ++c;
+                    if (!settings.quiet)
+                        reportStatus(c, settings.project.fileSettings.size(), c, settings.project.fileSettings.size());
+                }
             }
         }
 
@@ -911,7 +936,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
                 c++;
             }
         }
-        if (cppcheck.analyseWholeProgram())
+        if ( !checkSelectedFiles && cppcheck.analyseWholeProgram())
             returnValue++;
     } else if (!ThreadExecutor::isEnabled()) {
         std::cout << "No thread support yet implemented for this platform." << std::endl;
@@ -921,7 +946,8 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         returnValue = executor.check();
     }
 
-    cppcheck.analyseWholeProgram(mSettings->buildDir, mFiles);
+    if(!checkSelectedFiles)
+        cppcheck.analyseWholeProgram(mSettings->buildDir, mFiles);
 
     if (settings.isEnabled(Settings::INFORMATION) || settings.checkConfiguration) {
         const bool enableUnusedFunctionCheck = cppcheck.isUnusedFunctionCheckEnabled();
