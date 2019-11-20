@@ -10815,7 +10815,7 @@ void Tokenizer::deleteSymbolDatabase()
 bool Tokenizer::operatorEnd(const Token * tok) const
 {
     if (tok && tok->str() == ")") {
-        if (isFunctionHead(tok, "{|;"))
+        if (isFunctionHead(tok, "{|;|?|:"))
             return true;
 
         tok = tok->next();

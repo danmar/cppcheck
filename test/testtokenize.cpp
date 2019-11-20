@@ -408,6 +408,7 @@ private:
         TEST_CASE(simplifyOperatorName21);
         TEST_CASE(simplifyOperatorName22);
         TEST_CASE(simplifyOperatorName23);
+        TEST_CASE(simplifyOperatorName24);
 
         TEST_CASE(simplifyNullArray);
 
@@ -6543,6 +6544,19 @@ private:
                           "VTK_LEGACY_BODY ( vtkMatrix3x3 :: operator, , \"VTK 7.0\" ) ; "
                           "return & ( this . Element [ i ] [ 0 ] ) ; "
                           "}",
+                          tokenizeAndStringify(code));
+        }
+    }
+
+    void simplifyOperatorName24() {
+        {
+            const char code[] = "void foo() { int i = a.operator++() ? a.operator--() : 0; }";
+            ASSERT_EQUALS("void foo ( ) { int i ; i = a . operator++ ( ) ? a . operator-- ( ) : 0 ; }",
+                          tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "void foo() { int i = a.operator++(0) ? a.operator--(0) : 0; }";
+            ASSERT_EQUALS("void foo ( ) { int i ; i = a . operator++ ( 0 ) ? a . operator-- ( 0 ) : 0 ; }",
                           tokenizeAndStringify(code));
         }
     }
