@@ -190,6 +190,7 @@ private:
         TEST_CASE(template150); // syntax error
         TEST_CASE(template151); // crash
         TEST_CASE(template152); // #9467
+        TEST_CASE(template153); // #9483
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -3649,6 +3650,12 @@ private:
                            "int bar ; bar = 1 ; "
                            "return bar ; "
                            "}";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template153() { // #9483
+        const char code[] = "template <class = b<decltype(a<h>())...>> void i();";
+        const char exp[] = "template < class = b < decltype ( a < h > ( ) ) ... > > void i ( ) ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
