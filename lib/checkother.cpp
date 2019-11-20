@@ -247,13 +247,13 @@ void CheckOther::checkSuspiciousSemicolon()
             if (Token::simpleMatch(scope.bodyStart, "{ ; } {") &&
                 scope.bodyStart->previous()->linenr() == scope.bodyStart->tokAt(2)->linenr()
                 && scope.bodyStart->linenr()+1 >= scope.bodyStart->tokAt(3)->linenr()) {
-                SuspiciousSemicolonError(scope.classDef);
+                suspiciousSemicolonError(scope.classDef);
             }
         }
     }
 }
 
-void CheckOther::SuspiciousSemicolonError(const Token* tok)
+void CheckOther::suspiciousSemicolonError(const Token* tok)
 {
     reportError(tok, Severity::warning, "suspiciousSemicolon",
                 "Suspicious use of ; at the end of '" + (tok ? tok->str() : std::string()) + "' statement.", CWE398, true);

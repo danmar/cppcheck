@@ -5904,18 +5904,18 @@ bool ValueType::fromLibraryType(const std::string &typestr, const Settings *sett
         else if (platformType->mType == "wchar_t")
             type = ValueType::Type::WCHAR_T;
         else if (platformType->mType == "int")
-            type = platformType->_long ? ValueType::Type::LONG : ValueType::Type::INT;
+            type = platformType->mLong ? ValueType::Type::LONG : ValueType::Type::INT;
         else if (platformType->mType == "long")
-            type = platformType->_long ? ValueType::Type::LONGLONG : ValueType::Type::LONG;
-        if (platformType->_signed)
+            type = platformType->mLong ? ValueType::Type::LONGLONG : ValueType::Type::LONG;
+        if (platformType->mSigned)
             sign = ValueType::SIGNED;
-        else if (platformType->_unsigned)
+        else if (platformType->mUnsigned)
             sign = ValueType::UNSIGNED;
-        if (platformType->_pointer)
+        if (platformType->mPointer)
             pointer = 1;
-        if (platformType->_ptr_ptr)
+        if (platformType->mPtrPtr)
             pointer = 2;
-        if (platformType->_const_ptr)
+        if (platformType->mConstPtr)
             constness = 1;
         return true;
     } else if (!podtype && (typestr == "size_t" || typestr == "std::size_t")) {

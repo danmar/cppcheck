@@ -372,7 +372,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 *possibleInit = true;
 
             // might be a noreturn function..
-            if (mTokenizer->IsScopeNoReturn(tok)) {
+            if (mTokenizer->isScopeNoReturn(tok)) {
                 if (noreturn)
                     *noreturn = true;
                 return false;

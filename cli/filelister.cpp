@@ -40,7 +40,7 @@
 // When compiling Unicode targets WinAPI automatically uses *W Unicode versions
 // of called functions. Thus, we explicitly call *A versions of the functions.
 
-static BOOL MyIsDirectory(const std::string& path)
+static BOOL myIsDirectory(const std::string& path)
 {
 #ifdef __BORLANDC__
     return (GetFileAttributes(path.c_str()) & FILE_ATTRIBUTE_DIRECTORY);
@@ -50,13 +50,13 @@ static BOOL MyIsDirectory(const std::string& path)
 #endif
 }
 
-static HANDLE MyFindFirstFile(const std::string& path, LPWIN32_FIND_DATAA findData)
+static HANDLE myFindFirstFile(const std::string& path, LPWIN32_FIND_DATAA findData)
 {
     HANDLE hFind = FindFirstFileA(path.c_str(), findData);
     return hFind;
 }
 
-static BOOL MyFileExists(const std::string& path)
+static BOOL myFileExists(const std::string& path)
 {
 #ifdef __BORLANDC__
     DWORD fa = GetFileAttributes(path.c_str());
@@ -86,7 +86,7 @@ void FileLister::addFiles(std::map<std::string, std::size_t> &files, const std::
     std::string searchPattern = cleanedPath;
 
     // The user wants to check all files in a dir
-    const bool checkAllFilesInDir = (MyIsDirectory(cleanedPath) != FALSE);
+    const bool checkAllFilesInDir = (myIsDirectory(cleanedPath) != FALSE);
 
     if (checkAllFilesInDir) {
         const char c = cleanedPath.back();
@@ -111,7 +111,7 @@ void FileLister::addFiles(std::map<std::string, std::size_t> &files, const std::
     }
 
     WIN32_FIND_DATAA ffd;
-    HANDLE hFind = MyFindFirstFile(searchPattern, &ffd);
+    HANDLE hFind = myFindFirstFile(searchPattern, &ffd);
     if (INVALID_HANDLE_VALUE == hFind)
         return;
 
@@ -152,12 +152,12 @@ void FileLister::addFiles(std::map<std::string, std::size_t> &files, const std::
 
 bool FileLister::isDirectory(const std::string &path)
 {
-    return (MyIsDirectory(path) != FALSE);
+    return (myIsDirectory(path) != FALSE);
 }
 
 bool FileLister::fileExists(const std::string &path)
 {
-    return (MyFileExists(path) != FALSE);
+    return (myFileExists(path) != FALSE);
 }
 
 
