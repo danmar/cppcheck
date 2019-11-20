@@ -178,7 +178,7 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
                 case Standards::CPP20:
                     args << "-std=c++20";
                     break;
-                };
+                }
             }
 
             QString analyzerInfoFile;
@@ -334,7 +334,7 @@ void CheckThread::stop()
 
 void CheckThread::parseAddonErrors(QString err, const QString &tool)
 {
-    Q_UNUSED(tool);
+    Q_UNUSED(tool)
     QTextStream in(&err, QIODevice::ReadOnly);
     while (!in.atEnd()) {
         QString line = in.readLine();
