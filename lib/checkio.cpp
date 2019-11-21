@@ -936,7 +936,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                             case 'z':
                             case 'L':
                                 // Expect an alphabetical character after these specifiers
-                                if (i != formatString.end() && !isalpha(*(i+1))) {
+                                if ((i + 1) != formatString.end() && !isalpha(*(i+1))) {
                                     specifier += *i;
                                     invalidLengthModifierError(tok, numFormat, specifier);
                                     done = true;
@@ -1261,7 +1261,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                             case 't': // ptrdiff_t
                             case 'L': // long double
                                 // Expect an alphabetical character after these specifiers
-                                if (i != formatString.end() && !isalpha(*(i+1))) {
+                                if ((i + 1) != formatString.end() && !isalpha(*(i+1))) {
                                     specifier += *i;
                                     invalidLengthModifierError(tok, numFormat, specifier);
                                     done = true;
