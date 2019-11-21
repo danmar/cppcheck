@@ -1,7 +1,9 @@
-import os
+#!/usr/bin/env python3
+
 import socket
 import sys
 import time
+
 
 def receive_data(conn):
     data = ''
@@ -26,8 +28,9 @@ def astyle(server_address, code):
     sock.close()
     return None
 
+
 if __name__ == "__main__":
-    server_address = ('cppcheck.osuosl.org', 18000)
+    server_address = ('cppcheck1.osuosl.org', 18000)
 
     for filename in sorted(sys.argv[1:]):
         if not (filename.endswith('.cpp') or filename.endswith('.h')):
@@ -46,4 +49,3 @@ if __name__ == "__main__":
             f.close()
         else:
             print('Unchanged: ' + filename)
-

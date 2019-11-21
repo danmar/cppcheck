@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 
 import logging
 import socket
@@ -41,4 +42,3 @@ def server(port):
 
 if __name__ == "__main__":
     server(port=18000)
-
