@@ -193,7 +193,7 @@ void Suppressions::ErrorMessage::setFileName(const std::string &s)
     mFileName = Path::simplifyPath(s);
 }
 
-bool Suppressions::Suppression::parseComment(std::string comment, std::string *errorMessage)
+bool Suppressions::Suppression::parseComment(std::string comment, std::vector<Suppression>& suppressions, std::string& errorMessage)
 {
     if (comment.size() < 2)
         return false;
@@ -212,9 +212,17 @@ bool Suppressions::Suppression::parseComment(std::string comment, std::string *e
     iss >> word;
     if (word != "cppcheck-suppress")
         return false;
+
+    std::string errorId;
     iss >> errorId;
+
     if (!iss)
         return false;
+
+    Suppression suppression;
+    suppression.errorId = errorId;
+    suppressions.push_back(std::move(suppression));
+
     while (iss) {
         iss >> word;
         if (!iss)
@@ -222,9 +230,9 @@ bool Suppressions::Suppression::parseComment(std::string comment, std::string *e
         if (word.find_first_not_of("+-*/%#;") == std::string::npos)
             break;
         if (word.compare(0,11,"symbolName=")==0)
-            symbolName = word.substr(11);
-        else if (errorMessage && errorMessage->empty())
-            *errorMessage = "Bad suppression attribute '" + word + "'. You can write comments in the comment after a ; or //. Valid suppression attributes; symbolName=sym";
+            suppressions.back().symbolName = word.substr(11);
+        else if (errorMessage.empty())
+            errorMessage = "Bad suppression attribute '" + word + "'. You can write comments in the comment after a ; or //. Valid suppression attributes; symbolName=sym";
     }
     return true;
 }

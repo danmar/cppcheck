@@ -26,6 +26,7 @@
 #include <list>
 #include <set>
 #include <string>
+#include <vector>
 
 /// @addtogroup Core
 /// @{
@@ -78,10 +79,11 @@ public:
         /**
          * Parse inline suppression in comment
          * @param comment the full comment text
+         * @param suppressions output parameter for supressions found in the comment;
          * @param errorMessage output parameter for error message (wrong suppression attribute)
          * @return true if it is a inline comment.
          */
-        bool parseComment(std::string comment, std::string *errorMessage);
+        static bool parseComment(std::string comment, std::vector<Suppression>& suppressions, std::string& errorMessage);
 
         bool isSuppressed(const ErrorMessage &errmsg) const;
 

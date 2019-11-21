@@ -1,6 +1,9 @@
 project(Cppcheck)
 cmake_minimum_required(VERSION 2.8.11)
 
+# export compile commands for clang completion
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 include(GNUInstallDirs)
 
 include(cmake/versions.cmake REQUIRED)

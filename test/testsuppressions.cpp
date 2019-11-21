@@ -425,16 +425,16 @@ private:
     }
 
     void inlinesuppress() {
-        Suppressions::Suppression s;
+        std::vector<Suppressions::Suppression> s;
         std::string msg;
-        ASSERT_EQUALS(false, s.parseComment("/* some text */", &msg));
-        ASSERT_EQUALS(false, s.parseComment("/* cppcheck-suppress */", &msg));
+        ASSERT_EQUALS(false, Suppressions::Suppression::parseComment("/* some text */", s, msg));
+        ASSERT_EQUALS(false, Suppressions::Suppression::parseComment("/* cppcheck-suppress */", s, msg));
 
         msg.clear();
-        ASSERT_EQUALS(true, s.parseComment("/* cppcheck-suppress id */", &msg));
+        ASSERT_EQUALS(true, Suppressions::Suppression::parseComment("/* cppcheck-suppress id */", s, msg));
         ASSERT_EQUALS("", msg);
 
-        ASSERT_EQUALS(true, s.parseComment("/* cppcheck-suppress id some text */", &msg));
+        ASSERT_EQUALS(true, Suppressions::Suppression::parseComment("/* cppcheck-suppress id some text */", s, msg));
         ASSERT_EQUALS("Bad suppression attribute 'some'. You can write comments in the comment after a ; or //. Valid suppression attributes; symbolName=sym", msg);
     }
 
@@ -459,13 +459,13 @@ private:
     }
 
     void inlinesuppress_comment() {
-        Suppressions::Suppression s;
+        std::vector<Suppressions::Suppression> s;
         std::string errMsg;
-        ASSERT_EQUALS(true, s.parseComment("// cppcheck-suppress abc ; some comment", &errMsg));
+        ASSERT_EQUALS(true, Suppressions::Suppression::parseComment("// cppcheck-suppress abc ; some comment", s, errMsg));
         ASSERT_EQUALS("", errMsg);
-        ASSERT_EQUALS(true, s.parseComment("// cppcheck-suppress abc // some comment", &errMsg));
+        ASSERT_EQUALS(true, Suppressions::Suppression::parseComment("// cppcheck-suppress abc // some comment", s, errMsg));
         ASSERT_EQUALS("", errMsg);
-        ASSERT_EQUALS(true, s.parseComment("// cppcheck-suppress abc -- some comment", &errMsg));
+        ASSERT_EQUALS(true, Suppressions::Suppression::parseComment("// cppcheck-suppress abc -- some comment", s, errMsg));
         ASSERT_EQUALS("", errMsg);
     }
 

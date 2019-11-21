@@ -78,17 +78,17 @@ namespace {
 
 static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSettings, std::list<BadInlineSuppression> *bad)
 {
-    std::list<Suppressions::Suppression> inlineSuppressions;
+    std::vector<Suppressions::Suppression> inlineSuppressions;
+    std::string errmsg;
     for (const simplecpp::Token *tok = tokens.cfront(); tok; tok = tok->next) {
         if (tok->comment) {
-            Suppressions::Suppression s;
-            std::string errmsg;
-            if (!s.parseComment(tok->str(), &errmsg))
+            if (!Suppressions::Suppression::parseComment(tok->str(), inlineSuppressions, errmsg))
                 continue;
-            if (!errmsg.empty())
+            if (!errmsg.empty()) {
                 bad->push_back(BadInlineSuppression(tok->location, errmsg));
-            if (!s.errorId.empty())
-                inlineSuppressions.push_back(s);
+                errmsg.clear();
+            }
+            //we continue to get to real token that we want to suppress
             continue;
         }
 
@@ -109,10 +109,13 @@ static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSe
 
         // Add the suppressions.
         for (Suppressions::Suppression &suppr : inlineSuppressions) {
+            if(suppr.errorId.empty())
+                continue;
             suppr.fileName = relativeFilename;
             suppr.lineNumber = tok->location.line;
             mSettings.nomsg.addSuppression(suppr);
         }
+
         inlineSuppressions.clear();
     }
 }
