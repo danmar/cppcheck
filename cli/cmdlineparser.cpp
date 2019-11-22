@@ -1161,8 +1161,8 @@ void CmdLineParser::printHelp()
               "                         '{file}:{line},{severity},{id},{message}' or\n"
               "                         '{file}({line}):({severity}) {message}' or\n"
               "                         '{callstack} {message}'\n"
-              "                         Pre-defined templates: gcc, vs, edit, cppcheck1\n"
-              "                         The default format is 'gcc'.\n"
+              "                         Pre-defined templates: gcc (default), cppcheck1 (old default), vs, edit.\n"
+              // Note: template daca2 also exists, but is for internal use (cppcheck scripts).
               "    --template-location='<text>'\n"
               "                         Format error message location. If this is not provided\n"
               "                         then no extra location info is shown.\n"
