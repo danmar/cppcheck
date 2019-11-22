@@ -2866,7 +2866,7 @@ private:
               "    printf(\"%p\", p);\n"
               "    *p = 0;\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Possible null pointer dereference if the default parameter value is used: p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Possible null pointer dereference if the default parameter value is used: p\n", errout.str());
 
         // The init() function may or may not initialize p, but since the address
         // of p is passed in, it's a good bet that p may be modified and
