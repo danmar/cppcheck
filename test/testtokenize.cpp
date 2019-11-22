@@ -409,6 +409,7 @@ private:
         TEST_CASE(simplifyOperatorName22);
         TEST_CASE(simplifyOperatorName23);
         TEST_CASE(simplifyOperatorName24);
+        TEST_CASE(simplifyOperatorName25);
 
         TEST_CASE(simplifyNullArray);
 
@@ -6559,6 +6560,12 @@ private:
             ASSERT_EQUALS("void foo ( ) { int i ; i = a . operator++ ( 0 ) ? a . operator-- ( 0 ) : 0 ; }",
                           tokenizeAndStringify(code));
         }
+    }
+
+    void simplifyOperatorName25() {
+        const char code[] = "bool negative(const Number &num) { return num.operator std::string()[0] == '-'; }";
+        ASSERT_EQUALS("bool negative ( const Number & num ) { return num . operatorstd::string ( ) [ 0 ] == '-' ; }",
+                      tokenizeAndStringify(code));
     }
 
     void simplifyNullArray() {
