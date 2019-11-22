@@ -216,8 +216,7 @@ bool Suppressions::Suppression::parseComment(std::string comment, std::vector<Su
         return false;
 
     bool hasErrorId=false;
-    iss >> word;
-    while(iss) {
+    while(iss >> word) {
         if (hasErrorId) {
             if (word.compare(0,11,"symbolName=")==0) {
                 suppressions.back().symbolName = word.substr(11);
@@ -235,8 +234,6 @@ bool Suppressions::Suppression::parseComment(std::string comment, std::vector<Su
         suppression.errorId = std::move(word);
         suppressions.push_back(std::move(suppression));
         hasErrorId = true;
-
-        iss >> word;
     };
 
     if (suppressions.empty())
