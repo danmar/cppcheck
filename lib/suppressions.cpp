@@ -194,7 +194,7 @@ void Suppressions::ErrorMessage::setFileName(const std::string &s)
     mFileName = Path::simplifyPath(s);
 }
 
-bool Suppressions::Suppression::parseComment(std::string comment, std::vector<Suppression>& suppressions, std::string& errorMessage)
+bool Suppressions::Suppression::parseComment(std::string comment, std::vector<Suppression>& suppressions)
 {
     if (comment.size() < 2)
         return false;
@@ -220,7 +220,6 @@ bool Suppressions::Suppression::parseComment(std::string comment, std::vector<Su
         return false;
 
     bool hasErrorId=false;
-    (void) errorMessage; // use or delete error message
     while (++it != end) {
         auto const& word = *it;
 
