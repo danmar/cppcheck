@@ -29,6 +29,7 @@
 #include <stack>
 #include <sstream>
 #include <utility>
+#include <iterator>
 
 class ErrorLogger;
 
@@ -208,32 +209,42 @@ bool Suppressions::Suppression::parseComment(std::string comment, std::vector<Su
         comment.erase(comment.size() - 2, 2);
 
     std::istringstream iss(comment.substr(2));
-    std::string word;
-    iss >> word;
-    if (word != "cppcheck-suppress")
+
+    std::istream_iterator<std::string> end;
+    std::istream_iterator<std::string> it(iss);
+
+    if(it == end)
         return false;
 
-    std::string errorId;
-    iss >> errorId;
-
-    if (!iss)
+    if (*it != "cppcheck-suppress")
         return false;
 
-    Suppression suppression;
-    suppression.errorId = errorId;
-    suppressions.push_back(std::move(suppression));
+    bool hasErrorId=false;
+    (void) errorMessage; // use or delete error message
+    while (++it != end) {
+        auto const& word = *it;
 
-    while (iss) {
-        iss >> word;
-        if (!iss)
-            break;
+        if (hasErrorId) {
+            if (word.compare(0,11,"symbolName=")==0) {
+                suppressions.back().symbolName = word.substr(11);
+                hasErrorId = false;
+                continue;
+            }
+        }
+
         if (word.find_first_not_of("+-*/%#;") == std::string::npos)
             break;
-        if (word.compare(0,11,"symbolName=")==0)
-            suppressions.back().symbolName = word.substr(11);
-        else if (errorMessage.empty())
-            errorMessage = "Bad suppression attribute '" + word + "'. You can write comments in the comment after a ; or //. Valid suppression attributes; symbolName=sym";
+
+        //check if id is vaild?!
+
+        Suppression suppression;
+        suppression.errorId = word;
+        hasErrorId = true;
+        suppressions.push_back(std::move(suppression));
     }
+
+    if (suppressions.empty())
+        return false;
     return true;
 }
 
