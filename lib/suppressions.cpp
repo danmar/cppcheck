@@ -29,7 +29,6 @@
 #include <stack>
 #include <sstream>
 #include <utility>
-#include <iterator>
 
 class ErrorLogger;
 
@@ -210,19 +209,15 @@ bool Suppressions::Suppression::parseComment(std::string comment, std::vector<Su
 
     std::istringstream iss(comment.substr(2));
 
-    std::istream_iterator<std::string> end;
-    std::istream_iterator<std::string> it(iss);
+    std::string word;
+    iss >> word;
 
-    if(it == end)
-        return false;
-
-    if (*it != "cppcheck-suppress")
+    if (!iss || word != "cppcheck-suppress")
         return false;
 
     bool hasErrorId=false;
-    while (++it != end) {
-        auto const& word = *it;
-
+    iss >> word;
+    while(iss) {
         if (hasErrorId) {
             if (word.compare(0,11,"symbolName=")==0) {
                 suppressions.back().symbolName = word.substr(11);
@@ -234,13 +229,15 @@ bool Suppressions::Suppression::parseComment(std::string comment, std::vector<Su
         if (word.find_first_not_of("+-*/%#;") == std::string::npos)
             break;
 
-        //check if id is vaild?!
+        //check if errorId is vaild?!
 
         Suppression suppression;
-        suppression.errorId = word;
-        hasErrorId = true;
+        suppression.errorId = std::move(word);
         suppressions.push_back(std::move(suppression));
-    }
+        hasErrorId = true;
+
+        iss >> word;
+    };
 
     if (suppressions.empty())
         return false;
