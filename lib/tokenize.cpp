@@ -95,8 +95,11 @@ const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &end
         tok = tok->link();
     if (Token::Match(tok, ") ;|{|[")) {
         tok = tok->next();
-        while (tok && tok->str() == "[" && tok->link())
+        while (tok && tok->str() == "[" && tok->link()) {
+            if (endsWith.find(tok->str()) != std::string::npos)
+                return tok;
             tok = tok->link()->next();
+        }
         return (tok && endsWith.find(tok->str()) != std::string::npos) ? tok : nullptr;
     }
     if (cpp && tok->str() == ")") {
@@ -10815,7 +10818,7 @@ void Tokenizer::deleteSymbolDatabase()
 bool Tokenizer::operatorEnd(const Token * tok) const
 {
     if (tok && tok->str() == ")") {
-        if (isFunctionHead(tok, "{|;|?|:"))
+        if (isFunctionHead(tok, "{|;|?|:|["))
             return true;
 
         tok = tok->next();
