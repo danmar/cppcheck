@@ -19,7 +19,6 @@ import os
 import re
 import datetime
 import time
-
 import semver
 
 DEBIAN = ('ftp://ftp.de.debian.org/debian/',
@@ -108,8 +107,9 @@ def getpackages():
                 if res2 is None:
                     res2 = re.match(r'(.*)[-.][0-9.]+$', previous_path)
                 if res1 is None or res2 is None or res1.group(1) != res2.group(1):
-                archives.append(DEBIAN[0] + path + '/' + filename)
+                    archives.append(path + '/' + latestvername(filenames))
                 else:
+                    archives[-1] = path + '/' + latestvername(filenames)
             if path:
                 previous_path = path
             path = None

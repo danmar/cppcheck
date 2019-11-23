@@ -12,7 +12,6 @@ import shutil
 import glob
 import os
 import time
-
 import semver
 
 DEBIAN = ('ftp://ftp.se.debian.org/debian/',
