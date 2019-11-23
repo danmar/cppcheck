@@ -76,12 +76,16 @@ namespace {
     };
 }
 
-static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSettings)
+static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSettings, std::list<BadInlineSuppression> &bad)
 {
     std::vector<Suppressions::Suppression> inlineSuppressions;
+    std::string errorMessage;
     for (const simplecpp::Token *tok = tokens.cfront(); tok; tok = tok->next) {
         if (tok->comment) {
-            (void) Suppressions::Suppression::parseComment(tok->str(), inlineSuppressions);
+            errorMessage.clear();
+            if(!Suppressions::Suppression::parseComment(tok->str(), inlineSuppressions, errorMessage) && !errorMessage.empty()) {
+                bad.push_back(BadInlineSuppression(tok->location, errorMessage));
+            }
             //we continue to get to real token that we want to suppress
             continue;
         }
@@ -118,10 +122,14 @@ void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens)
 {
     if (!mSettings.inlineSuppressions)
         return;
-    ::inlineSuppressions(tokens, mSettings);
+    std::list<BadInlineSuppression> err;
+    ::inlineSuppressions(tokens, mSettings, err);
     for (std::map<std::string,simplecpp::TokenList*>::const_iterator it = mTokenLists.begin(); it != mTokenLists.end(); ++it) {
         if (it->second)
-            ::inlineSuppressions(*it->second, mSettings);
+            ::inlineSuppressions(*it->second, mSettings, err);
+    }
+    for (const BadInlineSuppression &bad : err) {
+        error(bad.location.file(), bad.location.line, bad.errmsg);
     }
 }
 

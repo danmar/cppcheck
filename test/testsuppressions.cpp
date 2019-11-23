@@ -426,18 +426,26 @@ private:
 
     void inlinesuppress() {
         std::vector<Suppressions::Suppression> s;
-        ASSERT_EQUALS(false, Suppressions::Suppression::parseComment("/* some text */", s));
+        std::string msg;
+        ASSERT_EQUALS(false, Suppressions::Suppression::parseComment("/* some text */", s, msg));
         ASSERT_EQUALS(0, s.size());
+        ASSERT_EQUALS("", msg);
 
-        ASSERT_EQUALS(false, Suppressions::Suppression::parseComment("/* cppcheck-suppress */", s));
+        ASSERT_EQUALS(false, Suppressions::Suppression::parseComment("/* cppcheck-suppress */", s, msg));
         ASSERT_EQUALS(0, s.size());
+        ASSERT_EQUALS("Could not find attribute for suppression in comment: '/* cppcheck-suppress */'. "
+                      "Make sure to follow the following pattern: "
+                      "'// cppcheck-suppress <attribute> [ symbolName=<restriction> ] [ <attribute> [ symbolName=<restriction> ] ... ] [; comment text]'", msg);
+        msg.clear();
 
-        ASSERT_EQUALS(true, Suppressions::Suppression::parseComment("/* cppcheck-suppress id */", s));
+        ASSERT_EQUALS(true, Suppressions::Suppression::parseComment("/* cppcheck-suppress id */", s, msg));
         ASSERT_EQUALS(1, s.size());
+        ASSERT_EQUALS("", msg);
 
         s.clear();
-        ASSERT_EQUALS(true, Suppressions::Suppression::parseComment("/* cppcheck-suppress id some text */", s));
+        ASSERT_EQUALS(true, Suppressions::Suppression::parseComment("/* cppcheck-suppress id some text */", s, msg));
         ASSERT_EQUALS(3, s.size());
+        ASSERT_EQUALS("", msg);
     }
 
     void inlinesuppress_symbolname() {
@@ -462,20 +470,25 @@ private:
 
     void inlinesuppress_comment() {
         std::vector<Suppressions::Suppression> s;
-        ASSERT_EQUALS(true, Suppressions::Suppression::parseComment("// cppcheck-suppress abc ; some comment", s));
+        std::string msg;
+        ASSERT_EQUALS(true, Suppressions::Suppression::parseComment("// cppcheck-suppress abc ; some comment", s, msg));
         ASSERT_EQUALS(1, s.size());
+        ASSERT_EQUALS("", msg);
 
         s.clear();
-        ASSERT_EQUALS(true, Suppressions::Suppression::parseComment("//cppcheck-suppress abc // some comment", s));
+        ASSERT_EQUALS(true, Suppressions::Suppression::parseComment("//cppcheck-suppress abc // some comment", s, msg));
         ASSERT_EQUALS(1, s.size());
+        ASSERT_EQUALS("", msg);
 
         s.clear();
-        ASSERT_EQUALS(true, Suppressions::Suppression::parseComment("//  cppcheck-suppress abc -- some comment", s));
+        ASSERT_EQUALS(true, Suppressions::Suppression::parseComment("//  cppcheck-suppress abc -- some comment", s, msg));
         ASSERT_EQUALS(1, s.size());
+        ASSERT_EQUALS("", msg);
 
         s.clear();
-        ASSERT_EQUALS(true, Suppressions::Suppression::parseComment("// cppcheck-suppress abc bac cab; some comment", s));
+        ASSERT_EQUALS(true, Suppressions::Suppression::parseComment("// cppcheck-suppress abc bac cab; some comment", s, msg));
         ASSERT_EQUALS(3, s.size());
+        ASSERT_EQUALS("", msg);
     }
 
     void globalSuppressions() { // Testing that Cppcheck::useGlobalSuppressions works (#8515)

@@ -80,9 +80,10 @@ public:
          * Parse inline suppression in comment
          * @param comment the full comment text
          * @param suppressions output parameter for supressions found in the comment;
+         * @param errorMessage output parameter for error message (missing/unmatched attribute)
          * @return true if it is a inline comment.
          */
-        static bool parseComment(std::string comment, std::vector<Suppression>& suppressions);
+        static bool parseComment(std::string const& comment, std::vector<Suppression>& suppressions, std::string& errorMessage);
 
         bool isSuppressed(const ErrorMessage &errmsg) const;
 

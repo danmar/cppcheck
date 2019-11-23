@@ -193,21 +193,25 @@ void Suppressions::ErrorMessage::setFileName(const std::string &s)
     mFileName = Path::simplifyPath(s);
 }
 
-bool Suppressions::Suppression::parseComment(std::string comment, std::vector<Suppression>& suppressions)
+bool Suppressions::Suppression::parseComment(std::string const& comment, std::vector<Suppression>& suppressions, std::string& errorMessage)
 {
-    if (comment.size() < 2)
+    if (comment.size() < 2 + 17 + 1 + 1) // comment (// | /*)) + "cppcheck-suppress" + space + attribute
         return false;
 
+    if (comment.find("cppcheck-suppress") == std::string::npos)
+        return false;
+
+    std::string commentCopy = comment;
     if (comment.find(';') != std::string::npos)
-        comment.erase(comment.find(';'));
+        commentCopy.erase(comment.find(';'));
 
     if (comment.find("//", 2) != std::string::npos)
-        comment.erase(comment.find("//",2));
+        commentCopy.erase(comment.find("//",2));
 
     if (comment.compare(comment.size() - 2, 2, "*/") == 0)
-        comment.erase(comment.size() - 2, 2);
+        commentCopy.erase(comment.size() - 2, 2);
 
-    std::istringstream iss(comment.substr(2));
+    std::istringstream iss(commentCopy.substr(2));
 
     std::string word;
     iss >> word;
@@ -217,6 +221,9 @@ bool Suppressions::Suppression::parseComment(std::string comment, std::vector<Su
 
     bool hasErrorId=false;
     while(iss >> word) {
+        if (word.find_first_not_of("+-*/%#;") == std::string::npos)
+            break;
+
         if (hasErrorId) {
             if (word.compare(0,11,"symbolName=")==0) {
                 suppressions.back().symbolName = word.substr(11);
@@ -225,19 +232,18 @@ bool Suppressions::Suppression::parseComment(std::string comment, std::vector<Su
             }
         }
 
-        if (word.find_first_not_of("+-*/%#;") == std::string::npos)
-            break;
-
-        //check if errorId is vaild?!
-
         Suppression suppression;
         suppression.errorId = std::move(word);
         suppressions.push_back(std::move(suppression));
         hasErrorId = true;
     };
 
-    if (suppressions.empty())
+    if (suppressions.empty()) {
+        errorMessage = "Could not find attribute for suppression in comment: '" + comment + "'. "
+                       "Make sure to follow the following pattern: "
+                       "'// cppcheck-suppress <attribute> [ symbolName=<restriction> ] [ <attribute> [ symbolName=<restriction> ] ... ] [; comment text]'";
         return false;
+    }
     return true;
 }
 
