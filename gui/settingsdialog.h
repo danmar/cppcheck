@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ class QSettings;
 class QWidget;
 class ApplicationList;
 class TranslationHandler;
+class CodeEditorStyle;
 
 /// @addtogroup GUI
 /// @{
@@ -40,7 +41,7 @@ class SettingsDialog : public QDialog {
 public:
     SettingsDialog(ApplicationList *list,
                    TranslationHandler *translator,
-                   QWidget *parent = 0);
+                   QWidget *parent = nullptr);
     SettingsDialog(const SettingsDialog &) = delete;
     virtual ~SettingsDialog();
     SettingsDialog &operator=(const SettingsDialog &) = delete;
@@ -136,6 +137,17 @@ protected slots:
      * @brief Browse for MISRA file
      */
     void browseMisraFile();
+
+    /**
+     * @brief Set Code Editor Style to Default
+     */
+    void setCodeEditorStyleDefault();
+
+    /**
+     * @brief Edit Custom Code Editor Style
+     */
+    void editCodeEditorStyle();
+
 protected:
     /**
     * @brief Clear all applications from the list and re insert them from mTempApplications
@@ -187,6 +199,11 @@ protected:
     void initTranslationsList();
 
     /**
+     * @brief Current Code Editor Style
+     */
+    CodeEditorStyle *mCurrentStyle;
+
+    /**
     * @brief List of applications user has specified
     *
     */
@@ -211,6 +228,8 @@ protected:
     */
     Ui::Settings mUI;
 private:
+    void manageStyleControls();
+
     static const int mLangCodeRole = Qt::UserRole;
 };
 /// @}

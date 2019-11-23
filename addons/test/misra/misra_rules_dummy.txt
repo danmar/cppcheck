@@ -1,0 +1,22 @@
+Appendix A Summary of guidelines
+Rule 3.1 Required
+R3.1 text.
+Rule 4.1 Required
+R4.1 text.
+Rule 10.4 Mandatory
+R10.4 text.
+Rule 11.5 Advisory
+R11.5 text.
+Rule 15.5 Advisory
+R15.5 text.
+Rule 15.6 Required
+R15.6 text.
+Rule 17.7 Required
+R17.7 text.
+Rule 20.1 Advisory
+R20.1 text.
+Rule 21.3 Required
+R21.3 text.
+Rule 21.4
+R21.4 text.
+

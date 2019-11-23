@@ -31,6 +31,23 @@ Compiling
       * g++ 4.6 (or later)
       * clang++
 
+    cmake
+    =====
+        Example, compiling Cppcheck with cmake:
+            mkdir build
+            cd build
+            cmake ..
+            cmake --build .
+
+        If you want to compile the GUI you can use the flag
+        -DBUILD_GUI=ON
+
+        For rules support (requires pcre) use the flag
+        -DHAVE_RULES=ON
+
+        For release builds it is recommended that you use:
+        -DUSE_MATCHCOMPILER=ON
+
     qmake
     =====
         You can use the gui/gui.pro file to build the GUI.
@@ -40,12 +57,14 @@ Compiling
 
     Visual Studio
     =============
-        Use the cppcheck.sln file. The file is configured for Visual Studio 2015, but the platform
+        Use the cppcheck.sln file. The file is configured for Visual Studio 2019, but the platform
         toolset can be changed easily to older or newer versions. The solution contains platform
         targets for both x86 and x64.
 
         To compile with rules, select "Release-PCRE" or "Debug-PCRE" configuration.
         pcre.lib (pcre64.lib for x64 builds) and pcre.h are expected to be in /externals then.
+        A current version of PCRE for Visual Studio can be obtained using vcpkg:
+        https://github.com/microsoft/vcpkg
 
     Qt Creator + mingw
     ==================
@@ -58,20 +77,20 @@ Compiling
             make
 
         The recommended release build is:
-            make SRCDIR=build CFGDIR=cfg HAVE_RULES=yes
+            make MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck HAVE_RULES=yes
 
         Flags:
-        SRCDIR=build   : Python is used to optimise cppcheck
-        CFGDIR=cfg     : Specify folder where .cfg files are found
-        HAVE_RULES=yes : Enable rules (pcre is required if this is used)
+        MATCHCOMPILER=yes               : Python is used to optimise cppcheck at compile time
+        FILESDIR=/usr/share/cppcheck    : Specify folder where cppcheck files are installed
+        HAVE_RULES=yes                  : Enable rules (pcre is required if this is used)
 
     g++ (for experts)
     =================
         If you just want to build Cppcheck without dependencies then you can use this command:
-            g++ -o cppcheck -std=c++11 -Iexternals/simplecpp -Iexternals/tinyxml -Ilib cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml/*.cpp
+            g++ -o cppcheck -std=c++11 -Iexternals -Iexternals/simplecpp -Iexternals/tinyxml -Ilib cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml/*.cpp
 
         If you want to use --rule and --rule-file then dependencies are needed:
-            g++ -o cppcheck -std=c++11 -lpcre -DHAVE_RULES -Ilib -Iexternals/simplecpp -Iexternals/tinyxml cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml/*.cpp
+            g++ -o cppcheck -std=c++11 -lpcre -DHAVE_RULES -Ilib -Iexternals -Iexternals/simplecpp -Iexternals/tinyxml cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml/*.cpp
 
     mingw
     =====

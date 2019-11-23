@@ -23,6 +23,15 @@ install(TARGETS cppcheck
     RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR}
     COMPONENT applications)
 
-install(FILES ${cfgs}
-   DESTINATION ${CFGDIR}/
+install(FILES ${addons}
+   DESTINATION ${FILESDIR}/addons
    COMPONENT headers)
+
+install(FILES ${cfgs}
+   DESTINATION ${FILESDIR}/cfg
+   COMPONENT headers)
+
+install(FILES ${platforms}
+   DESTINATION ${FILESDIR}/platforms
+   COMPONENT headers)
+

@@ -103,7 +103,6 @@ private:
         TEST_CASE(maxConfigsInvalid);
         TEST_CASE(maxConfigsTooSmall);
         TEST_CASE(reportProgressTest); // "Test" suffix to avoid hiding the parent's reportProgress
-        TEST_CASE(stdposix);
         TEST_CASE(stdc99);
         TEST_CASE(stdcpp11);
         TEST_CASE(platform);
@@ -694,14 +693,6 @@ private:
         ASSERT(settings.reportProgress);
     }
 
-    void stdposix() {
-        REDIRECT;
-        const char * const argv[] = {"cppcheck", "--std=posix", "file.cpp"};
-        settings.standards.posix = false;
-        ASSERT(defParser.parseFromArgs(3, argv));
-        ASSERT(settings.standards.posix);
-    }
-
     void stdc99() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--std=c99", "file.cpp"};
@@ -902,9 +893,9 @@ private:
     void showtime() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--showtime=summary"};
-        settings.showtime = SHOWTIME_NONE;
+        settings.showtime = SHOWTIME_MODES::SHOWTIME_NONE;
         ASSERT(defParser.parseFromArgs(2, argv));
-        ASSERT(settings.showtime == SHOWTIME_SUMMARY);
+        ASSERT(settings.showtime == SHOWTIME_MODES::SHOWTIME_SUMMARY);
     }
 
     void errorlist1() {

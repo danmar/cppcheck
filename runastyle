@@ -52,6 +52,8 @@ formatCplusplusRecursive "gui/test/*.cpp"
 formatCplusplusRecursive "gui/test/*.h"
 formatCplusplus "lib/*.cpp"
 formatCplusplus "lib/*.h"
+formatCplusplus "oss-fuzz/*.cpp"
+formatCplusplus "oss-fuzz/*.h"
 formatCplusplus "test/*.cpp"
 formatCplusplus "test/cfg/*.c"
 formatCplusplus "test/cfg/*.cpp"
@@ -74,3 +76,4 @@ done
 
 formatXML man/cppcheck.1.xml
 formatXML cppcheck-errors.rng
+formatXML rules/*.xml

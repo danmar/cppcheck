@@ -105,7 +105,6 @@ private:
         Tokenizer tokenizer(&settings, this);
         tokenizer.createTokens(&tokens2);
         tokenizer.simplifyTokens1("");
-        tokenizer.simplifyTokenList2();
 
         // Check for unused private functions..
         CheckClass checkClass(&tokenizer, &settings, this);

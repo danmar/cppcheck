@@ -8,6 +8,61 @@
 //
 
 #include <windows.h>
+#include <direct.h>
+#include <stdlib.h>
+#include <time.h>
+
+
+void uninitvar__putenv(char * envstr)
+{
+    // No warning is expected
+    (void)_putenv(envstr);
+
+    char * p;
+    // cppcheck-suppress uninitvar
+    (void)_putenv(p);
+}
+
+void nullPointer__putenv(char * envstr)
+{
+    // No warning is expected
+    (void)_putenv(envstr);
+
+    char * p=NULL;
+    // cppcheck-suppress nullPointer
+    (void)_putenv(p);
+}
+
+void invalidFunctionArg__getcwd(char * buffer)
+{
+    // Passing NULL as the buffer forces getcwd to allocate
+    // memory for the path, which allows the code to support file paths
+    // longer than _MAX_PATH, which are supported by NTFS.
+    if ((buffer = _getcwd(NULL, 0)) == NULL) {
+        return;
+    }
+    free(buffer);
+}
+
+void nullPointer__get_timezone(long *sec)
+{
+    // No warning is expected
+    (void)_get_timezone(sec);
+
+    long *pSec = NULL;
+    // cppcheck-suppress nullPointer
+    (void)_get_timezone(pSec);
+}
+
+void nullPointer__get_daylight(int *h)
+{
+    // No warning is expected
+    (void)_get_daylight(h);
+
+    int *pHours = NULL;
+    // cppcheck-suppress nullPointer
+    (void)_get_daylight(pHours);
+}
 
 void validCode()
 {
@@ -174,6 +229,14 @@ void validCode()
     __noop(1, "test", NULL);
     __nop();
 
+    void * pAlloc1 = _aligned_malloc(100, 2);
+    _aligned_free(pAlloc1);
+
+    ::PostMessage(nullptr, WM_QUIT, 0, 0);
+
+    printf("%zu", __alignof(int));
+    printf("%zu", _alignof(double));
+
     // Valid Library usage, no leaks, valid arguments
     HINSTANCE hInstLib = LoadLibrary(L"My.dll");
     FreeLibrary(hInstLib);
@@ -232,6 +295,23 @@ void bufferAccessOutOfBounds()
     RtlFillMemory(byteBuf, sizeof(byteBuf)+1, 0x01);
     // cppcheck-suppress bufferAccessOutOfBounds
     FillMemory(byteBuf, sizeof(byteBuf)+1, 0x01);
+
+    char * pAlloc1 = _malloca(32);
+    memset(pAlloc1, 0, 32);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    memset(pAlloc1, 0, 33);
+    _freea(pAlloc1);
+}
+
+void mismatchAllocDealloc()
+{
+    char * pChar = _aligned_malloc(100, 2);
+    // cppcheck-suppress mismatchAllocDealloc
+    free(pChar);
+
+    pChar = _malloca(32);
+    // cppcheck-suppress mismatchAllocDealloc
+    _aligned_free(pChar);
 }
 
 void nullPointer()
@@ -861,6 +941,24 @@ error_t nullPointer__strncpy_s_l(char *strDest, size_t numberOfElements, const c
 
     // no warning shall be shown for
     return _strncpy_s_l(strDest, numberOfElements, strSource, count, locale);
+}
+
+void GetShortPathName_validCode(TCHAR* lpszPath)
+{
+    long length = GetShortPathName(lpszPath, NULL, 0);
+    if (length == 0) {
+        _tprintf(TEXT("error"));
+        return;
+    }
+    TCHAR* buffer = new TCHAR[length];
+    length = GetShortPathName(lpszPath, buffer, length);
+    if (length == 0) {
+        delete [] buffer;
+        _tprintf(TEXT("error"));
+        return;
+    }
+    _tprintf(TEXT("long name = %s short name = %s"), lpszPath, buffer);
+    delete [] buffer;
 }
 
 class MyClass :public CObject {

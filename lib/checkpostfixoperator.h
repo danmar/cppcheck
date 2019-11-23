@@ -57,8 +57,6 @@ public:
         CheckPostfixOperator checkPostfixOperator(tokenizer, settings, errorLogger);
         checkPostfixOperator.postfixOperator();
     }
-    void runSimplifiedChecks(const Tokenizer * /*tokenizer*/, const Settings * /*settings*/, ErrorLogger * /*errorLogger*/) OVERRIDE {
-    }
 
     /** Check postfix operators */
     void postfixOperator();

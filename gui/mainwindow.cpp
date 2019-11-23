@@ -28,7 +28,9 @@
 #include <QFile>
 #include <QInputDialog>
 #include "mainwindow.h"
+
 #include "cppcheck.h"
+
 #include "applicationlist.h"
 #include "aboutdialog.h"
 #include "common.h"
@@ -207,6 +209,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mUI.mActionCpp03->setActionGroup(mCppStandardActions);
     mUI.mActionCpp11->setActionGroup(mCppStandardActions);
     mUI.mActionCpp14->setActionGroup(mCppStandardActions);
+    mUI.mActionCpp17->setActionGroup(mCppStandardActions);
+    mUI.mActionCpp20->setActionGroup(mCppStandardActions);
 
     mUI.mActionEnforceC->setActionGroup(mSelectLanguageActions);
     mUI.mActionEnforceCpp->setActionGroup(mSelectLanguageActions);
@@ -281,20 +285,17 @@ void MainWindow::loadSettings()
     mUI.mActionShowCppcheck->setChecked(true);
     mUI.mActionShowClang->setChecked(true);
 
-    const bool stdCpp03 = mSettings->value(SETTINGS_STD_CPP03, false).toBool();
-    mUI.mActionCpp03->setChecked(stdCpp03);
-    const bool stdCpp11 = mSettings->value(SETTINGS_STD_CPP11, true).toBool();
-    mUI.mActionCpp11->setChecked(stdCpp11 && !stdCpp03);
-    const bool stdCpp14 = mSettings->value(SETTINGS_STD_CPP14, true).toBool();
-    mUI.mActionCpp14->setChecked(stdCpp14 && !stdCpp03 && !stdCpp11);
-    const bool stdC89 = mSettings->value(SETTINGS_STD_C89, false).toBool();
-    mUI.mActionC89->setChecked(stdC89);
-    const bool stdC11 = mSettings->value(SETTINGS_STD_C11, false).toBool();
-    mUI.mActionC11->setChecked(stdC11);
-    const bool stdC99 = mSettings->value(SETTINGS_STD_C99, true).toBool();
-    mUI.mActionC99->setChecked(stdC99 || (!stdC89 && !stdC11));
-    const bool stdPosix = mSettings->value(SETTINGS_STD_POSIX, false).toBool();
-    mUI.mActionPosix->setChecked(stdPosix);
+    Standards standards;
+    standards.setC(mSettings->value(SETTINGS_STD_C, QString()).toString().toStdString());
+    mUI.mActionC89->setChecked(standards.c == Standards::C89);
+    mUI.mActionC99->setChecked(standards.c == Standards::C99);
+    mUI.mActionC11->setChecked(standards.c == Standards::C11);
+    standards.setCPP(mSettings->value(SETTINGS_STD_CPP, QString()).toString().toStdString());
+    mUI.mActionCpp03->setChecked(standards.cpp == Standards::CPP03);
+    mUI.mActionCpp11->setChecked(standards.cpp == Standards::CPP11);
+    mUI.mActionCpp14->setChecked(standards.cpp == Standards::CPP14);
+    mUI.mActionCpp17->setChecked(standards.cpp == Standards::CPP17);
+    mUI.mActionCpp20->setChecked(standards.cpp == Standards::CPP20);
 
     // Main window settings
     const bool showMainToolbar = mSettings->value(SETTINGS_TOOLBARS_MAIN_SHOW, true).toBool();
@@ -339,6 +340,7 @@ void MainWindow::loadSettings()
             mProjectFile = new ProjectFile(this);
             mProjectFile->read(projectFile);
             loadLastResults();
+            QDir::setCurrent(inf.absolutePath());
         }
     }
 }
@@ -358,13 +360,23 @@ void MainWindow::saveSettings() const
     mSettings->setValue(SETTINGS_SHOW_PERFORMANCE, mUI.mActionShowPerformance->isChecked());
     mSettings->setValue(SETTINGS_SHOW_INFORMATION, mUI.mActionShowInformation->isChecked());
 
-    mSettings->setValue(SETTINGS_STD_CPP03, mUI.mActionCpp03->isChecked());
-    mSettings->setValue(SETTINGS_STD_CPP11, mUI.mActionCpp11->isChecked());
-    mSettings->setValue(SETTINGS_STD_CPP14, mUI.mActionCpp14->isChecked());
-    mSettings->setValue(SETTINGS_STD_C89, mUI.mActionC89->isChecked());
-    mSettings->setValue(SETTINGS_STD_C99, mUI.mActionC99->isChecked());
-    mSettings->setValue(SETTINGS_STD_C11, mUI.mActionC11->isChecked());
-    mSettings->setValue(SETTINGS_STD_POSIX, mUI.mActionPosix->isChecked());
+    if (mUI.mActionC89->isChecked())
+        mSettings->setValue(SETTINGS_STD_C, "C89");
+    if (mUI.mActionC99->isChecked())
+        mSettings->setValue(SETTINGS_STD_C, "C99");
+    if (mUI.mActionC11->isChecked())
+        mSettings->setValue(SETTINGS_STD_C, "C11");
+
+    if (mUI.mActionCpp03->isChecked())
+        mSettings->setValue(SETTINGS_STD_CPP, "C++03");
+    if (mUI.mActionCpp11->isChecked())
+        mSettings->setValue(SETTINGS_STD_CPP, "C++11");
+    if (mUI.mActionCpp14->isChecked())
+        mSettings->setValue(SETTINGS_STD_CPP, "C++14");
+    if (mUI.mActionCpp17->isChecked())
+        mSettings->setValue(SETTINGS_STD_CPP, "C++17");
+    if (mUI.mActionCpp20->isChecked())
+        mSettings->setValue(SETTINGS_STD_CPP, "C++20");
 
     // Main window settings
     mSettings->setValue(SETTINGS_TOOLBARS_MAIN_SHOW, mUI.mToolBarMain->isVisible());
@@ -400,32 +412,8 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
         p.ignorePaths(v);
 
         if (!mProjectFile->getAnalyzeAllVsConfigs()) {
-            std::set<std::string> filenames;
             Settings::PlatformType platform = (Settings::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
-            for (std::list<ImportProject::FileSettings>::iterator it = p.fileSettings.begin(); it != p.fileSettings.end();) {
-                if (it->cfg.empty()) {
-                    ++it;
-                    continue;
-                }
-                const ImportProject::FileSettings &fs = *it;
-                bool remove = false;
-                if (fs.cfg.compare(0,5,"Debug") != 0)
-                    remove = true;
-                if (platform == Settings::Win64 && fs.platformType != platform)
-                    remove = true;
-                else if ((platform == Settings::Win32A || platform == Settings::Win32W) && fs.platformType == Settings::Win64)
-                    remove = true;
-                else if (fs.platformType != Settings::Win64 && platform == Settings::Win64)
-                    remove = true;
-                else if (filenames.find(fs.filename) != filenames.end())
-                    remove = true;
-                if (remove) {
-                    it = p.fileSettings.erase(it);
-                } else {
-                    filenames.insert(fs.filename);
-                    ++it;
-                }
-            }
+            p.selectOneVsConfig(platform);
         }
     } else {
         enableProjectActions(false);
@@ -502,6 +490,7 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
     mThread->setFiles(fileNames);
     if (mProjectFile && !checkConfiguration)
         mThread->setAddonsAndTools(mProjectFile->getAddonsAndTools(), mSettings->value(SETTINGS_MISRA_FILE).toString());
+    mThread->setSuppressions(mProjectFile ? mProjectFile->getSuppressions() : QList<Suppressions::Suppression>());
     QDir inf(mCurrentDirectory);
     const QString checkPath = inf.canonicalPath();
     setPath(SETTINGS_LAST_CHECK_PATH, checkPath);
@@ -745,14 +734,14 @@ Library::Error MainWindow::loadLibrary(Library *library, const QString &filename
     if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
         return ret;
 
-#ifdef CFGDIR
-    // Try to load the library from CFGDIR..
-    const QString cfgdir = CFGDIR;
-    if (!cfgdir.isEmpty()) {
-        ret = library->load(nullptr, (cfgdir+"/"+filename).toLatin1());
+#ifdef FILESDIR
+    // Try to load the library from FILESDIR/cfg..
+    const QString filesdir = FILESDIR;
+    if (!filesdir.isEmpty()) {
+        ret = library->load(nullptr, (filesdir+"/cfg/"+filename).toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
             return ret;
-        ret = library->load(nullptr, (cfgdir+"/cfg/"+filename).toLatin1());
+        ret = library->load(nullptr, (filesdir+filename).toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
             return ret;
     }
@@ -827,6 +816,17 @@ Settings MainWindow::getCppcheckSettings()
 
     Settings result;
 
+    const bool std = tryLoadLibrary(&result.library, "std.cfg");
+    bool posix = true;
+    if (result.posix())
+        posix = tryLoadLibrary(&result.library, "posix.cfg");
+    bool windows = true;
+    if (result.isWindowsPlatform())
+        windows = tryLoadLibrary(&result.library, "windows.cfg");
+
+    if (!std || !posix || !windows)
+        QMessageBox::critical(this, tr("Error"), tr("Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=<directory> at the command line to specify where this file is located. Please note that --data-dir is supposed to be used by installation scripts and therefore the GUI does not start when it is used, all that happens is that the setting is configured.").arg(!std ? "std.cfg" : !posix ? "posix.cfg" : "windows.cfg"));
+
     // If project file loaded, read settings from it
     if (mProjectFile) {
         QStringList dirs = mProjectFile->getIncludeDirs();
@@ -849,14 +849,17 @@ Settings MainWindow::getCppcheckSettings()
             tryLoadLibrary(&result.library, filename);
         }
 
-        const QList<Suppressions::Suppression> &suppressions = mProjectFile->getSuppressions();
-        foreach (const Suppressions::Suppression &suppression, suppressions) {
+        foreach (const Suppressions::Suppression &suppression, mProjectFile->getSuppressions()) {
             result.nomsg.addSuppression(suppression);
         }
 
         // Only check the given -D configuration
         if (!defines.isEmpty())
             result.maxConfigs = 1;
+
+        // If importing a project, only check the given configuration
+        if (!mProjectFile->getImportProject().isEmpty())
+            result.checkAllConfigurations = false;
 
         const QString &buildDir = mProjectFile->getBuildDir();
         if (!buildDir.isEmpty()) {
@@ -881,6 +884,16 @@ Settings MainWindow::getCppcheckSettings()
                 }
             }
         }
+
+        result.maxCtuDepth = mProjectFile->getMaxCtuDepth();
+        result.checkHeaders = mProjectFile->getCheckHeaders();
+        result.checkUnusedTemplates = mProjectFile->getCheckUnusedTemplates();
+        result.safeChecks.classes = mProjectFile->getSafeChecks().classes;
+        result.safeChecks.externalFunctions = mProjectFile->getSafeChecks().externalFunctions;
+        result.safeChecks.internalFunctions = mProjectFile->getSafeChecks().internalFunctions;
+        result.safeChecks.externalVariables = mProjectFile->getSafeChecks().externalVariables;
+        foreach (QString s, mProjectFile->getCheckUnknownFunctionReturn())
+            result.checkUnknownFunctionReturn.insert(s.toStdString());
     }
 
     // Include directories (and files) are searched in listed order.
@@ -908,28 +921,11 @@ Settings MainWindow::getCppcheckSettings()
     result.jobs = mSettings->value(SETTINGS_CHECK_THREADS, 1).toInt();
     result.inlineSuppressions = mSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool();
     result.inconclusive = mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool();
-    if (result.platformType == cppcheck::Platform::Unspecified)
+    if (!mProjectFile || result.platformType == cppcheck::Platform::Unspecified)
         result.platform((cppcheck::Platform::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt());
-    if (mSettings->value(SETTINGS_STD_CPP03, false).toBool())
-        result.standards.cpp = Standards::CPP03;
-    else if (mSettings->value(SETTINGS_STD_CPP11, false).toBool())
-        result.standards.cpp = Standards::CPP11;
-    else if (mSettings->value(SETTINGS_STD_CPP14, true).toBool())
-        result.standards.cpp = Standards::CPP14;
-    result.standards.c = mSettings->value(SETTINGS_STD_C99, true).toBool() ? Standards::C99 : (mSettings->value(SETTINGS_STD_C11, false).toBool() ? Standards::C11 : Standards::C89);
-    result.standards.posix = mSettings->value(SETTINGS_STD_POSIX, false).toBool();
+    result.standards.setCPP(mSettings->value(SETTINGS_STD_CPP, QString()).toString().toStdString());
+    result.standards.setC(mSettings->value(SETTINGS_STD_C, QString()).toString().toStdString());
     result.enforcedLang = (Settings::Language)mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();
-
-    const bool std = tryLoadLibrary(&result.library, "std.cfg");
-    bool posix = true;
-    if (result.standards.posix)
-        posix = tryLoadLibrary(&result.library, "posix.cfg");
-    bool windows = true;
-    if (result.isWindowsPlatform())
-        windows = tryLoadLibrary(&result.library, "windows.cfg");
-
-    if (!std || !posix || !windows)
-        QMessageBox::critical(this, tr("Error"), tr("Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=<directory> at the command line to specify where this file is located. Please note that --data-dir is supposed to be used by installation scripts and therefore the GUI does not start when it is used, all that happens is that the setting is configured.").arg(!std ? "std.cfg" : !posix ? "posix.cfg" : "windows.cfg"));
 
     if (result.jobs <= 1) {
         result.jobs = 1;
@@ -1016,12 +1012,14 @@ void MainWindow::programSettings()
     SettingsDialog dialog(mApplications, mTranslation, this);
     if (dialog.exec() == QDialog::Accepted) {
         dialog.saveSettingValues();
+        mSettings->sync();
         mUI.mResults->updateSettings(dialog.showFullPath(),
                                      dialog.saveFullPath(),
                                      dialog.saveAllErrors(),
                                      dialog.showNoErrorsMessage(),
                                      dialog.showErrorId(),
                                      dialog.showInconclusive());
+        mUI.mResults->updateStyleSetting(mSettings);
         const QString newLang = mSettings->value(SETTINGS_LANGUAGE, "en").toString();
         setLanguage(newLang);
     }
@@ -1118,7 +1116,7 @@ void MainWindow::openResults()
         QMessageBox msgBox(this);
         msgBox.setWindowTitle(tr("Cppcheck"));
         const QString msg(tr("Current results will be cleared.\n\n"
-                             "Opening a new XML file will clear current results."
+                             "Opening a new XML file will clear current results.\n"
                              "Do you want to proceed?"));
         msgBox.setText(msg);
         msgBox.setIcon(QMessageBox::Warning);
@@ -1491,7 +1489,7 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool check
     // file's location directory as root path
     if (rootpath.isEmpty() || rootpath == ".")
         mCurrentDirectory = inf.canonicalPath();
-    else if (rootpath.startsWith("."))
+    else if (rootpath.startsWith("./"))
         mCurrentDirectory = inf.canonicalPath() + rootpath.mid(1);
     else
         mCurrentDirectory = rootpath;
@@ -1499,7 +1497,7 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool check
     if (!projectFile->getBuildDir().isEmpty()) {
         QString buildDir = projectFile->getBuildDir();
         if (!QDir::isAbsolutePath(buildDir))
-            buildDir = mCurrentDirectory + '/' + buildDir;
+            buildDir = inf.canonicalPath() + '/' + buildDir;
         if (!QDir(buildDir).exists()) {
             QMessageBox msg(QMessageBox::Critical,
                             tr("Cppcheck"),
@@ -1658,8 +1656,12 @@ void MainWindow::openRecentProject()
     const QString project = action->data().toString();
     QFileInfo inf(project);
     if (inf.exists()) {
-        loadProjectFile(project);
-        loadLastResults();
+        if (inf.suffix() == "xml")
+            loadResults(project);
+        else {
+            loadProjectFile(project);
+            loadLastResults();
+        }
     } else {
         const QString text(tr("The project file\n\n%1\n\n could not be found!\n\n"
                               "Do you want to remove the file from the recently "

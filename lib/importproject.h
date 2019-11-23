@@ -82,10 +82,14 @@ public:
     };
     std::list<FileSettings> fileSettings;
 
+    void selectOneVsConfig(cppcheck::Platform::PlatformType platform);
+
     // Cppcheck GUI output
     struct {
+        std::string analyzeAllVsConfigs;
         std::vector<std::string> pathNames;
         std::list<std::string> libraries;
+        std::list<std::string> excludedPaths;
         std::string projectFile;
         std::string platform;
     } guiProject;
@@ -102,7 +106,54 @@ private:
     void importSln(std::istream &istr, const std::string &path);
     void importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories);
     void importBcb6Prj(const std::string &projectFilename);
+
+    std::string mPath;
 };
+
+
+namespace CppcheckXml {
+    const char ProjectElementName[] = "project";
+    const char ProjectVersionAttrib[] = "version";
+    const char ProjectFileVersion[] = "1";
+    const char BuildDirElementName[] = "builddir";
+    const char ImportProjectElementName[] = "importproject";
+    const char AnalyzeAllVsConfigsElementName[] = "analyze-all-vs-configs";
+    const char IncludeDirElementName[] = "includedir";
+    const char DirElementName[] = "dir";
+    const char DirNameAttrib[] = "name";
+    const char DefinesElementName[] = "defines";
+    const char DefineName[] = "define";
+    const char DefineNameAttrib[] = "name";
+    const char UndefinesElementName[] = "undefines";
+    const char UndefineName[] = "undefine";
+    const char PathsElementName[] = "paths";
+    const char PathName[] = "dir";
+    const char PathNameAttrib[] = "name";
+    const char RootPathName[] = "root";
+    const char RootPathNameAttrib[] = "name";
+    const char IgnoreElementName[] = "ignore";
+    const char IgnorePathName[] = "path";
+    const char IgnorePathNameAttrib[] = "name";
+    const char ExcludeElementName[] = "exclude";
+    const char ExcludePathName[] = "path";
+    const char ExcludePathNameAttrib[] = "name";
+    const char LibrariesElementName[] = "libraries";
+    const char LibraryElementName[] = "library";
+    const char PlatformElementName[] = "platform";
+    const char SuppressionsElementName[] = "suppressions";
+    const char SuppressionElementName[] = "suppression";
+    const char AddonElementName[] = "addon";
+    const char AddonsElementName[] = "addons";
+    const char ToolElementName[] = "tool";
+    const char ToolsElementName[] = "tools";
+    const char TagsElementName[] = "tags";
+    const char TagElementName[] = "tag";
+    const char CheckHeadersElementName[] = "check-headers";
+    const char CheckUnusedTemplatesElementName[] = "check-unused-templates";
+    const char MaxCtuDepthElementName[] = "max-ctu-depth";
+    const char CheckUnknownFunctionReturn[] = "check-unknown-function-return-values";
+    const char Name[] = "name";
+}
 
 /// @}
 //---------------------------------------------------------------------------

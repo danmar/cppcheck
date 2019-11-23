@@ -1,1 +1,1 @@
-pcre,ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.39.tar.bz2 -H sha256:b858099f82483031ee02092711689e7245586ada49e534a06e678b8ea9549e8b
+pcre,https://ftp.pcre.org/pub/pcre/pcre-8.43.tar.gz -H sha256:0b8e7465dc5e98c757cc3650a20a7843ee4c3edf50aaf60bb33fd879690d2c73

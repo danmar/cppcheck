@@ -134,15 +134,16 @@ static std::string writestr(const std::string &str, bool gccStyle = false)
     return ostr.str();
 }
 
-void TestFixture::assert_(const char * const filename, const unsigned int linenr, const bool condition) const
+bool TestFixture::assert_(const char * const filename, const unsigned int linenr, const bool condition) const
 {
     if (!condition) {
         ++fails_counter;
         errmsg << getLocationStr(filename, linenr) << ": Assertion failed." << std::endl << "_____" << std::endl;
     }
+    return condition;
 }
 
-void TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg) const
+bool TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg) const
 {
     if (expected != actual) {
         ++fails_counter;
@@ -155,6 +156,7 @@ void TestFixture::assertEquals(const char * const filename, const unsigned int l
             errmsg << "Hint:" << std::endl <<  msg << std::endl;
         errmsg << "_____" << std::endl;
     }
+    return expected == actual;
 }
 
 std::string TestFixture::deleteLineNumber(const std::string &message) const
@@ -186,20 +188,20 @@ void TestFixture::assertEqualsWithoutLineNumbers(const char * const filename, co
     assertEquals(filename, linenr, deleteLineNumber(expected), deleteLineNumber(actual), msg);
 }
 
-void TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const char expected[], const std::string& actual, const std::string &msg) const
+bool TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const char expected[], const std::string& actual, const std::string &msg) const
 {
-    assertEquals(filename, linenr, std::string(expected), actual, msg);
+    return assertEquals(filename, linenr, std::string(expected), actual, msg);
 }
-void TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const char expected[], const char actual[], const std::string &msg) const
+bool TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const char expected[], const char actual[], const std::string &msg) const
 {
-    assertEquals(filename, linenr, std::string(expected), std::string(actual), msg);
+    return assertEquals(filename, linenr, std::string(expected), std::string(actual), msg);
 }
-void TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const std::string& expected, const char actual[], const std::string &msg) const
+bool TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const std::string& expected, const char actual[], const std::string &msg) const
 {
-    assertEquals(filename, linenr, expected, std::string(actual), msg);
+    return assertEquals(filename, linenr, expected, std::string(actual), msg);
 }
 
-void TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const long long expected, const long long actual, const std::string &msg) const
+bool TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const long long expected, const long long actual, const std::string &msg) const
 {
     if (expected != actual) {
         std::ostringstream ostr1;
@@ -208,6 +210,7 @@ void TestFixture::assertEquals(const char * const filename, const unsigned int l
         ostr2 << actual;
         assertEquals(filename, linenr, ostr1.str(), ostr2.str(), msg);
     }
+    return expected == actual;
 }
 
 void TestFixture::assertEqualsDouble(const char * const filename, const unsigned int linenr, const double expected, const double actual, const double tolerance, const std::string &msg) const
@@ -280,13 +283,15 @@ void TestFixture::printHelp()
     std::cout << "Testrunner - run Cppcheck tests\n"
               "\n"
               "Syntax:\n"
-              "    testrunner [OPTIONS] [TestClass::TestCase]\n"
+              "    testrunner [OPTIONS] [TestClass::TestCase...]\n"
               "    run all test cases:\n"
               "        testrunner\n"
               "    run all test cases in TestClass:\n"
               "        testrunner TestClass\n"
               "    run TestClass::TestCase:\n"
               "        testrunner TestClass::TestCase\n"
+              "    run all test cases in TestClass1 and TestClass2::TestCase:\n"
+              "        testrunner TestClass1 TestClass2::TestCase\n"
               "\n"
               "Options:\n"
               "    -q                   Do not print the test cases that have run.\n"
@@ -311,22 +316,21 @@ void TestFixture::processOptions(const options& args)
 
 std::size_t TestFixture::runTests(const options& args)
 {
-    std::string classname(args.which_test());
-    std::string testname;
-    if (classname.find("::") != std::string::npos) {
-        testname = classname.substr(classname.find("::") + 2);
-        classname.erase(classname.find("::"));
-    }
-
     countTests = 0;
     errmsg.str("");
 
-    const TestSet &tests = TestRegistry::theInstance().tests();
+    for (std::string classname : args.which_test()) {
+        std::string testname;
+        if (classname.find("::") != std::string::npos) {
+            testname = classname.substr(classname.find("::") + 2);
+            classname.erase(classname.find("::"));
+        }
 
-    for (TestFixture * test : tests) {
-        if (classname.empty() || test->classname == classname) {
-            test->processOptions(args);
-            test->run(testname);
+        for (TestFixture * test : TestRegistry::theInstance().tests()) {
+            if (classname.empty() || test->classname == classname) {
+                test->processOptions(args);
+                test->run(testname);
+            }
         }
     }
 
@@ -343,8 +347,8 @@ std::size_t TestFixture::runTests(const options& args)
 
     if (!missingLibs.empty()) {
         std::cerr << "Missing libraries: ";
-        for (std::set<std::string>::const_iterator i = missingLibs.begin(); i != missingLibs.end(); ++i)
-            std::cerr << *i << "  ";
+        for (const std::string & missingLib : missingLibs)
+            std::cerr << missingLib << "  ";
         std::cerr << std::endl << std::endl;
     }
     std::cerr.flush();

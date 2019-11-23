@@ -52,15 +52,8 @@ public:
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         CheckAutoVariables checkAutoVariables(tokenizer, settings, errorLogger);
         checkAutoVariables.assignFunctionArg();
-        checkAutoVariables.returnReference();
         checkAutoVariables.checkVarLifetime();
         checkAutoVariables.autoVariables();
-    }
-
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        (void)tokenizer;
-        (void)settings;
-        (void)errorLogger;
     }
 
     /** assign function argument */
@@ -69,33 +62,22 @@ public:
     /** Check auto variables */
     void autoVariables();
 
-    /** Returning reference to local/temporary variable */
-    void returnReference();
-
     void checkVarLifetime();
 
     void checkVarLifetimeScope(const Token * start, const Token * end);
 
 private:
-    /**
-     * Returning a temporary object?
-     * @param tok pointing at the "return" token
-     * @return true if a temporary object is returned
-     */
-    static bool returnTemporary(const Token *tok);
-
     void errorReturnAddressToAutoVariable(const Token *tok);
     void errorReturnAddressToAutoVariable(const Token *tok, const ValueFlow::Value *value);
-    void errorAssignAddressOfLocalArrayToGlobalPointer(const Token *pointer, const Token *array);
-    void errorAssignAddressOfLocalVariableToGlobalPointer(const Token *pointer, const Token *variable);
     void errorReturnPointerToLocalArray(const Token *tok);
     void errorAutoVariableAssignment(const Token *tok, bool inconclusive);
     void errorReturnDanglingLifetime(const Token *tok, const ValueFlow::Value* val);
     void errorInvalidLifetime(const Token *tok, const ValueFlow::Value* val);
     void errorDanglngLifetime(const Token *tok, const ValueFlow::Value *val);
-    void errorReturnReference(const Token *tok, ErrorPath errorPath);
+    void errorDanglingTemporaryLifetime(const Token* tok, const ValueFlow::Value* val);
+    void errorReturnReference(const Token* tok, ErrorPath errorPath, bool inconclusive);
     void errorDanglingReference(const Token *tok, const Variable *var, ErrorPath errorPath);
-    void errorReturnTempReference(const Token *tok);
+    void errorReturnTempReference(const Token* tok, ErrorPath errorPath, bool inconclusive);
     void errorInvalidDeallocation(const Token *tok, const ValueFlow::Value *val);
     void errorReturnAddressOfFunctionParameter(const Token *tok, const std::string &varname);
     void errorUselessAssignmentArg(const Token *tok);
@@ -106,11 +88,10 @@ private:
         CheckAutoVariables c(nullptr,settings,errorLogger);
         c.errorAutoVariableAssignment(nullptr, false);
         c.errorReturnAddressToAutoVariable(nullptr);
-        c.errorAssignAddressOfLocalArrayToGlobalPointer(nullptr, nullptr);
         c.errorReturnPointerToLocalArray(nullptr);
-        c.errorReturnReference(nullptr, errorPath);
+        c.errorReturnReference(nullptr, errorPath, false);
         c.errorDanglingReference(nullptr, nullptr, errorPath);
-        c.errorReturnTempReference(nullptr);
+        c.errorReturnTempReference(nullptr, errorPath, false);
         c.errorInvalidDeallocation(nullptr, nullptr);
         c.errorReturnAddressOfFunctionParameter(nullptr, "parameter");
         c.errorUselessAssignmentArg(nullptr);
@@ -118,6 +99,7 @@ private:
         c.errorReturnDanglingLifetime(nullptr, nullptr);
         c.errorInvalidLifetime(nullptr, nullptr);
         c.errorDanglngLifetime(nullptr, nullptr);
+        c.errorDanglingTemporaryLifetime(nullptr, nullptr);
     }
 
     static std::string myName() {

@@ -306,7 +306,7 @@ bool Suppressions::isSuppressedLocal(const Suppressions::ErrorMessage &errmsg)
     return false;
 }
 
-void Suppressions::dump(std::ostream & out)
+void Suppressions::dump(std::ostream & out) const
 {
     out << "  <suppressions>" << std::endl;
     for (const Suppression &suppression : mSuppressions) {

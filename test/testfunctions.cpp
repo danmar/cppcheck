@@ -38,7 +38,7 @@ private:
         settings.addEnabled("style");
         settings.addEnabled("warning");
         settings.addEnabled("portability");
-        settings.standards.posix = true;
+        settings.libraries.emplace_back("posix");
         settings.standards.c = Standards::C11;
         settings.standards.cpp = Standards::CPP11;
         LOAD_LIB_2(settings.library, "std.cfg");
@@ -62,7 +62,7 @@ private:
 
         // Invalid function usage
         TEST_CASE(invalidFunctionUsage1);
-        TEST_CASE(invalidFunctionUsageStrings);
+        // TODO TEST_CASE(invalidFunctionUsageStrings);
 
         // Math function usage
         TEST_CASE(mathfunctionCall_fmod);
@@ -96,12 +96,6 @@ private:
 
         CheckFunctions checkFunctions(&tokenizer, settings_, this);
         checkFunctions.runChecks(&tokenizer, settings_, this);
-
-        // Simplify...
-        tokenizer.simplifyTokenList2();
-
-        // Check...
-        checkFunctions.runSimplifiedChecks(&tokenizer, settings_, this);
     }
 
     void prohibitedFunctions_posix() {
@@ -438,8 +432,16 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Invalid memset() argument nr 3. A non-boolean value is required.\n", errout.str());
 
-        check("int f() { strtol(a,b,sizeof(a)!=12); }");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strtol() argument nr 3. The value is 0 or 1 (boolean) but the valid values are '0,2:36'.\n", errout.str());
+        check("void boolArgZeroIsInvalidButOneIsValid(int param) {\n"
+              "  void* buffer = calloc(param > 0, 10);\n"
+              "  free(buffer);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Invalid calloc() argument nr 1. The value is 0 or 1 (boolean) but the valid values are '1:'.\n", errout.str());
+
+        check("void boolArgZeroIsValidButOneIsInvalid(int param) {\n"
+              "  strtol(a, b, param > 0);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Invalid strtol() argument nr 3. The value is 0 or 1 (boolean) but the valid values are '0,2:36'.\n", errout.str());
 
         check("int f() { strtol(a,b,1); }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strtol() argument nr 3. The value is 1 but the valid values are '0,2:36'.\n", errout.str());
@@ -1174,6 +1176,21 @@ private:
                       "[test.cpp:4]: (warning) Return value of function testfunc2() is not used.\n"
                       "[test.cpp:8]: (warning) Return value of function TestStruct1.testfunc1() is not used.\n"
                       "[test.cpp:9]: (warning) Return value of function TestStruct1.testfunc2() is not used.\n", errout.str());
+
+        // #9006
+        check("template <typename... a> uint8_t b(std::tuple<uint8_t> d) {\n"
+              "  std::tuple<a...> c{std::move(d)};\n"
+              "  return std::get<0>(c);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { int x; };\n"
+              "template <class... Ts>\n"
+              "A f(int x, Ts... xs) {\n"
+              "    return {std::move(x), static_cast<int>(xs)...};\n"
+              "}\n"
+              "A g() { return f(1); }\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void memsetZeroBytes() {

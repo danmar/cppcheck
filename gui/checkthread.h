@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -146,6 +146,8 @@ private:
 
     void parseAddonErrors(QString err, const QString &tool);
     void parseClangErrors(const QString &tool, const QString &file0, QString err);
+
+    bool isSuppressed(const Suppressions::ErrorMessage &errorMessage) const;
 
     QStringList mFiles;
     bool mAnalyseWholeProgram;

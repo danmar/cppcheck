@@ -1,6 +1,5 @@
 // To test:
 // ~/cppcheck/cppcheck --dump cert-test.c && python ../cert.py -verify cert-test.c.dump
-
 struct S {
     short a;
     short b;
@@ -11,6 +10,26 @@ struct PackedStruct {
     short a;
     short b;
 };
+
+void api01()
+{
+    const size_t String_Size = 20;
+    struct bad_node_s
+    {
+        char name[String_Size];
+        struct bad_node_s* next;      // cert-API01-C
+    }
+    struct good_node_s
+    {
+        struct good_node_s* next;
+        char name[String_Size];
+    }
+    struct also_good_node_s
+    {
+        struct also_good_node_s* next;
+        char *name;
+    }
+}
 
 void dostuff(int *data);
 
@@ -55,9 +74,109 @@ unsigned char int31(int x)
     x = (unsigned long long)-1; // cert-INT31-c
 }
 
+void env33()
+{
+    system("chmod -x $(which chmod)"); // cert-ENV33-C
+    int system;
+}
+
+void msc24()
+{
+    struct S {
+    int x; int fopen;
+    };
+
+    struct S s;
+    time_t rawtime;
+    struct tm *timeinfo;
+    char buffer[256];
+    int i;
+    long int li;
+    long long int lli;
+    FILE *f;
+
+    s.fopen = 123;
+
+    f = fopen ("myfile.txt","w+");  //cert-MSC24-C
+    setbuf ( f , buffer )   //cert-MSC24-C
+    for ( i='A' ; i<='Z' ; i++)
+        fputc ( n, f);
+    rewind (f);             //cert-MSC24-C
+    fclose (f);
+
+    time ( &rawtime );
+    timeinfo = localtime ( &rawtime );
+    printf ( "The current date/time is: %s", asctime (timeinfo) ); //cert-MSC24-C
+
+    n = atof (buffer);              //cert-MSC24-C
+    m = sin (n*pi/180);
+
+    i = atoi (buffer);      //cert-MSC24-C
+
+    li = atol(buffer);      //cert-MSC24-C
+
+    lli = atoll(buffer);    //cert-MSC24-C
+
+    time (&rawtime);
+    printf ("The current local time is: %s", ctime (&rawtime)); //cert-MSC24-C
+
+    freopen ("myfile.txt","w",stdout);                  //cert-MSC24-C
+    printf ("This sentence is redirected to a file.");
+    fclose (stdout);
+}
+
 void msc30()
 {
     unsigned int num = rand(); // cert-MSC30-c
     int rand = 5;
     int a = rand;
 }
+
+void exp15()
+{
+    int x=5, y=7;
+
+    if(x==y);                            //cert-EXP15-C
+    {
+        printf("not working\n");
+    }
+    if(x)
+        ;
+}
+
+void str03()
+{
+    char *string_data=(char*)malloc(16);
+    char a[16];
+    int d;
+    strncpy(a, string_data, sizeof(a));     //cert-STR03-C
+    strncpy(a, string_data, 5); d=sizeof(int);
+}
+
+void str05()
+{
+    int x=5, y=7;
+
+    if(x==y);                            //cert-EXP15-C
+    {
+        printf("not working\n");
+    }
+    if(x)
+        ;
+}
+
+void str07(char *buf, const char *newBuf)
+{
+    const char *str="test";
+    strcat(buf,"bla");
+    strcat(buf, str);    //cert-STR07-C
+    strcat(buf, newBuf); //cert-STR07-C
+    strcpy(str, newBuf); //cert-STR07-C
+}
+
+void str11()
+{
+    const char str[3]="abc";    //cert-STR11-C
+    const char *x[10]; x[3]="def";
+}
+

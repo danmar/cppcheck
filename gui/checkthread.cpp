@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,8 @@
 #include <QDebug>
 #include <QDir>
 #include <QFileInfo>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QProcess>
 #include <QSettings>
 #include "checkthread.h"
@@ -120,12 +122,12 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
                 continue;
 
             QStringList args;
-            for (std::list<std::string>::const_iterator I = fileSettings->includePaths.begin(); I != fileSettings->includePaths.end(); ++I)
-                args << ("-I" + QString::fromStdString(*I));
+            for (std::list<std::string>::const_iterator incIt = fileSettings->includePaths.begin(); incIt != fileSettings->includePaths.end(); ++incIt)
+                args << ("-I" + QString::fromStdString(*incIt));
             for (std::list<std::string>::const_iterator i = fileSettings->systemIncludePaths.begin(); i != fileSettings->systemIncludePaths.end(); ++i)
                 args << "-isystem" << QString::fromStdString(*i);
-            foreach (QString D, QString::fromStdString(fileSettings->defines).split(";")) {
-                args << ("-D" + D);
+            foreach (QString def, QString::fromStdString(fileSettings->defines).split(";")) {
+                args << ("-D" + def);
             }
             foreach (const std::string& U, fileSettings->undefs) {
                 args << QString::fromStdString("-U" + U);
@@ -170,7 +172,13 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
                 case Standards::CPP14:
                     args << "-std=c++14";
                     break;
-                };
+                case Standards::CPP17:
+                    args << "-std=c++17";
+                    break;
+                case Standards::CPP20:
+                    args << "-std=c++20";
+                    break;
+                }
             }
 
             QString analyzerInfoFile;
@@ -289,7 +297,7 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
             }
 
             QStringList args;
-            args << addonFilePath << dumpFile;
+            args << addonFilePath << "--cli" << dumpFile;
             if (addon == "misra" && !mMisraFile.isEmpty() && QFileInfo(mMisraFile).exists()) {
                 if (mMisraFile.endsWith(".pdf", Qt::CaseInsensitive))
                     args << "--misra-pdf=" + mMisraFile;
@@ -306,14 +314,14 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
             }
             process.start(python, args);
             process.waitForFinished();
-            const QString errout(process.readAllStandardError());
+            const QString output(process.readAllStandardOutput());
             QFile f(dumpFile + '-' + addon + "-results");
             if (f.open(QIODevice::WriteOnly | QIODevice::Text)) {
                 QTextStream out(&f);
-                out << errout;
+                out << output;
                 f.close();
             }
-            parseAddonErrors(errout, addon);
+            parseAddonErrors(output, addon);
         }
     }
 }
@@ -326,22 +334,41 @@ void CheckThread::stop()
 
 void CheckThread::parseAddonErrors(QString err, const QString &tool)
 {
-    Q_UNUSED(tool);
+    Q_UNUSED(tool)
     QTextStream in(&err, QIODevice::ReadOnly);
     while (!in.atEnd()) {
         QString line = in.readLine();
-        QRegExp r1("\\[([a-zA-Z]?:?[^:]+):([0-9]+)\\]:?[ ][(]([a-z]+)[)]:? (.+) \\[([a-zA-Z0-9_\\-\\.]+)\\]");
-        if (!r1.exactMatch(line))
+        if (!line.startsWith("{"))
             continue;
-        const std::string &filename = r1.cap(1).toStdString();
-        const int lineNumber = r1.cap(2).toInt();
-        const std::string severity = r1.cap(3).toStdString();
-        const std::string message = r1.cap(4).toStdString();
-        const std::string id = r1.cap(5).toStdString();
+
+        const QJsonDocument doc = QJsonDocument::fromJson(line.toLocal8Bit());
+        const QJsonObject obj = doc.object();
+
+        /*
+        msg = { 'file': location.file,
+                'linenr': location.linenr,
+                'column': location.column,
+                'severity': severity,
+                'message': message,
+                'addon': addon,
+                'errorId': errorId,
+                'extra': extra}
+        */
+
+        const std::string &filename = obj["file"].toString().toStdString();
+        const int lineNumber = obj["linenr"].toInt();
+        const int column = obj["column"].toInt();
+        const std::string severity = obj["severity"].toString().toStdString();
+        const std::string message = obj["message"].toString().toStdString();
+        const std::string id = (obj["addon"].toString() + "-" + obj["errorId"].toString()).toStdString();
 
         std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
-        callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(filename, lineNumber));
+        callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(filename, lineNumber, column));
         ErrorLogger::ErrorMessage errmsg(callstack, filename, Severity::fromString(severity), message, id, false);
+
+        if (isSuppressed(errmsg.toSuppressionsErrorMessage()))
+            continue;
+
         mResult.reportErr(errmsg);
     }
 }
@@ -359,9 +386,9 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
         if (line.startsWith("Assertion failed:")) {
             ErrorItem e;
             e.errorPath.append(QErrorPathItem());
-            e.errorPath.last().file = file0;
-            e.errorPath.last().line = 1;
-            e.errorPath.last().col  = 1;
+            e.errorPath.last().file   = file0;
+            e.errorPath.last().line   = 1;
+            e.errorPath.last().column = 1;
             e.errorId = tool + "-internal-error";
             e.file0 = file0;
             e.message = line;
@@ -381,7 +408,7 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
         errorItem.errorPath.append(QErrorPathItem());
         errorItem.errorPath.last().file = r1.cap(1);
         errorItem.errorPath.last().line = r1.cap(2).toInt();
-        errorItem.errorPath.last().col  = r1.cap(3).toInt();
+        errorItem.errorPath.last().column = r1.cap(3).toInt();
         if (r1.cap(4) == "warning")
             errorItem.severity = Severity::SeverityType::warning;
         else if (r1.cap(4) == "error" || r1.cap(4) == "fatal error")
@@ -428,18 +455,12 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
         errorMessage.errorId = e.errorId.toStdString();
         errorMessage.symbolNames = e.symbolNames.toStdString();
 
-        bool isSuppressed = false;
-        foreach (const Suppressions::Suppression &suppression, mSuppressions) {
-            if (suppression.isSuppressed(errorMessage)) {
-                isSuppressed = true;
-                break;
-            }
-        }
-        if (isSuppressed)
+        if (isSuppressed(errorMessage))
             continue;
+
         std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
         foreach (const QErrorPathItem &path, e.errorPath) {
-            callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(path.file.toStdString(), path.info.toStdString(), path.line));
+            callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(path.file.toStdString(), path.info.toStdString(), path.line, path.column));
         }
         const std::string f0 = file0.toStdString();
         const std::string msg = e.message.toStdString();
@@ -447,6 +468,15 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
         ErrorLogger::ErrorMessage errmsg(callstack, f0, e.severity, msg, id, false);
         mResult.reportErr(errmsg);
     }
+}
+
+bool CheckThread::isSuppressed(const Suppressions::ErrorMessage &errorMessage) const
+{
+    foreach (const Suppressions::Suppression &suppression, mSuppressions) {
+        if (suppression.isSuppressed(errorMessage))
+            return true;
+    }
+    return false;
 }
 
 QString CheckThread::clangCmd()

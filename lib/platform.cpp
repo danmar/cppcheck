@@ -1,6 +1,6 @@
 /*
 * Cppcheck - A tool for static C/C++ code analysis
-* Copyright (C) 2007-2018 Cppcheck team.
+* Copyright (C) 2007-2019 Cppcheck team.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -165,16 +165,16 @@ bool cppcheck::Platform::loadPlatformFile(const char exename[], const std::strin
             filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + filename);
             filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + filename + ".xml");
         }
-#ifdef CFGDIR
-        std::string cfgdir = CFGDIR;
-        if (!cfgdir.empty() && cfgdir[cfgdir.size()-1] != '/')
-            cfgdir += '/';
-        filenames.push_back(cfgdir + ("../platforms/" + filename));
-        filenames.push_back(cfgdir + ("../platforms/" + filename + ".xml"));
+#ifdef FILESDIR
+        std::string filesdir = FILESDIR;
+        if (!filesdir.empty() && filesdir[filesdir.size()-1] != '/')
+            filesdir += '/';
+        filenames.push_back(filesdir + ("platforms/" + filename));
+        filenames.push_back(filesdir + ("platforms/" + filename + ".xml"));
 #endif
         bool success = false;
-        for (int i = 0; i < filenames.size(); ++i) {
-            if (doc.LoadFile(filenames[i].c_str()) == tinyxml2::XML_SUCCESS) {
+        for (const std::string & f : filenames) {
+            if (doc.LoadFile(f.c_str()) == tinyxml2::XML_SUCCESS) {
                 success = true;
                 break;
             }

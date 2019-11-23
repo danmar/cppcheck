@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2017 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,10 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QtTest>
 #include <QObject>
 #include "testprojectfile.h"
 #include "projectfile.h"
+#include "settings.h"
+
+// Mock...
+const char Settings::SafeChecks::XmlRootName[] = "safe-checks";
+const char Settings::SafeChecks::XmlClasses[] = "class-public";
+const char Settings::SafeChecks::XmlExternalFunctions[] = "external-functions";
+const char Settings::SafeChecks::XmlInternalFunctions[] = "internal-functions";
+const char Settings::SafeChecks::XmlExternalVariables[] = "external-variables";
 
 void TestProjectFile::loadInexisting()
 {

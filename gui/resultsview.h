@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ class ResultsView : public QWidget {
     Q_OBJECT
 public:
 
-    explicit ResultsView(QWidget * parent = 0);
+    explicit ResultsView(QWidget * parent = nullptr);
     void initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler);
     ResultsView(const ResultsView &) = delete;
     virtual ~ResultsView();
@@ -106,6 +106,16 @@ public:
                         bool showNoErrorsMessage,
                         bool showErrorId,
                         bool showInconclusive);
+
+    /**
+     * @brief Update Code Editor Style
+     *
+     * Function will read updated Code Editor styling from
+     * stored program settings.
+     *
+     * @param settings Pointer to QSettings Object
+     */
+    void updateStyleSetting(QSettings *settings);
 
     /**
     * @brief Set the directory we are checking

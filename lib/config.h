@@ -20,7 +20,7 @@
 #endif
 
 // C++11 override
-#if defined(_MSC_VER) || (defined(__GNUC__) && (__GNUC >= 5)) || defined(__CPPCHECK__)
+#if defined(_MSC_VER) || (defined(__GNUC__) && (__GNUC__ >= 5)) || defined(__CPPCHECK__)
 #  define OVERRIDE override
 #else
 #  define OVERRIDE

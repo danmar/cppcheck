@@ -24,9 +24,11 @@
 
 #include "check.h"
 #include "config.h"
+#include "ctu.h"
 #include "errorlogger.h"
 #include "mathlib.h"
 #include "tokenize.h"
+#include "symboldatabase.h"
 
 #include <cstddef>
 #include <list>
@@ -34,20 +36,6 @@
 #include <string>
 #include <vector>
 
-class Settings;
-class SymbolDatabase;
-class Token;
-namespace ValueFlow {
-    class Value;
-}  // namespace ValueFlow
-namespace tinyxml2 {
-    class XMLElement;
-}  // namespace tinyxml2
-
-// CWE ids used
-static const struct CWE CWE119(119U); // Improper Restriction of Operations within the Bounds of a Memory Buffer
-
-class Variable;
 
 /// @addtogroup Checks
 /// @{
@@ -73,39 +61,78 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         CheckBufferOverrun checkBufferOverrun(tokenizer, settings, errorLogger);
         checkBufferOverrun.arrayIndex();
+        checkBufferOverrun.pointerArithmetic();
         checkBufferOverrun.bufferOverflow();
         checkBufferOverrun.arrayIndexThenCheck();
-    }
-
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        (void)tokenizer;
-        (void)settings;
-        (void)errorLogger;
+        checkBufferOverrun.stringNotZeroTerminated();
+        checkBufferOverrun.objectIndex();
     }
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckBufferOverrun c(nullptr, settings, errorLogger);
-        c.arrayIndexError(nullptr, nullptr, nullptr);
-        c.negativeIndexError(nullptr, nullptr, nullptr);
+        c.arrayIndexError(nullptr, std::vector<Dimension>(), std::vector<const ValueFlow::Value *>());
+        c.pointerArithmeticError(nullptr, nullptr, nullptr);
+        c.negativeIndexError(nullptr, std::vector<Dimension>(), std::vector<const ValueFlow::Value *>());
         c.arrayIndexThenCheckError(nullptr, "i");
+        c.bufferOverflowError(nullptr, nullptr);
+        c.objectIndexError(nullptr, nullptr, true);
     }
+
+    /** @brief Parse current TU and extract file info */
+    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const OVERRIDE;
+
+    /** @brief Analyse all file infos for all TU */
+    bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) OVERRIDE;
 
 private:
 
     void arrayIndex();
-    void arrayIndexError(const Token *tok, const Variable *var, const ValueFlow::Value *index);
-    void negativeIndexError(const Token *tok, const Variable *var, const ValueFlow::Value *negativeValue);
+    void arrayIndexError(const Token *tok, const std::vector<Dimension> &dimensions, const std::vector<const ValueFlow::Value *> &indexes);
+    void negativeIndexError(const Token *tok, const std::vector<Dimension> &dimensions, const std::vector<const ValueFlow::Value *> &indexes);
+
+    void pointerArithmetic();
+    void pointerArithmeticError(const Token *tok, const Token *indexToken, const ValueFlow::Value *indexValue);
 
     void bufferOverflow();
-    void bufferOverflowError(const Token *tok);
+    void bufferOverflowError(const Token *tok, const ValueFlow::Value *value);
 
     void arrayIndexThenCheck();
     void arrayIndexThenCheckError(const Token *tok, const std::string &indexName);
 
-    size_t getBufferSize(const Token *bufTok) const;
+    void stringNotZeroTerminated();
+    void terminateStrncpyError(const Token *tok, const std::string &varname);
+    void bufferNotZeroTerminatedError(const Token *tok, const std::string &varname, const std::string &function);
+
+    void objectIndex();
+    void objectIndexError(const Token *tok, const ValueFlow::Value *v, bool known);
+
+    ValueFlow::Value getBufferSize(const Token *bufTok) const;
+
+    // CTU
+
+    /** data for multifile checking */
+    class MyFileInfo : public Check::FileInfo {
+    public:
+        /** unsafe array index usage */
+        std::list<CTU::FileInfo::UnsafeUsage> unsafeArrayIndex;
+
+        /** unsafe pointer arithmetics */
+        std::list<CTU::FileInfo::UnsafeUsage> unsafePointerArith;
+
+        /** Convert MyFileInfo data into xml string */
+        std::string toString() const OVERRIDE;
+    };
+
+    static bool isCtuUnsafeBufferUsage(const Check *check, const Token *argtok, MathLib::bigint *offset, int type);
+    static bool isCtuUnsafeArrayIndex(const Check *check, const Token *argtok, MathLib::bigint *offset);
+    static bool isCtuUnsafePointerArith(const Check *check, const Token *argtok, MathLib::bigint *offset);
+
+    Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const OVERRIDE;
+    bool analyseWholeProgram1(const CTU::FileInfo *ctu, const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap, const CTU::FileInfo::UnsafeUsage &unsafeUsage, int type, ErrorLogger &errorLogger);
+
 
     static std::string myName() {
         return "Bounds checking";
@@ -114,9 +141,11 @@ private:
     std::string classInfo() const OVERRIDE {
         return "Out of bounds checking:\n"
                "- Array index out of bounds\n"
+               "- Pointer arithmetic overflow\n"
                "- Buffer overflow\n"
                "- Dangerous usage of strncat()\n"
-               "- Using array index before checking it\n";
+               "- Using array index before checking it\n"
+               "- Partial string write that leads to buffer that is not zero terminated.\n";
     }
 };
 /// @}

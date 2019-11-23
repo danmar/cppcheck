@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ class Platforms : public QObject {
     Q_OBJECT
 
 public:
-    explicit Platforms(QObject *parent = NULL);
+    explicit Platforms(QObject *parent = nullptr);
     void add(const QString &title, Settings::PlatformType platform);
     int getCount() const;
     void init();

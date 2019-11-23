@@ -64,10 +64,6 @@ public:
         checkSizeof.sizeofVoid();
     }
 
-    /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer* /*tokenizer*/, const Settings* /*settings*/, ErrorLogger* /*errorLogger*/) OVERRIDE {
-    }
-
     /** @brief %Check for 'sizeof sizeof ..' */
     void sizeofsizeof();
 

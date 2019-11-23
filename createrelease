@@ -20,12 +20,12 @@
 # git log --format='%aN' 1.81..HEAD | sort -u > AUTHORS2 && diff -y AUTHORS AUTHORS2 | less
 #
 # Update version numbers in:
-# sed -i "s/1.[0-9][0-9].99/1.82/" cli/main.cpp
-# sed -i "s/1.[0-9][0-9].99/1.82/" cmake/versions.cmake
-# sed -i "s/MINOR [0-9][0-9]/MINOR 82/" lib/version.h
-# sed -i "s/1.[0-9][0-9] dev/1.82/" man/manual.docbook
-# sed -i "s/1.[0-9][0-9] dev/1.82/" win_installer/productInfo.wxi
-# sed -i "s/1.[0-9][0-9].99/1.82/" win_installer/productInfo.wxi
+# sed -i "s/1.[0-9][0-9].99/1.89/" cli/main.cpp
+# sed -i "s/1.[0-9][0-9].99/1.89/" cmake/versions.cmake
+# sed -i "s/MINOR [0-9][0-9]/MINOR 89/" lib/version.h
+# sed -i "s/1.[0-9][0-9] dev/1.89/" win_installer/productInfo.wxi
+# sed -i "s/1.[0-9][0-9].99/1.89/" win_installer/productInfo.wxi
+# sed -i "s/Version 1.[0-9][0-9]/Version 1.89/" */*.md
 # Verify:
 # grep '\.99' */*.[ch]* && grep '[0-9][0-9] dev' */*.[ch]*
 # git commit -a -m "1.43: Set versions"
@@ -40,11 +40,14 @@
 # git tag 1.43
 # git push --tags
 #
+# Create a release folder on sourceforge:
+# https://sourceforge.net/projects/cppcheck/files/cppcheck/
+#
 # Create release:
 # ./createrelease 1.43
 #
 # Restore the Makefile:
-# ./dmake
+# make dmake && ./dmake
 # git commit -a -m "Makefile: Set debug mode"
 #
 # Update download link on index.php main page
@@ -59,6 +62,8 @@
 # ./build-cppcheck.sh 1.43
 #
 # run daca with new release
+# 1. edit OLD_VERSION
+# 2. scp tools/donate-cpu-server.py danielmarjamaki@cppcheck.osuosl.org:daca@home/
 
 # Tag to use
 tag=$1
@@ -66,20 +71,36 @@ tag=$1
 # Name of release
 releasename=cppcheck-$tag
 
-# Create archives..
-git archive --format=tar --prefix=$releasename/ $tag | gzip > ~/$releasename.tar.gz
-git archive --format=tar --prefix=$releasename/ $tag | bzip2 > ~/$releasename.tar.bz2
-git archive --format=zip -9 --prefix=$releasename/ $tag > ~/$releasename.zip
+set -e
 
-scp ~/$releasename.* danielmarjamaki,cppcheck@frs.sourceforge.net:/home/frs/project/c/cp/cppcheck/cppcheck/$tag/
+cd ~/cppcheck
+
+mkdir upload
+
+# Create archives..
+git archive --format=tar --prefix=$releasename/ $tag | gzip > upload/$releasename.tar.gz
+git archive --format=tar --prefix=$releasename/ $tag | bzip2 > upload/$releasename.tar.bz2
+git archive --format=zip -9 --prefix=$releasename/ $tag > upload/$releasename.zip
+cd upload
+wget https://www.pkeus.de/~philipp/Temp/$releasename-x64-Setup.msi
+#wget https://www.pkeus.de/~philipp/Temp/$releasename-x86-Setup.msi
+scp $releasename.* danielmarjamaki,cppcheck@frs.sourceforge.net:/home/frs/project/c/cp/cppcheck/cppcheck/$tag/
+rm $releasename.*
+cd ..
 
 # Generate the manual.pdf, manual.html and version.txt
-make clean && make
-./cppcheck --version > version.txt
-scp version.txt danielmarjamaki,cppcheck@web.sourceforge.net:htdocs/
-xsltproc -xinclude -o manual.fo /usr/share/xml/docbook/stylesheet/docbook-xsl/fo/docbook.xsl man/manual.docbook
-fop manual.fo -pdf manual.pdf
-#docbook2pdf man/manual.docbook
-scp manual.pdf danielmarjamaki,cppcheck@web.sourceforge.net:htdocs/
-xsltproc -o manual.html /usr/share/xml/docbook/stylesheet/nwalsh/xhtml/docbook.xsl man/manual.docbook
-scp manual.html danielmarjamaki,cppcheck@web.sourceforge.net:htdocs/
+make -j4
+./cppcheck --version > upload/version.txt
+cd ~/cppcheck/man
+./buildman.sh
+mv manual.pdf ../upload/
+mv manual.html ../upload/
+mv reference-cfg-format.pdf ../upload/
+mv reference-cfg-format.html ../upload/
+
+cd ~/cppcheck/upload
+scp * danielmarjamaki,cppcheck@web.sourceforge.net:htdocs/
+
+cd ~/cppcheck
+rm -rf upload
+

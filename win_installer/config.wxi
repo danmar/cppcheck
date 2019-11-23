@@ -9,10 +9,10 @@
   <?define QtDllDir = "..\bin" ?>
 
   <?if $(var.Platform) = x64 ?>
-    <?define CrtMergeModule = "$(env.CommonProgramFiles)\Merge Modules\Microsoft_VC150_CRT_x64.msm" ?>
+    <?define CrtMergeModule = "$(env.CommonProgramFiles)\Merge Modules\Microsoft_VC142_CRT_x64.msm" ?>
     <?define PlatformProgramFilesFolder = "ProgramFiles64Folder" ?>
   <?else?>
-    <?define CrtMergeModule = "$(env.CommonProgramFiles)\Merge Modules\Microsoft_VC150_CRT_x86.msm" ?>
+    <?define CrtMergeModule = "$(env.CommonProgramFiles)\Merge Modules\Microsoft_VC142_CRT_x86.msm" ?>
     <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
   <?endif?>
 </Include>

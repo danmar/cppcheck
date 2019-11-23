@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -65,4 +65,13 @@ std::list<Check *> &Check::instances()
     static std::list<Check *> _instances;
     return _instances;
 #endif
+}
+
+std::string Check::getMessageId(const ValueFlow::Value &value, const char id[])
+{
+    if (value.condition != nullptr)
+        return id + std::string("Cond");
+    if (value.safe)
+        return std::string("safe") + (char)std::toupper(id[0]) + (id + 1);
+    return id;
 }

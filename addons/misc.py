@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Misc: Uncategorized checks that might be moved to some better addon later
 #
@@ -21,8 +21,7 @@ def reportError(token, severity, msg, id):
     if VERIFY:
         VERIFY_ACTUAL.append(str(token.linenr) + ':' + id)
     else:
-        sys.stderr.write(
-            '[' + token.file + ':' + str(token.linenr) + '] (' + severity + '): ' + msg + ' [' + id + ']\n')
+        cppcheckdata.reportError(token, severity, msg, 'misc', id)
 
 def simpleMatch(token, pattern):
     for p in pattern.split(' '):
@@ -105,7 +104,7 @@ def ellipsisStructArg(data):
             for argnr, argvar in tok.astOperand1.function.argument.items():
                 if argnr < 1:
                     continue
-                if not simpleMatch(argvar.typeStartToken, '. . .'):
+                if not simpleMatch(argvar.typeStartToken, '...'):
                     continue
                 callArgs = getArguments(tok)
                 for i in range(argnr-1, len(callArgs)):
@@ -136,7 +135,7 @@ def ellipsisStructArg(data):
                 break
 
 for arg in sys.argv[1:]:
-    if arg in ['-debug', '-verify']:
+    if arg in ['-debug', '-verify', '--cli']:
         continue
     print('Checking ' + arg + '...')
     data = cppcheckdata.parsedump(arg)

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,9 +39,9 @@ namespace {
     }
 }
 
-void TimerResults::ShowResults(SHOWTIME_MODES mode) const
+void TimerResults::showResults(SHOWTIME_MODES mode) const
 {
-    if (mode == SHOWTIME_NONE)
+    if (mode == SHOWTIME_MODES::SHOWTIME_NONE)
         return;
 
     std::cout << std::endl;
@@ -55,7 +55,7 @@ void TimerResults::ShowResults(SHOWTIME_MODES mode) const
         const double sec = iter->second.seconds();
         const double secAverage = sec / (double)(iter->second.mNumberOfResults);
         overallData.mClocks += iter->second.mClocks;
-        if ((mode != SHOWTIME_TOP5) || (ordinal<=5)) {
+        if ((mode != SHOWTIME_MODES::SHOWTIME_TOP5) || (ordinal<=5)) {
             std::cout << iter->first << ": " << sec << "s (avg. " << secAverage << "s - " << iter->second.mNumberOfResults  << " result(s))" << std::endl;
         }
         ++ordinal;
@@ -65,40 +65,40 @@ void TimerResults::ShowResults(SHOWTIME_MODES mode) const
     std::cout << "Overall time: " << secOverall << "s" << std::endl;
 }
 
-void TimerResults::AddResults(const std::string& str, std::clock_t clocks)
+void TimerResults::addResults(const std::string& str, std::clock_t clocks)
 {
     mResults[str].mClocks += clocks;
     mResults[str].mNumberOfResults++;
 }
 
-Timer::Timer(const std::string& str, unsigned int showtimeMode, TimerResultsIntf* timerResults)
+Timer::Timer(const std::string& str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults)
     : mStr(str)
     , mTimerResults(timerResults)
     , mStart(0)
     , mShowTimeMode(showtimeMode)
     , mStopped(false)
 {
-    if (showtimeMode != SHOWTIME_NONE)
+    if (showtimeMode != SHOWTIME_MODES::SHOWTIME_NONE)
         mStart = std::clock();
 }
 
 Timer::~Timer()
 {
-    Stop();
+    stop();
 }
 
-void Timer::Stop()
+void Timer::stop()
 {
-    if ((mShowTimeMode != SHOWTIME_NONE) && !mStopped) {
+    if ((mShowTimeMode != SHOWTIME_MODES::SHOWTIME_NONE) && !mStopped) {
         const std::clock_t end = std::clock();
         const std::clock_t diff = end - mStart;
 
-        if (mShowTimeMode == SHOWTIME_FILE) {
+        if (mShowTimeMode == SHOWTIME_MODES::SHOWTIME_FILE) {
             const double sec = (double)diff / CLOCKS_PER_SEC;
             std::cout << mStr << ": " << sec << "s" << std::endl;
         } else {
             if (mTimerResults)
-                mTimerResults->AddResults(mStr, diff);
+                mTimerResults->addResults(mStr, diff);
         }
     }
 

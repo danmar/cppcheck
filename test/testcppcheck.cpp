@@ -37,11 +37,11 @@ private:
     public:
         std::list<std::string> id;
 
-        void reportOut(const std::string & /*outmsg*/) {
+        void reportOut(const std::string & /*outmsg*/) OVERRIDE {
         }
 
-        void reportErr(const ErrorLogger::ErrorMessage &msg) {
-            id.push_back(msg._id);
+        void reportErr(const ErrorLogger::ErrorMessage &msg) OVERRIDE {
+            id.push_back(msg.id);
         }
     };
 
@@ -94,12 +94,10 @@ private:
         // Check for error ids from this class.
         bool foundPurgedConfiguration = false;
         bool foundTooManyConfigs = false;
-        for (std::list<std::string>::iterator it = errorLogger.id.begin();
-             it != errorLogger.id.end();
-             ++it) {
-            if (*it == "purgedConfiguration")
+        for (const std::string & it : errorLogger.id) {
+            if (it == "purgedConfiguration")
                 foundPurgedConfiguration = true;
-            else if (*it == "toomanyconfigs")
+            else if (it == "toomanyconfigs")
                 foundTooManyConfigs = true;
         }
         ASSERT(foundPurgedConfiguration);

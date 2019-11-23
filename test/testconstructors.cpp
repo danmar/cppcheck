@@ -41,7 +41,6 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList2();
 
         // Check class constructors..
         CheckClass checkClass(&tokenizer, &settings, this);
@@ -76,7 +75,6 @@ private:
         TEST_CASE(noConstructor7); // ticket #4391
         TEST_CASE(noConstructor8); // ticket #4404
         TEST_CASE(noConstructor9); // ticket #4419
-        TEST_CASE(noConstructor10); // ticket #6614
         TEST_CASE(noConstructor11); // ticket #3552
         TEST_CASE(noConstructor12); // #8951 - member initialization
 
@@ -194,6 +192,8 @@ private:
         TEST_CASE(uninitAssignmentWithOperator);  // ticket #7429
         TEST_CASE(uninitCompoundAssignment);      // ticket #7429
         TEST_CASE(uninitComparisonAssignment);    // ticket #7429
+
+        TEST_CASE(uninitTemplate1); // ticket #7372
     }
 
 
@@ -550,26 +550,6 @@ private:
               "private:\n"
               " bool MessageSet;\n"
               "};");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void noConstructor10() {
-        // ticket #6614
-        check("class A : public wxDialog\n"
-              "{\n"
-              "private:\n"
-              "    DECLARE_EVENT_TABLE()\n"
-              "public:\n"
-              "    A(wxWindow *parent,\n"
-              "      wxWindowID id = 1,\n"
-              "      const wxString &title = wxT(""),\n"
-              "      const wxPoint& pos = wxDefaultPosition,\n"
-              "      const wxSize& size = wxDefaultSize,\n"
-              "      long style = wxDIALOG_NO_PARENT | wxMINIMIZE_BOX | wxMAXIMIZE_BOX | wxCLOSE_BOX);\n"
-              "    virtual ~A();\n"
-              "private:\n"
-              "    wxTimer *WxTimer1;\n"
-              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2172,7 +2152,8 @@ private:
               "};");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'LocalClass::bitsInData_' is not initialized in the constructor.\n", errout.str());
 
-        check("Object::MemFunc() {\n"
+        check("struct copy_protected;\n"
+              "Object::MemFunc() {\n"
               "    class LocalClass : public copy_protected {\n"
               "    public:\n"
               "        LocalClass() : copy_protected(1), dataLength_(0) {}\n"
@@ -2180,9 +2161,12 @@ private:
               "        double bitsInData_;\n"
               "    } obj;\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'LocalClass::bitsInData_' is not initialized in the constructor.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:5]: (warning) Member variable 'LocalClass::bitsInData_' is not initialized in the constructor.\n",
+            errout.str());
 
-        check("Object::MemFunc() {\n"
+        check("struct copy_protected;\n"
+              "Object::MemFunc() {\n"
               "    class LocalClass : ::copy_protected {\n"
               "    public:\n"
               "        LocalClass() : copy_protected(1), dataLength_(0) {}\n"
@@ -2190,7 +2174,9 @@ private:
               "        double bitsInData_;\n"
               "    } obj;\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'LocalClass::bitsInData_' is not initialized in the constructor.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:5]: (warning) Member variable 'LocalClass::bitsInData_' is not initialized in the constructor.\n",
+            errout.str());
     }
 
     void uninitVar21() { // ticket #2947
@@ -3847,6 +3833,36 @@ private:
               "    }\n"
               "    int SetValue() { return x = 1; }\n"
               "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitTemplate1() {
+        check("template <class A, class T> class C;\n"
+              "template <class A>\n"
+              "class C<A, void> {\n"
+              "  public:\n"
+              "    C() : b(0) { }\n"
+              "    C(A* a) : b(a) { }\n"
+              "  private:\n"
+              "    A* b;\n"
+              "};\n"
+              "template <class A, class T>\n"
+              "class C {\n"
+              "  private:\n"
+              "    A* b;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("template<class T> class A{};\n"
+              "template<class T1, class T2> class B{};\n"
+              "template<class T1, class T2>\n"
+              "class A<B<T1, T2>> {\n"
+              "  public:\n"
+              "    A();\n"
+              "    bool m_value;\n"
+              "};\n"
+              "template<class T1, class T2>\n"
+              "A<B<T1, T2>>::A() : m_value(false) {}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };

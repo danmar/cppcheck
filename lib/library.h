@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -73,27 +73,38 @@ public:
     struct AllocFunc {
         int groupId;
         int arg;
+        enum class BufferSize {none,malloc,calloc,strdup};
+        BufferSize bufferSize;
+        int bufferSizeArg1;
+        int bufferSizeArg2;
+        int reallocArg;
     };
 
     /** get allocation info for function */
-    const AllocFunc* alloc(const Token *tok) const;
+    const AllocFunc* getAllocFuncInfo(const Token *tok) const;
 
     /** get deallocation info for function */
-    const AllocFunc* dealloc(const Token *tok) const;
+    const AllocFunc* getDeallocFuncInfo(const Token *tok) const;
+
+    /** get reallocation info for function */
+    const AllocFunc* getReallocFuncInfo(const Token *tok) const;
 
     /** get allocation id for function */
-    int alloc(const Token *tok, int arg) const;
+    int getAllocId(const Token *tok, int arg) const;
 
     /** get deallocation id for function */
-    int dealloc(const Token *tok, int arg) const;
+    int getDeallocId(const Token *tok, int arg) const;
+
+    /** get reallocation id for function */
+    int getReallocId(const Token *tok, int arg) const;
 
     /** get allocation info for function by name (deprecated, use other alloc) */
-    const AllocFunc* alloc(const char name[]) const {
+    const AllocFunc* getAllocFuncInfo(const char name[]) const {
         return getAllocDealloc(mAlloc, name);
     }
 
     /** get deallocation info for function by name (deprecated, use other alloc) */
-    const AllocFunc* dealloc(const char name[]) const {
+    const AllocFunc* getDeallocFuncInfo(const char name[]) const {
         return getAllocDealloc(mDealloc, name);
     }
 
@@ -118,6 +129,12 @@ public:
     void setdealloc(const std::string &functionname, int id, int arg) {
         mDealloc[functionname].groupId = id;
         mDealloc[functionname].arg = arg;
+    }
+
+    void setrealloc(const std::string &functionname, int id, int arg, int reallocArg = 1) {
+        mRealloc[functionname].groupId = id;
+        mRealloc[functionname].arg = arg;
+        mRealloc[functionname].reallocArg = reallocArg;
     }
 
     /** add noreturn function setting */
@@ -164,6 +181,7 @@ public:
     const std::string& returnValue(const Token *ftok) const;
     const std::string& returnValueType(const Token *ftok) const;
     int returnValueContainer(const Token *ftok) const;
+    std::vector<MathLib::bigint> unknownReturnValues(const Token *ftok) const;
 
     bool isnoreturn(const Token *ftok) const;
     bool isnotnoreturn(const Token *ftok) const;
@@ -177,14 +195,16 @@ public:
             size_templateArgNo(-1),
             arrayLike_indexOp(false),
             stdStringLike(false),
-            opLessAllowed(true) {
+            stdAssociativeLike(false),
+            opLessAllowed(true),
+            hasInitializerListConstructor(false) {
         }
 
-        enum Action {
+        enum class Action {
             RESIZE, CLEAR, PUSH, POP, FIND, INSERT, ERASE, CHANGE_CONTENT, CHANGE, CHANGE_INTERNAL,
             NO_ACTION
         };
-        enum Yield {
+        enum class Yield {
             AT_INDEX, ITEM, BUFFER, BUFFER_NT, START_ITERATOR, END_ITERATOR, ITERATOR, SIZE, EMPTY,
             NO_YIELD
         };
@@ -192,26 +212,28 @@ public:
             Action action;
             Yield yield;
         };
-        std::string startPattern, endPattern, itEndPattern;
+        std::string startPattern, startPattern2, endPattern, itEndPattern;
         std::map<std::string, Function> functions;
         int type_templateArgNo;
         int size_templateArgNo;
         bool arrayLike_indexOp;
         bool stdStringLike;
+        bool stdAssociativeLike;
         bool opLessAllowed;
+        bool hasInitializerListConstructor;
 
         Action getAction(const std::string& function) const {
             const std::map<std::string, Function>::const_iterator i = functions.find(function);
             if (i != functions.end())
                 return i->second.action;
-            return NO_ACTION;
+            return Action::NO_ACTION;
         }
 
         Yield getYield(const std::string& function) const {
             const std::map<std::string, Function>::const_iterator i = functions.find(function);
             if (i != functions.end())
                 return i->second.yield;
-            return NO_YIELD;
+            return Yield::NO_YIELD;
         }
     };
     std::map<std::string, Container> containers;
@@ -222,18 +244,18 @@ public:
         ArgumentChecks() :
             notbool(false),
             notnull(false),
-            notuninit(false),
+            notuninit(-1),
             formatstr(false),
             strz(false),
             optional(false),
             variadic(false),
             iteratorInfo(),
-            direction(DIR_UNKNOWN) {
+            direction(Direction::DIR_UNKNOWN) {
         }
 
         bool         notbool;
         bool         notnull;
-        bool         notuninit;
+        int          notuninit;
         bool         formatstr;
         bool         strz;
         bool         optional;
@@ -253,15 +275,16 @@ public:
 
         class MinSize {
         public:
-            enum Type { NONE, STRLEN, ARGVALUE, SIZEOF, MUL };
-            MinSize(Type t, int a) : type(t), arg(a), arg2(0) {}
+            enum Type { NONE, STRLEN, ARGVALUE, SIZEOF, MUL, VALUE };
+            MinSize(Type t, int a) : type(t), arg(a), arg2(0), value(0) {}
             Type type;
             int arg;
             int arg2;
+            long long value;
         };
         std::vector<MinSize> minsizes;
 
-        enum Direction {
+        enum class Direction {
             DIR_IN,     ///< Input to called function. Data is treated as read-only.
             DIR_OUT,    ///< Output to caller. Data is passed by reference or address and is potentially written.
             DIR_INOUT,  ///< Input to called function, and output to caller. Data is passed by reference or address and is potentially modified.
@@ -297,7 +320,7 @@ public:
     }
 
     bool isnullargbad(const Token *ftok, int argnr) const;
-    bool isuninitargbad(const Token *ftok, int argnr) const;
+    bool isuninitargbad(const Token *ftok, int argnr, int indirect = 0) const;
 
     bool isargformatstr(const Token *ftok, int argnr) const {
         const ArgumentChecks *arg = getarg(ftok, argnr);
@@ -385,9 +408,13 @@ public:
     std::set<std::string> returnuninitdata;
     std::vector<std::string> defines; // to provide some library defines
 
+    std::set<std::string> smartPointers;
+    bool isSmartPointer(const Token *tok) const;
+
     struct PodType {
         unsigned int   size;
         char           sign;
+        enum { NO, BOOL, CHAR, SHORT, INT, LONG, LONGLONG } stdtype;
     };
     const struct PodType *podtype(const std::string &name) const {
         const std::map<std::string, struct PodType>::const_iterator it = mPodTypes.find(name);
@@ -396,32 +423,32 @@ public:
 
     struct PlatformType {
         PlatformType()
-            : _signed(false)
-            , _unsigned(false)
-            , _long(false)
-            , _pointer(false)
-            , _ptr_ptr(false)
-            , _const_ptr(false) {
+            : mSigned(false)
+            , mUnsigned(false)
+            , mLong(false)
+            , mPointer(false)
+            , mPtrPtr(false)
+            , mConstPtr(false) {
         }
         bool operator == (const PlatformType & type) const {
-            return (_signed == type._signed &&
-                    _unsigned == type._unsigned &&
-                    _long == type._long &&
-                    _pointer == type._pointer &&
-                    _ptr_ptr == type._ptr_ptr &&
-                    _const_ptr == type._const_ptr &&
+            return (mSigned == type.mSigned &&
+                    mUnsigned == type.mUnsigned &&
+                    mLong == type.mLong &&
+                    mPointer == type.mPointer &&
+                    mPtrPtr == type.mPtrPtr &&
+                    mConstPtr == type.mConstPtr &&
                     mType == type.mType);
         }
         bool operator != (const PlatformType & type) const {
             return !(*this == type);
         }
         std::string mType;
-        bool _signed;
-        bool _unsigned;
-        bool _long;
-        bool _pointer;
-        bool _ptr_ptr;
-        bool _const_ptr;
+        bool mSigned;
+        bool mUnsigned;
+        bool mLong;
+        bool mPointer;
+        bool mPtrPtr;
+        bool mConstPtr;
     };
 
     struct Platform {
@@ -450,6 +477,10 @@ public:
     std::string getFunctionName(const Token *ftok) const;
 
     static bool isContainerYield(const Token * const cond, Library::Container::Yield y, const std::string& fallback="");
+
+    /** Suppress/check a type */
+    enum class TypeCheck { def, check, suppress };
+    TypeCheck getTypeCheck(const std::string &check, const std::string &typeName) const;
 
 private:
     // load a <function> xml node
@@ -513,10 +544,12 @@ private:
     std::set<std::string> mFiles;
     std::map<std::string, AllocFunc> mAlloc; // allocation functions
     std::map<std::string, AllocFunc> mDealloc; // deallocation functions
+    std::map<std::string, AllocFunc> mRealloc; // reallocation functions
     std::map<std::string, bool> mNoReturn; // is function noreturn?
     std::map<std::string, std::string> mReturnValue;
     std::map<std::string, std::string> mReturnValueType;
     std::map<std::string, int> mReturnValueContainer;
+    std::map<std::string, std::vector<MathLib::bigint>> mUnknownReturnValues;
     std::map<std::string, bool> mReportErrors;
     std::map<std::string, bool> mProcessAfterCode;
     std::set<std::string> mMarkupExtensions; // file extensions of markup files
@@ -528,6 +561,7 @@ private:
     std::map<std::string, struct PodType> mPodTypes; // pod types
     std::map<std::string, PlatformType> mPlatformTypes; // platform independent typedefs
     std::map<std::string, Platform> mPlatforms; // platform dependent typedefs
+    std::map<std::pair<std::string,std::string>, TypeCheck> mTypeChecks;
 
     const ArgumentChecks * getarg(const Token *ftok, int argnr) const;
 
@@ -538,6 +572,8 @@ private:
         return (it == data.end()) ? nullptr : &it->second;
     }
 };
+
+CPPCHECKLIB const Library::Container * getLibraryContainer(const Token * tok);
 
 /// @}
 //---------------------------------------------------------------------------

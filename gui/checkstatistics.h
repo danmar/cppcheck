@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2017 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@
  */
 class CheckStatistics : public QObject {
 public:
-    explicit CheckStatistics(QObject *parent = NULL);
+    explicit CheckStatistics(QObject *parent = nullptr);
 
     /**
     * @brief Add new checked item to statistics.

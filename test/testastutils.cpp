@@ -34,6 +34,7 @@ private:
 
     void run() OVERRIDE {
         TEST_CASE(findLambdaEndToken);
+        TEST_CASE(findLambdaStartToken);
         TEST_CASE(isReturnScope);
         TEST_CASE(isVariableChanged);
         TEST_CASE(isVariableChangedByFunctionCall);
@@ -53,23 +54,55 @@ private:
         ASSERT(nullptr == ::findLambdaEndToken(nullptr));
         ASSERT_EQUALS(false, findLambdaEndToken("void f() { }"));
         ASSERT_EQUALS(true, findLambdaEndToken("[]{ }"));
-        ASSERT_EQUALS(true, findLambdaEndToken("[]{ return 0 }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[]{ return 0; }"));
         ASSERT_EQUALS(true, findLambdaEndToken("[](){ }"));
         ASSERT_EQUALS(true, findLambdaEndToken("[&](){ }"));
         ASSERT_EQUALS(true, findLambdaEndToken("[&, i](){ }"));
-        ASSERT_EQUALS(true, findLambdaEndToken("[](void) { return -1 }"));
-        ASSERT_EQUALS(true, findLambdaEndToken("[](int a, int b) { return a + b }"));
-        ASSERT_EQUALS(true, findLambdaEndToken("[](int a, int b) mutable { return a + b }"));
-        ASSERT_EQUALS(true, findLambdaEndToken("[](int a, int b) constexpr { return a + b }"));
-        ASSERT_EQUALS(true, findLambdaEndToken("[](void) -> int { return -1 }"));
-        ASSERT_EQUALS(true, findLambdaEndToken("[](void) mutable -> int { return -1 }"));
-        ASSERT_EQUALS(false, findLambdaEndToken("[](void) foo -> int { return -1 }"));
-        ASSERT_EQUALS(true, findLambdaEndToken("[](void) constexpr -> int { return -1 }"));
-        ASSERT_EQUALS(true, findLambdaEndToken("[](void) constexpr -> int* { return x }"));
-        ASSERT_EQUALS(true, findLambdaEndToken("[](void) constexpr -> const * int { return x }"));
-        ASSERT_EQUALS(true, findLambdaEndToken("[](void) mutable -> const * int { return x }"));
-        ASSERT_EQUALS(true, findLambdaEndToken("[](void) constexpr -> const ** int { return x }"));
-        ASSERT_EQUALS(true, findLambdaEndToken("[](void) constexpr -> const * const* int { return x }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[](void) { return -1; }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[](int a, int b) { return a + b; }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[](int a, int b) mutable { return a + b; }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[](int a, int b) constexpr { return a + b; }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[](void) -> int { return -1; }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[](void) mutable -> int { return -1; }"));
+        ASSERT_EQUALS(false, findLambdaEndToken("[](void) foo -> int { return -1; }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[](void) constexpr -> int { return -1; }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[](void) constexpr -> int* { return x; }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[](void) constexpr -> const * int { return x; }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[](void) mutable -> const * int { return x; }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[](void) constexpr -> const ** int { return x; }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[](void) constexpr -> const * const* int { return x; }"));
+    }
+
+    bool findLambdaStartToken(const char code[]) {
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        const Token * const tokStart = ::findLambdaStartToken(tokenizer.list.back());
+        return tokStart && tokStart == tokenizer.list.front();
+    }
+
+    void findLambdaStartToken() {
+        ASSERT(nullptr == ::findLambdaStartToken(nullptr));
+        ASSERT_EQUALS(false, findLambdaStartToken("void f() { }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[]{ }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[]{ return 0; }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[](){ }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[&](){ }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[&, i](){ }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[](void) { return -1; }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[](int a, int b) { return a + b; }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[](int a, int b) mutable { return a + b; }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[](int a, int b) constexpr { return a + b; }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[](void) -> int { return -1; }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[](void) mutable -> int { return -1; }"));
+        ASSERT_EQUALS(false, findLambdaStartToken("[](void) foo -> int { return -1; }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[](void) constexpr -> int { return -1; }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[](void) constexpr -> int* { return x; }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[](void) constexpr -> const * int { return x; }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[](void) mutable -> const * int { return x; }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[](void) constexpr -> const ** int { return x; }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[](void) constexpr -> const * const* int { return x; }"));
     }
 
     bool isReturnScope(const char code[], int offset) {
@@ -114,6 +147,10 @@ private:
                           "  int b;\n"
                           "  if (b) { (int)((INTOF(8))result >> b); }\n"
                           "}", "if", "}");
+        // #9235
+        ASSERT_EQUALS(true, isVariableChanged("void f() {\n"
+                                              "    int &a = a;\n"
+                                              "}\n", "= a", "}"));
     }
 
     bool isVariableChangedByFunctionCall(const char code[], const char pattern[], bool *inconclusive) {
@@ -122,7 +159,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         const Token * const argtok = Token::findmatch(tokenizer.tokens(), pattern);
-        return ::isVariableChangedByFunctionCall(argtok, &settings, inconclusive);
+        return ::isVariableChangedByFunctionCall(argtok, 0, &settings, inconclusive);
     }
 
     void isVariableChangedByFunctionCall() {

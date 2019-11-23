@@ -25,11 +25,13 @@
 #include "mathlib.h"
 #include "valueflow.h"
 #include "templatesimplifier.h"
+#include "utils.h"
 
 #include <algorithm>
 #include <cstddef>
 #include <functional>
 #include <list>
+#include <memory>
 #include <ostream>
 #include <string>
 #include <vector>
@@ -50,11 +52,18 @@ struct TokensFrontBack {
     Token *back;
 };
 
+struct ScopeInfo2 {
+    ScopeInfo2(const std::string &name_, const Token *bodyEnd_, const std::set<std::string> &usingNamespaces_ = std::set<std::string>()) : name(name_), bodyEnd(bodyEnd_), usingNamespaces(usingNamespaces_) {}
+    std::string name;
+    const Token * const bodyEnd;
+    std::set<std::string> usingNamespaces;
+};
+
 struct TokenImpl {
-    unsigned int mVarId;
-    unsigned int mFileIndex;
-    unsigned int mLineNumber;
-    unsigned int mColumn;
+    nonneg int mVarId;
+    nonneg int mFileIndex;
+    nonneg int mLineNumber;
+    nonneg int mColumn;
 
     // AST..
     Token *mAstOperand1;
@@ -74,7 +83,12 @@ struct TokenImpl {
      * A value from 0-100 that provides a rough idea about where in the token
      * list this token is located.
      */
-    unsigned int mProgressValue;
+    nonneg int mProgressValue;
+
+    /**
+     * Token index. Position in token list
+     */
+    nonneg int mIndex;
 
     // original name like size_t
     std::string* mOriginalName;
@@ -92,6 +106,23 @@ struct TokenImpl {
     // Pointer to a template in the template simplifier
     std::set<TemplateSimplifier::TokenAndName*> mTemplateSimplifierPointers;
 
+    // Pointer to the object representing this token's scope
+    std::shared_ptr<ScopeInfo2> mScopeInfo;
+
+    // __cppcheck_in_range__
+    struct CppcheckAttributes {
+        enum Type {LOW,HIGH} type;
+        MathLib::bigint value;
+        struct CppcheckAttributes *next;
+    };
+    struct CppcheckAttributes *mCppcheckAttributes;
+
+    // For memoization, to speed up parsing of huge arrays #8897
+    enum class Cpp11init {UNKNOWN, CPP11INIT, NOINIT} mCpp11init;
+
+    void setCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint value);
+    bool getCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint *value) const;
+
     TokenImpl()
         : mVarId(0)
         , mFileIndex(0)
@@ -103,11 +134,15 @@ struct TokenImpl {
         , mScope(nullptr)
         , mFunction(nullptr) // Initialize whole union
         , mProgressValue(0)
+        , mIndex(0)
         , mOriginalName(nullptr)
         , mValueType(nullptr)
         , mValues(nullptr)
         , mBits(0)
         , mTemplateSimplifierPointers()
+        , mScopeInfo(nullptr)
+        , mCppcheckAttributes(nullptr)
+        , mCpp11init(Cpp11init::UNKNOWN)
     {}
 
     ~TokenImpl();
@@ -140,6 +175,8 @@ public:
         eNumber, eString, eChar, eBoolean, eLiteral, eEnumerator, // Literals: Number, String, Character, Boolean, User defined literal (C++11), Enumerator
         eArithmeticalOp, eComparisonOp, eAssignmentOp, eLogicalOp, eBitOp, eIncDecOp, eExtendedOp, // Operators: Arithmetical, Comparison, Assignment, Logical, Bitwise, ++/--, Extended
         eBracket, // {, }, <, >: < and > only if link() is set. Otherwise they are comparison operators.
+        eLambda, // A function without a name
+        eEllipsis, // "..."
         eOther,
         eNone
     };
@@ -166,14 +203,14 @@ public:
     }
 
     /**
-     * Unlink and delete the next 'index' tokens.
+     * Unlink and delete the next 'count' tokens.
      */
-    void deleteNext(unsigned long index = 1);
+    void deleteNext(nonneg int count = 1);
 
     /**
-    * Unlink and delete the previous 'index' tokens.
+    * Unlink and delete the previous 'count' tokens.
     */
-    void deletePrevious(unsigned long index = 1);
+    void deletePrevious(nonneg int count = 1);
 
     /**
      * Swap the contents of this token with the next token.
@@ -269,7 +306,7 @@ public:
      * @return true if given token matches with given pattern
      *         false if given token does not match with given pattern
      */
-    static bool Match(const Token *tok, const char pattern[], unsigned int varid = 0);
+    static bool Match(const Token *tok, const char pattern[], nonneg int varid = 0);
 
     /**
      * @return length of C-string.
@@ -278,7 +315,16 @@ public:
      *
      * @param tok token with C-string
      **/
-    static std::size_t getStrLength(const Token *tok);
+    static nonneg int getStrLength(const Token *tok);
+
+    /**
+     * @return array length of C-string.
+     *
+     * Should be called for %%str%% tokens only.
+     *
+     * @param tok token with C-string
+     **/
+    static nonneg int getStrArraySize(const Token *tok);
 
     /**
      * @return sizeof of C-string.
@@ -286,8 +332,9 @@ public:
      * Should be called for %%str%% tokens only.
      *
      * @param tok token with C-string
+     * @param settings Settings
      **/
-    static std::size_t getStrSize(const Token *tok);
+    static nonneg int getStrSize(const Token *tok, const Settings *const);
 
     /**
      * @return char of C-string at index (possible escaped "\\n")
@@ -297,7 +344,7 @@ public:
      * @param tok token with C-string
      * @param index position of character
      **/
-    static std::string getCharAt(const Token *tok, std::size_t index);
+    static std::string getCharAt(const Token *tok, MathLib::bigint index);
 
     const ValueType *valueType() const {
         return mImpl->mValueType;
@@ -337,6 +384,9 @@ public:
     }
     bool isName() const {
         return getFlag(fIsName);
+    }
+    bool isNameOnly() const {
+        return mFlags == fIsName && mTokType == eName;
     }
     bool isUpperCaseName() const;
     bool isLiteral() const {
@@ -491,6 +541,12 @@ public:
     void isAttributeNodiscard(const bool value) {
         setFlag(fIsAttributeNodiscard, value);
     }
+    void setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint value) {
+        mImpl->setCppcheckAttribute(type, value);
+    }
+    bool getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint *value) const {
+        return mImpl->getCppcheckAttribute(type, value);
+    }
     bool isControlFlowKeyword() const {
         return getFlag(fIsControlFlowKeyword);
     }
@@ -518,6 +574,27 @@ public:
     void isAtAddress(bool b) {
         setFlag(fAtAddress, b);
     }
+    bool isIncompleteVar() const {
+        return getFlag(fIncompleteVar);
+    }
+    void isIncompleteVar(bool b) {
+        setFlag(fIncompleteVar, b);
+    }
+
+    bool isConstexpr() const {
+        return getFlag(fConstexpr);
+    }
+    void isConstexpr(bool b) {
+        setFlag(fConstexpr, b);
+    }
+
+    bool isExternC() const {
+        return getFlag(fExternC);
+    }
+    void isExternC(bool b) {
+        setFlag(fExternC, b);
+    }
+
 
     bool isBitfield() const {
         return mImpl->mBits > 0;
@@ -535,6 +612,30 @@ public:
         mImpl->mBits = b;
     }
 
+    bool isUtf8() const {
+        return (((mTokType == eString) && isPrefixStringCharLiteral(mStr, '"', "u8")) ||
+                ((mTokType == eChar) && isPrefixStringCharLiteral(mStr, '\'', "u8")));
+    }
+
+    bool isUtf16() const {
+        return (((mTokType == eString) && isPrefixStringCharLiteral(mStr, '"', "u")) ||
+                ((mTokType == eChar) && isPrefixStringCharLiteral(mStr, '\'', "u")));
+    }
+
+    bool isUtf32() const {
+        return (((mTokType == eString) && isPrefixStringCharLiteral(mStr, '"', "U")) ||
+                ((mTokType == eChar) && isPrefixStringCharLiteral(mStr, '\'', "U")));
+    }
+
+    bool isCChar() const {
+        return (((mTokType == eString) && isPrefixStringCharLiteral(mStr, '"', "")) ||
+                ((mTokType ==  eChar) && isPrefixStringCharLiteral(mStr, '\'', "") && mStr.length() == 3));
+    }
+
+    bool isCMultiChar() const {
+        return (((mTokType ==  eChar) && isPrefixStringCharLiteral(mStr, '\'', "")) &&
+                (mStr.length() > 3));
+    }
     /**
      * @brief Is current token a template argument?
      *
@@ -561,18 +662,18 @@ public:
 
     static const Token *findsimplematch(const Token * const startTok, const char pattern[]);
     static const Token *findsimplematch(const Token * const startTok, const char pattern[], const Token * const end);
-    static const Token *findmatch(const Token * const startTok, const char pattern[], const unsigned int varId = 0U);
-    static const Token *findmatch(const Token * const startTok, const char pattern[], const Token * const end, const unsigned int varId = 0U);
+    static const Token *findmatch(const Token * const startTok, const char pattern[], const nonneg int varId = 0);
+    static const Token *findmatch(const Token * const startTok, const char pattern[], const Token * const end, const nonneg int varId = 0);
     static Token *findsimplematch(Token * const startTok, const char pattern[]) {
         return const_cast<Token *>(findsimplematch(const_cast<const Token *>(startTok), pattern));
     }
     static Token *findsimplematch(Token * const startTok, const char pattern[], const Token * const end) {
         return const_cast<Token *>(findsimplematch(const_cast<const Token *>(startTok), pattern, end));
     }
-    static Token *findmatch(Token * const startTok, const char pattern[], const unsigned int varId = 0U) {
+    static Token *findmatch(Token * const startTok, const char pattern[], const nonneg int varId = 0) {
         return const_cast<Token *>(findmatch(const_cast<const Token *>(startTok), pattern, varId));
     }
-    static Token *findmatch(Token * const startTok, const char pattern[], const Token * const end, const unsigned int varId = 0U) {
+    static Token *findmatch(Token * const startTok, const char pattern[], const Token * const end, const nonneg int varId = 0) {
         return const_cast<Token *>(findmatch(const_cast<const Token *>(startTok), pattern, end, varId));
     }
 
@@ -590,26 +691,26 @@ public:
      *         0 if needle was empty string
      *        -1 if needle was not found
      */
-    static int multiCompare(const Token *tok, const char *haystack, unsigned int varid);
+    static int multiCompare(const Token *tok, const char *haystack, nonneg int varid);
 
-    unsigned int fileIndex() const {
+    nonneg int fileIndex() const {
         return mImpl->mFileIndex;
     }
-    void fileIndex(unsigned int indexOfFile) {
+    void fileIndex(nonneg int indexOfFile) {
         mImpl->mFileIndex = indexOfFile;
     }
 
-    unsigned int linenr() const {
+    nonneg int linenr() const {
         return mImpl->mLineNumber;
     }
-    void linenr(unsigned int lineNumber) {
+    void linenr(nonneg int lineNumber) {
         mImpl->mLineNumber = lineNumber;
     }
 
-    unsigned int col() const {
+    nonneg int column() const {
         return mImpl->mColumn;
     }
-    void col(unsigned int c) {
+    void column(nonneg int c) {
         mImpl->mColumn = c;
     }
 
@@ -642,10 +743,10 @@ public:
     }
 
 
-    unsigned int varId() const {
+    nonneg int varId() const {
         return mImpl->mVarId;
     }
-    void varId(unsigned int id) {
+    void varId(nonneg int id) {
         mImpl->mVarId = id;
         if (id != 0) {
             tokType(eVariable);
@@ -759,19 +860,13 @@ public:
      * Associate this token with given function
      * @param f Function to be associated
      */
-    void function(const Function *f) {
-        mImpl->mFunction = f;
-        if (f)
-            tokType(eFunction);
-        else if (mTokType == eFunction)
-            tokType(eName);
-    }
+    void function(const Function *f);
 
     /**
      * @return a pointer to the Function associated with this token.
      */
     const Function *function() const {
-        return mTokType == eFunction ? mImpl->mFunction : nullptr;
+        return mTokType == eFunction || mTokType == eLambda ? mImpl->mFunction : nullptr;
     }
 
     /**
@@ -805,6 +900,12 @@ public:
     const ::Type *type() const {
         return mTokType == eType ? mImpl->mType : nullptr;
     }
+
+    static const ::Type *typeOf(const Token *tok);
+
+    static std::pair<const Token*, const Token*> typeDecl(const Token * tok);
+
+    static std::string typeStr(const Token* tok);
 
     /**
     * @return a pointer to the Enumerator associated with this token.
@@ -847,8 +948,8 @@ public:
      */
     static void move(Token *srcStart, Token *srcEnd, Token *newLocation);
 
-    /** Get progressValue */
-    unsigned int progressValue() const {
+    /** Get progressValue (0 - 100) */
+    nonneg int progressValue() const {
         return mImpl->mProgressValue;
     }
 
@@ -895,7 +996,7 @@ public:
     }
 
     const std::list<ValueFlow::Value>& values() const {
-        return mImpl->mValues ? *mImpl->mValues : mImpl->mEmptyValueList;
+        return mImpl->mValues ? *mImpl->mValues : TokenImpl::mEmptyValueList;
     }
 
     /**
@@ -910,7 +1011,11 @@ public:
     }
 
     bool hasKnownIntValue() const {
-        return hasKnownValue() && std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), std::mem_fn(&ValueFlow::Value::isIntValue));
+        if (!mImpl->mValues)
+            return false;
+        return std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value &value) {
+            return value.isKnown() && value.isIntValue();
+        });
     }
 
     bool hasKnownValue() const {
@@ -924,11 +1029,10 @@ public:
     const ValueFlow::Value * getValue(const MathLib::bigint val) const {
         if (!mImpl->mValues)
             return nullptr;
-        for (const ValueFlow::Value &value : *mImpl->mValues) {
-            if (value.isIntValue() && value.intvalue == val)
-                return &value;
-        }
-        return nullptr;
+        const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value& value) {
+            return value.isIntValue() && !value.isImpossible() && value.intvalue == val;
+        });
+        return it == mImpl->mValues->end() ? nullptr : &*it;;
     }
 
     const ValueFlow::Value * getMaxValue(bool condition) const {
@@ -937,6 +1041,8 @@ public:
         const ValueFlow::Value *ret = nullptr;
         for (const ValueFlow::Value &value : *mImpl->mValues) {
             if (!value.isIntValue())
+                continue;
+            if (value.isImpossible())
                 continue;
             if ((!ret || value.intvalue > ret->intvalue) &&
                 ((value.condition != nullptr) == condition))
@@ -948,35 +1054,46 @@ public:
     const ValueFlow::Value * getMovedValue() const {
         if (!mImpl->mValues)
             return nullptr;
-        for (const ValueFlow::Value &value : *mImpl->mValues) {
-            if (value.isMovedValue() && value.moveKind != ValueFlow::Value::NonMovedVariable)
-                return &value;
-        }
-        return nullptr;
+        const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value& value) {
+            return value.isMovedValue() && !value.isImpossible() &&
+                   value.moveKind != ValueFlow::Value::MoveKind::NonMovedVariable;
+        });
+        return it == mImpl->mValues->end() ? nullptr : &*it;;
     }
 
     const ValueFlow::Value * getValueLE(const MathLib::bigint val, const Settings *settings) const;
     const ValueFlow::Value * getValueGE(const MathLib::bigint val, const Settings *settings) const;
 
-    const ValueFlow::Value * getInvalidValue(const Token *ftok, unsigned int argnr, const Settings *settings) const;
+    const ValueFlow::Value * getInvalidValue(const Token *ftok, nonneg int argnr, const Settings *settings) const;
 
     const ValueFlow::Value * getContainerSizeValue(const MathLib::bigint val) const {
         if (!mImpl->mValues)
             return nullptr;
-        for (const ValueFlow::Value &value : *mImpl->mValues) {
-            if (value.isContainerSizeValue() && value.intvalue == val)
-                return &value;
-        }
-        return nullptr;
+        const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value& value) {
+            return value.isContainerSizeValue() && !value.isImpossible() && value.intvalue == val;
+        });
+        return it == mImpl->mValues->end() ? nullptr : &*it;
     }
 
     const Token *getValueTokenMaxStrLength() const;
-    const Token *getValueTokenMinStrSize() const;
+    const Token *getValueTokenMinStrSize(const Settings *settings) const;
 
     const Token *getValueTokenDeadPointer() const;
 
     /** Add token value. Return true if value is added. */
     bool addValue(const ValueFlow::Value &value);
+
+    template<class Predicate>
+    void removeValues(Predicate pred) {
+        if (mImpl->mValues)
+            mImpl->mValues->remove_if(pred);
+    }
+
+    nonneg int index() const {
+        return mImpl->mIndex;
+    }
+
+    void assignIndexes();
 
 private:
 
@@ -1036,6 +1153,9 @@ private:
         fIsTemplateArg          = (1 << 22),
         fIsAttributeNodiscard   = (1 << 23), // __attribute__ ((warn_unused_result)), [[nodiscard]]
         fAtAddress              = (1 << 24), // @ 0x4000
+        fIncompleteVar          = (1 << 25),
+        fConstexpr              = (1 << 26),
+        fExternC                = (1 << 27),
     };
 
     Token::Type mTokType;
@@ -1069,19 +1189,41 @@ private:
     /** Update internal property cache about isStandardType() */
     void update_property_isStandardType();
 
+    /** Update internal property cache about string and char literals */
+    void update_property_char_string_literal();
+
+    /** Internal helper function to avoid excessive string allocations */
+    void astStringVerboseRecursive(std::string& ret, const nonneg int indent1 = 0, const nonneg int indent2 = 0) const;
+
 public:
     void astOperand1(Token *tok);
     void astOperand2(Token *tok);
 
+    Token * astOperand1() {
+        return mImpl->mAstOperand1;
+    }
     const Token * astOperand1() const {
         return mImpl->mAstOperand1;
+    }
+    Token * astOperand2() {
+        return mImpl->mAstOperand2;
     }
     const Token * astOperand2() const {
         return mImpl->mAstOperand2;
     }
+    Token * astParent() {
+        return mImpl->mAstParent;
+    }
     const Token * astParent() const {
         return mImpl->mAstParent;
     }
+    Token *astTop() {
+        Token *ret = this;
+        while (ret->mImpl->mAstParent)
+            ret = ret->mImpl->mAstParent;
+        return ret;
+    }
+
     const Token *astTop() const {
         const Token *ret = this;
         while (ret->mImpl->mAstParent)
@@ -1118,13 +1260,23 @@ public:
         return ret + sep + mStr;
     }
 
-    std::string astStringVerbose(const unsigned int indent1, const unsigned int indent2) const;
+    std::string astStringVerbose() const;
 
     std::string expressionString() const;
 
     void printAst(bool verbose, bool xml, std::ostream &out) const;
 
     void printValueFlow(bool xml, std::ostream &out) const;
+
+    void scopeInfo(std::shared_ptr<ScopeInfo2> newScopeInfo);
+    std::shared_ptr<ScopeInfo2> scopeInfo() const;
+
+    void setCpp11init(bool cpp11init) const {
+        mImpl->mCpp11init=cpp11init ? TokenImpl::Cpp11init::CPP11INIT : TokenImpl::Cpp11init::NOINIT;
+    }
+    TokenImpl::Cpp11init isCpp11init() const {
+        return mImpl->mCpp11init;
+    }
 };
 
 /// @}

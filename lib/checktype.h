@@ -59,13 +59,6 @@ public:
         checkType.checkFloatToIntegerOverflow();
     }
 
-    /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        (void)tokenizer;
-        (void)settings;
-        (void)errorLogger;
-    }
-
     /** @brief %Check for bitwise shift with too big right operand */
     void checkTooBigBitwiseShift();
 
@@ -80,13 +73,15 @@ public:
 
     /** @brief %Check for float to integer overflow */
     void checkFloatToIntegerOverflow();
+    void checkFloatToIntegerOverflow(const Token *tok, const ValueType *vtint, const ValueType *vtfloat, const std::list<ValueFlow::Value> *floatValues);
+
 private:
 
     // Error messages..
     void tooBigBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits);
     void tooBigSignedBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits);
     void integerOverflowError(const Token *tok, const ValueFlow::Value &value);
-    void signConversionError(const Token *tok, const bool constvalue);
+    void signConversionError(const Token *tok, const ValueFlow::Value *negativeValue, const bool constvalue);
     void longCastAssignError(const Token *tok);
     void longCastReturnError(const Token *tok);
     void floatToIntegerOverflowError(const Token *tok, const ValueFlow::Value &value);
@@ -96,11 +91,11 @@ private:
         c.tooBigBitwiseShiftError(nullptr, 32, ValueFlow::Value(64));
         c.tooBigSignedBitwiseShiftError(nullptr, 31, ValueFlow::Value(31));
         c.integerOverflowError(nullptr, ValueFlow::Value(1LL<<32));
-        c.signConversionError(nullptr, false);
+        c.signConversionError(nullptr, nullptr, false);
         c.longCastAssignError(nullptr);
         c.longCastReturnError(nullptr);
         ValueFlow::Value f;
-        f.valueType = ValueFlow::Value::FLOAT;
+        f.valueType = ValueFlow::Value::ValueType::FLOAT;
         f.floatValue = 1E100;
         c.floatToIntegerOverflowError(nullptr, f);
     }

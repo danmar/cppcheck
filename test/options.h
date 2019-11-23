@@ -1,5 +1,5 @@
 // Cppcheck - A tool for static C/C++ code analysis
-// Copyright (C) 2007-2017 Cppcheck team.
+// Copyright (C) 2007-2019 Cppcheck team.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ public:
     /** Print help. */
     bool help() const;
     /** Which test should be run. Empty string means 'all tests' */
-    const std::string& which_test() const;
+    const std::set<std::string>& which_test() const;
 
 private:
     options();
@@ -42,8 +42,7 @@ private:
     const options& operator =(const options& non_assign);
 
 private:
-    std::set<std::string> mOptions;
-    std::string mWhichTest;
+    std::set<std::string> mWhichTests;
     const bool mQuiet;
     const bool mHelp;
 };

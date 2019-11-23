@@ -22,113 +22,192 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "utils.h"
 
 #include <list>
 #include <string>
 #include <utility>
+#include <vector>
 
 class ErrorLogger;
 class Settings;
 class SymbolDatabase;
 class Token;
 class TokenList;
+class ValueType;
 class Variable;
 
 namespace ValueFlow {
+    struct increment {
+        template <class T>
+        void operator()(T& x) const {
+            x++;
+        }
+    };
+    struct decrement {
+        template <class T>
+        void operator()(T& x) const {
+            x--;
+        }
+    };
     class CPPCHECKLIB Value {
     public:
         typedef std::pair<const Token *, std::string> ErrorPathItem;
         typedef std::list<ErrorPathItem> ErrorPath;
 
         explicit Value(long long val = 0)
-            : valueType(INT),
+            : valueType(ValueType::INT),
+              bound(Bound::Point),
               intvalue(val),
               tokvalue(nullptr),
               floatValue(0.0),
-              moveKind(NonMovedVariable),
+              moveKind(MoveKind::NonMovedVariable),
               varvalue(val),
               condition(nullptr),
               varId(0U),
+              safe(false),
               conditional(false),
               defaultArg(false),
-              lifetimeKind(Object),
-              lifetimeScope(Local),
+              indirect(0),
+              lifetimeKind(LifetimeKind::Object),
+              lifetimeScope(LifetimeScope::Local),
               valueKind(ValueKind::Possible)
         {}
         Value(const Token *c, long long val);
 
-        bool operator==(const Value &rhs) const {
+        bool equalValue(const ValueFlow::Value& rhs) const {
             if (valueType != rhs.valueType)
                 return false;
             switch (valueType) {
-            case INT:
+            case ValueType::INT:
                 if (intvalue != rhs.intvalue)
                     return false;
                 break;
-            case TOK:
+            case ValueType::TOK:
                 if (tokvalue != rhs.tokvalue)
                     return false;
                 break;
-            case FLOAT:
+            case ValueType::FLOAT:
                 // TODO: Write some better comparison
                 if (floatValue > rhs.floatValue || floatValue < rhs.floatValue)
                     return false;
                 break;
-            case MOVED:
+            case ValueType::MOVED:
                 if (moveKind != rhs.moveKind)
                     return false;
                 break;
-            case UNINIT:
+            case ValueType::UNINIT:
                 break;
-            case CONTAINER_SIZE:
+            case ValueType::BUFFER_SIZE:
                 if (intvalue != rhs.intvalue)
                     return false;
                 break;
-            case LIFETIME:
+            case ValueType::CONTAINER_SIZE:
+                if (intvalue != rhs.intvalue)
+                    return false;
+                break;
+            case ValueType::LIFETIME:
                 if (tokvalue != rhs.tokvalue)
                     return false;
-            };
+            }
+            return true;
+        }
+
+        template <class F>
+        void visitValue(F f) {
+            switch (valueType) {
+            case ValueType::INT:
+            case ValueType::BUFFER_SIZE:
+            case ValueType::CONTAINER_SIZE: {
+                f(intvalue);
+                break;
+            }
+            case ValueType::FLOAT: {
+                f(floatValue);
+                break;
+            }
+            case ValueType::UNINIT:
+            case ValueType::TOK:
+            case ValueType::LIFETIME:
+            case ValueType::MOVED:
+                break;
+            }
+        }
+
+        bool operator==(const Value &rhs) const {
+            if (!equalValue(rhs))
+                return false;
 
             return varvalue == rhs.varvalue &&
                    condition == rhs.condition &&
                    varId == rhs.varId &&
                    conditional == rhs.conditional &&
                    defaultArg == rhs.defaultArg &&
+                   indirect == rhs.indirect &&
                    valueKind == rhs.valueKind;
+        }
+
+        bool operator!=(const Value &rhs) const {
+            return !(*this == rhs);
+        }
+
+        void decreaseRange() {
+            if (bound == Bound::Lower)
+                visitValue(increment{});
+            else if (bound == Bound::Upper)
+                visitValue(decrement{});
+        }
+
+        void invertRange() {
+            if (bound == Bound::Lower)
+                bound = Bound::Upper;
+            else if (bound == Bound::Upper)
+                bound = Bound::Lower;
+            decreaseRange();
         }
 
         std::string infoString() const;
 
-        enum ValueType { INT, TOK, FLOAT, MOVED, UNINIT, CONTAINER_SIZE, LIFETIME } valueType;
+        enum ValueType { INT, TOK, FLOAT, MOVED, UNINIT, CONTAINER_SIZE, LIFETIME, BUFFER_SIZE } valueType;
         bool isIntValue() const {
-            return valueType == INT;
+            return valueType == ValueType::INT;
         }
         bool isTokValue() const {
-            return valueType == TOK;
+            return valueType == ValueType::TOK;
         }
         bool isFloatValue() const {
-            return valueType == FLOAT;
+            return valueType == ValueType::FLOAT;
         }
         bool isMovedValue() const {
-            return valueType == MOVED;
+            return valueType == ValueType::MOVED;
         }
         bool isUninitValue() const {
-            return valueType == UNINIT;
+            return valueType == ValueType::UNINIT;
         }
         bool isContainerSizeValue() const {
-            return valueType == CONTAINER_SIZE;
+            return valueType == ValueType::CONTAINER_SIZE;
         }
         bool isLifetimeValue() const {
-            return valueType == LIFETIME;
+            return valueType == ValueType::LIFETIME;
+        }
+        bool isBufferSizeValue() const {
+            return valueType == ValueType::BUFFER_SIZE;
         }
 
         bool isLocalLifetimeValue() const {
-            return valueType == LIFETIME && lifetimeScope == Local;
+            return valueType == ValueType::LIFETIME && lifetimeScope == LifetimeScope::Local;
         }
 
         bool isArgumentLifetimeValue() const {
-            return valueType == LIFETIME && lifetimeScope == Argument;
+            return valueType == ValueType::LIFETIME && lifetimeScope == LifetimeScope::Argument;
         }
+
+        bool isNonValue() const {
+            return isMovedValue() || isUninitValue() || isLifetimeValue();
+        }
+
+        /** The value bound  */
+        enum class Bound { Upper, Lower, Point } bound;
 
         /** int value */
         long long intvalue;
@@ -140,7 +219,7 @@ namespace ValueFlow {
         double floatValue;
 
         /** kind of moved  */
-        enum MoveKind {NonMovedVariable, MovedVariable, ForwardedVariable} moveKind;
+        enum class MoveKind {NonMovedVariable, MovedVariable, ForwardedVariable} moveKind;
 
         /** For calculated values - variable value that calculated value depends on */
         long long varvalue;
@@ -151,7 +230,10 @@ namespace ValueFlow {
         ErrorPath errorPath;
 
         /** For calculated values - varId that calculated value depends on */
-        unsigned int varId;
+        nonneg int varId;
+
+        /** value relies on safe checking */
+        bool safe;
 
         /** Conditional value */
         bool conditional;
@@ -159,17 +241,19 @@ namespace ValueFlow {
         /** Is this value passed as default parameter to the function? */
         bool defaultArg;
 
-        enum LifetimeKind {Object, Lambda, Iterator} lifetimeKind;
+        int indirect;
 
-        enum LifetimeScope { Local, Argument } lifetimeScope;
+        enum class LifetimeKind {Object, Lambda, Iterator, Address} lifetimeKind;
+
+        enum class LifetimeScope { Local, Argument } lifetimeScope;
 
         static const char * toString(MoveKind moveKind) {
             switch (moveKind) {
-            case NonMovedVariable:
+            case MoveKind::NonMovedVariable:
                 return "NonMovedVariable";
-            case MovedVariable:
+            case MoveKind::MovedVariable:
                 return "MovedVariable";
-            case ForwardedVariable:
+            case MoveKind::ForwardedVariable:
                 return "ForwardedVariable";
             }
             return "";
@@ -182,7 +266,9 @@ namespace ValueFlow {
             /** Only listed values are possible */
             Known,
             /** Inconclusive */
-            Inconclusive
+            Inconclusive,
+            /** Listed values are impossible */
+            Impossible
         } valueKind;
 
         void setKnown() {
@@ -199,6 +285,14 @@ namespace ValueFlow {
 
         bool isPossible() const {
             return valueKind == ValueKind::Possible;
+        }
+
+        bool isImpossible() const {
+            return valueKind == ValueKind::Impossible;
+        }
+
+        void setImpossible() {
+            valueKind = ValueKind::Impossible;
         }
 
         void setInconclusive(bool inconclusive = true) {
@@ -221,16 +315,57 @@ namespace ValueFlow {
     };
 
     /// Constant folding of expression. This can be used before the full ValueFlow has been executed (ValueFlow::setValues).
-    const ValueFlow::Value * valueFlowConstantFoldAST(const Token *expr, const Settings *settings);
+    const ValueFlow::Value * valueFlowConstantFoldAST(Token *expr, const Settings *settings);
 
     /// Perform valueflow analysis.
     void setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings);
 
     std::string eitherTheConditionIsRedundant(const Token *condition);
+
+    size_t getSizeOf(const ValueType &vt, const Settings *settings);
 }
 
-const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPath &errorPath);
+struct LifetimeToken {
+    const Token* token;
+    bool addressOf;
+    ValueFlow::Value::ErrorPath errorPath;
+    bool inconclusive;
+
+    LifetimeToken() : token(nullptr), addressOf(false), errorPath(), inconclusive(false) {}
+
+    LifetimeToken(const Token* token, ValueFlow::Value::ErrorPath errorPath)
+        : token(token), addressOf(false), errorPath(std::move(errorPath)), inconclusive(false)
+    {}
+
+    LifetimeToken(const Token* token, bool addressOf, ValueFlow::Value::ErrorPath errorPath)
+        : token(token), addressOf(addressOf), errorPath(std::move(errorPath)), inconclusive(false)
+    {}
+
+    static std::vector<LifetimeToken> setAddressOf(std::vector<LifetimeToken> v, bool b) {
+        for (LifetimeToken& x : v)
+            x.addressOf = b;
+        return v;
+    }
+
+    static std::vector<LifetimeToken> setInconclusive(std::vector<LifetimeToken> v, bool b) {
+        for (LifetimeToken& x : v)
+            x.inconclusive = b;
+        return v;
+    }
+};
+
+const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value);
+
+std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, ValueFlow::Value::ErrorPath errorPath = ValueFlow::Value::ErrorPath{}, int depth = 20);
+
+const Variable* getLifetimeVariable(const Token* tok, ValueFlow::Value::ErrorPath& errorPath, bool* addressOf = nullptr);
+
+bool isLifetimeBorrowed(const Token *tok, const Settings *settings);
 
 std::string lifetimeType(const Token *tok, const ValueFlow::Value *val);
+
+std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, ValueFlow::Value::ErrorPath &errorPath);
+
+ValueFlow::Value getLifetimeObjValue(const Token *tok);
 
 #endif // valueflowH

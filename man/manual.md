@@ -1,16 +1,20 @@
+---
+title: Cppcheck manual
+subtitle: Version 1.90 dev
+author: Cppcheck team
+lang: en
+documentclass: report
+---
 
-
-# Cppcheck 1.88 dev
-
-## Introduction
+# Introduction
 
 Cppcheck is an analysis tool for C/C++ code. It provides unique code analysis to detect bugs and focuses on detecting undefined behaviour and dangerous coding constructs. The goal is to detect only real errors in the code (i.e. have very few false positives).
 
 Supported code and platforms:
 
-  - You can check non-standard code that contains various compiler extensions, inline assembly code, etc.
-  - Cppcheck should be compilable by any C++ compiler that handles the latest C++ standard.
-  - Cppcheck should work on any platform that has sufficient CPU and memory.
+- You can check non-standard code that contains various compiler extensions, inline assembly code, etc.
+- Cppcheck should be compilable by any C++ compiler that handles the latest C++ standard.
+- Cppcheck should work on any platform that has sufficient CPU and memory.
 
 Please understand that there are limits of Cppcheck. Cppcheck is rarely wrong about reported errors. But there are
 many bugs that it doesn't detect.
@@ -19,24 +23,25 @@ You will find more bugs in your software by testing your software carefully, tha
 more bugs in your software by instrumenting your software, than by using Cppcheck. But Cppcheck can still detect some
 of the bugs that you miss when testing and instrumenting your software.
 
-## Getting started
+# Getting started
 
-### GUI
+## GUI
 
 It is not required but creating a new project file is a good first step. There are a few options you can tweak to get
 good results.
 
 In the project settings dialog, the first option you see is "Import project". It is recommended that you use this
 feature if you can. Cppcheck can import:
- - Visual studio solution / project
- - Compile database (can be generated from cmake/qbs/etc build files)
- - Borland C++ Builder 6
+
+- Visual studio solution / project
+- Compile database (can be generated from cmake/qbs/etc build files)
+- Borland C++ Builder 6
 
 When you have filled out the project settings and click on OK; the Cppcheck analysis will start.
 
-### Command line
+## Command line
 
-#### First test
+### First test
 
 Here is a simple code
 
@@ -56,8 +61,7 @@ The output from cppcheck will then be:
     Checking file1.c...
     [file1.c:4]: (error) Array 'a[10]' index 10 out of bounds
 
-
-#### Checking all files in a folder
+### Checking all files in a folder
 
 Normally a program has many source files. And you want to check them all. Cppcheck can check all source files in a directory:
 
@@ -70,7 +74,7 @@ If "path" is a folder then cppcheck will recursively check all source files in t
     Checking path/file2.cpp...
     2/2 files checked 100% done
 
-#### Check files manually or use project file
+### Check files manually or use project file
 
 With Cppcheck you can check files manually, by specifying files/paths to check and settings. Or you can use a project file (cmake/visual studio/etc).
 
@@ -78,7 +82,7 @@ We don't know which approach (project file or manual configuration) will give yo
 
 Later chapters will describe this in more detail.
 
-#### Excluding a file or folder from checking
+### Excluding a file or folder from checking
 
 To exclude a file or folder, there are two options. The first option is to only provide the paths and files you want to check.
 
@@ -94,7 +98,7 @@ This option does not currently work with the `--project` option and is only vali
 
     cppcheck -isrc/b -isrc/c
 
-### Severities
+## Severities
 
 The possible severities for messages are:
 
@@ -122,18 +126,19 @@ portability warnings. 64-bit portability. code might work different on different
 
 Configuration problems. The recommendation is to only enable these during configuration.
 
-
-## Importing project
+# Importing project
 
 You can import some project files and build configurations into Cppcheck.
 
-### Cppcheck GUI project
+## Cppcheck GUI project
 
 You can import and use Cppcheck GUI project files in the command line tool:
 
     cppcheck --project=foobar.cppcheck
 
-### CMake
+The Cppcheck GUI has a few options that are not available in the command line directly. To use these options you can import a GUI project file. We want to keep the command line tool usage simple and limit the options by intention.
+
+## CMake
 
 Generate a compile database:
 
@@ -143,7 +148,7 @@ The file `compile_commands.json` is created in the current folder. Now run Cppch
 
     cppcheck --project=compile_commands.json
 
-### Visual Studio
+## Visual Studio
 
 You can run Cppcheck on individual project files (\*.vcxproj) or on a whole solution (\*.sln)
 
@@ -155,13 +160,15 @@ Running Cppcheck on a Visual Studio project:
 
     cppcheck --project=foobar.vcxproj
 
-### C++ Builder 6
+In the `Cppcheck GUI` you have the choice to only analyze a single debug configuration. If you want to use this choice on the command line then create a `Cppcheck GUI` project with this activated and then import the GUI project file on the command line.
+
+## C++ Builder 6
 
 Running Cppcheck on a C++ Builder 6 project:
 
     cppcheck --project=foobar.bpr
 
-### Other
+## Other
 
 If you can generate a compile database then it's possible to import that in Cppcheck.
 
@@ -169,15 +176,15 @@ In Linux you can use for instance the `bear` (build ear) utility to generate a c
 
     bear make
 
-## Platform
+# Platform
 
 You should use a platform configuration that match your target.
 
 By default Cppcheck uses native platform configuration that works well if your code is compiled and executed locally.
 
-Cppcheck has builtin configurations for unix and windows targets. You can easily use these with the --platform command line flag.
+Cppcheck has builtin configurations for Unix and Windows targets. You can easily use these with the --platform command line flag.
 
-You can also create your own custom platform configuration in a xml file. Here is an example:
+You can also create your own custom platform configuration in a XML file. Here is an example:
 
     <?xml version="1"?>
     <platform>
@@ -197,12 +204,11 @@ You can also create your own custom platform configuration in a xml file. Here i
       </sizeof>
     </platform>
 
-
-## Preprocessor Settings
+# Preprocessor Settings
 
 If you use `--project` then Cppcheck will use the preprocessor settings from the imported project. Otherwise you'll probably want to configure the include paths, defines, etc.
 
-### Defines
+## Defines
 
 Here is a file that has 2 preprocessor configurations (with A defined and without A defined):
 
@@ -212,7 +218,7 @@ Here is a file that has 2 preprocessor configurations (with A defined and withou
         x = z;
     #endif
 
-By default Cppcheck will check all preprocessor configurations (except those that have #error in them). So the above code will by default be analyzed both with `A` defined and without `A` defined. 
+By default Cppcheck will check all preprocessor configurations (except those that have #error in them). So the above code will by default be analyzed both with `A` defined and without `A` defined.
 
 You can use `-D` to change this. When you use `-D`, cppcheck will by default only check the given configuration and nothing else. This is how compilers work. But you can use `--force` or `--max-configs` to override the number of configurations.
 
@@ -234,8 +240,7 @@ Another useful flag might be `-U`. It tells Cppcheck that a macro is not defined
 
 That will mean that X is not defined. Cppcheck will not check what happens when X is defined.
 
-
-### Include paths
+## Include paths
 
 To add an include path, use `-I`, followed by the path.
 
@@ -243,13 +248,13 @@ Cppcheck's preprocessor basically handles includes like any other preprocessor. 
 
 The purpose of this behaviour is that cppcheck is meant to work without necessarily seeing the entire code. Actually, it is recommended to not give all include paths. While it is useful for cppcheck to see the declaration of a class when checking the implementation of its members, passing standard library headers is highly discouraged because it will result in worse results and longer checking time. For such cases, .cfg files (see below) are the better way to provide information about the implementation of functions and types to cppcheck.
 
-## Suppressions
+# Suppressions
 
 If you want to filter out certain errors you can suppress these.
 
-Please note that if you see a false positive then we (the Cppcheck team) want that you report it so we can fix it. 
+Please note that if you see a false positive then we (the Cppcheck team) want that you report it so we can fix it.
 
-### Plain text suppressions
+## Plain text suppressions
 
 You can suppress certain types of errors. The format for such a suppression is one of:
 
@@ -259,23 +264,22 @@ You can suppress certain types of errors. The format for such a suppression is o
 
 The `error id` is the id that you want to suppress. The easiest way to get it is to use the --template=gcc command line flag. The id is shown in brackets.
 
-The filename may include the wildcard characters \* or ?, which match any sequence of characters or any single character respectively. It is recommended that you use "/" as path separator on all operating systems.
+The filename may include the wildcard characters \* or ?, which match any sequence of characters or any single character respectively. It is recommended that you use "/" as path separator on all operating systems. The filename must match the filename in the reported warning exactly. For instance, if the warning contains a relative path then the suppression must match that relative path.
 
-### Command line suppression
+## Command line suppression
 
 The `--suppress=` command line option is used to specify suppressions on the command line. Example:
 
     cppcheck --suppress=memleak:src/file1.cpp src/
 
-
-### Suppressions in a file
+## Suppressions in a file
 
 You can create a suppressions file. Example:
 
     // suppress memleak and exceptNew errors in the file src/file1.cpp
     memleak:src/file1.cpp
     exceptNew:src/file1.cpp
-    
+
     // suppress all uninitvar errors in all files
     uninitvar
 
@@ -285,7 +289,7 @@ You can use the suppressions file like this:
 
     cppcheck --suppressions-list=suppressions.txt src/
 
-### XML suppressions
+## XML suppressions
 
 You can specify suppressions in a XML file. Example file:
 
@@ -299,13 +303,13 @@ You can specify suppressions in a XML file. Example file:
       </suppress>
     </suppressions>
 
-The xml format is extensible and may be extended with further attributes in the future.
+The XML format is extensible and may be extended with further attributes in the future.
 
 You can use the suppressions file like this:
 
     cppcheck --suppress-xml=suppressions.xml src/
 
-### Inline suppressions
+## Inline suppressions
 
 Suppressions can also be added directly in the code by adding comments that contain special keywords. Before adding such comments, consider that the code readability is sacrificed a little.
 
@@ -325,7 +329,7 @@ To suppress the error message, a comment can be added:
 
     void f() {
         char arr[5];
-    
+
         // cppcheck-suppress arrayIndexOutOfBounds
         arr[10] = 0;
     }
@@ -343,8 +347,7 @@ You can write comments for the suppress, however is recommended to use ; or // t
     // cppcheck-suppress arrayIndexOutOfBounds ; some comment
     // cppcheck-suppress arrayIndexOutOfBounds // some comment
 
-
-## XML output
+# XML output
 
 Cppcheck can generate output in XML format. Use `--xml` to enable this format.
 
@@ -356,7 +359,7 @@ Here is a sample report:
 
     <?xml version="1.0" encoding="UTF-8"?>
     <results version="2">
-      <cppcheck version="1.66">
+      <cppcheck version="1.66"/>
       <errors>
         <error id="someError" severity="error" msg="short error text"
            verbose="long error text" inconclusive="true" cwe="312">
@@ -365,7 +368,7 @@ Here is a sample report:
       </errors>
     </results>
 
-### The `<error>` element
+## The `<error>` element
 
 Each error is reported in a `<error>` element. Attributes:
 
@@ -393,7 +396,7 @@ this attribute is only used when the error message is inconclusive
 
 CWE ID for the problem. This attribute is only used when the CWE ID for the message is known.
 
-### The `<location>` element
+## The `<location>` element
 
 All locations related to an error are listed with `<location>` elements. The primary location is listed first.
 
@@ -415,11 +418,11 @@ line number
 
 short information for each location (optional)
 
-## Reformatting the text output
+# Reformatting the text output
 
 If you want to reformat the output so it looks different you can use templates.
 
-### Predefined output formats
+## Predefined output formats
 
 To get Visual Studio compatible output you can use --template=vs:
 
@@ -441,7 +444,7 @@ The output will look like this:
     a[2] = 0;
       ^
 
-### User defined output format (single line)
+## User defined output format (single line)
 
 You can write your own pattern. For instance, to get warning messages that are formatted like old gcc such format can be used:
 
@@ -461,7 +464,7 @@ The output will look like this:
     Checking samples/arrayIndexOutOfBounds/bad.c ...
     samples/arrayIndexOutOfBounds/bad.c,6,error,arrayIndexOutOfBounds,Array 'a[2]' accessed at index 2, which is out of bounds.
 
-### User defined output format (multi line)
+## User defined output format (multi line)
 
 Many warnings have multiple locations. Example code:
 
@@ -469,13 +472,13 @@ Many warnings have multiple locations. Example code:
     {
         *p = 3;       // line 3
     }
-    
+
     int main()
     {
         int *p = 0;   // line 8
         f(p);         // line 9
         return 0;
-   }
+    }
 
 There is a possible null pointer dereference at line 3. Cppcheck can show how it came to that conclusion by showing extra location information. You need to use both --template and --template-location at the command line.
 
@@ -503,8 +506,7 @@ The first line in the warning is formatted by the --template format.
 
 The other lines in the warning are formatted by the --template-location format.
 
-
-#### Format specifiers for --template
+### Format specifiers for --template
 
 The available specifiers for --template are:
 
@@ -544,20 +546,19 @@ Warning id
 
 The real code.
 
-**\t**
+**\\t**
 
 Tab
 
-**\n**
+**\\n**
 
 Newline
 
-**\r**
+**\\r**
 
 Carriage return
 
-
-#### Format specifiers for --template-location
+### Format specifiers for --template-location
 
 The available specifiers for `--template-location` are:
 
@@ -581,157 +582,91 @@ Information message about current location
 
 The real code.
 
-**\t**
+**\\t**
 
 Tab
 
-**\t**
+**\\n**
 
 Newline
 
-**\r**
+**\\r**
 
 Carriage return
 
-## Speeding up Cppcheck
+# Addons
 
-It is possible to speed up Cppcheck analysis in a few different ways.
+Addons are scripts that analyses Cppcheck dump files to check compatibility with secure coding standards and to locate various issues.
 
-### Preprocessor configurations
+Cppcheck is distributed with a few addons which are listed below.
 
-Imagine this source code:
+## Supported addons
 
-    void foo()
+### cert.py
+
+[cert.py](https://github.com/danmar/cppcheck/blob/master/addons/cert.py) checks for compliance with the safe programming standard [SEI CERT](http://www.cert.org/secure-coding/).
+
+### misra.py
+
+[misra.py](https://github.com/danmar/cppcheck/blob/master/addons/misra.py) is used to verify compliance with MISRA C 2012 - a proprietary set of guidelines to avoid such questionable code, developed for embedded systems.
+
+Since this standard is proprietary, cppcheck does not display error text by specifying only the number of violated rules (for example, [c2012-21.3]). If you want to display full texts for violated rules, you will need to create a text file containing MISRA rules, which you will have to pass when calling the script with `--rule-texts` key. Some examples of rule texts files available in [tests directory](https://github.com/danmar/cppcheck/blob/master/addons/test/misra/).
+
+You can also suppress some unwanted rules using `--suppress-rules` option. Suppressed rules should be set as comma-separated listed, for example: `--suppress-rules 21.1,18.7`. The full list of supported rules is available on [Cppcheck](http://cppcheck.sourceforge.net/misra.php) home page.
+
+### y2038.py
+
+[y2038.py](https://github.com/danmar/cppcheck/blob/master/addons/y2038.py) checks Linux system for [year 2038 problem](https://en.wikipedia.org/wiki/Year_2038_problem) safety. This required [modified environment](https://github.com/3adev/y2038). See complete description [here](https://github.com/danmar/cppcheck/blob/master/addons/doc/y2038.txt).
+
+### threadsafety.py
+
+[threadsafety.py](https://github.com/danmar/cppcheck/blob/master/addons/threadsafety.py) analyse Cppcheck dump files to locate thread safety issues like static local objects used by multiple threads.
+
+## Running Addons
+
+Addons could be run through Cppcheck command line utility as follows:
+
+    cppcheck --addon=misra.py somefile.c
+
+This will launch all Cppcheck checks and additionally calls specific checks provided by selected addon.
+
+Some addons need extra arguments. You can configure how you want to execute an addon in a json file. For example put this in misra.json:
+
     {
-        int x;
-    #ifdef __GNUC__
-        x = 0;
-    #endif
-    #ifdef _MSC_VER
-        x = 1;
-    #endif
-        return x;
+        "script": "misra.py",
+        "args": [
+            "--rule-texts=misra.txt",
+            "--suppress-rules 17.3,21.12"
+        ]
     }
 
-By default Cppcheck will try to check all the configurations. There are 3 important configurations here:
- * Neither `__GNUC__` nor `_MSC_VER` is defined
- * `__GNUC__` is defined
- * `_MSC_VER` is defined
+And then the configuration can be executed on the cppcheck command line:
 
-When you run Cppcheck, the output will be something like:
+    cppcheck --addon=misra.json somefile.c
 
-    $ cppcheck test.c
-    Checking test.c ...
-    [test.c:10]: (error) Uninitialized variable: x
-    Checking test.c: __GNUC__...
-    Checking test.c: _MSC_VER...
+By default Cppcheck would search addon at standard path which was specified in installation process. You also can set this path directly, for example:
 
-Now if you want you can limit the analysis. You probably know what the target compiler is. If `-D` is supplied and you do not specify `--force` then Cppcheck will only check the configuration you give.
+    cppcheck --addon=/opt/cppcheck/configurations/my_misra.json somefile.c
 
-    $ cppcheck -D __GNUC__ test.c
-    Checking test.c ...
-    Checking test.c: __GNUC__=1...
+This allows you create and manage multiple configuration files for different projects.
 
-
-### Unused templates
-
-If you think Cppcheck is slow and you are using templates, then you should try how it works to remove unused templates.
-
-Imagine this code:
-
-    template <class T> struct Foo {
-        T x = 100;
-    };
-
-    template <class T> struct Bar {
-        T x = 200 / 0;
-    };
-
-    int main() {
-        Foo<int> foo;
-        return 0;
-    }
-
-Cppcheck says:
-
-    $ cppcheck test.cpp
-    Checking test.cpp ...
-    [test.cpp:7]: (error) Division by zero.
-
-It complains about division by zero in `Bar` even though `Bar` is not instantiated.
-
-You can use the option `--remove-unused-templates` to remove unused templates from Cppcheck analysis.
-
-Example:
-
-    $ cppcheck --remove-unused-templates test.cpp
-    Checking test.cpp ...
-
-This lost message is in theory not critical, since `Bar` is not instantiated the division by zero should not occur in your real program.
-
-The speedup you get can be remarkable.
-
-### Check headers
-
-TBD
-
-## Misra
-
-Cppcheck has an addon that checks for MISRA C 2012 compliance.
-
-### Requirements
-
-You need:
-
-Python 2.X or 3.X
-
-The MISRA C 2012 PDF. You can buy this from http://www.misra.org.uk (costs 15-20 pounds)
-
-#### MISRA Text file
-
-It is not allowed to publish the MISRA rule texts. Therefore the MISRA rule texts are not available directly in the addon. We can not publish the rule texts. Instead, you must provide the rule texts; the addon can read the rule texts from a text file. If you copy/paste all text in "Appendix A Summary of guidelines" from the MISRA pdf, then you have all the rule texts.
-
-If you have installed xpdf, such text file can be generated on the command line (using pdftotext that is included in xpdf):
-
-    pdftotext misra-c-2012.pdf output.txt
-
-The output might not be 100% perfect so you might need to make minor tweaks manually.
-
-Other pdf-to-text utilities might work also.
-
-To create the text file manually, copy paste Appendix A "Summary of guidelines" from the MISRA PDF. Format:
-
-    Appendix A Summary of guidelines
-    Rule 1.1
-    Rule text
-    Rule 1.2
-    Rule text
-    ...
-
-Rules that you want to disable does not need to have a rule text. Rules that don't have rule text will be suppressed by the addon.
-
-
-## Library configuration
+# Library configuration
 
 When external libraries are used, such as WinAPI, POSIX, gtk, Qt, etc, Cppcheck doesn't know how the external functions behave. Cppcheck then fails to detect various problems such as leaks, buffer overflows, possible null pointer dereferences, etc. But this can be fixed with configuration files.
 
 Cppcheck already contains configurations for several libraries. They can be loaded as described below. Note that the configuration for the standard libraries of C and C++, std.cfg, is always loaded by cppcheck. If you create or update a configuration file for a popular library, we would appreciate if you upload it to us.
 
-### Using your own custom .cfg file
+## Using your own custom .cfg file
 
 You can create and use your own .cfg files for your projects. Use `--check-library` and `--enable=information` to get hints about what you should configure.
 
-It is recommended that you use the `Library Editor` in the `Cppcheck GUI` to edit configuration files. It is available in the `View` menu. Not all settings are documented in this manual yet.
+You can use the `Library Editor` in the `Cppcheck GUI` to edit configuration files. It is available in the `View` menu.
 
-If you have a question about the .cfg file format it is recommended that you ask in the forum (<http://sourceforge.net/p/cppcheck/discussion/>).
+The .cfg file format is documented in the `Reference: Cppcheck .cfg format` (http://cppcheck.sf.net/reference-cfg-format.pdf) document.
 
-The command line cppcheck will try to load custom .cfg files from the working path - execute cppcheck from the path where the .cfg files are.
+# HTML Report
 
-The cppcheck GUI will try to load custom .cfg files from the project file path. The custom .cfg files should be shown in the Edit Project File dialog that you open from the `File` menu.
-
-## HTML Report
-
-You can convert the XML output from cppcheck into a HTML report. You'll need Python and the pygments module (http://pygments.org/) for this to work. In the Cppcheck source tree there is a folder htmlreport that contains a script that transforms a Cppcheck XML file into HTML output.
+You can convert the XML output from cppcheck into a HTML report. You'll need Python and the pygments module (<http://pygments.org/)> for this to work. In the Cppcheck source tree there is a folder htmlreport that contains a script that transforms a Cppcheck XML file into HTML output.
 
 This command generates the help screen:
 
@@ -754,4 +689,3 @@ An example usage:
 
     ./cppcheck gui/test.cpp --xml 2> err.xml
     htmlreport/cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.
-

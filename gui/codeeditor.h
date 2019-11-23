@@ -5,6 +5,7 @@
 #include <QPlainTextEdit>
 #include <QObject>
 #include <QRegularExpression>
+#include "codeeditorstyle.h"
 
 class QPaintEvent;
 class QResizeEvent;
@@ -18,18 +19,32 @@ class Highlighter : public QSyntaxHighlighter {
     Q_OBJECT
 
 public:
-    explicit Highlighter(QTextDocument *parent);
+    explicit Highlighter(QTextDocument *parent,
+                         CodeEditorStyle *widgetStyle);
 
     void setSymbols(const QStringList &symbols);
+
+    void setStyle(const CodeEditorStyle &newStyle);
 
 protected:
     void highlightBlock(const QString &text) override;
 
 private:
+    enum RuleRole {
+        Keyword = 1,
+        Class   = 2,
+        Comment = 3,
+        Quote   = 4,
+        Symbol  = 5
+    };
     struct HighlightingRule {
         QRegularExpression pattern;
         QTextCharFormat format;
+        RuleRole ruleRole;
     };
+
+    void applyFormat(HighlightingRule &rule);
+
     QVector<HighlightingRule> mHighlightingRules;
     QVector<HighlightingRule> mHighlightingRulesWithSymbols;
 
@@ -42,6 +57,8 @@ private:
     QTextCharFormat mMultiLineCommentFormat;
     QTextCharFormat mQuotationFormat;
     QTextCharFormat mSymbolFormat;
+
+    CodeEditorStyle *mWidgetStyle;
 };
 
 class CodeEditor : public QPlainTextEdit {
@@ -51,9 +68,11 @@ public:
     explicit CodeEditor(QWidget *parent);
     CodeEditor(const CodeEditor &) = delete;
     CodeEditor &operator=(const CodeEditor &) = delete;
+    ~CodeEditor();
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
+    void setStyle(const CodeEditorStyle& newStyle);
 
     /**
      * Set source code to show, goto error line and highlight that line.
@@ -72,8 +91,12 @@ private slots:
     void updateLineNumberArea(const QRect &, int);
 
 private:
+    QString generateStyleString();
+
+private:
     QWidget *mLineNumberArea;
     Highlighter *mHighlighter;
+    CodeEditorStyle *mWidgetStyle;
     int mErrorPosition;
 };
 

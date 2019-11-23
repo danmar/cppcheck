@@ -50,16 +50,9 @@ public:
     }
 
     /** run checks, the token list is not simplified */
-    virtual void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         CheckAssert checkAssert(tokenizer, settings, errorLogger);
         checkAssert.assertWithSideEffects();
-    }
-
-
-    virtual void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        (void)tokenizer;
-        (void)settings;
-        (void)errorLogger;
     }
 
     void assertWithSideEffects();

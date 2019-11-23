@@ -26,6 +26,15 @@
 #include <fstream>
 #include <vector>
 #include <cstdarg>
+#include <functional>
+
+void valid_code()
+{
+    std::vector<int> vecInt{0, 1, 2};
+    std::fill_n(vecInt.begin(), 2, 0);
+    vecInt.push_back(1);
+    vecInt.pop_back();
+}
 
 void returnValue_std_isgreater(void)
 {
@@ -78,6 +87,7 @@ void bufferAccessOutOfBounds(void)
     // TODO cppcheck-suppress redundantCopy
     std::strcpy(a, "abcde");
     // TODO cppcheck-suppress redundantCopy
+    // cppcheck-suppress terminateStrncpy
     std::strncpy(a,"abcde",5);
     // cppcheck-suppress bufferAccessOutOfBounds
     // TODO cppcheck-suppress redundantCopy
@@ -1104,6 +1114,15 @@ void uninitvar_mbrlen(const char* p, size_t m, mbstate_t* s)
     (void)std::mbrlen(p,m,ps2);
     // no warning is expected
     (void)std::mbrlen(p,m,s);
+}
+
+void nullPointer_mbrlen(const char* p, size_t m, mbstate_t* s)
+{
+    // no warning is expected: A call to the function with a null pointer as pmb resets the shift state (and ignores parameter max).
+    (void)std::mbrlen(NULL,m,s);
+    (void)std::mbrlen(NULL,0,s);
+    // cppcheck-suppress nullPointer
+    (void)std::mbrlen(p,m,NULL);
 }
 
 void uninitvar_btowc(void)
@@ -2881,6 +2900,14 @@ void uninitvar_vsprintf(void)
     (void)std::vsprintf(s,format,arg);
 }
 
+void nullPointer_vsprintf(va_list arg,const char *format)
+{
+    char *s = NULL;
+    (void)std::vsprintf(s,format,arg); // Its allowed to provide 's' as NULL pointer
+    // cppcheck-suppress nullPointer
+    (void)std::vsprintf(s,NULL,arg);
+}
+
 void uninitvar_vswprintf(void)
 {
     wchar_t *s;
@@ -3274,6 +3301,12 @@ void stdalgorithm(const std::list<int> &ints1, const std::list<int> &ints2)
     // cppcheck-suppress mismatchingContainers
     if (std::find(ints1.begin(), ints1.end(), 123) == ints2.end()) {}
 
+    // #9455
+    std::list<int>::const_iterator uninitItBegin;
+    std::list<int>::const_iterator uninitItEnd;
+    // @todo cppcheck-suppress uninitvar
+    if (std::find(uninitItBegin, uninitItEnd, 123) == uninitItEnd) {}
+
     // <!-- InputIterator std::find_if(InputIterator first, InputIterator last, UnaryPredicate val) -->
     // cppcheck-suppress mismatchingContainers
     // cppcheck-suppress ignoredReturnValue
@@ -3316,9 +3349,7 @@ void stdalgorithm(const std::list<int> &ints1, const std::list<int> &ints2)
     // <!-- Function std::for_each(InputIterator first, InputIterator last, Function func) -->
     // cppcheck-suppress mismatchingContainers
     std::for_each(ints1.begin(), ints2.end(), [](int i) {});
-
 }
-
 
 void getline()
 {
@@ -3390,4 +3421,22 @@ void stdvector()
     v.back();
     // cppcheck-suppress ignoredReturnValue
     v.front();
+}
+
+void stdbind_helper(int a)
+{
+    printf("%d", a);
+}
+
+void stdbind()
+{
+    using namespace std::placeholders;
+
+    // TODO cppcheck-suppress ignoredReturnValue #9369
+    std::bind(stdbind_helper, 1);
+
+    // cppcheck-suppress unreadVariable
+    auto f1 = std::bind(stdbind_helper, _1);
+    // cppcheck-suppress unreadVariable
+    auto f2 = std::bind(stdbind_helper, 10);
 }

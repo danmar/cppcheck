@@ -31,7 +31,7 @@
 static std::string builddir(std::string filename)
 {
     if (filename.compare(0,4,"lib/") == 0)
-        filename = "$(SRCDIR)" + filename.substr(3);
+        filename = "$(libcppdir)" + filename.substr(3);
     return filename;
 }
 
@@ -41,16 +41,47 @@ static std::string objfile(std::string cppfile)
     return builddir(cppfile + ".o");
 }
 
+static std::string objfiles(const std::vector<std::string> &files)
+{
+    std::string allObjfiles;
+    for (const std::string &file : files) {
+        if (file != files.front())
+            allObjfiles += std::string(14, ' ');
+        allObjfiles += objfile(file);
+        if (file != files.back())
+            allObjfiles += " \\\n";
+    }
+    return allObjfiles;
+}
+
 static void getDeps(const std::string &filename, std::vector<std::string> &depfiles)
 {
+    static const std::vector<std::string> externalfolders = {"externals",
+                                                             "externals/simplecpp",
+                                                             "externals/tinyxml"
+                                                            };
+
     // Is the dependency already included?
     if (std::find(depfiles.begin(), depfiles.end(), filename) != depfiles.end())
         return;
 
     std::ifstream f(filename.c_str());
     if (! f.is_open()) {
-        if (filename.compare(0, 4, "cli/") == 0 || filename.compare(0, 5, "test/") == 0)
+        /*
+         * Recursively search for includes in other directories.
+         * Files are searched according to the following priority:
+         * [test, tools] -> cli -> lib -> externals
+         */
+        if (filename.compare(0, 4, "cli/") == 0)
             getDeps("lib" + filename.substr(filename.find('/')), depfiles);
+        else if (filename.compare(0, 5, "test/") == 0)
+            getDeps("cli" + filename.substr(filename.find('/')), depfiles);
+        else if (filename.compare(0, 6, "tools/") == 0)
+            getDeps("cli" + filename.substr(filename.find('/')), depfiles);
+        else if (filename.compare(0, 4, "lib/") == 0) {
+            for (const std::string & external : externalfolders)
+                getDeps(external + filename.substr(filename.find('/')), depfiles);
+        }
         return;
     }
     if (filename.find(".c") == std::string::npos)
@@ -63,12 +94,19 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
     std::string line;
     while (std::getline(f, line)) {
         std::string::size_type pos1 = line.find("#include \"");
-        if (pos1 == std::string::npos)
-            continue;
+        char rightBracket = '\"';
+        if (pos1 == std::string::npos) {
+            pos1 = line.find("#include <");
+            rightBracket = '>';
+            if (pos1 == std::string::npos)
+                continue;
+        }
+
         pos1 += 10;
 
-        std::string::size_type pos2 = line.find('\"', pos1);
-        std::string hfile(path + line.substr(pos1, pos2 - pos1));
+        std::string::size_type pos2 = line.find(rightBracket, pos1);
+        std::string hfile = path + line.substr(pos1, pos2 - pos1);
+
         if (hfile.find("/../") != std::string::npos)    // TODO: Ugly fix
             hfile.erase(0, 4 + hfile.find("/../"));
         getDeps(hfile, depfiles);
@@ -77,14 +115,15 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
 
 static void compilefiles(std::ostream &fout, const std::vector<std::string> &files, const std::string &args)
 {
-    for (unsigned int i = 0; i < files.size(); ++i) {
-        bool external(files[i].compare(0,10,"externals/") == 0);
-        fout << objfile(files[i]) << ": " << files[i];
+    for (const std::string &file : files) {
+        bool external(file.compare(0,10,"externals/") == 0);
+        fout << objfile(file) << ": " << file;
         std::vector<std::string> depfiles;
-        getDeps(files[i], depfiles);
-        for (unsigned int dep = 0; dep < depfiles.size(); ++dep)
-            fout << " " << depfiles[dep];
-        fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CFG) $(CXXFLAGS)" << (external?" -w":"") << " $(UNDEF_STRICT_ANSI) -c -o " << objfile(files[i]) << " " << builddir(files[i]) << "\n\n";
+        getDeps(file, depfiles);
+        std::sort(depfiles.begin(), depfiles.end());
+        for (const std::string &depfile : depfiles)
+            fout << " " << depfile;
+        fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS)" << (external?" -w":"") << " $(UNDEF_STRICT_ANSI) -c -o " << objfile(file) << " " << builddir(file) << "\n\n";
     }
 }
 
@@ -97,9 +136,9 @@ static void getCppFiles(std::vector<std::string> &files, const std::string &path
     FileLister::addFiles(filemap, path, extra, recursive, matcher);
 
     // add *.cpp files to the "files" vector..
-    for (std::map<std::string,size_t>::const_iterator it = filemap.begin(); it != filemap.end(); ++it) {
-        if (it->first.find(".cpp") != std::string::npos)
-            files.push_back(it->first);
+    for (const std::pair<const std::string&, size_t> file : filemap) {
+        if (file.first.find(".cpp") != std::string::npos)
+            files.push_back(file.first);
     }
 }
 
@@ -121,8 +160,7 @@ int main(int argc, char **argv)
     getCppFiles(libfiles, "lib/", false);
 
     std::vector<std::string> extfiles;
-    extfiles.push_back("externals/simplecpp/simplecpp.cpp");
-    extfiles.push_back("externals/tinyxml/tinyxml2.cpp");
+    getCppFiles(extfiles, "externals/", true);
 
     std::vector<std::string> clifiles;
     getCppFiles(clifiles, "cli/", false);
@@ -146,42 +184,21 @@ int main(int argc, char **argv)
             fout1 << "include($$PWD/pcrerules.pri)\n";
             fout1 << "include($$PWD/../externals/externals.pri)\n";
             fout1 << "INCLUDEPATH += $$PWD\n";
-            fout1 << "HEADERS += $${PWD}/check.h \\\n";
-            for (unsigned int i = 0; i < libfiles.size(); ++i) {
-                std::string fname(libfiles[i].substr(4));
+            fout1 << "HEADERS += ";
+            for (const std::string &libfile : libfiles) {
+                std::string fname(libfile.substr(4));
                 if (fname.find(".cpp") == std::string::npos)
                     continue;   // shouldn't happen
                 fname.erase(fname.find(".cpp"));
-                fout1 << std::string(11, ' ') << "$${PWD}/" << fname << ".h";
-                if (i + 1 < testfiles.size())
-                    fout1 << " \\\n";
-            }
-            fout1 << "\n\nSOURCES += ";
-            for (unsigned int i = 0; i < libfiles.size(); ++i) {
-                fout1 << "$${PWD}/" << libfiles[i].substr(4);
-                if (i < libfiles.size() - 1)
+                fout1 << "$${PWD}/" << fname << ".h";
+                if (libfile != libfiles.back())
                     fout1 << " \\\n" << std::string(11, ' ');
             }
-            fout1 << "\n";
-        }
-    }
-
-    // QMAKE - test/testfiles.pri
-    {
-        std::ofstream fout1("test/testfiles.pri");
-        if (fout1.is_open()) {
-            fout1 << "# no manual edits - this file is autogenerated by dmake\n\n";
-            fout1 << "INCLUDEPATH += ../externals/tinyxml\n";
             fout1 << "\n\nSOURCES += ";
-            for (unsigned int i = 0; i < testfiles.size(); ++i) {
-                const std::string filename(testfiles[i].substr(5));
-                // Include only files containing tests in this listing.
-                // I.e. filenames beginning with "test".
-                if (filename.compare(0, 4, "test") == 0) {
-                    fout1 << "$${BASEPATH}/" << filename;
-                    if (i + 1 < testfiles.size())
-                        fout1 << " \\\n" << std::string(11, ' ');
-                }
+            for (const std::string &libfile : libfiles) {
+                fout1 << "$${PWD}/" << libfile.substr(4);
+                if (libfile != libfiles.back())
+                    fout1 << " \\\n" << std::string(11, ' ');
             }
             fout1 << "\n";
         }
@@ -200,22 +217,43 @@ int main(int argc, char **argv)
     fout << "# To compile with rules, use 'make HAVE_RULES=yes'\n";
     makeConditionalVariable(fout, "HAVE_RULES", "no");
 
-    // compiled patterns..
-    fout << "# folder where lib/*.cpp files are located\n";
-    makeConditionalVariable(fout, "SRCDIR", "lib");
+    // Z3 is an optional dependency now..
+    makeConditionalVariable(fout, "USE_Z3", "no");
+    fout << "ifeq ($(USE_Z3),yes)\n"
+         << "    CPPFLAGS += -DUSE_Z3\n"
+         << "    LIBS += -lz3\n"
+         << "endif\n";
+
+    // use match compiler..
+    fout << "# use match compiler\n";
     fout << "ifeq ($(SRCDIR),build)\n"
-         << "    ifdef VERIFY\n"
-         << "        matchcompiler_S := $(shell python tools/matchcompiler.py --verify)\n"
-         << "    else\n"
-         << "        matchcompiler_S := $(shell python tools/matchcompiler.py)\n"
+         << "    $(warning Usage of SRCDIR to activate match compiler is deprecated. Use MATCHCOMPILER=yes instead.)\n"
+         << "    MATCHCOMPILER:=yes\n"
+         << "endif\n";
+    fout << "ifeq ($(MATCHCOMPILER),yes)\n"
+         << "    # Find available Python interpreter\n"
+         << "    PYTHON_INTERPRETER := $(shell which python)\n"
+         << "    ifndef PYTHON_INTERPRETER\n"
+         << "        PYTHON_INTERPRETER := $(shell which python3)\n"
          << "    endif\n"
+         << "    ifndef PYTHON_INTERPRETER\n"
+         << "        $(error Did not find a Python interpreter)\n"
+         << "    endif\n"
+         << "    ifdef VERIFY\n"
+         << "        matchcompiler_S := $(shell $(PYTHON_INTERPRETER) tools/matchcompiler.py --verify)\n"
+         << "    else\n"
+         << "        matchcompiler_S := $(shell $(PYTHON_INTERPRETER) tools/matchcompiler.py)\n"
+         << "    endif\n"
+         << "    libcppdir:=build\n"
+         << "else\n"
+         << "    libcppdir:=lib\n"
          << "endif\n\n";
 
-    // explicit cfg dir..
-    fout << "ifdef CFGDIR\n"
-         << "    CFG=-DCFGDIR=\\\"$(CFGDIR)\\\"\n"
+    // explicit files dir..
+    fout << "ifdef FILESDIR\n"
+         << "    CPPFILESDIR=-DFILESDIR=\\\"$(FILESDIR)\\\"\n"
          << "else\n"
-         << "    CFG=\n"
+         << "    CPPFILESDIR=\n"
          << "endif\n\n";
 
     // enable backtrac
@@ -290,9 +328,9 @@ int main(int argc, char **argv)
                                 "-pedantic "
                                 "-Wall "
                                 "-Wextra "
-                                "-Wabi "
                                 "-Wcast-qual "
 //                                "-Wconversion "  // danmar: gives fp. for instance: unsigned int sizeof_pointer = sizeof(void *);
+                                "-Wno-deprecated-declarations "
                                 "-Wfloat-equal "
 //                                "-Wlogical-op "
                                 "-Wmissing-declarations "
@@ -301,6 +339,7 @@ int main(int argc, char **argv)
 //                                "-Woverloaded-virtual "  // danmar: we get fp when overloading analyseWholeProgram()
                                 "-Wpacked "
                                 "-Wredundant-decls "
+                                "-Wundef "
                                 "-Wno-shadow "
 //                                "-Wsign-conversion "
 //                                "-Wsign-promo "
@@ -312,6 +351,16 @@ int main(int argc, char **argv)
                                 "$(CPPCHK_GLIBCXX_DEBUG) "
                                 "-g");
     }
+
+    fout << "# Increase stack size for Cygwin builds to avoid segmentation fault in limited recursive tests.\n"
+         << "ifdef COMSPEC\n"
+         << "    uname_S := $(shell uname -s)\n"
+         << "\n"
+         << "    ifneq (,$(findstring CYGWIN,$(uname_S)))\n"
+         << "        CXXFLAGS+=-Wl,--stack,8388608\n"
+         << "    endif # CYGWIN\n"
+         << "endif # COMSPEC\n"
+         << "\n";
 
     fout << "ifeq (g++, $(findstring g++,$(CXX)))\n"
          << "    override CXXFLAGS += -std=c++0x\n"
@@ -334,9 +383,9 @@ int main(int argc, char **argv)
          << "endif\n\n";
 
     makeConditionalVariable(fout, "PREFIX", "/usr");
-    makeConditionalVariable(fout, "INCLUDE_FOR_LIB", "-Ilib -Iexternals/simplecpp -Iexternals/tinyxml");
-    makeConditionalVariable(fout, "INCLUDE_FOR_CLI", "-Ilib -Iexternals/simplecpp -Iexternals/tinyxml");
-    makeConditionalVariable(fout, "INCLUDE_FOR_TEST", "-Ilib -Icli -Iexternals/simplecpp -Iexternals/tinyxml");
+    makeConditionalVariable(fout, "INCLUDE_FOR_LIB", "-Ilib -isystem externals -isystem externals/simplecpp -isystem externals/tinyxml");
+    makeConditionalVariable(fout, "INCLUDE_FOR_CLI", "-Ilib -isystem externals/simplecpp -isystem externals/tinyxml");
+    makeConditionalVariable(fout, "INCLUDE_FOR_TEST", "-Ilib -Icli -isystem externals/simplecpp -isystem externals/tinyxml");
 
     fout << "BIN=$(DESTDIR)$(PREFIX)/bin\n\n";
     fout << "# For 'make man': sudo apt-get install xsltproc docbook-xsl docbook-xml on Linux\n";
@@ -345,22 +394,10 @@ int main(int argc, char **argv)
     fout << "MAN_SOURCE=man/cppcheck.1.xml\n\n";
 
     fout << "\n###### Object Files\n\n";
-    fout << "LIBOBJ =      " << objfile(libfiles[0]);
-    for (size_t i = 1; i < libfiles.size(); ++i)
-        fout << " \\\n" << std::string(14, ' ') << objfile(libfiles[i]);
-    fout << "\n\n";
-    fout << "EXTOBJ =      " << objfile(extfiles[0]);
-    for (size_t i = 1; i < extfiles.size(); ++i)
-        fout << " \\\n" << std::string(14, ' ') << objfile(extfiles[i]);
-    fout << "\n\n";
-    fout << "CLIOBJ =      " << objfile(clifiles[0]);
-    for (size_t i = 1; i < clifiles.size(); ++i)
-        fout << " \\\n" << std::string(14, ' ') << objfile(clifiles[i]);
-    fout << "\n\n";
-    fout << "TESTOBJ =     " << objfile(testfiles[0]);
-    for (size_t i = 1; i < testfiles.size(); ++i)
-        fout << " \\\n" << std::string(14, ' ') << objfile(testfiles[i]);
-    fout << "\n\n";
+    fout << "LIBOBJ =      " << objfiles(libfiles) << "\n\n";
+    fout << "EXTOBJ =      " << objfiles(extfiles) << "\n\n";
+    fout << "CLIOBJ =      " << objfiles(clifiles) << "\n\n";
+    fout << "TESTOBJ =     " << objfiles(testfiles) << "\n\n";
 
     fout << ".PHONY: run-dmake tags\n\n";
     fout << "\n###### Targets\n\n";
@@ -375,14 +412,14 @@ int main(int argc, char **argv)
     fout << "\t./testrunner -q\n\n";
     fout << "checkcfg:\tcppcheck validateCFG\n";
     fout << "\t./test/cfg/runtests.sh\n\n";
-    fout << "dmake:\ttools/dmake.o cli/filelister.o $(SRCDIR)/pathmatch.o $(SRCDIR)/path.o externals/simplecpp/simplecpp.o\n";
+    fout << "dmake:\ttools/dmake.o cli/filelister.o $(libcppdir)/pathmatch.o $(libcppdir)/path.o externals/simplecpp/simplecpp.o\n";
     fout << "\t$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)\n\n";
     fout << "run-dmake: dmake\n";
     fout << "\t./dmake\n\n";
     fout << "generate_cfg_tests: tools/generate_cfg_tests.o $(EXTOBJ)\n";
-    fout << "\tg++ -Iexternals/tinyxml -o generate_cfg_tests tools/generate_cfg_tests.o $(EXTOBJ)\n";
+    fout << "\tg++ -isystem externals/tinyxml -o generate_cfg_tests tools/generate_cfg_tests.o $(EXTOBJ)\n";
     fout << "clean:\n";
-    fout << "\trm -f build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner dmake cppcheck cppcheck.1\n\n";
+    fout << "\trm -f build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner dmake cppcheck cppcheck.exe cppcheck.1\n\n";
     fout << "man:\tman/cppcheck.1\n\n";
     fout << "man/cppcheck.1:\t$(MAN_SOURCE)\n\n";
     fout << "\t$(XP) $(DB2MAN) $(MAN_SOURCE)\n\n";
@@ -391,20 +428,31 @@ int main(int argc, char **argv)
     fout << "install: cppcheck\n";
     fout << "\tinstall -d ${BIN}\n";
     fout << "\tinstall cppcheck ${BIN}\n";
-    fout << "\tinstall addons/*.py ${BIN}\n";
-    fout << "\tinstall addons/*/*.py ${BIN}\n";
     fout << "\tinstall htmlreport/cppcheck-htmlreport ${BIN}\n";
-    fout << "ifdef CFGDIR \n";
-    fout << "\tinstall -d ${DESTDIR}${CFGDIR}\n";
-    fout << "\tinstall -m 644 cfg/* ${DESTDIR}${CFGDIR}\n";
-    fout << "endif\n\n";
+    fout << "ifdef FILESDIR\n";
+    fout << "\tinstall -d ${DESTDIR}${FILESDIR}\n";
+    fout << "\tinstall -d ${DESTDIR}${FILESDIR}/addons\n";
+    fout << "\tinstall -m 644 addons/*.py ${DESTDIR}${FILESDIR}/addons\n";
+    fout << "\tinstall -d ${DESTDIR}${FILESDIR}/cfg\n";
+    fout << "\tinstall -m 644 cfg/*.cfg ${DESTDIR}${FILESDIR}/cfg\n";
+    fout << "\tinstall -d ${DESTDIR}${FILESDIR}/platforms\n";
+    fout << "\tinstall -m 644 platforms/*.xml ${DESTDIR}${FILESDIR}/platforms\n";
+    fout << "else\n";
+    fout << "\t$(error FILESDIR must be set!)\n";
+    fout << "endif\n";
+    fout << "\n";
     fout << "uninstall:\n";
     fout << "\t@if test -d ${BIN}; then \\\n";
-    fout << "\t  files=\"cppcheck cppcheck-htmlreport \\\n";
-    fout << "\t    `ls -d addons/*.py addons/*/*.py 2>/dev/null | sed 's,^.*/,,'`\"; \\\n";
+    fout << "\t  files=\"cppcheck cppcheck-htmlreport\"; \\\n";
     fout << "\t  echo '(' cd ${BIN} '&&' rm -f $$files ')'; \\\n";
     fout << "\t  ( cd ${BIN} && rm -f $$files ); \\\n";
     fout << "\tfi\n";
+    fout << "ifdef FILESDIR \n";
+    fout << "\t@if test -d ${DESTDIR}${FILESDIR}; then \\\n";
+    fout << "\t  echo rm -rf ${DESTDIR}${FILESDIR}; \\\n";
+    fout << "\t  rm -rf ${DESTDIR}${FILESDIR}; \\\n";
+    fout << "\tfi\n";
+    fout << "endif\n";
     fout << "ifdef CFGDIR \n";
     fout << "\t@if test -d ${DESTDIR}${CFGDIR}; then \\\n";
     fout << "\t  files=\"`cd cfg 2>/dev/null && ls`\"; \\\n";
@@ -420,7 +468,8 @@ int main(int argc, char **argv)
     fout << ".PHONY: validateCFG\n";
     fout << "%.checked:%.cfg\n";
     fout << "\txmllint --noout --relaxng cfg/cppcheck-cfg.rng $<\n";
-    fout << "validateCFG: ${ConfigFilesCHECKED}\n\n";
+    fout << "validateCFG: ${ConfigFilesCHECKED}\n";
+    fout << "\txmllint --noout cfg/cppcheck-cfg.rng\n\n";
     fout << "# Validation of platforms files:\n";
     fout << "PlatformFiles := $(wildcard platforms/*.xml)\n";
     fout << "PlatformFilesCHECKED := $(patsubst %.xml,%.checked,$(PlatformFiles))\n";
@@ -439,7 +488,10 @@ int main(int argc, char **argv)
     fout << "\txmllint --noout --relaxng cppcheck-errors.rng /tmp/errorlist.xml\n";
     fout << "\txmllint --noout --relaxng cppcheck-errors.rng /tmp/example.xml\n";
     fout << "\ncheckCWEEntries: /tmp/errorlist.xml\n";
-    fout << "\t./tools/listErrorsWithoutCWE.py -F /tmp/errorlist.xml";
+    fout << "\t./tools/listErrorsWithoutCWE.py -F /tmp/errorlist.xml\n";
+    fout << ".PHONY: validateRules\n",
+         fout << "validateRules:\n";
+    fout << "\txmllint --noout rules/*.xml\n";
 
     fout << "\n###### Build\n\n";
 

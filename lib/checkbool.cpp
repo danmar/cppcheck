@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,10 +47,6 @@ static bool isBool(const Variable* var)
 {
     return (var && Token::Match(var->typeEndToken(), "bool|_Bool"));
 }
-static bool isNonBoolStdType(const Variable* var)
-{
-    return (var && var->typeEndToken()->isStandardType() && !Token::Match(var->typeEndToken(), "bool|_Bool"));
-}
 
 //---------------------------------------------------------------------------
 void CheckBool::checkIncrementBoolean()
@@ -61,10 +57,8 @@ void CheckBool::checkIncrementBoolean()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            if (Token::Match(tok, "%var% ++")) {
-                const Variable *var = tok->variable();
-                if (isBool(var))
-                    incrementBooleanError(tok);
+            if (astIsBool(tok) && tok->astParent() && tok->astParent()->str() == "++") {
+                incrementBooleanError(tok);
             }
         }
     }
@@ -99,27 +93,20 @@ void CheckBool::checkBitwiseOnBoolean()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            if (Token::Match(tok, "(|.|return|&&|%oror%|throw|, %var% [&|]")) {
-                const Variable *var = tok->next()->variable();
-                if (isBool(var)) {
-                    bitwiseOnBooleanError(tok->next(), var->name(), tok->strAt(2) == "&" ? "&&" : "||");
-                    tok = tok->tokAt(2);
-                }
-            } else if (Token::Match(tok, "[&|] %var% )|.|return|&&|%oror%|throw|,") && (!tok->previous() || !tok->previous()->isExtendedOp() || tok->strAt(-1) == ")" || tok->strAt(-1) == "]")) {
-                const Variable *var = tok->next()->variable();
-                if (isBool(var)) {
-                    bitwiseOnBooleanError(tok->next(), var->name(), tok->str() == "&" ? "&&" : "||");
-                    tok = tok->tokAt(2);
+            if (tok->isBinaryOp() && (tok->str() == "&" || tok->str() == "|")) {
+                if (astIsBool(tok->astOperand1()) || astIsBool(tok->astOperand2())) {
+                    const std::string expression = astIsBool(tok->astOperand1()) ? tok->astOperand1()->expressionString() : tok->astOperand2()->expressionString();
+                    bitwiseOnBooleanError(tok, expression, tok->str() == "&" ? "&&" : "||");
                 }
             }
         }
     }
 }
 
-void CheckBool::bitwiseOnBooleanError(const Token *tok, const std::string &varname, const std::string &op)
+void CheckBool::bitwiseOnBooleanError(const Token *tok, const std::string &expression, const std::string &op)
 {
     reportError(tok, Severity::style, "bitwiseOnBoolean",
-                "Boolean variable '" + varname + "' is used in bitwise operation. Did you mean '" + op + "'?",
+                "Boolean expression '" + expression + "' is used in bitwise operation. Did you mean '" + op + "'?",
                 CWE398,
                 true);
 }
@@ -293,16 +280,9 @@ void CheckBool::checkAssignBoolToPointer()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
-            if (tok->str() != "=")
-                continue;
-            const ValueType *lhsType = tok->astOperand1() ? tok->astOperand1()->valueType() : nullptr;
-            if (!lhsType || lhsType->pointer == 0)
-                continue;
-            const ValueType *rhsType = tok->astOperand2() ? tok->astOperand2()->valueType() : nullptr;
-            if (!rhsType || rhsType->pointer > 0 || rhsType->type != ValueType::Type::BOOL)
-                continue;
-
-            assignBoolToPointerError(tok);
+            if (tok->str() == "=" && astIsPointer(tok->astOperand1()) && astIsBool(tok->astOperand2())) {
+                assignBoolToPointerError(tok);
+            }
         }
     }
 }
@@ -350,6 +330,9 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
                 // but it is probably written this way by design.
                 continue;
 
+            if (astIsBool(numTok))
+                continue;
+
             if (numTok->isNumber()) {
                 const MathLib::bigint num = MathLib::toLongNumber(numTok->str());
                 if (num==0 &&
@@ -361,7 +344,7 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
                      : Token::Match(tok, ">|==|!=")))
                     continue;
                 comparisonOfBoolExpressionWithIntError(tok, true);
-            } else if (isNonBoolStdType(numTok->variable()) && mTokenizer->isCPP())
+            } else if (astIsIntegral(numTok, false) && mTokenizer->isCPP())
                 comparisonOfBoolExpressionWithIntError(tok, false);
         }
     }
@@ -437,15 +420,8 @@ void CheckBool::checkAssignBoolToFloat()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
-            if (tok->str() == "=" && astIsBool(tok->astOperand2())) {
-                const Token *lhs = tok->astOperand1();
-                while (lhs && (lhs->str() == "." || lhs->str() == "::"))
-                    lhs = lhs->astOperand2();
-                if (!lhs || !lhs->variable())
-                    continue;
-                const Variable* var = lhs->variable();
-                if (var && var->isFloatingType() && !var->isArrayOrPointer())
-                    assignBoolToFloatError(tok->next());
+            if (tok->str() == "=" && astIsFloat(tok->astOperand1(), false) && astIsBool(tok->astOperand2())) {
+                assignBoolToFloatError(tok);
             }
         }
     }
@@ -457,7 +433,7 @@ void CheckBool::assignBoolToFloatError(const Token *tok)
                 "Boolean value assigned to floating point variable.", CWE704, false);
 }
 
-void CheckBool::returnValueOfFunctionReturningBool(void)
+void CheckBool::returnValueOfFunctionReturningBool()
 {
     if (!mSettings->isEnabled(Settings::STYLE))
         return;
@@ -473,8 +449,11 @@ void CheckBool::returnValueOfFunctionReturningBool(void)
             const Token* tok2 = findLambdaEndToken(tok);
             if (tok2)
                 tok = tok2;
+            else if (tok->scope() && tok->scope()->isClassOrStruct())
+                tok = tok->scope()->bodyEnd;
             else if (Token::simpleMatch(tok, "return") && tok->astOperand1() &&
-                     (tok->astOperand1()->getValueGE(2, mSettings) || tok->astOperand1()->getValueLE(-1, mSettings)))
+                     (tok->astOperand1()->getValueGE(2, mSettings) || tok->astOperand1()->getValueLE(-1, mSettings)) &&
+                     !(tok->astOperand1()->astOperand1() && Token::Match(tok->astOperand1(), "&|%or%")))
                 returnValueBoolError(tok);
         }
     }

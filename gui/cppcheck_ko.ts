@@ -26,7 +26,16 @@ of the GNU General Public License version 3</source>
         <translation>Cppcheck 홈페이지(%1)를 방문해보세요</translation>
     </message>
     <message>
-        <source>Copyright © 2007-2018 Cppcheck team.</source>
+        <source>Copyright © 2007-2019 Cppcheck team.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;
+&lt;p&gt;Many thanks to these libraries that we use:&lt;/p&gt;&lt;ul&gt;
+&lt;li&gt;tinyxml2&lt;/li&gt;
+&lt;li&gt;picojson&lt;/li&gt;
+&lt;li&gt;pcre&lt;/li&gt;
+&lt;li&gt;qt&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -315,27 +324,27 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
     <name>LogView</name>
     <message>
         <source>Checking Log</source>
-        <translation type="vanished">로그 확인</translation>
+        <translation type="obsolete">로그 확인</translation>
     </message>
     <message>
         <source>Clear</source>
-        <translation type="vanished">지우기</translation>
+        <translation type="obsolete">지우기</translation>
     </message>
     <message>
         <source>Save Log</source>
-        <translation type="vanished">로그 저장</translation>
+        <translation type="obsolete">로그 저장</translation>
     </message>
     <message>
         <source>Text files (*.txt *.log);;All files (*.*)</source>
-        <translation type="vanished">텍스트 파일 (*.txt *.log);;모든 파일 (*.*)</translation>
+        <translation type="obsolete">텍스트 파일 (*.txt *.log);;모든 파일 (*.*)</translation>
     </message>
     <message>
         <source>Cppcheck</source>
-        <translation type="vanished">Cppcheck</translation>
+        <translation type="obsolete">Cppcheck</translation>
     </message>
     <message>
         <source>Could not open file for writing: &quot;%1&quot;</source>
-        <translation type="vanished">기록할 파일 열기 실패: &quot;%1&quot;</translation>
+        <translation type="obsolete">기록할 파일 열기 실패: &quot;%1&quot;</translation>
     </message>
 </context>
 <context>
@@ -458,7 +467,7 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
     </message>
     <message>
         <source>Style warnings</source>
-        <translation type="vanished">스타일 경고</translation>
+        <translation type="obsolete">스타일 경고</translation>
     </message>
     <message>
         <source>Show style warnings</source>
@@ -466,7 +475,7 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
     </message>
     <message>
         <source>Errors</source>
-        <translation type="vanished">에러</translation>
+        <translation type="obsolete">에러</translation>
     </message>
     <message>
         <source>Show errors</source>
@@ -554,7 +563,7 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
     </message>
     <message>
         <source>Warnings</source>
-        <translation type="vanished">경고</translation>
+        <translation type="obsolete">경고</translation>
     </message>
     <message>
         <source>Show warnings</source>
@@ -562,7 +571,7 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
     </message>
     <message>
         <source>Performance warnings</source>
-        <translation type="vanished">성능 경고</translation>
+        <translation type="obsolete">성능 경고</translation>
     </message>
     <message>
         <source>Show performance warnings</source>
@@ -582,7 +591,7 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
     </message>
     <message>
         <source>Portability</source>
-        <translation type="vanished">이식성 경고</translation>
+        <translation type="obsolete">이식성 경고</translation>
     </message>
     <message>
         <source>Show portability warnings</source>
@@ -618,19 +627,19 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
     </message>
     <message>
         <source>Platforms</source>
-        <translation type="vanished">플랫폼</translation>
+        <translation type="obsolete">플랫폼</translation>
     </message>
     <message>
         <source>C++11</source>
-        <translation type="vanished">C++11</translation>
+        <translation type="obsolete">C++11</translation>
     </message>
     <message>
         <source>C99</source>
-        <translation type="vanished">C99</translation>
+        <translation type="obsolete">C99</translation>
     </message>
     <message>
         <source>Posix</source>
-        <translation type="vanished">Posix</translation>
+        <translation type="obsolete">Posix</translation>
     </message>
     <message>
         <source>Quick Filter:</source>
@@ -1066,20 +1075,12 @@ Do you want to stop the analysis and exit Cppcheck?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>C/C++ Source</source>
-        <translation type="unfinished"></translation>
+        <source>C++17</source>
+        <translation type="unfinished">C++17</translation>
     </message>
     <message>
-        <source>Compile database</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Visual Studio</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Borland C++ Builder 6</source>
-        <translation type="unfinished"></translation>
+        <source>C++20</source>
+        <translation type="unfinished">C++20</translation>
     </message>
 </context>
 <context>
@@ -1144,15 +1145,15 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     <name>Project</name>
     <message>
         <source>Cppcheck</source>
-        <translation type="vanished">Cppcheck</translation>
+        <translation type="obsolete">Cppcheck</translation>
     </message>
     <message>
         <source>Could not read the project file.</source>
-        <translation type="vanished">프로젝트 파일을 읽을 수 없습니다.</translation>
+        <translation type="obsolete">프로젝트 파일을 읽을 수 없습니다.</translation>
     </message>
     <message>
         <source>Could not write the project file.</source>
-        <translation type="vanished">프로젝트 파일에 쓸 수 없습니다.</translation>
+        <translation type="obsolete">프로젝트 파일에 쓸 수 없습니다.</translation>
     </message>
 </context>
 <context>
@@ -1163,7 +1164,7 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source>Project</source>
-        <translation type="vanished">프로젝트</translation>
+        <translation type="obsolete">프로젝트</translation>
     </message>
     <message>
         <source>Defines:</source>
@@ -1207,7 +1208,7 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source>Exclude</source>
-        <translation type="vanished">Exclude</translation>
+        <translation type="obsolete">Exclude</translation>
     </message>
     <message>
         <source>Suppressions</source>
@@ -1306,10 +1307,6 @@ Do you want to stop the analysis and exit Cppcheck?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Exclude paths</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Addons and tools</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1339,6 +1336,26 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source>Undefines must be separated by a semicolon. Example: UNDEF1;UNDEF2;UNDEF3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Analysis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Check code in headers  (slower analysis, more results)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Check code in unused templates  (slower and less accurate analysis)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Max CTU depth</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Exclude source files in paths</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1384,18 +1401,6 @@ Do you want to stop the analysis and exit Cppcheck?</source>
         <source>Misra rule texts file (%1)</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <source>Visual Studio</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Compile database</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Borland C++ Builder 6</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>QDialogButtonBox</name>
@@ -1436,6 +1441,114 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source> (Not found)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Thin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ExtraLight</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Light</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Normal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Medium</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DemiBold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ExtraBold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Black</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Editor Foreground Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Editor Background Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Highlight Background Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line Number Foreground Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line Number Background Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Keyword Foreground Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Keyword Font Weight</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Class ForegroundColor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Class Font Weight</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quote Foreground Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quote Font Weight</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Comment Foreground Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Comment Font Weight</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Symbol Foreground Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Symbol Background Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Symbol Font Weight</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Set to Default Light</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Set to Default Dark</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1482,7 +1595,7 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source>[Inconclusive]</source>
-        <translation type="vanished">[불확실]</translation>
+        <translation type="obsolete">[불확실]</translation>
     </message>
     <message>
         <source>style</source>
@@ -1514,15 +1627,15 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source>Copy filename</source>
-        <translation type="vanished">파일이름 복사</translation>
+        <translation type="obsolete">파일이름 복사</translation>
     </message>
     <message>
         <source>Copy full path</source>
-        <translation type="vanished">전체 경로 복사</translation>
+        <translation type="obsolete">전체 경로 복사</translation>
     </message>
     <message>
         <source>Copy message</source>
-        <translation type="vanished">메시지 복사</translation>
+        <translation type="obsolete">메시지 복사</translation>
     </message>
     <message>
         <source>Hide</source>
@@ -1564,7 +1677,7 @@ Please check the application path and parameters are correct.</source>
         <source>Could not find file:
 %1
 Please select the directory where file is located.</source>
-        <translation type="vanished">파일 찾기 실패:
+        <translation type="obsolete">파일 찾기 실패:
 %1
 파일이 위치한 디렉토리를 선택하세요.</translation>
     </message>
@@ -1671,11 +1784,11 @@ To toggle what kind of errors are shown, open view menu.</source>
     </message>
     <message>
         <source>Summary</source>
-        <translation type="vanished">요약</translation>
+        <translation type="obsolete">요약</translation>
     </message>
     <message>
         <source>Message</source>
-        <translation type="vanished">내용</translation>
+        <translation type="obsolete">내용</translation>
     </message>
     <message>
         <source>Id</source>
@@ -1777,11 +1890,11 @@ To toggle what kind of errors are shown, open view menu.</source>
     </message>
     <message>
         <source>Paths</source>
-        <translation type="vanished">경로</translation>
+        <translation type="obsolete">경로</translation>
     </message>
     <message>
         <source>Include paths:</source>
-        <translation type="vanished">Include 경로:</translation>
+        <translation type="obsolete">Include 경로:</translation>
     </message>
     <message>
         <source>Add...</source>
@@ -1789,7 +1902,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     </message>
     <message>
         <source>Edit</source>
-        <translation type="vanished">편집</translation>
+        <translation type="obsolete">편집</translation>
     </message>
     <message>
         <source>Remove</source>
@@ -1891,6 +2004,26 @@ To toggle what kind of errors are shown, open view menu.</source>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy/paste the text from Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012 pdf to a text file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Code Editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Code Editor Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default Light Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default Dark Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Custom</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SettingsDialog</name>
@@ -1912,7 +2045,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     </message>
     <message>
         <source>Select include directory</source>
-        <translation type="vanished">Include 디렉토리 선택</translation>
+        <translation type="obsolete">Include 디렉토리 선택</translation>
     </message>
     <message>
         <source> [Default]</source>

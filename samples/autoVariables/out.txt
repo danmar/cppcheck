@@ -1,1 +1,3 @@
-[samples\autoVariables\bad.c:4]: (error) Address of local auto-variable assigned to a function parameter.
+samples\autoVariables\bad.c:4:5: error: Address of local auto-variable assigned to a function parameter. [autoVariables]
+    *a = &b;
+    ^

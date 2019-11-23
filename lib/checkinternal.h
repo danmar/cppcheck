@@ -43,8 +43,7 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
-    /** Simplified checks. The token list is simplified. */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         if (!settings->isEnabled(Settings::INTERNAL))
             return;
 

@@ -20,6 +20,76 @@
 #include <time.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <syslog.h>
+#include <stdarg.h>
+
+void uninitvar_putenv(char * envstr)
+{
+    // No warning is expected
+    (void)putenv(envstr);
+
+    char * p;
+    // cppcheck-suppress uninitvar
+    (void)putenv(p);
+}
+
+void nullPointer_putenv(char * envstr)
+{
+    // No warning is expected
+    (void)putenv(envstr);
+
+    char * p=NULL;
+    // cppcheck-suppress nullPointer
+    (void)putenv(p);
+}
+
+void memleak_scandir(void)
+{
+    struct dirent **namelist;
+    int n = scandir(".", &namelist, NULL, alphasort);
+    if (n == -1) {
+        return;
+    }
+
+    // http://man7.org/linux/man-pages/man3/scandir.3.html
+    /* The scandir() function scans the directory dirp, calling filter() on
+       each directory entry.  Entries for which filter() returns nonzero are
+       stored in strings allocated via malloc(3), sorted using qsort(3) with
+       the comparison function compar(), and collected in array namelist
+       which is allocated via malloc(3).  If filter is NULL, all entries are
+       selected.*/
+
+    // TODO: cppcheck-suppress memleak
+}
+
+void no_memleak_scandir(void)
+{
+    struct dirent **namelist;
+    int n = scandir(".", &namelist, NULL, alphasort);
+    if (n == -1) {
+        return;
+    }
+    while (n--) {
+        free(namelist[n]);
+    }
+    free(namelist);
+}
+
+void validCode(va_list valist_arg1, va_list valist_arg2)
+{
+    void *ptr;
+    if (posix_memalign(&ptr, sizeof(void *), sizeof(void *)) == 0)
+        free(ptr);
+    syslog(LOG_ERR, "err %u", 0U);
+    syslog(LOG_WARNING, "warn %d %d", 5, 1);
+    vsyslog(LOG_EMERG, "emerg %d", valist_arg1);
+    vsyslog(LOG_INFO, "test %s %d %p", valist_arg2);
+
+    void* handle = dlopen("/lib.so", RTLD_NOW);
+    if (handle) {
+        dlclose(handle);
+    }
+}
 
 void bufferAccessOutOfBounds(int fd)
 {
@@ -100,7 +170,7 @@ void nullPointer(char *p, int fd, pthread_mutex_t mutex)
     // cppcheck-suppress nullPointer
     pthread_mutex_lock(NULL);
     // cppcheck-suppress nullPointer
-    pthread_mutex_trylock(NULL);
+    (void)pthread_mutex_trylock(NULL);
     // cppcheck-suppress nullPointer
     pthread_mutex_unlock(NULL);
 }
@@ -125,6 +195,24 @@ void resourceLeak_fdopen(int fd)
     // cppcheck-suppress unreadVariable
     FILE *f = fdopen(fd, "r");
     // cppcheck-suppress resourceLeak
+}
+
+void resourceLeak_mkstemp(char *template)
+{
+    // cppcheck-suppress unreadVariable
+    int fp = mkstemp(template);
+    // cppcheck-suppress resourceLeak
+}
+
+void no_resourceLeak_mkstemp_01(char *template)
+{
+    int fp = mkstemp(template);
+    close(fp);
+}
+
+int no_resourceLeak_mkstemp_02(char *template)
+{
+    return mkstemp(template);
 }
 
 void resourceLeak_fdopendir(int fd)
@@ -215,6 +303,14 @@ void invalidFunctionArg()
     usleep(1000000);
 }
 
+void invalidFunctionArg_close(int fd)
+{
+    if (fd < 0) {
+        // cppcheck-suppress invalidFunctionArg
+        (void)close(fd);
+    }
+}
+
 void uninitvar(int fd)
 {
     int x1, x2, x3, x4;
@@ -279,13 +375,13 @@ void uninitvar(int fd)
     // cppcheck-suppress uninitvar
     pthread_mutex_lock(&mutex1);
     // cppcheck-suppress uninitvar
-    pthread_mutex_trylock(&mutex2);
+    (void)pthread_mutex_trylock(&mutex2);
     // cppcheck-suppress uninitvar
     pthread_mutex_unlock(&mutex3);
     // after initialization it must be OK to call lock, trylock and unlock for this mutex
     pthread_mutex_init(&mutex, NULL);
     pthread_mutex_lock(&mutex);
-    pthread_mutex_trylock(&mutex);
+    (void)pthread_mutex_trylock(&mutex);
     pthread_mutex_unlock(&mutex);
 }
 
@@ -336,8 +432,8 @@ void timet_h(struct timespec* ptp1)
 void dl(const char* libname, const char* func)
 {
     void* lib = dlopen(libname, RTLD_NOW);
+    // cppcheck-suppress redundantInitialization
     // cppcheck-suppress resourceLeak
-    // cppcheck-suppress redundantAssignment
     lib = dlopen(libname, RTLD_LAZY);
     const char* funcname;
     // cppcheck-suppress uninitvar
@@ -349,4 +445,66 @@ void dl(const char* libname, const char* func)
     // cppcheck-suppress uninitvar
     dlclose(uninit);
     // cppcheck-suppress resourceLeak
+}
+
+void asctime_r_test(struct tm * tm, char * bufSizeUnknown)
+{
+    struct tm tm_uninit_data;
+    struct tm * tm_uninit_pointer;
+    char bufSize5[5];
+    char bufSize25[25];
+    char bufSize26[26];
+    char bufSize100[100];
+
+    // cppcheck-suppress asctime_rCalled
+    // cppcheck-suppress bufferAccessOutOfBounds
+    asctime_r(tm, bufSize5);
+    // cppcheck-suppress asctime_rCalled
+    // cppcheck-suppress bufferAccessOutOfBounds
+    asctime_r(tm, bufSize25);
+    // cppcheck-suppress asctime_rCalled
+    asctime_r(tm, bufSize26);
+    // cppcheck-suppress asctime_rCalled
+    asctime_r(tm, bufSize100);
+
+    // cppcheck-suppress asctime_rCalled
+    // cppcheck-suppress uninitvar
+    asctime_r(&tm_uninit_data, bufSize100);
+    // cppcheck-suppress asctime_rCalled
+    // cppcheck-suppress uninitvar
+    asctime_r(tm_uninit_pointer, bufSize100);
+
+    // cppcheck-suppress asctime_rCalled
+    asctime_r(tm, bufSizeUnknown);
+}
+
+void ctime_r_test(time_t * timep, char * bufSizeUnknown)
+{
+    time_t time_t_uninit_data;
+    time_t * time_t_uninit_pointer;
+    char bufSize5[5];
+    char bufSize25[25];
+    char bufSize26[26];
+    char bufSize100[100];
+
+    // cppcheck-suppress ctime_rCalled
+    // cppcheck-suppress bufferAccessOutOfBounds
+    ctime_r(timep, bufSize5);
+    // cppcheck-suppress ctime_rCalled
+    // cppcheck-suppress bufferAccessOutOfBounds
+    ctime_r(timep, bufSize25);
+    // cppcheck-suppress ctime_rCalled
+    ctime_r(timep, bufSize26);
+    // cppcheck-suppress ctime_rCalled
+    ctime_r(timep, bufSize100);
+
+    // cppcheck-suppress ctime_rCalled
+    // cppcheck-suppress uninitvar
+    ctime_r(&time_t_uninit_data, bufSize100);
+    // cppcheck-suppress ctime_rCalled
+    // cppcheck-suppress uninitvar
+    ctime_r(time_t_uninit_pointer, bufSize100);
+
+    // cppcheck-suppress ctime_rCalled
+    ctime_r(timep, bufSizeUnknown);
 }

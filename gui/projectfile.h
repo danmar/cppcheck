@@ -39,8 +39,8 @@ class ProjectFile : public QObject {
     Q_OBJECT
 
 public:
-    explicit ProjectFile(QObject *parent = 0);
-    ProjectFile(const QString &filename, QObject *parent = 0);
+    explicit ProjectFile(QObject *parent = nullptr);
+    explicit ProjectFile(const QString &filename, QObject *parent = nullptr);
 
     /**
      * @brief Read the project file.
@@ -66,6 +66,22 @@ public:
 
     bool getAnalyzeAllVsConfigs() const {
         return mAnalyzeAllVsConfigs;
+    }
+
+    bool getCheckHeaders() const {
+        return mCheckHeaders;
+    }
+
+    void setCheckHeaders(bool b) {
+        mCheckHeaders = b;
+    }
+
+    bool getCheckUnusedTemplates() const {
+        return mCheckUnusedTemplates;
+    }
+
+    void setCheckUnusedTemplates(bool b) {
+        mCheckUnusedTemplates = b;
     }
 
     /**
@@ -125,7 +141,7 @@ public:
     }
 
     /**
-    * @brief Get list suppressions.
+    * @brief Get "raw" suppressions.
     * @return list of suppressions.
     */
     QList<Suppressions::Suppression> getSuppressions() const {
@@ -164,6 +180,14 @@ public:
 
     QStringList getTags() const {
         return mTags;
+    }
+
+    int getMaxCtuDepth() const {
+        return mMaxCtuDepth;
+    }
+
+    void setMaxCtuDepth(int maxCtuDepth) {
+        mMaxCtuDepth = maxCtuDepth;
     }
 
     /**
@@ -270,6 +294,62 @@ public:
         mFilename = filename;
     }
 
+    /** Do not only check how interface is used. Also check that interface is safe. */
+    class SafeChecks {
+    public:
+        SafeChecks() : classes(false), externalFunctions(false), internalFunctions(false), externalVariables(false) {}
+
+        void clear() {
+            classes = externalFunctions = internalFunctions = externalVariables = false;
+        }
+
+        void loadFromXml(QXmlStreamReader &xmlReader);
+        void saveToXml(QXmlStreamWriter &xmlWriter) const;
+
+        /**
+         * Public interface of classes
+         * - public function parameters can have any value
+         * - public functions can be called in any order
+         * - public variables can have any value
+         */
+        bool classes;
+
+        /**
+         * External functions
+         * - external functions can be called in any order
+         * - function parameters can have any values
+         */
+        bool externalFunctions;
+
+        /**
+         * Experimental: assume that internal functions can be used in any way
+         * This is only available in the GUI.
+         */
+        bool internalFunctions;
+
+        /**
+         * Global variables that can be modified outside the TU.
+         * - Such variable can have "any" value
+         */
+        bool externalVariables;
+    };
+
+    /** Safe checks */
+    SafeChecks getSafeChecks() const {
+        return mSafeChecks;
+    }
+    void setSafeChecks(SafeChecks safeChecks) {
+        mSafeChecks = safeChecks;
+    }
+
+    /** Check unknown function return values */
+    QStringList getCheckUnknownFunctionReturn() const {
+        return mCheckUnknownFunctionReturn;
+    }
+    void setCheckUnknownFunctionReturn(const QStringList &s) {
+        mCheckUnknownFunctionReturn = s;
+    }
+
 protected:
 
     /**
@@ -286,7 +366,9 @@ protected:
      */
     void readImportProject(QXmlStreamReader &reader);
 
-    void readAnalyzeAllVsConfigs(QXmlStreamReader &reader);
+    bool readBool(QXmlStreamReader &reader);
+
+    int readInt(QXmlStreamReader &reader, int defaultValue);
 
     /**
      * @brief Read list of include directories from XML.
@@ -376,6 +458,12 @@ private:
      */
     bool mAnalyzeAllVsConfigs;
 
+    /** Check code in headers */
+    bool mCheckHeaders;
+
+    /** Check code in unused templates */
+    bool mCheckUnusedTemplates;
+
     /**
      * @brief List of include directories used to search include files.
      */
@@ -431,6 +519,14 @@ private:
      * @brief Warning tags
      */
     QStringList mTags;
+
+    /** Max CTU depth */
+    int mMaxCtuDepth;
+
+    SafeChecks mSafeChecks;
+
+    QStringList mCheckUnknownFunctionReturn;
+
 };
 /// @}
 #endif  // PROJECT_FILE_H

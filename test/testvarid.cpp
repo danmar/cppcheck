@@ -92,6 +92,8 @@ private:
         TEST_CASE(varid59); // #6696
         TEST_CASE(varid60); // #7267 cast '(unsigned x)10'
         TEST_CASE(varid61); // #4988 inline function
+        TEST_CASE(varid62);
+        TEST_CASE(varid63);
         TEST_CASE(varid_cpp_keywords_in_c_code);
         TEST_CASE(varid_cpp_keywords_in_c_code2); // #5373: varid=0 for argument called "delete"
         TEST_CASE(varidFunctionCall1);
@@ -113,7 +115,6 @@ private:
         TEST_CASE(varid_in_class5);     // #3584 - std::vector<::FOO::B> b;
         TEST_CASE(varid_in_class6);     // #3755
         TEST_CASE(varid_in_class7);     // set variable id for struct members
-        TEST_CASE(varid_in_class8);     // unknown macro in class
         TEST_CASE(varid_in_class9);     // #4291 - id for variables accessed through 'this'
         TEST_CASE(varid_in_class10);
         TEST_CASE(varid_in_class11);    // #4277 - anonymous union
@@ -161,6 +162,9 @@ private:
         TEST_CASE(varid_arrayinit); // #7579
         TEST_CASE(varid_lambda_arg);
         TEST_CASE(varid_lambda_mutable);
+        TEST_CASE(varid_trailing_return1); // #8889
+        TEST_CASE(varid_trailing_return2); // #9066
+        TEST_CASE(varid_parameter_pack); // #9383
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -209,6 +213,31 @@ private:
 
         // result..
         return tokenizer.tokens()->stringifyList(true,true,true,true,false);
+    }
+
+    std::string compareVaridsForVariable(const char code[], const char varname[], const char filename[] = "test.cpp") {
+        errout.str("");
+
+        Settings settings;
+        settings.platform(Settings::Unix64);
+        settings.standards.c   = Standards::C89;
+        settings.standards.cpp = Standards::CPP11;
+
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, filename);
+
+        unsigned int varid = ~0U;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+            if (tok->str() == varname) {
+                if (varid == ~0U)
+                    varid = tok->varId();
+                else if (varid != tok->varId())
+                    return std::string("Variable ") + varname + " has different varids:\n" + tokenizer.tokens()->stringifyList(true,true,true,true,false);
+            }
+        }
+
+        return "same varid";
     }
 
     void varid1() {
@@ -1073,6 +1102,24 @@ private:
         ASSERT_EQUALS(expected, tokenize(code, false));
     }
 
+    void varid62() {
+        const char code[] = "void bar(int,int);\n"
+                            "void f() {\n"
+                            "    for (size_t c = 0; c < 42; ++c) {\n"
+                            "        int x;\n"
+                            "        bar(r, r * x);\n"
+                            "    }\n"
+                            "}";
+        // Ensure that there is only one variable id for "x"
+        ASSERT_EQUALS("same varid", compareVaridsForVariable(code, "x"));
+    }
+
+    void varid63() {
+        const char code[] = "void f(boost::optional<int> const& x) {}";
+        const char expected[] = "1: void f ( boost :: optional < int > const & x@1 ) { }\n";
+        ASSERT_EQUALS(expected, tokenize(code, false));
+    }
+
     void varid_cpp_keywords_in_c_code() {
         const char code[] = "void f() {\n"
                             "    delete d;\n"
@@ -1458,20 +1505,6 @@ private:
                       "4: }\n"
                       "5: struct ABC abc@1 ;\n"
                       "6: } ;\n",
-                      tokenize(code));
-    }
-
-    void varid_in_class8() {  // #3776 - unknown macro
-        const char code[] = "class A {\n"
-                            "  UNKNOWN_MACRO(A)\n"
-                            "private:\n"
-                            "  int x;\n"
-                            "};";
-        ASSERT_EQUALS("1: class A {\n"
-                      "2: UNKNOWN_MACRO ( A )\n"
-                      "3: private:\n"
-                      "4: int x@1 ;\n"
-                      "5: } ;\n",
                       tokenize(code));
     }
 
@@ -2145,8 +2178,7 @@ private:
     void varid_templateUsing() { // #5781 #7273
         const char code[] = "template<class T> using X = Y<T,4>;\n"
                             "X<int> x;";
-        ASSERT_EQUALS("1: ;\n"
-                      "2: Y < int , 4 > x@1 ;\n",
+        ASSERT_EQUALS("2: Y < int , 4 > x@1 ;\n",
                       tokenize(code));
     }
 
@@ -2179,7 +2211,7 @@ private:
     }
 
     void varid_variadicFunc() {
-        ASSERT_EQUALS("1: int foo ( . . . ) ;\n", tokenize("int foo(...);"));
+        ASSERT_EQUALS("1: int foo ( ... ) ;\n", tokenize("int foo(...);"));
     }
 
     void varid_typename() {
@@ -2191,18 +2223,18 @@ private:
     }
 
     void varid_rvalueref() {
-        ASSERT_EQUALS("1: int & & a@1 ;\n", tokenize("int&& a;"));
+        ASSERT_EQUALS("1: int && a@1 ;\n", tokenize("int&& a;"));
 
-        ASSERT_EQUALS("1: void foo ( int & & a@1 ) { }\n", tokenize("void foo(int&& a) {}"));
+        ASSERT_EQUALS("1: void foo ( int && a@1 ) { }\n", tokenize("void foo(int&& a) {}"));
 
         ASSERT_EQUALS("1: class C {\n"
-                      "2: C ( int & & a@1 ) ;\n"
+                      "2: C ( int && a@1 ) ;\n"
                       "3: } ;\n",
                       tokenize("class C {\n"
                                "    C(int&& a);\n"
                                "};"));
 
-        ASSERT_EQUALS("1: void foo ( int & & ) ;\n", tokenize("void foo(int&&);"));
+        ASSERT_EQUALS("1: void foo ( int && ) ;\n", tokenize("void foo(int&&);"));
     }
 
     void varid_arrayFuncPar() {
@@ -2472,6 +2504,46 @@ private:
         const char exp1[] = "1: static void func ( ) {\n"
                             "2: auto x@1 ; x@1 = [ ] ( ) mutable { } ;\n"
                             "3: dostuff ( x@1 ) ;\n"
+                            "4: }\n";
+        ASSERT_EQUALS(exp1, tokenize(code1));
+    }
+
+    void varid_trailing_return1() { // #8889
+        const char code1[] = "struct Fred {\n"
+                             "    auto foo(const Fred & other) -> Fred &;\n"
+                             "    auto bar(const Fred & other) -> Fred & {\n"
+                             "        return *this;\n"
+                             "    }\n"
+                             "};\n"
+                             "auto Fred::foo(const Fred & other) -> Fred & {\n"
+                             "    return *this;\n"
+                             "}";
+        const char exp1[] = "1: struct Fred {\n"
+                            "2: auto foo ( const Fred & other@1 ) . Fred & ;\n"
+                            "3: auto bar ( const Fred & other@2 ) . Fred & {\n"
+                            "4: return * this ;\n"
+                            "5: }\n"
+                            "6: } ;\n"
+                            "7: auto Fred :: foo ( const Fred & other@3 ) . Fred & {\n"
+                            "8: return * this ;\n"
+                            "9: }\n";
+        ASSERT_EQUALS(exp1, tokenize(code1));
+    }
+
+    void varid_trailing_return2() { // #9066
+        const char code1[] = "auto func(int arg) -> bar::quux {}";
+        const char exp1[] = "1: auto func ( int arg@1 ) . bar :: quux { }\n";
+        ASSERT_EQUALS(exp1, tokenize(code1));
+    }
+
+    void varid_parameter_pack() { // #9383
+        const char code1[] = "template <typename... Rest>\n"
+                             "void func(Rest... parameters) {\n"
+                             "    foo(parameters...);\n"
+                             "}\n";
+        const char exp1[] = "1: template < typename ... Rest >\n"
+                            "2: void func ( Rest ... parameters@1 ) {\n"
+                            "3: foo ( parameters@1 ... ) ;\n"
                             "4: }\n";
         ASSERT_EQUALS(exp1, tokenize(code1));
     }

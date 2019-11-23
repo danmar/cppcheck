@@ -68,11 +68,7 @@ public:
     static std::list<Check *> &instances();
 
     /** run checks, the token list is not simplified */
-    virtual void runChecks(const Tokenizer *, const Settings *, ErrorLogger *) {
-    }
-
-    /** run checks, the token list is simplified */
-    virtual void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) = 0;
+    virtual void runChecks(const Tokenizer *, const Settings *, ErrorLogger *) = 0;
 
     /** get error messages */
     virtual void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const = 0;
@@ -121,6 +117,8 @@ public:
         (void)errorLogger;
         return false;
     }
+
+    static std::string getMessageId(const ValueFlow::Value &value, const char id[]);
 
 protected:
     const Tokenizer * const mTokenizer;
@@ -186,12 +184,12 @@ protected:
      * will call this method
      */
     bool wrongData(const Token *tok, bool condition, const char *str);
-private:
-    const std::string mName;
 
     /** disabled assignment operator and copy constructor */
     void operator=(const Check &) = delete;
     Check(const Check &) = delete;
+private:
+    const std::string mName;
 };
 
 /// @}

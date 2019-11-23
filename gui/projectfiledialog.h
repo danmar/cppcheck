@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ class ProjectFile;
 class ProjectFileDialog : public QDialog {
     Q_OBJECT
 public:
-    ProjectFileDialog(ProjectFile *projectFile, QWidget *parent = 0);
+    explicit ProjectFileDialog(ProjectFile *projectFile, QWidget *parent = nullptr);
     virtual ~ProjectFileDialog();
 
 private:

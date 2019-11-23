@@ -56,13 +56,13 @@ ResultsTree::ResultsTree(QWidget * parent) :
     QTreeView(parent),
     mSettings(nullptr),
     mApplications(nullptr),
-    mContextItem(0),
+    mContextItem(nullptr),
     mShowFullPath(false),
     mSaveFullPath(false),
     mSaveAllErrors(true),
     mShowErrorId(false),
     mVisibleErrors(false),
-    mSelectionModel(0),
+    mSelectionModel(nullptr),
     mThread(nullptr),
     mShowCppcheck(true),
     mShowClang(true)
@@ -136,7 +136,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
         realfile = tr("Undefined file");
     }
 
-    bool hide = !mShowSeverities.isShown(item.severity);
+    bool hide = false;
 
     // Ids that are temporarily hidden..
     if (mHiddenMessageId.contains(item.errorId))
@@ -187,7 +187,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
     data["message"]  = item.message;
     data["file"]  = loc.file;
     data["line"]  = loc.line;
-    data["col"] = loc.col;
+    data["column"] = loc.column;
     data["id"]  = item.errorId;
     data["inconclusive"] = item.inconclusive;
     data["file0"] = stripPath(item.file0, true);
@@ -219,7 +219,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
             child_data["message"]  = line.message;
             child_data["file"]  = e.file;
             child_data["line"]  = e.line;
-            child_data["col"] = e.col;
+            child_data["column"] = e.column;
             child_data["id"]  = line.errorId;
             child_data["inconclusive"] = line.inconclusive;
             child_item->setData(QVariant(child_data));
@@ -228,7 +228,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
 
     // Partially refresh the tree: Unhide file item if necessary
     if (!hide) {
-        setRowHidden(fileItem->row(), QModelIndex(), false);
+        setRowHidden(fileItem->row(), QModelIndex(), !mShowSeverities.isShown(item.severity));
     }
     return true;
 }
@@ -330,7 +330,7 @@ QStandardItem *ResultsTree::findFileItem(const QString &name) const
 #endif
             return mModel.item(i, 0);
     }
-    return 0;
+    return nullptr;
 }
 
 void ResultsTree::clear()
@@ -849,8 +849,10 @@ void ResultsTree::copy()
     QString text;
     foreach (QModelIndex index, selectedRows) {
         QStandardItem *item = mModel.itemFromIndex(index);
-        if (!item->parent())
+        if (!item->parent()) {
+            text += item->text() + '\n';
             continue;
+        }
         if (item->parent()->parent())
             item = item->parent();
         QVariantMap data = item->data().toMap();
@@ -1363,5 +1365,5 @@ void ResultsTree::showInconclusiveColumn(bool show)
 void ResultsTree::currentChanged(const QModelIndex &current, const QModelIndex &previous)
 {
     QTreeView::currentChanged(current, previous);
-    emit selectionChanged(current);
+    emit treeSelectionChanged(current);
 }

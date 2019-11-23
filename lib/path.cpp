@@ -134,7 +134,7 @@ std::string Path::getCurrentPath()
 #ifndef _WIN32
     if (getcwd(currentPath, 4096) != nullptr)
 #else
-    if (_getcwd(currentPath, 4096) != 0)
+    if (_getcwd(currentPath, 4096) != nullptr)
 #endif
         return std::string(currentPath);
 
@@ -218,7 +218,7 @@ std::string Path::getAbsoluteFilePath(const std::string& filePath)
     char absolute[_MAX_PATH];
     if (_fullpath(absolute, filePath.c_str(), _MAX_PATH))
         absolute_path = absolute;
-#elif defined(__linux__) || defined(__sun) || defined(__hpux) || defined(__GNUC__)
+#elif defined(__linux__) || defined(__sun) || defined(__hpux) || defined(__GNUC__) || defined(__CPPCHECK__)
     char * absolute = realpath(filePath.c_str(), nullptr);
     if (absolute)
         absolute_path = absolute;

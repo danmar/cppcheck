@@ -61,7 +61,6 @@ public:
 
         // can't be a simplified check .. the 'sizeof' is used.
         checkClass.checkMemset();
-        checkClass.checkUnsafeClassDivZero();
         checkClass.constructors();
         checkClass.operatorEq();
         checkClass.privateFunctions();
@@ -79,15 +78,8 @@ public:
         checkClass.checkExplicitConstructors();
         checkClass.checkCopyCtorAndEqOperator();
         checkClass.checkOverride();
+        checkClass.checkUnsafeClassRefMember();
     }
-
-    /** @brief Run checks on the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        (void)tokenizer;
-        (void)settings;
-        (void)errorLogger;
-    }
-
 
     /** @brief %Check that all class constructors are ok */
     void constructors();
@@ -148,11 +140,11 @@ public:
     /** @brief Check that copy constructor and operator defined together */
     void checkCopyCtorAndEqOperator();
 
-    /** @brief Check that arbitrary usage of the public interface does not result in division by zero */
-    void checkUnsafeClassDivZero(bool test=false);
-
     /** @brief Check that the override keyword is used when overriding virtual functions */
     void checkOverride();
+
+    /** @brief Unsafe class check - const reference member */
+    void checkUnsafeClassRefMember();
 
 private:
     const SymbolDatabase *mSymbolDatabase;
@@ -189,8 +181,8 @@ private:
     void virtualFunctionCallInConstructorError(const Function * scopeFunction, const std::list<const Token *> & tokStack, const std::string &funcname);
     void duplInheritedMembersError(const Token* tok1, const Token* tok2, const std::string &derivedName, const std::string &baseName, const std::string &variableName, bool derivedIsStruct, bool baseIsStruct);
     void copyCtorAndEqOperatorError(const Token *tok, const std::string &classname, bool isStruct, bool hasCopyCtor);
-    void unsafeClassDivZeroError(const Token *tok, const std::string &className, const std::string &methodName, const std::string &varName);
     void overrideError(const Function *funcInBase, const Function *funcInDerived);
+    void unsafeClassRefMemberError(const Token *tok, const std::string &varname);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckClass c(nullptr, settings, errorLogger);
@@ -224,10 +216,10 @@ private:
         c.selfInitializationError(nullptr, "var");
         c.duplInheritedMembersError(nullptr, nullptr, "class", "class", "variable", false, false);
         c.copyCtorAndEqOperatorError(nullptr, "class", false, false);
-        c.unsafeClassDivZeroError(nullptr, "Class", "dostuff", "x");
         c.pureVirtualFunctionCallInConstructorError(nullptr, std::list<const Token *>(), "f");
         c.virtualFunctionCallInConstructorError(nullptr, std::list<const Token *>(), "f");
         c.overrideError(nullptr, nullptr);
+        c.unsafeClassRefMemberError(nullptr, "UnsafeClass::var");
     }
 
     static std::string myName() {
@@ -293,7 +285,7 @@ private:
      * @param scope pointer to variable Scope
      * @param usage reference to usage vector
      */
-    static void assignVar(unsigned int varid, const Scope *scope, std::vector<Usage> &usage);
+    static void assignVar(nonneg int varid, const Scope *scope, std::vector<Usage> &usage);
 
     /**
      * @brief initialize a variable in the varlist
@@ -301,7 +293,7 @@ private:
      * @param scope pointer to variable Scope
      * @param usage reference to usage vector
      */
-    static void initVar(unsigned int varid, const Scope *scope, std::vector<Usage> &usage);
+    static void initVar(nonneg int varid, const Scope *scope, std::vector<Usage> &usage);
 
     /**
      * @brief set all variables in list assigned
@@ -325,7 +317,7 @@ private:
     void initializeVarList(const Function &func, std::list<const Function *> &callstack, const Scope *scope, std::vector<Usage> &usage);
 
     /**
-     * @brief gives a list of tokens where pure virtual functions are called directly or indirectly
+     * @brief gives a list of tokens where virtual functions are called directly or indirectly
      * @param function function to be checked
      * @param virtualFunctionCallsMap map of results for already checked functions
      * @return list of tokens where pure virtual functions are called
@@ -335,7 +327,7 @@ private:
         std::map<const Function *, std::list<const Token *> > & virtualFunctionCallsMap);
 
     /**
-     * @brief looks for the first pure virtual function call stack
+     * @brief looks for the first virtual function call stack
      * @param virtualFunctionCallsMap map of results obtained from getVirtualFunctionCalls
      * @param callToken token where pure virtual function is called directly or indirectly
      * @param[in,out] pureFuncStack list to append the stack

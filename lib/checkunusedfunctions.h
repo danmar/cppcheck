@@ -78,10 +78,11 @@ public:
 
 private:
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
-        CheckUnusedFunctions c(nullptr, settings, errorLogger);
-        c.unusedFunctionError(errorLogger, emptyString, 0, "funcName");
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings * /*settings*/) const OVERRIDE {
+        CheckUnusedFunctions::unusedFunctionError(errorLogger, emptyString, 0, "funcName");
     }
+
+    void runChecks(const Tokenizer * /*tokenizer*/, const Settings * /*settings*/, ErrorLogger * /*errorLogger*/) OVERRIDE {}
 
     /**
      * Dummy implementation, just to provide error for --errorlist
@@ -89,12 +90,6 @@ private:
     static void unusedFunctionError(ErrorLogger * const errorLogger,
                                     const std::string &filename, unsigned int lineNumber,
                                     const std::string &funcname);
-
-    /**
-     * Dummy implementation, just to provide error for --errorlist
-     */
-    void runSimplifiedChecks(const Tokenizer* /*tokenizer*/, const Settings* /*settings*/, ErrorLogger* /*errorLogger*/) OVERRIDE {
-    }
 
     static std::string myName() {
         return "Unused functions";

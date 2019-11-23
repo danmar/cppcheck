@@ -10,8 +10,9 @@ import operator
 
 from collections import Counter
 from pygments import highlight
-from pygments.lexers import guess_lexer_for_filename
-from pygments.formatters import HtmlFormatter
+from pygments.lexers import guess_lexer, guess_lexer_for_filename
+from pygments.formatters import HtmlFormatter  # pylint: disable=no-name-in-module
+from pygments.util import ClassNotFound
 from xml.sax import parse as xml_parse
 from xml.sax import SAXParseException as XmlParseException
 from xml.sax.handler import ContentHandler as XmlContentHandler
@@ -89,7 +90,7 @@ div.verbose div.content {
     margin-top: 5px;
     text-align: left;
     width: 150px;
-    height: 75%;
+    /*height: 75%;*/
     position: fixed;
     overflow: auto;
     z-index: 1;
@@ -100,8 +101,8 @@ div.verbose div.content {
     margin-top: 5px;
     padding-left: 5px;
     text-align: left;
-    width: 200px;
-    height: 75%;
+    width: 300px;
+    /*height: 75%;*/
     position: fixed;
     overflow: auto;
     z-index: 1;
@@ -150,7 +151,7 @@ div.verbose div.content {
     margin-left: 10px;
     padding: 0 10px 10px 10px;
     width: 80%;
-    padding-left: 200px;
+    padding-left: 300px;
 }
 
 .linenos {
@@ -226,6 +227,15 @@ HTML_HEAD = """
         var box = document.getElementById(id);
         set_class_display(id, box.checked ? '' : 'none');
       }
+      function toggle_all(){
+        var elts = document.getElementsByTagName("input");
+        for (var i = 1; i < elts.length; i++) {           
+          var el = elts[i];
+          el.checked ? el.checked=false : el.checked=true;
+          toggle_class_visibility(el.id);        
+        }            
+      }
+
     </script>
   </head>
   <body onload="init_expandables()">
@@ -249,7 +259,7 @@ HTML_FOOTER = """
          </br>
          Internet: <a href="http://cppcheck.net">http://cppcheck.net</a></br>
          IRC: <a href="irc://irc.freenode.net/cppcheck">irc://irc.freenode.net/cppcheck</a></br>
-        <p>
+        </p>
       </div>
   </body>
 </html>
@@ -444,7 +454,7 @@ if __name__ == '__main__':
     # Make sure that the report directory is created if it doesn't exist.
     print('Creating %s directory' % options.report_dir)
     if not os.path.exists(options.report_dir):
-        os.mkdir(options.report_dir)
+        os.makedirs(options.report_dir)
 
     # Generate a HTML file with syntax highlighted source code for each
     # file that contains one or more errors.
@@ -514,11 +524,14 @@ if __name__ == '__main__':
             output_file.write(HTML_HEAD_END)
             try:
                 lexer = guess_lexer_for_filename(source_filename, '')
-            except:
-                sys.stderr.write("ERROR: Couldn't determine lexer for the file' " + source_filename + " '. Won't be able to syntax highlight this file.")
-                output_file.write("\n <tr><td colspan='4'> Could not generated content because pygments failed to retrieve the determine code type.</td></tr>")
-                output_file.write("\n <tr><td colspan='4'> Sorry about this.</td></tr>")
-                continue
+            except ClassNotFound:
+                try:
+                    lexer = guess_lexer(content)
+                except ClassNotFound:
+                    sys.stderr.write("ERROR: Couldn't determine lexer for the file' " + source_filename + " '. Won't be able to syntax highlight this file.")
+                    output_file.write("\n <tr><td colspan='5'> Could not generated content because pygments failed to retrieve the determine code type.</td></tr>")
+                    output_file.write("\n <tr><td colspan='5'> Sorry about this.</td></tr>")
+                    continue
 
             if options.source_encoding:
                 lexer.encoding = options.source_encoding
@@ -560,35 +573,35 @@ if __name__ == '__main__':
         except IndexError:
             cnt_min = 0
 
-        stat_fmt = "            <tr><td><input type='checkbox' onclick='toggle_class_visibility(this.id)' id='{}' name='{}' checked></td><td>{}</td><td>{}</td></tr>"
+        stat_fmt = "\n            <tr><td><input type='checkbox' onclick='toggle_class_visibility(this.id)' id='{}' name='{}' checked></td><td>{}</td><td>{}</td></tr>"
         for occurrences in reversed(range(cnt_min, cnt_max + 1)):
             for _id in [k for k, v in sorted(counter.items()) if v == occurrences]:
                 stat_html.append(stat_fmt.format(_id, _id, dict(counter.most_common())[_id], _id))
 
         output_file.write(HTML_HEAD.replace('id="menu" dir="rtl"', 'id="menu_index"', 1).replace("Defects:", "Defect summary;", 1) % (options.title, '', options.title, '', ''))
-        output_file.write('       <table>')
-        output_file.write('           <tr><th>Show</th><th>#</th><th>Defect ID</th></tr>')
+        output_file.write('\n       <label><input type="checkbox" onclick="toggle_all()" checked> Toggle all</label>')
+        output_file.write('\n       <table>')
+        output_file.write('\n           <tr><th>Show</th><th>#</th><th>Defect ID</th></tr>')
         output_file.write(''.join(stat_html))
-        output_file.write('           <tr><td></td><td>' + str(stats_count) + '</td><td>total</td></tr>')
-        output_file.write('       </table>')
-        output_file.write('       <a href="stats.html">Statistics</a></p>')
+        output_file.write('\n           <tr><td></td><td>' + str(stats_count) + '</td><td>total</td></tr>')
+        output_file.write('\n       </table>')
+        output_file.write('\n       <p><a href="stats.html">Statistics</a></p>')
         output_file.write(HTML_HEAD_END.replace("content", "content_index", 1))
-        output_file.write('       <table>\n')
 
-        output_file.write(
-            '       <tr><th>Line</th><th>Id</th><th>CWE</th><th>Severity</th><th>Message</th></tr>')
+        output_file.write('\n       <table>')
+        output_file.write('\n       <tr><th>Line</th><th>Id</th><th>CWE</th><th>Severity</th><th>Message</th></tr>')
         for filename, data in sorted(files.items()):
             if filename in decode_errors:  # don't print a link but a note
-                output_file.write("\n       <tr><td colspan='4'>%s</td></tr>" % (filename))
-                output_file.write("\n       <tr><td colspan='4'> Could not generated due to UnicodeDecodeError</td></tr>")
+                output_file.write("\n       <tr><td colspan='5'>%s</td></tr>" % (filename))
+                output_file.write("\n       <tr><td colspan='5'> Could not generated due to UnicodeDecodeError</td></tr>")
             else:
                 if filename.endswith('*'):  # assume unmatched suppression
                     output_file.write(
-                        "\n       <tr><td colspan='4'>%s</td></tr>" %
+                        "\n       <tr><td colspan='5'>%s</td></tr>" %
                         (filename))
                 else:
                     output_file.write(
-                        "\n       <tr><td colspan='4'><a href='%s'>%s</a></td></tr>" %
+                        "\n       <tr><td colspan='5'><a href='%s'>%s</a></td></tr>" %
                         (data['htmlfile'], filename))
 
                 for error in sorted(data['errors'], key=lambda k: k['line']):
@@ -611,18 +624,18 @@ if __name__ == '__main__':
                     if error['id'] == 'missingInclude':
                         output_file.write(
                             '\n         <tr class="%s"><td></td><td>%s</td><td></td><td>%s</td><td>%s</td></tr>' %
-                            (error['id'], error['id'], error['severity'], error['msg']))
+                            (error['id'], error['id'], error['severity'], html_escape(error['msg'])))
                     elif (error['id'] == 'unmatchedSuppression') and filename.endswith('*'):
                         output_file.write(
                             '\n         <tr class="%s"><td></td><td>%s</td><td></td><td>%s</td><td %s>%s</td></tr>' %
                             (error['id'], error['id'], error['severity'], error_class,
-                             error['msg']))
+                             html_escape(error['msg'])))
                     else:
                         output_file.write(
                             '\n       <tr class="%s"><td><a href="%s#line-%d">%d</a></td><td>%s</td><td>%s</td><td>%s</td><td %s>%s</td></tr>' %
                             (error['id'], data['htmlfile'], error['line'], error['line'],
                              error['id'], cwe_url, error['severity'], error_class,
-                             error['msg']))
+                             html_escape(error['msg'])))
 
         output_file.write('\n       </table>')
         output_file.write(HTML_FOOTER % contentHandler.versionCppcheck)
@@ -671,7 +684,7 @@ if __name__ == '__main__':
                         continue
                 # don't print "0 style" etc, if no style warnings were found
                 if (_sum == 0):
-                    break
+                    continue
             except KeyError:
                 continue
             stats_file.write("<p>Top 10 files for " + sev + " severity, total findings: " + str(_sum) + "</br>\n")
@@ -692,5 +705,7 @@ if __name__ == '__main__':
                 if (it == 10):  # print only the top 10
                     break
             stats_file.write("</p>\n")
+
+        stats_file.write(HTML_FOOTER % contentHandler.versionCppcheck)
 
     print("\nOpen '" + options.report_dir + "/index.html' to see the results.")

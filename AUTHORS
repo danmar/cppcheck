@@ -2,6 +2,7 @@ The cppcheck team, in alphabetical order:
 
 Abhishek Bharadwaj
 Abigail Buccaneer
+Adam J Richter
 Ahti Legonkov
 Akhilesh Nema
 Akio Idehara
@@ -11,12 +12,15 @@ Aleksey Palazhchenko
 Alexander Alekseev
 Alexander Gushchin
 Alexander Mai
+Alexander Tkachev
 Alexey Eryomenko
 Alexey Zhikhartsev
 Ali Can Demiralp
 Ameen Ali
+Andreas Bacher
 Andreas Bießmann
 Andreas Pokorny
+Andreas Rönnquist
 Andreas Vollenweider
 Andrei Karas
 Andrew C. Martin
@@ -32,6 +36,7 @@ Ayaz Salikhov
 Balázs Tóth
 Baris Demiray
 Bartlomiej Grzeskowiak
+bbennetts
 Benjamin Bannier
 Benjamin Fovet
 Benjamin Goose
@@ -41,6 +46,7 @@ Benjamin Wolsey
 Ben T
 Bill Egert
 Björge Dijkstra
+Bo Rydberg
 booga
 Boris Barbulovski
 Boris Egorov
@@ -50,8 +56,12 @@ Cary R
 Changkyoon Kim
 Christian Ehrlicher
 Christian Franke
+Christoph Schmidt
+Christoph Strehle
 Chuck Larson
 Colomban Wendling
+Conrado Gouvea
+daisuke-chiba
 Daniel Marjamäki
 David Hallas
 David Korth
@@ -65,6 +75,7 @@ Dmitry Marakasov
 Dmitry-Me
 Duraffort
 Edoardo Prezioso
+Eivind Tagseth
 Elbert Pol
 Emmanuel Blot
 Eric Sesterhenn
@@ -79,8 +90,10 @@ Frank Zingsheim
 fu7mu4
 Galimov Albert
 Garrett Bodily
+Gary Leutheuser
 gaurav kaushik
 Gennady Feldman
+Georgy Komarov
 Gerhard Zlabinger
 Gianfranco Costamagna
 Gianluca Scacco
@@ -108,6 +121,7 @@ Jay Sigbrandt
 Jens Bäckman
 Jérémy Lefaure
 Jes Ramsing
+Jim Zhou
 Johan Samuelson
 John-Paul Ore
 John Smits
@@ -123,6 +137,7 @@ Jussi Lehtola
 Jørgen Kvalsvik
 Kamil Dudka
 Kartik Bajaj
+Ken-Patrick Lehrmann
 Kevin Christian
 Kevin Kendzia
 Kimmo Varis
@@ -150,11 +165,14 @@ Markus Elfring
 Martin Ettl
 Martin Exner
 Martin Güthle
+Martin Herren
+Márton Csordás
 Massimo Paladin
 Mateusz Pusz
 Mathias De Maré
 Matthias Krüger
 Matthias Schmieder
+Mathias Schmid
 Matt Johnson
 Mavik
 Miika-Petteri Matikainen
@@ -213,6 +231,8 @@ Samir Aguiar
 Sam Truscott
 Samuel Degrande
 Sandeep Dutta
+Scott Furry
+Sebastian Held
 Sebastian Matuschka
 Sébastien Debrard
 Simon Kagstrom
@@ -226,6 +246,7 @@ Stefan Weil
 Stéphane Michel
 Steve Browne
 Steve Duan
+Steven Cook
 Steven Myint
 Susi Lehtola
 Swasti Shrivastava
@@ -234,10 +255,12 @@ Tam Do Thanh
 Teddy Didé
 Thomas Arnhold
 Thomas Jarosch
+Thomas Niederberger
 Thomas Otto
 Thomas Sondergaard
 Thorsten Sick
 Tim Gerundt
+tititiou36
 Tobias Weibel
 Tom Pollok
 Toralf Förster
@@ -250,6 +273,7 @@ Vesa Pikki
 Ville-Pekka Vahteala
 Ville Skyttä
 Vincent Le Garrec
+Wolfgang Stöggl
 x29a
 XhmikosR
 Xuecheng Zhang

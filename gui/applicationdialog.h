@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2017 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,8 +45,9 @@ public:
     * @param app Application definition.
     * @param parent Parent widget.
     */
-    ApplicationDialog(const QString &title, Application &app,
-                      QWidget *parent = 0);
+    ApplicationDialog(const QString &title,
+                      Application &app,
+                      QWidget *parent = nullptr);
     virtual ~ApplicationDialog();
 
 protected slots:

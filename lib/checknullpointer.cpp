@@ -61,17 +61,11 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
     if (Token::Match(&tok, "%name% ( )") || !tok.tokAt(2))
         return;
 
-    const Token* firstParam = tok.tokAt(2);
-    const Token* secondParam = firstParam->nextArgument();
-
-    // 1st parameter..
-    if (Token::Match(&tok, "snprintf|vsnprintf|fnprintf|vfnprintf") && secondParam && secondParam->str() != "0") // Only if length (second parameter) is not zero
-        var.push_back(firstParam);
+    const std::vector<const Token *> args = getArguments(&tok);
 
     if (library || tok.function() != nullptr) {
-        const Token *param = firstParam;
-        int argnr = 1;
-        while (param) {
+        for (int argnr = 1; argnr <= args.size(); ++argnr) {
+            const Token *param = args[argnr - 1];
             if (library && library->isnullargbad(&tok, argnr) && checkNullpointerFunctionCallPlausibility(tok.function(), argnr))
                 var.push_back(param);
             else if (tok.function()) {
@@ -79,65 +73,51 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
                 if (argVar && argVar->isStlStringType() && !argVar->isArrayOrPointer())
                     var.push_back(param);
             }
-            param = param->nextArgument();
-            argnr++;
         }
     }
 
-    if (Token::Match(&tok, "printf|sprintf|snprintf|fprintf|fnprintf|scanf|sscanf|fscanf|wprintf|swprintf|fwprintf|wscanf|swscanf|fwscanf")) {
-        const Token* argListTok = nullptr; // Points to first va_list argument
-        std::string formatString;
-        const bool scan = Token::Match(&tok, "scanf|sscanf|fscanf|wscanf|swscanf|fwscanf");
+    if (library && library->formatstr_function(&tok)) {
+        const int formatStringArgNr = library->formatstr_argno(&tok);
+        if (formatStringArgNr < 0 || formatStringArgNr >= args.size())
+            return;
 
-        if (Token::Match(&tok, "printf|scanf|wprintf|wscanf ( %str%")) {
-            formatString = firstParam->strValue();
-            argListTok = secondParam;
-        } else if (Token::Match(&tok, "sprintf|fprintf|sscanf|fscanf|fwprintf|fwscanf|swscanf")) {
-            const Token* formatStringTok = secondParam; // Find second parameter (format string)
-            if (formatStringTok && formatStringTok->tokType() == Token::eString) {
-                argListTok = formatStringTok->nextArgument(); // Find third parameter (first argument of va_args)
-                formatString = formatStringTok->strValue();
-            }
-        } else if (Token::Match(&tok, "snprintf|fnprintf|swprintf") && secondParam) {
-            const Token* formatStringTok = secondParam->nextArgument(); // Find third parameter (format string)
-            if (formatStringTok && formatStringTok->tokType() == Token::eString) {
-                argListTok = formatStringTok->nextArgument(); // Find fourth parameter (first argument of va_args)
-                formatString = formatStringTok->strValue();
-            }
-        }
+        // 1st parameter..
+        if (Token::Match(&tok, "snprintf|vsnprintf|fnprintf|vfnprintf") && args.size() > 1 && !(args[1] && args[1]->hasKnownIntValue() && args[1]->getKnownIntValue() == 0)) // Only if length (second parameter) is not zero
+            var.push_back(args[0]);
 
-        if (argListTok) {
-            bool percent = false;
-            for (std::string::iterator i = formatString.begin(); i != formatString.end(); ++i) {
-                if (*i == '%') {
-                    percent = !percent;
-                } else if (percent) {
-                    percent = false;
+        if (args[formatStringArgNr]->tokType() != Token::eString)
+            return;
+        const std::string &formatString = args[formatStringArgNr]->strValue();
+        int argnr = formatStringArgNr + 1;
+        const bool scan = library->formatstr_scan(&tok);
 
-                    bool _continue = false;
-                    while (!std::isalpha((unsigned char)*i)) {
-                        if (*i == '*') {
-                            if (scan)
-                                _continue = true;
-                            else
-                                argListTok = argListTok->nextArgument();
-                        }
-                        ++i;
-                        if (!argListTok || i == formatString.end())
-                            return;
+        bool percent = false;
+        for (std::string::const_iterator i = formatString.begin(); i != formatString.end(); ++i) {
+            if (*i == '%') {
+                percent = !percent;
+            } else if (percent) {
+                percent = false;
+
+                bool _continue = false;
+                while (!std::isalpha((unsigned char)*i)) {
+                    if (*i == '*') {
+                        if (scan)
+                            _continue = true;
+                        else
+                            argnr++;
                     }
-                    if (_continue)
-                        continue;
-
-                    if ((*i == 'n' || *i == 's' || scan)) {
-                        var.push_back(argListTok);
-                    }
-
-                    if (*i != 'm') // %m is a non-standard glibc extension that requires no parameter
-                        argListTok = argListTok->nextArgument(); // Find next argument
-                    if (!argListTok)
-                        break;
+                    ++i;
+                    if (i == formatString.end())
+                        return;
                 }
+                if (_continue)
+                    continue;
+
+                if (argnr < args.size() && (*i == 'n' || *i == 's' || scan))
+                    var.push_back(args[argnr]);
+
+                if (*i != 'm') // %m is a non-standard glibc extension that requires no parameter
+                    argnr++;
             }
         }
     }
@@ -214,7 +194,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
         return false;
 
     // read/write member variable
-    if (firstOperand && parent->str() == "." && (!parent->astParent() || parent->astParent()->str() != "&")) {
+    if (firstOperand && parent->originalName() == "->" && (!parent->astParent() || parent->astParent()->str() != "&")) {
         if (!parent->astParent() || parent->astParent()->str() != "(" || parent->astParent() == tok->previous())
             return true;
         unknown = true;
@@ -338,6 +318,22 @@ void CheckNullPointer::nullPointerLinkedList()
     }
 }
 
+static bool isNullablePointer(const Token* tok, const Settings* settings)
+{
+    if (!tok)
+        return false;
+    if (astIsPointer(tok))
+        return true;
+    if (astIsSmartPointer(tok))
+        return true;
+    if (Token::simpleMatch(tok, "."))
+        return isNullablePointer(tok->astOperand2(), settings);
+    if (const Variable* var = tok->variable()) {
+        return (var->isPointer() || var->isSmartPointer());
+    }
+    return false;
+}
+
 void CheckNullPointer::nullPointerByDeRefAndChec()
 {
     const bool printInconclusive = (mSettings->inconclusive);
@@ -348,8 +344,10 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
             continue;
         }
 
-        const Variable *var = tok->variable();
-        if (!var || !var->isPointer() || tok == var->nameToken())
+        if (Token::Match(tok, "%num%|%char%|%str%"))
+            continue;
+
+        if (!isNullablePointer(tok, mSettings))
             continue;
 
         // Can pointer be NULL?
@@ -364,11 +362,11 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
         bool unknown = false;
         if (!isPointerDeRef(tok,unknown)) {
             if (unknown)
-                nullPointerError(tok, tok->str(), value, true);
+                nullPointerError(tok, tok->expressionString(), value, true);
             continue;
         }
 
-        nullPointerError(tok, tok->str(), value, value->isInconclusive());
+        nullPointerError(tok, tok->expressionString(), value, value->isInconclusive());
     }
 }
 
@@ -423,9 +421,8 @@ void CheckNullPointer::nullConstantDereference()
 
                     // is one of the var items a NULL pointer?
                     for (const Token *vartok : var) {
-                        if (Token::Match(vartok, "0|NULL|nullptr [,)]")) {
+                        if (vartok->hasKnownIntValue() && vartok->getKnownIntValue() == 0)
                             nullPointerError(vartok);
-                        }
                     }
                 }
             } else if (Token::Match(tok, "std :: string|wstring ( 0|NULL|nullptr )"))
@@ -615,8 +612,9 @@ std::string CheckNullPointer::MyFileInfo::toString() const
     return CTU::toString(unsafeUsage);
 }
 
-static bool isUnsafeUsage(const Check *check, const Token *vartok)
+static bool isUnsafeUsage(const Check *check, const Token *vartok, MathLib::bigint *value)
 {
+    (void)value;
     const CheckNullPointer *checkNullPointer = dynamic_cast<const CheckNullPointer *>(check);
     bool unknown = false;
     return checkNullPointer && checkNullPointer->isPointerDeRef(vartok, unknown);

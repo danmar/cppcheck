@@ -26,7 +26,7 @@
 #include <map>
 #include <string>
 
-enum SHOWTIME_MODES {
+enum class SHOWTIME_MODES {
     SHOWTIME_NONE = 0,
     SHOWTIME_FILE,
     SHOWTIME_SUMMARY,
@@ -37,7 +37,7 @@ class CPPCHECKLIB TimerResultsIntf {
 public:
     virtual ~TimerResultsIntf() { }
 
-    virtual void AddResults(const std::string& str, std::clock_t clocks) = 0;
+    virtual void addResults(const std::string& str, std::clock_t clocks) = 0;
 };
 
 struct TimerResultsData {
@@ -60,8 +60,8 @@ public:
     TimerResults() {
     }
 
-    void ShowResults(SHOWTIME_MODES mode) const;
-    void AddResults(const std::string& str, std::clock_t clocks) OVERRIDE;
+    void showResults(SHOWTIME_MODES mode) const;
+    void addResults(const std::string& str, std::clock_t clocks) OVERRIDE;
 
 private:
     std::map<std::string, struct TimerResultsData> mResults;
@@ -69,9 +69,9 @@ private:
 
 class CPPCHECKLIB Timer {
 public:
-    Timer(const std::string& str, unsigned int showtimeMode, TimerResultsIntf* timerResults = nullptr);
+    Timer(const std::string& str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults = nullptr);
     ~Timer();
-    void Stop();
+    void stop();
 
 private:
     Timer(const Timer& other); // disallow copying
@@ -80,7 +80,7 @@ private:
     const std::string mStr;
     TimerResultsIntf* mTimerResults;
     std::clock_t mStart;
-    const unsigned int mShowTimeMode;
+    const SHOWTIME_MODES mShowTimeMode;
     bool mStopped;
 };
 //---------------------------------------------------------------------------

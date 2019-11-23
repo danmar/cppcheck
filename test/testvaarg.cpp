@@ -40,8 +40,8 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
 
         // Check..
-        CheckVaarg checkVaarg(&tokenizer, &settings, this);
-        checkVaarg.runSimplifiedChecks(&tokenizer, &settings, this);
+        CheckVaarg checkVaarg;
+        checkVaarg.runChecks(&tokenizer, &settings, this);
     }
 
     void run() OVERRIDE {

@@ -46,6 +46,7 @@ private:
             "    <alloc init=\"false\">malloc</alloc>\n"
             "    <dealloc>free</dealloc>\n"
             "  </memory>\n"
+            "  <smart-pointer class-name=\"std::shared_ptr\"/>\n"
             "</def>";
             tinyxml2::XMLDocument doc;
             doc.Parse(xmldata, sizeof(xmldata));
@@ -173,6 +174,7 @@ private:
         TEST_CASE(const64); // ticket #6268
         TEST_CASE(const65); // ticket #8693
         TEST_CASE(const66); // ticket #7714
+        TEST_CASE(const67); // ticket #9193
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -215,10 +217,10 @@ private:
         TEST_CASE(explicitConstructors);
         TEST_CASE(copyCtorAndEqOperator);
 
-        TEST_CASE(unsafeClassDivZero);
-
         TEST_CASE(override1);
         TEST_CASE(overrideCVRefQualifiers);
+
+        TEST_CASE(unsafeClassRefMember);
     }
 
     void checkCopyCtorAndEqOperator(const char code[]) {
@@ -430,6 +432,11 @@ private:
                                   "    B(const B&) {}\n"
                                   "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkExplicitConstructors("struct A{"
+                                  "    A(int, int y=2) {}"
+                                  "};");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Struct 'A' has a constructor with 1 argument that is not explicit.\n", errout.str());
     }
 
     void checkDuplInheritedMembers(const char code[]) {
@@ -1473,6 +1480,18 @@ private:
             "A &A::operator =(int *other) { return (*this); };\n"
             "A &A::operator =(long *other) { return this->operator = (*(int *)other); };");
         ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqRetRefThis( // #9045
+            "class V {\n"
+            "public:\n"
+            "    V& operator=(const V& r) {\n"
+            "        if (this == &r) {\n"
+            "            return ( *this );\n"
+            "        }\n"
+            "        return *this;\n"
+            "    }\n"
+            "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void operatorEqRetRefThis4() {
@@ -2476,35 +2495,35 @@ private:
     }
 
     void virtualDestructor4() {
-        // Derived class doesn't have a destructor => no error
+        // Derived class doesn't have a destructor => undefined behaviour according to paragraph 3 in [expr.delete]
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : public Base { };"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : private Fred, public Base { };"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
     }
 
     void virtualDestructor5() {
-        // Derived class has empty destructor => no error
+        // Derived class has empty destructor => undefined behaviour according to paragraph 3 in [expr.delete]
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : public Base { public: ~Derived() {} };"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : public Base { public: ~Derived(); }; Derived::~Derived() {}"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
     }
 
     void virtualDestructor6() {
@@ -3144,7 +3163,8 @@ private:
         Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
-                               "  <podtype name=\"uint8_t\" sign=\"u\" size=\"1\"/>\n"
+                               "  <podtype name=\"std::uint8_t\" sign=\"u\" size=\"1\"/>\n"
+                               "  <podtype name=\"std::atomic_bool\"/>\n"
                                "</def>";
         tinyxml2::XMLDocument doc;
         doc.Parse(xmldata, sizeof(xmldata));
@@ -3161,8 +3181,7 @@ private:
 
         checkNoMemset("struct st {\n"
                       "  std::uint8_t a;\n"
-                      "  std::uint8_t b;\n"
-                      "  std::uint8_t c;\n"
+                      "  std::atomic_bool b;\n"
                       "};\n"
                       "\n"
                       "void f() {\n"
@@ -3302,7 +3321,7 @@ private:
                       "[test.cpp:3]: (warning) Suspicious pointer subtraction. Did you intend to write '->'?\n", errout.str());
     }
 
-    void checkConst(const char code[], Settings *s = 0, bool inconclusive = true) {
+    void checkConst(const char code[], Settings *s = nullptr, bool inconclusive = true) {
         // Clear the error log
         errout.str("");
 
@@ -5534,7 +5553,7 @@ private:
                    "  void set(const Key& key) {\n"
                    "      inherited::set(inherited::Key(key));\n"
                    "  }\n"
-                   "};\n", 0, false);
+                   "};\n", nullptr, false);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5641,6 +5660,20 @@ private:
                    "    int n;\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void const67() { // #9193
+        checkConst("template <class VALUE_T, class LIST_T = std::list<VALUE_T> >\n"
+                   "class TestList {\n"
+                   "public:\n"
+                   "    LIST_T m_list;\n"
+                   "};\n"
+                   "class Test {\n"
+                   "public:\n"
+                   "    const std::list<std::shared_ptr<int>>& get() { return m_test.m_list; }\n"
+                   "    TestList<std::shared_ptr<int>> m_test;\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:8]: (style, inconclusive) Technically the member function 'Test::get' can be const.\n", errout.str());
     }
 
     void const_handleDefaultParameters() {
@@ -6657,6 +6690,15 @@ private:
                                      "    }\n"
                                      "};");
         ASSERT_EQUALS("", errout.str());
+
+        // don't warn if some other instance's members are assigned to
+        checkInitializationListUsage("class C {\n"
+                                     "public:\n"
+                                     "    C(C& c) : m_i(c.m_i) { c.m_i = (Foo)-1; }\n"
+                                     "private:\n"
+                                     "    Foo m_i;\n"
+                                     "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -6756,7 +6798,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkVirtualFunctionCall(const char code[], Settings *s = 0, bool inconclusive = true) {
+    void checkVirtualFunctionCall(const char code[], Settings *s = nullptr, bool inconclusive = true) {
         // Clear the error log
         errout.str("");
 
@@ -6794,6 +6836,23 @@ private:
                                  "};\n"
                                  "int A::f() { return 1; }\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Virtual function 'f' is called from constructor 'A()' at line 3. Dynamic binding is not used.\n", errout.str());
+
+        checkVirtualFunctionCall("class A : B {\n"
+                                 "    int f() override;\n"
+                                 "    A() {f();}\n"
+                                 "};\n"
+                                 "int A::f() { return 1; }\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Virtual function 'f' is called from constructor 'A()' at line 3. Dynamic binding is not used.\n", errout.str());
+
+        checkVirtualFunctionCall("class B {\n"
+                                 "    virtual int f() = 0;\n"
+                                 "};\n"
+                                 "class A : B {\n"
+                                 "    int f();\n"
+                                 "    A() {f();}\n"
+                                 "};\n"
+                                 "int A::f() { return 1; }\n");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:5]: (warning) Virtual function 'f' is called from constructor 'A()' at line 6. Dynamic binding is not used.\n", errout.str());
 
         checkVirtualFunctionCall("class A\n"
                                  "{\n"
@@ -6997,47 +7056,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkUnsafeClassDivZero(const char code[]) {
-        // Clear the error log
-        errout.str("");
-        Settings settings;
-        settings.addEnabled("style");
-
-        // Tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        // Check..
-        CheckClass checkClass(&tokenizer, &settings, this);
-        checkClass.checkUnsafeClassDivZero(true);
-    }
-
-    void unsafeClassDivZero() {
-        checkUnsafeClassDivZero("class A {\n"
-                                "public:\n"
-                                "  void dostuff(int x);\n"
-                                "}\n"
-                                "void A::dostuff(int x) { int a = 1000 / x; }");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Public interface of A is not safe. When calling A::dostuff(), if parameter x is 0 that leads to division by zero.\n", errout.str());
-
-        checkUnsafeClassDivZero("class A {\n"
-                                "public:\n"
-                                "  void f1();\n"
-                                "  void f2(int x);\n"
-                                "}\n"
-                                "void A::f1() {}\n"
-                                "void A::f2(int x) { int a = 1000 / x; }");
-        ASSERT_EQUALS("[test.cpp:7]: (style) Public interface of A is not safe. When calling A::f2(), if parameter x is 0 that leads to division by zero.\n", errout.str());
-
-        checkUnsafeClassDivZero("class A {\n"
-                                "public:\n"
-                                "  void operator/(int x);\n"
-                                "}\n"
-                                "void A::operator/(int x) { int a = 1000 / x; }");
-        ASSERT_EQUALS("", errout.str());
-    }
-
     void checkOverride(const char code[]) {
         // Clear the error log
         errout.str("");
@@ -7078,6 +7096,28 @@ private:
                       "    auto bar( ) const -> size_t override { return 0; }\n"
                       "};");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:8]: (style) The function 'foo' overrides a function in a base class but is not marked with a 'override' specifier.\n", errout.str());
+
+        checkOverride("namespace Test {\n"
+                      "    class C {\n"
+                      "    public:\n"
+                      "        virtual ~C();\n"
+                      "    };\n"
+                      "}\n"
+                      "class C : Test::C {\n"
+                      "public:\n"
+                      "    ~C();\n"
+                      "};");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:9]: (style) The destructor '~C' overrides a destructor in a base class but is not marked with a 'override' specifier.\n", errout.str());
+
+        checkOverride("struct Base {\n"
+                      "    virtual void foo();\n"
+                      "};\n"
+                      "\n"
+                      "struct Derived: public Base {\n"
+                      "   void foo() override;\n"
+                      "   void foo(int);\n"
+                      "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void overrideCVRefQualifiers() {
@@ -7096,6 +7136,28 @@ private:
         checkOverride("class Base { virtual void f(); };\n"
                       "class Derived : Base { void f() &&; }");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkUnsafeClassRefMember(const char code[]) {
+        // Clear the error log
+        errout.str("");
+        Settings settings;
+        settings.safeChecks.classes = true;
+        settings.addEnabled("warning");
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Check..
+        CheckClass checkClass(&tokenizer, &settings, this);
+        checkClass.checkUnsafeClassRefMember();
+    }
+
+    void unsafeClassRefMember() {
+        checkUnsafeClassRefMember("class C { C(const std::string &s) : s(s) {} const std::string &s; };");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Unsafe class: The const reference member 'C::s' is initialized by a const reference constructor argument. You need to be careful about lifetime issues.\n", errout.str());
     }
 };
 

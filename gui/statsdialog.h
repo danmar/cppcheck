@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2017 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ class CheckStatistics;
 class StatsDialog : public QDialog {
     Q_OBJECT
 public:
-    explicit StatsDialog(QWidget *parent = 0);
+    explicit StatsDialog(QWidget *parent = nullptr);
 
     /**
     * @brief Sets the project to extract statistics from

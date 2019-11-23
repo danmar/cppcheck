@@ -64,15 +64,7 @@ public:
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         CheckUninitVar checkUninitVar(tokenizer, settings, errorLogger);
         checkUninitVar.check();
-        checkUninitVar.deadPointer();
         checkUninitVar.valueFlowUninit();
-    }
-
-    /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        (void)tokenizer;
-        (void)settings;
-        (void)errorLogger;
     }
 
     /** Check for uninitialized variables */
@@ -80,18 +72,14 @@ public:
     void checkScope(const Scope* scope, const std::set<std::string> &arrayTypeDefs);
     void checkStruct(const Token *tok, const Variable &structvar);
     enum Alloc { NO_ALLOC, NO_CTOR_CALL, CTOR_CALL, ARRAY };
-    bool checkScopeForVariable(const Token *tok, const Variable& var, bool* const possibleInit, bool* const noreturn, Alloc* const alloc, const std::string &membervar, std::map<unsigned int, VariableValue> variableValue);
+    bool checkScopeForVariable(const Token *tok, const Variable& var, bool* const possibleInit, bool* const noreturn, Alloc* const alloc, const std::string &membervar, std::map<int, VariableValue> variableValue);
     bool checkIfForWhileHead(const Token *startparentheses, const Variable& var, bool suppressErrors, bool isuninit, Alloc alloc, const std::string &membervar);
     bool checkLoopBody(const Token *tok, const Variable& var, const Alloc alloc, const std::string &membervar, const bool suppressErrors);
-    void checkRhs(const Token *tok, const Variable &var, Alloc alloc, unsigned int number_of_if, const std::string &membervar);
-    bool isVariableUsage(const Token *vartok, bool pointer, Alloc alloc) const;
-    int isFunctionParUsage(const Token *vartok, bool pointer, Alloc alloc) const;
+    void checkRhs(const Token *tok, const Variable &var, Alloc alloc, nonneg int number_of_if, const std::string &membervar);
+    bool isVariableUsage(const Token *vartok, bool pointer, Alloc alloc, int indirect = 0) const;
+    int isFunctionParUsage(const Token *vartok, bool pointer, Alloc alloc, int indirect = 0) const;
     bool isMemberVariableAssignment(const Token *tok, const std::string &membervar) const;
     bool isMemberVariableUsage(const Token *tok, bool isPointer, Alloc alloc, const std::string &membervar) const;
-
-    /** ValueFlow-based checking for dead pointer usage */
-    void deadPointer();
-    void deadPointerError(const Token *pointer, const Token *alias);
 
     /** ValueFlow-based checking for uninitialized variables */
     void valueFlowUninit();
@@ -116,7 +104,11 @@ public:
 
     void uninitstringError(const Token *tok, const std::string &varname, bool strncpy_);
     void uninitdataError(const Token *tok, const std::string &varname);
-    void uninitvarError(const Token *tok, const std::string &varname);
+    void uninitvarError(const Token *tok, const std::string &varname, ErrorPath errorPath);
+    void uninitvarError(const Token *tok, const std::string &varname) {
+        ErrorPath errorPath;
+        uninitvarError(tok, varname, errorPath);
+    }
     void uninitvarError(const Token *tok, const std::string &varname, Alloc alloc) {
         if (alloc == NO_CTOR_CALL || alloc == CTOR_CALL)
             uninitdataError(tok, varname);
@@ -137,7 +129,6 @@ private:
         c.uninitdataError(nullptr, "varname");
         c.uninitvarError(nullptr, "varname");
         c.uninitStructMemberError(nullptr, "a.b");
-        c.deadPointerError(nullptr, nullptr);
     }
 
     static std::string myName() {
@@ -147,8 +138,7 @@ private:
     std::string classInfo() const OVERRIDE {
         return "Uninitialized variables\n"
                "- using uninitialized local variables\n"
-               "- using allocated data before it has been initialized\n"
-               "- using dead pointer\n";
+               "- using allocated data before it has been initialized\n";
     }
 };
 /// @}

@@ -40,7 +40,8 @@ struct InternalError;
 
 #define GET_SYMBOL_DB(code) \
     Tokenizer tokenizer(&settings1, this); \
-    const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code, "test.cpp");
+    const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code, "test.cpp"); \
+    ASSERT(db);
 
 #define GET_SYMBOL_DB_C(code) \
     Tokenizer tokenizer(&settings1, this); \
@@ -83,7 +84,7 @@ private:
                     return &(*scope);
             }
         }
-        return 0;
+        return nullptr;
     }
 
     static const Function *findFunctionByName(const char str[], const Scope* startScope) {
@@ -95,13 +96,13 @@ private:
                 currScope = currScope->nestedIn;
         }
         while (currScope) {
-            for (std::list<Function>::const_iterator i = currScope->functionList.begin(); i != currScope->functionList.end(); ++i) {
-                if (i->tokenDef->str() == str)
-                    return &*i;
+            for (const Function & i : currScope->functionList) {
+                if (i.tokenDef->str() == str)
+                    return &i;
             }
             currScope = currScope->nestedIn;
         }
-        return 0;
+        return nullptr;
     }
 
     void run() OVERRIDE {
@@ -140,6 +141,7 @@ private:
         TEST_CASE(isVariableDeclarationPointerConst);
         TEST_CASE(isVariableDeclarationRValueRef);
         TEST_CASE(isVariableDeclarationDoesNotIdentifyCase);
+        TEST_CASE(isVariableDeclarationIf);
         TEST_CASE(isVariableStlType);
         TEST_CASE(isVariablePointerToConstPointer);
         TEST_CASE(isVariablePointerToVolatilePointer);
@@ -153,6 +155,7 @@ private:
         TEST_CASE(findVariableType1);
         TEST_CASE(findVariableType2);
         TEST_CASE(findVariableType3);
+        TEST_CASE(findVariableTypeExternC);
 
         TEST_CASE(rangeBasedFor);
 
@@ -204,7 +207,6 @@ private:
 
         TEST_CASE(functionArgs1);
         TEST_CASE(functionArgs2);
-        TEST_CASE(functionArgs3);
         TEST_CASE(functionArgs4);
         TEST_CASE(functionArgs5); // #7650
         TEST_CASE(functionArgs6); // #7651
@@ -215,8 +217,11 @@ private:
         TEST_CASE(functionArgs11);
         TEST_CASE(functionArgs12); // #7661
         TEST_CASE(functionArgs13); // #7697
+        TEST_CASE(functionArgs14); // #9055
 
         TEST_CASE(functionImplicitlyVirtual);
+
+        TEST_CASE(functionStatic);
 
         TEST_CASE(namespaces1);
         TEST_CASE(namespaces2);
@@ -293,9 +298,16 @@ private:
         TEST_CASE(symboldatabase70);
         TEST_CASE(symboldatabase71);
         TEST_CASE(symboldatabase72); // #8600
-        TEST_CASE(symboldatabase73); // #8603
         TEST_CASE(symboldatabase74); // #8838 - final
         TEST_CASE(symboldatabase75);
+        TEST_CASE(symboldatabase76); // #9056
+        TEST_CASE(symboldatabase77); // #8663
+        TEST_CASE(symboldatabase78); // #9147
+        TEST_CASE(symboldatabase79); // #9392
+        TEST_CASE(symboldatabase80); // #9389
+        TEST_CASE(symboldatabase81); // #9411
+        TEST_CASE(symboldatabase82);
+        TEST_CASE(symboldatabase83); // #9431
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
 
@@ -335,6 +347,22 @@ private:
         TEST_CASE(findFunction18);
         TEST_CASE(findFunction19);
         TEST_CASE(findFunction20); // #8280
+        TEST_CASE(findFunction21);
+        TEST_CASE(findFunction22);
+        TEST_CASE(findFunction23);
+        TEST_CASE(findFunction24); // smart pointer
+        TEST_CASE(findFunction25); // std::vector<std::shared_ptr<Fred>>
+        TEST_CASE(findFunction26); // #8668 - pointer parameter in function call, const pointer function argument
+        TEST_CASE(findFunction27);
+        TEST_CASE(findFunction28);
+        TEST_CASE(findFunction29);
+        TEST_CASE(findFunction30);
+        TEST_CASE(findFunction31);
+        TEST_CASE(findFunctionContainer);
+        TEST_CASE(findFunctionExternC);
+        TEST_CASE(findFunctionGlobalScope); // ::foo
+
+        TEST_CASE(valueTypeMatchParameter); // ValueType::matchParameter
 
         TEST_CASE(noexceptFunction1);
         TEST_CASE(noexceptFunction2);
@@ -357,6 +385,7 @@ private:
 
         TEST_CASE(lambda); // #5867
         TEST_CASE(lambda2); // #7473
+        TEST_CASE(lambda3);
 
         TEST_CASE(circularDependencies); // #6298
 
@@ -384,6 +413,8 @@ private:
         TEST_CASE(auto12); // #8993 - const std::string &x; auto y = x; if (y.empty()) ..
 
         TEST_CASE(unionWithConstructor);
+
+        TEST_CASE(incomplete_type); // #9255 (infinite recursion)
     }
 
     void array() {
@@ -401,15 +432,19 @@ private:
         ASSERT_EQUALS(12U, v->dimension(0));
     }
 
-    void stlarray() const {
-        std::istringstream code("std::array<int, 20> arr;");
-        TokenList list(nullptr);
-        list.createTokens(code, "test.c");
-        list.front()->tokAt(3)->link(list.front()->tokAt(7));
-        Variable v(list.front()->next(), list.front(), list.back(), 0, Public, nullptr, nullptr, &settings1);
-        ASSERT(v.isArray());
-        ASSERT_EQUALS(1U, v.dimensions().size());
-        ASSERT_EQUALS(20U, v.dimension(0));
+    void stlarray() {
+        GET_SYMBOL_DB("std::array<int, (16 + 4)> arr;");
+        ASSERT(db != nullptr);
+        if (!db)
+            return;
+        ASSERT(db->variableList().size() == 2); // the first one is not used
+        const Variable * v = db->getVariableFromVarId(1);
+        ASSERT(v != nullptr);
+        if (!v)
+            return;
+        ASSERT(v->isArray());
+        ASSERT_EQUALS(1U, v->dimensions().size());
+        ASSERT_EQUALS(20U, v->dimension(0));
     }
 
     void test_isVariableDeclarationCanHandleNull() {
@@ -418,7 +453,7 @@ private:
         ASSERT_EQUALS(false, result);
         ASSERT(nullptr == vartok);
         ASSERT(nullptr == typetok);
-        Variable v(nullptr, nullptr, nullptr, 0, Public, 0, 0, &settings1);
+        Variable v(nullptr, nullptr, nullptr, 0, AccessControl::Public, nullptr, nullptr, &settings1);
     }
 
     void test_isVariableDeclarationIdentifiesSimpleDeclaration() {
@@ -428,7 +463,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("x", vartok->str());
         ASSERT_EQUALS("int", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(false == v.isReference());
@@ -441,7 +476,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("x", vartok->str());
         ASSERT_EQUALS("int", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(false == v.isReference());
@@ -454,7 +489,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("x", vartok->str());
         ASSERT_EQUALS("int", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(false == v.isReference());
@@ -467,7 +502,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("x", vartok->str());
         ASSERT_EQUALS("int", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(false == v.isReference());
@@ -480,7 +515,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("x", vartok->str());
         ASSERT_EQUALS("string", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(false == v.isReference());
@@ -493,7 +528,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("x", vartok->str());
         ASSERT_EQUALS("string", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(false == v.isReference());
@@ -506,7 +541,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("x", vartok->str());
         ASSERT_EQUALS("EE", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(false == v.isReference());
@@ -519,14 +554,14 @@ private:
         ASSERT_EQUALS(true, result1);
         ASSERT_EQUALS("p", vartok->str());
         ASSERT_EQUALS("int", typetok->str());
-        Variable v1(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v1(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v1.isArray());
         ASSERT(true == v1.isPointer());
         ASSERT(false == v1.isReference());
 
         reset();
         givenACodeSampleToTokenize constpointer("const int* p;");
-        Variable v2(constpointer.tokens()->tokAt(3), constpointer.tokens()->next(), constpointer.tokens()->tokAt(2), 0, Public, 0, 0, &settings1);
+        Variable v2(constpointer.tokens()->tokAt(3), constpointer.tokens()->next(), constpointer.tokens()->tokAt(2), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v2.isArray());
         ASSERT(true == v2.isPointer());
         ASSERT(false == v2.isConst());
@@ -538,7 +573,7 @@ private:
         ASSERT_EQUALS(true, result2);
         ASSERT_EQUALS("p", vartok->str());
         ASSERT_EQUALS("int", typetok->str());
-        Variable v3(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v3(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v3.isArray());
         ASSERT(true == v3.isPointer());
         ASSERT(true == v3.isConst());
@@ -561,7 +596,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("first", vartok->str());
         ASSERT_EQUALS("int", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(false == v.isReference());
@@ -574,7 +609,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("p", vartok->str());
         ASSERT_EQUALS("EE", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
         ASSERT(true == v.isPointer());
         ASSERT(false == v.isReference());
@@ -587,7 +622,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("pp", vartok->str());
         ASSERT_EQUALS("int", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
         ASSERT(true == v.isPointer());
         ASSERT(false == v.isReference());
@@ -600,7 +635,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("p", vartok->str());
         ASSERT_EQUALS("int", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
         ASSERT(true == v.isPointer());
         ASSERT(false == v.isReference());
@@ -613,7 +648,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("v", vartok->str());
         ASSERT_EQUALS("string", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(true == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(false == v.isPointerArray());
@@ -627,7 +662,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("a", vartok->str());
         ASSERT_EQUALS("A", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isPointer());
         ASSERT(true == v.isArray());
         ASSERT(false == v.isPointerToArray());
@@ -642,7 +677,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("a", vartok->str());
         ASSERT_EQUALS("A", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(true == v.isPointer());
         ASSERT(false == v.isArray());
         ASSERT(true == v.isPointerToArray());
@@ -657,7 +692,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("chars", vartok->str());
         ASSERT_EQUALS("set", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
         ASSERT(true == v.isPointer());
         ASSERT(false == v.isReference());
@@ -670,7 +705,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("ints", vartok->str());
         ASSERT_EQUALS("deque", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
         ASSERT(true == v.isPointer());
         ASSERT(false == v.isReference());
@@ -683,7 +718,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("ints", vartok->str());
         ASSERT_EQUALS("deque", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(true == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(false == v.isReference());
@@ -696,7 +731,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("ints", vartok->str());
         ASSERT_EQUALS("vector", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(false == v.isReference());
@@ -709,7 +744,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("floats", vartok->str());
         ASSERT_EQUALS("const_iterator", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(false == v.isReference());
@@ -722,7 +757,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("intsets", vartok->str());
         ASSERT_EQUALS("deque", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(false == v.isReference());
@@ -733,7 +768,7 @@ private:
         givenACodeSampleToTokenize var1("int& foo;");
         const bool result1 = nullScope.isVariableDeclaration(var1.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result1);
-        Variable v1(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v1(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v1.isArray());
         ASSERT(false == v1.isPointer());
         ASSERT(true == v1.isReference());
@@ -742,7 +777,7 @@ private:
         givenACodeSampleToTokenize var2("foo*& bar;");
         const bool result2 = nullScope.isVariableDeclaration(var2.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result2);
-        Variable v2(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v2(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v2.isArray());
         ASSERT(true == v2.isPointer());
         ASSERT(true == v2.isReference());
@@ -751,7 +786,7 @@ private:
         givenACodeSampleToTokenize var3("std::vector<int>& foo;");
         const bool result3 = nullScope.isVariableDeclaration(var3.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result3);
-        Variable v3(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v3(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v3.isArray());
         ASSERT(false == v3.isPointer());
         ASSERT(true == v3.isReference());
@@ -776,7 +811,7 @@ private:
         givenACodeSampleToTokenize var("std::string const* s;");
         const bool result = nullScope.isVariableDeclaration(var.tokens()->next(), vartok, typetok);
         ASSERT_EQUALS(true, result);
-        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
         ASSERT(true == v.isPointer());
         ASSERT(false == v.isReference());
@@ -787,12 +822,12 @@ private:
         givenACodeSampleToTokenize var("int&& i;");
         const bool result = nullScope.isVariableDeclaration(var.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
-        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(true == v.isReference());
         ASSERT(true == v.isRValueReference());
-        ASSERT(var.tokens()->tokAt(2)->scope() != 0);
+        ASSERT(var.tokens()->tokAt(2)->scope() != nullptr);
     }
 
     void isVariableDeclarationDoesNotIdentifyCase() {
@@ -805,6 +840,23 @@ private:
         const Variable* b = db->getVariableFromVarId(1);
         ASSERT_EQUALS("b", b->name());
         ASSERT_EQUALS("a", b->typeStartToken()->str());
+    }
+
+    void isVariableDeclarationIf() {
+        GET_SYMBOL_DB("void foo() {\n"
+                      "    for (auto& elem : items) {\n"
+                      "        if (auto x = bar()) { int y = 3; }\n"
+                      "    }\n"
+                      "}");
+        const Token *x = Token::findsimplematch(tokenizer.tokens(), "x");
+        ASSERT(x);
+        ASSERT(x->varId());
+        ASSERT(x->variable());
+
+        const Token *y = Token::findsimplematch(tokenizer.tokens(), "y");
+        ASSERT(y);
+        ASSERT(y->varId());
+        ASSERT(y->variable());
     }
 
     void VariableValueType1() {
@@ -928,6 +980,18 @@ private:
         ASSERT(avar && avar->type() != nullptr);
     }
 
+    void findVariableTypeExternC() {
+        GET_SYMBOL_DB("extern \"C\" { typedef int INT; }\n"
+                      "void bar() {\n"
+                      "    INT x = 3;\n"
+                      "}");
+        (void)db;
+        const Variable* avar = Token::findsimplematch(tokenizer.tokens(), "x")->variable();
+        ASSERT(avar);
+        ASSERT(avar->valueType() != nullptr);
+        ASSERT(avar->valueType()->str() == "signed int");
+    }
+
     void rangeBasedFor() {
         GET_SYMBOL_DB("void reset() {\n"
                       "    for(auto& e : array)\n"
@@ -952,7 +1016,7 @@ private:
             list.createTokens(code, "test.cpp");
             const bool result = nullScope.isVariableDeclaration(list.front(), vartok, typetok);
             ASSERT_EQUALS(true, result);
-            Variable v(vartok, list.front(), list.back(), 0, Public, 0, 0, &settings1);
+            Variable v(vartok, list.front(), list.back(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
             static const std::set<std::string> types = { "string", "wstring" };
             static const std::set<std::string> no_types = { "set" };
             ASSERT_EQUALS(true, v.isStlType());
@@ -968,7 +1032,7 @@ private:
             list.front()->tokAt(3)->link(list.front()->tokAt(5));
             const bool result = nullScope.isVariableDeclaration(list.front(), vartok, typetok);
             ASSERT_EQUALS(true, result);
-            Variable v(vartok, list.front(), list.back(), 0, Public, 0, 0, &settings1);
+            Variable v(vartok, list.front(), list.back(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
             static const std::set<std::string> types = { "bitset", "set", "vector", "wstring" };
             static const std::set<std::string> no_types = { "bitset", "map", "set" };
             ASSERT_EQUALS(true, v.isStlType());
@@ -983,7 +1047,7 @@ private:
             list.createTokens(code, "test.cpp");
             const bool result = nullScope.isVariableDeclaration(list.front(), vartok, typetok);
             ASSERT_EQUALS(true, result);
-            Variable v(vartok, list.front(), list.back(), 0, Public, 0, 0, &settings1);
+            Variable v(vartok, list.front(), list.back(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
             static const std::set<std::string> types = { "bitset", "set", "vector" };
             ASSERT_EQUALS(false, v.isStlType());
             ASSERT_EQUALS(false, v.isStlType(types));
@@ -996,7 +1060,7 @@ private:
         givenACodeSampleToTokenize var("char* const * s;");
         bool result = nullScope.isVariableDeclaration(var.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
-        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
         ASSERT(true == v.isPointer());
         ASSERT(false == v.isReference());
@@ -1007,7 +1071,7 @@ private:
         givenACodeSampleToTokenize var("char* volatile * s;");
         bool result = nullScope.isVariableDeclaration(var.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
-        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
         ASSERT(true == v.isPointer());
         ASSERT(false == v.isReference());
@@ -1018,7 +1082,7 @@ private:
         givenACodeSampleToTokenize var("char* const volatile * s;");
         bool result = nullScope.isVariableDeclaration(var.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
-        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
         ASSERT(true == v.isPointer());
         ASSERT(false == v.isReference());
@@ -1029,7 +1093,7 @@ private:
         givenACodeSampleToTokenize var("const char* const volatile * const volatile * const volatile * const volatile s;");
         bool result = nullScope.isVariableDeclaration(var.tokens()->next(), vartok, typetok);
         ASSERT_EQUALS(true, result);
-        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
         ASSERT(true == v.isPointer());
         ASSERT(false == v.isReference());
@@ -1117,7 +1181,7 @@ private:
             ASSERT(scope && scope->className == "func");
             if (!scope)
                 return;
-            ASSERT(scope->functionOf == 0);
+            ASSERT(scope->functionOf == nullptr);
 
             const Function *function = findFunctionByName("func", &db->scopeList.front());
 
@@ -1141,7 +1205,7 @@ private:
             ASSERT(scope && scope->className == "func");
             if (!scope)
                 return;
-            ASSERT(scope->functionOf == 0);
+            ASSERT(scope->functionOf == nullptr);
 
             const Function *function = findFunctionByName("func", &db->scopeList.front());
 
@@ -1464,8 +1528,8 @@ private:
 
         if (db) {
             bool seen_something = false;
-            for (std::list<Scope>::const_iterator scope = db->scopeList.begin(); scope != db->scopeList.end(); ++scope) {
-                for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+            for (const Scope & scope : db->scopeList) {
+                for (std::list<Function>::const_iterator func = scope.functionList.begin(); func != scope.functionList.end(); ++func) {
                     ASSERT_EQUALS("Sub", func->token->str());
                     ASSERT_EQUALS(true, func->hasBody());
                     ASSERT_EQUALS(Function::eConstructor, func->type);
@@ -1481,67 +1545,67 @@ private:
             GET_SYMBOL_DB("class Foo { Foo(); };");
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
             ASSERT(db && ctor && ctor->type == Function::eConstructor);
-            ASSERT(ctor && ctor->retDef == 0);
+            ASSERT(ctor && ctor->retDef == nullptr);
         }
         {
             GET_SYMBOL_DB("class Foo { Foo(Foo f); };");
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
             ASSERT(db && ctor && ctor->type == Function::eConstructor && !ctor->isExplicit());
-            ASSERT(ctor && ctor->retDef == 0);
+            ASSERT(ctor && ctor->retDef == nullptr);
         }
         {
             GET_SYMBOL_DB("class Foo { explicit Foo(Foo f); };");
             const Function* ctor = tokenizer.tokens()->tokAt(4)->function();
             ASSERT(db && ctor && ctor->type == Function::eConstructor && ctor->isExplicit());
-            ASSERT(ctor && ctor->retDef == 0);
+            ASSERT(ctor && ctor->retDef == nullptr);
         }
         {
             GET_SYMBOL_DB("class Foo { Foo(Bar& f); };");
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
             ASSERT(db && ctor && ctor->type == Function::eConstructor);
-            ASSERT(ctor && ctor->retDef == 0);
+            ASSERT(ctor && ctor->retDef == nullptr);
         }
         {
             GET_SYMBOL_DB("class Foo { Foo(Foo& f); };");
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
             ASSERT(db && ctor && ctor->type == Function::eCopyConstructor);
-            ASSERT(ctor && ctor->retDef == 0);
+            ASSERT(ctor && ctor->retDef == nullptr);
         }
         {
             GET_SYMBOL_DB("class Foo { Foo(const Foo &f); };");
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
             ASSERT(db && ctor && ctor->type == Function::eCopyConstructor);
-            ASSERT(ctor && ctor->retDef == 0);
+            ASSERT(ctor && ctor->retDef == nullptr);
         }
         {
             GET_SYMBOL_DB("template <T> class Foo { Foo(Foo<T>& f); };");
             const Function* ctor = tokenizer.tokens()->tokAt(7)->function();
             ASSERT(db && ctor && ctor->type == Function::eCopyConstructor);
-            ASSERT(ctor && ctor->retDef == 0);
+            ASSERT(ctor && ctor->retDef == nullptr);
         }
         {
             GET_SYMBOL_DB("class Foo { Foo(Foo& f, int default = 0); };");
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
             ASSERT(db && ctor && ctor->type == Function::eCopyConstructor);
-            ASSERT(ctor && ctor->retDef == 0);
+            ASSERT(ctor && ctor->retDef == nullptr);
         }
         {
             GET_SYMBOL_DB("class Foo { Foo(Foo& f, char noDefault); };");
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
             ASSERT(db && ctor && ctor->type == Function::eConstructor);
-            ASSERT(ctor && ctor->retDef == 0);
+            ASSERT(ctor && ctor->retDef == nullptr);
         }
         {
             GET_SYMBOL_DB("class Foo { Foo(Foo&& f); };");
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
             ASSERT(db && ctor && ctor->type == Function::eMoveConstructor);
-            ASSERT(ctor && ctor->retDef == 0);
+            ASSERT(ctor && ctor->retDef == nullptr);
         }
         {
-            GET_SYMBOL_DB("class Foo { Foo(Foo & & f, int default = 1, bool defaultToo = true); };");
+            GET_SYMBOL_DB("class Foo { Foo(Foo&& f, int default = 1, bool defaultToo = true); };");
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
             ASSERT(db && ctor && ctor->type == Function::eMoveConstructor);
-            ASSERT(ctor && ctor->retDef == 0);
+            ASSERT(ctor && ctor->retDef == nullptr);
         }
     }
 
@@ -1841,7 +1905,6 @@ private:
         Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, filename);
-        tokenizer.simplifyTokenList2();
 
         // force symbol database creation
         tokenizer.createSymbolDatabase();
@@ -1905,12 +1968,6 @@ private:
         ASSERT_EQUALS(false, a->dimensions()[0].known);
         ASSERT_EQUALS(4UL, a->dimension(1));
         ASSERT_EQUALS(true, a->dimensions()[1].known);
-    }
-
-    void functionArgs3() {
-        GET_SYMBOL_DB("void f(int i,) { }"); // Don't crash
-        const Variable *a = db->getVariableFromVarId(1);
-        ASSERT_EQUALS("i", a->nameToken()->str());
     }
 
     void functionArgs4() {
@@ -2214,6 +2271,14 @@ private:
         }
     }
 
+    void functionArgs14() { // #7697
+        GET_SYMBOL_DB("void f(int (&a)[10], int (&b)[10]);");
+        (void)db;
+        const Function *func = tokenizer.tokens()->next()->function();
+        ASSERT_EQUALS(true, func != nullptr);
+        ASSERT_EQUALS(2, func ? func->argCount() : 0);
+    }
+
     void functionImplicitlyVirtual() {
         GET_SYMBOL_DB("class base { virtual void f(); };\n"
                       "class derived : base { void f(); };\n"
@@ -2226,6 +2291,14 @@ private:
         ASSERT_EQUALS(true, function && function->isImplicitlyVirtual(false));
     }
 
+    void functionStatic() {
+        GET_SYMBOL_DB("static void fs() {  }");
+        (void)db;
+        const Function *func = db->scopeList.back().function;
+        ASSERT(func);
+        ASSERT(func->isStatic());
+    }
+
     void namespaces1() {
         GET_SYMBOL_DB("namespace fred {\n"
                       "    namespace barney {\n"
@@ -2236,9 +2309,9 @@ private:
 
         // Locate the scope for the class..
         const Scope *scope = nullptr;
-        for (std::list<Scope>::const_iterator it = db->scopeList.begin(); it != db->scopeList.end(); ++it) {
-            if (it->isClassOrStruct()) {
-                scope = &(*it);
+        for (const Scope & it : db->scopeList) {
+            if (it.isClassOrStruct()) {
+                scope = &it;
                 break;
             }
         }
@@ -2270,9 +2343,9 @@ private:
 
         // Locate the scope for the class..
         const Scope *scope = nullptr;
-        for (std::list<Scope>::const_iterator it = db->scopeList.begin(); it != db->scopeList.end(); ++it) {
-            if (it->isClassOrStruct()) {
-                scope = &(*it);
+        for (const Scope & it : db->scopeList) {
+            if (it.isClassOrStruct()) {
+                scope = &it;
                 break;
             }
         }
@@ -2420,7 +2493,7 @@ private:
               "public:\n"
               "    int f() { return C< ::D,int>::f(); }\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:6]: (debug) Failed to instantiate template \"C\". The checking continues anyway.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void symboldatabase8() {
@@ -2508,7 +2581,8 @@ private:
         // ticket #2991 - segmentation fault
         check("::y(){x}");
 
-        ASSERT_EQUALS("[test.cpp:1]: (debug) Executable scope 'y' with unknown function.\n", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:1]: (debug) Executable scope 'y' with unknown function.\n"
+                                          "[test.cpp:1]: (debug) valueflow.cpp:1321:valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable x\n", errout.str());
     }
 
     void symboldatabase20() {
@@ -2559,9 +2633,9 @@ private:
 
         // Find the scope for the Fred struct..
         const Scope *fredScope = nullptr;
-        for (std::list<Scope>::const_iterator scope = db->scopeList.begin(); scope != db->scopeList.end(); ++scope) {
-            if (scope->isClassOrStruct() && scope->className == "Fred")
-                fredScope = &(*scope);
+        for (const Scope & scope : db->scopeList) {
+            if (scope.isClassOrStruct() && scope.className == "Fred")
+                fredScope = &scope;
         }
         ASSERT(fredScope != nullptr);
         if (fredScope == nullptr)
@@ -2573,11 +2647,11 @@ private:
         // Get linenumbers where the bodies for the constructor and destructor are..
         unsigned int constructor = 0;
         unsigned int destructor = 0;
-        for (std::list<Function>::const_iterator it = fredScope->functionList.begin(); it != fredScope->functionList.end(); ++it) {
-            if (it->type == Function::eConstructor)
-                constructor = it->token->linenr();  // line number for constructor body
-            if (it->type == Function::eDestructor)
-                destructor = it->token->linenr();  // line number for destructor body
+        for (const Function & it : fredScope->functionList) {
+            if (it.type == Function::eConstructor)
+                constructor = it.token->linenr();  // line number for constructor body
+            if (it.type == Function::eDestructor)
+                destructor = it.token->linenr();  // line number for destructor body
         }
 
         // The body for the constructor is located at line 5..
@@ -4058,7 +4132,7 @@ private:
         const Token *f = db ? Token::findsimplematch(tokenizer.tokens(), "get_endpoint_url ( ) const noexcept ;") : nullptr;
         ASSERT(f != nullptr);
         ASSERT(f && f->function() && f->function()->token->linenr() == 2);
-        ASSERT(f && f->function() && f->function()->isVirtual());
+        ASSERT(f && f->function() && f->function()->hasVirtualSpecifier());
         ASSERT(f && f->function() && !f->function()->hasOverrideSpecifier());
         ASSERT(f && f->function() && !f->function()->hasFinalSpecifier());
         ASSERT(f && f->function() && f->function()->isConst());
@@ -4066,7 +4140,7 @@ private:
         f = db ? Token::findsimplematch(tokenizer.tokens(), "get_endpoint_url ( ) const noexcept override final ;") : nullptr;
         ASSERT(f != nullptr);
         ASSERT(f && f->function() && f->function()->token->linenr() == 5);
-        ASSERT(f && f->function() && f->function()->isVirtual());
+        ASSERT(f && f->function() && f->function()->hasVirtualSpecifier());
         ASSERT(f && f->function() && f->function()->hasOverrideSpecifier());
         ASSERT(f && f->function() && f->function()->hasFinalSpecifier());
         ASSERT(f && f->function() && f->function()->isConst());
@@ -4146,26 +4220,6 @@ private:
         ASSERT(f && f->function() && f->function()->type == Function::eCopyConstructor);
     }
 
-    void symboldatabase73() { // #8603
-        GET_SYMBOL_DB("namespace swizzle {\n"
-                      "  template <comp> void swizzle(tvec2<f16>) {}\n"
-                      "  template <comp x, comp y> void swizzle(tvec2<f16> v) {}\n"
-                      "}");
-
-        ASSERT_EQUALS(4, db->scopeList.size());
-        ASSERT_EQUALS(2, db->functionScopes.size());
-
-        const Scope *f1 = db->functionScopes[0];
-        ASSERT_EQUALS(2, f1->bodyStart->linenr());
-        ASSERT_EQUALS(2, f1->bodyEnd->linenr());
-        ASSERT_EQUALS(2, f1->function->token->linenr());
-
-        const Scope *f2 = db->functionScopes[1];
-        ASSERT_EQUALS(3, f2->bodyStart->linenr());
-        ASSERT_EQUALS(3, f2->bodyEnd->linenr());
-        ASSERT_EQUALS(3, f2->function->token->linenr());
-    }
-
     void symboldatabase74() { // #8838 - final
         GET_SYMBOL_DB("class Base { virtual int f() const = 0; };\n"
                       "class Derived : Base { virtual int f() const final { return 6; } };");
@@ -4212,6 +4266,180 @@ private:
         ASSERT(f->function->isConst());
         ASSERT(f->function->hasTrailingReturnType());
         ASSERT(f->function->hasLvalRefQualifier());
+    }
+
+    void symboldatabase76() { // #9056
+        GET_SYMBOL_DB("namespace foo {\n"
+                      "  using namespace bar::baz;\n"
+                      "  auto func(int arg) -> bar::quux {}\n"
+                      "}");
+        ASSERT_EQUALS(2, db->mVariableList.size());
+    }
+
+    void symboldatabase77() { // #8663
+        GET_SYMBOL_DB("template <class T1, class T2>\n"
+                      "void f() {\n"
+                      "  using T3 = typename T1::template T3<T2>;\n"
+                      "  T3 t;\n"
+                      "}");
+        ASSERT_EQUALS(2, db->mVariableList.size());
+    }
+
+    void symboldatabase78() { // #9147
+        GET_SYMBOL_DB("template <class...> struct a;\n"
+                      "namespace {\n"
+                      "template <class, class> struct b;\n"
+                      "template <template <class> class c, class... f, template <class...> class d>\n"
+                      "struct b<c<f...>, d<>>;\n"
+                      "}\n"
+                      "void e() { using c = a<>; }");
+        ASSERT(db != nullptr);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase79() { // #9392
+        {
+            GET_SYMBOL_DB("class C { C(); };\n"
+                          "C::C() = default;");
+            ASSERT(db->scopeList.size() == 2);
+            ASSERT(db->scopeList.back().functionList.size() == 1);
+            ASSERT(db->scopeList.back().functionList.front().isDefault() == true);
+        }
+        {
+            GET_SYMBOL_DB("namespace ns {\n"
+                          "class C { C(); };\n"
+                          "}\n"
+                          "using namespace ns;\n"
+                          "C::C() = default;");
+            ASSERT(db->scopeList.size() == 3);
+            ASSERT(db->scopeList.back().functionList.size() == 1);
+            ASSERT(db->scopeList.back().functionList.front().isDefault() == true);
+        }
+    }
+
+    void symboldatabase80() { // #9389
+        {
+            GET_SYMBOL_DB("namespace ns {\n"
+                          "class A {};\n"
+                          "}\n"
+                          "class AA {\n"
+                          "private:\n"
+                          "    void f(const ns::A&);\n"
+                          "};\n"
+                          "using namespace ns;\n"
+                          "void AA::f(const A&) { }");
+            ASSERT(db->scopeList.size() == 5);
+            ASSERT(db->functionScopes.size() == 1);
+            const Scope *scope = db->findScopeByName("AA");
+            ASSERT(scope);
+            ASSERT(scope->functionList.size() == 1);
+            ASSERT(scope->functionList.front().name() == "f");
+            ASSERT(scope->functionList.front().hasBody() == true);
+        }
+        {
+            GET_SYMBOL_DB("namespace ns {\n"
+                          "namespace ns1 {\n"
+                          "class A {};\n"
+                          "}\n"
+                          "}\n"
+                          "class AA {\n"
+                          "private:\n"
+                          "    void f(const ns::ns1::A&);\n"
+                          "};\n"
+                          "using namespace ns::ns1;\n"
+                          "void AA::f(const A&) { }");
+            ASSERT(db->scopeList.size() == 6);
+            ASSERT(db->functionScopes.size() == 1);
+            const Scope *scope = db->findScopeByName("AA");
+            ASSERT(scope);
+            ASSERT(scope->functionList.size() == 1);
+            ASSERT(scope->functionList.front().name() == "f");
+            ASSERT(scope->functionList.front().hasBody() == true);
+        }
+        {
+            GET_SYMBOL_DB("namespace ns {\n"
+                          "namespace ns1 {\n"
+                          "class A {};\n"
+                          "}\n"
+                          "}\n"
+                          "class AA {\n"
+                          "private:\n"
+                          "    void f(const ns::ns1::A&);\n"
+                          "};\n"
+                          "using namespace ns;\n"
+                          "void AA::f(const ns1::A&) { }");
+            ASSERT(db->scopeList.size() == 6);
+            ASSERT(db->functionScopes.size() == 1);
+            const Scope *scope = db->findScopeByName("AA");
+            ASSERT(scope);
+            ASSERT(scope->functionList.size() == 1);
+            ASSERT(scope->functionList.front().name() == "f");
+            ASSERT(scope->functionList.front().hasBody() == true);
+        }
+    }
+
+    void symboldatabase81() { // #9411
+        {
+            GET_SYMBOL_DB("namespace Terminal {\n"
+                          "    class Complete {\n"
+                          "    public:\n"
+                          "        std::string act(const Parser::Action *act);\n"
+                          "    };\n"
+                          "}\n"
+                          "using namespace std;\n"
+                          "using namespace Parser;\n"
+                          "using namespace Terminal;\n"
+                          "string Complete::act(const Action *act) { }");
+            ASSERT(db->scopeList.size() == 4);
+            ASSERT(db->functionScopes.size() == 1);
+            const Scope *scope = db->findScopeByName("Complete");
+            ASSERT(scope);
+            ASSERT(scope->functionList.size() == 1);
+            ASSERT(scope->functionList.front().name() == "act");
+            ASSERT(scope->functionList.front().hasBody() == true);
+        }
+        {
+            GET_SYMBOL_DB("namespace Terminal {\n"
+                          "    class Complete {\n"
+                          "    public:\n"
+                          "        std::string act(const Foo::Parser::Action *act);\n"
+                          "    };\n"
+                          "}\n"
+                          "using namespace std;\n"
+                          "using namespace Foo::Parser;\n"
+                          "using namespace Terminal;\n"
+                          "string Complete::act(const Action *act) { }");
+            ASSERT(db->scopeList.size() == 4);
+            ASSERT(db->functionScopes.size() == 1);
+            const Scope *scope = db->findScopeByName("Complete");
+            ASSERT(scope);
+            ASSERT(scope->functionList.size() == 1);
+            ASSERT(scope->functionList.front().name() == "act");
+            ASSERT(scope->functionList.front().hasBody() == true);
+        }
+    }
+
+    void symboldatabase82() {
+        GET_SYMBOL_DB("namespace foo { void foo() {} }");
+        ASSERT(db->functionScopes.size() == 1);
+        ASSERT_EQUALS(false, db->functionScopes[0]->function->isConstructor());
+    }
+
+    void symboldatabase83() { // #9431
+        const bool old = settings1.debugwarnings;
+        settings1.debugwarnings = true;
+        GET_SYMBOL_DB("struct a { a() noexcept; };\n"
+                      "a::a() noexcept = default;");
+        settings1.debugwarnings = old;
+        const Scope *scope = db->findScopeByName("a");
+        ASSERT(scope);
+        ASSERT(scope->functionList.size() == 1);
+        ASSERT(scope->functionList.front().name() == "a");
+        ASSERT(scope->functionList.front().hasBody() == false);
+        ASSERT(scope->functionList.front().isConstructor() == true);
+        ASSERT(scope->functionList.front().isDefault() == true);
+        ASSERT(scope->functionList.front().isNoExcept() == true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void createSymbolDatabaseFindAllScopes1() {
@@ -5101,7 +5329,7 @@ private:
         ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 4);
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo ( & f ) ;");
-        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 5);
+        ASSERT_EQUALS(true, f && f->function() == nullptr);
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo ( ip ) ;");
         ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 4);
@@ -5113,7 +5341,7 @@ private:
         ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 5);
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo ( \"\" ) ;");
-        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 5);
+        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 1);
     }
 
     void findFunction14() {
@@ -5148,7 +5376,7 @@ private:
         ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 3);
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo ( ccp ) ;");
-        ASSERT_EQUALS(true, f && f->function() == nullptr);
+        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 5);
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo ( f ) ;");
         ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 4);
@@ -5170,6 +5398,7 @@ private:
         GET_SYMBOL_DB("void foo1(int, char* a) { }\n"
                       "void foo1(int, char a) { }\n"
                       "void foo1(int, wchar_t a) { }\n"
+                      "void foo1(int, char16_t a) { }\n"
                       "void foo2(int, float a) { }\n"
                       "void foo2(int, wchar_t a) { }\n"
                       "void foo3(int, float a) { }\n"
@@ -5177,10 +5406,11 @@ private:
                       "void func() {\n"
                       "    foo1(1, 'c');\n"
                       "    foo1(2, L'c');\n"
-                      "    foo2(3, 'c');\n"
-                      "    foo2(4, L'c');\n"
-                      "    foo3(5, 'c');\n"
-                      "    foo3(6, L'c');\n"
+                      "    foo1(3, u'c');\n"
+                      "    foo2(4, 'c');\n"
+                      "    foo2(5, L'c');\n"
+                      "    foo3(6, 'c');\n"
+                      "    foo3(7, L'c');\n"
                       "}");
 
         ASSERT_EQUALS("", errout.str());
@@ -5191,17 +5421,21 @@ private:
         f = Token::findsimplematch(tokenizer.tokens(), "foo1 ( 2");
         ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 3);
 
-        f = Token::findsimplematch(tokenizer.tokens(), "foo2 ( 3");
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 5);
+        f = Token::findsimplematch(tokenizer.tokens(), "foo1 ( 3");
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 4);
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo2 ( 4");
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 5);
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 6);
 
-        f = Token::findsimplematch(tokenizer.tokens(), "foo3 ( 5");
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 7);
+        f = Token::findsimplematch(tokenizer.tokens(), "foo2 ( 5");
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 6);
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo3 ( 6");
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 7);
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 8);
+
+        // Error: ambiguous function call
+        //f = Token::findsimplematch(tokenizer.tokens(), "foo3 ( 7");
+        //ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 8);
     }
 
     void findFunction16() {
@@ -5328,54 +5562,85 @@ private:
                       "};");
 
         ASSERT_EQUALS("", errout.str());
+        ASSERT(db);
 
         const Token *f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v1 ) ) ;");
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 4);
+        ASSERT(f);
+        ASSERT(f->function());
+        ASSERT_EQUALS(4, f->function()->tokenDef->linenr());
 
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v2 ) ) ;");
-        if (std::numeric_limits<char>::is_signed)
-            ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 5);
-        else
-            ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 10);
+        ASSERT(f);
+        ASSERT(f->function());
+        ASSERT_EQUALS(5, f->function()->tokenDef->linenr());
 
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v3 ) ) ;");
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 6);
+        ASSERT(f);
+        ASSERT(f->function());
+        ASSERT_EQUALS(6, f->function()->tokenDef->linenr());
 
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v4 ) ) ;");
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 7);
+        ASSERT(f);
+        ASSERT(f->function());
+        ASSERT_EQUALS(7, f->function()->tokenDef->linenr());
 
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v5 ) ) ;");
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 8);
+        ASSERT(f);
+        ASSERT(f->function());
+        ASSERT_EQUALS(8, f->function()->tokenDef->linenr());
 
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v6 ) ) ;");
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 9);
+        ASSERT(f);
+        ASSERT(f->function());
+        ASSERT_EQUALS(9, f->function()->tokenDef->linenr());
 
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v7 ) ) ;");
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 10);
+        ASSERT(f);
+        ASSERT(f->function());
+        if (std::numeric_limits<char>::is_signed) {
+            ASSERT_EQUALS(10, f->function()->tokenDef->linenr());
+        } else {
+            ASSERT_EQUALS(5, f->function()->tokenDef->linenr());
+        }
 
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v8 ) ) ;");
-        if (std::numeric_limits<char>::is_signed)
-            ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 5);
-        else
-            ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 10);
+        ASSERT(f);
+        ASSERT(f->function());
+        if (std::numeric_limits<char>::is_signed) {
+            ASSERT_EQUALS(5, f->function()->tokenDef->linenr());
+        } else {
+            ASSERT_EQUALS(11, f->function()->tokenDef->linenr());
+        }
 
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v9 ) ) ;");
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 12);
+        ASSERT(f);
+        ASSERT(f->function());
+        ASSERT_EQUALS(12, f->function()->tokenDef->linenr());
 
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v10 ) ) ;");
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 13);
+        ASSERT(f);
+        ASSERT(f->function());
+        ASSERT_EQUALS(13, f->function()->tokenDef->linenr());
 
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v11 ) ) ;");
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 14);
+        ASSERT(f);
+        ASSERT(f->function());
+        ASSERT_EQUALS(14, f->function()->tokenDef->linenr());
 
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v12 ) ) ;");
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 15);
+        ASSERT(f);
+        ASSERT(f->function());
+        ASSERT_EQUALS(15, f->function()->tokenDef->linenr());
 
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v13 ) ) ;");
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 16);
+        ASSERT(f);
+        ASSERT(f->function());
+        ASSERT_EQUALS(16, f->function()->tokenDef->linenr());
 
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v14 ) ) ;");
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 17);
+        ASSERT(f);
+        ASSERT(f->function());
+        ASSERT_EQUALS(17, f->function()->tokenDef->linenr());
     }
 
     void findFunction20() { // # 8280
@@ -5404,6 +5669,240 @@ private:
 
         f = Token::findsimplematch(tokenizer.tokens(), "copy ( * f ) ;");
         ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 12);
+    }
+
+    void findFunction21() { // # 8558
+        GET_SYMBOL_DB("struct foo {\n"
+                      "    int GetThing( ) const { return m_thing; }\n"
+                      "    int* GetThing( ) { return &m_thing; }\n"
+                      "};\n"
+                      "\n"
+                      "void f(foo *myFoo) {\n"
+                      "    int* myThing = myFoo->GetThing();\n"
+                      "}");
+
+        ASSERT(db != nullptr);
+
+        const Token *tok1 = Token::findsimplematch(tokenizer.tokens(), "myFoo . GetThing ( ) ;");
+
+        const Function *f = tok1 && tok1->tokAt(2) ? tok1->tokAt(2)->function() : nullptr;
+        ASSERT(f != nullptr);
+        ASSERT_EQUALS(true, f && !f->isConst());
+    }
+
+    void findFunction22() { // # 8558
+        GET_SYMBOL_DB("struct foo {\n"
+                      "    int GetThing( ) const { return m_thing; }\n"
+                      "    int* GetThing( ) { return &m_thing; }\n"
+                      "};\n"
+                      "\n"
+                      "void f(const foo *myFoo) {\n"
+                      "    int* myThing = myFoo->GetThing();\n"
+                      "}");
+
+        ASSERT(db != nullptr);
+
+        const Token *tok1 = Token::findsimplematch(tokenizer.tokens(), ". GetThing ( ) ;")->next();
+
+        const Function *f = tok1 ? tok1->function() : nullptr;
+        ASSERT(f != nullptr);
+        ASSERT_EQUALS(true, f && f->isConst());
+    }
+
+    void findFunction23() { // # 8558
+        GET_SYMBOL_DB("struct foo {\n"
+                      "    int GetThing( ) const { return m_thing; }\n"
+                      "    int* GetThing( ) { return &m_thing; }\n"
+                      "};\n"
+                      "\n"
+                      "void f(foo *myFoo) {\n"
+                      "    int* myThing = ((const foo *)myFoo)->GetThing();\n"
+                      "}");
+
+        ASSERT(db != nullptr);
+
+        const Token *tok1 = Token::findsimplematch(tokenizer.tokens(), ". GetThing ( ) ;")->next();
+
+        const Function *f = tok1 ? tok1->function() : nullptr;
+        ASSERT(f != nullptr);
+        ASSERT_EQUALS(true, f && f->isConst());
+    }
+
+    void findFunction24() { // smart pointers
+        GET_SYMBOL_DB("struct foo {\n"
+                      "  void dostuff();\n"
+                      "}\n"
+                      "\n"
+                      "void f(std::shared_ptr<foo> p) {\n"
+                      "  p->dostuff();\n"
+                      "}");
+        ASSERT(db != nullptr);
+        const Token *tok1 = Token::findsimplematch(tokenizer.tokens(), ". dostuff ( ) ;")->next();
+        ASSERT(tok1->function());
+    }
+
+    void findFunction25() { // std::vector<std::shared_ptr<Fred>>
+        GET_SYMBOL_DB("struct foo {\n"
+                      "  void dostuff();\n"
+                      "}\n"
+                      "\n"
+                      "void f1(std::vector<std::shared_ptr<foo>> v)\n"
+                      "{\n"
+                      "    for (auto p : v)\n"
+                      "    {\n"
+                      "        p->dostuff();\n"
+                      "    }\n"
+                      "}");
+        ASSERT(db != nullptr);
+        const Token *tok1 = Token::findsimplematch(tokenizer.tokens(), ". dostuff ( ) ;")->next();
+        ASSERT(tok1->function());
+    }
+
+    void findFunction26() {
+        GET_SYMBOL_DB("void dostuff(const int *p) {}\n"
+                      "void dostuff(float) {}\n"
+                      "void f(int *p) {\n"
+                      "  dostuff(p);\n"
+                      "}");
+        ASSERT(db != nullptr);
+        const Token *dostuff1 = Token::findsimplematch(tokenizer.tokens(), "dostuff ( p ) ;");
+        ASSERT(dostuff1->function());
+        ASSERT(dostuff1->function() && dostuff1->function()->token);
+        ASSERT(dostuff1->function() && dostuff1->function()->token && dostuff1->function()->token->linenr() == 1);
+    }
+
+    void findFunction27() {
+        GET_SYMBOL_DB("namespace { void a(int); }\n"
+                      "void f() { a(9); }");
+        const Token *a = Token::findsimplematch(tokenizer.tokens(), "a ( 9 )");
+        ASSERT(a);
+        ASSERT(a->function());
+    }
+
+    void findFunction28() {
+        GET_SYMBOL_DB("namespace { void a(int); }\n"
+                      "struct S {\n"
+                      "  void foo() { a(7); }\n"
+                      "  void a(int);\n"
+                      "};");
+        const Token *a = Token::findsimplematch(tokenizer.tokens(), "a ( 7 )");
+        ASSERT(a);
+        ASSERT(a->function());
+        ASSERT(a->function()->token);
+        ASSERT_EQUALS(4, a->function()->token->linenr());
+    }
+
+    void findFunction29() {
+        GET_SYMBOL_DB("struct A {\n"
+                      "    int foo() const;\n"
+                      "};\n"
+                      "\n"
+                      "struct B {\n"
+                      "    A a;\n"
+                      "};\n"
+                      "\n"
+                      "typedef std::shared_ptr<B> BPtr;\n"
+                      "\n"
+                      "void bar(BPtr b) {\n"
+                      "    int x = b->a.foo();\n"
+                      "}");
+        const Token *foo = Token::findsimplematch(tokenizer.tokens(), "foo ( ) ;");
+        ASSERT(foo);
+        ASSERT(foo->function());
+        ASSERT(foo->function()->token);
+        ASSERT_EQUALS(2, foo->function()->token->linenr());
+    }
+
+    void findFunction30() {
+        GET_SYMBOL_DB("struct A;\n"
+                      "void foo(std::shared_ptr<A> ptr) {\n"
+                      "    int x = ptr->bar();\n"
+                      "}");
+        const Token *bar = Token::findsimplematch(tokenizer.tokens(), "bar ( ) ;");
+        ASSERT(bar);
+        ASSERT(!bar->function());
+    }
+
+    void findFunction31() {
+        GET_SYMBOL_DB("void foo(bool);\n"
+                      "void foo(std::string s);\n"
+                      "void bar() { foo(\"123\"); }");
+        const Token *foo = Token::findsimplematch(tokenizer.tokens(), "foo ( \"123\" ) ;");
+        ASSERT(foo);
+        ASSERT(foo->function());
+        ASSERT(foo->function()->tokenDef);
+        ASSERT_EQUALS(1, foo->function()->tokenDef->linenr());
+    }
+
+    void findFunctionContainer() {
+        {
+            GET_SYMBOL_DB("void dostuff(std::vector<int> v);\n"
+                          "void f(std::vector<int> v) {\n"
+                          "  dostuff(v);\n"
+                          "}");
+            (void)db;
+            const Token *dostuff = Token::findsimplematch(tokenizer.tokens(), "dostuff ( v ) ;");
+            ASSERT(dostuff->function());
+            ASSERT(dostuff->function() && dostuff->function()->tokenDef);
+            ASSERT(dostuff->function() && dostuff->function()->tokenDef && dostuff->function()->tokenDef->linenr() == 1);
+        }
+        {
+            GET_SYMBOL_DB("void dostuff(std::vector<int> v);\n"
+                          "void dostuff(int *i);\n"
+                          "void f(std::vector<char> v) {\n"
+                          "  dostuff(v);\n"
+                          "}");
+            (void)db;
+            const Token *dostuff = Token::findsimplematch(tokenizer.tokens(), "dostuff ( v ) ;");
+            ASSERT(!dostuff->function());
+        }
+    }
+
+    void findFunctionExternC() {
+        GET_SYMBOL_DB("extern \"C\" { void foo(int); }\n"
+                      "void bar() {\n"
+                      "    foo(42);\n"
+                      "}");
+        const Token *a = Token::findsimplematch(tokenizer.tokens(), "foo ( 42 )");
+        ASSERT(a);
+        ASSERT(a->function());
+    }
+
+    void findFunctionGlobalScope() {
+        GET_SYMBOL_DB("struct S {\n"
+                      "    void foo();\n"
+                      "    int x;\n"
+                      "};\n"
+                      "\n"
+                      "int bar(int x);\n"
+                      "\n"
+                      "void S::foo() {\n"
+                      "    x = ::bar(x);\n"
+                      "}");
+        const Token *bar = Token::findsimplematch(tokenizer.tokens(), "bar ( x )");
+        ASSERT(bar);
+        ASSERT(bar->function());
+    }
+
+    void valueTypeMatchParameter() {
+        ValueType vt_int(ValueType::Sign::SIGNED, ValueType::Type::INT, 0);
+        ValueType vt_const_int(ValueType::Sign::SIGNED, ValueType::Type::INT, 0, 1);
+        ASSERT_EQUALS((int)ValueType::MatchResult::SAME, (int)ValueType::matchParameter(&vt_int, &vt_int));
+        ASSERT_EQUALS((int)ValueType::MatchResult::SAME, (int)ValueType::matchParameter(&vt_const_int, &vt_int));
+        ASSERT_EQUALS((int)ValueType::MatchResult::SAME, (int)ValueType::matchParameter(&vt_int, &vt_const_int));
+
+        ValueType vt_char_pointer(ValueType::Sign::SIGNED, ValueType::Type::CHAR, 1);
+        ValueType vt_void_pointer(ValueType::Sign::SIGNED, ValueType::Type::VOID, 1); // compatible
+        ValueType vt_int_pointer(ValueType::Sign::SIGNED, ValueType::Type::INT, 1); // not compatible
+        ASSERT_EQUALS((int)ValueType::MatchResult::FALLBACK1, (int)ValueType::matchParameter(&vt_char_pointer, &vt_void_pointer));
+        ASSERT_EQUALS((int)ValueType::MatchResult::NOMATCH, (int)ValueType::matchParameter(&vt_char_pointer, &vt_int_pointer));
+
+        ValueType vt_char_pointer2(ValueType::Sign::SIGNED, ValueType::Type::CHAR, 2);
+        ASSERT_EQUALS((int)ValueType::MatchResult::FALLBACK1, (int)ValueType::matchParameter(&vt_char_pointer2, &vt_void_pointer));
+
+        ValueType vt_const_float_pointer(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::FLOAT, 1, 1);
+        ValueType vt_long_long(ValueType::Sign::SIGNED, ValueType::Type::LONGLONG, 0, 0);
+        ASSERT_EQUALS((int)ValueType::MatchResult::NOMATCH, (int)ValueType::matchParameter(&vt_const_float_pointer, &vt_long_long));
     }
 
 #define FUNC(x) const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
@@ -5812,6 +6311,24 @@ private:
             ASSERT_EQUALS(Scope::eLambda, scope->type);
         }
     }
+
+
+    void lambda3() {
+        GET_SYMBOL_DB("void func() {\n"
+                      "    auto f = []() mutable {}\n"
+                      "}");
+
+        ASSERT(db && db->scopeList.size() == 3);
+        if (db && db->scopeList.size() == 3) {
+            std::list<Scope>::const_iterator scope = db->scopeList.begin();
+            ASSERT_EQUALS(Scope::eGlobal, scope->type);
+            ++scope;
+            ASSERT_EQUALS(Scope::eFunction, scope->type);
+            ++scope;
+            ASSERT_EQUALS(Scope::eLambda, scope->type);
+        }
+    }
+
     // #6298 "stack overflow in Scope::findFunctionInBase (endless recursion)"
     void circularDependencies() {
         check("template<template<class> class E,class D> class C : E<D> {\n"
@@ -5915,11 +6432,19 @@ private:
         ASSERT_EQUALS("signed long", typeOf("(signed long)1 + (unsigned int)2;", "+"));
         ASSERT_EQUALS("unsigned long", typeOf("(unsigned long)1 + (signed int)2;", "+"));
 
+        // char
+        ASSERT_EQUALS("char", typeOf("'a';", "'a'", "test.cpp"));
+        ASSERT_EQUALS("signed int", typeOf("'a';", "'a'", "test.c"));
+        ASSERT_EQUALS("wchar_t", typeOf("L'a';", "L'a'", "test.cpp"));
+        ASSERT_EQUALS("wchar_t", typeOf("L'a';", "L'a'", "test.c"));
+        ASSERT_EQUALS("signed int", typeOf("'aaa';", "'aaa'", "test.cpp"));
+        ASSERT_EQUALS("signed int", typeOf("'aaa';", "'aaa'", "test.c"));
+
         // char *
         ASSERT_EQUALS("const char *", typeOf("\"hello\" + 1;", "+"));
         ASSERT_EQUALS("const char",  typeOf("\"hello\"[1];", "["));
         ASSERT_EQUALS("const char",  typeOf(";*\"hello\";", "*"));
-        ASSERT_EQUALS("const short *", typeOf("L\"hello\" + 1;", "+"));
+        ASSERT_EQUALS("const wchar_t *", typeOf("L\"hello\" + 1;", "+"));
 
         // Variable calculations
         ASSERT_EQUALS("void *", typeOf("void *p; a = p + 1;", "+"));
@@ -5958,6 +6483,7 @@ private:
         ASSERT_EQUALS("double", typeOf("int x; double y; a = (b ? x : y);", "?"));
         ASSERT_EQUALS("const char *", typeOf("int x; double y; a = (b ? \"a\" : \"b\");", "?"));
         ASSERT_EQUALS("", typeOf("int x; double y; a = (b ? \"a\" : std::string(\"b\"));", "?"));
+        ASSERT_EQUALS("bool", typeOf("int x; a = (b ? false : true);", "?"));
 
         // Boolean operators/literals
         ASSERT_EQUALS("bool", typeOf("a > b;", ">"));
@@ -6012,6 +6538,9 @@ private:
         ASSERT_EQUALS("signed int", typeOf("auto a(int) -> int; a(5);", "( 5"));
         ASSERT_EQUALS("unsigned long", typeOf("sizeof(x);", "("));
         ASSERT_EQUALS("signed int", typeOf("int (*a)(int); a(5);", "( 5"));
+        ASSERT_EQUALS("s", typeOf("struct s { s foo(); s(int, int); }; s s::foo() { return s(1, 2); } ", "( 1 , 2 )"));
+        // Some standard template functions.. TODO library configuration
+        ASSERT_EQUALS("signed int", typeOf("std::move(5);", "( 5 )"));
 
         // struct member..
         ASSERT_EQUALS("signed int", typeOf("struct AB { int a; int b; } ab; x = ab.a;", "."));
@@ -6041,19 +6570,45 @@ private:
 
         // Library types
         {
+            // Char types
+            Settings settings;
+            const Library::PodType char8 = { 1, 'u' };
+            const Library::PodType char16 = { 2, 'u' };
+            const Library::PodType char32 = { 4, 'u' };
+            settings.library.mPodTypes["char8_t"] = char8;
+            settings.library.mPodTypes["char16_t"] = char16;
+            settings.library.mPodTypes["char32_t"] = char32;
+            settings.sizeof_short = 2;
+            settings.sizeof_int = 4;
+
+            ASSERT_EQUALS("unsigned char", typeOf("u8'a';", "u8'a'", "test.cpp", &settings));
+            ASSERT_EQUALS("unsigned short", typeOf("u'a';", "u'a'", "test.cpp", &settings));
+            ASSERT_EQUALS("unsigned int", typeOf("U'a';", "U'a'", "test.cpp", &settings));
+            ASSERT_EQUALS("const unsigned char *", typeOf("u8\"a\";", "u8\"a\"", "test.cpp", &settings));
+            ASSERT_EQUALS("const unsigned short *", typeOf("u\"a\";", "u\"a\"", "test.cpp", &settings));
+            ASSERT_EQUALS("const unsigned int *", typeOf("U\"a\";", "U\"a\"", "test.cpp", &settings));
+        }
+        {
             // PodType
             Settings settingsWin64;
             settingsWin64.platformType = Settings::Win64;
             const Library::PodType u32 = { 4, 'u' };
+            const Library::PodType podtype2 = { 0, 'u', Library::PodType::INT };
             settingsWin64.library.mPodTypes["u32"] = u32;
             settingsWin64.library.mPodTypes["xyz::x"] = u32;
+            settingsWin64.library.mPodTypes["podtype2"] = podtype2;
             ValueType vt;
             ASSERT_EQUALS(true, vt.fromLibraryType("u32", &settingsWin64));
             ASSERT_EQUALS(true, vt.fromLibraryType("xyz::x", &settingsWin64));
             ASSERT_EQUALS(ValueType::Type::INT, vt.type);
+            ValueType vt2;
+            ASSERT_EQUALS(true, vt2.fromLibraryType("podtype2", &settingsWin64));
+            ASSERT_EQUALS(ValueType::Type::INT, vt2.type);
             ASSERT_EQUALS("unsigned int *", typeOf(";void *data = new u32[10];", "new", "test.cpp", &settingsWin64));
             ASSERT_EQUALS("unsigned int *", typeOf(";void *data = new xyz::x[10];", "new", "test.cpp", &settingsWin64));
             ASSERT_EQUALS("unsigned int", typeOf("; x = (xyz::x)12;", "(", "test.cpp", &settingsWin64));
+            ASSERT_EQUALS("unsigned int", typeOf(";u32(12);", "(", "test.cpp", &settingsWin64));
+            ASSERT_EQUALS("unsigned int", typeOf("x = u32(y[i]);", "(", "test.cpp", &settingsWin64));
         }
         {
             // PlatformType
@@ -6067,23 +6622,45 @@ private:
             ASSERT_EQUALS(ValueType::Type::INT, vt.type);
         }
         {
+            // PlatformType - wchar_t
+            Settings settingsWin64;
+            settingsWin64.platformType = Settings::Win64;
+            Library::PlatformType lpctstr;
+            lpctstr.mType = "wchar_t";
+            settingsWin64.library.mPlatforms[settingsWin64.platformString()].mPlatformTypes["LPCTSTR"] = lpctstr;
+            ValueType vt;
+            ASSERT_EQUALS(true, vt.fromLibraryType("LPCTSTR", &settingsWin64));
+            ASSERT_EQUALS(ValueType::Type::WCHAR_T, vt.type);
+        }
+        {
             // Container
             Settings sC;
             Library::Container c;
             c.startPattern = "C";
+            c.startPattern2 = "C !!::";
             sC.library.containers["C"] = c;
             ASSERT_EQUALS("container(C) *", typeOf("C*c=new C;","new","test.cpp",&sC));
             ASSERT_EQUALS("container(C) *", typeOf("x=(C*)c;","(","test.cpp",&sC));
+            ASSERT_EQUALS("container(C)", typeOf("C c = C();","(","test.cpp",&sC));
         }
         {
             // Container (vector)
             Settings set;
             Library::Container vector;
-            vector.startPattern = "Vector";
+            vector.startPattern = "Vector <";
+            vector.startPattern2 = "Vector !!::";
             vector.type_templateArgNo = 0;
             vector.arrayLike_indexOp = true;
             set.library.containers["Vector"] = vector;
+            Library::Container string;
+            string.startPattern = "test :: string";
+            string.startPattern2 = "test :: string !!::";
+            string.arrayLike_indexOp = string.stdStringLike = true;
+            set.library.containers["test::string"] = string;
             ASSERT_EQUALS("signed int", typeOf("Vector<int> v; v[0]=3;", "[", "test.cpp", &set));
+            ASSERT_EQUALS("container(test :: string)", typeOf("return test::string();", "(", "test.cpp", &set));
+            ASSERT_EQUALS("container(test :: string)", typeOf("void foo(Vector<test::string> v) { for (auto s: v) { x=s+s; } }", "s", "test.cpp", &set));
+            ASSERT_EQUALS("container(test :: string)", typeOf("void foo(Vector<test::string> v) { for (auto s: v) { x=s+s; } }", "+", "test.cpp", &set));
         }
 
         // new
@@ -6097,12 +6674,14 @@ private:
         ASSERT_EQUALS("signed int *", typeOf("; auto data = new (nothrow) int[100];", "data"));
         ASSERT_EQUALS("signed int *", typeOf("; auto data = new (std::nothrow) int[100];", "data"));
         ASSERT_EQUALS("const signed short", typeOf("short values[10]; void f() { for (const auto *x : values); }", "x"));
-        ASSERT_EQUALS("signed int *", typeOf("MACRO(test) void test() { auto x = (int*)y; }", "x")); // #7931 (garbage?)
         ASSERT_EQUALS("const signed int", typeOf("; const auto x = 3;", "x"));
 
         // Variable declaration
         ASSERT_EQUALS("char *", typeOf("; char abc[] = \"abc\";", "["));
         ASSERT_EQUALS("", typeOf("; int x[10] = { [3]=1 };", "[ 3 ]"));
+
+        // std::make_shared
+        ASSERT_EQUALS("smart-pointer<C>", typeOf("class C {}; x = std::make_shared<C>();", "("));
     }
 
     void variadic1() { // #7453
@@ -6433,79 +7012,79 @@ private:
                       "    return vec[0].i;\n"
                       "}");
         const Token *autotok = Token::findsimplematch(tokenizer.tokens(), "auto a");
-        ASSERT(db && autotok && autotok->valueType() && autotok->valueType()->pointer == 0 && autotok->valueType()->constness == 0 && autotok->valueType()->typeScope && autotok->valueType()->typeScope->definedType && autotok->valueType()->typeScope->definedType->name() == "S");
-        ASSERT(db && autotok && autotok->type() && autotok->type()->name() == "S");
+        ASSERT(autotok && autotok->valueType() && autotok->valueType()->pointer == 0 && autotok->valueType()->constness == 0 && autotok->valueType()->typeScope && autotok->valueType()->typeScope->definedType && autotok->valueType()->typeScope->definedType->name() == "S");
+        ASSERT(autotok && autotok->type() && autotok->type()->name() == "S");
 
         autotok = Token::findsimplematch(autotok->next(), "auto & b");
-        ASSERT(db && autotok && autotok->valueType() && autotok->valueType()->pointer == 0 && autotok->valueType()->constness == 0 && autotok->valueType()->typeScope && autotok->valueType()->typeScope->definedType && autotok->valueType()->typeScope->definedType->name() == "S");
-        ASSERT(db && autotok && autotok->type() && autotok->type()->name() == "S");
+        ASSERT(autotok && autotok->valueType() && autotok->valueType()->pointer == 0 && autotok->valueType()->constness == 0 && autotok->valueType()->typeScope && autotok->valueType()->typeScope->definedType && autotok->valueType()->typeScope->definedType->name() == "S");
+        ASSERT(autotok && autotok->type() && autotok->type()->name() == "S");
 
         autotok = Token::findsimplematch(autotok->next(), "auto & c");
-        ASSERT(db && autotok && autotok->valueType() && autotok->valueType()->pointer == 0 && autotok->valueType()->constness == 0 && autotok->valueType()->typeScope && autotok->valueType()->typeScope->definedType && autotok->valueType()->typeScope->definedType->name() == "S");
-        ASSERT(db && autotok && autotok->type() && autotok->type()->name() == "S");
+        ASSERT(autotok && autotok->valueType() && autotok->valueType()->pointer == 0 && autotok->valueType()->constness == 0 && autotok->valueType()->typeScope && autotok->valueType()->typeScope->definedType && autotok->valueType()->typeScope->definedType->name() == "S");
+        ASSERT(autotok && autotok->type() && autotok->type()->name() == "S");
 
         autotok = Token::findsimplematch(autotok->next(), "auto * d");
-        ASSERT(db && autotok && autotok->valueType() && autotok->valueType()->pointer == 0 && autotok->valueType()->constness == 0 && autotok->valueType()->typeScope && autotok->valueType()->typeScope->definedType && autotok->valueType()->typeScope->definedType->name() == "S");
-        ASSERT(db && autotok && autotok->type() && autotok->type()->name() == "S");
+        ASSERT(autotok && autotok->valueType() && autotok->valueType()->pointer == 0 && autotok->valueType()->constness == 0 && autotok->valueType()->typeScope && autotok->valueType()->typeScope->definedType && autotok->valueType()->typeScope->definedType->name() == "S");
+        ASSERT(autotok && autotok->type() && autotok->type()->name() == "S");
 
         autotok = Token::findsimplematch(autotok->next(), "auto * e");
-        ASSERT(db && autotok && autotok->valueType() && autotok->valueType()->pointer == 0 && autotok->valueType()->constness == 0 && autotok->valueType()->typeScope && autotok->valueType()->typeScope->definedType && autotok->valueType()->typeScope->definedType->name() == "S");
-        ASSERT(db && autotok && autotok->type() && autotok->type()->name() == "S");
+        ASSERT(autotok && autotok->valueType() && autotok->valueType()->pointer == 0 && autotok->valueType()->constness == 0 && autotok->valueType()->typeScope && autotok->valueType()->typeScope->definedType && autotok->valueType()->typeScope->definedType->name() == "S");
+        ASSERT(autotok && autotok->type() && autotok->type()->name() == "S");
 
         vartok = Token::findsimplematch(tokenizer.tokens(), "a :");
-        ASSERT(db && vartok && vartok->valueType() && vartok->valueType()->typeScope && vartok->valueType()->typeScope->definedType && vartok->valueType()->typeScope->definedType->name() == "S");
-        ASSERT(db && vartok && vartok->variable() && !vartok->variable()->isReference() && !vartok->variable()->isPointer());
-        ASSERT(db && vartok && vartok->variable() && vartok->variable()->type() && vartok->variable()->type()->name() == "S");
+        ASSERT(vartok && vartok->valueType() && vartok->valueType()->typeScope && vartok->valueType()->typeScope->definedType && vartok->valueType()->typeScope->definedType->name() == "S");
+        ASSERT(vartok && vartok->variable() && !vartok->variable()->isReference() && !vartok->variable()->isPointer());
+        ASSERT(vartok && vartok->variable() && vartok->variable()->type() && vartok->variable()->type()->name() == "S");
 
         vartok = Token::findsimplematch(vartok->next(), "b :");
-        ASSERT(db && vartok && vartok->valueType() && vartok->valueType()->typeScope && vartok->valueType()->typeScope->definedType && vartok->valueType()->typeScope->definedType->name() == "S");
-        ASSERT(db && vartok && vartok->variable() && vartok->variable()->isReference() && !vartok->variable()->isPointer() && !vartok->variable()->isConst());
+        ASSERT(vartok && vartok->valueType() && vartok->valueType()->typeScope && vartok->valueType()->typeScope->definedType && vartok->valueType()->typeScope->definedType->name() == "S");
+        ASSERT(vartok && vartok->variable() && vartok->variable()->isReference() && !vartok->variable()->isPointer() && !vartok->variable()->isConst());
 
         vartok = Token::findsimplematch(vartok->next(), "c :");
-        ASSERT(db && vartok && vartok->valueType() && vartok->valueType()->typeScope && vartok->valueType()->typeScope->definedType && vartok->valueType()->typeScope->definedType->name() == "S");
-        ASSERT(db && vartok && vartok->variable() && vartok->variable()->isReference() && !vartok->variable()->isPointer() && vartok->variable()->isConst());
+        ASSERT(vartok && vartok->valueType() && vartok->valueType()->typeScope && vartok->valueType()->typeScope->definedType && vartok->valueType()->typeScope->definedType->name() == "S");
+        ASSERT(vartok && vartok->variable() && vartok->variable()->isReference() && !vartok->variable()->isPointer() && vartok->variable()->isConst());
 
         vartok = Token::findsimplematch(vartok->next(), "d :");
-        ASSERT(db && vartok && vartok->valueType() && vartok->valueType()->typeScope && vartok->valueType()->typeScope->definedType && vartok->valueType()->typeScope->definedType->name() == "S");
-        ASSERT(db && vartok && vartok->variable() && !vartok->variable()->isReference() && vartok->variable()->isPointer() && !vartok->variable()->isConst());
+        ASSERT(vartok && vartok->valueType() && vartok->valueType()->typeScope && vartok->valueType()->typeScope->definedType && vartok->valueType()->typeScope->definedType->name() == "S");
+        ASSERT(vartok && vartok->variable() && !vartok->variable()->isReference() && vartok->variable()->isPointer() && !vartok->variable()->isConst());
 
         vartok = Token::findsimplematch(vartok->next(), "e :");
-        ASSERT(db && vartok && vartok->valueType() && vartok->valueType()->typeScope && vartok->valueType()->typeScope->definedType && vartok->valueType()->typeScope->definedType->name() == "S");
-        ASSERT(db && vartok && vartok->variable() && !vartok->variable()->isReference() && vartok->variable()->isPointer() && vartok->variable()->isConst());
+        ASSERT(vartok && vartok->valueType() && vartok->valueType()->typeScope && vartok->valueType()->typeScope->definedType && vartok->valueType()->typeScope->definedType->name() == "S");
+        ASSERT(vartok && vartok->variable() && !vartok->variable()->isReference() && vartok->variable()->isPointer() && vartok->variable()->isConst());
 
 
         vartok = Token::findsimplematch(tokenizer.tokens(), "a . i");
-        ASSERT(db && vartok && vartok->variable() && !vartok->variable()->isPointer() && !vartok->variable()->isReference() && vartok->variable()->type() && vartok->variable()->type()->name() == "S");
+        ASSERT(vartok && vartok->variable() && !vartok->variable()->isPointer() && !vartok->variable()->isReference() && vartok->variable()->type() && vartok->variable()->type()->name() == "S");
 
         vartok = Token::findsimplematch(vartok, "i");
-        ASSERT(db && vartok && vartok->variable() && vartok->variable()->typeStartToken()->str() == "int");
+        ASSERT(vartok && vartok->variable() && vartok->variable()->typeStartToken()->str() == "int");
 
         vartok = Token::findsimplematch(vartok->next(), "b . i");
-        ASSERT(db && vartok && vartok->variable() && !vartok->variable()->isPointer() && vartok->variable()->isReference() && vartok->variable()->type() && vartok->variable()->type()->name() == "S");
+        ASSERT(vartok && vartok->variable() && !vartok->variable()->isPointer() && vartok->variable()->isReference() && vartok->variable()->type() && vartok->variable()->type()->name() == "S");
 
         vartok = Token::findsimplematch(vartok->next(), "i");
-        ASSERT(db && vartok && vartok->variable() && vartok->variable()->typeStartToken()->str() == "int");
+        ASSERT(vartok && vartok->variable() && vartok->variable()->typeStartToken()->str() == "int");
 
         vartok = Token::findsimplematch(vartok->next(), "c . i");
-        ASSERT(db && vartok && vartok->variable() && !vartok->variable()->isPointer() && vartok->variable()->isReference() && vartok->variable()->type() && vartok->variable()->type()->name() == "S");
+        ASSERT(vartok && vartok->variable() && !vartok->variable()->isPointer() && vartok->variable()->isReference() && vartok->variable()->type() && vartok->variable()->type()->name() == "S");
 
         vartok = Token::findsimplematch(vartok->next(), "i");
-        ASSERT(db && vartok && vartok->variable() && vartok->variable()->typeStartToken()->str() == "int");
+        ASSERT(vartok && vartok->variable() && vartok->variable()->typeStartToken()->str() == "int");
 
         vartok = Token::findsimplematch(vartok->next(), "d . i");
-        ASSERT(db && vartok && vartok->variable() && vartok->variable()->isPointer() && !vartok->variable()->isReference() && vartok->variable()->type() && vartok->variable()->type()->name() == "S");
+        ASSERT(vartok && vartok->variable() && vartok->variable()->isPointer() && !vartok->variable()->isReference() && vartok->variable()->type() && vartok->variable()->type()->name() == "S");
 
         vartok = Token::findsimplematch(vartok->next(), "i");
-        ASSERT(db && vartok && vartok->variable() && vartok->variable()->typeStartToken()->str() == "int");
+        ASSERT(vartok && vartok->variable() && vartok->variable()->typeStartToken()->str() == "int");
 
         vartok = Token::findsimplematch(vartok->next(), "e . i");
-        ASSERT(db && vartok && vartok->variable() && vartok->variable()->isPointer() && !vartok->variable()->isReference() && vartok->variable()->type() && vartok->variable()->type()->name() == "S");
+        ASSERT(vartok && vartok->variable() && vartok->variable()->isPointer() && !vartok->variable()->isReference() && vartok->variable()->type() && vartok->variable()->type()->name() == "S");
 
         vartok = Token::findsimplematch(vartok->next(), "i");
-        ASSERT(db && vartok && vartok->variable() && vartok->variable()->typeStartToken()->str() == "int");
+        ASSERT(vartok && vartok->variable() && vartok->variable()->typeStartToken()->str() == "int");
 
         vartok = Token::findsimplematch(vartok->next(), "i");
-        ASSERT(db && vartok && vartok->variable() && vartok->variable()->typeStartToken()->str() == "int");
+        ASSERT(vartok && vartok->variable() && vartok->variable()->typeStartToken()->str() == "int");
     }
 
     void auto6() {  // #7963 (segmentation fault)
@@ -6528,7 +7107,6 @@ private:
                       "for ( const auto & cur : mIndexedBindings ) {}\n"
                       "return mBuffersForTF ;\n"
                       "}");
-        ASSERT_EQUALS(true,  db != nullptr); // not null
     }
 
     void auto7() {
@@ -6558,196 +7136,178 @@ private:
         const Token *autotok = Token::findsimplematch(tokenizer.tokens(), "auto v1");
 
         // auto = int, v1 = int
-        ASSERT(db && autotok && autotok->valueType());
-        if (db && autotok && autotok->valueType()) {
-            ASSERT_EQUALS(0, autotok->valueType()->constness);
-            ASSERT_EQUALS(0, autotok->valueType()->pointer);
-            ASSERT_EQUALS(ValueType::SIGNED, autotok->valueType()->sign);
-            ASSERT_EQUALS(ValueType::INT, autotok->valueType()->type);
-        }
+        ASSERT(autotok);
+        ASSERT(autotok->valueType());
+        ASSERT_EQUALS(0, autotok->valueType()->constness);
+        ASSERT_EQUALS(0, autotok->valueType()->pointer);
+        ASSERT_EQUALS(ValueType::SIGNED, autotok->valueType()->sign);
+        ASSERT_EQUALS(ValueType::INT, autotok->valueType()->type);
         vartok = Token::findsimplematch(autotok, "v1 =");
-        ASSERT(db && vartok && vartok->valueType());
-        if (db && vartok && vartok->valueType()) {
-            ASSERT_EQUALS(0, vartok->valueType()->constness);
-            ASSERT_EQUALS(0, vartok->valueType()->pointer);
-            ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
-            ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
-        }
+        ASSERT(autotok);
+        ASSERT(autotok->valueType());
+        ASSERT_EQUALS(0, vartok->valueType()->constness);
+        ASSERT_EQUALS(0, vartok->valueType()->pointer);
+        ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
+        ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
 
         // auto = int, v2 = int
         autotok = Token::findsimplematch(autotok, "auto v2");
-        ASSERT(db && autotok && autotok->valueType());
-        if (db && autotok && autotok->valueType()) {
-            ASSERT_EQUALS(0, autotok->valueType()->constness);
-            ASSERT_EQUALS(0, autotok->valueType()->pointer);
-            ASSERT_EQUALS(ValueType::SIGNED, autotok->valueType()->sign);
-            ASSERT_EQUALS(ValueType::INT, autotok->valueType()->type);
-        }
+        ASSERT(autotok);
+        ASSERT(autotok->valueType());
+        ASSERT_EQUALS(0, autotok->valueType()->constness);
+        ASSERT_EQUALS(0, autotok->valueType()->pointer);
+        ASSERT_EQUALS(ValueType::SIGNED, autotok->valueType()->sign);
+        ASSERT_EQUALS(ValueType::INT, autotok->valueType()->type);
         vartok = Token::findsimplematch(autotok, "v2 =");
-        ASSERT(db && vartok && vartok->valueType());
-        if (db && vartok && vartok->valueType()) {
-            ASSERT_EQUALS(0, vartok->valueType()->constness);
-            ASSERT_EQUALS(0, vartok->valueType()->pointer);
-            ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
-            ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
-        }
+        ASSERT(autotok);
+        ASSERT(autotok->valueType());
+        ASSERT_EQUALS(0, vartok->valueType()->constness);
+        ASSERT_EQUALS(0, vartok->valueType()->pointer);
+        ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
+        ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
 
         // auto = const int *, v3 = const int * (const int[10])
         autotok = Token::findsimplematch(autotok, "auto v3");
-        ASSERT(db && autotok && autotok->valueType());
-        if (db && autotok && autotok->valueType()) {
-            ASSERT_EQUALS(1, autotok->valueType()->constness);
-            ASSERT_EQUALS(1, autotok->valueType()->pointer);
-            ASSERT_EQUALS(ValueType::SIGNED, autotok->valueType()->sign);
-            ASSERT_EQUALS(ValueType::INT, autotok->valueType()->type);
-        }
+        ASSERT(autotok);
+        ASSERT(autotok->valueType());
+        ASSERT_EQUALS(1, autotok->valueType()->constness);
+        ASSERT_EQUALS(1, autotok->valueType()->pointer);
+        ASSERT_EQUALS(ValueType::SIGNED, autotok->valueType()->sign);
+        ASSERT_EQUALS(ValueType::INT, autotok->valueType()->type);
         vartok = Token::findsimplematch(autotok, "v3 =");
-        ASSERT(db && vartok && vartok->valueType());
-        if (db && vartok && vartok->valueType()) {
-            ASSERT_EQUALS(1, vartok->valueType()->constness);
-            ASSERT_EQUALS(1, vartok->valueType()->pointer);
-            ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
-            ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
-        }
+        ASSERT(autotok);
+        ASSERT(autotok->valueType());
+        ASSERT_EQUALS(1, vartok->valueType()->constness);
+        ASSERT_EQUALS(1, vartok->valueType()->pointer);
+        ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
+        ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
 
         // auto = int *, v4 = const int * (const int[10])
         autotok = Token::findsimplematch(autotok, "auto v4");
-        ASSERT(db && autotok && autotok->valueType());
-        if (db && autotok && autotok->valueType()) {
-            TODO_ASSERT_EQUALS(0, 1, autotok->valueType()->constness);
-            ASSERT_EQUALS(1, autotok->valueType()->pointer);
-            ASSERT_EQUALS(ValueType::SIGNED, autotok->valueType()->sign);
-            ASSERT_EQUALS(ValueType::INT, autotok->valueType()->type);
-        }
+        ASSERT(autotok);
+        ASSERT(autotok->valueType());
+        TODO_ASSERT_EQUALS(0, 1, autotok->valueType()->constness);
+        ASSERT_EQUALS(1, autotok->valueType()->pointer);
+        ASSERT_EQUALS(ValueType::SIGNED, autotok->valueType()->sign);
+        ASSERT_EQUALS(ValueType::INT, autotok->valueType()->type);
         vartok = Token::findsimplematch(autotok, "v4 =");
-        ASSERT(db && vartok && vartok->valueType());
-        if (db && vartok && vartok->valueType()) {
-            ASSERT_EQUALS(1, vartok->valueType()->constness);
-            ASSERT_EQUALS(1, vartok->valueType()->pointer);
-            ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
-            ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
-        }
+        ASSERT(autotok);
+        ASSERT(autotok->valueType());
+        ASSERT_EQUALS(1, vartok->valueType()->constness);
+        ASSERT_EQUALS(1, vartok->valueType()->pointer);
+        ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
+        ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
 
         // auto = int, v5 = const int * (const int[10])
         autotok = Token::findsimplematch(autotok, "auto * v5");
-        ASSERT(db && autotok && autotok->valueType());
-        if (db && autotok && autotok->valueType()) {
-            TODO_ASSERT_EQUALS(0, 1, autotok->valueType()->constness);
-            ASSERT_EQUALS(0, autotok->valueType()->pointer);
-            ASSERT_EQUALS(ValueType::SIGNED, autotok->valueType()->sign);
-            ASSERT_EQUALS(ValueType::INT, autotok->valueType()->type);
-        }
+        ASSERT(autotok);
+        ASSERT(autotok->valueType());
+        TODO_ASSERT_EQUALS(0, 1, autotok->valueType()->constness);
+        ASSERT_EQUALS(0, autotok->valueType()->pointer);
+        ASSERT_EQUALS(ValueType::SIGNED, autotok->valueType()->sign);
+        ASSERT_EQUALS(ValueType::INT, autotok->valueType()->type);
         vartok = Token::findsimplematch(autotok, "v5 =");
-        ASSERT(db && vartok && vartok->valueType());
-        if (db && vartok && vartok->valueType()) {
-            ASSERT_EQUALS(1, vartok->valueType()->constness);
-            ASSERT_EQUALS(1, vartok->valueType()->pointer);
-            ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
-            ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
-        }
+        ASSERT(autotok);
+        ASSERT(autotok->valueType());
+        ASSERT_EQUALS(1, vartok->valueType()->constness);
+        ASSERT_EQUALS(1, vartok->valueType()->pointer);
+        ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
+        ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
 
         // auto = int, v6 = int
         autotok = Token::findsimplematch(autotok, "auto v6");
-        ASSERT(db && autotok && autotok->valueType());
-        if (db && autotok && autotok->valueType()) {
-            ASSERT_EQUALS(0, autotok->valueType()->constness);
-            ASSERT_EQUALS(0, autotok->valueType()->pointer);
-            ASSERT_EQUALS(ValueType::SIGNED, autotok->valueType()->sign);
-            ASSERT_EQUALS(ValueType::INT, autotok->valueType()->type);
-        }
+        ASSERT(autotok);
+        ASSERT(autotok->valueType());
+        ASSERT_EQUALS(0, autotok->valueType()->constness);
+        ASSERT_EQUALS(0, autotok->valueType()->pointer);
+        ASSERT_EQUALS(ValueType::SIGNED, autotok->valueType()->sign);
+        ASSERT_EQUALS(ValueType::INT, autotok->valueType()->type);
         vartok = Token::findsimplematch(autotok, "v6 =");
-        ASSERT(db && vartok && vartok->valueType());
-        if (db && vartok && vartok->valueType()) {
-            ASSERT_EQUALS(0, vartok->valueType()->constness);
-            ASSERT_EQUALS(0, vartok->valueType()->pointer);
-            ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
-            ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
-        }
+        ASSERT(autotok);
+        ASSERT(autotok->valueType());
+        ASSERT_EQUALS(0, vartok->valueType()->constness);
+        ASSERT_EQUALS(0, vartok->valueType()->pointer);
+        ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
+        ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
 
         // auto = int, v7 = int
         autotok = Token::findsimplematch(autotok, "auto v7");
-        ASSERT(db && autotok && autotok->valueType());
-        if (db && autotok && autotok->valueType()) {
-            ASSERT_EQUALS(0, autotok->valueType()->constness);
-            ASSERT_EQUALS(0, autotok->valueType()->pointer);
-            ASSERT_EQUALS(ValueType::SIGNED, autotok->valueType()->sign);
-            ASSERT_EQUALS(ValueType::INT, autotok->valueType()->type);
-        }
+        ASSERT(autotok);
+        ASSERT(autotok->valueType());
+        ASSERT_EQUALS(0, autotok->valueType()->constness);
+        ASSERT_EQUALS(0, autotok->valueType()->pointer);
+        ASSERT_EQUALS(ValueType::SIGNED, autotok->valueType()->sign);
+        ASSERT_EQUALS(ValueType::INT, autotok->valueType()->type);
         vartok = Token::findsimplematch(autotok, "v7 =");
-        ASSERT(db && vartok && vartok->valueType());
-        if (db && vartok && vartok->valueType()) {
-            ASSERT_EQUALS(0, vartok->valueType()->constness);
-            ASSERT_EQUALS(0, vartok->valueType()->pointer);
-            ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
-            ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
-        }
+        ASSERT(autotok);
+        ASSERT(autotok->valueType());
+        ASSERT_EQUALS(0, vartok->valueType()->constness);
+        ASSERT_EQUALS(0, vartok->valueType()->pointer);
+        ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
+        ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
 
         // auto = const int *, v8 = const int * (const int[10])
         autotok = Token::findsimplematch(autotok, "auto v8");
-        ASSERT(db && autotok && autotok->valueType());
-        if (db && autotok && autotok->valueType()) {
-            ASSERT_EQUALS(1, autotok->valueType()->constness);
-            ASSERT_EQUALS(1, autotok->valueType()->pointer);
-            ASSERT_EQUALS(ValueType::SIGNED, autotok->valueType()->sign);
-            ASSERT_EQUALS(ValueType::INT, autotok->valueType()->type);
-        }
+        ASSERT(autotok);
+        ASSERT(autotok->valueType());
+        ASSERT_EQUALS(1, autotok->valueType()->constness);
+        ASSERT_EQUALS(1, autotok->valueType()->pointer);
+        ASSERT_EQUALS(ValueType::SIGNED, autotok->valueType()->sign);
+        ASSERT_EQUALS(ValueType::INT, autotok->valueType()->type);
         vartok = Token::findsimplematch(autotok, "v8 =");
-        ASSERT(db && vartok && vartok->valueType());
-        if (db && vartok && vartok->valueType()) {
-            ASSERT_EQUALS(1, vartok->valueType()->constness);
-            ASSERT_EQUALS(1, vartok->valueType()->pointer);
-            ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
-            ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
-        }
+        ASSERT(autotok);
+        ASSERT(autotok->valueType());
+        ASSERT_EQUALS(1, vartok->valueType()->constness);
+        ASSERT_EQUALS(1, vartok->valueType()->pointer);
+        ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
+        ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
 
         // auto = int *, v9 = const int * (const int[10])
         autotok = Token::findsimplematch(autotok, "auto v9");
-        ASSERT(db && autotok && autotok->valueType());
-        if (db && autotok && autotok->valueType()) {
-            TODO_ASSERT_EQUALS(0, 1, autotok->valueType()->constness);
-            ASSERT_EQUALS(1, autotok->valueType()->pointer);
-            ASSERT_EQUALS(ValueType::SIGNED, autotok->valueType()->sign);
-            ASSERT_EQUALS(ValueType::INT, autotok->valueType()->type);
-        }
+        ASSERT(autotok);
+        ASSERT(autotok->valueType());
+        TODO_ASSERT_EQUALS(0, 1, autotok->valueType()->constness);
+        ASSERT_EQUALS(1, autotok->valueType()->pointer);
+        ASSERT_EQUALS(ValueType::SIGNED, autotok->valueType()->sign);
+        ASSERT_EQUALS(ValueType::INT, autotok->valueType()->type);
         vartok = Token::findsimplematch(autotok, "v9 =");
-        ASSERT(db && vartok && vartok->valueType());
-        if (db && vartok && vartok->valueType()) {
-            ASSERT_EQUALS(1, vartok->valueType()->constness);
-            ASSERT_EQUALS(1, vartok->valueType()->pointer);
-            ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
-            ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
-        }
+        ASSERT(autotok);
+        ASSERT(autotok->valueType());
+        ASSERT_EQUALS(1, vartok->valueType()->constness);
+        ASSERT_EQUALS(1, vartok->valueType()->pointer);
+        ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
+        ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
 
         // auto = int, v10 = const int * (const int[10])
         autotok = Token::findsimplematch(autotok, "auto * v10");
-        ASSERT(db && autotok && autotok->valueType());
-        if (db && autotok && autotok->valueType()) {
-            TODO_ASSERT_EQUALS(0, 1, autotok->valueType()->constness);
-            ASSERT_EQUALS(0, autotok->valueType()->pointer);
-            ASSERT_EQUALS(ValueType::SIGNED, autotok->valueType()->sign);
-            ASSERT_EQUALS(ValueType::INT, autotok->valueType()->type);
-        }
+        ASSERT(autotok);
+        ASSERT(autotok->valueType());
+        TODO_ASSERT_EQUALS(0, 1, autotok->valueType()->constness);
+        ASSERT_EQUALS(0, autotok->valueType()->pointer);
+        ASSERT_EQUALS(ValueType::SIGNED, autotok->valueType()->sign);
+        ASSERT_EQUALS(ValueType::INT, autotok->valueType()->type);
         vartok = Token::findsimplematch(autotok, "v10 =");
-        ASSERT(db && vartok && vartok->valueType());
-        if (db && vartok && vartok->valueType()) {
-            ASSERT_EQUALS(1, vartok->valueType()->constness);
-            ASSERT_EQUALS(1, vartok->valueType()->pointer);
-            ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
-            ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
-        }
+        ASSERT(autotok);
+        ASSERT(autotok->valueType());
+        ASSERT_EQUALS(1, vartok->valueType()->constness);
+        ASSERT_EQUALS(1, vartok->valueType()->pointer);
+        ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
+        ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
 
         // auto = int, v11 = int
         autotok = Token::findsimplematch(autotok, "auto v11");
-        TODO_ASSERT(db && autotok && autotok->valueType());
-        if (db && autotok && autotok->valueType()) {
+        ASSERT(autotok);
+        TODO_ASSERT(autotok->valueType());
+        if (autotok->valueType()) {
             ASSERT_EQUALS(0, autotok->valueType()->constness);
             ASSERT_EQUALS(0, autotok->valueType()->pointer);
             ASSERT_EQUALS(ValueType::SIGNED, autotok->valueType()->sign);
             ASSERT_EQUALS(ValueType::INT, autotok->valueType()->type);
         }
         vartok = autotok->next();
-        TODO_ASSERT(db && vartok && vartok->valueType());
-        if (db && vartok && vartok->valueType()) {
+        ASSERT(autotok);
+        TODO_ASSERT(autotok->valueType());
+        if (vartok->valueType()) {
             ASSERT_EQUALS(0, vartok->valueType()->constness);
             ASSERT_EQUALS(0, vartok->valueType()->pointer);
             ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
@@ -6762,22 +7322,20 @@ private:
                       "}");
         const Token *autotok = Token::findsimplematch(tokenizer.tokens(), "auto it");
 
-        ASSERT(db && autotok && autotok->valueType());
-        if (db && autotok && autotok->valueType()) {
-            ASSERT_EQUALS(0, autotok->valueType()->constness);
-            ASSERT_EQUALS(0, autotok->valueType()->pointer);
-            ASSERT_EQUALS(ValueType::UNKNOWN_SIGN, autotok->valueType()->sign);
-            ASSERT_EQUALS(ValueType::ITERATOR, autotok->valueType()->type);
-        }
+        ASSERT(autotok);
+        ASSERT(autotok->valueType());
+        ASSERT_EQUALS(0, autotok->valueType()->constness);
+        ASSERT_EQUALS(0, autotok->valueType()->pointer);
+        ASSERT_EQUALS(ValueType::UNKNOWN_SIGN, autotok->valueType()->sign);
+        ASSERT_EQUALS(ValueType::ITERATOR, autotok->valueType()->type);
 
         vartok = Token::findsimplematch(autotok, "it =");
-        ASSERT(db && vartok && vartok->valueType());
-        if (db && vartok && vartok->valueType()) {
-            ASSERT_EQUALS(0, vartok->valueType()->constness);
-            ASSERT_EQUALS(0, vartok->valueType()->pointer);
-            ASSERT_EQUALS(ValueType::UNKNOWN_SIGN, vartok->valueType()->sign);
-            ASSERT_EQUALS(ValueType::ITERATOR, vartok->valueType()->type);
-        }
+        ASSERT(vartok);
+        ASSERT(vartok->valueType());
+        ASSERT_EQUALS(0, vartok->valueType()->constness);
+        ASSERT_EQUALS(0, vartok->valueType()->pointer);
+        ASSERT_EQUALS(ValueType::UNKNOWN_SIGN, vartok->valueType()->sign);
+        ASSERT_EQUALS(ValueType::ITERATOR, vartok->valueType()->type);
     }
 
     void auto9() { // #8044 (segmentation fault)
@@ -6802,7 +7360,6 @@ private:
                       "  for (auto& elem : secret_) {\n"
                       "  }\n"
                       "}");
-        ASSERT_EQUALS(true,  db != nullptr); // not null
     }
 
     void auto10() { // #8020
@@ -6812,13 +7369,12 @@ private:
                       "}");
         const Token *autotok = Token::findsimplematch(tokenizer.tokens(), "auto iter");
 
-        ASSERT(db && autotok && autotok->valueType());
-        if (db && autotok && autotok->valueType()) {
-            ASSERT_EQUALS(0, autotok->valueType()->constness);
-            ASSERT_EQUALS(0, autotok->valueType()->pointer);
-            ASSERT_EQUALS(ValueType::UNKNOWN_SIGN, autotok->valueType()->sign);
-            ASSERT_EQUALS(ValueType::ITERATOR, autotok->valueType()->type);
-        }
+        ASSERT(autotok);
+        ASSERT(autotok->valueType());
+        ASSERT_EQUALS(0, autotok->valueType()->constness);
+        ASSERT_EQUALS(0, autotok->valueType()->pointer);
+        ASSERT_EQUALS(ValueType::UNKNOWN_SIGN, autotok->valueType()->sign);
+        ASSERT_EQUALS(ValueType::ITERATOR, autotok->valueType()->type);
     }
 
     void auto11() {
@@ -6826,8 +7382,6 @@ private:
                       "  const auto v1 = 3;\n"
                       "  const auto *v2 = 0;\n"
                       "}");
-
-        (void)db;
 
         const Token *v1tok = Token::findsimplematch(tokenizer.tokens(), "v1");
         ASSERT(v1tok && v1tok->variable() && v1tok->variable()->isConst());
@@ -6841,7 +7395,6 @@ private:
                       "  auto y = x;\n"
                       "  if (y.empty()) {}\n"
                       "}");
-        (void)db;
 
         const Token *tok;
 
@@ -6863,10 +7416,28 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         const Token *f = Token::findsimplematch(tokenizer.tokens(), "Fred ( int");
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 2);
+        ASSERT(f && f->function() && f->function()->tokenDef->linenr() == 2);
 
         f = Token::findsimplematch(tokenizer.tokens(), "Fred ( float");
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 3);
+        ASSERT(f && f->function() && f->function()->tokenDef->linenr() == 3);
+    }
+
+    void incomplete_type() {
+        GET_SYMBOL_DB("template<class _Ty,\n"
+                      "  class _Alloc = std::allocator<_Ty>>\n"
+                      "  class SLSurfaceLayerData\n"
+                      "  : public _Vector_alloc<_Vec_base_types<_Ty, _Alloc>>\n"
+                      "{     // varying size array of values\n"
+                      "\n"
+                      "  using reverse_iterator = _STD reverse_iterator<iterator>;\n"
+                      "  using const_reverse_iterator = _STD reverse_iterator<const_iterator>;\n"
+                      "  const_reverse_iterator crend() const noexcept\n"
+                      "  {   // return iterator for end of reversed nonmutable sequence\n"
+                      "    return (rend());\n"
+                      "  }\n"
+                      "};");
+
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
