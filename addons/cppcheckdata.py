@@ -373,6 +373,7 @@ class Function:
         self.argumentId = {}
         for arg in element:
             self.argumentId[int(arg.get('nr'))] = arg.get('variable')
+            arg.clear()
 
     def setId(self, IdMap):
         for argnr, argid in self.argumentId.items():
@@ -524,6 +525,7 @@ class ValueFlow:
         self.values = []
         for value in element:
             self.values.append(ValueFlow.Value(value))
+            value.clear()
 
 
 class Suppression:
@@ -596,15 +598,13 @@ class Configuration:
         for element in confignode:
             if element.tag == "standards":
                 self.standards = Standards(element)
-
-            if element.tag == 'directivelist':
+            elif element.tag == 'directivelist':
                 for directive in element:
                     self.directives.append(Directive(directive))
-
-            if element.tag == 'tokenlist':
+                    directive.clear()
+            elif element.tag == 'tokenlist':
                 for token in element:
                     self.tokenlist.append(Token(token))
-
                 # set next/previous..
                 prev = None
                 for token in self.tokenlist:
@@ -612,23 +612,26 @@ class Configuration:
                     if prev:
                         prev.next = token
                     prev = token
-            if element.tag == 'scopes':
+            elif element.tag == 'scopes':
                 for scope in element:
                     self.scopes.append(Scope(scope))
                     for functionList in scope:
                         if functionList.tag == 'functionList':
                             for function in functionList:
                                 self.functions.append(Function(function))
-            if element.tag == 'variables':
+                                function.clear()
+                    scope.clear()
+            elif element.tag == 'variables':
                 for variable in element:
                     var = Variable(variable)
                     if var.nameTokenId:
                         self.variables.append(var)
                     else:
                         arguments.append(var)
-            if element.tag == 'valueflow':
+            elif element.tag == 'valueflow':
                 for values in element:
                     self.valueflow.append(ValueFlow(values))
+            element.clear()
 
         IdMap = {None: None, '0': None, '00000000': None, '0000000000000000': None}
         for token in self.tokenlist:
@@ -750,36 +753,34 @@ class CppcheckData:
     def __init__(self, filename):
         self.configurations = []
 
-        data = ElementTree.parse(filename)
-
-        for platformNode in data.getroot():
-            if platformNode.tag == 'platform':
-                self.platform = Platform(platformNode)
-
-        for rawTokensNode in data.getroot():
-            if rawTokensNode.tag != 'rawtokens':
+        # Parse Cppcheck dump file incrementaly to avoid large memory consumption.
+        # Calling .clear() is necessary to let the element be garbage collected.
+        for _, node in ElementTree.iterparse(filename, events=('end',)):
+            if node.tag == 'dump':
+                self.configurations.append(Configuration(node))
+            elif node.tag == 'platform':
+                self.platform = Platform(node)
+            elif node.tag == 'suppressions':
+                for suppression_node in node:
+                    self.suppressions.append(Suppression(suppression_node))
+                    suppression_node.clear()
+            elif node.tag == 'rawtokens':
+                files = []
+                for rawtokens_node in node:
+                    if rawtokens_node.tag == 'file':
+                        files.append(rawtokens_node.get('name'))
+                    elif rawtokens_node.tag == 'tok':
+                        tok = Token(rawtokens_node)
+                        tok.file = files[int(rawtokens_node.get('fileIndex'))]
+                        self.rawTokens.append(tok)
+            else:
                 continue
-            files = []
-            for node in rawTokensNode:
-                if node.tag == 'file':
-                    files.append(node.get('name'))
-                elif node.tag == 'tok':
-                    tok = Token(node)
-                    tok.file = files[int(node.get('fileIndex'))]
-                    self.rawTokens.append(tok)
-            for i in range(len(self.rawTokens) - 1):
-                self.rawTokens[i + 1].previous = self.rawTokens[i]
-                self.rawTokens[i].next = self.rawTokens[i + 1]
+            node.clear()
 
-        for suppressionsNode in data.getroot():
-            if suppressionsNode.tag == "suppressions":
-                for suppression in suppressionsNode:
-                    self.suppressions.append(Suppression(suppression))
-
-        # root is 'dumps' node, each config has its own 'dump' subnode.
-        for cfgnode in data.getroot():
-            if cfgnode.tag == 'dump':
-                self.configurations.append(Configuration(cfgnode))
+        # Set links between rawTokens.
+        for i in range(len(self.rawTokens)-1):
+            self.rawTokens[i+1].previous = self.rawTokens[i]
+            self.rawTokens[i].next = self.rawTokens[i+1]
 
 
 # Get function arguments
