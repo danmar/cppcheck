@@ -8,6 +8,11 @@ public:
     static int rand();
 };
 
+namespace exp05c {
+    using uint32 = std::uint32_t;
+    static const uint32 a = static_cast<uint32>(0xFFFFFFFF);
+}
+
 void msc30(msc30TestClass & testClass)
 {
     unsigned int num = rand(); // cert-MSC30-c
