@@ -7621,7 +7621,7 @@ private:
         // ({..})
         ASSERT_EQUALS("a{+d+ bc+", testAst("a+({b+c;})+d"));
         ASSERT_EQUALS("a{d*+ bc+", testAst("a+({b+c;})*d"));
-        ASSERT_EQUALS("xabc({((= ydef({((=",
+        ASSERT_EQUALS("xa{((= bc( yd{((= ef(",
                       testAst("x=(int)(a({b(c);}));" // don't hang
                               "y=(int)(d({e(f);}));"));
         ASSERT_EQUALS("A{{,( x0= Bx1={x2={,(",  // TODO: This is not perfect!!
@@ -7726,7 +7726,7 @@ private:
         ASSERT_EQUALS("xsizeofvoid(=", testAst("x=sizeof(void*)"));
         ASSERT_EQUALS("abc{d{,{(=", testAst("a = b({ c{}, d{} });"));
         ASSERT_EQUALS("abc;(", testAst("a(b;c)"));
-        ASSERT_EQUALS("aforab;c;({(", testAst("a({ for(a;b;c){} });"));
+        ASSERT_EQUALS("x{( forbc;;(", testAst("x({ for(a;b;c){} });"));
     }
 
     void asttemplate() { // uninstantiated templates will have <,>,etc..

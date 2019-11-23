@@ -579,6 +579,8 @@ static bool iscpp11init_impl(const Token * const tok)
         return false;
     if (Token::simpleMatch(nameToken->previous(), "namespace"))
         return false;
+    if (Token::Match(nameToken, "%any% {") && Token::findsimplematch(nameToken->next(), ";", nameToken->linkAt(1)))
+        return false;
     // There is no initialisation for example here: 'class Fred {};'
     if (!Token::simpleMatch(endtok, "} ;"))
         return true;
@@ -714,7 +716,7 @@ static void compileTerm(Token *&tok, AST_state& state)
                 compileBinOp(tok, state, compileExpression);
             if (Token::Match(tok, "} ,|:"))
                 tok = tok->next();
-        } else if (state.cpp && Token::Match(tok->tokAt(-2), "%name% ( {")) {
+        } else if (state.cpp && Token::Match(tok->tokAt(-2), "%name% ( {") && !Token::findsimplematch(tok, ";", tok->link())) {
             if (Token::simpleMatch(tok, "{ }"))
                 tok = tok->tokAt(2);
             else {
