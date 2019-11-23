@@ -120,6 +120,8 @@ def exp05(data):
             function = token.astOperand1.function
             arguments = cppcheckdata.getArguments(token.previous)
             for argnr, argvar in function.argument.items():
+                if not arguments:
+                    continue
                 if argnr < 1 or argnr > len(arguments):
                     continue
                 if not argvar.isPointer:
