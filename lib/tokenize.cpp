@@ -9419,6 +9419,12 @@ void Tokenizer::findGarbageCode() const
             if (match1 && match2)
                 syntaxError(tok);
         }
+        if (Token::Match(tok, "%comp%|+|-|/|% )|]|}")) {
+            if (isC())
+                syntaxError(tok, tok->str() + tok->next()->str());
+            if (tok->str() != ">" && !Token::simpleMatch(tok->previous(), "operator"))
+                syntaxError(tok, tok->str() + " " + tok->next()->str());
+        }
         if (Token::Match(tok, "( %any% )") && tok->next()->isKeyword() && !Token::simpleMatch(tok->next(), "void"))
             syntaxError(tok);
         if (Token::Match(tok, "%num%|%bool%|%char%|%str% %num%|%bool%|%char%|%str%") && !Token::Match(tok, "%str% %str%"))
