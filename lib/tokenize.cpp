@@ -10114,8 +10114,13 @@ void Tokenizer::simplifyKeyword()
             tok->deleteNext();
 
         if (c99) {
-            while (tok->str() == "restrict")
-                tok->deleteThis();
+            if (tok->str() == "restrict") {
+                // check if restrict is used properly
+                if ((tok->strAt(-1) == "*" && tok->next()->isName()) || tok->strAt(-1) == "[" || tok->strAt(1) == "*")
+                    tok->deleteThis();
+                else
+                    syntaxErrorC(tok, "restrict");
+            }
 
             if (mSettings->standards.c >= Standards::C11) {
                 while (tok->str() == "_Atomic")
