@@ -119,9 +119,9 @@ def exp05(data):
         elif token.str == '(' and token.astOperand1 and token.astOperand2 and token.astOperand1.function:
             function = token.astOperand1.function
             arguments = cppcheckdata.getArguments(token.previous)
+            if not arguments:
+                continue
             for argnr, argvar in function.argument.items():
-                if not arguments:
-                    continue
                 if argnr < 1 or argnr > len(arguments):
                     continue
                 if not argvar.isPointer:
