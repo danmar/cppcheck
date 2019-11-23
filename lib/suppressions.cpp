@@ -193,7 +193,7 @@ void Suppressions::ErrorMessage::setFileName(const std::string &s)
     mFileName = Path::simplifyPath(s);
 }
 
-bool Suppressions::Suppression::parseComment(std::string const& comment, std::vector<Suppression>& suppressions, std::string& errorMessage)
+bool Suppressions::Suppression::parseComment(const std::string &comment, std::vector<Suppression> *suppressions, std::string *errorMessage)
 {
     if (comment.size() < 2 + 17 + 1 + 1) // comment (// | /*)) + "cppcheck-suppress" + space + attribute
         return false;
@@ -226,7 +226,7 @@ bool Suppressions::Suppression::parseComment(std::string const& comment, std::ve
 
         if (hasErrorId) {
             if (word.compare(0,11,"symbolName=")==0) {
-                suppressions.back().symbolName = word.substr(11);
+                suppressions->back().symbolName = word.substr(11);
                 hasErrorId = false;
                 continue;
             }
@@ -234,12 +234,12 @@ bool Suppressions::Suppression::parseComment(std::string const& comment, std::ve
 
         Suppression suppression;
         suppression.errorId = std::move(word);
-        suppressions.push_back(std::move(suppression));
+        suppressions->push_back(std::move(suppression));
         hasErrorId = true;
     };
 
-    if (suppressions.empty()) {
-        errorMessage = "Could not find attribute for suppression in comment: '" + comment + "'. "
+    if (suppressions->empty()) {
+        *errorMessage = "Could not find attribute for suppression in comment: '" + comment + "'. "
                        "Make sure to follow the following pattern: "
                        "'// cppcheck-suppress <attribute> [ symbolName=<restriction> ] [ <attribute> [ symbolName=<restriction> ] ... ] [; comment text]'";
         return false;

@@ -83,7 +83,7 @@ public:
          * @param errorMessage output parameter for error message (missing/unmatched attribute)
          * @return true if it is a inline comment.
          */
-        static bool parseComment(std::string const& comment, std::vector<Suppression>& suppressions, std::string& errorMessage);
+        static bool parseComment(const std::string &comment, std::vector<Suppression> *suppressions, std::string *errorMessage);
 
         bool isSuppressed(const ErrorMessage &errmsg) const;
 
