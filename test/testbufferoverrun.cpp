@@ -1487,7 +1487,7 @@ private:
               "{\n"
               "    int array[4] = { 1,2,3,4 };\n"
               "    for (int i = 1; i <= 4; i++) {\n"
-              "        scanf(\"%i\", i);\n"
+              "        scanf(\"%i\", &i);\n"
               "        array[i] = 0;\n"
               "    }\n"
               "}");
