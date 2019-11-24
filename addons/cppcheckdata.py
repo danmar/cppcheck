@@ -6,12 +6,27 @@ This is a Python module that helps you access Cppcheck dump data.
 License: No restrictions, use this as you need.
 """
 
-from xml.etree import ElementTree
 import argparse
 from fnmatch import fnmatch
 import json
 import os
 import sys
+from lxml import etree
+
+
+def lxml_clear(node):
+    """Clear references to lxml Element
+
+    Remove references to descendants and from root node to the
+    given lxml Element. This let the node to be garbage collected.
+
+    Reference: https://www.ibm.com/developerworks/xml/library/x-hiperfparse/
+    """
+    if not node:
+        return
+    node.clear()
+    while node.getprevious() is not None:
+        del node.getparent()[0]
 
 
 class Directive:
@@ -373,7 +388,7 @@ class Function:
         self.argumentId = {}
         for arg in element:
             self.argumentId[int(arg.get('nr'))] = arg.get('variable')
-            arg.clear()
+            lxml_clear(arg)
 
     def setId(self, IdMap):
         for argnr, argid in self.argumentId.items():
@@ -525,7 +540,7 @@ class ValueFlow:
         self.values = []
         for value in element:
             self.values.append(ValueFlow.Value(value))
-            value.clear()
+            lxml_clear(value)
 
 
 class Suppression:
@@ -601,11 +616,12 @@ class Configuration:
             elif element.tag == 'directivelist':
                 for directive in element:
                     self.directives.append(Directive(directive))
-                    directive.clear()
+                    lxml_clear(directive)
             elif element.tag == 'tokenlist':
                 for token in element:
                     self.tokenlist.append(Token(token))
-                # set next/previous..
+                    lxml_clear(token)
+                # Set next/previous links between tokens
                 prev = None
                 for token in self.tokenlist:
                     token.previous = prev
@@ -619,8 +635,9 @@ class Configuration:
                         if functionList.tag == 'functionList':
                             for function in functionList:
                                 self.functions.append(Function(function))
-                                function.clear()
-                    scope.clear()
+                                lxml_clear(function)
+                        lxml_clear(functionList)
+                    lxml_clear(scope)
             elif element.tag == 'variables':
                 for variable in element:
                     var = Variable(variable)
@@ -628,10 +645,13 @@ class Configuration:
                         self.variables.append(var)
                     else:
                         arguments.append(var)
+                    lxml_clear(variable)
             elif element.tag == 'valueflow':
                 for values in element:
                     self.valueflow.append(ValueFlow(values))
-            element.clear()
+                    lxml_clear(values)
+
+            lxml_clear(element)
 
         IdMap = {None: None, '0': None, '00000000': None, '0000000000000000': None}
         for token in self.tokenlist:
@@ -753,29 +773,48 @@ class CppcheckData:
     def __init__(self, filename):
         self.configurations = []
 
-        # Parse Cppcheck dump file incrementaly to avoid large memory consumption.
+        # Use iterable objects to traverse XML tree for dump files incrementally.
+        # Iterative approach is required to avoid large memory consumption.
+        #
         # Calling .clear() is necessary to let the element be garbage collected.
-        for _, node in ElementTree.iterparse(filename, events=('end',)):
-            if node.tag == 'dump':
-                self.configurations.append(Configuration(node))
-            elif node.tag == 'platform':
-                self.platform = Platform(node)
-            elif node.tag == 'suppressions':
-                for suppression_node in node:
-                    self.suppressions.append(Suppression(suppression_node))
-                    suppression_node.clear()
-            elif node.tag == 'rawtokens':
-                files = []
-                for rawtokens_node in node:
-                    if rawtokens_node.tag == 'file':
-                        files.append(rawtokens_node.get('name'))
-                    elif rawtokens_node.tag == 'tok':
-                        tok = Token(rawtokens_node)
-                        tok.file = files[int(rawtokens_node.get('fileIndex'))]
-                        self.rawTokens.append(tok)
-            else:
-                continue
-            node.clear()
+        # And we also need to remove references from the root-node to current element.
+        # This must be done when parsing subtrees as well.
+        #
+        # See this article for complete explanation:
+        # https://www.ibm.com/developerworks/xml/library/x-hiperfparse/
+
+        # Parse <dumps> nodes which contains configuration entries for the dump.
+        for _, dumps_node in etree.iterparse(filename, events=('end',), tag="dumps"):
+            # Load subtree for the current <dumps> in memory to serialize it.
+            #
+            # FIXME: This may cause a large memory usage with big dumps
+            # For example consider file that requires about 10Gb RAM to load variables subtree:
+            # https://github.com/mozilla/mozjpeg/blob/8217fd547855b419f9545f89a3ac6e9a6a3c5491/jcdctmgr.c
+            #
+            for node in dumps_node:
+                if node.tag == 'platform':
+                    self.platform = Platform(node)
+                elif node.tag == 'suppressions':
+                    for suppression_node in node:
+                        self.suppressions.append(Suppression(suppression_node))
+                        lxml_clear(suppression_node)
+                elif node.tag == 'rawtokens':
+                    files = []
+                    for rawtokens_node in node:
+                        if rawtokens_node.tag == 'file':
+                            files.append(rawtokens_node.get('name'))
+                        elif rawtokens_node.tag == 'tok':
+                            tok = Token(rawtokens_node)
+                            tok.file = files[int(rawtokens_node.get('fileIndex'))]
+                            self.rawTokens.append(tok)
+                        lxml_clear(rawtokens_node)
+                lxml_clear(node)
+            lxml_clear(dumps_node)
+
+        # Parse <dump> nodes to serialize Configuration objects.
+        for _, node in etree.iterparse(filename, events=('end',), tag="dump"):
+            self.configurations.append(Configuration(node))
+            lxml_clear(node)
 
         # Set links between rawTokens.
         for i in range(len(self.rawTokens)-1):
