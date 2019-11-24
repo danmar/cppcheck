@@ -352,10 +352,7 @@ public:
         return arg ? &arg->minsizes : nullptr;
     }
 
-    ArgumentChecks::Direction getArgDirection(const Token *ftok, int argnr) const {
-        const ArgumentChecks *arg = getarg(ftok, argnr);
-        return arg ? arg->direction : ArgumentChecks::Direction::DIR_UNKNOWN;
-    }
+    ArgumentChecks::Direction getArgDirection(const Token* ftok, int argnr) const;
 
     bool markupFile(const std::string &path) const;
 

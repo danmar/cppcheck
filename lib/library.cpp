@@ -1263,6 +1263,23 @@ bool Library::hasminsize(const Token *ftok) const
     return false;
 }
 
+Library::ArgumentChecks::Direction Library::getArgDirection(const Token* ftok, int argnr) const
+{
+    const ArgumentChecks* arg = getarg(ftok, argnr);
+    if (arg)
+        return arg->direction;
+    if (formatstr_function(ftok)) {
+        const int fs_argno = formatstr_argno(ftok);
+        if (fs_argno >= 0 && argnr >= fs_argno) {
+            if (formatstr_scan(ftok))
+                return ArgumentChecks::Direction::DIR_OUT;
+            else
+                return ArgumentChecks::Direction::DIR_IN;
+        }
+    }
+    return ArgumentChecks::Direction::DIR_UNKNOWN;
+}
+
 bool Library::ignorefunction(const std::string& functionName) const
 {
     const std::map<std::string, Function>::const_iterator it = functions.find(functionName);
