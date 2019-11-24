@@ -242,7 +242,8 @@ def int31(data, platform):
 def env33(data):
     for token in data.tokenlist:
         if isFunctionCall(token, ('system',), 1):
-            reportError(token, 'style', 'Do not call system()', 'ENV33-C')
+            if not simpleMatch(token, "system ( NULL )") and not simpleMatch(token, "system ( 0 )"):
+                reportError(token, 'style', 'Do not call system()', 'ENV33-C')
 
 
 # MSC24-C
