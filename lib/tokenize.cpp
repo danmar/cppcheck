@@ -10114,8 +10114,12 @@ void Tokenizer::simplifyKeyword()
             tok->deleteNext();
 
         if (c99) {
-            while (tok->str() == "restrict")
-                tok->deleteThis();
+            if (tok->str() == "restrict") {
+                // check if restrict is used as a type qualifier
+                if (Token::Match(tok->previous(), "*|[ restrict %name%") ||
+                    Token::Match(tok->next(), "* %name%"))
+                    tok->deleteThis();
+            }
 
             if (mSettings->standards.c >= Standards::C11) {
                 while (tok->str() == "_Atomic")
