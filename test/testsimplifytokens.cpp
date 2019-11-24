@@ -4648,6 +4648,7 @@ private:
         ASSERT_EQUALS("void foo ( float * a , float * b ) ;", tok("void foo(float * restrict a, float * restrict b);", "test.c"));
         ASSERT_EQUALS("void foo ( int restrict ) ;", tok("void foo(int restrict);", "test.c"));
         ASSERT_EQUALS("void f ( int restrict ) { a = buf [ restrict ] ; }", tok("void f(int restrict) { a = buf[restrict]; }", "test.c"));
+        ASSERT_EQUALS("void f ( int restrict ) { a = buf [ restrict * restrict ] ; }", tok("void f(int restrict) { a = buf[restrict*restrict]; }", "test.c"));
         ASSERT_EQUALS("void foo ( int restrict ) ;", tok("void foo(int restrict);"));
         ASSERT_EQUALS("int * p ;", tok("typedef int * __restrict__ rint; rint p;", "test.c"));
 

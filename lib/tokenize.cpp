@@ -10117,7 +10117,7 @@ void Tokenizer::simplifyKeyword()
             if (tok->str() == "restrict") {
                 // check if restrict is used as a type qualifier
                 if (Token::Match(tok->previous(), "*|[ restrict %name%") ||
-                    Token::Match(tok->next(), "* %name%"))
+                    (Token::Match(tok->next(), "* %name%") && tok->strAt(2) != "restrict"))
                     tok->deleteThis();
             }
 
