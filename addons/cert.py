@@ -242,8 +242,19 @@ def int31(data, platform):
 def env33(data):
     for token in data.tokenlist:
         if isFunctionCall(token, ('system',), 1):
-            if not simpleMatch(token, "system ( NULL )") and not simpleMatch(token, "system ( 0 )"):
-                reportError(token, 'style', 'Do not call system()', 'ENV33-C')
+
+            # Invalid syntax
+            if not token.next.astOperand2:
+                continue
+
+            # ENV33-C-EX1: It is permissible to call system() with a null
+            # pointer argument to determine the presence of a command processor
+            # for the system.
+            argValue = token.next.astOperand2.getValue(0)
+            if argValue and argValue.intvalue == 0 and argValue.isKnown():
+                continue
+
+            reportError(token, 'style', 'Do not call system()', 'ENV33-C')
 
 
 # MSC24-C
