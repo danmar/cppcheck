@@ -234,10 +234,17 @@ void misra_9_5() {
   int x[] = {[0]=23}; // 9.5
 }
 
-void misra_10_1(uint8_t u) {
+void misra_10_1(uint8_t u, char c1, char c2) {
   int32_t i;
+  char c;
+  enum { E1 = 1 };
   i = 3 << 1; // 10.1
   i = (u & u) << 4; // no-warning
+  c = c1 & c2; // FIXME: this is not compliant to "10.1"
+  c = c1 << 1; // 10.1
+  i = c1 - c2; // FIXME: false positive for 10.6 this is compliant
+  i = c1 > c2; // no-warning
+  i = E1 + i; // no-warning
 }
 
 void misra_10_4(u32 x, s32 y) {
