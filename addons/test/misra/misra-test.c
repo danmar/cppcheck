@@ -407,10 +407,10 @@ void misra_14_2(bool b) {
   for (;i<10;dostuff()) {} // TODO
   int32_t g = 0;
   for (int32_t i2 = 0; i2 < 8; ++i2) {
-      i2 += 2; // FIXME False negative for "14.2"
+      i2 += 2; // FIXME False negative for "14.2". Trac #9490
       g += 2; // no-warning
   }
-  for (misra_14_2_init_value(&i); i < 10; ++i) {} // no-warning FIXME: False positive for 14.2
+  for (misra_14_2_init_value(&i); i < 10; ++i) {} // no-warning FIXME: False positive for 14.2 Trac #9491
   bool abort = false;
   for (i = 0; (i < 10) && !abort; ++i) { // no-warning
       if (b) {
