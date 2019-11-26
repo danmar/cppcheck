@@ -11,22 +11,12 @@ from fnmatch import fnmatch
 import json
 import os
 import sys
-from lxml import etree
 
+# from lxml import etree
+from xml.etree import ElementTree
+from pympler import asizeof
 
-def lxml_clear(node):
-    """Clear references to lxml Element
-
-    Remove references to descendants and from root node to the
-    given lxml Element. This let the node to be garbage collected.
-
-    Reference: https://www.ibm.com/developerworks/xml/library/x-hiperfparse/
-    """
-    if not node:
-        return
-    node.clear()
-    while node.getprevious() is not None:
-        del node.getparent()[0]
+import pysnooper
 
 
 class Directive:
@@ -386,9 +376,6 @@ class Function:
 
         self.argument = {}
         self.argumentId = {}
-        for arg in element:
-            self.argumentId[int(arg.get('nr'))] = arg.get('variable')
-            lxml_clear(arg)
 
     def setId(self, IdMap):
         for argnr, argid in self.argumentId.items():
@@ -475,6 +462,52 @@ class Variable:
         self.scope = IdMap[self.scopeId]
 
 
+class Value:
+    """
+    Value class
+
+    Attributes:
+        intvalue         integer value
+        tokvalue         token value
+        floatvalue       float value
+        containerSize    container size
+        condition        condition where this Value comes from
+        valueKind        'known' or 'possible'
+        inconclusive     Is value inconclusive?
+    """
+
+    intvalue = None
+    tokvalue = None
+    floatvalue = None
+    containerSize = None
+    condition = None
+    valueKind = None
+    inconclusive = False
+
+    def isKnown(self):
+        return self.valueKind and self.valueKind == 'known'
+
+    def isPossible(self):
+        return self.valueKind and self.valueKind == 'possible'
+
+    def __init__(self, element):
+        self.intvalue = element.get('intvalue')
+        if self.intvalue:
+            self.intvalue = int(self.intvalue)
+        self.tokvalue = element.get('tokvalue')
+        self.floatvalue = element.get('floatvalue')
+        self.containerSize = element.get('container-size')
+        self.condition = element.get('condition-line')
+        if self.condition:
+            self.condition = int(self.condition)
+        if element.get('known'):
+            self.valueKind = 'known'
+        elif element.get('possible'):
+            self.valueKind = 'possible'
+        if element.get('inconclusive'):
+            self.inconclusive = True
+
+
 class ValueFlow:
     """
     ValueFlow::Value class
@@ -490,57 +523,9 @@ class ValueFlow:
     Id = None
     values = None
 
-    class Value:
-        """
-        Value class
-
-        Attributes:
-            intvalue         integer value
-            tokvalue         token value
-            floatvalue       float value
-            containerSize    container size
-            condition        condition where this Value comes from
-            valueKind        'known' or 'possible'
-            inconclusive     Is value inconclusive?
-        """
-
-        intvalue = None
-        tokvalue = None
-        floatvalue = None
-        containerSize = None
-        condition = None
-        valueKind = None
-        inconclusive = False
-
-        def isKnown(self):
-            return self.valueKind and self.valueKind == 'known'
-
-        def isPossible(self):
-            return self.valueKind and self.valueKind == 'possible'
-
-        def __init__(self, element):
-            self.intvalue = element.get('intvalue')
-            if self.intvalue:
-                self.intvalue = int(self.intvalue)
-            self.tokvalue = element.get('tokvalue')
-            self.floatvalue = element.get('floatvalue')
-            self.containerSize = element.get('container-size')
-            self.condition = element.get('condition-line')
-            if self.condition:
-                self.condition = int(self.condition)
-            if element.get('known'):
-                self.valueKind = 'known'
-            elif element.get('possible'):
-                self.valueKind = 'possible'
-            if element.get('inconclusive'):
-                self.inconclusive = True
-
     def __init__(self, element):
         self.Id = element.get('id')
         self.values = []
-        for value in element:
-            self.values.append(ValueFlow.Value(value))
-            lxml_clear(value)
 
 
 class Suppression:
@@ -590,6 +575,7 @@ class Configuration:
         functions     List of Function items
         variables     List of Variable items
         valueflow     List of ValueFlow values
+        standards     List of Standards values
     """
 
     name = ''
@@ -599,60 +585,29 @@ class Configuration:
     functions = []
     variables = []
     valueflow = []
+    standards = []
 
-    def __init__(self, confignode):
-        self.name = confignode.get('cfg')
+    def __init__(self, name):
+        self.name = name
         self.directives = []
         self.tokenlist = []
         self.scopes = []
         self.functions = []
         self.variables = []
         self.valueflow = []
-        arguments = []
+        self.standards = []
 
-        for element in confignode:
-            if element.tag == "standards":
-                self.standards = Standards(element)
-            elif element.tag == 'directivelist':
-                for directive in element:
-                    self.directives.append(Directive(directive))
-                    lxml_clear(directive)
-            elif element.tag == 'tokenlist':
-                for token in element:
-                    self.tokenlist.append(Token(token))
-                    lxml_clear(token)
-                # Set next/previous links between tokens
-                prev = None
-                for token in self.tokenlist:
-                    token.previous = prev
-                    if prev:
-                        prev.next = token
-                    prev = token
-            elif element.tag == 'scopes':
-                for scope in element:
-                    self.scopes.append(Scope(scope))
-                    for functionList in scope:
-                        if functionList.tag == 'functionList':
-                            for function in functionList:
-                                self.functions.append(Function(function))
-                                lxml_clear(function)
-                        lxml_clear(functionList)
-                    lxml_clear(scope)
-            elif element.tag == 'variables':
-                for variable in element:
-                    var = Variable(variable)
-                    if var.nameTokenId:
-                        self.variables.append(var)
-                    else:
-                        arguments.append(var)
-                    lxml_clear(variable)
-            elif element.tag == 'valueflow':
-                for values in element:
-                    self.valueflow.append(ValueFlow(values))
-                    lxml_clear(values)
+    def set_tokens_links(self):
+        """Set next/previous links between tokens."""
+        prev = None
+        for token in self.tokenlist:
+            token.previous = prev
+            if prev:
+                prev.next = token
+            prev = token
 
-            lxml_clear(element)
-
+    def set_id_map(self, arguments):
+        """Set relationships between objects stored in this configuration."""
         IdMap = {None: None, '0': None, '00000000': None, '0000000000000000': None}
         for token in self.tokenlist:
             IdMap[token.Id] = token
@@ -666,7 +621,6 @@ class Configuration:
             IdMap[variable.Id] = variable
         for values in self.valueflow:
             IdMap[values.Id] = values.values
-
         for token in self.tokenlist:
             token.setId(IdMap)
         for scope in self.scopes:
@@ -677,6 +631,10 @@ class Configuration:
             variable.setId(IdMap)
         for variable in arguments:
             variable.setId(IdMap)
+
+    def setIdMap(self, arguments):
+        self.set_tokens_links()
+        self.set_id_map(arguments)
 
 
 class Platform:
@@ -770,6 +728,7 @@ class CppcheckData:
     configurations = []
     suppressions = []
 
+    # @pysnooper.snoop()
     def __init__(self, filename):
         self.configurations = []
 
@@ -777,49 +736,135 @@ class CppcheckData:
         # Iterative approach is required to avoid large memory consumption.
         #
         # Calling .clear() is necessary to let the element be garbage collected.
-        # And we also need to remove references from the root-node to current element.
         # This must be done when parsing subtrees as well.
         #
-        # See this article for complete explanation:
-        # https://www.ibm.com/developerworks/xml/library/x-hiperfparse/
+        # Consider the following references for complete information:
+        # * https://www.ibm.com/developerworks/xml/library/x-hiperfparse/
+        # * http://effbot.org/zone/element-iterparse.htm
+        cfg = None
+        cfg_arguments = []  # function arguments for Configuration node initialization
+        files = []  # source files for elements occurred in this configuration
+        cfg_function = None
+        cfg_valueflow = None
+        for event, node in ElementTree.iterparse(filename, events=('start', 'end')):
+            # Parse general configuration options from <dumps> nodes
+            if node.tag == 'dumps' and event == 'start':
+                continue
 
-        # Parse <dumps> nodes which contains configuration entries for the dump.
-        for _, dumps_node in etree.iterparse(filename, events=('end',), tag="dumps"):
-            # Load subtree for the current <dumps> in memory to serialize it.
-            #
-            # FIXME: This may cause a large memory usage with big dumps
-            # For example consider file that requires about 10Gb RAM to load variables subtree:
-            # https://github.com/mozilla/mozjpeg/blob/8217fd547855b419f9545f89a3ac6e9a6a3c5491/jcdctmgr.c
-            #
-            for node in dumps_node:
-                if node.tag == 'platform':
-                    self.platform = Platform(node)
-                elif node.tag == 'suppressions':
-                    for suppression_node in node:
-                        self.suppressions.append(Suppression(suppression_node))
-                        lxml_clear(suppression_node)
-                elif node.tag == 'rawtokens':
-                    files = []
-                    for rawtokens_node in node:
-                        if rawtokens_node.tag == 'file':
-                            files.append(rawtokens_node.get('name'))
-                        elif rawtokens_node.tag == 'tok':
-                            tok = Token(rawtokens_node)
-                            tok.file = files[int(rawtokens_node.get('fileIndex'))]
-                            self.rawTokens.append(tok)
-                        lxml_clear(rawtokens_node)
-                lxml_clear(node)
-            lxml_clear(dumps_node)
+            # Parse platform options
+            elif node.tag == 'platform' and event == 'start':
+                self.platform = Platform(node)
 
-        # Parse <dump> nodes to serialize Configuration objects.
-        for _, node in etree.iterparse(filename, events=('end',), tag="dump"):
-            self.configurations.append(Configuration(node))
-            lxml_clear(node)
+            # Parse list of the raw tokens and their source files
+            elif node.tag == 'rawtokens' and event == 'start':
+                continue
+            elif node.tag == 'file' and event == 'start':
+                files.append(node.get('name'))
+            elif node.tag == 'tok' and event == 'start':
+                tok = Token(node)
+                tok.file = files[int(node.get('fileIndex'))]
+                self.rawTokens.append(tok)
+
+            # Parse suppressions
+            elif node.tag == 'suppressions' and event == 'start':
+                continue
+            elif node.tag == 'suppression' and event == 'start':
+                self.suppressions.append(Suppression(node))
+
+            # Serialize new configuration node
+            elif node.tag == 'dump':
+                if event == 'start':
+                    cfg = Configuration(node.get('cfg'))
+                    continue
+                elif event == 'end':
+                    cfg.setIdMap(cfg_arguments)
+                    print('Append configuration %d Kb. New overall size: %d Kb' % (
+                        asizeof.asizeof(cfg)/1024,
+                        asizeof.asizeof(self.configurations)/1024))
+                    self.configurations.append(cfg)
+                    cfg = None
+                    cfg_arguments = []
+
+            # Parse nested elemenets of configuration node
+            elif node.tag == "standards" and event == 'start':
+                cfg.standards = Standards(node)
+
+            # Parse directives list
+            elif node.tag == 'directive' and event == 'start':
+                cfg.directives.append(Directive(node))
+
+            # Parse tokens
+            elif node.tag == 'tokenlist' and event == 'start':
+                continue
+            elif node.tag == 'token' and event == 'start':
+                cfg.tokenlist.append(Token(node))
+
+            # Parse scopes
+            elif node.tag == 'scopes' and event == 'start':
+                continue
+            elif node.tag == 'scope' and event == 'start':
+                cfg.scopes.append(Scope(node))
+
+            # Parse functions
+            elif node.tag == 'functionList' and event == 'start':
+                continue
+            elif node.tag == 'function':
+                if event == 'start':
+                    cfg_function = Function(node)
+                    continue
+                elif event == 'end':
+                    cfg.functions.append(cfg_function)
+                    cfg_function = None
+
+            # Parse function arguments
+            elif node.tag == 'arg' and event == 'start':
+                arg_nr = int(node.get('nr'))
+                arg_variable_id = node.get('variable')
+                cfg_function.argumentId[arg_nr] = arg_variable_id
+
+            # Parse variables
+            elif node.tag == 'var' and event == 'start':
+                var = Variable(node)
+                if var.nameTokenId:
+                    cfg.variables.append(var)
+                else:
+                    cfg_arguments.append(var)
+
+            # Parse valueflows (list of values)
+            elif node.tag == 'valueflow' and event == 'start':
+                continue
+            elif node.tag == 'values':
+                if event == 'start':
+                    cfg_valueflow = ValueFlow(node)
+                    continue
+                elif event == 'end':
+                    cfg.valueflow.append(cfg_valueflow)
+                    cfg_valueflow = None
+
+            # Parse values
+            elif node.tag == 'value' and event == 'start':
+                cfg_valueflow.values.append(Value(node))
+
+            # Remove links to sibling nodes
+            node.clear()
 
         # Set links between rawTokens.
         for i in range(len(self.rawTokens)-1):
             self.rawTokens[i+1].previous = self.rawTokens[i]
             self.rawTokens[i].next = self.rawTokens[i+1]
+
+        # Print configutaion size in memory
+        print('')
+        print('Overall size: %d Kb' % (int(asizeof.asizeof(self.configurations)/1024)))
+        print('\tAll rawtokens: %d  (%d Kb)' % (len(self.rawTokens), int(asizeof.asizeof(self.rawTokens)/1024)))
+        print('\tAll tokens: %d     (%d Kb)' % (sum([len(c.tokenlist) for c in self.configurations]),
+            int(asizeof.asizeof([c.tokenlist for c in self.configurations])/1024)))
+        print('\tAll variables: %d  (%d Kb)' % (sum([len(c.variables) for c in self.configurations]),
+            int(asizeof.asizeof([c.variables for c in self.configurations])/1024)))
+        print('\tAll functions: %d  (%d Kb)' % (sum([len(c.functions) for c in self.configurations]),
+            int(asizeof.asizeof([c.functions for c in self.configurations])/1024)))
+        print('\tAll directives: %d (%d Kb)' % (sum([len(c.directives) for c in self.configurations]),
+            int(asizeof.asizeof([c.directives for c in self.configurations])/1024)))
 
 
 # Get function arguments
