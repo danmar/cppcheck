@@ -242,7 +242,7 @@ void misra_10_1(uint8_t u, char c1, char c2) {
   i = (u & u) << 4; // no-warning
   c = c1 & c2; // FIXME: this is not compliant to "10.1"
   c = c1 << 1; // 10.1
-  i = c1 - c2; // FIXME: false positive for 10.6 this is compliant
+  i = c1 - c2; // FIXME: False positive for 10.6 (this is compliant). Trac #9488
   i = c1 > c2; // no-warning
   i = E1 + i; // no-warning
 }
