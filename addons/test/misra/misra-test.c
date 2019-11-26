@@ -240,7 +240,7 @@ void misra_10_1(uint8_t u, char c1, char c2) {
   enum { E1 = 1 };
   i = 3 << 1; // 10.1
   i = (u & u) << 4; // no-warning
-  c = c1 & c2; // FIXME: this is not compliant to "10.1"
+  c = c1 & c2; // FIXME: This is not compliant to "10.1". Trac #9489
   c = c1 << 1; // 10.1
   i = c1 - c2; // FIXME: False positive for 10.6 (this is compliant). Trac #9488
   i = c1 > c2; // no-warning
