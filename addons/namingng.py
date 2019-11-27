@@ -92,7 +92,7 @@ def process(dumpfiles, configfile, debugprint=False):
         if not afile[-5:] == '.dump':
             continue
         print('Checking ' + afile + '...')
-        data = cppcheckdata.CppcheckData(arg)
+        data = cppcheckdata.CppcheckData(afile)
 
         # Check File naming
         if "RE_FILE" in conf and conf["RE_FILE"]:

@@ -28,7 +28,7 @@ for arg in sys.argv[1:]:
     if arg.startswith('-'):
         continue
 
-    print("Checking %s..." % arg)
+    print('Checking %s...' % arg)
     data = cppcheckdata.CppcheckData(arg)
 
     for cfg in data.iterconfigurations():

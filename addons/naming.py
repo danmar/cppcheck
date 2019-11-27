@@ -47,11 +47,10 @@ for arg in sys.argv[1:]:
     if not arg.endswith('.dump'):
         continue
     print('Checking ' + arg + '...')
-    data = cppcheckdata.CppcheckData(dumpfile)
+    data = cppcheckdata.CppcheckData(arg)
 
     for cfg in data.iterconfigurations():
-        if not.arg.quiet:
-            print('Checking %s, config %s...' % (arg, cfg.name))
+        print('Checking %s, config %s...' % (arg, cfg.name))
         if RE_VARNAME:
             for var in cfg.variables:
                 if var.access == 'Private':
