@@ -2062,6 +2062,14 @@ private:
               "    typeof(*NULL) y;\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
+
+        check("int * f() {\n"
+              "    return NULL;\n"
+              "}\n"
+              "int main() {\n"
+              "  return *f();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Null pointer dereference: f()\n", errout.str());
     }
 
     void gcc_statement_expression() {
