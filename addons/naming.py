@@ -47,10 +47,11 @@ for arg in sys.argv[1:]:
     if not arg.endswith('.dump'):
         continue
     print('Checking ' + arg + '...')
-    data = cppcheckdata.parsedump(arg)
-    for cfg in data.configurations:
-        if len(data.configurations) > 1:
-            print('Checking ' + arg + ', config "' + cfg.name + '"...')
+    data = cppcheckdata.CppcheckData(dumpfile)
+
+    for cfg in data.iterconfigurations():
+        if not.arg.quiet:
+            print('Checking %s, config %s...' % (arg, cfg.name))
         if RE_VARNAME:
             for var in cfg.variables:
                 if var.access == 'Private':
@@ -87,4 +88,3 @@ for arg in sys.argv[1:]:
                     if not res:
                         reportError(
                             scope.bodyStart, 'style', 'Function ' + scope.className + ' violates naming convention', 'functionName')
-

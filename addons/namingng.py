@@ -92,7 +92,7 @@ def process(dumpfiles, configfile, debugprint=False):
         if not afile[-5:] == '.dump':
             continue
         print('Checking ' + afile + '...')
-        data = cppcheckdata.parsedump(afile)
+        data = cppcheckdata.CppcheckData(arg)
 
         # Check File naming
         if "RE_FILE" in conf and conf["RE_FILE"]:
@@ -111,8 +111,7 @@ def process(dumpfiles, configfile, debugprint=False):
                         evalExpr(conf["RE_NAMESPACE"], exp, mockToken, msgType, errors)
 
         for cfg in data.configurations:
-            if len(data.configurations) > 1:
-                print('Checking ' + afile + ', config "' + cfg.name + '"...')
+            print('Checking %s, config %s...' % (afile, cfg.name))
             if "RE_VARNAME" in conf and conf["RE_VARNAME"]:
                 for var in cfg.variables:
                     if var.nameToken and var.access != 'Global' and var.access != 'Public' and var.access != 'Private':

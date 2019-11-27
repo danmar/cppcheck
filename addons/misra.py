@@ -2423,8 +2423,7 @@ class MisraChecker:
             check_function(arg)
 
     def parseDump(self, dumpfile):
-
-        data = cppcheckdata.parsedump(dumpfile)
+        data = cppcheckdata.CppcheckData(dumpfile)
 
         self.dumpfileSuppressions = data.suppressions
         self.parseSuppressions()
@@ -2446,15 +2445,13 @@ class MisraChecker:
         else:
             self.printStatus('Checking ' + dumpfile + '...')
 
-        cfgNumber = 0
-
-        for cfg in data.configurations:
-            cfgNumber = cfgNumber + 1
-            if len(data.configurations) > 1:
-                self.printStatus('Checking ' + dumpfile + ', config "' + cfg.name + '"...')
+        for cfgNumber, cfg in enumerate(data.iterconfigurations()):
+            if not self.settings.quiet:
+                self.printStatus('Checking %s, config %s...' % (dumpfile, cfg.name))
 
             self.executeCheck(207, self.misra_2_7, cfg)
-            if cfgNumber == 1:
+            # data.rawTokens is same for all configurations
+            if cfgNumber == 0:
                 self.executeCheck(301, self.misra_3_1, data.rawTokens)
                 self.executeCheck(302, self.misra_3_2, data.rawTokens)
                 self.executeCheck(401, self.misra_4_1, data.rawTokens)
@@ -2466,12 +2463,12 @@ class MisraChecker:
             self.executeCheck(505, self.misra_5_5, cfg)
             # 6.1 require updates in Cppcheck (type info for bitfields are lost)
             # 6.2 require updates in Cppcheck (type info for bitfields are lost)
-            if cfgNumber == 1:
+            if cfgNumber == 0:
                 self.executeCheck(701, self.misra_7_1, data.rawTokens)
                 self.executeCheck(703, self.misra_7_3, data.rawTokens)
             self.executeCheck(811, self.misra_8_11, cfg)
             self.executeCheck(812, self.misra_8_12, cfg)
-            if cfgNumber == 1:
+            if cfgNumber == 0:
                 self.executeCheck(814, self.misra_8_14, data.rawTokens)
                 self.executeCheck(905, self.misra_9_5, data.rawTokens)
             self.executeCheck(1001, self.misra_10_1, cfg)
@@ -2485,7 +2482,7 @@ class MisraChecker:
             self.executeCheck(1107, self.misra_11_7, cfg)
             self.executeCheck(1108, self.misra_11_8, cfg)
             self.executeCheck(1109, self.misra_11_9, cfg)
-            if cfgNumber == 1:
+            if cfgNumber == 0:
                 self.executeCheck(1201, self.misra_12_1_sizeof, data.rawTokens)
             self.executeCheck(1201, self.misra_12_1, cfg)
             self.executeCheck(1202, self.misra_12_2, cfg)
@@ -2503,11 +2500,11 @@ class MisraChecker:
             self.executeCheck(1502, self.misra_15_2, cfg)
             self.executeCheck(1503, self.misra_15_3, cfg)
             self.executeCheck(1505, self.misra_15_5, cfg)
-            if cfgNumber == 1:
+            if cfgNumber == 0:
                 self.executeCheck(1506, self.misra_15_6, data.rawTokens)
             self.executeCheck(1507, self.misra_15_7, cfg)
             self.executeCheck(1602, self.misra_16_2, cfg)
-            if cfgNumber == 1:
+            if cfgNumber == 0:
                 self.executeCheck(1603, self.misra_16_3, data.rawTokens)
             self.executeCheck(1604, self.misra_16_4, cfg)
             self.executeCheck(1605, self.misra_16_5, cfg)
@@ -2515,7 +2512,7 @@ class MisraChecker:
             self.executeCheck(1607, self.misra_16_7, cfg)
             self.executeCheck(1701, self.misra_17_1, cfg)
             self.executeCheck(1702, self.misra_17_2, cfg)
-            if cfgNumber == 1:
+            if cfgNumber == 0:
                 self.executeCheck(1706, self.misra_17_6, data.rawTokens)
             self.executeCheck(1707, self.misra_17_7, cfg)
             self.executeCheck(1708, self.misra_17_8, cfg)
@@ -2526,7 +2523,7 @@ class MisraChecker:
             self.executeCheck(1902, self.misra_19_2, cfg)
             self.executeCheck(2001, self.misra_20_1, cfg)
             self.executeCheck(2002, self.misra_20_2, cfg)
-            if cfgNumber == 1:
+            if cfgNumber == 0:
                 self.executeCheck(2003, self.misra_20_3, data.rawTokens)
             self.executeCheck(2004, self.misra_20_4, cfg)
             self.executeCheck(2005, self.misra_20_5, cfg)

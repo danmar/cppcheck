@@ -7,17 +7,12 @@ License: No restrictions, use this as you need.
 """
 
 import argparse
-from fnmatch import fnmatch
 import json
 import os
 import sys
 
-# from lxml import etree
 from xml.etree import ElementTree
-from pympler import asizeof
-
-import pysnooper
-
+from fnmatch import fnmatch
 
 class Directive:
     """
@@ -693,7 +688,9 @@ class CppcheckData:
     Contains a list of Configuration instances
 
     Attributes:
-        configurations    List of Configurations
+        filename          Path to Cppcheck dump file
+        rawTokens         List of rawToken elements
+        suppressions      List of Suppressions
 
     To iterate through all configurations use such code:
     @code
@@ -725,63 +722,76 @@ class CppcheckData:
 
     rawTokens = []
     platform = None
-    configurations = []
     suppressions = []
 
-    # @pysnooper.snoop()
     def __init__(self, filename):
-        self.configurations = []
+        """
+        :param filename: Path to Cppcheck dump file
+        """
+        self.filename = filename
+
+        files = []  # source files for elements occurred in this configuration
+        platform_done = False
+        rawtokens_done = False
+        suppressions_done = False
+
+        # Parse general configuration options from <dumps> node
+        # We intentionally don't clean node resources here because we
+        # want to serialize in memory only small part of the XML tree.
+        for event, node in ElementTree.iterparse(self.filename, events=('start', 'end')):
+            if platform_done and rawtokens_done and suppressions_done:
+                break
+            if node.tag == 'platform' and event == 'start':
+                self.platform = Platform(node)
+                platform_done = True
+            elif node.tag == 'rawtokens' and event == 'end':
+                for rawtokens_node in node:
+                    if rawtokens_node.tag == 'file':
+                        files.append(rawtokens_node.get('name'))
+                    elif rawtokens_node.tag == 'tok':
+                        tok = Token(rawtokens_node)
+                        tok.file = files[int(rawtokens_node.get('fileIndex'))]
+                        self.rawTokens.append(tok)
+                rawtokens_done = True
+            elif node.tag == 'suppressions' and event == 'end':
+                for suppressions_node in node:
+                    self.suppressions.append(Suppression(suppressions_node))
+                suppressions_done = True
+
+        # Set links between rawTokens.
+        for i in range(len(self.rawTokens)-1):
+            self.rawTokens[i+1].previous = self.rawTokens[i]
+            self.rawTokens[i].next = self.rawTokens[i+1]
+
+    @property
+    def configurations(self):
+        """
+        Return the list of all available Configuration objects.
+        """
+        return list(self.iterconfigurations())
+
+    def iterconfigurations(self):
+        """
+        Create and return iterator for the available Configuration objects.
+        The iterator loops over all Configurations in the dump file tree, in document order.
+        """
+        cfg = None
+        cfg_arguments = []  # function arguments for Configuration node initialization
+        cfg_function = None
+        cfg_valueflow = None
 
         # Use iterable objects to traverse XML tree for dump files incrementally.
         # Iterative approach is required to avoid large memory consumption.
-        #
         # Calling .clear() is necessary to let the element be garbage collected.
-        # This must be done when parsing subtrees as well.
-        #
-        # Consider the following references for complete information:
-        # * https://www.ibm.com/developerworks/xml/library/x-hiperfparse/
-        # * http://effbot.org/zone/element-iterparse.htm
-        cfg = None
-        cfg_arguments = []  # function arguments for Configuration node initialization
-        files = []  # source files for elements occurred in this configuration
-        cfg_function = None
-        cfg_valueflow = None
-        for event, node in ElementTree.iterparse(filename, events=('start', 'end')):
-            # Parse general configuration options from <dumps> nodes
-            if node.tag == 'dumps' and event == 'start':
-                continue
-
-            # Parse platform options
-            elif node.tag == 'platform' and event == 'start':
-                self.platform = Platform(node)
-
-            # Parse list of the raw tokens and their source files
-            elif node.tag == 'rawtokens' and event == 'start':
-                continue
-            elif node.tag == 'file' and event == 'start':
-                files.append(node.get('name'))
-            elif node.tag == 'tok' and event == 'start':
-                tok = Token(node)
-                tok.file = files[int(node.get('fileIndex'))]
-                self.rawTokens.append(tok)
-
-            # Parse suppressions
-            elif node.tag == 'suppressions' and event == 'start':
-                continue
-            elif node.tag == 'suppression' and event == 'start':
-                self.suppressions.append(Suppression(node))
-
+        for event, node in ElementTree.iterparse(self.filename, events=('start', 'end')):
             # Serialize new configuration node
-            elif node.tag == 'dump':
+            if node.tag == 'dump':
                 if event == 'start':
                     cfg = Configuration(node.get('cfg'))
                     continue
                 elif event == 'end':
                     cfg.setIdMap(cfg_arguments)
-                    print('Append configuration %d Kb. New overall size: %d Kb' % (
-                        asizeof.asizeof(cfg)/1024,
-                        asizeof.asizeof(self.configurations)/1024))
-                    self.configurations.append(cfg)
+                    yield cfg
                     cfg = None
                     cfg_arguments = []
 
@@ -845,26 +855,8 @@ class CppcheckData:
             elif node.tag == 'value' and event == 'start':
                 cfg_valueflow.values.append(Value(node))
 
-            # Remove links to sibling nodes
+            # Remove links to the sibling nodes
             node.clear()
-
-        # Set links between rawTokens.
-        for i in range(len(self.rawTokens)-1):
-            self.rawTokens[i+1].previous = self.rawTokens[i]
-            self.rawTokens[i].next = self.rawTokens[i+1]
-
-        # Print configutaion size in memory
-        print('')
-        print('Overall size: %d Kb' % (int(asizeof.asizeof(self.configurations)/1024)))
-        print('\tAll rawtokens: %d  (%d Kb)' % (len(self.rawTokens), int(asizeof.asizeof(self.rawTokens)/1024)))
-        print('\tAll tokens: %d     (%d Kb)' % (sum([len(c.tokenlist) for c in self.configurations]),
-            int(asizeof.asizeof([c.tokenlist for c in self.configurations])/1024)))
-        print('\tAll variables: %d  (%d Kb)' % (sum([len(c.variables) for c in self.configurations]),
-            int(asizeof.asizeof([c.variables for c in self.configurations])/1024)))
-        print('\tAll functions: %d  (%d Kb)' % (sum([len(c.functions) for c in self.configurations]),
-            int(asizeof.asizeof([c.functions for c in self.configurations])/1024)))
-        print('\tAll directives: %d (%d Kb)' % (sum([len(c.directives) for c in self.configurations]),
-            int(asizeof.asizeof([c.directives for c in self.configurations])/1024)))
 
 
 # Get function arguments
