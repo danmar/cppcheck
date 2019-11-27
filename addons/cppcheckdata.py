@@ -602,7 +602,6 @@ class Configuration:
             prev = token
 
     def set_id_map(self, arguments):
-        """Set relationships between objects stored in this configuration."""
         IdMap = {None: None, '0': None, '00000000': None, '0000000000000000': None}
         for token in self.tokenlist:
             IdMap[token.Id] = token
@@ -627,9 +626,12 @@ class Configuration:
         for variable in arguments:
             variable.setId(IdMap)
 
-    def setIdMap(self, arguments):
+    def setIdMap(self, functions_arguments):
+        """Set relationships between objects stored in this configuration.
+        :param functions_arguments: List of Variable objects which are function arguments
+        """
         self.set_tokens_links()
-        self.set_id_map(arguments)
+        self.set_id_map(functions_arguments)
 
 
 class Platform:
@@ -780,6 +782,14 @@ class CppcheckData:
         cfg_function = None
         cfg_valueflow = None
 
+        # Scopes contains <varlist> with all occurred variables. Some of them
+        # appearaed in <variables> node for this configuration.
+        # Others are arguments of functions.
+        # They have similar tag <var> but doesn't contain any attributes. So we
+        # set set a special state when iterate <varlist> node to prevent
+        # overriding of cfg.variables list with empty values.
+        iter_varlist = False
+
         # Use iterable objects to traverse XML tree for dump files incrementally.
         # Iterative approach is required to avoid large memory consumption.
         # Calling .clear() is necessary to let the element be garbage collected.
@@ -814,6 +824,11 @@ class CppcheckData:
                 continue
             elif node.tag == 'scope' and event == 'start':
                 cfg.scopes.append(Scope(node))
+            elif node.tag == 'varlist':
+                if event == 'start':
+                    iter_varlist = True
+                elif event == 'end':
+                    iter_varlist = False
 
             # Parse functions
             elif node.tag == 'functionList' and event == 'start':
@@ -837,7 +852,7 @@ class CppcheckData:
                 var = Variable(node)
                 if var.nameTokenId:
                     cfg.variables.append(var)
-                else:
+                elif not iter_varlist:
                     cfg_arguments.append(var)
 
             # Parse valueflows (list of values)
