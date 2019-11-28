@@ -4334,6 +4334,14 @@ private:
                "        state = x;\n"
                "}\n";
         valueOfTok(code, "=");
+
+        code = "void a() {\n"
+               "  auto b = [b = 0] {\n"
+               "    if (b) {\n"
+               "    }\n"
+               "  };\n"
+               "}\n";
+        valueOfTok(code, "0");
     }
 };
 
