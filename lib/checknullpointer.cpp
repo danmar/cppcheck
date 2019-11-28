@@ -322,7 +322,7 @@ static bool isNullablePointer(const Token* tok, const Settings* settings)
 {
     if (!tok)
         return false;
-    if (Token::simpleMatch(tok, "new"))
+    if (Token::simpleMatch(tok, "new") && tok->varId() == 0)
         return false;
     if (astIsPointer(tok))
         return true;
