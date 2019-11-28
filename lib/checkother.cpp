@@ -1569,7 +1569,7 @@ void CheckOther::checkIncompleteStatement()
         if (!Token::simpleMatch(tok->astParent(), ";") && !Token::simpleMatch(rtok, ";") &&
             !Token::Match(tok->previous(), ";|}|{ %any% ;"))
             continue;
-        // Skipe statement expressions
+        // Skip statement expressions
         if (Token::simpleMatch(rtok, "; } )"))
             continue;
         if (!isConstStatement(tok))
@@ -1587,6 +1587,10 @@ void CheckOther::checkIncompleteStatement()
 
 void CheckOther::constStatementError(const Token *tok, const std::string &type, bool inconclusive)
 {
+    const Token *valueTok = tok;
+    while (valueTok && valueTok->isCast())
+        valueTok = valueTok->astOperand2() ? valueTok->astOperand2() : valueTok->astOperand1();
+
     std::string msg;
     if (Token::simpleMatch(tok, "=="))
         msg = "Found suspicious equality comparison. Did you intend to assign a value instead?";
@@ -1594,8 +1598,12 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type, 
         msg = "Found suspicious operator '" + tok->str() + "'";
     else if (Token::Match(tok, "%var%"))
         msg = "Unused variable value '" + tok->str() + "'";
-    else
+    else if (Token::Match(valueTok, "%str%|%num%"))
+        msg = "Redundant code: Found a statement that begins with " + std::string(valueTok->isNumber() ? "numeric" : "string") + " constant.";
+    else if (!tok)
         msg = "Redundant code: Found a statement that begins with " + type + " constant.";
+    else
+        return; // Strange!
     reportError(tok, Severity::warning, "constStatement", msg, CWE398, inconclusive);
 }
 
