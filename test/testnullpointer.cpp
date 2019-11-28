@@ -85,6 +85,7 @@ private:
         TEST_CASE(nullpointer43); // #9404
         TEST_CASE(nullpointer44); // #9395, #9423
         TEST_CASE(nullpointer45);
+        TEST_CASE(nullpointer46); // #9441
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1609,6 +1610,14 @@ private:
               "    e();\n"
               "  a d = *c->b();\n"
               "  return d;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer46() {
+        check("void f() {\n"
+              "    char* p = new(std::nothrow) char[1];\n"
+              "    if( p ) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

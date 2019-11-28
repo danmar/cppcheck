@@ -322,6 +322,8 @@ static bool isNullablePointer(const Token* tok, const Settings* settings)
 {
     if (!tok)
         return false;
+    if (Token::simpleMatch(tok, "new"))
+        return false;
     if (astIsPointer(tok))
         return true;
     if (astIsSmartPointer(tok))
