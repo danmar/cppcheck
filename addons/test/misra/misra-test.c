@@ -165,13 +165,13 @@ void misra_5_3_func1(void)
   }
 }
 void misra_5_3_enum_hidesfunction_31y(void) {} //5.3
-extern bar(int i);
+extern bar_5_3(int i);
 void f_5_3( void )
 {
     {
         int i;
         i = 42;
-        bar(i);
+        bar_5_3(i);
     }
     int i; // no warning
 }
