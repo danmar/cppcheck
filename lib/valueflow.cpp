@@ -1698,6 +1698,9 @@ static void valueFlowReverse(TokenList *tokenlist,
                                      tokenlist,
                                      errorLogger,
                                      settings);
+                    // Only reverse analysis supported with variables
+                    if (assignTok->varId() > 0)
+                        valueFlowReverse(tokenlist, tok2->previous(), assignTok, val, val2, errorLogger, settings);
                 }
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "assignment of " + tok2->str());
