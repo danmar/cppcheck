@@ -355,7 +355,9 @@ void misra_12_4() {
 struct misra_13_1_t { int a; int b; };
 void misra_13_1(int *p) {
   volatile int v;
-  int a[3] = {0, (*p)++, 2}; // 13.1
+  int a1[3] = {0, (*p)++, 2}; // 13.1
+  int a2[3] = {0, ((*p) += 1), 2}; // 13.1
+  int a3[3] = {0, ((*p) = 19), 2}; // 13.1
   int b[2] = {v,1};
   struct misra_13_1_t c = { .a=4, .b=5 }; // no fp
 }
@@ -383,10 +385,15 @@ void misra_13_4() {
 
 void misra_13_5() {
   if (x && (y++ < 123)){} // 13.5
+  if (x || ((y += 19) > 33)){} // 13.5
+  if (x || ((y = 25) > 33)){} // 13.5 13.4
+  if (x || ((--y) > 33)){} // 13.5
   else {}
 }
 
 void misra_13_6() {
+  int a = sizeof(x|=42); // 13.6
+  a = sizeof(--x); // 13.6 13.3
   return sizeof(x++); // 13.6
 }
 
