@@ -105,6 +105,10 @@ KEYWORDS = {
 }
 
 
+# Reference: N1750 6.5.16
+ASSIGNMENT_OPERATORS = {s + '=' for s in ('', '*', '/', '%', '+', '-', '<<', '>>', '&', '^', '|')} | {'='}
+
+
 def getEssentialTypeCategory(expr):
     if not expr:
         return None
@@ -256,6 +260,23 @@ def getForLoopExpressions(forToken):
             lpar.astOperand2.astOperand2.astOperand2]
 
 
+def getForLoopCounterVariables(forToken):
+    """
+    Return set of Variable objects used as for loop counters.
+    """
+    if not forToken or forToken.str != 'for':
+        return None
+    tn = forToken.next
+    if not tn or tn.str != '(':
+        return None
+    counterVars = set()
+    while tn.next and tn.next.str not in (';', ')'):
+        if tn.variable:
+            counterVars.add(tn.variable)
+        tn = tn.next
+    return counterVars
+
+
 def findCounterTokens(cond):
     if not cond:
         return []
@@ -316,7 +337,7 @@ def hasSideEffectsRecursive(expr):
             e = e.astOperand1
         if e and e.str == '.':
             return False
-    if expr.str in ('++', '--', '='):
+    if expr.str in {'++', '--'} | ASSIGNMENT_OPERATORS:
         return True
     # Todo: Check function calls
     return hasSideEffectsRecursive(expr.astOperand1) or hasSideEffectsRecursive(expr.astOperand2)
@@ -1438,6 +1459,26 @@ class MisraChecker:
                 self.reportError(token, 14, 2)
             elif hasSideEffectsRecursive(expressions[1]):
                 self.reportError(token, 14, 2)
+
+            # Inspect modification of loop counter in loop body
+            counter_vars = getForLoopCounterVariables(token)
+            outer_scope = token.scope
+            body_scope = None
+            tn = token.next
+            while tn and tn.next != outer_scope.bodyEnd:
+                if tn.scope and tn.scope.nestedIn == outer_scope:
+                    body_scope = tn.scope
+                    break
+                tn = tn.next
+            tn = body_scope.bodyStart
+            while tn and tn != body_scope.bodyEnd:
+                if tn.variable and tn.variable in counter_vars:
+                    if tn.next:
+                        # TODO: Check modifications in function calls
+                        if hasSideEffectsRecursive(tn.next):
+                            self.reportError(tn, 14, 2)
+                tn = tn.next
+
 
     def misra_14_4(self, data):
         for token in data.tokenlist:

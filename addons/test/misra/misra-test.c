@@ -405,11 +405,24 @@ void misra_14_1() {
 
 }
 
+void misra_14_2_todo(void *a) { *a = 19; }
 void misra_14_2() {
   for (dostuff();a<10;a++) {} // 14.2
   for (;i++<10;) {} // 14.2
   for (;i<10;dostuff()) {} // TODO
-  // TODO check more variants
+  int32_t g = 0;
+  int g_arr[42];
+  g += 2; // no-warning
+  for (int32_t i2 = 0; i2 < 8; ++i2) {
+    i2 += 2; // 14.2
+    i2 |= 2; // 14.2
+    g += 2;
+    i2 ^= 2; // 14.2
+    if (i2 == 2) {
+      g += g_arr[i2];
+    }
+    misra_14_2_todo(i2); // TODO
+  }
 }
 
 struct {
