@@ -428,7 +428,7 @@ void misra_14_2() {
     if (i2 == 2) {
       g += g_arr[i2];
     }
-    misra_14_2_todo(i2); // TODO
+    misra_14_2_todo(&i2); // TODO: Fix false negative in function call
   }
 }
 

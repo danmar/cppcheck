@@ -106,7 +106,7 @@ KEYWORDS = {
 
 
 # Reference: N1750 6.5.16
-ASSIGNMENT_OPERATORS = {s + '=' for s in ('', '*', '/', '%', '+', '-', '<<', '>>', '&', '^', '|')} | {'='}
+ASSIGNMENT_OPERATORS = {s + '=' for s in ('', '*', '/', '%', '+', '-', '<<', '>>', '&', '^', '|')}
 
 
 def getEssentialTypeCategory(expr):
