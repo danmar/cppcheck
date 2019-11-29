@@ -191,6 +191,7 @@ private:
         TEST_CASE(template151); // crash
         TEST_CASE(template152); // #9467
         TEST_CASE(template153); // #9483
+        TEST_CASE(template154); // #9495
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -2798,6 +2799,12 @@ private:
         ASSERT_EQUALS(exp, tok(code));
     }
 
+    void template154() { // #9495
+        const char code[] = "template <typename S, enable_if_t<(is_compile_string<S>::value), int>> void i(S s);";
+        const char exp[] = "template < typename S , enable_if_t < ( is_compile_string < S > :: value ) , int > > void i ( S s ) ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
     void template116() { // #9178
         {
             const char code[] = "template <class, class a> auto b() -> decltype(a{}.template b<void(int, int)>);\n"
@@ -4379,6 +4386,8 @@ private:
         ASSERT_EQUALS(2U, templateParameters("template<template<typename>...Foo,template<template<template<typename>>>> x;"));
         ASSERT_EQUALS(3U, templateParameters("template<template<typename>...Foo,int,template<template<template<typename>>>> x;"));
         ASSERT_EQUALS(4U, templateParameters("template<template<typename>...Foo,int,template<template<template<typename>>>,int> x;"));
+        ASSERT_EQUALS(2U, templateParameters("template<typename S, enable_if_t<(is_compile_string<S>::value), int>> void i(S s);"));
+        ASSERT_EQUALS(2U, templateParameters("template<typename c, b<(c::d), int>> void e();"));
     }
 
     // Helper function to unit test TemplateSimplifier::getTemplateNamePosition
