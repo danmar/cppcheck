@@ -1665,9 +1665,9 @@ static void valueFlowReverse(TokenList *tokenlist,
     const Token * const      startToken = var->nameToken();
 
     for (Token *tok2 = tok->previous(); ; tok2 = tok2->previous()) {
-        if (!tok2 ||
-            tok2 == startToken ||
-            (tok2->str() == "{" && tok2->scope()->type == Scope::ScopeType::eFunction)) {
+        if (!tok2 || tok2 == startToken ||
+            (tok2->str() == "{" &&
+             (tok2->scope()->type == Scope::ScopeType::eFunction || tok2->scope()->type == Scope::ScopeType::eLambda))) {
             break;
         }
 
