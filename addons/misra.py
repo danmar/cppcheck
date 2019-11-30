@@ -921,8 +921,6 @@ class MisraChecker:
                                 continue
                             if int(innerVar.nameToken.linenr) > int(outerVar.nameToken.linenr):
                                 self.reportError(innerVar.nameToken, 5, 3)
-                            else:
-                                self.reportError(outerVar.nameToken, 5, 3)
                     outerScope = outerScope.nestedIn
                 for scope in data.scopes:
                     if scope.className and innerVar.nameToken.str[:num_sign_chars] == scope.className[:num_sign_chars]:

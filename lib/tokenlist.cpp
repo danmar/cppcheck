@@ -579,8 +579,15 @@ static bool iscpp11init_impl(const Token * const tok)
         return false;
     if (Token::simpleMatch(nameToken->previous(), "namespace"))
         return false;
-    if (Token::Match(nameToken, "%any% {") && Token::findsimplematch(nameToken->next(), ";", nameToken->linkAt(1)))
-        return false;
+    if (Token::Match(nameToken, "%any% {")) {
+        // If there is semicolon between {..} this is not a initlist
+        for (const Token *tok2 = nameToken->next(); tok2 != endtok; tok2 = tok2->next()) {
+            if (tok2->str() == ";")
+                return false;
+            if (tok2->str() == "[" && Token::simpleMatch(tok2->link(), "] (") && Token::simpleMatch(tok2->link()->linkAt(1), ") {"))
+                tok2 = tok2->link()->linkAt(1)->linkAt(1);
+        }
+    }
     // There is no initialisation for example here: 'class Fred {};'
     if (!Token::simpleMatch(endtok, "} ;"))
         return true;

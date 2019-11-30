@@ -165,6 +165,16 @@ void misra_5_3_func1(void)
   }
 }
 void misra_5_3_enum_hidesfunction_31y(void) {} //5.3
+extern bar_5_3(int i);
+void f_5_3( void )
+{
+    {
+        int i;
+        i = 42;
+        bar_5_3(i);
+    }
+    int i; // no warning
+}
 
 
 #define misra_5_4_macro_hides_macro__31x 1
@@ -234,10 +244,16 @@ void misra_9_5() {
   int x[] = {[0]=23}; // 9.5
 }
 
-void misra_10_1(uint8_t u) {
+void misra_10_1(uint8_t u, char c1, char c2) {
   int32_t i;
+  char c;
+  enum { E1 = 1 };
   i = 3 << 1; // 10.1
   i = (u & u) << 4; // no-warning
+  c = c1 & c2; // FIXME: This is not compliant to "10.1". Trac #9489
+  c = c1 << 1; // 10.1
+  i = c1 > c2; // no-warning
+  i = E1 + i; // no-warning
 }
 
 void misra_10_4(u32 x, s32 y) {
@@ -253,10 +269,11 @@ void misra_10_4(u32 x, s32 y) {
   z = (a == misra_10_4_A3) ? y : y; // no-warning
 }
 
-void misra_10_6(u8 x, u32 a, u32 b) {
+void misra_10_6(u8 x, u32 a, u32 b, char c1, char c2) {
   u16 y = x+x; // 10.6
   u16 z = ~u8 x ;//10.6
   u32 c = ( u16) ( u32 a + u32 b ); //10.6
+  s32 i = c1 - c2; // FIXME: False positive for 10.6 (this is compliant). Trac #9488
 }
 
 void misra_10_8(u8 x, s32 a, s32 b) {
@@ -398,10 +415,26 @@ void misra_14_1() {
 
 }
 
-void misra_14_2() {
+void misra_14_2_init_value(int32_t *var) {
+    *var = 0;
+}
+void misra_14_2(bool b) {
   for (dostuff();a<10;a++) {} // 14.2
   for (;i++<10;) {} // 14.2
   for (;i<10;dostuff()) {} // TODO
+  int32_t g = 0;
+  for (int32_t i2 = 0; i2 < 8; ++i2) {
+      i2 += 2; // FIXME False negative for "14.2". Trac #9490
+      g += 2; // no-warning
+  }
+  for (misra_14_2_init_value(&i); i < 10; ++i) {} // no-warning FIXME: False positive for 14.2 Trac #9491
+  bool abort = false;
+  for (i = 0; (i < 10) && !abort; ++i) { // no-warning
+      if (b) {
+        abort = true;
+      }
+  }
+  for (;;) {} // no-warning
   // TODO check more variants
 }
 

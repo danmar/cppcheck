@@ -2009,7 +2009,7 @@ private:
               "    std::vector<char> v;\n"
               "    return {v, [v]() { return v.data(); }};\n"
               "}\n");
-        // FIXME ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("template<class F>\n"
               "void g(F);\n"
