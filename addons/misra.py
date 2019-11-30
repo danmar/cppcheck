@@ -337,7 +337,7 @@ def hasSideEffectsRecursive(expr):
             e = e.astOperand1
         if e and e.str == '.':
             return False
-    if expr.str in {'++', '--'} | ASSIGNMENT_OPERATORS:
+    if expr.isAssignmentOp or expr.str in {'++', '--'}:
         return True
     # Todo: Check function calls
     return hasSideEffectsRecursive(expr.astOperand1) or hasSideEffectsRecursive(expr.astOperand2)
