@@ -451,13 +451,13 @@ Parameters: -l(line) (file)</translation>
         <location filename="mainwindow.cpp" line="553"/>
         <location filename="mainwindow.cpp" line="658"/>
         <location filename="mainwindow.cpp" line="680"/>
-        <location filename="mainwindow.cpp" line="1113"/>
-        <location filename="mainwindow.cpp" line="1238"/>
-        <location filename="mainwindow.cpp" line="1359"/>
-        <location filename="mainwindow.cpp" line="1499"/>
-        <location filename="mainwindow.cpp" line="1522"/>
-        <location filename="mainwindow.cpp" line="1593"/>
-        <location filename="mainwindow.cpp" line="1667"/>
+        <location filename="mainwindow.cpp" line="1117"/>
+        <location filename="mainwindow.cpp" line="1242"/>
+        <location filename="mainwindow.cpp" line="1363"/>
+        <location filename="mainwindow.cpp" line="1503"/>
+        <location filename="mainwindow.cpp" line="1526"/>
+        <location filename="mainwindow.cpp" line="1597"/>
+        <location filename="mainwindow.cpp" line="1671"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -1176,13 +1176,13 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
 新しくXMLファイルを開くと現在の結果が削除されます。実行しますか？</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1129"/>
-        <location filename="mainwindow.cpp" line="1309"/>
+        <location filename="mainwindow.cpp" line="1133"/>
+        <location filename="mainwindow.cpp" line="1313"/>
         <source>XML files (*.xml)</source>
         <translation>XML ファイル (*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1131"/>
+        <location filename="mainwindow.cpp" line="1135"/>
         <source>Open the report file</source>
         <translation>レポートを開く</translation>
     </message>
@@ -1195,12 +1195,12 @@ Do you want to stop the checking and exit Cppcheck?</source>
 解析を停止してCppcheckを終了しますか？.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1280"/>
+        <location filename="mainwindow.cpp" line="1284"/>
         <source>License</source>
         <translation>ライセンス</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1287"/>
+        <location filename="mainwindow.cpp" line="1291"/>
         <source>Authors</source>
         <translation>作者</translation>
     </message>
@@ -1210,7 +1210,7 @@ Do you want to stop the checking and exit Cppcheck?</source>
         <translation type="obsolete">XML ファイル (*.xml);;テキストファイル (*.txt);;CSV形式ファイル (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1302"/>
+        <location filename="mainwindow.cpp" line="1306"/>
         <source>Save the report file</source>
         <translation>レポートを保存</translation>
     </message>
@@ -1223,34 +1223,34 @@ Do you want to stop the checking and exit Cppcheck?</source>
         <translation type="obsolete">XMLファイルのバージョン2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1313"/>
+        <location filename="mainwindow.cpp" line="1317"/>
         <source>Text files (*.txt)</source>
         <translation>テキストファイル (*.txt)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1317"/>
+        <location filename="mainwindow.cpp" line="1321"/>
         <source>CSV files (*.csv)</source>
         <translation>CSV形式ファイル (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1361"/>
+        <location filename="mainwindow.cpp" line="1365"/>
         <source>Cppcheck - %1</source>
         <translation>Cppcheck - %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1407"/>
+        <location filename="mainwindow.cpp" line="1411"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation>プロジェクトファイル (*.cppcheck);;すべてのファイル(*.*)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1409"/>
+        <location filename="mainwindow.cpp" line="1413"/>
         <source>Select Project File</source>
         <translation>プロジェクトファイルを選択</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="159"/>
-        <location filename="mainwindow.cpp" line="1437"/>
-        <location filename="mainwindow.cpp" line="1562"/>
+        <location filename="mainwindow.cpp" line="1441"/>
+        <location filename="mainwindow.cpp" line="1566"/>
         <source>Project:</source>
         <translation>プロジェクト:</translation>
     </message>
@@ -1304,7 +1304,7 @@ Do you want to proceed analysis without using any of these project files?</sourc
 みつかったプロジェクトファイルを使用せずにチェックしますか?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1114"/>
+        <location filename="mainwindow.cpp" line="1118"/>
         <source>Current results will be cleared.
 
 Opening a new XML file will clear current results.
@@ -1314,7 +1314,7 @@ Do you want to proceed?</source>
 新しくXMLファイルを開くと現在の結果が削除されます。実行しますか？</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1234"/>
+        <location filename="mainwindow.cpp" line="1238"/>
         <source>Analyzer is running.
 
 Do you want to stop the analysis and exit Cppcheck?</source>
@@ -1323,37 +1323,37 @@ Do you want to stop the analysis and exit Cppcheck?</source>
 チェックを中断して、Cppcheckを終了しますか?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1300"/>
+        <location filename="mainwindow.cpp" line="1304"/>
         <source>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
         <translation>XML ファイル (*.xml);;テキストファイル (*.txt);;CSVファイル (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1500"/>
+        <location filename="mainwindow.cpp" line="1504"/>
         <source>Build dir &apos;%1&apos; does not exist, create it?</source>
         <translation>ビルドディレクトリ&apos;%1&apos;がありません。作成しますか?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1523"/>
+        <location filename="mainwindow.cpp" line="1527"/>
         <source>Failed to import &apos;%1&apos;, analysis is stopped</source>
         <translation>&apos;%1&apos;のインポートに失敗しました。(チェック中断)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1547"/>
+        <location filename="mainwindow.cpp" line="1551"/>
         <source>Project files (*.cppcheck)</source>
         <translation>プロジェクトファイル (*.cppcheck)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1549"/>
+        <location filename="mainwindow.cpp" line="1553"/>
         <source>Select Project Filename</source>
         <translation>プロジェクトファイル名を選択</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1594"/>
+        <location filename="mainwindow.cpp" line="1598"/>
         <source>No project file loaded</source>
         <translation>プロジェクトファイルが読み込まれていません</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1662"/>
+        <location filename="mainwindow.cpp" line="1666"/>
         <source>The project file
 
 %1
@@ -1543,22 +1543,22 @@ Options:
         <translation type="obsolete">除外するパス</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="597"/>
+        <location filename="projectfiledialog.ui" line="607"/>
         <source>MISRA C 2012</source>
         <translation>MISRA C 2012</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="606"/>
+        <location filename="projectfiledialog.ui" line="616"/>
         <source>Misra rule texts</source>
         <translation>Misra ルールテキスト</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="613"/>
+        <location filename="projectfiledialog.ui" line="623"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy/paste the text from Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012 pdf to a text file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;MISRA C 2012 pdfのAppendix A &amp;quot;Summary of guidelines&amp;quot; からテキストをコピーペーストしてください。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="620"/>
+        <location filename="projectfiledialog.ui" line="630"/>
         <source>...</source>
         <translation>...</translation>
     </message>
@@ -1646,7 +1646,12 @@ Options:
         <translation>除外するソースファイルのPATH</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="632"/>
+        <location filename="projectfiledialog.ui" line="569"/>
+        <source>Note: Addons require &lt;a href=&quot;https://www.python.org/&quot;&gt;Python&lt;/a&gt; beeing installed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="projectfiledialog.ui" line="642"/>
         <source>External tools</source>
         <translation>外部ツール</translation>
     </message>
@@ -1732,22 +1737,22 @@ Options:
         <translation>アドオン</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="569"/>
+        <location filename="projectfiledialog.ui" line="579"/>
         <source>Y2038</source>
         <translation>Y2038</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="576"/>
+        <location filename="projectfiledialog.ui" line="586"/>
         <source>Thread safety</source>
         <translation>スレッドセーフ</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="583"/>
+        <location filename="projectfiledialog.ui" line="593"/>
         <source>Coding standards</source>
         <translation>コーディング標準</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="590"/>
+        <location filename="projectfiledialog.ui" line="600"/>
         <source>Cert</source>
         <translation>CERT</translation>
     </message>
@@ -1760,12 +1765,12 @@ Options:
         <translation type="obsolete">複数ツールの併用はよい結果を生みます。</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="645"/>
+        <location filename="projectfiledialog.ui" line="655"/>
         <source>Clang analyzer</source>
         <translation>Clang Analyzer</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="638"/>
+        <location filename="projectfiledialog.ui" line="648"/>
         <source>Clang-tidy</source>
         <translation>Clang-tidy</translation>
     </message>

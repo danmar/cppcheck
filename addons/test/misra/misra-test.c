@@ -40,7 +40,7 @@ void misra_2_7_used_params (int *param1, int param2, int param3)
 void misra_3_2(int enable)
 {
     // This won't generate a violation because of subsequent blank line \
-	
+
     int y = 0;
     int x = 0;  // 3.2 non-compliant comment ends with backslash \
     if (enable != 0)
@@ -67,16 +67,16 @@ static int misra_5_2_var_hides_var______31x;
 static int misra_5_2_var_hides_var______31y;//5.2
 static int misra_5_2_function_hides_var_31x;
 void misra_5_2_function_hides_var_31y(void) {}//5.2
-void foo(void) 
+void foo(void)
 {
   int i;
   switch(misra_5_2_func1()) //16.4 16.6
   {
-    case 1: 
+    case 1:
     {
       do
       {
-        for(i = 0; i < 10; i++) 
+        for(i = 0; i < 10; i++)
         {
           if(misra_5_2_func3()) //14.4
           {
@@ -85,7 +85,7 @@ void foo(void)
           }
         }
       } while(misra_5_2_func2()); //14.4
-    } 
+    }
   }
 }
 
@@ -153,7 +153,7 @@ void misra_5_3_func1(void)
   {
     case 1:
     {
-      do 
+      do
       {
         int misra_5_3_var_hides_var_1____31x;
         if(misra_5_3_func3()) //14.4
@@ -165,6 +165,16 @@ void misra_5_3_func1(void)
   }
 }
 void misra_5_3_enum_hidesfunction_31y(void) {} //5.3
+extern bar_5_3(int i);
+void f_5_3( void )
+{
+    {
+        int i;
+        i = 42;
+        bar_5_3(i);
+    }
+    int i; // no warning
+}
 
 
 #define misra_5_4_macro_hides_macro__31x 1
@@ -189,13 +199,13 @@ void misra_5_5_functionhides_macro31y(int misra_5_5_param_hides_macro__31y){(voi
 struct misra_5_5_tag_hides_macro____31y { //5.5
 int x;
 };
-void misra_5_5_func1() 
+void misra_5_5_func1()
 {
   switch(misra_5_5_func2()) //16.4 16.6
   {
     case 1:
     {
-      do 
+      do
       {
         if(misra_5_5_func3()) //14.4
         {
@@ -212,11 +222,11 @@ void misra_7_1() {
 }
 
 void misra_7_3() {
-  long misra_7_3_a = 0l; //7.3       
-  long misra_7_3_b = 0lU; //7.3     
-  long long misra_7_3_c = 0Ull; //7.3     
-  long long misra_7_3_d = 0ll; //7.3     
-  long double misra_7_3_e = 7.3l; //7.3  
+  long misra_7_3_a = 0l; //7.3
+  long misra_7_3_b = 0lU; //7.3
+  long long misra_7_3_c = 0Ull; //7.3
+  long long misra_7_3_d = 0ll; //7.3
+  long double misra_7_3_e = 7.3l; //7.3
   }
 
 
@@ -252,7 +262,7 @@ void misra_10_4(u32 x, s32 y) {
   enum misra_10_4_enumb { misra_10_4_B1, misra_10_4_B2, misra_10_4_B3 };
   if ( misra_10_4_B1 > misra_10_4_A1 ) //10.4
    {
-      ; 
+      ;
    }
   z = x + y; //10.4
   z = (a == misra_10_4_A3) ? x : y; //10.4
@@ -412,8 +422,10 @@ void misra_14_1() {
 
 }
 
-void misra_14_2_todo(void *a) { *a = 19; }
-void misra_14_2() {
+void misra_14_2_init_value(int32_t *var) {
+    *var = 0;
+}
+void misra_14_2(bool b) {
   for (dostuff();a<10;a++) {} // 14.2
   for (;i++<10;) {} // 14.2
   for (;i<10;dostuff()) {} // TODO
@@ -428,8 +440,17 @@ void misra_14_2() {
     if (i2 == 2) {
       g += g_arr[i2];
     }
-    misra_14_2_todo(&i2); // TODO: Fix false negative in function call
+    misra_14_2_init_value(&i2); // TODO: Fix false negative in function call
   }
+  for (misra_14_2_init_value(&i); i < 10; ++i) {} // no-warning FIXME: False positive for 14.2 Trac #9491
+  bool abort = false;
+  for (i = 0; (i < 10) && !abort; ++i) { // no-warning
+      if (b) {
+        abort = true;
+      }
+  }
+  for (;;) {} // no-warning
+  // TODO check more variants
 }
 
 struct {
@@ -858,4 +879,3 @@ void misra_21_12() {
     rc = fesetexceptflag(&f, 1); // 21.12
     rc = fetestexcept(1); // 21.12
 }
-

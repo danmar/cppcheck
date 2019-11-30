@@ -85,6 +85,7 @@ private:
         TEST_CASE(nullpointer43); // #9404
         TEST_CASE(nullpointer44); // #9395, #9423
         TEST_CASE(nullpointer45);
+        TEST_CASE(nullpointer46); // #6850
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1611,6 +1612,15 @@ private:
               "  return d;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer46() {
+        check("void f(int *p) {\n"
+              "   if(!p[0]) {}\n"
+              "   const int *const a = p;\n"
+              "   if(!a){}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (warning) Either the condition '!a' is redundant or there is possible null pointer dereference: p.\n", errout.str());
     }
 
     void nullpointer_addressOf() { // address of
