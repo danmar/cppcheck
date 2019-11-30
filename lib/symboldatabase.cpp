@@ -1353,7 +1353,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
         "virtual",
         "void",
         "volatile",
-        // "NULL",
+        "NULL",
     };
     for (const Token* tok = mTokenizer->list.front(); tok != mTokenizer->list.back(); tok = tok->next()) {
         const Scope * scope = tok->scope();
