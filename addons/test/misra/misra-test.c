@@ -165,6 +165,16 @@ void misra_5_3_func1(void)
   }
 }
 void misra_5_3_enum_hidesfunction_31y(void) {} //5.3
+extern bar_5_3(int i);
+void f_5_3( void )
+{
+    {
+        int i;
+        i = 42;
+        bar_5_3(i);
+    }
+    int i; // no warning
+}
 
 
 #define misra_5_4_macro_hides_macro__31x 1
@@ -405,10 +415,26 @@ void misra_14_1() {
 
 }
 
-void misra_14_2() {
+void misra_14_2_init_value(int32_t *var) {
+    *var = 0;
+}
+void misra_14_2(bool b) {
   for (dostuff();a<10;a++) {} // 14.2
   for (;i++<10;) {} // 14.2
   for (;i<10;dostuff()) {} // TODO
+  int32_t g = 0;
+  for (int32_t i2 = 0; i2 < 8; ++i2) {
+      i2 += 2; // FIXME False negative for "14.2". Trac #9490
+      g += 2; // no-warning
+  }
+  for (misra_14_2_init_value(&i); i < 10; ++i) {} // no-warning FIXME: False positive for 14.2 Trac #9491
+  bool abort = false;
+  for (i = 0; (i < 10) && !abort; ++i) { // no-warning
+      if (b) {
+        abort = true;
+      }
+  }
+  for (;;) {} // no-warning
   // TODO check more variants
 }
 
