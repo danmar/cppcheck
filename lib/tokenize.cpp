@@ -2473,7 +2473,7 @@ void Tokenizer::combineOperators()
         } else if (tok->str() == "->") {
             // If the preceding sequence is "( & %name% )", replace it by "%name%"
             Token *t = tok->tokAt(-4);
-            if (Token::Match(t, "( & %name% )")) {
+            if (Token::Match(t, "( & %name% )") && !Token::simpleMatch(t->previous(), ">")) {
                 t->deleteThis();
                 t->deleteThis();
                 t->deleteNext();
@@ -9471,7 +9471,7 @@ void Tokenizer::findGarbageCode() const
     // Code must end with } ; ) NAME
     if (!Token::Match(list.back(), "%name%|;|}|)"))
         syntaxError(list.back());
-    if (list.back()->str() == ")" && !Token::Match(list.back()->link()->previous(), "%name% ("))
+    if (list.back()->str() == ")" && !Token::Match(list.back()->link()->previous(), "%name%|> ("))
         syntaxError(list.back());
     for (const Token *end = list.back(); end && end->isName(); end = end->previous()) {
         if (Token::Match(end, "void|char|short|int|long|float|double|const|volatile|static|inline|struct|class|enum|union|template|sizeof|case|break|continue|typedef"))
