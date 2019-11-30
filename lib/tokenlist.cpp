@@ -1465,7 +1465,10 @@ void TokenList::validateAst() const
         // Check control blocks
         if (Token::Match(tok->previous(), "if|while|for|switch (")) {
             if (!tok->astOperand1() || !tok->astOperand2())
-                throw InternalError(tok, "Syntax Error: AST broken, '" + tok->previous()->str() + "' doesn't have two operands.", InternalError::AST);
+                throw InternalError(tok,
+                                    "Syntax Error: AST broken, '" + tok->previous()->str() +
+                                        "' doesn't have two operands.",
+                                    InternalError::AST);
         }
     }
 }

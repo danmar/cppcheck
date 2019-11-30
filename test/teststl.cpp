@@ -2421,8 +2421,9 @@ private:
 
         // #3714 - segmentation fault for syntax error
         ASSERT_THROW(check("void f() {\n"
-              "    if (()) { }\n"
-              "}"), InternalError);
+                           "    if (()) { }\n"
+                           "}"),
+                     InternalError);
 
         // #3865
         check("void f() {\n"
