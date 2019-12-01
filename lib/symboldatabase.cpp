@@ -2277,6 +2277,9 @@ bool Function::returnsReference(const Function* function, bool unknown)
         start = start->next();
     if (start->tokAt(1) == defEnd && !start->type() && !start->isStandardType())
         return unknown;
+    // TODO: Try to deduce the type of the expression
+    if (Token::Match(start, "decltype|typeof"))
+        return unknown;
     return false;
 }
 
