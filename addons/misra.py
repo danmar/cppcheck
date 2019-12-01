@@ -1464,6 +1464,8 @@ class MisraChecker:
                     body_scope = tn.scope
                     break
                 tn = tn.next
+            if not body_scope:
+                continue
             tn = body_scope.bodyStart
             while tn and tn != body_scope.bodyEnd:
                 if tn.variable and tn.variable in counter_vars:
