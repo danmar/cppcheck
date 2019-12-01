@@ -124,7 +124,7 @@ def getEssentialTypeCategory(expr):
             return e1
         if expr.valueType:
             return expr.valueType.sign
-    if expr.valueType and expr.valueType.typeScope:
+    if expr.valueType and expr.valueType.typeScope and expr.valueType.typeScope.className:
         return "enum<" + expr.valueType.typeScope.className + ">"
     if expr.variable:
         typeToken = expr.variable.typeStartToken
