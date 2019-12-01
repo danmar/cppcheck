@@ -1366,6 +1366,8 @@ class MisraChecker:
             return
 
         for token in data.tokenlist:
+            if not token.values:
+                continue
             if (not isConstantExpression(token)) or (not isUnsignedInt(token)):
                 continue
             if not token.values:
@@ -1380,8 +1382,27 @@ class MisraChecker:
             if not simpleMatch(token, '= {'):
                 continue
             init = token.next
-            if hasSideEffectsRecursive(init):
-                self.reportError(init, 13, 1)
+            end = init.link
+            if not end:
+                continue  # syntax is broken
+
+            tn = init
+            while tn and tn != end:
+                if tn.str == '[' and tn.link:
+                    tn = tn.link
+                    if tn and tn.next and tn.next.str == '=':
+                        tn = tn.next.next
+                        continue
+                    else:
+                        break
+                if tn.str == '.' and tn.next and tn.next.isName:
+                    tn = tn.next
+                    if tn.next and tn.next.str == '=':
+                        tn = tn.next.next
+                    continue
+                if tn.str in {'++', '--'} or tn.isAssignmentOp:
+                    self.reportError(init, 13, 1)
+                tn = tn.next
 
     def misra_13_3(self, data):
         for token in data.tokenlist:
