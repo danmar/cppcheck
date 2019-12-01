@@ -1331,6 +1331,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
         "namespace",
         "new",
         "noexcept",
+        "nullptr",
         "override",
         "private",
         "protected",
