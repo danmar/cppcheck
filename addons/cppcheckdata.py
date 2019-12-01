@@ -807,6 +807,8 @@ class CppcheckData:
 
             # Parse nested elemenets of configuration node
             elif node.tag == "standards" and event == 'start':
+                continue
+            elif node.tag == "standards" and event == 'end':
                 cfg.standards = Standards(node)
 
             # Parse directives list
