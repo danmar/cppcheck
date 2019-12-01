@@ -112,6 +112,7 @@ private:
         TEST_CASE(returnReference16); // #9433
         TEST_CASE(returnReference16); // #9433
         TEST_CASE(returnReference17); // #9461
+        TEST_CASE(returnReference18); // #9482
         TEST_CASE(returnReferenceFunction);
         TEST_CASE(returnReferenceContainer);
         TEST_CASE(returnReferenceLiteral);
@@ -1293,6 +1294,15 @@ private:
         check("auto g() -> int&;\n"
               "int& f() {\n"
               "    return g();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void returnReference18() {
+        check("template<class T>\n"
+              "auto f(T& x) -> decltype(x);\n"
+              "int& g(int* x) {\n"
+              "    return f(*x);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
