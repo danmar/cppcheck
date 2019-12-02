@@ -450,7 +450,12 @@ void misra_14_2(bool b) {
       }
   }
   for (;;) {} // no-warning
-  // TODO check more variants
+
+  int x = 10;
+  for (int i = x; i < 42; i++) {
+      x++; // no warning
+  }
+
 }
 
 struct {
