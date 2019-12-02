@@ -18,7 +18,8 @@ from .util import dump_create, dump_remove, convert_json_output
 TEST_SOURCE_FILES = ['./addons/test/y2038/y2038-test-1-bad-time-bits.c',
                      './addons/test/y2038/y2038-test-2-no-time-bits.c',
                      './addons/test/y2038/y2038-test-3-no-use-time-bits.c',
-                     './addons/test/y2038/y2038-test-4-good.c']
+                     './addons/test/y2038/y2038-test-4-good.c',
+                     './addons/test/y2038/y2038-test-5-good-no-time-used.c']
 
 
 def setup_module(module):
@@ -90,6 +91,19 @@ def test_4_good(capsys):
     # There are no warnings from C sources.
     unsafe_calls = json_output['unsafe-call']
     assert(len([c for c in unsafe_calls if c['file'].endswith('.c')]) == 0)
+
+
+def test_5_good(capsys):
+    is_safe = check_y2038_safe('./addons/test/y2038/y2038-test-5-good-no-time-used.c.dump', quiet=True)
+    assert(is_safe is True)
+    captured = capsys.readouterr()
+    captured = captured.out.splitlines()
+    json_output = convert_json_output(captured)
+
+    # There are no warnings from C sources.
+    if 'unsafe-call' in json_output:
+        unsafe_calls = json_output['unsafe-call']
+        assert(len([c for c in unsafe_calls if c['file'].endswith('.c')]) == 0)
 
 
 def test_arguments_regression():
