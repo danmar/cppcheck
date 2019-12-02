@@ -87,6 +87,7 @@ private:
         TEST_CASE(nullpointer45);
         TEST_CASE(nullpointer46); // #9441
         TEST_CASE(nullpointer47); // #6850
+        TEST_CASE(nullpointer48); // #9196
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1630,6 +1631,15 @@ private:
               "   if(!a){}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (warning) Either the condition '!a' is redundant or there is possible null pointer dereference: p.\n", errout.str());
+    }
+
+    void nullpointer48() {
+        check("template<class T>\n"
+              "auto f(T& x) -> decltype(x);\n"
+              "int& g(int* x) {\n"
+              "    return f(*x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer_addressOf() { // address of
