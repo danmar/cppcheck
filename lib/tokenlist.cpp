@@ -1467,7 +1467,7 @@ void TokenList::validateAst() const
             if (!tok->astOperand1() || !tok->astOperand2())
                 throw InternalError(tok,
                                     "Syntax Error: AST broken, '" + tok->previous()->str() +
-                                        "' doesn't have two operands.",
+                                    "' doesn't have two operands.",
                                     InternalError::AST);
         }
     }
