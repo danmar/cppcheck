@@ -485,6 +485,7 @@ int main(int argc, char **argv)
     fout << "createXMLExamples:/tmp/errorlist.xml /tmp/example.xml\n";
     fout << ".PHONY: validateXML\n";
     fout << "validateXML: createXMLExamples\n";
+    fout << "\txmllint --noout cppcheck-errors.rng\n";
     fout << "\txmllint --noout --relaxng cppcheck-errors.rng /tmp/errorlist.xml\n";
     fout << "\txmllint --noout --relaxng cppcheck-errors.rng /tmp/example.xml\n";
     fout << "\ncheckCWEEntries: /tmp/errorlist.xml\n";
