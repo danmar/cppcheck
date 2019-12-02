@@ -1420,6 +1420,13 @@ class MisraChecker:
                 continue
             if not token.astParent:
                 continue
+
+            # Broken syntax
+            if not token.astOperand1:
+                continue
+            if not token.astOperand1.previous:
+                continue
+
             if token.astOperand1.str == '[' and token.astOperand1.previous.str in ('{', ','):
                 continue
             if not (token.astParent.str in [',', ';', '{']):
