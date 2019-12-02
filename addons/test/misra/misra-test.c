@@ -426,7 +426,6 @@ void misra_14_2_init_value(int32_t *var) {
     *var = 0;
 }
 void misra_14_2(bool b) {
-  for (dostuff();a<10;a++) {} // 14.2
   for (;i++<10;) {} // 14.2
   for (;i<10;dostuff()) {} // TODO
   int32_t g = 0;
@@ -442,7 +441,9 @@ void misra_14_2(bool b) {
     }
     misra_14_2_init_value(&i2); // TODO: Fix false negative in function call
   }
+
   for (misra_14_2_init_value(&i); i < 10; ++i) {} // no-warning FIXME: False positive for 14.2 Trac #9491
+
   bool abort = false;
   for (i = 0; (i < 10) && !abort; ++i) { // no-warning
       if (b) {
@@ -456,6 +457,21 @@ void misra_14_2(bool b) {
       x++; // no warning
   }
 
+  for (int i = 0, j = 19; i < 42; i++) { // 12.3 14.2
+      i += 12; // 14.2
+      j /= 3; // TODO: 14.2
+  }
+
+  for (int i = 0; i < 19; i++) {
+      for (int j = 0; j < 42; j++) {
+          i--; // 14.2
+          for (int k = j; k > 5; k--) {
+              i++; // 14.2
+              for (int h = 35; h > 5; k++) // 14.2
+              {}
+          }
+      }
+  }
 }
 
 struct {

@@ -257,9 +257,7 @@ def getForLoopExpressions(forToken):
 
 
 def getForLoopCounterVariables(forToken):
-    """
-    Return set of Variable objects used as for loop counters.
-    """
+    """Return set of Variable objects declared in ``for`` statement."""
     if not forToken or forToken.str != 'for':
         return None
     tn = forToken.next
@@ -321,7 +319,7 @@ def isFloatCounterInWhileLoop(whileToken):
 
 
 def hasSideEffectsRecursive(expr):
-    if not expr:
+    if not expr or expr.str == ';':
         return False
     if expr.str == '=' and expr.astOperand1 and expr.astOperand1.str == '[':
         prev = expr.astOperand1.previous
