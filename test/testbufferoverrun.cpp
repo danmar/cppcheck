@@ -127,6 +127,7 @@ private:
         TEST_CASE(array_index_46); // #4840 - two-statement for loop
         TEST_CASE(array_index_47); // #5849
         TEST_CASE(array_index_48); // #9478
+        TEST_CASE(array_index_49); // #8653
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1491,6 +1492,20 @@ private:
               "        array[i] = 0;\n"
               "    }\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_49() {
+        // #8653
+        check("void f() {\n"
+              "    int i, k;\n"
+              "    int arr[34] = {};\n"
+              "    i = 1;\n"
+              "    for (k = 0; k < 34 && i < 34; k++) {\n"
+              "        i++;\n"
+              "    }\n"
+              "    arr[k];\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
