@@ -2420,9 +2420,10 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // #3714 - segmentation fault for syntax error
-        check("void f() {\n"
-              "    if (()) { }\n"
-              "}");
+        ASSERT_THROW(check("void f() {\n"
+                           "    if (()) { }\n"
+                           "}"),
+                     InternalError);
 
         // #3865
         check("void f() {\n"

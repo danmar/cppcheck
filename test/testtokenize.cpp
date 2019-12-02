@@ -471,6 +471,7 @@ private:
         TEST_CASE(checkTemplates);
         TEST_CASE(checkNamespaces);
         TEST_CASE(checkLambdas);
+        TEST_CASE(checkIfCppCast);
 
         // #9052
         TEST_CASE(noCrash1);
@@ -946,6 +947,7 @@ private:
         ASSERT_EQUALS("; __published: ;", tokenizeAndStringify(";__published:;", false));
         ASSERT_EQUALS("a . public : ;", tokenizeAndStringify("a.public:;", false));
         ASSERT_EQUALS("void f ( x & = 2 ) ;", tokenizeAndStringify("void f(x &= 2);", false));
+        ASSERT_EQUALS("const_cast < a * > ( & e )", tokenizeAndStringify("const_cast<a*>(&e)", false));
     }
 
     void concatenateNegativeNumber() {
@@ -8077,6 +8079,20 @@ private:
                                              "    auto b = [this, a] {};\n"
                                              "  }\n"
                                              "};\n"))
+    }
+    void checkIfCppCast() {
+        ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
+                                             "  int b();\n"
+                                             "};\n"
+                                             "struct c {\n"
+                                             "  bool d() const;\n"
+                                             "  a e;\n"
+                                             "};\n"
+                                             "bool c::d() const {\n"
+                                             "  int f = 0;\n"
+                                             "  if (!const_cast<a *>(&e)->b()) {}\n"
+                                             "  return f;\n"
+                                             "}\n"))
     }
 
     void noCrash1() {

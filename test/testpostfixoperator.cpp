@@ -54,6 +54,7 @@ private:
         TEST_CASE(testvolatile);
         TEST_CASE(testiterator);
         TEST_CASE(test2168);
+        TEST_CASE(pointerSimplest);
         TEST_CASE(pointer);   // #2321 - postincrement of pointer is OK
         TEST_CASE(testtemplate); // #4686
         TEST_CASE(testmember);
@@ -311,6 +312,14 @@ private:
     void test2168() {
         check("--> declare allocator lock here\n"
               "int main(){}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void pointerSimplest() {
+        check("void f(int* p){\n"
+              "    p++;\n"
+              "    std::cout << *p;\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
