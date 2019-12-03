@@ -326,7 +326,10 @@ private:
     void pointer() {
         check("static struct class * ab;\n"
               "int * p;\n"
-              "p++;\n");
+              "\n"
+              "void f() {\n"
+              "    p++;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
