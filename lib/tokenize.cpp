@@ -9440,7 +9440,8 @@ void Tokenizer::findGarbageCode() const
         if (Token::Match(tok, "[+-] [;,)]}]") && !(isCPP() && Token::Match(tok->previous(), "operator [+-] ;")))
             syntaxError(tok);
         if (Token::simpleMatch(tok, ",") &&
-            !Token::Match(tok->tokAt(-2), "[ = , &|%name%")) {
+            !Token::Match(tok->tokAt(-2), "[ = , &|%name%") &&
+            !Token::Match(tok->tokAt(-2), "[ [")) {
             if (Token::Match(tok->previous(), "(|[|{|<|%assign%|%or%|%oror%|==|!=|+|-|/|!|>=|<=|~|^|::|sizeof|throw|decltype|typeof"))
                 syntaxError(tok);
             if (Token::Match(tok->next(), ")|]|>|%assign%|%or%|%oror%|==|!=|/|>=|<=|&&"))
@@ -10031,7 +10032,7 @@ void Tokenizer::simplifyCPPAttribute()
         return;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (!tok->link() || !Token::Match(tok, "[ [ %name%"))
+        if (!tok->link() || !Token::Match(tok, "[ [ %name%|,|] !!{"))
             continue;
         if (Token::Match(tok->tokAt(2), "noreturn|nodiscard")) {
             const Token * head = tok->link()->next();
