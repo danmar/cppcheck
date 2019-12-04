@@ -551,7 +551,7 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
 
                 // Check that another copy of the pointer wasn't saved earlier in the function
                 if (Token::findmatch(scope->bodyStart, "%name% = %varid% ;", tok, tok->varId()) ||
-                    Token::findmatch(scope->bodyStart, "[{};] %varid% = %name% [;=]", tok, tok->varId()))
+                    Token::findmatch(scope->bodyStart, "[{};] %varid% = *| %name% .| %name%| [;=]", tok, tok->varId()))
                     continue;
 
                 const Token* tokEndRealloc = reallocTok->linkAt(1);
