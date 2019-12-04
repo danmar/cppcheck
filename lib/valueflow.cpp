@@ -2990,8 +2990,10 @@ static const Token* solveExprValues(const Token* expr, std::list<ValueFlow::Valu
             return solveExprValues(binaryTok, values);
         }
         case '*': {
+            if (intval == 0)
+                break;
             transformIntValues(values, [&](MathLib::bigint x) {
-                return (intval == 0) ? 0 : x / intval;
+                return x / intval;
             });
             return solveExprValues(binaryTok, values);
         }
