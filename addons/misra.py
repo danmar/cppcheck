@@ -264,9 +264,10 @@ def getForLoopCounterVariables(forToken):
     if not tn or tn.str != '(':
         return None
     counterVars = set()
-    while tn.next and tn.next.str not in (';', ')'):
+    while tn and tn.str not in (';', ')'):
         if tn.variable:
-            counterVars.add(tn.variable)
+            if tn.variable.nameToken == tn:
+                counterVars.add(tn.variable)
         tn = tn.next
     return counterVars
 

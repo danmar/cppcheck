@@ -490,6 +490,9 @@ void misra_14_2(bool b) {
   for (int i = x; i < 42; i++) {
       x++; // no warning
   }
+  for (int i = (x - 3); i < 42; i++) {
+      x ^= 3; // no warning
+  }
 
   for (int i = 0, j = 19; i < 42; i++) { // 12.3 14.2
       i += 12; // 14.2
