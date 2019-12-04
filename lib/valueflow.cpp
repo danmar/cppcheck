@@ -2587,11 +2587,11 @@ static bool valueFlowForwardVariable(Token* const startToken,
         }
 
         // TODO: Check for eFunction
-        else if (tok2->str() == "}" && indentlevel <= 0 && tok2->scope() && tok2->scope()->type == Scope::eLambda) {  
+        else if (tok2->str() == "}" && indentlevel <= 0 && tok2->scope() && tok2->scope()->type == Scope::eLambda) {
             return true;
         }
 
-        else if (tok2->str() == "}" && indentlevel == varusagelevel) {  
+        else if (tok2->str() == "}" && indentlevel == varusagelevel) {
             ++number_of_if;
 
             // Set "conditional" flag for all values
