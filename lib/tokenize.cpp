@@ -1811,7 +1811,7 @@ namespace {
             return false;
         }
 
-        if (Token::Match(tok1->tokAt(-1), "class|struct|union|enum")) {
+        if (Token::Match(tok1->tokAt(-1), "class|struct|union|enum|namespace")) {
             // fixme
             return false;
         }
