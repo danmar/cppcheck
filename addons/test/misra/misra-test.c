@@ -355,6 +355,7 @@ void misra_12_2(u8 x) {
 
 void misra_12_3() {
   f((1,2),3); // TODO
+  int i, j; // TODO: 12.3 Trac #9521
   for (i=0;i<10;i++,j++){} // 12.3
 }
 
