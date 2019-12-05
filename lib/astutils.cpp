@@ -1525,6 +1525,8 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
     if (++depth > 1000)
         return Result(Result::Type::BAILOUT);
 
+    enum class ForLoop { None, InitStatement, Condition, IterationExpression } forLoop = ForLoop::None;
+
     for (const Token* tok = startToken; precedes(tok, endToken); tok = tok->next()) {
         if (Token::simpleMatch(tok, "try {")) {
             // TODO: handle try
@@ -1537,6 +1539,30 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
 
         if (Token::simpleMatch(tok, "goto"))
             return Result(Result::Type::BAILOUT);
+
+        if (Token::simpleMatch(tok, ") {"))
+            forLoop = ForLoop::None;
+
+        switch(forLoop){
+        case ForLoop::None:
+           if (Token::simpleMatch(tok, "for"))
+               forLoop = ForLoop::InitStatement;
+           break;
+
+        case ForLoop::InitStatement:
+           if (Token::simpleMatch(tok, ";")) 
+              forLoop = ForLoop::Condition;
+           break;
+
+        case ForLoop::Condition:
+           if (Token::simpleMatch(tok, ";")) 
+              forLoop = ForLoop::IterationExpression;
+           break;
+
+        case ForLoop::IterationExpression:
+           // skip for iteration expression
+           continue;
+        }
 
         if (!inInnerClass && tok->str() == "{" && tok->scope()->isClassOrStruct()) {
             // skip returns from local class definition

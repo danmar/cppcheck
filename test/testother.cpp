@@ -6680,6 +6680,15 @@ private:
                       "test.cpp:3:note:s is overwritten\n",
                       errout.str());
 
+        check("void g(int a);\n"
+              "void f(int a) {\n"
+              "    int i = a;\n"
+              "    for(int j = 0; j < 10; ++j, i = j) {\n"
+              "        g(i);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f() {\n"
               "    int *p = NULL;\n"
               "    p = dostuff();\n"
