@@ -930,6 +930,14 @@ private:
                              "};");
         ASSERT_EQUALS("", errout.str());
 
+        checkCopyConstructor("struct F {\n"
+                             "   int* i;\n"
+                             "   F() { i = new int(); }\n"
+                             "   F(const F &f);\n"
+                             "   F& operator=(const F&);"
+                             "};");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Struct 'F' does not have a destructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
+
         checkCopyConstructor("struct Data { int x; int y; };\n"
                              "struct F {\n"
                              "   Data* c;\n"
