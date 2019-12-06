@@ -1357,7 +1357,6 @@ class MisraChecker:
             if token.str != ',':
                 continue
             if token.astParent and token.astParent.str in ['(', ',', '{']:
-                excluded_linenrs.add(token.linenr)
                 continue
             self.reportError(token, 12, 3)
 
@@ -1374,7 +1373,7 @@ class MisraChecker:
             maybe_linenrs.add(decl_tokens[0].linenr)
 
         # Check found "suspicious" lines with variables declaration code to
-        # distinguish ';' or ',' symbols.
+        # distinguish ';' and ',' symbols.
         maybe_linenrs = maybe_linenrs.difference(excluded_linenrs)
         if len(maybe_linenrs) == 0:
             return
