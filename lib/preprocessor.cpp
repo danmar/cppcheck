@@ -569,12 +569,34 @@ static bool hasErrors(const simplecpp::OutputList &outputList)
     return false;
 }
 
+void Preprocessor::handleErrors(const simplecpp::OutputList& outputList, bool throwError)
+{
+    const bool showerror = (!mSettings.userDefines.empty() && !mSettings.force);
+    reportOutput(outputList, showerror);
+    if (throwError) {
+        for (const simplecpp::Output& output : outputList) {
+            switch (output.type) {
+            case simplecpp::Output::ERROR:
+            case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
+            case simplecpp::Output::SYNTAX_ERROR:
+            case simplecpp::Output::UNHANDLED_CHAR_ERROR:
+                throw output;
+            case simplecpp::Output::WARNING:
+            case simplecpp::Output::MISSING_HEADER:
+            case simplecpp::Output::PORTABILITY_BACKSLASH:
+                break;
+            };
+        }
+    }
+}
 
-void Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files)
+void Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files, bool throwError)
 {
     const simplecpp::DUI dui = createDUI(mSettings, emptyString, files[0]);
 
-    mTokenLists = simplecpp::load(rawtokens, files, dui, nullptr);
+    simplecpp::OutputList outputList;
+    mTokenLists = simplecpp::load(rawtokens, files, dui, &outputList);
+    handleErrors(outputList, throwError);
 }
 
 void Preprocessor::removeComments()
@@ -614,23 +636,7 @@ simplecpp::TokenList Preprocessor::preprocess(const simplecpp::TokenList &tokens
     simplecpp::TokenList tokens2(files);
     simplecpp::preprocess(tokens2, tokens1, files, mTokenLists, dui, &outputList, &macroUsage);
 
-    const bool showerror = (!mSettings.userDefines.empty() && !mSettings.force);
-    reportOutput(outputList, showerror);
-    if (throwError && hasErrors(outputList)) {
-        for (const simplecpp::Output &output : outputList) {
-            switch (output.type) {
-            case simplecpp::Output::ERROR:
-            case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
-            case simplecpp::Output::SYNTAX_ERROR:
-            case simplecpp::Output::UNHANDLED_CHAR_ERROR:
-                throw output;
-            case simplecpp::Output::WARNING:
-            case simplecpp::Output::MISSING_HEADER:
-            case simplecpp::Output::PORTABILITY_BACKSLASH:
-                break;
-            };
-        }
-    }
+    handleErrors(outputList, throwError);
 
     tokens2.removeComments();
 

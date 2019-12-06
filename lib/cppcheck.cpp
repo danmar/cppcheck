@@ -299,7 +299,11 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             }
         }
 
-        preprocessor.loadFiles(tokens1, files);
+        try {
+            preprocessor.loadFiles(tokens1, files, true);
+        } catch (const simplecpp::Output & o) {
+            return mExitCode;
+        }
 
         if (!mSettings.plistOutput.empty()) {
             std::string filename2;

@@ -98,7 +98,9 @@ public:
 
     std::set<std::string> getConfigs(const simplecpp::TokenList &tokens) const;
 
-    void loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files);
+    void handleErrors(const simplecpp::OutputList &outputList, bool throwError);
+
+    void loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files, bool throwError = false);
 
     void removeComments();
 
