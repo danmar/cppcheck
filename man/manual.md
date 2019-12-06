@@ -136,6 +136,10 @@ You can import and use Cppcheck GUI project files in the command line tool:
 
     cppcheck --project=foobar.cppcheck
 
+In addition you can also define files that are part of the project and you want to check only these files with the given project configuration:
+    
+    cppcheck --project=foobar.cppcheck file1.cpp file2.cpp
+
 The Cppcheck GUI has a few options that are not available in the command line directly. To use these options you can import a GUI project file. We want to keep the command line tool usage simple and limit the options by intention.
 
 ## CMake

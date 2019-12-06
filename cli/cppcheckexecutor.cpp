@@ -162,8 +162,8 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         // filter only for the selected filenames from all project files
         std::list<ImportProject::FileSettings> newList;
 
-        for (const std::string fname : pathnames) {
-            for (const ImportProject::FileSettings fsetting : settings.project.fileSettings)
+        for (const std::string &fname : pathnames) {
+            for (const ImportProject::FileSettings &fsetting : settings.project.fileSettings)
             {
                 const std::string *firstName = &fname;
                 const std::string *secondName = &fsetting.filename;
