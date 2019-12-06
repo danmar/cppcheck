@@ -353,12 +353,16 @@ void misra_12_2(u8 x) {
   a = x << 8;  // 12.2
 }
 
-void misra_12_3() {
+static int misra_12_3_v1 = 0, misra_12_3_v2; // 12.3
+static int misra_12_3_v3, misra_12_3_v4; // 12.3
+void misra_12_3(int, int, int); // no warning
+void misra_12_3(int a, int b, int c) { // no warning
   int a1, a2; // 12.3
   int a3; int a4; // no warning
   int a5 = 9, a6; // 12.3
   int a7, a8 = 11; // 12.3
   int a9 = foo(), a10; // 12.3
+  int a11 = a = b = c; // 17.8
 
   f((1,2),3); // TODO
 

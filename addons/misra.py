@@ -1351,7 +1351,7 @@ class MisraChecker:
     def misra_12_3(self, data, rawTokens):
         excluded_linenrs = set()
         for token in data.tokenlist:
-            if token.scope.type in ('Enum', 'Class', 'Global'):
+            if token.scope.type in ('Enum', 'Class'):
                 excluded_linenrs.add(token.linenr)
                 continue
             if token.str != ',':
@@ -1365,7 +1365,7 @@ class MisraChecker:
         # Will be reresented in dump file as:
         # int a; int b; int c;
         maybe_linenrs = set()  # numbers of lines that may be contains ',' symbols
-        name_tokens = [v.nameToken for v in data.variables if v.nameToken]
+        name_tokens = [v.nameToken for v in data.variables if v.nameToken and not v.isArgument]
         for _, decl_tokens in itertools.groupby(name_tokens, key=lambda t:t.linenr):
             decl_tokens = list(decl_tokens)
             if len(decl_tokens) == 1:
