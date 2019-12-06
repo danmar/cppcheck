@@ -2431,15 +2431,15 @@ class MisraChecker:
         if not self.settings.quiet:
             print(*args, **kwargs)
 
-    def executeCheck(self, rule_num, check_function, arg):
+    def executeCheck(self, rule_num, check_function, *args):
         """Execute check function for a single MISRA rule.
 
         :param rule_num: Number of rule in hundreds format
         :param check_function: Check function to execute
-        :param arg: Check function argument
+        :param args: Check function arguments
         """
         if not self.isRuleGloballySuppressed(rule_num):
-            check_function(arg)
+            check_function(*args)
 
     def parseDump(self, dumpfile):
 
