@@ -119,6 +119,8 @@ def exp05(data):
         elif token.str == '(' and token.astOperand1 and token.astOperand2 and token.astOperand1.function:
             function = token.astOperand1.function
             arguments = cppcheckdata.getArguments(token.previous)
+            if not arguments:
+                continue
             for argnr, argvar in function.argument.items():
                 if argnr < 1 or argnr > len(arguments):
                     continue
@@ -233,6 +235,28 @@ def int31(data, platform):
                     'Ensure that integer conversions do not result in lost or misinterpreted data (casting ' + str(value.intvalue) + ' to ' + destType + ')',
                     'INT31-c')
                 break
+
+
+# ENV33-C
+# Do not call system()
+def env33(data):
+    for token in data.tokenlist:
+        if isFunctionCall(token, ('system',), 1):
+
+            # Invalid syntax
+            if not token.next.astOperand2:
+                continue
+
+            # ENV33-C-EX1: It is permissible to call system() with a null
+            # pointer argument to determine the presence of a command processor
+            # for the system.
+            argValue = token.next.astOperand2.getValue(0)
+            if argValue and argValue.intvalue == 0 and argValue.isKnown():
+                continue
+
+            reportError(token, 'style', 'Do not call system()', 'ENV33-C')
+
+
 # MSC24-C
 # Do not use deprecated or obsolescent functions
 def msc24(data):
@@ -399,6 +423,7 @@ if __name__ == '__main__':
             str05(cfg)
             str07(cfg)
             str11(cfg)
+            env33(cfg)
             msc24(cfg)
             msc30(cfg)
             api01(cfg)

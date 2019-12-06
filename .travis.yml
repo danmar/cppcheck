@@ -27,6 +27,7 @@ before_install:
  - travis_retry python2 -m pip install --user unittest2
  - travis_retry python2 -m pip install --user pexpect # imported by tools/ci.py
  - travis_retry python2 -m pip install --user pygments
+ - travis_retry python2 -m pip install --user semver
 # Python 3 modules
  - travis_retry python3 -m pip install --user setuptools --upgrade
  - travis_retry python3 -m pip install --user pytest
@@ -35,6 +36,8 @@ before_install:
  - travis_retry python3 -m pip install --user pexpect # imported by tools/ci.py
  - travis_retry python3 -m pip install --user requests # imported by tools/pr.py
  - travis_retry python3 -m pip install --user pygments
+ - travis_retry sudo python3 -m pip install demjson # installs jsonlint => sudo required
+ - travis_retry python3 -m pip install --user semver
 
 matrix:
 # do notify immediately about it when a job of a build fails.
@@ -158,6 +161,8 @@ matrix:
         - make clean
         - make -j2 CXXFLAGS=-funsigned-char testrunner
         - ./testrunner TestSymbolDatabase
+# check .json files
+        - find . -name '*.json' -not -path '*/\.*' | xargs jsonlint -s
 
 # check if dmake needs to be rerun (this job may fail)
     - name: "rerun dmake?"

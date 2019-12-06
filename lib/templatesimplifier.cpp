@@ -246,7 +246,7 @@ void TemplateSimplifier::fixAngleBrackets()
             }
         } else if (Token::Match(tok, "class|struct|union|=|:|public|protected|private %name% <")) {
             Token *endTok = tok->tokAt(2)->findClosingBracket();
-            if (Token::Match(endTok, ">> ;|{")) {
+            if (Token::Match(endTok, ">> ;|{|%type%")) {
                 endTok->str(">");
                 endTok->insertToken(">");
             }
@@ -495,8 +495,9 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
                 return numberOfParameters;
             else if (tok->str() == ">>" && level == 1)
                 return numberOfParameters;
-            else if (tok->str() == "," && level == 0) {
-                ++numberOfParameters;
+            else if (tok->str() == ",") {
+                if (level == 0)
+                    ++numberOfParameters;
                 tok = tok->next();
             }
             continue;

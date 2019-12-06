@@ -126,6 +126,8 @@ private:
         TEST_CASE(array_index_45); // #4207 - calling function with variable number of parameters (...)
         TEST_CASE(array_index_46); // #4840 - two-statement for loop
         TEST_CASE(array_index_47); // #5849
+        TEST_CASE(array_index_48); // #9478
+        TEST_CASE(array_index_49); // #8653
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1467,6 +1469,43 @@ private:
               "    for (int i = 2; i < 0; i++)\n"
               "        s[i] = 5; \n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_48() {
+        // #9478
+        check("void test(void)\n"
+              "{\n"
+              "    int array[4] = { 1,2,3,4 };\n"
+              "    for (int i = 1; i <= 4; i++) {\n"
+              "        printf(\" %i\", i);\n"
+              "        array[i] = 0;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Array 'array[4]' accessed at index 4, which is out of bounds.\n", errout.str());
+
+        check("void test(void)\n"
+              "{\n"
+              "    int array[4] = { 1,2,3,4 };\n"
+              "    for (int i = 1; i <= 4; i++) {\n"
+              "        scanf(\"%i\", &i);\n"
+              "        array[i] = 0;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_49() {
+        // #8653
+        check("void f() {\n"
+              "    int i, k;\n"
+              "    int arr[34] = {};\n"
+              "    i = 1;\n"
+              "    for (k = 0; k < 34 && i < 34; k++) {\n"
+              "        i++;\n"
+              "    }\n"
+              "    arr[k];\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

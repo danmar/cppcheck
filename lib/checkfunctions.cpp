@@ -415,16 +415,16 @@ void CheckFunctions::checkLibraryMatchFunctions()
     if (!mSettings->checkLibrary || !mSettings->isEnabled(Settings::INFORMATION))
         return;
 
-    bool New = false;
+    bool insideNew = false;
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (!tok->scope() || !tok->scope()->isExecutable())
             continue;
 
         if (tok->str() == "new")
-            New = true;
+            insideNew = true;
         else if (tok->str() == ";")
-            New = false;
-        else if (New)
+            insideNew = false;
+        else if (insideNew)
             continue;
 
         if (!Token::Match(tok, "%name% (") || Token::Match(tok, "asm|sizeof|catch"))

@@ -21,12 +21,12 @@ void api01()
     }
     struct good_node_s
     {
-        struct good_node_s* next;      
+        struct good_node_s* next;
         char name[String_Size];
     }
     struct also_good_node_s
     {
-        struct also_good_node_s* next;      
+        struct also_good_node_s* next;
         char *name;
     }
 }
@@ -74,12 +74,23 @@ unsigned char int31(int x)
     x = (unsigned long long)-1; // cert-INT31-c
 }
 
+void env33()
+{
+    system("chmod -x $(which chmod)"); // cert-ENV33-C
+    system(""); // cert-ENV33-C
+    system(NULL); // no-warning
+    system(0); // no-warning
+    const int *np = NULL;
+    system(np); // no-warning
+    int system;
+}
+
 void msc24()
 {
     struct S {
     int x; int fopen;
     };
-    
+
     struct S s;
     time_t rawtime;
     struct tm *timeinfo;

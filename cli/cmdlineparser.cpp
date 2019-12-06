@@ -44,42 +44,42 @@
 #include <tinyxml2.h>
 #endif
 
-static void addFilesToList(const std::string& FileList, std::vector<std::string>& PathNames)
+static void addFilesToList(const std::string& fileList, std::vector<std::string>& pathNames)
 {
     // To keep things initially simple, if the file can't be opened, just be silent and move on.
-    std::istream *Files;
-    std::ifstream Infile;
-    if (FileList == "-") { // read from stdin
-        Files = &std::cin;
+    std::istream *files;
+    std::ifstream infile;
+    if (fileList == "-") { // read from stdin
+        files = &std::cin;
     } else {
-        Infile.open(FileList);
-        Files = &Infile;
+        infile.open(fileList);
+        files = &infile;
     }
-    if (Files && *Files) {
-        std::string FileName;
-        while (std::getline(*Files, FileName)) { // next line
-            if (!FileName.empty()) {
-                PathNames.push_back(FileName);
+    if (files && *files) {
+        std::string fileName;
+        while (std::getline(*files, fileName)) { // next line
+            if (!fileName.empty()) {
+                pathNames.push_back(fileName);
             }
         }
     }
 }
 
-static bool addIncludePathsToList(const std::string& FileList, std::list<std::string>* PathNames)
+static bool addIncludePathsToList(const std::string& fileList, std::list<std::string>* pathNames)
 {
-    std::ifstream Files(FileList);
-    if (Files) {
-        std::string PathName;
-        while (std::getline(Files, PathName)) { // next line
-            if (!PathName.empty()) {
-                PathName = Path::removeQuotationMarks(PathName);
-                PathName = Path::fromNativeSeparators(PathName);
+    std::ifstream files(fileList);
+    if (files) {
+        std::string pathName;
+        while (std::getline(files, pathName)) { // next line
+            if (!pathName.empty()) {
+                pathName = Path::removeQuotationMarks(pathName);
+                pathName = Path::fromNativeSeparators(pathName);
 
                 // If path doesn't end with / or \, add it
-                if (!endsWith(PathName, '/'))
-                    PathName += '/';
+                if (!endsWith(pathName, '/'))
+                    pathName += '/';
 
-                PathNames->push_back(PathName);
+                pathNames->push_back(pathName);
             }
         }
         return true;
@@ -87,10 +87,10 @@ static bool addIncludePathsToList(const std::string& FileList, std::list<std::st
     return false;
 }
 
-static bool addPathsToSet(const std::string& FileName, std::set<std::string>* set)
+static bool addPathsToSet(const std::string& fileName, std::set<std::string>* set)
 {
     std::list<std::string> templist;
-    if (!addIncludePathsToList(FileName, &templist))
+    if (!addIncludePathsToList(fileName, &templist))
         return false;
     set->insert(templist.begin(), templist.end());
     return true;
@@ -547,7 +547,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // --project
             else if (std::strncmp(argv[i], "--project=", 10) == 0) {
-                mSettings->checkAllConfigurations = false; // Can be overriden with --max-configs or --force
+                mSettings->checkAllConfigurations = false; // Can be overridden with --max-configs or --force
                 const std::string projectFile = argv[i]+10;
                 ImportProject::Type projType = mSettings->project.import(projectFile, mSettings);
                 if (projType == ImportProject::Type::CPPCHECK_GUI) {
@@ -1161,8 +1161,8 @@ void CmdLineParser::printHelp()
               "                         '{file}:{line},{severity},{id},{message}' or\n"
               "                         '{file}({line}):({severity}) {message}' or\n"
               "                         '{callstack} {message}'\n"
-              "                         Pre-defined templates: gcc, vs, edit, cppcheck1\n"
-              "                         The default format is 'gcc'.\n"
+              "                         Pre-defined templates: gcc (default), cppcheck1 (old default), vs, edit.\n"
+              // Note: template daca2 also exists, but is for internal use (cppcheck scripts).
               "    --template-location='<text>'\n"
               "                         Format error message location. If this is not provided\n"
               "                         then no extra location info is shown.\n"

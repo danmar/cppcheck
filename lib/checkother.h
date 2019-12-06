@@ -250,7 +250,7 @@ private:
     void pointerLessThanZeroError(const Token *tok, const ValueFlow::Value *v);
     void unsignedPositiveError(const Token *tok, const ValueFlow::Value *v, const std::string &varname);
     void pointerPositiveError(const Token *tok, const ValueFlow::Value *v);
-    void SuspiciousSemicolonError(const Token *tok);
+    void suspiciousSemicolonError(const Token *tok);
     void negativeBitwiseShiftError(const Token *tok, int op);
     void redundantCopyError(const Token *tok, const std::string &varname);
     void incompleteArrayFillError(const Token* tok, const std::string& buffer, const std::string& function, bool boolean);
@@ -316,7 +316,7 @@ private:
         c.unsignedPositiveError(nullptr, nullptr, "varname");
         c.pointerLessThanZeroError(nullptr, nullptr);
         c.pointerPositiveError(nullptr, nullptr);
-        c.SuspiciousSemicolonError(nullptr);
+        c.suspiciousSemicolonError(nullptr);
         c.incompleteArrayFillError(nullptr,  "buffer", "memset", false);
         c.varFuncNullUBError(nullptr);
         c.nanInArithmeticExpressionError(nullptr);

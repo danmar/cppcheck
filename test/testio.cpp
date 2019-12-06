@@ -1457,8 +1457,8 @@ private:
 
         TEST_SCANF_WARN("%jd", "intmax_t", "long double");
         TEST_SCANF_WARN("%jd", "intmax_t", "void *");
-        // TODO TEST_SCANF_WARN("%jd", "intmax_t", "size_t");
-        // TODO TEST_SCANF_WARN("%jd", "intmax_t", "unsigned ptrdiff_t");
+        TEST_SCANF_WARN_AKA("%jd", "intmax_t", "size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%jd", "intmax_t", "unsigned ptrdiff_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%jd", "intmax_t", "std::ssize_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%jd", "intmax_t", "std::ptrdiff_t", "signed long", "signed long long");
         TEST_SCANF_NOWARN("%jd", "intmax_t", "intmax_t");
@@ -1825,7 +1825,7 @@ private:
 
         TEST_SCANF_WARN("%I32d", "__int32", "bool");
         TEST_SCANF_WARN("%I32d", "__int32", "void *");
-        //TODO TEST_SCANF_WARN_AKA("%I32d", "__int32", "size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%I32d", "__int32", "size_t", "unsigned long", "unsigned long long");
         //TODO TEST_SCANF_WARN_AKA_WIN32("%I32d", "__int32", "ssize_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%I32d", "__int32", "ptrdiff_t", "signed long", "signed long long");
         TEST_SCANF_NOWARN("%I32d", "__int32", "__int32");

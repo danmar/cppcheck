@@ -45,6 +45,10 @@ for arg in sys.argv[1:]:
         stop_time = arg[-5:]
         print('Stop time:' + stop_time)
     elif arg.startswith('-j'):
+        if not re.match(r'-j\d+', arg):
+            print('Argument "{}" is invalid.'.format(arg))
+            print('"-j" must be followed by a positive number.')
+            sys.exit(1)
         jobs = arg
         print('Jobs:' + jobs[2:])
     elif arg.startswith('--package='):

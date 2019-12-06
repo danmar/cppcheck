@@ -55,7 +55,7 @@
 static const char Version[] = CPPCHECK_VERSION_STRING;
 static const char ExtraVersion[] = "";
 
-static TimerResults S_timerResults;
+static TimerResults s_timerResults;
 
 // CWE ids used
 static const CWE CWE398(398U);  // Indicator of Poor Code Quality
@@ -115,6 +115,10 @@ namespace {
                 return "Failed to open " + fileName;
             picojson::value json;
             fin >> json;
+            std::string json_error = picojson::get_last_error();
+            if (!json_error.empty()) {
+                return "Loading " + fileName + " failed. " + json_error;
+            }
             if (!json.is<picojson::object>())
                 return "Loading " + fileName + " failed. Bad json.";
             picojson::object obj = json.get<picojson::object>();
@@ -173,7 +177,7 @@ CppCheck::~CppCheck()
         delete mFileInfo.back();
         mFileInfo.pop_back();
     }
-    S_timerResults.ShowResults(mSettings.showtime);
+    s_timerResults.showResults(mSettings.showtime);
 }
 
 const char * CppCheck::version()
@@ -387,7 +391,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
         // Get configurations..
         if ((mSettings.checkAllConfigurations && mSettings.userDefines.empty()) || mSettings.force) {
-            Timer t("Preprocessor::getConfigs", mSettings.showtime, &S_timerResults);
+            Timer t("Preprocessor::getConfigs", mSettings.showtime, &s_timerResults);
             configurations = preprocessor.getConfigs(tokens1);
         } else {
             configurations.insert(mSettings.userDefines);
@@ -453,9 +457,9 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             }
 
             if (mSettings.preprocessOnly) {
-                Timer t("Preprocessor::getcode", mSettings.showtime, &S_timerResults);
+                Timer t("Preprocessor::getcode", mSettings.showtime, &s_timerResults);
                 std::string codeWithoutCfg = preprocessor.getcode(tokens1, mCurrentConfig, files, true);
-                t.Stop();
+                t.stop();
 
                 if (codeWithoutCfg.compare(0,5,"#file") == 0)
                     codeWithoutCfg.insert(0U, "//");
@@ -474,16 +478,16 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
             Tokenizer mTokenizer(&mSettings, this);
             if (mSettings.showtime != SHOWTIME_MODES::SHOWTIME_NONE)
-                mTokenizer.setTimerResults(&S_timerResults);
+                mTokenizer.setTimerResults(&s_timerResults);
 
             try {
                 bool result;
 
                 // Create tokens, skip rest of iteration if failed
-                Timer timer("Tokenizer::createTokens", mSettings.showtime, &S_timerResults);
+                Timer timer("Tokenizer::createTokens", mSettings.showtime, &s_timerResults);
                 const simplecpp::TokenList &tokensP = preprocessor.preprocess(tokens1, mCurrentConfig, files, true);
                 mTokenizer.createTokens(&tokensP);
-                timer.Stop();
+                timer.stop();
                 hasValidConfig = true;
 
                 // If only errors are printed, print filename after the check
@@ -504,9 +508,9 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 checkRawTokens(mTokenizer);
 
                 // Simplify tokens into normal form, skip rest of iteration if failed
-                Timer timer2("Tokenizer::simplifyTokens1", mSettings.showtime, &S_timerResults);
+                Timer timer2("Tokenizer::simplifyTokens1", mSettings.showtime, &s_timerResults);
                 result = mTokenizer.simplifyTokens1(mCurrentConfig);
-                timer2.Stop();
+                timer2.stop();
                 if (!result)
                     continue;
 
@@ -543,9 +547,9 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 // simplify more if required, skip rest of iteration if failed
                 if (mSimplify && hasRule("simple")) {
                     // if further simplification fails then skip rest of iteration
-                    Timer timer3("Tokenizer::simplifyTokenList2", mSettings.showtime, &S_timerResults);
+                    Timer timer3("Tokenizer::simplifyTokenList2", mSettings.showtime, &s_timerResults);
                     result = mTokenizer.simplifyTokenList2();
-                    timer3.Stop();
+                    timer3.stop();
                     if (!result)
                         continue;
 
@@ -614,6 +618,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 const std::string &failedToGetAddonInfo = addonInfo.getAddonInfo(addon, mSettings.exename);
                 if (!failedToGetAddonInfo.empty()) {
                     reportOut(failedToGetAddonInfo);
+                    mExitCode = 1;
                     continue;
                 }
                 const std::string results = executeAddon(addonInfo, dumpFile);
@@ -723,7 +728,7 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
         if (Tokenizer::isMaxTime())
             return;
 
-        Timer timerRunChecks(check->name() + "::runChecks", mSettings.showtime, &S_timerResults);
+        Timer timerRunChecks(check->name() + "::runChecks", mSettings.showtime, &s_timerResults);
         check->runChecks(&tokenizer, &mSettings, this);
     }
 

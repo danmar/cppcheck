@@ -130,6 +130,8 @@ private:
         TEST_CASE(valueFlowPointerAliasDeref);
 
         TEST_CASE(valueFlowCrashIncompleteCode);
+
+        TEST_CASE(valueFlowCrash);
     }
 
     static bool isNotTokValue(const ValueFlow::Value &val) {
@@ -4334,6 +4336,23 @@ private:
                "        state = x;\n"
                "}\n";
         valueOfTok(code, "=");
+
+        code = "void a() {\n"
+               "  auto b = [b = 0] {\n"
+               "    if (b) {\n"
+               "    }\n"
+               "  };\n"
+               "}\n";
+        valueOfTok(code, "0");
+    }
+
+    void valueFlowCrash() {
+        const char* code;
+
+        code = "void f(int x) {\n"
+               "    if (0 * (x > 2)) {}\n"
+               "}\n";
+        valueOfTok(code, "x");
     }
 };
 

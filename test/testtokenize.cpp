@@ -408,6 +408,8 @@ private:
         TEST_CASE(simplifyOperatorName21);
         TEST_CASE(simplifyOperatorName22);
         TEST_CASE(simplifyOperatorName23);
+        TEST_CASE(simplifyOperatorName24);
+        TEST_CASE(simplifyOperatorName25);
 
         TEST_CASE(simplifyNullArray);
 
@@ -454,6 +456,7 @@ private:
         TEST_CASE(astcast);
         TEST_CASE(astlambda);
         TEST_CASE(astcase);
+        TEST_CASE(astrefqualifier);
         TEST_CASE(astvardecl);
 
         TEST_CASE(startOfExecutableScope);
@@ -469,6 +472,8 @@ private:
         TEST_CASE(checkTemplates);
         TEST_CASE(checkNamespaces);
         TEST_CASE(checkLambdas);
+        TEST_CASE(checkIfCppCast);
+        TEST_CASE(checkRefQualifiers);
 
         // #9052
         TEST_CASE(noCrash1);
@@ -944,6 +949,7 @@ private:
         ASSERT_EQUALS("; __published: ;", tokenizeAndStringify(";__published:;", false));
         ASSERT_EQUALS("a . public : ;", tokenizeAndStringify("a.public:;", false));
         ASSERT_EQUALS("void f ( x & = 2 ) ;", tokenizeAndStringify("void f(x &= 2);", false));
+        ASSERT_EQUALS("const_cast < a * > ( & e )", tokenizeAndStringify("const_cast<a*>(&e)", false));
     }
 
     void concatenateNegativeNumber() {
@@ -6547,6 +6553,25 @@ private:
         }
     }
 
+    void simplifyOperatorName24() {
+        {
+            const char code[] = "void foo() { int i = a.operator++() ? a.operator--() : 0; }";
+            ASSERT_EQUALS("void foo ( ) { int i ; i = a . operator++ ( ) ? a . operator-- ( ) : 0 ; }",
+                          tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "void foo() { int i = a.operator++(0) ? a.operator--(0) : 0; }";
+            ASSERT_EQUALS("void foo ( ) { int i ; i = a . operator++ ( 0 ) ? a . operator-- ( 0 ) : 0 ; }",
+                          tokenizeAndStringify(code));
+        }
+    }
+
+    void simplifyOperatorName25() {
+        const char code[] = "bool negative(const Number &num) { return num.operator std::string()[0] == '-'; }";
+        ASSERT_EQUALS("bool negative ( const Number & num ) { return num . operatorstd::string ( ) [ 0 ] == '-' ; }",
+                      tokenizeAndStringify(code));
+    }
+
     void simplifyNullArray() {
         ASSERT_EQUALS("* ( foo . bar [ 5 ] ) = x ;", tokenizeAndStringify("0[foo.bar[5]] = x;"));
     }
@@ -7266,6 +7291,26 @@ private:
         ASSERT_EQUALS("[ [ maybe_unused ] ] int f ( [ [ maybe_unused ] ] int i ) ;",
                       tokenizeAndStringify("[[maybe_unused]] int f([[maybe_unused]] int i);", false, true, Settings::Native, "test.cpp", false));
 
+        ASSERT_EQUALS("struct a ;",
+                      tokenizeAndStringify("struct [[]] a;", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("struct a ;",
+                      tokenizeAndStringify("struct [[,]] a;", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("struct a ;",
+                      tokenizeAndStringify("struct [[deprecated,]] a;", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("struct a ;",
+                      tokenizeAndStringify("struct [[,,]] a;", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("struct a ;",
+                      tokenizeAndStringify("struct [[deprecated,,]] a;", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("struct a ;",
+                      tokenizeAndStringify("struct [[deprecated,maybe_unused,]] a;", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("struct a ;",
+                      tokenizeAndStringify("struct [[,,,]] a;", false, true, Settings::Native, "test.cpp", true));
     }
 
     void simplifyCaseRange() {
@@ -7600,15 +7645,17 @@ private:
         // ({..})
         ASSERT_EQUALS("a{+d+ bc+", testAst("a+({b+c;})+d"));
         ASSERT_EQUALS("a{d*+ bc+", testAst("a+({b+c;})*d"));
-        ASSERT_EQUALS("xabc({((= ydef({((=",
+        ASSERT_EQUALS("xa{((= bc( yd{((= ef(",
                       testAst("x=(int)(a({b(c);}));" // don't hang
                               "y=(int)(d({e(f);}));"));
-        ASSERT_EQUALS("A{,( x0= Bx1={{,( x2=",  // TODO: This is not perfect!!
+        ASSERT_EQUALS("A{{,( x0= Bx1={x2={,(",  // TODO: This is not perfect!!
                       testAst("A({},{x=0;});" // don't hang
                               "B({x=1},{x=2});"));
         ASSERT_EQUALS("xMACROtype.T=value.1=,{({=",
                       testAst("x = { MACRO( { .type=T, .value=1 } ) }")); // don't hang: MACRO({..})
         ASSERT_EQUALS("fori10=i{;;( i--", testAst("for (i=10;i;({i--;}) ) {}"));
+        ASSERT_EQUALS("c{0{,{(",
+                      testAst("c({{}, {0}}, {0.0f});"));
 
         // function pointer
         TODO_ASSERT_EQUALS("todo", "va_argapvoid((,(*0=", testAst("*va_arg(ap, void(**) ()) = 0;"));
@@ -7703,7 +7750,7 @@ private:
         ASSERT_EQUALS("xsizeofvoid(=", testAst("x=sizeof(void*)"));
         ASSERT_EQUALS("abc{d{,{(=", testAst("a = b({ c{}, d{} });"));
         ASSERT_EQUALS("abc;(", testAst("a(b;c)"));
-        ASSERT_THROW(testAst("a({ for(a;b;c){} });"), InternalError);
+        ASSERT_EQUALS("x{( forbc;;(", testAst("x({ for(a;b;c){} });"));
     }
 
     void asttemplate() { // uninstantiated templates will have <,>,etc..
@@ -7775,7 +7822,7 @@ private:
                               "    a = b;\n"
                               "  }\n"
                               "};\n"));
-        ASSERT_EQUALS("{return ab={",
+        ASSERT_EQUALS("{return ab=",
                       testAst("return {\n"
                               "  [=]() -> int {\n"
                               "    a=b;\n"
@@ -7793,6 +7840,15 @@ private:
         ASSERT_EQUALS("0case", testAst("case 0:"));
         ASSERT_EQUALS("12+case", testAst("case 1+2:"));
         ASSERT_EQUALS("xyz:?case", testAst("case (x?y:z):"));
+    }
+
+    void astrefqualifier() {
+        ASSERT_EQUALS("b(int.", testAst("class a { auto b() -> int&; };"));
+        ASSERT_EQUALS("b(int.", testAst("class a { auto b() -> int&&; };"));
+        ASSERT_EQUALS("b(", testAst("class a { void b() &&; };"));
+        ASSERT_EQUALS("b(", testAst("class a { void b() &; };"));
+        ASSERT_EQUALS("b(", testAst("class a { void b() && {} };"));
+        ASSERT_EQUALS("b(", testAst("class a { void b() & {} };"));
     }
 
     void compileLimits() {
@@ -7881,6 +7937,8 @@ private:
         ASSERT_THROW(tokenizeAndStringify("void f() { MACRO(x,switch); }"), InternalError);
         ASSERT_THROW(tokenizeAndStringify("void foo() { for_chain( if (!done) done = 1); }"), InternalError);
         ASSERT_THROW(tokenizeAndStringify("void foo() { for_chain( a, b, if (!done) done = 1); }"), InternalError);
+
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { if (retval==){} }"), InternalError, "syntax error: == )");
 
         // after (expr)
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { switch (a) int b; }"));
@@ -8052,6 +8110,63 @@ private:
                                              "    auto b = [this, a] {};\n"
                                              "  }\n"
                                              "};\n"))
+    }
+    void checkIfCppCast() {
+        ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
+                                             "  int b();\n"
+                                             "};\n"
+                                             "struct c {\n"
+                                             "  bool d() const;\n"
+                                             "  a e;\n"
+                                             "};\n"
+                                             "bool c::d() const {\n"
+                                             "  int f = 0;\n"
+                                             "  if (!const_cast<a *>(&e)->b()) {}\n"
+                                             "  return f;\n"
+                                             "}\n"))
+    }
+
+    // #9511
+    void checkRefQualifiers() {
+        ASSERT_NO_THROW(tokenizeAndStringify("class a {\n"
+                                             "  void b() && {\n"
+                                             "    if (this) {}\n"
+                                             "  }\n"
+                                             "};\n"))
+        ASSERT_NO_THROW(tokenizeAndStringify("class a {\n"
+                                             "  void b() & {\n"
+                                             "    if (this) {}\n"
+                                             "  }\n"
+                                             "};\n"))
+        ASSERT_NO_THROW(tokenizeAndStringify("class a {\n"
+                                             "  auto b() && -> void {\n"
+                                             "    if (this) {}\n"
+                                             "  }\n"
+                                             "};\n"))
+        ASSERT_NO_THROW(tokenizeAndStringify("class a {\n"
+                                             "  auto b() & -> void {\n"
+                                             "    if (this) {}\n"
+                                             "  }\n"
+                                             "};\n"))
+        ASSERT_NO_THROW(tokenizeAndStringify("class a {\n"
+                                             "  auto b(int& x) -> int& {\n"
+                                             "    if (this) {}\n"
+                                             "    return x;\n"
+                                             "  }\n"
+                                             "};\n"))
+        ASSERT_NO_THROW(tokenizeAndStringify("class a {\n"
+                                             "  auto b(int& x) -> int&& {\n"
+                                             "    if (this) {}\n"
+                                             "    return x;\n"
+                                             "  }\n"
+                                             "};\n"))
+        ASSERT_NO_THROW(tokenizeAndStringify("class a {\n"
+                                             "  auto b(int& x) && -> int& {\n"
+                                             "    if (this) {}\n"
+                                             "    return x;\n"
+                                             "  }\n"
+                                             "};\n"))
+
     }
 
     void noCrash1() {

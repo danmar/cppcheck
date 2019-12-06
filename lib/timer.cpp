@@ -39,7 +39,7 @@ namespace {
     }
 }
 
-void TimerResults::ShowResults(SHOWTIME_MODES mode) const
+void TimerResults::showResults(SHOWTIME_MODES mode) const
 {
     if (mode == SHOWTIME_MODES::SHOWTIME_NONE)
         return;
@@ -65,7 +65,7 @@ void TimerResults::ShowResults(SHOWTIME_MODES mode) const
     std::cout << "Overall time: " << secOverall << "s" << std::endl;
 }
 
-void TimerResults::AddResults(const std::string& str, std::clock_t clocks)
+void TimerResults::addResults(const std::string& str, std::clock_t clocks)
 {
     mResults[str].mClocks += clocks;
     mResults[str].mNumberOfResults++;
@@ -84,10 +84,10 @@ Timer::Timer(const std::string& str, SHOWTIME_MODES showtimeMode, TimerResultsIn
 
 Timer::~Timer()
 {
-    Stop();
+    stop();
 }
 
-void Timer::Stop()
+void Timer::stop()
 {
     if ((mShowTimeMode != SHOWTIME_MODES::SHOWTIME_NONE) && !mStopped) {
         const std::clock_t end = std::clock();
@@ -98,7 +98,7 @@ void Timer::Stop()
             std::cout << mStr << ": " << sec << "s" << std::endl;
         } else {
             if (mTimerResults)
-                mTimerResults->AddResults(mStr, diff);
+                mTimerResults->addResults(mStr, diff);
         }
     }
 

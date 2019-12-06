@@ -234,7 +234,7 @@ void CppCheckExecutor::setSettings(const Settings &settings)
  * \return size of array
  * */
 template<typename T, int size>
-std::size_t GetArrayLength(const T(&)[size])
+std::size_t getArrayLength(const T(&)[size])
 {
     return size;
 }
@@ -254,7 +254,7 @@ static void print_stacktrace(FILE* output, bool demangling, int maxdepth, bool l
 #define ADDRESSDISPLAYLENGTH ((sizeof(long)==8)?12:8)
     const int fd = fileno(output);
     void *callstackArray[32]= {nullptr}; // the less resources the better...
-    const int currentdepth = backtrace(callstackArray, (int)GetArrayLength(callstackArray));
+    const int currentdepth = backtrace(callstackArray, (int)getArrayLength(callstackArray));
     const int offset=2; // some entries on top are within our own exception handling code or libc
     if (maxdepth<0)
         maxdepth=currentdepth-offset;
@@ -282,7 +282,7 @@ static void print_stacktrace(FILE* output, bool demangling, int maxdepth, bool l
                         char input_buffer[1024]= {0};
                         strncpy(input_buffer, firstBracketName+1, plus-firstBracketName-1);
                         char output_buffer[2048]= {0};
-                        size_t length = GetArrayLength(output_buffer);
+                        size_t length = getArrayLength(output_buffer);
                         int status=0;
                         // We're violating the specification - passing stack address instead of malloc'ed heap.
                         // Benefit is that no further heap is required, while there is sufficient stack...
@@ -565,7 +565,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
 namespace {
     const ULONG maxnamelength = 512;
     struct IMAGEHLP_SYMBOL64_EXT : public IMAGEHLP_SYMBOL64 {
-        TCHAR NameExt[maxnamelength]; // actually no need to worry about character encoding here
+        TCHAR nameExt[maxnamelength]; // actually no need to worry about character encoding here
     };
     typedef BOOL (WINAPI *fpStackWalk64)(DWORD, HANDLE, HANDLE, LPSTACKFRAME64, PVOID, PREAD_PROCESS_MEMORY_ROUTINE64, PFUNCTION_TABLE_ACCESS_ROUTINE64, PGET_MODULE_BASE_ROUTINE64, PTRANSLATE_ADDRESS_ROUTINE64);
     fpStackWalk64 pStackWalk64;
@@ -600,7 +600,7 @@ namespace {
     }
 
 
-    void PrintCallstack(FILE* outputFile, PEXCEPTION_POINTERS ex)
+    void printCallstack(FILE* outputFile, PEXCEPTION_POINTERS ex)
     {
         if (!loadDbgHelp())
             return;
@@ -654,7 +654,7 @@ namespace {
                 break;
             pSymGetSymFromAddr64(hProcess, (ULONG64)stack.AddrPC.Offset, &displacement, &symbol);
             TCHAR undname[maxnamelength]= {0};
-            pUnDecorateSymbolName((const TCHAR*)symbol.Name, (PTSTR)undname, (DWORD)GetArrayLength(undname), UNDNAME_COMPLETE);
+            pUnDecorateSymbolName((const TCHAR*)symbol.Name, (PTSTR)undname, (DWORD)getArrayLength(undname), UNDNAME_COMPLETE);
             if (beyond_main>=0)
                 ++beyond_main;
             if (_tcscmp(undname, _T("main"))==0)
@@ -777,7 +777,7 @@ namespace {
             break;
         }
         fputc('\n', outputFile);
-        PrintCallstack(outputFile, ex);
+        printCallstack(outputFile, ex);
         fflush(outputFile);
         return EXCEPTION_EXECUTE_HANDLER;
     }

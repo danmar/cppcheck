@@ -107,7 +107,7 @@ public:
      * \param unknown set to true if it's unknown if the scope is noreturn
      * \return true if scope ends with a function call that might be 'noreturn'
      */
-    bool IsScopeNoReturn(const Token *endScopeToken, bool *unknown = nullptr) const;
+    bool isScopeNoReturn(const Token *endScopeToken, bool *unknown = nullptr) const;
 
     bool createTokens(std::istream &code, const std::string& FileName);
     void createTokens(const simplecpp::TokenList *tokenList);

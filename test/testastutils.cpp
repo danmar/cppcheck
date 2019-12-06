@@ -129,6 +129,10 @@ private:
         ASSERT_EQUALS(true, isReturnScope("auto f() { return [=]() { return data; }; }", -1));
         ASSERT_EQUALS(true, isReturnScope("auto f() { return [=]() { return data; }(); }", -1));
         ASSERT_EQUALS(false, isReturnScope("auto f() { [=]() { return data; }(); }", -1));
+
+        ASSERT_EQUALS(true, isReturnScope("void negativeTokenOffset() { return; }", -1));
+        ASSERT_EQUALS(false, isReturnScope("void zeroTokenOffset() { return; }", 0));
+        ASSERT_EQUALS(true, isReturnScope("void positiveTokenOffset() { return; }", 7));
     }
 
     bool isVariableChanged(const char code[], const char startPattern[], const char endPattern[]) {

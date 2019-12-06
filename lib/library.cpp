@@ -576,17 +576,17 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                         return Error(MISSING_ATTRIBUTE, "type");
                     platform.insert(type_attribute);
                 } else if (typenodename == "signed")
-                    type._signed = true;
+                    type.mSigned = true;
                 else if (typenodename == "unsigned")
-                    type._unsigned = true;
+                    type.mUnsigned = true;
                 else if (typenodename == "long")
-                    type._long = true;
+                    type.mLong = true;
                 else if (typenodename == "pointer")
-                    type._pointer= true;
+                    type.mPointer= true;
                 else if (typenodename == "ptr_ptr")
-                    type._ptr_ptr = true;
+                    type.mPtrPtr = true;
                 else if (typenodename == "const_ptr")
-                    type._const_ptr = true;
+                    type.mConstPtr = true;
                 else
                     unknown_elements.insert(typenodename);
             }
@@ -1261,6 +1261,23 @@ bool Library::hasminsize(const Token *ftok) const
             return true;
     }
     return false;
+}
+
+Library::ArgumentChecks::Direction Library::getArgDirection(const Token* ftok, int argnr) const
+{
+    const ArgumentChecks* arg = getarg(ftok, argnr);
+    if (arg)
+        return arg->direction;
+    if (formatstr_function(ftok)) {
+        const int fs_argno = formatstr_argno(ftok);
+        if (fs_argno >= 0 && argnr >= fs_argno) {
+            if (formatstr_scan(ftok))
+                return ArgumentChecks::Direction::DIR_OUT;
+            else
+                return ArgumentChecks::Direction::DIR_IN;
+        }
+    }
+    return ArgumentChecks::Direction::DIR_UNKNOWN;
 }
 
 bool Library::ignorefunction(const std::string& functionName) const

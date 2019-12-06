@@ -588,7 +588,7 @@ static double myStod(const std::string& str, std::string::const_iterator from, s
 
 // Assuming a limited support of built-in hexadecimal floats (see C99, C++17) that is a fall-back implementation.
 // Performance has been optimized WRT to heap activity, however the calculation part is not optimized.
-static double FloatHexToDoubleNumber(const std::string& str)
+static double floatHexToDoubleNumber(const std::string& str)
 {
     const std::size_t p = str.find_first_of("pP",3);
     const double factor1 = myStod(str, str.begin() + 2, str.begin()+p, 16);
@@ -613,7 +613,7 @@ double MathLib::toDoubleNumber(const std::string &str)
         return std::strtod(str.c_str(), nullptr);
 #endif
     if (isFloatHex(str))
-        return FloatHexToDoubleNumber(str);
+        return floatHexToDoubleNumber(str);
     // otherwise, convert to double
     std::istringstream istr(str);
     istr.imbue(std::locale::classic());
@@ -740,7 +740,7 @@ bool MathLib::isPositive(const std::string &str)
     return !MathLib::isNegative(str);
 }
 
-static bool _isValidIntegerSuffix(std::string::const_iterator it, std::string::const_iterator end, bool supportMicrosoftExtensions=true)
+static bool isValidIntegerSuffixIt(std::string::const_iterator it, std::string::const_iterator end, bool supportMicrosoftExtensions=true)
 {
     enum { START, SUFFIX_U, SUFFIX_UL, SUFFIX_ULL, SUFFIX_L, SUFFIX_LU, SUFFIX_LL, SUFFIX_LLU, SUFFIX_I, SUFFIX_I6, SUFFIX_I64, SUFFIX_UI, SUFFIX_UI6, SUFFIX_UI64 } state = START;
     for (; it != end; ++it) {
@@ -826,7 +826,7 @@ static bool _isValidIntegerSuffix(std::string::const_iterator it, std::string::c
 
 bool MathLib::isValidIntegerSuffix(const std::string& str, bool supportMicrosoftExtensions)
 {
-    return _isValidIntegerSuffix(str.begin(), str.end(), supportMicrosoftExtensions);
+    return isValidIntegerSuffixIt(str.begin(), str.end(), supportMicrosoftExtensions);
 }
 
 
@@ -868,7 +868,7 @@ bool MathLib::isOct(const std::string& str)
             if (isOctalDigit(static_cast<unsigned char>(*it)))
                 state = Status::DIGITS;
             else
-                return _isValidIntegerSuffix(it,str.end());
+                return isValidIntegerSuffixIt(it,str.end());
             break;
         }
     }
@@ -909,7 +909,7 @@ bool MathLib::isIntHex(const std::string& str)
             if (isxdigit(static_cast<unsigned char>(*it)))
                 ; //  state = DIGIT;
             else
-                return _isValidIntegerSuffix(it,str.end());
+                return isValidIntegerSuffixIt(it,str.end());
             break;
         }
     }
@@ -1040,7 +1040,7 @@ bool MathLib::isBin(const std::string& str)
             if (*it == '0' || *it == '1')
                 ; //  state = DIGIT;
             else
-                return _isValidIntegerSuffix(it,str.end());
+                return isValidIntegerSuffixIt(it,str.end());
             break;
         }
     }
@@ -1069,7 +1069,7 @@ bool MathLib::isDec(const std::string & str)
             if (isdigit(static_cast<unsigned char>(*it)))
                 state = DIGIT;
             else
-                return _isValidIntegerSuffix(it,str.end());
+                return isValidIntegerSuffixIt(it,str.end());
             break;
         }
     }
