@@ -354,8 +354,19 @@ void misra_12_2(u8 x) {
 }
 
 void misra_12_3() {
+  int a1, a2; // 12.3
+  int a3; int a4; // no warning
+  int a5 = 9, a6; // 12.3
+  int a7, a8 = 11; // 12.3
+  int a9 = foo(), a10; // 12.3
+
   f((1,2),3); // TODO
-  for (i=0;i<10;i++,j++){} // 12.3
+
+  for (i=0; i<10; i++, j++){} // 12.3
+  for (int i = 0, p = &a1;  // 12.3 14.2
+          i < 42;
+          ++i, ++p ) // 12.3
+  {}
 }
 
 #define MISRA12_4a 2000000000u

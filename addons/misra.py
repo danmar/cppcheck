@@ -1348,14 +1348,45 @@ class MisraChecker:
             if maxval >= sz:
                 self.reportError(token, 12, 2)
 
-    def misra_12_3(self, data):
+    def misra_12_3(self, data, rawTokens):
+        excluded_linenrs = set()
         for token in data.tokenlist:
-            if token.str != ',' or token.scope.type == 'Enum' or \
-                    token.scope.type == 'Class' or token.scope.type == 'Global':
+            if token.scope.type in ('Enum', 'Class', 'Global'):
+                excluded_linenrs.add(token.linenr)
+                continue
+            if token.str != ',':
                 continue
             if token.astParent and token.astParent.str in ['(', ',', '{']:
+                excluded_linenrs.add(token.linenr)
                 continue
             self.reportError(token, 12, 3)
+
+        # Cppcheck performs some simplifications in variables declaration code:
+        # int a, b, c;
+        # Will be reresented in dump file as:
+        # int a; int b; int c;
+        maybe_linenrs = set()  # numbers of lines that may be contains ',' symbols
+        name_tokens = [v.nameToken for v in data.variables if v.nameToken]
+        for _, decl_tokens in itertools.groupby(name_tokens, key=lambda t:t.linenr):
+            decl_tokens = list(decl_tokens)
+            if len(decl_tokens) == 1:
+                continue
+            maybe_linenrs.add(decl_tokens[0].linenr)
+
+        # Check found "suspicious" lines with variables declaration code to
+        # distinguish ';' or ',' symbols.
+        maybe_linenrs = maybe_linenrs.difference(excluded_linenrs)
+        if len(maybe_linenrs) == 0:
+            return
+        cur_line = min(maybe_linenrs)
+        for tok in rawTokens:
+            if tok.linenr in maybe_linenrs and tok.str == ',':
+                self.reportError(tok, 12, 3)
+            if tok.linenr > cur_line:
+                maybe_linenrs.remove(cur_line)
+                if len(maybe_linenrs) == 0:
+                    break
+                cur_line = min(maybe_linenrs)
 
     def misra_12_4(self, data):
         if typeBits['INT'] == 16:
@@ -2508,7 +2539,7 @@ class MisraChecker:
                 self.executeCheck(1201, self.misra_12_1_sizeof, data.rawTokens)
             self.executeCheck(1201, self.misra_12_1, cfg)
             self.executeCheck(1202, self.misra_12_2, cfg)
-            self.executeCheck(1203, self.misra_12_3, cfg)
+            self.executeCheck(1203, self.misra_12_3, cfg, data.rawTokens)
             self.executeCheck(1204, self.misra_12_4, cfg)
             self.executeCheck(1301, self.misra_13_1, cfg)
             self.executeCheck(1303, self.misra_13_3, cfg)
