@@ -360,6 +360,11 @@ enum misra_12_3_e2 { M123A2 = 3, M123B2 = 4, M123C2 };
 typedef enum misra_12_3_e3 { M123A3 , M123B3, M123C3 } misra_12_3_e3_t;
 typedef enum { M123A4 , M123B4, M123C4 } misra_12_3_e4_t;
 struct misra_12_3_s1 { int a; int b; int c, d; };
+static struct misra_12_3_s1 misra_12_3_s1_inst = {
+  3,
+  4, 5,
+  6, // no warning
+};
 typedef struct misra_12_3_s2 { int a; int b; int c, d; } misra_12_3_s2_t;
 typedef struct { int a; int b; int c, d; } misra_12_3_s3_t;
 void misra_12_3_fn1(int, int); static int misra_12_3_v5, misra_12_4_v6; // 12.3

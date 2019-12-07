@@ -1356,7 +1356,7 @@ class MisraChecker:
         end_tokens_map = {}
 
         for token in data.tokenlist:
-            if token.scope.type in ('Enum', 'Class', 'Struct'):
+            if token.scope.type in ('Enum', 'Class', 'Struct', 'Global'):
                 continue
             # Save end tokens from function calls in initialization
             if simpleMatch(token, ') ;'):
