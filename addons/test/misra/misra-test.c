@@ -355,6 +355,13 @@ void misra_12_2(u8 x) {
 
 static int misra_12_3_v1 = 0, misra_12_3_v2; // 12.3
 static int misra_12_3_v3, misra_12_3_v4; // 12.3
+enum misra_12_3_e1 { M123A1, M123B1, M123C1 };
+enum misra_12_3_e2 { M123A2 = 3, M123B2 = 4, M123C2 };
+typedef enum misra_12_3_e3 { M123A3 , M123B3, M123C3 } misra_12_3_e3_t;
+typedef enum { M123A4 , M123B4, M123C4 } misra_12_3_e4_t;
+struct misra_12_3_s1 { int a; int b; int c, d; };
+typedef struct misra_12_3_s2 { int a; int b; int c, d; } misra_12_3_s2_t;
+typedef struct { int a; int b; int c, d; } misra_12_3_s3_t;
 void misra_12_3(int, int, int); // no warning
 void misra_12_3(int a, int b, int c) { // no warning
   int a1, a2; // 12.3
