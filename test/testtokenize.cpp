@@ -474,7 +474,7 @@ private:
         TEST_CASE(checkLambdas);
         TEST_CASE(checkIfCppCast);
         TEST_CASE(checkRefQualifiers);
-        TEST_CASE(checkCondtionBlock);
+        TEST_CASE(checkConditionBlock);
 
         // #9052
         TEST_CASE(noCrash1);
@@ -8171,7 +8171,7 @@ private:
 
     }
 
-    void checkCondtionBlock() {
+    void checkConditionBlock() {
         ASSERT_NO_THROW(tokenizeAndStringify("void a() {\n"
                                              "  for (auto b : std::vector<std::vector<int>>{{}, {}}) {}\n"
                                              "}\n"))
