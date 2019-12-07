@@ -8126,8 +8126,8 @@ private:
                                              "}\n"))
     }
 
-    // #9511
     void checkRefQualifiers() {
+        // #9511
         ASSERT_NO_THROW(tokenizeAndStringify("class a {\n"
                                              "  void b() && {\n"
                                              "    if (this) {}\n"
@@ -8165,6 +8165,15 @@ private:
                                              "    if (this) {}\n"
                                              "    return x;\n"
                                              "  }\n"
+                                             "};\n"))
+        // #9524
+        ASSERT_NO_THROW(tokenizeAndStringify("auto f() -> int* {\n"
+                                             "  if (0) {}\n"
+                                             "  return 0;\n"
+                                             "};\n"))
+        ASSERT_NO_THROW(tokenizeAndStringify("auto f() -> int** {\n"
+                                             "  if (0) {}\n"
+                                             "  return 0;\n"
                                              "};\n"))
 
     }
