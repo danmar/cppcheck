@@ -1348,11 +1348,12 @@ class MisraChecker:
             if maxval >= sz:
                 self.reportError(token, 12, 2)
 
-    def misra_12_3(self, data, rawTokens):
+    def misra_12_3(self, data, rawTokens, filename):
         excluded_linenrs = set()
         for token in data.tokenlist:
-            if token.scope.type in ('Enum', 'Class'):
-                excluded_linenrs.add(token.linenr)
+            if token.scope.type in ('Enum', 'Class', 'Struct'):
+                if token.file == filename:
+                    excluded_linenrs.add(token.linenr)
                 continue
             if token.str != ',':
                 continue
@@ -2472,7 +2473,7 @@ class MisraChecker:
             check_function(*args)
 
     def parseDump(self, dumpfile):
-
+        filename = '.'.join(dumpfile.split('.')[:-1])
         data = cppcheckdata.parsedump(dumpfile)
 
         self.dumpfileSuppressions = data.suppressions
@@ -2538,7 +2539,7 @@ class MisraChecker:
                 self.executeCheck(1201, self.misra_12_1_sizeof, data.rawTokens)
             self.executeCheck(1201, self.misra_12_1, cfg)
             self.executeCheck(1202, self.misra_12_2, cfg)
-            self.executeCheck(1203, self.misra_12_3, cfg, data.rawTokens)
+            self.executeCheck(1203, self.misra_12_3, cfg, data.rawTokens, filename)
             self.executeCheck(1204, self.misra_12_4, cfg)
             self.executeCheck(1301, self.misra_13_1, cfg)
             self.executeCheck(1303, self.misra_13_3, cfg)
