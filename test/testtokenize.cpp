@@ -474,6 +474,7 @@ private:
         TEST_CASE(checkLambdas);
         TEST_CASE(checkIfCppCast);
         TEST_CASE(checkRefQualifiers);
+        TEST_CASE(checkConditionBlock);
 
         // #9052
         TEST_CASE(noCrash1);
@@ -7692,6 +7693,7 @@ private:
         ASSERT_EQUALS("Abc({newreturn", testAst("return new A {b(c)};"));
         ASSERT_EQUALS("a{{return", testAst("return{{a}};"));
         ASSERT_EQUALS("a{b{,{return", testAst("return{{a},{b}};"));
+        ASSERT_EQUALS("stdvector::", testAst("std::vector<std::vector<int>>{{},{}}"));
     }
 
     void astbrackets() { // []
@@ -8176,6 +8178,12 @@ private:
                                              "  return 0;\n"
                                              "};\n"))
 
+    }
+
+    void checkConditionBlock() {
+        ASSERT_NO_THROW(tokenizeAndStringify("void a() {\n"
+                                             "  for (auto b : std::vector<std::vector<int>>{{}, {}}) {}\n"
+                                             "}\n"))
     }
 
     void noCrash1() {
