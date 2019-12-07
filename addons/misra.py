@@ -1349,44 +1349,80 @@ class MisraChecker:
                 self.reportError(token, 12, 2)
 
     def misra_12_3(self, data, rawTokens, filename):
-        excluded_linenrs = set()
+        # We need an additional check for closing braces using in
+        # initialization lists and function calls, e.g.:
+        # struct S a = {1, 2, 3}, b, c = foo(1, 2), d;
+        #                       ^                 ^
+        end_tokens_map = {}
+
         for token in data.tokenlist:
             if token.scope.type in ('Enum', 'Class', 'Struct'):
-                if token.file == filename:
-                    excluded_linenrs.add(token.linenr)
                 continue
+            # Save end tokens from function calls in initialization
+            if simpleMatch(token, ') ;'):
+                if (token.isExpandedMacro):
+                    end_tokens_map.setdefault(token.next.linenr, set())
+                    end_tokens_map[token.linenr].add(token.next.column)
+                else:
+                    end_tokens_map.setdefault(token.linenr, set())
+                    end_tokens_map[token.linenr].add(token.column)
             if token.str != ',':
                 continue
-            if token.astParent and token.astParent.str in ['(', ',', '{']:
-                continue
+            if token.astParent:
+                if token.astParent.str in ('(', '{'):
+                    end_token = token.astParent.link
+                    if end_token:
+                        end_tokens_map.setdefault(end_token.linenr, set())
+                        end_tokens_map[end_token.linenr].add(end_token.column)
+                    continue
+                elif token.astParent.str == ',':
+                    continue
             self.reportError(token, 12, 3)
 
         # Cppcheck performs some simplifications in variables declaration code:
         # int a, b, c;
         # Will be reresented in dump file as:
         # int a; int b; int c;
-        maybe_linenrs = set()  # numbers of lines that may be contains ',' symbols
-        name_tokens = [v.nameToken for v in data.variables if v.nameToken and not v.isArgument]
-        for _, decl_tokens in itertools.groupby(name_tokens, key=lambda t:t.linenr):
-            decl_tokens = list(decl_tokens)
-            if len(decl_tokens) == 1:
+        name_tokens_map = {}
+        for v in data.variables:
+            if v.isArgument:
                 continue
-            maybe_linenrs.add(decl_tokens[0].linenr)
-
-        # Check found "suspicious" lines with variables declaration code to
-        # distinguish ';' and ',' symbols.
-        maybe_linenrs = maybe_linenrs.difference(excluded_linenrs)
-        if len(maybe_linenrs) == 0:
+            nt = v.nameToken
+            if nt and nt.scope and nt.scope.type not in ('Enum', 'Class', 'Struct'):
+                name_tokens_map.setdefault(nt.linenr, set())
+                name_tokens_map[nt.linenr].add(nt.column)
+        if not name_tokens_map:
             return
-        cur_line = min(maybe_linenrs)
+
+        # Select tokens to check
+        maybe_map = {}
+        for linenr in set(name_tokens_map.keys()) | set(end_tokens_map.keys()):
+            maybe_map[linenr] = name_tokens_map.get(linenr, set())
+            maybe_map[linenr] |= end_tokens_map.get(linenr, set())
+
+        # Check variables declaration code in raw tokens to distinguish ';' and
+        # ',' symbols.
+        STATE_SKIP = 0
+        STATE_CHECK = 1
+        state = STATE_SKIP
+        cur_line = min(maybe_map)
         for tok in rawTokens:
-            if tok.linenr in maybe_linenrs and tok.str == ',':
+            if tok.linenr in maybe_map and tok.column in maybe_map[tok.linenr]:
+                if tok.linenr in end_tokens_map and tok.column in end_tokens_map[tok.linenr]:
+                    if tok.str == ',' or (tok.next and tok.next.str == ','):
+                        self.reportError(tok, 12, 3)
+                        end_tokens_map[tok.linenr].remove(tok.column)
+                state = STATE_CHECK
+                cur_line = tok.linenr
+            if tok.str in ('(', ';', '{'):
+                state = STATE_SKIP
+                if tok.linenr > cur_line:
+                    maybe_map.pop(cur_line)
+                    if not maybe_map:
+                        break
+                    cur_line = min(maybe_map)
+            if state == STATE_CHECK and tok.str == ',':
                 self.reportError(tok, 12, 3)
-            if tok.linenr > cur_line:
-                maybe_linenrs.remove(cur_line)
-                if len(maybe_linenrs) == 0:
-                    break
-                cur_line = min(maybe_linenrs)
 
     def misra_12_4(self, data):
         if typeBits['INT'] == 16:
