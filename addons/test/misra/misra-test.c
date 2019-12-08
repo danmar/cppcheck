@@ -139,44 +139,6 @@ void misra_4_2()
     (void)printf("No?/Trigraph\n");
 }
 
-extern int misra_5_3_var_hides_var______31x;
-void misra_5_3_var_hides_function_31x (void) {}
-enum misra_5_3_Enum {
-misra_5_3_var_hidesenumconst_31x = 2,misra_5_3_enum_hidesfunction_31x = 5
-};
-void misra_5_3_func1(void)
-{
-  int misra_5_3_var_hides_var______31y; //5.3
-  int misra_5_3_var_hides_function_31y; //5.3
-  int misra_5_3_var_hidesenumconst_31y; //5.3
-  switch(misra_5_3_func2()) //16.4 16.6
-  {
-    case 1:
-    {
-      do 
-      {
-        int misra_5_3_var_hides_var_1____31x;
-        if(misra_5_3_func3()) //14.4
-        {
-          int misra_5_3_var_hides_var_1____31y = 1; //5.3
-        }
-      } while(misra_5_3_func2()); //14.4
-    }
-  }
-}
-void misra_5_3_enum_hidesfunction_31y(void) {} //5.3
-extern bar_5_3(int i);
-void f_5_3( void )
-{
-    {
-        int i;
-        i = 42;
-        bar_5_3(i);
-    }
-    int i; // no warning
-}
-
-
 #define misra_5_4_macro_hides_macro__31x 1
 #define misra_5_4_param_hides_macro__31x 1
 #define misra_5_4_macro_hides_macro__31y 2 //5.4

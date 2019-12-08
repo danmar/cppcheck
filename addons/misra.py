@@ -881,59 +881,6 @@ class MisraChecker:
                         else:
                             self.reportError(scopename2.bodyStart, 5, 2)
 
-    def misra_5_3(self, data):
-        num_sign_chars = self.get_num_significant_naming_chars(data)
-        enum = []
-        scopeVars = {}
-        for var in data.variables:
-            if var.nameToken is not None:
-                if var.nameToken.scope not in scopeVars:
-                    scopeVars[var.nameToken.scope] = []
-                scopeVars[var.nameToken.scope].append(var)
-        for innerScope in data.scopes:
-            if innerScope.type == "Enum":
-                enum_token = innerScope.bodyStart.next
-                while enum_token != innerScope.bodyEnd:
-                    if enum_token.values and enum_token.isName:
-                        enum.append(enum_token.str)
-                    enum_token = enum_token.next
-                continue
-            if innerScope not in scopeVars:
-                continue
-            if innerScope.type == "Global":
-                continue
-            for innerVar in scopeVars[innerScope]:
-                outerScope = innerScope.nestedIn
-                while outerScope:
-                    if outerScope not in scopeVars:
-                        outerScope = outerScope.nestedIn
-                        continue
-                    for outerVar in scopeVars[outerScope]:
-                        if innerVar.nameToken.str[:num_sign_chars] == outerVar.nameToken.str[:num_sign_chars]:
-                            if outerVar.isArgument and outerScope.type == "Global" and not innerVar.isArgument:
-                                continue
-                            if int(innerVar.nameToken.linenr) > int(outerVar.nameToken.linenr):
-                                self.reportError(innerVar.nameToken, 5, 3)
-                    outerScope = outerScope.nestedIn
-                for scope in data.scopes:
-                    if scope.className and innerVar.nameToken.str[:num_sign_chars] == scope.className[:num_sign_chars]:
-                        if int(innerVar.nameToken.linenr) > int(scope.bodyStart.linenr):
-                            self.reportError(innerVar.nameToken, 5, 3)
-                        else:
-                            self.reportError(scope.bodyStart, 5, 3)
-
-                for e in enum:
-                    for scope in data.scopes:
-                        if scope.className and innerVar.nameToken.str[:num_sign_chars] == e[:num_sign_chars]:
-                            if int(innerVar.nameToken.linenr) > int(innerScope.bodyStart.linenr):
-                                self.reportError(innerVar.nameToken, 5, 3)
-                            else:
-                                self.reportError(innerScope.bodyStart, 5, 3)
-        for e in enum:
-            for scope in data.scopes:
-                if scope.className and scope.className[:num_sign_chars] == e[:num_sign_chars]:
-                    self.reportError(scope.bodyStart, 5, 3)
-
     def misra_5_4(self, data):
         num_sign_chars = self.get_num_significant_naming_chars(data)
         macro = {}
@@ -2471,7 +2418,6 @@ class MisraChecker:
                 self.executeCheck(402, self.misra_4_2, data.rawTokens)
             self.executeCheck(501, self.misra_5_1, cfg)
             self.executeCheck(502, self.misra_5_2, cfg)
-            self.executeCheck(503, self.misra_5_3, cfg)
             self.executeCheck(504, self.misra_5_4, cfg)
             self.executeCheck(505, self.misra_5_5, cfg)
             # 6.1 require updates in Cppcheck (type info for bitfields are lost)
