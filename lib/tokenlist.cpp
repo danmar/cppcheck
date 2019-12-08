@@ -533,7 +533,7 @@ static const Token * findLambdaEndScope(const Token *tok)
     if (!Token::simpleMatch(tok, "["))
         return nullptr;
     tok = tok->link();
-    if (Token::simpleMatch(tok, "] (|{"))
+    if (!Token::Match(tok, "] (|{"))
         return nullptr;
     tok = tok->linkAt(1);
     if (Token::simpleMatch(tok, "}"))
@@ -544,7 +544,7 @@ static const Token * findLambdaEndScope(const Token *tok)
         return nullptr;
     tok = tok->next();
     while(Token::Match(tok, "mutable|constexpr|constval|noexcept|.")) {
-        if (Token::Match(tok, "noexcept ("))
+        if (Token::simpleMatch(tok, "noexcept ("))
             tok = tok->linkAt(1);
         if (Token::simpleMatch(tok, ".")) {
             tok = findTypeEnd(tok);
