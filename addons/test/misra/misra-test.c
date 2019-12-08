@@ -373,6 +373,7 @@ int misra_12_3_fn3(int a, int b) { return a+b;} static int misra_12_3_v5, misra_
 #define MISRA_12_3_FN3_1(A, B) (misra_12_3_fn3(A, B))
 #define MISRA_12_3_FN3_2(A, B) (misra_12_3_fn3(A, \
                                 B))
+#define MISRA_12_3_FN3_2_MSG(x) x, fflush(stderr) // 20.7
 void misra_12_3(int, int, int); // no warning
 void misra_12_3(int a, int b, int c) { // no warning
   int a1, a2; // 12.3
@@ -403,6 +404,8 @@ void misra_12_3(int a, int b, int c) { // no warning
   int a39, a40 = MISRA_12_3_FN3_1(a34, a35); // 12.3
   int a41 = MISRA_12_3_FN3_2(a34, a35), a42; // 12.3
   int a43, a44 = MISRA_12_3_FN3_2(a34, a35); // 12.3
+
+  MISRA_12_3_FN3_2_MSG(fprintf(stderr, "test\n")); // 12.3
 
   f((1,2),3); // TODO
 
