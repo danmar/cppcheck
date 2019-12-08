@@ -6989,13 +6989,13 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Storing getchar() return value in char variable and then comparing with EOF.\n", errout.str());
 
-		check("void f() {\n"
-			"  unsigned char c;\n"
-			"  while( EOF != ( c = getchar() ) )\n"
-			"  {\n"
-			"  }\n"
-			"}");
-		ASSERT_EQUALS("[test.cpp:3]: (warning) Storing getchar() return value in char variable and then comparing with EOF.\n", errout.str());
+        check("void f() {\n"
+              "  unsigned char c;\n"
+              "  while( EOF != ( c = getchar() ) )\n"
+              "  {\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Storing getchar() return value in char variable and then comparing with EOF.\n", errout.str());
 
         check("void f() {\n"
               "  unsigned char c;\n"
