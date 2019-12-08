@@ -1771,6 +1771,9 @@ private:
             "void f() {\n"
             "    auto fn = []() -> foo* { return new foo(); };\n"
             "}\n");
+	
+	checkCode(
+	   "extern \"C\" typedef void FUNC();\n");
     }
 };
 
