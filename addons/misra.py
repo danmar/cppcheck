@@ -1822,21 +1822,23 @@ class MisraChecker:
                     pos = exp.find(arg, pos)
                     if pos < 0:
                         break
+                    # is 'arg' used at position pos
                     pos1 = pos - 1
                     pos2 = pos + len(arg)
                     pos = pos2
-                    if isalnum(exp[pos1]) or exp[pos1] == '_':
+                    if pos1 >= 0 and (isalnum(exp[pos1]) or exp[pos1] == '_'):
                         continue
-                    if isalnum(exp[pos2]) or exp[pos2] == '_':
+                    if pos2 < len(exp) and (isalnum(exp[pos2]) or exp[pos2] == '_'):
                         continue
-                    while exp[pos1] == ' ':
+
+                    while pos1 >= 0 and exp[pos1] == ' ':
                         pos1 -= 1
-                    if exp[pos1] != '(' and exp[pos1] != '[':
+                    if exp[pos1] not in '([#':
                         self.reportError(directive, 20, 7)
                         break
-                    while exp[pos2] == ' ':
+                    while pos2 < len(exp) and exp[pos2] == ' ':
                         pos2 += 1
-                    if exp[pos2] != ')' and exp[pos2] != ']':
+                    if pos2 < len(exp) and exp[pos2] not in ')]#':
                         self.reportError(directive, 20, 7)
                         break
 
