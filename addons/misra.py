@@ -345,14 +345,7 @@ def isConstantExpression(expr):
 
 
 def isUnsignedInt(expr):
-    # TODO this function is very incomplete. use ValueType?
-    if not expr:
-        return False
-    if expr.isNumber:
-        return 'u' in expr.str or 'U' in expr.str
-    if expr.str in ('+', '-', '*', '/', '%'):
-        return isUnsignedInt(expr.astOperand1) or isUnsignedInt(expr.astOperand2)
-    return False
+    return expr and expr.valueType and expr.valueType.type in ('short', 'int') and expr.valueType.sign == 'unsigned'
 
 
 def getPrecedence(expr):
@@ -1369,8 +1362,6 @@ class MisraChecker:
             if not token.values:
                 continue
             if (not isConstantExpression(token)) or (not isUnsignedInt(token)):
-                continue
-            if not token.values:
                 continue
             for value in token.values:
                 if value.intvalue < 0 or value.intvalue > max_uint:

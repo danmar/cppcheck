@@ -367,6 +367,7 @@ void misra_12_4() {
   x = MISRA12_4a + MISRA12_4b; // 12.4
   x = 0u - 1u; // 12.4
   x = t ? 0u : (0u-1u); // 12.4
+  x = 556200230913ULL;
 }
 
 struct misra_13_1_t { int a; int b; };
