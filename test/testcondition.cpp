@@ -3481,6 +3481,14 @@ private:
               "  if (y.empty()) return;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9106
+        check("struct A {int b;};\n"
+              "void f(A a, int c) {\n"
+              "    if (a.b) a.b = c;\n"
+              "    if (a.b) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkInvalidTestForOverflow() {

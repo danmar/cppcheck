@@ -139,44 +139,6 @@ void misra_4_2()
     (void)printf("No?/Trigraph\n");
 }
 
-extern int misra_5_3_var_hides_var______31x;
-void misra_5_3_var_hides_function_31x (void) {}
-enum misra_5_3_Enum {
-misra_5_3_var_hidesenumconst_31x = 2,misra_5_3_enum_hidesfunction_31x = 5
-};
-void misra_5_3_func1(void)
-{
-  int misra_5_3_var_hides_var______31y; //5.3
-  int misra_5_3_var_hides_function_31y; //5.3
-  int misra_5_3_var_hidesenumconst_31y; //5.3
-  switch(misra_5_3_func2()) //16.4 16.6
-  {
-    case 1:
-    {
-      do 
-      {
-        int misra_5_3_var_hides_var_1____31x;
-        if(misra_5_3_func3()) //14.4
-        {
-          int misra_5_3_var_hides_var_1____31y = 1; //5.3
-        }
-      } while(misra_5_3_func2()); //14.4
-    }
-  }
-}
-void misra_5_3_enum_hidesfunction_31y(void) {} //5.3
-extern bar_5_3(int i);
-void f_5_3( void )
-{
-    {
-        int i;
-        i = 42;
-        bar_5_3(i);
-    }
-    int i; // no warning
-}
-
-
 #define misra_5_4_macro_hides_macro__31x 1
 #define misra_5_4_param_hides_macro__31x 1
 #define misra_5_4_macro_hides_macro__31y 2 //5.4
@@ -367,6 +329,7 @@ void misra_12_4() {
   x = MISRA12_4a + MISRA12_4b; // 12.4
   x = 0u - 1u; // 12.4
   x = t ? 0u : (0u-1u); // 12.4
+  x = 556200230913ULL;
 }
 
 struct misra_13_1_t { int a; int b; };
@@ -791,8 +754,9 @@ union misra_19_2 { }; // 19.2
 #define M_20_7_1(A)  (A+1) // 20.7
 #define M_20_7_2(A,B)  (1+AB+2) // no warning
 #define M_20_7_3(A)  ((A)+A) // 20.7
+#define M_20_7_4(A)  x##A // 20.10 this test was written to see there are not FPs
 
-#define STRINGIFY(a) (#a) // 20.7 20.10
+#define M_20_10(a) (#a) // 20.10
 
 #else1 // 20.13
 

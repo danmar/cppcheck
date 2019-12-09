@@ -601,11 +601,11 @@ static bool iscpp11init_impl(const Token * const tok)
     return true;
 }
 
-static bool isRefQualifier(const Token* tok)
+static bool isQualifier(const Token* tok)
 {
-    if (!Token::Match(tok, "&|&&"))
-        return false;
-    if (!Token::Match(tok->next(), "{|;"))
+    while (Token::Match(tok, "&|&&|*"))
+        tok = tok->next();
+    if (!Token::Match(tok, "{|;"))
         return false;
     return true;
 }
@@ -883,7 +883,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 compileUnaryOp(tok, state, compileExpression);
             else
                 compileBinOp(tok, state, compileExpression);
-            if (Token::simpleMatch(tok, "}"))
+            while (Token::simpleMatch(tok, "}"))
                 tok = tok->next();
         } else break;
     }
@@ -977,7 +977,7 @@ static void compileMulDiv(Token *&tok, AST_state& state)
 {
     compilePointerToElem(tok, state);
     while (tok) {
-        if (Token::Match(tok, "[/%]") || (tok->str() == "*" && !tok->astOperand1())) {
+        if (Token::Match(tok, "[/%]") || (tok->str() == "*" && !tok->astOperand1() && !isQualifier(tok))) {
             if (Token::Match(tok, "* [*,)]")) {
                 Token* tok2 = tok->next();
                 while (tok2->next() && tok2->str() == "*")
@@ -1036,7 +1036,7 @@ static void compileAnd(Token *&tok, AST_state& state)
 {
     compileEqComp(tok, state);
     while (tok) {
-        if (tok->str() == "&" && !tok->astOperand1() && !isRefQualifier(tok)) {
+        if (tok->str() == "&" && !tok->astOperand1() && !isQualifier(tok)) {
             Token* tok2 = tok->next();
             if (!tok2)
                 break;
@@ -1075,7 +1075,7 @@ static void compileLogicAnd(Token *&tok, AST_state& state)
 {
     compileOr(tok, state);
     while (tok) {
-        if (tok->str() == "&&" && !isRefQualifier(tok)) {
+        if (tok->str() == "&&" && !isQualifier(tok)) {
             if (!tok->astOperand1()) {
                 Token* tok2 = tok->next();
                 if (!tok2)
