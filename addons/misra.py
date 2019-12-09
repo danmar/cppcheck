@@ -345,14 +345,7 @@ def isConstantExpression(expr):
 
 
 def isUnsignedInt(expr):
-    # TODO this function is very incomplete. use ValueType?
-    if not expr:
-        return False
-    if expr.isNumber:
-        return 'u' in expr.str or 'U' in expr.str
-    if expr.str in ('+', '-', '*', '/', '%'):
-        return isUnsignedInt(expr.astOperand1) or isUnsignedInt(expr.astOperand2)
-    return False
+    return expr and expr.valueType and expr.valueType.type in ('short', 'int') and expr.valueType.sign == 'unsigned'
 
 
 def getPrecedence(expr):
@@ -560,9 +553,9 @@ def getAddonRules():
 
 def getCppcheckRules():
     """Returns list of rules handled by cppcheck."""
-    return ['1.3', '2.1', '2.2', '2.4', '2.6', '8.3', '12.2', '13.2', '13.6',
-            '14.3', '17.5', '18.1', '18.2', '18.3', '18.6', '20.6',
-            '22.1', '22.2', '22.4', '22.6']
+    return ['1.3', '2.1', '2.2', '2.4', '2.6', '5.3', '8.3', '12.2',
+            '13.2', '13.6', '14.3', '17.5', '18.1', '18.2', '18.3',
+            '18.6', '20.6', '22.1', '22.2', '22.4', '22.6']
 
 
 def generateTable():
@@ -887,59 +880,6 @@ class MisraChecker:
                             self.reportError(scopename1.bodyStart, 5, 2)
                         else:
                             self.reportError(scopename2.bodyStart, 5, 2)
-
-    def misra_5_3(self, data):
-        num_sign_chars = self.get_num_significant_naming_chars(data)
-        enum = []
-        scopeVars = {}
-        for var in data.variables:
-            if var.nameToken is not None:
-                if var.nameToken.scope not in scopeVars:
-                    scopeVars[var.nameToken.scope] = []
-                scopeVars[var.nameToken.scope].append(var)
-        for innerScope in data.scopes:
-            if innerScope.type == "Enum":
-                enum_token = innerScope.bodyStart.next
-                while enum_token != innerScope.bodyEnd:
-                    if enum_token.values and enum_token.isName:
-                        enum.append(enum_token.str)
-                    enum_token = enum_token.next
-                continue
-            if innerScope not in scopeVars:
-                continue
-            if innerScope.type == "Global":
-                continue
-            for innerVar in scopeVars[innerScope]:
-                outerScope = innerScope.nestedIn
-                while outerScope:
-                    if outerScope not in scopeVars:
-                        outerScope = outerScope.nestedIn
-                        continue
-                    for outerVar in scopeVars[outerScope]:
-                        if innerVar.nameToken.str[:num_sign_chars] == outerVar.nameToken.str[:num_sign_chars]:
-                            if outerVar.isArgument and outerScope.type == "Global" and not innerVar.isArgument:
-                                continue
-                            if int(innerVar.nameToken.linenr) > int(outerVar.nameToken.linenr):
-                                self.reportError(innerVar.nameToken, 5, 3)
-                    outerScope = outerScope.nestedIn
-                for scope in data.scopes:
-                    if scope.className and innerVar.nameToken.str[:num_sign_chars] == scope.className[:num_sign_chars]:
-                        if int(innerVar.nameToken.linenr) > int(scope.bodyStart.linenr):
-                            self.reportError(innerVar.nameToken, 5, 3)
-                        else:
-                            self.reportError(scope.bodyStart, 5, 3)
-
-                for e in enum:
-                    for scope in data.scopes:
-                        if scope.className and innerVar.nameToken.str[:num_sign_chars] == e[:num_sign_chars]:
-                            if int(innerVar.nameToken.linenr) > int(innerScope.bodyStart.linenr):
-                                self.reportError(innerVar.nameToken, 5, 3)
-                            else:
-                                self.reportError(innerScope.bodyStart, 5, 3)
-        for e in enum:
-            for scope in data.scopes:
-                if scope.className and scope.className[:num_sign_chars] == e[:num_sign_chars]:
-                    self.reportError(scope.bodyStart, 5, 3)
 
     def misra_5_4(self, data):
         num_sign_chars = self.get_num_significant_naming_chars(data)
@@ -1369,8 +1309,6 @@ class MisraChecker:
             if not token.values:
                 continue
             if (not isConstantExpression(token)) or (not isUnsignedInt(token)):
-                continue
-            if not token.values:
                 continue
             for value in token.values:
                 if value.intvalue < 0 or value.intvalue > max_uint:
@@ -1884,21 +1822,23 @@ class MisraChecker:
                     pos = exp.find(arg, pos)
                     if pos < 0:
                         break
+                    # is 'arg' used at position pos
                     pos1 = pos - 1
                     pos2 = pos + len(arg)
                     pos = pos2
-                    if isalnum(exp[pos1]) or exp[pos1] == '_':
+                    if pos1 >= 0 and (isalnum(exp[pos1]) or exp[pos1] == '_'):
                         continue
-                    if isalnum(exp[pos2]) or exp[pos2] == '_':
+                    if pos2 < len(exp) and (isalnum(exp[pos2]) or exp[pos2] == '_'):
                         continue
-                    while exp[pos1] == ' ':
+
+                    while pos1 >= 0 and exp[pos1] == ' ':
                         pos1 -= 1
-                    if exp[pos1] != '(' and exp[pos1] != '[':
+                    if exp[pos1] not in '([#':
                         self.reportError(directive, 20, 7)
                         break
-                    while exp[pos2] == ' ':
+                    while pos2 < len(exp) and exp[pos2] == ' ':
                         pos2 += 1
-                    if exp[pos2] != ')' and exp[pos2] != ']':
+                    if pos2 < len(exp) and exp[pos2] not in ')]#':
                         self.reportError(directive, 20, 7)
                         break
 
@@ -2480,7 +2420,6 @@ class MisraChecker:
                 self.executeCheck(402, self.misra_4_2, data.rawTokens)
             self.executeCheck(501, self.misra_5_1, cfg)
             self.executeCheck(502, self.misra_5_2, cfg)
-            self.executeCheck(503, self.misra_5_3, cfg)
             self.executeCheck(504, self.misra_5_4, cfg)
             self.executeCheck(505, self.misra_5_5, cfg)
             # 6.1 require updates in Cppcheck (type info for bitfields are lost)
