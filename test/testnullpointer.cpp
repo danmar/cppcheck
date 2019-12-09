@@ -88,6 +88,7 @@ private:
         TEST_CASE(nullpointer46); // #9441
         TEST_CASE(nullpointer47); // #6850
         TEST_CASE(nullpointer48); // #9196
+        TEST_CASE(nullpointer49); // #7989
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1638,6 +1639,26 @@ private:
               "auto f(T& x) -> decltype(x);\n"
               "int& g(int* x) {\n"
               "    return f(*x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer49() {
+        check("int f();\n"
+              "bool g();\n"
+              "void h(A *  a) {\n"
+              "    bool h = false;\n"
+              "    A* ptr = NULL;\n"
+              "    for (int i = 0; i < f(); i++) {\n"
+              "        if (g()) {\n"
+              "            h = true;\n"
+              "            ptr = a[ i ];\n"
+              "            break;\n"
+              "        }\n"
+              "    }\n"
+              "    if (h) {\n"
+              "        A e(*ptr);\n"
+              "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
