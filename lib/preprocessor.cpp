@@ -724,8 +724,10 @@ void Preprocessor::reportOutput(const simplecpp::OutputList &outputList, bool sh
         case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
         case simplecpp::Output::SYNTAX_ERROR:
         case simplecpp::Output::UNHANDLED_CHAR_ERROR:
-        case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
             error(out.location.file(), out.location.line, out.msg);
+            break;
+        case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
+            error(emptyString, 0, out.msg);
             break;
         };
     }
