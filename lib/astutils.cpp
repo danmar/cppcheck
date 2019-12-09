@@ -1958,7 +1958,7 @@ bool FwdAnalysis::unusedValue(const Token *expr, const Token *startToken, const 
         return false;
     mWhat = What::UnusedValue;
     Result result = check(expr, startToken, endToken);
-    return (result.type == FwdAnalysis::Result::Type::NONE || result.type == FwdAnalysis::Result::Type::RETURN) && !possiblyAliased(expr, startToken);
+    return (result.type == FwdAnalysis::Result::Type::NONE || result.type == FwdAnalysis::Result::Type::RETURN || result.type == FwdAnalysis::Result::Type::WRITE) && !possiblyAliased(expr, startToken);
 }
 
 std::vector<FwdAnalysis::KnownAndToken> FwdAnalysis::valueFlow(const Token *expr, const Token *startToken, const Token *endToken)

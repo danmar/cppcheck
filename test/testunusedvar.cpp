@@ -742,7 +742,7 @@ private:
 
         functionVariableUsage("void foo()\n"
                               "{\n"
-                              "    int i = 0,code=10;\n"
+                              "    int i ,code=10;\n"
                               "    for(i = 0; i < 10; i++) {\n"
                               "        std::cout<<code<<std::endl;\n"
                               "        code += 2;\n"
@@ -752,7 +752,7 @@ private:
 
         functionVariableUsage("void foo()\n"
                               "{\n"
-                              "    int i = 0,code=10,d=10;\n"
+                              "    int i,code=10,d=10;\n"
                               "    for(i = 0; i < 10; i++) {\n"
                               "        std::cout<<code<<std::endl;\n"
                               "        code += 2;\n"
@@ -765,7 +765,7 @@ private:
 
         functionVariableUsage("void foo()\n"
                               "{\n"
-                              "    int i = 0,code=10,d=10;\n"
+                              "    int i,code=10,d=10;\n"
                               "    for(i = 0; i < 10; i++) {\n"
                               "        std::cout<<code<<std::endl;\n"
                               "        code += 2;\n"
@@ -777,7 +777,7 @@ private:
 
         functionVariableUsage("void foo()\n"
                               "{\n"
-                              "    int i = 0,code=10,d=10;\n"
+                              "    int i,code=10,d=10;\n"
                               "    for(i = 0; i < 10; i++) {\n"
                               "        std::cout<<code<<std::endl;\n"
                               "        code += 2;\n"
@@ -791,7 +791,7 @@ private:
 
         functionVariableUsage("void foo()\n"
                               "{\n"
-                              "    int i = 0,a=10,b=20;\n"
+                              "    int i,a=10,b=20;\n"
                               "    for(i = 0; i < 10; i++) {\n"
                               "        std::cout<<a<<std::endl;\n"
                               "        int tmp=a;\n"
@@ -1607,7 +1607,8 @@ private:
                               "    data->info = k;\n"
                               "    line_start = ptr;\n"
                               "}");
-        ASSERT_EQUALS("[test.cpp:10]: (style) Variable 'line_start' is assigned a value that is never used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (style) Variable 'line_start' is assigned a value that is never used.\n"
+                      "[test.cpp:10]: (style) Variable 'line_start' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvar18() { // ticket #1723
@@ -1843,7 +1844,7 @@ private:
                               "    int a = 0;\n"
                               "    bar(a=2);\n"
                               "}");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'a' is assigned a value that is never used.\n", errout.str());
 
         functionVariableUsage("void bar(int);\n"
                               "int foo() {\n"
@@ -2813,7 +2814,8 @@ private:
                               "    srcdata = vdata;\n"
                               "    b(srcdata);\n"
                               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: buf\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (style) Variable 'srcdata' is assigned a value that is never used.\n"
+                      "[test.cpp:3]: (style) Unused variable: buf\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -2825,7 +2827,7 @@ private:
                               "    srcdata = buf;\n"
                               "    b(srcdata);\n"
                               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (style) Variable 'srcdata' is assigned a value that is never used.\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -2881,7 +2883,8 @@ private:
                               "    srcdata = vdata;\n"
                               "    b(srcdata);\n"
                               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: buf\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (style) Variable 'srcdata' is assigned a value that is never used.\n"
+                      "[test.cpp:3]: (style) Unused variable: buf\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -2894,7 +2897,8 @@ private:
                               "    srcdata = buf;\n"
                               "    b(srcdata);\n"
                               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Unused variable: vdata\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (style) Variable 'srcdata' is assigned a value that is never used.\n"
+                      "[test.cpp:5]: (style) Unused variable: vdata\n", errout.str());
     }
 
     void localvaralias7() { // ticket 1732
@@ -2947,7 +2951,7 @@ private:
                               "    }\n"
                               "    b(pb);\n"
                               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:15]: (style) Variable 'pb' is assigned a value that is never used.\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -2970,7 +2974,9 @@ private:
                               "    }\n"
                               "    b(pb);\n"
                               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:15]: (style) Variable 'pb' is assigned a value that is never used.\n"
+                      "[test.cpp:16]: (style) Variable 'pb' is assigned a value that is never used.\n"
+                      "[test.cpp:17]: (style) Variable 'pb' is assigned a value that is never used.\n", errout.str());
 
 
         functionVariableUsage("void foo()\n"
@@ -2989,7 +2995,10 @@ private:
                               "    pb = b4;\n"
                               "    b(pb);\n"
                               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: b1\n"
+        ASSERT_EQUALS("[test.cpp:9]: (style) Variable 'pb' is assigned a value that is never used.\n"
+                      "[test.cpp:11]: (style) Variable 'pb' is assigned a value that is never used.\n"
+                      "[test.cpp:13]: (style) Variable 'pb' is assigned a value that is never used.\n"
+                      "[test.cpp:3]: (style) Unused variable: b1\n"
                       "[test.cpp:4]: (style) Unused variable: b2\n"
                       "[test.cpp:5]: (style) Unused variable: b3\n", errout.str());
 
@@ -3039,7 +3048,7 @@ private:
                               "    }\n"
                               "    b(pb);\n"
                               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:17]: (style) Variable 'pb' is assigned a value that is never used.\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -3066,7 +3075,9 @@ private:
                               "    }\n"
                               "    b(pb);\n"
                               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:17]: (style) Variable 'pb' is assigned a value that is never used.\n"
+                      "[test.cpp:18]: (style) Variable 'pb' is assigned a value that is never used.\n"
+                      "[test.cpp:19]: (style) Variable 'pb' is assigned a value that is never used.\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -3088,7 +3099,10 @@ private:
                               "    pb = b4;\n"
                               "    b(pb);\n"
                               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: b1\n"
+        ASSERT_EQUALS("[test.cpp:9]: (style) Variable 'pb' is assigned a value that is never used.\n"
+                      "[test.cpp:12]: (style) Variable 'pb' is assigned a value that is never used.\n"
+                      "[test.cpp:15]: (style) Variable 'pb' is assigned a value that is never used.\n"
+                      "[test.cpp:3]: (style) Unused variable: b1\n"
                       "[test.cpp:4]: (style) Unused variable: b2\n"
                       "[test.cpp:5]: (style) Unused variable: b3\n", errout.str());
     }

@@ -431,6 +431,7 @@ void timet_h(struct timespec* ptp1)
 
 void dl(const char* libname, const char* func)
 {
+    // cppcheck-suppress unreadVariable
     void* lib = dlopen(libname, RTLD_NOW);
     // cppcheck-suppress redundantInitialization
     // cppcheck-suppress resourceLeak

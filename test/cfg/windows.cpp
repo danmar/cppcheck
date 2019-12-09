@@ -67,7 +67,9 @@ void nullPointer__get_daylight(int *h)
 void validCode()
 {
     DWORD dwordInit = 0;
+    // cppcheck-suppress unreadVariable
     WORD wordInit = 0;
+    // cppcheck-suppress unreadVariable
     BYTE byteInit = 0;
 
     // Valid Semaphore usage, no leaks, valid arguments
@@ -189,11 +191,13 @@ void validCode()
     }
     WSACleanup();
 
+    // cppcheck-suppress unreadVariable
     wordInit = MAKEWORD(1, 2);
     // cppcheck-suppress redundantAssignment
     dwordInit = MAKELONG(1, 2);
     // cppcheck-suppress redundantAssignment
     wordInit = LOWORD(dwordInit);
+    // cppcheck-suppress unreadVariable
     byteInit = LOBYTE(wordInit);
     wordInit = HIWORD(dwordInit);
     // cppcheck-suppress redundantAssignment
