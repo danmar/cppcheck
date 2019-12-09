@@ -268,6 +268,9 @@ private:
     struct Result check(const Token *expr, const Token *startToken, const Token *endToken);
     struct Result checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<int> &exprVarIds, bool local, bool inInnerClass, int depth=0);
 
+
+    struct Result checkForLoop(const Token *expr, const Token *forToken, const std::set<int> &exprVarIds, bool local, bool inInnerClass, int depth);
+
     // Is expression a l-value global data?
     bool isGlobalData(const Token *expr) const;
 
