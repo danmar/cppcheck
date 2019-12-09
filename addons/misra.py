@@ -538,6 +538,14 @@ class Define:
         self.args = res.group(1).split(',')
         self.expansionList = res.group(2)
 
+    def __repr__(self):
+        attrs = ["args", "expansionList"]
+        return "{}({})".format(
+            "Define",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
+
+
 
 def getAddonRules():
     """Returns dict of MISRA rules handled by this addon."""
@@ -682,6 +690,13 @@ class MisraSettings(object):
         if args.no_summary:
             self.show_summary = False
 
+    def __repr__(self):
+        attrs = ["verify", "quiet", "show_summary", "verify"]
+        return "{}({})".format(
+            "MisraSettings",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
+
 
 class MisraChecker:
 
@@ -725,6 +740,15 @@ class MisraChecker:
         self.suppressionStats   = dict()
 
         self.stdversion = stdversion
+
+    def __repr__(self):
+        attrs = ["settings", "verify_expected", "verify_actual", "violations",
+                 "ruleTexts", "suppressedRules", "dumpfileSuppressions",
+                 "filePrefix", "suppressionStats", "stdversion"]
+        return "{}({})".format(
+            "MisraChecker",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
 
     def get_num_significant_naming_chars(self, cfg):
         if cfg.standards and cfg.standards.c == "c99":
