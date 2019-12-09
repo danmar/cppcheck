@@ -10,7 +10,6 @@ from xml.etree import ElementTree
 import argparse
 from fnmatch import fnmatch
 import json
-import os
 import sys
 
 
