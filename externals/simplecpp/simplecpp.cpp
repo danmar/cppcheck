@@ -2426,8 +2426,16 @@ std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::To
             continue;
 
         std::ifstream fin(filename.c_str());
-        if (!fin.is_open())
+        if (!fin.is_open()) {
+            if (outputList) {
+                simplecpp::Output err(fileNumbers);
+                err.type = simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND;
+                err.location = Location(fileNumbers);
+                err.msg = "Can not open include file '" + filename + "' that is explicitly included.";
+                outputList->push_back(err);
+            }
             continue;
+        }
 
         TokenList *tokenlist = new TokenList(fin, fileNumbers, filename, outputList);
         if (!tokenlist->front()) {

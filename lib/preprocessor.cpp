@@ -559,6 +559,7 @@ static bool hasErrors(const simplecpp::OutputList &outputList)
         case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
         case simplecpp::Output::SYNTAX_ERROR:
         case simplecpp::Output::UNHANDLED_CHAR_ERROR:
+        case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
             return true;
         case simplecpp::Output::WARNING:
         case simplecpp::Output::MISSING_HEADER:
@@ -580,6 +581,7 @@ void Preprocessor::handleErrors(const simplecpp::OutputList& outputList, bool th
             case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
             case simplecpp::Output::SYNTAX_ERROR:
             case simplecpp::Output::UNHANDLED_CHAR_ERROR:
+            case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
                 throw output;
             case simplecpp::Output::WARNING:
             case simplecpp::Output::MISSING_HEADER:
@@ -590,13 +592,14 @@ void Preprocessor::handleErrors(const simplecpp::OutputList& outputList, bool th
     }
 }
 
-void Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files, bool throwError)
+bool Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files)
 {
     const simplecpp::DUI dui = createDUI(mSettings, emptyString, files[0]);
 
     simplecpp::OutputList outputList;
     mTokenLists = simplecpp::load(rawtokens, files, dui, &outputList);
-    handleErrors(outputList, throwError);
+    handleErrors(outputList, false);
+    return !hasErrors(outputList);
 }
 
 void Preprocessor::removeComments()
@@ -721,6 +724,7 @@ void Preprocessor::reportOutput(const simplecpp::OutputList &outputList, bool sh
         case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
         case simplecpp::Output::SYNTAX_ERROR:
         case simplecpp::Output::UNHANDLED_CHAR_ERROR:
+        case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
             error(out.location.file(), out.location.line, out.msg);
             break;
         };

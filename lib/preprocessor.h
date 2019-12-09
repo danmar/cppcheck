@@ -100,7 +100,7 @@ public:
 
     void handleErrors(const simplecpp::OutputList &outputList, bool throwError);
 
-    void loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files, bool throwError = false);
+    bool loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files);
 
     void removeComments();
 
