@@ -5920,7 +5920,7 @@ bool Tokenizer::simplifyConditions()
                     const std::string& op1(tok->next()->str());
                     const std::string& op2(tok->strAt(3));
 
-                    bool eq = false;
+                    bool eq;
                     if (MathLib::isInt(op1) && MathLib::isInt(op2))
                         eq = (MathLib::toLongNumber(op1) == MathLib::toLongNumber(op2));
                     else {

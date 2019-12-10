@@ -115,7 +115,7 @@ void TokenList::addtoken(std::string str, const nonneg int lineno, const nonneg 
     // If token contains # characters, split it up
     if (split) {
         size_t begin = 0;
-        size_t end = 0;
+        size_t end;
         while ((end = str.find("##", begin)) != std::string::npos) {
             addtoken(str.substr(begin, end - begin), lineno, fileno, false);
             addtoken("##", lineno, fileno, false);

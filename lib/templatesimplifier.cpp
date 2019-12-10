@@ -950,7 +950,7 @@ void TemplateSimplifier::getTemplateInstantiations()
                             if (it1 != mTemplateDeclarations.end()) {
                                 // insert using namespace into token stream
                                 std::string::size_type offset = 0;
-                                std::string::size_type pos = 0;
+                                std::string::size_type pos;
                                 while ((pos = nameSpace.substr(offset).find(' ')) != std::string::npos) {
                                     qualificationTok->insertToken(nameSpace.substr(offset, pos), "", true);
                                     offset = offset + pos + 1;
@@ -1470,9 +1470,9 @@ void TemplateSimplifier::addNamespace(const TokenAndName &templateDeclaration, c
     const bool insert = tokStart != tok;
 
     std::string::size_type start = 0;
-    std::string::size_type end = 0;
     bool inTemplate = false;
     int level = 0;
+    std::string::size_type end;
     while ((end = templateDeclaration.scope().find(" ", start)) != std::string::npos) {
         std::string token = templateDeclaration.scope().substr(start, end - start);
         // done if scopes overlap

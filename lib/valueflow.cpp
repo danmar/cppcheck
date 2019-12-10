@@ -1004,7 +1004,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
                 setTokenValue(const_cast<Token *>(tok->next()), value, settings);
             }
         } else if (tok2->tokType() == Token::eChar) {
-            nonneg int sz = 0;
+            nonneg int sz;
             if (cpp && settings->standards.cpp >= Standards::CPP20 && tok2->isUtf8())
                 sz = 1;
             else if (tok2->isUtf16())
@@ -1153,7 +1153,7 @@ static void valueFlowArrayBool(TokenList *tokenlist)
         if (tok->hasKnownIntValue())
             continue;
         const Variable *var = nullptr;
-        bool known = false;
+        bool known;
         std::list<ValueFlow::Value>::const_iterator val =
             std::find_if(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isTokValue));
         if (val == tok->values().end()) {

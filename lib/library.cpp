@@ -699,14 +699,13 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                 else if (argnodename == "valid") {
                     // Validate the validation expression
                     const char *p = argnode->GetText();
-                    bool error = false;
                     bool range = false;
                     bool has_dot = false;
 
                     if (!p)
                         return Error(BAD_ATTRIBUTE_VALUE, "\"\"");
 
-                    error = *p == '.';
+                    bool error = *p == '.';
                     for (; *p; p++) {
                         if (std::isdigit(*p))
                             error |= (*(p+1) == '-');

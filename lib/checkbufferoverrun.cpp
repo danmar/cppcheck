@@ -853,7 +853,7 @@ bool CheckBufferOverrun::analyseWholeProgram1(const CTU::FileInfo *ctu, const st
 
     const char *errorId = nullptr;
     std::string errmsg;
-    CWE cwe(0);
+    CWE cwe;
 
     if (type == 1) {
         errorId = "ctuArrayIndex";

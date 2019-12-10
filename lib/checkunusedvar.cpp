@@ -346,6 +346,36 @@ Variables::VariableUsage *Variables::find(unsigned int varid)
     return nullptr;
 }
 
+static bool replacementNeeded(const Variables::VariableUsage *var1, const Scope *scope){
+    // pointerArray => don't replace
+    if (var1->mType == Variables::pointerArray)
+        return false;
+
+    // check if variable declared in same scope
+    if (scope == var1->_var->scope())
+        return true;
+
+    // not in same scope as declaration
+    // no other assignment in this scope
+    if (var1->_assignments.find(scope) == var1->_assignments.end() ||
+        scope->type == Scope::eSwitch) {
+        // nothing to replace
+        if (var1->_assignments.empty())
+            return false;
+
+        // this variable has previous assignments
+        /**
+         * @todo determine if existing aliases should be replaced or merged
+         */
+
+        return false;
+    }
+
+    // assignment in this scope
+    // replace when only one other assignment, merge them otherwise
+    return (var1->_assignments.size() == 1);
+}
+
 static const Token* doAssignment(Variables &variables, const Token *tok, bool dereference, const Scope *scope)
 {
     // a = a + b;
@@ -458,42 +488,7 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
                         if (addressOf ||
                             var2->mType == Variables::array ||
                             var2->mType == Variables::pointer) {
-                            bool replace = true;
-
-                            // pointerArray => don't replace
-                            if (var1->mType == Variables::pointerArray)
-                                replace = false;
-
-                            // check if variable declared in same scope
-                            else if (scope == var1->_var->scope())
-                                replace = true;
-
-                            // not in same scope as declaration
-                            else {
-                                // no other assignment in this scope
-                                if (var1->_assignments.find(scope) == var1->_assignments.end() ||
-                                    scope->type == Scope::eSwitch) {
-                                    // nothing to replace
-                                    if (var1->_assignments.empty())
-                                        replace = false;
-
-                                    // this variable has previous assignments
-                                    else {
-                                        /**
-                                         * @todo determine if existing aliases should be replaced or merged
-                                         */
-
-                                        replace = false;
-                                    }
-                                }
-
-                                // assignment in this scope
-                                else {
-                                    // replace when only one other assignment, merge them otherwise
-                                    replace = (var1->_assignments.size() == 1);
-                                }
-                            }
-
+                            bool replace = replacementNeeded(var1, scope);
                             variables.alias(varid1, varid2, replace);
                         } else if (tok->strAt(1) == "?") {
                             if (var2->mType == Variables::reference)
@@ -785,7 +780,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         // Freeing memory (not considered "using" the pointer if it was also allocated in this function)
         if (Token::Match(tok, "free|g_free|kfree|vfree ( %var% )") ||
             (mTokenizer->isCPP() && (Token::Match(tok, "delete %var% ;") || Token::Match(tok, "delete [ ] %var% ;")))) {
-            unsigned int varid = 0;
+            unsigned int varid;
             if (tok->str() != "delete") {
                 const Token *varTok = tok->tokAt(2);
                 varid = varTok->varId();
