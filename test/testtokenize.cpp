@@ -456,6 +456,7 @@ private:
         TEST_CASE(astcast);
         TEST_CASE(astlambda);
         TEST_CASE(astcase);
+        TEST_CASE(astrefqualifier);
         TEST_CASE(astvardecl);
 
         TEST_CASE(startOfExecutableScope);
@@ -472,6 +473,8 @@ private:
         TEST_CASE(checkNamespaces);
         TEST_CASE(checkLambdas);
         TEST_CASE(checkIfCppCast);
+        TEST_CASE(checkRefQualifiers);
+        TEST_CASE(checkConditionBlock);
 
         // #9052
         TEST_CASE(noCrash1);
@@ -7289,6 +7292,26 @@ private:
         ASSERT_EQUALS("[ [ maybe_unused ] ] int f ( [ [ maybe_unused ] ] int i ) ;",
                       tokenizeAndStringify("[[maybe_unused]] int f([[maybe_unused]] int i);", false, true, Settings::Native, "test.cpp", false));
 
+        ASSERT_EQUALS("struct a ;",
+                      tokenizeAndStringify("struct [[]] a;", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("struct a ;",
+                      tokenizeAndStringify("struct [[,]] a;", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("struct a ;",
+                      tokenizeAndStringify("struct [[deprecated,]] a;", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("struct a ;",
+                      tokenizeAndStringify("struct [[,,]] a;", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("struct a ;",
+                      tokenizeAndStringify("struct [[deprecated,,]] a;", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("struct a ;",
+                      tokenizeAndStringify("struct [[deprecated,maybe_unused,]] a;", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("struct a ;",
+                      tokenizeAndStringify("struct [[,,,]] a;", false, true, Settings::Native, "test.cpp", true));
     }
 
     void simplifyCaseRange() {
@@ -7670,6 +7693,7 @@ private:
         ASSERT_EQUALS("Abc({newreturn", testAst("return new A {b(c)};"));
         ASSERT_EQUALS("a{{return", testAst("return{{a}};"));
         ASSERT_EQUALS("a{b{,{return", testAst("return{{a},{b}};"));
+        ASSERT_EQUALS("stdvector::", testAst("std::vector<std::vector<int>>{{},{}}"));
     }
 
     void astbrackets() { // []
@@ -7818,6 +7842,15 @@ private:
         ASSERT_EQUALS("0case", testAst("case 0:"));
         ASSERT_EQUALS("12+case", testAst("case 1+2:"));
         ASSERT_EQUALS("xyz:?case", testAst("case (x?y:z):"));
+    }
+
+    void astrefqualifier() {
+        ASSERT_EQUALS("b(int.", testAst("class a { auto b() -> int&; };"));
+        ASSERT_EQUALS("b(int.", testAst("class a { auto b() -> int&&; };"));
+        ASSERT_EQUALS("b(", testAst("class a { void b() &&; };"));
+        ASSERT_EQUALS("b(", testAst("class a { void b() &; };"));
+        ASSERT_EQUALS("b(", testAst("class a { void b() && {} };"));
+        ASSERT_EQUALS("b(", testAst("class a { void b() & {} };"));
     }
 
     void compileLimits() {
@@ -8092,6 +8125,64 @@ private:
                                              "  int f = 0;\n"
                                              "  if (!const_cast<a *>(&e)->b()) {}\n"
                                              "  return f;\n"
+                                             "}\n"))
+    }
+
+    void checkRefQualifiers() {
+        // #9511
+        ASSERT_NO_THROW(tokenizeAndStringify("class a {\n"
+                                             "  void b() && {\n"
+                                             "    if (this) {}\n"
+                                             "  }\n"
+                                             "};\n"))
+        ASSERT_NO_THROW(tokenizeAndStringify("class a {\n"
+                                             "  void b() & {\n"
+                                             "    if (this) {}\n"
+                                             "  }\n"
+                                             "};\n"))
+        ASSERT_NO_THROW(tokenizeAndStringify("class a {\n"
+                                             "  auto b() && -> void {\n"
+                                             "    if (this) {}\n"
+                                             "  }\n"
+                                             "};\n"))
+        ASSERT_NO_THROW(tokenizeAndStringify("class a {\n"
+                                             "  auto b() & -> void {\n"
+                                             "    if (this) {}\n"
+                                             "  }\n"
+                                             "};\n"))
+        ASSERT_NO_THROW(tokenizeAndStringify("class a {\n"
+                                             "  auto b(int& x) -> int& {\n"
+                                             "    if (this) {}\n"
+                                             "    return x;\n"
+                                             "  }\n"
+                                             "};\n"))
+        ASSERT_NO_THROW(tokenizeAndStringify("class a {\n"
+                                             "  auto b(int& x) -> int&& {\n"
+                                             "    if (this) {}\n"
+                                             "    return x;\n"
+                                             "  }\n"
+                                             "};\n"))
+        ASSERT_NO_THROW(tokenizeAndStringify("class a {\n"
+                                             "  auto b(int& x) && -> int& {\n"
+                                             "    if (this) {}\n"
+                                             "    return x;\n"
+                                             "  }\n"
+                                             "};\n"))
+        // #9524
+        ASSERT_NO_THROW(tokenizeAndStringify("auto f() -> int* {\n"
+                                             "  if (0) {}\n"
+                                             "  return 0;\n"
+                                             "};\n"))
+        ASSERT_NO_THROW(tokenizeAndStringify("auto f() -> int** {\n"
+                                             "  if (0) {}\n"
+                                             "  return 0;\n"
+                                             "};\n"))
+
+    }
+
+    void checkConditionBlock() {
+        ASSERT_NO_THROW(tokenizeAndStringify("void a() {\n"
+                                             "  for (auto b : std::vector<std::vector<int>>{{}, {}}) {}\n"
                                              "}\n"))
     }
 

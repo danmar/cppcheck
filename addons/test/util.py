@@ -1,9 +1,25 @@
 # Helpers for pytest tests
 import subprocess
 import json
+import os
+
+
+def find_cppcheck_binary():
+    possible_locations = [
+        "./cppcheck",
+        r".\bin\cppcheck.exe",
+    ]
+    for location in possible_locations:
+        if os.path.exists(location):
+            break
+    else:
+        raise RuntimeError("Could not fine cppcheck binary")
+
+    return location
 
 def dump_create(fpath, *argv):
-    cmd = ["./cppcheck", "--dump", "--quiet", fpath] + list(argv)
+    cppcheck_binary = find_cppcheck_binary()
+    cmd = [cppcheck_binary, "--dump", "--quiet", fpath] + list(argv)
     p = subprocess.Popen(cmd)
     p.communicate()
     if p.returncode != 0:

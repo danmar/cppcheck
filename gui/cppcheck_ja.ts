@@ -1648,7 +1648,7 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="569"/>
         <source>Note: Addons require &lt;a href=&quot;https://www.python.org/&quot;&gt;Python&lt;/a&gt; beeing installed.</source>
-        <translation type="unfinished"></translation>
+        <translation>注意: アドオンには&lt;a href=&quot;https://www.python.org/&quot;&gt;Python&lt;/a&gt; が必要です。</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="642"/>

@@ -2586,6 +2586,11 @@ static bool valueFlowForwardVariable(Token* const startToken,
             }
         }
 
+        // TODO: Check for eFunction
+        else if (tok2->str() == "}" && indentlevel <= 0 && tok2->scope() && tok2->scope()->type == Scope::eLambda) {
+            return true;
+        }
+
         else if (tok2->str() == "}" && indentlevel == varusagelevel) {
             ++number_of_if;
 
@@ -2985,6 +2990,8 @@ static const Token* solveExprValues(const Token* expr, std::list<ValueFlow::Valu
             return solveExprValues(binaryTok, values);
         }
         case '*': {
+            if (intval == 0)
+                break;
             transformIntValues(values, [&](MathLib::bigint x) {
                 return x / intval;
             });
@@ -3761,7 +3768,7 @@ struct Lambda {
     }
 };
 
-static bool isDecayedPointer(const Token *tok, const Settings *settings)
+static bool isDecayedPointer(const Token *tok)
 {
     if (!tok)
         return false;
@@ -3879,7 +3886,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
                 continue;
             if (var->nameToken() == tok)
                 continue;
-            if (var->isArray() && !var->isStlType() && !var->isArgument() && isDecayedPointer(tok, settings)) {
+            if (var->isArray() && !var->isStlType() && !var->isArgument() && isDecayedPointer(tok)) {
                 errorPath.emplace_back(tok, "Array decayed to pointer here.");
 
                 ValueFlow::Value value;

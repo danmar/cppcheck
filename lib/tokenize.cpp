@@ -1811,7 +1811,7 @@ namespace {
             return false;
         }
 
-        if (Token::Match(tok1->tokAt(-1), "class|struct|union|enum")) {
+        if (Token::Match(tok1->tokAt(-1), "class|struct|union|enum|namespace")) {
             // fixme
             return false;
         }
@@ -9254,8 +9254,15 @@ static const Token *findUnmatchedTernaryOp(const Token * const begin, const Toke
     return ternaryOp.empty() ? nullptr : ternaryOp.top();
 }
 
+static bool isCPPAttribute(const Token * tok)
+{
+    return Token::simpleMatch(tok, "[ [") && tok->link() && tok->link()->previous() == tok->linkAt(1);
+}
+
 void Tokenizer::findGarbageCode() const
 {
+    const bool isCPP11  = isCPP() && mSettings->standards.cpp >= Standards::CPP11;
+
     // initialization: = {
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (!Token::simpleMatch(tok, "= {"))
@@ -9408,6 +9415,11 @@ void Tokenizer::findGarbageCode() const
                 templateEndToken = nullptr;
             if (Token::Match(tok, "> %cop%"))
                 continue;
+        }
+        // skip C++ attributes [[...]]
+        if (isCPP11 && isCPPAttribute(tok)) {
+            tok = tok->link();
+            continue;
         }
         {
             bool match1 = Token::Match(tok, "%or%|%oror%|==|!=|+|-|/|!|>=|<=|~|^|++|--|::|sizeof");
@@ -10031,7 +10043,7 @@ void Tokenizer::simplifyCPPAttribute()
         return;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (!tok->link() || !Token::Match(tok, "[ [ %name%"))
+        if (!isCPPAttribute(tok))
             continue;
         if (Token::Match(tok->tokAt(2), "noreturn|nodiscard")) {
             const Token * head = tok->link()->next();

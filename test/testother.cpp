@@ -2766,6 +2766,20 @@ private:
               "    switch (a)\n"
               "    {\n"
               "    case 2:\n"
+              "        y = y | 3;\n"
+              "    case 3:\n"
+              "        y = y | 3;\n"
+              "        break;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Redundant bitwise operation on 'y' in 'switch' statement. 'break;' missing?\n", errout.str());
+
+        check("void foo(int a)\n"
+              "{\n"
+              "    int y = 1;\n"
+              "    switch (a)\n"
+              "    {\n"
+              "    case 2:\n"
               "        y |= 3;\n"
               "    default:\n"
               "        y |= 3;\n"
@@ -6972,6 +6986,14 @@ private:
               "    bar(c);\n"
               "    c = getchar();\n"
               "  } ;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Storing getchar() return value in char variable and then comparing with EOF.\n", errout.str());
+
+        check("void f() {\n"
+              "  unsigned char c;\n"
+              "  while( EOF != ( c = getchar() ) )\n"
+              "  {\n"
+              "  }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Storing getchar() return value in char variable and then comparing with EOF.\n", errout.str());
 
