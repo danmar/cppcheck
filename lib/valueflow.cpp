@@ -3768,7 +3768,7 @@ struct Lambda {
     }
 };
 
-static bool isDecayedPointer(const Token *tok, const Settings *settings)
+static bool isDecayedPointer(const Token *tok)
 {
     if (!tok)
         return false;
@@ -3886,7 +3886,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
                 continue;
             if (var->nameToken() == tok)
                 continue;
-            if (var->isArray() && !var->isStlType() && !var->isArgument() && isDecayedPointer(tok, settings)) {
+            if (var->isArray() && !var->isStlType() && !var->isArgument() && isDecayedPointer(tok)) {
                 errorPath.emplace_back(tok, "Array decayed to pointer here.");
 
                 ValueFlow::Value value;
