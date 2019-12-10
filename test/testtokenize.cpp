@@ -7818,15 +7818,27 @@ private:
         // 8628
         ASSERT_EQUALS("f{([( switchx( 1case y++", testAst("f([](){switch(x){case 1:{++y;}}});"));
 
-        ASSERT_EQUALS("{return ab=",
+        ASSERT_EQUALS("{([{return ab=",
                       testAst("return {\n"
                               "  [=]() {\n"
                               "    a = b;\n"
                               "  }\n"
                               "};\n"));
-        ASSERT_EQUALS("{return ab=",
+        ASSERT_EQUALS("{[{return ab=",
+                      testAst("return {\n"
+                              "  [=] {\n"
+                              "    a = b;\n"
+                              "  }\n"
+                              "};\n"));
+        ASSERT_EQUALS("{([{return ab=",
                       testAst("return {\n"
                               "  [=]() -> int {\n"
+                              "    a=b;\n"
+                              "  }\n"
+                              "}"));
+        ASSERT_EQUALS("{([{return ab=",
+                      testAst("return {\n"
+                              "  [=]() mutable -> int {\n"
                               "    a=b;\n"
                               "  }\n"
                               "}"));
@@ -8112,6 +8124,34 @@ private:
                                              "    auto b = [this, a] {};\n"
                                              "  }\n"
                                              "};\n"))
+
+        // #9525
+        ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
+                                             "  template <class b> a(b) {}\n"
+                                             "};\n"
+                                             "auto c() -> a {\n"
+                                             "  return {[] {\n"
+                                             "    if (0) {}\n"
+                                             "  }};\n"
+                                             "}\n"))
+        ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
+                                             "  template <class b> a(b) {}\n"
+                                             "};\n"
+                                             "auto c() -> a {\n"
+                                             "  return {[]() -> int {\n"
+                                             "    if (0) {}\n"
+                                             "    return 0;\n"
+                                             "  }};\n"
+                                             "}\n"))
+        ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
+                                             "  template <class b> a(b) {}\n"
+                                             "};\n"
+                                             "auto c() -> a {\n"
+                                             "  return {[]() mutable -> int {\n"
+                                             "    if (0) {}\n"
+                                             "    return 0;\n"
+                                             "  }};\n"
+                                             "}\n"))
     }
     void checkIfCppCast() {
         ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"

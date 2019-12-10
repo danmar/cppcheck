@@ -516,6 +516,47 @@ static bool iscast(const Token *tok)
     return false;
 }
 
+static const Token* findTypeEnd(const Token* tok)
+{
+    while(Token::Match(tok, "%name%|.|::|<|(|template|decltype|sizeof")) {
+        if (Token::Match(tok, "(|<"))
+            tok = tok->link();
+        if (!tok)
+            return nullptr;
+        tok = tok->next();
+    }
+    return tok;
+}
+
+static const Token * findLambdaEndScope(const Token *tok)
+{
+    if (!Token::simpleMatch(tok, "["))
+        return nullptr;
+    tok = tok->link();
+    if (!Token::Match(tok, "] (|{"))
+        return nullptr;
+    tok = tok->linkAt(1);
+    if (Token::simpleMatch(tok, "}"))
+        return tok;
+    if (Token::simpleMatch(tok, ") {"))
+        return tok->linkAt(1);
+    if (!Token::simpleMatch(tok, ")"))
+        return nullptr;
+    tok = tok->next();
+    while(Token::Match(tok, "mutable|constexpr|constval|noexcept|.")) {
+        if (Token::simpleMatch(tok, "noexcept ("))
+            tok = tok->linkAt(1);
+        if (Token::simpleMatch(tok, ".")) {
+            tok = findTypeEnd(tok);
+            break;
+        }
+        tok = tok->next();
+    }
+    if (Token::simpleMatch(tok, "{"))
+        return tok->link();
+    return nullptr;
+}
+
 // int(1), int*(2), ..
 static Token * findCppTypeInitPar(Token *tok)
 {
@@ -567,7 +608,7 @@ static bool iscpp11init_impl(const Token * const tok)
         nameToken = nameToken->link()->previous();
 
     const Token *endtok = nullptr;
-    if (Token::Match(nameToken, "%name% { !!["))
+    if (Token::Match(nameToken, "%name%|return {") && (!Token::simpleMatch(nameToken->tokAt(2), "[") || findLambdaEndScope(nameToken->tokAt(2))))
         endtok = nameToken->linkAt(1);
     else if (Token::Match(nameToken,"%name% <") && Token::simpleMatch(nameToken->linkAt(1),"> {"))
         endtok = nameToken->linkAt(1)->linkAt(1);
@@ -584,8 +625,9 @@ static bool iscpp11init_impl(const Token * const tok)
         for (const Token *tok2 = nameToken->next(); tok2 != endtok; tok2 = tok2->next()) {
             if (tok2->str() == ";")
                 return false;
-            if (tok2->str() == "[" && Token::simpleMatch(tok2->link(), "] (") && Token::simpleMatch(tok2->link()->linkAt(1), ") {"))
-                tok2 = tok2->link()->linkAt(1)->linkAt(1);
+            const Token * lambdaEnd = findLambdaEndScope(tok2);
+            if (lambdaEnd)
+                tok2 = lambdaEnd;
         }
     }
     // There is no initialisation for example here: 'class Fred {};'
