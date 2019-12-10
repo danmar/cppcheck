@@ -133,6 +133,9 @@ private:
     Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const OVERRIDE;
     bool analyseWholeProgram1(const CTU::FileInfo *ctu, const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap, const CTU::FileInfo::UnsafeUsage &unsafeUsage, int type, ErrorLogger &errorLogger);
 
+    void reportArrayOOBOver(const std::list<ErrorLogger::ErrorMessage::FileLocation> &locationList,const CTU::FileInfo::FunctionCall *functionCall,const CTU::FileInfo::UnsafeUsage &unsafeUsage, ErrorLogger &errorLogger);
+    void reportArrayOOBUnder(const std::list<ErrorLogger::ErrorMessage::FileLocation> &locationList, const CTU::FileInfo::UnsafeUsage &unsafeUsage, ErrorLogger &errorLogger);
+    void reportOOBPointer(const std::list<ErrorLogger::ErrorMessage::FileLocation> &locationList,const CTU::FileInfo::FunctionCall *functionCall,const CTU::FileInfo::UnsafeUsage &unsafeUsage, ErrorLogger &errorLogger);
 
     static std::string myName() {
         return "Bounds checking";

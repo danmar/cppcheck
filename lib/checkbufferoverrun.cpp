@@ -851,33 +851,42 @@ bool CheckBufferOverrun::analyseWholeProgram1(const CTU::FileInfo *ctu, const st
     if (locationList.empty())
         return false;
 
-    const char *errorId = nullptr;
-    std::string errmsg;
-    CWE cwe;
-
     if (type == 1) {
-        errorId = "ctuArrayIndex";
         if (unsafeUsage.value > 0)
-            errmsg = "Array index out of bounds; '" + unsafeUsage.myArgumentName + "' buffer size is " + MathLib::toString(functionCall->callArgValue) + " and it is accessed at offset " + MathLib::toString(unsafeUsage.value) + ".";
+            reportArrayOOBOver(locationList, functionCall, unsafeUsage, errorLogger);
         else
-            errmsg = "Array index out of bounds; buffer '" + unsafeUsage.myArgumentName + "' is accessed at offset " + MathLib::toString(unsafeUsage.value) + ".";
-        cwe = (unsafeUsage.value > 0) ? CWE_BUFFER_OVERRUN : CWE_BUFFER_UNDERRUN;
-    } else {
-        errorId = "ctuPointerArith";
-        errmsg = "Pointer arithmetic overflow; '" + unsafeUsage.myArgumentName + "' buffer size is " + MathLib::toString(functionCall->callArgValue);
-        cwe = CWE_POINTER_ARITHMETIC_OVERFLOW;
-    }
-
-    const ErrorLogger::ErrorMessage errorMessage(locationList,
-            emptyString,
-            Severity::error,
-            errmsg,
-            errorId,
-            cwe, false);
-    errorLogger.reportErr(errorMessage);
+            reportArrayOOBUnder(locationList, unsafeUsage, errorLogger);
+    } else
+        reportOOBPointer(locationList, functionCall, unsafeUsage, errorLogger);
 
     return true;
 }
+
+void CheckBufferOverrun::reportArrayOOBOver(const std::list<ErrorLogger::ErrorMessage::FileLocation> &locationList,const CTU::FileInfo::FunctionCall *functionCall,const CTU::FileInfo::UnsafeUsage &unsafeUsage, ErrorLogger &errorLogger)
+{
+    const std::string errmsg = "Array index out of bounds; '" + unsafeUsage.myArgumentName + "' buffer size is " + MathLib::toString(functionCall->callArgValue) + " and it is accessed at offset " + MathLib::toString(unsafeUsage.value) + ".";
+    const ErrorLogger::ErrorMessage errorMessage(locationList, emptyString, Severity::error, errmsg, "ctuArrayIndex", CWE_BUFFER_OVERRUN, false);
+    errorLogger.reportErr(errorMessage);
+
+}
+
+void CheckBufferOverrun::reportArrayOOBUnder(const std::list<ErrorLogger::ErrorMessage::FileLocation> &locationList, const CTU::FileInfo::UnsafeUsage &unsafeUsage, ErrorLogger &errorLogger)
+{
+    const std::string errmsg =
+        "Array index out of bounds; buffer '" + unsafeUsage.myArgumentName + "' is accessed at offset " + MathLib::toString(unsafeUsage.value) + ".";
+    const ErrorLogger::ErrorMessage errorMessage(locationList, emptyString, Severity::error, errmsg, "ctuArrayIndex", CWE_BUFFER_UNDERRUN, false);
+    errorLogger.reportErr(errorMessage);
+
+}
+
+void CheckBufferOverrun::reportOOBPointer(const std::list<ErrorLogger::ErrorMessage::FileLocation> &locationList,const CTU::FileInfo::FunctionCall *functionCall,const CTU::FileInfo::UnsafeUsage &unsafeUsage, ErrorLogger &errorLogger)
+{
+    const std::string errmsg = "Pointer arithmetic overflow; '" + unsafeUsage.myArgumentName + "' buffer size is " + MathLib::toString(functionCall->callArgValue);
+    const ErrorLogger::ErrorMessage errorMessage(locationList, emptyString, Severity::error, errmsg, "ctuPointerArith", CWE_POINTER_ARITHMETIC_OVERFLOW, false);
+    errorLogger.reportErr(errorMessage);
+
+}
+
 
 void CheckBufferOverrun::objectIndex()
 {
