@@ -365,6 +365,33 @@ else
 fi
 ${CPPCHECK} ${CPPCHECK_OPT} --library=openssl ${DIR}openssl.c
 
+# opencv2.cpp
+set +e
+pkg-config --version
+PKGCONFIG_RETURNCODE=$?
+set -e
+if [ $PKGCONFIG_RETURNCODE -ne 0 ]; then
+    echo "pkg-config needed to retrieve OpenCV configuration is not available, skipping syntax check."
+else
+    set +e
+    OPENCVCONFIG=$(pkg-config --cflags opencv)
+    OPENCVCONFIG_RETURNCODE=$?
+    set -e
+    if [ $OPENCVCONFIG_RETURNCODE -eq 0 ]; then
+        set +e
+        echo -e "#include <opencv2/opencv.hpp>\n" | ${CXX} ${CXX_OPT} ${OPENCVCONFIG} -x c++ -
+        OPENCVCONFIG_RETURNCODE=$?
+        set -e
+        if [ $OPENCVCONFIG_RETURNCODE -ne 0 ]; then
+            echo "OpenCV not completely present or not working, skipping syntax check with ${CXX}."
+        else
+            echo "OpenCV found and working, checking syntax with ${CXX} now."
+            ${CXX} ${CXX_OPT} ${OPENCVCONFIG} ${DIR}opencv2.cpp
+        fi
+    fi
+fi
+${CPPCHECK} ${CPPCHECK_OPT} --library=opencv2 ${DIR}opencv2.cpp
+
 # Check the syntax of the defines in the configuration files
 set +e
 xmlstarlet --version
