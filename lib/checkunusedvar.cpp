@@ -346,7 +346,8 @@ Variables::VariableUsage *Variables::find(unsigned int varid)
     return nullptr;
 }
 
-static bool replacementNeeded(const Variables::VariableUsage *var1, const Scope *scope){
+static bool replacementNeeded(const Variables::VariableUsage *var1, const Scope *scope)
+{
     // pointerArray => don't replace
     if (var1->mType == Variables::pointerArray)
         return false;
