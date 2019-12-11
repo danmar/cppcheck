@@ -140,7 +140,7 @@ def get_package(server_address, package_index = None):
             sock.send(request.encode())
         package = sock.recv(256)
     except socket.error:
-        package = ''
+        package = b''
     sock.close()
     return package.decode('utf-8')
 
