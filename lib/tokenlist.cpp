@@ -518,7 +518,7 @@ static bool iscast(const Token *tok)
 
 static const Token* findTypeEnd(const Token* tok)
 {
-    while(Token::Match(tok, "%name%|.|::|<|(|template|decltype|sizeof")) {
+    while (Token::Match(tok, "%name%|.|::|<|(|template|decltype|sizeof")) {
         if (Token::Match(tok, "(|<"))
             tok = tok->link();
         if (!tok)
@@ -543,7 +543,7 @@ static const Token * findLambdaEndScope(const Token *tok)
     if (!Token::simpleMatch(tok, ")"))
         return nullptr;
     tok = tok->next();
-    while(Token::Match(tok, "mutable|constexpr|constval|noexcept|.")) {
+    while (Token::Match(tok, "mutable|constexpr|constval|noexcept|.")) {
         if (Token::simpleMatch(tok, "noexcept ("))
             tok = tok->linkAt(1);
         if (Token::simpleMatch(tok, ".")) {
