@@ -7959,6 +7959,8 @@ private:
 
         ASSERT_NO_THROW(tokenizeAndStringify("S s = { .x=2, .y[0]=3 };"));
         ASSERT_NO_THROW(tokenizeAndStringify("S s = { .ab.a=2, .ab.b=3 };"));
+
+        ASSERT_NO_THROW(tokenizeAndStringify("extern \"C\" typedef void FUNC();"));
     }
 
 
