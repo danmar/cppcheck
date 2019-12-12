@@ -9,7 +9,6 @@ import argparse
 import os
 import sys
 import random
-import time
 import subprocess
 
 if __name__ == "__main__":
@@ -73,9 +72,6 @@ if __name__ == "__main__":
 
     while packages_processed < args.p and len(packages_idxs) > 0:
         package = lib.get_package(lib.server_address, packages_idxs.pop())
-        if len(package) == 0:
-            print("network or server might be temporarily down..")
-            sys.exit(1)
 
         tgz = lib.download_package(work_path, package, None)
         if tgz is None:
