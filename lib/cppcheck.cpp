@@ -275,6 +275,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
             case simplecpp::Output::SYNTAX_ERROR:
             case simplecpp::Output::UNHANDLED_CHAR_ERROR:
+            case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
                 err = true;
                 break;
             case simplecpp::Output::WARNING:
@@ -299,7 +300,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             }
         }
 
-        preprocessor.loadFiles(tokens1, files);
+        if (!preprocessor.loadFiles(tokens1, files))
+            return mExitCode;
 
         if (!mSettings.plistOutput.empty()) {
             std::string filename2;

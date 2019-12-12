@@ -460,6 +460,7 @@ def get_libraries():
                        'microsoft_sal': ['<sal.h>'],
                        'motif': ['<X11/', '<Xm/'],
                        'nspr': ['<prtypes.h>', '"prtypes.h"'],
+                       # 'opencv2': ['<opencv2/', '"opencv2/'], <= enable after release of version 1.90
                        'opengl': ['<GL/gl.h>', '<GL/glu.h>', '<GL/glut.h>'],
                        'openmp': ['<omp.h>'],
                        # 'openssl': ['<openssl/'], <= enable after release of version 1.90
