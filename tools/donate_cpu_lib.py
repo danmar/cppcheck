@@ -129,7 +129,7 @@ def get_packages_count(server_address):
 
 def get_package(server_address, package_index = None):
     print('Connecting to server to get assigned work..')
-    package = None
+    package = b''
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         sock.connect(server_address)
@@ -140,7 +140,7 @@ def get_package(server_address, package_index = None):
             sock.send(request.encode())
         package = sock.recv(256)
     except socket.error:
-        package = b''
+        pass
     sock.close()
     return package.decode('utf-8')
 
