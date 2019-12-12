@@ -824,7 +824,7 @@ void TemplateSimplifier::getTemplateInstantiations()
             Token *tok2 = Token::findsimplematch(tok->tokAt(2), ";");
             if (tok2)
                 tok = tok2;
-        } else if (Token::Match(tok->previous(), "(|{|}|;|=|>|<<|:|.|*|&|return|<|,|! %name% ::|<|(") ||
+        } else if (Token::Match(tok->previous(), "(|{|}|;|=|>|<<|:|.|*|&|return|<|,|!|[ %name% ::|<|(") ||
                    Token::Match(tok->previous(), "%type% %name% ::|<") ||
                    Token::Match(tok->tokAt(-2), "[,:] private|protected|public %name% ::|<")) {
             std::string scopeName = tok->scopeInfo()->name;
