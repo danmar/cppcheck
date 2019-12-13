@@ -36,36 +36,45 @@ def getVsConfigs(stdout, filename):
 
 def test_relative_path():
     ret, stdout, stderr = cppcheck(['--template=cppcheck1', 'helloworld'])
-    filename = os.path.join('helloworld', 'main.c')
+    filename1 = os.path.join('helloworld', 'main.c')
+    filename2 = os.path.join('helloworld', 'foo.c')
     assert ret == 0
-    assert stderr == '[%s:5]: (error) Division by zero.\n' % (filename)
-
+    assert stderr == ( '[%s:5]: (error) Memory leak: buffer\n'
+                       '[%s:5]: (error) Division by zero.\n' % (filename2, filename1))
 
 def test_local_path():
     ret, stdout, stderr = cppcheck_local(['--template=cppcheck1', '.'])
     assert ret == 0
-    assert stderr == '[main.c:5]: (error) Division by zero.\n'
+    assert stderr == ('[foo.c:5]: (error) Memory leak: buffer\n'
+                      '[main.c:5]: (error) Division by zero.\n')
 
 def test_absolute_path():
     prjpath = getAbsoluteProjectPath()
     ret, stdout, stderr = cppcheck(['--template=cppcheck1', prjpath])
-    filename = os.path.join(prjpath, 'main.c')
+    filename1 = os.path.join(prjpath, 'foo.c')
+    filename2 = os.path.join(prjpath, 'main.c')
     assert ret == 0
-    assert stderr == '[%s:5]: (error) Division by zero.\n' % (filename)
+    assert stderr == ('[%s:5]: (error) Memory leak: buffer\n'
+                      '[%s:5]: (error) Division by zero.\n' % (filename1, filename2))
 
 def test_addon_local_path():
     ret, stdout, stderr = cppcheck_local(['--addon=misra', '--template=cppcheck1', '.'])
     assert ret == 0
-    assert stderr == ('[main.c:5]: (error) Division by zero.\n'
+    assert stderr == ('[foo.c:5]: (error) Memory leak: buffer\n'
+                      '[foo.c:3]: (style) misra violation (use --rule-texts=<file> to get proper output)\n'
+                      '[main.c:5]: (error) Division by zero.\n'
                       '[main.c:1]: (style) misra violation (use --rule-texts=<file> to get proper output)\n')
 
 def test_addon_absolute_path():
     prjpath = getAbsoluteProjectPath()
     ret, stdout, stderr = cppcheck(['--addon=misra', '--template=cppcheck1', prjpath])
-    filename = os.path.join(prjpath, 'main.c')
+    filename1 = os.path.join(prjpath, 'foo.c')
+    filename2 = os.path.join(prjpath, 'main.c')
     assert ret == 0
-    assert stderr == ('[%s:5]: (error) Division by zero.\n'
-                      '[%s:1]: (style) misra violation (use --rule-texts=<file> to get proper output)\n' % (filename, filename))
+    assert stderr == ('[%s:5]: (error) Memory leak: buffer\n'
+                      '[%s:3]: (style) misra violation (use --rule-texts=<file> to get proper output)\n'
+                      '[%s:5]: (error) Division by zero.\n'
+                      '[%s:1]: (style) misra violation (use --rule-texts=<file> to get proper output)\n' % (filename1, filename1, filename2, filename2))
 
 def test_addon_relative_path():
     prjpath = getRelativeProjectPath()
@@ -80,87 +89,109 @@ def test_addon_relative_path():
     project_file = 'helloworld/test.cppcheck'
     create_gui_project_file(project_file, paths=['.'], addon='misra')
     ret, stdout, stderr = cppcheck(['--template=cppcheck1', '--project=' + project_file])
-    filename = os.path.join('helloworld', 'main.c')
+    filename1 = os.path.join('helloworld', 'foo.c')
+    filename2 = os.path.join('helloworld', 'main.c')
     assert ret == 0
-    assert stdout == 'Checking %s ...\n' % (filename)
-    assert stderr == ('[%s:5]: (error) Division by zero.\n'
-                      '[%s:1]: (style) misra violation (use --rule-texts=<file> to get proper output)\n' % (filename, filename))
+#    assert stdout == ('Checking %s ...\n'
+#                      'Checking %s ...\n' % (filename1,filename2))
+    assert stderr == ('[%s:5]: (error) Memory leak: buffer\n'
+                      '[%s:3]: (style) misra violation (use --rule-texts=<file> to get proper output)\n'
+                      '[%s:5]: (error) Division by zero.\n'
+                      '[%s:1]: (style) misra violation (use --rule-texts=<file> to get proper output)\n' % (filename1, filename1, filename2, filename2))
 
 def test_basepath_relative_path():
     prjpath = getRelativeProjectPath()
     ret, stdout, stderr = cppcheck([prjpath, '--template=cppcheck1', '-rp=' + prjpath])
-    filename = os.path.join(prjpath, 'main.c')
     assert ret == 0
-    assert stderr == '[main.c:5]: (error) Division by zero.\n'
+    assert stderr == ('[foo.c:5]: (error) Memory leak: buffer\n'
+                      '[main.c:5]: (error) Division by zero.\n')
 
 def test_basepath_absolute_path():
     prjpath = getAbsoluteProjectPath()
     ret, stdout, stderr = cppcheck(['--template=cppcheck1', prjpath, '-rp=' + prjpath])
-    filename = os.path.join(prjpath, 'main.c')
     assert ret == 0
-    assert stderr == '[main.c:5]: (error) Division by zero.\n'
+    assert stderr == ('[foo.c:5]: (error) Memory leak: buffer\n'
+                      '[main.c:5]: (error) Division by zero.\n')
 
 def test_vs_project_local_path():
     ret, stdout, stderr = cppcheck_local(['--template=cppcheck1', '--project=helloworld.vcxproj'])
     assert ret == 0
+    assert getVsConfigs(stdout, 'foo.c') == 'Debug|Win32 Debug|x64 Release|Win32 Release|x64'
     assert getVsConfigs(stdout, 'main.c') == 'Debug|Win32 Debug|x64 Release|Win32 Release|x64'
-    assert stderr == '[main.c:5]: (error) Division by zero.\n'
+    assert stderr == ('[main.c:5]: (error) Division by zero.\n'
+                      '[foo.c:5]: (error) Memory leak: buffer\n')
 
 def test_vs_project_relative_path():
     prjpath = getRelativeProjectPath()
     ret, stdout, stderr = cppcheck(['--template=cppcheck1', '--project=' + os.path.join(prjpath, 'helloworld.vcxproj')])
-    filename = os.path.join(prjpath, 'main.c')
+    filename1 = os.path.join(prjpath, 'foo.c')
+    filename2 = os.path.join(prjpath, 'main.c')
     assert ret == 0
-    assert getVsConfigs(stdout, filename) == 'Debug|Win32 Debug|x64 Release|Win32 Release|x64'
-    assert stderr == '[%s:5]: (error) Division by zero.\n' % (filename)
+    assert getVsConfigs(stdout, filename1) == 'Debug|Win32 Debug|x64 Release|Win32 Release|x64'
+    assert getVsConfigs(stdout, filename2) == 'Debug|Win32 Debug|x64 Release|Win32 Release|x64'
+    assert stderr == ('[%s:5]: (error) Division by zero.\n'
+                      '[%s:5]: (error) Memory leak: buffer\n' % (filename2, filename1))
 
 def test_vs_project_absolute_path():
     prjpath = getAbsoluteProjectPath()
     ret, stdout, stderr = cppcheck(['--template=cppcheck1', '--project=' + os.path.join(prjpath, 'helloworld.vcxproj')])
-    filename = os.path.join(prjpath, 'main.c')
+    filename1 = os.path.join(prjpath, 'main.c')
+    filename2 = os.path.join(prjpath, 'foo.c')
     assert ret == 0
-    assert getVsConfigs(stdout, filename) == 'Debug|Win32 Debug|x64 Release|Win32 Release|x64'
-    assert stderr == '[%s:5]: (error) Division by zero.\n' % (filename)
+    assert getVsConfigs(stdout, filename1) == 'Debug|Win32 Debug|x64 Release|Win32 Release|x64'
+    assert getVsConfigs(stdout, filename2) == 'Debug|Win32 Debug|x64 Release|Win32 Release|x64'
+    assert stderr == ('[%s:5]: (error) Division by zero.\n'
+                      '[%s:5]: (error) Memory leak: buffer\n' % (filename1, filename2))
 
 def test_cppcheck_project_local_path():
     ret, stdout, stderr = cppcheck_local(['--template=cppcheck1', '--platform=win64', '--project=helloworld.cppcheck'])
     assert ret == 0
     assert getVsConfigs(stdout, 'main.c') == 'Debug|x64'
-    assert stderr == '[main.c:5]: (error) Division by zero.\n'
+    assert getVsConfigs(stdout, 'foo.c') == 'Debug|x64'
+    assert stderr == ('[main.c:5]: (error) Division by zero.\n'
+                      '[foo.c:5]: (error) Memory leak: buffer\n')
 
 def test_cppcheck_project_relative_path():
     prjpath = getRelativeProjectPath()
     ret, stdout, stderr = cppcheck(['--template=cppcheck1', '--platform=win64', '--project=' + os.path.join(prjpath, 'helloworld.cppcheck')])
-    filename = os.path.join(prjpath, 'main.c')
+    filename1 = os.path.join(prjpath, 'main.c')
+    filename2 = os.path.join(prjpath, 'foo.c')
     assert ret == 0
-    assert getVsConfigs(stdout, filename) == 'Debug|x64'
-    assert stderr == '[%s:5]: (error) Division by zero.\n' % (filename)
+    assert getVsConfigs(stdout, filename1) == 'Debug|x64'
+    assert getVsConfigs(stdout, filename2) == 'Debug|x64'
+    assert stderr == ('[%s:5]: (error) Division by zero.\n'
+                      '[%s:5]: (error) Memory leak: buffer\n' % (filename1, filename2))
 
 def test_cppcheck_project_absolute_path():
     prjpath = getAbsoluteProjectPath()
     ret, stdout, stderr = cppcheck(['--template=cppcheck1', '--platform=win64', '--project=' + os.path.join(prjpath, 'helloworld.cppcheck')])
-    filename = os.path.join(prjpath, 'main.c')
+    filename1 = os.path.join(prjpath, 'main.c')
+    filename2 = os.path.join(prjpath, 'foo.c')
     assert ret == 0
-    assert getVsConfigs(stdout, filename) == 'Debug|x64'
-    assert stderr == '[%s:5]: (error) Division by zero.\n' % (filename)
+    assert getVsConfigs(stdout, filename1) == 'Debug|x64'
+    assert getVsConfigs(stdout, filename2) == 'Debug|x64'
+    assert stderr == ('[%s:5]: (error) Division by zero.\n'
+                      '[%s:5]: (error) Memory leak: buffer\n' % (filename1, filename2))
 
 def test_suppress_command_line():
     prjpath = getRelativeProjectPath()
-    ret, stdout, stderr = cppcheck(['--suppress=zerodiv:' + os.path.join(prjpath, 'main.c'), prjpath])
+    ret, stdout, stderr = cppcheck(['--suppress=zerodiv:' + os.path.join(prjpath, 'main.c'), '--suppress=memleak:' + os.path.join(prjpath, 'foo.c'), prjpath])
     assert ret == 0
     assert stderr == ''
 
     prjpath = getAbsoluteProjectPath()
-    ret, stdout, stderr = cppcheck(['--suppress=zerodiv:' + os.path.join(prjpath, 'main.c'), prjpath])
+    ret, stdout, stderr = cppcheck(['--suppress=zerodiv:' + os.path.join(prjpath, 'main.c'), '--suppress=memleak:' + os.path.join(prjpath, 'foo.c'), prjpath])
     assert ret == 0
     assert stderr == ''
 
 def test_suppress_project():
-    project_file = os.path.join('helloworld', 'test.cppcheck')
+    prjpath = getRelativeProjectPath()
+    project_file = os.path.join(prjpath, 'test.cppcheck')
     create_gui_project_file(project_file,
                             paths=['.'],
-                            suppressions=[{'fileName':'main.c', 'id':'zerodiv'}])
-
+                            suppressions=[{'fileName':'main.c', 'id':'zerodiv'},
+                                          {'fileName':'foo.c', 'id':'memleak'}])
+    
     # Relative path
     ret, stdout, stderr = cppcheck(['--project=' + project_file])
     assert ret == 0
@@ -177,4 +208,11 @@ def test_exclude():
     ret, stdout, stderr = cppcheck(['-i' + prjpath, '--platform=win64', '--project=' + os.path.join(prjpath, 'helloworld.cppcheck')])
     assert stdout == 'cppcheck: No C or C++ source files found.\n'
 
-
+def test_selected_files():
+    prjpath = getRelativeProjectPath()
+    filename1 = os.path.join(prjpath, 'main.c')
+    filename2 = os.path.join(prjpath, 'foo.c')
+    ret, stdout, stderr = cppcheck(['--template=cppcheck1','--project='+os.path.join(prjpath,'helloworld.cppcheck'), 'main.c'])
+    assert stderr == '[%s:5]: (error) Division by zero.\n' % (filename1)
+    ret, stdout, stderr = cppcheck(['--template=cppcheck1','--project='+os.path.join(prjpath,'helloworld.cppcheck'), 'foo.c'])
+    assert stderr == '[%s:5]: (error) Memory leak: buffer\n' % (filename2)
