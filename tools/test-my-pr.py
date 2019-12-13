@@ -21,7 +21,7 @@ if __name__ == "__main__":
 
     print(args)
 
-    work_path = args.work_path
+    work_path = os.path.abspath(args.work_path)
     if not os.path.exists(work_path):
         os.makedirs(work_path)
     master_dir = os.path.join(work_path, 'cppcheck')
