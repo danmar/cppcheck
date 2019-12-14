@@ -4191,6 +4191,18 @@ private:
                "}";
         ASSERT_EQUALS(0U, tokenValues(code, "v . size ( )").size());
 
+        // if
+        code = "bool f(std::vector<int>&) {\n" // #9532
+               "  return false;\n"
+               "}\n"
+               "int g() {\n"
+               "    std::vector<int> v;\n"
+               "    if (f(v) || v.empty())\n"
+               "        return 0;\n"
+               "    return v[0];\n"
+               "}\n";
+        ASSERT_EQUALS(0U, tokenValues(code, "v [ 0 ]").size());
+
         // container size => yields
         code = "void f() {\n"
                "  std::string s = \"abcd\";\n"

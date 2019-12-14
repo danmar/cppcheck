@@ -5479,7 +5479,7 @@ static void valueFlowContainerForward(Token *tok, nonneg int containerId, ValueF
         }
         if (Token::simpleMatch(tok, ") {") && Token::Match(tok->link()->previous(), "while|for|if (")) {
             const Token *start = tok->next();
-            if (isContainerSizeChanged(containerId, start, start->link()))
+            if (isContainerSizeChanged(containerId, start, start->link()) || isEscapeScope(start, nullptr))
                 break;
             tok = start->link();
             if (Token::simpleMatch(tok, "} else {")) {

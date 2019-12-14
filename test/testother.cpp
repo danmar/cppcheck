@@ -4658,8 +4658,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void duplicateExpression10()
-    {
+    void duplicateExpression10() {
         // #9485
         check("int f() {\n"
               "   const int a = 1;\n"
