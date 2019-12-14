@@ -257,19 +257,35 @@ def getForLoopExpressions(forToken):
 
 
 def getForLoopCounterVariables(forToken):
-    """Return set of Variable objects declared in ``for`` statement."""
+    """ Return a set of Variable objects defined in ``for`` statement and
+    satisfy requirements to loop counter term from section 8.14 of MISRA
+    document.
+    """
     if not forToken or forToken.str != 'for':
         return None
     tn = forToken.next
     if not tn or tn.str != '(':
         return None
-    counterVars = set()
-    while tn and tn.str not in (';', ')'):
+    vars_defined = set()
+    vars_exit = set()
+    vars_modified = set()
+    cur_clause = 1
+    te = tn.link
+    while tn and tn != te:
         if tn.variable:
-            if tn.variable.nameToken == tn:
-                counterVars.add(tn.variable)
+            if cur_clause == 1 and tn.variable.nameToken == tn:
+                vars_defined.add(tn.variable)
+            elif cur_clause == 2:
+                vars_exit.add(tn.variable)
+            elif cur_clause == 3:
+                if tn.next and hasSideEffectsRecursive(tn.next):
+                    vars_modified.add(tn.variable)
+                elif tn.previous and tn.previous.str in ('++', '--'):
+                    vars_modified.add(tn.variable)
+        if tn.str == ';':
+            cur_clause += 1
         tn = tn.next
-    return counterVars
+    return vars_defined & vars_exit & vars_modified
 
 
 def findCounterTokens(cond):

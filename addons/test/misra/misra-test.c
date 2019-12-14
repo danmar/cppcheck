@@ -422,7 +422,7 @@ void misra_14_1() {
 void misra_14_2_init_value(int32_t *var) {
     *var = 0;
 }
-void misra_14_2(bool b) {
+void misra_14_2_fn1(bool b) {
   for (;i++<10;) {} // 14.2
   for (;i<10;dostuff()) {} // TODO
   int32_t g = 0;
@@ -472,6 +472,47 @@ void misra_14_2(bool b) {
           }
       }
   }
+}
+static void misra_14_2_fn2()
+{
+    int y = 0;
+
+    // Handle cases when i is not treated as loop counter according MISRA
+    // definition.
+    for (int i = 0, j = 19; y < 10, --j > 10; y++, j--) { // 14.2 12.3
+        i++; // no warning
+    }
+    for (int i = 0, j = 19; y < 10, --j > 10; y++, j--) { // 14.2 12.3
+        i++; // no warning
+    }
+    for (int i = 0; y < 10; y++) { // TODO: 14.2
+        i++; // no warning
+    }
+    for (int i = 0; i < 10; y++) { // TODO: 14.2
+        i++; // no warning
+    }
+    for (int i = 0; y < 10; i++) { // TODO: 14.2
+        i++; // no warning
+    }
+    for (int i = 0; i < 10; (y+=i)) {
+        i++; // no warning
+    }
+
+    // i is a loop counter according MISRA definition
+    for (int i = 0; i < 10; i++) {
+        i++; // 14.2
+        if (++i > 5) { // 14.2
+            break;
+        }
+    }
+    for (int i = 0; i < 10; (i+=42)) {
+        i++; // 14.2
+    }
+    for (int i = 0; i < 10; (i|=y)) {
+        i++; // 14.2
+    }
+
+    return 0;
 }
 
 struct {
