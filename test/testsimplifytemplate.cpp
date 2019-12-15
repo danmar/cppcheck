@@ -192,6 +192,7 @@ private:
         TEST_CASE(template152); // #9467
         TEST_CASE(template153); // #9483
         TEST_CASE(template154); // #9495
+        TEST_CASE(template155); // #9539
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -2799,12 +2800,6 @@ private:
         ASSERT_EQUALS(exp, tok(code));
     }
 
-    void template154() { // #9495
-        const char code[] = "template <typename S, enable_if_t<(is_compile_string<S>::value), int>> void i(S s);";
-        const char exp[] = "template < typename S , enable_if_t < ( is_compile_string < S > :: value ) , int > > void i ( S s ) ;";
-        ASSERT_EQUALS(exp, tok(code));
-    }
-
     void template116() { // #9178
         {
             const char code[] = "template <class, class a> auto b() -> decltype(a{}.template b<void(int, int)>);\n"
@@ -3663,6 +3658,33 @@ private:
     void template153() { // #9483
         const char code[] = "template <class = b<decltype(a<h>())...>> void i();";
         const char exp[] = "template < class = b < decltype ( a < h > ( ) ) ... > > void i ( ) ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template154() { // #9495
+        const char code[] = "template <typename S, enable_if_t<(is_compile_string<S>::value), int>> void i(S s);";
+        const char exp[] = "template < typename S , enable_if_t < ( is_compile_string < S > :: value ) , int > > void i ( S s ) ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template155() { // #9539
+        const char code[] = "template <int> int a = 0;\n"
+                            "struct b {\n"
+                            "  void operator[](int);\n"
+                            "};\n"
+                            "void c() {\n"
+                            "  b d;\n"
+                            "  d[a<0>];\n"
+                            "}";
+        const char exp[] = "int a<0> ; "
+                           "a<0> = 0 ; "
+                           "struct b { "
+                           "void operator[] ( int ) ; "
+                           "} ; "
+                           "void c ( ) { "
+                           "b d ; "
+                           "d [ a<0> ] ; "
+                           "}";
         ASSERT_EQUALS(exp, tok(code));
     }
 

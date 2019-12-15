@@ -94,7 +94,7 @@ The second option is to use -i, with it you specify files/paths to ignore. With 
 
     cppcheck -isrc/c src
 
-This option does not currently work with the `--project` option and is only valid when supplying an input directory. To ignore multiple directories supply the -i multiple times. The following command ignores both the src/b and src/c directories.
+This option is only valid when supplying an input directory. To ignore multiple directories supply the -i multiple times. The following command ignores both the src/b and src/c directories.
 
     cppcheck -isrc/b -isrc/c
 
@@ -142,6 +142,10 @@ In addition you can also define files that are part of the project and you want 
 
 The Cppcheck GUI has a few options that are not available in the command line directly. To use these options you can import a GUI project file. We want to keep the command line tool usage simple and limit the options by intention.
 
+To ignore certain folders in the project you can use `-i`. This will skip analysis of source files in the `foo` folder.
+
+    cppcheck --project=foobar.cppcheck -ifoo
+
 ## CMake
 
 Generate a compile database:
@@ -151,6 +155,11 @@ Generate a compile database:
 The file `compile_commands.json` is created in the current folder. Now run Cppcheck like this:
 
     cppcheck --project=compile_commands.json
+
+To ignore certain folders you can use `-i`. This will skip analysis of source files in the `foo` folder.
+
+    cppcheck --project=compile_commands.json -ifoo
+
 
 ## Visual Studio
 
@@ -166,11 +175,20 @@ Running Cppcheck on a Visual Studio project:
 
 In the `Cppcheck GUI` you have the choice to only analyze a single debug configuration. If you want to use this choice on the command line then create a `Cppcheck GUI` project with this activated and then import the GUI project file on the command line.
 
+To ignore certain folders in the project you can use `-i`. This will skip analysis of source files in the `foo` folder.
+
+    cppcheck --project=foobar.vcxproj -ifoo
+
 ## C++ Builder 6
 
 Running Cppcheck on a C++ Builder 6 project:
 
     cppcheck --project=foobar.bpr
+
+
+To ignore certain folders in the project you can use `-i`. This will skip analysis of source files in the `foo` folder.
+
+    cppcheck --project=foobar.bpr -ifoo
 
 ## Other
 
@@ -186,7 +204,7 @@ You should use a platform configuration that match your target.
 
 By default Cppcheck uses native platform configuration that works well if your code is compiled and executed locally.
 
-Cppcheck has builtin configurations for Unix and Windows targets. You can easily use these with the --platform command line flag.
+Cppcheck has builtin configurations for Unix and Windows targets. You can easily use these with the `--platform` command line flag.
 
 You can also create your own custom platform configuration in a XML file. Here is an example:
 

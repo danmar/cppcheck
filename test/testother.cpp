@@ -139,6 +139,7 @@ private:
         TEST_CASE(duplicateExpression7);
         TEST_CASE(duplicateExpression8);
         TEST_CASE(duplicateExpression9); // #9320
+        TEST_CASE(duplicateExpression10); // #9485
         TEST_CASE(duplicateExpressionLoop);
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateExpressionTernary); // #6391
@@ -4653,6 +4654,17 @@ private:
               "  uint16_t x = 1000;\n"
               "  uint8_t y = x;\n"
               "  if (x != y) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateExpression10() {
+        // #9485
+        check("int f() {\n"
+              "   const int a = 1;\n"
+              "   const int b = a-1;\n"
+              "   const int c = a+1;\n"
+              "   return c;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

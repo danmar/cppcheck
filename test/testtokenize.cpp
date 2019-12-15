@@ -3581,6 +3581,11 @@ private:
     void simplifyStructDecl() {
         const char code[] = "const struct A { int a; int b; } a;";
         ASSERT_EQUALS("struct A { int a ; int b ; } ; const struct A a ;", tokenizeAndStringify(code));
+
+        // #9519
+        const char code2[] = "enum A {} (a);";
+        const char expected2[] = "enum A { } ; enum A a ;";
+        ASSERT_EQUALS(expected2, tokenizeAndStringify(code2));
     }
 
     void vardecl1() {
@@ -7959,6 +7964,8 @@ private:
 
         ASSERT_NO_THROW(tokenizeAndStringify("S s = { .x=2, .y[0]=3 };"));
         ASSERT_NO_THROW(tokenizeAndStringify("S s = { .ab.a=2, .ab.b=3 };"));
+
+        ASSERT_NO_THROW(tokenizeAndStringify("extern \"C\" typedef void FUNC();"));
     }
 
 

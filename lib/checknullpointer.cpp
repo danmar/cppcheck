@@ -166,6 +166,9 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
         }
     }
 
+    if (tok->str() == "(" && !tok->scope()->isExecutable())
+        return false;
+
     const Token* parent = tok->astParent();
     if (!parent)
         return false;
