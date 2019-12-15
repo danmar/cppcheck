@@ -270,15 +270,13 @@ class Token:
         self.column = int(element.get('column'))
 
     def __repr__(self):
-        attrs = ["Id", "str", "next", "previous", "scopeId",
-                 "scope", "isName", "isUnsigned", "isSigned",
-                 "isNumber", "isInt", "isFloat", "isString", "strlen",
-                 "isChar", "isOp", "isArithmeticalOp", "isComparisonOp",
-                 "isLogicalOp", "isExpandedMacro", "linkId", "link",
-                 "varId", "variableId", "variable", "functionId", "function",
-                 "valuesId", "values", "valueType", "typeScopeId", "typeScope",
-                 "astParentId", "astParent", "astOperand1Id", "astOperand1",
-                 "astOperand2Id", "astOperand2", "file", "linenr", "column"]
+        attrs = ["Id", "str", "scopeId", "isName", "isUnsigned", "isSigned",
+                "isNumber", "isInt", "isFloat", "isString", "strlen",
+                "isChar", "isOp", "isArithmeticalOp", "isComparisonOp",
+                "isLogicalOp", "isExpandedMacro", "linkId", "varId",
+                "variableId", "functionId", "valuesId", "valueType",
+                "typeScopeId", "astParentId", "astOperand1Id", "file",
+                "linenr", "column"]
         return "{}({})".format(
             "Token",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
@@ -356,8 +354,7 @@ class Scope:
                                            'Switch', 'Try', 'Catch', 'Unconditional', 'Lambda'))
 
     def __repr__(self):
-        attrs = ["Id", "className", "functionId", "function",
-                 "bodyStartId", "bodyStart", "bodyEndId", "bodyEnd",
+        attrs = ["Id", "className", "functionId", "bodyStartId", "bodyEndId",
                  "nestedInId", "nestedIn", "type", "isExecutable"]
         return "{}({})".format(
             "Scope",
@@ -415,7 +412,7 @@ class Function:
 
     def __repr__(self):
         attrs = ["Id", "tokenDefId", "name", "type", "isVirtual",
-                 "isImplicitlyVirtual", "isStatic", "argument", "argumentId"]
+                 "isImplicitlyVirtual", "isStatic", "argumentId"]
         return "{}({})".format(
             "Function",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
@@ -500,11 +497,10 @@ class Variable:
             self.constness = int(self.constness)
 
     def __repr__(self):
-        attrs = ["Id", "nameTokenId", "nameToken", "typeStartTokenId",
-                 "typeStartToken", "typeEndTokenId", "typeEndToken",
-                 "access", "scopeId", "scope", "isArgument", "isArray",
-                 "isClass", "isConst", "isGlobal", "isExtern", "isLocal",
-                 "isPointer", "isReference", "isStatic", "constness", ]
+        attrs = ["Id", "nameTokenId", "typeStartTokenId", "typeEndTokenId",
+                 "access", "scopeId", "isArgument", "isArray", "isClass",
+                 "isConst", "isGlobal", "isExtern", "isLocal", "isPointer",
+                 "isReference", "isStatic", "constness", ]
         return "{}({})".format(
             "Variable",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
@@ -736,8 +732,7 @@ class Configuration:
             variable.setId(IdMap)
 
     def __repr__(self):
-        attrs = ["name", "directives", "tokenlist",
-                 "scopes", "functions", "variables", "valueflow"]
+        attrs = ["name"]
         return "{}({})".format(
             "Configuration",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
@@ -885,7 +880,7 @@ class CppcheckData:
                 self.configurations.append(Configuration(cfgnode))
 
     def __repr__(self):
-        attrs = ["configurations", ]
+        attrs = ["configurations", "platform"]
         return "{}({})".format(
             "CppcheckData",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
