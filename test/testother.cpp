@@ -139,6 +139,7 @@ private:
         TEST_CASE(duplicateExpression7);
         TEST_CASE(duplicateExpression8);
         TEST_CASE(duplicateExpression9); // #9320
+        TEST_CASE(duplicateExpression10); // #9485
         TEST_CASE(duplicateExpressionLoop);
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateExpressionTernary); // #6391
@@ -4657,6 +4658,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void duplicateExpression10() {
+        // #9485
+        check("int f() {\n"
+              "   const int a = 1;\n"
+              "   const int b = a-1;\n"
+              "   const int c = a+1;\n"
+              "   return c;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void duplicateExpressionLoop() {
         check("void f() {\n"
               "    int a = 1;\n"
@@ -6986,14 +6998,6 @@ private:
               "    bar(c);\n"
               "    c = getchar();\n"
               "  } ;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Storing getchar() return value in char variable and then comparing with EOF.\n", errout.str());
-
-        check("void f() {\n"
-              "  unsigned char c;\n"
-              "  while( EOF != ( c = getchar() ) )\n"
-              "  {\n"
-              "  }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Storing getchar() return value in char variable and then comparing with EOF.\n", errout.str());
 
