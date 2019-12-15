@@ -1021,10 +1021,15 @@ class MisraChecker:
             e2 = getEssentialTypeCategory(token.astOperand2)
             if not e1 or not e2:
                 continue
-            if token.str in ['<<', '>>']:
+            if token.str in ('<<', '>>'):
                 if e1 != 'unsigned':
                     self.reportError(token, 10, 1)
                 elif e2 != 'unsigned' and not token.astOperand2.isNumber:
+                    self.reportError(token, 10, 1)
+            elif token.str in ('~', '&', '|', '^'):
+                e1_et = getEssentialType(token.astOperand1)
+                e2_et = getEssentialType(token.astOperand2)
+                if e1_et == 'char' and e2_et == 'char':
                     self.reportError(token, 10, 1)
 
     def misra_10_4(self, data):

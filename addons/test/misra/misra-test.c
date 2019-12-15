@@ -206,16 +206,33 @@ void misra_9_5() {
   int x[] = {[0]=23}; // 9.5
 }
 
+typedef char misra_10_1_char_t;
+#define MISRA_10_1_CHAR char
 void misra_10_1(uint8_t u, char c1, char c2) {
   int32_t i;
   char c;
   enum { E1 = 1 };
   i = 3 << 1; // 10.1
   i = (u & u) << 4; // no-warning
-  c = c1 & c2; // FIXME: This is not compliant to "10.1". Trac #9489
+  c = c1 & c2; // 10.1
   c = c1 << 1; // 10.1
   i = c1 > c2; // no-warning
   i = E1 + i; // no-warning
+
+  char ch1 = 'a';
+  char ch2 = 'b';
+  char ch3;
+  ch3 = ch1 & ch2; // 10.1
+
+  misra_10_1_char_t ct1 = 'a';
+  misra_10_1_char_t ct2 = 'b';
+  misra_10_1_char_t ct3;
+  ct3 = ct1 & ct2; // 10.1
+
+  MISRA_10_1_CHAR cd1 = 'a';
+  MISRA_10_1_CHAR cd2 = 'b';
+  MISRA_10_1_CHAR cd3;
+  cd3 = cd1 & cd2; // 10.1
 }
 
 void misra_10_4(u32 x, s32 y) {
