@@ -40,7 +40,7 @@ void misra_2_7_used_params (int *param1, int param2, int param3)
 void misra_3_2(int enable)
 {
     // This won't generate a violation because of subsequent blank line \
-	
+
     int y = 0;
     int x = 0;  // 3.2 non-compliant comment ends with backslash \
     if (enable != 0)
@@ -67,16 +67,16 @@ static int misra_5_2_var_hides_var______31x;
 static int misra_5_2_var_hides_var______31y;//5.2
 static int misra_5_2_function_hides_var_31x;
 void misra_5_2_function_hides_var_31y(void) {}//5.2
-void foo(void) 
+void foo(void)
 {
   int i;
   switch(misra_5_2_func1()) //16.4 16.6
   {
-    case 1: 
+    case 1:
     {
       do
       {
-        for(i = 0; i < 10; i++) 
+        for(i = 0; i < 10; i++)
         {
           if(misra_5_2_func3()) //14.4
           {
@@ -85,7 +85,7 @@ void foo(void)
           }
         }
       } while(misra_5_2_func2()); //14.4
-    } 
+    }
   }
 }
 
@@ -161,13 +161,13 @@ void misra_5_5_functionhides_macro31y(int misra_5_5_param_hides_macro__31y){(voi
 struct misra_5_5_tag_hides_macro____31y { //5.5
 int x;
 };
-void misra_5_5_func1() 
+void misra_5_5_func1()
 {
   switch(misra_5_5_func2()) //16.4 16.6
   {
     case 1:
     {
-      do 
+      do
       {
         if(misra_5_5_func3()) //14.4
         {
@@ -184,11 +184,11 @@ void misra_7_1() {
 }
 
 void misra_7_3() {
-  long misra_7_3_a = 0l; //7.3       
-  long misra_7_3_b = 0lU; //7.3     
-  long long misra_7_3_c = 0Ull; //7.3     
-  long long misra_7_3_d = 0ll; //7.3     
-  long double misra_7_3_e = 7.3l; //7.3  
+  long misra_7_3_a = 0l; //7.3
+  long misra_7_3_b = 0lU; //7.3
+  long long misra_7_3_c = 0Ull; //7.3
+  long long misra_7_3_d = 0ll; //7.3
+  long double misra_7_3_e = 7.3l; //7.3
   }
 
 
@@ -241,7 +241,7 @@ void misra_10_4(u32 x, s32 y) {
   enum misra_10_4_enumb { misra_10_4_B1, misra_10_4_B2, misra_10_4_B3 };
   if ( misra_10_4_B1 > misra_10_4_A1 ) //10.4
    {
-      ; 
+      ;
    }
   z = x + y; //10.4
   z = (a == misra_10_4_A3) ? x : y; //10.4
@@ -351,6 +351,12 @@ void misra_12_4() {
 
 struct misra_13_1_t { int a; int b; };
 void misra_13_1(int *p) {
+  volatile int v;
+  int a1[3] = {0, (*p)++, 2}; // 13.1
+  int a2[3] = {0, ((*p) += 1), 2}; // 13.1
+  int a3[3] = {0, ((*p) = 19), 2}; // 13.1
+  int b[2] = {v,1};
+  struct misra_13_1_t c = { .a=4, .b=5 }; // no fp
   volatile int vv;
   int v = 42;
 
@@ -403,10 +409,15 @@ void misra_13_4() {
 
 void misra_13_5() {
   if (x && (y++ < 123)){} // 13.5
+  if (x || ((y += 19) > 33)){} // 13.5
+  if (x || ((y = 25) > 33)){} // 13.5 13.4
+  if (x || ((--y) > 33)){} // 13.5
   else {}
 }
 
 void misra_13_6() {
+  int a = sizeof(x|=42); // 13.6
+  a = sizeof(--x); // 13.6 13.3
   return sizeof(x++); // 13.6
 }
 
@@ -428,16 +439,25 @@ void misra_14_1() {
 void misra_14_2_init_value(int32_t *var) {
     *var = 0;
 }
-void misra_14_2(bool b) {
-  for (dostuff();a<10;a++) {} // 14.2
+void misra_14_2_fn1(bool b) {
   for (;i++<10;) {} // 14.2
   for (;i<10;dostuff()) {} // TODO
   int32_t g = 0;
+  int g_arr[42];
+  g += 2; // no-warning
   for (int32_t i2 = 0; i2 < 8; ++i2) {
-      i2 += 2; // FIXME False negative for "14.2". Trac #9490
-      g += 2; // no-warning
+    i2 += 2; // 14.2
+    i2 |= 2; // 14.2
+    g += 2;
+    i2 ^= 2; // 14.2
+    if (i2 == 2) {
+      g += g_arr[i2];
+    }
+    misra_14_2_init_value(&i2); // TODO: Fix false negative in function call
   }
+
   for (misra_14_2_init_value(&i); i < 10; ++i) {} // no-warning FIXME: False positive for 14.2 Trac #9491
+
   bool abort = false;
   for (i = 0; (i < 10) && !abort; ++i) { // no-warning
       if (b) {
@@ -445,7 +465,71 @@ void misra_14_2(bool b) {
       }
   }
   for (;;) {} // no-warning
-  // TODO check more variants
+
+  int x = 10;
+  for (int i = x; i < 42; i++) {
+      x++; // no warning
+  }
+  for (int i = (x - 3); i < 42; i++) {
+      x ^= 3; // no warning
+  }
+
+  for (int i = 0, j = 19; i < 42; i++) { // 12.3 14.2
+      i += 12; // 14.2
+      j /= 3; // TODO: 14.2
+  }
+
+  for (int i = 0; i < 19; i++) {
+      for (int j = 0; j < 42; j++) {
+          i--; // 14.2
+          for (int k = j; k > 5; k--) {
+              i++; // 14.2
+              for (int h = 35; h > 5; k++) // 14.2
+              {}
+          }
+      }
+  }
+}
+static void misra_14_2_fn2()
+{
+    int y = 0;
+
+    // Handle cases when i is not treated as loop counter according MISRA
+    // definition.
+    for (int i = 0, j = 19; y < 10, --j > 10; y++, j--) { // 14.2 12.3
+        i++; // no warning
+    }
+    for (int i = 0, j = 19; y < 10, --j > 10; y++, j--) { // 14.2 12.3
+        i++; // no warning
+    }
+    for (int i = 0; y < 10; y++) { // TODO: 14.2
+        i++; // no warning
+    }
+    for (int i = 0; i < 10; y++) { // TODO: 14.2
+        i++; // no warning
+    }
+    for (int i = 0; y < 10; i++) { // TODO: 14.2
+        i++; // no warning
+    }
+    for (int i = 0; i < 10; (y+=i)) {
+        i++; // no warning
+    }
+
+    // i is a loop counter according MISRA definition
+    for (int i = 0; i < 10; i++) {
+        i++; // 14.2
+        if (++i > 5) { // 14.2
+            break;
+        }
+    }
+    for (int i = 0; i < 10; (i+=42)) {
+        i++; // 14.2
+    }
+    for (int i = 0; i < 10; (i|=y)) {
+        i++; // 14.2
+    }
+
+    return 0;
 }
 
 struct {
