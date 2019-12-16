@@ -43,6 +43,7 @@
 #include <list>
 #include <utility>
 #include <vector>
+#include <regex>
 
 #if !defined(NO_UNIX_SIGNAL_HANDLING) && defined(__GNUC__) && !defined(__MINGW32__) && !defined(__OS2__)
 #define USE_UNIX_SIGNAL_HANDLING
@@ -163,24 +164,31 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         std::list<ImportProject::FileSettings> newList;
 
         for (const std::string &fname : pathnames) {
-            for (const ImportProject::FileSettings &fsetting : settings.project.fileSettings)
-            {
-                const std::string *firstName = &fname;
-                const std::string *secondName = &fsetting.filename;
-                if (firstName->size() < secondName->size())
-                {
-                    secondName = &fname;
-                    firstName = &fsetting.filename;
-                }
+            std::string searchString = fname;
+            size_t pos = fname.find('*');
 
-                if (firstName->find(*secondName) != std::string::npos)
+            // if the user added an asterix '*' replace it with regex '\w+' to match whole words
+            if ( pos != std::string::npos) {
+                std::string regWord = "\\w+";
+                searchString.replace(pos, 1, regWord);
+            }
+
+            for (const ImportProject::FileSettings &fsetting : settings.project.fileSettings) {
+                try {
+                    std::regex re(searchString);
+                    std::smatch match;
+                    if (std::regex_search(fsetting.filename, match, re) && match.ready()) {
+                        newList.push_back(fsetting);
+                    }
+                }
+                catch (std::regex_error &e)
                 {
-                    newList.push_back(fsetting);
+                    std::cout << "cppcheck: error: could not apply file filter on project files." << std::endl;
+                    return false;
                 }
             }
         }
-        if (!newList.empty())
-        {
+        if (!newList.empty()) {
             settings.project.fileSettings = newList;
         }
     }

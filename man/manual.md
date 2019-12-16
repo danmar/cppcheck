@@ -140,6 +140,12 @@ In addition you can also define files that are part of the project and you want 
     
     cppcheck --project=foobar.cppcheck file1.cpp file2.cpp
 
+It is also possible to use an asterix to just check those files that matches the filter:
+
+    cppcheck --project=foobar.cppcheck file*.cpp
+
+This will check file1.cpp and file2.cpp.
+
 The Cppcheck GUI has a few options that are not available in the command line directly. To use these options you can import a GUI project file. We want to keep the command line tool usage simple and limit the options by intention.
 
 To ignore certain folders in the project you can use `-i`. This will skip analysis of source files in the `foo` folder.
