@@ -116,6 +116,7 @@ private:
         TEST_CASE(ticket6505);
         TEST_CASE(subtract);
         TEST_CASE(addNull);
+        TEST_CASE(isPointerDeRefFunctionDecl);
 
         TEST_CASE(ctu);
     }
@@ -3050,6 +3051,11 @@ private:
         check("class foo {};\n"
               "const char* get() const { return 0; }\n"
               "void f(foo x) { if (get()) x += get(); }\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void isPointerDeRefFunctionDecl() {
+        check("const char** get() { return 0; }");
         ASSERT_EQUALS("", errout.str());
     }
 

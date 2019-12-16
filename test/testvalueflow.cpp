@@ -4077,6 +4077,14 @@ private:
                "}";
         ASSERT(tokenValues(code, "x . front").empty());
 
+        code = "void g(std::list<int>* const);\n" // #9434
+               "void f() {\n"
+               "  std::list<int> x;\n"
+               "  g(&x);\n"
+               "  x.front();\n"
+               "}";
+        ASSERT(tokenValues(code, "x . front").empty());
+
         code = "void g(const std::list<int>&);\n"
                "void f() {\n"
                "  std::list<int> x;\n"
@@ -4190,6 +4198,18 @@ private:
                "    if (v.size () > 0) {}\n" // <- v has unknown size!
                "}";
         ASSERT_EQUALS(0U, tokenValues(code, "v . size ( )").size());
+
+        // if
+        code = "bool f(std::vector<int>&) {\n" // #9532
+               "  return false;\n"
+               "}\n"
+               "int g() {\n"
+               "    std::vector<int> v;\n"
+               "    if (f(v) || v.empty())\n"
+               "        return 0;\n"
+               "    return v[0];\n"
+               "}\n";
+        ASSERT_EQUALS(0U, tokenValues(code, "v [ 0 ]").size());
 
         // container size => yields
         code = "void f() {\n"

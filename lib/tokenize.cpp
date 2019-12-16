@@ -9726,8 +9726,13 @@ void Tokenizer::simplifyStructDecl()
         // check for anonymous enum
         else if ((Token::simpleMatch(tok, "enum {") &&
                   !Token::Match(tok->tokAt(-3), "using %name% =") &&
-                  Token::Match(tok->next()->link(), "} %type%| ,|;|[|(|{")) ||
-                 (Token::Match(tok, "enum : %type% {") && Token::Match(tok->linkAt(3), "} %type%| ,|;|[|(|{"))) {
+                  Token::Match(tok->next()->link(), "} (| %type%| )| ,|;|[|(|{")) ||
+                 (Token::Match(tok, "enum : %type% {") && Token::Match(tok->linkAt(3), "} (| %type%| )| ,|;|[|(|{"))) {
+            Token *start = tok->strAt(1) == ":" ? tok->linkAt(3) : tok->linkAt(1);
+            if (start && Token::Match(start->next(), "( %type% )")) {
+                start->next()->link()->deleteThis();
+                start->next()->deleteThis();
+            }
             tok->insertToken("Anonymous" + MathLib::toString(count++));
         }
     }
@@ -9761,7 +9766,7 @@ void Tokenizer::simplifyStructDecl()
             Token *restart = next;
 
             // check for named type
-            if (Token::Match(tok->next(), "const| *|&| const| %type% ,|;|[|=|(|{")) {
+            if (Token::Match(tok->next(), "const| *|&| const| (| %type% )| ,|;|[|=|(|{")) {
                 tok->insertToken(";");
                 tok = tok->next();
                 while (!Token::Match(start, "struct|class|union|enum")) {
@@ -9778,6 +9783,11 @@ void Tokenizer::simplifyStructDecl()
                 }
 
                 tok = tok->tokAt(2);
+
+                if (Token::Match(tok, "( %type% )")) {
+                    tok->link()->deleteThis();
+                    tok->deleteThis();
+                }
 
                 // check for initialization
                 if (tok && (tok->next()->str() == "(" || tok->next()->str() == "{")) {
