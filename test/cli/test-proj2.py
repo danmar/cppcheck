@@ -151,3 +151,10 @@ def test_gui_project_loads_absolute_vs_solution():
     ret, stdout, stderr = cppcheck(['--project=test.cppcheck'])
     assert stderr == ERR_A + ERR_B
 
+def text_selected_files_in_project():
+    ret, stdout, stderr = cppcheck(['--project=proj2.cppcheck', '*.c'])
+    file1 = os.path.join('proj2', 'a', 'a.c')
+    file2 = os.path.join('proj2', 'b', 'b.c')
+    assert stderr == ERR_A + ERR_B
+    ret, stdout, stderr = cppcheck(['--project=proj2.cppcheck', 'b.c'])
+    assert stderr == ERR_B
