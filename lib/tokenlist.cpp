@@ -516,9 +516,9 @@ static bool iscast(const Token *tok)
     return false;
 }
 
-static const Token* findTypeEnd(const Token* tok)
+static Token* findTypeEnd(Token* tok)
 {
-    while (Token::Match(tok, "%name%|.|::|<|(|template|decltype|sizeof")) {
+    while (Token::Match(tok, "%name%|.|::|*|&|<|(|template|decltype|sizeof")) {
         if (Token::Match(tok, "(|<"))
             tok = tok->link();
         if (!tok)
@@ -526,6 +526,11 @@ static const Token* findTypeEnd(const Token* tok)
         tok = tok->next();
     }
     return tok;
+}
+
+static const Token* findTypeEnd(const Token* tok)
+{
+    return findTypeEnd(const_cast<Token*>(tok));
 }
 
 static const Token * findLambdaEndScope(const Token *tok)
@@ -867,10 +872,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                     if (Token::Match(curlyBracket, "mutable|const"))
                         curlyBracket = curlyBracket->next();
                     if (curlyBracket && curlyBracket->originalName() == "->") {
-                        while (Token::Match(curlyBracket, "%name%|.|::|&|*"))
-                            curlyBracket = curlyBracket->next();
-                        if (curlyBracket && curlyBracket->str() == "<" && curlyBracket->link())
-                            curlyBracket = curlyBracket->link()->next();
+                        curlyBracket = findTypeEnd(curlyBracket->next());
                     }
                     if (curlyBracket && curlyBracket->str() == "{") {
                         squareBracket->astOperand1(roundBracket);
