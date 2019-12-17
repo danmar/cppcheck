@@ -137,7 +137,26 @@ namespace {
 
 static std::string executeAddon(const AddonInfo &addonInfo, const std::string &dumpFile)
 {
-    const std::string cmd = "python \"" + addonInfo.scriptFile + "\" --cli" + addonInfo.args + " \"" + dumpFile + "\"";
+    // Can python be executed?
+    {
+        const std::string cmd = "python --version 2>&1";
+
+#ifdef _WIN32
+        std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
+#else
+        std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+#endif
+        if (!pipe)
+            throw InternalError(nullptr, "popen failed (command: '" + cmd + "')");
+        char buffer[1024];
+        std::string result;
+        while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr)
+            result += buffer;
+        if (result.compare(0, 7, "Python ", 0, 7) != 0 || result.size() > 50)
+            throw InternalError(nullptr, "Failed to execute '" + cmd + "' (" + result + ")");
+    }
+
+    const std::string cmd = "python \"" + addonInfo.scriptFile + "\" --cli" + addonInfo.args + " \"" + dumpFile + "\" 2>&1";
 
 #ifdef _WIN32
     std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
@@ -145,12 +164,22 @@ static std::string executeAddon(const AddonInfo &addonInfo, const std::string &d
     std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
 #endif
     if (!pipe)
-        return "";
+        throw InternalError(nullptr, "popen failed (command: '" + cmd + "')");
     char buffer[1024];
     std::string result;
     while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr) {
         result += buffer;
     }
+
+    // Validate output..
+    std::istringstream istr(result);
+    std::string line;
+    while (std::getline(istr, line)) {
+        if (line.compare(0,9,"Checking ", 0, 9) != 0 && !line.empty() && line[0] != '{')
+            throw InternalError(nullptr, "Failed to execute '" + cmd + "'. " + result);
+    }
+
+    // Valid results
     return result;
 }
 
