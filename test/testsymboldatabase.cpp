@@ -308,6 +308,7 @@ private:
         TEST_CASE(symboldatabase81); // #9411
         TEST_CASE(symboldatabase82);
         TEST_CASE(symboldatabase83); // #9431
+        TEST_CASE(symboldatabase84);
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
 
@@ -4440,6 +4441,41 @@ private:
         ASSERT(scope->functionList.front().isDefault() == true);
         ASSERT(scope->functionList.front().isNoExcept() == true);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase84() {
+        {
+            const bool old = settings1.debugwarnings;
+            settings1.debugwarnings = true;
+            GET_SYMBOL_DB("struct a { a() noexcept(false); };\n"
+                          "a::a() noexcept(false) = default;");
+            settings1.debugwarnings = old;
+            const Scope *scope = db->findScopeByName("a");
+            ASSERT(scope);
+            ASSERT(scope->functionList.size() == 1);
+            ASSERT(scope->functionList.front().name() == "a");
+            ASSERT(scope->functionList.front().hasBody() == false);
+            ASSERT(scope->functionList.front().isConstructor() == true);
+            ASSERT(scope->functionList.front().isDefault() == true);
+            ASSERT(scope->functionList.front().isNoExcept() == false);
+            ASSERT_EQUALS("", errout.str());
+        }
+        {
+            const bool old = settings1.debugwarnings;
+            settings1.debugwarnings = true;
+            GET_SYMBOL_DB("struct a { a() noexcept(true); };\n"
+                          "a::a() noexcept(true) = default;");
+            settings1.debugwarnings = old;
+            const Scope *scope = db->findScopeByName("a");
+            ASSERT(scope);
+            ASSERT(scope->functionList.size() == 1);
+            ASSERT(scope->functionList.front().name() == "a");
+            ASSERT(scope->functionList.front().hasBody() == false);
+            ASSERT(scope->functionList.front().isConstructor() == true);
+            ASSERT(scope->functionList.front().isDefault() == true);
+            ASSERT(scope->functionList.front().isNoExcept() == true);
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void createSymbolDatabaseFindAllScopes1() {
