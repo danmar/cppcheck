@@ -20,6 +20,7 @@
 #include <QString>
 #include <QDebug>
 #include <QDir>
+#include <QFile>
 #include <QFileInfo>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -338,6 +339,10 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
             }
             parseAddonErrors(output, addon);
         }
+    }
+
+    if (!dumpFile.isEmpty()) {
+        QFile::remove(dumpFile);
     }
 }
 

@@ -46,6 +46,7 @@
 #include <vector>
 #include <memory>
 #include <iostream> // <- TEMPORARY
+#include <cstdio>
 
 #ifdef HAVE_RULES
 #define PCRE_STATIC
@@ -283,7 +284,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             case simplecpp::Output::PORTABILITY_BACKSLASH:
                 err = false;
                 break;
-            };
+            }
 
             if (err) {
                 const ErrorLogger::ErrorMessage::FileLocation loc1(output.location.file(), output.location.line, output.location.col);
@@ -659,6 +660,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     reportErr(errmsg);
                 }
             }
+            std::remove(dumpFile.c_str());
         }
 
     } catch (const std::runtime_error &e) {
