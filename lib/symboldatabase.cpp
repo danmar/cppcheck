@@ -2412,8 +2412,8 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
                             const Token *closeParen = (*tok)->next()->link();
                             if (closeParen) {
                                 if (Token::Match(closeParen, ") noexcept| = default ;") ||
-                                    (Token::Match(closeParen, ") noexcept (") &&
-                                     Token::Match(closeParen->linkAt(2), ") = default ;"))) {
+                                    (Token::simpleMatch(closeParen, ") noexcept (") &&
+                                     Token::simpleMatch(closeParen->linkAt(2), ") = default ;"))) {
                                     func->isDefault(true);
                                     return;
                                 }
@@ -2486,8 +2486,8 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
                             const Token *closeParen = (*tok)->next()->link();
                             if (closeParen) {
                                 if (Token::Match(closeParen, ") noexcept| = default ;") ||
-                                    (Token::Match(closeParen, ") noexcept (") &&
-                                     Token::Match(closeParen->linkAt(2), ") = default ;"))) {
+                                    (Token::simpleMatch(closeParen, ") noexcept (") &&
+                                     Token::simpleMatch(closeParen->linkAt(2), ") = default ;"))) {
                                     func->isDefault(true);
                                     return;
                                 }
