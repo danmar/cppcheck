@@ -38,6 +38,20 @@ private:
         TEST_CASE(is_c);
         TEST_CASE(is_cpp);
         TEST_CASE(get_path_from_filename);
+        TEST_CASE(isMatchingFilter);
+    }
+
+    void isMatchingFilter() const
+    {
+        ASSERT(Path::isMatchingFilter("c:\\foo\\bar\\os_linux.c", "bar"));
+        ASSERT(Path::isMatchingFilter("c:\\foo\\bar\\os_linux.c", "os_win")==false);
+        ASSERT(Path::isMatchingFilter("c:\\foo\\bar\\os_linux.c", "bar"));
+        ASSERT(Path::isMatchingFilter("c:\\foo\\bar\\os_linux.c", "b*"));
+        ASSERT(Path::isMatchingFilter("c:\\foo\\bar\\os_linux.cpp", "*.cpp"));
+        ASSERT(Path::isMatchingFilter("c:\\foo\\bar\\os_linux.cpp", "*.c") == false);
+        ASSERT(Path::isMatchingFilter("c:\\foo\\bar\\os_linux.cpp", "os_*.cpp"));
+        ASSERT(Path::isMatchingFilter("c:\\foo\\bar\\os_linux.cpp", "os*.c") == false);
+        ASSERT(Path::isMatchingFilter("c:\\foo\\bar\\os_linux.c", "os*.c"));
     }
 
     void removeQuotationMarks() const {

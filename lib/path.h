@@ -104,6 +104,14 @@ public:
     static std::string getCurrentPath();
 
     /**
+     * @brief Check if given filename matches the given filter (regex). 
+     * @param filename to check
+     * @param filter to use. If the filter includes '*' it will be replaced by \w+ (regex for match any word)
+     * @return true if given filename matches the filter
+     */
+    static bool isMatchingFilter(const std::string &filename, const std::string &filter);
+
+    /**
      * @brief Check if given path is absolute
      * @param path Path to check
      * @return true if given path is absolute
