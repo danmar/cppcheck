@@ -247,7 +247,7 @@ public:
         bool isSameFamily(const TemplateSimplifier::TokenAndName &decl) const {
             // Make sure a family flag is set and matches.
             // This works because at most only one flag will be set.
-            return (mFlags & fFamilyMask) & (decl.mFlags & (fFamilyMask));
+            return ((mFlags & fFamilyMask) & (decl.mFlags & fFamilyMask)) != 0;
         }
     };
 

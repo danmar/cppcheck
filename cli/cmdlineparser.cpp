@@ -165,7 +165,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->maxCtuDepth = std::atoi(argv[i] + 16);
 
             else if (std::strcmp(argv[i], "--experimental-fast") == 0)
-                // TODO: Reomve this flag!
+                // TODO: Remove this flag!
                 ;
 
             // (Experimental) exception handling inside cppcheck client
