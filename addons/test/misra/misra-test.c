@@ -332,67 +332,9 @@ void misra_12_2(u8 x) {
   a = x << 8;  // 12.2
 }
 
-static int misra_12_3_v1 = 0, misra_12_3_v2; // 12.3
-static int misra_12_3_v3, misra_12_3_v4; // 12.3
-enum misra_12_3_e1 { M123A1, M123B1, M123C1 };
-enum misra_12_3_e2 { M123A2 = 3, M123B2 = 4, M123C2 };
-typedef enum misra_12_3_e3 { M123A3 , M123B3, M123C3 } misra_12_3_e3_t;
-typedef enum { M123A4 , M123B4, M123C4 } misra_12_3_e4_t;
-struct misra_12_3_s1 { int a; int b; int c, d; };
-static struct misra_12_3_s1 misra_12_3_s1_inst = {
-  3,
-  4, 5,
-  6, // no warning
-};
-typedef struct misra_12_3_s2 { int a; int b; int c, d; } misra_12_3_s2_t;
-typedef struct { int a; int b; int c, d; } misra_12_3_s3_t;
-void misra_12_3_fn1(int, int); static int misra_12_3_v5, misra_12_4_v6; // 12.3
-void misra_12_3_fn2(int a, int b) { int d, e; } // 12.3 2.7
-int misra_12_3_fn3(int a, int b) { return a+b;} static int misra_12_3_v5, misra_12_4_v6; // 12.3
-#define MISRA_12_3_FN3_1(A, B) (misra_12_3_fn3(A, B))
-#define MISRA_12_3_FN3_2(A, B) (misra_12_3_fn3(A, \
-                                B))
-#define MISRA_12_3_FN3_2_MSG(x) x, fflush(stderr) // 20.7
-void misra_12_3(int, int, int); // no warning
-void misra_12_3(int a, int b, int c) { // no warning
-  int a1, a2; // 12.3
-  int a3; int a4; // no warning
-  int a5 = 9, a6; // 12.3
-  int a7, a8 = 11; // 12.3
-  int a9 = foo(), a10; // 12.3
-  int a11 = a = b = c; // 17.8
-
-  struct s1 {int a, b;}; int a12, a13; // 12.3
-  int a14, a15; misra_12_3_fn3(a14, a15); // 12.3 17.7
-  ; int a16, a17; // 12.3
-  int a18; int a19, a20; // 12.3
-  int a21, a22; int a23; // 12.3
-  int a24, // 12.3
-      a25;
-  int a26
-      , a27; // 12.3
-  int a28
-      , // 12.3
-      a29;
-
-  struct misra_12_3_s2 a30 = {1, 2}, a31; // 12.3
-  struct misra_12_3_s2 a32, a33; // 12.3
-  struct misra_12_3_s2 a34, a35 = {1, 2}, a36; // 12.3
-
-  int a37 = MISRA_12_3_FN3_1(a34, a35), a38; // 12.3
-  int a39, a40 = MISRA_12_3_FN3_1(a34, a35); // 12.3
-  int a41 = MISRA_12_3_FN3_2(a34, a35), a42; // 12.3
-  int a43, a44 = MISRA_12_3_FN3_2(a34, a35); // 12.3
-
-  MISRA_12_3_FN3_2_MSG(fprintf(stderr, "test\n")); // 12.3
-
+void misra_12_3() {
   f((1,2),3); // TODO
-
-  for (i=0; i<10; i++, j++){} // 12.3
-  for (int i = 0, p = &a1;  // 12.3 14.2
-          i < 42;
-          ++i, ++p ) // 12.3
-  {}
+  for (i=0;i<10;i++,j++){} // 12.3
 }
 
 #define MISRA12_4a 2000000000u
