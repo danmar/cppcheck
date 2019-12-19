@@ -28,7 +28,6 @@
 #include <cstring>
 #include <fstream>
 #include <sstream>
-#include <regex>
 
 #ifndef _WIN32
 #include <unistd.h>
@@ -253,31 +252,21 @@ bool Path::fileExists(const std::string &file)
 
 bool Path::isMatchingFilter(const std::string &filename, const std::string &filter)
 {
-    std::string searchString = filter;
-    size_t pos = filter.find('*');
+    bool result = false;
+    std::vector<std::string> filters;
+    int count = 0;
 
-    // if the user added an asterix '*' replace it with regex '\w+' to match whole words
-    if (pos != std::string::npos)
-    {
-        std::string regWord = "\\w+";
-        searchString.replace(pos, 1, regWord);
+    splitString(filter, filters, '*');
+    for(std::string filt : filters) {
+        if (filename.find(filt) != std::string::npos)
+            count++;
     }
+    if (count>0 && count == filters.size())
+        result = true;
 
-    try
-    {
-        std::regex re(searchString);
-        std::smatch match;
-        if (std::regex_search(filename, match, re) && match.ready())
-        {
-            // if the filer is something like '*.c' return false if the filename is a cpp file
-            if (match.suffix() == "pp" && Path::isCPP(filename))
-                return false;
-            return true;
-        }
-    }
-    catch (std::regex_error & e)
-    {
-        return false;
-    }
-    return false;
+    if (endsWith(filter, ".c", 2) && !endsWith(filename, ".c", 2))
+        result = false;
+    else if (endsWith(filter, ".cpp", 4) && !endsWith(filename, ".cpp", 4)) 
+        result = false;
+    return result;
 }

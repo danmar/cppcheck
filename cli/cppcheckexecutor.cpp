@@ -158,7 +158,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 #else
     const bool caseSensitive = true;
 #endif
-    if (!mSettings->project.fileSettings.empty()) {
+    if (!mSettings->project.fileSettings.empty() && !pathnames.empty()) {
         // filter only for the selected filenames from all project files
         std::list<ImportProject::FileSettings> newList;
 
@@ -169,8 +169,11 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
                 }
             }
         }
-        if (!newList.empty()) {
+        if (!newList.empty()) 
             settings.project.fileSettings = newList;
+        else {
+            std::cout << "cppcheck: error: could not find any of the paths in the given project." << std::endl;
+            return false;
         }
     }
     else if (!pathnames.empty()) {
