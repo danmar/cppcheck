@@ -7064,6 +7064,13 @@ bool Tokenizer::simplifyCAlternativeTokens()
                 continue;
             if (Token::Match(tok->next(), "%assign%|%or%|%oror%|&&|*|/|%|^") && !Token::Match(tok->previous(), "%num%|%char% %name% *"))
                 continue;
+            if (executableScopeLevel == 0 && Token::Match(tok, "%name% (")) {
+                const Token *start = tok;
+                while (Token::Match(start, "%name%|*"))
+                    start = start->previous();
+                if (!start || Token::Match(start, "[;}]"))
+                    continue;
+            }
             tok->str(cOpIt->second);
             ret = true;
         } else if (Token::Match(tok, "not|compl")) {
