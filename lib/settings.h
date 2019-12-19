@@ -30,6 +30,7 @@
 #include "suppressions.h"
 #include "timer.h"
 
+#include <atomic>
 #include <list>
 #include <set>
 #include <string>
@@ -65,7 +66,7 @@ private:
     int mEnabled;
 
     /** @brief terminate checking */
-    static bool mTerminated;
+    static std::atomic<bool> mTerminated;
 
 public:
     Settings();
