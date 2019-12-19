@@ -106,7 +106,7 @@ public:
     /**
      * @brief Check if given filename matches the given filter. 
      * @param filename to check
-     * @param filter to use. Any asterix '*' is allowed (like '*.*' or '/*.cpp'
+     * @param filter to use. Any asterix '*' is allowed (like '*.*' or '*.cpp'
      * @return true if given filename matches the filter
      */
     static bool isMatchingFilter(const std::string &filename, const std::string &filter);
