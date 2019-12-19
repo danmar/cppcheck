@@ -1356,7 +1356,17 @@ class MisraChecker:
         #                       ^                 ^
         end_tokens_map = {}
 
+        skip_to = None
         for token in data.tokenlist:
+            # Skip tokens in function call body
+            if skip_to:
+                if token == skip_to:
+                    skip_to = None
+                else:
+                    continue
+            if token.function and token.next and token.next.str == "(":
+                skip_to = token.next.link
+
             if token.scope.type in ('Enum', 'Class', 'Struct', 'Global'):
                 continue
             # Save end tokens from function calls in initialization
