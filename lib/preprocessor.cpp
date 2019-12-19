@@ -53,8 +53,8 @@ Directive::Directive(const std::string &_file, const int _linenr, const std::str
 {
 }
 
-bool Preprocessor::missingIncludeFlag;
-bool Preprocessor::missingSystemIncludeFlag;
+std::atomic<bool> Preprocessor::missingIncludeFlag;
+std::atomic<bool> Preprocessor::missingSystemIncludeFlag;
 
 char Preprocessor::macroChar = char(1);
 
