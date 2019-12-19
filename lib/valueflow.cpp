@@ -5423,7 +5423,9 @@ static bool isContainerSizeChangedByFunction(const Token *tok, int depth = 20)
         if (arg) {
             if (!arg->isReference() && !addressOf)
                 return false;
-            if (arg->isConst())
+            if (!addressOf && arg->isConst())
+                return false;
+            if (arg->valueType() && arg->valueType()->constness == 1)
                 return false;
             const Scope * scope = fun->functionScope;
             if (scope) {

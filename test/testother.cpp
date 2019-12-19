@@ -6629,6 +6629,19 @@ private:
               "     } while (false);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int num) {\n" // #9420 FP
+              "  int a = num;\n"
+              "  for (int b = 0; b < num; a = b++)\n"
+              "    dostuff(a);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int num) {\n" // #9420 FN
+              "  int a = num;\n"
+              "  for (int b = 0; b < num; a = b++);\n"
+              "}");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
     }
 
     void redundantVarAssignment_after_switch() {

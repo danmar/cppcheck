@@ -4077,6 +4077,14 @@ private:
                "}";
         ASSERT(tokenValues(code, "x . front").empty());
 
+        code = "void g(std::list<int>* const);\n" // #9434
+               "void f() {\n"
+               "  std::list<int> x;\n"
+               "  g(&x);\n"
+               "  x.front();\n"
+               "}";
+        ASSERT(tokenValues(code, "x . front").empty());
+
         code = "void g(const std::list<int>&);\n"
                "void f() {\n"
                "  std::list<int> x;\n"

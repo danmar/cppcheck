@@ -1681,6 +1681,15 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             return Result(Result::Type::BAILOUT);
         }
 
+        if (mWhat == What::Reassign &&
+            Token::simpleMatch(tok, ";") &&
+            Token::simpleMatch(tok->astParent(), ";") &&
+            Token::simpleMatch(tok->astParent()->astParent(), "(") &&
+            Token::simpleMatch(tok->astParent()->astParent()->previous(), "for (") &&
+            !isUnchanged(tok, tok->astParent()->astParent()->link(), exprVarIds, local))
+            // TODO: This is a quick bailout to avoid FP #9420, there are false negatives (TODO_ASSERT_EQUALS)
+            return Result(Result::Type::BAILOUT);
+
         if (expr->isName() && Token::Match(tok, "%name% (") && tok->str().find("<") != std::string::npos && tok->str().find(expr->str()) != std::string::npos)
             return Result(Result::Type::BAILOUT);
 

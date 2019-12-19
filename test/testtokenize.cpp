@@ -7811,6 +7811,7 @@ private:
         ASSERT_EQUALS("{([(return 0return", testAst("return []() -> int { return 0; }();"));
         ASSERT_EQUALS("{([(return 0return", testAst("return [something]() -> int { return 0; }();"));
         ASSERT_EQUALS("{([cd,(return 0return", testAst("return [](int a, int b) -> int { return 0; }(c, d);"));
+        ASSERT_EQUALS("{([return", testAst("return []() -> decltype(0) {};"));
         ASSERT_EQUALS("x{([=", testAst("x = [&]()->std::string const & {};"));
         ASSERT_EQUALS("f{([=", testAst("f = []() -> foo* {};"));
         ASSERT_EQUALS("f{([=", testAst("f = [](void) mutable -> foo* {};"));
@@ -8158,6 +8159,13 @@ private:
                                              "    if (0) {}\n"
                                              "    return 0;\n"
                                              "  }};\n"
+                                             "}\n"))
+        // #0535
+        ASSERT_NO_THROW(tokenizeAndStringify("template <typename, typename> struct a;\n"
+                                             "template <typename, typename b> void c() {\n"
+                                             "  ([]() -> decltype(0) {\n"
+                                             "    if (a<b, decltype(0)>::d) {}\n"
+                                             "  });\n"
                                              "}\n"))
     }
     void checkIfCppCast() {
