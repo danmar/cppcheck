@@ -1889,6 +1889,8 @@ private:
         if (db && db->functionScopes.size()==1U) {
             const Function * const f = db->functionScopes.front()->function;
             ASSERT_EQUALS(1U, f->argCount());
+            ASSERT_EQUALS(0U, f->initializedArgCount());
+            ASSERT_EQUALS(1U, f->minArgCount());
             const Variable * const arg1 = f->getArgumentVar(0);
             ASSERT_EQUALS("char", arg1->typeStartToken()->str());
             ASSERT_EQUALS("char", arg1->typeEndToken()->str());
@@ -2278,6 +2280,8 @@ private:
         const Function *func = tokenizer.tokens()->next()->function();
         ASSERT_EQUALS(true, func != nullptr);
         ASSERT_EQUALS(2, func ? func->argCount() : 0);
+        ASSERT_EQUALS(0, func ? func->initializedArgCount() : 1);
+        ASSERT_EQUALS(2, func ? func->minArgCount() : 0);
     }
 
     void functionImplicitlyVirtual() {
