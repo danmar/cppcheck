@@ -4099,6 +4099,11 @@ private:
               "  sizeof(a)/sizeof(a[i]) && i < 10;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int i) {\n" // ?:
+              "  if ((i < 10 ? buf[i] : 1) && (i < 5 ? buf[i] : 5)){}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void bufferNotZeroTerminated() {

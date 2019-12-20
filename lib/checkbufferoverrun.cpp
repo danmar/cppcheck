@@ -633,7 +633,7 @@ void CheckBufferOverrun::arrayIndexThenCheck()
                 // Iterate AST upwards
                 const Token* tok2 = tok;
                 const Token* tok3 = tok2;
-                while (tok2->astParent() && tok2->tokType() != Token::eLogicalOp) {
+                while (tok2->astParent() && tok2->tokType() != Token::eLogicalOp && tok2->str() != "?") {
                     tok3 = tok2;
                     tok2 = tok2->astParent();
                 }
