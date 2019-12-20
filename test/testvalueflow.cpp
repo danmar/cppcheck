@@ -2762,6 +2762,14 @@ private:
                "}";
         values = tokenValues(code, "==");
         ASSERT_EQUALS(true, values.empty());
+
+        // for loops
+        code = "struct S { int x; };\n" // #9036
+               "void foo(struct S s) {\n"
+               "    for (s.x = 0; s.x < 127; s.x++) {}\n"
+               "}";
+        values = tokenValues(code, "<"); // TODO: comparison can be true or false
+        ASSERT_EQUALS(true, values.empty());
     }
 
     void valueFlowSwitchVariable() {
