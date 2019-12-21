@@ -130,6 +130,8 @@ private:
         TEST_CASE(valueFlowPointerAliasDeref);
 
         TEST_CASE(valueFlowCrashIncompleteCode);
+
+        TEST_CASE(valueFlowCrash);
     }
 
     static bool isNotTokValue(const ValueFlow::Value &val) {
@@ -559,6 +561,12 @@ private:
                "   X y=x;\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 11U, ValueFlow::Value::MoveKind::MovedVariable));
+
+        code = "void f(int x) {\n"
+               "   g(std::move(x));\n"
+               "   y=x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, ValueFlow::Value::MoveKind::MovedVariable));
     }
 
     void valueFlowCalculations() {
@@ -2760,6 +2768,14 @@ private:
                "}";
         values = tokenValues(code, "==");
         ASSERT_EQUALS(true, values.empty());
+
+        // for loops
+        code = "struct S { int x; };\n" // #9036
+               "void foo(struct S s) {\n"
+               "    for (s.x = 0; s.x < 127; s.x++) {}\n"
+               "}";
+        values = tokenValues(code, "<"); // TODO: comparison can be true or false
+        ASSERT_EQUALS(true, values.empty());
     }
 
     void valueFlowSwitchVariable() {
@@ -4075,6 +4091,14 @@ private:
                "}";
         ASSERT(tokenValues(code, "x . front").empty());
 
+        code = "void g(std::list<int>* const);\n" // #9434
+               "void f() {\n"
+               "  std::list<int> x;\n"
+               "  g(&x);\n"
+               "  x.front();\n"
+               "}";
+        ASSERT(tokenValues(code, "x . front").empty());
+
         code = "void g(const std::list<int>&);\n"
                "void f() {\n"
                "  std::list<int> x;\n"
@@ -4188,6 +4212,18 @@ private:
                "    if (v.size () > 0) {}\n" // <- v has unknown size!
                "}";
         ASSERT_EQUALS(0U, tokenValues(code, "v . size ( )").size());
+
+        // if
+        code = "bool f(std::vector<int>&) {\n" // #9532
+               "  return false;\n"
+               "}\n"
+               "int g() {\n"
+               "    std::vector<int> v;\n"
+               "    if (f(v) || v.empty())\n"
+               "        return 0;\n"
+               "    return v[0];\n"
+               "}\n";
+        ASSERT_EQUALS(0U, tokenValues(code, "v [ 0 ]").size());
 
         // container size => yields
         code = "void f() {\n"
@@ -4334,6 +4370,23 @@ private:
                "        state = x;\n"
                "}\n";
         valueOfTok(code, "=");
+
+        code = "void a() {\n"
+               "  auto b = [b = 0] {\n"
+               "    if (b) {\n"
+               "    }\n"
+               "  };\n"
+               "}\n";
+        valueOfTok(code, "0");
+    }
+
+    void valueFlowCrash() {
+        const char* code;
+
+        code = "void f(int x) {\n"
+               "    if (0 * (x > 2)) {}\n"
+               "}\n";
+        valueOfTok(code, "x");
     }
 };
 

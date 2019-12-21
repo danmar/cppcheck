@@ -68,6 +68,7 @@ private:
         TEST_CASE(simplifyUsing9381);
         TEST_CASE(simplifyUsing9385);
         TEST_CASE(simplifyUsing9388);
+        TEST_CASE(simplifyUsing9518);
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
@@ -616,6 +617,16 @@ private:
                            "int & t_ ; "
                            "} ; "
                            "A :: A ( int & t ) : t_ ( t ) { }";
+        ASSERT_EQUALS(exp, tok(code, false));
+    }
+
+    void simplifyUsing9518() {
+        const char code[] = "namespace a {\n"
+                            "using a = enum {};\n"
+                            "}";
+        const char exp[] = "namespace a { "
+                           "enum a { } ; "
+                           "}";
         ASSERT_EQUALS(exp, tok(code, false));
     }
 

@@ -63,7 +63,7 @@ private:
         TEST_CASE(uninitvar5);          // #3861
         TEST_CASE(uninitvar2_func);     // function calls
         TEST_CASE(uninitvar2_value);    // value flow
-        TEST_CASE(uninitvar2_structmembers); // struct members
+        TEST_CASE(uninitStructMember);  // struct members
         TEST_CASE(uninitvar2_while);
         TEST_CASE(uninitvar2_4494);      // #4494
         TEST_CASE(uninitvar2_malloc);    // malloc returns uninitialized data
@@ -3084,7 +3084,7 @@ private:
         TODO_ASSERT_EQUALS("error", "", errout.str());
     }
 
-    void uninitvar2_structmembers() { // struct members
+    void uninitStructMember() { // struct members
         checkUninitVar("struct AB { int a; int b; };\n"
                        "void f(void) {\n"
                        "    struct AB ab;\n"
@@ -3528,6 +3528,16 @@ private:
                        "void f() {\n"
                        "    struct AB ab;\n"
                        "    int *p = ab.a;\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // Reference
+        checkUninitVar("struct A { int x; };\n"
+                       "void foo() {\n"
+                       "  struct A a;\n"
+                       "  int& x = a.x;\n"
+                       "  x = 0;\n"
+                       "  return a.x;\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
 

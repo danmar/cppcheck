@@ -325,6 +325,14 @@ private:
         reportUnmatchedSuppressions(suppressions);
         ASSERT_EQUALS("", errout.str());
 
+        // suppress all unmatchedSuppression (corresponds to "--suppress=unmatchedSuppression")
+        errout.str("");
+        suppressions.clear();
+        suppressions.emplace_back("abc", "a.c", 10U);
+        suppressions.emplace_back("unmatchedSuppression", "", Suppressions::Suppression::NO_LINE);
+        reportUnmatchedSuppressions(suppressions);
+        ASSERT_EQUALS("", errout.str());
+
         // suppress all unmatchedSuppression in a.c
         errout.str("");
         suppressions.clear();

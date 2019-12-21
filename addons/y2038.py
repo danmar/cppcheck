@@ -151,8 +151,8 @@ id_Y2038 = {
 
 
 def check_y2038_safe(dumpfile, quiet=False):
-    # at the start of the check, we don't know if code is Y2038 safe
-    y2038safe = False
+    # Assume that the code is Y2038 safe until proven otherwise
+    y2038safe = True
     # load XML from .dump file
     data = cppcheckdata.CppcheckData(dumpfile)
 

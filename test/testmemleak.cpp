@@ -172,6 +172,9 @@ private:
         TEST_CASE(realloc18);
         TEST_CASE(realloc19);
         TEST_CASE(realloc20);
+        TEST_CASE(realloc21);
+        TEST_CASE(realloc22);
+        TEST_CASE(realloc23);
         TEST_CASE(reallocarray1);
     }
 
@@ -376,6 +379,39 @@ private:
               "{\n"
               "    void *a = malloc(sizeof(a));\n"
               "    a = realloc((a) + 1, sizeof(a) * 2);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void realloc21() {
+        check("char *foo(char *bs0)\n"
+              "{\n"
+              "    char *bs = bs0;\n"
+              "    bs = realloc(bs, 100);\n"
+              "    if (bs == NULL) return bs0;\n"
+              "    return bs;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void realloc22() {
+        check("void foo(char **bsp)\n"
+              "{\n"
+              "    char *bs = *bsp;\n"
+              "    bs = realloc(bs, 100);\n"
+              "    if (bs == NULL) return;\n"
+              "    *bsp = bs;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void realloc23() {
+        check("void foo(struct ABC *s)\n"
+              "{\n"
+              "    uint32_t *cigar = s->cigar;\n"
+              "    if (!(cigar = realloc(cigar, 100 * sizeof(*cigar))))\n"
+              "        return;\n"
+              "    s->cigar = cigar;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

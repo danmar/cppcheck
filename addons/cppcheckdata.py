@@ -8,7 +8,6 @@ License: No restrictions, use this as you need.
 
 import argparse
 import json
-import os
 import sys
 
 from xml.etree import ElementTree
@@ -41,6 +40,13 @@ class Directive:
         self.str = element.get('str')
         self.file = element.get('file')
         self.linenr = int(element.get('linenr'))
+
+    def __repr__(self):
+        attrs = ["str", "file", "linenr"]
+        return "{}({})".format(
+            "Directive",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
 
 
 class ValueType:
@@ -75,6 +81,15 @@ class ValueType:
             self.pointer = int(pointer)
         else:
             self.pointer = 0
+
+    def __repr__(self):
+        attrs = ["type", "sign", "bits", "typeScopeId", "originalTypeName",
+                 "constness", "constness", "pointer"]
+        return "{}({})".format(
+            "ValueType",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
+
 
     def setId(self, IdMap):
         self.typeScope = IdMap[self.typeScopeId]
@@ -254,6 +269,19 @@ class Token:
         self.linenr = int(element.get('linenr'))
         self.column = int(element.get('column'))
 
+    def __repr__(self):
+        attrs = ["Id", "str", "scopeId", "isName", "isUnsigned", "isSigned",
+                "isNumber", "isInt", "isFloat", "isString", "strlen",
+                "isChar", "isOp", "isArithmeticalOp", "isComparisonOp",
+                "isLogicalOp", "isExpandedMacro", "linkId", "varId",
+                "variableId", "functionId", "valuesId", "valueType",
+                "typeScopeId", "astParentId", "astOperand1Id", "file",
+                "linenr", "column"]
+        return "{}({})".format(
+            "Token",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
+
     def setId(self, IdMap):
         self.scope = IdMap[self.scopeId]
         self.link = IdMap[self.linkId]
@@ -325,6 +353,14 @@ class Scope:
         self.isExecutable = (self.type in ('Function', 'If', 'Else', 'For', 'While', 'Do',
                                            'Switch', 'Try', 'Catch', 'Unconditional', 'Lambda'))
 
+    def __repr__(self):
+        attrs = ["Id", "className", "functionId", "bodyStartId", "bodyEndId",
+                 "nestedInId", "nestedIn", "type", "isExecutable"]
+        return "{}({})".format(
+            "Scope",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
+
     def setId(self, IdMap):
         self.bodyStart = IdMap[self.bodyStartId]
         self.bodyEnd = IdMap[self.bodyEndId]
@@ -371,6 +407,14 @@ class Function:
 
         self.argument = {}
         self.argumentId = {}
+
+    def __repr__(self):
+        attrs = ["Id", "tokenDefId", "name", "type", "isVirtual",
+                 "isImplicitlyVirtual", "isStatic", "argumentId"]
+        return "{}({})".format(
+            "Function",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
 
     def setId(self, IdMap):
         for argnr, argid in self.argumentId.items():
@@ -450,6 +494,16 @@ class Variable:
         if self.constness:
             self.constness = int(self.constness)
 
+    def __repr__(self):
+        attrs = ["Id", "nameTokenId", "typeStartTokenId", "typeEndTokenId",
+                 "access", "scopeId", "isArgument", "isArray", "isClass",
+                 "isConst", "isGlobal", "isExtern", "isLocal", "isPointer",
+                 "isReference", "isStatic", "constness", ]
+        return "{}({})".format(
+            "Variable",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
+
     def setId(self, IdMap):
         self.nameToken = IdMap[self.nameTokenId]
         self.typeStartToken = IdMap[self.typeStartTokenId]
@@ -502,6 +556,14 @@ class Value:
         if element.get('inconclusive'):
             self.inconclusive = True
 
+    def __repr__(self):
+        attrs = ["intvalue", "tokvalue", "floatvalue", "containerSize",
+                    "condition", "valueKind", "inconclusive"]
+        return "{}({})".format(
+            "Value",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
+
 
 class ValueFlow:
     """
@@ -521,6 +583,13 @@ class ValueFlow:
     def __init__(self, element):
         self.Id = element.get('id')
         self.values = []
+
+    def __repr__(self):
+        attrs = ["Id", "values"]
+        return "{}({})".format(
+            "ValueFlow",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
 
 
 class Suppression:
@@ -545,6 +614,13 @@ class Suppression:
         self.fileName = element.get('fileName')
         self.lineNumber = element.get('lineNumber')
         self.symbolName = element.get('symbolName')
+
+    def __repr__(self):
+        attrs = ['errorId' , "fileName", "lineNumber", "symbolName"]
+        return "{}({})".format(
+            "Suppression",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
 
     def isMatch(self, file, line, message, errorId):
         if ((self.fileName is None or fnmatch(file, self.fileName))
@@ -666,6 +742,14 @@ class Platform:
         self.long_long_bit = int(platformnode.get('long_long_bit'))
         self.pointer_bit = int(platformnode.get('pointer_bit'))
 
+    def __repr__(self):
+        attrs = ["name", "char_bit", "short_bit", "int_bit",
+                 "long_bit", "long_long_bit", "pointer_bit"]
+        return "{}({})".format(
+            "Platform",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
+
 
 class Standards:
     """
@@ -682,6 +766,13 @@ class Standards:
         self.c = standardsnode.find("c").get("version")
         self.cpp = standardsnode.find("cpp").get("version")
         self.posix = standardsnode.find("posix") is not None
+
+    def __repr__(self):
+        attrs = ["c", "cpp", "posix"]
+        return "{}({})".format(
+            "Standards",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
 
 
 class CppcheckData:
@@ -874,6 +965,13 @@ class CppcheckData:
 
             # Remove links to the sibling nodes
             node.clear()
+
+    def __repr__(self):
+        attrs = ["configurations", "platform"]
+        return "{}({})".format(
+            "CppcheckData",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
 
 
 # Get function arguments

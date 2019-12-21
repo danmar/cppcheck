@@ -46,6 +46,7 @@
 #include <vector>
 #include <memory>
 #include <iostream> // <- TEMPORARY
+#include <cstdio>
 
 #ifdef HAVE_RULES
 #define PCRE_STATIC
@@ -136,7 +137,26 @@ namespace {
 
 static std::string executeAddon(const AddonInfo &addonInfo, const std::string &dumpFile)
 {
-    const std::string cmd = "python \"" + addonInfo.scriptFile + "\" --cli" + addonInfo.args + " \"" + dumpFile + "\"";
+    // Can python be executed?
+    {
+        const std::string cmd = "python --version 2>&1";
+
+#ifdef _WIN32
+        std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
+#else
+        std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+#endif
+        if (!pipe)
+            throw InternalError(nullptr, "popen failed (command: '" + cmd + "')");
+        char buffer[1024];
+        std::string result;
+        while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr)
+            result += buffer;
+        if (result.compare(0, 7, "Python ", 0, 7) != 0 || result.size() > 50)
+            throw InternalError(nullptr, "Failed to execute '" + cmd + "' (" + result + ")");
+    }
+
+    const std::string cmd = "python \"" + addonInfo.scriptFile + "\" --cli" + addonInfo.args + " \"" + dumpFile + "\" 2>&1";
 
 #ifdef _WIN32
     std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
@@ -144,12 +164,22 @@ static std::string executeAddon(const AddonInfo &addonInfo, const std::string &d
     std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
 #endif
     if (!pipe)
-        return "";
+        throw InternalError(nullptr, "popen failed (command: '" + cmd + "')");
     char buffer[1024];
     std::string result;
     while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr) {
         result += buffer;
     }
+
+    // Validate output..
+    std::istringstream istr(result);
+    std::string line;
+    while (std::getline(istr, line)) {
+        if (line.compare(0,9,"Checking ", 0, 9) != 0 && !line.empty() && line[0] != '{')
+            throw InternalError(nullptr, "Failed to execute '" + cmd + "'. " + result);
+    }
+
+    // Valid results
     return result;
 }
 
@@ -275,6 +305,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
             case simplecpp::Output::SYNTAX_ERROR:
             case simplecpp::Output::UNHANDLED_CHAR_ERROR:
+            case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
                 err = true;
                 break;
             case simplecpp::Output::WARNING:
@@ -282,7 +313,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             case simplecpp::Output::PORTABILITY_BACKSLASH:
                 err = false;
                 break;
-            };
+            }
 
             if (err) {
                 const ErrorLogger::ErrorMessage::FileLocation loc1(output.location.file(), output.location.line, output.location.col);
@@ -299,7 +330,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             }
         }
 
-        preprocessor.loadFiles(tokens1, files);
+        if (!preprocessor.loadFiles(tokens1, files))
+            return mExitCode;
 
         if (!mSettings.plistOutput.empty()) {
             std::string filename2;
@@ -657,6 +689,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     reportErr(errmsg);
                 }
             }
+            std::remove(dumpFile.c_str());
         }
 
     } catch (const std::runtime_error &e) {

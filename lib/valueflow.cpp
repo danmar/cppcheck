@@ -1665,9 +1665,9 @@ static void valueFlowReverse(TokenList *tokenlist,
     const Token * const      startToken = var->nameToken();
 
     for (Token *tok2 = tok->previous(); ; tok2 = tok2->previous()) {
-        if (!tok2 ||
-            tok2 == startToken ||
-            (tok2->str() == "{" && tok2->scope()->type == Scope::ScopeType::eFunction)) {
+        if (!tok2 || tok2 == startToken ||
+            (tok2->str() == "{" &&
+             (tok2->scope()->type == Scope::ScopeType::eFunction || tok2->scope()->type == Scope::ScopeType::eLambda))) {
             break;
         }
 
@@ -1698,6 +1698,9 @@ static void valueFlowReverse(TokenList *tokenlist,
                                      tokenlist,
                                      errorLogger,
                                      settings);
+                    // Only reverse analysis supported with variables
+                    if (assignTok->varId() > 0)
+                        valueFlowReverse(tokenlist, tok2->previous(), assignTok, val, val2, errorLogger, settings);
                 }
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "assignment of " + tok2->str());
@@ -2583,6 +2586,11 @@ static bool valueFlowForwardVariable(Token* const startToken,
             }
         }
 
+        // TODO: Check for eFunction
+        else if (tok2->str() == "}" && indentlevel <= 0 && tok2->scope() && tok2->scope()->type == Scope::eLambda) {
+            return true;
+        }
+
         else if (tok2->str() == "}" && indentlevel == varusagelevel) {
             ++number_of_if;
 
@@ -2982,6 +2990,8 @@ static const Token* solveExprValues(const Token* expr, std::list<ValueFlow::Valu
             return solveExprValues(binaryTok, values);
         }
         case '*': {
+            if (intval == 0)
+                break;
             transformIntValues(values, [&](MathLib::bigint x) {
                 return x / intval;
             });
@@ -3758,7 +3768,7 @@ struct Lambda {
     }
 };
 
-static bool isDecayedPointer(const Token *tok, const Settings *settings)
+static bool isDecayedPointer(const Token *tok)
 {
     if (!tok)
         return false;
@@ -3876,7 +3886,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
                 continue;
             if (var->nameToken() == tok)
                 continue;
-            if (var->isArray() && !var->isStlType() && !var->isArgument() && isDecayedPointer(tok, settings)) {
+            if (var->isArray() && !var->isStlType() && !var->isArgument() && isDecayedPointer(tok)) {
                 errorPath.emplace_back(tok, "Array decayed to pointer here.");
 
                 ValueFlow::Value value;
@@ -3913,7 +3923,8 @@ static bool isStdMoveOrStdForwarded(Token * tok, ValueFlow::Value::MoveKind * mo
         return false;
     if (variableToken->strAt(2) == ".") // Only partially moved
         return false;
-
+    if (variableToken->valueType() && variableToken->valueType()->type >= ValueType::Type::VOID)
+        return false;
     if (moveKind != nullptr)
         *moveKind = kind;
     if (varTok != nullptr)
@@ -5413,7 +5424,9 @@ static bool isContainerSizeChangedByFunction(const Token *tok, int depth = 20)
         if (arg) {
             if (!arg->isReference() && !addressOf)
                 return false;
-            if (arg->isConst())
+            if (!addressOf && arg->isConst())
+                return false;
+            if (arg->valueType() && arg->valueType()->constness == 1)
                 return false;
             const Scope * scope = fun->functionScope;
             if (scope) {
@@ -5469,7 +5482,7 @@ static void valueFlowContainerForward(Token *tok, nonneg int containerId, ValueF
         }
         if (Token::simpleMatch(tok, ") {") && Token::Match(tok->link()->previous(), "while|for|if (")) {
             const Token *start = tok->next();
-            if (isContainerSizeChanged(containerId, start, start->link()))
+            if (isContainerSizeChanged(containerId, start, start->link()) || isEscapeScope(start, nullptr))
                 break;
             tok = start->link();
             if (Token::simpleMatch(tok, "} else {")) {
@@ -5767,6 +5780,8 @@ static void valueFlowContainerAfterCondition(TokenList *tokenlist,
 static void valueFlowFwdAnalysis(const TokenList *tokenlist, const Settings *settings)
 {
     for (const Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+        if (Token::simpleMatch(tok, "for ("))
+            tok = tok->linkAt(1);
         if (tok->str() != "=" || !tok->astOperand1() || !tok->astOperand2())
             continue;
         if (!tok->scope()->isExecutable())

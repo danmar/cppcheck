@@ -1811,7 +1811,7 @@ namespace {
             return false;
         }
 
-        if (Token::Match(tok1->tokAt(-1), "class|struct|union|enum")) {
+        if (Token::Match(tok1->tokAt(-1), "class|struct|union|enum|namespace")) {
             // fixme
             return false;
         }
@@ -2473,7 +2473,7 @@ void Tokenizer::combineOperators()
         } else if (tok->str() == "->") {
             // If the preceding sequence is "( & %name% )", replace it by "%name%"
             Token *t = tok->tokAt(-4);
-            if (Token::Match(t, "( & %name% )")) {
+            if (Token::Match(t, "( & %name% )") && !Token::simpleMatch(t->previous(), ">")) {
                 t->deleteThis();
                 t->deleteThis();
                 t->deleteNext();
@@ -7064,6 +7064,13 @@ bool Tokenizer::simplifyCAlternativeTokens()
                 continue;
             if (Token::Match(tok->next(), "%assign%|%or%|%oror%|&&|*|/|%|^") && !Token::Match(tok->previous(), "%num%|%char% %name% *"))
                 continue;
+            if (executableScopeLevel == 0 && Token::Match(tok, "%name% (")) {
+                const Token *start = tok;
+                while (Token::Match(start, "%name%|*"))
+                    start = start->previous();
+                if (!start || Token::Match(start, "[;}]"))
+                    continue;
+            }
             tok->str(cOpIt->second);
             ret = true;
         } else if (Token::Match(tok, "not|compl")) {
@@ -9254,8 +9261,15 @@ static const Token *findUnmatchedTernaryOp(const Token * const begin, const Toke
     return ternaryOp.empty() ? nullptr : ternaryOp.top();
 }
 
+static bool isCPPAttribute(const Token * tok)
+{
+    return Token::simpleMatch(tok, "[ [") && tok->link() && tok->link()->previous() == tok->linkAt(1);
+}
+
 void Tokenizer::findGarbageCode() const
 {
+    const bool isCPP11  = isCPP() && mSettings->standards.cpp >= Standards::CPP11;
+
     // initialization: = {
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (!Token::simpleMatch(tok, "= {"))
@@ -9339,7 +9353,8 @@ void Tokenizer::findGarbageCode() const
         while (prev && prev->isName())
             prev = prev->previous();
         if (Token::Match(prev, "%op%|%num%|%str%|%char%")) {
-            if (!Token::simpleMatch(tok->tokAt(-2), "operator \"\" if"))
+            if (!Token::simpleMatch(tok->tokAt(-2), "operator \"\" if") &&
+                !Token::simpleMatch(tok->tokAt(-2), "extern \"C\""))
                 syntaxError(tok, prev == tok->previous() ? (prev->str() + " " + tok->str()) : (prev->str() + " .. " + tok->str()));
         }
     }
@@ -9409,6 +9424,11 @@ void Tokenizer::findGarbageCode() const
             if (Token::Match(tok, "> %cop%"))
                 continue;
         }
+        // skip C++ attributes [[...]]
+        if (isCPP11 && isCPPAttribute(tok)) {
+            tok = tok->link();
+            continue;
+        }
         {
             bool match1 = Token::Match(tok, "%or%|%oror%|==|!=|+|-|/|!|>=|<=|~|^|++|--|::|sizeof");
             bool match2 = Token::Match(tok->next(), "{|if|else|while|do|for|return|switch|break");
@@ -9435,7 +9455,7 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, ";|(|[ %comp%"))
             syntaxError(tok);
-        if (Token::Match(tok, "%cop%|= ]") && !(isCPP() && Token::Match(tok->previous(), "[|, &|= ]")))
+        if (Token::Match(tok, "%cop%|= ]") && !(isCPP() && Token::Match(tok->previous(), "[|,|%num% &|=|> ]")))
             syntaxError(tok);
         if (Token::Match(tok, "[+-] [;,)]}]") && !(isCPP() && Token::Match(tok->previous(), "operator [+-] ;")))
             syntaxError(tok);
@@ -9471,7 +9491,7 @@ void Tokenizer::findGarbageCode() const
     // Code must end with } ; ) NAME
     if (!Token::Match(list.back(), "%name%|;|}|)"))
         syntaxError(list.back());
-    if (list.back()->str() == ")" && !Token::Match(list.back()->link()->previous(), "%name% ("))
+    if (list.back()->str() == ")" && !Token::Match(list.back()->link()->previous(), "%name%|> ("))
         syntaxError(list.back());
     for (const Token *end = list.back(); end && end->isName(); end = end->previous()) {
         if (Token::Match(end, "void|char|short|int|long|float|double|const|volatile|static|inline|struct|class|enum|union|template|sizeof|case|break|continue|typedef"))
@@ -9713,8 +9733,13 @@ void Tokenizer::simplifyStructDecl()
         // check for anonymous enum
         else if ((Token::simpleMatch(tok, "enum {") &&
                   !Token::Match(tok->tokAt(-3), "using %name% =") &&
-                  Token::Match(tok->next()->link(), "} %type%| ,|;|[|(|{")) ||
-                 (Token::Match(tok, "enum : %type% {") && Token::Match(tok->linkAt(3), "} %type%| ,|;|[|(|{"))) {
+                  Token::Match(tok->next()->link(), "} (| %type%| )| ,|;|[|(|{")) ||
+                 (Token::Match(tok, "enum : %type% {") && Token::Match(tok->linkAt(3), "} (| %type%| )| ,|;|[|(|{"))) {
+            Token *start = tok->strAt(1) == ":" ? tok->linkAt(3) : tok->linkAt(1);
+            if (start && Token::Match(start->next(), "( %type% )")) {
+                start->next()->link()->deleteThis();
+                start->next()->deleteThis();
+            }
             tok->insertToken("Anonymous" + MathLib::toString(count++));
         }
     }
@@ -9748,7 +9773,7 @@ void Tokenizer::simplifyStructDecl()
             Token *restart = next;
 
             // check for named type
-            if (Token::Match(tok->next(), "const| *|&| const| %type% ,|;|[|=|(|{")) {
+            if (Token::Match(tok->next(), "const| *|&| const| (| %type% )| ,|;|[|=|(|{")) {
                 tok->insertToken(";");
                 tok = tok->next();
                 while (!Token::Match(start, "struct|class|union|enum")) {
@@ -9765,6 +9790,11 @@ void Tokenizer::simplifyStructDecl()
                 }
 
                 tok = tok->tokAt(2);
+
+                if (Token::Match(tok, "( %type% )")) {
+                    tok->link()->deleteThis();
+                    tok->deleteThis();
+                }
 
                 // check for initialization
                 if (tok && (tok->next()->str() == "(" || tok->next()->str() == "{")) {
@@ -10031,7 +10061,7 @@ void Tokenizer::simplifyCPPAttribute()
         return;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (!tok->link() || !Token::Match(tok, "[ [ %name%"))
+        if (!isCPPAttribute(tok))
             continue;
         if (Token::Match(tok->tokAt(2), "noreturn|nodiscard")) {
             const Token * head = tok->link()->next();

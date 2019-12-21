@@ -95,6 +95,8 @@ void CheckBool::checkBitwiseOnBoolean()
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->isBinaryOp() && (tok->str() == "&" || tok->str() == "|")) {
                 if (astIsBool(tok->astOperand1()) || astIsBool(tok->astOperand2())) {
+                    if (tok->astOperand2()->variable() && tok->astOperand2()->variable()->nameToken() == tok->astOperand2())
+                        continue;
                     const std::string expression = astIsBool(tok->astOperand1()) ? tok->astOperand1()->expressionString() : tok->astOperand2()->expressionString();
                     bitwiseOnBooleanError(tok, expression, tok->str() == "&" ? "&&" : "||");
                 }

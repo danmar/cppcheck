@@ -456,6 +456,7 @@ private:
         TEST_CASE(astcast);
         TEST_CASE(astlambda);
         TEST_CASE(astcase);
+        TEST_CASE(astrefqualifier);
         TEST_CASE(astvardecl);
 
         TEST_CASE(startOfExecutableScope);
@@ -471,6 +472,9 @@ private:
         TEST_CASE(checkTemplates);
         TEST_CASE(checkNamespaces);
         TEST_CASE(checkLambdas);
+        TEST_CASE(checkIfCppCast);
+        TEST_CASE(checkRefQualifiers);
+        TEST_CASE(checkConditionBlock);
 
         // #9052
         TEST_CASE(noCrash1);
@@ -946,6 +950,7 @@ private:
         ASSERT_EQUALS("; __published: ;", tokenizeAndStringify(";__published:;", false));
         ASSERT_EQUALS("a . public : ;", tokenizeAndStringify("a.public:;", false));
         ASSERT_EQUALS("void f ( x & = 2 ) ;", tokenizeAndStringify("void f(x &= 2);", false));
+        ASSERT_EQUALS("const_cast < a * > ( & e )", tokenizeAndStringify("const_cast<a*>(&e)", false));
     }
 
     void concatenateNegativeNumber() {
@@ -3576,6 +3581,11 @@ private:
     void simplifyStructDecl() {
         const char code[] = "const struct A { int a; int b; } a;";
         ASSERT_EQUALS("struct A { int a ; int b ; } ; const struct A a ;", tokenizeAndStringify(code));
+
+        // #9519
+        const char code2[] = "enum A {} (a);";
+        const char expected2[] = "enum A { } ; enum A a ;";
+        ASSERT_EQUALS(expected2, tokenizeAndStringify(code2));
     }
 
     void vardecl1() {
@@ -6133,6 +6143,7 @@ private:
     }
 
     void simplifyCAlternativeTokens() {
+        ASSERT_EQUALS("void or ( ) ;", tokenizeAndStringify("void or(void);", false, true, Settings::Native, "test.c"));
         ASSERT_EQUALS("void f ( ) { if ( a && b ) { ; } }", tokenizeAndStringify("void f() { if (a and b); }", false, true, Settings::Native, "test.c"));
         ASSERT_EQUALS("void f ( ) { if ( a && b ) { ; } }", tokenizeAndStringify("void f() { if (a and b); }", false, true, Settings::Native, "test.cpp"));
         ASSERT_EQUALS("void f ( ) { if ( a || b ) { ; } }", tokenizeAndStringify("void f() { if (a or b); }", false, true, Settings::Native, "test.c"));
@@ -7287,6 +7298,26 @@ private:
         ASSERT_EQUALS("[ [ maybe_unused ] ] int f ( [ [ maybe_unused ] ] int i ) ;",
                       tokenizeAndStringify("[[maybe_unused]] int f([[maybe_unused]] int i);", false, true, Settings::Native, "test.cpp", false));
 
+        ASSERT_EQUALS("struct a ;",
+                      tokenizeAndStringify("struct [[]] a;", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("struct a ;",
+                      tokenizeAndStringify("struct [[,]] a;", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("struct a ;",
+                      tokenizeAndStringify("struct [[deprecated,]] a;", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("struct a ;",
+                      tokenizeAndStringify("struct [[,,]] a;", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("struct a ;",
+                      tokenizeAndStringify("struct [[deprecated,,]] a;", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("struct a ;",
+                      tokenizeAndStringify("struct [[deprecated,maybe_unused,]] a;", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("struct a ;",
+                      tokenizeAndStringify("struct [[,,,]] a;", false, true, Settings::Native, "test.cpp", true));
     }
 
     void simplifyCaseRange() {
@@ -7621,7 +7652,7 @@ private:
         // ({..})
         ASSERT_EQUALS("a{+d+ bc+", testAst("a+({b+c;})+d"));
         ASSERT_EQUALS("a{d*+ bc+", testAst("a+({b+c;})*d"));
-        ASSERT_EQUALS("xabc({((= ydef({((=",
+        ASSERT_EQUALS("xa{((= bc( yd{((= ef(",
                       testAst("x=(int)(a({b(c);}));" // don't hang
                               "y=(int)(d({e(f);}));"));
         ASSERT_EQUALS("A{{,( x0= Bx1={x2={,(",  // TODO: This is not perfect!!
@@ -7668,6 +7699,7 @@ private:
         ASSERT_EQUALS("Abc({newreturn", testAst("return new A {b(c)};"));
         ASSERT_EQUALS("a{{return", testAst("return{{a}};"));
         ASSERT_EQUALS("a{b{,{return", testAst("return{{a},{b}};"));
+        ASSERT_EQUALS("stdvector::", testAst("std::vector<std::vector<int>>{{},{}}"));
     }
 
     void astbrackets() { // []
@@ -7726,7 +7758,7 @@ private:
         ASSERT_EQUALS("xsizeofvoid(=", testAst("x=sizeof(void*)"));
         ASSERT_EQUALS("abc{d{,{(=", testAst("a = b({ c{}, d{} });"));
         ASSERT_EQUALS("abc;(", testAst("a(b;c)"));
-        ASSERT_EQUALS("aforab;c;({(", testAst("a({ for(a;b;c){} });"));
+        ASSERT_EQUALS("x{( forbc;;(", testAst("x({ for(a;b;c){} });"));
     }
 
     void asttemplate() { // uninstantiated templates will have <,>,etc..
@@ -7780,6 +7812,7 @@ private:
         ASSERT_EQUALS("{([(return 0return", testAst("return []() -> int { return 0; }();"));
         ASSERT_EQUALS("{([(return 0return", testAst("return [something]() -> int { return 0; }();"));
         ASSERT_EQUALS("{([cd,(return 0return", testAst("return [](int a, int b) -> int { return 0; }(c, d);"));
+        ASSERT_EQUALS("{([return", testAst("return []() -> decltype(0) {};"));
         ASSERT_EQUALS("x{([=", testAst("x = [&]()->std::string const & {};"));
         ASSERT_EQUALS("f{([=", testAst("f = []() -> foo* {};"));
         ASSERT_EQUALS("f{([=", testAst("f = [](void) mutable -> foo* {};"));
@@ -7792,15 +7825,27 @@ private:
         // 8628
         ASSERT_EQUALS("f{([( switchx( 1case y++", testAst("f([](){switch(x){case 1:{++y;}}});"));
 
-        ASSERT_EQUALS("{return ab=",
+        ASSERT_EQUALS("{([{return ab=",
                       testAst("return {\n"
                               "  [=]() {\n"
                               "    a = b;\n"
                               "  }\n"
                               "};\n"));
-        ASSERT_EQUALS("{return ab=",
+        ASSERT_EQUALS("{[{return ab=",
+                      testAst("return {\n"
+                              "  [=] {\n"
+                              "    a = b;\n"
+                              "  }\n"
+                              "};\n"));
+        ASSERT_EQUALS("{([{return ab=",
                       testAst("return {\n"
                               "  [=]() -> int {\n"
+                              "    a=b;\n"
+                              "  }\n"
+                              "}"));
+        ASSERT_EQUALS("{([{return ab=",
+                      testAst("return {\n"
+                              "  [=]() mutable -> int {\n"
                               "    a=b;\n"
                               "  }\n"
                               "}"));
@@ -7816,6 +7861,15 @@ private:
         ASSERT_EQUALS("0case", testAst("case 0:"));
         ASSERT_EQUALS("12+case", testAst("case 1+2:"));
         ASSERT_EQUALS("xyz:?case", testAst("case (x?y:z):"));
+    }
+
+    void astrefqualifier() {
+        ASSERT_EQUALS("b(int.", testAst("class a { auto b() -> int&; };"));
+        ASSERT_EQUALS("b(int.", testAst("class a { auto b() -> int&&; };"));
+        ASSERT_EQUALS("b(", testAst("class a { void b() &&; };"));
+        ASSERT_EQUALS("b(", testAst("class a { void b() &; };"));
+        ASSERT_EQUALS("b(", testAst("class a { void b() && {} };"));
+        ASSERT_EQUALS("b(", testAst("class a { void b() & {} };"));
     }
 
     void compileLimits() {
@@ -7912,6 +7966,8 @@ private:
 
         ASSERT_NO_THROW(tokenizeAndStringify("S s = { .x=2, .y[0]=3 };"));
         ASSERT_NO_THROW(tokenizeAndStringify("S s = { .ab.a=2, .ab.b=3 };"));
+
+        ASSERT_NO_THROW(tokenizeAndStringify("extern \"C\" typedef void FUNC();"));
     }
 
 
@@ -8077,6 +8133,113 @@ private:
                                              "    auto b = [this, a] {};\n"
                                              "  }\n"
                                              "};\n"))
+
+        // #9525
+        ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
+                                             "  template <class b> a(b) {}\n"
+                                             "};\n"
+                                             "auto c() -> a {\n"
+                                             "  return {[] {\n"
+                                             "    if (0) {}\n"
+                                             "  }};\n"
+                                             "}\n"))
+        ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
+                                             "  template <class b> a(b) {}\n"
+                                             "};\n"
+                                             "auto c() -> a {\n"
+                                             "  return {[]() -> int {\n"
+                                             "    if (0) {}\n"
+                                             "    return 0;\n"
+                                             "  }};\n"
+                                             "}\n"))
+        ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
+                                             "  template <class b> a(b) {}\n"
+                                             "};\n"
+                                             "auto c() -> a {\n"
+                                             "  return {[]() mutable -> int {\n"
+                                             "    if (0) {}\n"
+                                             "    return 0;\n"
+                                             "  }};\n"
+                                             "}\n"))
+        // #0535
+        ASSERT_NO_THROW(tokenizeAndStringify("template <typename, typename> struct a;\n"
+                                             "template <typename, typename b> void c() {\n"
+                                             "  ([]() -> decltype(0) {\n"
+                                             "    if (a<b, decltype(0)>::d) {}\n"
+                                             "  });\n"
+                                             "}\n"))
+    }
+    void checkIfCppCast() {
+        ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
+                                             "  int b();\n"
+                                             "};\n"
+                                             "struct c {\n"
+                                             "  bool d() const;\n"
+                                             "  a e;\n"
+                                             "};\n"
+                                             "bool c::d() const {\n"
+                                             "  int f = 0;\n"
+                                             "  if (!const_cast<a *>(&e)->b()) {}\n"
+                                             "  return f;\n"
+                                             "}\n"))
+    }
+
+    void checkRefQualifiers() {
+        // #9511
+        ASSERT_NO_THROW(tokenizeAndStringify("class a {\n"
+                                             "  void b() && {\n"
+                                             "    if (this) {}\n"
+                                             "  }\n"
+                                             "};\n"))
+        ASSERT_NO_THROW(tokenizeAndStringify("class a {\n"
+                                             "  void b() & {\n"
+                                             "    if (this) {}\n"
+                                             "  }\n"
+                                             "};\n"))
+        ASSERT_NO_THROW(tokenizeAndStringify("class a {\n"
+                                             "  auto b() && -> void {\n"
+                                             "    if (this) {}\n"
+                                             "  }\n"
+                                             "};\n"))
+        ASSERT_NO_THROW(tokenizeAndStringify("class a {\n"
+                                             "  auto b() & -> void {\n"
+                                             "    if (this) {}\n"
+                                             "  }\n"
+                                             "};\n"))
+        ASSERT_NO_THROW(tokenizeAndStringify("class a {\n"
+                                             "  auto b(int& x) -> int& {\n"
+                                             "    if (this) {}\n"
+                                             "    return x;\n"
+                                             "  }\n"
+                                             "};\n"))
+        ASSERT_NO_THROW(tokenizeAndStringify("class a {\n"
+                                             "  auto b(int& x) -> int&& {\n"
+                                             "    if (this) {}\n"
+                                             "    return x;\n"
+                                             "  }\n"
+                                             "};\n"))
+        ASSERT_NO_THROW(tokenizeAndStringify("class a {\n"
+                                             "  auto b(int& x) && -> int& {\n"
+                                             "    if (this) {}\n"
+                                             "    return x;\n"
+                                             "  }\n"
+                                             "};\n"))
+        // #9524
+        ASSERT_NO_THROW(tokenizeAndStringify("auto f() -> int* {\n"
+                                             "  if (0) {}\n"
+                                             "  return 0;\n"
+                                             "};\n"))
+        ASSERT_NO_THROW(tokenizeAndStringify("auto f() -> int** {\n"
+                                             "  if (0) {}\n"
+                                             "  return 0;\n"
+                                             "};\n"))
+
+    }
+
+    void checkConditionBlock() {
+        ASSERT_NO_THROW(tokenizeAndStringify("void a() {\n"
+                                             "  for (auto b : std::vector<std::vector<int>>{{}, {}}) {}\n"
+                                             "}\n"))
     }
 
     void noCrash1() {

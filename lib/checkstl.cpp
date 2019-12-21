@@ -493,6 +493,21 @@ void CheckStl::iterators()
                             continue;
                     }
 
+                    // Not different containers if a reference is used..
+                    if (containerToken && containerToken->variable() && containerToken->variable()->isReference()) {
+                        const Token *nameToken = containerToken->variable()->nameToken();
+                        if (Token::Match(nameToken, "%name% =")) {
+                            const Token *name1 = nameToken->tokAt(2);
+                            const Token *name2 = tok2;
+                            while (Token::Match(name1, "%name%|.|::") && name2 && name1->str() == name2->str()) {
+                                name1 = name1->next();
+                                name2 = name2->next();
+                            }
+                            if (!Token::simpleMatch(name1, ";") || !Token::Match(name2, "[;,()=]"))
+                                continue;
+                        }
+                    }
+
                     // Show error message, mismatching iterator is used.
                     iteratorsError(tok2, getContainerName(containerToken), getContainerName(tok2));
                 }

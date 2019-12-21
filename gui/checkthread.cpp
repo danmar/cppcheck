@@ -20,6 +20,7 @@
 #include <QString>
 #include <QDebug>
 #include <QDir>
+#include <QFile>
 #include <QFileInfo>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -313,7 +314,22 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
                 process.setProcessEnvironment(env);
             }
             process.start(python, args);
-            process.waitForFinished();
+            if (!process.waitForFinished()) {
+                const QString errMsg("ERROR: Process '" + python + " " + args.join(" ") +
+                                     "' did not finish successfully: " + process.errorString());
+                qWarning() << errMsg;
+                mResult.reportOut(errMsg.toStdString());
+            }
+            const QByteArray errout = process.readAllStandardError();
+            if (process.exitCode() != 0 && !errout.isEmpty()) {
+                const QString errMsg("ERROR: Process '" + python + " " + args.join(" ") +
+                                     "' failed with error code " +
+                                     QString::number(process.exitCode()) + ": '" +
+                                     process.errorString() +
+                                     "'\nError output: " + errout);
+                qWarning() << errMsg;
+                mResult.reportOut(errMsg.toStdString());
+            }
             const QString output(process.readAllStandardOutput());
             QFile f(dumpFile + '-' + addon + "-results");
             if (f.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -323,6 +339,10 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
             }
             parseAddonErrors(output, addon);
         }
+    }
+
+    if (!dumpFile.isEmpty()) {
+        QFile::remove(dumpFile);
     }
 }
 

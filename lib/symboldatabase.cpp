@@ -1331,6 +1331,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
         "namespace",
         "new",
         "noexcept",
+        "nullptr",
         "override",
         "private",
         "protected",
@@ -1353,6 +1354,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
         "virtual",
         "void",
         "volatile",
+        "NULL",
     };
     for (const Token* tok = mTokenizer->list.front(); tok != mTokenizer->list.back(); tok = tok->next()) {
         const Scope * scope = tok->scope();
@@ -2277,6 +2279,9 @@ bool Function::returnsReference(const Function* function, bool unknown)
         start = start->next();
     if (start->tokAt(1) == defEnd && !start->type() && !start->isStandardType())
         return unknown;
+    // TODO: Try to deduce the type of the expression
+    if (Token::Match(start, "decltype|typeof"))
+        return unknown;
     return false;
 }
 
@@ -2406,7 +2411,9 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
                         if (!func->hasBody()) {
                             const Token *closeParen = (*tok)->next()->link();
                             if (closeParen) {
-                                if (Token::Match(closeParen, ") noexcept| = default ;")) {
+                                if (Token::Match(closeParen, ") noexcept| = default ;") ||
+                                    (Token::simpleMatch(closeParen, ") noexcept (") &&
+                                     Token::simpleMatch(closeParen->linkAt(2), ") = default ;"))) {
                                     func->isDefault(true);
                                     return;
                                 }
@@ -2478,7 +2485,9 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
                             // normal function?
                             const Token *closeParen = (*tok)->next()->link();
                             if (closeParen) {
-                                if (Token::Match(closeParen, ") noexcept| = default ;")) {
+                                if (Token::Match(closeParen, ") noexcept| = default ;") ||
+                                    (Token::simpleMatch(closeParen, ") noexcept (") &&
+                                     Token::simpleMatch(closeParen->linkAt(2), ") = default ;"))) {
                                     func->isDefault(true);
                                     return;
                                 }

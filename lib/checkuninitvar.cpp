@@ -753,7 +753,10 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                     return true;
                 }
 
-                else if (Token::Match(tok->previous(), "[(,] %name% [,)]"))
+                if (Token::Match(tok->previous(), "[(,] %name% [,)]"))
+                    return true;
+
+                if (Token::Match(tok->previous(), "= %var% . %var% ;") && membervar == tok->strAt(2))
                     return true;
 
             } else {

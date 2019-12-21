@@ -516,6 +516,52 @@ static bool iscast(const Token *tok)
     return false;
 }
 
+static Token* findTypeEnd(Token* tok)
+{
+    while (Token::Match(tok, "%name%|.|::|*|&|<|(|template|decltype|sizeof")) {
+        if (Token::Match(tok, "(|<"))
+            tok = tok->link();
+        if (!tok)
+            return nullptr;
+        tok = tok->next();
+    }
+    return tok;
+}
+
+static const Token* findTypeEnd(const Token* tok)
+{
+    return findTypeEnd(const_cast<Token*>(tok));
+}
+
+static const Token * findLambdaEndScope(const Token *tok)
+{
+    if (!Token::simpleMatch(tok, "["))
+        return nullptr;
+    tok = tok->link();
+    if (!Token::Match(tok, "] (|{"))
+        return nullptr;
+    tok = tok->linkAt(1);
+    if (Token::simpleMatch(tok, "}"))
+        return tok;
+    if (Token::simpleMatch(tok, ") {"))
+        return tok->linkAt(1);
+    if (!Token::simpleMatch(tok, ")"))
+        return nullptr;
+    tok = tok->next();
+    while (Token::Match(tok, "mutable|constexpr|constval|noexcept|.")) {
+        if (Token::simpleMatch(tok, "noexcept ("))
+            tok = tok->linkAt(1);
+        if (Token::simpleMatch(tok, ".")) {
+            tok = findTypeEnd(tok);
+            break;
+        }
+        tok = tok->next();
+    }
+    if (Token::simpleMatch(tok, "{"))
+        return tok->link();
+    return nullptr;
+}
+
 // int(1), int*(2), ..
 static Token * findCppTypeInitPar(Token *tok)
 {
@@ -567,7 +613,7 @@ static bool iscpp11init_impl(const Token * const tok)
         nameToken = nameToken->link()->previous();
 
     const Token *endtok = nullptr;
-    if (Token::Match(nameToken, "%name% { !!["))
+    if (Token::Match(nameToken, "%name%|return {") && (!Token::simpleMatch(nameToken->tokAt(2), "[") || findLambdaEndScope(nameToken->tokAt(2))))
         endtok = nameToken->linkAt(1);
     else if (Token::Match(nameToken,"%name% <") && Token::simpleMatch(nameToken->linkAt(1),"> {"))
         endtok = nameToken->linkAt(1)->linkAt(1);
@@ -579,6 +625,16 @@ static bool iscpp11init_impl(const Token * const tok)
         return false;
     if (Token::simpleMatch(nameToken->previous(), "namespace"))
         return false;
+    if (Token::Match(nameToken, "%any% {")) {
+        // If there is semicolon between {..} this is not a initlist
+        for (const Token *tok2 = nameToken->next(); tok2 != endtok; tok2 = tok2->next()) {
+            if (tok2->str() == ";")
+                return false;
+            const Token * lambdaEnd = findLambdaEndScope(tok2);
+            if (lambdaEnd)
+                tok2 = lambdaEnd;
+        }
+    }
     // There is no initialisation for example here: 'class Fred {};'
     if (!Token::simpleMatch(endtok, "} ;"))
         return true;
@@ -589,6 +645,15 @@ static bool iscpp11init_impl(const Token * const tok)
 
         prev = prev->previous();
     }
+    return true;
+}
+
+static bool isQualifier(const Token* tok)
+{
+    while (Token::Match(tok, "&|&&|*"))
+        tok = tok->next();
+    if (!Token::Match(tok, "{|;"))
+        return false;
     return true;
 }
 
@@ -714,7 +779,7 @@ static void compileTerm(Token *&tok, AST_state& state)
                 compileBinOp(tok, state, compileExpression);
             if (Token::Match(tok, "} ,|:"))
                 tok = tok->next();
-        } else if (state.cpp && Token::Match(tok->tokAt(-2), "%name% ( {")) {
+        } else if (state.cpp && Token::Match(tok->tokAt(-2), "%name% ( {") && !Token::findsimplematch(tok, ";", tok->link())) {
             if (Token::simpleMatch(tok, "{ }"))
                 tok = tok->tokAt(2);
             else {
@@ -807,10 +872,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                     if (Token::Match(curlyBracket, "mutable|const"))
                         curlyBracket = curlyBracket->next();
                     if (curlyBracket && curlyBracket->originalName() == "->") {
-                        while (Token::Match(curlyBracket, "%name%|.|::|&|*"))
-                            curlyBracket = curlyBracket->next();
-                        if (curlyBracket && curlyBracket->str() == "<" && curlyBracket->link())
-                            curlyBracket = curlyBracket->link()->next();
+                        curlyBracket = findTypeEnd(curlyBracket->next());
                     }
                     if (curlyBracket && curlyBracket->str() == "{") {
                         squareBracket->astOperand1(roundBracket);
@@ -865,7 +927,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 compileUnaryOp(tok, state, compileExpression);
             else
                 compileBinOp(tok, state, compileExpression);
-            if (Token::simpleMatch(tok, "}"))
+            while (Token::simpleMatch(tok, "}"))
                 tok = tok->next();
         } else break;
     }
@@ -959,7 +1021,7 @@ static void compileMulDiv(Token *&tok, AST_state& state)
 {
     compilePointerToElem(tok, state);
     while (tok) {
-        if (Token::Match(tok, "[/%]") || (tok->str() == "*" && !tok->astOperand1())) {
+        if (Token::Match(tok, "[/%]") || (tok->str() == "*" && !tok->astOperand1() && !isQualifier(tok))) {
             if (Token::Match(tok, "* [*,)]")) {
                 Token* tok2 = tok->next();
                 while (tok2->next() && tok2->str() == "*")
@@ -1018,7 +1080,7 @@ static void compileAnd(Token *&tok, AST_state& state)
 {
     compileEqComp(tok, state);
     while (tok) {
-        if (tok->str() == "&" && !tok->astOperand1()) {
+        if (tok->str() == "&" && !tok->astOperand1() && !isQualifier(tok)) {
             Token* tok2 = tok->next();
             if (!tok2)
                 break;
@@ -1057,7 +1119,7 @@ static void compileLogicAnd(Token *&tok, AST_state& state)
 {
     compileOr(tok, state);
     while (tok) {
-        if (tok->str() == "&&") {
+        if (tok->str() == "&&" && !isQualifier(tok)) {
             if (!tok->astOperand1()) {
                 Token* tok2 = tok->next();
                 if (!tok2)
@@ -1451,6 +1513,15 @@ void TokenList::validateAst() const
                 continue;
             if (!tok->astOperand1() || !tok->astOperand2())
                 throw InternalError(tok, "Syntax Error: AST broken, binary operator '" + tok->str() + "' doesn't have two operands.", InternalError::AST);
+        }
+
+        // Check control blocks
+        if (Token::Match(tok->previous(), "if|while|for|switch (")) {
+            if (!tok->astOperand1() || !tok->astOperand2())
+                throw InternalError(tok,
+                                    "Syntax Error: AST broken, '" + tok->previous()->str() +
+                                    "' doesn't have two operands.",
+                                    InternalError::AST);
         }
     }
 }

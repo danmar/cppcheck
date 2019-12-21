@@ -1569,7 +1569,7 @@ void CheckOther::checkIncompleteStatement()
         if (!Token::simpleMatch(tok->astParent(), ";") && !Token::simpleMatch(rtok, ";") &&
             !Token::Match(tok->previous(), ";|}|{ %any% ;"))
             continue;
-        // Skipe statement expressions
+        // Skip statement expressions
         if (Token::simpleMatch(rtok, "; } )"))
             continue;
         if (!isConstStatement(tok))
@@ -1587,6 +1587,10 @@ void CheckOther::checkIncompleteStatement()
 
 void CheckOther::constStatementError(const Token *tok, const std::string &type, bool inconclusive)
 {
+    const Token *valueTok = tok;
+    while (valueTok && valueTok->isCast())
+        valueTok = valueTok->astOperand2() ? valueTok->astOperand2() : valueTok->astOperand1();
+
     std::string msg;
     if (Token::simpleMatch(tok, "=="))
         msg = "Found suspicious equality comparison. Did you intend to assign a value instead?";
@@ -1594,8 +1598,12 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type, 
         msg = "Found suspicious operator '" + tok->str() + "'";
     else if (Token::Match(tok, "%var%"))
         msg = "Unused variable value '" + tok->str() + "'";
-    else
+    else if (Token::Match(valueTok, "%str%|%num%"))
+        msg = "Redundant code: Found a statement that begins with " + std::string(valueTok->isNumber() ? "numeric" : "string") + " constant.";
+    else if (!tok)
         msg = "Redundant code: Found a statement that begins with " + type + " constant.";
+    else
+        return; // Strange!
     reportError(tok, Severity::warning, "constStatement", msg, CWE398, inconclusive);
 }
 
@@ -1979,7 +1987,15 @@ void CheckOther::checkDuplicateExpression()
             if (tok->isOp() && tok->astOperand1() && !Token::Match(tok, "+|*|<<|>>|+=|*=|<<=|>>=")) {
                 if (Token::Match(tok, "==|!=|-") && astIsFloat(tok->astOperand1(), true))
                     continue;
-                if (isSameExpression(mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, true, true, &errorPath)) {
+                const bool followVar = !isConstVarExpression(tok) || Token::Match(tok, "%comp%|%oror%|&&");
+                if (isSameExpression(mTokenizer->isCPP(),
+                                     true,
+                                     tok->astOperand1(),
+                                     tok->astOperand2(),
+                                     mSettings->library,
+                                     true,
+                                     followVar,
+                                     &errorPath)) {
                     if (isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand1())) {
                         const bool assignment = tok->str() == "=";
                         if (assignment && warningEnabled)
@@ -1997,17 +2013,39 @@ void CheckOther::checkDuplicateExpression()
                             duplicateExpressionError(tok->astOperand1(), tok->astOperand2(), tok, errorPath);
                         }
                     }
-                } else if (tok->str() == "=" && Token::simpleMatch(tok->astOperand2(), "=") && isSameExpression(mTokenizer->isCPP(), false, tok->astOperand1(), tok->astOperand2()->astOperand1(), mSettings->library, true, false)) {
+                } else if (tok->str() == "=" && Token::simpleMatch(tok->astOperand2(), "=") &&
+                           isSameExpression(mTokenizer->isCPP(),
+                                            false,
+                                            tok->astOperand1(),
+                                            tok->astOperand2()->astOperand1(),
+                                            mSettings->library,
+                                            true,
+                                            false)) {
                     if (warningEnabled && isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand1())) {
                         selfAssignmentError(tok, tok->astOperand1()->expressionString());
                     }
                 } else if (styleEnabled &&
-                           isOppositeExpression(mTokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), mSettings->library, false, true, &errorPath) &&
+                           isOppositeExpression(mTokenizer->isCPP(),
+                                                tok->astOperand1(),
+                                                tok->astOperand2(),
+                                                mSettings->library,
+                                                false,
+                                                true,
+                                                &errorPath) &&
                            !Token::Match(tok, "=|-|-=|/|/=") &&
                            isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand1())) {
                     oppositeExpressionError(tok, errorPath);
                 } else if (!Token::Match(tok, "[-/%]")) { // These operators are not associative
-                    if (styleEnabled && tok->astOperand2() && tok->str() == tok->astOperand1()->str() && isSameExpression(mTokenizer->isCPP(), true, tok->astOperand2(), tok->astOperand1()->astOperand2(), mSettings->library, true, true, &errorPath) && isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand2()))
+                    if (styleEnabled && tok->astOperand2() && tok->str() == tok->astOperand1()->str() &&
+                        isSameExpression(mTokenizer->isCPP(),
+                                         true,
+                                         tok->astOperand2(),
+                                         tok->astOperand1()->astOperand2(),
+                                         mSettings->library,
+                                         true,
+                                         followVar,
+                                         &errorPath) &&
+                        isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand2()))
                         duplicateExpressionError(tok->astOperand2(), tok->astOperand1()->astOperand2(), tok, errorPath);
                     else if (tok->astOperand2() && isConstExpression(tok->astOperand1(), mSettings->library, true, mTokenizer->isCPP())) {
                         const Token *ast1 = tok->astOperand1();

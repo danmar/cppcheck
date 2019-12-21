@@ -115,8 +115,8 @@ void valid_code(int argInt1, va_list valist_arg, int * parg)
 
     if (__builtin_expect(argInt1, 0)) {}
     if (__builtin_expect_with_probability(argInt1 + 1, 2, 0.5)) {}
-    if (__glibc_unlikely(argInt1)) {}
-    if (__glibc_likely(parg)) {}
+    if (__glibc_unlikely(argInt1 != 0)) {}
+    if (__glibc_likely(parg != NULL)) {}
     void *ax1 = __builtin_assume_aligned(parg, 16);
     printf("%p", ax1);
     void *ax2 = __builtin_assume_aligned(parg, 32, 8);

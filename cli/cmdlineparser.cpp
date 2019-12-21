@@ -165,7 +165,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->maxCtuDepth = std::atoi(argv[i] + 16);
 
             else if (std::strcmp(argv[i], "--experimental-fast") == 0)
-                // TODO: Reomve this flag!
+                // TODO: Remove this flag!
                 ;
 
             // (Experimental) exception handling inside cppcheck client
@@ -1141,6 +1141,10 @@ void CmdLineParser::printHelp()
               "    --suppressions-list=<file>\n"
               "                         Suppress warnings listed in the file. Each suppression\n"
               "                         is in the same format as <spec> above.\n"
+              "    --suppress-xml=<file>\n"
+              "                         Suppress warnings listed in a xml file. XML file should\n"
+              "                         follow the manual.pdf format specified in section.\n"
+              "                         `6.4 XML suppressions` .\n"
               "    --template='<text>'  Format the error messages. Available fields:\n"
               "                           {file}              file name\n"
               "                           {line}              line number\n"
@@ -1161,8 +1165,8 @@ void CmdLineParser::printHelp()
               "                         '{file}:{line},{severity},{id},{message}' or\n"
               "                         '{file}({line}):({severity}) {message}' or\n"
               "                         '{callstack} {message}'\n"
-              "                         Pre-defined templates: gcc, vs, edit, cppcheck1\n"
-              "                         The default format is 'gcc'.\n"
+              "                         Pre-defined templates: gcc (default), cppcheck1 (old default), vs, edit.\n"
+              // Note: template daca2 also exists, but is for internal use (cppcheck scripts).
               "    --template-location='<text>'\n"
               "                         Format error message location. If this is not provided\n"
               "                         then no extra location info is shown.\n"

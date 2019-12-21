@@ -139,6 +139,7 @@ private:
         TEST_CASE(duplicateExpression7);
         TEST_CASE(duplicateExpression8);
         TEST_CASE(duplicateExpression9); // #9320
+        TEST_CASE(duplicateExpression10); // #9485
         TEST_CASE(duplicateExpressionLoop);
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateExpressionTernary); // #6391
@@ -2766,6 +2767,20 @@ private:
               "    switch (a)\n"
               "    {\n"
               "    case 2:\n"
+              "        y = y | 3;\n"
+              "    case 3:\n"
+              "        y = y | 3;\n"
+              "        break;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Redundant bitwise operation on 'y' in 'switch' statement. 'break;' missing?\n", errout.str());
+
+        check("void foo(int a)\n"
+              "{\n"
+              "    int y = 1;\n"
+              "    switch (a)\n"
+              "    {\n"
+              "    case 2:\n"
               "        y |= 3;\n"
               "    default:\n"
               "        y |= 3;\n"
@@ -4639,6 +4654,17 @@ private:
               "  uint16_t x = 1000;\n"
               "  uint8_t y = x;\n"
               "  if (x != y) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateExpression10() {
+        // #9485
+        check("int f() {\n"
+              "   const int a = 1;\n"
+              "   const int b = a-1;\n"
+              "   const int c = a+1;\n"
+              "   return c;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -6603,6 +6629,19 @@ private:
               "     } while (false);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int num) {\n" // #9420 FP
+              "  int a = num;\n"
+              "  for (int b = 0; b < num; a = b++)\n"
+              "    dostuff(a);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int num) {\n" // #9420 FN
+              "  int a = num;\n"
+              "  for (int b = 0; b < num; a = b++);\n"
+              "}");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
     }
 
     void redundantVarAssignment_after_switch() {

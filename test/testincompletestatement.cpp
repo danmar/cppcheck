@@ -68,6 +68,7 @@ private:
         TEST_CASE(test4);
         TEST_CASE(test5);
         TEST_CASE(test6);
+        TEST_CASE(test7);
         TEST_CASE(test_numeric);
         TEST_CASE(void0); // #6327: No fp for statement "(void)0;"
         TEST_CASE(intarray);
@@ -150,18 +151,32 @@ private:
               "}");
     }
 
+    void test7() { // #9335
+        check("namespace { std::string S = \"\"; }\n"
+              "\n"
+              "class C {\n"
+              "public:\n"
+              "  explicit C(const std::string& s);\n"
+              "};\n"
+              "\n"
+              "void f() {\n"
+              "  for (C c(S); ; ) {\n"
+              "    (void)c;\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void test_numeric() {
-        check("struct P\n"
-              "{\n"
-              "double a;\n"
-              "double b;\n"
+        check("struct P {\n"
+              "    double a;\n"
+              "    double b;\n"
               "};\n"
-              "void f()\n"
-              "{\n"
-              "const P values[2] =\n"
-              "{\n"
-              "{ 346.1,114.1 }, { 347.1,111.1 }\n"
-              "};\n"
+              "void f() {\n"
+              "    const P values[2] =\n"
+              "    {\n"
+              "        { 346.1,114.1 }, { 347.1,111.1 }\n"
+              "    };\n"
               "}");
 
         ASSERT_EQUALS("", errout.str());
@@ -343,8 +358,8 @@ private:
               "}\n", true);
         ASSERT_EQUALS("[test.cpp:2]: (warning) Redundant code: Found a statement that begins with numeric constant.\n"
                       "[test.cpp:3]: (warning) Redundant code: Found a statement that begins with numeric constant.\n"
-                      "[test.cpp:4]: (warning) Redundant code: Found a statement that begins with string constant.\n"
-                      "[test.cpp:5]: (warning) Redundant code: Found a statement that begins with string constant.\n"
+                      "[test.cpp:4]: (warning) Redundant code: Found a statement that begins with numeric constant.\n"
+                      "[test.cpp:5]: (warning) Redundant code: Found a statement that begins with numeric constant.\n"
                       "[test.cpp:6]: (warning, inconclusive) Found suspicious operator '!'\n"
                       "[test.cpp:7]: (warning, inconclusive) Found suspicious operator '!'\n"
                       "[test.cpp:9]: (warning, inconclusive) Found suspicious operator '~'\n", errout.str());

@@ -77,6 +77,11 @@ unsigned char int31(int x)
 void env33()
 {
     system("chmod -x $(which chmod)"); // cert-ENV33-C
+    system(""); // cert-ENV33-C
+    system(NULL); // no-warning
+    system(0); // no-warning
+    const int *np = NULL;
+    system(np); // no-warning
     int system;
 }
 

@@ -597,10 +597,17 @@ private:
     }
 
     void checkComparisonOfFuncReturningBool2() {
-        check("void f(){\n"
+        check("void leftOfComparison(){\n"
               " int temp = 4;\n"
               " bool a = true;\n"
               " if(compare(temp) > a){\n"
+              "     printf(\"foo\");\n"
+              " }\n"
+              "}\n"
+              "void rightOfComparison(){\n"
+              " int temp = 4;\n"
+              " bool a = true;\n"
+              " if(a < compare(temp)){\n"
               "     printf(\"foo\");\n"
               " }\n"
               "}\n"
@@ -611,7 +618,8 @@ private:
               "    else\n"
               "     return false;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Comparison of a function returning boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Comparison of a function returning boolean value using relational (<, >, <= or >=) operator.\n"
+                      "[test.cpp:11]: (style) Comparison of a function returning boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
     }
 
     void checkComparisonOfFuncReturningBool3() {
@@ -848,6 +856,11 @@ private:
 
         check("void f(bool b) {\n"
               "    foo(bar, &b);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool b) {\n" // #9405
+              "    class C { void foo(bool &b) {} };\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

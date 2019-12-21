@@ -166,6 +166,9 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
         }
     }
 
+    if (tok->str() == "(" && !tok->scope()->isExecutable())
+        return false;
+
     const Token* parent = tok->astParent();
     if (!parent)
         return false;
@@ -321,6 +324,8 @@ void CheckNullPointer::nullPointerLinkedList()
 static bool isNullablePointer(const Token* tok, const Settings* settings)
 {
     if (!tok)
+        return false;
+    if (Token::simpleMatch(tok, "new") && tok->varId() == 0)
         return false;
     if (astIsPointer(tok))
         return true;

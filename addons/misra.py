@@ -124,7 +124,7 @@ def getEssentialTypeCategory(expr):
             return e1
         if expr.valueType:
             return expr.valueType.sign
-    if expr.valueType and expr.valueType.typeScope:
+    if expr.valueType and expr.valueType.typeScope and expr.valueType.typeScope.className:
         return "enum<" + expr.valueType.typeScope.className + ">"
     if expr.variable:
         typeToken = expr.variable.typeStartToken
@@ -256,6 +256,38 @@ def getForLoopExpressions(forToken):
             lpar.astOperand2.astOperand2.astOperand2]
 
 
+def getForLoopCounterVariables(forToken):
+    """ Return a set of Variable objects defined in ``for`` statement and
+    satisfy requirements to loop counter term from section 8.14 of MISRA
+    document.
+    """
+    if not forToken or forToken.str != 'for':
+        return None
+    tn = forToken.next
+    if not tn or tn.str != '(':
+        return None
+    vars_defined = set()
+    vars_exit = set()
+    vars_modified = set()
+    cur_clause = 1
+    te = tn.link
+    while tn and tn != te:
+        if tn.variable:
+            if cur_clause == 1 and tn.variable.nameToken == tn:
+                vars_defined.add(tn.variable)
+            elif cur_clause == 2:
+                vars_exit.add(tn.variable)
+            elif cur_clause == 3:
+                if tn.next and hasSideEffectsRecursive(tn.next):
+                    vars_modified.add(tn.variable)
+                elif tn.previous and tn.previous.str in ('++', '--'):
+                    vars_modified.add(tn.variable)
+        if tn.str == ';':
+            cur_clause += 1
+        tn = tn.next
+    return vars_defined & vars_exit & vars_modified
+
+
 def findCounterTokens(cond):
     if not cond:
         return []
@@ -304,7 +336,7 @@ def isFloatCounterInWhileLoop(whileToken):
 
 
 def hasSideEffectsRecursive(expr):
-    if not expr:
+    if not expr or expr.str == ';':
         return False
     if expr.str == '=' and expr.astOperand1 and expr.astOperand1.str == '[':
         prev = expr.astOperand1.previous
@@ -316,7 +348,7 @@ def hasSideEffectsRecursive(expr):
             e = e.astOperand1
         if e and e.str == '.':
             return False
-    if expr.str in ('++', '--', '='):
+    if expr.isAssignmentOp or expr.str in {'++', '--'}:
         return True
     # Todo: Check function calls
     return hasSideEffectsRecursive(expr.astOperand1) or hasSideEffectsRecursive(expr.astOperand2)
@@ -345,14 +377,7 @@ def isConstantExpression(expr):
 
 
 def isUnsignedInt(expr):
-    # TODO this function is very incomplete. use ValueType?
-    if not expr:
-        return False
-    if expr.isNumber:
-        return 'u' in expr.str or 'U' in expr.str
-    if expr.str in ('+', '-', '*', '/', '%'):
-        return isUnsignedInt(expr.astOperand1) or isUnsignedInt(expr.astOperand2)
-    return False
+    return expr and expr.valueType and expr.valueType.type in ('short', 'int') and expr.valueType.sign == 'unsigned'
 
 
 def getPrecedence(expr):
@@ -506,6 +531,28 @@ def isSimpleEscapeSequence(symbols):
     return symbols[1] in ("'", '"', '?', '\\', 'a', 'b', 'f', 'n', 'r', 't', 'v')
 
 
+def isTernaryOperator(token):
+    if not token:
+        return False
+    if not token.astOperand2:
+        return False
+    return token.str == '?' and token.astOperand2.str == ':'
+
+
+def getTernaryOperandsRecursive(token):
+    """Returns list of ternary operands including nested onces."""
+    if not isTernaryOperator(token):
+        return []
+    result = []
+    result += getTernaryOperandsRecursive(token.astOperand2.astOperand1)
+    if token.astOperand2.astOperand1 and not isTernaryOperator(token.astOperand2.astOperand1):
+        result += [token.astOperand2.astOperand1]
+    result += getTernaryOperandsRecursive(token.astOperand2.astOperand2)
+    if token.astOperand2.astOperand2 and not isTernaryOperator(token.astOperand2.astOperand2):
+        result += [token.astOperand2.astOperand2]
+    return result
+
+
 def hasNumericEscapeSequence(symbols):
     """Check that given string contains octal or hexadecimal escape sequences."""
     if '\\' not in symbols:
@@ -545,6 +592,14 @@ class Define:
         self.args = res.group(1).split(',')
         self.expansionList = res.group(2)
 
+    def __repr__(self):
+        attrs = ["args", "expansionList"]
+        return "{}({})".format(
+            "Define",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
+
+
 
 def getAddonRules():
     """Returns dict of MISRA rules handled by this addon."""
@@ -560,9 +615,9 @@ def getAddonRules():
 
 def getCppcheckRules():
     """Returns list of rules handled by cppcheck."""
-    return ['1.3', '2.1', '2.2', '2.4', '2.6', '8.3', '12.2', '13.2', '13.6',
-            '14.3', '17.5', '18.1', '18.2', '18.3', '18.6', '20.6',
-            '22.1', '22.2', '22.4', '22.6']
+    return ['1.3', '2.1', '2.2', '2.4', '2.6', '5.3', '8.3', '12.2',
+            '13.2', '13.6', '14.3', '17.5', '18.1', '18.2', '18.3',
+            '18.6', '20.6', '22.1', '22.2', '22.4', '22.6']
 
 
 def generateTable():
@@ -689,6 +744,13 @@ class MisraSettings(object):
         if args.no_summary:
             self.show_summary = False
 
+    def __repr__(self):
+        attrs = ["verify", "quiet", "show_summary", "verify"]
+        return "{}({})".format(
+            "MisraSettings",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
+
 
 class MisraChecker:
 
@@ -732,6 +794,15 @@ class MisraChecker:
         self.suppressionStats   = dict()
 
         self.stdversion = stdversion
+
+    def __repr__(self):
+        attrs = ["settings", "verify_expected", "verify_actual", "violations",
+                 "ruleTexts", "suppressedRules", "dumpfileSuppressions",
+                 "filePrefix", "suppressionStats", "stdversion"]
+        return "{}({})".format(
+            "MisraChecker",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
 
     def get_num_significant_naming_chars(self, cfg):
         if cfg.standards and cfg.standards.c == "c99":
@@ -888,61 +959,6 @@ class MisraChecker:
                         else:
                             self.reportError(scopename2.bodyStart, 5, 2)
 
-    def misra_5_3(self, data):
-        num_sign_chars = self.get_num_significant_naming_chars(data)
-        enum = []
-        scopeVars = {}
-        for var in data.variables:
-            if var.nameToken is not None:
-                if var.nameToken.scope not in scopeVars:
-                    scopeVars[var.nameToken.scope] = []
-                scopeVars[var.nameToken.scope].append(var)
-        for innerScope in data.scopes:
-            if innerScope.type == "Enum":
-                enum_token = innerScope.bodyStart.next
-                while enum_token != innerScope.bodyEnd:
-                    if enum_token.values and enum_token.isName:
-                        enum.append(enum_token.str)
-                    enum_token = enum_token.next
-                continue
-            if innerScope not in scopeVars:
-                continue
-            if innerScope.type == "Global":
-                continue
-            for innerVar in scopeVars[innerScope]:
-                outerScope = innerScope.nestedIn
-                while outerScope:
-                    if outerScope not in scopeVars:
-                        outerScope = outerScope.nestedIn
-                        continue
-                    for outerVar in scopeVars[outerScope]:
-                        if innerVar.nameToken.str[:num_sign_chars] == outerVar.nameToken.str[:num_sign_chars]:
-                            if outerVar.isArgument and outerScope.type == "Global" and not innerVar.isArgument:
-                                continue
-                            if int(innerVar.nameToken.linenr) > int(outerVar.nameToken.linenr):
-                                self.reportError(innerVar.nameToken, 5, 3)
-                            else:
-                                self.reportError(outerVar.nameToken, 5, 3)
-                    outerScope = outerScope.nestedIn
-                for scope in data.scopes:
-                    if scope.className and innerVar.nameToken.str[:num_sign_chars] == scope.className[:num_sign_chars]:
-                        if int(innerVar.nameToken.linenr) > int(scope.bodyStart.linenr):
-                            self.reportError(innerVar.nameToken, 5, 3)
-                        else:
-                            self.reportError(scope.bodyStart, 5, 3)
-
-                for e in enum:
-                    for scope in data.scopes:
-                        if scope.className and innerVar.nameToken.str[:num_sign_chars] == e[:num_sign_chars]:
-                            if int(innerVar.nameToken.linenr) > int(innerScope.bodyStart.linenr):
-                                self.reportError(innerVar.nameToken, 5, 3)
-                            else:
-                                self.reportError(innerScope.bodyStart, 5, 3)
-        for e in enum:
-            for scope in data.scopes:
-                if scope.className and scope.className[:num_sign_chars] == e[:num_sign_chars]:
-                    self.reportError(scope.bodyStart, 5, 3)
-
     def misra_5_4(self, data):
         num_sign_chars = self.get_num_significant_naming_chars(data)
         macro = {}
@@ -1055,15 +1071,25 @@ class MisraChecker:
         for token in data.tokenlist:
             if not token.isOp:
                 continue
-            e1 = getEssentialTypeCategory(token.astOperand1)
-            e2 = getEssentialTypeCategory(token.astOperand2)
-            if not e1 or not e2:
-                continue
-            if token.str in ['<<', '>>']:
-                if e1 != 'unsigned':
-                    self.reportError(token, 10, 1)
-                elif e2 != 'unsigned' and not token.astOperand2.isNumber:
-                    self.reportError(token, 10, 1)
+
+            for t1, t2 in itertools.product(
+                list(getTernaryOperandsRecursive(token.astOperand1) or [token.astOperand1]),
+                list(getTernaryOperandsRecursive(token.astOperand2) or [token.astOperand2]),
+            ):
+                e1 = getEssentialTypeCategory(t1)
+                e2 = getEssentialTypeCategory(t2)
+                if not e1 or not e2:
+                    continue
+                if token.str in ('<<', '>>'):
+                    if e1 != 'unsigned':
+                        self.reportError(token, 10, 1)
+                    elif e2 != 'unsigned' and not token.astOperand2.isNumber:
+                        self.reportError(token, 10, 1)
+                elif token.str in ('~', '&', '|', '^'):
+                    e1_et = getEssentialType(token.astOperand1)
+                    e2_et = getEssentialType(token.astOperand2)
+                    if e1_et == 'char' and e2_et == 'char':
+                        self.reportError(token, 10, 1)
 
     def misra_10_4(self, data):
         op = {'+', '-', '*', '/', '%', '&', '|', '^', '+=', '-=', ':'}
@@ -1350,14 +1376,92 @@ class MisraChecker:
             if maxval >= sz:
                 self.reportError(token, 12, 2)
 
-    def misra_12_3(self, data):
+    def misra_12_3(self, data, rawTokens, filename):
+        # We need an additional check for closing braces using in
+        # initialization lists and function calls, e.g.:
+        # struct S a = {1, 2, 3}, b, c = foo(1, 2), d;
+        #                       ^                 ^
+        end_tokens_map = {}
+
+        skip_to = None
         for token in data.tokenlist:
-            if token.str != ',' or token.scope.type == 'Enum' or \
-                    token.scope.type == 'Class' or token.scope.type == 'Global':
+            # Skip tokens in function call body
+            if skip_to:
+                if token == skip_to:
+                    skip_to = None
+                else:
+                    continue
+            if token.function and token.next and token.next.str == "(":
+                skip_to = token.next.link
+
+            if token.scope.type in ('Enum', 'Class', 'Struct', 'Global'):
                 continue
-            if token.astParent and token.astParent.str in ['(', ',', '{']:
+            # Save end tokens from function calls in initialization
+            if simpleMatch(token, ') ;'):
+                if (token.isExpandedMacro):
+                    end_tokens_map.setdefault(token.next.linenr, set())
+                    end_tokens_map[token.linenr].add(token.next.column)
+                else:
+                    end_tokens_map.setdefault(token.linenr, set())
+                    end_tokens_map[token.linenr].add(token.column)
+            if token.str != ',':
                 continue
+            if token.astParent:
+                if token.astParent.str in ('(', '{'):
+                    end_token = token.astParent.link
+                    if end_token:
+                        end_tokens_map.setdefault(end_token.linenr, set())
+                        end_tokens_map[end_token.linenr].add(end_token.column)
+                    continue
+                elif token.astParent.str == ',':
+                    continue
             self.reportError(token, 12, 3)
+
+        # Cppcheck performs some simplifications in variables declaration code:
+        # int a, b, c;
+        # Will be reresented in dump file as:
+        # int a; int b; int c;
+        name_tokens_map = {}
+        for v in data.variables:
+            if v.isArgument:
+                continue
+            nt = v.nameToken
+            if nt and nt.scope and nt.scope.type not in ('Enum', 'Class', 'Struct'):
+                name_tokens_map.setdefault(nt.linenr, set())
+                name_tokens_map[nt.linenr].add(nt.column)
+        if not name_tokens_map:
+            return
+
+        # Select tokens to check
+        maybe_map = {}
+        for linenr in set(name_tokens_map.keys()) | set(end_tokens_map.keys()):
+            maybe_map[linenr] = name_tokens_map.get(linenr, set())
+            maybe_map[linenr] |= end_tokens_map.get(linenr, set())
+
+        # Check variables declaration code in raw tokens to distinguish ';' and
+        # ',' symbols.
+        STATE_SKIP = 0
+        STATE_CHECK = 1
+        state = STATE_SKIP
+        cur_line = min(maybe_map)
+        for tok in rawTokens:
+            if tok.linenr in maybe_map and tok.column in maybe_map[tok.linenr]:
+                if tok.linenr in end_tokens_map and tok.column in end_tokens_map[tok.linenr]:
+                    if tok.str == ',' or (tok.next and tok.next.str == ','):
+                        self.reportError(tok, 12, 3)
+                        end_tokens_map[tok.linenr].remove(tok.column)
+                state = STATE_CHECK
+                cur_line = tok.linenr
+            if tok.str in ('(', ';', '{'):
+                state = STATE_SKIP
+                if tok.linenr > cur_line:
+                    maybe_map.pop(cur_line)
+                    if not maybe_map:
+                        break
+                    cur_line = min(maybe_map)
+            if state == STATE_CHECK and tok.str == ',':
+                self.reportError(tok, 12, 3)
+
 
     def misra_12_4(self, data):
         if typeBits['INT'] == 16:
@@ -1368,9 +1472,9 @@ class MisraChecker:
             return
 
         for token in data.tokenlist:
-            if (not isConstantExpression(token)) or (not isUnsignedInt(token)):
-                continue
             if not token.values:
+                continue
+            if (not isConstantExpression(token)) or (not isUnsignedInt(token)):
                 continue
             for value in token.values:
                 if value.intvalue < 0 or value.intvalue > max_uint:
@@ -1382,8 +1486,27 @@ class MisraChecker:
             if not simpleMatch(token, '= {'):
                 continue
             init = token.next
-            if hasSideEffectsRecursive(init):
-                self.reportError(init, 13, 1)
+            end = init.link
+            if not end:
+                continue  # syntax is broken
+
+            tn = init
+            while tn and tn != end:
+                if tn.str == '[' and tn.link:
+                    tn = tn.link
+                    if tn and tn.next and tn.next.str == '=':
+                        tn = tn.next.next
+                        continue
+                    else:
+                        break
+                if tn.str == '.' and tn.next and tn.next.isName:
+                    tn = tn.next
+                    if tn.next and tn.next.str == '=':
+                        tn = tn.next.next
+                    continue
+                if tn.str in {'++', '--'} or tn.isAssignmentOp:
+                    self.reportError(init, 13, 1)
+                tn = tn.next
 
     def misra_13_3(self, data):
         for token in data.tokenlist:
@@ -1438,6 +1561,28 @@ class MisraChecker:
                 self.reportError(token, 14, 2)
             elif hasSideEffectsRecursive(expressions[1]):
                 self.reportError(token, 14, 2)
+
+            # Inspect modification of loop counter in loop body
+            counter_vars = getForLoopCounterVariables(token)
+            outer_scope = token.scope
+            body_scope = None
+            tn = token.next
+            while tn and tn.next != outer_scope.bodyEnd:
+                if tn.scope and tn.scope.nestedIn == outer_scope:
+                    body_scope = tn.scope
+                    break
+                tn = tn.next
+            if not body_scope:
+                continue
+            tn = body_scope.bodyStart
+            while tn and tn != body_scope.bodyEnd:
+                if tn.variable and tn.variable in counter_vars:
+                    if tn.next:
+                        # TODO: Check modifications in function calls
+                        if hasSideEffectsRecursive(tn.next):
+                            self.reportError(tn, 14, 2)
+                tn = tn.next
+
 
     def misra_14_4(self, data):
         for token in data.tokenlist:
@@ -1865,21 +2010,23 @@ class MisraChecker:
                     pos = exp.find(arg, pos)
                     if pos < 0:
                         break
+                    # is 'arg' used at position pos
                     pos1 = pos - 1
                     pos2 = pos + len(arg)
                     pos = pos2
-                    if isalnum(exp[pos1]) or exp[pos1] == '_':
+                    if pos1 >= 0 and (isalnum(exp[pos1]) or exp[pos1] == '_'):
                         continue
-                    if isalnum(exp[pos2]) or exp[pos2] == '_':
+                    if pos2 < len(exp) and (isalnum(exp[pos2]) or exp[pos2] == '_'):
                         continue
-                    while exp[pos1] == ' ':
+
+                    while pos1 >= 0 and exp[pos1] == ' ':
                         pos1 -= 1
-                    if exp[pos1] != '(' and exp[pos1] != '[':
+                    if exp[pos1] not in '([#,':
                         self.reportError(directive, 20, 7)
                         break
-                    while exp[pos2] == ' ':
+                    while pos2 < len(exp) and exp[pos2] == ' ':
                         pos2 += 1
-                    if exp[pos2] != ')' and exp[pos2] != ']':
+                    if pos2 < len(exp) and exp[pos2] not in ')]#,':
                         self.reportError(directive, 20, 7)
                         break
 
@@ -2412,18 +2559,19 @@ class MisraChecker:
         if not self.settings.quiet:
             print(*args, **kwargs)
 
-    def executeCheck(self, rule_num, check_function, arg):
+    def executeCheck(self, rule_num, check_function, *args):
         """Execute check function for a single MISRA rule.
 
         :param rule_num: Number of rule in hundreds format
         :param check_function: Check function to execute
-        :param arg: Check function argument
+        :param args: Check function arguments
         """
         if not self.isRuleGloballySuppressed(rule_num):
-            check_function(arg)
+            check_function(*args)
 
     def parseDump(self, dumpfile):
-        data = cppcheckdata.CppcheckData(dumpfile)
+        filename = '.'.join(dumpfile.split('.')[:-1])
+        data = cppcheckdata.parsedump(dumpfile)
 
         self.dumpfileSuppressions = data.suppressions
         self.parseSuppressions()
@@ -2458,7 +2606,6 @@ class MisraChecker:
                 self.executeCheck(402, self.misra_4_2, data.rawTokens)
             self.executeCheck(501, self.misra_5_1, cfg)
             self.executeCheck(502, self.misra_5_2, cfg)
-            self.executeCheck(503, self.misra_5_3, cfg)
             self.executeCheck(504, self.misra_5_4, cfg)
             self.executeCheck(505, self.misra_5_5, cfg)
             # 6.1 require updates in Cppcheck (type info for bitfields are lost)
@@ -2486,7 +2633,7 @@ class MisraChecker:
                 self.executeCheck(1201, self.misra_12_1_sizeof, data.rawTokens)
             self.executeCheck(1201, self.misra_12_1, cfg)
             self.executeCheck(1202, self.misra_12_2, cfg)
-            self.executeCheck(1203, self.misra_12_3, cfg)
+            self.executeCheck(1203, self.misra_12_3, cfg, data.rawTokens, filename)
             self.executeCheck(1204, self.misra_12_4, cfg)
             self.executeCheck(1301, self.misra_13_1, cfg)
             self.executeCheck(1303, self.misra_13_3, cfg)
