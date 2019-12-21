@@ -25,10 +25,11 @@
 #include <cctype>
 #include <cstddef>
 #include <string>
+#include <vector>
 
 inline void splitString(const std::string &str, std::vector<std::string> &stringList, char delimeter)
 {
-    size_t cur, prev = 0;
+    std::size_t cur, prev = 0;
     cur = str.find(delimeter);
     if (cur != std::string::npos) {
         while (cur != std::string::npos) {
