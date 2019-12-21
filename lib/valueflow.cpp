@@ -3923,7 +3923,8 @@ static bool isStdMoveOrStdForwarded(Token * tok, ValueFlow::Value::MoveKind * mo
         return false;
     if (variableToken->strAt(2) == ".") // Only partially moved
         return false;
-
+    if (variableToken->valueType() && variableToken->valueType()->type >= ValueType::Type::VOID)
+        return false;
     if (moveKind != nullptr)
         *moveKind = kind;
     if (varTok != nullptr)
