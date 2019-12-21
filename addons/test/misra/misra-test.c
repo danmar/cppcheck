@@ -234,6 +234,32 @@ void misra_10_1(uint8_t u, char c1, char c2) {
   MISRA_10_1_CHAR cd3;
   cd3 = cd1 & cd2; // 10.1
 }
+void misra_10_1_ternary()
+{
+    int a;
+    uint8_t ui8;
+    uint16_t ui16;
+    int8_t i8;
+    int16_t i16;
+
+    a = ui16 << ui16;
+    a = ui16 << (get_bool(42) ? ui16 : ui16);
+    a = ui16 << (get_bool(42) ? ui16 : (get_bool(34) ? ui16 : ui16)); // 10.4
+    a = ui16 << (get_bool(42) ? (get_bool(34) ? ui16 : ui16) : ui16); // 10.4
+    a = ui16 << (get_bool(42) ? i16 : (get_bool(34) ? ui16 : ui16)); // 10.1
+    a = ui16 << (get_bool(42) ? (get_bool(34) ? ui16 : i16) : ui16); // 10.1 10.4
+    a = ui16 << (get_bool(42) ? (get_bool(34) ? ui16 : ui16) : i16); // 10.1
+    a = ui16 << (get_bool(42) ? (get_bool(34) ? ui16 : ui8) : ui8); // 10.4
+    a = ui16 << (get_bool(42) ? (get_bool(34) ? i16 : ui8) : ui8); // 10.1 10.4
+    a = (get_bool(42) ? (get_bool(34) ? ui16 : ui8) : ui8) << ui16; // 10.4
+    a = (get_bool(42) ? (get_bool(34) ? i16 : ui8) : ui8) << ui16; // 10.1 10.4
+    a = (get_bool(42) ? (get_bool(34) ? ui16 : i8) : ui8) << ui16; // 10.1 10.4
+    a = (get_bool(42) ? (get_bool(34) ? ui16 : ui8) : i8) << ui16; // 10.1
+    a = (get_bool(42) ? (get_bool(34) ? ui16 : ui8) : ui8) << (get_bool(19) ? ui16 : ui8); // 10.4
+    a = (get_bool(42) ? (get_bool(34) ? i16 : ui8) : ui8) << (get_bool(19) ? ui16 : ui8); // 10.1 10.4
+    a = (get_bool(42) ? (get_bool(34) ? ui16 : ui8) : ui8) << (get_bool(19) ? i16 : ui8); // 10.1 10.4
+
+}
 
 void misra_10_4(u32 x, s32 y) {
   z = x + 3; // 10.4
