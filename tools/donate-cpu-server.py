@@ -22,9 +22,9 @@ import operator
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.0"
+SERVER_VERSION = "1.3.1"
 
-OLD_VERSION = '1.89'
+OLD_VERSION = '1.90'
 
 
 # Set up logging
