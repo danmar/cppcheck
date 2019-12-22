@@ -1513,6 +1513,8 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
     std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> divByZero = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
         if (!tok->astParent() || !std::strchr("/%", tok->astParent()->str()[0]))
             return;
+        if (tok->hasKnownIntValue() && tok->getKnownIntValue() != 0)
+            return;
         if (tok->astParent()->astOperand2() == tok && value.isEqual(dataBase, 0)) {
             dataBase->addError(tok->linenr());
             std::list<const Token*> callstack{tok->astParent()};
