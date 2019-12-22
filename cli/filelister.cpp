@@ -43,11 +43,16 @@
 static BOOL myIsDirectory(const std::string& path)
 {
 #ifdef __BORLANDC__
-    return (GetFileAttributes(path.c_str()) & FILE_ATTRIBUTE_DIRECTORY);
+    if (GetFileAttributes(path.c_str()) & FILE_ATTRIBUTE_DIRECTORY))
+        return TRUE;
 #else
 // See http://msdn.microsoft.com/en-us/library/bb773621(VS.85).aspx
-    return PathIsDirectoryA(path.c_str());
+    if (PathIsDirectoryA(path.c_str()))
+        return TRUE;
 #endif
+    else  if (endsWith(path, "*.cpp", 5) || endsWith(path, "*.c", 3))
+        return TRUE;
+    return FALSE;
 }
 
 static HANDLE myFindFirstFile(const std::string& path, LPWIN32_FIND_DATAA findData)
@@ -77,7 +82,6 @@ void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, co
 void FileLister::addFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored)
 {
     const std::string cleanedPath = Path::toNativeSeparators(path);
-
     // basedir is the base directory which is used to form pathnames.
     // It always has a trailing backslash available for concatenation.
     std::string basedir;
@@ -95,6 +99,17 @@ void FileLister::addFiles(std::map<std::string, std::size_t> &files, const std::
             searchPattern += '*';
             basedir = cleanedPath;
             break;
+        case 'c':   // ends with *.c
+        case 'p': { // ends with *.cpp
+            const std::string::size_type pos = searchPattern.find_last_of('\\');
+            if (std::string::npos != pos)
+            {
+                searchPattern = searchPattern.substr(0, pos)+'\\';
+                basedir = searchPattern;
+                searchPattern += "*";
+            }
+            break;
+        }
         case '*':
             basedir = cleanedPath.substr(0, cleanedPath.length() - 1);
             break;
