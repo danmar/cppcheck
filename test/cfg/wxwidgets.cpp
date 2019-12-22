@@ -24,6 +24,13 @@
 #include <wx/stattext.h>
 #include <wx/sizer.h>
 #include <wx/string.h>
+#include <wx/textctrl.h>
+
+wxTextCtrlHitTestResult nullPointer_wxTextCtrl_HitTest(wxTextCtrl &txtCtrl, const wxPoint &pos)
+{
+    // no nullPointer-warning is expected
+    return txtCtrl.HitTest(pos, NULL);
+}
 
 void validCode()
 {
