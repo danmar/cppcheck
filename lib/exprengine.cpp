@@ -68,7 +68,7 @@ static ExprEngine::ValuePtr getValueRangeFromValueType(const std::string &name, 
 namespace {
     class TrackExecution {
     public:
-        TrackExecution() : mDataIndex(0) {}
+        TrackExecution() : mDataIndex(0), mAbortLine(-1) {}
         std::map<const Token *, std::vector<std::string>> map;
         int getNewDataIndex() {
             return mDataIndex++;
@@ -111,9 +111,48 @@ namespace {
                 }
             }
         }
+
+        void report(std::ostream &out, const Scope *functionScope) {
+            int linenr = -1;
+            std::string code;
+            for (const Token *tok = functionScope->bodyStart->next(); tok != functionScope->bodyEnd; tok = tok->next()) {
+                if (tok->linenr() > linenr) {
+                    if (!code.empty())
+                        out << getStatus(linenr) << " " << code << std::endl;
+                    linenr = tok->linenr();
+                    code.clear();
+                }
+                code += " " + tok->str();
+            }
+
+            out << getStatus(linenr) << " " << code << std::endl;
+        }
+
+        void setAbortLine(int linenr) {
+            if (linenr > 0 && (mAbortLine == -1 || linenr < mAbortLine))
+                mAbortLine = linenr;
+        }
+
+        void addError(int linenr) {
+            mErrors.insert(linenr);
+        }
+
+        bool isAllOk() const {
+            return mErrors.empty();
+        }
     private:
+        const char *getStatus(int linenr) const {
+            if (mErrors.find(linenr) != mErrors.end())
+                return "ERROR";
+            if (mAbortLine > 0 && linenr >= mAbortLine)
+                return "--";
+            return "ok";
+        }
+
         int mDataIndex;
+        int mAbortLine;
         std::set<std::string> mSymbols;
+        std::set<int> mErrors;
     };
 
     class Data : public ExprEngine::DataBase {
@@ -131,6 +170,10 @@ namespace {
         const Tokenizer * const tokenizer;
         const std::vector<ExprEngine::Callback> &callbacks;
         std::vector<ExprEngine::ValuePtr> constraints;
+
+        void addError(int linenr) OVERRIDE {
+            mTrackExecution->addError(linenr);
+        }
 
         void assignValue(const Token *tok, unsigned int varId, ExprEngine::ValuePtr value) {
             if (varId == 0)
@@ -1446,12 +1489,23 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
     for (const Variable &arg : function->argumentList)
         data.assignValue(functionScope->bodyStart, arg.declarationId(), createVariableValue(arg, data));
 
-    execute(functionScope->bodyStart, functionScope->bodyEnd, data);
+    try {
+        execute(functionScope->bodyStart, functionScope->bodyEnd, data);
+    } catch (VerifyException &e) {
+        trackExecution.setAbortLine(e.tok->linenr());
+        auto bailoutValue = std::make_shared<BailoutValue>();
+        for (const Token *tok = e.tok; tok != functionScope->bodyEnd; tok = tok->next())
+            call(callbacks, tok, bailoutValue, &data);
+    }
 
     if (settings->debugVerification) {
         // TODO generate better output!!
         trackExecution.print(trace);
     }
+
+    // Write a verification report
+    //if (!trackExecution.isAllOk())
+    //    trackExecution.report(trace, functionScope);
 }
 
 void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings)
@@ -1460,6 +1514,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
         if (!tok->astParent() || !std::strchr("/%", tok->astParent()->str()[0]))
             return;
         if (tok->astParent()->astOperand2() == tok && value.isEqual(dataBase, 0)) {
+            dataBase->addError(tok->linenr());
             std::list<const Token*> callstack{tok->astParent()};
             ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationDivByZero", "There is division, cannot determine that there can't be a division by zero.", CWE(369), false);
             errorLogger->reportErr(errmsg);

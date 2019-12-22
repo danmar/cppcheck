@@ -64,7 +64,8 @@ namespace ExprEngine {
         StructValue,
         AddressOfValue,
         BinOpResult,
-        IntegerTruncation
+        IntegerTruncation,
+        BailoutValue
     };
 
     class Value;
@@ -75,6 +76,9 @@ namespace ExprEngine {
         explicit DataBase(const Settings *settings) : settings(settings) {}
         virtual std::string getNewSymbolName() = 0;
         const Settings * const settings;
+        virtual void addError(int linenr) {
+            (void)linenr;
+        }
     };
 
     class Value {
@@ -278,6 +282,14 @@ namespace ExprEngine {
         ExprEngine::ValuePtr inputValue;
         int bits;
         char sign;
+    };
+
+    class BailoutValue : public Value {
+    public:
+        BailoutValue() : Value("bailout", ValueType::BailoutValue) {}
+        bool isEqual(DataBase * /*dataBase*/, int /*value*/) const {
+            return true;
+        }
     };
 
     typedef std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> Callback;
