@@ -531,6 +531,28 @@ def isSimpleEscapeSequence(symbols):
     return symbols[1] in ("'", '"', '?', '\\', 'a', 'b', 'f', 'n', 'r', 't', 'v')
 
 
+def isTernaryOperator(token):
+    if not token:
+        return False
+    if not token.astOperand2:
+        return False
+    return token.str == '?' and token.astOperand2.str == ':'
+
+
+def getTernaryOperandsRecursive(token):
+    """Returns list of ternary operands including nested onces."""
+    if not isTernaryOperator(token):
+        return []
+    result = []
+    result += getTernaryOperandsRecursive(token.astOperand2.astOperand1)
+    if token.astOperand2.astOperand1 and not isTernaryOperator(token.astOperand2.astOperand1):
+        result += [token.astOperand2.astOperand1]
+    result += getTernaryOperandsRecursive(token.astOperand2.astOperand2)
+    if token.astOperand2.astOperand2 and not isTernaryOperator(token.astOperand2.astOperand2):
+        result += [token.astOperand2.astOperand2]
+    return result
+
+
 def hasNumericEscapeSequence(symbols):
     """Check that given string contains octal or hexadecimal escape sequences."""
     if '\\' not in symbols:
@@ -1049,20 +1071,25 @@ class MisraChecker:
         for token in data.tokenlist:
             if not token.isOp:
                 continue
-            e1 = getEssentialTypeCategory(token.astOperand1)
-            e2 = getEssentialTypeCategory(token.astOperand2)
-            if not e1 or not e2:
-                continue
-            if token.str in ('<<', '>>'):
-                if e1 != 'unsigned':
-                    self.reportError(token, 10, 1)
-                elif e2 != 'unsigned' and not token.astOperand2.isNumber:
-                    self.reportError(token, 10, 1)
-            elif token.str in ('~', '&', '|', '^'):
-                e1_et = getEssentialType(token.astOperand1)
-                e2_et = getEssentialType(token.astOperand2)
-                if e1_et == 'char' and e2_et == 'char':
-                    self.reportError(token, 10, 1)
+
+            for t1, t2 in itertools.product(
+                list(getTernaryOperandsRecursive(token.astOperand1) or [token.astOperand1]),
+                list(getTernaryOperandsRecursive(token.astOperand2) or [token.astOperand2]),
+            ):
+                e1 = getEssentialTypeCategory(t1)
+                e2 = getEssentialTypeCategory(t2)
+                if not e1 or not e2:
+                    continue
+                if token.str in ('<<', '>>'):
+                    if e1 != 'unsigned':
+                        self.reportError(token, 10, 1)
+                    elif e2 != 'unsigned' and not token.astOperand2.isNumber:
+                        self.reportError(token, 10, 1)
+                elif token.str in ('~', '&', '|', '^'):
+                    e1_et = getEssentialType(token.astOperand1)
+                    e2_et = getEssentialType(token.astOperand2)
+                    if e1_et == 'char' and e2_et == 'char':
+                        self.reportError(token, 10, 1)
 
     def misra_10_4(self, data):
         op = {'+', '-', '*', '/', '%', '&', '|', '^', '+=', '-=', ':'}

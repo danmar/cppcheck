@@ -162,22 +162,7 @@ protected:
             reportError(errmsg);
     }
 
-    ErrorPath getErrorPath(const Token *errtok, const ValueFlow::Value *value, const std::string &bug) const {
-        ErrorPath errorPath;
-        if (!value) {
-            errorPath.emplace_back(errtok,bug);
-        } else if (mSettings->verbose || mSettings->xml || !mSettings->templateLocation.empty()) {
-            errorPath = value->errorPath;
-            errorPath.emplace_back(errtok,bug);
-        } else {
-            if (value->condition)
-                errorPath.emplace_back(value->condition, "condition '" + value->condition->expressionString() + "'");
-            //else if (!value->isKnown() || value->defaultArg)
-            //    errorPath = value->callstack;
-            errorPath.emplace_back(errtok,bug);
-        }
-        return errorPath;
-    }
+    ErrorPath getErrorPath(const Token* errtok, const ValueFlow::Value* value, const std::string& bug) const;
 
     /**
      * Use WRONG_DATA in checkers when you check for wrong data. That

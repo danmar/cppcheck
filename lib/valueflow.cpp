@@ -3923,7 +3923,8 @@ static bool isStdMoveOrStdForwarded(Token * tok, ValueFlow::Value::MoveKind * mo
         return false;
     if (variableToken->strAt(2) == ".") // Only partially moved
         return false;
-
+    if (variableToken->valueType() && variableToken->valueType()->type >= ValueType::Type::VOID)
+        return false;
     if (moveKind != nullptr)
         *moveKind = kind;
     if (varTok != nullptr)
@@ -5779,6 +5780,8 @@ static void valueFlowContainerAfterCondition(TokenList *tokenlist,
 static void valueFlowFwdAnalysis(const TokenList *tokenlist, const Settings *settings)
 {
     for (const Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+        if (Token::simpleMatch(tok, "for ("))
+            tok = tok->linkAt(1);
         if (tok->str() != "=" || !tok->astOperand1() || !tok->astOperand2())
             continue;
         if (!tok->scope()->isExecutable())

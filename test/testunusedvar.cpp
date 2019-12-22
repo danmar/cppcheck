@@ -161,6 +161,7 @@ private:
         TEST_CASE(localvarStruct5);
         TEST_CASE(localvarStruct6);
         TEST_CASE(localvarStruct7);
+        TEST_CASE(localvarStruct8);
         TEST_CASE(localvarStructArray);
 
         TEST_CASE(localvarOp);          // Usage with arithmetic operators
@@ -3441,6 +3442,25 @@ private:
                               "  int &a = ab.a;\n"
                               "  ab.a = 123;\n"
                               "  dostuff(a);\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarStruct8() {
+        functionVariableUsage("struct s {\n"
+                              "     union {\n"
+                              "         struct {\n"
+                              "             int fld1 : 16;\n"
+                              "             int fld2 : 16;\n"
+                              "         };\n"
+                              "         int raw;\n"
+                              "     };\n"
+                              "};\n"
+                              "\n"
+                              "void foo() {\n"
+                              "      struct s test;\n"
+                              "      test.raw = 0x100;\n"
+                              "      dostuff(test.fld1, test.fld2);\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }

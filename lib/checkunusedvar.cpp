@@ -1221,6 +1221,10 @@ void CheckUnusedVar::checkFunctionVariableUsage()
 
             const Token *expr = varDecl ? varDecl : tok->astOperand1();
 
+            // Is variable in lhs a union member?
+            if (tok->previous() && tok->previous()->variable() && tok->previous()->variable()->nameToken()->scope()->type == Scope::eUnion)
+                continue;
+
             FwdAnalysis fwdAnalysis(mTokenizer->isCPP(), mSettings->library);
             if (fwdAnalysis.unusedValue(expr, start, scope->bodyEnd)) {
                 if (!bailoutTypeName.empty() && bailoutTypeName != "auto") {

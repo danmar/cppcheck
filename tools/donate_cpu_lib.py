@@ -13,7 +13,7 @@ import tarfile
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.40"
+CLIENT_VERSION = "1.1.41"
 
 
 def check_requirements():
@@ -446,24 +446,24 @@ def upload_info(package, info_output, server_address):
 def get_libraries():
     libraries = ['posix', 'gnu']
     library_includes = {'boost': ['<boost/'],
-                       # 'cairo': ['<cairo.h>'], <= enable after release of version 1.90
+                       'cairo': ['<cairo.h>'],
                        'cppunit': ['<cppunit/'],
                        'googletest': ['<gtest/gtest.h>'],
                        'gtk': ['<gtk/gtk.h>', '<glib.h>', '<glib/', '<gnome.h>'],
-                       # 'kde': ['<KGlobal>', '<KApplication>', '<KDE/'], <= enable after release of version 1.90
+                       'kde': ['<KGlobal>', '<KApplication>', '<KDE/'],
                        'libcerror': ['<libcerror.h>'],
                        'libcurl': ['<curl/curl.h>'],
-                       # 'libsigc++': ['<sigc++/'], <= enable after release of version 1.90
+                       'libsigc++': ['<sigc++/'],
                        'lua': ['<lua.h>', '"lua.h"'],
-                       # 'mfc': ['<afx.h>', '<afxwin.h>', '<afxext.h>'], <= enable after release of version 1.90
-                       # 'microsoft_atl': ['<atlbase.h>'], <= enable after release of version 1.90
+                       'mfc': ['<afx.h>', '<afxwin.h>', '<afxext.h>'],
+                       'microsoft_atl': ['<atlbase.h>'],
                        'microsoft_sal': ['<sal.h>'],
                        'motif': ['<X11/', '<Xm/'],
                        'nspr': ['<prtypes.h>', '"prtypes.h"'],
-                       # 'opencv2': ['<opencv2/', '"opencv2/'], <= enable after release of version 1.90
+                       'opencv2': ['<opencv2/', '"opencv2/'],
                        'opengl': ['<GL/gl.h>', '<GL/glu.h>', '<GL/glut.h>'],
                        'openmp': ['<omp.h>'],
-                       # 'openssl': ['<openssl/'], <= enable after release of version 1.90
+                       'openssl': ['<openssl/'],
                        'python': ['<Python.h>', '"Python.h"'],
                        'qt': ['<QApplication>', '<QList>', '<qlist.h>', '<QObject>', '<QString>', '<qstring.h>', '<QWidget>', '<QtWidgets>', '<QtGui'],
                        'ruby': ['<ruby.h>', '<ruby/', '"ruby.h"'],

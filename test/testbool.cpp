@@ -858,6 +858,11 @@ private:
               "    foo(bar, &b);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool b) {\n" // #9405
+              "    class C { void foo(bool &b) {} };\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void incrementBoolean() {
