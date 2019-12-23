@@ -357,18 +357,18 @@ private:
     void iterator1() {
         check("void f()\n"
               "{\n"
-              "    list<int> l1;\n"
-              "    list<int> l2;\n"
-              "    for (list<int>::iterator it = l1.begin(); it != l2.end(); ++it)\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int> l2;\n"
+              "    for (std::list<int>::iterator it = l1.begin(); it != l2.end(); ++it)\n"
               "    { }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:5]: (error) Same iterator is used with different containers 'l1' and 'l2'.\n", errout.str());
 
         check("void f()\n"
               "{\n"
-              "    list<int> l1;\n"
-              "    list<int> l2;\n"
-              "    for (list<int>::iterator it = l1.begin(); l2.end() != it; ++it)\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int> l2;\n"
+              "    for (std::list<int>::iterator it = l1.begin(); l2.end() != it; ++it)\n"
               "    { }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:5]: (error) Same iterator is used with different containers 'l2' and 'l1'.\n", errout.str());
@@ -385,9 +385,9 @@ private:
         // Same check with reverse iterator
         check("void f()\n"
               "{\n"
-              "    list<int> l1;\n"
-              "    list<int> l2;\n"
-              "    for (list<int>::const_reverse_iterator it = l1.rbegin(); it != l2.rend(); ++it)\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int> l2;\n"
+              "    for (std::list<int>::const_reverse_iterator it = l1.rbegin(); it != l2.rend(); ++it)\n"
               "    { }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:5]: (error) Same iterator is used with different containers 'l1' and 'l2'.\n", errout.str());
@@ -396,9 +396,9 @@ private:
     void iterator2() {
         check("void foo()\n"
               "{\n"
-              "    list<int> l1;\n"
-              "    list<int> l2;\n"
-              "    list<int>::iterator it = l1.begin();\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int> l2;\n"
+              "    std::list<int>::iterator it = l1.begin();\n"
               "    while (it != l2.end())\n"
               "    {\n"
               "        ++it;\n"
@@ -408,9 +408,9 @@ private:
 
         check("void foo()\n"
               "{\n"
-              "    list<int> l1;\n"
-              "    list<int> l2;\n"
-              "    list<int>::iterator it = l1.begin();\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int> l2;\n"
+              "    std::list<int>::iterator it = l1.begin();\n"
               "    while (l2.end() != it)\n"
               "    {\n"
               "        ++it;\n"
@@ -422,42 +422,42 @@ private:
     void iterator3() {
         check("void foo()\n"
               "{\n"
-              "    list<int> l1;\n"
-              "    list<int> l2;\n"
-              "    list<int>::iterator it = l1.begin();\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int> l2;\n"
+              "    std::list<int>::iterator it = l1.begin();\n"
               "    l2.insert(it, 0);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:6]: (error) Same iterator is used with different containers 'l1' and 'l2'.\n", errout.str());
 
         check("void foo() {\n" // #5803
-              "    list<int> l1;\n"
-              "    list<int> l2;\n"
-              "    list<int>::iterator it = l1.begin();\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int> l2;\n"
+              "    std::list<int>::iterator it = l1.begin();\n"
               "    l2.insert(it, l1.end());\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void foo() {\n" // #7658
-              "    list<int> l1;\n"
-              "    list<int> l2;\n"
-              "    list<int>::iterator it = l1.begin();\n"
-              "    list<int>::iterator end = l1.end();\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int> l2;\n"
+              "    std::list<int>::iterator it = l1.begin();\n"
+              "    std::list<int>::iterator end = l1.end();\n"
               "    l2.insert(it, end);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         // only warn for insert when there are preciself 2 arguments.
         check("void foo() {\n"
-              "    list<int> l1;\n"
-              "    list<int> l2;\n"
-              "    list<int>::iterator it = l1.begin();\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int> l2;\n"
+              "    std::list<int>::iterator it = l1.begin();\n"
               "    l2.insert(it);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
         check("void foo() {\n"
-              "    list<int> l1;\n"
-              "    list<int> l2;\n"
-              "    list<int>::iterator it = l1.begin();\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int> l2;\n"
+              "    std::list<int>::iterator it = l1.begin();\n"
               "    l2.insert(it,0,1);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -967,7 +967,7 @@ private:
               "        ++it1;\n"
               "    }\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:7]: (error) Same iterator is used with different containers 'l2' and 'l1'.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:7]: (error) Same iterator is used with different containers 'l2' and 'l1'.\n", errout.str());
 
         check("std::list<int> l3;\n"
               "std::list<int>::iterator bar()\n"
@@ -1453,9 +1453,9 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // #2101
-        check("void f(vector< list<int> > &ints, unsigned int i)\n"
+        check("void f(vector< std::list<int> > &ints, unsigned int i)\n"
               "{\n"
-              "    list<int>::iterator it;\n"
+              "    std::list<int>::iterator it;\n"
               "    for(it = ints[i].begin(); it != ints[i].end(); it++) {\n"
               "        if (*it % 2)\n"
               "            it = ints[i].erase(it);\n"
@@ -1717,11 +1717,11 @@ private:
     }
 
     void eraseAssign2() {
-        check("void f(list<int> &ints)\n"
+        check("void f(std::list<int> &ints)\n"
               "{\n"
-              "    for (list<int>::iterator it = ints.begin(); it != ints.end();) {\n"
+              "    for (std::list<int>::iterator it = ints.begin(); it != ints.end();) {\n"
               "        if (*it == 123) {\n"
-              "            list<int>::iterator copy = it;\n"
+              "            std::list<int>::iterator copy = it;\n"
               "            ++copy;\n"
               "            ints.erase(it);\n"
               "            it = copy;\n"
