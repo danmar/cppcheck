@@ -9,13 +9,18 @@ import re
 import sys
 import subprocess
 
-ITC_PATH = os.path.expanduser('~/testing')
-ZERO_DIVISION = '000/199/329/zero_division.c'
-
 if sys.argv[0] in ('test/verify/itc.py', './test/verify/itc.py'):
     CPPCHECK_PATH = './cppcheck'
 else:
     CPPCHECK_PATH = '../../cppcheck'
+
+if len(sys.argv) == 2:
+    TESTFILE = sys.argv[1]
+    if not os.path.isfile(TESTFILE):
+        print(f'ERROR: {TESTFILE} is not a file')
+        sys.exit(1)
+else:
+    TESTFILE = os.path.expanduser('~/itc/01.w_Defects/zero_division.c')
 
 def get_error_lines(filename):
     ret = []
@@ -46,9 +51,8 @@ def check(filename):
         ret.append(int(res.group(1)))
     return ret
 
-filename = os.path.join(ITC_PATH, ZERO_DIVISION)
-wanted = get_error_lines(filename)
-actual = check(filename)
+wanted = get_error_lines(TESTFILE)
+actual = check(TESTFILE)
 print('wanted:' + str(wanted))
 print('actual:' + str(actual))
 missing = []
