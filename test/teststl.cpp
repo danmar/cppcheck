@@ -362,7 +362,7 @@ private:
               "    for (std::list<int>::iterator it = l1.begin(); it != l2.end(); ++it)\n"
               "    { }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:5]: (error) Same iterator is used with different containers 'l1' and 'l2'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Iterators of different containers 'l1' and 'l2' are used together.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -371,7 +371,7 @@ private:
               "    for (std::list<int>::iterator it = l1.begin(); l2.end() != it; ++it)\n"
               "    { }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:5]: (error) Same iterator is used with different containers 'l2' and 'l1'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Iterators of different containers 'l2' and 'l1' are used together.\n", errout.str());
 
         check("struct C { std::list<int> l1; void func(); };\n"
               "void C::func() {\n"
@@ -390,7 +390,7 @@ private:
               "    for (std::list<int>::const_reverse_iterator it = l1.rbegin(); it != l2.rend(); ++it)\n"
               "    { }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:5]: (error) Same iterator is used with different containers 'l1' and 'l2'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Iterators of different containers 'l1' and 'l2' are used together.\n", errout.str());
     }
 
     void iterator2() {
@@ -404,7 +404,7 @@ private:
               "        ++it;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:5]: (error) Same iterator is used with different containers 'l1' and 'l2'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Iterators of different containers 'l1' and 'l2' are used together.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -416,7 +416,7 @@ private:
               "        ++it;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:5]: (error) Same iterator is used with different containers 'l2' and 'l1'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Iterators of different containers 'l2' and 'l1' are used together.\n", errout.str());
     }
 
     void iterator3() {
@@ -485,7 +485,7 @@ private:
               "    std::vector<int> ints2;\n"
               "    std::vector<int>::iterator it = std::find(ints1.begin(), ints2.end(), 22);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Iterators of different containers are used together.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Iterators of different containers 'ints1' and 'ints2' are used together.\n", errout.str());
     }
 
     void iterator6() {
@@ -516,7 +516,7 @@ private:
               "    std::vector<int> ints2;\n"
               "    std::vector<int>::iterator it = std::inplace_merge(ints1.begin(), std::advance(ints1.rbegin(), 5), ints2.end());\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Iterators of different containers are used together.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Iterators of different containers 'ints1' and 'ints2' are used together.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -534,7 +534,7 @@ private:
               "    std::vector<int> ints2;\n"
               "    std::vector<int>::iterator it = std::find_first_of(ints1.begin(), ints2.end(), ints1.begin(), ints1.end());\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Iterators of different containers are used together.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Iterators of different containers 'ints1' and 'ints2' are used together.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -542,7 +542,7 @@ private:
               "    std::vector<int> ints2;\n"
               "    std::vector<int>::iterator it = std::find_first_of(ints1.begin(), ints1.end(), ints2.begin(), ints1.end());\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Iterators of different containers are used together.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Iterators of different containers 'ints2' and 'ints1' are used together.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -550,7 +550,7 @@ private:
               "    std::vector<int> ints2;\n"
               "    std::vector<int>::iterator it = std::find_first_of(foo.bar.begin(), foo.bar.end()-6, ints2.begin(), ints1.end());\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Iterators of different containers are used together.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Iterators of different containers 'ints2' and 'ints1' are used together.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -571,8 +571,8 @@ private:
               "}");
         ASSERT_EQUALS(// TODO "[test.cpp:2]: (error) Iterators of different containers are used together.\n"
             // TODO "[test.cpp:3]: (error) Iterators of different containers are used together.\n"
-            "[test.cpp:4]: (error) Iterators of different containers are used together.\n"
-            "[test.cpp:5]: (error) Iterators of different containers are used together.\n", errout.str());
+            "[test.cpp:4]: (error) Iterators of different containers 'tp3' and 'a' are used together.\n"
+            "[test.cpp:5]: (error) Iterators of different containers 'tp4' and 'b' are used together.\n", errout.str());
     }
 
     void iterator9() {
@@ -640,7 +640,7 @@ private:
               "        if (it != s2.end()) continue;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:5]: (error) Same iterator is used with different containers 's1' and 's2'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Iterators of different containers 's1' and 's2' are used together.\n", errout.str());
     }
 
     void iterator11() {
@@ -662,7 +662,7 @@ private:
               "    std::map<int, int>::const_iterator it = map1.find(123);\n"
               "    if (it == map2.end()) { }"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4]: (error) Same iterator is used with different containers 'map1' and 'map2'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Iterators of different containers 'map1' and 'map2' are used together.\n", errout.str());
 
         check("void f() {\n"
               "    std::map<int, int> map1;\n"
@@ -670,7 +670,7 @@ private:
               "    std::map<int, int>::const_iterator it = map1.find(123);\n"
               "    if (map2.end() == it) { }"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4]: (error) Same iterator is used with different containers 'map2' and 'map1'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Iterators of different containers 'map2' and 'map1' are used together.\n", errout.str());
 
         check("void f(std::string &s) {\n"
               "    int pos = s.find(x);\n"
@@ -692,7 +692,7 @@ private:
               "    while (it!=a.end())\n"
               "        ++it;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:8]: (error) Same iterator is used with different containers 't' and 'a'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Iterators of different containers 't' and 'a' are used together.\n", errout.str());
 
         // #4062
         check("void f() {\n"
@@ -753,7 +753,7 @@ private:
               "        ++it1;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:5] -> [test.cpp:6]: (error) Comparison of iterators from containers 'l1' and 'l2'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Iterators of different containers 'l1' and 'l2' are used together.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -766,7 +766,7 @@ private:
               "        ++it2;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6] -> [test.cpp:5]: (error) Comparison of iterators from containers 'l2' and 'l1'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Iterators of different containers 'l2' and 'l1' are used together.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -779,20 +779,20 @@ private:
               "        ++it1;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6] -> [test.cpp:5]: (error) Comparison of iterators from containers 'l1' and 'l2'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Iterators of different containers 'l1' and 'l2' are used together.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
-              "    std::list<int> l1;\n"
-              "    std::list<int> l2(10, 4);\n"
-              "    std::list<int>::iterator it1 = l1.begin();\n"
-              "    std::list<int>::iterator it2 = l2.find(4);\n"
+              "    std::set<int> l1;\n"
+              "    std::set<int> l2(10, 4);\n"
+              "    std::set<int>::iterator it1 = l1.begin();\n"
+              "    std::set<int>::iterator it2 = l2.find(4);\n"
               "    while (it1 != it2)\n"
               "    {\n"
               "        ++it1;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6] -> [test.cpp:5]: (error) Comparison of iterators from containers 'l1' and 'l2'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Iterators of different containers 'l1' and 'l2' are used together.\n", errout.str());
 
     }
 
@@ -809,7 +809,7 @@ private:
               "        ++it1;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:5] -> [test.cpp:7]: (error) Comparison of iterators from containers 'l1' and 'l2'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Iterators of different containers 'l1' and 'l2' are used together.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -854,7 +854,7 @@ private:
               "        ++it1;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:10] -> [test.cpp:5] -> [test.cpp:9]: (error) Comparison of iterators from containers 'l1' and 'l2'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Iterators of different containers 'l1' and 'l2' are used together.\n", errout.str());
     }
 
     void iterator18() {
@@ -921,7 +921,7 @@ private:
               "    }\n"
               "}");
         TODO_ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:4]: (error) Same iterator is used with containers 'l1' that are defined in different scopes.\n",
-                           "[test.cpp:7] -> [test.cpp:4]: (error) Same iterator is used with containers 'l1' that are defined in different scopes.\n[test.cpp:7]: (error) Dangerous comparison using operator< on iterator.\n",
+                           "[test.cpp:7] -> [test.cpp:7]: (error) Same iterator is used with containers 'l1' that are defined in different scopes.\n[test.cpp:7]: (error) Dangerous comparison using operator< on iterator.\n",
                            errout.str());
 
         check("void foo()\n"
@@ -936,7 +936,7 @@ private:
               "        }\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:4] -> [test.cpp:7]: (error) Comparison of iterators from containers 'l1' that are defined in different scopes.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:4]: (error) Same iterator is used with containers 'l1' that are defined in different scopes.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -950,7 +950,7 @@ private:
               "        }\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:4] -> [test.cpp:7]: (error) Comparison of iterators from containers 'l1' that are defined in different scopes.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:7]: (error) Same iterator is used with containers 'l1' that are defined in different scopes.\n", errout.str());
 
     }
 
@@ -967,7 +967,7 @@ private:
               "        ++it1;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:7]: (error) Same iterator is used with different containers 'l2' and 'l1'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Iterators of different containers 'l2' and 'l1' are used together.\n", errout.str());
 
         check("std::list<int> l3;\n"
               "std::list<int>::iterator bar()\n"
@@ -1004,8 +1004,8 @@ private:
               "    {\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6] -> [test.cpp:5]: (error) Comparison of iterators from containers 'l1' and 'l2'.\n"
-                      "[test.cpp:10] -> [test.cpp:6] -> [test.cpp:5]: (error) Comparison of iterators from containers 'l2' and 'l1'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Iterators of different containers 'l1' and 'l2' are used together.\n"
+                      "[test.cpp:6]: (error) Iterators of different containers 'l2' and 'l1' are used together.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -1017,7 +1017,7 @@ private:
               "    {\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6] -> [test.cpp:5]: (error) Comparison of iterators from containers 'l1' and 'l2'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Iterators of different containers 'l1' and 'l2' are used together.\n", errout.str());
     }
 
     void iterator22() { // #7107
