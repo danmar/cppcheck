@@ -1572,8 +1572,64 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
     };
 #endif
 
+    std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> checkFunctionCall = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
+        if (!Token::Match(tok->astParent(), "[(,]"))
+            return;
+        int num = (tok == tok->astParent()->astOperand2()) ? 1 : 0;
+        const Token *parent = tok->astParent();
+        while (Token::simpleMatch(parent, ",")) {
+            parent = parent->astParent();
+            ++num;
+        }
+        if (!parent || parent->str() != "(")
+            return;
+
+        // Check invalid function argument values..
+        for (const Library::InvalidArgValue &invalidArgValue : Library::getInvalidArgValues(settings->library.validarg(parent->astOperand1(), num))) {
+            bool err = false;
+            std::string bad;
+            switch (invalidArgValue.type) {
+            case Library::InvalidArgValue::eq:
+                err = value.isEqual(dataBase, MathLib::toLongNumber(invalidArgValue.op1));
+                bad = "equals " + invalidArgValue.op1;
+                break;
+            case Library::InvalidArgValue::le:
+                err = value.isLessThan(dataBase, MathLib::toLongNumber(invalidArgValue.op1) + 1);
+                bad = "less equal " + invalidArgValue.op1;
+                break;
+            case Library::InvalidArgValue::lt:
+                err = value.isLessThan(dataBase, MathLib::toLongNumber(invalidArgValue.op1));
+                bad = "less than " + invalidArgValue.op1;
+                break;
+            case Library::InvalidArgValue::ge:
+                err = value.isGreaterThan(dataBase, MathLib::toLongNumber(invalidArgValue.op1) - 1);
+                bad = "greater equal " + invalidArgValue.op1;
+                break;
+            case Library::InvalidArgValue::gt:
+                err = value.isGreaterThan(dataBase, MathLib::toLongNumber(invalidArgValue.op1));
+                bad = "greater than " + invalidArgValue.op1;
+                break;
+            case Library::InvalidArgValue::range:
+                // TODO
+                err = value.isEqual(dataBase, MathLib::toLongNumber(invalidArgValue.op1));
+                err |= value.isEqual(dataBase, MathLib::toLongNumber(invalidArgValue.op2));
+                bad = "range " + invalidArgValue.op1 + "-" + invalidArgValue.op2;
+                break;
+            };
+
+            if (err) {
+                dataBase->addError(tok->linenr());
+                std::list<const Token*> callstack{tok};
+                ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationInvalidArgValue", "There is function call, cannot determine that argument value is valid. Bad value: " + bad, CWE(0), false);
+                errorLogger->reportErr(errmsg);
+                break;
+            }
+        }
+    };
+
     std::vector<ExprEngine::Callback> callbacks;
     callbacks.push_back(divByZero);
+    callbacks.push_back(checkFunctionCall);
 #ifdef VERIFY_INTEGEROVERFLOW
     callbacks.push_back(integerOverflow);
 #endif

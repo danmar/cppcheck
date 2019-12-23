@@ -859,6 +859,56 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
     return Error(OK);
 }
 
+std::vector<Library::InvalidArgValue> Library::getInvalidArgValues(const std::string &validExpr)
+{
+    std::vector<Library::InvalidArgValue> valid;
+    TokenList tokenList(nullptr);
+    gettokenlistfromvalid(validExpr, tokenList);
+    for (const Token *tok = tokenList.front(); tok; tok = tok ? tok->next() : nullptr) {
+        if (tok->str() == ",")
+            continue;
+        if (Token::Match(tok, ": %num%")) {
+            valid.push_back(InvalidArgValue{InvalidArgValue::le, tok->next()->str(), std::string()});
+            tok = tok->tokAt(2);
+        } else if (Token::Match(tok, "%num% : %num%")) {
+            valid.push_back(InvalidArgValue{InvalidArgValue::range, tok->str(), tok->strAt(2)});
+            tok = tok->tokAt(3);
+        } else if (Token::Match(tok, "%num% :")) {
+            valid.push_back(InvalidArgValue{InvalidArgValue::ge, tok->str(), std::string()});
+            tok = tok->tokAt(2);
+        } else if (Token::Match(tok, "%num%")) {
+            valid.push_back(InvalidArgValue{InvalidArgValue::eq, tok->str(), std::string()});
+            tok = tok->next();
+        }
+    }
+
+    std::vector<Library::InvalidArgValue> invalid;
+    if (valid.empty())
+        return invalid;
+
+    if (valid[0].type == InvalidArgValue::ge || valid[0].type == InvalidArgValue::eq)
+        invalid.push_back(InvalidArgValue{InvalidArgValue::lt, valid[0].op1, std::string()});
+    if (valid.back().type == InvalidArgValue::le || valid.back().type == InvalidArgValue::eq)
+        invalid.push_back(InvalidArgValue{InvalidArgValue::gt, valid[0].op1, std::string()});
+    for (int i = 0; i + 1 < valid.size(); i++) {
+        const InvalidArgValue &v1 = valid[i];
+        const InvalidArgValue &v2 = valid[i + 1];
+        if (v1.type == InvalidArgValue::le && v2.type == InvalidArgValue::ge) {
+            if (v1.isInt()) {
+                MathLib::bigint op1 = MathLib::toLongNumber(v1.op1);
+                MathLib::bigint op2 = MathLib::toLongNumber(v2.op1);
+                if (op1 + 1 == op2 - 1)
+                    invalid.push_back(InvalidArgValue{InvalidArgValue::eq, MathLib::toString(op1 + 1), std::string()});
+                else
+                    invalid.push_back(InvalidArgValue{InvalidArgValue::range, MathLib::toString(op1 + 1), MathLib::toString(op2 - 1)});
+            }
+        }
+    }
+
+    return invalid;
+}
+
+
 bool Library::isIntArgValid(const Token *ftok, int argnr, const MathLib::bigint argvalue) const
 {
     const ArgumentChecks *ac = getarg(ftok, argnr);
