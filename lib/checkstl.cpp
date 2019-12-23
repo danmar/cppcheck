@@ -761,7 +761,6 @@ void CheckStl::mismatchingContainers()
             if (!Token::Match(tok, "%name% ( !!)"))
                 continue;
             const Token * const ftok = tok;
-            const Token * firstArg = nullptr;
 
             const std::vector<const Token *> args = getArguments(ftok);
             if (args.size() < 2)
