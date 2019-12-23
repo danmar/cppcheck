@@ -1,5 +1,6 @@
 if (BUILD_TESTS)
 
+    cmake_minimum_required(VERSION 3.4) # cmake_policy(SET CMP0064 NEW)
     cmake_policy(SET CMP0064 NEW)
     cmake_policy(SET CMP0057 NEW)
 
