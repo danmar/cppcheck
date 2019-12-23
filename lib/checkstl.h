@@ -199,7 +199,7 @@ private:
     void iteratorsError(const Token* tok, const Token* containerTok, const std::string& containerName);
     void iteratorsCmpError(const Token* cmpOperatorTok, const Token* containerTok1, const Token* containerTok2, const std::string& containerName1, const std::string& containerName2);
     void iteratorsCmpError(const Token* cmpOperatorTok, const Token* containerTok1, const Token* containerTok2, const std::string& containerName);
-    void mismatchingContainersError(const Token *tok1, const Token *tok2);
+    void mismatchingContainersError(const Token* tok1, const Token* tok2);
     void mismatchingContainerExpressionError(const Token *tok1, const Token *tok2);
     void sameIteratorExpressionError(const Token *tok);
     void stlBoundariesError(const Token* tok);

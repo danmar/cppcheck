@@ -627,11 +627,16 @@ bool CheckStl::compareIteratorAgainstDifferentContainer(const Token* operatorTok
 }
 
 // Error message for bad iterator usage..
-void CheckStl::mismatchingContainersError(const Token *tok1, const Token *tok2)
+void CheckStl::mismatchingContainersError(const Token* tok1, const Token* tok2)
 {
     const std::string expr1(tok1 ? tok1->expressionString() : std::string("v1"));
     const std::string expr2(tok2 ? tok2->expressionString() : std::string("v2"));
-    reportError(tok1, Severity::error, "mismatchingContainers", "Iterators of different containers '" + expr1 + "' and '" + expr2 + "' are used together.", CWE664, false);
+    reportError(tok1,
+                Severity::error,
+                "mismatchingContainers",
+                "Iterators of different containers '" + expr1 + "' and '" + expr2 + "' are used together.",
+                CWE664,
+                false);
 }
 
 void CheckStl::mismatchingContainerExpressionError(const Token *tok1, const Token *tok2)
@@ -729,8 +734,8 @@ bool CheckStl::checkIteratorPair(const Token* tok1, const Token* tok2)
         return true;
     }
 
-    const Token * iter1 = getIteratorExpression(tok1);
-    const Token * iter2 = getIteratorExpression(tok2);
+    const Token* iter1 = getIteratorExpression(tok1);
+    const Token* iter2 = getIteratorExpression(tok2);
     if (iter1 && iter2 && !isSameExpression(true, false, iter1, iter2, mSettings->library, false, false)) {
         mismatchingContainerExpressionError(iter1, iter2);
         return true;
@@ -738,10 +743,9 @@ bool CheckStl::checkIteratorPair(const Token* tok1, const Token* tok2)
     return false;
 }
 
-struct ArgIteratorInfo
-{
+struct ArgIteratorInfo {
     const Token* tok;
-    const Library::ArgumentChecks::IteratorInfo * info;
+    const Library::ArgumentChecks::IteratorInfo* info;
 };
 
 void CheckStl::mismatchingContainers()
@@ -775,13 +779,14 @@ void CheckStl::mismatchingContainers()
 
             // Lambda is used to escape the nested loops
             [&] {
-                for(const auto& p:containers) {
+                for (const auto& p : containers) {
                     const std::vector<ArgIteratorInfo>& args = p.second;
-                    for(ArgIteratorInfo iter1:args) {
-                        for(ArgIteratorInfo iter2:args) {
+                    for (ArgIteratorInfo iter1 : args) {
+                        for (ArgIteratorInfo iter2 : args) {
                             if (iter1.tok == iter2.tok)
                                 continue;
-                            if (iter1.info->first && iter2.info->last && isSameExpression(true, false, iter1.tok, iter2.tok, mSettings->library, false, false))
+                            if (iter1.info->first && iter2.info->last &&
+                                isSameExpression(true, false, iter1.tok, iter2.tok, mSettings->library, false, false))
                                 sameIteratorExpressionError(iter1.tok);
                             if (checkIteratorPair(iter1.tok, iter2.tok))
                                 return;
