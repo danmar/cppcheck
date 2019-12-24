@@ -33,6 +33,8 @@ public:
 private:
     void run() OVERRIDE {
 #ifdef USE_Z3
+        TEST_CASE(annotation1);
+
         TEST_CASE(expr1);
         TEST_CASE(expr2);
         TEST_CASE(expr3);
@@ -141,6 +143,20 @@ private:
         std::ostringstream ret;
         ExprEngine::executeAllFunctions(&tokenizer, &settings, dummy, ret);
         return ret.str();
+    }
+
+    void annotation1() {
+        const char code[] = "void f(__cppcheck_low__(100) short x) {\n"
+                            "    return x < 10;\n"
+                            "}";
+
+        const char expected[] = "(declare-fun $1 () Int)\n"
+                                "(assert (and (>= $1 (- 32768)) (<= $1 32767)))\n"
+                                "(assert (>= $1 100))\n" // <- annotation
+                                "(assert (< $1 10))\n"
+                                "z3::unsat";
+
+        ASSERT_EQUALS(expected, expr(code, "<"));
     }
 
     void expr1() {

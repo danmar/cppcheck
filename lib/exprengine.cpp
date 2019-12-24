@@ -286,6 +286,16 @@ namespace {
             constraints.push_back(std::make_shared<ExprEngine::BinOpResult>(equals?"==":"!=", lhsValue, rhsValue));
         }
 
+        void addConstraints(ExprEngine::ValuePtr value, const Token *tok) {
+            MathLib::bigint low;
+            if (tok->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW, &low))
+                addConstraint(std::make_shared<ExprEngine::BinOpResult>(">=", value, std::make_shared<ExprEngine::IntRange>(std::to_string(low), low, low)), true);
+
+            MathLib::bigint high;
+            if (tok->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH, &high))
+                addConstraint(std::make_shared<ExprEngine::BinOpResult>("<=", value, std::make_shared<ExprEngine::IntRange>(std::to_string(high), high, high)), true);
+        }
+
     private:
         TrackExecution * const mTrackExecution;
         const int mDataIndex;
@@ -1455,8 +1465,11 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
     }
     if (var.isArray())
         return std::make_shared<ExprEngine::ArrayValue>(&data, &var);
-    if (valueType->isIntegral())
-        return getValueRangeFromValueType(data.getNewSymbolName(), valueType, *data.settings);
+    if (valueType->isIntegral()) {
+        auto value = getValueRangeFromValueType(data.getNewSymbolName(), valueType, *data.settings);
+        data.addConstraints(value, var.nameToken());
+        return value;
+    }
     if (valueType->type == ValueType::Type::RECORD)
         return createStructVal(valueType->typeScope, var.isLocal() && !var.isStatic(), data);
     if (valueType->smartPointerType) {
