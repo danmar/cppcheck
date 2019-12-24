@@ -40,7 +40,7 @@ QString::iterator QString3()
 {
     QString qstring1;
     QString qstring2;
-    // cppcheck-suppress iterators2
+    // cppcheck-suppress mismatchingContainers
     for (QString::iterator it = qstring1.begin(); it != qstring2.end(); ++it)
     {}
 
@@ -126,7 +126,7 @@ QList<int>::iterator QList3()
 {
     QList<int> qlist1;
     QList<int> qlist2;
-    // cppcheck-suppress iterators2
+    // cppcheck-suppress mismatchingContainers
     for (QList<int>::iterator it = qlist1.begin(); it != qlist2.end(); ++it)
     {}
 
@@ -162,7 +162,7 @@ QLinkedList<int>::iterator QLinkedList3()
 {
     QLinkedList<int> intQLinkedList1;
     QLinkedList<int> intQLinkedList2;
-    // cppcheck-suppress iterators2
+    // cppcheck-suppress mismatchingContainers
     for (QLinkedList<int>::iterator it = intQLinkedList1.begin(); it != intQLinkedList2.end(); ++it)
     {}
 
@@ -219,7 +219,7 @@ QStringList::iterator QStringList2()
 {
     QStringList qstringlist1;
     QStringList qstringlist2;
-    // cppcheck-suppress iterators2
+    // cppcheck-suppress mismatchingContainers
     for (QStringList::iterator it = qstringlist1.begin(); it != qstringlist2.end(); ++it)
     {}
 
@@ -273,7 +273,7 @@ QVector<int>::iterator QVector2()
 {
     QVector<int> qvector1;
     QVector<int> qvector2;
-    // cppcheck-suppress iterators2
+    // cppcheck-suppress mismatchingContainers
     for (QVector<int>::iterator it = qvector1.begin(); it != qvector2.end(); ++it)
     {}
 
@@ -326,7 +326,7 @@ QStack<int>::iterator QStack2()
 {
     QStack<int> qstack1;
     QStack<int> qstack2;
-    // cppcheck-suppress iterators2
+    // cppcheck-suppress mismatchingContainers
     for (QStack<int>::iterator it = qstack1.begin(); it != qstack2.end(); ++it)
     {}
 
