@@ -44,6 +44,8 @@ private:
         TEST_CASE(exprAssign2); // Truncation
 
         TEST_CASE(if1);
+        TEST_CASE(if2);
+        TEST_CASE(if3);
         TEST_CASE(ifelse1);
 
         TEST_CASE(switch1);
@@ -216,6 +218,32 @@ private:
                       "(assert (= $1 $2))\n"
                       "z3::unsat",
                       expr("void f(int x, int y) { if (x < y) return x == y; }", "=="));
+    }
+
+    void if2() {
+        const char code[] = "void foo(int x) {\n"
+                            "  if (x > 0 && x == 20) {}\n"
+                            "}";
+        // In expression "x + x < 20", "x" is greater than 0
+        const char expected[] = "(declare-fun $1 () Int)\n"
+                                "(assert (and (>= $1 (- 2147483648)) (<= $1 2147483647)))\n"
+                                "(assert (> $1 0))\n"
+                                "(assert (= $1 20))\n"
+                                "z3::sat";
+        ASSERT_EQUALS(expected, expr(code, "=="));
+    }
+
+    void if3() {
+        const char code[] = "void foo(int x) {\n"
+                            "  if (x > 0 || x == 20) {}\n"
+                            "}";
+        // In expression "x + x < 20", "x" is greater than 0
+        const char expected[] = "(declare-fun $1 () Int)\n"
+                                "(assert (and (>= $1 (- 2147483648)) (<= $1 2147483647)))\n"
+                                "(assert (<= $1 0))\n"
+                                "(assert (= $1 20))\n"
+                                "z3::unsat"; // "x == 20" is unsat
+        ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
     void ifelse1() {

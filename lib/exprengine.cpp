@@ -1092,7 +1092,14 @@ static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
 static ExprEngine::ValuePtr executeBinaryOp(const Token *tok, Data &data)
 {
     ExprEngine::ValuePtr v1 = executeExpression(tok->astOperand1(), data);
-    ExprEngine::ValuePtr v2 = executeExpression(tok->astOperand2(), data);
+    ExprEngine::ValuePtr v2;
+    if (tok->str() == "&&" || tok->str() == "||") {
+        Data data2(data);
+        data2.addConstraint(v1, tok->str() == "&&");
+        v2 = executeExpression(tok->astOperand2(), data2);
+    } else {
+        v2 = executeExpression(tok->astOperand2(), data);
+    }
     if (v1 && v2) {
         auto result = simplifyValue(std::make_shared<ExprEngine::BinOpResult>(tok->str(), v1, v2));
         call(data.callbacks, tok, result, &data);
