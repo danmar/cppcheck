@@ -2198,17 +2198,17 @@ private:
         check("void f(int x) {\n"
               "\n"
               "  if (x>5) {\n"
-              "    if (x>4) {}\n" // <- TODO
+              "    if (x>4) {}\n" // <- Warning
               "  }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Condition 'x>4' is always true\n", errout.str());
         check("void f(int x) {\n"
               "\n"
               "  if (x>5) {\n"
-              "    if (x>=4) {}\n" // <- TODO
+              "    if (x>=4) {}\n" // <- Warning
               "  }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Condition 'x>=4' is always true\n", errout.str());
         check("void f(int x) {\n"
               "\n"
               "  if (x>5) {\n"

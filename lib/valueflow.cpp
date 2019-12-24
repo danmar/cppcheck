@@ -4632,21 +4632,22 @@ static void valueFlowInferCondition(TokenList* tokenlist,
             if (varTok->values().empty())
                 continue;
             const ValueFlow::Value* result = nullptr;
+            const ValueFlow::Value* notEqual = proveNotEqual(varTok->values(), val);
             bool known = false;
             if (Token::Match(tok, "==|!=")) {
-                result = proveNotEqual(varTok->values(), val);
+                result = notEqual;
                 known = tok->str() == "!=";
             } else if (Token::Match(tok, "<|>=")) {
                 result = proveLessThan(varTok->values(), val);
-                known = tok->str() == "<";
-                if (!result && proveNotEqual(varTok->values(), val)) {
+                known = tok->str() == "<" || notEqual;
+                if (!result && notEqual) {
                     result = proveGreaterThan(varTok->values(), val);
                     known = tok->str() == ">=";
                 }
             } else if (Token::Match(tok, ">|<=")) {
                 result = proveGreaterThan(varTok->values(), val);
-                known = tok->str() == ">";
-                if (!result && proveNotEqual(varTok->values(), val)) {
+                known = tok->str() == ">" || notEqual;
+                if (!result && notEqual) {
                     result = proveLessThan(varTok->values(), val);
                     known = tok->str() == "<=";
                 }
