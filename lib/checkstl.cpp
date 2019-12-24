@@ -365,8 +365,6 @@ void CheckStl::iterators()
         if (iteratorId != 0)
             iteratorScopeBeginInfo[iteratorId] = var->nameToken();
     }
-    // Storage to save found comparison problems to avoid duplicate error messages
-    std::set<const Token*> foundOperatorErrors;
 
     for (const Variable* var : symbolDatabase->variableList()) {
         bool inconclusiveType=false;
@@ -677,9 +675,9 @@ void CheckStl::mismatchingContainers()
             // Lambda is used to escape the nested loops
             [&] {
                 for (const auto& p : containers) {
-                    const std::vector<ArgIteratorInfo>& args = p.second;
-                    for (ArgIteratorInfo iter1 : args) {
-                        for (ArgIteratorInfo iter2 : args) {
+                    const std::vector<ArgIteratorInfo>& cargs = p.second;
+                    for (ArgIteratorInfo iter1 : cargs) {
+                        for (ArgIteratorInfo iter2 : cargs) {
                             if (iter1.tok == iter2.tok)
                                 continue;
                             if (iter1.info->first && iter2.info->last &&
