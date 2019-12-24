@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # cppcheck addon for Y2038 safeness detection
 #
@@ -151,8 +151,8 @@ id_Y2038 = {
 
 
 def check_y2038_safe(dumpfile, quiet=False):
-    # at the start of the check, we don't know if code is Y2038 safe
-    y2038safe = False
+    # Assume that the code is Y2038 safe until proven otherwise
+    y2038safe = True
     # load XML from .dump file
     data = cppcheckdata.parsedump(dumpfile)
 
@@ -228,10 +228,6 @@ def check_y2038_safe(dumpfile, quiet=False):
 
 def get_args():
     parser = cppcheckdata.ArgumentParser()
-    parser.add_argument("dumpfile", nargs='*', help="Path of dump file from cppcheck")
-    parser.add_argument('-q', '--quiet', action='store_true',
-                        help='do not print "Checking ..." lines')
-    parser.add_argument('--cli', help='Addon is executed from Cppcheck', action='store_true')
     return parser.parse_args()
 
 
@@ -241,19 +237,23 @@ if __name__ == '__main__':
     exit_code = 0
     quiet = not any((args.quiet, args.cli))
 
-    if args.dumpfile:
-        for dumpfile in args.dumpfile:
-            if not os.path.isfile(dumpfile):
-                print("Error: File not found: %s" % dumpfile)
-                sys.exit(127)
-            if not os.access(dumpfile, os.R_OK):
-                print("Error: Permission denied: %s" % dumpfile)
-                sys.exit(13)
-            if not args.quiet:
-                print('Checking ' + dumpfile + '...')
+    if not args.dumpfile:
+        if not args.quiet:
+            print("no input files.")
+        sys.exit(0)
 
-            y2038safe = check_y2038_safe(dumpfile, quiet)
-            if not y2038safe and exit_code == 0:
-                exit_code = 1
+    for dumpfile in args.dumpfile:
+        if not os.path.isfile(dumpfile):
+            print("Error: File not found: %s" % dumpfile)
+            sys.exit(127)
+        if not os.access(dumpfile, os.R_OK):
+            print("Error: Permission denied: %s" % dumpfile)
+            sys.exit(13)
+        if not args.quiet:
+            print('Checking ' + dumpfile + '...')
+
+        y2038safe = check_y2038_safe(dumpfile, quiet)
+        if not y2038safe and exit_code == 0:
+            exit_code = 1
 
     sys.exit(exit_code)

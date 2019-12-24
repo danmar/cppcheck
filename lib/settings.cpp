@@ -20,7 +20,7 @@
 
 #include "valueflow.h"
 
-bool Settings::mTerminated;
+std::atomic<bool> Settings::mTerminated;
 
 const char Settings::SafeChecks::XmlRootName[] = "safe-checks";
 const char Settings::SafeChecks::XmlClasses[] = "class-public";
@@ -46,11 +46,13 @@ Settings::Settings()
       force(false),
       inconclusive(false),
       verification(false),
+      debugVerification(false),
       inlineSuppressions(false),
       jobs(1),
       jointSuppressionReport(false),
       loadAverage(0),
       maxConfigs(12),
+      checkAllConfigurations(true),
       maxCtuDepth(2),
       preprocessOnly(false),
       quiet(false),

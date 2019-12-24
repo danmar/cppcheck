@@ -228,7 +228,7 @@ void CheckClass::constructors()
                     if (classNameUsed)
                         operatorEqVarError(func.token, scope->className, var.name(), inconclusive);
                 } else if (func.access != AccessControl::Private || mSettings->standards.cpp >= Standards::CPP11) {
-                    // If constructor is not in scope then we maybe using a oonstructor from a different template specialization
+                    // If constructor is not in scope then we maybe using a constructor from a different template specialization
                     if (!precedes(scope->bodyStart, func.tokenDef))
                         continue;
                     const Scope *varType = var.typeScope();
@@ -1639,7 +1639,7 @@ void CheckClass::virtualDestructor()
 {
     // This error should only be given if:
     // * base class doesn't have virtual destructor
-    // * derived class has non-empty destructor
+    // * derived class has non-empty destructor (only c++03, in c++11 it's UB see paragraph 3 in [expr.delete])
     // * base class is deleted
     // unless inconclusive in which case:
     // * base class has virtual members but doesn't have virtual destructor
@@ -1665,16 +1665,19 @@ void CheckClass::virtualDestructor()
             continue;
         }
 
-        // Find the destructor
-        const Function *destructor = scope->getDestructor();
+        // Check if destructor is empty and non-empty ..
+        if (mSettings->standards.cpp <= Standards::CPP03) {
+            // Find the destructor
+            const Function *destructor = scope->getDestructor();
 
-        // Check for destructor with implementation
-        if (!destructor || !destructor->hasBody())
-            continue;
+            // Check for destructor with implementation
+            if (!destructor || !destructor->hasBody())
+                continue;
 
-        // Empty destructor
-        if (destructor->token->linkAt(3) == destructor->token->tokAt(4))
-            continue;
+            // Empty destructor
+            if (destructor->token->linkAt(3) == destructor->token->tokAt(4))
+                continue;
+        }
 
         const Token *derived = scope->classDef;
         const Token *derivedClass = derived->next();
@@ -2581,50 +2584,6 @@ void CheckClass::copyCtorAndEqOperatorError(const Token *tok, const std::string 
                                 "' but lack of '" + getFunctionTypeName(hasCopyCtor ? Function::eOperatorEqual : Function::eCopyConstructor) +
                                 "'.";
     reportError(tok, Severity::warning, "copyCtorAndEqOperator", message);
-}
-
-void CheckClass::checkUnsafeClassDivZero(bool test)
-{
-    // style severity: it is a style decision if classes should be safe or
-    // if users should be required to be careful. I expect that many users
-    // will disagree about these reports.
-    if (!mSettings->isEnabled(Settings::STYLE))
-        return;
-
-    for (const Scope * classScope : mSymbolDatabase->classAndStructScopes) {
-        if (!test && classScope->classDef->fileIndex() != 1)
-            continue;
-        for (const Function &func : classScope->functionList) {
-            if (func.access != AccessControl::Public)
-                continue;
-            if (!func.hasBody())
-                continue;
-            if (func.name().compare(0,8,"operator")==0)
-                continue;
-            for (const Token *tok = func.functionScope->bodyStart; tok; tok = tok->next()) {
-                if (Token::Match(tok, "if|switch|while|for|do|}"))
-                    break;
-                if (tok->str() != "/")
-                    continue;
-                if (!tok->valueType() || !tok->valueType()->isIntegral())
-                    continue;
-                if (!tok->astOperand2())
-                    continue;
-                const Variable *var = tok->astOperand2()->variable();
-                if (!var || !var->isArgument())
-                    continue;
-                unsafeClassDivZeroError(tok, classScope->className, func.name(), var->name());
-                break;
-            }
-        }
-    }
-}
-
-void CheckClass::unsafeClassDivZeroError(const Token *tok, const std::string &className, const std::string &methodName, const std::string &varName)
-{
-    const std::string symbols = "$symbol:" + className + "\n$symbol:" + methodName + "\n$symbol:" + varName + '\n';
-    const std::string s = className + "::" + methodName + "()";
-    reportError(tok, Severity::style, "unsafeClassDivZero", symbols + "Public interface of " + className + " is not safe. When calling " + s + ", if parameter " + varName + " is 0 that leads to division by zero.");
 }
 
 void CheckClass::checkOverride()

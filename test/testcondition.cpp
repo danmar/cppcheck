@@ -2453,7 +2453,7 @@ private:
               "  if (x > 100) { return false; }\n"
               "  return x > 100;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Identical condition 'x>100', second condition is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Identical condition and return expression 'x>100', return value is always false\n", errout.str());
 
         check("void f(int x) {\n"
               "  if (x > 100) { return; }\n"
@@ -2689,8 +2689,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious condition (bitwise operator + comparison); Clarify expression with parentheses.\n"
                       "[test.cpp:2]: (style) Boolean result is used in bitwise operation. Clarify expression with parentheses.\n"
-                      "[test.cpp:2]: (style) Condition 'x&3==2' is always false\n"
-                      "[test.cpp:2]: (style) Condition '3==2' is always false\n", errout.str());
+                      "[test.cpp:2]: (style) Condition 'x&3==2' is always false\n", errout.str());
 
         check("void f() {\n"
               "    if (a & fred1.x == fred2.y) {}\n"
@@ -2846,16 +2845,24 @@ private:
               "  if(x == 0) { x++; return x == 0; } \n"
               "  return false;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 'x==0' is always false\n", errout.str());
+        TODO_ASSERT_EQUALS("return value is always true?", "", errout.str());
 
         check("void f() {\n" // #6898 (Token::expressionString)
               "  int x = 0;\n"
               "  A(x++ == 1);\n"
               "  A(x++ == 2);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'x++==1' is always false\n"
-                      "[test.cpp:4]: (style) Condition 'x++==2' is always false\n",
-                      errout.str());
+        TODO_ASSERT_EQUALS("function argument is always true? however is code really weird/suspicious?", "", errout.str());
+
+        check("bool foo(int bar) {\n"
+              "  bool ret = false;\n"
+              "  if (bar == 1)\n"
+              "    return ret;\n" // <- #9326 - FP condition is always false
+              "  if (bar == 2)\n"
+              "    ret = true;\n"
+              "  return ret;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
         check("void f1(const std::string &s) { if(s.empty()) if(s.size() == 0) {}} ");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Condition 's.size()==0' is always true\n", errout.str());
@@ -2960,6 +2967,15 @@ private:
               "  assert(x == 0);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #9363 - do not warn about value passed to function
+        check("void f(bool b) {\n"
+              "    if (b) {\n"
+              "        if (bar(!b)) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
 
         // #7783  FP knownConditionTrueFalse on assert(0 && "message")
         check("void foo(int x) {\n"
@@ -3304,6 +3320,15 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9367
+        check("void f(long x) {\n"
+              "    if (x <= 0L)\n"
+              "        return;\n"
+              "    if (x % 360L == 0)\n"
+              "        return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueInfer() {
@@ -3564,6 +3589,14 @@ private:
               "  auto y = x;\n"
               "  if (x.empty()) y = \"1\";\n"
               "  if (y.empty()) return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #9106
+        check("struct A {int b;};\n"
+              "void f(A a, int c) {\n"
+              "    if (a.b) a.b = c;\n"
+              "    if (a.b) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

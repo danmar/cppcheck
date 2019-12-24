@@ -217,8 +217,6 @@ private:
         TEST_CASE(explicitConstructors);
         TEST_CASE(copyCtorAndEqOperator);
 
-        TEST_CASE(unsafeClassDivZero);
-
         TEST_CASE(override1);
         TEST_CASE(overrideCVRefQualifiers);
 
@@ -931,6 +929,14 @@ private:
                              "   F&operator=(const F&);"
                              "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkCopyConstructor("struct F {\n"
+                             "   int* i;\n"
+                             "   F() { i = new int(); }\n"
+                             "   F(const F &f);\n"
+                             "   F& operator=(const F&);"
+                             "};");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Struct 'F' does not have a destructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
 
         checkCopyConstructor("struct Data { int x; int y; };\n"
                              "struct F {\n"
@@ -2497,35 +2503,35 @@ private:
     }
 
     void virtualDestructor4() {
-        // Derived class doesn't have a destructor => no error
+        // Derived class doesn't have a destructor => undefined behaviour according to paragraph 3 in [expr.delete]
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : public Base { };"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : private Fred, public Base { };"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
     }
 
     void virtualDestructor5() {
-        // Derived class has empty destructor => no error
+        // Derived class has empty destructor => undefined behaviour according to paragraph 3 in [expr.delete]
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : public Base { public: ~Derived() {} };"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : public Base { public: ~Derived(); }; Derived::~Derived() {}"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
     }
 
     void virtualDestructor6() {
@@ -7058,47 +7064,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkUnsafeClassDivZero(const char code[]) {
-        // Clear the error log
-        errout.str("");
-        Settings settings;
-        settings.addEnabled("style");
-
-        // Tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        // Check..
-        CheckClass checkClass(&tokenizer, &settings, this);
-        checkClass.checkUnsafeClassDivZero(true);
-    }
-
-    void unsafeClassDivZero() {
-        checkUnsafeClassDivZero("class A {\n"
-                                "public:\n"
-                                "  void dostuff(int x);\n"
-                                "}\n"
-                                "void A::dostuff(int x) { int a = 1000 / x; }");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Public interface of A is not safe. When calling A::dostuff(), if parameter x is 0 that leads to division by zero.\n", errout.str());
-
-        checkUnsafeClassDivZero("class A {\n"
-                                "public:\n"
-                                "  void f1();\n"
-                                "  void f2(int x);\n"
-                                "}\n"
-                                "void A::f1() {}\n"
-                                "void A::f2(int x) { int a = 1000 / x; }");
-        ASSERT_EQUALS("[test.cpp:7]: (style) Public interface of A is not safe. When calling A::f2(), if parameter x is 0 that leads to division by zero.\n", errout.str());
-
-        checkUnsafeClassDivZero("class A {\n"
-                                "public:\n"
-                                "  void operator/(int x);\n"
-                                "}\n"
-                                "void A::operator/(int x) { int a = 1000 / x; }");
-        ASSERT_EQUALS("", errout.str());
-    }
-
     void checkOverride(const char code[]) {
         // Clear the error log
         errout.str("");
@@ -7152,6 +7117,15 @@ private:
                       "};");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:9]: (style) The destructor '~C' overrides a destructor in a base class but is not marked with a 'override' specifier.\n", errout.str());
 
+        checkOverride("struct Base {\n"
+                      "    virtual void foo();\n"
+                      "};\n"
+                      "\n"
+                      "struct Derived: public Base {\n"
+                      "   void foo() override;\n"
+                      "   void foo(int);\n"
+                      "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void overrideCVRefQualifiers() {

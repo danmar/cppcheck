@@ -142,7 +142,7 @@ static bool simplifyPathWithVariables(std::string &s, std::map<std::string, std:
 
 void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables)
 {
-    std::list<std::string> I;
+    std::list<std::string> listInc;
     // only parse each includePath once - so remove duplicates
     std::list<std::string> uniqueIncludePaths = in;
     uniqueIncludePaths.sort();
@@ -157,7 +157,7 @@ void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, c
         if (s[0] == '/' || (s.size() > 1U && s.compare(1,2,":/") == 0)) {
             if (!endsWith(s,'/'))
                 s += '/';
-            I.push_back(s);
+            listInc.push_back(s);
             continue;
         }
 
@@ -172,9 +172,9 @@ void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, c
         }
         if (s.empty())
             continue;
-        I.push_back(s + '/');
+        listInc.push_back(s + '/');
     }
-    includePaths.swap(I);
+    includePaths.swap(listInc);
 }
 
 ImportProject::Type ImportProject::import(const std::string &filename, Settings *settings)
@@ -626,7 +626,7 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                     if (std::strcmp(e->Name(), "ClCompile") == 0) {
                         const char *include = e->Attribute("Include");
                         if (include && Path::acceptFile(include))
-                            compileList.push_back(include);
+                            compileList.emplace_back(include);
                     }
                 }
             }
@@ -700,7 +700,7 @@ void ImportProject::importBcb6Prj(const std::string &projectFilename)
                 if (std::strcmp(f->Name(), "FILE") == 0) {
                     const char *filename = f->Attribute("FILENAME");
                     if (filename && Path::acceptFile(filename))
-                        compileList.push_back(filename);
+                        compileList.emplace_back(filename);
                 }
             }
         } else if (std::strcmp(node->Name(), "MACROS") == 0) {

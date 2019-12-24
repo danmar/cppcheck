@@ -6,7 +6,7 @@ This is a Python module that helps you access Cppcheck dump data.
 License: No restrictions, use this as you need.
 """
 
-import xml.etree.ElementTree as ET
+from xml.etree import ElementTree
 import argparse
 from fnmatch import fnmatch
 import json
@@ -41,6 +41,13 @@ class Directive:
         self.file = element.get('file')
         self.linenr = int(element.get('linenr'))
 
+    def __repr__(self):
+        attrs = ["str", "file", "linenr"]
+        return "{}({})".format(
+            "Directive",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
+
 
 class ValueType:
     """
@@ -74,6 +81,15 @@ class ValueType:
             self.pointer = int(pointer)
         else:
             self.pointer = 0
+
+    def __repr__(self):
+        attrs = ["type", "sign", "bits", "typeScopeId", "originalTypeName",
+                 "constness", "constness", "pointer"]
+        return "{}({})".format(
+            "ValueType",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
+
 
     def setId(self, IdMap):
         self.typeScope = IdMap[self.typeScopeId]
@@ -253,6 +269,19 @@ class Token:
         self.linenr = int(element.get('linenr'))
         self.column = int(element.get('column'))
 
+    def __repr__(self):
+        attrs = ["Id", "str", "scopeId", "isName", "isUnsigned", "isSigned",
+                "isNumber", "isInt", "isFloat", "isString", "strlen",
+                "isChar", "isOp", "isArithmeticalOp", "isComparisonOp",
+                "isLogicalOp", "isExpandedMacro", "linkId", "varId",
+                "variableId", "functionId", "valuesId", "valueType",
+                "typeScopeId", "astParentId", "astOperand1Id", "file",
+                "linenr", "column"]
+        return "{}({})".format(
+            "Token",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
+
     def setId(self, IdMap):
         self.scope = IdMap[self.scopeId]
         self.link = IdMap[self.linkId]
@@ -321,7 +350,16 @@ class Scope:
         self.nestedInId = element.get('nestedIn')
         self.nestedIn = None
         self.type = element.get('type')
-        self.isExecutable = (self.type in ('Function', 'If', 'Else', 'For', 'While', 'Do', 'Switch', 'Try', 'Catch', 'Unconditional', 'Lambda'))
+        self.isExecutable = (self.type in ('Function', 'If', 'Else', 'For', 'While', 'Do',
+                                           'Switch', 'Try', 'Catch', 'Unconditional', 'Lambda'))
+
+    def __repr__(self):
+        attrs = ["Id", "className", "functionId", "bodyStartId", "bodyEndId",
+                 "nestedInId", "nestedIn", "type", "isExecutable"]
+        return "{}({})".format(
+            "Scope",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
 
     def setId(self, IdMap):
         self.bodyStart = IdMap[self.bodyStartId]
@@ -341,6 +379,7 @@ class Function:
         tokenDef                Token in function definition
         isVirtual               Is this function is virtual
         isImplicitlyVirtual     Is this function is virtual this in the base classes
+        isStatic                Is this function is static
     """
 
     Id = None
@@ -352,6 +391,7 @@ class Function:
     type = None
     isVirtual = None
     isImplicitlyVirtual = None
+    isStatic = None
 
     def __init__(self, element):
         self.Id = element.get('id')
@@ -362,11 +402,21 @@ class Function:
         self.isVirtual = (isVirtual and isVirtual == 'true')
         isImplicitlyVirtual = element.get('isImplicitlyVirtual')
         self.isImplicitlyVirtual = (isImplicitlyVirtual and isImplicitlyVirtual == 'true')
+        isStatic = element.get('isStatic')
+        self.isStatic = (isStatic and isStatic == 'true')
 
         self.argument = {}
         self.argumentId = {}
         for arg in element:
             self.argumentId[int(arg.get('nr'))] = arg.get('variable')
+
+    def __repr__(self):
+        attrs = ["Id", "tokenDefId", "name", "type", "isVirtual",
+                 "isImplicitlyVirtual", "isStatic", "argumentId"]
+        return "{}({})".format(
+            "Function",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
 
     def setId(self, IdMap):
         for argnr, argid in self.argumentId.items():
@@ -446,6 +496,16 @@ class Variable:
         if self.constness:
             self.constness = int(self.constness)
 
+    def __repr__(self):
+        attrs = ["Id", "nameTokenId", "typeStartTokenId", "typeEndTokenId",
+                 "access", "scopeId", "isArgument", "isArray", "isClass",
+                 "isConst", "isGlobal", "isExtern", "isLocal", "isPointer",
+                 "isReference", "isStatic", "constness", ]
+        return "{}({})".format(
+            "Variable",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
+
     def setId(self, IdMap):
         self.nameToken = IdMap[self.nameTokenId]
         self.typeStartToken = IdMap[self.typeStartTokenId]
@@ -513,11 +573,27 @@ class ValueFlow:
             if element.get('inconclusive'):
                 self.inconclusive = True
 
+        def __repr__(self):
+            attrs = ["intvalue", "tokvalue", "floatvalue", "containerSize",
+                     "condition", "valueKind", "inconclusive"]
+            return "{}({})".format(
+                "Value",
+                ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+            )
+
     def __init__(self, element):
         self.Id = element.get('id')
         self.values = []
         for value in element:
             self.values.append(ValueFlow.Value(value))
+
+    def __repr__(self):
+        attrs = ["Id", "values"]
+        return "{}({})".format(
+            "ValueFlow",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
+
 
 class Suppression:
     """
@@ -542,14 +618,22 @@ class Suppression:
         self.lineNumber = element.get('lineNumber')
         self.symbolName = element.get('symbolName')
 
+    def __repr__(self):
+        attrs = ['errorId' , "fileName", "lineNumber", "symbolName"]
+        return "{}({})".format(
+            "Suppression",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
+
     def isMatch(self, file, line, message, errorId):
         if ((self.fileName is None or fnmatch(file, self.fileName))
-            and (self.lineNumber is None or line == self.lineNumber)
-            and (self.symbolName is None or fnmatch(message, '*'+self.symbolName+'*'))
-            and fnmatch(errorId, self.errorId)):
+                and (self.lineNumber is None or line == self.lineNumber)
+                and (self.symbolName is None or fnmatch(message, '*'+self.symbolName+'*'))
+                and fnmatch(errorId, self.errorId)):
             return True
         else:
             return False
+
 
 class Configuration:
     """
@@ -647,6 +731,13 @@ class Configuration:
         for variable in arguments:
             variable.setId(IdMap)
 
+    def __repr__(self):
+        attrs = ["name"]
+        return "{}({})".format(
+            "Configuration",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
+
 
 class Platform:
     """
@@ -680,6 +771,15 @@ class Platform:
         self.long_long_bit = int(platformnode.get('long_long_bit'))
         self.pointer_bit = int(platformnode.get('pointer_bit'))
 
+    def __repr__(self):
+        attrs = ["name", "char_bit", "short_bit", "int_bit",
+                 "long_bit", "long_long_bit", "pointer_bit"]
+        return "{}({})".format(
+            "Platform",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
+
+
 class Standards:
     """
     Standards class
@@ -694,7 +794,15 @@ class Standards:
     def __init__(self, standardsnode):
         self.c = standardsnode.find("c").get("version")
         self.cpp = standardsnode.find("cpp").get("version")
-        self.posix = standardsnode.find("posix") != None
+        self.posix = standardsnode.find("posix") is not None
+
+    def __repr__(self):
+        attrs = ["c", "cpp", "posix"]
+        return "{}({})".format(
+            "Standards",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
+
 
 class CppcheckData:
     """
@@ -740,7 +848,7 @@ class CppcheckData:
     def __init__(self, filename):
         self.configurations = []
 
-        data = ET.parse(filename)
+        data = ElementTree.parse(filename)
 
         for platformNode in data.getroot():
             if platformNode.tag == 'platform':
@@ -761,17 +869,22 @@ class CppcheckData:
                 self.rawTokens[i + 1].previous = self.rawTokens[i]
                 self.rawTokens[i].next = self.rawTokens[i + 1]
 
-
         for suppressionsNode in data.getroot():
             if suppressionsNode.tag == "suppressions":
                 for suppression in suppressionsNode:
                     self.suppressions.append(Suppression(suppression))
 
-
         # root is 'dumps' node, each config has its own 'dump' subnode.
         for cfgnode in data.getroot():
             if cfgnode.tag == 'dump':
                 self.configurations.append(Configuration(cfgnode))
+
+    def __repr__(self):
+        attrs = ["configurations", "platform"]
+        return "{}({})".format(
+            "CppcheckData",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
 
 
 # Get function arguments
@@ -842,8 +955,8 @@ class CppCheckFormatter(argparse.HelpFormatter):
 
 def ArgumentParser():
     """
-        Returns an argparse argument parser with an already-added
-        argument definition for -t/--template
+    Returns an argparse argument parser with an already-added
+    argument definition for -t/--template
     """
     parser = argparse.ArgumentParser(formatter_class=CppCheckFormatter)
     parser.add_argument('-t', '--template', metavar='<text>',
@@ -853,6 +966,14 @@ def ArgumentParser():
                         "'{file}({line}):({severity}) {message}' or\n"
                         "'{callstack} {message}'\n"
                         "Pre-defined templates: gcc, vs, edit")
+    parser.add_argument("dumpfile", nargs='*',
+                        help="Path of dump files from cppcheck.")
+    parser.add_argument("--cli",
+                        help="Addon is executed from Cppcheck",
+                        action="store_true")
+    parser.add_argument("-q", "--quiet",
+                        help='do not print "Checking ..." lines',
+                        action="store_true")
     return parser
 
 

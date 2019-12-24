@@ -280,6 +280,118 @@ else
 fi
 ${CPPCHECK} ${CPPCHECK_OPT} --library=cairo ${DIR}cairo.c
 
+${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=googletest ${DIR}googletest.cpp
+
+# kde.cpp
+set +e
+KDECONFIG=$(kde4-config --path include)
+KDECONFIG_RETURNCODE=$?
+set -e
+if [ $KDECONFIG_RETURNCODE -ne 0 ]; then
+    echo "kde4-config does not work, skipping syntax check."
+else
+    set +e
+    KDEQTCONFIG=$(pkg-config --cflags QtCore)
+    KDEQTCONFIG_RETURNCODE=$?
+    set -e
+    if [ $KDEQTCONFIG_RETURNCODE -ne 0 ]; then
+        echo "Suitable Qt not present, Qt is necessary for KDE. Skipping syntax check."
+    else
+        set +e
+        echo -e "#include <KDE/KGlobal>\n" | ${CXX} ${CXX_OPT} -I${KDECONFIG} ${KDEQTCONFIG} -x c++ -
+        KDECHECK_RETURNCODE=$?
+        set -e
+        if [ $KDECHECK_RETURNCODE -ne 0 ]; then
+            echo "KDE headers not completely present or not working, skipping syntax check with ${CXX}."
+        else
+            echo "KDE found, checking syntax with ${CXX} now."
+            ${CXX} ${CXX_OPT} -I${KDECONFIG} ${KDEQTCONFIG} ${DIR}kde.cpp
+        fi
+    fi
+fi
+${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=kde ${DIR}kde.cpp
+
+# libsigc++.cpp
+set +e
+pkg-config --version
+PKGCONFIG_RETURNCODE=$?
+set -e
+if [ $PKGCONFIG_RETURNCODE -ne 0 ]; then
+    echo "pkg-config needed to retrieve libsigc++ configuration is not available, skipping syntax check."
+else
+    set +e
+    LIBSIGCPPCONFIG=$(pkg-config --cflags sigc++-2.0)
+    LIBSIGCPPCONFIG_RETURNCODE=$?
+    set -e
+    if [ $LIBSIGCPPCONFIG_RETURNCODE -eq 0 ]; then
+        set +e
+        echo -e "#include <sigc++/sigc++.h>\n" | ${CXX} ${CXX_OPT} ${LIBSIGCPPCONFIG} -x c++ -
+        LIBSIGCPPCONFIG_RETURNCODE=$?
+        set -e
+        if [ $LIBSIGCPPCONFIG_RETURNCODE -ne 0 ]; then
+            echo "libsigc++ not completely present or not working, skipping syntax check with ${CXX}."
+        else
+            echo "libsigc++ found and working, checking syntax with ${CXX} now."
+            ${CXX} ${CXX_OPT} ${LIBSIGCPPCONFIG} ${DIR}libsigc++.cpp
+        fi
+    fi
+fi
+${CPPCHECK} ${CPPCHECK_OPT} --library=libsigc++ ${DIR}libsigc++.cpp
+
+# openssl.c
+set +e
+pkg-config --version
+PKGCONFIG_RETURNCODE=$?
+set -e
+if [ $PKGCONFIG_RETURNCODE -ne 0 ]; then
+    echo "pkg-config needed to retrieve OpenSSL configuration is not available, skipping syntax check."
+else
+    set +e
+    OPENSSLCONFIG=$(pkg-config --cflags libssl)
+    OPENSSLCONFIG_RETURNCODE=$?
+    set -e
+    if [ $OPENSSLCONFIG_RETURNCODE -eq 0 ]; then
+        set +e
+        echo -e "#include <openssl/ssl.h>" | ${CC} ${CC_OPT} ${OPENSSLCONFIG} -x c -
+        OPENSSLCONFIG_RETURNCODE=$?
+        set -e
+        if [ $OPENSSLCONFIG_RETURNCODE -ne 0 ]; then
+            echo "OpenSSL not completely present or not working, skipping syntax check with ${CC}."
+        else
+            echo "OpenSSL found and working, checking syntax with ${CC} now."
+            ${CC} ${CC_OPT} ${OPENSSLCONFIG} ${DIR}openssl.c
+        fi
+    fi
+fi
+${CPPCHECK} ${CPPCHECK_OPT} --library=openssl ${DIR}openssl.c
+
+# opencv2.cpp
+set +e
+pkg-config --version
+PKGCONFIG_RETURNCODE=$?
+set -e
+if [ $PKGCONFIG_RETURNCODE -ne 0 ]; then
+    echo "pkg-config needed to retrieve OpenCV configuration is not available, skipping syntax check."
+else
+    set +e
+    OPENCVCONFIG=$(pkg-config --cflags opencv)
+    OPENCVCONFIG_RETURNCODE=$?
+    set -e
+    if [ $OPENCVCONFIG_RETURNCODE -eq 0 ]; then
+        set +e
+        echo -e "#include <opencv2/opencv.hpp>\n" | ${CXX} ${CXX_OPT} ${OPENCVCONFIG} -x c++ -
+        OPENCVCONFIG_RETURNCODE=$?
+        set -e
+        if [ $OPENCVCONFIG_RETURNCODE -ne 0 ]; then
+            echo "OpenCV not completely present or not working, skipping syntax check with ${CXX}."
+        else
+            echo "OpenCV found and working, checking syntax with ${CXX} now."
+            ${CXX} ${CXX_OPT} ${OPENCVCONFIG} ${DIR}opencv2.cpp
+        fi
+    fi
+fi
+${CPPCHECK} ${CPPCHECK_OPT} --library=opencv2 ${DIR}opencv2.cpp
+
 # Check the syntax of the defines in the configuration files
 set +e
 xmlstarlet --version

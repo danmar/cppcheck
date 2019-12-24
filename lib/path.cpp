@@ -134,7 +134,7 @@ std::string Path::getCurrentPath()
 #ifndef _WIN32
     if (getcwd(currentPath, 4096) != nullptr)
 #else
-    if (_getcwd(currentPath, 4096) != 0)
+    if (_getcwd(currentPath, 4096) != nullptr)
 #endif
         return std::string(currentPath);
 

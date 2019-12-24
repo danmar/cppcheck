@@ -56,10 +56,13 @@ private:
         TEST_CASE(multiCompare3);                   // false positive for %or% on code using "|="
         TEST_CASE(multiCompare4);
         TEST_CASE(multiCompare5);
+        TEST_CASE(charTypes);
+        TEST_CASE(stringTypes);
         TEST_CASE(getStrLength);
         TEST_CASE(getStrSize);
         TEST_CASE(getCharAt);
         TEST_CASE(strValue);
+        TEST_CASE(concatStr);
 
         TEST_CASE(deleteLast);
         TEST_CASE(deleteFirst);
@@ -90,7 +93,6 @@ private:
         TEST_CASE(operators);
 
         TEST_CASE(updateProperties)
-        TEST_CASE(updatePropertiesConcatStr)
         TEST_CASE(isNameGuarantees1)
         TEST_CASE(isNameGuarantees2)
         TEST_CASE(isNameGuarantees3)
@@ -266,6 +268,102 @@ private:
         ASSERT_EQUALS(true, Token::multiCompare(&tok, "+|%or%|%oror%", 0) >= 0);
     }
 
+    void charTypes() const {
+        Token tok;
+
+        tok.str("'a'");
+        ASSERT_EQUALS(true, tok.isCChar());
+        ASSERT_EQUALS(false, tok.isUtf8());
+        ASSERT_EQUALS(false, tok.isUtf16());
+        ASSERT_EQUALS(false, tok.isUtf32());
+        ASSERT_EQUALS(false, tok.isLong());
+        ASSERT_EQUALS(false, tok.isCMultiChar());
+
+        tok.str("u8'a'");
+        ASSERT_EQUALS(false, tok.isCChar());
+        ASSERT_EQUALS(true, tok.isUtf8());
+        ASSERT_EQUALS(false, tok.isUtf16());
+        ASSERT_EQUALS(false, tok.isUtf32());
+        ASSERT_EQUALS(false, tok.isLong());
+        ASSERT_EQUALS(false, tok.isCMultiChar());
+
+        tok.str("u'a'");
+        ASSERT_EQUALS(false, tok.isCChar());
+        ASSERT_EQUALS(false, tok.isUtf8());
+        ASSERT_EQUALS(true, tok.isUtf16());
+        ASSERT_EQUALS(false, tok.isUtf32());
+        ASSERT_EQUALS(false, tok.isLong());
+        ASSERT_EQUALS(false, tok.isCMultiChar());
+
+        tok.str("U'a'");
+        ASSERT_EQUALS(false, tok.isCChar());
+        ASSERT_EQUALS(false, tok.isUtf8());
+        ASSERT_EQUALS(false, tok.isUtf16());
+        ASSERT_EQUALS(true, tok.isUtf32());
+        ASSERT_EQUALS(false, tok.isLong());
+        ASSERT_EQUALS(false, tok.isCMultiChar());
+
+        tok.str("L'a'");
+        ASSERT_EQUALS(false, tok.isCChar());
+        ASSERT_EQUALS(false, tok.isUtf8());
+        ASSERT_EQUALS(false, tok.isUtf16());
+        ASSERT_EQUALS(false, tok.isUtf32());
+        ASSERT_EQUALS(true, tok.isLong());
+        ASSERT_EQUALS(false, tok.isCMultiChar());
+
+        tok.str("'aaa'");
+        ASSERT_EQUALS(false, tok.isCChar());
+        ASSERT_EQUALS(false, tok.isUtf8());
+        ASSERT_EQUALS(false, tok.isUtf16());
+        ASSERT_EQUALS(false, tok.isUtf32());
+        ASSERT_EQUALS(false, tok.isLong());
+        ASSERT_EQUALS(true, tok.isCMultiChar());
+    }
+
+    void stringTypes() const {
+        Token tok;
+
+        tok.str("\"a\"");
+        ASSERT_EQUALS(true, tok.isCChar());
+        ASSERT_EQUALS(false, tok.isUtf8());
+        ASSERT_EQUALS(false, tok.isUtf16());
+        ASSERT_EQUALS(false, tok.isUtf32());
+        ASSERT_EQUALS(false, tok.isLong());
+        ASSERT_EQUALS(false, tok.isCMultiChar());
+
+        tok.str("u8\"a\"");
+        ASSERT_EQUALS(false, tok.isCChar());
+        ASSERT_EQUALS(true, tok.isUtf8());
+        ASSERT_EQUALS(false, tok.isUtf16());
+        ASSERT_EQUALS(false, tok.isUtf32());
+        ASSERT_EQUALS(false, tok.isLong());
+        ASSERT_EQUALS(false, tok.isCMultiChar());
+
+        tok.str("u\"a\"");
+        ASSERT_EQUALS(false, tok.isCChar());
+        ASSERT_EQUALS(false, tok.isUtf8());
+        ASSERT_EQUALS(true, tok.isUtf16());
+        ASSERT_EQUALS(false, tok.isUtf32());
+        ASSERT_EQUALS(false, tok.isLong());
+        ASSERT_EQUALS(false, tok.isCMultiChar());
+
+        tok.str("U\"a\"");
+        ASSERT_EQUALS(false, tok.isCChar());
+        ASSERT_EQUALS(false, tok.isUtf8());
+        ASSERT_EQUALS(false, tok.isUtf16());
+        ASSERT_EQUALS(true, tok.isUtf32());
+        ASSERT_EQUALS(false, tok.isLong());
+        ASSERT_EQUALS(false, tok.isCMultiChar());
+
+        tok.str("L\"a\"");
+        ASSERT_EQUALS(false, tok.isCChar());
+        ASSERT_EQUALS(false, tok.isUtf8());
+        ASSERT_EQUALS(false, tok.isUtf16());
+        ASSERT_EQUALS(false, tok.isUtf32());
+        ASSERT_EQUALS(true, tok.isLong());
+        ASSERT_EQUALS(false, tok.isCMultiChar());
+    }
+
     void getStrLength() const {
         Token tok;
 
@@ -296,18 +394,19 @@ private:
 
     void getStrSize() const {
         Token tok;
+        Settings settings;
 
         tok.str("\"\"");
-        ASSERT_EQUALS(sizeof(""), Token::getStrSize(&tok));
+        ASSERT_EQUALS(sizeof(""), Token::getStrSize(&tok, &settings));
 
         tok.str("\"abc\"");
-        ASSERT_EQUALS(sizeof("abc"), Token::getStrSize(&tok));
+        ASSERT_EQUALS(sizeof("abc"), Token::getStrSize(&tok, &settings));
 
         tok.str("\"\\0abc\"");
-        ASSERT_EQUALS(sizeof("\0abc"), Token::getStrSize(&tok));
+        ASSERT_EQUALS(sizeof("\0abc"), Token::getStrSize(&tok, &settings));
 
         tok.str("\"\\\\\"");
-        ASSERT_EQUALS(sizeof("\\"), Token::getStrSize(&tok));
+        ASSERT_EQUALS(sizeof("\\"), Token::getStrSize(&tok, &settings));
     }
 
     void getCharAt() const {
@@ -363,6 +462,44 @@ private:
         ASSERT_EQUALS("a", tok.strValue());
     }
 
+    void concatStr() const {
+        Token tok;
+
+        tok.str("\"\"");
+        tok.concatStr("\"\"");
+        ASSERT_EQUALS("", tok.strValue());
+        ASSERT(tok.isCChar());
+
+        tok.str("\"ab\"");
+        tok.concatStr("\"cd\"");
+        ASSERT_EQUALS("abcd", tok.strValue());
+        ASSERT(tok.isCChar());
+
+        tok.str("L\"ab\"");
+        tok.concatStr("L\"cd\"");
+        ASSERT_EQUALS("abcd", tok.strValue());
+        ASSERT(tok.isLong());
+
+        tok.str("L\"ab\"");
+        tok.concatStr("\"cd\"");
+        ASSERT_EQUALS("abcd", tok.strValue());
+        ASSERT(tok.isLong());
+
+        tok.str("\"ab\"");
+        tok.concatStr("L\"cd\"");
+        ASSERT_EQUALS("abcd", tok.strValue());
+        ASSERT(tok.isLong());
+
+        tok.str("\"ab\"");
+        tok.concatStr("L\"\"");
+        ASSERT_EQUALS("ab", tok.strValue());
+        ASSERT(tok.isLong());
+
+        tok.str("\"ab\"");
+        tok.concatStr("u8\"cd\"");
+        ASSERT_EQUALS("abcd", tok.strValue());
+        ASSERT(tok.isUtf8());
+    }
 
     void deleteLast() const {
         TokensFrontBack listEnds{ nullptr };
@@ -833,14 +970,14 @@ private:
 
     void isStandardType() const {
         std::vector<std::string> standard_types;
-        standard_types.push_back("bool");
-        standard_types.push_back("char");
-        standard_types.push_back("short");
-        standard_types.push_back("int");
-        standard_types.push_back("long");
-        standard_types.push_back("float");
-        standard_types.push_back("double");
-        standard_types.push_back("size_t");
+        standard_types.emplace_back("bool");
+        standard_types.emplace_back("char");
+        standard_types.emplace_back("short");
+        standard_types.emplace_back("int");
+        standard_types.emplace_back("long");
+        standard_types.emplace_back("float");
+        standard_types.emplace_back("double");
+        standard_types.emplace_back("size_t");
 
         std::vector<std::string>::const_iterator test_op, test_ops_end = standard_types.end();
         for (test_op = standard_types.begin(); test_op != test_ops_end; ++test_op) {
@@ -876,18 +1013,6 @@ private:
 
         ASSERT_EQUALS(false, tok.isName());
         ASSERT_EQUALS(true, tok.isNumber());
-    }
-
-    void updatePropertiesConcatStr() const {
-        Token tok;
-        tok.str("true");
-
-        ASSERT_EQUALS(true, tok.isBoolean());
-
-        tok.concatStr("123");
-
-        ASSERT_EQUALS(false, tok.isBoolean());
-        ASSERT_EQUALS("tru23", tok.str());
     }
 
     void isNameGuarantees1() const {
@@ -990,6 +1115,9 @@ private:
 
         givenACodeSampleToTokenize data4("return L\"a\";");
         ASSERT_EQUALS("returnL\"a\"", data4.tokens()->expressionString());
+
+        givenACodeSampleToTokenize data5("return U\"a\";");
+        ASSERT_EQUALS("returnU\"a\"", data5.tokens()->expressionString());
     }
 
     void hasKnownIntValue() {

@@ -286,6 +286,7 @@ private:
         ASSERT_EQUALS((int)('\x10'), MathLib::toLongNumber("'\\x10'"));
         ASSERT_EQUALS((int)('\100'), MathLib::toLongNumber("'\\100'"));
         ASSERT_EQUALS((int)('\200'), MathLib::toLongNumber("'\\200'"));
+        ASSERT_EQUALS((int)(L'A'),   MathLib::toLongNumber("L'A'"));
 #ifdef __GNUC__
         // BEGIN Implementation-specific results
         ASSERT_EQUALS((int)('AB'),    MathLib::toLongNumber("'AB'"));
@@ -375,6 +376,7 @@ private:
         ASSERT_EQUALS_DOUBLE(0.0,    MathLib::toDoubleNumber("-0.0"),     0.000001);
         ASSERT_EQUALS_DOUBLE(0.0,    MathLib::toDoubleNumber("+0.0"),     0.000001);
         ASSERT_EQUALS_DOUBLE('0',    MathLib::toDoubleNumber("'0'"),      0.000001);
+        ASSERT_EQUALS_DOUBLE(L'0',   MathLib::toDoubleNumber("L'0'"),     0.000001);
 
         ASSERT_EQUALS_DOUBLE(192, MathLib::toDoubleNumber("0x0.3p10"), 0.000001);
         ASSERT_EQUALS_DOUBLE(5.42101e-20, MathLib::toDoubleNumber("0x1p-64"), 1e-20);
@@ -704,7 +706,7 @@ private:
         ASSERT_EQUALS(false, MathLib::isIntHex(""));
     }
 
-    void isValidIntegerSuffix(void) const {
+    void isValidIntegerSuffix() const {
         // negative testing
         ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(""));
         ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix("ux"));
@@ -889,7 +891,7 @@ private:
         ASSERT_EQUALS("-inf.0", MathLib::divide("-3.0", "-0.0f")); // inf (#5142)
     }
 
-    void isdec(void) const {
+    void isdec() const {
         // positive testing
         ASSERT_EQUALS(true, MathLib::isDec("1"));
         ASSERT_EQUALS(true, MathLib::isDec("+1"));

@@ -30,6 +30,7 @@
 #include "suppressions.h"
 #include "timer.h"
 
+#include <atomic>
 #include <list>
 #include <set>
 #include <string>
@@ -65,7 +66,7 @@ private:
     int mEnabled;
 
     /** @brief terminate checking */
-    static bool mTerminated;
+    static std::atomic<bool> mTerminated;
 
 public:
     Settings();
@@ -190,6 +191,8 @@ public:
     /** @brief Enable verification analysis */
     bool verification;
 
+    bool debugVerification;
+
     /** @brief check unknown function return values */
     std::set<std::string> checkUnknownFunctionReturn;
 
@@ -217,6 +220,9 @@ public:
     /** @brief Maximum number of configurations to check before bailing.
         Default is 12. (--max-configs=N) */
     unsigned int maxConfigs;
+
+    /** @brief --check all configurations */
+    bool checkAllConfigurations;
 
     /** @brief --max-ctu-depth */
     int maxCtuDepth;

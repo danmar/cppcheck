@@ -247,13 +247,13 @@ void CheckOther::checkSuspiciousSemicolon()
             if (Token::simpleMatch(scope.bodyStart, "{ ; } {") &&
                 scope.bodyStart->previous()->linenr() == scope.bodyStart->tokAt(2)->linenr()
                 && scope.bodyStart->linenr()+1 >= scope.bodyStart->tokAt(3)->linenr()) {
-                SuspiciousSemicolonError(scope.classDef);
+                suspiciousSemicolonError(scope.classDef);
             }
         }
     }
 }
 
-void CheckOther::SuspiciousSemicolonError(const Token* tok)
+void CheckOther::suspiciousSemicolonError(const Token* tok)
 {
     reportError(tok, Severity::warning, "suspiciousSemicolon",
                 "Suspicious use of ; at the end of '" + (tok ? tok->str() : std::string()) + "' statement.", CWE398, true);
@@ -344,26 +344,20 @@ void CheckOther::invalidPointerCast()
             if (fromType->type != toType->type && fromType->type >= ValueType::Type::BOOL && toType->type >= ValueType::Type::BOOL && (toType->type != ValueType::Type::CHAR || printInconclusive)) {
                 if (toType->isIntegral() && fromType->isIntegral())
                     continue;
-                std::string toStr = toType->isIntegral() ? "integer *" : toType->str();
-                toStr.erase(toStr.size()-2);
-                std::string fromStr = fromType->isIntegral() ? "integer *" : fromType->str();
-                fromStr.erase(fromStr.size() - 2);
 
-                invalidPointerCastError(tok, fromStr, toStr, toType->type == ValueType::Type::CHAR);
+                invalidPointerCastError(tok, fromType->str(), toType->str(), toType->type == ValueType::Type::CHAR, toType->isIntegral());
             }
         }
     }
 }
 
-void CheckOther::invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive)
+
+void CheckOther::invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive, bool toIsInt)
 {
-    if (to == "integer") { // If we cast something to int*, this can be useful to play with its binary data representation
-        if (!inconclusive)
-            reportError(tok, Severity::portability, "invalidPointerCast", "Casting from " + from + "* to integer* is not portable due to different binary data representations on different platforms.", CWE704, false);
-        else
-            reportError(tok, Severity::portability, "invalidPointerCast", "Casting from " + from + "* to char* is not portable due to different binary data representations on different platforms.", CWE704, true);
+    if (toIsInt) { // If we cast something to int*, this can be useful to play with its binary data representation
+        reportError(tok, Severity::portability, "invalidPointerCast", "Casting from " + from + " to " + to + " is not portable due to different binary data representations on different platforms.", CWE704, inconclusive);
     } else
-        reportError(tok, Severity::portability, "invalidPointerCast", "Casting between " + from + "* and " + to + "* which have an incompatible binary data representation.", CWE704, false);
+        reportError(tok, Severity::portability, "invalidPointerCast", "Casting between " + from + " and " + to + " which have an incompatible binary data representation.", CWE704, false);
 }
 
 //---------------------------------------------------------------------------
@@ -442,6 +436,8 @@ void CheckOther::checkRedundantAssignment()
                         if (Token::simpleMatch(rhs, "{ 0 }"))
                             return ChildrenToVisit::none;
                         if (Token::Match(rhs, "%str%|%num%|%name%") && !rhs->varId())
+                            return ChildrenToVisit::none;
+                        if (Token::Match(rhs, ":: %name%") && rhs->hasKnownIntValue())
                             return ChildrenToVisit::none;
                         if (rhs->isCast())
                             return ChildrenToVisit::op2;
@@ -1232,6 +1228,10 @@ void CheckOther::checkPassByReference()
         if (var->scope() && var->scope()->function->arg->link()->strAt(-1) == "...")
             continue; // references could not be used as va_start parameters (#5824)
 
+        if ((var->declEndToken() && var->declEndToken()->isExternC()) ||
+            (var->scope() && var->scope()->function && var->scope()->function->tokenDef && var->scope()->function->tokenDef->isExternC()))
+            continue; // references cannot be used in functions in extern "C" blocks
+
         bool inconclusive = false;
 
         if (var->valueType()->type == ValueType::Type::CONTAINER) {
@@ -1357,7 +1357,7 @@ void CheckOther::checkConstVariable()
         if (isVariableChanged(var, mSettings, mTokenizer->isCPP()))
             continue;
         if (Function::returnsReference(function) &&
-            Token::findmatch(var->nameToken(), "return %varid% ;|[", scope->bodyEnd, var->declarationId()))
+            Token::findmatch(var->nameToken(), "return %varid% ;|[|.", scope->bodyEnd, var->declarationId()))
             continue;
         // Skip if address is taken
         if (Token::findmatch(var->nameToken(), "& %varid%", scope->bodyEnd, var->declarationId()))
@@ -1569,7 +1569,7 @@ void CheckOther::checkIncompleteStatement()
         if (!Token::simpleMatch(tok->astParent(), ";") && !Token::simpleMatch(rtok, ";") &&
             !Token::Match(tok->previous(), ";|}|{ %any% ;"))
             continue;
-        // Skipe statement expressions
+        // Skip statement expressions
         if (Token::simpleMatch(rtok, "; } )"))
             continue;
         if (!isConstStatement(tok))
@@ -1587,6 +1587,10 @@ void CheckOther::checkIncompleteStatement()
 
 void CheckOther::constStatementError(const Token *tok, const std::string &type, bool inconclusive)
 {
+    const Token *valueTok = tok;
+    while (valueTok && valueTok->isCast())
+        valueTok = valueTok->astOperand2() ? valueTok->astOperand2() : valueTok->astOperand1();
+
     std::string msg;
     if (Token::simpleMatch(tok, "=="))
         msg = "Found suspicious equality comparison. Did you intend to assign a value instead?";
@@ -1594,8 +1598,12 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type, 
         msg = "Found suspicious operator '" + tok->str() + "'";
     else if (Token::Match(tok, "%var%"))
         msg = "Unused variable value '" + tok->str() + "'";
-    else
+    else if (Token::Match(valueTok, "%str%|%num%"))
+        msg = "Redundant code: Found a statement that begins with " + std::string(valueTok->isNumber() ? "numeric" : "string") + " constant.";
+    else if (!tok)
         msg = "Redundant code: Found a statement that begins with " + type + " constant.";
+    else
+        return; // Strange!
     reportError(tok, Severity::warning, "constStatement", msg, CWE398, inconclusive);
 }
 
@@ -1610,14 +1618,6 @@ void CheckOther::checkZeroDivision()
         if (tok->str() != "%" && tok->str() != "/" && tok->str() != "%=" && tok->str() != "/=")
             continue;
         if (!tok->valueType() || !tok->valueType()->isIntegral())
-            continue;
-        if (tok->astOperand1()->isNumber()) {
-            if (MathLib::isFloat(tok->astOperand1()->str()))
-                continue;
-        } else if (tok->astOperand1()->isName()) {
-            if (!tok->astOperand1()->valueType()->isIntegral())
-                continue;
-        } else if (!tok->astOperand1()->isArithmeticalOp())
             continue;
 
         // Value flow..
@@ -1987,7 +1987,15 @@ void CheckOther::checkDuplicateExpression()
             if (tok->isOp() && tok->astOperand1() && !Token::Match(tok, "+|*|<<|>>|+=|*=|<<=|>>=")) {
                 if (Token::Match(tok, "==|!=|-") && astIsFloat(tok->astOperand1(), true))
                     continue;
-                if (isSameExpression(mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, true, true, &errorPath)) {
+                const bool followVar = !isConstVarExpression(tok) || Token::Match(tok, "%comp%|%oror%|&&");
+                if (isSameExpression(mTokenizer->isCPP(),
+                                     true,
+                                     tok->astOperand1(),
+                                     tok->astOperand2(),
+                                     mSettings->library,
+                                     true,
+                                     followVar,
+                                     &errorPath)) {
                     if (isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand1())) {
                         const bool assignment = tok->str() == "=";
                         if (assignment && warningEnabled)
@@ -2005,17 +2013,39 @@ void CheckOther::checkDuplicateExpression()
                             duplicateExpressionError(tok->astOperand1(), tok->astOperand2(), tok, errorPath);
                         }
                     }
-                } else if (tok->str() == "=" && Token::simpleMatch(tok->astOperand2(), "=") && isSameExpression(mTokenizer->isCPP(), false, tok->astOperand1(), tok->astOperand2()->astOperand1(), mSettings->library, true, false)) {
+                } else if (tok->str() == "=" && Token::simpleMatch(tok->astOperand2(), "=") &&
+                           isSameExpression(mTokenizer->isCPP(),
+                                            false,
+                                            tok->astOperand1(),
+                                            tok->astOperand2()->astOperand1(),
+                                            mSettings->library,
+                                            true,
+                                            false)) {
                     if (warningEnabled && isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand1())) {
                         selfAssignmentError(tok, tok->astOperand1()->expressionString());
                     }
                 } else if (styleEnabled &&
-                           isOppositeExpression(mTokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), mSettings->library, false, true, &errorPath) &&
+                           isOppositeExpression(mTokenizer->isCPP(),
+                                                tok->astOperand1(),
+                                                tok->astOperand2(),
+                                                mSettings->library,
+                                                false,
+                                                true,
+                                                &errorPath) &&
                            !Token::Match(tok, "=|-|-=|/|/=") &&
                            isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand1())) {
                     oppositeExpressionError(tok, errorPath);
                 } else if (!Token::Match(tok, "[-/%]")) { // These operators are not associative
-                    if (styleEnabled && tok->astOperand2() && tok->str() == tok->astOperand1()->str() && isSameExpression(mTokenizer->isCPP(), true, tok->astOperand2(), tok->astOperand1()->astOperand2(), mSettings->library, true, true, &errorPath) && isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand2()))
+                    if (styleEnabled && tok->astOperand2() && tok->str() == tok->astOperand1()->str() &&
+                        isSameExpression(mTokenizer->isCPP(),
+                                         true,
+                                         tok->astOperand2(),
+                                         tok->astOperand1()->astOperand2(),
+                                         mSettings->library,
+                                         true,
+                                         followVar,
+                                         &errorPath) &&
+                        isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand2()))
                         duplicateExpressionError(tok->astOperand2(), tok->astOperand1()->astOperand2(), tok, errorPath);
                     else if (tok->astOperand2() && isConstExpression(tok->astOperand1(), mSettings->library, true, mTokenizer->isCPP())) {
                         const Token *ast1 = tok->astOperand1();
@@ -2925,6 +2955,9 @@ void CheckOther::checkShadowVariables()
         while (functionScope && functionScope->type != Scope::ScopeType::eFunction && functionScope->type != Scope::ScopeType::eLambda)
             functionScope = functionScope->nestedIn;
         for (const Variable &var : scope.varlist) {
+            if (var.nameToken() && var.nameToken()->isExpandedMacro()) // #8903
+                continue;
+
             if (functionScope && functionScope->type == Scope::ScopeType::eFunction && functionScope->function) {
                 bool shadowArg = false;
                 for (const Variable &arg : functionScope->function->argumentList) {

@@ -12,6 +12,6 @@ cppcheck_tools_path=..
 while :
 do
     git pull
-    python "${cppcheck_tools_path}/donate-cpu.py" --bandwidth-limit=1m --max-packages=100
+    "${cppcheck_tools_path}/donate-cpu.py" --bandwidth-limit=1m --max-packages=100
     sleep 10
 done

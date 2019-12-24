@@ -39,7 +39,7 @@ static std::vector<std::string> getnames(const char *names)
         ret.emplace_back(names, p-names);
         names = p + 1;
     }
-    ret.push_back(names);
+    ret.emplace_back(names);
     return ret;
 }
 
@@ -96,7 +96,7 @@ Library::Error Library::load(const char exename[], const char path[])
 
         std::list<std::string> cfgfolders;
 #ifdef FILESDIR
-        cfgfolders.push_back(FILESDIR "/cfg");
+        cfgfolders.emplace_back(FILESDIR "/cfg");
 #endif
         if (exename) {
             const std::string exepath(Path::fromNativeSeparators(Path::getPathFromFilename(exename)));
@@ -105,8 +105,8 @@ Library::Error Library::load(const char exename[], const char path[])
         }
 
         while (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND && !cfgfolders.empty()) {
-            const std::string cfgfolder(cfgfolders.front());
-            cfgfolders.pop_front();
+            const std::string cfgfolder(cfgfolders.back());
+            cfgfolders.pop_back();
             const char *sep = (!cfgfolder.empty() && endsWith(cfgfolder,'/') ? "" : "/");
             const std::string filename(cfgfolder + sep + fullfilename);
             error = doc.LoadFile(filename.c_str());
@@ -405,6 +405,9 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             const char* const opLessAllowed = node->Attribute("opLessAllowed");
             if (opLessAllowed)
                 container.opLessAllowed = std::string(opLessAllowed) == "true";
+            const char* const hasInitializerListConstructor = node->Attribute("hasInitializerListConstructor");
+            if (hasInitializerListConstructor)
+                container.hasInitializerListConstructor = std::string(hasInitializerListConstructor) == "true";
 
             for (const tinyxml2::XMLElement *containerNode = node->FirstChildElement(); containerNode; containerNode = containerNode->NextSiblingElement()) {
                 const std::string containerNodeName = containerNode->Name();
@@ -508,11 +511,43 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                 smartPointers.insert(className);
         }
 
+        else if (nodename == "type-checks") {
+            for (const tinyxml2::XMLElement *checkNode = node->FirstChildElement(); checkNode; checkNode = checkNode->NextSiblingElement()) {
+                const std::string &checkName = checkNode->Name();
+                for (const tinyxml2::XMLElement *checkTypeNode = checkNode->FirstChildElement(); checkTypeNode; checkTypeNode = checkTypeNode->NextSiblingElement()) {
+                    const std::string checkTypeName = checkTypeNode->Name();
+                    const char *typeName = checkTypeNode->GetText();
+                    if (!typeName)
+                        continue;
+                    if (checkTypeName == "check")
+                        mTypeChecks[std::pair<std::string,std::string>(checkName, typeName)] = TypeCheck::check;
+                    else if (checkTypeName == "suppress")
+                        mTypeChecks[std::pair<std::string,std::string>(checkName, typeName)] = TypeCheck::suppress;
+                }
+            }
+        }
+
         else if (nodename == "podtype") {
             const char * const name = node->Attribute("name");
             if (!name)
                 return Error(MISSING_ATTRIBUTE, "name");
             PodType podType = {0};
+            podType.stdtype = PodType::NO;
+            const char * const stdtype = node->Attribute("stdtype");
+            if (stdtype) {
+                if (std::strcmp(stdtype, "bool") == 0)
+                    podType.stdtype = PodType::BOOL;
+                else if (std::strcmp(stdtype, "char") == 0)
+                    podType.stdtype = PodType::CHAR;
+                else if (std::strcmp(stdtype, "short") == 0)
+                    podType.stdtype = PodType::SHORT;
+                else if (std::strcmp(stdtype, "int") == 0)
+                    podType.stdtype = PodType::INT;
+                else if (std::strcmp(stdtype, "long") == 0)
+                    podType.stdtype = PodType::LONG;
+                else if (std::strcmp(stdtype, "long long") == 0)
+                    podType.stdtype = PodType::LONGLONG;
+            }
             const char * const size = node->Attribute("size");
             if (size)
                 podType.size = atoi(size);
@@ -541,17 +576,17 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                         return Error(MISSING_ATTRIBUTE, "type");
                     platform.insert(type_attribute);
                 } else if (typenodename == "signed")
-                    type._signed = true;
+                    type.mSigned = true;
                 else if (typenodename == "unsigned")
-                    type._unsigned = true;
+                    type.mUnsigned = true;
                 else if (typenodename == "long")
-                    type._long = true;
+                    type.mLong = true;
                 else if (typenodename == "pointer")
-                    type._pointer= true;
+                    type.mPointer= true;
                 else if (typenodename == "ptr_ptr")
-                    type._ptr_ptr = true;
+                    type.mPtrPtr = true;
                 else if (typenodename == "const_ptr")
-                    type._const_ptr = true;
+                    type.mConstPtr = true;
                 else
                     unknown_elements.insert(typenodename);
             }
@@ -647,12 +682,16 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
             }
             for (const tinyxml2::XMLElement *argnode = functionnode->FirstChildElement(); argnode; argnode = argnode->NextSiblingElement()) {
                 const std::string argnodename = argnode->Name();
+                int indirect = 0;
+                const char * const indirectStr = node->Attribute("indirect");
+                if (indirectStr)
+                    indirect = atoi(indirectStr);
                 if (argnodename == "not-bool")
                     ac.notbool = true;
                 else if (argnodename == "not-null")
                     ac.notnull = true;
                 else if (argnodename == "not-uninit")
-                    ac.notuninit = true;
+                    ac.notuninit = indirect;
                 else if (argnodename == "formatstr")
                     ac.formatstr = true;
                 else if (argnodename == "strz")
@@ -759,6 +798,8 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                 else
                     unknown_elements.insert(argnodename);
             }
+            if (ac.notuninit == 0)
+                ac.notuninit = ac.notnull ? 1 : 0;
         } else if (functionnodename == "ignorefunction") {
             func.ignore = true;
         } else if (functionnodename == "formatstr") {
@@ -935,7 +976,7 @@ bool Library::isnullargbad(const Token *ftok, int argnr) const
     return arg && arg->notnull;
 }
 
-bool Library::isuninitargbad(const Token *ftok, int argnr) const
+bool Library::isuninitargbad(const Token *ftok, int argnr, int indirect) const
 {
     const ArgumentChecks *arg = getarg(ftok, argnr);
     if (!arg) {
@@ -945,7 +986,7 @@ bool Library::isuninitargbad(const Token *ftok, int argnr) const
         if (it != functions.cend() && it->second.formatstr && !it->second.formatstr_scan)
             return true;
     }
-    return arg && arg->notuninit;
+    return arg && arg->notuninit >= indirect;
 }
 
 
@@ -1222,6 +1263,23 @@ bool Library::hasminsize(const Token *ftok) const
     return false;
 }
 
+Library::ArgumentChecks::Direction Library::getArgDirection(const Token* ftok, int argnr) const
+{
+    const ArgumentChecks* arg = getarg(ftok, argnr);
+    if (arg)
+        return arg->direction;
+    if (formatstr_function(ftok)) {
+        const int fs_argno = formatstr_argno(ftok);
+        if (fs_argno >= 0 && argnr >= fs_argno) {
+            if (formatstr_scan(ftok))
+                return ArgumentChecks::Direction::DIR_OUT;
+            else
+                return ArgumentChecks::Direction::DIR_IN;
+        }
+    }
+    return ArgumentChecks::Direction::DIR_UNKNOWN;
+}
+
 bool Library::ignorefunction(const std::string& functionName) const
 {
     const std::map<std::string, Function>::const_iterator it = functions.find(functionName);
@@ -1380,3 +1438,8 @@ CPPCHECKLIB const Library::Container * getLibraryContainer(const Token * tok)
     return tok->valueType()->container;
 }
 
+Library::TypeCheck Library::getTypeCheck(const std::string &check, const std::string &typeName) const
+{
+    auto it = mTypeChecks.find(std::pair<std::string, std::string>(check, typeName));
+    return it == mTypeChecks.end() ? TypeCheck::def : it->second;
+}

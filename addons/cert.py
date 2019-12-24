@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Cert: Some extra CERT checkers
 #
@@ -119,6 +119,8 @@ def exp05(data):
         elif token.str == '(' and token.astOperand1 and token.astOperand2 and token.astOperand1.function:
             function = token.astOperand1.function
             arguments = cppcheckdata.getArguments(token.previous)
+            if not arguments:
+                continue
             for argnr, argvar in function.argument.items():
                 if argnr < 1 or argnr > len(arguments):
                     continue
@@ -160,7 +162,7 @@ def exp42(data):
 def exp15(data):
     for scope in data.scopes:
         if scope.type in ('If', 'For', 'While'):
-            token = scope.bodyStart.next 
+            token = scope.bodyStart.next
             if token.str==';' and token.linenr==scope.bodyStart.linenr:
                 reportError(token, 'style', 'Do not place a semicolon on the same line as an IF, FOR or WHILE', 'EXP15-C')
 
@@ -232,7 +234,29 @@ def int31(data, platform):
                     'style',
                     'Ensure that integer conversions do not result in lost or misinterpreted data (casting ' + str(value.intvalue) + ' to ' + destType + ')',
                     'INT31-c')
-                break                
+                break
+
+
+# ENV33-C
+# Do not call system()
+def env33(data):
+    for token in data.tokenlist:
+        if isFunctionCall(token, ('system',), 1):
+
+            # Invalid syntax
+            if not token.next.astOperand2:
+                continue
+
+            # ENV33-C-EX1: It is permissible to call system() with a null
+            # pointer argument to determine the presence of a command processor
+            # for the system.
+            argValue = token.next.astOperand2.getValue(0)
+            if argValue and argValue.intvalue == 0 and argValue.isKnown():
+                continue
+
+            reportError(token, 'style', 'Do not call system()', 'ENV33-C')
+
+
 # MSC24-C
 # Do not use deprecated or obsolescent functions
 def msc24(data):
@@ -321,7 +345,7 @@ def str11(data):
 
         if not parent.isAssignmentOp:
             continue
-            
+
         varToken = parentOp1.astOperand1
         if varToken is None or not varToken.isName:
             continue
@@ -332,7 +356,7 @@ def str11(data):
         valueToken = parentOp1.astOperand2
         if valueToken is None:
             continue
-            
+
         if valueToken.isNumber and int(valueToken.str)==strlen:
             reportError(valueToken, 'style', 'Do not specify the bound of a character array initialized with a string literal', 'STR11-C')
 
@@ -358,10 +382,6 @@ def api01(data):
 
 def get_args():
     parser = cppcheckdata.ArgumentParser()
-    parser.add_argument("dumpfile", nargs='*', help="Path of dump files from cppcheck")
-    parser.add_argument('-q', '--quiet', action='store_true',
-                        help='do not print "Checking ..." lines')
-    parser.add_argument('--cli', help='Addon is executed from Cppcheck', action='store_true')
     parser.add_argument("-verify", help=argparse.SUPPRESS, action="store_true")
     return parser.parse_args()
 
@@ -370,6 +390,11 @@ if __name__ == '__main__':
 
     if args.verify:
         VERIFY = True
+
+    if not args.dumpfile:
+        if not args.quiet:
+            print("no input files.")
+        sys.exit(0)
 
     for dumpfile in args.dumpfile:
         if not args.quiet:
@@ -398,6 +423,7 @@ if __name__ == '__main__':
             str05(cfg)
             str07(cfg)
             str11(cfg)
+            env33(cfg)
             msc24(cfg)
             msc30(cfg)
             api01(cfg)

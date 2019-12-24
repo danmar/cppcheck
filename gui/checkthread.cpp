@@ -20,6 +20,7 @@
 #include <QString>
 #include <QDebug>
 #include <QDir>
+#include <QFile>
 #include <QFileInfo>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -122,12 +123,12 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
                 continue;
 
             QStringList args;
-            for (std::list<std::string>::const_iterator I = fileSettings->includePaths.begin(); I != fileSettings->includePaths.end(); ++I)
-                args << ("-I" + QString::fromStdString(*I));
+            for (std::list<std::string>::const_iterator incIt = fileSettings->includePaths.begin(); incIt != fileSettings->includePaths.end(); ++incIt)
+                args << ("-I" + QString::fromStdString(*incIt));
             for (std::list<std::string>::const_iterator i = fileSettings->systemIncludePaths.begin(); i != fileSettings->systemIncludePaths.end(); ++i)
                 args << "-isystem" << QString::fromStdString(*i);
-            foreach (QString D, QString::fromStdString(fileSettings->defines).split(";")) {
-                args << ("-D" + D);
+            foreach (QString def, QString::fromStdString(fileSettings->defines).split(";")) {
+                args << ("-D" + def);
             }
             foreach (const std::string& U, fileSettings->undefs) {
                 args << QString::fromStdString("-U" + U);
@@ -178,7 +179,7 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
                 case Standards::CPP20:
                     args << "-std=c++20";
                     break;
-                };
+                }
             }
 
             QString analyzerInfoFile;
@@ -313,7 +314,22 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
                 process.setProcessEnvironment(env);
             }
             process.start(python, args);
-            process.waitForFinished();
+            if (!process.waitForFinished()) {
+                const QString errMsg("ERROR: Process '" + python + " " + args.join(" ") +
+                                     "' did not finish successfully: " + process.errorString());
+                qWarning() << errMsg;
+                mResult.reportOut(errMsg.toStdString());
+            }
+            const QByteArray errout = process.readAllStandardError();
+            if (process.exitCode() != 0 && !errout.isEmpty()) {
+                const QString errMsg("ERROR: Process '" + python + " " + args.join(" ") +
+                                     "' failed with error code " +
+                                     QString::number(process.exitCode()) + ": '" +
+                                     process.errorString() +
+                                     "'\nError output: " + errout);
+                qWarning() << errMsg;
+                mResult.reportOut(errMsg.toStdString());
+            }
             const QString output(process.readAllStandardOutput());
             QFile f(dumpFile + '-' + addon + "-results");
             if (f.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -323,6 +339,10 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
             }
             parseAddonErrors(output, addon);
         }
+    }
+
+    if (!dumpFile.isEmpty()) {
+        QFile::remove(dumpFile);
     }
 }
 
@@ -334,7 +354,7 @@ void CheckThread::stop()
 
 void CheckThread::parseAddonErrors(QString err, const QString &tool)
 {
-    Q_UNUSED(tool);
+    Q_UNUSED(tool)
     QTextStream in(&err, QIODevice::ReadOnly);
     while (!in.atEnd()) {
         QString line = in.readLine();

@@ -1180,27 +1180,66 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             if (iteratorToken && iteratorToken->variable() && iteratorToken->variable()->typeEndToken()->str().find("iterator") != std::string::npos)
                 continue;
 
-            const Variable *op1Var = tok->astOperand1() ? tok->astOperand1()->variable() : nullptr;
-            if (op1Var && op1Var->isReference() && op1Var->nameToken() != tok->astOperand1())
-                // todo: check references
-                continue;
+            const Token *op1tok = tok->astOperand1();
+            while (Token::Match(op1tok, ".|[|*"))
+                op1tok = op1tok->astOperand1();
 
-            if (op1Var && op1Var->isStatic())
-                // todo: check static variables
-                continue;
+            const Variable *op1Var = op1tok ? op1tok->variable() : nullptr;
+            std::string bailoutTypeName;
+            if (op1Var) {
+                if (op1Var->isReference() && op1Var->nameToken() != tok->astOperand1())
+                    // todo: check references
+                    continue;
 
-            if (op1Var && op1Var->nameToken()->isAttributeUnused())
-                continue;
+                if (op1Var->isStatic())
+                    // todo: check static variables
+                    continue;
+
+                if (op1Var->nameToken()->isAttributeUnused())
+                    continue;
+
+                // Bailout for unknown template classes, we have no idea what side effects such assignments have
+                if (mTokenizer->isCPP() &&
+                    op1Var->isClass() &&
+                    (!op1Var->valueType() || op1Var->valueType()->type == ValueType::Type::UNKNOWN_TYPE)) {
+                    // Check in the library if we should bailout or not..
+                    const std::string typeName = op1Var->getTypeName();
+                    switch (mSettings->library.getTypeCheck("unusedvar", typeName)) {
+                    case Library::TypeCheck::def:
+                        bailoutTypeName = typeName;
+                        break;
+                    case Library::TypeCheck::check:
+                        break;
+                    case Library::TypeCheck::suppress:
+                        continue;
+                    };
+                }
+            }
 
             // Is there a redundant assignment?
             const Token *start = tok->findExpressionStartEndTokens().second->next();
 
             const Token *expr = varDecl ? varDecl : tok->astOperand1();
 
+            // Is variable in lhs a union member?
+            if (tok->previous() && tok->previous()->variable() && tok->previous()->variable()->nameToken()->scope()->type == Scope::eUnion)
+                continue;
+
             FwdAnalysis fwdAnalysis(mTokenizer->isCPP(), mSettings->library);
-            if (fwdAnalysis.unusedValue(expr, start, scope->bodyEnd))
+            if (fwdAnalysis.unusedValue(expr, start, scope->bodyEnd)) {
+                if (!bailoutTypeName.empty() && bailoutTypeName != "auto") {
+                    if (mSettings->checkLibrary && mSettings->isEnabled(Settings::INFORMATION)) {
+                        reportError(tok,
+                                    Severity::information,
+                                    "checkLibraryCheckType",
+                                    "--check-library: Provide <type-checks><unusedvar> configuration for " + bailoutTypeName);
+                        continue;
+                    }
+                }
+
                 // warn
                 unreadVariableError(tok, expr->expressionString(), false);
+            }
         }
 
         // varId, usage {read, write, modified}

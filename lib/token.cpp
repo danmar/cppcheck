@@ -34,22 +34,6 @@
 #include <stack>
 #include <utility>
 
-static const std::string literal_prefix[4] = {"u8", "u", "U", "L"};
-
-static bool isStringCharLiteral(const std::string &str, char q)
-{
-
-    if (!endsWith(str, q))
-        return false;
-    if (str[0] == q && str.length() > 1)
-        return true;
-
-    for (const std::string & p: literal_prefix) {
-        if ((str.length() + 1) > p.length() && (str.compare(0, p.size() + 1, (p + q)) == 0))
-            return true;
-    }
-    return false;
-}
 const std::list<ValueFlow::Value> TokenImpl::mEmptyValueList;
 
 Token::Token(TokensFrontBack *tokensFrontBack) :
@@ -89,9 +73,9 @@ void Token::update_property_info()
     if (!mStr.empty()) {
         if (mStr == "true" || mStr == "false")
             tokType(eBoolean);
-        else if (isStringCharLiteral(mStr, '\"'))
+        else if (isStringLiteral(mStr))
             tokType(eString);
-        else if (isStringCharLiteral(mStr, '\''))
+        else if (isCharLiteral(mStr))
             tokType(eChar);
         else if (std::isalpha((unsigned char)mStr[0]) || mStr[0] == '_' || mStr[0] == '$') { // Name
             if (mImpl->mVarId)
@@ -168,17 +152,11 @@ void Token::update_property_isStandardType()
 
 void Token::update_property_char_string_literal()
 {
-    if (!(mTokType == Token::eString || mTokType == Token::eChar)) // Token has already been updated
+    if (mTokType != Token::eString && mTokType != Token::eChar)
         return;
 
-    for (const std::string & p : literal_prefix) {
-        if (((mTokType == Token::eString) && mStr.compare(0, p.size() + 1, p + "\"") == 0) ||
-            ((mTokType == Token::eChar) && (mStr.compare(0, p.size() +  1, p + "\'") == 0))) {
-            mStr = mStr.substr(p.size());
-            isLong(p != "u8");
-            break;
-        }
-    }
+    isLong(((mTokType == Token::eString) && isPrefixStringCharLiteral(mStr, '"', "L")) ||
+           ((mTokType == Token::eChar) && isPrefixStringCharLiteral(mStr, '\'', "L")));
 }
 
 bool Token::isUpperCaseName() const
@@ -195,15 +173,18 @@ bool Token::isUpperCaseName() const
 void Token::concatStr(std::string const& b)
 {
     mStr.erase(mStr.length() - 1);
-    mStr.append(b.begin() + 1, b.end());
+    mStr.append(getStringLiteral(b) + "\"");
 
+    if (isCChar() && isStringLiteral(b) && b[0] != '"') {
+        mStr.insert(0, b.substr(0, b.find('"')));
+    }
     update_property_info();
 }
 
 std::string Token::strValue() const
 {
     assert(mTokType == eString);
-    std::string ret(mStr.substr(1, mStr.length() - 2));
+    std::string ret(getStringLiteral(mStr));
     std::string::size_type pos = 0U;
     while ((pos = ret.find('\\', pos)) != std::string::npos) {
         ret.erase(pos,1U);
@@ -721,8 +702,9 @@ nonneg int Token::getStrLength(const Token *tok)
     assert(tok->mTokType == eString);
 
     int len = 0;
-    std::string::const_iterator it = tok->str().begin() + 1U;
-    const std::string::const_iterator end = tok->str().end() - 1U;
+    const std::string str(getStringLiteral(tok->str()));
+    std::string::const_iterator it = str.begin();
+    const std::string::const_iterator end = str.end();
 
     while (it != end) {
         if (*it == '\\') {
@@ -743,13 +725,13 @@ nonneg int Token::getStrLength(const Token *tok)
     return len;
 }
 
-nonneg int Token::getStrSize(const Token *tok)
+nonneg int Token::getStrArraySize(const Token *tok)
 {
     assert(tok != nullptr);
     assert(tok->tokType() == eString);
-    const std::string &str = tok->str();
+    const std::string str(getStringLiteral(tok->str()));
     int sizeofstring = 1;
-    for (int i = 1; i < (int)str.size() - 1; i++) {
+    for (int i = 0; i < (int)str.size(); i++) {
         if (str[i] == '\\')
             ++i;
         ++sizeofstring;
@@ -757,12 +739,24 @@ nonneg int Token::getStrSize(const Token *tok)
     return sizeofstring;
 }
 
+nonneg int Token::getStrSize(const Token *tok, const Settings *settings)
+{
+    assert(tok != nullptr && tok->tokType() == eString);
+    nonneg int sizeofType = 1;
+    if (tok->valueType()) {
+        ValueType vt(*tok->valueType());
+        vt.pointer = 0;
+        sizeofType = ValueFlow::getSizeOf(vt, settings);
+    }
+    return getStrArraySize(tok) * sizeofType;
+}
+
 std::string Token::getCharAt(const Token *tok, MathLib::bigint index)
 {
     assert(tok != nullptr);
-
-    std::string::const_iterator it = tok->str().begin() + 1U;
-    const std::string::const_iterator end = tok->str().end() - 1U;
+    std::string str(getStringLiteral(tok->str()));
+    std::string::const_iterator it = str.begin();
+    const std::string::const_iterator end = str.end();
 
     while (it != end) {
         if (index == 0) {
@@ -851,6 +845,14 @@ Token* Token::nextTemplateArgument() const
     return nullptr;
 }
 
+static bool isOperator(const Token *tok)
+{
+    if (tok->link())
+        tok = tok->link();
+    // TODO handle multi token operators
+    return tok->strAt(-1) == "operator";
+}
+
 const Token * Token::findClosingBracket() const
 {
     if (mStr != "<")
@@ -869,7 +871,8 @@ const Token * Token::findClosingBracket() const
         } else if (Token::Match(closing, "}|]|)|;"))
             return nullptr;
         // we can make some guesses for template parameters
-        else if (closing->str() == "<" && closing->previous() && closing->previous()->isName() &&
+        else if (closing->str() == "<" && closing->previous() &&
+                 (closing->previous()->isName() || isOperator(closing->previous())) &&
                  (templateParameter ? templateParameters.find(closing->strAt(-1)) == templateParameters.end() : true))
             ++depth;
         else if (closing->str() == ">") {
@@ -1016,7 +1019,7 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
         if (mImpl->mScopeInfo) {
             // If the brace is immediately closed there is no point opening a new scope for it
             if (tokenStr == "{") {
-                std::string nextScopeNameAddition = "";
+                std::string nextScopeNameAddition;
                 // This might be the opening of a member function
                 Token *tok1 = newToken;
                 while (Token::Match(tok1->previous(), "const|volatile|final|override|&|&&|noexcept"))
@@ -1152,9 +1155,7 @@ void Token::stringify(std::ostream& os, bool varid, bool attributes, bool macro)
         if (isComplex())
             os << "_Complex ";
         if (isLong()) {
-            if (mTokType == eString || mTokType == eChar)
-                os << "L";
-            else
+            if (!(mTokType == eString || mTokType == eChar))
                 os << "long ";
         }
     }
@@ -1419,8 +1420,8 @@ static std::string stringFromTokenRange(const Token* start, const Token* end)
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
         if (tok->isUnsigned())
             ret << "unsigned ";
-        if (tok->isLong())
-            ret << (tok->isLiteral() ? "L" : "long ");
+        if (tok->isLong() && !tok->isLiteral())
+            ret << "long ";
         if (tok->originalName().empty() || tok->isUnsigned() || tok->isLong()) {
             ret << tok->str();
         } else
@@ -1727,7 +1728,7 @@ const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, nonneg int ar
     return ret;
 }
 
-const Token *Token::getValueTokenMinStrSize() const
+const Token *Token::getValueTokenMinStrSize(const Settings *settings) const
 {
     if (!mImpl->mValues)
         return nullptr;
@@ -1736,7 +1737,7 @@ const Token *Token::getValueTokenMinStrSize() const
     std::list<ValueFlow::Value>::const_iterator it;
     for (it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
         if (it->isTokValue() && it->tokvalue && it->tokvalue->tokType() == Token::eString) {
-            const int size = getStrSize(it->tokvalue);
+            const int size = getStrSize(it->tokvalue, settings);
             if (!ret || size < minsize) {
                 minsize = size;
                 ret = it->tokvalue;

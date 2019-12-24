@@ -857,6 +857,10 @@ Settings MainWindow::getCppcheckSettings()
         if (!defines.isEmpty())
             result.maxConfigs = 1;
 
+        // If importing a project, only check the given configuration
+        if (!mProjectFile->getImportProject().isEmpty())
+            result.checkAllConfigurations = false;
+
         const QString &buildDir = mProjectFile->getBuildDir();
         if (!buildDir.isEmpty()) {
             if (QDir(buildDir).isAbsolute()) {

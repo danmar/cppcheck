@@ -32,42 +32,76 @@ public:
 
 private:
     void run() OVERRIDE {
-        TEST_CASE(argPointer);
-        TEST_CASE(argSmartPointer);
-        TEST_CASE(argStruct);
-
+#ifdef USE_Z3
         TEST_CASE(expr1);
         TEST_CASE(expr2);
         TEST_CASE(expr3);
         TEST_CASE(expr4);
         TEST_CASE(expr5);
+        TEST_CASE(expr6);
+        TEST_CASE(expr7);
         TEST_CASE(exprAssign1);
         TEST_CASE(exprAssign2); // Truncation
+
+        TEST_CASE(if1);
+        TEST_CASE(ifelse1);
+
+        TEST_CASE(switch1);
+
+        TEST_CASE(while1);
+        TEST_CASE(while2);
+        TEST_CASE(while3);
+
+        TEST_CASE(array1);
+        TEST_CASE(array2);
+        TEST_CASE(array3);
+        TEST_CASE(array4);
+        TEST_CASE(arrayInit1);
+        TEST_CASE(arrayInit2);
+        TEST_CASE(arrayUninit);
 
         TEST_CASE(floatValue1);
         TEST_CASE(floatValue2);
 
         TEST_CASE(functionCall1);
         TEST_CASE(functionCall2);
+        TEST_CASE(functionCall3);
 
-        TEST_CASE(if1);
-        TEST_CASE(if2);
-        TEST_CASE(if3);
-        TEST_CASE(if4);
-        TEST_CASE(if5);
+        TEST_CASE(int1);
 
-        TEST_CASE(ifelse1);
-
-        TEST_CASE(localArray1);
-        TEST_CASE(localArray2);
-        TEST_CASE(localArray3);
-        TEST_CASE(localArrayUninit);
-
+        TEST_CASE(pointer1);
         TEST_CASE(pointerAlias1);
         TEST_CASE(pointerAlias2);
         TEST_CASE(pointerAlias3);
         TEST_CASE(pointerAlias4);
         TEST_CASE(pointerNull1);
+
+        TEST_CASE(structMember);
+#endif
+    }
+
+    std::string expr(const char code[], const std::string &binop) {
+        Settings settings;
+        settings.platform(cppcheck::Platform::Unix64);
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        std::string ret;
+        std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> f = [&](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
+            if (tok->str() != binop)
+                return;
+            auto b = dynamic_cast<const ExprEngine::BinOpResult *>(&value);
+            if (!b)
+                return;
+            if (!ret.empty())
+                ret += "\n";
+            ret += b->getExpr(dataBase);
+        };
+        std::vector<ExprEngine::Callback> callbacks;
+        callbacks.push_back(f);
+        std::ostringstream dummy;
+        ExprEngine::executeAllFunctions(&tokenizer, &settings, callbacks, dummy);
+        return ret;
     }
 
     std::string getRange(const char code[], const std::string &str, int linenr = 0) {
@@ -78,7 +112,8 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         std::string ret;
-        std::function<void(const Token *, const ExprEngine::Value &)> f = [&](const Token *tok, const ExprEngine::Value &value) {
+        std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> f = [&](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
+            (void)dataBase;
             if ((linenr == 0 || linenr == tok->linenr()) && tok->expressionString() == str) {
                 if (!ret.empty())
                     ret += ",";
@@ -87,25 +122,23 @@ private:
         };
         std::vector<ExprEngine::Callback> callbacks;
         callbacks.push_back(f);
-        ExprEngine::executeAllFunctions(&tokenizer, &settings, callbacks);
+        std::ostringstream dummy;
+        ExprEngine::executeAllFunctions(&tokenizer, &settings, callbacks, dummy);
         return ret;
     }
 
-    void argPointer() {
-        ASSERT_EQUALS("->0:255,null,->?", getRange("void f(unsigned char *p) { a = *p; }", "p"));
-    }
-
-    void argSmartPointer() {
-        ASSERT_EQUALS("->$1,null", getRange("struct S { int x; }; void f(std::shared_ptr<S> ptr) { x = ptr; }", "ptr"));
-    }
-
-    void argStruct() {
-        ASSERT_EQUALS("0:510",
-                      getRange("struct S {\n"
-                               "    unsigned char a;\n"
-                               "    unsigned char b;\n"
-                               "};\n"
-                               "void f(struct S s) { return s.a + s.b; }", "s.a+s.b"));
+    std::string trackExecution(const char code[]) {
+        Settings settings;
+        settings.debugVerification = true;
+        settings.platform(cppcheck::Platform::Unix64);
+        settings.library.smartPointers.insert("std::shared_ptr");
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        std::vector<ExprEngine::Callback> dummy;
+        std::ostringstream ret;
+        ExprEngine::executeAllFunctions(&tokenizer, &settings, dummy, ret);
+        return ret.str();
     }
 
     void expr1() {
@@ -113,36 +146,198 @@ private:
     }
 
     void expr2() {
-        ASSERT_EQUALS("-65536:65534", getRange("void f(short x) { a = x + x; }", "x+x"));
+        ASSERT_EQUALS("($1)+($1)", getRange("void f(short x) { a = x + x; }", "x+x"));
     }
 
     void expr3() {
-        ASSERT_EQUALS("-65536:65534", getRange("int f(short x) { int a = x + x; return a; }", "return a"));
+        ASSERT_EQUALS("($1)+($1)", getRange("int f(short x) { int a = x + x; return a; }", "return a"));
     }
 
     void expr4() {
-        ASSERT_EQUALS("0", getRange("int f(short x) { int a = x - x; return a; }", "return a"));
+        ASSERT_EQUALS("($1)-($1)", getRange("int f(short x) { int a = x - x; return a; }", "return a"));
     }
 
     void expr5() {
-        ASSERT_EQUALS("-65536:65534", getRange("void f(short a, short b, short c, short d) { if (a+b<c+d) {} }", "a+b"));
+        ASSERT_EQUALS("($1)+($2)", getRange("void f(short a, short b, short c, short d) { if (a+b<c+d) {} }", "a+b"));
+    }
+
+    void expr6() {
+        const char code[] = "void f(unsigned char x) {\n"
+                            "    unsigned char result = 8 - x;\n"
+                            "    result > 1000;"
+                            "}";
+
+        ASSERT_EQUALS("(8)-($1)", getRange(code, "8-x"));
+
+        ASSERT_EQUALS("(declare-fun $1 () Int)\n"
+                      "(assert (and (>= $1 0) (<= $1 255)))\n"
+                      "(assert (> (- 8 $1) 1000))\n"
+                      "z3::unsat",
+                      expr(code, ">"));
+    }
+
+    void expr7() {
+        const char code[] = "void f(bool a, bool b, int c) {\n"
+                            "    if (a||b) {}\n"
+                            "    c > 1000;"
+                            "}";
+
+        ASSERT_EQUALS("(declare-fun $3 () Int)\n"
+                      "(declare-fun $2 () Int)\n"
+                      "(declare-fun $1 () Int)\n"
+                      "(assert (and (>= $3 (- 2147483648)) (<= $3 2147483647)))\n"
+                      "(assert (or (distinct $1 0) (distinct $2 0)))\n"
+                      "(assert (> $3 1000))\n"
+                      "z3::sat\n"
+                      "(declare-fun $3 () Int)\n"
+                      "(declare-fun $2 () Int)\n"
+                      "(declare-fun $1 () Int)\n"
+                      "(assert (and (>= $3 (- 2147483648)) (<= $3 2147483647)))\n"
+                      "(assert (= (ite (or (distinct $1 0) (distinct $2 0)) 1 0) 0))\n"
+                      "(assert (> $3 1000))\n"
+                      "z3::sat",
+                      expr(code, ">"));
     }
 
     void exprAssign1() {
-        ASSERT_EQUALS("1:256", getRange("void f(unsigned char a) { a += 1; }", "a+=1"));
+        ASSERT_EQUALS("($1)+(1)", getRange("void f(unsigned char a) { a += 1; }", "a+=1"));
     }
 
     void exprAssign2() {
         ASSERT_EQUALS("2", getRange("void f(unsigned char x) { x = 258; int a = x }", "a=x"));
     }
 
+    void if1() {
+        ASSERT_EQUALS("(declare-fun $1 () Int)\n"
+                      "(declare-fun $2 () Int)\n"
+                      "(assert (and (>= $1 (- 2147483648)) (<= $1 2147483647)))\n"
+                      "(assert (and (>= $2 (- 2147483648)) (<= $2 2147483647)))\n"
+                      "(assert (< $1 $2))\n"
+                      "(assert (= $1 $2))\n"
+                      "z3::unsat",
+                      expr("void f(int x, int y) { if (x < y) return x == y; }", "=="));
+    }
+
+    void ifelse1() {
+        ASSERT_EQUALS("(declare-fun $1 () Int)\n"
+                      "(assert (and (>= $1 (- 32768)) (<= $1 32767)))\n"
+                      "(assert (<= $1 5))\n"
+                      "(assert (= (+ $1 2) 40))\n"
+                      "z3::unsat",
+                      expr("void f(short x) { if (x > 5) ; else if (x+2==40); }", "=="));
+    }
+
+
+    void switch1() {
+        const char code[] = "void f(int x) {\n"
+                            "    switch (x) {\n"
+                            "    case 1: x==3; break;\n"
+                            "    case 2: x>0; break;\n"
+                            "    };\n"
+                            "    x<=4;\n"
+                            "}";
+        ASSERT_EQUALS("(declare-fun $1 () Int)\n"
+                      "(assert (and (>= $1 (- 2147483648)) (<= $1 2147483647)))\n"
+                      "(assert (= $1 1))\n"
+                      "(assert (= $1 3))\n"
+                      "z3::unsat",
+                      expr(code, "=="));
+    }
+
+    void while1() {
+        const char code[] = "void f(int y) {\n"
+                            "  int x = 0;\n"
+                            "  while (x < y)\n"
+                            "    x = x + 34;\n"
+                            "  x == 340;\n"
+                            "}";
+        ASSERT_EQUALS("(declare-fun $2 () Int)\n"
+                      "(assert (and (>= $2 (- 2147483648)) (<= $2 2147483647)))\n"
+                      "(assert (= (+ $2 34) 340))\n"
+                      "z3::sat",
+                      expr(code, "=="));
+    }
+
+    void while2() {
+        const char code[] = "void f(int y) {\n"
+                            "  int x = 0;\n"
+                            "  while (x < y)\n"
+                            "    x++;\n"
+                            "  x == 1;\n"
+                            "}";
+        ASSERT_EQUALS("(declare-fun $2 () Int)\n"
+                      "(assert (and (>= $2 (- 2147483648)) (<= $2 2147483647)))\n"
+                      "(assert (= $2 1))\n"
+                      "z3::sat",
+                      expr(code, "=="));
+    }
+
+    void while3() {
+        const char code[] = "struct AB {int a; int b;};\n"
+                            "void f() {\n"
+                            "  struct AB ab;\n"
+                            "  while (1)\n"
+                            "    ab.a = 3;\n"
+                            "  ab.a == 0;\n"
+                            "}";
+        ASSERT_EQUALS("(assert (= 3 0))\n"
+                      "z3::unsat",
+                      expr(code, "=="));
+    }
+
+    void array1() {
+        ASSERT_EQUALS("(assert (= 5 0))\nz3::unsat",
+                      expr("int f() { int arr[10]; arr[4] = 5; return arr[4]==0; }", "=="));
+    }
+
+    void array2() {
+        ASSERT_EQUALS("(declare-fun |$3:4| () Int)\n"
+                      "(assert (and (>= |$3:4| 0) (<= |$3:4| 255)))\n"
+                      "(assert (= |$3:4| 365))\n"
+                      "z3::unsat",
+                      expr("void dostuff(unsigned char *); int f() { unsigned char arr[10] = \"\"; dostuff(arr); return arr[4] == 365; }", "=="));
+    }
+
+    void array3() {
+        const char code[] = "void f(unsigned char x) { int arr[10]; arr[4] = 43; return arr[x] == 12; }";
+        ASSERT_EQUALS("?,43", getRange(code, "arr[x]"));
+        ASSERT_EQUALS("(declare-fun $1 () Int)\n"
+                      "(assert (and (>= $1 0) (<= $1 255)))\n"
+                      "(assert (= (ite (= $1 4) 43 0) 12))\n"
+                      "z3::unsat",
+                      expr(code, "=="));
+    }
+
+    void array4() {
+        const char code[] = "int buf[10];\n"
+                            "void f() { int x = buf[0]; }";
+        ASSERT_EQUALS("2:16: $2:0=-2147483648:2147483647\n"
+                      "2:20: $2=-2147483648:2147483647\n"
+                      "2:26: { buf=($1,size=10,[:]=$2) x=$2:0}\n",
+                      trackExecution(code));
+    }
+
+    void arrayInit1() {
+        ASSERT_EQUALS("0", getRange("inf f() { char arr[10] = \"\"; return arr[4]; }", "arr[4]"));
+    }
+
+    void arrayInit2() {
+        ASSERT_EQUALS("66", getRange("void f() { char str[] = \"hello\"; str[0] = \'B\'; }", "str[0]=\'B\'"));
+    }
+
+    void arrayUninit() {
+        ASSERT_EQUALS("?", getRange("int f() { int arr[10]; return arr[4]; }", "arr[4]"));
+    }
+
+
     void floatValue1() {
         ASSERT_EQUALS(std::to_string(std::numeric_limits<float>::min()) + ":" + std::to_string(std::numeric_limits<float>::max()), getRange("float f; void func() { f=f; }", "f=f"));
     }
 
     void floatValue2() {
-        ASSERT_EQUALS("14.500000", getRange("void func() { float f = 29.0; f = f / 2.0; }", "f/2.0"));
+        ASSERT_EQUALS("(29.0)/(2.0)", getRange("void func() { float f = 29.0; f = f / 2.0; }", "f/2.0"));
     }
+
 
     void functionCall1() {
         ASSERT_EQUALS("-2147483648:2147483647", getRange("int atoi(const char *p); void f() { int x = atoi(a); x = x; }", "x=x"));
@@ -159,44 +354,28 @@ private:
         ASSERT_EQUALS("-32768:32767", getRange(code, "value=value"));
     }
 
-    void if1() {
-        ASSERT_EQUALS("7:32768", getRange("inf f(short x) { if (x > 5) a = x + 1; }", "x+1"));
+    void functionCall3() {
+        ASSERT_EQUALS("-2147483648:2147483647", getRange("int fgets(int, const char *, void *); void f() { int x = -1; fgets(stdin, \"%d\", &x); x=x; }", "x=x"));
     }
 
-    void if2() {
-        ASSERT_EQUALS("7:32768,-32767:6", getRange("inf f(short x) { if (x > 5) {} a = x + 1; }", "x+1"));
+
+    void int1() {
+        ASSERT_EQUALS("(declare-fun $1 () Int)\n"
+                      "(assert (and (>= $1 (- 2147483648)) (<= $1 2147483647)))\n"
+                      "(assert (= (+ 2 $1) 3))\n"
+                      "z3::sat",
+                      expr("void f(int x) { return 2+x==3; }", "=="));
     }
 
-    void if3() {
-        ASSERT_EQUALS("1,-2147483648:2147483647,-2147483648:2147483647", getRange("void f() { int x; if (a) { if (b) x=1; } a=x; }", "a=x"));
-    }
 
-    void if4() {
-        ASSERT_EQUALS("1:2147483647,-2147483648:-1", getRange("int x; void f() { if (x) { a=x; }}", "a=x"));
-    }
-
-    void if5() {
-        ASSERT_EQUALS("0", getRange("int x; void f() { if (x) {} else { a=x; }}", "a=x"));
-    }
-
-    void ifelse1() {
-        ASSERT_EQUALS("-32767:6", getRange("inf f(short x) { if (x > 5) ; else a = x + 1; }", "x+1"));
-    }
-
-    void localArray1() {
-        ASSERT_EQUALS("5", getRange("inf f() { int arr[10]; arr[4] = 5; return arr[4]; }", "arr[4]"));
-    }
-
-    void localArray2() {
-        ASSERT_EQUALS("0", getRange("inf f() { char arr[10] = \"\"; return arr[4]; }", "arr[4]"));
-    }
-
-    void localArray3() {
-        ASSERT_EQUALS("0:255", getRange("int f() { unsigned char arr[10] = \"\"; dostuff(arr); return arr[4]; }", "arr[4]"));
-    }
-
-    void localArrayUninit() {
-        ASSERT_EQUALS("?", getRange("int f() { int arr[10]; return arr[4]; }", "arr[4]"));
+    void pointer1() {
+        const char code[] = "void f(unsigned char *p) { return *p == 7; }";
+        ASSERT_EQUALS("->$1,null,->?", getRange(code, "p"));
+        ASSERT_EQUALS("(declare-fun $1 () Int)\n"
+                      "(assert (and (>= $1 0) (<= $1 255)))\n"
+                      "(assert (= $1 7))\n"
+                      "z3::sat",
+                      expr(code, "=="));
     }
 
     void pointerAlias1() {
@@ -223,6 +402,22 @@ private:
     void pointerNull1() {
         ASSERT_EQUALS("1", getRange("void f(void *p) { p = NULL; p += 1; }", "p+=1"));
     }
+
+
+    void structMember() {
+        ASSERT_EQUALS("(declare-fun $2 () Int)\n"
+                      "(declare-fun $3 () Int)\n"
+                      "(assert (and (>= $2 0) (<= $2 255)))\n"
+                      "(assert (and (>= $3 0) (<= $3 255)))\n"
+                      "(assert (= (+ $2 $3) 0))\n"
+                      "z3::sat",
+                      expr("struct S {\n"
+                           "    unsigned char a;\n"
+                           "    unsigned char b;\n"
+                           "};\n"
+                           "void f(struct S s) { return s.a + s.b == 0; }", "=="));
+    }
+
 };
 
 REGISTER_TEST(TestExprEngine)

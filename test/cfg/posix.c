@@ -23,6 +23,26 @@
 #include <syslog.h>
 #include <stdarg.h>
 
+void uninitvar_putenv(char * envstr)
+{
+    // No warning is expected
+    (void)putenv(envstr);
+
+    char * p;
+    // cppcheck-suppress uninitvar
+    (void)putenv(p);
+}
+
+void nullPointer_putenv(char * envstr)
+{
+    // No warning is expected
+    (void)putenv(envstr);
+
+    char * p=NULL;
+    // cppcheck-suppress nullPointer
+    (void)putenv(p);
+}
+
 void memleak_scandir(void)
 {
     struct dirent **namelist;

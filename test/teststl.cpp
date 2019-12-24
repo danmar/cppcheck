@@ -64,6 +64,7 @@ private:
         TEST_CASE(iterator19);
         TEST_CASE(iterator20);
         TEST_CASE(iterator21);
+        TEST_CASE(iterator22);
         TEST_CASE(iteratorExpression);
         TEST_CASE(iteratorSameExpression);
 
@@ -1017,7 +1018,15 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6] -> [test.cpp:5]: (error) Comparison of iterators from containers 'l1' and 'l2'.\n", errout.str());
+    }
 
+    void iterator22() { // #7107
+        check("void foo() {\n"
+              "    std::list<int> &l = x.l;\n"
+              "    std::list<int>::iterator it = l.find(123);\n"
+              "    x.l.erase(it);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void iteratorExpression() {
@@ -2420,9 +2429,10 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // #3714 - segmentation fault for syntax error
-        check("void f() {\n"
-              "    if (()) { }\n"
-              "}");
+        ASSERT_THROW(check("void f() {\n"
+                           "    if (()) { }\n"
+                           "}"),
+                     InternalError);
 
         // #3865
         check("void f() {\n"

@@ -66,7 +66,6 @@ private:
         TEST_CASE(garbageCode10); // #6127
         TEST_CASE(garbageCode12);
         TEST_CASE(garbageCode13); // #2607
-        TEST_CASE(garbageCode14); // #5595
         TEST_CASE(garbageCode15); // #5203
         TEST_CASE(garbageCode16);
         TEST_CASE(garbageCode17);
@@ -238,6 +237,13 @@ private:
         TEST_CASE(garbageCode203); // #8972
         TEST_CASE(garbageCode204);
         TEST_CASE(garbageCode205);
+        TEST_CASE(garbageCode206);
+        TEST_CASE(garbageCode207); // #8750
+        TEST_CASE(garbageCode208); // #8753
+        TEST_CASE(garbageCode209); // #8756
+        TEST_CASE(garbageCode210); // #8762
+        TEST_CASE(garbageCode211); // #8764
+        TEST_CASE(garbageCode212); // #8765
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -317,7 +323,7 @@ private:
     void wrong_syntax1() {
         {
             const char code[] ="TR(kvmpio, PROTO(int rw), ARGS(rw), TP_(aa->rw;))";
-            ASSERT_EQUALS("TR ( kvmpio , PROTO ( int rw ) , ARGS ( rw ) , TP_ ( aa . rw ; ) )", checkCode(code));
+            ASSERT_THROW(checkCode(code), InternalError);
             ASSERT_EQUALS("", errout.str());
         }
 
@@ -484,10 +490,6 @@ private:
 
     void garbageCode13() {
         checkCode("struct C {} {} x");
-    }
-
-    void garbageCode14() {
-        checkCode("static f() { int i; int source[1] = { 1 }; for (i = 0; i < 4; i++) (u, if (y u.x e)) }"); // Garbage code
     }
 
     void garbageCode15() { // Ticket #5203
@@ -1014,7 +1016,7 @@ private:
     }
 
     void garbageCode132() { // #7022
-        checkCode("() () { } { () () ({}) i() } void i(void(*ptr) ()) { ptr(!) () }");
+        ASSERT_THROW(checkCode("() () { } { () () ({}) i() } void i(void(*ptr) ()) { ptr(!) () }"), InternalError);
     }
 
     void garbageCode133() {
@@ -1251,7 +1253,7 @@ private:
     }
 
     void garbageCode159() { // #7119
-        checkCode("({}typedef typename x;typename x!){({{}()})}"); // don't hang
+        ASSERT_THROW(checkCode("({}typedef typename x;typename x!){({{}()})}"), InternalError);
     }
 
     void garbageCode160() { // #7190
@@ -1274,10 +1276,6 @@ private:
                            "    (foo(s, , 2, , , 5, , 7)) abort()\n"
                            "}\n";
         ASSERT_THROW(checkCode(code), InternalError);
-
-        // #6106
-        code = " f { int i ; b2 , [ ] ( for ( i = 0 ; ; ) ) }";
-        checkCode(code);
 
         // 6122 survive garbage code
         code = "; { int i ; for ( i = 0 ; = 123 ; ) - ; }";
@@ -1632,6 +1630,35 @@ private:
                   ": wxCommandEvent ( Event )\n"
                   ", m_SnippetID ( 0 ) {\n"
                   "}"); // don't crash
+    }
+
+    void garbageCode206() {
+        ASSERT_EQUALS("[test.cpp:1] syntax error: operator", getSyntaxError("void foo() { for (auto operator new : int); }"));
+        ASSERT_EQUALS("[test.cpp:1] syntax error: operator", getSyntaxError("void foo() { for (a operator== :) }"));
+    }
+
+    void garbageCode207() { // #8750
+        ASSERT_THROW(checkCode("d f(){(.n00e0(return%n00e0''('')));}"), InternalError);
+    }
+
+    void garbageCode208() { // #8753
+        ASSERT_THROW(checkCode("d f(){(for(((((0{t b;((((((((()))))))))}))))))}"), InternalError);
+    }
+
+    void garbageCode209() { // #8756
+        ASSERT_THROW(checkCode("{(- -##0xf/-1 0)[]}"), InternalError);
+    }
+
+    void garbageCode210() { // #8762
+        ASSERT_THROW(checkCode("{typedef typedef c n00e0[]c000(;n00e0&c000)}"), InternalError);
+    }
+
+    void garbageCode211() { // #8764
+        ASSERT_THROW(checkCode("{typedef f typedef[]({typedef e e,>;typedef(((typedef<typedef|)))})}"), InternalError);
+    }
+
+    void garbageCode212() { // #8765
+        ASSERT_THROW(checkCode("{(){}[]typedef r n00e0[](((n00e0 0((;()))))){(0 typedef n00e0 bre00 n00e0())}[]();typedef n n00e0()[],(bre00)}"), InternalError);
     }
 
     void syntaxErrorFirstToken() {

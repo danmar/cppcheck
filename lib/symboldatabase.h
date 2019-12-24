@@ -616,6 +616,8 @@ public:
         return mAccess;
     }
 
+    std::string getTypeName() const;
+
 private:
     // only symbol database can change the type
     friend class SymbolDatabase;
@@ -662,6 +664,9 @@ private:
 };
 
 class CPPCHECKLIB Function {
+    // only symbol database can change this
+    friend class SymbolDatabase;
+
     /** @brief flags mask used to access specific bit. */
     enum {
         fHasBody               = (1 << 0),  ///< @brief has implementation
@@ -865,11 +870,11 @@ public:
 
     static bool argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, nonneg int path_length);
 
-    static bool returnsReference(const Function *function);
+    static bool returnsReference(const Function* function, bool unknown = false);
 
     const Token* returnDefEnd() const {
         if (this->hasTrailingReturnType()) {
-            return Token::findsimplematch(retDef, "{");
+            return Token::findmatch(retDef, "{|;");
         } else {
             return tokenDef;
         }
@@ -1128,17 +1133,60 @@ public:
     nonneg int constness;               ///< bit 0=data, bit 1=*, bit 2=**
     const Scope *typeScope;               ///< if the type definition is seen this point out the type scope
     const ::Type *smartPointerType;       ///< Smart pointer type
+    const Token* smartPointerTypeToken;   ///< Smart pointer type token
     const Library::Container *container;  ///< If the type is a container defined in a cfg file, this is the used container
     const Token *containerTypeToken;      ///< The container type token. the template argument token that defines the container element type.
     std::string originalTypeName;         ///< original type name as written in the source code. eg. this might be "uint8_t" when type is CHAR.
 
-    ValueType() : sign(UNKNOWN_SIGN), type(UNKNOWN_TYPE), bits(0), pointer(0U), constness(0U), typeScope(nullptr), smartPointerType(nullptr), container(nullptr), containerTypeToken(nullptr) {}
-    ValueType(const ValueType &vt) : sign(vt.sign), type(vt.type), bits(vt.bits), pointer(vt.pointer), constness(vt.constness), typeScope(vt.typeScope), smartPointerType(vt.smartPointerType), container(vt.container), containerTypeToken(vt.containerTypeToken), originalTypeName(vt.originalTypeName) {}
-    ValueType(enum Sign s, enum Type t, nonneg int p) : sign(s), type(t), bits(0), pointer(p), constness(0U), typeScope(nullptr), smartPointerType(nullptr), container(nullptr), containerTypeToken(nullptr) {}
-    ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c) : sign(s), type(t), bits(0), pointer(p), constness(c), typeScope(nullptr), smartPointerType(nullptr), container(nullptr), containerTypeToken(nullptr) {}
-    ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c, const std::string &otn) : sign(s), type(t), bits(0), pointer(p), constness(c), typeScope(nullptr), smartPointerType(nullptr), container(nullptr), containerTypeToken(nullptr), originalTypeName(otn) {}
-    ValueType &operator=(const ValueType &other) = delete;
-
+    ValueType()
+        : sign(UNKNOWN_SIGN),
+          type(UNKNOWN_TYPE),
+          bits(0),
+          pointer(0U),
+          constness(0U),
+          typeScope(nullptr),
+          smartPointerType(nullptr),
+          smartPointerTypeToken(nullptr),
+          container(nullptr),
+          containerTypeToken(nullptr)
+    {}
+    ValueType(enum Sign s, enum Type t, nonneg int p)
+        : sign(s),
+          type(t),
+          bits(0),
+          pointer(p),
+          constness(0U),
+          typeScope(nullptr),
+          smartPointerType(nullptr),
+          smartPointerTypeToken(nullptr),
+          container(nullptr),
+          containerTypeToken(nullptr)
+    {}
+    ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c)
+        : sign(s),
+          type(t),
+          bits(0),
+          pointer(p),
+          constness(c),
+          typeScope(nullptr),
+          smartPointerType(nullptr),
+          smartPointerTypeToken(nullptr),
+          container(nullptr),
+          containerTypeToken(nullptr)
+    {}
+    ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c, const std::string& otn)
+        : sign(s),
+          type(t),
+          bits(0),
+          pointer(p),
+          constness(c),
+          typeScope(nullptr),
+          smartPointerType(nullptr),
+          smartPointerTypeToken(nullptr),
+          container(nullptr),
+          containerTypeToken(nullptr),
+          originalTypeName(otn)
+    {}
     static ValueType parseDecl(const Token *type, const Settings *settings);
 
     static Type typeFromString(const std::string &typestr, bool longType);

@@ -217,6 +217,13 @@ int main(int argc, char **argv)
     fout << "# To compile with rules, use 'make HAVE_RULES=yes'\n";
     makeConditionalVariable(fout, "HAVE_RULES", "no");
 
+    // Z3 is an optional dependency now..
+    makeConditionalVariable(fout, "USE_Z3", "no");
+    fout << "ifeq ($(USE_Z3),yes)\n"
+         << "    CPPFLAGS += -DUSE_Z3\n"
+         << "    LIBS += -lz3\n"
+         << "endif\n";
+
     // use match compiler..
     fout << "# use match compiler\n";
     fout << "ifeq ($(SRCDIR),build)\n"
@@ -224,10 +231,18 @@ int main(int argc, char **argv)
          << "    MATCHCOMPILER:=yes\n"
          << "endif\n";
     fout << "ifeq ($(MATCHCOMPILER),yes)\n"
+         << "    # Find available Python interpreter\n"
+         << "    PYTHON_INTERPRETER := $(shell which python)\n"
+         << "    ifndef PYTHON_INTERPRETER\n"
+         << "        PYTHON_INTERPRETER := $(shell which python3)\n"
+         << "    endif\n"
+         << "    ifndef PYTHON_INTERPRETER\n"
+         << "        $(error Did not find a Python interpreter)\n"
+         << "    endif\n"
          << "    ifdef VERIFY\n"
-         << "        matchcompiler_S := $(shell python tools/matchcompiler.py --verify)\n"
+         << "        matchcompiler_S := $(shell $(PYTHON_INTERPRETER) tools/matchcompiler.py --verify)\n"
          << "    else\n"
-         << "        matchcompiler_S := $(shell python tools/matchcompiler.py)\n"
+         << "        matchcompiler_S := $(shell $(PYTHON_INTERPRETER) tools/matchcompiler.py)\n"
          << "    endif\n"
          << "    libcppdir:=build\n"
          << "else\n"
@@ -453,7 +468,8 @@ int main(int argc, char **argv)
     fout << ".PHONY: validateCFG\n";
     fout << "%.checked:%.cfg\n";
     fout << "\txmllint --noout --relaxng cfg/cppcheck-cfg.rng $<\n";
-    fout << "validateCFG: ${ConfigFilesCHECKED}\n\n";
+    fout << "validateCFG: ${ConfigFilesCHECKED}\n";
+    fout << "\txmllint --noout cfg/cppcheck-cfg.rng\n\n";
     fout << "# Validation of platforms files:\n";
     fout << "PlatformFiles := $(wildcard platforms/*.xml)\n";
     fout << "PlatformFilesCHECKED := $(patsubst %.xml,%.checked,$(PlatformFiles))\n";
@@ -465,10 +481,11 @@ int main(int argc, char **argv)
     fout << "/tmp/errorlist.xml: cppcheck\n";
     fout << "\t./cppcheck --errorlist >$@\n";
     fout << "/tmp/example.xml: cppcheck\n";
-    fout << "\t./cppcheck --xml --enable=all --inconclusive --suppress=operatorEqVarError:*check.h -j 4 cli externals gui lib test 2>/tmp/example.xml\n";
+    fout << "\t./cppcheck --xml --enable=all --inconclusive --suppress=operatorEqVarError:*check.h --max-configs=1 -j 4 cli externals gui lib test 2>/tmp/example.xml\n";
     fout << "createXMLExamples:/tmp/errorlist.xml /tmp/example.xml\n";
     fout << ".PHONY: validateXML\n";
     fout << "validateXML: createXMLExamples\n";
+    fout << "\txmllint --noout cppcheck-errors.rng\n";
     fout << "\txmllint --noout --relaxng cppcheck-errors.rng /tmp/errorlist.xml\n";
     fout << "\txmllint --noout --relaxng cppcheck-errors.rng /tmp/example.xml\n";
     fout << "\ncheckCWEEntries: /tmp/errorlist.xml\n";

@@ -107,7 +107,7 @@ public:
      * \param unknown set to true if it's unknown if the scope is noreturn
      * \return true if scope ends with a function call that might be 'noreturn'
      */
-    bool IsScopeNoReturn(const Token *endScopeToken, bool *unknown = nullptr) const;
+    bool isScopeNoReturn(const Token *endScopeToken, bool *unknown = nullptr) const;
 
     bool createTokens(std::istream &code, const std::string& FileName);
     void createTokens(const simplecpp::TokenList *tokenList);
@@ -153,8 +153,6 @@ public:
     * the checking of this file.
     */
     bool simplifyTokenList1(const char FileName[]);
-
-    void SimplifyNamelessRValueReferences();
 
     /**
     * Most aggressive simplification of tokenlist
@@ -249,6 +247,8 @@ public:
 
     /** Remove macros in global scope */
     void removeMacrosInGlobalScope();
+
+    void addSemicolonAfterUnknownMacro();
 
     /** Remove undefined macro in class definition:
       * class DLLEXPORT Fred { };
@@ -375,6 +375,10 @@ public:
      * A c;
      */
     void simplifyTypedef();
+
+    /**
+     */
+    bool isMemberFunction(const Token *openParen) const;
 
     /**
      */
@@ -792,6 +796,8 @@ private:
 
     /** Find end of SQL (or PL/SQL) block */
     static const Token *findSQLBlockEnd(const Token *tokSQLStart);
+
+    bool operatorEnd(const Token * tok) const;
 
 public:
 

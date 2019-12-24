@@ -38,7 +38,7 @@ private:
         settings.addEnabled("style");
         settings.addEnabled("warning");
         settings.addEnabled("portability");
-        settings.libraries.push_back("posix");
+        settings.libraries.emplace_back("posix");
         settings.standards.c = Standards::C11;
         settings.standards.cpp = Standards::CPP11;
         LOAD_LIB_2(settings.library, "std.cfg");
@@ -432,8 +432,16 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Invalid memset() argument nr 3. A non-boolean value is required.\n", errout.str());
 
-        check("int f() { strtol(a,b,sizeof(a)!=12); }");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strtol() argument nr 3. The value is 0 or 1 (boolean) but the valid values are '0,2:36'.\n", errout.str());
+        check("void boolArgZeroIsInvalidButOneIsValid(int param) {\n"
+              "  void* buffer = calloc(param > 0, 10);\n"
+              "  free(buffer);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Invalid calloc() argument nr 1. The value is 0 or 1 (boolean) but the valid values are '1:'.\n", errout.str());
+
+        check("void boolArgZeroIsValidButOneIsInvalid(int param) {\n"
+              "  strtol(a, b, param > 0);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Invalid strtol() argument nr 3. The value is 0 or 1 (boolean) but the valid values are '0,2:36'.\n", errout.str());
 
         check("int f() { strtol(a,b,1); }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strtol() argument nr 3. The value is 1 but the valid values are '0,2:36'.\n", errout.str());

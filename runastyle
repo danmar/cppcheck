@@ -76,3 +76,4 @@ done
 
 formatXML man/cppcheck.1.xml
 formatXML cppcheck-errors.rng
+formatXML rules/*.xml
