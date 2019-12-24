@@ -131,7 +131,7 @@ QList<int>::iterator QList3()
     {}
 
     QList<int>::iterator it = qlist1.begin();
-    // TODO: cppcheck-suppress returnDanglingLifetime
+    // cppcheck-suppress returnDanglingLifetime
     return it;
 }
 
@@ -167,7 +167,7 @@ QLinkedList<int>::iterator QLinkedList3()
     {}
 
     QLinkedList<int>::iterator it = intQLinkedList1.begin();
-    // TODO: cppcheck-suppress returnDanglingLifetime
+    // cppcheck-suppress returnDanglingLifetime
     return it;
 }
 
@@ -278,7 +278,7 @@ QVector<int>::iterator QVector2()
     {}
 
     QVector<int>::iterator it = qvector1.begin();
-    // TODO cppcheck-suppress returnDanglingLifetime
+    // cppcheck-suppress returnDanglingLifetime
     return it;
 }
 
@@ -331,7 +331,7 @@ QStack<int>::iterator QStack2()
     {}
 
     QStack<int>::iterator it = qstack1.begin();
-    // TODO cppcheck-suppress returnDanglingLifetime
+    // cppcheck-suppress returnDanglingLifetime
     return it;
 }
 
