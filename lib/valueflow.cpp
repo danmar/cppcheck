@@ -4545,18 +4545,18 @@ static const ValueFlow::Value* getCompareIntValue(const std::list<ValueFlow::Val
     return result;
 }
 
-template<class Compare>
-static const ValueFlow::Value* proveCompare(const std::list<ValueFlow::Value>& values, MathLib::bigint x, Compare compare, bool as)
+template<class CompareMax, class CompareMin>
+static const ValueFlow::Value* proveCompare(const std::list<ValueFlow::Value>& values, MathLib::bigint x, CompareMax compareMax, CompareMin compareMin)
 {
     const ValueFlow::Value* result = nullptr;
     const ValueFlow::Value* maxValue = getCompareIntValue(values, std::greater<MathLib::bigint>{});
     if (maxValue && maxValue->isImpossible() && maxValue->bound == ValueFlow::Value::Bound::Lower) {
-        if (compare(maxValue->intvalue, x) == as)
+        if (compareMax(maxValue->intvalue, x))
             result = maxValue;
     }
     const ValueFlow::Value* minValue = getCompareIntValue(values, std::less<MathLib::bigint>{});
     if (minValue && minValue->isImpossible() && minValue->bound == ValueFlow::Value::Bound::Upper) {
-        if (compare(minValue->intvalue, x) == !as)
+        if (compareMin(x, minValue->intvalue))
             result = minValue;
     }
     return result;
@@ -4564,12 +4564,12 @@ static const ValueFlow::Value* proveCompare(const std::list<ValueFlow::Value>& v
 
 static const ValueFlow::Value* proveLessThan(const std::list<ValueFlow::Value>& values, MathLib::bigint x)
 {
-    return proveCompare(values, x, std::less<MathLib::bigint>{}, true);
+    return proveCompare(values, x, std::less_equal<MathLib::bigint>{}, std::less<MathLib::bigint>{});
 }
 
 static const ValueFlow::Value* proveGreaterThan(const std::list<ValueFlow::Value>& values, MathLib::bigint x)
 {
-    return proveCompare(values, x, std::greater<MathLib::bigint>{}, false);
+    return proveCompare(values, x, std::greater<MathLib::bigint>{}, std::greater_equal<MathLib::bigint>{});
 }
 
 static const ValueFlow::Value* proveNotEqual(const std::list<ValueFlow::Value>& values, MathLib::bigint x)
