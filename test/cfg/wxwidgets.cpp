@@ -312,7 +312,7 @@ wxString::iterator wxString_test3()
 {
     wxString wxString1;
     wxString wxString2;
-    // cppcheck-suppress iterators2
+    // cppcheck-suppress mismatchingContainers
     for (wxString::iterator it = wxString1.begin(); it != wxString2.end(); ++it)
     {}
 
