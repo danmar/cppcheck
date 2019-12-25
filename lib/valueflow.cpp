@@ -4634,14 +4634,14 @@ static void valueFlowInferCondition(TokenList* tokenlist,
             } else if (Token::Match(tok, "<|>=")) {
                 result = proveLessThan(varTok->values(), val);
                 known = tok->str() == "<";
-                if (!result) {
+                if (!result && !isSaturated(val)) {
                     result = proveGreaterThan(varTok->values(), val - 1);
                     known = tok->str() == ">=";
                 }
             } else if (Token::Match(tok, ">|<=")) {
                 result = proveGreaterThan(varTok->values(), val);
                 known = tok->str() == ">";
-                if (!result) {
+                if (!result && !isSaturated(val)) {
                     result = proveLessThan(varTok->values(), val + 1);
                     known = tok->str() == "<=";
                 }
