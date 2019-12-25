@@ -4545,31 +4545,26 @@ static const ValueFlow::Value* getCompareIntValue(const std::list<ValueFlow::Val
     return result;
 }
 
-template<class CompareMax, class CompareMin>
-static const ValueFlow::Value* proveCompare(const std::list<ValueFlow::Value>& values, MathLib::bigint x, CompareMax compareMax, CompareMin compareMin)
+static const ValueFlow::Value* proveLessThan(const std::list<ValueFlow::Value>& values, MathLib::bigint x)
 {
     const ValueFlow::Value* result = nullptr;
     const ValueFlow::Value* maxValue = getCompareIntValue(values, std::greater<MathLib::bigint>{});
     if (maxValue && maxValue->isImpossible() && maxValue->bound == ValueFlow::Value::Bound::Lower) {
-        if (compareMax(maxValue->intvalue, x))
+        if (maxValue->intvalue <= x)
             result = maxValue;
-    }
-    const ValueFlow::Value* minValue = getCompareIntValue(values, std::less<MathLib::bigint>{});
-    if (minValue && minValue->isImpossible() && minValue->bound == ValueFlow::Value::Bound::Upper) {
-        if (compareMin(x, minValue->intvalue))
-            result = minValue;
     }
     return result;
 }
 
-static const ValueFlow::Value* proveLessThan(const std::list<ValueFlow::Value>& values, MathLib::bigint x)
-{
-    return proveCompare(values, x, std::less_equal<MathLib::bigint>{}, std::less<MathLib::bigint>{});
-}
-
 static const ValueFlow::Value* proveGreaterThan(const std::list<ValueFlow::Value>& values, MathLib::bigint x)
 {
-    return proveCompare(values, x, std::greater<MathLib::bigint>{}, std::greater_equal<MathLib::bigint>{});
+    const ValueFlow::Value* result = nullptr;
+    const ValueFlow::Value* minValue = getCompareIntValue(values, std::less<MathLib::bigint>{});
+    if (minValue && minValue->isImpossible() && minValue->bound == ValueFlow::Value::Bound::Upper) {
+        if (minValue->intvalue >= x)
+            result = minValue;
+    }
+    return result;
 }
 
 static const ValueFlow::Value* proveNotEqual(const std::list<ValueFlow::Value>& values, MathLib::bigint x)
@@ -4632,23 +4627,22 @@ static void valueFlowInferCondition(TokenList* tokenlist,
             if (varTok->values().empty())
                 continue;
             const ValueFlow::Value* result = nullptr;
-            const ValueFlow::Value* notEqual = proveNotEqual(varTok->values(), val);
             bool known = false;
             if (Token::Match(tok, "==|!=")) {
-                result = notEqual;
+                result = proveNotEqual(varTok->values(), val);
                 known = tok->str() == "!=";
             } else if (Token::Match(tok, "<|>=")) {
                 result = proveLessThan(varTok->values(), val);
-                known = tok->str() == "<" || notEqual;
-                if (!result && notEqual) {
-                    result = proveGreaterThan(varTok->values(), val);
+                known = tok->str() == "<";
+                if (!result) {
+                    result = proveGreaterThan(varTok->values(), val - 1);
                     known = tok->str() == ">=";
                 }
             } else if (Token::Match(tok, ">|<=")) {
                 result = proveGreaterThan(varTok->values(), val);
-                known = tok->str() == ">" || notEqual;
-                if (!result && notEqual) {
-                    result = proveLessThan(varTok->values(), val);
+                known = tok->str() == ">";
+                if (!result) {
+                    result = proveLessThan(varTok->values(), val + 1);
                     known = tok->str() == "<=";
                 }
             }

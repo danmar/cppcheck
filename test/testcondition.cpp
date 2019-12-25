@@ -2148,7 +2148,7 @@ private:
               "    if (x<=4) {}\n"
               "  }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Condition 'x<=4' is always true\n", errout.str());
 
         // first comparison: >
         check("void f(int x) {\n"
@@ -2168,17 +2168,17 @@ private:
         check("void f(int x) {\n"
               "\n"
               "  if (x>4) {\n"
-              "    if (x>=5) {}\n" // <- TODO
+              "    if (x>=5) {}\n" // <- Warning
               "  }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Condition 'x>=5' is always true\n", errout.str());
         check("void f(int x) {\n"
               "\n"
               "  if (x>4) {\n"
-              "    if (x<5) {}\n" // <- TODO
+              "    if (x<5) {}\n" // <- Warning
               "  }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Condition 'x<5' is always false\n", errout.str());
         check("void f(int x) {\n"
               "\n"
               "  if (x>4) {\n"
