@@ -1601,8 +1601,40 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             parent = parent->astParent();
             ++num;
         }
-        if (!parent || parent->str() != "(")
+        if (!parent || parent->str() != "(" || num == 0)
             return;
+
+        if (parent->astOperand1() && parent->astOperand1()->function()) {
+            const Variable *arg = parent->astOperand1()->function()->getArgumentVar(num - 1);
+            if (arg->nameToken()) {
+                std::string bad;
+
+                MathLib::bigint low;
+                if (arg->nameToken()->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW, &low)) {
+                    if (value.isLessThan(dataBase, low)) {
+                        bad = "__cppcheck_low_(" + std::to_string(low) + ")";
+                    }
+                }
+
+                MathLib::bigint high;
+                if (arg->nameToken()->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH, &high)) {
+                    if (value.isLessThan(dataBase, low)) {
+                        bad = "__cppcheck_low_(" + std::to_string(low) + ")";
+                    }
+                }
+
+                if (!bad.empty()) {
+                    dataBase->addError(tok->linenr());
+                    std::list<const Token*> callstack{tok};
+                    ErrorLogger::ErrorMessage errmsg(callstack,
+                                                     &tokenizer->list,
+                                                     Severity::SeverityType::error,
+                                                     "verificationInvalidArgValue",
+                                                     "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument value meets the attribute " + bad, CWE(0), false);
+                    errorLogger->reportErr(errmsg);
+                }
+            }
+        }
 
         // Check invalid function argument values..
         for (const Library::InvalidArgValue &invalidArgValue : Library::getInvalidArgValues(settings->library.validarg(parent->astOperand1(), num))) {
@@ -1640,7 +1672,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             if (err) {
                 dataBase->addError(tok->linenr());
                 std::list<const Token*> callstack{tok};
-                ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationInvalidArgValue", "There is function call, cannot determine that argument value is valid. Bad value: " + bad, CWE(0), false);
+                ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationInvalidArgValue", "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument value is valid. Bad value: " + bad, CWE(0), false);
                 errorLogger->reportErr(errmsg);
                 break;
             }
