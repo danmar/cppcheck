@@ -1653,16 +1653,24 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
     std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> checkFunctionCall = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
         if (!Token::Match(tok->astParent(), "[(,]"))
             return;
-        int num = (tok == tok->astParent()->astOperand2()) ? 1 : 0;
         const Token *parent = tok->astParent();
-        while (Token::simpleMatch(parent, ",")) {
+        while (Token::simpleMatch(parent, ","))
             parent = parent->astParent();
-            ++num;
-        }
-        if (!parent || parent->str() != "(" || num == 0)
+        if (!parent || parent->str() != "(")
             return;
 
-        if (parent->astOperand1() && parent->astOperand1()->function()) {
+        int num = 0;
+        for (const Token *argTok: getArguments(parent->astOperand1())) {
+            --num;
+            if (argTok == tok) {
+                num = -num;
+                break;
+            }
+        }
+        if (num <= 0)
+            return;
+
+        if (parent->astOperand1()->function()) {
             const Variable *arg = parent->astOperand1()->function()->getArgumentVar(num - 1);
             if (arg->nameToken()) {
                 std::string bad;
@@ -1690,6 +1698,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
                                                      "verificationInvalidArgValue",
                                                      "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument value meets the attribute " + bad, CWE(0), false);
                     errorLogger->reportErr(errmsg);
+                    return;
                 }
             }
         }
