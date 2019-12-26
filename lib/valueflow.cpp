@@ -4550,8 +4550,8 @@ static const ValueFlow::Value* getCompareIntValue(const std::list<ValueFlow::Val
             continue;
         if (result)
             result = &std::min(value, *result, [&](const ValueFlow::Value& x, const ValueFlow::Value& y) {
-                return compare(x.intvalue, y.intvalue);
-            });
+            return compare(x.intvalue, y.intvalue);
+        });
         else
             result = &value;
     }
@@ -4561,7 +4561,7 @@ static const ValueFlow::Value* getCompareIntValue(const std::list<ValueFlow::Val
 static const ValueFlow::Value* proveLessThan(const std::list<ValueFlow::Value>& values, MathLib::bigint x)
 {
     const ValueFlow::Value* result = nullptr;
-    const ValueFlow::Value* maxValue = getCompareIntValue(values, std::greater<MathLib::bigint>{});
+    const ValueFlow::Value* maxValue = getCompareIntValue(values, std::greater<MathLib::bigint> {});
     if (maxValue && maxValue->isImpossible() && maxValue->bound == ValueFlow::Value::Bound::Lower) {
         if (maxValue->intvalue <= x)
             result = maxValue;
@@ -4572,7 +4572,7 @@ static const ValueFlow::Value* proveLessThan(const std::list<ValueFlow::Value>& 
 static const ValueFlow::Value* proveGreaterThan(const std::list<ValueFlow::Value>& values, MathLib::bigint x)
 {
     const ValueFlow::Value* result = nullptr;
-    const ValueFlow::Value* minValue = getCompareIntValue(values, std::less<MathLib::bigint>{});
+    const ValueFlow::Value* minValue = getCompareIntValue(values, std::less<MathLib::bigint> {});
     if (minValue && minValue->isImpossible() && minValue->bound == ValueFlow::Value::Bound::Upper) {
         if (minValue->intvalue >= x)
             result = minValue;

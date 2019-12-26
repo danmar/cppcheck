@@ -3332,7 +3332,7 @@ private:
     }
 
     void alwaysTrueInfer() {
-      check("void f(int x) {\n"
+        check("void f(int x) {\n"
               "    if (x > 5) {\n"
               "        x++;\n"
               "        if (x == 1) {}\n"
@@ -3348,7 +3348,7 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Condition 'x!=1' is always true\n", errout.str());
 
-      // #6890
+        // #6890
         check("void f(int i) {\n"
               "    int x = i;\n"
               "    if (x >= 1) {}\n"

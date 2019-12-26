@@ -674,7 +674,8 @@ void CheckStl::mismatchingContainers()
 
             // Lambda is used to escape the nested loops
             [&] {
-                for (const auto& p : containers) {
+                for (const auto& p : containers)
+                {
                     const std::vector<ArgIteratorInfo>& cargs = p.second;
                     for (ArgIteratorInfo iter1 : cargs) {
                         for (ArgIteratorInfo iter2 : cargs) {
