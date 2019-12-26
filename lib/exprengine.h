@@ -129,6 +129,8 @@ namespace ExprEngine {
             return str(minValue) + ":" + str(maxValue);
         }
         bool isEqual(DataBase *dataBase, int value) const override;
+        bool isGreaterThan(DataBase *dataBase, int value) const override;
+        bool isLessThan(DataBase *dataBase, int value) const override;
 
         int128_t minValue;
         int128_t maxValue;
