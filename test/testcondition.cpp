@@ -109,6 +109,7 @@ private:
         TEST_CASE(clarifyCondition8);
 
         TEST_CASE(alwaysTrue);
+        TEST_CASE(alwaysTrueInfer);
         TEST_CASE(multiConditionAlwaysTrue);
         TEST_CASE(duplicateCondition);
 
@@ -2090,14 +2091,14 @@ private:
               "    if (x<5) {}\n"
               "  }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Condition 'x<5' is always true\n", errout.str());
         check("void f(int x) {\n"
               "\n"
               "  if (x<4) {\n"
               "    if (x<=5) {}\n"
               "  }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Condition 'x<=5' is always true\n", errout.str());
 
         check("void f(int x) {\n"
               "\n"
@@ -2116,10 +2117,17 @@ private:
         check("void f(int x) {\n"
               "\n"
               "  if (x<5) {\n"
-              "    if (x>4) {}\n" // <- TODO
+              "    if (x!=6) {}\n"
               "  }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Condition 'x!=6' is always true\n", errout.str());
+        check("void f(int x) {\n"
+              "\n"
+              "  if (x<5) {\n"
+              "    if (x>4) {}\n" // <- Warning
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Condition 'x>4' is always false\n", errout.str());
         check("void f(int x) {\n"
               "\n"
               "  if (x<5) {\n"
@@ -2140,7 +2148,7 @@ private:
               "    if (x<=4) {}\n"
               "  }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Condition 'x<=4' is always true\n", errout.str());
 
         // first comparison: >
         check("void f(int x) {\n"
@@ -2160,17 +2168,17 @@ private:
         check("void f(int x) {\n"
               "\n"
               "  if (x>4) {\n"
-              "    if (x>=5) {}\n" // <- TODO
+              "    if (x>=5) {}\n" // <- Warning
               "  }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Condition 'x>=5' is always true\n", errout.str());
         check("void f(int x) {\n"
               "\n"
               "  if (x>4) {\n"
-              "    if (x<5) {}\n" // <- TODO
+              "    if (x<5) {}\n" // <- Warning
               "  }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Condition 'x<5' is always false\n", errout.str());
         check("void f(int x) {\n"
               "\n"
               "  if (x>4) {\n"
@@ -2190,17 +2198,17 @@ private:
         check("void f(int x) {\n"
               "\n"
               "  if (x>5) {\n"
-              "    if (x>4) {}\n" // <- TODO
+              "    if (x>4) {}\n" // <- Warning
               "  }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Condition 'x>4' is always true\n", errout.str());
         check("void f(int x) {\n"
               "\n"
               "  if (x>5) {\n"
-              "    if (x>=4) {}\n" // <- TODO
+              "    if (x>=4) {}\n" // <- Warning
               "  }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Condition 'x>=4' is always true\n", errout.str());
         check("void f(int x) {\n"
               "\n"
               "  if (x>5) {\n"
@@ -3276,22 +3284,6 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f(int x) {\n"
-              "    if (x > 5) {\n"
-              "        x++;\n"
-              "        if (x == 1) {}\n"
-              "    }\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Condition 'x==1' is always false\n", errout.str());
-
-        check("void f(int x) {\n"
-              "    if (x > 5) {\n"
-              "        x++;\n"
-              "        if (x != 1) {}\n"
-              "    }\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Condition 'x!=1' is always true\n", errout.str());
-
         // #9332
         check("struct A { void* g(); };\n"
               "void f() {\n"
@@ -3335,6 +3327,124 @@ private:
               "        return;\n"
               "    if (x % 360L == 0)\n"
               "        return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void alwaysTrueInfer() {
+      check("void f(int x) {\n"
+              "    if (x > 5) {\n"
+              "        x++;\n"
+              "        if (x == 1) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Condition 'x==1' is always false\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (x > 5) {\n"
+              "        x++;\n"
+              "        if (x != 1) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Condition 'x!=1' is always true\n", errout.str());
+
+      // #6890
+        check("void f(int i) {\n"
+              "    int x = i;\n"
+              "    if (x >= 1) {}\n"
+              "    else {\n"
+              "        x = 8 - x; \n"
+              "        if (x == -1) {}\n"
+              "        else {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (style) Condition 'x==-1' is always false\n", errout.str());
+
+        check("void f(int i) {\n"
+              "    int x = i;\n"
+              "    if (x >= 1) {}\n"
+              "    else {\n"
+              "        x = 8 - x; \n"
+              "        if (x != -1) {}\n"
+              "        else {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (style) Condition 'x!=-1' is always true\n", errout.str());
+
+        check("void f(int i) {\n"
+              "    int x = i;\n"
+              "    if (x >= 1) {}\n"
+              "    else {\n"
+              "        x = 8 - x; \n"
+              "        if (x >= -1) {}\n"
+              "        else {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (style) Condition 'x>=-1' is always true\n", errout.str());
+
+        check("void f(int i) {\n"
+              "    int x = i;\n"
+              "    if (x >= 1) {}\n"
+              "    else {\n"
+              "        x = 8 - x; \n"
+              "        if (x > -1) {}\n"
+              "        else {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (style) Condition 'x>-1' is always true\n", errout.str());
+
+        check("void f(int i) {\n"
+              "    int x = i;\n"
+              "    if (x >= 1) {}\n"
+              "    else {\n"
+              "        x = 8 - x; \n"
+              "        if (x < -1) {}\n"
+              "        else {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (style) Condition 'x<-1' is always false\n", errout.str());
+
+        check("void f(int i) {\n"
+              "    int x = i;\n"
+              "    if (x >= 1) {}\n"
+              "    else {\n"
+              "        x = 8 - x; \n"
+              "        if (x <= -1) {}\n"
+              "        else {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (style) Condition 'x<=-1' is always false\n", errout.str());
+
+        check("void f(int i) {\n"
+              "    int x = i;\n"
+              "    if (x >= 1) {}\n"
+              "    else {\n"
+              "        x = 8 - x; \n"
+              "        if (x > 7) {}\n"
+              "        else {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (style) Condition 'x>7' is always true\n", errout.str());
+
+        check("void f(int i) {\n"
+              "    int x = i;\n"
+              "    if (x >= 1) {}\n"
+              "    else {\n"
+              "        x = 8 - x; \n"
+              "        if (x > 9) {}\n"
+              "        else {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int i) {\n"
+              "    int x = i;\n"
+              "    if (x >= 1) {}\n"
+              "    else {\n"
+              "        x = 8 - x; \n"
+              "        if (x > 10) {}\n"
+              "        else {}\n"
+              "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
