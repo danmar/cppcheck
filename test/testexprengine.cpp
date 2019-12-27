@@ -103,8 +103,8 @@ private:
         };
         std::vector<ExprEngine::Callback> callbacks;
         callbacks.push_back(f);
-        std::ostringstream dummy;
-        ExprEngine::executeAllFunctions(&tokenizer, &settings, callbacks, dummy);
+        std::ostringstream trace;
+        ExprEngine::executeAllFunctions(&tokenizer, &settings, callbacks, trace);
         return ret;
     }
 
@@ -126,8 +126,8 @@ private:
         };
         std::vector<ExprEngine::Callback> callbacks;
         callbacks.push_back(f);
-        std::ostringstream dummy;
-        ExprEngine::executeAllFunctions(&tokenizer, &settings, callbacks, dummy);
+        std::ostringstream trace;
+        ExprEngine::executeAllFunctions(&tokenizer, &settings, callbacks, trace);
         return ret;
     }
 
@@ -139,9 +139,9 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        std::vector<ExprEngine::Callback> dummy;
+        std::vector<ExprEngine::Callback> callbacks;
         std::ostringstream ret;
-        ExprEngine::executeAllFunctions(&tokenizer, &settings, dummy, ret);
+        ExprEngine::executeAllFunctions(&tokenizer, &settings, callbacks, ret);
         return ret.str();
     }
 

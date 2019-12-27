@@ -18,6 +18,7 @@
 
 #include "exprengine.h"
 #include "astutils.h"
+#include "path.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "tokenize.h"
@@ -1455,12 +1456,12 @@ static void execute(const Token *start, const Token *end, Data &data)
     }
 }
 
-void ExprEngine::executeAllFunctions(const Tokenizer *tokenizer, const Settings *settings, const std::vector<ExprEngine::Callback> &callbacks, std::ostream &trace)
+void ExprEngine::executeAllFunctions(const Tokenizer *tokenizer, const Settings *settings, const std::vector<ExprEngine::Callback> &callbacks, std::ostream &report)
 {
     const SymbolDatabase *symbolDatabase = tokenizer->getSymbolDatabase();
     for (const Scope *functionScope : symbolDatabase->functionScopes) {
         try {
-            executeFunction(functionScope, tokenizer, settings, callbacks, trace);
+            executeFunction(functionScope, tokenizer, settings, callbacks, report);
         } catch (const VerifyException &e) {
             // FIXME.. there should not be exceptions
             std::string functionName = functionScope->function->name();
@@ -1549,7 +1550,7 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
     return ExprEngine::ValuePtr();
 }
 
-void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *tokenizer, const Settings *settings, const std::vector<ExprEngine::Callback> &callbacks, std::ostream &trace)
+void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *tokenizer, const Settings *settings, const std::vector<ExprEngine::Callback> &callbacks, std::ostream &report)
 {
     if (!functionScope->bodyStart)
         return;
@@ -1576,14 +1577,24 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
             call(callbacks, tok, bailoutValue, &data);
     }
 
-    if (settings->debugVerification) {
-        // TODO generate better output!!
-        trackExecution.print(trace);
+    if (settings->debugVerification && !trackExecution.isAllOk()) {
+        if (settings->verificationReport)
+            report << "[debug]" << std::endl;
+        trackExecution.print(report);
+        if (settings->verificationReport)
+            report << "[details]" << std::endl;
+        trackExecution.report(report, functionScope);
     }
 
     // Write a verification report
-    //if (!trackExecution.isAllOk())
-    //    trackExecution.report(trace, functionScope);
+    if (settings->verificationReport) {
+        report << "[function-report] "
+               << Path::stripDirectoryPart(tokenizer->list.getFiles().at(functionScope->bodyStart->fileIndex())) << ":"
+               << functionScope->bodyStart->linenr() << ":"
+               << function->name()
+               << (trackExecution.isAllOk() ? " is safe" : " is not safe")
+               << std::endl;
+    }
 }
 
 void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings)
@@ -1752,5 +1763,9 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
 #ifdef VERIFY_INTEGEROVERFLOW
     callbacks.push_back(integerOverflow);
 #endif
-    ExprEngine::executeAllFunctions(tokenizer, settings, callbacks, std::cout);
+
+    std::ostringstream report;
+    ExprEngine::executeAllFunctions(tokenizer, settings, callbacks, report);
+    if (errorLogger && settings->verificationReport && !report.str().empty())
+        errorLogger->reportVerification(report.str());
 }

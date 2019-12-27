@@ -766,9 +766,8 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
     }
 
     // Verification using ExprEngine..
-    if (mSettings.verification) {
+    if (mSettings.verification)
         ExprEngine::runChecks(this, &tokenizer, &mSettings);
-    }
 
     // Analyse the tokens..
 
@@ -1200,6 +1199,11 @@ void CppCheck::reportInfo(const ErrorLogger::ErrorMessage &msg)
 void CppCheck::reportStatus(unsigned int /*fileindex*/, unsigned int /*filecount*/, std::size_t /*sizedone*/, std::size_t /*sizetotal*/)
 {
 
+}
+
+void CppCheck::reportVerification(const std::string &str)
+{
+    mErrorLogger.reportVerification(str);
 }
 
 void CppCheck::getErrorMessages()

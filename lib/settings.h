@@ -191,6 +191,10 @@ public:
     /** @brief Enable verification analysis */
     bool verification;
 
+    /** @brief Generate verification report */
+    bool verificationReport;
+
+    /** @brief Generate verification debug output */
     bool debugVerification;
 
     /** @brief check unknown function return values */
