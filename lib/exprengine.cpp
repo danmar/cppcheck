@@ -197,7 +197,7 @@ namespace {
             structVal->member[memberName] = value;
         }
 
-        std::string getNewSymbolName() override {
+        std::string getNewSymbolName() OVERRIDE {
             return "$" + std::to_string(++(*symbolValueIndex));
         }
 

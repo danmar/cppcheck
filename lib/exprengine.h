@@ -123,14 +123,14 @@ namespace ExprEngine {
             , minValue(minValue)
             , maxValue(maxValue) {
         }
-        std::string getRange() const override {
+        std::string getRange() const OVERRIDE {
             if (minValue == maxValue)
                 return str(minValue);
             return str(minValue) + ":" + str(maxValue);
         }
-        bool isEqual(DataBase *dataBase, int value) const override;
-        bool isGreaterThan(DataBase *dataBase, int value) const override;
-        bool isLessThan(DataBase *dataBase, int value) const override;
+        bool isEqual(DataBase *dataBase, int value) const OVERRIDE;
+        bool isGreaterThan(DataBase *dataBase, int value) const OVERRIDE;
+        bool isLessThan(DataBase *dataBase, int value) const OVERRIDE;
 
         int128_t minValue;
         int128_t maxValue;
@@ -144,12 +144,12 @@ namespace ExprEngine {
             , maxValue(maxValue) {
         }
 
-        bool isEqual(DataBase *dataBase, int value) const override {
+        bool isEqual(DataBase *dataBase, int value) const OVERRIDE {
             (void)dataBase;
             return value >= minValue && value <= maxValue;
         }
 
-        std::string getRange() const override {
+        std::string getRange() const OVERRIDE {
             return std::to_string(minValue) + ":" + std::to_string(maxValue);
         }
 
@@ -165,7 +165,7 @@ namespace ExprEngine {
             , null(null)
             , uninitData(uninitData) {
         }
-        std::string getRange() const override;
+        std::string getRange() const OVERRIDE;
         ValuePtr data;
         bool null;
         bool uninitData;
@@ -177,7 +177,7 @@ namespace ExprEngine {
 
         ConditionalValue(const std::string &name, const Vector &values) : Value(name, ValueType::ConditionalValue), values(values) {}
 
-        std::string getSymbolicExpression() const override;
+        std::string getSymbolicExpression() const OVERRIDE;
 
         Vector values;
     };
@@ -189,7 +189,7 @@ namespace ExprEngine {
         ArrayValue(const std::string &name, ValuePtr size, ValuePtr value);
         ArrayValue(DataBase *data, const Variable *var);
 
-        std::string getSymbolicExpression() const override;
+        std::string getSymbolicExpression() const OVERRIDE;
 
         void assign(ValuePtr index, ValuePtr value);
         void clear();
@@ -207,7 +207,7 @@ namespace ExprEngine {
     public:
         StringLiteralValue(const std::string &name, const std::string &s) : Value(name, ValueType::StringLiteralValue), string(s) {}
 
-        std::string getRange() const override {
+        std::string getRange() const OVERRIDE {
             return "\"" + string + "\"";
         }
 
@@ -221,7 +221,7 @@ namespace ExprEngine {
     public:
         explicit StructValue(const std::string &name) : Value(name, ValueType::StructValue) {}
 
-        std::string getSymbolicExpression() const override;
+        std::string getSymbolicExpression() const OVERRIDE;
 
         ValuePtr getValueOfMember(const std::string &name) const {
             auto it = member.find(name);
@@ -237,7 +237,7 @@ namespace ExprEngine {
             , varId(varId)
         {}
 
-        std::string getRange() const override {
+        std::string getRange() const OVERRIDE {
             return "&@" + std::to_string(varId);
         }
 
@@ -253,9 +253,9 @@ namespace ExprEngine {
             , op2(op2) {
         }
 
-        bool isEqual(DataBase *dataBase, int value) const override;
-        bool isGreaterThan(DataBase *dataBase, int value) const override;
-        bool isLessThan(DataBase *dataBase, int value) const override;
+        bool isEqual(DataBase *dataBase, int value) const OVERRIDE;
+        bool isGreaterThan(DataBase *dataBase, int value) const OVERRIDE;
+        virtual bool isLessThan(DataBase *dataBase, int value) const OVERRIDE;
 
         std::string getExpr(DataBase *dataBase) const;
 
@@ -279,7 +279,7 @@ namespace ExprEngine {
             , sign(sign) {
         }
 
-        std::string getSymbolicExpression() const override;
+        std::string getSymbolicExpression() const OVERRIDE;
 
         ExprEngine::ValuePtr inputValue;
         int bits;
