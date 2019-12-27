@@ -10,12 +10,11 @@ for arg in sys.argv[1:]:
     if arg.startswith('-'):
         continue
 
-    print('Checking ' + arg + '...')
-    data = cppcheckdata.parsedump(arg)
+    print('Checking %s...' % arg)
+    data = cppcheckdata.CppcheckData(arg)
 
-    for cfg in data.configurations:
-        if len(data.configurations) > 1:
-            print('Checking ' + arg + ', config "' + cfg.name + '"...')
+    for cfg in data.iterconfigurations():
+        print('Checking %s, config %s...' % (arg, cfg.name))
         for token in cfg.tokenlist:
             if token.str != '(' or not token.astOperand1 or token.astOperand2:
                 continue

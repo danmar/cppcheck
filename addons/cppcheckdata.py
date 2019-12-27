@@ -6,12 +6,12 @@ This is a Python module that helps you access Cppcheck dump data.
 License: No restrictions, use this as you need.
 """
 
-from xml.etree import ElementTree
 import argparse
-from fnmatch import fnmatch
 import json
 import sys
 
+from xml.etree import ElementTree
+from fnmatch import fnmatch
 
 class Directive:
     """
@@ -407,8 +407,6 @@ class Function:
 
         self.argument = {}
         self.argumentId = {}
-        for arg in element:
-            self.argumentId[int(arg.get('nr'))] = arg.get('variable')
 
     def __repr__(self):
         attrs = ["Id", "tokenDefId", "name", "type", "isVirtual",
@@ -513,6 +511,60 @@ class Variable:
         self.scope = IdMap[self.scopeId]
 
 
+class Value:
+    """
+    Value class
+
+    Attributes:
+        intvalue         integer value
+        tokvalue         token value
+        floatvalue       float value
+        containerSize    container size
+        condition        condition where this Value comes from
+        valueKind        'known' or 'possible'
+        inconclusive     Is value inconclusive?
+    """
+
+    intvalue = None
+    tokvalue = None
+    floatvalue = None
+    containerSize = None
+    condition = None
+    valueKind = None
+    inconclusive = False
+
+    def isKnown(self):
+        return self.valueKind and self.valueKind == 'known'
+
+    def isPossible(self):
+        return self.valueKind and self.valueKind == 'possible'
+
+    def __init__(self, element):
+        self.intvalue = element.get('intvalue')
+        if self.intvalue:
+            self.intvalue = int(self.intvalue)
+        self.tokvalue = element.get('tokvalue')
+        self.floatvalue = element.get('floatvalue')
+        self.containerSize = element.get('container-size')
+        self.condition = element.get('condition-line')
+        if self.condition:
+            self.condition = int(self.condition)
+        if element.get('known'):
+            self.valueKind = 'known'
+        elif element.get('possible'):
+            self.valueKind = 'possible'
+        if element.get('inconclusive'):
+            self.inconclusive = True
+
+    def __repr__(self):
+        attrs = ["intvalue", "tokvalue", "floatvalue", "containerSize",
+                    "condition", "valueKind", "inconclusive"]
+        return "{}({})".format(
+            "Value",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
+
+
 class ValueFlow:
     """
     ValueFlow::Value class
@@ -528,64 +580,9 @@ class ValueFlow:
     Id = None
     values = None
 
-    class Value:
-        """
-        Value class
-
-        Attributes:
-            intvalue         integer value
-            tokvalue         token value
-            floatvalue       float value
-            containerSize    container size
-            condition        condition where this Value comes from
-            valueKind        'known' or 'possible'
-            inconclusive     Is value inconclusive?
-        """
-
-        intvalue = None
-        tokvalue = None
-        floatvalue = None
-        containerSize = None
-        condition = None
-        valueKind = None
-        inconclusive = False
-
-        def isKnown(self):
-            return self.valueKind and self.valueKind == 'known'
-
-        def isPossible(self):
-            return self.valueKind and self.valueKind == 'possible'
-
-        def __init__(self, element):
-            self.intvalue = element.get('intvalue')
-            if self.intvalue:
-                self.intvalue = int(self.intvalue)
-            self.tokvalue = element.get('tokvalue')
-            self.floatvalue = element.get('floatvalue')
-            self.containerSize = element.get('container-size')
-            self.condition = element.get('condition-line')
-            if self.condition:
-                self.condition = int(self.condition)
-            if element.get('known'):
-                self.valueKind = 'known'
-            elif element.get('possible'):
-                self.valueKind = 'possible'
-            if element.get('inconclusive'):
-                self.inconclusive = True
-
-        def __repr__(self):
-            attrs = ["intvalue", "tokvalue", "floatvalue", "containerSize",
-                     "condition", "valueKind", "inconclusive"]
-            return "{}({})".format(
-                "Value",
-                ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
-            )
-
     def __init__(self, element):
         self.Id = element.get('id')
         self.values = []
-        for value in element:
-            self.values.append(ValueFlow.Value(value))
 
     def __repr__(self):
         attrs = ["Id", "values"]
@@ -649,6 +646,7 @@ class Configuration:
         functions     List of Function items
         variables     List of Variable items
         valueflow     List of ValueFlow values
+        standards     List of Standards values
     """
 
     name = ''
@@ -658,54 +656,28 @@ class Configuration:
     functions = []
     variables = []
     valueflow = []
+    standards = []
 
-    def __init__(self, confignode):
-        self.name = confignode.get('cfg')
+    def __init__(self, name):
+        self.name = name
         self.directives = []
         self.tokenlist = []
         self.scopes = []
         self.functions = []
         self.variables = []
         self.valueflow = []
-        arguments = []
+        self.standards = []
 
-        for element in confignode:
-            if element.tag == "standards":
-                self.standards = Standards(element)
+    def set_tokens_links(self):
+        """Set next/previous links between tokens."""
+        prev = None
+        for token in self.tokenlist:
+            token.previous = prev
+            if prev:
+                prev.next = token
+            prev = token
 
-            if element.tag == 'directivelist':
-                for directive in element:
-                    self.directives.append(Directive(directive))
-
-            if element.tag == 'tokenlist':
-                for token in element:
-                    self.tokenlist.append(Token(token))
-
-                # set next/previous..
-                prev = None
-                for token in self.tokenlist:
-                    token.previous = prev
-                    if prev:
-                        prev.next = token
-                    prev = token
-            if element.tag == 'scopes':
-                for scope in element:
-                    self.scopes.append(Scope(scope))
-                    for functionList in scope:
-                        if functionList.tag == 'functionList':
-                            for function in functionList:
-                                self.functions.append(Function(function))
-            if element.tag == 'variables':
-                for variable in element:
-                    var = Variable(variable)
-                    if var.nameTokenId:
-                        self.variables.append(var)
-                    else:
-                        arguments.append(var)
-            if element.tag == 'valueflow':
-                for values in element:
-                    self.valueflow.append(ValueFlow(values))
-
+    def set_id_map(self, arguments):
         IdMap = {None: None, '0': None, '00000000': None, '0000000000000000': None}
         for token in self.tokenlist:
             IdMap[token.Id] = token
@@ -719,7 +691,6 @@ class Configuration:
             IdMap[variable.Id] = variable
         for values in self.valueflow:
             IdMap[values.Id] = values.values
-
         for token in self.tokenlist:
             token.setId(IdMap)
         for scope in self.scopes:
@@ -731,12 +702,12 @@ class Configuration:
         for variable in arguments:
             variable.setId(IdMap)
 
-    def __repr__(self):
-        attrs = ["name"]
-        return "{}({})".format(
-            "Configuration",
-            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
-        )
+    def setIdMap(self, functions_arguments):
+        """Set relationships between objects stored in this configuration.
+        :param functions_arguments: List of Variable objects which are function arguments
+        """
+        self.set_tokens_links()
+        self.set_id_map(functions_arguments)
 
 
 class Platform:
@@ -810,7 +781,9 @@ class CppcheckData:
     Contains a list of Configuration instances
 
     Attributes:
-        configurations    List of Configurations
+        filename          Path to Cppcheck dump file
+        rawTokens         List of rawToken elements
+        suppressions      List of Suppressions
 
     To iterate through all configurations use such code:
     @code
@@ -842,42 +815,156 @@ class CppcheckData:
 
     rawTokens = []
     platform = None
-    configurations = []
     suppressions = []
 
     def __init__(self, filename):
-        self.configurations = []
+        """
+        :param filename: Path to Cppcheck dump file
+        """
+        self.filename = filename
 
-        data = ElementTree.parse(filename)
+        files = []  # source files for elements occurred in this configuration
+        platform_done = False
+        rawtokens_done = False
+        suppressions_done = False
 
-        for platformNode in data.getroot():
-            if platformNode.tag == 'platform':
-                self.platform = Platform(platformNode)
+        # Parse general configuration options from <dumps> node
+        # We intentionally don't clean node resources here because we
+        # want to serialize in memory only small part of the XML tree.
+        for event, node in ElementTree.iterparse(self.filename, events=('start', 'end')):
+            if platform_done and rawtokens_done and suppressions_done:
+                break
+            if node.tag == 'platform' and event == 'start':
+                self.platform = Platform(node)
+                platform_done = True
+            elif node.tag == 'rawtokens' and event == 'end':
+                for rawtokens_node in node:
+                    if rawtokens_node.tag == 'file':
+                        files.append(rawtokens_node.get('name'))
+                    elif rawtokens_node.tag == 'tok':
+                        tok = Token(rawtokens_node)
+                        tok.file = files[int(rawtokens_node.get('fileIndex'))]
+                        self.rawTokens.append(tok)
+                rawtokens_done = True
+            elif node.tag == 'suppressions' and event == 'end':
+                for suppressions_node in node:
+                    self.suppressions.append(Suppression(suppressions_node))
+                suppressions_done = True
 
-        for rawTokensNode in data.getroot():
-            if rawTokensNode.tag != 'rawtokens':
+        # Set links between rawTokens.
+        for i in range(len(self.rawTokens)-1):
+            self.rawTokens[i+1].previous = self.rawTokens[i]
+            self.rawTokens[i].next = self.rawTokens[i+1]
+
+    @property
+    def configurations(self):
+        """
+        Return the list of all available Configuration objects.
+        """
+        return list(self.iterconfigurations())
+
+    def iterconfigurations(self):
+        """
+        Create and return iterator for the available Configuration objects.
+        The iterator loops over all Configurations in the dump file tree, in document order.
+        """
+        cfg = None
+        cfg_arguments = []  # function arguments for Configuration node initialization
+        cfg_function = None
+        cfg_valueflow = None
+
+        # Scopes contains <varlist> with all occurred variables. Some of them
+        # appearaed in <variables> node for this configuration.
+        # Others are arguments of functions.
+        # They have similar tag <var> but doesn't contain any attributes. So we
+        # set set a special state when iterate <varlist> node to prevent
+        # overriding of cfg.variables list with empty values.
+        iter_varlist = False
+
+        # Use iterable objects to traverse XML tree for dump files incrementally.
+        # Iterative approach is required to avoid large memory consumption.
+        # Calling .clear() is necessary to let the element be garbage collected.
+        for event, node in ElementTree.iterparse(self.filename, events=('start', 'end')):
+            # Serialize new configuration node
+            if node.tag == 'dump':
+                if event == 'start':
+                    cfg = Configuration(node.get('cfg'))
+                    continue
+                elif event == 'end':
+                    cfg.setIdMap(cfg_arguments)
+                    yield cfg
+                    cfg = None
+                    cfg_arguments = []
+
+            # Parse nested elemenets of configuration node
+            elif node.tag == "standards" and event == 'start':
                 continue
-            files = []
-            for node in rawTokensNode:
-                if node.tag == 'file':
-                    files.append(node.get('name'))
-                elif node.tag == 'tok':
-                    tok = Token(node)
-                    tok.file = files[int(node.get('fileIndex'))]
-                    self.rawTokens.append(tok)
-            for i in range(len(self.rawTokens) - 1):
-                self.rawTokens[i + 1].previous = self.rawTokens[i]
-                self.rawTokens[i].next = self.rawTokens[i + 1]
+            elif node.tag == "standards" and event == 'end':
+                cfg.standards = Standards(node)
 
-        for suppressionsNode in data.getroot():
-            if suppressionsNode.tag == "suppressions":
-                for suppression in suppressionsNode:
-                    self.suppressions.append(Suppression(suppression))
+            # Parse directives list
+            elif node.tag == 'directive' and event == 'start':
+                cfg.directives.append(Directive(node))
 
-        # root is 'dumps' node, each config has its own 'dump' subnode.
-        for cfgnode in data.getroot():
-            if cfgnode.tag == 'dump':
-                self.configurations.append(Configuration(cfgnode))
+            # Parse tokens
+            elif node.tag == 'tokenlist' and event == 'start':
+                continue
+            elif node.tag == 'token' and event == 'start':
+                cfg.tokenlist.append(Token(node))
+
+            # Parse scopes
+            elif node.tag == 'scopes' and event == 'start':
+                continue
+            elif node.tag == 'scope' and event == 'start':
+                cfg.scopes.append(Scope(node))
+            elif node.tag == 'varlist':
+                if event == 'start':
+                    iter_varlist = True
+                elif event == 'end':
+                    iter_varlist = False
+
+            # Parse functions
+            elif node.tag == 'functionList' and event == 'start':
+                continue
+            elif node.tag == 'function':
+                if event == 'start':
+                    cfg_function = Function(node)
+                    continue
+                elif event == 'end':
+                    cfg.functions.append(cfg_function)
+                    cfg_function = None
+
+            # Parse function arguments
+            elif node.tag == 'arg' and event == 'start':
+                arg_nr = int(node.get('nr'))
+                arg_variable_id = node.get('variable')
+                cfg_function.argumentId[arg_nr] = arg_variable_id
+
+            # Parse variables
+            elif node.tag == 'var' and event == 'start':
+                var = Variable(node)
+                if var.nameTokenId:
+                    cfg.variables.append(var)
+                elif not iter_varlist:
+                    cfg_arguments.append(var)
+
+            # Parse valueflows (list of values)
+            elif node.tag == 'valueflow' and event == 'start':
+                continue
+            elif node.tag == 'values':
+                if event == 'start':
+                    cfg_valueflow = ValueFlow(node)
+                    continue
+                elif event == 'end':
+                    cfg.valueflow.append(cfg_valueflow)
+                    cfg_valueflow = None
+
+            # Parse values
+            elif node.tag == 'value' and event == 'start':
+                cfg_valueflow.values.append(Value(node))
+
+            # Remove links to the sibling nodes
+            node.clear()
 
     def __repr__(self):
         attrs = ["configurations", "platform"]
