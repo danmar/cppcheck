@@ -191,8 +191,8 @@ public:
     /** @brief Enable verification analysis */
     bool verification;
 
-    /** @brief Generate verification report */
-    bool verificationReport;
+    /** @brief Verification report filename */
+    std::string verificationReport;
 
     /** @brief Generate verification debug output */
     bool debugVerification;

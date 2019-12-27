@@ -46,7 +46,6 @@ Settings::Settings()
       force(false),
       inconclusive(false),
       verification(false),
-      verificationReport(false),
       debugVerification(false),
       inlineSuppressions(false),
       jobs(1),

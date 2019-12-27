@@ -192,8 +192,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             // Experimental: Verify
             else if (std::strcmp(argv[i], "--verify") == 0)
                 mSettings->verification = true;
-            else if (std::strcmp(argv[i], "--verify-report") == 0)
-                mSettings->verification = mSettings->verificationReport = true;
+            else if (std::strncmp(argv[i], "--verify-report=", 16) == 0) {
+                mSettings->verification = true;
+                mSettings->verificationReport = argv[i] + 16;
+            }
             else if (std::strcmp(argv[i], "--debug-verify") == 0)
                 mSettings->debugVerification = true;
 

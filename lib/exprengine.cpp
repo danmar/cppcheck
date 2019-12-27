@@ -1578,16 +1578,16 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
     }
 
     if (settings->debugVerification && !trackExecution.isAllOk()) {
-        if (settings->verificationReport)
+        if (!settings->verificationReport.empty())
             report << "[debug]" << std::endl;
         trackExecution.print(report);
-        if (settings->verificationReport)
+        if (!settings->verificationReport.empty())
             report << "[details]" << std::endl;
         trackExecution.report(report, functionScope);
     }
 
     // Write a verification report
-    if (settings->verificationReport) {
+    if (!settings->verificationReport.empty()) {
         report << "[function-report] "
                << Path::stripDirectoryPart(tokenizer->list.getFiles().at(functionScope->bodyStart->fileIndex())) << ":"
                << functionScope->bodyStart->linenr() << ":"
@@ -1766,6 +1766,6 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
 
     std::ostringstream report;
     ExprEngine::executeAllFunctions(tokenizer, settings, callbacks, report);
-    if (errorLogger && settings->verificationReport && !report.str().empty())
+    if (errorLogger && !settings->verificationReport.empty() && !report.str().empty())
         errorLogger->reportVerification(report.str());
 }

@@ -1066,8 +1066,10 @@ void CppCheckExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
 
 void CppCheckExecutor::reportVerification(const std::string &str)
 {
+    if (!mSettings || str.empty())
+        return;
     if (!mVerificationOutput)
-        mVerificationOutput = new std::ofstream("verification-report.txt");
+        mVerificationOutput = new std::ofstream(mSettings->verificationReport);
     (*mVerificationOutput) << str << std::endl;
 }
 
