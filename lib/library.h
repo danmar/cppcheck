@@ -293,7 +293,6 @@ public:
         Direction direction;
     };
 
-
     struct Function {
         std::map<int, ArgumentChecks> argumentChecks; // argument nr => argument data
         bool use;
@@ -339,6 +338,16 @@ public:
         const ArgumentChecks *arg = getarg(ftok, argnr);
         return arg ? arg->valid : emptyString;
     }
+
+    struct InvalidArgValue {
+        enum Type {le, lt, eq, ge, gt, range} type;
+        std::string op1;
+        std::string op2;
+        bool isInt() const {
+            return MathLib::isInt(op1);
+        }
+    };
+    static std::vector<InvalidArgValue> getInvalidArgValues(const std::string &validExpr);
 
     const ArgumentChecks::IteratorInfo *getArgIteratorInfo(const Token *ftok, int argnr) const {
         const ArgumentChecks *arg = getarg(ftok, argnr);

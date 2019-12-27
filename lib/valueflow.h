@@ -158,11 +158,15 @@ namespace ValueFlow {
                 visitValue(decrement{});
         }
 
-        void invertRange() {
+        void invertBound() {
             if (bound == Bound::Lower)
                 bound = Bound::Upper;
             else if (bound == Bound::Upper)
                 bound = Bound::Lower;
+        }
+
+        void invertRange() {
+            invertBound();
             decreaseRange();
         }
 

@@ -369,8 +369,13 @@ static void combineValueProperties(const ValueFlow::Value &value1, const ValueFl
     result->varvalue = (result->varId == value1.varId) ? value1.varvalue : value2.varvalue;
     result->errorPath = (value1.errorPath.empty() ? value2 : value1).errorPath;
     result->safe = value1.safe || value2.safe;
+    if (value1.bound == ValueFlow::Value::Bound::Point || value2.bound == ValueFlow::Value::Bound::Point) {
+        if (value1.bound == ValueFlow::Value::Bound::Upper || value2.bound == ValueFlow::Value::Bound::Upper)
+            result->bound = ValueFlow::Value::Bound::Upper;
+        if (value1.bound == ValueFlow::Value::Bound::Lower || value2.bound == ValueFlow::Value::Bound::Lower)
+            result->bound = ValueFlow::Value::Bound::Lower;
+    }
 }
-
 
 static const Token *getCastTypeStartToken(const Token *parent)
 {
@@ -598,6 +603,9 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                         } else {
                             result.intvalue = value1.intvalue - value2.intvalue;
                         }
+                        // If the bound comes from the second value then invert the bound
+                        if (value2.bound == result.bound && value2.bound != ValueFlow::Value::Bound::Point)
+                            result.invertBound();
                         setTokenValue(parent, result, settings);
                         break;
                     case '*':
@@ -761,6 +769,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                 v.intvalue = -v.intvalue;
             else
                 v.floatValue = -v.floatValue;
+            v.invertBound();
             setTokenValue(parent, v, settings);
         }
     }
@@ -3612,7 +3621,20 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
 {
     if (!Token::Match(tok, "%name% ("))
         return;
-    if (Token::Match(tok->tokAt(-2), "std :: ref|cref|tie|front_inserter|back_inserter")) {
+    int returnContainer = settings->library.returnValueContainer(tok);
+    if (returnContainer >= 0) {
+        std::vector<const Token *> args = getArguments(tok);
+        for (int argnr = 1; argnr <= args.size(); ++argnr) {
+            const Library::ArgumentChecks::IteratorInfo *i = settings->library.getArgIteratorInfo(tok, argnr);
+            if (!i)
+                continue;
+            if (i->container != returnContainer)
+                continue;
+            const Token * const argTok = args[argnr - 1];
+            LifetimeStore{argTok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::LifetimeKind::Iterator} .byVal(
+                tok->next(), tokenlist, errorLogger, settings);
+        }
+    } else if (Token::Match(tok->tokAt(-2), "std :: ref|cref|tie|front_inserter|back_inserter")) {
         for (const Token *argtok : getArguments(tok)) {
             LifetimeStore{argtok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::LifetimeKind::Object} .byRef(
                 tok->next(), tokenlist, errorLogger, settings);
@@ -4519,6 +4541,45 @@ static bool isInBounds(const ValueFlow::Value& value, MathLib::bigint x)
     return true;
 }
 
+template<class Compare>
+static const ValueFlow::Value* getCompareIntValue(const std::list<ValueFlow::Value>& values, Compare compare)
+{
+    const ValueFlow::Value* result = nullptr;
+    for (const ValueFlow::Value& value : values) {
+        if (!value.isIntValue())
+            continue;
+        if (result)
+            result = &std::min(value, *result, [&](const ValueFlow::Value& x, const ValueFlow::Value& y) {
+            return compare(x.intvalue, y.intvalue);
+        });
+        else
+            result = &value;
+    }
+    return result;
+}
+
+static const ValueFlow::Value* proveLessThan(const std::list<ValueFlow::Value>& values, MathLib::bigint x)
+{
+    const ValueFlow::Value* result = nullptr;
+    const ValueFlow::Value* maxValue = getCompareIntValue(values, std::greater<MathLib::bigint> {});
+    if (maxValue && maxValue->isImpossible() && maxValue->bound == ValueFlow::Value::Bound::Lower) {
+        if (maxValue->intvalue <= x)
+            result = maxValue;
+    }
+    return result;
+}
+
+static const ValueFlow::Value* proveGreaterThan(const std::list<ValueFlow::Value>& values, MathLib::bigint x)
+{
+    const ValueFlow::Value* result = nullptr;
+    const ValueFlow::Value* minValue = getCompareIntValue(values, std::less<MathLib::bigint> {});
+    if (minValue && minValue->isImpossible() && minValue->bound == ValueFlow::Value::Bound::Upper) {
+        if (minValue->intvalue >= x)
+            result = minValue;
+    }
+    return result;
+}
+
 static const ValueFlow::Value* proveNotEqual(const std::list<ValueFlow::Value>& values, MathLib::bigint x)
 {
     const ValueFlow::Value* result = nullptr;
@@ -4559,9 +4620,10 @@ static void valueFlowInferCondition(TokenList* tokenlist,
                 continue;
             ValueFlow::Value value = *result;
             value.intvalue = 1;
+            value.bound = ValueFlow::Value::Bound::Point;
             value.setKnown();
             setTokenValue(tok, value, settings);
-        } else if (Token::Match(tok, "==|!=")) {
+        } else if (Token::Match(tok, "%comp%")) {
             MathLib::bigint val = 0;
             const Token* varTok = nullptr;
             if (tok->astOperand1()->hasKnownIntValue()) {
@@ -4575,11 +4637,33 @@ static void valueFlowInferCondition(TokenList* tokenlist,
                 continue;
             if (varTok->hasKnownIntValue())
                 continue;
-            const ValueFlow::Value* result = proveNotEqual(varTok->values(), val);
+            if (varTok->values().empty())
+                continue;
+            const ValueFlow::Value* result = nullptr;
+            bool known = false;
+            if (Token::Match(tok, "==|!=")) {
+                result = proveNotEqual(varTok->values(), val);
+                known = tok->str() == "!=";
+            } else if (Token::Match(tok, "<|>=")) {
+                result = proveLessThan(varTok->values(), val);
+                known = tok->str() == "<";
+                if (!result && !isSaturated(val)) {
+                    result = proveGreaterThan(varTok->values(), val - 1);
+                    known = tok->str() == ">=";
+                }
+            } else if (Token::Match(tok, ">|<=")) {
+                result = proveGreaterThan(varTok->values(), val);
+                known = tok->str() == ">";
+                if (!result && !isSaturated(val)) {
+                    result = proveLessThan(varTok->values(), val + 1);
+                    known = tok->str() == "<=";
+                }
+            }
             if (!result)
                 continue;
             ValueFlow::Value value = *result;
-            value.intvalue = tok->str() == "!=";
+            value.intvalue = known;
+            value.bound = ValueFlow::Value::Bound::Point;
             value.setKnown();
             setTokenValue(tok, value, settings);
         }

@@ -68,7 +68,7 @@ static ExprEngine::ValuePtr getValueRangeFromValueType(const std::string &name, 
 namespace {
     class TrackExecution {
     public:
-        TrackExecution() : mDataIndex(0) {}
+        TrackExecution() : mDataIndex(0), mAbortLine(-1) {}
         std::map<const Token *, std::vector<std::string>> map;
         int getNewDataIndex() {
             return mDataIndex++;
@@ -111,9 +111,48 @@ namespace {
                 }
             }
         }
+
+        void report(std::ostream &out, const Scope *functionScope) {
+            int linenr = -1;
+            std::string code;
+            for (const Token *tok = functionScope->bodyStart->next(); tok != functionScope->bodyEnd; tok = tok->next()) {
+                if (tok->linenr() > linenr) {
+                    if (!code.empty())
+                        out << getStatus(linenr) << " " << code << std::endl;
+                    linenr = tok->linenr();
+                    code.clear();
+                }
+                code += " " + tok->str();
+            }
+
+            out << getStatus(linenr) << " " << code << std::endl;
+        }
+
+        void setAbortLine(int linenr) {
+            if (linenr > 0 && (mAbortLine == -1 || linenr < mAbortLine))
+                mAbortLine = linenr;
+        }
+
+        void addError(int linenr) {
+            mErrors.insert(linenr);
+        }
+
+        bool isAllOk() const {
+            return mErrors.empty();
+        }
     private:
+        const char *getStatus(int linenr) const {
+            if (mErrors.find(linenr) != mErrors.end())
+                return "ERROR";
+            if (mAbortLine > 0 && linenr >= mAbortLine)
+                return "--";
+            return "ok";
+        }
+
         int mDataIndex;
+        int mAbortLine;
         std::set<std::string> mSymbols;
+        std::set<int> mErrors;
     };
 
     class Data : public ExprEngine::DataBase {
@@ -131,6 +170,10 @@ namespace {
         const Tokenizer * const tokenizer;
         const std::vector<ExprEngine::Callback> &callbacks;
         std::vector<ExprEngine::ValuePtr> constraints;
+
+        void addError(int linenr) OVERRIDE {
+            mTrackExecution->addError(linenr);
+        }
 
         void assignValue(const Token *tok, unsigned int varId, ExprEngine::ValuePtr value) {
             if (varId == 0)
@@ -154,7 +197,7 @@ namespace {
             structVal->member[memberName] = value;
         }
 
-        std::string getNewSymbolName() override {
+        std::string getNewSymbolName() OVERRIDE {
             return "$" + std::to_string(++(*symbolValueIndex));
         }
 
@@ -241,6 +284,16 @@ namespace {
             if (!lhsValue || !rhsValue)
                 return;
             constraints.push_back(std::make_shared<ExprEngine::BinOpResult>(equals?"==":"!=", lhsValue, rhsValue));
+        }
+
+        void addConstraints(ExprEngine::ValuePtr value, const Token *tok) {
+            MathLib::bigint low;
+            if (tok->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW, &low))
+                addConstraint(std::make_shared<ExprEngine::BinOpResult>(">=", value, std::make_shared<ExprEngine::IntRange>(std::to_string(low), low, low)), true);
+
+            MathLib::bigint high;
+            if (tok->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH, &high))
+                addConstraint(std::make_shared<ExprEngine::BinOpResult>("<=", value, std::make_shared<ExprEngine::IntRange>(std::to_string(high), high, high)), true);
         }
 
     private:
@@ -654,6 +707,64 @@ bool ExprEngine::IntRange::isEqual(DataBase *dataBase, int value) const
 #endif
 }
 
+bool ExprEngine::IntRange::isGreaterThan(DataBase *dataBase, int value) const
+{
+    if (value < minValue || value > maxValue)
+        return false;
+
+    const Data *data = dynamic_cast<Data *>(dataBase);
+    if (data->constraints.empty())
+        return true;
+#ifdef USE_Z3
+    // Check the value against the constraints
+    ExprData exprData;
+    z3::solver solver(exprData.context);
+    try {
+        z3::expr e = exprData.context.int_const(name.c_str());
+        exprData.valueExpr.emplace(name, e);
+        for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
+            solver.add(exprData.getConstraintExpr(constraint));
+        solver.add(e > value);
+        return solver.check() == z3::sat;
+    } catch (const z3::exception &exception) {
+        std::cerr << "z3: " << exception << std::endl;
+        return true;  // Safe option is to return true
+    }
+#else
+    // The value may or may not be in range
+    return false;
+#endif
+}
+
+bool ExprEngine::IntRange::isLessThan(DataBase *dataBase, int value) const
+{
+    if (value < minValue || value > maxValue)
+        return false;
+
+    const Data *data = dynamic_cast<Data *>(dataBase);
+    if (data->constraints.empty())
+        return true;
+#ifdef USE_Z3
+    // Check the value against the constraints
+    ExprData exprData;
+    z3::solver solver(exprData.context);
+    try {
+        z3::expr e = exprData.context.int_const(name.c_str());
+        exprData.valueExpr.emplace(name, e);
+        for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
+            solver.add(exprData.getConstraintExpr(constraint));
+        solver.add(e < value);
+        return solver.check() == z3::sat;
+    } catch (const z3::exception &exception) {
+        std::cerr << "z3: " << exception << std::endl;
+        return true;  // Safe option is to return true
+    }
+#else
+    // The value may or may not be in range
+    return false;
+#endif
+}
+
 bool ExprEngine::BinOpResult::isEqual(ExprEngine::DataBase *dataBase, int value) const
 {
 #ifdef USE_Z3
@@ -1049,7 +1160,14 @@ static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
 static ExprEngine::ValuePtr executeBinaryOp(const Token *tok, Data &data)
 {
     ExprEngine::ValuePtr v1 = executeExpression(tok->astOperand1(), data);
-    ExprEngine::ValuePtr v2 = executeExpression(tok->astOperand2(), data);
+    ExprEngine::ValuePtr v2;
+    if (tok->str() == "&&" || tok->str() == "||") {
+        Data data2(data);
+        data2.addConstraint(v1, tok->str() == "&&");
+        v2 = executeExpression(tok->astOperand2(), data2);
+    } else {
+        v2 = executeExpression(tok->astOperand2(), data);
+    }
     if (v1 && v2) {
         auto result = simplifyValue(std::make_shared<ExprEngine::BinOpResult>(tok->str(), v1, v2));
         call(data.callbacks, tok, result, &data);
@@ -1405,8 +1523,11 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
     }
     if (var.isArray())
         return std::make_shared<ExprEngine::ArrayValue>(&data, &var);
-    if (valueType->isIntegral())
-        return getValueRangeFromValueType(data.getNewSymbolName(), valueType, *data.settings);
+    if (valueType->isIntegral()) {
+        auto value = getValueRangeFromValueType(data.getNewSymbolName(), valueType, *data.settings);
+        data.addConstraints(value, var.nameToken());
+        return value;
+    }
     if (valueType->type == ValueType::Type::RECORD)
         return createStructVal(valueType->typeScope, var.isLocal() && !var.isStatic(), data);
     if (valueType->smartPointerType) {
@@ -1446,12 +1567,23 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
     for (const Variable &arg : function->argumentList)
         data.assignValue(functionScope->bodyStart, arg.declarationId(), createVariableValue(arg, data));
 
-    execute(functionScope->bodyStart, functionScope->bodyEnd, data);
+    try {
+        execute(functionScope->bodyStart, functionScope->bodyEnd, data);
+    } catch (VerifyException &e) {
+        trackExecution.setAbortLine(e.tok->linenr());
+        auto bailoutValue = std::make_shared<BailoutValue>();
+        for (const Token *tok = e.tok; tok != functionScope->bodyEnd; tok = tok->next())
+            call(callbacks, tok, bailoutValue, &data);
+    }
 
     if (settings->debugVerification) {
         // TODO generate better output!!
         trackExecution.print(trace);
     }
+
+    // Write a verification report
+    //if (!trackExecution.isAllOk())
+    //    trackExecution.report(trace, functionScope);
 }
 
 void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings)
@@ -1459,7 +1591,10 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
     std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> divByZero = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
         if (!tok->astParent() || !std::strchr("/%", tok->astParent()->str()[0]))
             return;
+        if (tok->hasKnownIntValue() && tok->getKnownIntValue() != 0)
+            return;
         if (tok->astParent()->astOperand2() == tok && value.isEqual(dataBase, 0)) {
+            dataBase->addError(tok->linenr());
             std::list<const Token*> callstack{tok->astParent()};
             ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationDivByZero", "There is division, cannot determine that there can't be a division by zero.", CWE(369), false);
             errorLogger->reportErr(errmsg);
@@ -1515,8 +1650,105 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
     };
 #endif
 
+    std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> checkFunctionCall = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
+        if (!Token::Match(tok->astParent(), "[(,]"))
+            return;
+        const Token *parent = tok->astParent();
+        while (Token::simpleMatch(parent, ","))
+            parent = parent->astParent();
+        if (!parent || parent->str() != "(")
+            return;
+
+        int num = 0;
+        for (const Token *argTok: getArguments(parent->astOperand1())) {
+            --num;
+            if (argTok == tok) {
+                num = -num;
+                break;
+            }
+        }
+        if (num <= 0)
+            return;
+
+        if (parent->astOperand1()->function()) {
+            const Variable *arg = parent->astOperand1()->function()->getArgumentVar(num - 1);
+            if (arg->nameToken()) {
+                std::string bad;
+
+                MathLib::bigint low;
+                if (arg->nameToken()->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW, &low)) {
+                    if (value.isLessThan(dataBase, low)) {
+                        bad = "__cppcheck_low_(" + std::to_string(low) + ")";
+                    }
+                }
+
+                MathLib::bigint high;
+                if (arg->nameToken()->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH, &high)) {
+                    if (value.isLessThan(dataBase, low)) {
+                        bad = "__cppcheck_low_(" + std::to_string(low) + ")";
+                    }
+                }
+
+                if (!bad.empty()) {
+                    dataBase->addError(tok->linenr());
+                    std::list<const Token*> callstack{tok};
+                    ErrorLogger::ErrorMessage errmsg(callstack,
+                                                     &tokenizer->list,
+                                                     Severity::SeverityType::error,
+                                                     "verificationInvalidArgValue",
+                                                     "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument value meets the attribute " + bad, CWE(0), false);
+                    errorLogger->reportErr(errmsg);
+                    return;
+                }
+            }
+        }
+
+        // Check invalid function argument values..
+        for (const Library::InvalidArgValue &invalidArgValue : Library::getInvalidArgValues(settings->library.validarg(parent->astOperand1(), num))) {
+            bool err = false;
+            std::string bad;
+            switch (invalidArgValue.type) {
+            case Library::InvalidArgValue::eq:
+                err = value.isEqual(dataBase, MathLib::toLongNumber(invalidArgValue.op1));
+                bad = "equals " + invalidArgValue.op1;
+                break;
+            case Library::InvalidArgValue::le:
+                err = value.isLessThan(dataBase, MathLib::toLongNumber(invalidArgValue.op1) + 1);
+                bad = "less equal " + invalidArgValue.op1;
+                break;
+            case Library::InvalidArgValue::lt:
+                err = value.isLessThan(dataBase, MathLib::toLongNumber(invalidArgValue.op1));
+                bad = "less than " + invalidArgValue.op1;
+                break;
+            case Library::InvalidArgValue::ge:
+                err = value.isGreaterThan(dataBase, MathLib::toLongNumber(invalidArgValue.op1) - 1);
+                bad = "greater equal " + invalidArgValue.op1;
+                break;
+            case Library::InvalidArgValue::gt:
+                err = value.isGreaterThan(dataBase, MathLib::toLongNumber(invalidArgValue.op1));
+                bad = "greater than " + invalidArgValue.op1;
+                break;
+            case Library::InvalidArgValue::range:
+                // TODO
+                err = value.isEqual(dataBase, MathLib::toLongNumber(invalidArgValue.op1));
+                err |= value.isEqual(dataBase, MathLib::toLongNumber(invalidArgValue.op2));
+                bad = "range " + invalidArgValue.op1 + "-" + invalidArgValue.op2;
+                break;
+            };
+
+            if (err) {
+                dataBase->addError(tok->linenr());
+                std::list<const Token*> callstack{tok};
+                ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationInvalidArgValue", "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument value is valid. Bad value: " + bad, CWE(0), false);
+                errorLogger->reportErr(errmsg);
+                break;
+            }
+        }
+    };
+
     std::vector<ExprEngine::Callback> callbacks;
     callbacks.push_back(divByZero);
+    callbacks.push_back(checkFunctionCall);
 #ifdef VERIFY_INTEGEROVERFLOW
     callbacks.push_back(integerOverflow);
 #endif

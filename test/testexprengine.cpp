@@ -33,6 +33,8 @@ public:
 private:
     void run() OVERRIDE {
 #ifdef USE_Z3
+        TEST_CASE(annotation1);
+
         TEST_CASE(expr1);
         TEST_CASE(expr2);
         TEST_CASE(expr3);
@@ -44,6 +46,8 @@ private:
         TEST_CASE(exprAssign2); // Truncation
 
         TEST_CASE(if1);
+        TEST_CASE(if2);
+        TEST_CASE(if3);
         TEST_CASE(ifelse1);
 
         TEST_CASE(switch1);
@@ -141,6 +145,20 @@ private:
         return ret.str();
     }
 
+    void annotation1() {
+        const char code[] = "void f(__cppcheck_low__(100) short x) {\n"
+                            "    return x < 10;\n"
+                            "}";
+
+        const char expected[] = "(declare-fun $1 () Int)\n"
+                                "(assert (and (>= $1 (- 32768)) (<= $1 32767)))\n"
+                                "(assert (>= $1 100))\n" // <- annotation
+                                "(assert (< $1 10))\n"
+                                "z3::unsat";
+
+        ASSERT_EQUALS(expected, expr(code, "<"));
+    }
+
     void expr1() {
         ASSERT_EQUALS("-32768:32767", getRange("void f(short x) { a = x; }", "x"));
     }
@@ -216,6 +234,32 @@ private:
                       "(assert (= $1 $2))\n"
                       "z3::unsat",
                       expr("void f(int x, int y) { if (x < y) return x == y; }", "=="));
+    }
+
+    void if2() {
+        const char code[] = "void foo(int x) {\n"
+                            "  if (x > 0 && x == 20) {}\n"
+                            "}";
+        // In expression "x + x < 20", "x" is greater than 0
+        const char expected[] = "(declare-fun $1 () Int)\n"
+                                "(assert (and (>= $1 (- 2147483648)) (<= $1 2147483647)))\n"
+                                "(assert (> $1 0))\n"
+                                "(assert (= $1 20))\n"
+                                "z3::sat";
+        ASSERT_EQUALS(expected, expr(code, "=="));
+    }
+
+    void if3() {
+        const char code[] = "void foo(int x) {\n"
+                            "  if (x > 0 || x == 20) {}\n"
+                            "}";
+        // In expression "x + x < 20", "x" is greater than 0
+        const char expected[] = "(declare-fun $1 () Int)\n"
+                                "(assert (and (>= $1 (- 2147483648)) (<= $1 2147483647)))\n"
+                                "(assert (<= $1 0))\n"
+                                "(assert (= $1 20))\n"
+                                "z3::unsat"; // "x == 20" is unsat
+        ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
     void ifelse1() {

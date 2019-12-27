@@ -717,3 +717,54 @@ An example usage:
 
     ./cppcheck gui/test.cpp --xml 2> err.xml
     htmlreport/cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.
+
+# Verification
+
+Let Cppcheck prove that your code is safe.
+
+## Compiling
+
+make USE_Z3=yes
+
+## Usage
+
+Imagine this is your whole program:
+
+    int foo(int x, int y)
+    {
+        return x / y;
+    }
+
+    int main()
+    {
+        foo(100, 20);
+        return 0;
+    }
+
+By design, Cppcheck will warn about the division in `foo`. It is always assumed that arguments can have arbitrary values. If the argument `y` is zero then there will be division by zero.
+
+You could suppress the warning if you think it's a false positive but it would be unsafe and dangerous to suppress it. To handle false positives in verification, you can rewrite the code, add contracts, or just ignore the warning.
+
+A contract can be added inline (annotations, C++ contracts) or externally in a configuration. Some users will prefer to add them inline and other user will prefer external configuration.
+
+Example code with SAL annotation:
+
+    int foo(int x, int _In_range_(1,1000) y)
+    {
+        return x / y;
+    }
+
+    int main()
+    {
+        foo(100, 20);
+        return 0;
+    }
+
+To be defined; configuration that has contract for `foo`.
+
+Here, it can now be determined that the function call in `main` is safe. However it still can't be proven that `foo` is safe; there could be unseen function calls (you could for instance link a library that call `foo` with arbitrary values).
+
+## Future
+
+The focus will be to detect "hidden bugs". Buffer overflows.
+
