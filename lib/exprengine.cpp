@@ -1433,6 +1433,8 @@ static void execute(const Token *start, const Token *end, Data &data)
                     }
                     if (!Token::Match(tok2->astOperand1(), "%var%"))
                         throw VerifyException(tok2, "Unhandled assignment in loop");
+                    if (!tok2->astOperand1()->variable())
+                        throw VerifyException(tok2, "Unhandled assignment in loop");
                     // give variable "any" value
                     int varid = tok2->astOperand1()->varId();
                     if (changedVariables.find(varid) != changedVariables.end())
