@@ -1579,13 +1579,15 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
             call(callbacks, tok, bailoutValue, &data);
     }
 
-    if (settings->debugVerification && !trackExecution.isAllOk()) {
+    if (settings->debugVerification && (callbacks.empty() || !trackExecution.isAllOk())) {
         if (!settings->verificationReport.empty())
             report << "[debug]" << std::endl;
         trackExecution.print(report);
-        if (!settings->verificationReport.empty())
-            report << "[details]" << std::endl;
-        trackExecution.report(report, functionScope);
+        if (!callbacks.empty()) {
+            if (!settings->verificationReport.empty())
+                report << "[details]" << std::endl;
+            trackExecution.report(report, functionScope);
+        }
     }
 
     // Write a verification report
