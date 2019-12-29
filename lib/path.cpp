@@ -250,23 +250,3 @@ bool Path::fileExists(const std::string &file)
     return f.is_open();
 }
 
-bool Path::isMatchingFilter(const std::string &filename, const std::string &filter)
-{
-    bool result = false;
-    std::vector<std::string> filters;
-    int count = 0;
-
-    splitString(filter, filters, '*');
-    for(std::string filt : filters) {
-        if (filename.find(filt) != std::string::npos)
-            count++;
-    }
-    if (count>0 && count == filters.size())
-        result = true;
-
-    if (endsWith(filter, ".c", 2) && !endsWith(filename, ".c", 2))
-        result = false;
-    else if (endsWith(filter, ".cpp", 4) && !endsWith(filename, ".cpp", 4)) 
-        result = false;
-    return result;
-}

@@ -43,16 +43,11 @@
 static BOOL myIsDirectory(const std::string& path)
 {
 #ifdef __BORLANDC__
-    if (GetFileAttributes(path.c_str()) & FILE_ATTRIBUTE_DIRECTORY))
-        return TRUE;
+    return (GetFileAttributes(path.c_str()) & FILE_ATTRIBUTE_DIRECTORY);
 #else
 // See http://msdn.microsoft.com/en-us/library/bb773621(VS.85).aspx
-    if (PathIsDirectoryA(path.c_str()))
-        return TRUE;
+    return PathIsDirectoryA(path.c_str());
 #endif
-    else  if (endsWith(path, "*.cpp", 5) || endsWith(path, "*.c", 3))
-        return TRUE;
-    return FALSE;
 }
 
 static HANDLE myFindFirstFile(const std::string& path, LPWIN32_FIND_DATAA findData)
@@ -99,17 +94,6 @@ void FileLister::addFiles(std::map<std::string, std::size_t> &files, const std::
             searchPattern += '*';
             basedir = cleanedPath;
             break;
-        case 'c':   // ends with *.c
-        case 'p': { // ends with *.cpp
-            const std::string::size_type pos = searchPattern.find_last_of('\\');
-            if (std::string::npos != pos)
-            {
-                searchPattern = searchPattern.substr(0, pos)+'\\';
-                basedir = searchPattern;
-                searchPattern += "*";
-            }
-            break;
-        }
         case '*':
             basedir = cleanedPath.substr(0, cleanedPath.length() - 1);
             break;

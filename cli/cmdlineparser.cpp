@@ -355,6 +355,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->xml = true;
             }
 
+            // use a file filter 
+            else if (std::strncmp(argv[i], "--file-filter=", 14) == 0)
+                mSettings->fileFilter = std::string(argv[i] + 14);
+
             // Only print something when there are errors
             else if (std::strcmp(argv[i], "-q") == 0 || std::strcmp(argv[i], "--quiet") == 0)
                 mSettings->quiet = true;
@@ -979,6 +983,9 @@ void CmdLineParser::printHelp()
               "                         Example: '-UDEBUG'\n"
               "    -E                   Print preprocessor output on stdout and don't do any\n"
               "                         further processing.\n"
+              "    --file-filter=\"str\"  Analyze only those files matching the given filter str\n"
+              "                         Example: --file-filter=\"*bar.cpp\" analyzes only files\n"
+              "                                  that end with bar.cpp.\n"
               "    --enable=<id>        Enable additional checks. The available ids are:\n"
               "                          * all\n"
               "                                  Enable all checks. It is recommended to only\n"

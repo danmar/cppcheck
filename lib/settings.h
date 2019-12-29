@@ -71,6 +71,7 @@ private:
 public:
     Settings();
 
+
     std::list<std::string> addons;
 
     /** @brief Paths used as base for conversion to relative paths. */
@@ -78,6 +79,9 @@ public:
 
     /** @brief --cppcheck-build-dir */
     std::string buildDir;
+
+    /** @brief --file-filter for analyzing special files */
+    std::string fileFilter;
 
     /** Is the 'configuration checking' wanted? */
     bool checkConfiguration;

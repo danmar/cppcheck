@@ -159,15 +159,13 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 #else
     const bool caseSensitive = true;
 #endif
-    if (!mSettings->project.fileSettings.empty() && !pathnames.empty()) {
+    if (!mSettings->project.fileSettings.empty() && !mSettings->fileFilter.empty()) {
         // filter only for the selected filenames from all project files
         std::list<ImportProject::FileSettings> newList;
 
-        for (const std::string &fname : pathnames) {
-            for (const ImportProject::FileSettings &fsetting : settings.project.fileSettings) {
-                if (Path::isMatchingFilter(fsetting.filename, fname)) {
-                    newList.push_back(fsetting);
-                }
+        for (const ImportProject::FileSettings &fsetting : settings.project.fileSettings) {
+            if (Suppressions::matchglob(mSettings->fileFilter, fsetting.filename)) {
+                newList.push_back(fsetting);
             }
         }
         if (!newList.empty()) 
@@ -190,6 +188,18 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
             std::cout << "cppcheck: Maybe all paths were ignored?" << std::endl;
         return false;
     }
+    else
+    {
+        std::map<std::string, std::size_t> newMap;
+        for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i)
+            if (Suppressions::matchglob(mSettings->fileFilter, i->first))
+            {
+                newMap[i->first] = i->second;
+            }
+        if (!newMap.empty())
+            mFiles = newMap;
+    }
+    
     return true;
 }
 
