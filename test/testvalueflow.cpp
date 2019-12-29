@@ -4387,6 +4387,16 @@ private:
                "    if (0 * (x > 2)) {}\n"
                "}\n";
         valueOfTok(code, "x");
+
+        code = "const int& f(int, const int& y = 0);\n"
+               "const int& f(int, const int& y) {\n"
+               "    return y;\n"
+               "}\n"
+               "const int& g(int x) {\n"
+               "    const int& r = f(x);\n"
+               "    return r;\n"
+               "}\n";
+        valueOfTok(code, "0");
     }
 };
 

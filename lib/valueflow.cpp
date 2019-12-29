@@ -3199,7 +3199,11 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, ValueFlow::Value:
                         int n = getArgumentPos(argvar, f);
                         if (n < 0)
                             return std::vector<LifetimeToken> {};
-                        const Token* argTok = getArguments(tok->previous()).at(n);
+                        std::vector<const Token*> args = getArguments(tok->previous());
+                        // TODO: Track lifetimes of default parameters
+                        if (n >= args.size())
+                            return std::vector<LifetimeToken> {};
+                        const Token* argTok = args[n];
                         lt.errorPath.emplace_back(returnTok, "Return reference.");
                         lt.errorPath.emplace_back(tok->previous(), "Called function passing '" + argTok->str() + "'.");
                         std::vector<LifetimeToken> arglts = LifetimeToken::setInconclusive(
