@@ -51,6 +51,7 @@ private:
         TEST_CASE(nothrowAttributeThrow);
         TEST_CASE(nothrowAttributeThrow2); // #5703
         TEST_CASE(nothrowDeclspecThrow);
+        TEST_CASE(emptyCatchBlock);
     }
 
     void check(const char code[], bool inconclusive = false) {
@@ -91,6 +92,7 @@ private:
               "        try {\n"
               "            throw e;\n"
               "        } catch (...) {\n"
+              "            f();"
               "        }\n"
               "    }\n"
               "}");
@@ -360,7 +362,7 @@ private:
               "void myCatchingFoo() {\n"
               "  try {\n"
               "    myThrowingFoo();\n"
-              "  } catch(MyException &) {}\n"
+              "  } catch(MyException &) {f();}\n"
               "}\n", true);
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (style, inconclusive) Unhandled exception specification when calling function myThrowingFoo().\n", errout.str());
     }
@@ -405,6 +407,18 @@ private:
         // avoid false positives
         check("const char *func() __attribute((nothrow)); void func1() { return 0; }\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void emptyCatchBlock() {
+        check("void f() {\n"
+              "    try {\n"
+              "        bar();\n"
+              "    } catch(MyException &) {\n"
+              "    } catch (...) {\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Empty catch block swallow an error condition and then continuing execution.\n"
+                      "[test.cpp:5]: (style) Empty catch block swallow an error condition and then continuing execution.\n", errout.str());
     }
 };
 

@@ -36,6 +36,7 @@ class Settings;
 // CWE ID used:
 static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
 static const struct CWE CWE703(703U);   // Improper Check or Handling of Exceptional Conditions
+static const struct CWE CWE1069(1069U); // Empty Exception Block
 
 
 /// @addtogroup Checks
@@ -72,6 +73,7 @@ public:
         checkExceptionSafety.checkCatchExceptionByValue();
         checkExceptionSafety.nothrowThrows();
         checkExceptionSafety.unhandledExceptionSpecification();
+        checkExceptionSafety.emptyCatchBlock();
     }
 
     /** Don't throw exceptions in destructors */
@@ -91,6 +93,8 @@ public:
 
     /** @brief %Check for unhandled exception specification */
     void unhandledExceptionSpecification();
+
+    void emptyCatchBlock();
 
 private:
     /** Don't throw exceptions in destructors */
@@ -135,6 +139,13 @@ private:
                     "Either use a try/catch around the function call, or add a exception specification for " + funcname + "() also.", CWE703, true);
     }
 
+    void emptyCatchBlockError(const Token * const tok) {
+        reportError(tok, Severity::style,
+                    "emptyCatchBlock", "Empty catch block swallow an error condition and then continuing execution.\n"
+                    "It could prevent the software from running reliably and might introduce a vulnerability."
+                    "Also using exceptions as control flow considered as antipattern.", CWE1069, false);
+    }
+
     /** Generate all possible errors (for --errorlist) */
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckExceptionSafety c(nullptr, settings, errorLogger);
@@ -144,6 +155,7 @@ private:
         c.catchExceptionByValueError(nullptr);
         c.noexceptThrowError(nullptr);
         c.unhandledExceptionSpecificationError(nullptr, nullptr, "funcname");
+        c.emptyCatchBlockError(nullptr);
     }
 
     /** Short description of class (for --doc) */
@@ -159,7 +171,8 @@ private:
                "- Throwing a copy of a caught exception instead of rethrowing the original exception\n"
                "- Exception caught by value instead of by reference\n"
                "- Throwing exception in noexcept, nothrow(), __attribute__((nothrow)) or __declspec(nothrow) function\n"
-               "- Unhandled exception specification when calling function foo()\n";
+               "- Unhandled exception specification when calling function foo()\n"
+               "- Empty catch block swallow an error condition\n";
     }
 };
 /// @}

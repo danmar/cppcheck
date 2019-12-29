@@ -302,3 +302,21 @@ void CheckExceptionSafety::unhandledExceptionSpecification()
     }
 }
 
+//---------------------------------------------------------------------------
+//    try {} catch (anything) {/*nothing*/} <- Exception should be handled
+//---------------------------------------------------------------------------
+void CheckExceptionSafety::emptyCatchBlock()
+{
+    if (!mSettings->isEnabled(Settings::STYLE))
+        return;
+
+    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
+
+    for (const Scope &scope : symbolDatabase->scopeList) {
+        if (scope.type != Scope::eCatch)
+            continue;
+
+        if (scope.bodyStart->next() == scope.bodyEnd)
+            emptyCatchBlockError(scope.bodyStart);
+    }
+}
