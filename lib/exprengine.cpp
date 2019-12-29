@@ -1142,9 +1142,20 @@ static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
     if (!structValue) {
         if (tok->originalName() == "->") {
             std::shared_ptr<ExprEngine::ArrayValue> pointerValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(data.getValue(tok->astOperand1()->varId(), nullptr, nullptr));
-            if (pointerValue && pointerValue->pointer && pointerValue->data.size() == 1) {
+            if (pointerValue && pointerValue->pointer && !pointerValue->data.empty()) {
                 call(data.callbacks, tok->astOperand1(), pointerValue, &data);
-                structValue = std::dynamic_pointer_cast<ExprEngine::StructValue>(pointerValue->data[0].value);
+                auto indexValue = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
+                ExprEngine::ValuePtr ret;
+                for (auto val: pointerValue->read(indexValue)) {
+                    structValue = std::dynamic_pointer_cast<ExprEngine::StructValue>(val.second);
+                    if (structValue) {
+                        auto memberValue = structValue->getValueOfMember(tok->astOperand2()->str());
+                        call(data.callbacks, tok, memberValue, &data);
+                        if (!ret)
+                            ret = memberValue;
+                    }
+                }
+                return ret;
             } else {
                 call(data.callbacks, tok->astOperand1(), data.getValue(tok->astOperand1()->varId(), nullptr, nullptr), &data);
             }
@@ -1524,11 +1535,16 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
     if (valueType->pointer > 0) {
         if (var.isLocal())
             return std::make_shared<ExprEngine::UninitValue>();
-        ValueType vt(*valueType);
-        vt.pointer = 0;
-        auto range = getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings);
-        auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 1, ~0UL);
-        return std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), size, range, true, true, true);
+        auto bufferSize = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 1, ~0UL);
+        ExprEngine::ValuePtr pointerValue;
+        if (valueType->type == ValueType::Type::RECORD)
+            pointerValue = createStructVal(valueType->typeScope, var.isLocal() && !var.isStatic(), data);
+        else {
+            ValueType vt(*valueType);
+            vt.pointer = 0;
+            pointerValue = getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings);
+        }
+        return std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), bufferSize, pointerValue, true, true, true);
     }
     if (var.isArray())
         return std::make_shared<ExprEngine::ArrayValue>(&data, &var);
