@@ -139,9 +139,9 @@ static bool isAlternativeUnaryOp(const simplecpp::Token *tok, const std::string 
 
 static std::string replaceAll(std::string s, const std::string& from, const std::string& to)
 {
-  for (size_t pos = s.find(from); pos != std::string::npos; pos = s.find(from, pos + to.size()))
-    s.replace(pos, from.size(), to);
-  return s;
+    for (size_t pos = s.find(from); pos != std::string::npos; pos = s.find(from, pos + to.size()))
+        s.replace(pos, from.size(), to);
+    return s;
 }
 
 const std::string simplecpp::Location::emptyFileName;
