@@ -1124,11 +1124,15 @@ static ExprEngine::ValuePtr executeCast(const Token *tok, Data &data)
         return std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), bufferSize, range, true, nullPointer, uninitPointer);
     }
 
-    if (val)
+    if (val) {
         // TODO: Cast this..
+        call(data.callbacks, tok, val, &data);
         return val;
+    }
 
-    return getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
+    val = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
+    call(data.callbacks, tok, val, &data);
+    return val;
 }
 
 static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
