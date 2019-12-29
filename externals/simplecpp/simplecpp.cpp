@@ -137,6 +137,12 @@ static bool isAlternativeUnaryOp(const simplecpp::Token *tok, const std::string 
             (tok->next && (tok->next->name || tok->next->number)));
 }
 
+static std::string replaceAll(std::string s, const std::string& from, const std::string& to)
+{
+    for (size_t pos = s.find(from); pos != std::string::npos; pos = s.find(from, pos + to.size()))
+        s.replace(pos, from.size(), to);
+    return s;
+}
 
 const std::string simplecpp::Location::emptyFileName;
 
@@ -498,7 +504,7 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
                 } else if (lastline == "# line %num%") {
                     lineDirective(location.fileIndex, std::atol(cback()->str().c_str()), &location);
                 } else if (lastline == "# %num% %str%" || lastline == "# line %num% %str%") {
-                    lineDirective(fileIndex(cback()->str().substr(1U, cback()->str().size() - 2U)),
+                    lineDirective(fileIndex(replaceAll(cback()->str().substr(1U, cback()->str().size() - 2U),"\\\\","\\")),
                                   std::atol(cback()->previous->str().c_str()), &location);
                 }
                 // #endfile
