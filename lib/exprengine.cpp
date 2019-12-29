@@ -18,6 +18,7 @@
 
 #include "exprengine.h"
 #include "astutils.h"
+#include "path.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "tokenize.h"
@@ -359,8 +360,9 @@ static int128_t truncateInt(int128_t value, int bits, char sign)
     return value;
 }
 
-ExprEngine::ArrayValue::ArrayValue(const std::string &name, ExprEngine::ValuePtr size, ExprEngine::ValuePtr value)
+ExprEngine::ArrayValue::ArrayValue(const std::string &name, ExprEngine::ValuePtr size, ExprEngine::ValuePtr value, bool pointer, bool nullPointer, bool uninitPointer)
     : Value(name, ExprEngine::ValueType::ArrayValue)
+    , pointer(pointer), nullPointer(nullPointer), uninitPointer(uninitPointer)
     , size(size)
 {
     assign(ExprEngine::ValuePtr(), value);
@@ -368,6 +370,7 @@ ExprEngine::ArrayValue::ArrayValue(const std::string &name, ExprEngine::ValuePtr
 
 ExprEngine::ArrayValue::ArrayValue(DataBase *data, const Variable *var)
     : Value(data->getNewSymbolName(), ExprEngine::ValueType::ArrayValue)
+    , pointer(var->isPointer()), nullPointer(var->isPointer()), uninitPointer(var->isPointer())
 {
     if (var) {
         int sz = 1;
@@ -390,6 +393,16 @@ ExprEngine::ArrayValue::ArrayValue(DataBase *data, const Variable *var)
         val = getValueRangeFromValueType(data->getNewSymbolName(), &vt, *data->settings);
     }
     assign(ExprEngine::ValuePtr(), val);
+}
+
+std::string ExprEngine::ArrayValue::getRange() const
+{
+    std::string r = getSymbolicExpression();
+    if (nullPointer)
+        r += std::string(r.empty() ? "" : ",") + "null";
+    if (uninitPointer)
+        r += std::string(r.empty() ? "" : ",") + "->?";
+    return r;
 }
 
 void ExprEngine::ArrayValue::assign(ExprEngine::ValuePtr index, ExprEngine::ValuePtr value)
@@ -538,18 +551,6 @@ std::string ExprEngine::StructValue::getSymbolicExpression() const
     }
     ostr << "}";
     return ostr.str();
-}
-
-std::string ExprEngine::PointerValue::getRange() const
-{
-    std::string r;
-    if (data)
-        r = "->" + data->getSymbolicExpression();
-    if (null)
-        r += std::string(r.empty() ? "" : ",") + "null";
-    if (uninitData)
-        r += std::string(r.empty() ? "" : ",") + "->?";
-    return r;
 }
 
 std::string ExprEngine::IntegerTruncation::getSymbolicExpression() const
@@ -982,7 +983,7 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
     if (!rhsValue && tok->astOperand2()->valueType() && tok->astOperand2()->valueType()->container && tok->astOperand2()->valueType()->container->stdStringLike) {
         auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 0, ~0ULL);
         auto value = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), -128, 127);
-        rhsValue = std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), size, value);
+        rhsValue = std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), size, value, false, false, false);
         call(data.callbacks, tok->astOperand2(), rhsValue, &data);
     }
 
@@ -1113,13 +1114,14 @@ static ExprEngine::ValuePtr executeCast(const Token *tok, Data &data)
         if (tok->valueType()->pointer == 0)
             return range;
 
-        bool uninit = false, null = false;
-        if (val && val->type == ExprEngine::ValueType::PointerValue) {
-            null = std::static_pointer_cast<ExprEngine::PointerValue>(val)->null;
-            uninit = std::static_pointer_cast<ExprEngine::PointerValue>(val)->uninitData;
+        bool uninitPointer = false, nullPointer = false;
+        if (val && val->type == ExprEngine::ValueType::ArrayValue) {
+            nullPointer = std::static_pointer_cast<ExprEngine::ArrayValue>(val)->nullPointer;
+            uninitPointer = std::static_pointer_cast<ExprEngine::ArrayValue>(val)->uninitPointer;
         }
 
-        return std::make_shared<ExprEngine::PointerValue>(data.getNewSymbolName(), range, null, uninit);
+        auto bufferSize = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 1, ~0UL);
+        return std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), bufferSize, range, true, nullPointer, uninitPointer);
     }
 
     if (val)
@@ -1139,10 +1141,10 @@ static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
     std::shared_ptr<ExprEngine::StructValue> structValue = std::dynamic_pointer_cast<ExprEngine::StructValue>(data.getValue(tok->astOperand1()->varId(), nullptr, nullptr));
     if (!structValue) {
         if (tok->originalName() == "->") {
-            std::shared_ptr<ExprEngine::PointerValue> pointerValue = std::dynamic_pointer_cast<ExprEngine::PointerValue>(data.getValue(tok->astOperand1()->varId(), nullptr, nullptr));
-            if (pointerValue) {
+            std::shared_ptr<ExprEngine::ArrayValue> pointerValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(data.getValue(tok->astOperand1()->varId(), nullptr, nullptr));
+            if (pointerValue && pointerValue->pointer && pointerValue->data.size() == 1) {
                 call(data.callbacks, tok->astOperand1(), pointerValue, &data);
-                structValue = std::dynamic_pointer_cast<ExprEngine::StructValue>(pointerValue->data);
+                structValue = std::dynamic_pointer_cast<ExprEngine::StructValue>(pointerValue->data[0].value);
             } else {
                 call(data.callbacks, tok->astOperand1(), data.getValue(tok->astOperand1()->varId(), nullptr, nullptr), &data);
             }
@@ -1189,7 +1191,7 @@ static ExprEngine::ValuePtr executeDeref(const Token *tok, Data &data)
     if (!pval) {
         auto v = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
         if (tok->astOperand1()->varId()) {
-            pval = std::make_shared<ExprEngine::PointerValue>(data.getNewSymbolName(), v, false, false);
+            pval = std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), ExprEngine::ValuePtr(), v, true, false, false);
             data.assignValue(tok->astOperand1(), tok->astOperand1()->varId(), pval);
         }
         call(data.callbacks, tok, v, &data);
@@ -1201,11 +1203,15 @@ static ExprEngine::ValuePtr executeDeref(const Token *tok, Data &data)
         call(data.callbacks, tok, val, &data);
         return val;
     }
-    auto pointer = std::dynamic_pointer_cast<ExprEngine::PointerValue>(pval);
+    auto pointer = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(pval);
     if (pointer) {
-        auto val = pointer->data;
-        call(data.callbacks, tok, val, &data);
-        return val;
+        auto indexValue = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
+        auto conditionalValues = pointer->read(indexValue);
+        for (auto value: conditionalValues)
+            call(data.callbacks, tok, value.second, &data);
+        if (conditionalValues.size() == 1 && !conditionalValues[0].first)
+            return conditionalValues[0].second;
+        return std::make_shared<ExprEngine::ConditionalValue>(data.getNewSymbolName(), conditionalValues);
     }
     return ExprEngine::ValuePtr();
 }
@@ -1432,6 +1438,8 @@ static void execute(const Token *start, const Token *end, Data &data)
                     }
                     if (!Token::Match(tok2->astOperand1(), "%var%"))
                         throw VerifyException(tok2, "Unhandled assignment in loop");
+                    if (!tok2->astOperand1()->variable())
+                        throw VerifyException(tok2, "Unhandled assignment in loop");
                     // give variable "any" value
                     int varid = tok2->astOperand1()->varId();
                     if (changedVariables.find(varid) != changedVariables.end())
@@ -1455,12 +1463,12 @@ static void execute(const Token *start, const Token *end, Data &data)
     }
 }
 
-void ExprEngine::executeAllFunctions(const Tokenizer *tokenizer, const Settings *settings, const std::vector<ExprEngine::Callback> &callbacks, std::ostream &trace)
+void ExprEngine::executeAllFunctions(const Tokenizer *tokenizer, const Settings *settings, const std::vector<ExprEngine::Callback> &callbacks, std::ostream &report)
 {
     const SymbolDatabase *symbolDatabase = tokenizer->getSymbolDatabase();
     for (const Scope *functionScope : symbolDatabase->functionScopes) {
         try {
-            executeFunction(functionScope, tokenizer, settings, callbacks, trace);
+            executeFunction(functionScope, tokenizer, settings, callbacks, report);
         } catch (const VerifyException &e) {
             // FIXME.. there should not be exceptions
             std::string functionName = functionScope->function->name();
@@ -1519,7 +1527,8 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
         ValueType vt(*valueType);
         vt.pointer = 0;
         auto range = getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings);
-        return std::make_shared<ExprEngine::PointerValue>(data.getNewSymbolName(), range, true, true);
+        auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 1, ~0UL);
+        return std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), size, range, true, true, true);
     }
     if (var.isArray())
         return std::make_shared<ExprEngine::ArrayValue>(&data, &var);
@@ -1532,7 +1541,8 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
         return createStructVal(valueType->typeScope, var.isLocal() && !var.isStatic(), data);
     if (valueType->smartPointerType) {
         auto structValue = createStructVal(valueType->smartPointerType->classScope, var.isLocal() && !var.isStatic(), data);
-        return std::make_shared<ExprEngine::PointerValue>(data.getNewSymbolName(), structValue, true, false);
+        auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 1, ~0UL);
+        return std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), size, structValue, true, true, false);
     }
     if (valueType->container) {
         ExprEngine::ValuePtr value;
@@ -1543,13 +1553,13 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
             value = getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings);
         } else
             return ExprEngine::ValuePtr();
-        auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 0, ~0ULL);
-        return std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), size, value);
+        auto bufferSize = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 0, ~0U);
+        return std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), bufferSize, value, false, false, false);
     }
     return ExprEngine::ValuePtr();
 }
 
-void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *tokenizer, const Settings *settings, const std::vector<ExprEngine::Callback> &callbacks, std::ostream &trace)
+void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *tokenizer, const Settings *settings, const std::vector<ExprEngine::Callback> &callbacks, std::ostream &report)
 {
     if (!functionScope->bodyStart)
         return;
@@ -1576,14 +1586,26 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
             call(callbacks, tok, bailoutValue, &data);
     }
 
-    if (settings->debugVerification) {
-        // TODO generate better output!!
-        trackExecution.print(trace);
+    if (settings->debugVerification && (callbacks.empty() || !trackExecution.isAllOk())) {
+        if (!settings->verificationReport.empty())
+            report << "[debug]" << std::endl;
+        trackExecution.print(report);
+        if (!callbacks.empty()) {
+            if (!settings->verificationReport.empty())
+                report << "[details]" << std::endl;
+            trackExecution.report(report, functionScope);
+        }
     }
 
     // Write a verification report
-    //if (!trackExecution.isAllOk())
-    //    trackExecution.report(trace, functionScope);
+    if (!settings->verificationReport.empty()) {
+        report << "[function-report] "
+               << Path::stripDirectoryPart(tokenizer->list.getFiles().at(functionScope->bodyStart->fileIndex())) << ":"
+               << functionScope->bodyStart->linenr() << ":"
+               << function->name()
+               << (trackExecution.isAllOk() ? " is safe" : " is not safe")
+               << std::endl;
+    }
 }
 
 void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings)
@@ -1752,5 +1774,9 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
 #ifdef VERIFY_INTEGEROVERFLOW
     callbacks.push_back(integerOverflow);
 #endif
-    ExprEngine::executeAllFunctions(tokenizer, settings, callbacks, std::cout);
+
+    std::ostringstream report;
+    ExprEngine::executeAllFunctions(tokenizer, settings, callbacks, report);
+    if (errorLogger && !settings->verificationReport.empty() && !report.str().empty())
+        errorLogger->reportVerification(report.str());
 }

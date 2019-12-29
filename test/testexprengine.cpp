@@ -74,6 +74,7 @@ private:
         TEST_CASE(int1);
 
         TEST_CASE(pointer1);
+        TEST_CASE(pointer2);
         TEST_CASE(pointerAlias1);
         TEST_CASE(pointerAlias2);
         TEST_CASE(pointerAlias3);
@@ -103,8 +104,8 @@ private:
         };
         std::vector<ExprEngine::Callback> callbacks;
         callbacks.push_back(f);
-        std::ostringstream dummy;
-        ExprEngine::executeAllFunctions(&tokenizer, &settings, callbacks, dummy);
+        std::ostringstream trace;
+        ExprEngine::executeAllFunctions(&tokenizer, &settings, callbacks, trace);
         return ret;
     }
 
@@ -126,8 +127,8 @@ private:
         };
         std::vector<ExprEngine::Callback> callbacks;
         callbacks.push_back(f);
-        std::ostringstream dummy;
-        ExprEngine::executeAllFunctions(&tokenizer, &settings, callbacks, dummy);
+        std::ostringstream trace;
+        ExprEngine::executeAllFunctions(&tokenizer, &settings, callbacks, trace);
         return ret;
     }
 
@@ -139,9 +140,9 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        std::vector<ExprEngine::Callback> dummy;
+        std::vector<ExprEngine::Callback> callbacks;
         std::ostringstream ret;
-        ExprEngine::executeAllFunctions(&tokenizer, &settings, dummy, ret);
+        ExprEngine::executeAllFunctions(&tokenizer, &settings, callbacks, ret);
         return ret.str();
     }
 
@@ -414,10 +415,19 @@ private:
 
     void pointer1() {
         const char code[] = "void f(unsigned char *p) { return *p == 7; }";
-        ASSERT_EQUALS("->$1,null,->?", getRange(code, "p"));
-        ASSERT_EQUALS("(declare-fun $1 () Int)\n"
-                      "(assert (and (>= $1 0) (<= $1 255)))\n"
-                      "(assert (= $1 7))\n"
+        ASSERT_EQUALS("size=$2,[:]=$1,null,->?", getRange(code, "p"));
+        ASSERT_EQUALS("(declare-fun |$1:0| () Int)\n"
+                      "(assert (and (>= |$1:0| 0) (<= |$1:0| 255)))\n"
+                      "(assert (= |$1:0| 7))\n"
+                      "z3::sat",
+                      expr(code, "=="));
+    }
+
+    void pointer2() {
+        const char code[] = "void f(unsigned char *p) { return p[2] == 7; }";
+        ASSERT_EQUALS("(declare-fun |$1:2| () Int)\n"
+                      "(assert (and (>= |$1:2| 0) (<= |$1:2| 255)))\n"
+                      "(assert (= |$1:2| 7))\n"
                       "z3::sat",
                       expr(code, "=="));
     }

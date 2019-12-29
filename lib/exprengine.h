@@ -57,7 +57,6 @@ namespace ExprEngine {
         UninitValue,
         IntRange,
         FloatRange,
-        PointerValue,
         ConditionalValue,
         ArrayValue,
         StringLiteralValue,
@@ -157,20 +156,6 @@ namespace ExprEngine {
         long double maxValue;
     };
 
-    class PointerValue: public Value {
-    public:
-        PointerValue(const std::string &name, ValuePtr data, bool null, bool uninitData)
-            : Value(name, ValueType::PointerValue)
-            , data(data)
-            , null(null)
-            , uninitData(uninitData) {
-        }
-        std::string getRange() const OVERRIDE;
-        ValuePtr data;
-        bool null;
-        bool uninitData;
-    };
-
     class ConditionalValue : public Value {
     public:
         typedef std::vector<std::pair<ValuePtr,ValuePtr>> Vector;
@@ -182,18 +167,24 @@ namespace ExprEngine {
         Vector values;
     };
 
+    // Array or pointer
     class ArrayValue: public Value {
     public:
         const int MAXSIZE = 0x100000;
 
-        ArrayValue(const std::string &name, ValuePtr size, ValuePtr value);
+        ArrayValue(const std::string &name, ValuePtr size, ValuePtr value, bool pointer, bool nullPointer, bool uninitPointer);
         ArrayValue(DataBase *data, const Variable *var);
 
+        std::string getRange() const;
         std::string getSymbolicExpression() const OVERRIDE;
 
         void assign(ValuePtr index, ValuePtr value);
         void clear();
         ConditionalValue::Vector read(ValuePtr index) const;
+
+        bool pointer;
+        bool nullPointer;
+        bool uninitPointer;
 
         struct IndexAndValue {
             ValuePtr index;
@@ -297,8 +288,8 @@ namespace ExprEngine {
     typedef std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> Callback;
 
     /** Execute all functions */
-    void CPPCHECKLIB executeAllFunctions(const Tokenizer *tokenizer, const Settings *settings, const std::vector<Callback> &callbacks, std::ostream &trace);
-    void executeFunction(const Scope *functionScope, const Tokenizer *tokenizer, const Settings *settings, const std::vector<Callback> &callbacks, std::ostream &trace);
+    void CPPCHECKLIB executeAllFunctions(const Tokenizer *tokenizer, const Settings *settings, const std::vector<Callback> &callbacks, std::ostream &report);
+    void executeFunction(const Scope *functionScope, const Tokenizer *tokenizer, const Settings *settings, const std::vector<Callback> &callbacks, std::ostream &report);
 
     void runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings);
 }

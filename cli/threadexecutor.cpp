@@ -348,6 +348,11 @@ void ThreadExecutor::reportInfo(const ErrorLogger::ErrorMessage &msg)
     writeToPipe(REPORT_INFO, msg.serialize());
 }
 
+void ThreadExecutor::reportVerification(const std::string &str)
+{
+    writeToPipe(REPORT_VERIFICATION, str.c_str());
+}
+
 #elif defined(THREADING_MODEL_WIN)
 
 void ThreadExecutor::addFileContent(const std::string &path, const std::string &content)
@@ -490,7 +495,12 @@ void ThreadExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
 
 void ThreadExecutor::reportInfo(const ErrorLogger::ErrorMessage &msg)
 {
-    report(msg, MessageType::REPORT_INFO);
+
+}
+
+void ThreadExecutor::reportVerification(const std::string  &/*str*/)
+{
+    // TODO
 }
 
 void ThreadExecutor::report(const ErrorLogger::ErrorMessage &msg, MessageType msgType)
@@ -549,6 +559,10 @@ void ThreadExecutor::reportErr(const ErrorLogger::ErrorMessage &/*msg*/)
 void ThreadExecutor::reportInfo(const ErrorLogger::ErrorMessage &/*msg*/)
 {
 
+}
+
+void ThreadExecutor::reportVerification(const std::string &/*str*/)
+{
 }
 
 #endif

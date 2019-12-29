@@ -82,6 +82,7 @@ protected:
 
     void processOptions(const options& args);
 public:
+    void reportVerification(const std::string &/*str*/) OVERRIDE {}
     void reportOut(const std::string &outmsg) OVERRIDE;
     void reportErr(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
     void run(const std::string &str);

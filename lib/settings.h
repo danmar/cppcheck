@@ -191,6 +191,10 @@ public:
     /** @brief Enable verification analysis */
     bool verification;
 
+    /** @brief Verification report filename */
+    std::string verificationReport;
+
+    /** @brief Generate verification debug output */
     bool debugVerification;
 
     /** @brief check unknown function return values */
