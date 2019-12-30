@@ -48,6 +48,7 @@ private:
         TEST_CASE(if1);
         TEST_CASE(if2);
         TEST_CASE(if3);
+        TEST_CASE(if4);
         TEST_CASE(ifelse1);
 
         TEST_CASE(switch1);
@@ -153,8 +154,8 @@ private:
                             "}";
 
         const char expected[] = "(declare-fun $1 () Int)\n"
-                                "(assert (and (>= $1 (- 32768)) (<= $1 32767)))\n"
                                 "(assert (>= $1 100))\n" // <- annotation
+                                "(assert (and (>= $1 (- 32768)) (<= $1 32767)))\n"
                                 "(assert (< $1 10))\n"
                                 "z3::unsat";
 
@@ -202,18 +203,22 @@ private:
                             "    c > 1000;"
                             "}";
 
-        ASSERT_EQUALS("(declare-fun $3 () Int)\n"
-                      "(declare-fun $2 () Int)\n"
+        ASSERT_EQUALS("(declare-fun $2 () Int)\n"
                       "(declare-fun $1 () Int)\n"
-                      "(assert (and (>= $3 (- 2147483648)) (<= $3 2147483647)))\n"
+                      "(declare-fun $3 () Int)\n"
                       "(assert (or (distinct $1 0) (distinct $2 0)))\n"
+                      "(assert (and (>= $3 (- 2147483648)) (<= $3 2147483647)))\n"
+                      "(assert (and (>= $1 0) (<= $1 1)))\n"
+                      "(assert (and (>= $2 0) (<= $2 1)))\n"
                       "(assert (> $3 1000))\n"
                       "z3::sat\n"
-                      "(declare-fun $3 () Int)\n"
                       "(declare-fun $2 () Int)\n"
                       "(declare-fun $1 () Int)\n"
-                      "(assert (and (>= $3 (- 2147483648)) (<= $3 2147483647)))\n"
+                      "(declare-fun $3 () Int)\n"
                       "(assert (= (ite (or (distinct $1 0) (distinct $2 0)) 1 0) 0))\n"
+                      "(assert (and (>= $3 (- 2147483648)) (<= $3 2147483647)))\n"
+                      "(assert (and (>= $1 0) (<= $1 1)))\n"
+                      "(assert (and (>= $2 0) (<= $2 1)))\n"
                       "(assert (> $3 1000))\n"
                       "z3::sat",
                       expr(code, ">"));
@@ -228,11 +233,11 @@ private:
     }
 
     void if1() {
-        ASSERT_EQUALS("(declare-fun $1 () Int)\n"
-                      "(declare-fun $2 () Int)\n"
+        ASSERT_EQUALS("(declare-fun $2 () Int)\n"
+                      "(declare-fun $1 () Int)\n"
+                      "(assert (< $1 $2))\n"
                       "(assert (and (>= $1 (- 2147483648)) (<= $1 2147483647)))\n"
                       "(assert (and (>= $2 (- 2147483648)) (<= $2 2147483647)))\n"
-                      "(assert (< $1 $2))\n"
                       "(assert (= $1 $2))\n"
                       "z3::unsat",
                       expr("void f(int x, int y) { if (x < y) return x == y; }", "=="));
@@ -244,8 +249,8 @@ private:
                             "}";
         // In expression "x + x < 20", "x" is greater than 0
         const char expected[] = "(declare-fun $1 () Int)\n"
-                                "(assert (and (>= $1 (- 2147483648)) (<= $1 2147483647)))\n"
                                 "(assert (> $1 0))\n"
+                                "(assert (and (>= $1 (- 2147483648)) (<= $1 2147483647)))\n"
                                 "(assert (= $1 20))\n"
                                 "z3::sat";
         ASSERT_EQUALS(expected, expr(code, "=="));
@@ -257,17 +262,32 @@ private:
                             "}";
         // In expression "x + x < 20", "x" is greater than 0
         const char expected[] = "(declare-fun $1 () Int)\n"
-                                "(assert (and (>= $1 (- 2147483648)) (<= $1 2147483647)))\n"
                                 "(assert (<= $1 0))\n"
+                                "(assert (and (>= $1 (- 2147483648)) (<= $1 2147483647)))\n"
                                 "(assert (= $1 20))\n"
                                 "z3::unsat"; // "x == 20" is unsat
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
+    void if4() {
+        const char code[] = "void foo(unsigned int x, unsigned int y) {\n"
+                            "    unsigned int z = y;"
+                            "    if (x < z) { return z == 0; }\n"
+                            "}";
+        const char expected[] = "(declare-fun $2 () Int)\n"
+                                "(declare-fun $1 () Int)\n"
+                                "(assert (< $1 $2))\n"
+                                "(assert (>= $2 0))\n"
+                                "(assert (>= $1 0))\n"
+                                "(assert (= $2 0))\n"
+                                "z3::unsat";
+        ASSERT_EQUALS(expected, expr(code, "=="));
+    }
+
     void ifelse1() {
         ASSERT_EQUALS("(declare-fun $1 () Int)\n"
-                      "(assert (and (>= $1 (- 32768)) (<= $1 32767)))\n"
                       "(assert (<= $1 5))\n"
+                      "(assert (and (>= $1 (- 32768)) (<= $1 32767)))\n"
                       "(assert (= (+ $1 2) 40))\n"
                       "z3::unsat",
                       expr("void f(short x) { if (x > 5) ; else if (x+2==40); }", "=="));
@@ -283,8 +303,8 @@ private:
                             "    x<=4;\n"
                             "}";
         ASSERT_EQUALS("(declare-fun $1 () Int)\n"
-                      "(assert (and (>= $1 (- 2147483648)) (<= $1 2147483647)))\n"
                       "(assert (= $1 1))\n"
+                      "(assert (and (>= $1 (- 2147483648)) (<= $1 2147483647)))\n"
                       "(assert (= $1 3))\n"
                       "z3::unsat",
                       expr(code, "=="));

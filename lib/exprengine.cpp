@@ -573,6 +573,18 @@ struct ExprData {
             solver.add(assertExpr);
     }
 
+    z3::expr addInt(const std::string &name, int128_t minValue, int128_t maxValue) {
+        z3::expr e = context.int_const(name.c_str());
+        valueExpr.emplace(name, e);
+        if (minValue >= INT_MIN && maxValue <= INT_MAX)
+            assertionList.push_back(e >= int(minValue) && e <= int(maxValue));
+        else if (maxValue <= INT_MAX)
+            assertionList.push_back(e <= int(maxValue));
+        else if (minValue >= INT_MIN)
+            assertionList.push_back(e >= int(minValue));
+        return e;
+    }
+
     z3::expr getExpr(const ExprEngine::BinOpResult *b) {
         auto op1 = getExpr(b->op1);
         auto op2 = getExpr(b->op2);
@@ -619,15 +631,7 @@ struct ExprData {
             auto it = valueExpr.find(v->name);
             if (it != valueExpr.end())
                 return it->second;
-            auto e = context.int_const(v->name.c_str());
-            valueExpr.emplace(v->name, e);
-            if (intRange->minValue >= INT_MIN && intRange->maxValue <= INT_MAX)
-                assertionList.push_back(e >= int(intRange->minValue) && e <= int(intRange->maxValue));
-            else if (intRange->maxValue <= INT_MAX)
-                assertionList.push_back(e <= int(intRange->maxValue));
-            else if (intRange->minValue >= INT_MIN)
-                assertionList.push_back(e >= int(intRange->minValue));
-            return e;
+            return addInt(v->name, intRange->minValue, intRange->maxValue);
         }
 
         if (auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(v)) {
@@ -692,10 +696,10 @@ bool ExprEngine::IntRange::isEqual(DataBase *dataBase, int value) const
     ExprData exprData;
     z3::solver solver(exprData.context);
     try {
-        z3::expr e = exprData.context.int_const(name.c_str());
-        exprData.valueExpr.emplace(name, e);
+        z3::expr e = exprData.addInt(name, minValue, maxValue);
         for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
             solver.add(exprData.getConstraintExpr(constraint));
+        exprData.addAssertions(solver);
         solver.add(e == value);
         return solver.check() == z3::sat;
     } catch (const z3::exception &exception) {
@@ -725,6 +729,7 @@ bool ExprEngine::IntRange::isGreaterThan(DataBase *dataBase, int value) const
         exprData.valueExpr.emplace(name, e);
         for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
             solver.add(exprData.getConstraintExpr(constraint));
+        exprData.addAssertions(solver);
         solver.add(e > value);
         return solver.check() == z3::sat;
     } catch (const z3::exception &exception) {
@@ -754,6 +759,7 @@ bool ExprEngine::IntRange::isLessThan(DataBase *dataBase, int value) const
         exprData.valueExpr.emplace(name, e);
         for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
             solver.add(exprData.getConstraintExpr(constraint));
+        exprData.addAssertions(solver);
         solver.add(e < value);
         return solver.check() == z3::sat;
     } catch (const z3::exception &exception) {
@@ -772,9 +778,9 @@ bool ExprEngine::BinOpResult::isEqual(ExprEngine::DataBase *dataBase, int value)
     ExprData exprData;
     z3::solver solver(exprData.context);
     z3::expr e = exprData.getExpr(this);
-    exprData.addAssertions(solver);
     for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
         solver.add(exprData.getConstraintExpr(constraint));
+    exprData.addAssertions(solver);
     solver.add(e == value);
     return solver.check() == z3::sat;
 #else
@@ -791,9 +797,9 @@ bool ExprEngine::BinOpResult::isGreaterThan(ExprEngine::DataBase *dataBase, int 
         ExprData exprData;
         z3::solver solver(exprData.context);
         z3::expr e = exprData.getExpr(this);
-        exprData.addAssertions(solver);
         for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
             solver.add(exprData.getConstraintExpr(constraint));
+        exprData.addAssertions(solver);
         solver.add(e > value);
         return solver.check() == z3::sat;
     } catch (const z3::exception &exception) {
@@ -814,9 +820,9 @@ bool ExprEngine::BinOpResult::isLessThan(ExprEngine::DataBase *dataBase, int val
         ExprData exprData;
         z3::solver solver(exprData.context);
         z3::expr e = exprData.getExpr(this);
-        exprData.addAssertions(solver);
         for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
             solver.add(exprData.getConstraintExpr(constraint));
+        exprData.addAssertions(solver);
         solver.add(e < value);
         return solver.check() == z3::sat;
     } catch (const z3::exception &exception) {
@@ -837,9 +843,9 @@ std::string ExprEngine::BinOpResult::getExpr(ExprEngine::DataBase *dataBase) con
         ExprData exprData;
         z3::solver solver(exprData.context);
         z3::expr e = exprData.getExpr(this);
-        exprData.addAssertions(solver);
         for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
             solver.add(exprData.getConstraintExpr(constraint));
+        exprData.addAssertions(solver);
         solver.add(e);
         std::ostringstream os;
         os << solver;
