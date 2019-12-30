@@ -1,4 +1,20 @@
 
+struct S { int x; };
+
+int globalvar;
+
+void callfunc1() {
+    int x = 16;
+    scanf("%i\n", &x);
+    // cppcheck-suppress verificationDivByZero
+    return 100000 / x;
+}
+
+void g1() {
+    // cppcheck-suppress verificationDivByZero
+    return 100000 / globalvar;
+}
+
 void pointer1(int *p) {
     // cppcheck-suppress verificationDivByZero
     return 100000 / *p;
@@ -19,7 +35,6 @@ void stdmap(std::map<int,int> &data) {
     return 100000 / data[43];
 }
 
-struct S { int x; };
 void struct1(struct S *s) {
     // cppcheck-suppress verificationDivByZero
     return 100000 / s->x;
