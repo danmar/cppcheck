@@ -1734,7 +1734,8 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
         if (tok->astParent()->astOperand2() == tok && value.isEqual(dataBase, 0)) {
             dataBase->addError(tok->linenr());
             std::list<const Token*> callstack{tok->astParent()};
-            ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationDivByZero", "There is division, cannot determine that there can't be a division by zero.", CWE(369), false);
+            const char * const id = (tok->valueType() && tok->valueType()->isFloat()) ? "verificationDivByZeroFloat" : "verificationDivByZero";
+            ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, id, "There is division, cannot determine that there can't be a division by zero.", CWE(369), false);
             errorLogger->reportErr(errmsg);
         }
     };

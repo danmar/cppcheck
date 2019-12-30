@@ -31,7 +31,7 @@ void float1(float f) {
 }
 
 void float2(float f) {
-    // cppcheck-suppress verificationDivByZero
+    // cppcheck-suppress verificationDivByZeroFloat
     return 100000 / f;
 }
 
