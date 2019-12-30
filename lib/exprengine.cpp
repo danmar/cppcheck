@@ -1698,6 +1698,20 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
     };
 #endif
 
+#ifdef VERIFY_UNINIT  // This is highly experimental
+    std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> uninit = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
+        if (!tok->astParent())
+            return;
+        if (!value.isUninit())
+            return;
+
+        dataBase->addError(tok->linenr());
+        std::list<const Token*> callstack{tok};
+        ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationUninit", "Cannot determine that data is initialized", CWE(908), false);
+        errorLogger->reportErr(errmsg);
+    };
+#endif
+
     std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> checkFunctionCall = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
         if (!Token::Match(tok->astParent(), "[(,]"))
             return;
@@ -1799,6 +1813,9 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
     callbacks.push_back(checkFunctionCall);
 #ifdef VERIFY_INTEGEROVERFLOW
     callbacks.push_back(integerOverflow);
+#endif
+#ifdef VERIFY_UNINIT
+    callbacks.push_back(uninit);
 #endif
 
     std::ostringstream report;

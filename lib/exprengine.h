@@ -105,6 +105,9 @@ namespace ExprEngine {
             (void)value;
             return false;
         }
+        virtual bool isUninit() const {
+            return false;
+        }
 
         const std::string name;
         ValueType type;
@@ -113,6 +116,9 @@ namespace ExprEngine {
     class UninitValue: public Value {
     public:
         UninitValue() : Value("?", ValueType::UninitValue) {}
+        bool isUninit() const OVERRIDE {
+            return true;
+        }
     };
 
     class IntRange : public Value {
