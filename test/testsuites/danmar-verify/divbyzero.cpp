@@ -30,6 +30,11 @@ void float1(float f) {
     return 100000 / (int)f;
 }
 
+void float2(float f) {
+    // cppcheck-suppress verificationDivByZero
+    return 100000 / f;
+}
+
 void stdmap(std::map<int,int> &data) {
     // cppcheck-suppress verificationDivByZero
     return 100000 / data[43];

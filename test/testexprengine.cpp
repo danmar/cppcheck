@@ -67,6 +67,7 @@ private:
 
         TEST_CASE(floatValue1);
         TEST_CASE(floatValue2);
+        TEST_CASE(floatValue3);
 
         TEST_CASE(functionCall1);
         TEST_CASE(functionCall2);
@@ -397,11 +398,20 @@ private:
 
 
     void floatValue1() {
-        ASSERT_EQUALS(std::to_string(std::numeric_limits<float>::min()) + ":" + std::to_string(std::numeric_limits<float>::max()), getRange("float f; void func() { f=f; }", "f=f"));
+        ASSERT_EQUALS("-inf:inf", getRange("float f; void func() { f=f; }", "f=f"));
     }
 
     void floatValue2() {
         ASSERT_EQUALS("(29.0)/(2.0)", getRange("void func() { float f = 29.0; f = f / 2.0; }", "f/2.0"));
+    }
+
+    void floatValue3() {
+        const char code[] = "void foo(float f) { return f > 12.0; }";
+        const char expected[] = "(declare-fun |12.0| () (_ FloatingPoint 11 53))\n"
+                                "(declare-fun $1 () (_ FloatingPoint 11 53))\n"
+                                "(assert (fp.gt $1 |12.0|))\n"
+                                "z3::sat";
+        ASSERT_EQUALS(expected, expr(code, ">"));
     }
 
 

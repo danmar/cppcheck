@@ -585,6 +585,12 @@ struct ExprData {
         return e;
     }
 
+    z3::expr addFloat(const std::string &name) {
+        z3::expr e = context.fpa_const(name.c_str(), 11, 53);
+        valueExpr.emplace(name, e);
+        return e;
+    }
+
     z3::expr getExpr(const ExprEngine::BinOpResult *b) {
         auto op1 = getExpr(b->op1);
         auto op2 = getExpr(b->op2);
@@ -632,6 +638,13 @@ struct ExprData {
             if (it != valueExpr.end())
                 return it->second;
             return addInt(v->name, intRange->minValue, intRange->maxValue);
+        }
+
+        if (auto floatRange = std::dynamic_pointer_cast<ExprEngine::FloatRange>(v)) {
+            auto it = valueExpr.find(v->name);
+            if (it != valueExpr.end())
+                return it->second;
+            return addFloat(v->name);
         }
 
         if (auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(v)) {
@@ -725,8 +738,7 @@ bool ExprEngine::IntRange::isGreaterThan(DataBase *dataBase, int value) const
     ExprData exprData;
     z3::solver solver(exprData.context);
     try {
-        z3::expr e = exprData.context.int_const(name.c_str());
-        exprData.valueExpr.emplace(name, e);
+        z3::expr e = exprData.addInt(name, minValue, maxValue);
         for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
             solver.add(exprData.getConstraintExpr(constraint));
         exprData.addAssertions(solver);
@@ -755,8 +767,7 @@ bool ExprEngine::IntRange::isLessThan(DataBase *dataBase, int value) const
     ExprData exprData;
     z3::solver solver(exprData.context);
     try {
-        z3::expr e = exprData.context.int_const(name.c_str());
-        exprData.valueExpr.emplace(name, e);
+        z3::expr e = exprData.addInt(name, minValue, maxValue);
         for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
             solver.add(exprData.getConstraintExpr(constraint));
         exprData.addAssertions(solver);
@@ -771,6 +782,91 @@ bool ExprEngine::IntRange::isLessThan(DataBase *dataBase, int value) const
     return false;
 #endif
 }
+
+bool ExprEngine::FloatRange::isEqual(DataBase *dataBase, int value) const
+{
+    const Data *data = dynamic_cast<Data *>(dataBase);
+    if (data->constraints.empty())
+        return true;
+#ifdef USE_Z3
+    // Check the value against the constraints
+    ExprData exprData;
+    z3::solver solver(exprData.context);
+    try {
+        z3::expr e = exprData.addFloat(name);
+        for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
+            solver.add(exprData.getConstraintExpr(constraint));
+        exprData.addAssertions(solver);
+        solver.add(e == value);
+        return solver.check() != z3::unsat;
+    } catch (const z3::exception &exception) {
+        std::cerr << "z3: " << exception << std::endl;
+        return true;  // Safe option is to return true
+    }
+#else
+    // The value may or may not be in range
+    return false;
+#endif
+}
+
+bool ExprEngine::FloatRange::isGreaterThan(DataBase *dataBase, int value) const
+{
+    if (value < minValue || value > maxValue)
+        return false;
+
+    const Data *data = dynamic_cast<Data *>(dataBase);
+    if (data->constraints.empty())
+        return true;
+#ifdef USE_Z3
+    // Check the value against the constraints
+    ExprData exprData;
+    z3::solver solver(exprData.context);
+    try {
+        z3::expr e = exprData.addFloat(name);
+        for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
+            solver.add(exprData.getConstraintExpr(constraint));
+        exprData.addAssertions(solver);
+        solver.add(e > value);
+        return solver.check() == z3::sat;
+    } catch (const z3::exception &exception) {
+        std::cerr << "z3: " << exception << std::endl;
+        return true;  // Safe option is to return true
+    }
+#else
+    // The value may or may not be in range
+    return false;
+#endif
+}
+
+bool ExprEngine::FloatRange::isLessThan(DataBase *dataBase, int value) const
+{
+    if (value < minValue || value > maxValue)
+        return false;
+
+    const Data *data = dynamic_cast<Data *>(dataBase);
+    if (data->constraints.empty())
+        return true;
+#ifdef USE_Z3
+    // Check the value against the constraints
+    ExprData exprData;
+    z3::solver solver(exprData.context);
+    try {
+        z3::expr e = exprData.addFloat(name);
+        for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
+            solver.add(exprData.getConstraintExpr(constraint));
+        exprData.addAssertions(solver);
+        solver.add(e < value);
+        return solver.check() == z3::sat;
+    } catch (const z3::exception &exception) {
+        std::cerr << "z3: " << exception << std::endl;
+        return true;  // Safe option is to return true
+    }
+#else
+    // The value may or may not be in range
+    return false;
+#endif
+}
+
 
 bool ExprEngine::BinOpResult::isEqual(ExprEngine::DataBase *dataBase, int value) const
 {
@@ -913,16 +1009,10 @@ static ExprEngine::ValuePtr getValueRangeFromValueType(const std::string &name, 
         }
     }
 
-    switch (vt->type) {
-    case ValueType::Type::FLOAT:
-        return std::make_shared<ExprEngine::FloatRange>(name, std::numeric_limits<float>::min(), std::numeric_limits<float>::max());
-    case ValueType::Type::DOUBLE:
-        return std::make_shared<ExprEngine::FloatRange>(name, std::numeric_limits<double>::min(), std::numeric_limits<double>::max());
-    case ValueType::Type::LONGDOUBLE:
-        return std::make_shared<ExprEngine::FloatRange>(name, std::numeric_limits<long double>::min(), std::numeric_limits<long double>::max());
-    default:
-        return ExprEngine::ValuePtr();
-    };
+    if (vt->isFloat())
+        return std::make_shared<ExprEngine::FloatRange>(name, -std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
+
+    return ExprEngine::ValuePtr();
 }
 
 static void call(const std::vector<ExprEngine::Callback> &callbacks, const Token *tok, ExprEngine::ValuePtr value, Data *dataBase)
@@ -1558,7 +1648,7 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
     }
     if (var.isArray())
         return std::make_shared<ExprEngine::ArrayValue>(&data, &var);
-    if (valueType->isIntegral()) {
+    if (valueType->isIntegral() || valueType->isFloat()) {
         auto value = getValueRangeFromValueType(data.getNewSymbolName(), valueType, *data.settings);
         data.addConstraints(value, var.nameToken());
         return value;
