@@ -3,7 +3,7 @@
 # Locate casts in the code
 #
 
-import cppcheckdata
+from . import cppcheckdata
 import sys
 
 for arg in sys.argv[1:]:

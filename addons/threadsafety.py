@@ -4,7 +4,7 @@
 # - warn about static local objects
 #
 
-import cppcheckdata
+from . import cppcheckdata
 import sys
 
 def reportError(token, severity, msg, id):

@@ -15,7 +15,7 @@
 
 from __future__ import print_function
 
-import cppcheckdata
+from . import cppcheckdata
 import itertools
 import sys
 import re
