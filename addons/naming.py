@@ -7,7 +7,7 @@
 # $ python addons/naming.py --var='[a-z].*' --function='[A-Z].*' path-to-src/*.dump
 #
 
-from . import cppcheckdata
+import cppcheckdata
 import sys
 import re
 

@@ -15,7 +15,7 @@
 # y2038.py will walk the source tree for .dump files.
 from __future__ import print_function
 
-from . import cppcheckdata
+import cppcheckdata
 import sys
 import os
 import re

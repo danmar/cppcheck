@@ -10,7 +10,7 @@
 # python cert.py main.cpp.dump
 
 import argparse
-from . import cppcheckdata
+import cppcheckdata
 import sys
 import re
 
