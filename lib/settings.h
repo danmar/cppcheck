@@ -197,6 +197,14 @@ public:
     /** @brief Generate verification debug output */
     bool debugVerification;
 
+    /** @brief Verify diff */
+    struct Diff {
+        std::string filename;
+        int fromLine;
+        int toLine;
+    };
+    std::vector<Diff> verifyDiff;
+
     /** @brief check unknown function return values */
     std::set<std::string> checkUnknownFunctionReturn;
 
@@ -359,6 +367,8 @@ public:
     * @return true if the value can be shown
     */
     bool isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck=false) const;
+
+    static std::vector<Diff> loadDiffFile(std::istream &istr);
 
     /** Is posix library specified? */
     bool posix() const {

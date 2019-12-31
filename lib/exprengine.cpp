@@ -1694,6 +1694,23 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
         // TODO.. what about functions in headers?
         return;
 
+    if (!settings->verifyDiff.empty()) {
+        const std::string filename = tokenizer->list.getFiles().at(functionScope->bodyStart->fileIndex());
+        bool verify = false;
+        for (const auto &diff: settings->verifyDiff) {
+            if (diff.filename != filename)
+                continue;
+            if (diff.fromLine > functionScope->bodyEnd->linenr())
+                continue;
+            if (diff.toLine < functionScope->bodyStart->linenr())
+                continue;
+            verify = true;
+            break;
+        }
+        if (!verify)
+            return;
+    }
+
     int symbolValueIndex = 0;
     TrackExecution trackExecution;
     Data data(&symbolValueIndex, tokenizer, settings, callbacks, &trackExecution);
