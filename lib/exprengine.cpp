@@ -1830,16 +1830,14 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
 
                 MathLib::bigint low;
                 if (arg->nameToken()->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW, &low)) {
-                    if (value.isLessThan(dataBase, low)) {
-                        bad = "__cppcheck_low_(" + std::to_string(low) + ")";
-                    }
+                    if (!(tok->hasKnownIntValue() && tok->getKnownIntValue() >= low) && value.isLessThan(dataBase, low))
+                        bad = "__cppcheck_low__(" + std::to_string(low) + ")";
                 }
 
                 MathLib::bigint high;
                 if (arg->nameToken()->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH, &high)) {
-                    if (value.isLessThan(dataBase, low)) {
-                        bad = "__cppcheck_low_(" + std::to_string(low) + ")";
-                    }
+                    if (!(tok->hasKnownIntValue() && tok->getKnownIntValue() <= high) && value.isGreaterThan(dataBase, high))
+                        bad = "__cppcheck_high__(" + std::to_string(high) + ")";
                 }
 
                 if (!bad.empty()) {
@@ -1862,23 +1860,28 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             std::string bad;
             switch (invalidArgValue.type) {
             case Library::InvalidArgValue::eq:
-                err = value.isEqual(dataBase, MathLib::toLongNumber(invalidArgValue.op1));
+                if (!tok->hasKnownIntValue() || tok->getKnownIntValue() == MathLib::toLongNumber(invalidArgValue.op1))
+                    err = value.isEqual(dataBase, MathLib::toLongNumber(invalidArgValue.op1));
                 bad = "equals " + invalidArgValue.op1;
                 break;
             case Library::InvalidArgValue::le:
-                err = value.isLessThan(dataBase, MathLib::toLongNumber(invalidArgValue.op1) + 1);
+                if (!tok->hasKnownIntValue() || tok->getKnownIntValue() <= MathLib::toLongNumber(invalidArgValue.op1))
+                    err = value.isLessThan(dataBase, MathLib::toLongNumber(invalidArgValue.op1) + 1);
                 bad = "less equal " + invalidArgValue.op1;
                 break;
             case Library::InvalidArgValue::lt:
-                err = value.isLessThan(dataBase, MathLib::toLongNumber(invalidArgValue.op1));
+                if (!tok->hasKnownIntValue() || tok->getKnownIntValue() < MathLib::toLongNumber(invalidArgValue.op1))
+                    err = value.isLessThan(dataBase, MathLib::toLongNumber(invalidArgValue.op1));
                 bad = "less than " + invalidArgValue.op1;
                 break;
             case Library::InvalidArgValue::ge:
-                err = value.isGreaterThan(dataBase, MathLib::toLongNumber(invalidArgValue.op1) - 1);
+                if (!tok->hasKnownIntValue() || tok->getKnownIntValue() >= MathLib::toLongNumber(invalidArgValue.op1))
+                    err = value.isGreaterThan(dataBase, MathLib::toLongNumber(invalidArgValue.op1) - 1);
                 bad = "greater equal " + invalidArgValue.op1;
                 break;
             case Library::InvalidArgValue::gt:
-                err = value.isGreaterThan(dataBase, MathLib::toLongNumber(invalidArgValue.op1));
+                if (!tok->hasKnownIntValue() || tok->getKnownIntValue() > MathLib::toLongNumber(invalidArgValue.op1))
+                    err = value.isGreaterThan(dataBase, MathLib::toLongNumber(invalidArgValue.op1));
                 bad = "greater than " + invalidArgValue.op1;
                 break;
             case Library::InvalidArgValue::range:
