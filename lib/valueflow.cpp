@@ -3151,7 +3151,7 @@ ValueFlow::Value getLifetimeObjValue(const Token *tok)
     result = *it;
     // There should only be one lifetime
     if (std::find_if(std::next(it), tok->values().end(), pred) != tok->values().end())
-        return result;
+        return ValueFlow::Value{};
     return result;
 }
 
@@ -3635,8 +3635,13 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
             if (i->container != returnContainer)
                 continue;
             const Token * const argTok = args[argnr - 1];
-            LifetimeStore{argTok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::LifetimeKind::Iterator} .byVal(
-                tok->next(), tokenlist, errorLogger, settings);
+            // Check if lifetime is available to avoid adding the lifetime twice
+            ValueFlow::Value val = getLifetimeObjValue(argTok);
+            if (val.tokvalue) {
+                LifetimeStore{argTok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::LifetimeKind::Iterator} .byVal(
+                    tok->next(), tokenlist, errorLogger, settings);
+                break;
+            }
         }
     } else if (Token::Match(tok->tokAt(-2), "std :: ref|cref|tie|front_inserter|back_inserter")) {
         for (const Token *argtok : getArguments(tok)) {

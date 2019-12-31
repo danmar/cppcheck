@@ -65,6 +65,7 @@ private:
         TEST_CASE(iterator20);
         TEST_CASE(iterator21);
         TEST_CASE(iterator22);
+        TEST_CASE(iterator23);
         TEST_CASE(iteratorExpression);
         TEST_CASE(iteratorSameExpression);
 
@@ -1053,6 +1054,21 @@ private:
               "    std::list<int>::iterator it = l.find(123);\n"
               "    x.l.erase(it);\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void iterator23() { // #9550
+        check("struct A {\n"
+              "    struct B {\n"
+              "        bool operator==(const A::B& b) const;\n"
+              "        int x;\n"
+              "        int y;\n"
+              "        int z;\n"
+              "    };\n"
+              "};\n"
+              "bool A::B::operator==(const A::B& b) const {\n"
+              "    return std::tie(x, y, z) == std::tie(b.x, b.y, b.z);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
