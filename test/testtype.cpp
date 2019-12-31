@@ -104,6 +104,15 @@ private:
                 ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout.str());
             }
         }
+        // Shifting to the right with a size bigger than the type.
+        {
+            // c++11
+            check("char f( char x) { return x >> 8; }", &settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 8-bit value by 8 bits is undefined behaviour\n", errout.str());
+            check("short f( short x) { return x >> 16; }", &settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 16-bit value by 16 bits is undefined behaviour\n", errout.str());
+        }
+
         // 64 bit width types
         {
             // unsigned long long

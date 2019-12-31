@@ -65,29 +65,56 @@ void CheckType::checkTooBigBitwiseShift()
         if (!tok->astOperand1() || !tok->astOperand2())
             continue;
 
-        if (!Token::Match(tok, "<<|>>|<<=|>>="))
+        bool testleft;
+
+        if (Token::Match(tok, "<<|<<="))
+            testleft = true;
+        else if (Token::Match(tok, ">>|>>="))
+             testleft = false;
+        else
             continue;
 
         // get number of bits of lhs
         const ValueType * const lhstype = tok->astOperand1()->valueType();
         if (!lhstype || !lhstype->isIntegral() || lhstype->pointer >= 1)
             continue;
-        // C11 Standard, section 6.5.7 Bitwise shift operators, states:
-        //   The integer promotions are performed on each of the operands.
-        //   The type of the result is that of the promoted left operand.
         int lhsbits;
-        if ((lhstype->type == ValueType::Type::CHAR) ||
-            (lhstype->type == ValueType::Type::SHORT) ||
-            (lhstype->type == ValueType::Type::WCHAR_T) ||
-            (lhstype->type == ValueType::Type::BOOL) ||
-            (lhstype->type == ValueType::Type::INT))
-            lhsbits = mSettings->int_bit;
-        else if (lhstype->type == ValueType::Type::LONG)
-            lhsbits = mSettings->long_bit;
-        else if (lhstype->type == ValueType::Type::LONGLONG)
-            lhsbits = mSettings->long_long_bit;
-        else
-            continue;
+
+        if ( testleft ) {
+            // C11 Standard, section 6.5.7 Bitwise shift operators, states:
+            //   The integer promotions are performed on each of the operands.
+            //   The type of the result is that of the promoted left operand.
+            if ((lhstype->type == ValueType::Type::CHAR) ||
+                (lhstype->type == ValueType::Type::SHORT) ||
+                (lhstype->type == ValueType::Type::WCHAR_T) ||
+                (lhstype->type == ValueType::Type::BOOL) ||
+                (lhstype->type == ValueType::Type::INT))
+                lhsbits = mSettings->int_bit;
+            else if (lhstype->type == ValueType::Type::LONG)
+                lhsbits = mSettings->long_bit;
+            else if (lhstype->type == ValueType::Type::LONGLONG)
+                lhsbits = mSettings->long_long_bit;
+            else
+                continue;
+        }
+        else {
+            // When shifting right, make sure the end result
+            // is not undefined (chances are it will be 0).
+            if (lhstype->type == ValueType::Type::CHAR)
+                lhsbits = mSettings->char_bit;
+            else if (lhstype->type == ValueType::Type::SHORT)
+                lhsbits = mSettings->short_bit;
+            else if ((lhstype->type == ValueType::Type::WCHAR_T) ||
+                (lhstype->type == ValueType::Type::BOOL) ||
+                (lhstype->type == ValueType::Type::INT))
+                lhsbits = mSettings->int_bit;
+            else if (lhstype->type == ValueType::Type::LONG)
+                lhsbits = mSettings->long_bit;
+            else if (lhstype->type == ValueType::Type::LONGLONG)
+                lhsbits = mSettings->long_long_bit;
+            else
+                continue;
+        }
 
         // Get biggest rhs value. preferably a value which doesn't have 'condition'.
         const ValueFlow::Value * value = tok->astOperand2()->getValueGE(lhsbits, mSettings);
