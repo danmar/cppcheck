@@ -218,6 +218,7 @@ private:
         TEST_CASE(functionArgs12); // #7661
         TEST_CASE(functionArgs13); // #7697
         TEST_CASE(functionArgs14); // #9055
+        TEST_CASE(functionArgs15); // #7159
 
         TEST_CASE(functionImplicitlyVirtual);
 
@@ -2282,6 +2283,30 @@ private:
         ASSERT_EQUALS(2, func ? func->argCount() : 0);
         ASSERT_EQUALS(0, func ? func->initializedArgCount() : 1);
         ASSERT_EQUALS(2, func ? func->minArgCount() : 0);
+    }
+
+    void functionArgs15() { // #7159
+        const char code[] =
+            "class Class {\n"
+            "    void Method(\n"
+            "        char c = []()->char {\n"
+            "            int d = rand();\n"// the '=' on this line used to reproduce the defect
+            "            return d;\n"
+            "        }()\n"
+            "    );\n"
+            "};\n";
+        GET_SYMBOL_DB(code);
+        ASSERT(db);
+        ASSERT_EQUALS(2, db->scopeList.size());
+        const Scope& classScope = db->scopeList.back();
+        ASSERT_EQUALS(Scope::eClass, classScope.type);
+        ASSERT_EQUALS("Class", classScope.className);
+        ASSERT_EQUALS(1, classScope.functionList.size());
+        const Function& method = classScope.functionList.front();
+        ASSERT_EQUALS("Method", method.name());
+        ASSERT_EQUALS(1, method.argCount());
+        ASSERT_EQUALS(1, method.initializedArgCount());
+        ASSERT_EQUALS(0, method.minArgCount());
     }
 
     void functionImplicitlyVirtual() {

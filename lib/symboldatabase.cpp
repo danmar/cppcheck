@@ -3428,8 +3428,12 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
 
     // count default arguments
     for (const Token* tok = argDef->next(); tok && tok != argDef->link(); tok = tok->next()) {
-        if (tok->str() == "=")
+        if (tok->str() == "=") {
             initArgCount++;
+            if (tok->strAt(1) == "[") {
+                tok = findLambdaEndToken(tok->next());
+            }
+        }
     }
 }
 
