@@ -318,9 +318,9 @@ private:
                             "    x = x + 34;\n"
                             "  x == 340;\n"
                             "}";
-        ASSERT_EQUALS("(declare-fun $4 () Int)\n"
-                      "(assert (and (>= $4 (- 2147483648)) (<= $4 2147483647)))\n"
-                      "(assert (= (+ $4 34) 340))\n"
+        ASSERT_EQUALS("(declare-fun $2 () Int)\n"
+                      "(assert (and (>= $2 (- 2147483648)) (<= $2 2147483647)))\n"
+                      "(assert (= (+ $2 34) 340))\n"
                       "z3::sat",
                       expr(code, "=="));
     }
