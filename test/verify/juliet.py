@@ -61,8 +61,7 @@ def check(tc:str, warning_id:str):
 
 
 final_report = ''
-final_report += check('C/testcases/CWE369_Divide_by_Zero/s*/*_int_*.c', 'verificationDivByZero')
-#final_report += check('C/testcases/CWE476_*/*.c', 'verificationNullPointerDereference')
+final_report += check('C/testcases/CWE369_Divide_by_Zero/s*/*.c', 'verificationDivByZero')
 
 print(final_report)
 

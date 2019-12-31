@@ -788,6 +788,10 @@ bool ExprEngine::FloatRange::isEqual(DataBase *dataBase, int value) const
     const Data *data = dynamic_cast<Data *>(dataBase);
     if (data->constraints.empty())
         return true;
+    if (MathLib::isFloat(name)) {
+        float f = MathLib::toDoubleNumber(name);
+        return value >= f - 0.00001 && value <= f + 0.00001;
+    }
 #ifdef USE_Z3
     // Check the value against the constraints
     ExprData exprData;
@@ -797,7 +801,7 @@ bool ExprEngine::FloatRange::isEqual(DataBase *dataBase, int value) const
         for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
             solver.add(exprData.getConstraintExpr(constraint));
         exprData.addAssertions(solver);
-        solver.add(e == value);
+        solver.add(e >= value && e <= value);
         return solver.check() != z3::unsat;
     } catch (const z3::exception &exception) {
         std::cerr << "z3: " << exception << std::endl;
@@ -817,6 +821,8 @@ bool ExprEngine::FloatRange::isGreaterThan(DataBase *dataBase, int value) const
     const Data *data = dynamic_cast<Data *>(dataBase);
     if (data->constraints.empty())
         return true;
+    if (MathLib::isFloat(name))
+        return value > MathLib::toDoubleNumber(name);
 #ifdef USE_Z3
     // Check the value against the constraints
     ExprData exprData;
@@ -846,6 +852,8 @@ bool ExprEngine::FloatRange::isLessThan(DataBase *dataBase, int value) const
     const Data *data = dynamic_cast<Data *>(dataBase);
     if (data->constraints.empty())
         return true;
+    if (MathLib::isFloat(name))
+        return value < MathLib::toDoubleNumber(name);
 #ifdef USE_Z3
     // Check the value against the constraints
     ExprData exprData;
