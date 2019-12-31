@@ -1824,6 +1824,13 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
         if (!value.isUninit())
             return;
 
+        // Avoid FP for array declaration
+        const Token *parent = tok->astParent();
+        while (parent && parent->str() == "[")
+            parent = parent->astParent();
+        if (!parent)
+            return;
+
         dataBase->addError(tok->linenr());
         std::list<const Token*> callstack{tok};
         ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationUninit", "Cannot determine that data is initialized", CWE(908), false);
