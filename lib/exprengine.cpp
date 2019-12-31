@@ -1464,8 +1464,7 @@ static void execute(const Token *start, const Token *end, Data &data)
                     tok = tok->tokAt(2);
                     continue;
                 }
-            }
-            if (tok->variable()->isArray()) {
+            } else if (tok->variable()->isArray()) {
                 data.assignValue(tok, tok->varId(), std::make_shared<ExprEngine::ArrayValue>(&data, tok->variable()));
                 if (Token::Match(tok, "%name% ["))
                     tok = tok->linkAt(1);
@@ -1657,7 +1656,11 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
     if (var.isArray())
         return std::make_shared<ExprEngine::ArrayValue>(&data, &var);
     if (valueType->isIntegral() || valueType->isFloat()) {
-        auto value = getValueRangeFromValueType(data.getNewSymbolName(), valueType, *data.settings);
+        ExprEngine::ValuePtr value;
+        if (var.isLocal() && !var.isStatic())
+            value = std::make_shared<ExprEngine::UninitValue>();
+        else
+            value = getValueRangeFromValueType(data.getNewSymbolName(), valueType, *data.settings);
         data.addConstraints(value, var.nameToken());
         return value;
     }

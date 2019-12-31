@@ -16,6 +16,12 @@ int array2() {
     return a[2][3];
 }
 
+void local1() {
+    int x;
+    // cppcheck-suppress verificationUninit
+    return x;
+}
+
 int pointer1(int *p) {
     // cppcheck-suppress verificationUninit
     return *p;
