@@ -1571,7 +1571,7 @@ static void execute(const Token *start, const Token *end, Data &data)
                     if (changedVariables.find(varid) != changedVariables.end())
                         continue;
                     changedVariables.insert(varid);
-                    data.assignValue(tok2, varid, createVariableValue(*vartok->variable(), data));
+                    data.assignValue(tok2, varid, getValueRangeFromValueType(data.getNewSymbolName(), vartok->valueType(), *data.settings));
                 }
             }
         }

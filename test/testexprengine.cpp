@@ -318,9 +318,9 @@ private:
                             "    x = x + 34;\n"
                             "  x == 340;\n"
                             "}";
-        ASSERT_EQUALS("(declare-fun $2 () Int)\n"
-                      "(assert (and (>= $2 (- 2147483648)) (<= $2 2147483647)))\n"
-                      "(assert (= (+ $2 34) 340))\n"
+        ASSERT_EQUALS("(declare-fun $4 () Int)\n"
+                      "(assert (and (>= $4 (- 2147483648)) (<= $4 2147483647)))\n"
+                      "(assert (= (+ $4 34) 340))\n"
                       "z3::sat",
                       expr(code, "=="));
     }
@@ -446,19 +446,19 @@ private:
 
     void pointer1() {
         const char code[] = "void f(unsigned char *p) { return *p == 7; }";
-        ASSERT_EQUALS("size=$1,[:]=$2,null,->?", getRange(code, "p"));
-        ASSERT_EQUALS("(declare-fun |$2:0| () Int)\n"
-                      "(assert (and (>= |$2:0| 0) (<= |$2:0| 255)))\n"
-                      "(assert (= |$2:0| 7))\n"
+        ASSERT_EQUALS("size=$1,[:]=?,null", getRange(code, "p"));
+        ASSERT_EQUALS("(declare-fun $3 () Int)\n"
+                      "(assert (and (>= $3 0) (<= $3 255)))\n"
+                      "(assert (= $3 7))\n"
                       "z3::sat",
                       expr(code, "=="));
     }
 
     void pointer2() {
         const char code[] = "void f(unsigned char *p) { return p[2] == 7; }";
-        ASSERT_EQUALS("(declare-fun |$2:2| () Int)\n"
-                      "(assert (and (>= |$2:2| 0) (<= |$2:2| 255)))\n"
-                      "(assert (= |$2:2| 7))\n"
+        ASSERT_EQUALS("(declare-fun $3 () Int)\n"
+                      "(assert (and (>= $3 0) (<= $3 255)))\n"
+                      "(assert (= $3 7))\n"
                       "z3::sat",
                       expr(code, "=="));
     }
