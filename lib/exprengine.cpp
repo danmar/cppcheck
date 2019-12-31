@@ -1649,9 +1649,12 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
         else {
             ValueType vt(*valueType);
             vt.pointer = 0;
-            pointerValue = getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings);
+            if (vt.constness & 1)
+                pointerValue = getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings);
+            else
+                pointerValue = std::make_shared<ExprEngine::UninitValue>();
         }
-        return std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), bufferSize, pointerValue, true, true, true);
+        return std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), bufferSize, pointerValue, true, true, var.isLocal() && !var.isStatic());
     }
     if (var.isArray())
         return std::make_shared<ExprEngine::ArrayValue>(&data, &var);
