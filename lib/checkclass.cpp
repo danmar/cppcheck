@@ -383,8 +383,10 @@ void CheckClass::copyconstructors()
                         break;
                     }
                     const Variable *var = it->second->variable();
-                    if (var && var->typeScope() && var->typeScope()->functionList.empty() && var->type()->derivedFrom.empty())
+                    if (var && var->typeScope() && var->typeScope()->functionList.empty() && var->type()->derivedFrom.empty()) {
                         mustDealloc = it->second;
+                        break;
+                    }
                 }
                 if (mustDealloc)
                     noDestructorError(scope, funcDestructor, mustDealloc);
