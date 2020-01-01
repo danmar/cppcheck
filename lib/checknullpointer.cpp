@@ -40,9 +40,6 @@ namespace {
     CheckNullPointer instance;
 }
 
-static const CWE CWE476(476U);  // NULL Pointer Dereference
-static const CWE CWE682(682U);  // Incorrect Calculation
-
 //---------------------------------------------------------------------------
 
 static bool checkNullpointerFunctionCallPlausibility(const Function* func, unsigned int arg)
@@ -487,14 +484,14 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
     const std::string errmsgdefarg("$symbol:" + varname + "\nPossible null pointer dereference if the default parameter value is used: $symbol");
 
     if (!tok) {
-        reportError(tok, Severity::error, "nullPointer", "Null pointer dereference", CWE476, false);
-        reportError(tok, Severity::warning, "nullPointerDefaultArg", errmsgdefarg, CWE476, false);
-        reportError(tok, Severity::warning, "nullPointerRedundantCheck", errmsgcond, CWE476, false);
+        reportError(tok, Severity::error, "nullPointer", "Null pointer dereference", CWE_NULL_POINTER_DEREFERENCE, false);
+        reportError(tok, Severity::warning, "nullPointerDefaultArg", errmsgdefarg, CWE_NULL_POINTER_DEREFERENCE, false);
+        reportError(tok, Severity::warning, "nullPointerRedundantCheck", errmsgcond, CWE_NULL_POINTER_DEREFERENCE, false);
         return;
     }
 
     if (!value) {
-        reportError(tok, Severity::error, "nullPointer", "Null pointer dereference", CWE476, inconclusive);
+        reportError(tok, Severity::error, "nullPointer", "Null pointer dereference", CWE_NULL_POINTER_DEREFERENCE, inconclusive);
         return;
     }
 
@@ -504,9 +501,9 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
     const ErrorPath errorPath = getErrorPath(tok, value, "Null pointer dereference");
 
     if (value->condition) {
-        reportError(errorPath, Severity::warning, "nullPointerRedundantCheck", errmsgcond, CWE476, inconclusive || value->isInconclusive());
+        reportError(errorPath, Severity::warning, "nullPointerRedundantCheck", errmsgcond, CWE_NULL_POINTER_DEREFERENCE, inconclusive || value->isInconclusive());
     } else if (value->defaultArg) {
-        reportError(errorPath, Severity::warning, "nullPointerDefaultArg", errmsgdefarg, CWE476, inconclusive || value->isInconclusive());
+        reportError(errorPath, Severity::warning, "nullPointerDefaultArg", errmsgdefarg, CWE_NULL_POINTER_DEREFERENCE, inconclusive || value->isInconclusive());
     } else {
         std::string errmsg;
         errmsg = std::string(value->isKnown() ? "Null" : "Possible null") + " pointer dereference";
@@ -517,7 +514,7 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
                     value->isKnown() ? Severity::error : Severity::warning,
                     "nullPointer",
                     errmsg,
-                    CWE476, inconclusive || value->isInconclusive());
+                    CWE_NULL_POINTER_DEREFERENCE, inconclusive || value->isInconclusive());
     }
 }
 
@@ -590,7 +587,7 @@ void CheckNullPointer::pointerArithmeticError(const Token* tok, const ValueFlow:
                 Severity::error,
                 "nullPointerArithmetic",
                 errmsg,
-                CWE682,
+                CWE_INCORRECT_CALCULATION,
                 inconclusive);
 }
 
@@ -608,7 +605,7 @@ void CheckNullPointer::redundantConditionWarning(const Token* tok, const ValueFl
                 Severity::warning,
                 "nullPointerArithmeticRedundantCheck",
                 errmsg,
-                CWE682,
+                CWE_INCORRECT_CALCULATION,
                 inconclusive);
 }
 
@@ -681,7 +678,7 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::
                                                        warning ? Severity::warning : Severity::error,
                                                        "Null pointer dereference: " + unsafeUsage.myArgumentName,
                                                        "ctunullpointer",
-                                                       CWE476, false);
+                                                       CWE_NULL_POINTER_DEREFERENCE, false);
                 errorLogger.reportErr(errmsg);
 
                 foundErrors = true;
