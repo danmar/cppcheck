@@ -244,6 +244,7 @@ private:
         TEST_CASE(garbageCode210); // #8762
         TEST_CASE(garbageCode211); // #8764
         TEST_CASE(garbageCode212); // #8765
+        TEST_CASE(garbageCode213); // #8758
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -1659,6 +1660,10 @@ private:
 
     void garbageCode212() { // #8765
         ASSERT_THROW(checkCode("{(){}[]typedef r n00e0[](((n00e0 0((;()))))){(0 typedef n00e0 bre00 n00e0())}[]();typedef n n00e0()[],(bre00)}"), InternalError);
+    }
+
+    void garbageCode213() { // #8758
+        ASSERT_THROW(checkCode("{\"\"[(1||)];}"), InternalError);
     }
 
     void syntaxErrorFirstToken() {
