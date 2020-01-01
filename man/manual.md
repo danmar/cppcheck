@@ -722,6 +722,19 @@ Some possible use cases;
  * you need extra help troubleshooting a crash or weird bug.
  * you tagged a release candidate and want to run extra analysis on that.
 
+## Philosopphy
+
+It is very important that we do warn about unsafe code. We want that users feel confident about the code we say is "safe".
+
+However, a sloppy analysis that will report too much noise will not be useful. We need to have heuristics to avoid false positives.
+
+At the moment there is no whole program analysis but that will be added later to avoid definite false positives.
+
+The focus will be to detect "hidden" bugs. Good candidates are undefined behavior that does not cause a crash immediately but will just cause strange behavior.
+ * Buffer overflows
+ * Uninitialized variables
+ * Usage of dead pointers
+
 ## Compiling
 
 make USE_Z3=yes
