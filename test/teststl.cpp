@@ -1073,7 +1073,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void iterator24() { // #9556
+    void iterator24()
+    { // #9556
         check("void f(int a, int b) {\n"
               "  if (&a == &b) {}\n"
               "}\n");
@@ -1082,12 +1083,14 @@ private:
         check("void f(int a, int b) {\n"
               "  if (std::for_each(&a, &b + 1, [](auto) {})) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Iterators of different containers 'a' and 'b' are used together.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Iterators of different containers 'a' and 'b' are used together.\n",
+                      errout.str());
 
         check("void f(int a, int b) {\n"
               "  if (std::for_each(&a, &b, [](auto) {})) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Iterators of different containers 'a' and 'b' are used together.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Iterators of different containers 'a' and 'b' are used together.\n",
+                      errout.str());
 
         check("void f(int a) {\n"
               "  if (std::for_each(&a, &a, [](auto) {})) {}\n"
