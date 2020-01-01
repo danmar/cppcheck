@@ -1755,12 +1755,24 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
     }
 }
 
+static float getKnownFloatValue(const Token *tok, float def)
+{
+    for (const auto &value: tok->values()) {
+        if (value.isKnown() && value.valueType == ValueFlow::Value::ValueType::FLOAT)
+            return value.floatValue;
+    }
+    return def;
+}
+
 void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings)
 {
     std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> divByZero = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
         if (!tok->astParent() || !std::strchr("/%", tok->astParent()->str()[0]))
             return;
         if (tok->hasKnownIntValue() && tok->getKnownIntValue() != 0)
+            return;
+        float f = getKnownFloatValue(tok, 0.0f);
+        if (f > 0.0f || f < 0.0f)
             return;
         if (tok->astParent()->astOperand2() == tok && value.isEqual(dataBase, 0)) {
             dataBase->addError(tok->linenr());
