@@ -19,11 +19,17 @@ int array2() {
 void local1() {
     int x;
     // cppcheck-suppress verificationUninit
+    // cppcheck-suppress uninitvar
     return x;
 }
 
 int pointer1(int *p) {
     // cppcheck-suppress verificationUninit
     return *p;
+}
+
+void pointer2(char *p) {
+    // cppcheck-suppress verificationUninitArg
+    strlen(p);
 }
 

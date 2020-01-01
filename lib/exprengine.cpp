@@ -1950,6 +1950,21 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
                 break;
             }
         }
+
+        // Uninitialized function argument..
+        if (settings->library.isuninitargbad(parent->astOperand1(), num) && value.type == ExprEngine::ValueType::ArrayValue) {
+            const ExprEngine::ArrayValue &arrayValue = static_cast<const ExprEngine::ArrayValue &>(value);
+            auto index0 = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
+            for (const auto &v: arrayValue.read(index0)) {
+                if (v.second->isUninit()) {
+                    dataBase->addError(tok->linenr());
+                    std::list<const Token*> callstack{tok};
+                    ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationUninitArg", "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument is initialized.", CWE_USE_OF_UNINITIALIZED_VARIABLE, false);
+                    errorLogger->reportErr(errmsg);
+                    break;
+                }
+            }
+        }
     };
 
     std::vector<ExprEngine::Callback> callbacks;
