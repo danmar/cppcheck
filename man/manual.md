@@ -712,21 +712,19 @@ An example usage:
 
 Cppcheck will tell you if it can't determine that your code is safe.
 
-The goal is that this will detect all bugs you find with dynamic analysis and fuzzing. And then more bugs.
+All bugs you find with dynamic analysis and fuzzing will be revealed. And then more bugs.
 
-However the analysis will be noisy. Because of the noise, it will probably not be practical to use this in continuous integration.
-
-Some possible use cases;
- * you are writing new code and want to ensure that there is no bug.
+This analysis is noisy. Because of the noise, it will probably not be practical to use this for instance in continuous integration. Some possible use cases where more noise could be tolerated;
+ * you are writing new code and want to ensure it is safe.
  * you are reviewing code and want to get hints about possible UB.
- * you need extra help troubleshooting a crash or weird bug.
- * you tagged a release candidate and want to run extra analysis on that.
+ * you need extra help troubleshooting a weird bug.
+ * you tagged a release candidate and want to check if the code is safe.
 
 ## Philosopphy
 
-It is very important that we do warn about unsafe code. We want that users feel confident about the code we say is "safe".
+It is very important that we do warn about all unsafe code. We want that users can feel fully confident about the code we say is "safe".
 
-However, a sloppy analysis that will report too much noise will not be useful. We need to have heuristics to avoid false positives.
+However, a sloppy analysis that will report too much noise will not be useful. We need to have strong heuristics to avoid false positives.
 
 At the moment there is no whole program analysis but that will be added later to avoid definite false positives.
 
@@ -784,5 +782,27 @@ Example code with Cppcheck annotation:
     void foo(int __cppcheck_low__(1) x) {
         return 10000 / x;
     }
+
+## Function calls
+
+For a reliable verification it will be very important that `--check-library` is used, you need to ensure that critical library functions are configured.
+
+### Uninitialized variables
+
+When `const` is used for pointer arguments that will be seen as a annotation.
+
+This function:
+
+    void foo(char *p);
+
+Cppcheck will assume that `p` points at uninitialized memory. When `foo` is checked it will be ensured that it initializes the memory.
+
+This function:
+
+    void foo(const char *p);
+
+Cppcheck will assume that `p` points at initialized memory. If you call `foo` and pass a pointer to uninitialized memory we will warn.
+
+TODO: Further annotations to specify how a function initializes memory will be required.
 
 
