@@ -621,6 +621,13 @@ bool CheckStl::checkIteratorPair(const Token* tok1, const Token* tok2)
     if (val1.tokvalue && val2.tokvalue && val1.lifetimeKind == val2.lifetimeKind) {
         if (val1.lifetimeKind == ValueFlow::Value::LifetimeKind::Lambda)
             return false;
+        if (tok1->astParent() == tok2->astParent() && Token::Match(tok1->astParent(), "%comp%|-")) {
+            if (val1.lifetimeKind == ValueFlow::Value::LifetimeKind::Address)
+                return false;
+            if (val1.lifetimeKind == ValueFlow::Value::LifetimeKind::Object &&
+                (!astIsContainer(val1.tokvalue) || !astIsContainer(val2.tokvalue)))
+                return false;
+        }
         if (isSameExpression(true, false, val1.tokvalue, val2.tokvalue, mSettings->library, false, false))
             return false;
         if (val1.tokvalue->expressionString() == val2.tokvalue->expressionString())
