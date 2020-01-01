@@ -1979,6 +1979,8 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
 
     std::ostringstream report;
     ExprEngine::executeAllFunctions(tokenizer, settings, callbacks, report);
-    if (errorLogger && !settings->verificationReport.empty() && !report.str().empty())
+    if (settings->verificationReport.empty())
+        std::cout << report.str();
+    else if (errorLogger)
         errorLogger->reportVerification(report.str());
 }
