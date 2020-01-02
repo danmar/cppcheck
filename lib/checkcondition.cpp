@@ -1378,6 +1378,8 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (Token::Match(tok, "%comp%") && isSameExpression(mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, true, true))
                 continue;
+            if (isConstVarExpression(tok, "[|(|&|+|-|*|/|%|^|>>|<<"))
+                continue;
 
             const bool constIfWhileExpression =
                 tok->astParent() && Token::Match(tok->astTop()->astOperand1(), "if|while") && !tok->astTop()->astOperand1()->isConstexpr() &&

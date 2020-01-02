@@ -1411,27 +1411,31 @@ bool isCPPCast(const Token* tok)
     return tok && Token::simpleMatch(tok->previous(), "> (") && tok->astOperand2() && tok->astOperand1() && tok->astOperand1()->str().find("_cast") != std::string::npos;
 }
 
-bool isConstVarExpression(const Token *tok)
+bool isConstVarExpression(const Token *tok, const char* skipMatch)
 {
     if (!tok)
+        return false;
+    if (skipMatch && Token::Match(tok, skipMatch))
         return false;
     if (Token::simpleMatch(tok->previous(), "sizeof ("))
         return true;
     if (Token::Match(tok->previous(), "%name% (")) {
+        if (Token::simpleMatch(tok->astOperand1(), ".") && !isConstVarExpression(tok->astOperand1(), skipMatch))
+            return false;
         std::vector<const Token *> args = getArguments(tok);
-        return std::all_of(args.begin(), args.end(), &isConstVarExpression);
+        return std::all_of(args.begin(), args.end(), [&](const Token* t) { return isConstVarExpression(t, skipMatch); });
     }
     if (isCPPCast(tok)) {
-        return isConstVarExpression(tok->astOperand2());
+        return isConstVarExpression(tok->astOperand2(), skipMatch);
     }
     if (Token::Match(tok, "( %type%"))
-        return isConstVarExpression(tok->astOperand1());
+        return isConstVarExpression(tok->astOperand1(), skipMatch);
     if (tok->str() == "::" && tok->hasKnownValue())
-        return isConstVarExpression(tok->astOperand2());
+        return isConstVarExpression(tok->astOperand2(), skipMatch);
     if (Token::Match(tok, "%cop%|[|.")) {
-        if (tok->astOperand1() && !isConstVarExpression(tok->astOperand1()))
+        if (tok->astOperand1() && !isConstVarExpression(tok->astOperand1(), skipMatch))
             return false;
-        if (tok->astOperand2() && !isConstVarExpression(tok->astOperand2()))
+        if (tok->astOperand2() && !isConstVarExpression(tok->astOperand2(), skipMatch))
             return false;
         return true;
     }
@@ -1440,7 +1444,7 @@ bool isConstVarExpression(const Token *tok)
     if (tok->isEnumerator())
         return true;
     if (tok->variable())
-        return tok->variable()->isConst();
+        return tok->variable()->isConst() && tok->variable()->nameToken() && tok->variable()->nameToken()->hasKnownValue();
     return false;
 }
 

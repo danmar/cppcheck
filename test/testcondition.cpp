@@ -3329,6 +3329,24 @@ private:
               "        return;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f(int a, int b) {\n"
+              "    static const int x = 10;\n"
+              "    return x == 1 ? a : b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("const bool x = false;\n"
+              "void f() {\n"
+              "    if (x) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("const bool x = false;\n"
+              "void f() {\n"
+              "    if (!x) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueInfer() {
