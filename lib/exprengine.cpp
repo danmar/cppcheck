@@ -206,7 +206,7 @@ namespace {
             const Memory::iterator it = memory.find(tok->varId());
             if (it != memory.end())
                 return std::dynamic_pointer_cast<ExprEngine::ArrayValue>(it->second);
-            if (tok->varId() == 0)
+            if (tok->varId() == 0 || !tok->variable())
                 return std::shared_ptr<ExprEngine::ArrayValue>();
             auto val = std::make_shared<ExprEngine::ArrayValue>(this, tok->variable());
             assignValue(tok, tok->varId(), val);
@@ -1952,7 +1952,8 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
         }
 
         // Uninitialized function argument..
-        if (settings->library.isuninitargbad(parent->astOperand1(), num) && value.type == ExprEngine::ValueType::ArrayValue) {
+#ifdef VERIFY_UNINIT  // This is highly experimental
+        if (settings->library.isuninitargbad(parent->astOperand1(), num) && settings->library.isnullargbad(parent->astOperand1(), num) && value.type == ExprEngine::ValueType::ArrayValue) {
             const ExprEngine::ArrayValue &arrayValue = static_cast<const ExprEngine::ArrayValue &>(value);
             auto index0 = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
             for (const auto &v: arrayValue.read(index0)) {
@@ -1965,6 +1966,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
                 }
             }
         }
+#endif
     };
 
     std::vector<ExprEngine::Callback> callbacks;
