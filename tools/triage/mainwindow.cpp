@@ -52,7 +52,7 @@ MainWindow::~MainWindow()
 void MainWindow::loadFile()
 {
     ui->statusBar->clearMessage();
-    const QString fileName = QFileDialog::getOpenFileName(this, tr("daca results file"), WORK_FOLDER, tr("Text files (*.txt);;All (*.*)"));
+    const QString fileName = QFileDialog::getOpenFileName(this, tr("daca results file"), WORK_FOLDER, tr("Text files (*.txt *.log);;All (*.*)"));
     if (fileName.isEmpty())
         return;
     QFile file(fileName);
