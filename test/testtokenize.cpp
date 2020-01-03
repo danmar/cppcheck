@@ -8168,6 +8168,14 @@ private:
                                              "    if (a<b, decltype(0)>::d) {}\n"
                                              "  });\n"
                                              "}\n"))
+
+        // #9563
+        ASSERT_NO_THROW(tokenizeAndStringify("template <typename> struct a;\n"
+                                             "template <typename b, typename... c> struct a<b(c...)> {\n"
+                                             "  template <typename d> a(d);\n"
+                                             "};\n"
+                                             "void e(\n"
+                                             "    int, a<void()> f = [] {});\n"))
     }
     void checkIfCppCast() {
         ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"

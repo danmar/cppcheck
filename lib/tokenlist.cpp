@@ -765,6 +765,8 @@ static void compileTerm(Token *&tok, AST_state& state)
                 while (Token::Match(tok, "%name%|%str%"))
                     tok = tok->next();
             }
+            if (Token::Match(tok, "%name% %assign%"))
+                tok = tok->next();
         }
     } else if (tok->str() == "{") {
         const Token *prev = tok->previous();
@@ -1265,8 +1267,8 @@ static void createAstAtTokenInner(Token * const tok1, const Token *endToken, boo
                 const Token * const endToken2 = tok->link();
                 for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
                     tok = createAstAtToken(tok, cpp);
-            } else if (Token::simpleMatch(tok->link(), "] (") && Token::Match(tok->link()->linkAt(1), ") .|{")) {
-                Token *bodyStart = tok->link()->linkAt(1)->next();
+            } else if (const Token * lambdaEnd = findLambdaEndScope(tok)) {
+                Token *bodyStart = lambdaEnd->link();
                 if (Token::Match(bodyStart, ". %name%") && bodyStart->originalName() == "->") {
                     bodyStart = bodyStart->next();
                     while (Token::Match(bodyStart, "%name%|::"))

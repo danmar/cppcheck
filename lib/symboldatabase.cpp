@@ -3431,7 +3431,10 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
         if (tok->str() == "=") {
             initArgCount++;
             if (tok->strAt(1) == "[") {
-                tok = findLambdaEndToken(tok->next());
+                const Token* lambdaStart = tok->next();
+                tok = findLambdaEndToken(lambdaStart);
+                if (!tok)
+                    throw InternalError(lambdaStart, "Analysis failed (lambda not recognized). If the code is valid then please report this failure.", InternalError::INTERNAL);
             }
         }
     }
