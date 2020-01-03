@@ -4394,6 +4394,31 @@ private:
               "    return i[0]; \n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  int x = 0;\n"
+              "  std::map<int, int*> m;\n"
+              "  m[0] = &x;\n"
+              "  m[1] = &x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              "  int x = 0;\n"
+              "  std::map<int, int*> m;\n"
+              "  m[0] = &x;\n"
+              "  return m[0][1];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (error) The address of local variable 'x' is accessed at non-zero index.\n", errout.str());
+
+        check("int f(int * y) {\n"
+              "  int x = 0;\n"
+              "  std::map<int, int*> m;\n"
+              "  m[0] = &x;\n"
+              "  m[1] = y;\n"
+              "  return m[1][1];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

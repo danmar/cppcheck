@@ -1560,13 +1560,14 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
         if (Token::Match(tok, "return|throw")) {
             // TODO: Handle these better
             // Is expr variable used in expression?
-            const Token *end = tok->findExpressionStartEndTokens().second->next();
-            for (const Token *tok2 = tok; tok2 != end; tok2 = tok2->next()) {
-                if (!local && Token::Match(tok2, "%name% ("))
-                    return Result(Result::Type::READ);
-                if (tok2->varId() && exprVarIds.find(tok2->varId()) != exprVarIds.end())
-                    return Result(Result::Type::READ);
-            }
+
+            const Token* opTok = tok->astOperand1();
+            if (!opTok)
+                opTok = tok->next();
+            std::pair<const Token *, const Token *> startEndTokens = opTok->findExpressionStartEndTokens();
+            FwdAnalysis::Result result = checkRecursive(expr, startEndTokens.first, startEndTokens.second->next(), exprVarIds, local, true, depth);
+            if (result.type != Result::Type::NONE)
+                return result;
 
             // #9167: if the return is inside an inner class, it does not tell us anything
             if (!inInnerClass) {

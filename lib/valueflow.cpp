@@ -3371,16 +3371,6 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
         return;
     // Assignment
     if (parent->str() == "=" && (!parent->astParent() || Token::simpleMatch(parent->astParent(), ";"))) {
-        const Variable *var = getLHSVariable(parent);
-        if (!var)
-            return;
-
-        const Token * endOfVarScope = nullptr;
-        if (!var->isLocal())
-            endOfVarScope = tok->scope()->bodyEnd;
-        else
-            endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
-
         // Rhs values..
         if (!parent->astOperand2() || parent->astOperand2()->values().empty())
             return;
@@ -3388,33 +3378,51 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
         if (!isLifetimeBorrowed(parent->astOperand2(), settings))
             return;
 
-        std::list<ValueFlow::Value> values = parent->astOperand2()->values();
+        const Variable *var = getLHSVariable(parent);
+        if (!var)
+            return;
 
-        // Static variable initialisation?
-        if (var->isStatic() && var->nameToken() == parent->astOperand1())
-            lowerToPossible(values);
+        const Token * endOfVarScope = nullptr;
+        if (var && var->isLocal())
+            endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
+        else
+            endOfVarScope = tok->scope()->bodyEnd;
+
+        // Only forward lifetime values
+        std::list<ValueFlow::Value> values = parent->astOperand2()->values();
+        values.remove_if(&isNotLifetimeValue);
 
         // Skip RHS
         const Token *nextExpression = nextAfterAstRightmostLeaf(parent);
 
-        // Only forward lifetime values
-        values.remove_if(&isNotLifetimeValue);
-        valueFlowForwardVariable(const_cast<Token*>(nextExpression),
-                                 endOfVarScope,
-                                 var,
-                                 var->declarationId(),
-                                 values,
-                                 false,
-                                 false,
-                                 tokenlist,
-                                 errorLogger,
-                                 settings);
+        if (Token::Match(parent->astOperand1(), ".|[|(")) {
+            valueFlowForwardExpression(const_cast<Token*>(nextExpression), endOfVarScope, parent->astOperand1(), values, tokenlist, settings);
+            
+            for(ValueFlow::Value& val:values) {
+                if (val.lifetimeKind == ValueFlow::Value::LifetimeKind::Address)
+                    val.lifetimeKind = ValueFlow::Value::LifetimeKind::Object;
+            }
+        }
+        if (var) {
+            valueFlowForwardVariable(const_cast<Token*>(nextExpression),
+                                     endOfVarScope,
+                                     var,
+                                     var->declarationId(),
+                                     values,
+                                     false,
+                                     false,
+                                     tokenlist,
+                                     errorLogger,
+                                     settings);
 
-        if (tok->astTop() && Token::simpleMatch(tok->astTop()->previous(), "for (") &&
-            Token::simpleMatch(tok->astTop()->link(), ") {")) {
-            Token *start = tok->astTop()->link()->next();
-            valueFlowForwardVariable(
-                start, start->link(), var, var->declarationId(), values, false, false, tokenlist, errorLogger, settings);
+            if (tok->astTop() && Token::simpleMatch(tok->astTop()->previous(), "for (") &&
+                Token::simpleMatch(tok->astTop()->link(), ") {")) {
+                Token *start = tok->astTop()->link()->next();
+                valueFlowForwardVariable(
+                    start, start->link(), var, var->declarationId(), values, false, false, tokenlist, errorLogger, settings);
+        }
+
+
         }
         // Constructor
     } else if (Token::simpleMatch(parent, "{") && !isScopeBracket(parent)) {
