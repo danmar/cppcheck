@@ -2937,16 +2937,21 @@ static bool valueFlowForwardVariable(Token* const startToken,
                 return false;
         }
 
-        // Function call
-        else if (!var->isLocal() && tok2->function() && Token::Match(tok2, "%name% (")) {
+        // Member function call
+        else if (!var->isLocal() && tok2->function() && !tok2->function()->isConst() && Token::Match(tok2, "%name% (") && exprDependsOnThis(tok2)) {
             if (tok2->function()->functionScope) {
-                const bool c = isVariableChanged(
+                const bool changed = isVariableChanged(
                                    tok2->function()->functionScope->bodyStart,
                                    tok2->function()->functionScope->bodyEnd, varid,
                                    var->isGlobal(), settings, tokenlist->isCPP());
-                if (c)
-                    lowerToInconclusive(values, settings);
+                if (changed) {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok2, "Variable was modified by member function call.");
+                    return false;
+                } 
             }
+            else
+                lowerToInconclusive(values, settings);
         }
 
         // Lambda function
