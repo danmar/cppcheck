@@ -1300,6 +1300,8 @@ static bool isVariableMutableInInitializer(const Token* start, const Token * end
             if (Token::Match(memberTok, "%var% (") && memberTok->variable()) {
                 const Variable * memberVar = memberTok->variable();
                 if(memberVar->isClass())
+                    //TODO: check if the called constructor could live with a const variable
+                    // pending that, assume the worst (that it can't)
                     return true;
                 if (!memberVar->isReference())
                     continue;
