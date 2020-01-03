@@ -1074,7 +1074,8 @@ private:
     }
 
     void iterator24()
-    { // #9556
+    {
+        // #9556
         check("void f(int a, int b) {\n"
               "  if (&a == &b) {}\n"
               "}\n");

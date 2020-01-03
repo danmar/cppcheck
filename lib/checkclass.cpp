@@ -2637,8 +2637,8 @@ void CheckClass::checkAccessModifierVirtualFunctions()
             continue;
         for (const Function &func : classScope->functionList) {
             const Function *baseFunc = func.getOverriddenFunction();
-            if(baseFunc) {
-                if(AccessControl::Public == baseFunc->access && AccessControl::Public != func.access) {
+            if (baseFunc) {
+                if (AccessControl::Public == baseFunc->access && AccessControl::Public != func.access) {
                     checkAccessModifierVirtualFunctionsError(func.tokenDef, func.name());
                 }
             }
@@ -2649,10 +2649,10 @@ void CheckClass::checkAccessModifierVirtualFunctions()
 void CheckClass::checkAccessModifierVirtualFunctionsError(const Token *tok, const std::string& func)
 {
     reportError(tok, Severity::style, "hidingInheritedPublic",
-        "$symbol:" + func + "\n"
-        "The function '$symbol' has more narrow access modifier in a derived class. It could violate a LSP principle.",
-        CWE(0U) /* Unknown CWE! */,
-        false);
+                "$symbol:" + func + "\n"
+                "The function '$symbol' has more narrow access modifier in a derived class. It could violate a LSP principle.",
+                CWE(0U) /* Unknown CWE! */,
+                false);
 }
 
 void CheckClass::checkUnsafeClassRefMember()

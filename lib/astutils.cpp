@@ -1423,7 +1423,9 @@ bool isConstVarExpression(const Token *tok, const char* skipMatch)
         if (Token::simpleMatch(tok->astOperand1(), ".") && !isConstVarExpression(tok->astOperand1(), skipMatch))
             return false;
         std::vector<const Token *> args = getArguments(tok);
-        return std::all_of(args.begin(), args.end(), [&](const Token* t) { return isConstVarExpression(t, skipMatch); });
+        return std::all_of(args.begin(), args.end(), [&](const Token* t) {
+            return isConstVarExpression(t, skipMatch);
+        });
     }
     if (isCPPCast(tok)) {
         return isConstVarExpression(tok->astOperand2(), skipMatch);
