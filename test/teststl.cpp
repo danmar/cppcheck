@@ -1073,8 +1073,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void iterator24()
-    {
+    void iterator24() {
         // #9556
         check("void f(int a, int b) {\n"
               "  if (&a == &b) {}\n"
