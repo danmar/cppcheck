@@ -3000,6 +3000,9 @@ static bool isVariableExpression(const Token* tok)
     if (Token::simpleMatch(tok, "."))
         return isVariableExpression(tok->astOperand1()) &&
                isVariableExpression(tok->astOperand2());
+    if (Token::simpleMatch(tok, "["))
+        return isVariableExpression(tok->astOperand1()) &&
+               tok->astOperand2() && tok->astOperand2()->hasKnownIntValue();
     return false;
 }
 
