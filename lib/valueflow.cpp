@@ -3379,8 +3379,6 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
             return;
 
         const Variable* var = getLHSVariable(parent);
-        if (!var)
-            return;
 
         const Token* endOfVarScope = nullptr;
         if (var && var->isLocal())
