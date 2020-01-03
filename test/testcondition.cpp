@@ -3833,7 +3833,7 @@ private:
               "  g();\n"
               "  if (!x) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:18]: (style) Condition '!x' is always true\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:15]: (style) Condition '!x' is always true\n", errout.str());
     }
 };
 
