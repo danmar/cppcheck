@@ -1564,8 +1564,9 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             const Token* opTok = tok->astOperand1();
             if (!opTok)
                 opTok = tok->next();
-            std::pair<const Token *, const Token *> startEndTokens = opTok->findExpressionStartEndTokens();
-            FwdAnalysis::Result result = checkRecursive(expr, startEndTokens.first, startEndTokens.second->next(), exprVarIds, local, true, depth);
+            std::pair<const Token*, const Token*> startEndTokens = opTok->findExpressionStartEndTokens();
+            FwdAnalysis::Result result =
+                checkRecursive(expr, startEndTokens.first, startEndTokens.second->next(), exprVarIds, local, true, depth);
             if (result.type != Result::Type::NONE)
                 return result;
 

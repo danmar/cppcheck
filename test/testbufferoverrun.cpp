@@ -4409,7 +4409,9 @@ private:
               "  m[0] = &x;\n"
               "  return m[0][1];\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (error) The address of local variable 'x' is accessed at non-zero index.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:5]: (error) The address of local variable 'x' is accessed at non-zero index.\n",
+            errout.str());
 
         check("int f(int * y) {\n"
               "  int x = 0;\n"
