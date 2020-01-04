@@ -2178,7 +2178,7 @@ static void valueFlowForwardExpression(Token* startToken,
     }
 }
 
-static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, const Settings* settings, int depth=20)
+static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, const Settings* settings, int depth = 20)
 {
     if (depth < 0)
         return false;
@@ -2194,13 +2194,14 @@ static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, cons
         const Variable* var = tok->variable();
         if (!var)
             return false;
-        const Token * start = var->declEndToken();
+        const Token* start = var->declEndToken();
         if (!start)
             return false;
         if (Token::Match(start, "; %varid% =", var->declarationId()))
             start = start->tokAt(2);
-        if (var->isConst() || !isVariableChanged(start->next(), tok, var->declarationId(), var->isGlobal(), settings, true))
-            return var->isArgument() || bifurcate(start->astOperand2(), varids, settings, depth-1);
+        if (var->isConst() ||
+            !isVariableChanged(start->next(), tok, var->declarationId(), var->isGlobal(), settings, true))
+            return var->isArgument() || bifurcate(start->astOperand2(), varids, settings, depth - 1);
         return false;
     }
     return false;
@@ -2208,7 +2209,7 @@ static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, cons
 
 static void addCondition(std::list<ValueFlow::Value>& values, const Token* condTok, bool assume)
 {
-    for(ValueFlow::Value& v:values)
+    for (ValueFlow::Value& v : values)
         if (assume)
             v.errorPath.emplace_back(condTok, "Assuming condition is true.");
         else
@@ -2431,7 +2432,10 @@ static bool valueFlowForwardVariable(Token* const startToken,
 
             }
             bool unknown = false;
-            if (truevalues.empty() && falsevalues.empty() && condTok && std::all_of(condTok->values().begin(), condTok->values().end(), std::mem_fn(&ValueFlow::Value::isNonValue)) && bifurcate(condTok, {varid}, settings)) {
+            if (truevalues.empty() && falsevalues.empty() && condTok &&
+                std::all_of(
+                    condTok->values().begin(), condTok->values().end(), std::mem_fn(&ValueFlow::Value::isNonValue)) &&
+                bifurcate(condTok, {varid}, settings)) {
                 truevalues = values;
                 addCondition(truevalues, condTok, true);
                 falsevalues = values;
@@ -2441,7 +2445,7 @@ static bool valueFlowForwardVariable(Token* const startToken,
             if (!truevalues.empty() || !falsevalues.empty()) {
                 Token* tok3 = tok2;
                 // '{'
-                const Token * const startToken1 = tok3->linkAt(1)->next();
+                const Token* const startToken1 = tok3->linkAt(1)->next();
 
                 bool vfresult = valueFlowForwardVariable(startToken1->next(),
                                 startToken1->link(),
@@ -2454,7 +2458,9 @@ static bool valueFlowForwardVariable(Token* const startToken,
                                 errorLogger,
                                 settings);
 
-                if (!unknown && !condAlwaysFalse && isVariableChanged(startToken1, startToken1->link(), varid, var->isGlobal(), settings, tokenlist->isCPP())) {
+                if (!unknown && !condAlwaysFalse &&
+                    isVariableChanged(
+                        startToken1, startToken1->link(), varid, var->isGlobal(), settings, tokenlist->isCPP())) {
                     removeValues(values, truevalues);
                     lowerToPossible(values);
                 }
@@ -2469,7 +2475,7 @@ static bool valueFlowForwardVariable(Token* const startToken,
                 }
 
                 if (Token::simpleMatch(tok3, "} else {")) {
-                    const Token * const startTokenElse = tok3->tokAt(2);
+                    const Token* const startTokenElse = tok3->tokAt(2);
 
                     vfresult = valueFlowForwardVariable(startTokenElse->next(),
                                                         startTokenElse->link(),
@@ -2482,7 +2488,9 @@ static bool valueFlowForwardVariable(Token* const startToken,
                                                         errorLogger,
                                                         settings);
 
-                    if (!unknown && !condAlwaysTrue && isVariableChanged(startTokenElse, startTokenElse->link(), varid, var->isGlobal(), settings, tokenlist->isCPP())) {
+                    if (!unknown && !condAlwaysTrue &&
+                        isVariableChanged(
+                            startTokenElse, startTokenElse->link(), varid, var->isGlobal(), settings, tokenlist->isCPP())) {
                         removeValues(values, falsevalues);
                         lowerToPossible(values);
                     }

@@ -214,8 +214,9 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
     }
 }
 
-static void removeModifiedVars(ProgramMemory& pm, const Token* tok, const Token* origin) {
-    for (auto i = pm.values.begin(), last = pm.values.end(); i != last; ) {
+static void removeModifiedVars(ProgramMemory& pm, const Token* tok, const Token* origin)
+{
+    for (auto i = pm.values.begin(), last = pm.values.end(); i != last;) {
         if (isVariableChanged(origin, tok, i->first, false, nullptr, true)) {
             i = pm.values.erase(i);
         } else {
@@ -224,7 +225,9 @@ static void removeModifiedVars(ProgramMemory& pm, const Token* tok, const Token*
     }
 }
 
-static ProgramMemory getInitialProgramState(const Token* tok, const Token* origin, const std::unordered_map<nonneg int, ValueFlow::Value>& vars)
+static ProgramMemory getInitialProgramState(const Token* tok,
+                                            const Token* origin,
+                                            const std::unordered_map<nonneg int, ValueFlow::Value>& vars)
 {
     ProgramMemory pm;
     if (origin) {
