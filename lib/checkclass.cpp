@@ -2650,7 +2650,7 @@ void CheckClass::checkAccessModifierVirtualFunctionsError(const Token *tok, cons
 {
     reportError(tok, Severity::style, "hidingInheritedPublic",
                 "$symbol:" + func + "\n"
-                "The function '$symbol' has more narrow access modifier in a derived class. It could violate a LSP principle.",
+                "The virtual function '$symbol' is a public in a base class and became not-public in derived. It's violate a substitutability a principle in OOP.",
                 CWE(0U) /* Unknown CWE! */,
                 false);
 }

@@ -100,7 +100,7 @@ private:
                // style
                "- unused variable\n"
                "- allocated but unused variable\n"
-               "- unred variable\n"
+               "- unread variable\n"
                "- unassigned variable\n"
                "- unused struct member\n";
     }
