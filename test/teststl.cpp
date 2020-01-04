@@ -1425,6 +1425,13 @@ private:
               "    for (B b : D()) {}\n" // Don't crash on range-based for-loop
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo(std::vector<int> foo) {\n"
+              "    for (unsigned int ii = 0; ii <= foo.size() + 1; ++ii) {\n"
+              "       foo.at(ii) = 0;\n"
+              "    }\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) When ii==foo.size(), foo.at(ii) is out of bounds.\n", "", errout.str());
     }
 
     void STLSizeNoErr() {
@@ -1474,6 +1481,15 @@ private:
                   "    int i = x;"
                   "    for (int i = 5; i <= data.size(); i++)\n"
                   "        data[i] = 0;\n"
+                  "}");
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            check("void foo(std::vector<int> foo) {\n"
+                  "    for (unsigned int ii = 0; ii <= foo.size() - 1; ++ii) {\n"
+                  "       foo.at(ii) = 0;\n"
+                  "    }\n"
                   "}");
             ASSERT_EQUALS("", errout.str());
         }
