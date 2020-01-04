@@ -2431,7 +2431,7 @@ static bool valueFlowForwardVariable(Token* const startToken,
 
             }
             bool unknown = false;
-            if (truevalues.empty() && falsevalues.empty() && bifurcate(condTok, {varid}, settings)) {
+            if (truevalues.empty() && falsevalues.empty() && condTok && std::all_of(condTok->values().begin(), condTok->values().end(), std::mem_fn(&ValueFlow::Value::isNonValue)) && bifurcate(condTok, {varid}, settings)) {
                 truevalues = values;
                 addCondition(truevalues, condTok, true);
                 falsevalues = values;
@@ -6305,9 +6305,9 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
         valueFlowTerminatingCondition(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowBeforeCondition(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowAfterMove(tokenlist, symboldatabase, errorLogger, settings);
-        valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowAfterCondition(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowInferCondition(tokenlist, settings);
+        valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowSwitchVariable(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowForLoop(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowSubFunction(tokenlist, errorLogger, settings);

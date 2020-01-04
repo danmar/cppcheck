@@ -1664,7 +1664,15 @@ private:
               "    *p +=2;\n"
               "    if(n < 120) *q+=12;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Possible null pointer dereference: q\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (warning) Possible null pointer dereference: q\n", "", errout.str());
+
+        check("void f(int *p, int n) {\n"
+              "    int *q = 0;\n"
+              "    if(n > 10) q = p;\n"
+              "    *p +=2;\n"
+              "    if(n > 10) *q+=12;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer50() {
