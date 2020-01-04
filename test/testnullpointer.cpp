@@ -88,6 +88,7 @@ private:
         TEST_CASE(nullpointer46); // #9441
         TEST_CASE(nullpointer47); // #6850
         TEST_CASE(nullpointer48); // #9196
+        TEST_CASE(nullpointer49); // #7804
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1653,6 +1654,16 @@ private:
               "    return f(*x);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer49() {
+        check("void f(int *p, int n) {\n"
+              "    int *q = 0;\n"
+              "    if(n > 10) q = p;\n"
+              "    *p +=2;\n"
+              "    if(n < 120) *q+=12;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Possible null pointer dereference: q\n", errout.str());
     }
 
     void nullpointer_addressOf() { // address of
