@@ -1448,6 +1448,18 @@ private:
               "    g(0);\n"
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
+
+        check("bool f(int*);\n"
+              "void g(int* x) {\n"
+              "    bool b = f(x);\n"
+              "    if (b) {\n"
+              "        *x = 1;\n"
+              "    }\n"
+              "}\n"
+              "void h() {\n"
+              "    g(0);\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer36() {
@@ -2834,7 +2846,7 @@ private:
               "    if (a != 0)\n"
               "      *p = 0;\n"
               "}", true);
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (warning) Possible null pointer dereference if the default parameter value is used: p\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Possible null pointer dereference if the default parameter value is used: p\n", errout.str());
 
         check("void f(int *p = 0) {\n"
               "    p = a;\n"
