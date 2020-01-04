@@ -627,6 +627,17 @@ void CheckCondition::multiCondition2()
         if (nonConstFunctionCall)
             continue;
 
+        std::vector<const Variable*> varsInCond;
+        visitAstNodes(condTok,
+        [&varsInCond](const Token *cond) {
+            if (cond->variable()) {
+                const Variable *var = cond->variable();
+                if(std::find(varsInCond.begin(), varsInCond.end(), var) == varsInCond.end())
+                    varsInCond.push_back(var);
+            }
+            return ChildrenToVisit::op1_and_op2;
+        });
+
         // parse until second condition is reached..
         enum MULTICONDITIONTYPE { INNER, AFTER };
         const Token *tok;
@@ -709,6 +720,9 @@ void CheckCondition::multiCondition2()
                             }
                         }
                     }
+                }
+                if (Token::Match(tok, "%name% (") && isVariablesChanged(tok, tok->linkAt(1), true, varsInCond, mSettings, mTokenizer->isCPP())) {
+                    break;
                 }
                 if (Token::Match(tok, "%type% (") && nonlocal && isNonConstFunctionCall(tok, mSettings->library)) // non const function call -> bailout if there are nonlocal variables
                     break;
