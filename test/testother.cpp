@@ -2107,6 +2107,90 @@ private:
               "void an();\n"
               "void h();\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("class C\n"
+              "{\n"
+              "public:\n"
+              "  explicit C(int&);\n"
+              "};\n"
+              "\n"
+              "class D\n"
+              "{\n"
+              "public:\n"
+              "  explicit D(int&);\n"
+              "\n"
+              "private:\n"
+              "  C c;\n"
+              "};\n"
+              "\n"
+              "D::D(int& i)\n"
+              "  : c(i)\n"
+              "{\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class C\n"
+              "{\n"
+              "public:\n"
+              "  explicit C(const int&);\n"
+              "};\n"
+              "\n"
+              "class D\n"
+              "{\n"
+              "public:\n"
+              "  explicit D(int&);\n"
+              "\n"
+              "private:\n"
+              "  C c;\n"
+              "};\n"
+              "\n"
+              "D::D(int& i)\n"
+              "  : c(i)\n"
+              "{\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:16]: (style) Parameter 'i' can be declared with const\n", "", errout.str());
+
+        check("class C\n"
+              "{\n"
+              "public:\n"
+              "  explicit C(int);\n"
+              "};\n"
+              "\n"
+              "class D\n"
+              "{\n"
+              "public:\n"
+              "  explicit D(int&);\n"
+              "\n"
+              "private:\n"
+              "  C c;\n"
+              "};\n"
+              "\n"
+              "D::D(int& i)\n"
+              "  : c(i)\n"
+              "{\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:16]: (style) Parameter 'i' can be declared with const\n", "", errout.str());
+
+        check("class C\n"
+              "{\n"
+              "public:\n"
+              "  explicit C(int, int);\n"
+              "};\n"
+              "\n"
+              "class D\n"
+              "{\n"
+              "public:\n"
+              "  explicit D(int&);\n"
+              "\n"
+              "private:\n"
+              "  C c;\n"
+              "};\n"
+              "\n"
+              "D::D(int& i)\n"
+              "  : c(0, i)\n"
+              "{\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:16]: (style) Parameter 'i' can be declared with const\n", "", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
