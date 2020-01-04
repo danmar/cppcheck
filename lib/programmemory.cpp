@@ -242,12 +242,8 @@ static ProgramMemory getInitialProgramState(const Token* tok,
 ProgramMemory getProgramMemory(const Token *tok, nonneg int varid, const ValueFlow::Value &value)
 {
     ProgramMemory programMemory;
-    if (value.tokvalue) {
-        programMemory.replace(getInitialProgramState(tok, value.tokvalue, {{}}));
-    }
-    if (value.condition) {
-        programMemory.replace(getInitialProgramState(tok, value.condition, {{}}));
-    }
+    programMemory.replace(getInitialProgramState(tok, value.tokvalue, {{}}));
+    programMemory.replace(getInitialProgramState(tok, value.condition, {{}}));
     programMemory.setValue(varid, value);
     if (value.varId)
         programMemory.setIntValue(value.varId, value.varvalue);
