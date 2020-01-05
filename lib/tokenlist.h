@@ -186,6 +186,8 @@ public:
      */
     void simplifyStdType();
 
+    void clangSetOrigFiles();
+
 private:
 
     /** Disable copy constructor, no implementation */

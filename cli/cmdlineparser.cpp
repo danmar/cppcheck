@@ -133,6 +133,9 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--addon=", 8) == 0)
                 mSettings->addons.emplace_back(argv[i]+8);
 
+            else if (std::strcmp(argv[i], "--clang") == 0)
+                mSettings->clang = true;
+
             else if (std::strncmp(argv[i], "--cppcheck-build-dir=", 21) == 0) {
                 mSettings->buildDir = Path::fromNativeSeparators(argv[i] + 21);
                 if (endsWith(mSettings->buildDir, '/'))

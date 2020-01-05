@@ -112,12 +112,12 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack
     : id(id), severity(severity), cwe(cwe.id), inconclusive(inconclusive)
 {
     // Format callstack
-    for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it) {
+    for (const Token *tok: callstack) {
         // --errorlist can provide null values here
-        if (!(*it))
+        if (!tok)
             continue;
 
-        callStack.emplace_back(*it, list);
+        callStack.emplace_back(tok, list);
     }
 
     if (list && !list->getFiles().empty())

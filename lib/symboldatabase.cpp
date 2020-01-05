@@ -39,6 +39,9 @@
 SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     : mTokenizer(tokenizer), mSettings(settings), mErrorLogger(errorLogger)
 {
+    if (!tokenizer || !tokenizer->tokens())
+        return;
+
     mIsCpp = isCPP();
 
     if (mSettings->defaultSign == 's' || mSettings->defaultSign == 'S')
@@ -1715,6 +1718,13 @@ void SymbolDatabase::validate() const
     //validateVariables();
 }
 
+void SymbolDatabase::clangSetVariables(const std::map<std::string, Variable *> &variableMap)
+{
+    mVariableList.resize(variableMap.size() + 1);
+    for (std::map<std::string, Variable *>::const_iterator it = variableMap.begin(); it != variableMap.end(); ++it)
+        mVariableList[it->second->declarationId()] = it->second;
+}
+
 Variable::~Variable()
 {
     delete mValueType;
@@ -1738,6 +1748,9 @@ const Token * Variable::declEndToken() const
 
 void Variable::evaluate(const Settings* settings)
 {
+    if (!settings)
+        return;
+
     const Library * const lib = settings ? &settings->library : nullptr;
 
     if (mNameToken)
@@ -2019,6 +2032,26 @@ Function::Function(const Tokenizer *mTokenizer,
         hasBody(true);
     }
 }
+
+Function::Function(const Token *tokenDef)
+    : tokenDef(tokenDef),
+      argDef(nullptr),
+      token(nullptr),
+      arg(nullptr),
+      retDef(nullptr),
+      retType(nullptr),
+      functionScope(nullptr),
+      nestedIn(nullptr),
+      initArgCount(0),
+      type(eFunction),
+      access(AccessControl::Public),
+      noexceptArg(nullptr),
+      throwArg(nullptr),
+      templateDef(nullptr),
+      mFlags(0)
+{
+}
+
 
 static std::string qualifiedName(const Scope *scope)
 {
