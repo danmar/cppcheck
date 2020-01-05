@@ -227,7 +227,7 @@ static void removeModifiedVars(ProgramMemory& pm, const Token* tok, const Token*
 
 static ProgramMemory getInitialProgramState(const Token* tok,
                                             const Token* origin,
-                                            const std::unordered_map<nonneg int, ValueFlow::Value>& vars)
+                                            const std::unordered_map<nonneg int, ValueFlow::Value>& vars = std::unordered_map<nonneg int, ValueFlow::Value>{})
 {
     ProgramMemory pm;
     if (origin) {
@@ -242,8 +242,8 @@ static ProgramMemory getInitialProgramState(const Token* tok,
 ProgramMemory getProgramMemory(const Token *tok, nonneg int varid, const ValueFlow::Value &value)
 {
     ProgramMemory programMemory;
-    programMemory.replace(getInitialProgramState(tok, value.tokvalue, {{}}));
-    programMemory.replace(getInitialProgramState(tok, value.condition, {{}}));
+    programMemory.replace(getInitialProgramState(tok, value.tokvalue));
+    programMemory.replace(getInitialProgramState(tok, value.condition));
     programMemory.setValue(varid, value);
     if (value.varId)
         programMemory.setIntValue(value.varId, value.varvalue);
