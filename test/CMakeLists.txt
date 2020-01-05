@@ -59,6 +59,7 @@ if (BUILD_TESTS)
             add_fixture(${CMAKE_MATCH_1})
         endif()
     endforeach()
+    add_fixture("TestLeakAutoVarStrcpy")
 
     function(add_cfg CFG_TEST)
         set(options INCONCLUSIVE)
