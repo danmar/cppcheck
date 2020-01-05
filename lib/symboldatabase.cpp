@@ -1751,7 +1751,7 @@ void Variable::evaluate(const Settings* settings)
     if (!settings)
         return;
 
-    const Library * const lib = settings ? &settings->library : nullptr;
+    const Library * const lib = &settings->library;
 
     if (mNameToken)
         setFlag(fIsArray, arrayDimensions(settings));

@@ -129,6 +129,7 @@
     <ClInclude Include="checkunusedfunctions.h" />
     <ClInclude Include="checkunusedvar.h" />
     <ClInclude Include="checkvaarg.h" />
+    <ClInclude Include="clangastdump.h" />
     <ClInclude Include="config.h" />
     <ClInclude Include="cppcheck.h" />
     <ClInclude Include="ctu.h" />
