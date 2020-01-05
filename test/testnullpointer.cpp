@@ -88,6 +88,8 @@ private:
         TEST_CASE(nullpointer46); // #9441
         TEST_CASE(nullpointer47); // #6850
         TEST_CASE(nullpointer48); // #9196
+        TEST_CASE(nullpointer49); // #7804
+        TEST_CASE(nullpointer50); // #6462
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1448,6 +1450,19 @@ private:
               "    g(0);\n"
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
+
+        check("bool f(int*);\n"
+              "void g(int* x) {\n"
+              "    bool b = f(x);\n"
+              "    if (b) {\n"
+              "        *x = 1;\n"
+              "    }\n"
+              "}\n"
+              "void h() {\n"
+              "    g(0);\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer36() {
@@ -1641,6 +1656,42 @@ private:
               "    return f(*x);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer49()
+    {
+        check("void f(int *p, int n) {\n"
+              "    int *q = 0;\n"
+              "    if(n > 10) q = p;\n"
+              "    *p +=2;\n"
+              "    if(n < 120) *q+=12;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (warning) Possible null pointer dereference: q\n", "", errout.str());
+
+        check("void f(int *p, int n) {\n"
+              "    int *q = 0;\n"
+              "    if(n > 10) q = p;\n"
+              "    *p +=2;\n"
+              "    if(n > 10) *q+=12;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer50()
+    {
+        check("void f(int *p, int a) {\n"
+              "    if(!p) {\n"
+              "        if(a > 0) {\n"
+              "            if(a > 10){}\n"
+              "            else {\n"
+              "                *p = 0;\n"
+              "            }\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:6]: (warning) Either the condition '!p' is redundant or there is possible null pointer dereference: p.\n",
+            errout.str());
     }
 
     void nullpointer_addressOf() { // address of
@@ -2834,7 +2885,9 @@ private:
               "    if (a != 0)\n"
               "      *p = 0;\n"
               "}", true);
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (warning) Possible null pointer dereference if the default parameter value is used: p\n", "", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (warning) Possible null pointer dereference if the default parameter value is used: p\n",
+            errout.str());
 
         check("void f(int *p = 0) {\n"
               "    p = a;\n"

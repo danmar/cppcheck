@@ -3474,6 +3474,17 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9541
+        check("int f(int pos, int a) {\n"
+              "    if (pos <= 0)\n"
+              "        pos = 0;\n"
+              "    else if (pos < a)\n"
+              "        if(pos > 0)\n"
+              "            --pos;\n"
+              "    return pos;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5]: (style) Condition 'pos>0' is always true\n", errout.str());
     }
 
     void alwaysTrueContainer() {

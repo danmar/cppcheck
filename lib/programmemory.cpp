@@ -214,13 +214,36 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
     }
 }
 
+static void removeModifiedVars(ProgramMemory& pm, const Token* tok, const Token* origin)
+{
+    for (auto i = pm.values.begin(), last = pm.values.end(); i != last;) {
+        if (isVariableChanged(origin, tok, i->first, false, nullptr, true)) {
+            i = pm.values.erase(i);
+        } else {
+            ++i;
+        }
+    }
+}
+
+static ProgramMemory getInitialProgramState(const Token* tok,
+                                            const Token* origin,
+                                            const std::unordered_map<nonneg int, ValueFlow::Value>& vars = std::unordered_map<nonneg int, ValueFlow::Value>{})
+{
+    ProgramMemory pm;
+    if (origin) {
+        fillProgramMemoryFromConditions(pm, origin, nullptr);
+        const ProgramMemory state = pm;
+        fillProgramMemoryFromAssignments(pm, tok, state, vars);
+        removeModifiedVars(pm, tok, origin);
+    }
+    return pm;
+}
+
 ProgramMemory getProgramMemory(const Token *tok, nonneg int varid, const ValueFlow::Value &value)
 {
     ProgramMemory programMemory;
-    if (value.tokvalue)
-        fillProgramMemoryFromConditions(programMemory, value.tokvalue, nullptr);
-    if (value.condition)
-        fillProgramMemoryFromConditions(programMemory, value.condition, nullptr);
+    programMemory.replace(getInitialProgramState(tok, value.tokvalue));
+    programMemory.replace(getInitialProgramState(tok, value.condition));
     programMemory.setValue(varid, value);
     if (value.varId)
         programMemory.setIntValue(value.varId, value.varvalue);

@@ -2178,6 +2178,44 @@ static void valueFlowForwardExpression(Token* startToken,
     }
 }
 
+static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, const Settings* settings, int depth = 20)
+{
+    if (depth < 0)
+        return false;
+    if (!tok)
+        return true;
+    if (tok->hasKnownIntValue())
+        return true;
+    if (Token::Match(tok, "%cop%"))
+        return bifurcate(tok->astOperand1(), varids, settings) && bifurcate(tok->astOperand2(), varids, settings, depth);
+    if (Token::Match(tok, "%var%")) {
+        if (varids.count(tok->varId()) > 0)
+            return true;
+        const Variable* var = tok->variable();
+        if (!var)
+            return false;
+        const Token* start = var->declEndToken();
+        if (!start)
+            return false;
+        if (Token::Match(start, "; %varid% =", var->declarationId()))
+            start = start->tokAt(2);
+        if (var->isConst() ||
+            !isVariableChanged(start->next(), tok, var->declarationId(), var->isGlobal(), settings, true))
+            return var->isArgument() || bifurcate(start->astOperand2(), varids, settings, depth - 1);
+        return false;
+    }
+    return false;
+}
+
+static void addCondition(std::list<ValueFlow::Value>& values, const Token* condTok, bool assume)
+{
+    for (ValueFlow::Value& v : values)
+        if (assume)
+            v.errorPath.emplace_back(condTok, "Assuming condition is true.");
+        else
+            v.errorPath.emplace_back(condTok, "Assuming condition is false.");
+}
+
 static bool valueFlowForwardVariable(Token* const startToken,
                                      const Token* const endToken,
                                      const Variable* const var,
@@ -2393,9 +2431,21 @@ static bool valueFlowForwardVariable(Token* const startToken,
                     falsevalues.push_back(v);
 
             }
+            bool unknown = false;
+            if (truevalues.empty() && falsevalues.empty() && condTok &&
+                std::all_of(
+                    condTok->values().begin(), condTok->values().end(), std::mem_fn(&ValueFlow::Value::isNonValue)) &&
+                bifurcate(condTok, {varid}, settings)) {
+                truevalues = values;
+                addCondition(truevalues, condTok, true);
+                falsevalues = values;
+                addCondition(falsevalues, condTok, false);
+                unknown = true;
+            }
             if (!truevalues.empty() || !falsevalues.empty()) {
+                Token* tok3 = tok2;
                 // '{'
-                const Token * const startToken1 = tok2->linkAt(1)->next();
+                const Token* const startToken1 = tok3->linkAt(1)->next();
 
                 bool vfresult = valueFlowForwardVariable(startToken1->next(),
                                 startToken1->link(),
@@ -2408,22 +2458,24 @@ static bool valueFlowForwardVariable(Token* const startToken,
                                 errorLogger,
                                 settings);
 
-                if (!condAlwaysFalse && isVariableChanged(startToken1, startToken1->link(), varid, var->isGlobal(), settings, tokenlist->isCPP())) {
+                if (!unknown && !condAlwaysFalse &&
+                    isVariableChanged(
+                        startToken1, startToken1->link(), varid, var->isGlobal(), settings, tokenlist->isCPP())) {
                     removeValues(values, truevalues);
                     lowerToPossible(values);
                 }
 
                 // goto '}'
-                tok2 = startToken1->link();
+                tok3 = startToken1->link();
 
-                if (isEscapeScope(startToken1, tokenlist, true) || !vfresult) {
+                if (!unknown && (isEscapeScope(startToken1, tokenlist, true) || !vfresult)) {
                     if (condAlwaysTrue)
                         return false;
                     removeValues(values, truevalues);
                 }
 
-                if (Token::simpleMatch(tok2, "} else {")) {
-                    const Token * const startTokenElse = tok2->tokAt(2);
+                if (Token::simpleMatch(tok3, "} else {")) {
+                    const Token* const startTokenElse = tok3->tokAt(2);
 
                     vfresult = valueFlowForwardVariable(startTokenElse->next(),
                                                         startTokenElse->link(),
@@ -2436,15 +2488,17 @@ static bool valueFlowForwardVariable(Token* const startToken,
                                                         errorLogger,
                                                         settings);
 
-                    if (!condAlwaysTrue && isVariableChanged(startTokenElse, startTokenElse->link(), varid, var->isGlobal(), settings, tokenlist->isCPP())) {
+                    if (!unknown && !condAlwaysTrue &&
+                        isVariableChanged(
+                            startTokenElse, startTokenElse->link(), varid, var->isGlobal(), settings, tokenlist->isCPP())) {
                         removeValues(values, falsevalues);
                         lowerToPossible(values);
                     }
 
                     // goto '}'
-                    tok2 = startTokenElse->link();
+                    tok3 = startTokenElse->link();
 
-                    if (isEscapeScope(startTokenElse, tokenlist, true) || !vfresult) {
+                    if (!unknown && (isEscapeScope(startTokenElse, tokenlist, true) || !vfresult)) {
                         if (condAlwaysFalse)
                             return false;
                         removeValues(values, falsevalues);
@@ -2452,7 +2506,10 @@ static bool valueFlowForwardVariable(Token* const startToken,
                 }
                 if (values.empty())
                     return false;
-                continue;
+                if (!unknown) {
+                    tok2 = tok3;
+                    continue;
+                }
             }
 
             Token * const start = tok2->linkAt(1)->next();
@@ -6261,9 +6318,9 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
         valueFlowTerminatingCondition(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowBeforeCondition(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowAfterMove(tokenlist, symboldatabase, errorLogger, settings);
-        valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowAfterCondition(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowInferCondition(tokenlist, settings);
+        valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowSwitchVariable(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowForLoop(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowSubFunction(tokenlist, errorLogger, settings);
