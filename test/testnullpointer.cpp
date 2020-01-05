@@ -1658,8 +1658,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void nullpointer49()
-    {
+    void nullpointer49() {
         check("void f(int *p, int n) {\n"
               "    int *q = 0;\n"
               "    if(n > 10) q = p;\n"
@@ -1677,8 +1676,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void nullpointer50()
-    {
+    void nullpointer50() {
         check("void f(int *p, int a) {\n"
               "    if(!p) {\n"
               "        if(a > 0) {\n"

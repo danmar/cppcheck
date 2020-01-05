@@ -226,8 +226,8 @@ static void removeModifiedVars(ProgramMemory& pm, const Token* tok, const Token*
 }
 
 static ProgramMemory getInitialProgramState(const Token* tok,
-                                            const Token* origin,
-                                            const std::unordered_map<nonneg int, ValueFlow::Value>& vars = std::unordered_map<nonneg int, ValueFlow::Value>{})
+        const Token* origin,
+        const std::unordered_map<nonneg int, ValueFlow::Value>& vars = std::unordered_map<nonneg int, ValueFlow::Value> {})
 {
     ProgramMemory pm;
     if (origin) {
