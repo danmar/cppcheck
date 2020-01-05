@@ -253,7 +253,8 @@ private:
                "- Duplicated inherited data members\n"
                // disabled for now "- If 'copy constructor' defined, 'operator=' also should be defined and vice versa\n"
                "- Check that arbitrary usage of public interface does not result in division by zero\n"
-               "- Check that the 'override' keyword is used when overriding virtual functions\n";
+               "- Check that the 'override' keyword is used when overriding virtual functions\n"
+               "- Check that virtual public function not became private in derived class\n";
     }
 
     // operatorEqRetRefThis helper functions

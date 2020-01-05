@@ -7167,7 +7167,7 @@ private:
     void accessModifierVirtualFunctions() {
         checkAccessModifierVirtualFunctions("struct Base { virtual void f(); };\n"
                                             "struct Derived : Base { private: virtual void f(); };");
-        ASSERT_EQUALS("[test.cpp:2]: (style) The function 'f' has more narrow access modifier in a derived class. It could violate a LSP principle.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) The virtual function 'f' is a public in a base class and became not-public in derived. It's violate a substitutability a principle in OOP.\n", errout.str());
 
         checkAccessModifierVirtualFunctions("struct Base { virtual void f(); };\n"
                                             "struct Derived : Base { virtual void f(); };");
