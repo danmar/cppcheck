@@ -2926,20 +2926,24 @@ void SymbolDatabase::printVariable(const Variable *var, const char *indent) cons
     std::cout << indent << "mTypeStartToken: " << tokenToString(var->typeStartToken(), mTokenizer) << std::endl;
     std::cout << indent << "mTypeEndToken: " << tokenToString(var->typeEndToken(), mTokenizer) << std::endl;
 
-    const Token * autoTok = nullptr;
-    std::cout << indent << "   ";
-    for (const Token * tok = var->typeStartToken(); tok != var->typeEndToken()->next(); tok = tok->next()) {
-        std::cout << " " << tokenType(tok);
-        if (tok->str() == "auto")
-            autoTok = tok;
-    }
-    std::cout << std::endl;
-    if (autoTok) {
-        const ValueType * valueType = autoTok->valueType();
-        std::cout << indent << "    auto valueType: " << valueType << std::endl;
-        if (var->typeStartToken()->valueType()) {
-            std::cout << indent << "        " << valueType->str() << std::endl;
+    if (var->typeStartToken()) {
+        const Token * autoTok = nullptr;
+        std::cout << indent << "   ";
+        for (const Token * tok = var->typeStartToken(); tok != var->typeEndToken()->next(); tok = tok->next()) {
+            std::cout << " " << tokenType(tok);
+            if (tok->str() == "auto")
+                autoTok = tok;
         }
+        std::cout << std::endl;
+        if (autoTok) {
+            const ValueType * valueType = autoTok->valueType();
+            std::cout << indent << "    auto valueType: " << valueType << std::endl;
+            if (var->typeStartToken()->valueType()) {
+                std::cout << indent << "        " << valueType->str() << std::endl;
+            }
+        }
+    } else if (var->valueType()) {
+        std::cout << indent << "   " << var->valueType()->str() << std::endl;
     }
     std::cout << indent << "mIndex: " << var->index() << std::endl;
     std::cout << indent << "mAccess: " << accessControlToString(var->accessControl()) << std::endl;
