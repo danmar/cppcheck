@@ -253,6 +253,7 @@ unsigned int CppCheck::check(const std::string &path)
         std::istringstream ast(res.second);
         Tokenizer tokenizer(&mSettings, this);
         clangastdump::parseClangAstDump(&tokenizer, ast);
+        ValueFlow::setValues(&tokenizer->list, tokenizer.getSymbolDatabase(), this, &mSettings);
         //tokenizer.tokens()->printOut("");
         //tokenizer.tokens()->printAst(true, false, std::cout);
         ExprEngine::runChecks(this, &tokenizer, &mSettings);
