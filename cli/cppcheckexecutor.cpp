@@ -171,7 +171,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         if (!newList.empty()) 
             settings.project.fileSettings = newList;
         else {
-            std::cout << "cppcheck: error: could not find any of the paths in the given project." << std::endl;
+            std::cout << "cppcheck: error: could not find any files matching the filter." << std::endl;
             return false;
         }
     }
@@ -188,16 +188,18 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
             std::cout << "cppcheck: Maybe all paths were ignored?" << std::endl;
         return false;
     }
-    else
-    {
+    else if(!mSettings->fileFilter.empty()) {
         std::map<std::string, std::size_t> newMap;
         for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i)
-            if (Suppressions::matchglob(mSettings->fileFilter, i->first))
-            {
+            if (Suppressions::matchglob(mSettings->fileFilter, i->first)) {
                 newMap[i->first] = i->second;
             }
-        if (!newMap.empty())
-            mFiles = newMap;
+        mFiles = newMap;
+        if (mFiles.empty()) {
+            std::cout << "cppcheck: error: could not find any files matching the filter." << std::endl;
+            return false;
+        }
+
     }
     
     return true;

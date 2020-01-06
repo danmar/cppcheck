@@ -38,29 +38,6 @@ private:
         TEST_CASE(is_c);
         TEST_CASE(is_cpp);
         TEST_CASE(get_path_from_filename);
-        TEST_CASE(isMatchingFilter);
-    }
-
-    void isMatchingFilter() const
-    {
-        ASSERT(Path::isMatchingFilter("c:/foo/bar/file1.cpp", "*bla.cpp") == false);
-        ASSERT(Path::isMatchingFilter("c:/foo/bar/file1.cpp", "file1.cpp")==false);
-        ASSERT(Path::isMatchingFilter("c:/foo/bar/file1.cpp", "*/file1.cpp"));
-        ASSERT(Path::isMatchingFilter("c:/foo/bar/file1.cpp", "bar") == false);
-        ASSERT(Path::isMatchingFilter("c:/foo/bar/file1.cpp", "*.*"));
-        ASSERT(Path::isMatchingFilter("c:/foo/bar/file1.cpp", "/*/bla/*.*") == false);
-        ASSERT(Path::isMatchingFilter("c:/foo/bar/file1.cpp", "/*/*/*.*"));
-        ASSERT(Path::isMatchingFilter("c:/foo/bar/file1.cpp", "/*/*/*.c") == false);
-        ASSERT(Path::isMatchingFilter("c:/foo/bar/file1.cpp", "/*/bar/*.cpp"));
-        ASSERT(Path::isMatchingFilter("c:/foo/bar/file1.cpp", "/*/*/*.cpp"));
-        ASSERT(Path::isMatchingFilter("c:/foo/bar/file1.cpp", "*file1.c") == false);
-        ASSERT(Path::isMatchingFilter("c:/foo/bar/file1.cpp", "*file1.cpp"));
-        ASSERT(Path::isMatchingFilter("c:/foo/bar/file1.cpp", "*file*.cpp"));
-        ASSERT(Path::isMatchingFilter("c:/foo/bar/file1.c", "*.c"));
-        ASSERT(Path::isMatchingFilter("c:/foo/bar/file1.cpp", "*.cpp"));
-        ASSERT(Path::isMatchingFilter("c:/foo/bar/file1.cpp", "*.c")==false);
-        ASSERT(Path::isMatchingFilter("c:/foo/bar/file1.cpp", "*bar*"));
-        ASSERT(Path::isMatchingFilter("c:/foo/bar/file1.cpp", "*file*.c") == false);
     }
 
     void removeQuotationMarks() const {
