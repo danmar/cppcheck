@@ -19,6 +19,7 @@
 
 #include "check.h"
 #include "checkunusedfunctions.h"
+#include "clangastdump.h"
 #include "ctu.h"
 #include "library.h"
 #include "mathlib.h"
@@ -196,6 +197,24 @@ static std::vector<std::string> split(const std::string &str, const std::string 
     return ret;
 }
 
+static std::pair<bool,std::string> executeCommand(const std::string &cmd)
+{
+#ifdef _WIN32
+    std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
+#else
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+#endif
+
+    if (!pipe)
+        return std::pair<bool, std::string>(false, "");
+
+    char buffer[1024];
+    std::string result;
+    while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr)
+        result += buffer;
+    return std::pair<bool, std::string>(true, result);
+}
+
 CppCheck::CppCheck(ErrorLogger &errorLogger, bool useGlobalSuppressions)
     : mErrorLogger(errorLogger), mExitCode(0), mSuppressInternalErrorFound(false), mUseGlobalSuppressions(useGlobalSuppressions), mTooManyConfigs(false), mSimplify(true)
 {
@@ -222,6 +241,25 @@ const char * CppCheck::extraVersion()
 
 unsigned int CppCheck::check(const std::string &path)
 {
+    if (mSettings.clang) {
+        /* Experimental: import clang ast dump */
+        const std::string cmd = "clang -cc1 -ast-dump " + path;
+        std::pair<bool, std::string> res = executeCommand(cmd);
+        if (!res.first) {
+            std::cerr << "Failed to execute '" + cmd + "'" << std::endl;
+            return 0;
+        }
+        //std::cout << "Checking Clang ast dump:\n" << res.second << std::endl;
+        std::istringstream ast(res.second);
+        Tokenizer tokenizer(&mSettings, this);
+        clangastdump::parseClangAstDump(&tokenizer, ast);
+        ValueFlow::setValues(&tokenizer.list, const_cast<SymbolDatabase *>(tokenizer.getSymbolDatabase()), this, &mSettings);
+        if (mSettings.debugnormal)
+            tokenizer.printDebugOutput(1);
+        ExprEngine::runChecks(this, &tokenizer, &mSettings);
+        return 0;
+    }
+
     std::ifstream fin(path);
     return checkFile(Path::simplifyPath(path), emptyString, fin);
 }

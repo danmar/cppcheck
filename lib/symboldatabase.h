@@ -716,6 +716,7 @@ public:
     enum Type { eConstructor, eCopyConstructor, eMoveConstructor, eOperatorEqual, eDestructor, eFunction, eLambda };
 
     Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *scope, const Token *tokDef, const Token *tokArgDef);
+    explicit Function(const Token *tokenDef);
 
     const std::string &name() const {
         return tokenDef->str();
@@ -1303,6 +1304,8 @@ public:
 
     /** Set array dimensions when valueflow analysis is completed */
     void setArrayDimensionsUsingValueFlow();
+
+    void clangSetVariables(const std::map<std::string, Variable *> &variableMap);
 
 private:
     friend class Scope;

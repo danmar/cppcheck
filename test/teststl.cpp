@@ -65,6 +65,8 @@ private:
         TEST_CASE(iterator20);
         TEST_CASE(iterator21);
         TEST_CASE(iterator22);
+        TEST_CASE(iterator23);
+        TEST_CASE(iterator24);
         TEST_CASE(iteratorExpression);
         TEST_CASE(iteratorSameExpression);
 
@@ -1056,6 +1058,51 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void iterator23() { // #9550
+        check("struct A {\n"
+              "    struct B {\n"
+              "        bool operator==(const A::B& b) const;\n"
+              "        int x;\n"
+              "        int y;\n"
+              "        int z;\n"
+              "    };\n"
+              "};\n"
+              "bool A::B::operator==(const A::B& b) const {\n"
+              "    return std::tie(x, y, z) == std::tie(b.x, b.y, b.z);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void iterator24() {
+        // #9556
+        check("void f(int a, int b) {\n"
+              "  if (&a == &b) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int a, int b) {\n"
+              "  if (std::for_each(&a, &b + 1, [](auto) {})) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Iterators of different containers 'a' and 'b' are used together.\n",
+                      errout.str());
+
+        check("void f(int a, int b) {\n"
+              "  if (std::for_each(&a, &b, [](auto) {})) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Iterators of different containers 'a' and 'b' are used together.\n",
+                      errout.str());
+
+        check("void f(int a) {\n"
+              "  if (std::for_each(&a, &a, [](auto) {})) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same iterators expression are used for algorithm.\n", errout.str());
+
+        check("void f(int a) {\n"
+              "  if (std::for_each(&a, &a + 1, [](auto) {})) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void iteratorExpression() {
         check("std::vector<int>& f();\n"
               "std::vector<int>& g();\n"
@@ -1378,6 +1425,13 @@ private:
               "    for (B b : D()) {}\n" // Don't crash on range-based for-loop
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo(std::vector<int> foo) {\n"
+              "    for (unsigned int ii = 0; ii <= foo.size() + 1; ++ii) {\n"
+              "       foo.at(ii) = 0;\n"
+              "    }\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) When ii==foo.size(), foo.at(ii) is out of bounds.\n", "", errout.str());
     }
 
     void STLSizeNoErr() {
@@ -1427,6 +1481,15 @@ private:
                   "    int i = x;"
                   "    for (int i = 5; i <= data.size(); i++)\n"
                   "        data[i] = 0;\n"
+                  "}");
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            check("void foo(std::vector<int> foo) {\n"
+                  "    for (unsigned int ii = 0; ii <= foo.size() - 1; ++ii) {\n"
+                  "       foo.at(ii) = 0;\n"
+                  "    }\n"
                   "}");
             ASSERT_EQUALS("", errout.str());
         }

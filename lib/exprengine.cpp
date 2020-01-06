@@ -206,7 +206,7 @@ namespace {
             const Memory::iterator it = memory.find(tok->varId());
             if (it != memory.end())
                 return std::dynamic_pointer_cast<ExprEngine::ArrayValue>(it->second);
-            if (tok->varId() == 0)
+            if (tok->varId() == 0 || !tok->variable())
                 return std::shared_ptr<ExprEngine::ArrayValue>();
             auto val = std::make_shared<ExprEngine::ArrayValue>(this, tok->variable());
             assignValue(tok, tok->varId(), val);
@@ -573,6 +573,24 @@ struct ExprData {
             solver.add(assertExpr);
     }
 
+    z3::expr addInt(const std::string &name, int128_t minValue, int128_t maxValue) {
+        z3::expr e = context.int_const(name.c_str());
+        valueExpr.emplace(name, e);
+        if (minValue >= INT_MIN && maxValue <= INT_MAX)
+            assertionList.push_back(e >= int(minValue) && e <= int(maxValue));
+        else if (maxValue <= INT_MAX)
+            assertionList.push_back(e <= int(maxValue));
+        else if (minValue >= INT_MIN)
+            assertionList.push_back(e >= int(minValue));
+        return e;
+    }
+
+    z3::expr addFloat(const std::string &name) {
+        z3::expr e = context.fpa_const(name.c_str(), 11, 53);
+        valueExpr.emplace(name, e);
+        return e;
+    }
+
     z3::expr getExpr(const ExprEngine::BinOpResult *b) {
         auto op1 = getExpr(b->op1);
         auto op2 = getExpr(b->op2);
@@ -619,15 +637,14 @@ struct ExprData {
             auto it = valueExpr.find(v->name);
             if (it != valueExpr.end())
                 return it->second;
-            auto e = context.int_const(v->name.c_str());
-            valueExpr.emplace(v->name, e);
-            if (intRange->minValue >= INT_MIN && intRange->maxValue <= INT_MAX)
-                assertionList.push_back(e >= int(intRange->minValue) && e <= int(intRange->maxValue));
-            else if (intRange->maxValue <= INT_MAX)
-                assertionList.push_back(e <= int(intRange->maxValue));
-            else if (intRange->minValue >= INT_MIN)
-                assertionList.push_back(e >= int(intRange->minValue));
-            return e;
+            return addInt(v->name, intRange->minValue, intRange->maxValue);
+        }
+
+        if (auto floatRange = std::dynamic_pointer_cast<ExprEngine::FloatRange>(v)) {
+            auto it = valueExpr.find(v->name);
+            if (it != valueExpr.end())
+                return it->second;
+            return addFloat(v->name);
         }
 
         if (auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(v)) {
@@ -692,10 +709,10 @@ bool ExprEngine::IntRange::isEqual(DataBase *dataBase, int value) const
     ExprData exprData;
     z3::solver solver(exprData.context);
     try {
-        z3::expr e = exprData.context.int_const(name.c_str());
-        exprData.valueExpr.emplace(name, e);
+        z3::expr e = exprData.addInt(name, minValue, maxValue);
         for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
             solver.add(exprData.getConstraintExpr(constraint));
+        exprData.addAssertions(solver);
         solver.add(e == value);
         return solver.check() == z3::sat;
     } catch (const z3::exception &exception) {
@@ -721,10 +738,10 @@ bool ExprEngine::IntRange::isGreaterThan(DataBase *dataBase, int value) const
     ExprData exprData;
     z3::solver solver(exprData.context);
     try {
-        z3::expr e = exprData.context.int_const(name.c_str());
-        exprData.valueExpr.emplace(name, e);
+        z3::expr e = exprData.addInt(name, minValue, maxValue);
         for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
             solver.add(exprData.getConstraintExpr(constraint));
+        exprData.addAssertions(solver);
         solver.add(e > value);
         return solver.check() == z3::sat;
     } catch (const z3::exception &exception) {
@@ -750,10 +767,10 @@ bool ExprEngine::IntRange::isLessThan(DataBase *dataBase, int value) const
     ExprData exprData;
     z3::solver solver(exprData.context);
     try {
-        z3::expr e = exprData.context.int_const(name.c_str());
-        exprData.valueExpr.emplace(name, e);
+        z3::expr e = exprData.addInt(name, minValue, maxValue);
         for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
             solver.add(exprData.getConstraintExpr(constraint));
+        exprData.addAssertions(solver);
         solver.add(e < value);
         return solver.check() == z3::sat;
     } catch (const z3::exception &exception) {
@@ -766,15 +783,108 @@ bool ExprEngine::IntRange::isLessThan(DataBase *dataBase, int value) const
 #endif
 }
 
+bool ExprEngine::FloatRange::isEqual(DataBase *dataBase, int value) const
+{
+    const Data *data = dynamic_cast<Data *>(dataBase);
+    if (data->constraints.empty())
+        return true;
+    if (MathLib::isFloat(name)) {
+        float f = MathLib::toDoubleNumber(name);
+        return value >= f - 0.00001 && value <= f + 0.00001;
+    }
+#ifdef USE_Z3
+    // Check the value against the constraints
+    ExprData exprData;
+    z3::solver solver(exprData.context);
+    try {
+        z3::expr e = exprData.addFloat(name);
+        for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
+            solver.add(exprData.getConstraintExpr(constraint));
+        exprData.addAssertions(solver);
+        solver.add(e >= value && e <= value);
+        return solver.check() != z3::unsat;
+    } catch (const z3::exception &exception) {
+        std::cerr << "z3: " << exception << std::endl;
+        return true;  // Safe option is to return true
+    }
+#else
+    // The value may or may not be in range
+    return false;
+#endif
+}
+
+bool ExprEngine::FloatRange::isGreaterThan(DataBase *dataBase, int value) const
+{
+    if (value < minValue || value > maxValue)
+        return false;
+
+    const Data *data = dynamic_cast<Data *>(dataBase);
+    if (data->constraints.empty())
+        return true;
+    if (MathLib::isFloat(name))
+        return value > MathLib::toDoubleNumber(name);
+#ifdef USE_Z3
+    // Check the value against the constraints
+    ExprData exprData;
+    z3::solver solver(exprData.context);
+    try {
+        z3::expr e = exprData.addFloat(name);
+        for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
+            solver.add(exprData.getConstraintExpr(constraint));
+        exprData.addAssertions(solver);
+        solver.add(e > value);
+        return solver.check() == z3::sat;
+    } catch (const z3::exception &exception) {
+        std::cerr << "z3: " << exception << std::endl;
+        return true;  // Safe option is to return true
+    }
+#else
+    // The value may or may not be in range
+    return false;
+#endif
+}
+
+bool ExprEngine::FloatRange::isLessThan(DataBase *dataBase, int value) const
+{
+    if (value < minValue || value > maxValue)
+        return false;
+
+    const Data *data = dynamic_cast<Data *>(dataBase);
+    if (data->constraints.empty())
+        return true;
+    if (MathLib::isFloat(name))
+        return value < MathLib::toDoubleNumber(name);
+#ifdef USE_Z3
+    // Check the value against the constraints
+    ExprData exprData;
+    z3::solver solver(exprData.context);
+    try {
+        z3::expr e = exprData.addFloat(name);
+        for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
+            solver.add(exprData.getConstraintExpr(constraint));
+        exprData.addAssertions(solver);
+        solver.add(e < value);
+        return solver.check() == z3::sat;
+    } catch (const z3::exception &exception) {
+        std::cerr << "z3: " << exception << std::endl;
+        return true;  // Safe option is to return true
+    }
+#else
+    // The value may or may not be in range
+    return false;
+#endif
+}
+
+
 bool ExprEngine::BinOpResult::isEqual(ExprEngine::DataBase *dataBase, int value) const
 {
 #ifdef USE_Z3
     ExprData exprData;
     z3::solver solver(exprData.context);
     z3::expr e = exprData.getExpr(this);
-    exprData.addAssertions(solver);
     for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
         solver.add(exprData.getConstraintExpr(constraint));
+    exprData.addAssertions(solver);
     solver.add(e == value);
     return solver.check() == z3::sat;
 #else
@@ -791,9 +901,9 @@ bool ExprEngine::BinOpResult::isGreaterThan(ExprEngine::DataBase *dataBase, int 
         ExprData exprData;
         z3::solver solver(exprData.context);
         z3::expr e = exprData.getExpr(this);
-        exprData.addAssertions(solver);
         for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
             solver.add(exprData.getConstraintExpr(constraint));
+        exprData.addAssertions(solver);
         solver.add(e > value);
         return solver.check() == z3::sat;
     } catch (const z3::exception &exception) {
@@ -814,9 +924,9 @@ bool ExprEngine::BinOpResult::isLessThan(ExprEngine::DataBase *dataBase, int val
         ExprData exprData;
         z3::solver solver(exprData.context);
         z3::expr e = exprData.getExpr(this);
-        exprData.addAssertions(solver);
         for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
             solver.add(exprData.getConstraintExpr(constraint));
+        exprData.addAssertions(solver);
         solver.add(e < value);
         return solver.check() == z3::sat;
     } catch (const z3::exception &exception) {
@@ -837,9 +947,9 @@ std::string ExprEngine::BinOpResult::getExpr(ExprEngine::DataBase *dataBase) con
         ExprData exprData;
         z3::solver solver(exprData.context);
         z3::expr e = exprData.getExpr(this);
-        exprData.addAssertions(solver);
         for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
             solver.add(exprData.getConstraintExpr(constraint));
+        exprData.addAssertions(solver);
         solver.add(e);
         std::ostringstream os;
         os << solver;
@@ -907,16 +1017,10 @@ static ExprEngine::ValuePtr getValueRangeFromValueType(const std::string &name, 
         }
     }
 
-    switch (vt->type) {
-    case ValueType::Type::FLOAT:
-        return std::make_shared<ExprEngine::FloatRange>(name, std::numeric_limits<float>::min(), std::numeric_limits<float>::max());
-    case ValueType::Type::DOUBLE:
-        return std::make_shared<ExprEngine::FloatRange>(name, std::numeric_limits<double>::min(), std::numeric_limits<double>::max());
-    case ValueType::Type::LONGDOUBLE:
-        return std::make_shared<ExprEngine::FloatRange>(name, std::numeric_limits<long double>::min(), std::numeric_limits<long double>::max());
-    default:
-        return ExprEngine::ValuePtr();
-    };
+    if (vt->isFloat())
+        return std::make_shared<ExprEngine::FloatRange>(name, -std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
+
+    return ExprEngine::ValuePtr();
 }
 
 static void call(const std::vector<ExprEngine::Callback> &callbacks, const Token *tok, ExprEngine::ValuePtr value, Data *dataBase)
@@ -1124,11 +1228,15 @@ static ExprEngine::ValuePtr executeCast(const Token *tok, Data &data)
         return std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), bufferSize, range, true, nullPointer, uninitPointer);
     }
 
-    if (val)
+    if (val) {
         // TODO: Cast this..
+        call(data.callbacks, tok, val, &data);
         return val;
+    }
 
-    return getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
+    val = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
+    call(data.callbacks, tok, val, &data);
+    return val;
 }
 
 static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
@@ -1142,9 +1250,20 @@ static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
     if (!structValue) {
         if (tok->originalName() == "->") {
             std::shared_ptr<ExprEngine::ArrayValue> pointerValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(data.getValue(tok->astOperand1()->varId(), nullptr, nullptr));
-            if (pointerValue && pointerValue->pointer && pointerValue->data.size() == 1) {
+            if (pointerValue && pointerValue->pointer && !pointerValue->data.empty()) {
                 call(data.callbacks, tok->astOperand1(), pointerValue, &data);
-                structValue = std::dynamic_pointer_cast<ExprEngine::StructValue>(pointerValue->data[0].value);
+                auto indexValue = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
+                ExprEngine::ValuePtr ret;
+                for (auto val: pointerValue->read(indexValue)) {
+                    structValue = std::dynamic_pointer_cast<ExprEngine::StructValue>(val.second);
+                    if (structValue) {
+                        auto memberValue = structValue->getValueOfMember(tok->astOperand2()->str());
+                        call(data.callbacks, tok, memberValue, &data);
+                        if (!ret)
+                            ret = memberValue;
+                    }
+                }
+                return ret;
             } else {
                 call(data.callbacks, tok->astOperand1(), data.getValue(tok->astOperand1()->varId(), nullptr, nullptr), &data);
             }
@@ -1345,8 +1464,7 @@ static void execute(const Token *start, const Token *end, Data &data)
                     tok = tok->tokAt(2);
                     continue;
                 }
-            }
-            if (tok->variable()->isArray()) {
+            } else if (tok->variable()->isArray()) {
                 data.assignValue(tok, tok->varId(), std::make_shared<ExprEngine::ArrayValue>(&data, tok->variable()));
                 if (Token::Match(tok, "%name% ["))
                     tok = tok->linkAt(1);
@@ -1445,7 +1563,7 @@ static void execute(const Token *start, const Token *end, Data &data)
                     if (changedVariables.find(varid) != changedVariables.end())
                         continue;
                     changedVariables.insert(varid);
-                    data.assignValue(tok2, varid, createVariableValue(*tok2->astOperand1()->variable(), data));
+                    data.assignValue(tok2, varid, getValueRangeFromValueType(data.getNewSymbolName(), tok2->astOperand1()->valueType(), *data.settings));
                 } else if (Token::Match(tok2, "++|--") && tok2->astOperand1() && tok2->astOperand1()->variable()) {
                     // give variable "any" value
                     const Token *vartok = tok2->astOperand1();
@@ -1453,7 +1571,7 @@ static void execute(const Token *start, const Token *end, Data &data)
                     if (changedVariables.find(varid) != changedVariables.end())
                         continue;
                     changedVariables.insert(varid);
-                    data.assignValue(tok2, varid, createVariableValue(*vartok->variable(), data));
+                    data.assignValue(tok2, varid, getValueRangeFromValueType(data.getNewSymbolName(), vartok->valueType(), *data.settings));
                 }
             }
         }
@@ -1524,16 +1642,28 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
     if (valueType->pointer > 0) {
         if (var.isLocal())
             return std::make_shared<ExprEngine::UninitValue>();
-        ValueType vt(*valueType);
-        vt.pointer = 0;
-        auto range = getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings);
-        auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 1, ~0UL);
-        return std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), size, range, true, true, true);
+        auto bufferSize = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 1, ~0UL);
+        ExprEngine::ValuePtr pointerValue;
+        if (valueType->type == ValueType::Type::RECORD)
+            pointerValue = createStructVal(valueType->typeScope, var.isLocal() && !var.isStatic(), data);
+        else {
+            ValueType vt(*valueType);
+            vt.pointer = 0;
+            if (vt.constness & 1)
+                pointerValue = getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings);
+            else
+                pointerValue = std::make_shared<ExprEngine::UninitValue>();
+        }
+        return std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), bufferSize, pointerValue, true, true, var.isLocal() && !var.isStatic());
     }
     if (var.isArray())
         return std::make_shared<ExprEngine::ArrayValue>(&data, &var);
-    if (valueType->isIntegral()) {
-        auto value = getValueRangeFromValueType(data.getNewSymbolName(), valueType, *data.settings);
+    if (valueType->isIntegral() || valueType->isFloat()) {
+        ExprEngine::ValuePtr value;
+        if (var.isLocal() && !var.isStatic())
+            value = std::make_shared<ExprEngine::UninitValue>();
+        else
+            value = getValueRangeFromValueType(data.getNewSymbolName(), valueType, *data.settings);
         data.addConstraints(value, var.nameToken());
         return value;
     }
@@ -1569,6 +1699,23 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
     if (functionScope->bodyStart->fileIndex() > 0)
         // TODO.. what about functions in headers?
         return;
+
+    if (!settings->verifyDiff.empty()) {
+        const std::string filename = tokenizer->list.getFiles().at(functionScope->bodyStart->fileIndex());
+        bool verify = false;
+        for (const auto &diff: settings->verifyDiff) {
+            if (diff.filename != filename)
+                continue;
+            if (diff.fromLine > functionScope->bodyEnd->linenr())
+                continue;
+            if (diff.toLine < functionScope->bodyStart->linenr())
+                continue;
+            verify = true;
+            break;
+        }
+        if (!verify)
+            return;
+    }
 
     int symbolValueIndex = 0;
     TrackExecution trackExecution;
@@ -1608,6 +1755,15 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
     }
 }
 
+static float getKnownFloatValue(const Token *tok, float def)
+{
+    for (const auto &value: tok->values()) {
+        if (value.isKnown() && value.valueType == ValueFlow::Value::ValueType::FLOAT)
+            return value.floatValue;
+    }
+    return def;
+}
+
 void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings)
 {
     std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> divByZero = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
@@ -1615,10 +1771,14 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             return;
         if (tok->hasKnownIntValue() && tok->getKnownIntValue() != 0)
             return;
+        float f = getKnownFloatValue(tok, 0.0f);
+        if (f > 0.0f || f < 0.0f)
+            return;
         if (tok->astParent()->astOperand2() == tok && value.isEqual(dataBase, 0)) {
             dataBase->addError(tok->linenr());
             std::list<const Token*> callstack{tok->astParent()};
-            ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationDivByZero", "There is division, cannot determine that there can't be a division by zero.", CWE(369), false);
+            const char * const id = (tok->valueType() && tok->valueType()->isFloat()) ? "verificationDivByZeroFloat" : "verificationDivByZero";
+            ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, id, "There is division, cannot determine that there can't be a division by zero.", CWE(369), false);
             errorLogger->reportErr(errmsg);
         }
     };
@@ -1672,6 +1832,27 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
     };
 #endif
 
+#ifdef VERIFY_UNINIT  // This is highly experimental
+    std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> uninit = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
+        if (!tok->astParent())
+            return;
+        if (!value.isUninit())
+            return;
+
+        // Avoid FP for array declaration
+        const Token *parent = tok->astParent();
+        while (parent && parent->str() == "[")
+            parent = parent->astParent();
+        if (!parent)
+            return;
+
+        dataBase->addError(tok->linenr());
+        std::list<const Token*> callstack{tok};
+        ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationUninit", "Cannot determine that '" + tok->expressionString() + "' is initialized", CWE_USE_OF_UNINITIALIZED_VARIABLE, false);
+        errorLogger->reportErr(errmsg);
+    };
+#endif
+
     std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> checkFunctionCall = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
         if (!Token::Match(tok->astParent(), "[(,]"))
             return;
@@ -1699,16 +1880,14 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
 
                 MathLib::bigint low;
                 if (arg->nameToken()->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW, &low)) {
-                    if (value.isLessThan(dataBase, low)) {
-                        bad = "__cppcheck_low_(" + std::to_string(low) + ")";
-                    }
+                    if (!(tok->hasKnownIntValue() && tok->getKnownIntValue() >= low) && value.isLessThan(dataBase, low))
+                        bad = "__cppcheck_low__(" + std::to_string(low) + ")";
                 }
 
                 MathLib::bigint high;
                 if (arg->nameToken()->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH, &high)) {
-                    if (value.isLessThan(dataBase, low)) {
-                        bad = "__cppcheck_low_(" + std::to_string(low) + ")";
-                    }
+                    if (!(tok->hasKnownIntValue() && tok->getKnownIntValue() <= high) && value.isGreaterThan(dataBase, high))
+                        bad = "__cppcheck_high__(" + std::to_string(high) + ")";
                 }
 
                 if (!bad.empty()) {
@@ -1731,23 +1910,28 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             std::string bad;
             switch (invalidArgValue.type) {
             case Library::InvalidArgValue::eq:
-                err = value.isEqual(dataBase, MathLib::toLongNumber(invalidArgValue.op1));
+                if (!tok->hasKnownIntValue() || tok->getKnownIntValue() == MathLib::toLongNumber(invalidArgValue.op1))
+                    err = value.isEqual(dataBase, MathLib::toLongNumber(invalidArgValue.op1));
                 bad = "equals " + invalidArgValue.op1;
                 break;
             case Library::InvalidArgValue::le:
-                err = value.isLessThan(dataBase, MathLib::toLongNumber(invalidArgValue.op1) + 1);
+                if (!tok->hasKnownIntValue() || tok->getKnownIntValue() <= MathLib::toLongNumber(invalidArgValue.op1))
+                    err = value.isLessThan(dataBase, MathLib::toLongNumber(invalidArgValue.op1) + 1);
                 bad = "less equal " + invalidArgValue.op1;
                 break;
             case Library::InvalidArgValue::lt:
-                err = value.isLessThan(dataBase, MathLib::toLongNumber(invalidArgValue.op1));
+                if (!tok->hasKnownIntValue() || tok->getKnownIntValue() < MathLib::toLongNumber(invalidArgValue.op1))
+                    err = value.isLessThan(dataBase, MathLib::toLongNumber(invalidArgValue.op1));
                 bad = "less than " + invalidArgValue.op1;
                 break;
             case Library::InvalidArgValue::ge:
-                err = value.isGreaterThan(dataBase, MathLib::toLongNumber(invalidArgValue.op1) - 1);
+                if (!tok->hasKnownIntValue() || tok->getKnownIntValue() >= MathLib::toLongNumber(invalidArgValue.op1))
+                    err = value.isGreaterThan(dataBase, MathLib::toLongNumber(invalidArgValue.op1) - 1);
                 bad = "greater equal " + invalidArgValue.op1;
                 break;
             case Library::InvalidArgValue::gt:
-                err = value.isGreaterThan(dataBase, MathLib::toLongNumber(invalidArgValue.op1));
+                if (!tok->hasKnownIntValue() || tok->getKnownIntValue() > MathLib::toLongNumber(invalidArgValue.op1))
+                    err = value.isGreaterThan(dataBase, MathLib::toLongNumber(invalidArgValue.op1));
                 bad = "greater than " + invalidArgValue.op1;
                 break;
             case Library::InvalidArgValue::range:
@@ -1766,6 +1950,23 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
                 break;
             }
         }
+
+        // Uninitialized function argument..
+#ifdef VERIFY_UNINIT  // This is highly experimental
+        if (settings->library.isuninitargbad(parent->astOperand1(), num) && settings->library.isnullargbad(parent->astOperand1(), num) && value.type == ExprEngine::ValueType::ArrayValue) {
+            const ExprEngine::ArrayValue &arrayValue = static_cast<const ExprEngine::ArrayValue &>(value);
+            auto index0 = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
+            for (const auto &v: arrayValue.read(index0)) {
+                if (v.second->isUninit()) {
+                    dataBase->addError(tok->linenr());
+                    std::list<const Token*> callstack{tok};
+                    ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationUninitArg", "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument is initialized.", CWE_USE_OF_UNINITIALIZED_VARIABLE, false);
+                    errorLogger->reportErr(errmsg);
+                    break;
+                }
+            }
+        }
+#endif
     };
 
     std::vector<ExprEngine::Callback> callbacks;
@@ -1774,9 +1975,14 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
 #ifdef VERIFY_INTEGEROVERFLOW
     callbacks.push_back(integerOverflow);
 #endif
+#ifdef VERIFY_UNINIT
+    callbacks.push_back(uninit);
+#endif
 
     std::ostringstream report;
     ExprEngine::executeAllFunctions(tokenizer, settings, callbacks, report);
-    if (errorLogger && !settings->verificationReport.empty() && !report.str().empty())
+    if (settings->verificationReport.empty())
+        std::cout << report.str();
+    else if (errorLogger)
         errorLogger->reportVerification(report.str());
 }

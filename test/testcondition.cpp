@@ -1895,6 +1895,15 @@ private:
               "  }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+
+        // #8938
+        check("void Delete(SS_CELLCOORD upperleft) {\n"
+              "    if ((upperleft.Col == -1) && (upperleft.Row == -1)) {\n"
+              "        GetActiveCell(&(upperleft.Col), &(upperleft.Row));\n"
+              "        if (upperleft.Row == -1) {}\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void oppositeInnerConditionPointers() {
@@ -3329,6 +3338,24 @@ private:
               "        return;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f(int a, int b) {\n"
+              "    static const int x = 10;\n"
+              "    return x == 1 ? a : b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("const bool x = false;\n"
+              "void f() {\n"
+              "    if (x) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("const bool x = false;\n"
+              "void f() {\n"
+              "    if (!x) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueInfer() {
@@ -3447,6 +3474,17 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9541
+        check("int f(int pos, int a) {\n"
+              "    if (pos <= 0)\n"
+              "        pos = 0;\n"
+              "    else if (pos < a)\n"
+              "        if(pos > 0)\n"
+              "            --pos;\n"
+              "    return pos;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5]: (style) Condition 'pos>0' is always true\n", errout.str());
     }
 
     void alwaysTrueContainer() {

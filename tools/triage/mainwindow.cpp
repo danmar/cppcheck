@@ -20,7 +20,7 @@ const int MAX_ERRORS = 100;
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    mVersionRe("^(your|head|1.[0-9][0-9]) .*"),
+    mVersionRe("^(master|your|head|1.[0-9][0-9]) (.*)"),
     hFiles{"*.hpp", "*.h", "*.hxx", "*.hh", "*.tpp", "*.txx"},
     srcFiles{"*.cpp", "*.cxx", "*.cc", "*.c++", "*.C", "*.c", "*.cl"}
 {
@@ -52,7 +52,7 @@ MainWindow::~MainWindow()
 void MainWindow::loadFile()
 {
     ui->statusBar->clearMessage();
-    const QString fileName = QFileDialog::getOpenFileName(this, tr("daca results file"), WORK_FOLDER, tr("Text files (*.txt);;All (*.*)"));
+    const QString fileName = QFileDialog::getOpenFileName(this, tr("daca results file"), WORK_FOLDER, tr("Text files (*.txt *.log);;All (*.*)"));
     if (fileName.isEmpty())
         return;
     QFile file(fileName);
@@ -86,7 +86,7 @@ void MainWindow::load(QTextStream &textStream)
             errorMessage.clear();
         } else if (!url.isEmpty() && QRegExp(".*: (error|warning|style|note):.*").exactMatch(line)) {
             if (mVersionRe.exactMatch(line)) {
-                const QString version = line.mid(0, 4);
+                const QString version = mVersionRe.cap(1);
                 if (versions.indexOf(version) < 0)
                     versions << version;
             }
@@ -216,7 +216,7 @@ void MainWindow::showResult(QListWidgetItem *item)
     const QString url = lines[0];
     QString msg = lines[1];
     if (mVersionRe.exactMatch(msg))
-        msg = msg.mid(5);
+        msg = mVersionRe.cap(2);
     const QString archiveName = url.mid(url.lastIndexOf("/") + 1);
     const int pos1 = msg.indexOf(":");
     const int pos2 = msg.indexOf(":", pos1+1);

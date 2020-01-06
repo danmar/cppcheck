@@ -383,8 +383,10 @@ void CheckClass::copyconstructors()
                         break;
                     }
                     const Variable *var = it->second->variable();
-                    if (var && var->typeScope() && var->typeScope()->functionList.empty() && var->type()->derivedFrom.empty())
+                    if (var && var->typeScope() && var->typeScope()->functionList.empty() && var->type()->derivedFrom.empty()) {
                         mustDealloc = it->second;
+                        break;
+                    }
                 }
                 if (mustDealloc)
                     noDestructorError(scope, funcDestructor, mustDealloc);
@@ -2619,6 +2621,36 @@ void CheckClass::overrideError(const Function *funcInBase, const Function *funcI
     reportError(errorPath, Severity::style, "missingOverride",
                 "$symbol:" + functionName + "\n"
                 "The " + funcType + " '$symbol' overrides a " + funcType + " in a base class but is not marked with a 'override' specifier.",
+                CWE(0U) /* Unknown CWE! */,
+                false);
+}
+
+void CheckClass::checkAccessModifierVirtualFunctions()
+{
+    // Motivation:
+    // isocpp.org/wiki/faq/proper-inheritance#hiding-inherited-public
+    // stackoverflow.com/questions/484592/overriding-public-virtual-functions-with-private-functions-in-c
+    if (!mSettings->isEnabled(Settings::STYLE))
+        return;
+    for (const Scope * classScope : mSymbolDatabase->classAndStructScopes) {
+        if (!classScope->definedType || classScope->definedType->derivedFrom.empty())
+            continue;
+        for (const Function &func : classScope->functionList) {
+            const Function *baseFunc = func.getOverriddenFunction();
+            if (baseFunc) {
+                if (AccessControl::Public == baseFunc->access && AccessControl::Public != func.access) {
+                    checkAccessModifierVirtualFunctionsError(func.tokenDef, func.name());
+                }
+            }
+        }
+    }
+}
+
+void CheckClass::checkAccessModifierVirtualFunctionsError(const Token *tok, const std::string& func)
+{
+    reportError(tok, Severity::style, "hidingInheritedPublic",
+                "$symbol:" + func + "\n"
+                "The virtual function '$symbol' is a public in a base class and became not-public in derived. It's violate a substitutability a principle in OOP.",
                 CWE(0U) /* Unknown CWE! */,
                 false);
 }

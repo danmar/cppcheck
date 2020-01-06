@@ -9439,7 +9439,7 @@ void Tokenizer::findGarbageCode() const
             if (match1 && match2)
                 syntaxError(tok);
         }
-        if (Token::Match(tok, "%comp%|+|-|/|% )|]|}")) {
+        if (Token::Match(tok, "%or%|%oror%|~|^|!|%comp%|+|-|/|% )|]|}")) {
             if (isC())
                 syntaxError(tok, tok->str() + tok->next()->str());
             if (tok->str() != ">" && !Token::simpleMatch(tok->previous(), "operator"))

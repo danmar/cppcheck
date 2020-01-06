@@ -105,6 +105,9 @@ namespace ExprEngine {
             (void)value;
             return false;
         }
+        virtual bool isUninit() const {
+            return false;
+        }
 
         const std::string name;
         ValueType type;
@@ -113,6 +116,9 @@ namespace ExprEngine {
     class UninitValue: public Value {
     public:
         UninitValue() : Value("?", ValueType::UninitValue) {}
+        bool isUninit() const OVERRIDE {
+            return true;
+        }
     };
 
     class IntRange : public Value {
@@ -143,14 +149,13 @@ namespace ExprEngine {
             , maxValue(maxValue) {
         }
 
-        bool isEqual(DataBase *dataBase, int value) const OVERRIDE {
-            (void)dataBase;
-            return value >= minValue && value <= maxValue;
-        }
-
         std::string getRange() const OVERRIDE {
             return std::to_string(minValue) + ":" + std::to_string(maxValue);
         }
+
+        bool isEqual(DataBase *dataBase, int value) const OVERRIDE;
+        bool isGreaterThan(DataBase *dataBase, int value) const OVERRIDE;
+        bool isLessThan(DataBase *dataBase, int value) const OVERRIDE;
 
         long double minValue;
         long double maxValue;
@@ -175,7 +180,7 @@ namespace ExprEngine {
         ArrayValue(const std::string &name, ValuePtr size, ValuePtr value, bool pointer, bool nullPointer, bool uninitPointer);
         ArrayValue(DataBase *data, const Variable *var);
 
-        std::string getRange() const;
+        std::string getRange() const OVERRIDE;
         std::string getSymbolicExpression() const OVERRIDE;
 
         void assign(ValuePtr index, ValuePtr value);

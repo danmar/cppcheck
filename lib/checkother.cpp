@@ -1299,6 +1299,10 @@ static bool isVariableMutableInInitializer(const Token* start, const Token * end
             const Token * memberTok = tok->astParent()->previous();
             if (Token::Match(memberTok, "%var% (") && memberTok->variable()) {
                 const Variable * memberVar = memberTok->variable();
+                if (memberVar->isClass())
+                    //TODO: check if the called constructor could live with a const variable
+                    // pending that, assume the worst (that it can't)
+                    return true;
                 if (!memberVar->isReference())
                     continue;
                 if (memberVar->isConst())
@@ -3000,6 +3004,9 @@ static bool isVariableExpression(const Token* tok)
     if (Token::simpleMatch(tok, "."))
         return isVariableExpression(tok->astOperand1()) &&
                isVariableExpression(tok->astOperand2());
+    if (Token::simpleMatch(tok, "["))
+        return isVariableExpression(tok->astOperand1()) &&
+               tok->astOperand2() && tok->astOperand2()->hasKnownIntValue();
     return false;
 }
 

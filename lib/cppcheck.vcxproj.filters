@@ -167,6 +167,9 @@
     <ClCompile Include="programmemory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="clangastdump.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="checkbufferoverrun.h">
@@ -323,6 +326,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ctu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="clangastdump.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -720,51 +720,99 @@ An example usage:
 
 # Verification
 
-Let Cppcheck prove that your code is safe.
+Cppcheck will tell you if it can't determine that your code is safe.
+
+All bugs you find with dynamic analysis and fuzzing will be revealed. And then more bugs.
+
+This analysis is noisy. Because of the noise, it will probably not be practical to use this for instance in continuous integration. Some possible use cases where more noise could be tolerated;
+ * you are writing new code and want to ensure it is safe.
+ * you are reviewing code and want to get hints about possible UB.
+ * you need extra help troubleshooting a weird bug.
+ * you tagged a release candidate and want to check if the code is safe.
+
+## Philosopphy
+
+It is very important that we do warn about all unsafe code. We want that users can feel fully confident about the code we say is "safe".
+
+However, a sloppy analysis that will report too much noise will not be useful. We need to have strong heuristics to avoid false positives.
+
+At the moment there is no whole program analysis but that will be added later to avoid definite false positives.
+
+The focus will be to detect "hidden" bugs. Good candidates are undefined behavior that does not cause a crash immediately but will just cause strange behavior.
+ * Buffer overflows
+ * Uninitialized variables
+ * Usage of dead pointers
 
 ## Compiling
 
 make USE_Z3=yes
 
-## Usage
+To get experimental checking for uninitialized data:
 
-Imagine this is your whole program:
+make USE_Z3=yes CPPFLAGS=-DVERIFY_UNINIT
 
-    int foo(int x, int y)
-    {
-        return x / y;
+## Verification for work-in-progress
+
+It is possible to instantly verify your code changes directly in your editor.
+
+You can for instance configure a save action like this:
+
+    cd repo ; git diff > temp.diff ; cppcheck --verify-diff=temp.diff
+
+Ensure that the warnings are sent to your editor and displayed.
+
+From now on, only use 'git commit' when you think all the verification warnings you get looks safe.
+
+With this method, Cppcheck will verify all functions that you are modifying.
+
+## Verification during review
+
+... well I am hoping it will be possible to integrate cppcheck verification in github, gerrit, etc.
+
+## Annotations
+
+To silence Cppcheck verification warnings it is possible to use annotations.
+
+Example code:
+
+    void foo(int x) {
+        return 10000 / x;
     }
 
-    int main()
-    {
-        foo(100, 20);
-        return 0;
-    }
-
-By design, Cppcheck will warn about the division in `foo`. It is always assumed that arguments can have arbitrary values. If the argument `y` is zero then there will be division by zero.
-
-You could suppress the warning if you think it's a false positive but it would be unsafe and dangerous to suppress it. To handle false positives in verification, you can rewrite the code, add contracts, or just ignore the warning.
-
-A contract can be added inline (annotations, C++ contracts) or externally in a configuration. Some users will prefer to add them inline and other user will prefer external configuration.
+Cppcheck verification will say that there is division and it can't determine that it's not division by zero.
 
 Example code with SAL annotation:
 
-    int foo(int x, int _In_range_(1,1000) y)
-    {
-        return x / y;
+    void foo(int _In_range_(1,1000) x) {
+        return 10000 / x;
     }
 
-    int main()
-    {
-        foo(100, 20);
-        return 0;
+Example code with Cppcheck annotation:
+
+    void foo(int __cppcheck_low__(1) x) {
+        return 10000 / x;
     }
 
-To be defined; configuration that has contract for `foo`.
+## Function calls
 
-Here, it can now be determined that the function call in `main` is safe. However it still can't be proven that `foo` is safe; there could be unseen function calls (you could for instance link a library that call `foo` with arbitrary values).
+For a reliable verification it will be very important that `--check-library` is used, you need to ensure that critical library functions are configured.
 
-## Future
+### Uninitialized variables
 
-The focus will be to detect "hidden bugs". Buffer overflows.
+When `const` is used for pointer arguments that will be seen as a annotation.
+
+This function:
+
+    void foo(char *p);
+
+Cppcheck will assume that `p` points at uninitialized memory. When `foo` is checked it will be ensured that it initializes the memory.
+
+This function:
+
+    void foo(const char *p);
+
+Cppcheck will assume that `p` points at initialized memory. If you call `foo` and pass a pointer to uninitialized memory we will warn.
+
+TODO: Further annotations to specify how a function initializes memory will be required.
+
 

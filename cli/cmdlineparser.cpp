@@ -133,6 +133,9 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--addon=", 8) == 0)
                 mSettings->addons.emplace_back(argv[i]+8);
 
+            else if (std::strcmp(argv[i], "--clang") == 0)
+                mSettings->clang = true;
+
             else if (std::strncmp(argv[i], "--cppcheck-build-dir=", 21) == 0) {
                 mSettings->buildDir = Path::fromNativeSeparators(argv[i] + 21);
                 if (endsWith(mSettings->buildDir, '/'))
@@ -197,6 +200,24 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->verificationReport = argv[i] + 16;
             } else if (std::strcmp(argv[i], "--debug-verify") == 0)
                 mSettings->debugVerification = true;
+            else if (std::strncmp(argv[i], "--verify-diff=", 14) == 0) {
+                std::ifstream fin(argv[i] + 14);
+                if (!fin.is_open()) {
+                    printMessage("cppcheck: could not open file " + std::string(argv[i] + 14) + ".");
+                    return false;
+                }
+
+                mSettings->verifyDiff = Settings::loadDiffFile(fin);
+                mSettings->verification = true;
+
+                for (const auto &diff: mSettings->verifyDiff) {
+                    if (!Path::acceptFile(diff.filename))
+                        continue;
+                    const std::string filename = Path::fromNativeSeparators(diff.filename);
+                    if (std::find(mPathNames.begin(), mPathNames.end(), filename) == mPathNames.end())
+                        mPathNames.push_back(filename);
+                }
+            }
 
             // Enforce language (--language=, -x)
             else if (std::strncmp(argv[i], "--language=", 11) == 0 || std::strcmp(argv[i], "-x") == 0) {
