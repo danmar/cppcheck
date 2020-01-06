@@ -132,9 +132,11 @@ void clangastdump::AstNode::setLocations(TokenList *tokenList, int file, int lin
     for (const std::string &ext: mExtTokens) {
         if (ext.compare(0,5,"<col:") == 0)
             col = std::atoi(ext.substr(5).c_str());
-        else if (ext.compare(0,6,"<line:") == 0)
+        else if (ext.compare(0,6,"<line:") == 0) {
             line = std::atoi(ext.substr(6).c_str());
-        else if (ext[0] == '<' && ext.find(":") != std::string::npos)
+            if (ext.find(", col:") != std::string::npos)
+                col = std::atoi(ext.c_str() + ext.find(", col:") + 6);
+        } else if (ext[0] == '<' && ext.find(":") != std::string::npos)
             file = tokenList->appendFileIfNew(ext.substr(1,ext.find(":") - 1));
     }
     mFile = file;
@@ -154,6 +156,7 @@ Token *clangastdump::AstNode::addtoken(TokenList *tokenList, const std::string &
     else
         scope = tokenList->back()->scope();
     tokenList->addtoken(str, mLine, mFile);
+    tokenList->back()->column(mCol);
     tokenList->back()->scope(scope);
     if (getType() == "int")
         tokenList->back()->setValueType(new ValueType(ValueType::Sign::SIGNED, ValueType::Type::INT, 0));
@@ -182,7 +185,8 @@ Scope *clangastdump::AstNode::createScope(TokenList *tokenList, Scope::ScopeType
     Token *bodyStart = addtoken(tokenList, "{");
     tokenList->back()->scope(scope);
     astNode->createTokens(tokenList);
-    addtoken(tokenList, ";");
+    if (tokenList->back()->str() != ";")
+        addtoken(tokenList, ";");
     Token *bodyEnd = addtoken(tokenList, "}");
     bodyStart->link(bodyEnd);
     scope->bodyStart = bodyStart;
@@ -201,29 +205,38 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         return binop;
     }
     if (nodeType == CallExpr) {
-        Token *op1 = children[0]->createTokens(tokenList);
-        Token *call = addtoken(tokenList, "(");
-        call->astOperand1(op1);
-        for (int c = 1; c < children.size(); ++c)
-            call->astOperand2(children[c]->createTokens(tokenList));
-        call->link(addtoken(tokenList, ")"));
-        return call;
+        Token *f = children[0]->createTokens(tokenList);
+        Token *par1 = addtoken(tokenList, "(");
+        par1->astOperand1(f);
+        Token *parent = par1;
+        for (int c = 1; c < children.size(); ++c) {
+            if (c + 1 < children.size()) {
+                Token *child = children[c]->createTokens(tokenList);
+                Token *comma = addtoken(tokenList, ",");
+                comma->astOperand1(child);
+                parent->astOperand2(comma);
+                parent = comma;
+            } else {
+                parent->astOperand2(children[c]->createTokens(tokenList));
+            }
+        }
+        par1->link(addtoken(tokenList, ")"));
+        return par1;
     }
     if (nodeType == CompoundStmt) {
-        bool first = true;
         for (AstNodePtr child: children) {
-            if (!first)
-                child->addtoken(tokenList, ";");
-            first = false;
             child->createTokens(tokenList);
+            child->addtoken(tokenList, ";");
         }
         return nullptr;
     }
     if (nodeType == DeclRefExpr) {
         Token *vartok = addtoken(tokenList, unquote(mExtTokens[mExtTokens.size() - 2]));
         std::string addr = mExtTokens[mExtTokens.size() - 3];
-        vartok->varId(mData->varId[addr]);
-        vartok->variable(mData->variableMap[addr]);
+        if (mData->varId.find(addr) != mData->varId.end()) {
+            vartok->varId(mData->varId[addr]);
+            vartok->variable(mData->variableMap[addr]);
+        }
         return vartok;
     }
     if (nodeType == FunctionDecl) {
@@ -236,7 +249,9 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         globalScope.functionList.push_back(Function(nameToken));
         scope.function = &globalScope.functionList.back();
         scope.type = Scope::ScopeType::eFunction;
+        scope.className = nameToken->str();
         Token *par1 = addtoken(tokenList, "(");
+        // Function arguments
         for (AstNodePtr child: children) {
             if (child->nodeType != ParmVarDecl)
                 continue;
@@ -259,13 +274,18 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         }
         Token *par2 = addtoken(tokenList, ")");
         par1->link(par2);
-        Token *bodyStart = addtoken(tokenList, "{");
-        bodyStart->scope(&scope);
-        children.back()->createTokens(tokenList);
-        Token *bodyEnd = addtoken(tokenList, "}");
-        scope.bodyStart = bodyStart;
-        scope.bodyEnd = bodyEnd;
-        bodyStart->link(bodyEnd);
+        // Function body
+        if (!children.empty() && children.back()->nodeType == CompoundStmt) {
+            Token *bodyStart = addtoken(tokenList, "{");
+            bodyStart->scope(&scope);
+            children.back()->createTokens(tokenList);
+            Token *bodyEnd = addtoken(tokenList, "}");
+            scope.bodyStart = bodyStart;
+            scope.bodyEnd = bodyEnd;
+            bodyStart->link(bodyEnd);
+        } else {
+            addtoken(tokenList, ";");
+        }
         return nullptr;
     }
     if (nodeType == IfStmt) {
