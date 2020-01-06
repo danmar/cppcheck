@@ -1305,7 +1305,7 @@ public:
     /** Set array dimensions when valueflow analysis is completed */
     void setArrayDimensionsUsingValueFlow();
 
-    void clangSetVariables(const std::map<std::string, Variable *> &variableMap);
+    void clangSetVariables(const std::vector<const Variable *> &variableMap);
 
 private:
     friend class Scope;

@@ -1718,11 +1718,9 @@ void SymbolDatabase::validate() const
     //validateVariables();
 }
 
-void SymbolDatabase::clangSetVariables(const std::map<std::string, Variable *> &variableMap)
+void SymbolDatabase::clangSetVariables(const std::vector<const Variable *> &variableList)
 {
-    mVariableList.resize(variableMap.size() + 1);
-    for (std::map<std::string, Variable *>::const_iterator it = variableMap.begin(); it != variableMap.end(); ++it)
-        mVariableList[it->second->declarationId()] = it->second;
+    mVariableList = variableList;
 }
 
 Variable::~Variable()
