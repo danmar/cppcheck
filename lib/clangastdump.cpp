@@ -376,6 +376,7 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
             Token *eq = addtoken(tokenList, "=");
             eq->astOperand1(vartok2);
             eq->astOperand2(children.back()->createTokens(tokenList));
+            addtoken(tokenList, ";");
         }
         return nullptr;
     }
