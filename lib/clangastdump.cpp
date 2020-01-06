@@ -65,8 +65,15 @@ static std::vector<std::string> splitString(const std::string &line)
 namespace clangastdump {
     struct Data {
         struct Decl {
-            Decl(Token *def, Variable *var) : def(def), var(var) {}
+            Decl(Token *def, Variable *var) : def(def), function(nullptr), var(var) {}
+            Decl(Token *def, Function *function) : def(def), function(function), var(nullptr) {}
+            void ref(Token *tok) {
+                tok->function(function);
+                tok->varId(var ? var->declarationId() : 0);
+                tok->variable(var);
+            }
             Token *def;
+            Function *function;
             Variable *var;
         };
 
@@ -80,12 +87,16 @@ namespace clangastdump {
             var->setValueType(ValueType(ValueType::Sign::SIGNED, ValueType::Type::INT, 0));
         }
 
+        void funcDecl(const std::string &addr, Token *nameToken, Function *function) {
+            Decl decl(nameToken, function);
+            mDeclMap.insert(std::pair<std::string, Decl>(addr, decl));
+            nameToken->function(function);
+        }
+
         void ref(const std::string &addr, Token *tok) {
             auto it = mDeclMap.find(addr);
-            if (it != mDeclMap.end()) {
-                tok->varId(it->second.var->declarationId());
-                tok->variable(it->second.var);
-            }
+            if (it != mDeclMap.end())
+                it->second.ref(tok);
         }
 
         std::vector<const Variable *> getVariableList() const {
@@ -279,14 +290,15 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         SymbolDatabase *symbolDatabase = mData->mSymbolDatabase;
         addTypeTokens(tokenList, mExtTokens.back());
         Token *nameToken = addtoken(tokenList, mExtTokens[mExtTokens.size() - 2]);
-        Scope &globalScope = symbolDatabase->scopeList.front();
-        symbolDatabase->scopeList.push_back(Scope(nullptr, nullptr, &globalScope));
+        Scope *nestedIn = const_cast<Scope *>(nameToken->scope());
+        symbolDatabase->scopeList.push_back(Scope(nullptr, nullptr, nestedIn));
         Scope &scope = symbolDatabase->scopeList.back();
         symbolDatabase->functionScopes.push_back(&scope);
-        globalScope.functionList.push_back(Function(nameToken));
-        scope.function = &globalScope.functionList.back();
+        nestedIn->functionList.push_back(Function(nameToken));
+        scope.function = &nestedIn->functionList.back();
         scope.type = Scope::ScopeType::eFunction;
         scope.className = nameToken->str();
+        mData->funcDecl(mExtTokens.front(), nameToken, scope.function);
         Token *par1 = addtoken(tokenList, "(");
         // Function arguments
         for (AstNodePtr child: children) {
