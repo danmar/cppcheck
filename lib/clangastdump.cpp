@@ -233,12 +233,12 @@ Scope *clangastdump::AstNode::createScope(TokenList *tokenList, Scope::ScopeType
     symbolDatabase->scopeList.push_back(Scope(nullptr, nullptr, nestedIn));
     Scope *scope = &symbolDatabase->scopeList.back();
     scope->type = scopeType;
-    Token *bodyStart = addtoken(tokenList, "{");
+    Token *bodyStart = astNode->addtoken(tokenList, "{");
     tokenList->back()->scope(scope);
     astNode->createTokens(tokenList);
-    if (tokenList->back()->str() != ";")
-        addtoken(tokenList, ";");
-    Token *bodyEnd = addtoken(tokenList, "}");
+    if (!Token::Match(tokenList->back(), "[;{}]"))
+        astNode->addtoken(tokenList, ";");
+    Token *bodyEnd = astNode->addtoken(tokenList, "}");
     bodyStart->link(bodyEnd);
     scope->bodyStart = bodyStart;
     scope->bodyEnd = bodyEnd;
@@ -345,6 +345,7 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
     if (nodeType == IfStmt) {
         AstNode *cond = children[2].get();
         AstNode *then = children[3].get();
+        AstNode *else_ = children[4].get();
         Token *iftok = addtoken(tokenList, "if");
         Token *par1 = addtoken(tokenList, "(");
         par1->astOperand1(iftok);
@@ -352,6 +353,10 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         Token *par2 = addtoken(tokenList, ")");
         par1->link(par2);
         createScope(tokenList, Scope::ScopeType::eIf, then);
+        if (else_) {
+            else_->addtoken(tokenList, "else");
+            createScope(tokenList, Scope::ScopeType::eElse, else_);
+        }
         return nullptr;
     }
     if (nodeType == ImplicitCastExpr)

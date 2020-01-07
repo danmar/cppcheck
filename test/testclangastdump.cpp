@@ -31,6 +31,7 @@ private:
     void run() OVERRIDE {
         TEST_CASE(funcdecl1);
         TEST_CASE(funcdecl2);
+        TEST_CASE(ifelse);
         TEST_CASE(vardecl1);
         TEST_CASE(vardecl2);
     }
@@ -64,6 +65,24 @@ private:
                              "          `-DeclRefExpr 0x24b2d50 <col:16> 'int' lvalue ParmVar 0x24b2b58 'y' 'int'";
         ASSERT_EQUALS("int foo ( int x@1 , int y@2 ) {\n\n"
                       "return x@1 / y@2 ; }", parse(clang));
+    }
+
+    void ifelse() {
+        const char clang[] = "`-FunctionDecl 0x2637ba8 <1.c:1:1, line:4:1> line:1:5 foo 'int (int)'\n"
+                             "  |-ParmVarDecl 0x2637ae0 <col:9, col:13> col:13 used x 'int'\n"
+                             "  `-CompoundStmt 0x2637d70 <col:16, line:4:1>\n"
+                             "    `-IfStmt 0x2637d38 <line:2:5, line:3:11>\n"
+                             "      |-<<<NULL>>>\n"
+                             "      |-<<<NULL>>>\n"
+                             "      |-BinaryOperator 0x2637cf0 <line:2:9, col:13> 'int' '>'\n"
+                             "      | |-ImplicitCastExpr 0x2637cd8 <col:9> 'int' <LValueToRValue>\n"
+                             "      | | `-DeclRefExpr 0x2637c90 <col:9> 'int' lvalue ParmVar 0x2637ae0 'x' 'int'\n"
+                             "      | `-IntegerLiteral 0x2637cb8 <col:13> 'int' 10\n"
+                             "      |-CompoundStmt 0x2637d18 <col:17, col:18>\n"
+                             "      `-CompoundStmt 0x2637d28 <line:3:10, col:11>";
+        ASSERT_EQUALS("int foo ( int x@1 ) {\n"
+                      "if ( x@1 > 10 ) { }\n"
+                      "else { } ; }", parse(clang));
     }
 
     void vardecl1() {
