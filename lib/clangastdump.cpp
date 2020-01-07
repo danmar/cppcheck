@@ -138,6 +138,7 @@ namespace clangastdump {
         Token *addTypeTokens(TokenList *tokenList, const std::string &str);
         Scope *createScope(TokenList *tokenList, Scope::ScopeType scopeType, AstNodePtr astNode);
         Scope *createScope(TokenList *tokenList, Scope::ScopeType scopeType, const std::vector<AstNodePtr> &children);
+        void createTokensVarDecl(TokenList *tokenList);
         std::string getSpelling() const;
         std::string getType() const;
         const Scope *getNestedInScope(TokenList *tokenList);
@@ -308,25 +309,7 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         return reftok;
     }
     if (nodeType == FieldDecl) {
-        bool isInit = mExtTokens.back() == "cinit";
-        const std::string addr = mExtTokens.front();
-        const std::string type = isInit ? mExtTokens[mExtTokens.size() - 2] : mExtTokens.back();
-        const std::string name = isInit ? mExtTokens[mExtTokens.size() - 3] : mExtTokens[mExtTokens.size() - 2];
-        addTypeTokens(tokenList, type);
-        Token *vartok1 = addtoken(tokenList, name);
-        Scope *scope = const_cast<Scope *>(tokenList->back()->scope());
-        const AccessControl accessControl = (scope->type == Scope::ScopeType::eGlobal) ? (AccessControl::Global) : (AccessControl::Local);
-        scope->varlist.push_back(Variable(vartok1, type, 0, accessControl, nullptr, scope));
-        mData->varDecl(addr, vartok1, &scope->varlist.back());
-        addtoken(tokenList, ";");
-        if (isInit) {
-            Token *vartok2 = addtoken(tokenList, name);
-            mData->ref(addr, vartok2);
-            Token *eq = addtoken(tokenList, "=");
-            eq->astOperand1(vartok2);
-            eq->astOperand2(children.back()->createTokens(tokenList));
-            addtoken(tokenList, ";");
-        }
+        createTokensVarDecl(tokenList);
         return nullptr;
     }
     if (nodeType == FunctionDecl) {
@@ -417,28 +400,33 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         return unop;
     }
     if (nodeType == VarDecl) {
-        bool isInit = mExtTokens.back() == "cinit";
-        const std::string addr = mExtTokens.front();
-        const std::string type = isInit ? mExtTokens[mExtTokens.size() - 2] : mExtTokens.back();
-        const std::string name = isInit ? mExtTokens[mExtTokens.size() - 3] : mExtTokens[mExtTokens.size() - 2];
-        addTypeTokens(tokenList, type);
-        Token *vartok1 = addtoken(tokenList, name);
-        Scope *scope = const_cast<Scope *>(tokenList->back()->scope());
-        const AccessControl accessControl = (scope->type == Scope::ScopeType::eGlobal) ? (AccessControl::Global) : (AccessControl::Local);
-        scope->varlist.push_back(Variable(vartok1, type, 0, accessControl, nullptr, scope));
-        mData->varDecl(addr, vartok1, &scope->varlist.back());
-        addtoken(tokenList, ";");
-        if (isInit) {
-            Token *vartok2 = addtoken(tokenList, name);
-            mData->ref(addr, vartok2);
-            Token *eq = addtoken(tokenList, "=");
-            eq->astOperand1(vartok2);
-            eq->astOperand2(children.back()->createTokens(tokenList));
-            addtoken(tokenList, ";");
-        }
+        createTokensVarDecl(tokenList);
         return nullptr;
     }
     return addtoken(tokenList, "?" + nodeType + "?");
+}
+
+void clangastdump::AstNode::createTokensVarDecl(TokenList *tokenList)
+{
+    bool isInit = mExtTokens.back() == "cinit";
+    const std::string addr = mExtTokens.front();
+    const std::string type = isInit ? mExtTokens[mExtTokens.size() - 2] : mExtTokens.back();
+    const std::string name = isInit ? mExtTokens[mExtTokens.size() - 3] : mExtTokens[mExtTokens.size() - 2];
+    addTypeTokens(tokenList, type);
+    Token *vartok1 = addtoken(tokenList, name);
+    Scope *scope = const_cast<Scope *>(tokenList->back()->scope());
+    const AccessControl accessControl = (scope->type == Scope::ScopeType::eGlobal) ? (AccessControl::Global) : (AccessControl::Local);
+    scope->varlist.push_back(Variable(vartok1, type, 0, accessControl, nullptr, scope));
+    mData->varDecl(addr, vartok1, &scope->varlist.back());
+    addtoken(tokenList, ";");
+    if (isInit) {
+        Token *vartok2 = addtoken(tokenList, name);
+        mData->ref(addr, vartok2);
+        Token *eq = addtoken(tokenList, "=");
+        eq->astOperand1(vartok2);
+        eq->astOperand2(children.back()->createTokens(tokenList));
+        addtoken(tokenList, ";");
+    }
 }
 
 void clangastdump::parseClangAstDump(Tokenizer *tokenizer, std::istream &f)
