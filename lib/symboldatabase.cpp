@@ -1723,6 +1723,36 @@ void SymbolDatabase::clangSetVariables(const std::vector<const Variable *> &vari
     mVariableList = variableList;
 }
 
+Variable::Variable(const Token *name_, const std::string &clangType,
+                   nonneg int index_, AccessControl access_, const Type *type_,
+                   const Scope *scope_)
+    : mNameToken(name_),
+      mTypeStartToken(nullptr),
+      mTypeEndToken(nullptr),
+      mIndex(index_),
+      mAccess(access_),
+      mFlags(0),
+      mType(type_),
+      mScope(scope_),
+      mValueType(nullptr)
+{
+
+    std::string::size_type pos = clangType.find("[");
+    if (pos != std::string::npos) {
+        setFlag(fIsArray, true);
+        do {
+            const std::string::size_type pos1 = pos+1;
+            pos = clangType.find("]", pos1);
+            Dimension dim;
+            dim.tok = nullptr;
+            dim.known = true;
+            dim.num = MathLib::toLongNumber(clangType.substr(pos1, pos-pos1));
+            mDimensions.push_back(dim);
+            ++pos;
+        } while (pos < clangType.size() && clangType[pos] == '[');
+    }
+}
+
 Variable::~Variable()
 {
     delete mValueType;

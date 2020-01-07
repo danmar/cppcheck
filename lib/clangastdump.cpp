@@ -24,6 +24,7 @@
 #include <vector>
 #include <iostream>
 
+static const std::string ArraySubscriptExpr = "ArraySubscriptExpr";
 static const std::string BinaryOperator = "BinaryOperator";
 static const std::string CallExpr = "CallExpr";
 static const std::string CompoundStmt = "CompoundStmt";
@@ -246,6 +247,16 @@ Scope *clangastdump::AstNode::createScope(TokenList *tokenList, Scope::ScopeType
 
 Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
 {
+    if (nodeType == ArraySubscriptExpr) {
+        Token *array = children[0]->createTokens(tokenList);
+        Token *bracket1 = addtoken(tokenList, "[");
+        Token *index = children[1]->createTokens(tokenList);
+        Token *bracket2 = addtoken(tokenList, "]");
+        bracket1->astOperand1(array);
+        bracket1->astOperand2(index);
+        bracket1->link(bracket2);
+        return bracket1;
+    }
     if (nodeType == BinaryOperator) {
         Token *tok1 = children[0]->createTokens(tokenList);
         Token *binop = addtoken(tokenList, unquote(mExtTokens.back()));
@@ -367,7 +378,7 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         Token *vartok1 = addtoken(tokenList, name);
         Scope *scope = const_cast<Scope *>(tokenList->back()->scope());
         const AccessControl accessControl = (scope->type == Scope::ScopeType::eGlobal) ? (AccessControl::Global) : (AccessControl::Local);
-        scope->varlist.push_back(Variable(vartok1, nullptr, nullptr, 0, accessControl, nullptr, scope, nullptr));
+        scope->varlist.push_back(Variable(vartok1, type, 0, accessControl, nullptr, scope));
         mData->varDecl(addr, vartok1, &scope->varlist.back());
         addtoken(tokenList, ";");
         if (isInit) {

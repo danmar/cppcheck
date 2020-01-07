@@ -32,6 +32,7 @@ private:
         TEST_CASE(funcdecl1);
         TEST_CASE(funcdecl2);
         TEST_CASE(vardecl1);
+        TEST_CASE(vardecl2);
     }
 
     std::string parse(const char clang[]) {
@@ -74,6 +75,25 @@ private:
 
         ASSERT_EQUALS("int a@1 ; a@1 = 1 ;\n"
                       "int b@2 ; b@2 = a@1 ;",
+                      parse(clang));
+    }
+
+    void vardecl2() {
+        const char clang[] = "|-VarDecl 0x3873b50 <1.c:1:1, col:9> col:5 used a 'int [10]'\n"
+                             "`-FunctionDecl 0x3873c38 <line:3:1, line:6:1> line:3:6 foo 'void ()'\n"
+                             "  `-CompoundStmt 0x3873dd0 <line:4:1, line:6:1>\n"
+                             "    `-BinaryOperator 0x3873da8 <line:5:3, col:10> 'int' '='\n"
+                             "      |-ArraySubscriptExpr 0x3873d60 <col:3, col:6> 'int' lvalue\n"
+                             "      | |-ImplicitCastExpr 0x3873d48 <col:3> 'int *' <ArrayToPointerDecay>\n"
+                             "      | | `-DeclRefExpr 0x3873cd8 <col:3> 'int [10]' lvalue Var 0x3873b50 'a' 'int [10]'\n"
+                             "      | `-IntegerLiteral 0x3873d00 <col:5> 'int' 0\n"
+                             "      `-IntegerLiteral 0x3873d88 <col:10> 'int' 0\n";
+
+        ASSERT_EQUALS("int[10] a@1 ;\n"
+                      "\n"
+                      "void foo ( ) {\n"
+                      "\n"
+                      "a@1 [ 0 ] = 0 ; }",
                       parse(clang));
     }
 };
