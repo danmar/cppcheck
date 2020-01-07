@@ -19,6 +19,7 @@
 #include "clangastdump.h"
 #include "symboldatabase.h"
 #include "tokenize.h"
+#include "utils.h"
 
 #include <memory>
 #include <vector>
@@ -29,11 +30,13 @@ static const std::string BinaryOperator = "BinaryOperator";
 static const std::string CallExpr = "CallExpr";
 static const std::string CompoundStmt = "CompoundStmt";
 static const std::string DeclRefExpr = "DeclRefExpr";
+static const std::string FieldDecl = "FieldDecl";
 static const std::string FunctionDecl = "FunctionDecl";
 static const std::string IfStmt = "IfStmt";
 static const std::string ImplicitCastExpr = "ImplicitCastExpr";
 static const std::string IntegerLiteral = "IntegerLiteral";
 static const std::string ParmVarDecl = "ParmVarDecl";
+static const std::string RecordDecl = "RecordDecl";
 static const std::string ReturnStmt = "ReturnStmt";
 static const std::string UnaryOperator = "UnaryOperator";
 static const std::string VarDecl = "VarDecl";
@@ -133,6 +136,7 @@ namespace clangastdump {
         Scope *createScope(TokenList *tokenList, Scope::ScopeType scopeType, AstNode *astNode);
         std::string getSpelling() const;
         std::string getType() const;
+        const Scope *getNestedInScope(TokenList *tokenList);
 
         int mFile  = 0;
         int mLine  = 1;
@@ -147,9 +151,7 @@ namespace clangastdump {
 
 std::string clangastdump::AstNode::getSpelling() const
 {
-    if (nodeType == ParmVarDecl)
-        return mExtTokens[mExtTokens.size() - 2];
-    return "";
+    return mExtTokens[mExtTokens.size() - 2];
 }
 
 std::string clangastdump::AstNode::getType() const
@@ -197,13 +199,7 @@ void clangastdump::AstNode::setLocations(TokenList *tokenList, int file, int lin
 
 Token *clangastdump::AstNode::addtoken(TokenList *tokenList, const std::string &str)
 {
-    const Scope *scope;
-    if (!tokenList->back())
-        scope = &mData->mSymbolDatabase->scopeList.front();
-    else if (tokenList->back()->str() == "}")
-        scope = tokenList->back()->scope()->nestedIn;
-    else
-        scope = tokenList->back()->scope();
+    const Scope *scope = getNestedInScope(tokenList);
     tokenList->addtoken(str, mLine, mFile);
     tokenList->back()->column(mCol);
     tokenList->back()->scope(scope);
@@ -219,17 +215,21 @@ Token *clangastdump::AstNode::addTypeTokens(TokenList *tokenList, const std::str
     return addtoken(tokenList, str.substr(1,str.find(" (")-1));
 }
 
+const Scope *clangastdump::AstNode::getNestedInScope(TokenList *tokenList)
+{
+    if (!tokenList->back())
+        return &mData->mSymbolDatabase->scopeList.front();
+    if (tokenList->back()->str() == "}")
+        return tokenList->back()->scope()->nestedIn;
+    return tokenList->back()->scope();
+}
+
 Scope *clangastdump::AstNode::createScope(TokenList *tokenList, Scope::ScopeType scopeType, AstNode *astNode)
 {
     SymbolDatabase *symbolDatabase = mData->mSymbolDatabase;
 
-    const Scope *nestedIn;
-    if (!tokenList->back())
-        nestedIn = &symbolDatabase->scopeList.front();
-    else if (tokenList->back()->str() == "}")
-        nestedIn = tokenList->back()->link()->previous()->scope();
-    else
-        nestedIn = tokenList->back()->scope();
+    const Scope *nestedIn = getNestedInScope(tokenList);
+
     symbolDatabase->scopeList.push_back(Scope(nullptr, nullptr, nestedIn));
     Scope *scope = &symbolDatabase->scopeList.back();
     scope->type = scopeType;
@@ -297,6 +297,28 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         mData->ref(addr, reftok);
         return reftok;
     }
+    if (nodeType == FieldDecl) {
+        bool isInit = mExtTokens.back() == "cinit";
+        const std::string addr = mExtTokens.front();
+        const std::string type = isInit ? mExtTokens[mExtTokens.size() - 2] : mExtTokens.back();
+        const std::string name = isInit ? mExtTokens[mExtTokens.size() - 3] : mExtTokens[mExtTokens.size() - 2];
+        addTypeTokens(tokenList, type);
+        Token *vartok1 = addtoken(tokenList, name);
+        Scope *scope = const_cast<Scope *>(tokenList->back()->scope());
+        const AccessControl accessControl = (scope->type == Scope::ScopeType::eGlobal) ? (AccessControl::Global) : (AccessControl::Local);
+        scope->varlist.push_back(Variable(vartok1, type, 0, accessControl, nullptr, scope));
+        mData->varDecl(addr, vartok1, &scope->varlist.back());
+        addtoken(tokenList, ";");
+        if (isInit) {
+            Token *vartok2 = addtoken(tokenList, name);
+            mData->ref(addr, vartok2);
+            Token *eq = addtoken(tokenList, "=");
+            eq->astOperand1(vartok2);
+            eq->astOperand2(children.back()->createTokens(tokenList));
+            addtoken(tokenList, ";");
+        }
+        return nullptr;
+    }
     if (nodeType == FunctionDecl) {
         SymbolDatabase *symbolDatabase = mData->mSymbolDatabase;
         addTypeTokens(tokenList, mExtTokens.back());
@@ -363,6 +385,26 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         return children[0]->createTokens(tokenList);
     if (nodeType == IntegerLiteral)
         return addtoken(tokenList, mExtTokens.back());
+    if (nodeType == RecordDecl) {
+        const Token *classDef = addtoken(tokenList, "struct");
+        /*const Token *nameToken =*/ addtoken(tokenList, getSpelling());
+        const Scope *nestedIn = getNestedInScope(tokenList);
+        mData->mSymbolDatabase->scopeList.push_back(Scope(nullptr, nullptr, nestedIn));
+        Scope *scope = &mData->mSymbolDatabase->scopeList.back();
+        scope->type = Scope::ScopeType::eStruct;
+        mData->mSymbolDatabase->typeList.push_back(Type(classDef, scope, nestedIn));
+        scope->definedType = &mData->mSymbolDatabase->typeList.back();
+        Token *bodyStart = addtoken(tokenList, "{");
+        bodyStart->scope(scope);
+        for (AstNodePtr child: children) {
+            child->createTokens(tokenList);
+        }
+        Token *bodyEnd = addtoken(tokenList, "}");
+        bodyStart->link(bodyEnd);
+        scope->bodyStart = bodyStart;
+        scope->bodyEnd = bodyEnd;
+        return nullptr;
+    }
     if (nodeType == ReturnStmt) {
         Token *tok1 = addtoken(tokenList, "return");
         if (!children.empty())
@@ -427,7 +469,7 @@ void clangastdump::parseClangAstDump(Tokenizer *tokenizer, std::istream &f)
         const std::string nodeType = line.substr(pos1+1, pos2 - pos1 - 1);
         const std::string ext = line.substr(pos2);
 
-        if (pos1 == 1 && (nodeType == FunctionDecl || nodeType == VarDecl)) {
+        if (pos1 == 1 && endsWith(nodeType, "Decl", 4) && nodeType != "TypedefDecl") {
             if (!tree.empty()) {
                 tree[0]->setLocations(tokenList, 0, 1, 1);
                 tree[0]->createTokens(tokenList);
