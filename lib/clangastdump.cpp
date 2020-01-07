@@ -118,13 +118,16 @@ namespace clangastdump {
         int mVarId = 0;
     };
 
+    class AstNode;
+    typedef std::shared_ptr<AstNode> AstNodePtr;
+
     class AstNode {
     public:
         AstNode(const std::string &nodeType, const std::string &ext, Data *data)
             : nodeType(nodeType), mExtTokens(splitString(ext)), mData(data)
         {}
         std::string nodeType;
-        std::vector<std::shared_ptr<AstNode>> children;
+        std::vector<AstNodePtr> children;
 
         void setLocations(TokenList *tokenList, int file, int line, int col);
 
@@ -133,7 +136,8 @@ namespace clangastdump {
     private:
         Token *addtoken(TokenList *tokenList, const std::string &str);
         Token *addTypeTokens(TokenList *tokenList, const std::string &str);
-        Scope *createScope(TokenList *tokenList, Scope::ScopeType scopeType, AstNode *astNode);
+        Scope *createScope(TokenList *tokenList, Scope::ScopeType scopeType, AstNodePtr astNode);
+        Scope *createScope(TokenList *tokenList, Scope::ScopeType scopeType, const std::vector<AstNodePtr> &children);
         std::string getSpelling() const;
         std::string getType() const;
         const Scope *getNestedInScope(TokenList *tokenList);
@@ -145,8 +149,6 @@ namespace clangastdump {
         std::vector<std::string> mExtTokens;
         Data *mData;
     };
-
-    typedef std::shared_ptr<AstNode> AstNodePtr;
 }
 
 std::string clangastdump::AstNode::getSpelling() const
@@ -224,7 +226,13 @@ const Scope *clangastdump::AstNode::getNestedInScope(TokenList *tokenList)
     return tokenList->back()->scope();
 }
 
-Scope *clangastdump::AstNode::createScope(TokenList *tokenList, Scope::ScopeType scopeType, AstNode *astNode)
+Scope *clangastdump::AstNode::createScope(TokenList *tokenList, Scope::ScopeType scopeType, AstNodePtr astNode)
+{
+    std::vector<AstNodePtr> children{astNode};
+    return createScope(tokenList, scopeType, children);
+}
+
+Scope *clangastdump::AstNode::createScope(TokenList *tokenList, Scope::ScopeType scopeType, const std::vector<AstNodePtr> &children)
 {
     SymbolDatabase *symbolDatabase = mData->mSymbolDatabase;
 
@@ -233,12 +241,14 @@ Scope *clangastdump::AstNode::createScope(TokenList *tokenList, Scope::ScopeType
     symbolDatabase->scopeList.push_back(Scope(nullptr, nullptr, nestedIn));
     Scope *scope = &symbolDatabase->scopeList.back();
     scope->type = scopeType;
-    Token *bodyStart = astNode->addtoken(tokenList, "{");
+    Token *bodyStart = children[0]->addtoken(tokenList, "{");
     tokenList->back()->scope(scope);
-    astNode->createTokens(tokenList);
-    if (!Token::Match(tokenList->back(), "[;{}]"))
-        astNode->addtoken(tokenList, ";");
-    Token *bodyEnd = astNode->addtoken(tokenList, "}");
+    for (AstNodePtr astNode: children) {
+        astNode->createTokens(tokenList);
+        if (!Token::Match(tokenList->back(), "[;{}]"))
+            astNode->addtoken(tokenList, ";");
+    }
+    Token *bodyEnd = children.back()->addtoken(tokenList, "}");
     bodyStart->link(bodyEnd);
     scope->bodyStart = bodyStart;
     scope->bodyEnd = bodyEnd;
@@ -365,9 +375,9 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         return nullptr;
     }
     if (nodeType == IfStmt) {
-        AstNode *cond = children[2].get();
-        AstNode *then = children[3].get();
-        AstNode *else_ = children[4].get();
+        AstNodePtr cond = children[2];
+        AstNodePtr then = children[3];
+        AstNodePtr else_ = children[4];
         Token *iftok = addtoken(tokenList, "if");
         Token *par1 = addtoken(tokenList, "(");
         par1->astOperand1(iftok);
@@ -387,22 +397,12 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         return addtoken(tokenList, mExtTokens.back());
     if (nodeType == RecordDecl) {
         const Token *classDef = addtoken(tokenList, "struct");
-        /*const Token *nameToken =*/ addtoken(tokenList, getSpelling());
-        const Scope *nestedIn = getNestedInScope(tokenList);
-        mData->mSymbolDatabase->scopeList.push_back(Scope(nullptr, nullptr, nestedIn));
-        Scope *scope = &mData->mSymbolDatabase->scopeList.back();
-        scope->type = Scope::ScopeType::eStruct;
-        mData->mSymbolDatabase->typeList.push_back(Type(classDef, scope, nestedIn));
-        scope->definedType = &mData->mSymbolDatabase->typeList.back();
-        Token *bodyStart = addtoken(tokenList, "{");
-        bodyStart->scope(scope);
-        for (AstNodePtr child: children) {
-            child->createTokens(tokenList);
-        }
-        Token *bodyEnd = addtoken(tokenList, "}");
-        bodyStart->link(bodyEnd);
-        scope->bodyStart = bodyStart;
-        scope->bodyEnd = bodyEnd;
+        const std::string &recordName = getSpelling();
+        if (!recordName.empty())
+            addtoken(tokenList, getSpelling());
+        Scope *recordScope = createScope(tokenList, Scope::ScopeType::eStruct, children);
+        mData->mSymbolDatabase->typeList.push_back(Type(classDef, recordScope, classDef->scope()));
+        recordScope->definedType = &mData->mSymbolDatabase->typeList.back();
         return nullptr;
     }
     if (nodeType == ReturnStmt) {

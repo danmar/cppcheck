@@ -90,8 +90,8 @@ private:
         const char clang[] = "`-RecordDecl 0x354eac8 <1.c:1:1, line:4:1> line:1:8 struct S definition\n"
                              "  |-FieldDecl 0x354eb88 <line:2:3, col:7> col:7 x 'int'\n"
                              "  `-FieldDecl 0x354ebe8 <line:3:3, col:7> col:7 y 'int'";
-        ASSERT_EQUALS("struct S {\n"
-                      "int x@1 ;\n"
+        ASSERT_EQUALS("struct S\n"
+                      "{ int x@1 ;\n"
                       "int y@2 ; }",
                       parse(clang));
     }
