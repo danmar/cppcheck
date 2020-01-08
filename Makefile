@@ -226,6 +226,7 @@ TESTOBJ =     test/options.o \
               test/testboost.o \
               test/testbufferoverrun.o \
               test/testcharvar.o \
+              test/testclangastdump.o \
               test/testclass.o \
               test/testcmdlineparser.o \
               test/testcondition.o \
@@ -590,6 +591,9 @@ test/testbufferoverrun.o: test/testbufferoverrun.cpp externals/tinyxml/tinyxml2.
 
 test/testcharvar.o: test/testcharvar.cpp lib/check.h lib/checkother.h lib/config.h lib/errorlogger.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h test/testsuite.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testcharvar.o test/testcharvar.cpp
+
+test/testclangastdump.o: test/testclangastdump.cpp lib/clangastdump.h lib/config.h lib/errorlogger.h lib/suppressions.h test/testsuite.h
+	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testclangastdump.o test/testclangastdump.cpp
 
 test/testclass.o: test/testclass.cpp externals/tinyxml/tinyxml2.h lib/check.h lib/checkclass.h lib/config.h lib/errorlogger.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h test/testsuite.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testclass.o test/testclass.cpp

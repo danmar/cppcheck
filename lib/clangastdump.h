@@ -25,7 +25,6 @@
 #include <string>
 #include <vector>
 
-class SymbolDatabase;
 class Tokenizer;
 
 namespace clangastdump {

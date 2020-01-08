@@ -220,12 +220,12 @@ script:
   - cd ../
 # self check lib/cli
   - mkdir b1
-  - ${CPPCHECK} -j2 --template=gcc --cppcheck-build-dir=b1 -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --inconclusive --enable=style,performance,portability,warning,internal --exception-handling cli lib
+  - ${CPPCHECK} -q -j2 --template=gcc --cppcheck-build-dir=b1 -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --inconclusive --enable=style,performance,portability,warning,internal --exception-handling cli lib
 # check gui with qt settings
   - mkdir b2
-  - ${CPPCHECK} -j2 --template=gcc --cppcheck-build-dir=b2 -D__CPPCHECK__ -DQT_VERSION=0x050000 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=qt --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ --enable=style,performance,portability,warning,internal --exception-handling gui/*.cpp
+  - ${CPPCHECK} -q -j2 --template=gcc --cppcheck-build-dir=b2 -D__CPPCHECK__ -DQT_VERSION=0x050000 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=qt --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ --enable=style,performance,portability,warning,internal --exception-handling gui/*.cpp
 # self check test and tools
-  - ${CPPCHECK} -j2 --template=gcc -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --inconclusive --enable=style,performance,portability,warning,internal --exception-handling test/*.cpp tools
+  - ${CPPCHECK} -q -j2 --template=gcc -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --inconclusive --enable=style,performance,portability,warning,internal --exception-handling test/*.cpp tools
 # Build gui
   - cd ./gui
 # clean rebuild
