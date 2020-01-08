@@ -38,6 +38,7 @@ private:
         TEST_CASE(funcdecl4);
         TEST_CASE(ifelse);
         TEST_CASE(memberExpr);
+        TEST_CASE(namespaceDecl);
         TEST_CASE(recordDecl);
         TEST_CASE(typedefDecl1);
         TEST_CASE(typedefDecl2);
@@ -45,7 +46,12 @@ private:
         TEST_CASE(vardecl1);
         TEST_CASE(vardecl2);
         TEST_CASE(vardecl3);
+        TEST_CASE(vardecl4);
+        TEST_CASE(vardecl5);
         TEST_CASE(whileStmt);
+
+        // C++..
+        TEST_CASE(namespaceDecl);
     }
 
     std::string parse(const char clang[]) {
@@ -170,6 +176,13 @@ private:
                       parse(clang));
     }
 
+    void namespaceDecl() {
+        const char clang[] = "`-NamespaceDecl 0x2e5f658 <hello.cpp:1:1, col:24> col:11 x\n"
+                             "  `-VarDecl 0x2e5f6d8 <col:15, col:19> col:19 var 'int'";
+        ASSERT_EQUALS("namespace x { int var@1 ; }",
+                      parse(clang));
+    }
+
     void recordDecl() {
         const char clang[] = "`-RecordDecl 0x354eac8 <1.c:1:1, line:4:1> line:1:8 struct S definition\n"
                              "  |-FieldDecl 0x354eb88 <line:2:3, col:7> col:7 x 'int'\n"
@@ -234,6 +247,16 @@ private:
     void vardecl3() {
         const char clang[] = "`-VarDecl 0x25a8aa0 <1.c:1:1, col:12> col:12 p 'const int *'";
         ASSERT_EQUALS("const int * p@1 ;", parse(clang));
+    }
+
+    void vardecl4() {
+        const char clang[] = "|-VarDecl 0x23d6c78 <line:137:1, col:14> col:14 stdin 'FILE *' extern";
+        ASSERT_EQUALS("FILE * stdin@1 ;", parse(clang));
+    }
+
+    void vardecl5() {
+        const char clang[] = "|-VarDecl 0x2e31fc0 <line:27:1, col:38> col:26 sys_errlist 'const char *const []' extern";
+        ASSERT_EQUALS("const char *const [] sys_errlist@1 ;", parse(clang));
     }
 
     void whileStmt() {

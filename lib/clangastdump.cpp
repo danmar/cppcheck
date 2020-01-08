@@ -41,6 +41,7 @@ static const std::string IfStmt = "IfStmt";
 static const std::string ImplicitCastExpr = "ImplicitCastExpr";
 static const std::string IntegerLiteral = "IntegerLiteral";
 static const std::string MemberExpr = "MemberExpr";
+static const std::string NamespaceDecl = "NamespaceDecl";
 static const std::string NullStmt = "NullStmt";
 static const std::string ParmVarDecl = "ParmVarDecl";
 static const std::string RecordDecl = "RecordDecl";
@@ -145,6 +146,7 @@ namespace clangastdump {
 
         void dumpAst(int num = 0, int indent = 0) const;
         void createTokens1(TokenList *tokenList) {
+            //dumpAst();
             setLocations(tokenList, 0, 1, 1);
             createTokens(tokenList);
             if (nodeType == VarDecl || nodeType == RecordDecl || nodeType == TypedefDecl)
@@ -444,6 +446,18 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         return addtoken(tokenList, mExtTokens.back());
     if (nodeType == NullStmt)
         return addtoken(tokenList, ";");
+    if (nodeType == NamespaceDecl) {
+        if (children.empty())
+            return nullptr;
+        Token *defToken = addtoken(tokenList, "namespace");
+        Token *nameToken = (mExtTokens[mExtTokens.size() - 2].compare(0,4,"col:") == 0) ?
+                           addtoken(tokenList, mExtTokens.back()) : nullptr;
+        Scope *scope = createScope(tokenList, Scope::ScopeType::eNamespace, children);
+        scope->classDef = defToken;
+        if (nameToken)
+            scope->className = nameToken->str();
+        return nullptr;
+    }
     if (nodeType == MemberExpr) {
         Token *s = children[0]->createTokens(tokenList);
         Token *dot = addtoken(tokenList, ".");
@@ -504,17 +518,19 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
 
 Token * clangastdump::AstNode::createTokensVarDecl(TokenList *tokenList)
 {
-    bool isInit = mExtTokens.back() == "cinit";
     const std::string addr = mExtTokens.front();
-    const std::string type = isInit ? mExtTokens[mExtTokens.size() - 2] : mExtTokens.back();
-    const std::string name = isInit ? mExtTokens[mExtTokens.size() - 3] : mExtTokens[mExtTokens.size() - 2];
+    int typeIndex = mExtTokens.size() - 1;
+    while (typeIndex > 1 && std::isalpha(mExtTokens[typeIndex][0]))
+        typeIndex--;
+    const std::string type = mExtTokens[typeIndex];
+    const std::string name = mExtTokens[typeIndex - 1];
     addTypeTokens(tokenList, type);
     Token *vartok1 = addtoken(tokenList, name);
     Scope *scope = const_cast<Scope *>(tokenList->back()->scope());
     const AccessControl accessControl = (scope->type == Scope::ScopeType::eGlobal) ? (AccessControl::Global) : (AccessControl::Local);
     scope->varlist.push_back(Variable(vartok1, type, 0, accessControl, nullptr, scope));
     mData->varDecl(addr, vartok1, &scope->varlist.back());
-    if (isInit) {
+    if (mExtTokens.back() == "cinit") {
         Token *eq = addtoken(tokenList, "=");
         eq->astOperand1(vartok1);
         eq->astOperand2(children.back()->createTokens(tokenList));
