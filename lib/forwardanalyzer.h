@@ -25,12 +25,67 @@
 
 struct ForwardAnalyzer
 {
-    enum class Action {
-        None,
-        Read,
-        Write,
-        Invalid,
-        Inconclusive
+    struct Action {
+
+        Action() : flag(0)
+        {}
+
+        Action(unsigned int f) : flag(f)
+        {}
+
+        enum {
+            None         = 0,
+            Read         = (1 << 0),
+            Write        = (1 << 1),
+            Invalid      = (1 << 2),
+            Inconclusive = (1 << 3),
+        };
+
+        void set(unsigned int f, bool state = true) {
+            flag = state ? flag | f : flag & ~f;
+        }
+
+        bool get(unsigned int f) const {
+            return ((flag & f) != 0);
+        }
+
+        bool isRead() const {
+            return get(Read);
+        }
+
+        bool isWrite() const {
+            return get(Write);
+        }
+
+        bool isInvalid() const {
+            return get(Invalid);
+        }
+
+        bool isInconclusive() const {
+            return get(Inconclusive);
+        }
+
+        bool isNone() const {
+            return flag == None;
+        }
+
+        bool isModified() const {
+            return isWrite() || isInvalid();
+        }
+
+        Action& operator|=(Action a) {
+            set(a.flag);
+            return *this;
+        }
+
+        friend Action operator|(Action a, Action b) {
+            a |= b;
+            return a;
+        }
+
+    private:
+
+        unsigned int flag;
     };
     virtual Action Analyze(const Token* tok) const = 0;
     virtual void Update(Token* tok, Action a) = 0;

@@ -11,9 +11,9 @@ struct ForwardTraversal
 
     Progress update(Token* tok) {
         ForwardAnalyzer::Action action = analyzer->Analyze(tok);
-        if (action != ForwardAnalyzer::Action::None)
+        if (action.isNone())
             analyzer->Update(tok, action);
-        if (action == ForwardAnalyzer::Action::Invalid)
+        if (action.isInvalid())
             return Progress::Break;
         return Progress::Continue;
     }
@@ -33,7 +33,7 @@ struct ForwardTraversal
     ForwardAnalyzer::Action analyzeRange(const Token* start, const Token* end) {
         for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
             ForwardAnalyzer::Action action = analyzer->Analyze(tok);
-            if (action != ForwardAnalyzer::Action::None && action != ForwardAnalyzer::Action::Read)
+            if (action.isModified() || action.isInconclusive())
                 return action;
         }
         return ForwardAnalyzer::Action::None;
@@ -107,10 +107,10 @@ struct ForwardTraversal
 
                 if (!checkThen && !checkElse) {
                     ForwardAnalyzer::Action a = analyzeRange(endCond->next(), endBlock);
-                    if (a == ForwardAnalyzer::Action::Write || a == ForwardAnalyzer::Action::Invalid) {
-                        analyzer->LowerToPossible();
-                    } else if (a == ForwardAnalyzer::Action::Inconclusive) {
+                    if (a.isInconclusive()) {
                         analyzer->LowerToInconclusive();
+                    } else if (a.isModified()) {
+                        analyzer->LowerToPossible();
                     }
                 }
 

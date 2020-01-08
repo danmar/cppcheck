@@ -2222,15 +2222,16 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
                     return Action::Invalid;
                 return Action::Write;
             }
-            // Check for modifications
+            // Check for modifications by function calls
+            Action read = Action::Read;
             bool inconclusive = false;
             if (isVariableChangedByFunctionCall(tok, value.indirect, settings, &inconclusive))
-                return Action::Invalid;
+                return read | Action::Invalid;
             if (inconclusive)
-                return Action::Inconclusive;
+                return read | Action::Inconclusive;
             if (isVariableChanged(tok, value.indirect, settings, cpp))
-                return Action::Invalid;
-            return Action::Read;
+                return read | Action::Invalid;
+            return read;
         } else if (isAliasOf(var, tok, varid, {value}) && isVariableChanged(tok, 0, settings, cpp)) {
             return Action::Invalid;
         }
@@ -2238,16 +2239,16 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
     }
     virtual void Update(Token* tok, Action a) OVERRIDE
     {
-        if (a == Action::Read) {
+        if (a.isRead())
             setTokenValue(tok, value, settings);
-        } else if (a == Action::Write) {
+        if (a.isInconclusive())
+            LowerToInconclusive();
+        if (a.isWrite()) {
             if (Token::Match(tok->astParent(), "%assign%")) {
                 // TODO: Check result
                 evalAssignment(value, tok->astParent()->str(), *getKnownValue(tok->astParent()->astOperand2(), value.valueKind));
             }
             setTokenValue(tok, value, settings);
-        } else if (a == Action::Inconclusive) {
-            LowerToInconclusive();
         }
     }
     virtual std::vector<int> Evaluate(const Token* tok) const OVERRIDE
