@@ -34,6 +34,7 @@ static const std::string ClassTemplateDecl = "ClassTemplateDecl";
 static const std::string ClassTemplateSpecializationDecl = "ClassTemplateSpecializationDecl";
 static const std::string CompoundStmt = "CompoundStmt";
 static const std::string ContinueStmt = "ContinueStmt";
+static const std::string CXXMemberCallExpr = "CXXMemberCallExpr";
 static const std::string CXXMethodDecl = "CXXMethodDecl";
 static const std::string CXXRecordDecl = "CXXRecordDecl";
 static const std::string DeclRefExpr = "DeclRefExpr";
@@ -164,6 +165,7 @@ namespace clangastdump {
         void addTypeTokens(TokenList *tokenList, const std::string &str);
         Scope *createScope(TokenList *tokenList, Scope::ScopeType scopeType, AstNodePtr astNode);
         Scope *createScope(TokenList *tokenList, Scope::ScopeType scopeType, const std::vector<AstNodePtr> &children);
+        Token *createTokensCall(TokenList *tokenList);
         void createTokensFunctionDecl(TokenList *tokenList);
         void createTokensForCXXRecord(TokenList *tokenList);
         Token *createTokensVarDecl(TokenList *tokenList);
@@ -342,25 +344,8 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == BreakStmt)
         return addtoken(tokenList, "break");
-    if (nodeType == CallExpr) {
-        Token *f = children[0]->createTokens(tokenList);
-        Token *par1 = addtoken(tokenList, "(");
-        par1->astOperand1(f);
-        Token *parent = par1;
-        for (int c = 1; c < children.size(); ++c) {
-            if (c + 1 < children.size()) {
-                Token *child = children[c]->createTokens(tokenList);
-                Token *comma = addtoken(tokenList, ",");
-                comma->astOperand1(child);
-                parent->astOperand2(comma);
-                parent = comma;
-            } else {
-                parent->astOperand2(children[c]->createTokens(tokenList));
-            }
-        }
-        par1->link(addtoken(tokenList, ")"));
-        return par1;
-    }
+    if (nodeType == CallExpr)
+        return createTokensCall(tokenList);
     if (nodeType == ClassTemplateDecl) {
         for (AstNodePtr child: children) {
             if (child->nodeType == ClassTemplateSpecializationDecl)
@@ -385,6 +370,8 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         createTokensFunctionDecl(tokenList);
         return nullptr;
     }
+    if (nodeType == CXXMemberCallExpr)
+        return createTokensCall(tokenList);
     if (nodeType == CXXRecordDecl) {
         createTokensForCXXRecord(tokenList);
         return nullptr;
@@ -524,6 +511,27 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         return nullptr;
     }
     return addtoken(tokenList, "?" + nodeType + "?");
+}
+
+Token * clangastdump::AstNode::createTokensCall(TokenList *tokenList)
+{
+    Token *f = children[0]->createTokens(tokenList);
+    Token *par1 = addtoken(tokenList, "(");
+    par1->astOperand1(f);
+    Token *parent = par1;
+    for (int c = 1; c < children.size(); ++c) {
+        if (c + 1 < children.size()) {
+            Token *child = children[c]->createTokens(tokenList);
+            Token *comma = addtoken(tokenList, ",");
+            comma->astOperand1(child);
+            parent->astOperand2(comma);
+            parent = comma;
+        } else {
+            parent->astOperand2(children[c]->createTokens(tokenList));
+        }
+    }
+    par1->link(addtoken(tokenList, ")"));
+    return par1;
 }
 
 void clangastdump::AstNode::createTokensFunctionDecl(TokenList *tokenList)

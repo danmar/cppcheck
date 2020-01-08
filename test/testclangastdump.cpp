@@ -34,6 +34,7 @@ private:
         TEST_CASE(classTemplateDecl1);
         TEST_CASE(classTemplateDecl2);
         TEST_CASE(continueStmt);
+        TEST_CASE(cxxMemberCall);
         TEST_CASE(forStmt);
         TEST_CASE(funcdecl1);
         TEST_CASE(funcdecl2);
@@ -158,6 +159,18 @@ private:
                              "      |-IntegerLiteral 0x2c31bf8 <col:21> 'int' 0\n"
                              "      `-ContinueStmt 0x2c31c18 <col:24>";
         ASSERT_EQUALS("void foo ( ) { while ( 0 ) { continue ; } ; }", parse(clang));
+    }
+
+    void cxxMemberCall() {
+        const char clang[] = "`-FunctionDecl 0x320dc80 <line:2:1, col:33> col:6 bar 'void ()'\n"
+                             "  `-CompoundStmt 0x323bb08 <col:12, col:33>\n"
+                             "    |-DeclStmt 0x323ba40 <col:14, col:22>\n"
+                             "    | `-VarDecl 0x320df28 <col:14, col:21> col:21 used c 'C<int>':'C<int>' callinit\n"
+                             "    |   `-CXXConstructExpr 0x323ba10 <col:21> 'C<int>':'C<int>' 'void () noexcept'\n"
+                             "    `-CXXMemberCallExpr 0x323bab8 <col:24, col:30> 'int':'int'\n"
+                             "      `-MemberExpr 0x323ba80 <col:24, col:26> '<bound member function type>' .foo 0x320e160\n"
+                             "        `-DeclRefExpr 0x323ba58 <col:24> 'C<int>':'C<int>' lvalue Var 0x320df28 'c' 'C<int>':'C<int>'";
+        ASSERT_EQUALS("void bar ( ) { C<int> c@1 ; c@1 . foo ( ) ; }", parse(clang));
     }
 
     void forStmt() {
