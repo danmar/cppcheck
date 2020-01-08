@@ -375,7 +375,6 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == FunctionDecl) {
         SymbolDatabase *symbolDatabase = mData->mSymbolDatabase;
-        std::string name, rettype;
         const int nameIndex = (mExtTokens.back() == "extern") ?
                               (mExtTokens.size() - 3) :
                               (mExtTokens.size() - 2);
