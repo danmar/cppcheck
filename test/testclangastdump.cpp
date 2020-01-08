@@ -37,6 +37,7 @@ private:
         TEST_CASE(recordDecl);
         TEST_CASE(vardecl1);
         TEST_CASE(vardecl2);
+        TEST_CASE(whileStmt);
     }
 
     std::string parse(const char clang[]) {
@@ -163,6 +164,18 @@ private:
                       "void foo ( ) {\n"
                       "\n"
                       "a@1 [ 0 ] = 0 ; }",
+                      parse(clang));
+    }
+
+    void whileStmt() {
+        const char clang[] = "`-FunctionDecl 0x3d45b18 <1.c:1:1, line:3:1> line:1:6 foo 'void ()'\n"
+                             "  `-CompoundStmt 0x3d45c48 <col:12, line:3:1>\n"
+                             "    `-WhileStmt 0x3d45c28 <line:2:5, col:14>\n"
+                             "      |-<<<NULL>>>\n"
+                             "      |-IntegerLiteral 0x3d45bf8 <col:12> 'int' 0\n"
+                             "      `-NullStmt 0x3d45c18 <col:14>";
+        ASSERT_EQUALS("void foo ( ) {\n"
+                      "while ( 0 ) { ; } ; }",
                       parse(clang));
     }
 };

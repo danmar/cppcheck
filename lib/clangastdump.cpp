@@ -39,11 +39,13 @@ static const std::string IfStmt = "IfStmt";
 static const std::string ImplicitCastExpr = "ImplicitCastExpr";
 static const std::string IntegerLiteral = "IntegerLiteral";
 static const std::string MemberExpr = "MemberExpr";
+static const std::string NullStmt = "NullStmt";
 static const std::string ParmVarDecl = "ParmVarDecl";
 static const std::string RecordDecl = "RecordDecl";
 static const std::string ReturnStmt = "ReturnStmt";
 static const std::string UnaryOperator = "UnaryOperator";
 static const std::string VarDecl = "VarDecl";
+static const std::string WhileStmt = "WhileStmt";
 
 static std::string unquote(const std::string &s)
 {
@@ -415,6 +417,8 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         return children[0]->createTokens(tokenList);
     if (nodeType == IntegerLiteral)
         return addtoken(tokenList, mExtTokens.back());
+    if (nodeType == NullStmt)
+        return addtoken(tokenList, ";");
     if (nodeType == MemberExpr) {
         Token *s = children[0]->createTokens(tokenList);
         Token *dot = addtoken(tokenList, ".");
@@ -447,6 +451,18 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == VarDecl)
         return createTokensVarDecl(tokenList);
+    if (nodeType == WhileStmt) {
+        AstNodePtr cond = children[1];
+        AstNodePtr body = children[2];
+        Token *whiletok = addtoken(tokenList, "while");
+        Token *par1 = addtoken(tokenList, "(");
+        par1->astOperand1(whiletok);
+        par1->astOperand2(cond->createTokens(tokenList));
+        Token *par2 = addtoken(tokenList, ")");
+        par1->link(par2);
+        createScope(tokenList, Scope::ScopeType::eWhile, body);
+        return nullptr;
+    }
     return addtoken(tokenList, "?" + nodeType + "?");
 }
 
