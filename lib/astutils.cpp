@@ -277,7 +277,8 @@ static bool hasToken(const Token * startTok, const Token * stopTok, const Token 
     return false;
 }
 
-const Token * nextAfterAstRightmostLeaf(const Token * tok)
+template<class T>
+T * nextAfterAstRightmostLeafGeneric(T * tok)
 {
     const Token * rightmostLeaf = tok;
     if (!rightmostLeaf || !rightmostLeaf->astOperand1())
@@ -293,6 +294,15 @@ const Token * nextAfterAstRightmostLeaf(const Token * tok)
     if (rightmostLeaf->str() == "{" && rightmostLeaf->link())
         rightmostLeaf = rightmostLeaf->link();
     return rightmostLeaf->next();
+}
+
+const Token * nextAfterAstRightmostLeaf(const Token * tok)
+{
+    return nextAfterAstRightmostLeafGeneric(tok);
+}
+Token * nextAfterAstRightmostLeaf(Token * tok)
+{
+    return nextAfterAstRightmostLeafGeneric(tok);
 }
 
 const Token* astParentSkipParens(const Token* tok)

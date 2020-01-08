@@ -32,7 +32,7 @@ struct ForwardAnalyzer
         Invalid,
         Inconclusive
     };
-    virtual Action Analyze(const Token* tok) const = 0;
+    virtual Action Analyze(const Token* tok, bool lhs = false) const = 0;
     virtual void Update(Token* tok, Action a) = 0;
     virtual std::vector<int> Evaluate(const Token* tok) const = 0;
     virtual void LowerToPossible() = 0;
