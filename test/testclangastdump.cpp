@@ -35,6 +35,7 @@ private:
         TEST_CASE(funcdecl1);
         TEST_CASE(funcdecl2);
         TEST_CASE(funcdecl3);
+        TEST_CASE(funcdecl4);
         TEST_CASE(ifelse);
         TEST_CASE(memberExpr);
         TEST_CASE(recordDecl);
@@ -122,6 +123,15 @@ private:
                              "| |-ParmVarDecl 0x27cb528 <col:24, col:29> col:30 'FILE *'\n"
                              "| `-ParmVarDecl 0x27cb5a0 <col:32> col:35 'int'";
         ASSERT_EQUALS("int __overflow ( FILE * , int ) ;", parse(clang));
+    }
+
+    void funcdecl4() {
+        const char clang[] = "|-FunctionDecl 0x272bb60 <line:658:15> col:15 implicit fwrite 'unsigned long (const void *, unsigned long, unsigned long, FILE *)' extern\n"
+                             "| |-ParmVarDecl 0x272cc40 <<invalid sloc>> <invalid sloc> 'const void *'\n"
+                             "| |-ParmVarDecl 0x272cca0 <<invalid sloc>> <invalid sloc> 'unsigned long'\n"
+                             "| |-ParmVarDecl 0x272cd00 <<invalid sloc>> <invalid sloc> 'unsigned long'\n"
+                             "| `-ParmVarDecl 0x272cd60 <<invalid sloc>> <invalid sloc> 'FILE *'";
+        ASSERT_EQUALS("unsigned long fwrite ( const void * , unsigned long , unsigned long , FILE * ) ;", parse(clang));
     }
 
     void ifelse() {

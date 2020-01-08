@@ -176,6 +176,8 @@ std::string clangastdump::AstNode::getSpelling() const
         return mExtTokens[mExtTokens.size() - 3];
     if (mExtTokens[mExtTokens.size() - 2].compare(0,4,"col:") == 0)
         return "";
+    if ((mExtTokens[mExtTokens.size() - 2].compare(0,8,"<invalid") == 0))
+        return "";
     return mExtTokens[mExtTokens.size() - 2];
 }
 
