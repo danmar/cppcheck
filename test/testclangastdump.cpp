@@ -34,6 +34,7 @@ private:
         TEST_CASE(forStmt);
         TEST_CASE(funcdecl1);
         TEST_CASE(funcdecl2);
+        TEST_CASE(funcdecl3);
         TEST_CASE(ifelse);
         TEST_CASE(memberExpr);
         TEST_CASE(recordDecl);
@@ -114,6 +115,13 @@ private:
                              "          `-DeclRefExpr 0x24b2d50 <col:16> 'int' lvalue ParmVar 0x24b2b58 'y' 'int'";
         ASSERT_EQUALS("int foo ( int x@1 , int y@2 ) {\n\n"
                       "return x@1 / y@2 ; }", parse(clang));
+    }
+
+    void funcdecl3() {
+        const char clang[] = "|-FunctionDecl 0x27cb6b8 <line:865:1, col:35> col:12 __overflow 'int (FILE *, int)' extern\n"
+                             "| |-ParmVarDecl 0x27cb528 <col:24, col:29> col:30 'FILE *'\n"
+                             "| `-ParmVarDecl 0x27cb5a0 <col:32> col:35 'int'";
+        ASSERT_EQUALS("int __overflow ( FILE * , int ) ;", parse(clang));
     }
 
     void ifelse() {

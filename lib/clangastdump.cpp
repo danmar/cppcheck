@@ -45,6 +45,7 @@ static const std::string NullStmt = "NullStmt";
 static const std::string ParmVarDecl = "ParmVarDecl";
 static const std::string RecordDecl = "RecordDecl";
 static const std::string ReturnStmt = "ReturnStmt";
+static const std::string StringLiteral = "StringLiteral";
 static const std::string TypedefDecl = "TypedefDecl";
 static const std::string UnaryOperator = "UnaryOperator";
 static const std::string VarDecl = "VarDecl";
@@ -171,6 +172,10 @@ namespace clangastdump {
 
 std::string clangastdump::AstNode::getSpelling() const
 {
+    if (mExtTokens.back() == "extern")
+        return mExtTokens[mExtTokens.size() - 3];
+    if (mExtTokens[mExtTokens.size() - 2].compare(0,4,"col:") == 0)
+        return "";
     return mExtTokens[mExtTokens.size() - 2];
 }
 
@@ -180,6 +185,10 @@ std::string clangastdump::AstNode::getType() const
         return unquote(mExtTokens[mExtTokens.size() - 2]);
     if (nodeType == DeclRefExpr)
         return unquote(mExtTokens.back());
+    if (nodeType == FunctionDecl)
+        return unquote((mExtTokens.back() == "extern") ?
+                       mExtTokens[mExtTokens.size() - 2] :
+                       mExtTokens.back());
     if (nodeType == IntegerLiteral)
         return unquote(mExtTokens[mExtTokens.size() - 2]);
     if (nodeType == TypedefDecl)
@@ -362,8 +371,13 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == FunctionDecl) {
         SymbolDatabase *symbolDatabase = mData->mSymbolDatabase;
-        addTypeTokens(tokenList, mExtTokens.back());
-        Token *nameToken = addtoken(tokenList, mExtTokens[mExtTokens.size() - 2]);
+        std::string name, rettype;
+        const int nameIndex = (mExtTokens.back() == "extern") ?
+                              (mExtTokens.size() - 3) :
+                              (mExtTokens.size() - 2);
+        const int retTypeIndex = nameIndex + 1;
+        addTypeTokens(tokenList, mExtTokens[retTypeIndex]);
+        Token *nameToken = addtoken(tokenList, mExtTokens[nameIndex]);
         Scope *nestedIn = const_cast<Scope *>(nameToken->scope());
         symbolDatabase->scopeList.push_back(Scope(nullptr, nullptr, nestedIn));
         Scope &scope = symbolDatabase->scopeList.back();
@@ -442,9 +456,13 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         const std::string &recordName = getSpelling();
         if (!recordName.empty())
             addtoken(tokenList, getSpelling());
-        Scope *recordScope = createScope(tokenList, Scope::ScopeType::eStruct, children);
-        mData->mSymbolDatabase->typeList.push_back(Type(classDef, recordScope, classDef->scope()));
-        recordScope->definedType = &mData->mSymbolDatabase->typeList.back();
+        if (children.empty())
+            addtoken(tokenList, ";");
+        else {
+            Scope *recordScope = createScope(tokenList, Scope::ScopeType::eStruct, children);
+            mData->mSymbolDatabase->typeList.push_back(Type(classDef, recordScope, classDef->scope()));
+            recordScope->definedType = &mData->mSymbolDatabase->typeList.back();
+        }
         return nullptr;
     }
     if (nodeType == ReturnStmt) {
@@ -453,6 +471,8 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
             tok1->astOperand1(children[0]->createTokens(tokenList));
         return tok1;
     }
+    if (nodeType == StringLiteral)
+        return addtoken(tokenList, mExtTokens.back());
     if (nodeType == TypedefDecl) {
         addtoken(tokenList, "typedef");
         addTypeTokens(tokenList, getType());
