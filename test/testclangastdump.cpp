@@ -29,6 +29,7 @@ public:
 
 private:
     void run() OVERRIDE {
+        TEST_CASE(forStmt);
         TEST_CASE(funcdecl1);
         TEST_CASE(funcdecl2);
         TEST_CASE(ifelse);
@@ -46,6 +47,25 @@ private:
         return tokenizer.tokens()->stringifyList(true, false, false, true, false);
     }
 
+    void forStmt() {
+        const char clang[] = "`-FunctionDecl 0x2f93ae0 <1.c:1:1, col:56> col:5 main 'int ()'\n"
+                             "  `-CompoundStmt 0x2f93dc0 <col:12, col:56>\n"
+                             "    |-ForStmt 0x2f93d50 <col:14, col:44>\n"
+                             "    | |-DeclStmt 0x2f93c58 <col:19, col:28>\n"
+                             "    | | `-VarDecl 0x2f93bd8 <col:19, col:27> col:23 used i 'int' cinit\n"
+                             "    | |   `-IntegerLiteral 0x2f93c38 <col:27> 'int' 0\n"
+                             "    | |-<<<NULL>>>\n"
+                             "    | |-BinaryOperator 0x2f93cd0 <col:30, col:34> 'int' '<'\n"
+                             "    | | |-ImplicitCastExpr 0x2f93cb8 <col:30> 'int' <LValueToRValue>\n"
+                             "    | | | `-DeclRefExpr 0x2f93c70 <col:30> 'int' lvalue Var 0x2f93bd8 'i' 'int'\n"
+                             "    | | `-IntegerLiteral 0x2f93c98 <col:34> 'int' 10\n"
+                             "    | |-UnaryOperator 0x2f93d20 <col:38, col:39> 'int' postfix '++'\n"
+                             "    | | `-DeclRefExpr 0x2f93cf8 <col:38> 'int' lvalue Var 0x2f93bd8 'i' 'int'\n"
+                             "    | `-CompoundStmt 0x2f93d40 <col:43, col:44>\n"
+                             "    `-ReturnStmt 0x2f93da8 <col:46, col:53>\n"
+                             "      `-IntegerLiteral 0x2f93d88 <col:53> 'int' 0";
+        ASSERT_EQUALS("int main ( ) { for ( int i@1 = 0 ; i@1 < 10 ; ++ i@1 ) { } ; return 0 ; }", parse(clang));
+    }
 
     void funcdecl1() {
         const char clang[] = "`-FunctionDecl 0x3122c30 <1.c:1:1, col:22> col:6 foo 'void (int, int)'\n"
@@ -100,7 +120,7 @@ private:
                              "      `-ImplicitCastExpr 0x2441e40 <col:30, col:32> 'int' <LValueToRValue>\n"
                              "        `-MemberExpr 0x2441e08 <col:30, col:32> 'int' lvalue .x 0x2441b48\n"
                              "          `-DeclRefExpr 0x2441de0 <col:30> 'struct S':'struct S' lvalue ParmVar 0x2441be8 's' 'struct S':'struct S'";
-        ASSERT_EQUALS("struct S { int x@1 ; }\n"
+        ASSERT_EQUALS("struct S { int x@1 ; } ;\n"
                       "int foo ( struct S s@2 ) { return s@2 . x@1 ; }",
                       parse(clang));
     }
@@ -111,7 +131,7 @@ private:
                              "  `-FieldDecl 0x354ebe8 <line:3:3, col:7> col:7 y 'int'";
         ASSERT_EQUALS("struct S\n"
                       "{ int x@1 ;\n"
-                      "int y@2 ; }",
+                      "int y@2 ; } ;",
                       parse(clang));
     }
 
@@ -122,8 +142,8 @@ private:
                              "  `-ImplicitCastExpr 0x32b8c00 <col:9> 'int' <LValueToRValue>\n"
                              "    `-DeclRefExpr 0x32b8bd8 <col:9> 'int' lvalue Var 0x32b8aa0 'a' 'int'";
 
-        ASSERT_EQUALS("int a@1 ; a@1 = 1 ;\n"
-                      "int b@2 ; b@2 = a@1 ;",
+        ASSERT_EQUALS("int a@1 = 1 ;\n"
+                      "int b@2 = a@1 ;",
                       parse(clang));
     }
 
