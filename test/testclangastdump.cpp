@@ -37,6 +37,8 @@ private:
         TEST_CASE(funcdecl2);
         TEST_CASE(funcdecl3);
         TEST_CASE(funcdecl4);
+        TEST_CASE(functionTemplateDecl1);
+        TEST_CASE(functionTemplateDecl2);
         TEST_CASE(ifelse);
         TEST_CASE(memberExpr);
         TEST_CASE(namespaceDecl);
@@ -151,6 +153,40 @@ private:
                              "| |-ParmVarDecl 0x272cd00 <<invalid sloc>> <invalid sloc> 'unsigned long'\n"
                              "| `-ParmVarDecl 0x272cd60 <<invalid sloc>> <invalid sloc> 'FILE *'";
         ASSERT_EQUALS("unsigned long fwrite ( const void * , unsigned long , unsigned long , FILE * ) ;", parse(clang));
+    }
+
+    void functionTemplateDecl1() {
+        const char clang[] = "`-FunctionTemplateDecl 0x3242860 <a.cpp:1:1, col:46> col:21 foo";
+        ASSERT_EQUALS("", parse(clang));
+    }
+
+    void functionTemplateDecl2() {
+        const char clang[] = "|-FunctionTemplateDecl 0x333a860 <a.cpp:1:1, col:46> col:21 foo\n"
+                             "| |-TemplateTypeParmDecl 0x333a5f8 <col:10, col:16> col:16 referenced class depth 0 index 0 T\n"
+                             "| |-FunctionDecl 0x333a7c0 <col:19, col:46> col:21 foo 'T (T)'\n"
+                             "| | |-ParmVarDecl 0x333a6c0 <col:25, col:27> col:27 referenced t 'T'\n"
+                             "| | `-CompoundStmt 0x333a980 <col:30, col:46>\n"
+                             "| |   `-ReturnStmt 0x333a968 <col:32, col:43>\n"
+                             "| |     `-BinaryOperator 0x333a940 <col:39, col:43> '<dependent type>' '+'\n"
+                             "| |       |-DeclRefExpr 0x333a8f8 <col:39> 'T' lvalue ParmVar 0x333a6c0 't' 'T'\n"
+                             "| |       `-IntegerLiteral 0x333a920 <col:43> 'int' 1\n"
+                             "| `-FunctionDecl 0x333ae00 <col:19, col:46> col:21 used foo 'int (int)'\n"
+                             "|   |-TemplateArgument type 'int'\n"
+                             "|   |-ParmVarDecl 0x333ad00 <col:25, col:27> col:27 used t 'int':'int'\n"
+                             "|   `-CompoundStmt 0x333b0a8 <col:30, col:46>\n"
+                             "|     `-ReturnStmt 0x333b090 <col:32, col:43>\n"
+                             "|       `-BinaryOperator 0x333b068 <col:39, col:43> 'int' '+'\n"
+                             "|         |-ImplicitCastExpr 0x333b050 <col:39> 'int':'int' <LValueToRValue>\n"
+                             "|         | `-DeclRefExpr 0x333b028 <col:39> 'int':'int' lvalue ParmVar 0x333ad00 't' 'int':'int'\n"
+                             "|         `-IntegerLiteral 0x333a920 <col:43> 'int' 1\n"
+                             "`-FunctionDecl 0x333a9f8 <line:2:1, col:22> col:1 invalid bar 'int ()'\n"
+                             "  `-CompoundStmt 0x333b010 <col:7, col:22>\n"
+                             "    `-CallExpr 0x333afe0 <col:9, col:19> 'int':'int'\n"
+                             "      |-ImplicitCastExpr 0x333afc8 <col:9, col:16> 'int (*)(int)' <FunctionToPointerDecay>\n"
+                             "      | `-DeclRefExpr 0x333af00 <col:9, col:16> 'int (int)' lvalue Function 0x333ae00 'foo' 'int (int)' (FunctionTemplate 0x333a860 'foo')\n"
+                             "      `-IntegerLiteral 0x333ab48 <col:18> 'int' 1";
+        ASSERT_EQUALS("int foo<int> ( int t@1 ) { return t@1 + 1 ; }\n"
+                      "int bar ( ) { foo ( 1 ) ; }", parse(clang));
     }
 
     void ifelse() {

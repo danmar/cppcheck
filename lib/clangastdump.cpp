@@ -39,6 +39,7 @@ static const std::string DeclStmt = "DeclStmt";
 static const std::string FieldDecl = "FieldDecl";
 static const std::string ForStmt = "ForStmt";
 static const std::string FunctionDecl = "FunctionDecl";
+static const std::string FunctionTemplateDecl = "FunctionTemplateDecl";
 static const std::string IfStmt = "IfStmt";
 static const std::string ImplicitCastExpr = "ImplicitCastExpr";
 static const std::string IntegerLiteral = "IntegerLiteral";
@@ -49,6 +50,7 @@ static const std::string ParmVarDecl = "ParmVarDecl";
 static const std::string RecordDecl = "RecordDecl";
 static const std::string ReturnStmt = "ReturnStmt";
 static const std::string StringLiteral = "StringLiteral";
+static const std::string TemplateArgument = "TemplateArgument";
 static const std::string TypedefDecl = "TypedefDecl";
 static const std::string UnaryOperator = "UnaryOperator";
 static const std::string VarDecl = "VarDecl";
@@ -401,6 +403,17 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         createTokensFunctionDecl(tokenList);
         return nullptr;
     }
+    if (nodeType == FunctionTemplateDecl) {
+        bool first = true;
+        for (AstNodePtr child: children) {
+            if (child->nodeType == FunctionDecl) {
+                if (!first)
+                    child->createTokens(tokenList);
+                first = false;
+            }
+        }
+        return nullptr;
+    }
     if (nodeType == IfStmt) {
         AstNodePtr cond = children[2];
         AstNodePtr then = children[3];
@@ -503,6 +516,19 @@ void clangastdump::AstNode::createTokensFunctionDecl(TokenList *tokenList)
     const int retTypeIndex = nameIndex + 1;
     addTypeTokens(tokenList, mExtTokens[retTypeIndex]);
     Token *nameToken = addtoken(tokenList, mExtTokens[nameIndex]);
+    if (!children.empty() && children[0]->nodeType == TemplateArgument) {
+        std::string templateParameters;
+        for (AstNodePtr child: children) {
+            if (child->nodeType == TemplateArgument) {
+                if (templateParameters.empty())
+                    templateParameters = "<";
+                else
+                    templateParameters += ",";
+                templateParameters += unquote(child->mExtTokens.back());
+            }
+        }
+        nameToken->str(nameToken->str() + templateParameters + ">");
+    }
     Scope *nestedIn = const_cast<Scope *>(nameToken->scope());
     symbolDatabase->scopeList.push_back(Scope(nullptr, nullptr, nestedIn));
     Scope &scope = symbolDatabase->scopeList.back();
