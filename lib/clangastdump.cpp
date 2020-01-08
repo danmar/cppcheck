@@ -30,6 +30,8 @@ static const std::string ArraySubscriptExpr = "ArraySubscriptExpr";
 static const std::string BinaryOperator = "BinaryOperator";
 static const std::string BreakStmt = "BreakStmt";
 static const std::string CallExpr = "CallExpr";
+static const std::string ClassTemplateDecl = "ClassTemplateDecl";
+static const std::string ClassTemplateSpecializationDecl = "ClassTemplateSpecializationDecl";
 static const std::string CompoundStmt = "CompoundStmt";
 static const std::string ContinueStmt = "ContinueStmt";
 static const std::string CXXMethodDecl = "CXXMethodDecl";
@@ -163,9 +165,11 @@ namespace clangastdump {
         Scope *createScope(TokenList *tokenList, Scope::ScopeType scopeType, AstNodePtr astNode);
         Scope *createScope(TokenList *tokenList, Scope::ScopeType scopeType, const std::vector<AstNodePtr> &children);
         void createTokensFunctionDecl(TokenList *tokenList);
+        void createTokensForCXXRecord(TokenList *tokenList);
         Token *createTokensVarDecl(TokenList *tokenList);
         std::string getSpelling() const;
         std::string getType() const;
+        std::string getTemplateParameters() const;
         const Scope *getNestedInScope(TokenList *tokenList);
 
         int mFile  = 0;
@@ -203,6 +207,23 @@ std::string clangastdump::AstNode::getType() const
     if (nodeType == TypedefDecl)
         return unquote(mExtTokens.back());
     return "";
+}
+
+std::string clangastdump::AstNode::getTemplateParameters() const
+{
+    if (children.empty() || children[0]->nodeType != TemplateArgument)
+        return "";
+    std::string templateParameters;
+    for (AstNodePtr child: children) {
+        if (child->nodeType == TemplateArgument) {
+            if (templateParameters.empty())
+                templateParameters = "<";
+            else
+                templateParameters += ",";
+            templateParameters += unquote(child->mExtTokens.back());
+        }
+    }
+    return templateParameters + ">";
 }
 
 void clangastdump::AstNode::dumpAst(int num, int indent) const
@@ -340,6 +361,17 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         par1->link(addtoken(tokenList, ")"));
         return par1;
     }
+    if (nodeType == ClassTemplateDecl) {
+        for (AstNodePtr child: children) {
+            if (child->nodeType == ClassTemplateSpecializationDecl)
+                child->createTokens(tokenList);
+        }
+        return nullptr;
+    }
+    if (nodeType == ClassTemplateSpecializationDecl) {
+        createTokensForCXXRecord(tokenList);
+        return nullptr;
+    }
     if (nodeType == CompoundStmt) {
         for (AstNodePtr child: children) {
             child->createTokens(tokenList);
@@ -354,20 +386,7 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         return nullptr;
     }
     if (nodeType == CXXRecordDecl) {
-        Token *classToken = addtoken(tokenList, "class");
-        Token *nameToken = addtoken(tokenList, mExtTokens[mExtTokens.size() - 2]);
-        std::vector<AstNodePtr> children2;
-        for (auto child: children) {
-            if (child->nodeType == CXXMethodDecl)
-                children2.push_back(child);
-            else if (child->nodeType == FieldDecl)
-                children2.push_back(child);
-        }
-        Scope *scope = createScope(tokenList, Scope::ScopeType::eClass, children2);
-        scope->classDef = classToken;
-        scope->className = nameToken->str();
-        mData->mSymbolDatabase->typeList.push_back(Type(classToken, scope, classToken->scope()));
-        scope->definedType = &mData->mSymbolDatabase->typeList.back();
+        createTokensForCXXRecord(tokenList);
         return nullptr;
     }
     if (nodeType == DeclStmt)
@@ -515,20 +534,7 @@ void clangastdump::AstNode::createTokensFunctionDecl(TokenList *tokenList)
                           (mExtTokens.size() - 2);
     const int retTypeIndex = nameIndex + 1;
     addTypeTokens(tokenList, mExtTokens[retTypeIndex]);
-    Token *nameToken = addtoken(tokenList, mExtTokens[nameIndex]);
-    if (!children.empty() && children[0]->nodeType == TemplateArgument) {
-        std::string templateParameters;
-        for (AstNodePtr child: children) {
-            if (child->nodeType == TemplateArgument) {
-                if (templateParameters.empty())
-                    templateParameters = "<";
-                else
-                    templateParameters += ",";
-                templateParameters += unquote(child->mExtTokens.back());
-            }
-        }
-        nameToken->str(nameToken->str() + templateParameters + ">");
-    }
+    Token *nameToken = addtoken(tokenList, mExtTokens[nameIndex] + getTemplateParameters());
     Scope *nestedIn = const_cast<Scope *>(nameToken->scope());
     symbolDatabase->scopeList.push_back(Scope(nullptr, nullptr, nestedIn));
     Scope &scope = symbolDatabase->scopeList.back();
@@ -568,6 +574,25 @@ void clangastdump::AstNode::createTokensFunctionDecl(TokenList *tokenList)
     } else {
         addtoken(tokenList, ";");
     }
+}
+
+void clangastdump::AstNode::createTokensForCXXRecord(TokenList *tokenList)
+{
+    Token *classToken = addtoken(tokenList, "class");
+    const std::string className = mExtTokens[mExtTokens.size() - 2] + getTemplateParameters();
+    /*Token *nameToken =*/ addtoken(tokenList, className);
+    std::vector<AstNodePtr> children2;
+    for (auto child: children) {
+        if (child->nodeType == CXXMethodDecl)
+            children2.push_back(child);
+        else if (child->nodeType == FieldDecl)
+            children2.push_back(child);
+    }
+    Scope *scope = createScope(tokenList, Scope::ScopeType::eClass, children2);
+    scope->classDef = classToken;
+    scope->className = className;
+    mData->mSymbolDatabase->typeList.push_back(Type(classToken, scope, classToken->scope()));
+    scope->definedType = &mData->mSymbolDatabase->typeList.back();
 }
 
 Token * clangastdump::AstNode::createTokensVarDecl(TokenList *tokenList)

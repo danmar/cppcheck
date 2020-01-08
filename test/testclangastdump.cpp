@@ -31,6 +31,8 @@ private:
     void run() OVERRIDE {
         TEST_CASE(breakStmt);
         TEST_CASE(class1);
+        TEST_CASE(classTemplateDecl1);
+        TEST_CASE(classTemplateDecl2);
         TEST_CASE(continueStmt);
         TEST_CASE(forStmt);
         TEST_CASE(funcdecl1);
@@ -85,6 +87,67 @@ private:
                              "  `-CXXMethodDecl 0x274c870 <col:11, col:23> col:16 foo 'void ()'\n"
                              "    `-CompoundStmt 0x274c930 <col:22, col:23>";
         ASSERT_EQUALS("class C { void foo ( ) { } }", parse(clang));
+    }
+
+    void classTemplateDecl1() {
+        const char clang[] = "`-ClassTemplateDecl 0x29d1748 <a.cpp:1:1, col:59> col:25 C\n"
+                             "  |-TemplateTypeParmDecl 0x29d15f8 <col:10, col:16> col:16 referenced class depth 0 index 0 T\n"
+                             "  `-CXXRecordDecl 0x29d16b0 <col:19, col:59> col:25 class C definition\n"
+                             "    |-DefinitionData empty aggregate standard_layout trivially_copyable pod trivial literal has_constexpr_non_copy_move_ctor can_const_default_init\n"
+                             "    | |-DefaultConstructor exists trivial constexpr needs_implicit defaulted_is_constexpr\n"
+                             "    | |-CopyConstructor simple trivial has_const_param needs_implicit implicit_has_const_param\n"
+                             "    | |-MoveConstructor exists simple trivial needs_implicit\n"
+                             "    | |-CopyAssignment trivial has_const_param needs_implicit implicit_has_const_param\n"
+                             "    | |-MoveAssignment exists simple trivial needs_implicit\n"
+                             "    | `-Destructor simple irrelevant trivial needs_implicit\n"
+                             "    |-CXXRecordDecl 0x29d19b0 <col:19, col:25> col:25 implicit class C\n"
+                             "    |-AccessSpecDecl 0x29d1a48 <col:29, col:35> col:29 public\n"
+                             "    `-CXXMethodDecl 0x29d1b20 <col:37, col:57> col:39 foo 'T ()'\n"
+                             "      `-CompoundStmt 0x29d1c18 <col:45, col:57>\n"
+                             "        `-ReturnStmt 0x29d1c00 <col:47, col:54>\n"
+                             "          `-IntegerLiteral 0x29d1be0 <col:54> 'int' 0";
+        ASSERT_EQUALS("", parse(clang));
+    }
+
+    void classTemplateDecl2() {
+        const char clang[] = "|-ClassTemplateDecl 0x244e748 <a.cpp:1:1, col:59> col:25 C\n"
+                             "| |-TemplateTypeParmDecl 0x244e5f8 <col:10, col:16> col:16 referenced class depth 0 index 0 T\n"
+                             "| |-CXXRecordDecl 0x244e6b0 <col:19, col:59> col:25 class C definition\n"
+                             "| | |-DefinitionData empty aggregate standard_layout trivially_copyable pod trivial literal has_constexpr_non_copy_move_ctor can_const_default_init\n"
+                             "| | | |-DefaultConstructor exists trivial constexpr needs_implicit defaulted_is_constexpr\n"
+                             "| | | |-CopyConstructor simple trivial has_const_param needs_implicit implicit_has_const_param\n"
+                             "| | | |-MoveConstructor exists simple trivial needs_implicit\n"
+                             "| | | |-CopyAssignment trivial has_const_param needs_implicit implicit_has_const_param\n"
+                             "| | | |-MoveAssignment exists simple trivial needs_implicit\n"
+                             "| | | `-Destructor simple irrelevant trivial needs_implicit\n"
+                             "| | |-CXXRecordDecl 0x244e9b0 <col:19, col:25> col:25 implicit class C\n"
+                             "| | |-AccessSpecDecl 0x244ea48 <col:29, col:35> col:29 public\n"
+                             "| | `-CXXMethodDecl 0x244eb20 <col:37, col:57> col:39 foo 'T ()'\n"
+                             "| |   `-CompoundStmt 0x244ec18 <col:45, col:57>\n"
+                             "| |     `-ReturnStmt 0x244ec00 <col:47, col:54>\n"
+                             "| |       `-IntegerLiteral 0x244ebe0 <col:54> 'int' 0\n"
+                             "| `-ClassTemplateSpecializationDecl 0x244ed78 <col:1, col:59> col:25 class C definition\n"
+                             "|   |-DefinitionData pass_in_registers empty aggregate standard_layout trivially_copyable pod trivial literal has_constexpr_non_copy_move_ctor can_const_default_init\n"
+                             "|   | |-DefaultConstructor exists trivial constexpr defaulted_is_constexpr\n"
+                             "|   | |-CopyConstructor simple trivial has_const_param implicit_has_const_param\n"
+                             "|   | |-MoveConstructor exists simple trivial\n"
+                             "|   | |-CopyAssignment trivial has_const_param needs_implicit implicit_has_const_param\n"
+                             "|   | |-MoveAssignment exists simple trivial needs_implicit\n"
+                             "|   | `-Destructor simple irrelevant trivial needs_implicit\n"
+                             "|   |-TemplateArgument type 'int'\n"
+                             "|   |-CXXRecordDecl 0x244eff0 prev 0x244ed78 <col:19, col:25> col:25 implicit class C\n"
+                             "|   |-AccessSpecDecl 0x244f088 <col:29, col:35> col:29 public\n"
+                             "|   |-CXXMethodDecl 0x244f160 <col:37, col:57> col:39 used foo 'int ()'\n"
+                             "|   | `-CompoundStmt 0x247cb40 <col:45, col:57>\n"
+                             "|   |   `-ReturnStmt 0x247cb28 <col:47, col:54>\n"
+                             "|   |     `-IntegerLiteral 0x244ebe0 <col:54> 'int' 0\n"
+                             "|   |-CXXConstructorDecl 0x247c540 <col:25> col:25 implicit used constexpr C 'void () noexcept' inline default trivial\n"
+                             "|   | `-CompoundStmt 0x247ca00 <col:25>\n"
+                             "|   |-CXXConstructorDecl 0x247c658 <col:25> col:25 implicit constexpr C 'void (const C<int> &)' inline default trivial noexcept-unevaluated 0x247c658\n"
+                             "|   | `-ParmVarDecl 0x247c790 <col:25> col:25 'const C<int> &'\n"
+                             "|   `-CXXConstructorDecl 0x247c828 <col:25> col:25 implicit constexpr C 'void (C<int> &&)' inline default trivial noexcept-unevaluated 0x247c828\n"
+                             "|     `-ParmVarDecl 0x247c960 <col:25> col:25 'C<int> &&'\n";
+        ASSERT_EQUALS("class C { int foo ( ) { return 0 ; } }", parse(clang));
     }
 
     void continueStmt() {
