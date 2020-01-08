@@ -2179,6 +2179,18 @@ static void valueFlowForwardExpression(Token* startToken,
     }
 }
 
+static const ValueFlow::Value* getKnownValue(const Token* tok, ValueFlow::Value::ValueKind kind)
+{
+    if (!tok)
+        return nullptr;
+    auto it = std::find_if(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
+        return v.isKnown() && v.valueKind == kind;
+    });
+    if (it != tok->values().end())
+        return &*it;
+    return nullptr;
+}
+
 struct VariableForwardAnalyzer : ForwardAnalyzer
 {
     Token* start;
@@ -2190,6 +2202,11 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
     VariableForwardAnalyzer()
     {}
 
+    bool isWritableValue() const
+    {
+        return value.isIntValue() || value.isFloatValue();
+    }
+
     virtual Action Analyze(const Token* tok) const OVERRIDE
     {
         bool cpp = true;
@@ -2197,6 +2214,15 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
             const Token * parent = tok->astParent();
             if (Token::Match(parent, "*|[") && value.indirect <= 0)
                 return Action::Read;
+
+            if (isWritableValue() && Token::Match(parent, "%assign%") && astIsLHS(tok) && parent->astOperand2()->hasKnownValue()) {
+                const Token* rhs = parent->astOperand2();
+                const ValueFlow::Value * rhsValue = getKnownValue(rhs, value.valueKind);
+                if (!rhsValue)
+                    return Action::Invalid;
+                return Action::Write;
+            }
+            // Check for modifications
             bool inconclusive = false;
             if (isVariableChangedByFunctionCall(tok, value.indirect, settings, &inconclusive))
                 return Action::Invalid;
@@ -2214,6 +2240,14 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
     {
         if (a == Action::Read) {
             setTokenValue(tok, value, settings);
+        } else if (a == Action::Write) {
+            if (Token::Match(tok->astParent(), "%assign%")) {
+                // TODO: Check result
+                evalAssignment(value, tok->astParent()->str(), *getKnownValue(tok->astParent()->astOperand2(), value.valueKind));
+            }
+            setTokenValue(tok, value, settings);
+        } else if (a == Action::Inconclusive) {
+            LowerToInconclusive();
         }
     }
     virtual std::vector<int> Evaluate(const Token* tok) const OVERRIDE
