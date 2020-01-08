@@ -9,8 +9,8 @@ struct ForwardTraversal
     };
     ValuePtr<ForwardAnalyzer> analyzer;
 
-    Progress update(Token* tok, bool lhs = false) {
-        ForwardAnalyzer::Action action = analyzer->Analyze(tok, lhs);
+    Progress update(Token* tok) {
+        ForwardAnalyzer::Action action = analyzer->Analyze(tok);
         if (action != ForwardAnalyzer::Action::None)
             analyzer->Update(tok, action);
         if (action == ForwardAnalyzer::Action::Invalid)
@@ -18,14 +18,14 @@ struct ForwardTraversal
         return Progress::Continue;
     }
 
-    Progress updateRecursive(Token* tok, bool lhs = false) {
+    Progress updateRecursive(Token* tok) {
         if (!tok)
             return Progress::Continue;
-        if (tok->astOperand1() && updateRecursive(tok->astOperand1(), lhs) == Progress::Break)
+        if (tok->astOperand1() && updateRecursive(tok->astOperand1()) == Progress::Break)
             return Progress::Break;
-        if (update(tok, lhs) == Progress::Break)
+        if (update(tok) == Progress::Break)
             return Progress::Break;
-        if (tok->astOperand2() && updateRecursive(tok->astOperand2(), lhs) == Progress::Break)
+        if (tok->astOperand2() && updateRecursive(tok->astOperand2()) == Progress::Break)
             return Progress::Break;
         return Progress::Continue;
     }
@@ -53,7 +53,9 @@ struct ForwardTraversal
             if (Token::Match(top, "%assign%")) {
                 if (updateRecursive(top->astOperand2()) == Progress::Break)
                     return Progress::Break;
-                if (updateRecursive(top->astOperand1(), true) == Progress::Break)
+                if (update(top) == Progress::Break)
+                    return Progress::Break;
+                if (updateRecursive(top->astOperand1()) == Progress::Break)
                     return Progress::Break;
                 tok = nextAfterAstRightmostLeaf(top);
                 continue;

@@ -338,6 +338,33 @@ const Token* getParentMember(const Token * tok)
     return tok;
 }
 
+bool astIsLHS(const Token* tok)
+{
+    if (!tok)
+        return false;
+    const Token * parent = tok->astParent();
+    if (!parent)
+        return false;
+    if (!parent->astOperand1())
+        return false;
+    if (!parent->astOperand2())
+        return false;
+    return parent->astOperand1() == tok;
+}
+bool astIsRHS(const Token* tok)
+{
+    if (!tok)
+        return false;
+    const Token * parent = tok->astParent();
+    if (!parent)
+        return false;
+    if (!parent->astOperand1())
+        return false;
+    if (!parent->astOperand2())
+        return false;
+    return parent->astOperand2() == tok;
+}
+
 static const Token * getVariableInitExpression(const Variable * var)
 {
     if (!var || !var->declEndToken())

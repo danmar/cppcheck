@@ -2190,16 +2190,19 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
     VariableForwardAnalyzer()
     {}
 
-    virtual Action Analyze(const Token* tok, bool lhs) const OVERRIDE
+    virtual Action Analyze(const Token* tok) const OVERRIDE
     {
         bool cpp = true;
         if (tok->varId() == varid) {
+            const Token * parent = tok->astParent();
+            if (Token::Match(parent, "*|[") && value.indirect <= 0)
+                return Action::Read;
             bool inconclusive = false;
             if (isVariableChangedByFunctionCall(tok, value.indirect, settings, &inconclusive))
                 return Action::Invalid;
             if (inconclusive)
                 return Action::Inconclusive;
-            if (!lhs && isVariableChanged(tok, value.indirect, settings, cpp))
+            if (isVariableChanged(tok, value.indirect, settings, cpp))
                 return Action::Invalid;
             return Action::Read;
         } else if (isAliasOf(var, tok, varid, {value}) && isVariableChanged(tok, 0, settings, cpp)) {
