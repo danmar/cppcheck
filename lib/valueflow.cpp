@@ -2222,6 +2222,15 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
                     return Action::Invalid;
                 return Action::Write;
             }
+
+            // increment/decrement
+            if (value.intvalue && Token::Match(tok->previous(), "++|-- %name%") || Token::Match(tok, "%name% ++|--")) {
+                Action write = Action::Write;
+                const bool pre = Token::Match(tok->previous(), "++|--");
+                if (pre)
+                    write |= Action::Read;
+                return write;
+            }
             // Check for modifications by function calls
             Action read = Action::Read;
             bool inconclusive = false;
@@ -2247,8 +2256,17 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
             if (Token::Match(tok->astParent(), "%assign%")) {
                 // TODO: Check result
                 evalAssignment(value, tok->astParent()->str(), *getKnownValue(tok->astParent()->astOperand2(), value.valueKind));
+                const std::string info("Compound assignment '" + tok->astParent()->str() + "', assigned value is " + value.infoString());
+                value.errorPath.emplace_back(tok, info);
             }
-            setTokenValue(tok, value, settings);
+            if (Token::Match(tok->astParent(), "++|--")) {
+                const bool inc   = Token::simpleMatch(tok->astParent(), "++");
+                value.intvalue += (inc ? 1 : -1);
+                const std::string info(tok->str() + " is " + std::string(inc ? "incremented" : "decremented") + "', new value is " + value.infoString());
+                value.errorPath.emplace_back(tok, info);
+            }
+            if (!a.isRead())
+                setTokenValue(tok, value, settings);
         }
     }
     virtual std::vector<int> Evaluate(const Token* tok) const OVERRIDE
@@ -2270,6 +2288,11 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
     virtual void LowerToInconclusive() OVERRIDE
     {
         value.setInconclusive();
+    }
+
+    virtual bool SkipLambda(const Token* tok) const OVERRIDE
+    {
+        return !value.isLifetimeValue();
     }
 };
 

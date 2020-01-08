@@ -92,6 +92,9 @@ struct ForwardAnalyzer
     virtual std::vector<int> Evaluate(const Token* tok) const = 0;
     virtual void LowerToPossible() = 0;
     virtual void LowerToInconclusive() = 0;
+    virtual bool SkipLambda(const Token* tok) const {
+        return true;
+    }
     virtual ~ForwardAnalyzer() {}
 };
 

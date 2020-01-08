@@ -9,9 +9,17 @@ struct ForwardTraversal
     };
     ValuePtr<ForwardAnalyzer> analyzer;
 
+    std::pair<bool, bool> checkCond(const Token* tok)
+    {
+        std::vector<int> result = analyzer->Evaluate(tok);
+        bool checkThen = std::any_of(result.begin(), result.end(), [](int x) { return x; });
+        bool checkElse = std::any_of(result.begin(), result.end(), [](int x) { return !x; });
+        return std::make_pair(checkThen, checkElse);
+    }
+
     Progress update(Token* tok) {
         ForwardAnalyzer::Action action = analyzer->Analyze(tok);
-        if (action.isNone())
+        if (!action.isNone())
             analyzer->Update(tok, action);
         if (action.isInvalid())
             return Progress::Break;
@@ -23,10 +31,44 @@ struct ForwardTraversal
             return Progress::Continue;
         if (tok->astOperand1() && updateRecursive(tok->astOperand1()) == Progress::Break)
             return Progress::Break;
-        if (update(tok) == Progress::Break)
-            return Progress::Break;
-        if (tok->astOperand2() && updateRecursive(tok->astOperand2()) == Progress::Break)
-            return Progress::Break;
+        if (Token::Match(tok, "?|&&|%oror%")) {
+            if (updateConditional(tok) == Progress::Break)
+                return Progress::Break;
+        } else {
+            if (update(tok) == Progress::Break)
+                return Progress::Break;
+            if (tok->astOperand2() && updateRecursive(tok->astOperand2()) == Progress::Break)
+                return Progress::Break;
+        }
+        return Progress::Continue;
+    }
+
+    Progress updateConditional(Token* tok) {
+        if (Token::Match(tok, "?|&&|%oror%")) {
+            const Token * condTok = tok->astOperand1();
+            if (!condTok)
+                return Progress::Break;
+            Token * childTok = tok->astOperand2();
+            bool checkThen, checkElse;
+            std::tie(checkThen, checkElse) = checkCond(condTok);
+            if (!checkThen && !checkElse) {
+                checkThen = true;
+                checkElse = true;
+            }
+            if (Token::simpleMatch(childTok, ":")) {
+                if (checkThen && updateRecursive(childTok->astOperand1()) == Progress::Break)
+                    return Progress::Break;
+                if (checkElse && updateRecursive(childTok->astOperand2()) == Progress::Break)
+                    return Progress::Break;
+            } else {
+                if (!checkThen && Token::simpleMatch(tok, "&&"))
+                    return Progress::Continue;
+                if (!checkElse && Token::simpleMatch(tok, "||"))
+                    return Progress::Continue;
+                if (updateRecursive(childTok->astOperand2()) == Progress::Break)
+                    return Progress::Break;
+            }
+        }
         return Progress::Continue;
     }
 
@@ -48,18 +90,18 @@ struct ForwardTraversal
                 return Progress::Break;
             }
 
-            Token * top = tok->astTop();
-            // Handle correct order for assign
-            if (Token::Match(top, "%assign%")) {
-                if (updateRecursive(top->astOperand2()) == Progress::Break)
-                    return Progress::Break;
-                if (update(top) == Progress::Break)
-                    return Progress::Break;
-                if (updateRecursive(top->astOperand1()) == Progress::Break)
-                    return Progress::Break;
-                tok = nextAfterAstRightmostLeaf(top);
-                continue;
-            }
+            // Token * top = tok->astTop();
+            // // Handle correct order for assign
+            // if (Token::Match(top, "%assign%")) {
+            //     if (updateRecursive(top->astOperand2()) == Progress::Break)
+            //         return Progress::Break;
+            //     if (update(top) == Progress::Break)
+            //         return Progress::Break;
+            //     if (updateRecursive(top->astOperand1()) == Progress::Break)
+            //         return Progress::Break;
+            //     tok = nextAfterAstRightmostLeaf(top);
+            //     continue;
+            // }
 
             if (Token::simpleMatch(tok, "}") && Token::simpleMatch(tok->link()->previous(), ") {") && Token::Match(tok->link()->linkAt(-1)->previous(), "if|while|for (")) {
                 const Token * blockStart = tok->link()->linkAt(-1)->previous();
@@ -93,17 +135,16 @@ struct ForwardTraversal
             } else if (Token::Match(tok, "if|while|for (") && Token::simpleMatch(tok->next()->link(), ") {")) {
                 Token * endCond = tok->next()->link();
                 Token * endBlock = endCond->next()->link();
-                const Token * condTok = getCondTok(tok);
+                Token * condTok = getCondTok(tok);
                 if (!condTok)
                     return Progress::Break;
                 // Traverse condition
-                if (updateRecursive(tok) == Progress::Break)
+                if (updateRecursive(condTok) == Progress::Break)
                     return Progress::Break;
 
                 // Check if condition is true or false
-                std::vector<int> result = analyzer->Evaluate(condTok);
-                bool checkThen = std::any_of(result.begin(), result.end(), [](int x) { return x; });
-                bool checkElse = std::any_of(result.begin(), result.end(), [](int x) { return !x; });
+                bool checkThen, checkElse;
+                std::tie(checkThen, checkElse) = checkCond(condTok);
 
                 if (!checkThen && !checkElse) {
                     ForwardAnalyzer::Action a = analyzeRange(endCond->next(), endBlock);
@@ -132,9 +173,20 @@ struct ForwardTraversal
                 }
             } else if (Token::simpleMatch(tok, "} else {")) {
                 tok = tok->linkAt(2);
+            } else if (Token::Match(tok, "?|&&|%oror%")) {
+                updateConditional(tok);
+                tok = nextAfterAstRightmostLeaf(tok);
+
             // Skip lambdas
             } else if (Token *lambdaEndToken = findLambdaEndToken(tok)) {
-                tok = lambdaEndToken;
+                if (analyzer->SkipLambda(tok)) {
+                    ForwardAnalyzer::Action a = analyzeRange(lambdaEndToken->link(), lambdaEndToken);
+                    if (a.isModified())
+                        return Progress::Break;
+                    tok = lambdaEndToken;
+                }
+            } else if (Token::Match(tok, "sizeof|decltype (")) {
+                tok = tok->next()->link();
             } else {
                 if (update(tok) == Progress::Break)
                     return Progress::Break;
@@ -146,7 +198,8 @@ struct ForwardTraversal
         return Progress::Continue;
     }
 
-    static const Token* getCondTok(const Token* tok)
+    template<class T>
+    static T* getCondTok(T* tok)
     {
         if (!tok)
             return nullptr;
