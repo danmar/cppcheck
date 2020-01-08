@@ -28,8 +28,10 @@
 
 static const std::string ArraySubscriptExpr = "ArraySubscriptExpr";
 static const std::string BinaryOperator = "BinaryOperator";
+static const std::string BreakStmt = "BreakStmt";
 static const std::string CallExpr = "CallExpr";
 static const std::string CompoundStmt = "CompoundStmt";
+static const std::string ContinueStmt = "ContinueStmt";
 static const std::string DeclRefExpr = "DeclRefExpr";
 static const std::string DeclStmt = "DeclStmt";
 static const std::string FieldDecl = "FieldDecl";
@@ -296,6 +298,8 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         binop->astOperand2(tok2);
         return binop;
     }
+    if (nodeType == BreakStmt)
+        return addtoken(tokenList, "break");
     if (nodeType == CallExpr) {
         Token *f = children[0]->createTokens(tokenList);
         Token *par1 = addtoken(tokenList, "(");
@@ -322,6 +326,8 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         }
         return nullptr;
     }
+    if (nodeType == ContinueStmt)
+        return addtoken(tokenList, "continue");
     if (nodeType == DeclStmt)
         return children[0]->createTokens(tokenList);
     if (nodeType == DeclRefExpr) {

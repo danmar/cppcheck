@@ -29,6 +29,8 @@ public:
 
 private:
     void run() OVERRIDE {
+        TEST_CASE(breakStmt);
+        TEST_CASE(continueStmt);
         TEST_CASE(forStmt);
         TEST_CASE(funcdecl1);
         TEST_CASE(funcdecl2);
@@ -37,6 +39,7 @@ private:
         TEST_CASE(recordDecl);
         TEST_CASE(vardecl1);
         TEST_CASE(vardecl2);
+        TEST_CASE(vardecl3);
         TEST_CASE(whileStmt);
     }
 
@@ -46,6 +49,26 @@ private:
         std::istringstream istr(clang);
         clangastdump::parseClangAstDump(&tokenizer, istr);
         return tokenizer.tokens()->stringifyList(true, false, false, true, false);
+    }
+
+    void breakStmt() {
+        const char clang[] = "`-FunctionDecl 0x2c31b18 <1.c:1:1, col:34> col:6 foo 'void ()'\n"
+                             "  `-CompoundStmt 0x2c31c40 <col:12, col:34>\n"
+                             "    `-WhileStmt 0x2c31c20 <col:14, col:24>\n"
+                             "      |-<<<NULL>>>\n"
+                             "      |-IntegerLiteral 0x2c31bf8 <col:21> 'int' 0\n"
+                             "      `-BreakStmt 0x3687c18 <col:24>";
+        ASSERT_EQUALS("void foo ( ) { while ( 0 ) { break ; } ; }", parse(clang));
+    }
+
+    void continueStmt() {
+        const char clang[] = "`-FunctionDecl 0x2c31b18 <1.c:1:1, col:34> col:6 foo 'void ()'\n"
+                             "  `-CompoundStmt 0x2c31c40 <col:12, col:34>\n"
+                             "    `-WhileStmt 0x2c31c20 <col:14, col:24>\n"
+                             "      |-<<<NULL>>>\n"
+                             "      |-IntegerLiteral 0x2c31bf8 <col:21> 'int' 0\n"
+                             "      `-ContinueStmt 0x2c31c18 <col:24>";
+        ASSERT_EQUALS("void foo ( ) { while ( 0 ) { continue ; } ; }", parse(clang));
     }
 
     void forStmt() {
@@ -165,6 +188,11 @@ private:
                       "\n"
                       "a@1 [ 0 ] = 0 ; }",
                       parse(clang));
+    }
+
+    void vardecl3() {
+        const char clang[] = "`-VarDecl 0x25a8aa0 <1.c:1:1, col:12> col:12 p 'const int *'";
+        ASSERT_EQUALS("const int * p@1 ;", parse(clang));
     }
 
     void whileStmt() {
