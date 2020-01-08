@@ -91,7 +91,7 @@ div.verbose div.content {
     text-align: left;
     width: 150px;
     /*height: 75%;*/
-    position: fixed;
+    /*position: fixed;*/
     overflow: auto;
     z-index: 1;
 }
@@ -103,7 +103,7 @@ div.verbose div.content {
     text-align: left;
     width: 300px;
     /*height: 75%;*/
-    position: fixed;
+    /*position: fixed;*/
     overflow: auto;
     z-index: 1;
 }
@@ -133,7 +133,7 @@ div.verbose div.content {
     -webkit-box-sizing: content-box;
     -moz-box-sizing: content-box;
     box-sizing: content-box;
-    float: left;
+    /*float: left;*/
     margin: 5px;
     margin-left: 10px;
     padding: 0 10px 10px 10px;
@@ -146,7 +146,7 @@ div.verbose div.content {
     -webkit-box-sizing: content-box;
     -moz-box-sizing: content-box;
     box-sizing: content-box;
-    float: left;
+    /*float: left;*/
     margin: 5px;
     margin-left: 10px;
     padding: 0 10px 10px 10px;
