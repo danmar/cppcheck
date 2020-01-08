@@ -29,9 +29,12 @@
 
 inline void splitString(const std::string &str, std::vector<std::string> &stringList, char delimeter)
 {
-    std::size_t cur, prev = 0;
+    std::size_t cur;
+
     cur = str.find(delimeter);
     if (cur != std::string::npos) {
+        std::size_t prev = 0;
+
         while (cur != std::string::npos) {
             stringList.push_back(str.substr(prev, cur - prev));
             prev = cur + 1;
