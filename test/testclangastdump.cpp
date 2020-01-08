@@ -37,6 +37,9 @@ private:
         TEST_CASE(ifelse);
         TEST_CASE(memberExpr);
         TEST_CASE(recordDecl);
+        TEST_CASE(typedefDecl1);
+        TEST_CASE(typedefDecl2);
+        TEST_CASE(typedefDecl3);
         TEST_CASE(vardecl1);
         TEST_CASE(vardecl2);
         TEST_CASE(vardecl3);
@@ -157,6 +160,26 @@ private:
                       "{ int x@1 ;\n"
                       "int y@2 ; } ;",
                       parse(clang));
+    }
+
+    void typedefDecl1() {
+        const char clang[] = "|-TypedefDecl 0x2d60180 <<invalid sloc>> <invalid sloc> implicit __int128_t '__int128'\n"
+                             "| `-BuiltinType 0x2d5fe80 '__int128'";
+        ASSERT_EQUALS("typedef __int128 __int128_t ;", parse(clang));
+    }
+
+    void typedefDecl2() {
+        const char clang[] = "|-TypedefDecl 0x2d604a8 <<invalid sloc>> <invalid sloc> implicit __NSConstantString 'struct __NSConstantString_tag'\n"
+                             "| `-RecordType 0x2d602c0 'struct __NSConstantString_tag'\n"
+                             "|   `-Record 0x2d60238 '__NSConstantString_tag'";
+        ASSERT_EQUALS("typedef struct __NSConstantString_tag __NSConstantString ;", parse(clang));
+    }
+
+    void typedefDecl3() {
+        const char clang[] = "|-TypedefDecl 0x2d60540 <<invalid sloc>> <invalid sloc> implicit __builtin_ms_va_list 'char *'\n"
+                             "| `-PointerType 0x2d60500 'char *'\n"
+                             "|   `-BuiltinType 0x2d5f980 'char'";
+        ASSERT_EQUALS("typedef char * __builtin_ms_va_list ;", parse(clang));
     }
 
     void vardecl1() {

@@ -45,6 +45,7 @@ static const std::string NullStmt = "NullStmt";
 static const std::string ParmVarDecl = "ParmVarDecl";
 static const std::string RecordDecl = "RecordDecl";
 static const std::string ReturnStmt = "ReturnStmt";
+static const std::string TypedefDecl = "TypedefDecl";
 static const std::string UnaryOperator = "UnaryOperator";
 static const std::string VarDecl = "VarDecl";
 static const std::string WhileStmt = "WhileStmt";
@@ -145,7 +146,7 @@ namespace clangastdump {
         void createTokens1(TokenList *tokenList) {
             setLocations(tokenList, 0, 1, 1);
             createTokens(tokenList);
-            if (nodeType == VarDecl || nodeType == RecordDecl)
+            if (nodeType == VarDecl || nodeType == RecordDecl || nodeType == TypedefDecl)
                 addtoken(tokenList, ";");
         }
     private:
@@ -175,12 +176,14 @@ std::string clangastdump::AstNode::getSpelling() const
 
 std::string clangastdump::AstNode::getType() const
 {
-    if (nodeType == DeclRefExpr)
-        return unquote(mExtTokens.back());
     if (nodeType == BinaryOperator)
         return unquote(mExtTokens[mExtTokens.size() - 2]);
+    if (nodeType == DeclRefExpr)
+        return unquote(mExtTokens.back());
     if (nodeType == IntegerLiteral)
         return unquote(mExtTokens[mExtTokens.size() - 2]);
+    if (nodeType == TypedefDecl)
+        return unquote(mExtTokens.back());
     return "";
 }
 
@@ -450,6 +453,11 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
             tok1->astOperand1(children[0]->createTokens(tokenList));
         return tok1;
     }
+    if (nodeType == TypedefDecl) {
+        addtoken(tokenList, "typedef");
+        addTypeTokens(tokenList, getType());
+        return addtoken(tokenList, getSpelling());
+    }
     if (nodeType == UnaryOperator) {
         Token *unop = addtoken(tokenList, unquote(mExtTokens.back()));
         unop->astOperand1(children[0]->createTokens(tokenList));
@@ -521,7 +529,7 @@ void clangastdump::parseClangAstDump(Tokenizer *tokenizer, std::istream &f)
         const std::string nodeType = line.substr(pos1+1, pos2 - pos1 - 1);
         const std::string ext = line.substr(pos2);
 
-        if (pos1 == 1 && endsWith(nodeType, "Decl", 4) && nodeType != "TypedefDecl") {
+        if (pos1 == 1 && endsWith(nodeType, "Decl", 4)) {
             if (!tree.empty())
                 tree[0]->createTokens1(tokenList);
             tree.clear();
