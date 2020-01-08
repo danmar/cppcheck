@@ -35,6 +35,9 @@ struct ForwardAnalyzer
     virtual Action Analyze(const Token* tok) const = 0;
     virtual void Update(Token* tok, Action a) = 0;
     virtual std::vector<int> Evaluate(const Token* tok) const = 0;
+    virtual void LowerToPossible() = 0;
+    virtual void LowerToInconclusive() = 0;
+    virtual ~ForwardAnalyzer() {}
 };
 
 void valueFlowGenericForward(Token* start, const Token* end, const ValuePtr<ForwardAnalyzer>& fa);

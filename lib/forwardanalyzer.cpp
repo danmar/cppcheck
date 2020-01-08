@@ -1,4 +1,5 @@
 #include "forwardanalyzer.h"
+#include "astutils.h"
 
 struct ForwardTraversal
 {
@@ -8,24 +9,30 @@ struct ForwardTraversal
     };
     ValuePtr<ForwardAnalyzer> analyzer;
 
+    Progress update(Token* tok) {
+        ForwardAnalyzer::Action action = analyzer->Analyze(tok);
+        if (action != ForwardAnalyzer::Action::None)
+            analyzer->Update(tok, action);
+        if (action == ForwardAnalyzer::Action::Invalid)
+            return Progress::Break;
+        return Progress::Continue;
+    }
+
     Progress updateRecursive(Token* tok) {
         if (!tok)
             return Progress::Continue;
         if (tok->astOperand1() && updateRecursive(tok->astOperand1()) == Progress::Break)
             return Progress::Break;
-        Action action = analyzer->Analyze(tok);
-        if (action == ForwardAnalyzer::Action::Invalid)
+        if (update(tok) == Progress::Break)
             return Progress::Break;
-        if (action != ForwardAnalyze::Action::None)
-            analyzer->Update(tok, action);
         if (tok->astOperand2() && updateRecursive(tok->astOperand2()) == Progress::Break)
             return Progress::Break;
         return Progress::Continue;
     }
 
     ForwardAnalyzer::Action analyzeRange(const Token* start, const Token* end) {
-        for (const Token *tok = startToken; tok && tok != endToken; tok = tok->next()) {
-            Action action = analyzer->Analyze(tok);
+        for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
+            ForwardAnalyzer::Action action = analyzer->Analyze(tok);
             if (action != ForwardAnalyzer::Action::None && action != ForwardAnalyzer::Action::Read)
                 return action;
         }
@@ -33,7 +40,7 @@ struct ForwardTraversal
     }
 
     Progress updateRange(Token* start, const Token* end) {
-        for (const Token *tok = startToken; tok && tok != endToken; tok = tok->next()) {
+        for (Token *tok = start; tok && tok != end; tok = tok->next()) {
             if (Token::Match(tok, "asm|goto|break|continue"))
                 return Progress::Break;
             if (Token::Match(tok, "return|throw")) {
@@ -41,6 +48,9 @@ struct ForwardTraversal
                 return Progress::Break;
             }
 
+            if (Token::simpleMatch(tok, "}"))
+                return Progress::Break;
+#if 0
             if (Token::simpleMatch(tok, "}") && Token::simpleMatch(tok->link()->previous(), ") {") && Token::Match(tok->link()->linkAt(-1)->previous(), "if|while|for (")) {
                 const Token * blockStart = tok->link()->linkAt(-1)->previous();
                 const Token * condTok = getCondTok(blockStart);
@@ -67,10 +77,11 @@ struct ForwardTraversal
                     }
                 }
             }
+#endif
 
             if (Token::Match(tok, "if|while|for (") && Token::simpleMatch(tok->next()->link(), ") {")) {
-                const Token * endCond = tok->next()->link();
-                const Token * endBlock = endCond->next()->link();
+                Token * endCond = tok->next()->link();
+                Token * endBlock = endCond->next()->link();
                 const Token * condTok = getCondTok(tok);
                 if (!condTok)
                     return Progress::Break;
@@ -86,9 +97,9 @@ struct ForwardTraversal
                 if (!checkThen && !checkElse) {
                     ForwardAnalyzer::Action a = analyzeRange(endCond->next(), endBlock);
                     if (a == ForwardAnalyzer::Action::Write || a == ForwardAnalyzer::Action::Invalid) {
-                        // Lower to possible
+                        analyzer->LowerToPossible();
                     } else if (a == ForwardAnalyzer::Action::Inconclusive) {
-                        // Lower to inconclusive
+                        analyzer->LowerToInconclusive();
                     }
                 }
 
@@ -110,8 +121,12 @@ struct ForwardTraversal
                 }
             } else if (Token::simpleMatch(tok, "} else {")) {
                 tok = tok->linkAt(2);
+            // Skip lambdas
+            } else if (Token *lambdaEndToken = findLambdaEndToken(tok)) {
+                tok = lambdaEndToken;
             } else {
-                
+                if (update(tok) == Progress::Break)
+                    return Progress::Break;
             }
             // Prevent infinite recursion
             if (tok->next() == start)
@@ -136,5 +151,6 @@ struct ForwardTraversal
 
 void valueFlowGenericForward(Token* start, const Token* end, const ValuePtr<ForwardAnalyzer>& fa)
 {
-
+    ForwardTraversal ft{fa};
+    ft.updateRange(start, end);
 }

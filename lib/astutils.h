@@ -193,6 +193,7 @@ const Token *findLambdaStartToken(const Token *last);
  * \return nullptr or the }
  */
 const Token *findLambdaEndToken(const Token *first);
+Token *findLambdaEndToken(Token *first);
 
 bool isLikelyStream(bool cpp, const Token *stream);
 

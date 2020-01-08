@@ -1349,7 +1349,8 @@ const Token *findLambdaStartToken(const Token *last)
     return nullptr;
 }
 
-const Token *findLambdaEndToken(const Token *first)
+template<class T>
+T *findLambdaEndTokenGeneric(T *first)
 {
     if (!first || first->str() != "[")
         return nullptr;
@@ -1364,6 +1365,15 @@ const Token *findLambdaEndToken(const Token *first)
     if (tok->astOperand1() && tok->astOperand1()->str() == "{")
         return tok->astOperand1()->link();
     return nullptr;
+}
+
+const Token *findLambdaEndToken(const Token *first)
+{
+    return findLambdaEndTokenGeneric(first);
+}
+Token *findLambdaEndToken(Token *first)
+{
+    return findLambdaEndTokenGeneric(first);
 }
 
 bool isLikelyStream(bool cpp, const Token *stream)

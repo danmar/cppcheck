@@ -90,6 +90,7 @@
 #include "tokenlist.h"
 #include "utils.h"
 #include "path.h"
+#include "forwardanalyzer.h"
 
 #include <algorithm>
 #include <cassert>
@@ -2178,6 +2179,62 @@ static void valueFlowForwardExpression(Token* startToken,
     }
 }
 
+struct VariableForwardAnalyzer : ForwardAnalyzer
+{
+    Token* start;
+    const Variable* var;
+    nonneg int varid;
+    ValueFlow::Value value;
+    const Settings* settings;
+
+    VariableForwardAnalyzer()
+    {}
+
+    virtual Action Analyze(const Token* tok) const OVERRIDE
+    {
+        bool cpp = true;
+        if (tok->varId() == varid) {
+            bool inconclusive = false;
+            if (isVariableChangedByFunctionCall(tok, value.indirect, settings, &inconclusive))
+                return Action::Invalid;
+            if (inconclusive)
+                return Action::Inconclusive;
+            if (isVariableChanged(tok, value.indirect, settings, cpp))
+                return Action::Invalid;
+            return Action::Read;
+        } else if (isAliasOf(var, tok, varid, {value}) && isVariableChanged(tok, 0, settings, cpp)) {
+            return Action::Invalid;
+        }
+        return Action::None;
+    }
+    virtual void Update(Token* tok, Action a) OVERRIDE
+    {
+        if (a == Action::Read) {
+            setTokenValue(tok, value, settings);
+        }
+    }
+    virtual std::vector<int> Evaluate(const Token* tok) const OVERRIDE
+    {
+        if (tok->hasKnownIntValue())
+            return {static_cast<int>(tok->values().front().intvalue)};
+        std::vector<int> result;
+        ProgramMemory programMemory = getProgramMemory(tok, varid, value);
+        if (conditionIsTrue(tok, programMemory))
+            result.push_back(1);
+        if (conditionIsFalse(tok, programMemory))
+            result.push_back(0);
+        return result;
+    }
+    virtual void LowerToPossible() OVERRIDE
+    {
+        value.changeKnownToPossible();
+    }
+    virtual void LowerToInconclusive() OVERRIDE
+    {
+        value.setInconclusive();
+    }
+};
+
 static bool valueFlowForwardVariable(Token* const startToken,
                                      const Token* const endToken,
                                      const Variable* const var,
@@ -2189,6 +2246,17 @@ static bool valueFlowForwardVariable(Token* const startToken,
                                      ErrorLogger* const errorLogger,
                                      const Settings* const settings)
 {
+#if 1
+    VariableForwardAnalyzer a;
+    a.start = startToken;
+    a.var = var;
+    a.varid = varid;
+    a.settings = settings;
+    for(ValueFlow::Value& v:values) {
+        a.value = v;
+        valueFlowGenericForward(startToken, endToken, a);
+    }
+#else
     int indentlevel = 0;
     int number_of_if = 0;
     int varusagelevel = -1;
@@ -2953,6 +3021,7 @@ static bool valueFlowForwardVariable(Token* const startToken,
         }
 
     }
+#endif
     return true;
 }
 
