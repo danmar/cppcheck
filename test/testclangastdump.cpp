@@ -32,6 +32,7 @@ private:
         TEST_CASE(funcdecl1);
         TEST_CASE(funcdecl2);
         TEST_CASE(ifelse);
+        TEST_CASE(memberExpr);
         TEST_CASE(recordDecl);
         TEST_CASE(vardecl1);
         TEST_CASE(vardecl2);
@@ -86,6 +87,24 @@ private:
                       "else { } ; }", parse(clang));
     }
 
+    void memberExpr() {
+        // C code:
+        // struct S { int x };
+        // int foo(struct S s) { return s.x; }
+        const char clang[] = "|-RecordDecl 0x2441a88 <1.c:1:1, col:18> col:8 struct S definition\n"
+                             "| `-FieldDecl 0x2441b48 <col:12, col:16> col:16 referenced x 'int'\n"
+                             "`-FunctionDecl 0x2441cf8 <line:2:1, col:35> col:5 foo 'int (struct S)'\n"
+                             "  |-ParmVarDecl 0x2441be8 <col:9, col:18> col:18 used s 'struct S':'struct S'\n"
+                             "  `-CompoundStmt 0x2441e70 <col:21, col:35>\n"
+                             "    `-ReturnStmt 0x2441e58 <col:23, col:32>\n"
+                             "      `-ImplicitCastExpr 0x2441e40 <col:30, col:32> 'int' <LValueToRValue>\n"
+                             "        `-MemberExpr 0x2441e08 <col:30, col:32> 'int' lvalue .x 0x2441b48\n"
+                             "          `-DeclRefExpr 0x2441de0 <col:30> 'struct S':'struct S' lvalue ParmVar 0x2441be8 's' 'struct S':'struct S'";
+        ASSERT_EQUALS("struct S { int x@1 ; }\n"
+                      "int foo ( struct S s@2 ) { return s@2 . x@1 ; }",
+                      parse(clang));
+    }
+
     void recordDecl() {
         const char clang[] = "`-RecordDecl 0x354eac8 <1.c:1:1, line:4:1> line:1:8 struct S definition\n"
                              "  |-FieldDecl 0x354eb88 <line:2:3, col:7> col:7 x 'int'\n"
@@ -119,7 +138,7 @@ private:
                              "      | `-IntegerLiteral 0x3873d00 <col:5> 'int' 0\n"
                              "      `-IntegerLiteral 0x3873d88 <col:10> 'int' 0\n";
 
-        ASSERT_EQUALS("int[10] a@1 ;\n"
+        ASSERT_EQUALS("int [10] a@1 ;\n" // <- TODO
                       "\n"
                       "void foo ( ) {\n"
                       "\n"

@@ -17,6 +17,7 @@
  */
 
 #include "clangastdump.h"
+#include "settings.h"
 #include "symboldatabase.h"
 #include "tokenize.h"
 #include "utils.h"
@@ -35,6 +36,7 @@ static const std::string FunctionDecl = "FunctionDecl";
 static const std::string IfStmt = "IfStmt";
 static const std::string ImplicitCastExpr = "ImplicitCastExpr";
 static const std::string IntegerLiteral = "IntegerLiteral";
+static const std::string MemberExpr = "MemberExpr";
 static const std::string ParmVarDecl = "ParmVarDecl";
 static const std::string RecordDecl = "RecordDecl";
 static const std::string ReturnStmt = "ReturnStmt";
@@ -54,9 +56,11 @@ static std::vector<std::string> splitString(const std::string &line)
         std::string::size_type pos2;
         if (line[pos1] == '<')
             pos2 = line.find(">", pos1);
-        else if (line[pos1] == '\'')
+        else if (line[pos1] == '\'') {
             pos2 = line.find("\'", pos1+1);
-        else
+            if (line.compare(pos2, 3, "\':\'", 0, 3) == 0)
+                pos2 = line.find("\'", pos2 + 3);
+        } else
             pos2 = line.find(" ", pos1) - 1;
         ret.push_back(line.substr(pos1, pos2+1-pos1));
         if (pos2 == std::string::npos)
@@ -135,7 +139,7 @@ namespace clangastdump {
         Token *createTokens(TokenList *tokenList);
     private:
         Token *addtoken(TokenList *tokenList, const std::string &str);
-        Token *addTypeTokens(TokenList *tokenList, const std::string &str);
+        void addTypeTokens(TokenList *tokenList, const std::string &str);
         Scope *createScope(TokenList *tokenList, Scope::ScopeType scopeType, AstNodePtr astNode);
         Scope *createScope(TokenList *tokenList, Scope::ScopeType scopeType, const std::vector<AstNodePtr> &children);
         void createTokensVarDecl(TokenList *tokenList);
@@ -211,11 +215,17 @@ Token *clangastdump::AstNode::addtoken(TokenList *tokenList, const std::string &
     return tokenList->back();
 }
 
-Token *clangastdump::AstNode::addTypeTokens(TokenList *tokenList, const std::string &str)
+void clangastdump::AstNode::addTypeTokens(TokenList *tokenList, const std::string &str)
 {
-    if (str.find(" (") == std::string::npos)
-        return addtoken(tokenList, unquote(str));
-    return addtoken(tokenList, str.substr(1,str.find(" (")-1));
+    std::string type;
+    if (str.find(" (") != std::string::npos)
+        type = str.substr(1,str.find(" (")-1);
+    else if (str.find("\':\'") != std::string::npos)
+        type = str.substr(1, str.find("\':\'") - 1);
+    else
+        type = unquote(str);
+    for (const std::string &s: splitString(type))
+        addtoken(tokenList, s);
 }
 
 const Scope *clangastdump::AstNode::getNestedInScope(TokenList *tokenList)
@@ -378,6 +388,15 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         return children[0]->createTokens(tokenList);
     if (nodeType == IntegerLiteral)
         return addtoken(tokenList, mExtTokens.back());
+    if (nodeType == MemberExpr) {
+        Token *s = children[0]->createTokens(tokenList);
+        Token *dot = addtoken(tokenList, ".");
+        Token *member = addtoken(tokenList, getSpelling().substr(1));
+        mData->ref(mExtTokens.back(), member);
+        dot->astOperand1(s);
+        dot->astOperand2(member);
+        return dot;
+    }
     if (nodeType == RecordDecl) {
         const Token *classDef = addtoken(tokenList, "struct");
         const std::string &recordName = getSpelling();
@@ -480,6 +499,8 @@ void clangastdump::parseClangAstDump(Tokenizer *tokenizer, std::istream &f)
     }
 
     if (!tree.empty()) {
+        //if (tokenizer->getSettings()->debugnormal)
+        //    tree[0]->dumpAst();
         tree[0]->setLocations(tokenList, 0, 1, 1);
         tree[0]->createTokens(tokenList);
     }
