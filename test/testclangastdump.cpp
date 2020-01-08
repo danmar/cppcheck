@@ -30,6 +30,7 @@ public:
 private:
     void run() OVERRIDE {
         TEST_CASE(breakStmt);
+        TEST_CASE(class1);
         TEST_CASE(continueStmt);
         TEST_CASE(forStmt);
         TEST_CASE(funcdecl1);
@@ -49,9 +50,6 @@ private:
         TEST_CASE(vardecl4);
         TEST_CASE(vardecl5);
         TEST_CASE(whileStmt);
-
-        // C++..
-        TEST_CASE(namespaceDecl);
     }
 
     std::string parse(const char clang[]) {
@@ -70,6 +68,21 @@ private:
                              "      |-IntegerLiteral 0x2c31bf8 <col:21> 'int' 0\n"
                              "      `-BreakStmt 0x3687c18 <col:24>";
         ASSERT_EQUALS("void foo ( ) { while ( 0 ) { break ; } ; }", parse(clang));
+    }
+
+    void class1() {
+        const char clang[] = "`-CXXRecordDecl 0x274c638 <a.cpp:1:1, col:25> col:7 class C definition\n"
+                             "  |-DefinitionData pass_in_registers empty aggregate standard_layout trivially_copyable pod trivial literal has_constexpr_non_copy_move_ctor can_const_default_init\n"
+                             "  | |-DefaultConstructor exists trivial constexpr needs_implicit defaulted_is_constexpr\n"
+                             "  | |-CopyConstructor simple trivial has_const_param needs_implicit implicit_has_const_param\n"
+                             "  | |-MoveConstructor exists simple trivial needs_implicit\n"
+                             "  | |-CopyAssignment trivial has_const_param needs_implicit implicit_has_const_param\n"
+                             "  | |-MoveAssignment exists simple trivial needs_implicit\n"
+                             "  | `-Destructor simple irrelevant trivial needs_implicit\n"
+                             "  |-CXXRecordDecl 0x274c758 <col:1, col:7> col:7 implicit class C\n"
+                             "  `-CXXMethodDecl 0x274c870 <col:11, col:23> col:16 foo 'void ()'\n"
+                             "    `-CompoundStmt 0x274c930 <col:22, col:23>";
+        ASSERT_EQUALS("class C { void foo ( ) { } }", parse(clang));
     }
 
     void continueStmt() {

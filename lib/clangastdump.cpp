@@ -32,6 +32,8 @@ static const std::string BreakStmt = "BreakStmt";
 static const std::string CallExpr = "CallExpr";
 static const std::string CompoundStmt = "CompoundStmt";
 static const std::string ContinueStmt = "ContinueStmt";
+static const std::string CXXMethodDecl = "CXXMethodDecl";
+static const std::string CXXRecordDecl = "CXXRecordDecl";
 static const std::string DeclRefExpr = "DeclRefExpr";
 static const std::string DeclStmt = "DeclStmt";
 static const std::string FieldDecl = "FieldDecl";
@@ -158,6 +160,7 @@ namespace clangastdump {
         void addTypeTokens(TokenList *tokenList, const std::string &str);
         Scope *createScope(TokenList *tokenList, Scope::ScopeType scopeType, AstNodePtr astNode);
         Scope *createScope(TokenList *tokenList, Scope::ScopeType scopeType, const std::vector<AstNodePtr> &children);
+        void createTokensFunctionDecl(TokenList *tokenList);
         Token *createTokensVarDecl(TokenList *tokenList);
         std::string getSpelling() const;
         std::string getType() const;
@@ -344,6 +347,25 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == ContinueStmt)
         return addtoken(tokenList, "continue");
+    if (nodeType == CXXMethodDecl) {
+        createTokensFunctionDecl(tokenList);
+        return nullptr;
+    }
+    if (nodeType == CXXRecordDecl) {
+        Token *classToken = addtoken(tokenList, "class");
+        Token *nameToken = addtoken(tokenList, mExtTokens[mExtTokens.size() - 2]);
+        std::vector<AstNodePtr> children2;
+        for (auto child: children) {
+            if (child->nodeType == "CXXMethodDecl")
+                children2.push_back(child);
+        }
+        Scope *scope = createScope(tokenList, Scope::ScopeType::eClass, children2);
+        scope->classDef = classToken;
+        scope->className = nameToken->str();
+        mData->mSymbolDatabase->typeList.push_back(Type(classToken, scope, classToken->scope()));
+        scope->definedType = &mData->mSymbolDatabase->typeList.back();
+        return nullptr;
+    }
     if (nodeType == DeclStmt)
         return children[0]->createTokens(tokenList);
     if (nodeType == DeclRefExpr) {
@@ -374,52 +396,7 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         return nullptr;
     }
     if (nodeType == FunctionDecl) {
-        SymbolDatabase *symbolDatabase = mData->mSymbolDatabase;
-        const int nameIndex = (mExtTokens.back() == "extern") ?
-                              (mExtTokens.size() - 3) :
-                              (mExtTokens.size() - 2);
-        const int retTypeIndex = nameIndex + 1;
-        addTypeTokens(tokenList, mExtTokens[retTypeIndex]);
-        Token *nameToken = addtoken(tokenList, mExtTokens[nameIndex]);
-        Scope *nestedIn = const_cast<Scope *>(nameToken->scope());
-        symbolDatabase->scopeList.push_back(Scope(nullptr, nullptr, nestedIn));
-        Scope &scope = symbolDatabase->scopeList.back();
-        symbolDatabase->functionScopes.push_back(&scope);
-        nestedIn->functionList.push_back(Function(nameToken));
-        scope.function = &nestedIn->functionList.back();
-        scope.type = Scope::ScopeType::eFunction;
-        scope.className = nameToken->str();
-        mData->funcDecl(mExtTokens.front(), nameToken, scope.function);
-        Token *par1 = addtoken(tokenList, "(");
-        // Function arguments
-        for (AstNodePtr child: children) {
-            if (child->nodeType != ParmVarDecl)
-                continue;
-            if (tokenList->back() != par1)
-                addtoken(tokenList, ",");
-            addTypeTokens(tokenList, child->mExtTokens.back());
-            const std::string spelling = child->getSpelling();
-            if (!spelling.empty()) {
-                const std::string addr = child->mExtTokens[0];
-                Token *vartok = addtoken(tokenList, spelling);
-                scope.function->argumentList.push_back(Variable(vartok, nullptr, nullptr, 0, AccessControl::Argument, nullptr, &scope, nullptr));
-                mData->varDecl(addr, vartok, &scope.function->argumentList.back());
-            }
-        }
-        Token *par2 = addtoken(tokenList, ")");
-        par1->link(par2);
-        // Function body
-        if (!children.empty() && children.back()->nodeType == CompoundStmt) {
-            Token *bodyStart = addtoken(tokenList, "{");
-            bodyStart->scope(&scope);
-            children.back()->createTokens(tokenList);
-            Token *bodyEnd = addtoken(tokenList, "}");
-            scope.bodyStart = bodyStart;
-            scope.bodyEnd = bodyEnd;
-            bodyStart->link(bodyEnd);
-        } else {
-            addtoken(tokenList, ";");
-        }
+        createTokensFunctionDecl(tokenList);
         return nullptr;
     }
     if (nodeType == IfStmt) {
@@ -513,6 +490,56 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         return nullptr;
     }
     return addtoken(tokenList, "?" + nodeType + "?");
+}
+
+void clangastdump::AstNode::createTokensFunctionDecl(TokenList *tokenList)
+{
+    SymbolDatabase *symbolDatabase = mData->mSymbolDatabase;
+    const int nameIndex = (mExtTokens.back() == "extern") ?
+                          (mExtTokens.size() - 3) :
+                          (mExtTokens.size() - 2);
+    const int retTypeIndex = nameIndex + 1;
+    addTypeTokens(tokenList, mExtTokens[retTypeIndex]);
+    Token *nameToken = addtoken(tokenList, mExtTokens[nameIndex]);
+    Scope *nestedIn = const_cast<Scope *>(nameToken->scope());
+    symbolDatabase->scopeList.push_back(Scope(nullptr, nullptr, nestedIn));
+    Scope &scope = symbolDatabase->scopeList.back();
+    symbolDatabase->functionScopes.push_back(&scope);
+    nestedIn->functionList.push_back(Function(nameToken));
+    scope.function = &nestedIn->functionList.back();
+    scope.type = Scope::ScopeType::eFunction;
+    scope.className = nameToken->str();
+    mData->funcDecl(mExtTokens.front(), nameToken, scope.function);
+    Token *par1 = addtoken(tokenList, "(");
+    // Function arguments
+    for (AstNodePtr child: children) {
+        if (child->nodeType != ParmVarDecl)
+            continue;
+        if (tokenList->back() != par1)
+            addtoken(tokenList, ",");
+        addTypeTokens(tokenList, child->mExtTokens.back());
+        const std::string spelling = child->getSpelling();
+        if (!spelling.empty()) {
+            const std::string addr = child->mExtTokens[0];
+            Token *vartok = addtoken(tokenList, spelling);
+            scope.function->argumentList.push_back(Variable(vartok, nullptr, nullptr, 0, AccessControl::Argument, nullptr, &scope, nullptr));
+            mData->varDecl(addr, vartok, &scope.function->argumentList.back());
+        }
+    }
+    Token *par2 = addtoken(tokenList, ")");
+    par1->link(par2);
+    // Function body
+    if (!children.empty() && children.back()->nodeType == CompoundStmt) {
+        Token *bodyStart = addtoken(tokenList, "{");
+        bodyStart->scope(&scope);
+        children.back()->createTokens(tokenList);
+        Token *bodyEnd = addtoken(tokenList, "}");
+        scope.bodyStart = bodyStart;
+        scope.bodyEnd = bodyEnd;
+        bodyStart->link(bodyEnd);
+    } else {
+        addtoken(tokenList, ";");
+    }
 }
 
 Token * clangastdump::AstNode::createTokensVarDecl(TokenList *tokenList)
