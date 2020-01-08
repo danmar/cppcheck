@@ -356,7 +356,9 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         Token *nameToken = addtoken(tokenList, mExtTokens[mExtTokens.size() - 2]);
         std::vector<AstNodePtr> children2;
         for (auto child: children) {
-            if (child->nodeType == "CXXMethodDecl")
+            if (child->nodeType == CXXMethodDecl)
+                children2.push_back(child);
+            else if (child->nodeType == FieldDecl)
                 children2.push_back(child);
         }
         Scope *scope = createScope(tokenList, Scope::ScopeType::eClass, children2);
