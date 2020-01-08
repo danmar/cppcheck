@@ -48,14 +48,12 @@ struct ForwardTraversal
                 return Progress::Break;
             }
 
-            if (Token::simpleMatch(tok, "}"))
-                return Progress::Break;
-#if 0
             if (Token::simpleMatch(tok, "}") && Token::simpleMatch(tok->link()->previous(), ") {") && Token::Match(tok->link()->linkAt(-1)->previous(), "if|while|for (")) {
                 const Token * blockStart = tok->link()->linkAt(-1)->previous();
                 const Token * condTok = getCondTok(blockStart);
                 if (!condTok)
                     return Progress::Break;
+                analyzer->LowerToPossible();
                 // std::vector<int> result = analyzer->Evaluate(tok);
                 // if (result.empty())
                 //     return Progress::Break;
@@ -63,6 +61,8 @@ struct ForwardTraversal
                 // info.errorPath.emplace_back(condTok, "Assuming condition is true.");
                 // Traverse a loop a second time
                 if (Token::Match(blockStart, "for|while (")) {
+                    return Progress::Break;
+#if 0
                     const Token* endCond = blockStart->linkAt(1);
                     bool traverseLoop = true;
                     // Only traverse simple for loops
@@ -75,9 +75,9 @@ struct ForwardTraversal
                             return Progress::Break;
                         // TODO: Should we traverse the body: updateRange(tok->link(), tok)?
                     }
+#endif
                 }
             }
-#endif
 
             if (Token::Match(tok, "if|while|for (") && Token::simpleMatch(tok->next()->link(), ") {")) {
                 Token * endCond = tok->next()->link();
