@@ -427,7 +427,8 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         sep1->astOperand2(sep2);
         sep2->astOperand1(expr2);
         sep2->astOperand2(expr3);
-        createScope(tokenList, Scope::ScopeType::eFor, children[4]);
+        Scope *scope = createScope(tokenList, Scope::ScopeType::eFor, children[4]);
+        scope->classDef = forToken;
         return nullptr;
     }
     if (nodeType == FunctionDecl) {
