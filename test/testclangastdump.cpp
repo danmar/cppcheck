@@ -34,6 +34,7 @@ private:
         TEST_CASE(classTemplateDecl1);
         TEST_CASE(classTemplateDecl2);
         TEST_CASE(continueStmt);
+        TEST_CASE(cxxBoolLiteralExpr);
         TEST_CASE(cxxConstructorDecl);
         TEST_CASE(cxxMemberCall);
         TEST_CASE(cxxOperatorCallExpr);
@@ -161,6 +162,12 @@ private:
                              "      |-IntegerLiteral 0x2c31bf8 <col:21> 'int' 0\n"
                              "      `-ContinueStmt 0x2c31c18 <col:24>";
         ASSERT_EQUALS("void foo ( ) { while ( 0 ) { continue ; } }", parse(clang));
+    }
+
+    void cxxBoolLiteralExpr() {
+        const char clang[] = "`-VarDecl 0x3940608 <a.cpp:1:1, col:10> col:6 x 'bool' cinit\n"
+                             "  `-CXXBoolLiteralExpr 0x39406a8 <col:10> 'bool' true";
+        ASSERT_EQUALS("bool x@1 = true ;", parse(clang));
     }
 
     void cxxConstructorDecl() {

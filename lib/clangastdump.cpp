@@ -34,6 +34,7 @@ static const std::string ClassTemplateDecl = "ClassTemplateDecl";
 static const std::string ClassTemplateSpecializationDecl = "ClassTemplateSpecializationDecl";
 static const std::string CompoundStmt = "CompoundStmt";
 static const std::string ContinueStmt = "ContinueStmt";
+static const std::string CXXBoolLiteralExpr = "CXXBoolLiteralExpr";
 static const std::string CXXConstructorDecl = "CXXConstructorDecl";
 static const std::string CXXMemberCallExpr = "CXXMemberCallExpr";
 static const std::string CXXMethodDecl = "CXXMethodDecl";
@@ -388,6 +389,11 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         if (hasBody)
             createTokensFunctionDecl(tokenList);
         return nullptr;
+    }
+    if (nodeType == CXXBoolLiteralExpr) {
+        addtoken(tokenList, mExtTokens.back());
+        tokenList->back()->setValueType(new ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::BOOL, 0));
+        return tokenList->back();
     }
     if (nodeType == CXXMethodDecl) {
         createTokensFunctionDecl(tokenList);
