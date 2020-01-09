@@ -245,7 +245,10 @@ unsigned int CppCheck::check(const std::string &path)
         const std::string clang = Path::isCPP(path) ? "clang++" : "clang";
 
         /* Experimental: import clang ast dump */
-        const std::string cmd1 = clang + " -v -fsyntax-only " + path + " 2>&1";
+        std::ofstream fout("temp.c");
+        fout << "int x;\n";
+        fout.close();
+        const std::string cmd1 = clang + " -v -fsyntax-only temp.c 2>&1";
         const std::pair<bool, std::string> res1 = executeCommand(cmd1);
         if (!res1.first) {
             std::cerr << "Failed to execute '" + cmd1 + "'" << std::endl;
@@ -276,7 +279,7 @@ unsigned int CppCheck::check(const std::string &path)
         std::istringstream ast(res.second);
         Tokenizer tokenizer(&mSettings, this);
         clangastdump::parseClangAstDump(&tokenizer, ast);
-        ValueFlow::setValues(&tokenizer.list, const_cast<SymbolDatabase *>(tokenizer.getSymbolDatabase()), this, &mSettings);
+        //ValueFlow::setValues(&tokenizer.list, const_cast<SymbolDatabase *>(tokenizer.getSymbolDatabase()), this, &mSettings);
         if (mSettings.debugnormal)
             tokenizer.printDebugOutput(1);
         ExprEngine::runChecks(this, &tokenizer, &mSettings);
