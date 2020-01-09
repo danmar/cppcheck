@@ -239,6 +239,8 @@ void clangastdump::AstNode::dumpAst(int num, int indent) const
     for (int c = 0; c < children.size(); ++c) {
         if (children[c])
             children[c]->dumpAst(c, indent + 2);
+        else
+            std::cout << std::string(indent + 2, ' ') << "<<<<NULL>>>>>" << std::endl;
     }
 }
 
