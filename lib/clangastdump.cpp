@@ -41,6 +41,7 @@ static const std::string CXXMemberCallExpr = "CXXMemberCallExpr";
 static const std::string CXXMethodDecl = "CXXMethodDecl";
 static const std::string CXXOperatorCallExpr = "CXXOperatorCallExpr";
 static const std::string CXXRecordDecl = "CXXRecordDecl";
+static const std::string CXXStaticCastExpr = "CXXStaticCastExpr";
 static const std::string CXXThisExpr = "CXXThisExpr";
 static const std::string DeclRefExpr = "DeclRefExpr";
 static const std::string DeclStmt = "DeclStmt";
@@ -322,7 +323,9 @@ const Scope *clangastdump::AstNode::getNestedInScope(TokenList *tokenList)
 void clangastdump::AstNode::setValueType(Token *tok)
 {
     int typeIndex = -1;
-    if (nodeType == UnaryExprOrTypeTraitExpr)
+    if (nodeType == CXXStaticCastExpr)
+        typeIndex = mExtTokens.size() - 3;
+    else if (nodeType == UnaryExprOrTypeTraitExpr)
         typeIndex = mExtTokens.size() - 3;
     else
         return;
@@ -330,7 +333,9 @@ void clangastdump::AstNode::setValueType(Token *tok)
     TokenList decl(nullptr);
     addTypeTokens(&decl, mExtTokens[typeIndex]);
 
-    if (Token::simpleMatch(decl.front(), "unsigned long"))
+    if (Token::simpleMatch(decl.front(), "int"))
+        tok->setValueType(new ValueType(ValueType::Sign::SIGNED, ValueType::Type::INT, 0));
+    else if (Token::simpleMatch(decl.front(), "unsigned long"))
         tok->setValueType(new ValueType(ValueType::Sign::UNSIGNED, ValueType::Type::LONG, 0));
 }
 
@@ -455,6 +460,18 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
     if (nodeType == CXXRecordDecl) {
         createTokensForCXXRecord(tokenList);
         return nullptr;
+    }
+    if (nodeType == CXXStaticCastExpr) {
+        Token *cast = addtoken(tokenList, getSpelling());
+        Token *par1 = addtoken(tokenList, "(");
+        Token *expr = children[0]->createTokens(tokenList);
+        Token *par2 = addtoken(tokenList, ")");
+        par1->link(par2);
+        par2->link(par1);
+        par1->astOperand1(cast);
+        par1->astOperand2(expr);
+        setValueType(par1);
+        return par1;
     }
     if (nodeType == CXXThisExpr)
         return addtoken(tokenList, "this");

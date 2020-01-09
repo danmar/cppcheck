@@ -39,6 +39,7 @@ private:
         TEST_CASE(cxxConstructorDecl);
         TEST_CASE(cxxMemberCall);
         TEST_CASE(cxxOperatorCallExpr);
+        TEST_CASE(cxxStaticCastExpr);
         TEST_CASE(forStmt);
         TEST_CASE(funcdecl1);
         TEST_CASE(funcdecl2);
@@ -214,6 +215,13 @@ private:
                              "      |-DeclRefExpr 0x3c0a078 <col:19> 'C' lvalue Var 0x3c09ae0 'c' 'C'\n"
                              "      `-IntegerLiteral 0x3c0a0a0 <col:21> 'int' 4";
         ASSERT_EQUALS("void foo ( ) { C c@1 ; c@1 . operator= ( 4 ) ; }", parse(clang));
+    }
+
+    void cxxStaticCastExpr() {
+        const char clang[] = "`-VarDecl 0x2e0e650 <a.cpp:2:1, col:27> col:5 a 'int' cinit\n"
+                             "  `-CXXStaticCastExpr 0x2e0e728 <col:9, col:27> 'int' static_cast<int> <NoOp>\n"
+                             "    `-IntegerLiteral 0x2e0e6f0 <col:26> 'int' 0";
+        ASSERT_EQUALS("int a@1 = static_cast<int> ( 0 ) ;", parse(clang));
     }
 
     void forStmt() {
