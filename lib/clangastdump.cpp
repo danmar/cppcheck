@@ -34,9 +34,11 @@ static const std::string ClassTemplateDecl = "ClassTemplateDecl";
 static const std::string ClassTemplateSpecializationDecl = "ClassTemplateSpecializationDecl";
 static const std::string CompoundStmt = "CompoundStmt";
 static const std::string ContinueStmt = "ContinueStmt";
+static const std::string CXXConstructorDecl = "CXXConstructorDecl";
 static const std::string CXXMemberCallExpr = "CXXMemberCallExpr";
 static const std::string CXXMethodDecl = "CXXMethodDecl";
 static const std::string CXXRecordDecl = "CXXRecordDecl";
+static const std::string CXXThisExpr = "CXXThisExpr";
 static const std::string DeclRefExpr = "DeclRefExpr";
 static const std::string DeclStmt = "DeclStmt";
 static const std::string FieldDecl = "FieldDecl";
@@ -374,6 +376,18 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == ContinueStmt)
         return addtoken(tokenList, "continue");
+    if (nodeType == CXXConstructorDecl) {
+        bool hasBody = false;
+        for (AstNodePtr child: children) {
+            if (child->nodeType == CompoundStmt && !child->children.empty()) {
+                hasBody = true;
+                break;
+            }
+        }
+        if (hasBody)
+            createTokensFunctionDecl(tokenList);
+        return nullptr;
+    }
     if (nodeType == CXXMethodDecl) {
         createTokensFunctionDecl(tokenList);
         return nullptr;
@@ -384,6 +398,8 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         createTokensForCXXRecord(tokenList);
         return nullptr;
     }
+    if (nodeType == CXXThisExpr)
+        return addtoken(tokenList, "this");
     if (nodeType == DeclStmt)
         return children[0]->createTokens(tokenList);
     if (nodeType == DeclRefExpr) {
@@ -468,7 +484,14 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
     if (nodeType == MemberExpr) {
         Token *s = children[0]->createTokens(tokenList);
         Token *dot = addtoken(tokenList, ".");
-        Token *member = addtoken(tokenList, getSpelling().substr(1));
+        std::string memberName = getSpelling();
+        if (memberName.compare(0,2,"->") == 0) {
+            dot->originalName("->");
+            memberName = memberName.substr(2);
+        } else {
+            memberName = memberName.substr(1);
+        }
+        Token *member = addtoken(tokenList, memberName);
         mData->ref(mExtTokens.back(), member);
         dot->astOperand1(s);
         dot->astOperand2(member);
@@ -613,10 +636,10 @@ void clangastdump::AstNode::createTokensForCXXRecord(TokenList *tokenList)
     const std::string className = mExtTokens[mExtTokens.size() - 2] + getTemplateParameters();
     /*Token *nameToken =*/ addtoken(tokenList, className);
     std::vector<AstNodePtr> children2;
-    for (auto child: children) {
-        if (child->nodeType == CXXMethodDecl)
-            children2.push_back(child);
-        else if (child->nodeType == FieldDecl)
+    for (AstNodePtr child: children) {
+        if (child->nodeType == CXXConstructorDecl ||
+            child->nodeType == CXXMethodDecl ||
+            child->nodeType == FieldDecl)
             children2.push_back(child);
     }
     if (children2.empty()) {

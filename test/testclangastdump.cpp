@@ -34,6 +34,7 @@ private:
         TEST_CASE(classTemplateDecl1);
         TEST_CASE(classTemplateDecl2);
         TEST_CASE(continueStmt);
+        TEST_CASE(cxxConstructorDecl);
         TEST_CASE(cxxMemberCall);
         TEST_CASE(forStmt);
         TEST_CASE(funcdecl1);
@@ -159,6 +160,17 @@ private:
                              "      |-IntegerLiteral 0x2c31bf8 <col:21> 'int' 0\n"
                              "      `-ContinueStmt 0x2c31c18 <col:24>";
         ASSERT_EQUALS("void foo ( ) { while ( 0 ) { continue ; } }", parse(clang));
+    }
+
+    void cxxConstructorDecl() {
+        const char clang[] = "|-CXXConstructorDecl 0x428e890 <col:11, col:24> col:11 C 'void ()'\n"
+                             "| `-CompoundStmt 0x428ea58 <col:15, col:24>\n"
+                             "|   `-BinaryOperator 0x428ea30 <col:17, col:21> 'int' lvalue '='\n"
+                             "|     |-MemberExpr 0x428e9d8 <col:17> 'int' lvalue ->x 0x428e958\n"
+                             "|     | `-CXXThisExpr 0x428e9c0 <col:17> 'C *' this\n"
+                             "|     `-IntegerLiteral 0x428ea10 <col:21> 'int' 0\n"
+                             "`-FieldDecl 0x428e958 <col:26, col:30> col:30 referenced x 'int'";
+        ASSERT_EQUALS("void C ( ) { this . x = 0 ; } int x@1", parse(clang));
     }
 
     void cxxMemberCall() {
