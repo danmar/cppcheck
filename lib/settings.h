@@ -71,7 +71,6 @@ private:
 public:
     Settings();
 
-
     std::list<std::string> addons;
 
     /** @brief Paths used as base for conversion to relative paths. */

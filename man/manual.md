@@ -82,6 +82,16 @@ We don't know which approach (project file or manual configuration) will give yo
 
 Later chapters will describe this in more detail.
 
+### Check files matching a given file filter
+
+With `--file-filter=<str>` you can set a file filter and only those files matching the filter will be checked.
+
+For example: if you want to check only those files and folders starting from a subfolder src/ that start with "test" you have to type:
+
+    cppcheck src/ --file-filter=src/test*
+
+Cppcheck first collects all files in src/ and will apply the filter after that. So the filter must start with the given start folder. 
+
 ### Excluding a file or folder from checking
 
 To exclude a file or folder, there are two options. The first option is to only provide the paths and files you want to check.
@@ -135,16 +145,6 @@ You can import some project files and build configurations into Cppcheck.
 You can import and use Cppcheck GUI project files in the command line tool:
 
     cppcheck --project=foobar.cppcheck
-
-In addition you can also define files that are part of the project and you want to check only these files with the given project configuration:
-    
-    cppcheck --project=foobar.cppcheck file1.cpp file2.cpp
-
-It is also possible to use an asterix to just check those files that matches the filter:
-
-    cppcheck --project=foobar.cppcheck file*.cpp
-
-This will check file1.cpp and file2.cpp.
 
 The Cppcheck GUI has a few options that are not available in the command line directly. To use these options you can import a GUI project file. We want to keep the command line tool usage simple and limit the options by intention.
 

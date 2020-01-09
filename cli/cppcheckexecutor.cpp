@@ -920,7 +920,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
                 }
             }
         } else {
-        // filesettings
+            // filesettings
             // check all files of the project
             for (const ImportProject::FileSettings &fs : settings.project.fileSettings) {
                 returnValue += cppcheck.check(fs);
@@ -941,7 +941,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
                 c++;
             }
         }
-        if ( cppcheck.analyseWholeProgram())
+        if (cppcheck.analyseWholeProgram())
             returnValue++;
     } else if (!ThreadExecutor::isEnabled()) {
         std::cout << "No thread support yet implemented for this platform." << std::endl;

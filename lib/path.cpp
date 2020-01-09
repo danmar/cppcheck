@@ -249,4 +249,3 @@ bool Path::fileExists(const std::string &file)
     std::ifstream f(file.c_str());
     return f.is_open();
 }
-
