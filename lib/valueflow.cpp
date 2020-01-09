@@ -1996,7 +1996,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symbo
             if (Token::Match(tok, "<|>")) {
                 if (num != 0)
                     continue;
-                if (!var->typeStartToken()->isUnsigned())
+                if (var->valueType() && var->valueType()->sign != ValueType::Sign::UNSIGNED)
                     continue;
             }
             ValueFlow::Value val(tok, num);
@@ -4144,7 +4144,7 @@ static void valueFlowForwardAssign(Token * const               tok,
                                    ErrorLogger * const         errorLogger,
                                    const Settings * const      settings)
 {
-    const Token * const endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
+    const Token * const endOfVarScope = var->nameToken()->scope()->bodyEnd;
     if (std::any_of(values.begin(), values.end(), std::mem_fn(&ValueFlow::Value::isLifetimeValue))) {
         valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
         values.remove_if(std::mem_fn(&ValueFlow::Value::isLifetimeValue));

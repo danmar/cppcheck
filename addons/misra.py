@@ -23,6 +23,7 @@ import os
 import argparse
 import codecs
 import string
+from collections import defaultdict
 
 try:
     from itertools import izip as zip
@@ -1381,7 +1382,7 @@ class MisraChecker:
         # initialization lists and function calls, e.g.:
         # struct S a = {1, 2, 3}, b, c = foo(1, 2), d;
         #                       ^                 ^
-        end_tokens_map = {}
+        end_tokens_map = defaultdict(set)
 
         skip_to = None
         for token in data.tokenlist:
@@ -1399,10 +1400,8 @@ class MisraChecker:
             # Save end tokens from function calls in initialization
             if simpleMatch(token, ') ;'):
                 if (token.isExpandedMacro):
-                    end_tokens_map.setdefault(token.next.linenr, set())
-                    end_tokens_map[token.linenr].add(token.next.column)
+                    end_tokens_map[token.next.linenr].add(token.next.column)
                 else:
-                    end_tokens_map.setdefault(token.linenr, set())
                     end_tokens_map[token.linenr].add(token.column)
             if token.str != ',':
                 continue
@@ -1410,7 +1409,6 @@ class MisraChecker:
                 if token.astParent.str in ('(', '{'):
                     end_token = token.astParent.link
                     if end_token:
-                        end_tokens_map.setdefault(end_token.linenr, set())
                         end_tokens_map[end_token.linenr].add(end_token.column)
                     continue
                 elif token.astParent.str == ',':

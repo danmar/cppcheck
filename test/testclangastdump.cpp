@@ -30,11 +30,15 @@ public:
 private:
     void run() OVERRIDE {
         TEST_CASE(breakStmt);
+        TEST_CASE(characterLiteral);
         TEST_CASE(class1);
         TEST_CASE(classTemplateDecl1);
         TEST_CASE(classTemplateDecl2);
         TEST_CASE(continueStmt);
+        TEST_CASE(cxxBoolLiteralExpr);
+        TEST_CASE(cxxConstructorDecl);
         TEST_CASE(cxxMemberCall);
+        TEST_CASE(cxxOperatorCallExpr);
         TEST_CASE(forStmt);
         TEST_CASE(funcdecl1);
         TEST_CASE(funcdecl2);
@@ -49,6 +53,8 @@ private:
         TEST_CASE(typedefDecl1);
         TEST_CASE(typedefDecl2);
         TEST_CASE(typedefDecl3);
+        TEST_CASE(unaryExprOrTypeTraitExpr);
+        TEST_CASE(unaryOperator);
         TEST_CASE(vardecl1);
         TEST_CASE(vardecl2);
         TEST_CASE(vardecl3);
@@ -72,7 +78,13 @@ private:
                              "      |-<<<NULL>>>\n"
                              "      |-IntegerLiteral 0x2c31bf8 <col:21> 'int' 0\n"
                              "      `-BreakStmt 0x3687c18 <col:24>";
-        ASSERT_EQUALS("void foo ( ) { while ( 0 ) { break ; } ; }", parse(clang));
+        ASSERT_EQUALS("void foo ( ) { while ( 0 ) { break ; } }", parse(clang));
+    }
+
+    void characterLiteral() {
+        const char clang[] = "`-VarDecl 0x3df8608 <a.cpp:1:1, col:10> col:6 c 'char' cinit\n"
+                             "  `-CharacterLiteral 0x3df86a8 <col:10> 'char' 120";
+        ASSERT_EQUALS("char c@1 = 'x' ;", parse(clang));
     }
 
     void class1() {
@@ -158,7 +170,24 @@ private:
                              "      |-<<<NULL>>>\n"
                              "      |-IntegerLiteral 0x2c31bf8 <col:21> 'int' 0\n"
                              "      `-ContinueStmt 0x2c31c18 <col:24>";
-        ASSERT_EQUALS("void foo ( ) { while ( 0 ) { continue ; } ; }", parse(clang));
+        ASSERT_EQUALS("void foo ( ) { while ( 0 ) { continue ; } }", parse(clang));
+    }
+
+    void cxxBoolLiteralExpr() {
+        const char clang[] = "`-VarDecl 0x3940608 <a.cpp:1:1, col:10> col:6 x 'bool' cinit\n"
+                             "  `-CXXBoolLiteralExpr 0x39406a8 <col:10> 'bool' true";
+        ASSERT_EQUALS("bool x@1 = true ;", parse(clang));
+    }
+
+    void cxxConstructorDecl() {
+        const char clang[] = "|-CXXConstructorDecl 0x428e890 <col:11, col:24> col:11 C 'void ()'\n"
+                             "| `-CompoundStmt 0x428ea58 <col:15, col:24>\n"
+                             "|   `-BinaryOperator 0x428ea30 <col:17, col:21> 'int' lvalue '='\n"
+                             "|     |-MemberExpr 0x428e9d8 <col:17> 'int' lvalue ->x 0x428e958\n"
+                             "|     | `-CXXThisExpr 0x428e9c0 <col:17> 'C *' this\n"
+                             "|     `-IntegerLiteral 0x428ea10 <col:21> 'int' 0\n"
+                             "`-FieldDecl 0x428e958 <col:26, col:30> col:30 referenced x 'int'";
+        ASSERT_EQUALS("void C ( ) { this . x@1 = 0 ; } int x@1", parse(clang));
     }
 
     void cxxMemberCall() {
@@ -171,6 +200,20 @@ private:
                              "      `-MemberExpr 0x323ba80 <col:24, col:26> '<bound member function type>' .foo 0x320e160\n"
                              "        `-DeclRefExpr 0x323ba58 <col:24> 'C<int>':'C<int>' lvalue Var 0x320df28 'c' 'C<int>':'C<int>'";
         ASSERT_EQUALS("void bar ( ) { C<int> c@1 ; c@1 . foo ( ) ; }", parse(clang));
+    }
+
+    void cxxOperatorCallExpr() {
+        const char clang[] = "`-FunctionDecl 0x3c099f0 <line:2:1, col:24> col:6 foo 'void ()'\n"
+                             "  `-CompoundStmt 0x3c37308 <col:12, col:24>\n"
+                             "    |-DeclStmt 0x3c0a060 <col:14, col:17>\n"
+                             "    | `-VarDecl 0x3c09ae0 <col:14, col:16> col:16 used c 'C' callinit\n"
+                             "    |   `-CXXConstructExpr 0x3c0a030 <col:16> 'C' 'void () noexcept'\n"
+                             "    `-CXXOperatorCallExpr 0x3c372c0 <col:19, col:21> 'void'\n"
+                             "      |-ImplicitCastExpr 0x3c372a8 <col:20> 'void (*)(int)' <FunctionToPointerDecay>\n"
+                             "      | `-DeclRefExpr 0x3c37250 <col:20> 'void (int)' lvalue CXXMethod 0x3c098c0 'operator=' 'void (int)'\n"
+                             "      |-DeclRefExpr 0x3c0a078 <col:19> 'C' lvalue Var 0x3c09ae0 'c' 'C'\n"
+                             "      `-IntegerLiteral 0x3c0a0a0 <col:21> 'int' 4";
+        ASSERT_EQUALS("void foo ( ) { C c@1 ; c@1 . operator= ( 4 ) ; }", parse(clang));
     }
 
     void forStmt() {
@@ -190,7 +233,7 @@ private:
                              "    | `-CompoundStmt 0x2f93d40 <col:43, col:44>\n"
                              "    `-ReturnStmt 0x2f93da8 <col:46, col:53>\n"
                              "      `-IntegerLiteral 0x2f93d88 <col:53> 'int' 0";
-        ASSERT_EQUALS("int main ( ) { for ( int i@1 = 0 ; i@1 < 10 ; ++ i@1 ) { } ; return 0 ; }", parse(clang));
+        ASSERT_EQUALS("int main ( ) { for ( int i@1 = 0 ; i@1 < 10 ; ++ i@1 ) { } return 0 ; }", parse(clang));
     }
 
     void funcdecl1() {
@@ -280,7 +323,7 @@ private:
                              "      `-CompoundStmt 0x2637d28 <line:3:10, col:11>";
         ASSERT_EQUALS("int foo ( int x@1 ) {\n"
                       "if ( x@1 > 10 ) { }\n"
-                      "else { } ; }", parse(clang));
+                      "else { } }", parse(clang));
     }
 
     void memberExpr() {
@@ -338,6 +381,27 @@ private:
         ASSERT_EQUALS("typedef char * __builtin_ms_va_list ;", parse(clang));
     }
 
+    void unaryExprOrTypeTraitExpr() {
+        const char clang[] = "`-VarDecl 0x24cc610 <a.cpp:1:1, col:19> col:5 x 'int' cinit\n"
+                             "  `-ImplicitCastExpr 0x24cc6e8 <col:9, col:19> 'int' <IntegralCast>\n"
+                             "    `-UnaryExprOrTypeTraitExpr 0x24cc6c8 <col:9, col:19> 'unsigned long' sizeof 'int'\n";
+        ASSERT_EQUALS("int x@1 = sizeof ( int ) ;", parse(clang));
+    }
+
+    void unaryOperator() {
+        const char clang[] = "`-FunctionDecl 0x2dd9748 <1.cpp:2:1, col:44> col:5 foo 'int (int *)'\n"
+                             "  |-ParmVarDecl 0x2dd9680 <col:14, col:19> col:19 used p 'int *'\n"
+                             "  `-CompoundStmt 0x2dd9908 <col:22, col:44>\n"
+                             "    `-ReturnStmt 0x2dd98f0 <col:24, col:41>\n"
+                             "      `-BinaryOperator 0x2dd98c8 <col:31, col:41> 'int' '/'\n"
+                             "        |-IntegerLiteral 0x2dd9830 <col:31> 'int' 100000\n"
+                             "        `-ImplicitCastExpr 0x2dd98b0 <col:40, col:41> 'int' <LValueToRValue>\n"
+                             "          `-UnaryOperator 0x2dd9890 <col:40, col:41> 'int' lvalue prefix '*' cannot overflow\n"
+                             "            `-ImplicitCastExpr 0x2dd9878 <col:41> 'int *' <LValueToRValue>\n"
+                             "              `-DeclRefExpr 0x2dd9850 <col:41> 'int *' lvalue ParmVar 0x2dd9680 'p' 'int *'";
+        ASSERT_EQUALS("int foo ( int * p@1 ) { return 100000 / * p@1 ; }", parse(clang));
+    }
+
     void vardecl1() {
         const char clang[] = "|-VarDecl 0x32b8aa0 <1.c:1:1, col:9> col:5 used a 'int' cinit\n"
                              "| `-IntegerLiteral 0x32b8b40 <col:9> 'int' 1\n"
@@ -392,7 +456,7 @@ private:
                              "      |-IntegerLiteral 0x3d45bf8 <col:12> 'int' 0\n"
                              "      `-NullStmt 0x3d45c18 <col:14>";
         ASSERT_EQUALS("void foo ( ) {\n"
-                      "while ( 0 ) { ; } ; }",
+                      "while ( 0 ) { ; } }",
                       parse(clang));
     }
 };

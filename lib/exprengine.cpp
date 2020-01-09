@@ -165,7 +165,7 @@ namespace {
             , callbacks(callbacks)
             , mTrackExecution(trackExecution)
             , mDataIndex(trackExecution->getNewDataIndex()) {}
-        typedef std::map<nonneg int, std::shared_ptr<ExprEngine::Value>> Memory;
+        typedef std::map<nonneg int, ExprEngine::ValuePtr> Memory;
         Memory memory;
         int * const symbolValueIndex;
         const Tokenizer * const tokenizer;
@@ -196,6 +196,19 @@ namespace {
         void assignStructMember(const Token *tok, ExprEngine::StructValue *structVal, const std::string &memberName, ExprEngine::ValuePtr value) {
             mTrackExecution->symbolRange(tok, value);
             structVal->member[memberName] = value;
+        }
+
+        void functionCall() {
+            // Remove values for global variables
+            const SymbolDatabase *symbolDatabase = tokenizer->getSymbolDatabase();
+            for (std::map<nonneg int, ExprEngine::ValuePtr>::iterator it = memory.begin(); it != memory.end();) {
+                unsigned int varid = it->first;
+                const Variable *var = symbolDatabase->getVariableFromVarId(varid);
+                if (var->isGlobal())
+                    it = memory.erase(it);
+                else
+                    ++it;
+            }
         }
 
         std::string getNewSymbolName() OVERRIDE {
@@ -1181,6 +1194,7 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
 
     auto val = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
     call(data.callbacks, tok, val, &data);
+    data.functionCall();
     return val;
 }
 
