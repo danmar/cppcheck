@@ -72,7 +72,7 @@ private:
                              "      |-<<<NULL>>>\n"
                              "      |-IntegerLiteral 0x2c31bf8 <col:21> 'int' 0\n"
                              "      `-BreakStmt 0x3687c18 <col:24>";
-        ASSERT_EQUALS("void foo ( ) { while ( 0 ) { break ; } ; }", parse(clang));
+        ASSERT_EQUALS("void foo ( ) { while ( 0 ) { break ; } }", parse(clang));
     }
 
     void class1() {
@@ -158,7 +158,7 @@ private:
                              "      |-<<<NULL>>>\n"
                              "      |-IntegerLiteral 0x2c31bf8 <col:21> 'int' 0\n"
                              "      `-ContinueStmt 0x2c31c18 <col:24>";
-        ASSERT_EQUALS("void foo ( ) { while ( 0 ) { continue ; } ; }", parse(clang));
+        ASSERT_EQUALS("void foo ( ) { while ( 0 ) { continue ; } }", parse(clang));
     }
 
     void cxxMemberCall() {
@@ -190,7 +190,7 @@ private:
                              "    | `-CompoundStmt 0x2f93d40 <col:43, col:44>\n"
                              "    `-ReturnStmt 0x2f93da8 <col:46, col:53>\n"
                              "      `-IntegerLiteral 0x2f93d88 <col:53> 'int' 0";
-        ASSERT_EQUALS("int main ( ) { for ( int i@1 = 0 ; i@1 < 10 ; ++ i@1 ) { } ; return 0 ; }", parse(clang));
+        ASSERT_EQUALS("int main ( ) { for ( int i@1 = 0 ; i@1 < 10 ; ++ i@1 ) { } return 0 ; }", parse(clang));
     }
 
     void funcdecl1() {
@@ -280,7 +280,7 @@ private:
                              "      `-CompoundStmt 0x2637d28 <line:3:10, col:11>";
         ASSERT_EQUALS("int foo ( int x@1 ) {\n"
                       "if ( x@1 > 10 ) { }\n"
-                      "else { } ; }", parse(clang));
+                      "else { } }", parse(clang));
     }
 
     void memberExpr() {
@@ -392,7 +392,7 @@ private:
                              "      |-IntegerLiteral 0x3d45bf8 <col:12> 'int' 0\n"
                              "      `-NullStmt 0x3d45c18 <col:14>";
         ASSERT_EQUALS("void foo ( ) {\n"
-                      "while ( 0 ) { ; } ; }",
+                      "while ( 0 ) { ; } }",
                       parse(clang));
     }
 };

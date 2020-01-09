@@ -322,6 +322,7 @@ Scope *clangastdump::AstNode::createScope(TokenList *tokenList, Scope::ScopeType
     }
     Token *bodyEnd = children.back()->addtoken(tokenList, "}");
     bodyStart->link(bodyEnd);
+    bodyEnd->link(bodyStart);
     scope->bodyStart = bodyStart;
     scope->bodyEnd = bodyEnd;
     return scope;
@@ -337,6 +338,7 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         bracket1->astOperand1(array);
         bracket1->astOperand2(index);
         bracket1->link(bracket2);
+        bracket2->link(bracket1);
         return bracket1;
     }
     if (nodeType == BinaryOperator) {
@@ -402,6 +404,7 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         Token *expr3 = children[3] ? children[3]->createTokens(tokenList) : nullptr;
         Token *par2 = addtoken(tokenList, ")");
         par1->link(par2);
+        par2->link(par1);
         par1->astOperand1(forToken);
         par1->astOperand2(sep1);
         sep1->astOperand1(expr1);
@@ -436,6 +439,7 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         par1->astOperand2(cond->createTokens(tokenList));
         Token *par2 = addtoken(tokenList, ")");
         par1->link(par2);
+        par2->link(par1);
         createScope(tokenList, Scope::ScopeType::eIf, then);
         if (else_) {
             else_->addtoken(tokenList, "else");
@@ -475,6 +479,7 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         Token *expr = children[0]->createTokens(tokenList);
         Token *par2 = addtoken(tokenList, ")");
         par1->link(par2);
+        par2->link(par1);
         return expr;
     }
     if (nodeType == RecordDecl) {
@@ -520,6 +525,7 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         par1->astOperand2(cond->createTokens(tokenList));
         Token *par2 = addtoken(tokenList, ")");
         par1->link(par2);
+        par2->link(par1);
         createScope(tokenList, Scope::ScopeType::eWhile, body);
         return nullptr;
     }
@@ -543,7 +549,9 @@ Token * clangastdump::AstNode::createTokensCall(TokenList *tokenList)
             parent->astOperand2(children[c]->createTokens(tokenList));
         }
     }
-    par1->link(addtoken(tokenList, ")"));
+    Token *par2 = addtoken(tokenList, ")");
+    par1->link(par2);
+    par2->link(par1);
     return par1;
 }
 
@@ -583,6 +591,7 @@ void clangastdump::AstNode::createTokensFunctionDecl(TokenList *tokenList)
     }
     Token *par2 = addtoken(tokenList, ")");
     par1->link(par2);
+    par2->link(par1);
     // Function body
     if (!children.empty() && children.back()->nodeType == CompoundStmt) {
         Token *bodyStart = addtoken(tokenList, "{");
@@ -592,6 +601,7 @@ void clangastdump::AstNode::createTokensFunctionDecl(TokenList *tokenList)
         scope.bodyStart = bodyStart;
         scope.bodyEnd = bodyEnd;
         bodyStart->link(bodyEnd);
+        bodyEnd->link(bodyStart);
     } else {
         addtoken(tokenList, ";");
     }

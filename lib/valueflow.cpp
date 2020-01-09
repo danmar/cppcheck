@@ -1996,7 +1996,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symbo
             if (Token::Match(tok, "<|>")) {
                 if (num != 0)
                     continue;
-                if (!var->typeStartToken()->isUnsigned())
+                if (var->valueType() && var->valueType()->sign != ValueType::Sign::UNSIGNED)
                     continue;
             }
             ValueFlow::Value val(tok, num);
