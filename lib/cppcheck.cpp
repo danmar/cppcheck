@@ -269,6 +269,9 @@ unsigned int CppCheck::check(const std::string &path)
             }
         }
 
+        for (const std::string &i: mSettings.includePaths)
+            flags += "-I" + i + " ";
+
         const std::string cmd = clang + " -cc1 -ast-dump " + flags + path;
         std::pair<bool, std::string> res = executeCommand(cmd);
         if (!res.first) {
