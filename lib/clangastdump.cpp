@@ -49,6 +49,7 @@ static const std::string IntegerLiteral = "IntegerLiteral";
 static const std::string MemberExpr = "MemberExpr";
 static const std::string NamespaceDecl = "NamespaceDecl";
 static const std::string NullStmt = "NullStmt";
+static const std::string ParenExpr = "ParenExpr";
 static const std::string ParmVarDecl = "ParmVarDecl";
 static const std::string RecordDecl = "RecordDecl";
 static const std::string ReturnStmt = "ReturnStmt";
@@ -235,8 +236,10 @@ void clangastdump::AstNode::dumpAst(int num, int indent) const
     for (auto tok: mExtTokens)
         std::cout << " " << tok;
     std::cout << std::endl;
-    for (int c = 0; c < children.size(); ++c)
-        children[c]->dumpAst(c, indent + 2);
+    for (int c = 0; c < children.size(); ++c) {
+        if (children[c])
+            children[c]->dumpAst(c, indent + 2);
+    }
 }
 
 void clangastdump::AstNode::setLocations(TokenList *tokenList, int file, int line, int col)
@@ -360,7 +363,8 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
     if (nodeType == CompoundStmt) {
         for (AstNodePtr child: children) {
             child->createTokens(tokenList);
-            child->addtoken(tokenList, ";");
+            if (!Token::Match(tokenList->back(), "[;{}]"))
+                child->addtoken(tokenList, ";");
         }
         return nullptr;
     }
@@ -389,11 +393,11 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
     if (nodeType == ForStmt) {
         Token *forToken = addtoken(tokenList, "for");
         Token *par1 = addtoken(tokenList, "(");
-        Token *expr1 = children[0]->createTokens(tokenList);
+        Token *expr1 = children[0] ? children[0]->createTokens(tokenList) : nullptr;
         Token *sep1 = addtoken(tokenList, ";");
-        Token *expr2 = children[2]->createTokens(tokenList);
+        Token *expr2 = children[2] ? children[2]->createTokens(tokenList) : nullptr;
         Token *sep2 = addtoken(tokenList, ";");
-        Token *expr3 = children[3]->createTokens(tokenList);
+        Token *expr3 = children[3] ? children[3]->createTokens(tokenList) : nullptr;
         Token *par2 = addtoken(tokenList, ")");
         par1->link(par2);
         par1->astOperand1(forToken);
@@ -463,6 +467,13 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         dot->astOperand1(s);
         dot->astOperand2(member);
         return dot;
+    }
+    if (nodeType == ParenExpr) {
+        Token *par1 = addtoken(tokenList, "(");
+        Token *expr = children[0]->createTokens(tokenList);
+        Token *par2 = addtoken(tokenList, ")");
+        par1->link(par2);
+        return expr;
     }
     if (nodeType == RecordDecl) {
         const Token *classDef = addtoken(tokenList, "struct");
@@ -595,6 +606,10 @@ void clangastdump::AstNode::createTokensForCXXRecord(TokenList *tokenList)
             children2.push_back(child);
         else if (child->nodeType == FieldDecl)
             children2.push_back(child);
+    }
+    if (children2.empty()) {
+        addtoken(tokenList, ";");
+        return;
     }
     Scope *scope = createScope(tokenList, Scope::ScopeType::eClass, children2);
     scope->classDef = classToken;
