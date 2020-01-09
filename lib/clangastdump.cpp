@@ -485,12 +485,14 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         Token *s = children[0]->createTokens(tokenList);
         Token *dot = addtoken(tokenList, ".");
         std::string memberName = getSpelling();
-        if (memberName.compare(0,2,"->") == 0) {
+        if (memberName.compare(0, 2, "->") == 0) {
             dot->originalName("->");
             memberName = memberName.substr(2);
-        } else {
+        } else if (memberName.compare(0, 1, ".") == 0) {
             memberName = memberName.substr(1);
         }
+        if (memberName.empty())
+            memberName = "<unknown>";
         Token *member = addtoken(tokenList, memberName);
         mData->ref(mExtTokens.back(), member);
         dot->astOperand1(s);
