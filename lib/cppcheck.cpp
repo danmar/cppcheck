@@ -243,7 +243,26 @@ unsigned int CppCheck::check(const std::string &path)
 {
     if (mSettings.clang) {
         /* Experimental: import clang ast dump */
-        const std::string cmd = "clang -cc1 -ast-dump " + path;
+        const std::string cmd1 = "clang -v -fsyntax-only " + path + " 2>&1";
+        const std::pair<bool, std::string> res1 = executeCommand(cmd1);
+        if (!res1.first) {
+            std::cerr << "Failed to execute '" + cmd1 + "'" << std::endl;
+            return 0;
+        }
+        std::istringstream details(res1.second);
+        std::string line;
+        std::string includes;
+        while (std::getline(details, line)) {
+            if (line.find(" -internal-isystem ") == std::string::npos)
+                continue;
+            const std::vector<std::string> options = split(line, " ");
+            for (int i = 0; i+1 < options.size(); i++) {
+                if (endsWith(options[i], "-isystem", 8))
+                    includes += options[i] + " " + options[i+1] + " ";
+            }
+        }
+
+        const std::string cmd = "clang -cc1 -ast-dump " + includes + path;
         std::pair<bool, std::string> res = executeCommand(cmd);
         if (!res.first) {
             std::cerr << "Failed to execute '" + cmd + "'" << std::endl;

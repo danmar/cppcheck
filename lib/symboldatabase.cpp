@@ -1745,8 +1745,11 @@ Variable::Variable(const Token *name_, const std::string &clangType,
             pos = clangType.find("]", pos1);
             Dimension dim;
             dim.tok = nullptr;
-            dim.known = true;
-            dim.num = MathLib::toLongNumber(clangType.substr(pos1, pos-pos1));
+            dim.known = pos > pos1;
+            if (pos > pos1)
+                dim.num = MathLib::toLongNumber(clangType.substr(pos1, pos-pos1));
+            else
+                dim.num = 0;
             mDimensions.push_back(dim);
             ++pos;
         } while (pos < clangType.size() && clangType[pos] == '[');

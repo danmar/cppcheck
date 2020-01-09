@@ -30,16 +30,30 @@ public:
 private:
     void run() OVERRIDE {
         TEST_CASE(breakStmt);
+        TEST_CASE(class1);
+        TEST_CASE(classTemplateDecl1);
+        TEST_CASE(classTemplateDecl2);
         TEST_CASE(continueStmt);
+        TEST_CASE(cxxMemberCall);
         TEST_CASE(forStmt);
         TEST_CASE(funcdecl1);
         TEST_CASE(funcdecl2);
+        TEST_CASE(funcdecl3);
+        TEST_CASE(funcdecl4);
+        TEST_CASE(functionTemplateDecl1);
+        TEST_CASE(functionTemplateDecl2);
         TEST_CASE(ifelse);
         TEST_CASE(memberExpr);
+        TEST_CASE(namespaceDecl);
         TEST_CASE(recordDecl);
+        TEST_CASE(typedefDecl1);
+        TEST_CASE(typedefDecl2);
+        TEST_CASE(typedefDecl3);
         TEST_CASE(vardecl1);
         TEST_CASE(vardecl2);
         TEST_CASE(vardecl3);
+        TEST_CASE(vardecl4);
+        TEST_CASE(vardecl5);
         TEST_CASE(whileStmt);
     }
 
@@ -61,6 +75,82 @@ private:
         ASSERT_EQUALS("void foo ( ) { while ( 0 ) { break ; } ; }", parse(clang));
     }
 
+    void class1() {
+        const char clang[] = "`-CXXRecordDecl 0x274c638 <a.cpp:1:1, col:25> col:7 class C definition\n"
+                             "  |-DefinitionData pass_in_registers empty aggregate standard_layout trivially_copyable pod trivial literal has_constexpr_non_copy_move_ctor can_const_default_init\n"
+                             "  | |-DefaultConstructor exists trivial constexpr needs_implicit defaulted_is_constexpr\n"
+                             "  | |-CopyConstructor simple trivial has_const_param needs_implicit implicit_has_const_param\n"
+                             "  | |-MoveConstructor exists simple trivial needs_implicit\n"
+                             "  | |-CopyAssignment trivial has_const_param needs_implicit implicit_has_const_param\n"
+                             "  | |-MoveAssignment exists simple trivial needs_implicit\n"
+                             "  | `-Destructor simple irrelevant trivial needs_implicit\n"
+                             "  |-CXXRecordDecl 0x274c758 <col:1, col:7> col:7 implicit class C\n"
+                             "  `-CXXMethodDecl 0x274c870 <col:11, col:23> col:16 foo 'void ()'\n"
+                             "    `-CompoundStmt 0x274c930 <col:22, col:23>";
+        ASSERT_EQUALS("class C { void foo ( ) { } }", parse(clang));
+    }
+
+    void classTemplateDecl1() {
+        const char clang[] = "`-ClassTemplateDecl 0x29d1748 <a.cpp:1:1, col:59> col:25 C\n"
+                             "  |-TemplateTypeParmDecl 0x29d15f8 <col:10, col:16> col:16 referenced class depth 0 index 0 T\n"
+                             "  `-CXXRecordDecl 0x29d16b0 <col:19, col:59> col:25 class C definition\n"
+                             "    |-DefinitionData empty aggregate standard_layout trivially_copyable pod trivial literal has_constexpr_non_copy_move_ctor can_const_default_init\n"
+                             "    | |-DefaultConstructor exists trivial constexpr needs_implicit defaulted_is_constexpr\n"
+                             "    | |-CopyConstructor simple trivial has_const_param needs_implicit implicit_has_const_param\n"
+                             "    | |-MoveConstructor exists simple trivial needs_implicit\n"
+                             "    | |-CopyAssignment trivial has_const_param needs_implicit implicit_has_const_param\n"
+                             "    | |-MoveAssignment exists simple trivial needs_implicit\n"
+                             "    | `-Destructor simple irrelevant trivial needs_implicit\n"
+                             "    |-CXXRecordDecl 0x29d19b0 <col:19, col:25> col:25 implicit class C\n"
+                             "    |-AccessSpecDecl 0x29d1a48 <col:29, col:35> col:29 public\n"
+                             "    `-CXXMethodDecl 0x29d1b20 <col:37, col:57> col:39 foo 'T ()'\n"
+                             "      `-CompoundStmt 0x29d1c18 <col:45, col:57>\n"
+                             "        `-ReturnStmt 0x29d1c00 <col:47, col:54>\n"
+                             "          `-IntegerLiteral 0x29d1be0 <col:54> 'int' 0";
+        ASSERT_EQUALS("", parse(clang));
+    }
+
+    void classTemplateDecl2() {
+        const char clang[] = "|-ClassTemplateDecl 0x244e748 <a.cpp:1:1, col:59> col:25 C\n"
+                             "| |-TemplateTypeParmDecl 0x244e5f8 <col:10, col:16> col:16 referenced class depth 0 index 0 T\n"
+                             "| |-CXXRecordDecl 0x244e6b0 <col:19, col:59> col:25 class C definition\n"
+                             "| | |-DefinitionData empty aggregate standard_layout trivially_copyable pod trivial literal has_constexpr_non_copy_move_ctor can_const_default_init\n"
+                             "| | | |-DefaultConstructor exists trivial constexpr needs_implicit defaulted_is_constexpr\n"
+                             "| | | |-CopyConstructor simple trivial has_const_param needs_implicit implicit_has_const_param\n"
+                             "| | | |-MoveConstructor exists simple trivial needs_implicit\n"
+                             "| | | |-CopyAssignment trivial has_const_param needs_implicit implicit_has_const_param\n"
+                             "| | | |-MoveAssignment exists simple trivial needs_implicit\n"
+                             "| | | `-Destructor simple irrelevant trivial needs_implicit\n"
+                             "| | |-CXXRecordDecl 0x244e9b0 <col:19, col:25> col:25 implicit class C\n"
+                             "| | |-AccessSpecDecl 0x244ea48 <col:29, col:35> col:29 public\n"
+                             "| | `-CXXMethodDecl 0x244eb20 <col:37, col:57> col:39 foo 'T ()'\n"
+                             "| |   `-CompoundStmt 0x244ec18 <col:45, col:57>\n"
+                             "| |     `-ReturnStmt 0x244ec00 <col:47, col:54>\n"
+                             "| |       `-IntegerLiteral 0x244ebe0 <col:54> 'int' 0\n"
+                             "| `-ClassTemplateSpecializationDecl 0x244ed78 <col:1, col:59> col:25 class C definition\n"
+                             "|   |-DefinitionData pass_in_registers empty aggregate standard_layout trivially_copyable pod trivial literal has_constexpr_non_copy_move_ctor can_const_default_init\n"
+                             "|   | |-DefaultConstructor exists trivial constexpr defaulted_is_constexpr\n"
+                             "|   | |-CopyConstructor simple trivial has_const_param implicit_has_const_param\n"
+                             "|   | |-MoveConstructor exists simple trivial\n"
+                             "|   | |-CopyAssignment trivial has_const_param needs_implicit implicit_has_const_param\n"
+                             "|   | |-MoveAssignment exists simple trivial needs_implicit\n"
+                             "|   | `-Destructor simple irrelevant trivial needs_implicit\n"
+                             "|   |-TemplateArgument type 'int'\n"
+                             "|   |-CXXRecordDecl 0x244eff0 prev 0x244ed78 <col:19, col:25> col:25 implicit class C\n"
+                             "|   |-AccessSpecDecl 0x244f088 <col:29, col:35> col:29 public\n"
+                             "|   |-CXXMethodDecl 0x244f160 <col:37, col:57> col:39 used foo 'int ()'\n"
+                             "|   | `-CompoundStmt 0x247cb40 <col:45, col:57>\n"
+                             "|   |   `-ReturnStmt 0x247cb28 <col:47, col:54>\n"
+                             "|   |     `-IntegerLiteral 0x244ebe0 <col:54> 'int' 0\n"
+                             "|   |-CXXConstructorDecl 0x247c540 <col:25> col:25 implicit used constexpr C 'void () noexcept' inline default trivial\n"
+                             "|   | `-CompoundStmt 0x247ca00 <col:25>\n"
+                             "|   |-CXXConstructorDecl 0x247c658 <col:25> col:25 implicit constexpr C 'void (const C<int> &)' inline default trivial noexcept-unevaluated 0x247c658\n"
+                             "|   | `-ParmVarDecl 0x247c790 <col:25> col:25 'const C<int> &'\n"
+                             "|   `-CXXConstructorDecl 0x247c828 <col:25> col:25 implicit constexpr C 'void (C<int> &&)' inline default trivial noexcept-unevaluated 0x247c828\n"
+                             "|     `-ParmVarDecl 0x247c960 <col:25> col:25 'C<int> &&'\n";
+        ASSERT_EQUALS("class C { int foo ( ) { return 0 ; } }", parse(clang));
+    }
+
     void continueStmt() {
         const char clang[] = "`-FunctionDecl 0x2c31b18 <1.c:1:1, col:34> col:6 foo 'void ()'\n"
                              "  `-CompoundStmt 0x2c31c40 <col:12, col:34>\n"
@@ -69,6 +159,18 @@ private:
                              "      |-IntegerLiteral 0x2c31bf8 <col:21> 'int' 0\n"
                              "      `-ContinueStmt 0x2c31c18 <col:24>";
         ASSERT_EQUALS("void foo ( ) { while ( 0 ) { continue ; } ; }", parse(clang));
+    }
+
+    void cxxMemberCall() {
+        const char clang[] = "`-FunctionDecl 0x320dc80 <line:2:1, col:33> col:6 bar 'void ()'\n"
+                             "  `-CompoundStmt 0x323bb08 <col:12, col:33>\n"
+                             "    |-DeclStmt 0x323ba40 <col:14, col:22>\n"
+                             "    | `-VarDecl 0x320df28 <col:14, col:21> col:21 used c 'C<int>':'C<int>' callinit\n"
+                             "    |   `-CXXConstructExpr 0x323ba10 <col:21> 'C<int>':'C<int>' 'void () noexcept'\n"
+                             "    `-CXXMemberCallExpr 0x323bab8 <col:24, col:30> 'int':'int'\n"
+                             "      `-MemberExpr 0x323ba80 <col:24, col:26> '<bound member function type>' .foo 0x320e160\n"
+                             "        `-DeclRefExpr 0x323ba58 <col:24> 'C<int>':'C<int>' lvalue Var 0x320df28 'c' 'C<int>':'C<int>'";
+        ASSERT_EQUALS("void bar ( ) { C<int> c@1 ; c@1 . foo ( ) ; }", parse(clang));
     }
 
     void forStmt() {
@@ -113,6 +215,56 @@ private:
                       "return x@1 / y@2 ; }", parse(clang));
     }
 
+    void funcdecl3() {
+        const char clang[] = "|-FunctionDecl 0x27cb6b8 <line:865:1, col:35> col:12 __overflow 'int (FILE *, int)' extern\n"
+                             "| |-ParmVarDecl 0x27cb528 <col:24, col:29> col:30 'FILE *'\n"
+                             "| `-ParmVarDecl 0x27cb5a0 <col:32> col:35 'int'";
+        ASSERT_EQUALS("int __overflow ( FILE * , int ) ;", parse(clang));
+    }
+
+    void funcdecl4() {
+        const char clang[] = "|-FunctionDecl 0x272bb60 <line:658:15> col:15 implicit fwrite 'unsigned long (const void *, unsigned long, unsigned long, FILE *)' extern\n"
+                             "| |-ParmVarDecl 0x272cc40 <<invalid sloc>> <invalid sloc> 'const void *'\n"
+                             "| |-ParmVarDecl 0x272cca0 <<invalid sloc>> <invalid sloc> 'unsigned long'\n"
+                             "| |-ParmVarDecl 0x272cd00 <<invalid sloc>> <invalid sloc> 'unsigned long'\n"
+                             "| `-ParmVarDecl 0x272cd60 <<invalid sloc>> <invalid sloc> 'FILE *'";
+        ASSERT_EQUALS("unsigned long fwrite ( const void * , unsigned long , unsigned long , FILE * ) ;", parse(clang));
+    }
+
+    void functionTemplateDecl1() {
+        const char clang[] = "`-FunctionTemplateDecl 0x3242860 <a.cpp:1:1, col:46> col:21 foo";
+        ASSERT_EQUALS("", parse(clang));
+    }
+
+    void functionTemplateDecl2() {
+        const char clang[] = "|-FunctionTemplateDecl 0x333a860 <a.cpp:1:1, col:46> col:21 foo\n"
+                             "| |-TemplateTypeParmDecl 0x333a5f8 <col:10, col:16> col:16 referenced class depth 0 index 0 T\n"
+                             "| |-FunctionDecl 0x333a7c0 <col:19, col:46> col:21 foo 'T (T)'\n"
+                             "| | |-ParmVarDecl 0x333a6c0 <col:25, col:27> col:27 referenced t 'T'\n"
+                             "| | `-CompoundStmt 0x333a980 <col:30, col:46>\n"
+                             "| |   `-ReturnStmt 0x333a968 <col:32, col:43>\n"
+                             "| |     `-BinaryOperator 0x333a940 <col:39, col:43> '<dependent type>' '+'\n"
+                             "| |       |-DeclRefExpr 0x333a8f8 <col:39> 'T' lvalue ParmVar 0x333a6c0 't' 'T'\n"
+                             "| |       `-IntegerLiteral 0x333a920 <col:43> 'int' 1\n"
+                             "| `-FunctionDecl 0x333ae00 <col:19, col:46> col:21 used foo 'int (int)'\n"
+                             "|   |-TemplateArgument type 'int'\n"
+                             "|   |-ParmVarDecl 0x333ad00 <col:25, col:27> col:27 used t 'int':'int'\n"
+                             "|   `-CompoundStmt 0x333b0a8 <col:30, col:46>\n"
+                             "|     `-ReturnStmt 0x333b090 <col:32, col:43>\n"
+                             "|       `-BinaryOperator 0x333b068 <col:39, col:43> 'int' '+'\n"
+                             "|         |-ImplicitCastExpr 0x333b050 <col:39> 'int':'int' <LValueToRValue>\n"
+                             "|         | `-DeclRefExpr 0x333b028 <col:39> 'int':'int' lvalue ParmVar 0x333ad00 't' 'int':'int'\n"
+                             "|         `-IntegerLiteral 0x333a920 <col:43> 'int' 1\n"
+                             "`-FunctionDecl 0x333a9f8 <line:2:1, col:22> col:1 invalid bar 'int ()'\n"
+                             "  `-CompoundStmt 0x333b010 <col:7, col:22>\n"
+                             "    `-CallExpr 0x333afe0 <col:9, col:19> 'int':'int'\n"
+                             "      |-ImplicitCastExpr 0x333afc8 <col:9, col:16> 'int (*)(int)' <FunctionToPointerDecay>\n"
+                             "      | `-DeclRefExpr 0x333af00 <col:9, col:16> 'int (int)' lvalue Function 0x333ae00 'foo' 'int (int)' (FunctionTemplate 0x333a860 'foo')\n"
+                             "      `-IntegerLiteral 0x333ab48 <col:18> 'int' 1";
+        ASSERT_EQUALS("int foo<int> ( int t@1 ) { return t@1 + 1 ; }\n"
+                      "int bar ( ) { foo ( 1 ) ; }", parse(clang));
+    }
+
     void ifelse() {
         const char clang[] = "`-FunctionDecl 0x2637ba8 <1.c:1:1, line:4:1> line:1:5 foo 'int (int)'\n"
                              "  |-ParmVarDecl 0x2637ae0 <col:9, col:13> col:13 used x 'int'\n"
@@ -149,6 +301,13 @@ private:
                       parse(clang));
     }
 
+    void namespaceDecl() {
+        const char clang[] = "`-NamespaceDecl 0x2e5f658 <hello.cpp:1:1, col:24> col:11 x\n"
+                             "  `-VarDecl 0x2e5f6d8 <col:15, col:19> col:19 var 'int'";
+        ASSERT_EQUALS("namespace x { int var@1 ; }",
+                      parse(clang));
+    }
+
     void recordDecl() {
         const char clang[] = "`-RecordDecl 0x354eac8 <1.c:1:1, line:4:1> line:1:8 struct S definition\n"
                              "  |-FieldDecl 0x354eb88 <line:2:3, col:7> col:7 x 'int'\n"
@@ -157,6 +316,26 @@ private:
                       "{ int x@1 ;\n"
                       "int y@2 ; } ;",
                       parse(clang));
+    }
+
+    void typedefDecl1() {
+        const char clang[] = "|-TypedefDecl 0x2d60180 <<invalid sloc>> <invalid sloc> implicit __int128_t '__int128'\n"
+                             "| `-BuiltinType 0x2d5fe80 '__int128'";
+        ASSERT_EQUALS("typedef __int128 __int128_t ;", parse(clang));
+    }
+
+    void typedefDecl2() {
+        const char clang[] = "|-TypedefDecl 0x2d604a8 <<invalid sloc>> <invalid sloc> implicit __NSConstantString 'struct __NSConstantString_tag'\n"
+                             "| `-RecordType 0x2d602c0 'struct __NSConstantString_tag'\n"
+                             "|   `-Record 0x2d60238 '__NSConstantString_tag'";
+        ASSERT_EQUALS("typedef struct __NSConstantString_tag __NSConstantString ;", parse(clang));
+    }
+
+    void typedefDecl3() {
+        const char clang[] = "|-TypedefDecl 0x2d60540 <<invalid sloc>> <invalid sloc> implicit __builtin_ms_va_list 'char *'\n"
+                             "| `-PointerType 0x2d60500 'char *'\n"
+                             "|   `-BuiltinType 0x2d5f980 'char'";
+        ASSERT_EQUALS("typedef char * __builtin_ms_va_list ;", parse(clang));
     }
 
     void vardecl1() {
@@ -193,6 +372,16 @@ private:
     void vardecl3() {
         const char clang[] = "`-VarDecl 0x25a8aa0 <1.c:1:1, col:12> col:12 p 'const int *'";
         ASSERT_EQUALS("const int * p@1 ;", parse(clang));
+    }
+
+    void vardecl4() {
+        const char clang[] = "|-VarDecl 0x23d6c78 <line:137:1, col:14> col:14 stdin 'FILE *' extern";
+        ASSERT_EQUALS("FILE * stdin@1 ;", parse(clang));
+    }
+
+    void vardecl5() {
+        const char clang[] = "|-VarDecl 0x2e31fc0 <line:27:1, col:38> col:26 sys_errlist 'const char *const []' extern";
+        ASSERT_EQUALS("const char *const [] sys_errlist@1 ;", parse(clang));
     }
 
     void whileStmt() {
