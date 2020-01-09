@@ -36,6 +36,7 @@ private:
         TEST_CASE(continueStmt);
         TEST_CASE(cxxConstructorDecl);
         TEST_CASE(cxxMemberCall);
+        TEST_CASE(cxxOperatorCallExpr);
         TEST_CASE(forStmt);
         TEST_CASE(funcdecl1);
         TEST_CASE(funcdecl2);
@@ -183,6 +184,20 @@ private:
                              "      `-MemberExpr 0x323ba80 <col:24, col:26> '<bound member function type>' .foo 0x320e160\n"
                              "        `-DeclRefExpr 0x323ba58 <col:24> 'C<int>':'C<int>' lvalue Var 0x320df28 'c' 'C<int>':'C<int>'";
         ASSERT_EQUALS("void bar ( ) { C<int> c@1 ; c@1 . foo ( ) ; }", parse(clang));
+    }
+
+    void cxxOperatorCallExpr() {
+        const char clang[] = "`-FunctionDecl 0x3c099f0 <line:2:1, col:24> col:6 foo 'void ()'\n"
+                             "  `-CompoundStmt 0x3c37308 <col:12, col:24>\n"
+                             "    |-DeclStmt 0x3c0a060 <col:14, col:17>\n"
+                             "    | `-VarDecl 0x3c09ae0 <col:14, col:16> col:16 used c 'C' callinit\n"
+                             "    |   `-CXXConstructExpr 0x3c0a030 <col:16> 'C' 'void () noexcept'\n"
+                             "    `-CXXOperatorCallExpr 0x3c372c0 <col:19, col:21> 'void'\n"
+                             "      |-ImplicitCastExpr 0x3c372a8 <col:20> 'void (*)(int)' <FunctionToPointerDecay>\n"
+                             "      | `-DeclRefExpr 0x3c37250 <col:20> 'void (int)' lvalue CXXMethod 0x3c098c0 'operator=' 'void (int)'\n"
+                             "      |-DeclRefExpr 0x3c0a078 <col:19> 'C' lvalue Var 0x3c09ae0 'c' 'C'\n"
+                             "      `-IntegerLiteral 0x3c0a0a0 <col:21> 'int' 4";
+        ASSERT_EQUALS("void foo ( ) { C c@1 ; c@1 . operator= ( 4 ) ; }", parse(clang));
     }
 
     void forStmt() {

@@ -37,6 +37,7 @@ static const std::string ContinueStmt = "ContinueStmt";
 static const std::string CXXConstructorDecl = "CXXConstructorDecl";
 static const std::string CXXMemberCallExpr = "CXXMemberCallExpr";
 static const std::string CXXMethodDecl = "CXXMethodDecl";
+static const std::string CXXOperatorCallExpr = "CXXOperatorCallExpr";
 static const std::string CXXRecordDecl = "CXXRecordDecl";
 static const std::string CXXThisExpr = "CXXThisExpr";
 static const std::string DeclRefExpr = "DeclRefExpr";
@@ -394,6 +395,8 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == CXXMemberCallExpr)
         return createTokensCall(tokenList);
+    if (nodeType == CXXOperatorCallExpr)
+        return createTokensCall(tokenList);
     if (nodeType == CXXRecordDecl) {
         createTokensForCXXRecord(tokenList);
         return nullptr;
@@ -560,11 +563,24 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
 
 Token * clangastdump::AstNode::createTokensCall(TokenList *tokenList)
 {
-    Token *f = children[0]->createTokens(tokenList);
+    int firstParam;
+    Token *f;
+    if (nodeType == CXXOperatorCallExpr) {
+        firstParam = 2;
+        Token *obj = children[1]->createTokens(tokenList);
+        Token *dot = addtoken(tokenList, ".");
+        Token *op = children[0]->createTokens(tokenList);
+        dot->astOperand1(obj);
+        dot->astOperand2(op);
+        f = dot;
+    } else {
+        firstParam = 1;
+        f = children[0]->createTokens(tokenList);
+    }
     Token *par1 = addtoken(tokenList, "(");
     par1->astOperand1(f);
     Token *parent = par1;
-    for (int c = 1; c < children.size(); ++c) {
+    for (int c = firstParam; c < children.size(); ++c) {
         if (c + 1 < children.size()) {
             Token *child = children[c]->createTokens(tokenList);
             Token *comma = addtoken(tokenList, ",");
