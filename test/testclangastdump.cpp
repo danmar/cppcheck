@@ -54,6 +54,7 @@ private:
         TEST_CASE(typedefDecl2);
         TEST_CASE(typedefDecl3);
         TEST_CASE(unaryExprOrTypeTraitExpr);
+        TEST_CASE(unaryOperator);
         TEST_CASE(vardecl1);
         TEST_CASE(vardecl2);
         TEST_CASE(vardecl3);
@@ -385,6 +386,20 @@ private:
                              "  `-ImplicitCastExpr 0x24cc6e8 <col:9, col:19> 'int' <IntegralCast>\n"
                              "    `-UnaryExprOrTypeTraitExpr 0x24cc6c8 <col:9, col:19> 'unsigned long' sizeof 'int'\n";
         ASSERT_EQUALS("int x@1 = sizeof ( int ) ;", parse(clang));
+    }
+
+    void unaryOperator() {
+        const char clang[] = "`-FunctionDecl 0x2dd9748 <1.cpp:2:1, col:44> col:5 foo 'int (int *)'\n"
+                             "  |-ParmVarDecl 0x2dd9680 <col:14, col:19> col:19 used p 'int *'\n"
+                             "  `-CompoundStmt 0x2dd9908 <col:22, col:44>\n"
+                             "    `-ReturnStmt 0x2dd98f0 <col:24, col:41>\n"
+                             "      `-BinaryOperator 0x2dd98c8 <col:31, col:41> 'int' '/'\n"
+                             "        |-IntegerLiteral 0x2dd9830 <col:31> 'int' 100000\n"
+                             "        `-ImplicitCastExpr 0x2dd98b0 <col:40, col:41> 'int' <LValueToRValue>\n"
+                             "          `-UnaryOperator 0x2dd9890 <col:40, col:41> 'int' lvalue prefix '*' cannot overflow\n"
+                             "            `-ImplicitCastExpr 0x2dd9878 <col:41> 'int *' <LValueToRValue>\n"
+                             "              `-DeclRefExpr 0x2dd9850 <col:41> 'int *' lvalue ParmVar 0x2dd9680 'p' 'int *'";
+        ASSERT_EQUALS("int foo ( int * p@1 ) { return 100000 / * p@1 ; }", parse(clang));
     }
 
     void vardecl1() {

@@ -594,7 +594,10 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         return addtoken(tokenList, getSpelling());
     }
     if (nodeType == UnaryOperator) {
-        Token *unop = addtoken(tokenList, unquote(mExtTokens.back()));
+        int index = (int)mExtTokens.size() - 1;
+        while (index > 0 && mExtTokens[index][0] != '\'')
+            --index;
+        Token *unop = addtoken(tokenList, unquote(mExtTokens[index]));
         unop->astOperand1(children[0]->createTokens(tokenList));
         return unop;
     }
