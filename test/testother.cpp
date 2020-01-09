@@ -4846,10 +4846,24 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // #6426
-        check("void foo(bool flag) {\n"
-              "  bar( (flag) ? ~0u : ~0ul);\n"
-              "}");
-        ASSERT_EQUALS((_settings.sizeof_int==_settings.sizeof_long)?"[test.cpp:2]: (style) Same value in both branches of ternary operator.\n":"",  errout.str());
+	{
+            const char code[] = "void foo(bool flag) {\n"
+                                "  bar( (flag) ? ~0u : ~0ul);\n"
+                                "}";
+            Settings settings = _settings;
+            settings.sizeof_int = 4;
+            settings.int_bit = 32;
+
+            settings.sizeof_long = 4;
+            settings.long_bit = 32;
+            check(code, &settings);
+            ASSERT_EQUALS("[test.cpp:2]: (style) Same value in both branches of ternary operator.\n", errout.str());
+
+            settings.sizeof_long = 8;
+            settings.long_bit = 64;
+            check(code, &settings);
+            ASSERT_EQUALS("", errout.str());
+	}
     }
 
     void duplicateValueTernary() {
