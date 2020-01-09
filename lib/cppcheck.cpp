@@ -253,18 +253,20 @@ unsigned int CppCheck::check(const std::string &path)
         }
         std::istringstream details(res1.second);
         std::string line;
-        std::string includes;
+        std::string flags;
         while (std::getline(details, line)) {
             if (line.find(" -internal-isystem ") == std::string::npos)
                 continue;
             const std::vector<std::string> options = split(line, " ");
             for (int i = 0; i+1 < options.size(); i++) {
                 if (endsWith(options[i], "-isystem", 8))
-                    includes += options[i] + " " + options[i+1] + " ";
+                    flags += options[i] + " " + options[i+1] + " ";
+                if (options[i] == "-fcxx-exceptions")
+                    flags += "-fcxx-exceptions ";
             }
         }
 
-        const std::string cmd = clang + " -cc1 -ast-dump " + includes + path;
+        const std::string cmd = clang + " -cc1 -ast-dump " + flags + path;
         std::pair<bool, std::string> res = executeCommand(cmd);
         if (!res.first) {
             std::cerr << "Failed to execute '" + cmd + "'" << std::endl;
