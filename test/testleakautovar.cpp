@@ -2020,7 +2020,48 @@ private:
 REGISTER_TEST(TestLeakAutoVar)
 
 
+class TestLeakAutoVarStrcpy: public TestFixture {
+public:
+    TestLeakAutoVarStrcpy() : TestFixture("TestLeakAutoVarStrcpy") {
+    }
 
+private:
+    Settings settings;
+
+    void check(const char code[]) {
+        // Clear the error buffer..
+        errout.str("");
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Check for leaks..
+        CheckLeakAutoVar checkLeak;
+        settings.checkLibrary = true;
+        settings.addEnabled("information");
+        checkLeak.runChecks(&tokenizer, &settings, this);
+    }
+
+    void run() OVERRIDE {
+        LOAD_LIB_2(settings.library, "std.cfg");
+
+        TEST_CASE(returnedValue); // #9298
+    }
+
+    void returnedValue() { // #9298
+        check("char *m;\n"
+              "void strcpy_returnedvalue(const char* str)\n"
+              "{\n"
+              "    char* ptr = new char[strlen(str)+1];\n"
+              "    m = strcpy(ptr, str);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+};
+
+REGISTER_TEST(TestLeakAutoVarStrcpy)
 
 
 class TestLeakAutoVarWindows : public TestFixture {
