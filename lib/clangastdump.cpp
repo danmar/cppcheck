@@ -30,6 +30,7 @@ static const std::string ArraySubscriptExpr = "ArraySubscriptExpr";
 static const std::string BinaryOperator = "BinaryOperator";
 static const std::string BreakStmt = "BreakStmt";
 static const std::string CallExpr = "CallExpr";
+static const std::string CharacterLiteral = "CharacterLiteral";
 static const std::string ClassTemplateDecl = "ClassTemplateDecl";
 static const std::string ClassTemplateSpecializationDecl = "ClassTemplateSpecializationDecl";
 static const std::string CompoundStmt = "CompoundStmt";
@@ -355,6 +356,23 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == BreakStmt)
         return addtoken(tokenList, "break");
+    if (nodeType == CharacterLiteral) {
+        int c = MathLib::toLongNumber(mExtTokens.back());
+        if (c == 0)
+            return addtoken(tokenList, "\'\\0\'");
+        if (c == '\r')
+            return addtoken(tokenList, "\'\\r\'");
+        if (c == '\n')
+            return addtoken(tokenList, "\'\\n\'");
+        if (c == '\t')
+            return addtoken(tokenList, "\'\\t\'");
+        if (c < ' ' || c >= 0x80) {
+            std::ostringstream hex;
+            hex << std::hex << ((c>>4) & 0xf) << (c&0xf);
+            return addtoken(tokenList, "\'\\x" + hex.str() + "\'");
+        }
+        return addtoken(tokenList, std::string("\'") + char(c) + std::string("\'"));
+    }
     if (nodeType == CallExpr)
         return createTokensCall(tokenList);
     if (nodeType == ClassTemplateDecl) {

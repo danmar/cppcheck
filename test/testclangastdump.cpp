@@ -30,6 +30,7 @@ public:
 private:
     void run() OVERRIDE {
         TEST_CASE(breakStmt);
+        TEST_CASE(characterLiteral);
         TEST_CASE(class1);
         TEST_CASE(classTemplateDecl1);
         TEST_CASE(classTemplateDecl2);
@@ -76,6 +77,12 @@ private:
                              "      |-IntegerLiteral 0x2c31bf8 <col:21> 'int' 0\n"
                              "      `-BreakStmt 0x3687c18 <col:24>";
         ASSERT_EQUALS("void foo ( ) { while ( 0 ) { break ; } }", parse(clang));
+    }
+
+    void characterLiteral() {
+        const char clang[] = "`-VarDecl 0x3df8608 <a.cpp:1:1, col:10> col:6 c 'char' cinit\n"
+                             "  `-CharacterLiteral 0x3df86a8 <col:10> 'char' 120";
+        ASSERT_EQUALS("char c@1 = 'x' ;", parse(clang));
     }
 
     void class1() {
