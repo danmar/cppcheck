@@ -62,6 +62,7 @@ static const std::string StringLiteral = "StringLiteral";
 static const std::string TemplateArgument = "TemplateArgument";
 static const std::string TypedefDecl = "TypedefDecl";
 static const std::string UnaryOperator = "UnaryOperator";
+static const std::string UnaryExprOrTypeTraitExpr = "UnaryExprOrTypeTraitExpr";
 static const std::string VarDecl = "VarDecl";
 static const std::string WhileStmt = "WhileStmt";
 
@@ -179,6 +180,7 @@ namespace clangastdump {
         std::string getType() const;
         std::string getTemplateParameters() const;
         const Scope *getNestedInScope(TokenList *tokenList);
+        void setValueType(Token *tok);
 
         int mFile  = 0;
         int mLine  = 1;
@@ -301,6 +303,21 @@ const Scope *clangastdump::AstNode::getNestedInScope(TokenList *tokenList)
     if (tokenList->back()->str() == "}")
         return tokenList->back()->scope()->nestedIn;
     return tokenList->back()->scope();
+}
+
+void clangastdump::AstNode::setValueType(Token *tok)
+{
+    int typeIndex = -1;
+    if (nodeType == UnaryExprOrTypeTraitExpr)
+        typeIndex = mExtTokens.size() - 3;
+    else
+        return;
+
+    TokenList decl(nullptr);
+    addTypeTokens(&decl, mExtTokens[typeIndex]);
+
+    if (Token::simpleMatch(decl.front(), "unsigned long"))
+        tok->setValueType(new ValueType(ValueType::Sign::UNSIGNED, ValueType::Type::LONG, 0));
 }
 
 Scope *clangastdump::AstNode::createScope(TokenList *tokenList, Scope::ScopeType scopeType, AstNodePtr astNode)
@@ -566,6 +583,18 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         Token *unop = addtoken(tokenList, unquote(mExtTokens.back()));
         unop->astOperand1(children[0]->createTokens(tokenList));
         return unop;
+    }
+    if (nodeType == UnaryExprOrTypeTraitExpr) {
+        Token *tok1 = addtoken(tokenList, getSpelling());
+        Token *par1 = addtoken(tokenList, "(");
+        addTypeTokens(tokenList, mExtTokens.back());
+        Token *par2 = addtoken(tokenList, ")");
+        par1->link(par2);
+        par2->link(par1);
+        par1->astOperand1(tok1);
+        par1->astOperand2(par1->next());
+        setValueType(par1);
+        return par1;
     }
     if (nodeType == VarDecl)
         return createTokensVarDecl(tokenList);

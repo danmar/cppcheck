@@ -53,6 +53,7 @@ private:
         TEST_CASE(typedefDecl1);
         TEST_CASE(typedefDecl2);
         TEST_CASE(typedefDecl3);
+        TEST_CASE(unaryExprOrTypeTraitExpr);
         TEST_CASE(vardecl1);
         TEST_CASE(vardecl2);
         TEST_CASE(vardecl3);
@@ -377,6 +378,13 @@ private:
                              "| `-PointerType 0x2d60500 'char *'\n"
                              "|   `-BuiltinType 0x2d5f980 'char'";
         ASSERT_EQUALS("typedef char * __builtin_ms_va_list ;", parse(clang));
+    }
+
+    void unaryExprOrTypeTraitExpr() {
+        const char clang[] = "`-VarDecl 0x24cc610 <a.cpp:1:1, col:19> col:5 x 'int' cinit\n"
+                             "  `-ImplicitCastExpr 0x24cc6e8 <col:9, col:19> 'int' <IntegralCast>\n"
+                             "    `-UnaryExprOrTypeTraitExpr 0x24cc6c8 <col:9, col:19> 'unsigned long' sizeof 'int'\n";
+        ASSERT_EQUALS("int x@1 = sizeof ( int ) ;", parse(clang));
     }
 
     void vardecl1() {
