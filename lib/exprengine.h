@@ -116,6 +116,11 @@ namespace ExprEngine {
     class UninitValue: public Value {
     public:
         UninitValue() : Value("?", ValueType::UninitValue) {}
+        virtual bool isEqual(DataBase *dataBase, int value) const {
+            (void)dataBase;
+            (void)value;
+            return true;
+        }
         bool isUninit() const OVERRIDE {
             return true;
         }
