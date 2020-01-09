@@ -23,6 +23,8 @@
 #include "valueptr.h"
 #include <vector>
 
+class Settings;
+
 struct ForwardAnalyzer
 {
     struct Action {
@@ -92,12 +94,13 @@ struct ForwardAnalyzer
     virtual std::vector<int> Evaluate(const Token* tok) const = 0;
     virtual void LowerToPossible() = 0;
     virtual void LowerToInconclusive() = 0;
+    virtual bool UpdateScope(const Token* endBlock, bool modified) const = 0;
     virtual bool SkipLambda(const Token* tok) const {
         return true;
     }
     virtual ~ForwardAnalyzer() {}
 };
 
-void valueFlowGenericForward(Token* start, const Token* end, const ValuePtr<ForwardAnalyzer>& fa);
+void valueFlowGenericForward(Token* start, const Token* end, const ValuePtr<ForwardAnalyzer>& fa, const Settings* settings);
 
 #endif

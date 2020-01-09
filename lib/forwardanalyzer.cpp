@@ -1,5 +1,6 @@
 #include "forwardanalyzer.h"
 #include "astutils.h"
+#include "settings.h"
 
 struct ForwardTraversal
 {
@@ -8,6 +9,7 @@ struct ForwardTraversal
         Break
     };
     ValuePtr<ForwardAnalyzer> analyzer;
+    const Settings* settings;
 
     std::pair<bool, bool> checkCond(const Token* tok)
     {
@@ -81,6 +83,29 @@ struct ForwardTraversal
         return ForwardAnalyzer::Action::None;
     }
 
+    enum class Status {
+        None,
+        Escaped,
+        Modified,
+        Inconclusive,
+    };
+
+    Status checkScope(const Token* endBlock, bool checkReturn=true) {
+        if (checkReturn && isReturnScope(endBlock, &settings->library))
+            return Status::Escaped;
+        ForwardAnalyzer::Action a = analyzeRange(endBlock->link(), endBlock);
+        if (analyzer->UpdateScope(endBlock, a.isModified())) {
+            ForwardTraversal ft = *this;
+            ft.updateRange(endBlock->link(), endBlock);
+        }            
+        if (a.isInconclusive()) {
+            return Status::Inconclusive;
+        } else if (a.isModified()) {
+            return Status::Modified;
+        }
+        return Status::None;
+    }
+
     Progress updateRange(Token* start, const Token* end) {
         for (Token *tok = start; tok && tok != end; tok = tok->next()) {
             if (Token::Match(tok, "asm|goto|break|continue"))
@@ -90,25 +115,15 @@ struct ForwardTraversal
                 return Progress::Break;
             }
 
-            // Token * top = tok->astTop();
-            // // Handle correct order for assign
-            // if (Token::Match(top, "%assign%")) {
-            //     if (updateRecursive(top->astOperand2()) == Progress::Break)
-            //         return Progress::Break;
-            //     if (update(top) == Progress::Break)
-            //         return Progress::Break;
-            //     if (updateRecursive(top->astOperand1()) == Progress::Break)
-            //         return Progress::Break;
-            //     tok = nextAfterAstRightmostLeaf(top);
-            //     continue;
-            // }
-
             if (Token::simpleMatch(tok, "}") && Token::simpleMatch(tok->link()->previous(), ") {") && Token::Match(tok->link()->linkAt(-1)->previous(), "if|while|for (")) {
                 const Token * blockStart = tok->link()->linkAt(-1)->previous();
                 const Token * condTok = getCondTok(blockStart);
                 if (!condTok)
                     return Progress::Break;
-                analyzer->LowerToPossible();
+                if (!condTok->hasKnownIntValue())
+                    analyzer->LowerToPossible();
+                else if (condTok->values().front().intvalue == 0)
+                    return Progress::Break;
                 // std::vector<int> result = analyzer->Evaluate(tok);
                 // if (result.empty())
                 //     return Progress::Break;
@@ -132,6 +147,8 @@ struct ForwardTraversal
                     }
 #endif
                 }
+                if (Token::simpleMatch(tok, "} else {"))
+                    tok = tok->linkAt(2);
             } else if (Token::Match(tok, "if|while|for (") && Token::simpleMatch(tok->next()->link(), ") {")) {
                 Token * endCond = tok->next()->link();
                 Token * endBlock = endCond->next()->link();
@@ -145,20 +162,15 @@ struct ForwardTraversal
                 // Check if condition is true or false
                 bool checkThen, checkElse;
                 std::tie(checkThen, checkElse) = checkCond(condTok);
-
-                if (!checkThen && !checkElse) {
-                    ForwardAnalyzer::Action a = analyzeRange(endCond->next(), endBlock);
-                    if (a.isInconclusive()) {
-                        analyzer->LowerToInconclusive();
-                    } else if (a.isModified()) {
-                        analyzer->LowerToPossible();
-                    }
-                }
+                Status thenStatus = Status::None;
+                Status elseStatus = Status::None;
 
                 // Traverse then block
                 if (checkThen) {
                     if (updateRange(endCond->next(), endBlock) == Progress::Break)
                         return Progress::Break;
+                } else if (!checkElse) {
+                    thenStatus = checkScope(endBlock);
                 }
                 // Traverse else block
                 if (Token::simpleMatch(endBlock, "} else {")) {
@@ -166,10 +178,23 @@ struct ForwardTraversal
                         Progress result = updateRange(endCond->next(), endBlock);
                         if (result == Progress::Break)
                             return Progress::Break;
+                    } else if (!checkThen) {
+                        elseStatus = checkScope(endBlock->linkAt(2));
                     }
                     tok = endBlock->linkAt(2);
                 } else {
                     tok = endBlock;
+                }
+                if (thenStatus == Status::Escaped && elseStatus == Status::Escaped) {
+                    return Progress::Break;
+                } else if (thenStatus == Status::Escaped || elseStatus == Status::Escaped) {
+                    if (thenStatus == Status::Modified || elseStatus == Status::Modified) {
+                        return Progress::Break;
+                    }
+                } else if (thenStatus == Status::Inconclusive || elseStatus == Status::Inconclusive) {
+                    analyzer->LowerToInconclusive();
+                } else if (thenStatus == Status::Modified || elseStatus == Status::Modified) {
+                    analyzer->LowerToPossible();
                 }
             } else if (Token::simpleMatch(tok, "} else {")) {
                 tok = tok->linkAt(2);
@@ -179,12 +204,9 @@ struct ForwardTraversal
 
             // Skip lambdas
             } else if (Token *lambdaEndToken = findLambdaEndToken(tok)) {
-                if (analyzer->SkipLambda(tok)) {
-                    ForwardAnalyzer::Action a = analyzeRange(lambdaEndToken->link(), lambdaEndToken);
-                    if (a.isModified())
-                        return Progress::Break;
-                    tok = lambdaEndToken;
-                }
+                if (checkScope(lambdaEndToken, false) == Status::Modified)
+                    return Progress::Break;
+                tok = lambdaEndToken;
             } else if (Token::Match(tok, "sizeof|decltype (")) {
                 tok = tok->next()->link();
             } else {
@@ -213,8 +235,8 @@ struct ForwardTraversal
     }
 };
 
-void valueFlowGenericForward(Token* start, const Token* end, const ValuePtr<ForwardAnalyzer>& fa)
+void valueFlowGenericForward(Token* start, const Token* end, const ValuePtr<ForwardAnalyzer>& fa, const Settings* settings)
 {
-    ForwardTraversal ft{fa};
+    ForwardTraversal ft{fa, settings};
     ft.updateRange(start, end);
 }

@@ -2075,7 +2075,9 @@ static bool handleKnownValuesInLoop(const Token                 *startToken,
 static bool evalAssignment(ValueFlow::Value &lhsValue, const std::string &assign, const ValueFlow::Value &rhsValue)
 {
     if (lhsValue.isIntValue()) {
-        if (assign == "+=")
+        if (assign == "=")
+            lhsValue.intvalue = rhsValue.intvalue;
+        else if (assign == "+=")
             lhsValue.intvalue += rhsValue.intvalue;
         else if (assign == "-=")
             lhsValue.intvalue -= rhsValue.intvalue;
@@ -2100,7 +2102,9 @@ static bool evalAssignment(ValueFlow::Value &lhsValue, const std::string &assign
         else
             return false;
     } else if (lhsValue.isFloatValue()) {
-        if (assign == "+=")
+        if (assign == "=")
+            lhsValue.intvalue = rhsValue.intvalue;
+        else if (assign == "+=")
             lhsValue.floatValue += rhsValue.intvalue;
         else if (assign == "-=")
             lhsValue.floatValue -= rhsValue.intvalue;
@@ -2226,9 +2230,9 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
             // increment/decrement
             if (value.intvalue && Token::Match(tok->previous(), "++|-- %name%") || Token::Match(tok, "%name% ++|--")) {
                 Action write = Action::Write;
-                const bool pre = Token::Match(tok->previous(), "++|--");
-                if (pre)
-                    write |= Action::Read;
+                // const bool pre = Token::Match(tok->previous(), "++|--");
+                // if (pre)
+                //     write |= Action::Read;
                 return write;
             }
             // Check for modifications by function calls
@@ -2239,7 +2243,7 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
             if (inconclusive)
                 return read | Action::Inconclusive;
             if (isVariableChanged(tok, value.indirect, settings, cpp))
-                return read | Action::Invalid;
+                return Action::Invalid;
             return read;
         } else if (isAliasOf(var, tok, varid, {value}) && isVariableChanged(tok, 0, settings, cpp)) {
             return Action::Invalid;
@@ -2265,8 +2269,6 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
                 const std::string info(tok->str() + " is " + std::string(inc ? "incremented" : "decremented") + "', new value is " + value.infoString());
                 value.errorPath.emplace_back(tok, info);
             }
-            if (!a.isRead())
-                setTokenValue(tok, value, settings);
         }
     }
     virtual std::vector<int> Evaluate(const Token* tok) const OVERRIDE
@@ -2288,6 +2290,20 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
     virtual void LowerToInconclusive() OVERRIDE
     {
         value.setInconclusive();
+    }
+
+    virtual bool UpdateScope(const Token* endBlock, bool modified) const OVERRIDE
+    {
+        const Scope* scope = endBlock->scope();
+        if (!scope)
+            return false;
+        if (scope->type == Scope::eLambda) {
+            return !modified || value.isLifetimeValue();
+        } else if (scope->type == Scope::eIf || scope->type == Scope::eElse) {
+            return value.isKnown() || value.isImpossible();
+        }
+
+        return false;
     }
 
     virtual bool SkipLambda(const Token* tok) const OVERRIDE
@@ -2315,7 +2331,7 @@ static bool valueFlowForwardVariable(Token* const startToken,
     a.settings = settings;
     for(ValueFlow::Value& v:values) {
         a.value = v;
-        valueFlowGenericForward(startToken, endToken, a);
+        valueFlowGenericForward(startToken, endToken, a, settings);
     }
 #else
     int indentlevel = 0;
