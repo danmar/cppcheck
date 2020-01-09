@@ -1,5 +1,5 @@
 
-// make USE_Z3=yes CPPFLAGS=-DVERIFY_UNININIT
+// make USE_Z3=yes
 // ./cppcheck --verify --inline-suppr --enable=information test/testsuites/danmar-verify/uninit.c
 
 int array1() {

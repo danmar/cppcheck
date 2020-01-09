@@ -737,10 +737,6 @@ The focus will be to detect "hidden" bugs. Good candidates are undefined behavio
 
 make USE_Z3=yes
 
-To get experimental checking for uninitialized data:
-
-make USE_Z3=yes CPPFLAGS=-DVERIFY_UNINIT
-
 ## Verification for work-in-progress
 
 It is possible to instantly verify your code changes directly in your editor.

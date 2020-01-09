@@ -1846,7 +1846,6 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
     };
 #endif
 
-#ifdef VERIFY_UNINIT  // This is highly experimental
     std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> uninit = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
         if (!tok->astParent())
             return;
@@ -1865,7 +1864,6 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
         ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationUninit", "Cannot determine that '" + tok->expressionString() + "' is initialized", CWE_USE_OF_UNINITIALIZED_VARIABLE, false);
         errorLogger->reportErr(errmsg);
     };
-#endif
 
     std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> checkFunctionCall = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
         if (!Token::Match(tok->astParent(), "[(,]"))
@@ -1966,7 +1964,6 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
         }
 
         // Uninitialized function argument..
-#ifdef VERIFY_UNINIT  // This is highly experimental
         if (settings->library.isuninitargbad(parent->astOperand1(), num) && settings->library.isnullargbad(parent->astOperand1(), num) && value.type == ExprEngine::ValueType::ArrayValue) {
             const ExprEngine::ArrayValue &arrayValue = static_cast<const ExprEngine::ArrayValue &>(value);
             auto index0 = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
@@ -1980,7 +1977,6 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
                 }
             }
         }
-#endif
     };
 
     std::vector<ExprEngine::Callback> callbacks;
@@ -1989,9 +1985,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
 #ifdef VERIFY_INTEGEROVERFLOW
     callbacks.push_back(integerOverflow);
 #endif
-#ifdef VERIFY_UNINIT
     callbacks.push_back(uninit);
-#endif
 
     std::ostringstream report;
     ExprEngine::executeAllFunctions(tokenizer, settings, callbacks, report);
