@@ -989,6 +989,23 @@ static bool isEscapedOrJump(const Token* tok, bool functionsScope)
         return Token::Match(tok, "return|goto|throw|continue|break");
 }
 
+bool isEscapeFunction(const Token* ftok, const Library * library)
+{
+    if (!Token::Match(ftok, "%name% ("))
+        return false;
+    const Function * function = ftok->function();
+    if (function) {
+        if (function->isEscapeFunction())
+            return true;
+        if (function->isAttributeNoreturn())
+            return true;
+    } else if (library) {
+        if (library->isnoreturn(ftok))
+            return true;
+    }
+    return false;
+}
+
 bool isReturnScope(const Token * const endToken, const Library * library, bool functionScope)
 {
     if (!endToken || endToken->str() != "}")

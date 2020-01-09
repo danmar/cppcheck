@@ -1,6 +1,7 @@
 #include "forwardanalyzer.h"
 #include "astutils.h"
 #include "settings.h"
+#include "symboldatabase.h"
 
 struct ForwardTraversal
 {
@@ -108,14 +109,20 @@ struct ForwardTraversal
 
     Progress updateRange(Token* start, const Token* end) {
         for (Token *tok = start; tok && tok != end; tok = tok->next()) {
-            if (Token::Match(tok, "asm|goto|break|continue"))
+            if (Token::Match(tok, "asm|goto|continue"))
                 return Progress::Break;
-            if (Token::Match(tok, "return|throw")) {
+            if (Token::Match(tok, "return|throw") || isEscapeFunction(tok, &settings->library)) {
                 updateRecursive(tok);
                 return Progress::Break;
             }
 
-            if (Token::simpleMatch(tok, "}") && Token::simpleMatch(tok->link()->previous(), ") {") && Token::Match(tok->link()->linkAt(-1)->previous(), "if|while|for (")) {
+            if (Token::simpleMatch(tok, "break")) {
+                const Scope* scope = findBreakScope(tok->scope());
+                if (!scope)
+                    return Progress::Break;
+                tok = skipTo(tok, scope->bodyEnd, end);
+                analyzer->LowerToPossible();
+            } else if (Token::simpleMatch(tok, "}") && Token::simpleMatch(tok->link()->previous(), ") {") && Token::Match(tok->link()->linkAt(-1)->previous(), "if|while|for (")) {
                 const Token * blockStart = tok->link()->linkAt(-1)->previous();
                 const Token * condTok = getCondTok(blockStart);
                 if (!condTok)
@@ -192,21 +199,25 @@ struct ForwardTraversal
                         return Progress::Break;
                     }
                 } else if (thenStatus == Status::Inconclusive || elseStatus == Status::Inconclusive) {
-                    analyzer->LowerToInconclusive();
+                    if (!analyzer->LowerToInconclusive())
+                        return Progress::Break;
                 } else if (thenStatus == Status::Modified || elseStatus == Status::Modified) {
-                    analyzer->LowerToPossible();
+                    if (!analyzer->LowerToPossible())
+                        return Progress::Break;
                 }
             } else if (Token::simpleMatch(tok, "} else {")) {
                 tok = tok->linkAt(2);
             } else if (Token::Match(tok, "?|&&|%oror%")) {
                 updateConditional(tok);
                 tok = nextAfterAstRightmostLeaf(tok);
-
+            } else if (Token::simpleMatch(tok, "switch (")) {
+                return Progress::Break;
             // Skip lambdas
             } else if (Token *lambdaEndToken = findLambdaEndToken(tok)) {
                 if (checkScope(lambdaEndToken, false) == Status::Modified)
                     return Progress::Break;
                 tok = lambdaEndToken;
+            // Skip unevaluated context
             } else if (Token::Match(tok, "sizeof|decltype (")) {
                 tok = tok->next()->link();
             } else {
@@ -232,6 +243,20 @@ struct ForwardTraversal
         if (Token::simpleMatch(tok->next()->astOperand2(), ";"))
             return tok->next()->astOperand2()->astOperand1();
         return tok->next()->astOperand2();
+    }
+
+    static const Scope* findBreakScope(const Scope * scope)
+    {
+        while(scope && scope->type != Scope::eWhile && scope->type != Scope::eFor && scope->type != Scope::eSwitch)
+            scope = scope->nestedIn;
+        return scope;
+    }
+
+    static Token* skipTo(Token* tok, const Token* dest, const Token* end = nullptr)
+    {
+        while(tok != dest && tok != end)
+            tok = tok->next();
+        return tok;
     }
 };
 

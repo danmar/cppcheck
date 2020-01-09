@@ -2283,13 +2283,19 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
             result.push_back(0);
         return result;
     }
-    virtual void LowerToPossible() OVERRIDE
+    virtual bool LowerToPossible() OVERRIDE
     {
+        if (value.isImpossible())
+            return false;
         value.changeKnownToPossible();
+        return true;
     }
-    virtual void LowerToInconclusive() OVERRIDE
+    virtual bool LowerToInconclusive() OVERRIDE
     {
+        if (value.isImpossible())
+            return false;
         value.setInconclusive();
+        return true;
     }
 
     virtual bool UpdateScope(const Token* endBlock, bool modified) const OVERRIDE

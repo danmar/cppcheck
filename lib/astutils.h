@@ -129,6 +129,8 @@ bool isWithoutSideEffects(bool cpp, const Token* tok);
 
 bool isUniqueExpression(const Token* tok);
 
+bool isEscapeFunction(const Token* ftok, const Library * library);
+
 /** Is scope a return scope (scope will unconditionally return) */
 bool isReturnScope(const Token * const endToken, const Library * library=nullptr, bool functionScope=false);
 
