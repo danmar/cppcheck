@@ -186,7 +186,7 @@ private:
                              "|     | `-CXXThisExpr 0x428e9c0 <col:17> 'C *' this\n"
                              "|     `-IntegerLiteral 0x428ea10 <col:21> 'int' 0\n"
                              "`-FieldDecl 0x428e958 <col:26, col:30> col:30 referenced x 'int'";
-        ASSERT_EQUALS("void C ( ) { this . x = 0 ; } int x@1", parse(clang));
+        ASSERT_EQUALS("void C ( ) { this . x@1 = 0 ; } int x@1", parse(clang));
     }
 
     void cxxMemberCall() {

@@ -116,18 +116,22 @@ namespace clangastdump {
             def->varId(++mVarId);
             def->variable(var);
             var->setValueType(ValueType(ValueType::Sign::SIGNED, ValueType::Type::INT, 0));
+            notFound(addr);
         }
 
         void funcDecl(const std::string &addr, Token *nameToken, Function *function) {
             Decl decl(nameToken, function);
             mDeclMap.insert(std::pair<std::string, Decl>(addr, decl));
             nameToken->function(function);
+            notFound(addr);
         }
 
         void ref(const std::string &addr, Token *tok) {
             auto it = mDeclMap.find(addr);
             if (it != mDeclMap.end())
                 it->second.ref(tok);
+            else
+                mNotFound[addr].push_back(tok);
         }
 
         std::vector<const Variable *> getVariableList() const {
@@ -141,7 +145,17 @@ namespace clangastdump {
         }
 
     private:
+        void notFound(const std::string &addr) {
+            auto it = mNotFound.find(addr);
+            if (it != mNotFound.end()) {
+                for (Token *reftok: it->second)
+                    ref(addr, reftok);
+                mNotFound.erase(it);
+            }
+        }
+
         std::map<std::string, Decl> mDeclMap;
+        std::map<std::string, std::vector<Token *>> mNotFound;
         int mVarId = 0;
     };
 
