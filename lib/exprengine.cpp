@@ -1225,6 +1225,9 @@ static ExprEngine::ValuePtr executeCast(const Token *tok, Data &data)
     auto val = executeExpression(expr, data);
 
     if (expr->valueType() && expr->valueType()->type == ::ValueType::Type::VOID && expr->valueType()->pointer > 0) {
+        if (!tok->valueType() || expr->valueType()->pointer < tok->valueType()->pointer)
+            return std::make_shared<ExprEngine::UninitValue>();
+
         ::ValueType vt(*tok->valueType());
         vt.pointer = 0;
         auto range = getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings);
