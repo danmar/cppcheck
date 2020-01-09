@@ -166,44 +166,52 @@ struct ForwardTraversal
                 if (updateRecursive(condTok) == Progress::Break)
                     return Progress::Break;
 
-                // Check if condition is true or false
-                bool checkThen, checkElse;
-                std::tie(checkThen, checkElse) = checkCond(condTok);
-                Status thenStatus = Status::None;
-                Status elseStatus = Status::None;
-
-                // Traverse then block
-                if (checkThen) {
-                    if (updateRange(endCond->next(), endBlock) == Progress::Break)
-                        return Progress::Break;
-                } else if (!checkElse) {
-                    thenStatus = checkScope(endBlock);
-                }
-                // Traverse else block
-                if (Token::simpleMatch(endBlock, "} else {")) {
-                    if (checkElse) {
-                        Progress result = updateRange(endCond->next(), endBlock);
-                        if (result == Progress::Break)
-                            return Progress::Break;
-                    } else if (!checkThen) {
-                        elseStatus = checkScope(endBlock->linkAt(2));
-                    }
-                    tok = endBlock->linkAt(2);
+                if (Token::Match(tok, "for|while (")) {
+                    Status loopStatus = checkScope(endBlock);
+                    if (loopStatus == Status::Inconclusive)
+                        analyzer->LowerToInconclusive();
+                    else if (loopStatus == Status::Modified)
+                        analyzer->LowerToPossible();  
                 } else {
-                    tok = endBlock;
-                }
-                if (thenStatus == Status::Escaped && elseStatus == Status::Escaped) {
-                    return Progress::Break;
-                } else if (thenStatus == Status::Escaped || elseStatus == Status::Escaped) {
-                    if (thenStatus == Status::Modified || elseStatus == Status::Modified) {
-                        return Progress::Break;
+                    // Check if condition is true or false
+                    bool checkThen, checkElse;
+                    std::tie(checkThen, checkElse) = checkCond(condTok);
+                    Status thenStatus = Status::None;
+                    Status elseStatus = Status::None;
+
+                    // Traverse then block
+                    if (checkThen) {
+                        if (updateRange(endCond->next(), endBlock) == Progress::Break)
+                            return Progress::Break;
+                    } else if (!checkElse) {
+                        thenStatus = checkScope(endBlock);
                     }
-                } else if (thenStatus == Status::Inconclusive || elseStatus == Status::Inconclusive) {
-                    if (!analyzer->LowerToInconclusive())
+                    // Traverse else block
+                    if (Token::simpleMatch(endBlock, "} else {")) {
+                        if (checkElse) {
+                            Progress result = updateRange(endCond->next(), endBlock);
+                            if (result == Progress::Break)
+                                return Progress::Break;
+                        } else if (!checkThen) {
+                            elseStatus = checkScope(endBlock->linkAt(2));
+                        }
+                        tok = endBlock->linkAt(2);
+                    } else {
+                        tok = endBlock;
+                    }
+                    if (thenStatus == Status::Escaped && elseStatus == Status::Escaped) {
                         return Progress::Break;
-                } else if (thenStatus == Status::Modified || elseStatus == Status::Modified) {
-                    if (!analyzer->LowerToPossible())
-                        return Progress::Break;
+                    } else if (thenStatus == Status::Escaped || elseStatus == Status::Escaped) {
+                        if (thenStatus == Status::Modified || elseStatus == Status::Modified) {
+                            return Progress::Break;
+                        }
+                    } else if (thenStatus == Status::Inconclusive || elseStatus == Status::Inconclusive) {
+                        if (!analyzer->LowerToInconclusive())
+                            return Progress::Break;
+                    } else if (thenStatus == Status::Modified || elseStatus == Status::Modified) {
+                        if (!analyzer->LowerToPossible())
+                            return Progress::Break;
+                    }
                 }
             } else if (Token::simpleMatch(tok, "} else {")) {
                 tok = tok->linkAt(2);
