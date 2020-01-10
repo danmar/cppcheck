@@ -927,6 +927,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
                 ++c;
                 if (!settings.quiet)
                     reportStatus(c, settings.project.fileSettings.size(), c, settings.project.fileSettings.size());
+                cppcheck.analyseClangTidy(fs);
             }
         }
 

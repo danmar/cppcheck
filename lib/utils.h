@@ -26,6 +26,25 @@
 #include <cstddef>
 #include <string>
 
+inline void splitString(const std::string &str, std::vector<std::string> &stringList, char delimeter)
+{
+    std::size_t cur;
+
+    cur = str.find(delimeter);
+    if (cur != std::string::npos)
+    {
+        std::size_t prev = 0;
+
+        while (cur != std::string::npos)
+        {
+            stringList.push_back(str.substr(prev, cur - prev));
+            prev = cur + 1;
+            cur = str.find(delimeter, prev);
+        }
+        stringList.push_back(str.substr(prev, cur - prev));
+    }
+}
+
 inline bool endsWith(const std::string &str, char c)
 {
     return str[str.size()-1U] == c;
