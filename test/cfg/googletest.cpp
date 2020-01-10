@@ -10,16 +10,22 @@
 #include <gmock/gmock-generated-matchers.h>
 #include <gtest/gtest.h>
 
-// #9397 syntaxError when MATCHER_P is not known
+
 namespace ExampleNamespace {
     constexpr long long TOLERANCE = 10;
 
-    MATCHER_P(ExampleMatcherTest, expected, "")
+    // #9397 syntaxError when MATCHER_P is not known
+    MATCHER_P(ExampleMatcherPTest, expected, "")
     {
         return ((arg <= (expected + TOLERANCE)) && (arg >= (expected - TOLERANCE)));
     }
-}
 
+    // syntaxError when MATCHER is not known
+    MATCHER(ExampleMatcherTest, "")
+    {
+        return (arg == TOLERANCE);
+    }
+}
 
 TEST(ASSERT, ASSERT)
 {
