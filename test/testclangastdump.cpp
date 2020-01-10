@@ -39,7 +39,8 @@ private:
         TEST_CASE(cxxConstructorDecl);
         TEST_CASE(cxxMemberCall);
         TEST_CASE(cxxOperatorCallExpr);
-        TEST_CASE(cxxStaticCastExpr);
+        TEST_CASE(cxxStaticCastExpr1);
+        TEST_CASE(cxxStaticCastExpr2);
         TEST_CASE(forStmt);
         TEST_CASE(funcdecl1);
         TEST_CASE(funcdecl2);
@@ -217,11 +218,18 @@ private:
         ASSERT_EQUALS("void foo ( ) { C c@1 ; c@1 . operator= ( 4 ) ; }", parse(clang));
     }
 
-    void cxxStaticCastExpr() {
+    void cxxStaticCastExpr1() {
         const char clang[] = "`-VarDecl 0x2e0e650 <a.cpp:2:1, col:27> col:5 a 'int' cinit\n"
                              "  `-CXXStaticCastExpr 0x2e0e728 <col:9, col:27> 'int' static_cast<int> <NoOp>\n"
                              "    `-IntegerLiteral 0x2e0e6f0 <col:26> 'int' 0";
         ASSERT_EQUALS("int a@1 = static_cast<int> ( 0 ) ;", parse(clang));
+    }
+
+    void cxxStaticCastExpr2() {
+        const char clang[] = "`-VarDecl 0x2e0e650 <a.cpp:2:1, col:27> col:5 a 'int' cinit\n"
+                             "  `-CXXStaticCastExpr 0x3e453e8 <col:12> 'std::_Rb_tree_iterator<std::pair<const std::__cxx11::basic_string<char>, Library::AllocFunc> >' xvalue static_cast<struct std::_Rb_tree_iterator<struct std::pair<const class std::__cxx11::basic_string<char>, struct Library::AllocFunc> > &&> <NoOp>\n"
+                             "    `-DeclRefExpr 0x3e453b0 <col:12> 'std::_Rb_tree_iterator<std::pair<const std::__cxx11::basic_string<char>, Library::AllocFunc> >' lvalue ParmVar 0x3e45250 '' 'std::_Rb_tree_iterator<std::pair<const std::__cxx11::basic_string<char>, Library::AllocFunc> > &&'";
+        ASSERT_EQUALS("int a@1 = static_cast<structstd::_Rb_tree_iterator<structstd::pair<constclassstd::__cxx11::basic_string<char>,structLibrary::AllocFunc>>&&> ( <NoName> ) ;", parse(clang));
     }
 
     void forStmt() {

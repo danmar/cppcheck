@@ -376,7 +376,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->xml = true;
             }
 
-            // use a file filter 
+            // use a file filter
             else if (std::strncmp(argv[i], "--file-filter=", 14) == 0)
                 mSettings->fileFilter = std::string(argv[i] + 14);
 
