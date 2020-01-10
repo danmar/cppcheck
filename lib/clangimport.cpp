@@ -460,6 +460,8 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
             return addtoken(tokenList, "\'\\n\'");
         if (c == '\t')
             return addtoken(tokenList, "\'\\t\'");
+        if (c == '\\')
+            return addtoken(tokenList, "\'\\\\\'");
         if (c < ' ' || c >= 0x80) {
             std::ostringstream hex;
             hex << std::hex << ((c>>4) & 0xf) << (c&0xf);
