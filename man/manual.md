@@ -82,6 +82,16 @@ We don't know which approach (project file or manual configuration) will give yo
 
 Later chapters will describe this in more detail.
 
+### Check files matching a given file filter
+
+With `--file-filter=<str>` you can set a file filter and only those files matching the filter will be checked.
+
+For example: if you want to check only those files and folders starting from a subfolder src/ that start with "test" you have to type:
+
+    cppcheck src/ --file-filter=src/test*
+
+Cppcheck first collects all files in src/ and will apply the filter after that. So the filter must start with the given start folder. 
+
 ### Excluding a file or folder from checking
 
 To exclude a file or folder, there are two options. The first option is to only provide the paths and files you want to check.

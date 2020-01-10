@@ -79,6 +79,9 @@ public:
     /** @brief --cppcheck-build-dir */
     std::string buildDir;
 
+    /** @brief --file-filter for analyzing special files */
+    std::string fileFilter;
+
     /** Is the 'configuration checking' wanted? */
     bool checkConfiguration;
 
