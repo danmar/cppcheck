@@ -4846,7 +4846,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // #6426
-	{
+        {
             const char code[] = "void foo(bool flag) {\n"
                                 "  bar( (flag) ? ~0u : ~0ul);\n"
                                 "}";
@@ -4863,7 +4863,7 @@ private:
             settings.long_bit = 64;
             check(code, &settings);
             ASSERT_EQUALS("", errout.str());
-	}
+        }
     }
 
     void duplicateValueTernary() {
