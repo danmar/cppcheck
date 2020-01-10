@@ -167,7 +167,7 @@
     <ClCompile Include="programmemory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="clangastdump.cpp">
+    <ClCompile Include="clangimport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -328,7 +328,7 @@
     <ClInclude Include="ctu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="clangastdump.h">
+    <ClInclude Include="clangimport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

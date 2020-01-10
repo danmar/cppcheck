@@ -14,16 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "clangastdump.h"
+#include "clangimport.h"
 #include "settings.h"
 #include "tokenize.h"
 #include "testsuite.h"
 
 
-class TestClangAstDump: public TestFixture {
+class TestClangImport: public TestFixture {
 public:
-    TestClangAstDump()
-        :TestFixture("TestClangAstDump") {
+    TestClangImport()
+        :TestFixture("TestClangImport") {
     }
 
 
@@ -70,7 +70,7 @@ private:
         Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(clang);
-        clangastdump::parseClangAstDump(&tokenizer, istr);
+        clangimport::parseClangAstDump(&tokenizer, istr);
         return tokenizer.tokens()->stringifyList(true, false, false, true, false);
     }
 
@@ -485,4 +485,4 @@ private:
     }
 };
 
-REGISTER_TEST(TestClangAstDump)
+REGISTER_TEST(TestClangImport)

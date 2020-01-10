@@ -18,19 +18,16 @@
 
 
 //---------------------------------------------------------------------------
-#ifndef clangastdumpH
-#define clangastdumpH
+#ifndef clangimportH
+#define clangimportH
 //---------------------------------------------------------------------------
 
-#include <string>
-#include <vector>
+#include <istream>
 
 class Tokenizer;
 
-namespace clangastdump {
-
+namespace clangimport {
     void parseClangAstDump(Tokenizer *tokenizer, std::istream &f);
-
 }
 
 #endif

@@ -19,7 +19,7 @@
 
 #include "check.h"
 #include "checkunusedfunctions.h"
-#include "clangastdump.h"
+#include "clangimport.h"
 #include "ctu.h"
 #include "library.h"
 #include "mathlib.h"
@@ -282,7 +282,7 @@ unsigned int CppCheck::check(const std::string &path)
         std::istringstream ast(res.second);
         Tokenizer tokenizer(&mSettings, this);
         tokenizer.list.appendFileIfNew(path);
-        clangastdump::parseClangAstDump(&tokenizer, ast);
+        clangimport::parseClangAstDump(&tokenizer, ast);
         //ValueFlow::setValues(&tokenizer.list, const_cast<SymbolDatabase *>(tokenizer.getSymbolDatabase()), this, &mSettings);
         if (mSettings.debugnormal)
             tokenizer.printDebugOutput(1);
