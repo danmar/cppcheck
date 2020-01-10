@@ -1310,7 +1310,7 @@ bool CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings 
         pos += 3;
     }
 
-    const std::string cmd = "clang-tidy -checks=*,-clang-analyzer-*,-llvm* " + fileSettings.filename + " -- " + allIncludes + allDefines;
+    const std::string cmd = "clang-tidy -quiet -checks=*,-clang-analyzer-*,-llvm* " + fileSettings.filename + " -- " + allIncludes + allDefines;
 
     #ifdef _WIN32
         std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
@@ -1337,16 +1337,18 @@ bool CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings 
             size_t endColumnPos = lineParts[0].find_last_of(':', lineParts[0].length()-1);
             size_t endLineNumPos = lineParts[0].find_last_of(':', endColumnPos-1);
             size_t endNamePos = lineParts[0].find_last_of(':', endLineNumPos-1);
-            const std::string filename = lineParts[0].substr(0, endNamePos);
+            std::string fixedpath = Path::simplifyPath(lineParts[0].substr(0, endNamePos));
             const std::string strLineNumber = lineParts[0].substr(endNamePos+1, endLineNumPos-endNamePos-1);
             const std::string strColumNumber = lineParts[0].substr(endLineNumPos + 1, endColumnPos-endLineNumPos-1);
             const int64_t lineNumber = std::atol(strLineNumber.c_str());
             const int64_t column = std::atol(strColumNumber.c_str());
+            fixedpath = Path::toNativeSeparators(fixedpath);
+
 
             for (std::string id : lineParts) {
                 if (id[0] == '[') {
                     ErrorLogger::ErrorMessage errmsg;
-                    errmsg.callStack.emplace_back(ErrorLogger::ErrorMessage::FileLocation(filename, lineNumber, column));
+                    errmsg.callStack.emplace_back(ErrorLogger::ErrorMessage::FileLocation(fixedpath, lineNumber, column));
 
                     errmsg.id = "clang-tidy-" + id.substr(1, id.length() - 2);
                     if (line.find("error") != std::string::npos)
@@ -1362,7 +1364,7 @@ bool CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings 
                     else
                         errmsg.severity = Severity::SeverityType::style;
 
-                    errmsg.file0 = filename;
+                    errmsg.file0 = fixedpath;
                     size_t startOfMsg = line.find_last_of(':')+1;
                     size_t endOfMsg = line.find('[')-1;
 
