@@ -40,6 +40,7 @@ private:
         TEST_CASE(cxxConstructorDecl);
         TEST_CASE(cxxConstructExpr);
         TEST_CASE(cxxMemberCall);
+        TEST_CASE(cxxNullPtrLiteralExpr);
         TEST_CASE(cxxOperatorCallExpr);
         TEST_CASE(cxxStaticCastExpr1);
         TEST_CASE(cxxStaticCastExpr2);
@@ -222,6 +223,13 @@ private:
                              "      `-MemberExpr 0x323ba80 <col:24, col:26> '<bound member function type>' .foo 0x320e160\n"
                              "        `-DeclRefExpr 0x323ba58 <col:24> 'C<int>':'C<int>' lvalue Var 0x320df28 'c' 'C<int>':'C<int>'";
         ASSERT_EQUALS("void bar ( ) { C<int> c@1 ; c@1 . foo ( ) ; }", parse(clang));
+    }
+
+    void cxxNullPtrLiteralExpr() {
+        const char clang[] = "`-VarDecl 0x2a7d650 <1.cpp:1:1, col:17> col:13 p 'const char *' cinit\n"
+                             "  `-ImplicitCastExpr 0x2a7d708 <col:17> 'const char *' <NullToPointer>\n"
+                             "    `-CXXNullPtrLiteralExpr 0x2a7d6f0 <col:17> 'nullptr_t'";
+        ASSERT_EQUALS("const char * p@1 = nullptr ;", parse(clang));
     }
 
     void cxxOperatorCallExpr() {
