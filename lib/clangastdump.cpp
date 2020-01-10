@@ -84,8 +84,27 @@ static std::vector<std::string> splitString(const std::string &line)
             pos2 = line.find("\'", pos1+1);
             if (pos2 < (int)line.size() - 3 && line.compare(pos2, 3, "\':\'", 0, 3) == 0)
                 pos2 = line.find("\'", pos2 + 3);
-        } else
+        } else {
             pos2 = line.find(" ", pos1) - 1;
+            if (std::isalpha(line[pos1]) && line.find("<", pos1) < pos2 && line.find(">", pos1) > pos2) {
+                int level = 0;
+                pos2 = pos1;
+                for (pos2 = pos1; pos2 < line.size(); ++pos2) {
+                    if (line[pos2] == '<')
+                        ++level;
+                    else if (line[pos2] == '>') {
+                        if (level <= 1)
+                            break;
+                        --level;
+                    }
+                }
+                if (level != 1 || pos2 + 1 >= line.size())
+                    return std::vector<std::string> {};
+                pos2 = line.find(" ", pos2);
+                if (pos2 != std::string::npos)
+                    --pos2;
+            }
+        }
         ret.push_back(line.substr(pos1, pos2+1-pos1));
         if (pos2 == std::string::npos)
             break;
@@ -479,7 +498,8 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         return children[0]->createTokens(tokenList);
     if (nodeType == DeclRefExpr) {
         const std::string addr = mExtTokens[mExtTokens.size() - 3];
-        Token *reftok = addtoken(tokenList, unquote(mExtTokens[mExtTokens.size() - 2]));
+        std::string name = unquote(getSpelling());
+        Token *reftok = addtoken(tokenList, name.empty() ? "<NoName>" : name);
         mData->ref(addr, reftok);
         return reftok;
     }
