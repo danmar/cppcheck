@@ -236,13 +236,17 @@ namespace clangimport {
 
 std::string clangimport::AstNode::getSpelling() const
 {
-    if (mExtTokens.back() == "extern")
-        return mExtTokens[mExtTokens.size() - 3];
-    if (mExtTokens[mExtTokens.size() - 2].compare(0,4,"col:") == 0)
+    int retTypeIndex = mExtTokens.size() - 1;
+    if (nodeType == FunctionDecl) {
+        while (mExtTokens[retTypeIndex][0] != '\'')
+            retTypeIndex--;
+    }
+    const std::string &str = mExtTokens[retTypeIndex - 1];
+    if (str.compare(0,4,"col:") == 0)
         return "";
-    if ((mExtTokens[mExtTokens.size() - 2].compare(0,8,"<invalid") == 0))
+    if (str.compare(0,8,"<invalid") == 0)
         return "";
-    return mExtTokens[mExtTokens.size() - 2];
+    return str;
 }
 
 std::string clangimport::AstNode::getType() const
@@ -257,10 +261,12 @@ std::string clangimport::AstNode::getType() const
         return unquote(mExtTokens[mExtTokens.size() - 3]);
     if (nodeType == DeclRefExpr)
         return unquote(mExtTokens.back());
-    if (nodeType == FunctionDecl)
-        return unquote((mExtTokens.back() == "extern") ?
-                       mExtTokens[mExtTokens.size() - 2] :
-                       mExtTokens.back());
+    if (nodeType == FunctionDecl) {
+        int retTypeIndex = mExtTokens.size() - 1;
+        while (mExtTokens[retTypeIndex][0] != '\'')
+            retTypeIndex--;
+        return unquote(mExtTokens[retTypeIndex]);
+    }
     if (nodeType == IntegerLiteral)
         return unquote(mExtTokens[mExtTokens.size() - 2]);
     if (nodeType == TypedefDecl)
@@ -757,12 +763,8 @@ Token * clangimport::AstNode::createTokensCall(TokenList *tokenList)
 void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
 {
     SymbolDatabase *symbolDatabase = mData->mSymbolDatabase;
-    const int nameIndex = (mExtTokens.back() == "extern") ?
-                          (mExtTokens.size() - 3) :
-                          (mExtTokens.size() - 2);
-    const int retTypeIndex = nameIndex + 1;
-    addTypeTokens(tokenList, mExtTokens[retTypeIndex]);
-    Token *nameToken = addtoken(tokenList, mExtTokens[nameIndex] + getTemplateParameters());
+    addTypeTokens(tokenList, '\'' + getType() + '\'');
+    Token *nameToken = addtoken(tokenList, getSpelling() + getTemplateParameters());
     Scope *nestedIn = const_cast<Scope *>(nameToken->scope());
     symbolDatabase->scopeList.push_back(Scope(nullptr, nullptr, nestedIn));
     Scope &scope = symbolDatabase->scopeList.back();
