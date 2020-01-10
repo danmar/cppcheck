@@ -201,7 +201,10 @@ namespace clangastdump {
         void dumpAst(int num = 0, int indent = 0) const;
         void createTokens1(TokenList *tokenList) {
             //dumpAst();
-            setLocations(tokenList, 0, 1, 1);
+            if (!tokenList->back())
+                setLocations(tokenList, 0, 1, 1);
+            else
+                setLocations(tokenList, tokenList->back()->fileIndex(), tokenList->back()->linenr(), 1);
             createTokens(tokenList);
             if (nodeType == VarDecl || nodeType == RecordDecl || nodeType == TypedefDecl)
                 addtoken(tokenList, ";");
@@ -774,7 +777,7 @@ void clangastdump::AstNode::createTokensFunctionDecl(TokenList *tokenList)
     par1->link(par2);
     par2->link(par1);
     // Function body
-    if (!children.empty() && children.back()->nodeType == CompoundStmt) {
+    if (mFile == 0 && !children.empty() && children.back()->nodeType == CompoundStmt) {
         Token *bodyStart = addtoken(tokenList, "{");
         bodyStart->scope(&scope);
         children.back()->createTokens(tokenList);

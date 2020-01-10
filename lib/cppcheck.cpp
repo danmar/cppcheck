@@ -281,6 +281,7 @@ unsigned int CppCheck::check(const std::string &path)
         //std::cout << "Checking Clang ast dump:\n" << res.second << std::endl;
         std::istringstream ast(res.second);
         Tokenizer tokenizer(&mSettings, this);
+        tokenizer.list.appendFileIfNew(path);
         clangastdump::parseClangAstDump(&tokenizer, ast);
         //ValueFlow::setValues(&tokenizer.list, const_cast<SymbolDatabase *>(tokenizer.getSymbolDatabase()), this, &mSettings);
         if (mSettings.debugnormal)
