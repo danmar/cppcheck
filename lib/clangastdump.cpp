@@ -98,16 +98,18 @@ static std::vector<std::string> splitString(const std::string &line)
                         --level;
                     }
                 }
-                if (level != 1 || pos2 + 1 >= line.size())
+                if (level > 1 && pos2 + 1 >= line.size())
                     return std::vector<std::string> {};
                 pos2 = line.find(" ", pos2);
                 if (pos2 != std::string::npos)
                     --pos2;
             }
         }
-        ret.push_back(line.substr(pos1, pos2+1-pos1));
-        if (pos2 == std::string::npos)
+        if (pos2 == std::string::npos) {
+            ret.push_back(line.substr(pos1));
             break;
+        }
+        ret.push_back(line.substr(pos1, pos2+1-pos1));
         pos1 = line.find_first_not_of(" ", pos2 + 1);
     }
     return ret;
@@ -319,13 +321,20 @@ Token *clangastdump::AstNode::addtoken(TokenList *tokenList, const std::string &
 
 void clangastdump::AstNode::addTypeTokens(TokenList *tokenList, const std::string &str)
 {
+    if (str.find("\':\'") != std::string::npos) {
+        addTypeTokens(tokenList, str.substr(0, str.find("\':\'") + 1));
+        return;
+    }
+
     std::string type;
-    if (str.find(" (") != std::string::npos)
-        type = str.substr(1,str.find(" (")-1);
-    else if (str.find("\':\'") != std::string::npos)
-        type = str.substr(1, str.find("\':\'") - 1);
-    else
+    if (str.find(" (") != std::string::npos) {
+        if (str.find("<") != std::string::npos)
+            type = str.substr(1, str.find("<")) + "...>";
+        else
+            type = str.substr(1,str.find(" (")-1);
+    } else
         type = unquote(str);
+
     for (const std::string &s: splitString(type))
         addtoken(tokenList, s);
 }
