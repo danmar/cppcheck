@@ -38,6 +38,7 @@ static const std::string ContinueStmt = "ContinueStmt";
 static const std::string CStyleCastExpr = "CStyleCastExpr";
 static const std::string CXXBoolLiteralExpr = "CXXBoolLiteralExpr";
 static const std::string CXXConstructorDecl = "CXXConstructorDecl";
+static const std::string CXXConstructExpr = "CXXConstructExpr";
 static const std::string CXXMemberCallExpr = "CXXMemberCallExpr";
 static const std::string CXXMethodDecl = "CXXMethodDecl";
 static const std::string CXXOperatorCallExpr = "CXXOperatorCallExpr";
@@ -251,29 +252,10 @@ std::string clangimport::AstNode::getSpelling() const
 
 std::string clangimport::AstNode::getType() const
 {
-    if (nodeType == BinaryOperator)
-        return unquote(mExtTokens[mExtTokens.size() - 2]);
-    if (nodeType == CStyleCastExpr)
-        return unquote((mExtTokens.back() == "<NoOp>") ?
-                       mExtTokens[mExtTokens.size() - 2] :
-                       mExtTokens.back());
-    if (nodeType == CXXStaticCastExpr)
-        return unquote(mExtTokens[mExtTokens.size() - 3]);
-    if (nodeType == DeclRefExpr)
-        return unquote(mExtTokens.back());
-    if (nodeType == FunctionDecl) {
-        int retTypeIndex = mExtTokens.size() - 1;
-        while (mExtTokens[retTypeIndex][0] != '\'')
-            retTypeIndex--;
-        return unquote(mExtTokens[retTypeIndex]);
-    }
-    if (nodeType == IntegerLiteral)
-        return unquote(mExtTokens[mExtTokens.size() - 2]);
-    if (nodeType == TypedefDecl)
-        return unquote(mExtTokens.back());
-    if (nodeType == UnaryExprOrTypeTraitExpr)
-        return unquote(mExtTokens[mExtTokens.size() - 3]);
-    return "";
+    int typeIndex = mExtTokens.size() - 1;
+    while (typeIndex >= 0 && mExtTokens[typeIndex][0] != '\'')
+        typeIndex--;
+    return typeIndex == -1 ? "" : unquote(mExtTokens[typeIndex]);
 }
 
 std::string clangimport::AstNode::getTemplateParameters() const
@@ -524,6 +506,8 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         tokenList->back()->setValueType(new ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::BOOL, 0));
         return tokenList->back();
     }
+    if (nodeType == CXXConstructExpr)
+        return children[0]->createTokens(tokenList);
     if (nodeType == CXXMethodDecl) {
         createTokensFunctionDecl(tokenList);
         return nullptr;

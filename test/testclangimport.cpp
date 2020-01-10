@@ -38,6 +38,7 @@ private:
         TEST_CASE(cstyleCastExpr);
         TEST_CASE(cxxBoolLiteralExpr);
         TEST_CASE(cxxConstructorDecl);
+        TEST_CASE(cxxConstructExpr);
         TEST_CASE(cxxMemberCall);
         TEST_CASE(cxxOperatorCallExpr);
         TEST_CASE(cxxStaticCastExpr1);
@@ -198,6 +199,17 @@ private:
                              "|     `-IntegerLiteral 0x428ea10 <col:21> 'int' 0\n"
                              "`-FieldDecl 0x428e958 <col:26, col:30> col:30 referenced x 'int'";
         ASSERT_EQUALS("void C ( ) { this . x@1 = 0 ; } int x@1", parse(clang));
+    }
+
+    void cxxConstructExpr() {
+        const char clang[] = "`-FunctionDecl 0x2dd7940 <line:2:1, col:30> col:5 f 'Foo (Foo)'\n"
+                             "  |-ParmVarDecl 0x2dd7880 <col:7, col:11> col:11 used foo 'Foo'\n"
+                             "  `-CompoundStmt 0x2dd80c0 <col:16, col:30>\n"
+                             "    `-ReturnStmt 0x2dd80a8 <col:18, col:25>\n"
+                             "      `-CXXConstructExpr 0x2dd8070 <col:25> 'Foo' 'void (Foo &&) noexcept'\n"
+                             "        `-ImplicitCastExpr 0x2dd7f28 <col:25> 'Foo' xvalue <NoOp>\n"
+                             "          `-DeclRefExpr 0x2dd7a28 <col:25> 'Foo' lvalue ParmVar 0x2dd7880 'foo' 'Foo'";
+        ASSERT_EQUALS("Foo f ( Foo foo@1 ) { return foo@1 ; }", parse(clang));
     }
 
     void cxxMemberCall() {
