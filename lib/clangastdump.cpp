@@ -208,7 +208,7 @@ namespace clangastdump {
         }
     private:
         Token *createTokens(TokenList *tokenList);
-        Token *addtoken(TokenList *tokenList, const std::string &str);
+        Token *addtoken(TokenList *tokenList, const std::string &str, bool valueType=true);
         void addTypeTokens(TokenList *tokenList, const std::string &str);
         Scope *createScope(TokenList *tokenList, Scope::ScopeType scopeType, AstNodePtr astNode);
         Scope *createScope(TokenList *tokenList, Scope::ScopeType scopeType, const std::vector<AstNodePtr> &children);
@@ -246,6 +246,8 @@ std::string clangastdump::AstNode::getType() const
 {
     if (nodeType == BinaryOperator)
         return unquote(mExtTokens[mExtTokens.size() - 2]);
+    if (nodeType == CXXStaticCastExpr)
+        return unquote(mExtTokens[mExtTokens.size() - 3]);
     if (nodeType == DeclRefExpr)
         return unquote(mExtTokens.back());
     if (nodeType == FunctionDecl)
@@ -256,6 +258,8 @@ std::string clangastdump::AstNode::getType() const
         return unquote(mExtTokens[mExtTokens.size() - 2]);
     if (nodeType == TypedefDecl)
         return unquote(mExtTokens.back());
+    if (nodeType == UnaryExprOrTypeTraitExpr)
+        return unquote(mExtTokens[mExtTokens.size() - 3]);
     return "";
 }
 
@@ -312,14 +316,14 @@ void clangastdump::AstNode::setLocations(TokenList *tokenList, int file, int lin
     }
 }
 
-Token *clangastdump::AstNode::addtoken(TokenList *tokenList, const std::string &str)
+Token *clangastdump::AstNode::addtoken(TokenList *tokenList, const std::string &str, bool valueType)
 {
     const Scope *scope = getNestedInScope(tokenList);
     tokenList->addtoken(str, mLine, mFile);
     tokenList->back()->column(mCol);
     tokenList->back()->scope(scope);
-    if (getType() == "int")
-        tokenList->back()->setValueType(new ValueType(ValueType::Sign::SIGNED, ValueType::Type::INT, 0));
+    if (valueType)
+        setValueType(tokenList->back());
     return tokenList->back();
 }
 
@@ -340,7 +344,7 @@ void clangastdump::AstNode::addTypeTokens(TokenList *tokenList, const std::strin
         type = unquote(str);
 
     for (const std::string &s: splitString(type))
-        addtoken(tokenList, s);
+        addtoken(tokenList, s, false);
 }
 
 const Scope *clangastdump::AstNode::getNestedInScope(TokenList *tokenList)
@@ -354,21 +358,36 @@ const Scope *clangastdump::AstNode::getNestedInScope(TokenList *tokenList)
 
 void clangastdump::AstNode::setValueType(Token *tok)
 {
-    int typeIndex = -1;
-    if (nodeType == CXXStaticCastExpr)
-        typeIndex = mExtTokens.size() - 3;
-    else if (nodeType == UnaryExprOrTypeTraitExpr)
-        typeIndex = mExtTokens.size() - 3;
-    else
+    const std::string &type = getType();
+
+    if (type.find("<") != std::string::npos) {
+        // TODO
+        tok->setValueType(new ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::NONSTD, 0));
         return;
+    }
 
     TokenList decl(nullptr);
-    addTypeTokens(&decl, mExtTokens[typeIndex]);
+    addTypeTokens(&decl, type);
 
-    if (Token::simpleMatch(decl.front(), "int"))
+    if (Token::simpleMatch(decl.front(), "bool"))
+        tok->setValueType(new ValueType(ValueType::Sign::UNSIGNED, ValueType::Type::BOOL, 0));
+    else if (Token::simpleMatch(decl.front(), "int"))
         tok->setValueType(new ValueType(ValueType::Sign::SIGNED, ValueType::Type::INT, 0));
     else if (Token::simpleMatch(decl.front(), "unsigned long"))
         tok->setValueType(new ValueType(ValueType::Sign::UNSIGNED, ValueType::Type::LONG, 0));
+    else if (Token::simpleMatch(decl.front(), "__int128"))
+        tok->setValueType(new ValueType(ValueType::Sign::SIGNED, ValueType::Type::UNKNOWN_INT, 0));
+    else if (tok->isNumber())
+        tok->setValueType(new ValueType(ValueType::Sign::SIGNED, ValueType::Type::INT, 0));
+    else if (tok->tokType() == Token::Type::eChar)
+        // TODO
+        tok->setValueType(new ValueType(ValueType::Sign::SIGNED, ValueType::Type::CHAR, 0));
+    else if (tok->tokType() == Token::Type::eString)
+        // TODO
+        tok->setValueType(new ValueType(ValueType::Sign::SIGNED, ValueType::Type::CHAR, 1));
+    else {
+        //decl.front()->printOut("");
+    }
 }
 
 Scope *clangastdump::AstNode::createScope(TokenList *tokenList, Scope::ScopeType scopeType, AstNodePtr astNode)
