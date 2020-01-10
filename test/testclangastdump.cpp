@@ -35,6 +35,7 @@ private:
         TEST_CASE(classTemplateDecl1);
         TEST_CASE(classTemplateDecl2);
         TEST_CASE(continueStmt);
+        TEST_CASE(cstyleCastExpr);
         TEST_CASE(cxxBoolLiteralExpr);
         TEST_CASE(cxxConstructorDecl);
         TEST_CASE(cxxMemberCall);
@@ -173,6 +174,13 @@ private:
                              "      |-IntegerLiteral 0x2c31bf8 <col:21> 'int' 0\n"
                              "      `-ContinueStmt 0x2c31c18 <col:24>";
         ASSERT_EQUALS("void foo ( ) { while ( 0 ) { continue ; } }", parse(clang));
+    }
+
+    void cstyleCastExpr() {
+        const char clang[] = "`-VarDecl 0x2336aa0 <1.c:1:1, col:14> col:5 x 'int' cinit\n"
+                             "  `-CStyleCastExpr 0x2336b70 <col:9, col:14> 'int' <NoOp>\n"
+                             "    `-CharacterLiteral 0x2336b40 <col:14> 'int' 97";
+        ASSERT_EQUALS("int x@1 = ( int ) 'a' ;", parse(clang));
     }
 
     void cxxBoolLiteralExpr() {

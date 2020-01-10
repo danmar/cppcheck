@@ -35,6 +35,7 @@ static const std::string ClassTemplateDecl = "ClassTemplateDecl";
 static const std::string ClassTemplateSpecializationDecl = "ClassTemplateSpecializationDecl";
 static const std::string CompoundStmt = "CompoundStmt";
 static const std::string ContinueStmt = "ContinueStmt";
+static const std::string CStyleCastExpr = "CStyleCastExpr";
 static const std::string CXXBoolLiteralExpr = "CXXBoolLiteralExpr";
 static const std::string CXXConstructorDecl = "CXXConstructorDecl";
 static const std::string CXXMemberCallExpr = "CXXMemberCallExpr";
@@ -248,6 +249,10 @@ std::string clangastdump::AstNode::getType() const
 {
     if (nodeType == BinaryOperator)
         return unquote(mExtTokens[mExtTokens.size() - 2]);
+    if (nodeType == CStyleCastExpr)
+        return unquote((mExtTokens.back() == "<NoOp>") ?
+                       mExtTokens[mExtTokens.size() - 2] :
+                       mExtTokens.back());
     if (nodeType == CXXStaticCastExpr)
         return unquote(mExtTokens[mExtTokens.size() - 3]);
     if (nodeType == DeclRefExpr)
@@ -496,6 +501,15 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         if (hasBody)
             createTokensFunctionDecl(tokenList);
         return nullptr;
+    }
+    if (nodeType == CStyleCastExpr) {
+        Token *par1 = addtoken(tokenList, "(");
+        addTypeTokens(tokenList, '\'' + getType() + '\'');
+        Token *par2 = addtoken(tokenList, ")");
+        par1->link(par2);
+        par2->link(par1);
+        par1->astOperand1(children[0]->createTokens(tokenList));
+        return par1;
     }
     if (nodeType == CXXBoolLiteralExpr) {
         addtoken(tokenList, mExtTokens.back());
