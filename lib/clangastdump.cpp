@@ -92,7 +92,6 @@ static std::vector<std::string> splitString(const std::string &line)
                 line.find(">", pos1) != std::string::npos &&
                 line.find(">", pos1) > pos2) {
                 int level = 0;
-                pos2 = pos1;
                 for (pos2 = pos1; pos2 < line.size(); ++pos2) {
                     if (line[pos2] == '<')
                         ++level;
