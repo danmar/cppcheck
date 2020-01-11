@@ -599,9 +599,9 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         return nullptr;
     }
     if (nodeType == IfStmt) {
-        AstNodePtr cond = children[2];
-        AstNodePtr then = children[3];
-        AstNodePtr else_ = children[4];
+        AstNodePtr cond = children[children.size() - 3];
+        AstNodePtr then = children[children.size() - 2];
+        AstNodePtr else_ = children[children.size() - 1];
         Token *iftok = addtoken(tokenList, "if");
         Token *par1 = addtoken(tokenList, "(");
         par1->astOperand1(iftok);
