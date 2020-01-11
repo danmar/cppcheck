@@ -189,13 +189,12 @@ struct ForwardTraversal
                         analyzer->LowerToInconclusive();
                     } else if (loopStatus == Status::Modified) {
                         analyzer->LowerToPossible();
-                        Token * writeTok = findActionRange(endBlock->link(), endBlock, ForwardAnalyzer::Action::Write);
+                        Token * writeTok = findRange(endBlock->link(), endBlock, std::mem_fn(&ForwardAnalyzer::Action::isModified));
                         const Token * nextStatement = Token::findmatch(writeTok, ";|}", endBlock);
                         if (!Token::Match(nextStatement, ";|} break ;"))
                             return Progress::Break;
-                        if (update(writeTok) == Progress::Break)
-                            return Progress::Break;
                     }
+                    // TODO: Shoule we traverse the body?
                     // updateRange(endBlock->link(), endBlock);
                     tok = endBlock;
                 } else {
