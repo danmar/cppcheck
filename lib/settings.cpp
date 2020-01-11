@@ -34,6 +34,7 @@ Settings::Settings()
       checkLibrary(false),
       checkHeaders(true),
       checkUnusedTemplates(false),
+      clang(false),
       debugSimplified(false),
       debugnormal(false),
       debugwarnings(false),

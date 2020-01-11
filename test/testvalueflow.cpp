@@ -1676,7 +1676,7 @@ private:
                "        ++x;\n"
                "    return 2 + x;\n"
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 4U, 123));
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 123));
 
         code = "void f() {\n"
                "    int x = 1;\n"
@@ -1839,7 +1839,7 @@ private:
                "        else if (x && i == 1) {}\n"
                "    }\n"
                "}\n";
-        ASSERT_EQUALS(false, testValueOfX(code, 6U, 0));
+        ASSERT_EQUALS(true, testValueOfX(code, 6U, 0));
 
         // multivariables
         code = "void f(int a) {\n"

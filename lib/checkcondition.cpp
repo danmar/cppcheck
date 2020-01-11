@@ -632,7 +632,7 @@ void CheckCondition::multiCondition2()
         [&varsInCond](const Token *cond) {
             if (cond->variable()) {
                 const Variable *var = cond->variable();
-                if(std::find(varsInCond.begin(), varsInCond.end(), var) == varsInCond.end())
+                if (std::find(varsInCond.begin(), varsInCond.end(), var) == varsInCond.end())
                     varsInCond.push_back(var);
             }
             return ChildrenToVisit::op1_and_op2;

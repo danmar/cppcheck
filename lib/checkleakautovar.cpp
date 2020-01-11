@@ -743,8 +743,31 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
                 deallocUseError(tok, tok->str());
             } else if (Token::simpleMatch(tok->tokAt(-2), "= &")) {
                 varInfo->erase(tok->varId());
-            } else if (Token::Match(tok->previous(), "= %var% [;,)]")) {
-                varInfo->erase(tok->varId());
+            } else {
+                // check if tok is assigned into another variable
+                const Token *rhs = tok;
+                while (rhs->astParent()) {
+                    if (rhs->astParent()->str() == "=")
+                        break;
+                    rhs = rhs->astParent();
+                }
+                if (rhs->varId() == tok->varId()) {
+                    // simple assignment
+                    varInfo->erase(tok->varId());
+                } else if (rhs->str() == "(" && mSettings->library.returnValue(rhs->astOperand1()) != emptyString) {
+                    // #9298, assignment through return value of a function
+                    const std::string &returnValue = mSettings->library.returnValue(rhs->astOperand1());
+                    if (returnValue.compare(0, 3, "arg") == 0) {
+                        int argn;
+                        const Token *func = getTokenArgumentFunction(tok, argn);
+                        if (func) {
+                            const std::string arg = "arg" + std::to_string(argn + 1);
+                            if (returnValue == arg) {
+                                varInfo->erase(tok->varId());
+                            }
+                        }
+                    }
+                }
             }
         } else if (Token::Match(tok->previous(), "& %name% = %var% ;")) {
             varInfo->referenced.insert(tok->tokAt(2)->varId());
@@ -759,7 +782,7 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
         if (alloc.type == 0)
             alloc.status = VarInfo::NOALLOC;
         functionCall(tok, openingPar, varInfo, alloc, nullptr);
-        return openingPar->link();
+        return openingPar;
     }
 
     return nullptr;

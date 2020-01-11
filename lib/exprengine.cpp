@@ -165,7 +165,7 @@ namespace {
             , callbacks(callbacks)
             , mTrackExecution(trackExecution)
             , mDataIndex(trackExecution->getNewDataIndex()) {}
-        typedef std::map<nonneg int, std::shared_ptr<ExprEngine::Value>> Memory;
+        typedef std::map<nonneg int, ExprEngine::ValuePtr> Memory;
         Memory memory;
         int * const symbolValueIndex;
         const Tokenizer * const tokenizer;
@@ -196,6 +196,19 @@ namespace {
         void assignStructMember(const Token *tok, ExprEngine::StructValue *structVal, const std::string &memberName, ExprEngine::ValuePtr value) {
             mTrackExecution->symbolRange(tok, value);
             structVal->member[memberName] = value;
+        }
+
+        void functionCall() {
+            // Remove values for global variables
+            const SymbolDatabase *symbolDatabase = tokenizer->getSymbolDatabase();
+            for (std::map<nonneg int, ExprEngine::ValuePtr>::iterator it = memory.begin(); it != memory.end();) {
+                unsigned int varid = it->first;
+                const Variable *var = symbolDatabase->getVariableFromVarId(varid);
+                if (var->isGlobal())
+                    it = memory.erase(it);
+                else
+                    ++it;
+            }
         }
 
         std::string getNewSymbolName() OVERRIDE {
@@ -1181,6 +1194,7 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
 
     auto val = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
     call(data.callbacks, tok, val, &data);
+    data.functionCall();
     return val;
 }
 
@@ -1211,6 +1225,9 @@ static ExprEngine::ValuePtr executeCast(const Token *tok, Data &data)
     auto val = executeExpression(expr, data);
 
     if (expr->valueType() && expr->valueType()->type == ::ValueType::Type::VOID && expr->valueType()->pointer > 0) {
+        if (!tok->valueType() || expr->valueType()->pointer < tok->valueType()->pointer)
+            return std::make_shared<ExprEngine::UninitValue>();
+
         ::ValueType vt(*tok->valueType());
         vt.pointer = 0;
         auto range = getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings);
@@ -1832,7 +1849,6 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
     };
 #endif
 
-#ifdef VERIFY_UNINIT  // This is highly experimental
     std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> uninit = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
         if (!tok->astParent())
             return;
@@ -1851,7 +1867,6 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
         ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationUninit", "Cannot determine that '" + tok->expressionString() + "' is initialized", CWE_USE_OF_UNINITIALIZED_VARIABLE, false);
         errorLogger->reportErr(errmsg);
     };
-#endif
 
     std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> checkFunctionCall = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
         if (!Token::Match(tok->astParent(), "[(,]"))
@@ -1952,7 +1967,6 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
         }
 
         // Uninitialized function argument..
-#ifdef VERIFY_UNINIT  // This is highly experimental
         if (settings->library.isuninitargbad(parent->astOperand1(), num) && settings->library.isnullargbad(parent->astOperand1(), num) && value.type == ExprEngine::ValueType::ArrayValue) {
             const ExprEngine::ArrayValue &arrayValue = static_cast<const ExprEngine::ArrayValue &>(value);
             auto index0 = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
@@ -1966,7 +1980,6 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
                 }
             }
         }
-#endif
     };
 
     std::vector<ExprEngine::Callback> callbacks;
@@ -1975,9 +1988,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
 #ifdef VERIFY_INTEGEROVERFLOW
     callbacks.push_back(integerOverflow);
 #endif
-#ifdef VERIFY_UNINIT
     callbacks.push_back(uninit);
-#endif
 
     std::ostringstream report;
     ExprEngine::executeAllFunctions(tokenizer, settings, callbacks, report);

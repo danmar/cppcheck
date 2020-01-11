@@ -2625,36 +2625,6 @@ void CheckClass::overrideError(const Function *funcInBase, const Function *funcI
                 false);
 }
 
-void CheckClass::checkAccessModifierVirtualFunctions()
-{
-    // Motivation:
-    // isocpp.org/wiki/faq/proper-inheritance#hiding-inherited-public
-    // stackoverflow.com/questions/484592/overriding-public-virtual-functions-with-private-functions-in-c
-    if (!mSettings->isEnabled(Settings::STYLE))
-        return;
-    for (const Scope * classScope : mSymbolDatabase->classAndStructScopes) {
-        if (!classScope->definedType || classScope->definedType->derivedFrom.empty())
-            continue;
-        for (const Function &func : classScope->functionList) {
-            const Function *baseFunc = func.getOverriddenFunction();
-            if (baseFunc) {
-                if (AccessControl::Public == baseFunc->access && AccessControl::Public != func.access) {
-                    checkAccessModifierVirtualFunctionsError(func.tokenDef, func.name());
-                }
-            }
-        }
-    }
-}
-
-void CheckClass::checkAccessModifierVirtualFunctionsError(const Token *tok, const std::string& func)
-{
-    reportError(tok, Severity::style, "hidingInheritedPublic",
-                "$symbol:" + func + "\n"
-                "The function '$symbol' has more narrow access modifier in a derived class. It could violate a LSP principle.",
-                CWE(0U) /* Unknown CWE! */,
-                false);
-}
-
 void CheckClass::checkUnsafeClassRefMember()
 {
     if (!mSettings->safeChecks.classes || !mSettings->isEnabled(Settings::WARNING))

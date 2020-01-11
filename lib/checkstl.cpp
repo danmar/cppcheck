@@ -869,7 +869,11 @@ void CheckStl::stlOutOfBounds()
         for (const Token *cond : conds) {
             const Token *vartok;
             const Token *containerToken;
-            if (Token::Match(cond, "<= %var% . %name% ( )") && Token::Match(cond->astOperand1(), "%var%")) {
+            // check in the ast that cond is of the form "%var% <= %var% . %name% ( )"
+            if (cond->str() == "<=" && Token::Match(cond->astOperand1(), "%var%") &&
+                cond->astOperand2()->str() == "(" && cond->astOperand2()->astOperand1()->str() == "." &&
+                Token::Match(cond->astOperand2()->astOperand1()->astOperand1(), "%var%") &&
+                Token::Match(cond->astOperand2()->astOperand1()->astOperand2(), "%name%")) {
                 vartok = cond->astOperand1();
                 containerToken = cond->next();
             } else {

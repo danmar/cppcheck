@@ -93,6 +93,9 @@ public:
     /** Check unused templates */
     bool checkUnusedTemplates;
 
+    /** Use Clang */
+    bool clang;
+
     /** @brief include paths excluded from checking the configuration */
     std::set<std::string> configExcludePaths;
 

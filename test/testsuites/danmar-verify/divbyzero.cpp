@@ -6,6 +6,8 @@ struct S { int x; };
 
 int globalvar;
 
+void dostuff();
+
 void callfunc1() {
     int x = 16;
     scanf("%i\n", &x);
@@ -33,6 +35,13 @@ void globalVar1() {
     return 100000 / globalvar;
 }
 
+void globalVar1() {
+    globalvar = 123;
+    dostuff();
+    // cppcheck-suppress verificationDivByZero
+    return 100000 / globalvar;
+}
+
 void pointer1(int *p) {
     // cppcheck-suppress verificationDivByZero
     return 100000 / *p;
@@ -51,4 +60,14 @@ void stdmap(std::map<int,int> &data) {
 void struct1(struct S *s) {
     // cppcheck-suppress verificationDivByZero
     return 100000 / s->x;
+}
+
+void trycatch() {
+    int x = 0;
+    try {
+        dostuff();
+        x = 1;
+    } catch (...) {}
+    // cppcheck-suppress verificationDivByZero
+    return 100000 / x;
 }

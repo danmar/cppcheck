@@ -79,7 +79,6 @@ public:
         checkClass.checkCopyCtorAndEqOperator();
         checkClass.checkOverride();
         checkClass.checkUnsafeClassRefMember();
-        checkClass.checkAccessModifierVirtualFunctions();
     }
 
     /** @brief %Check that all class constructors are ok */
@@ -147,8 +146,6 @@ public:
     /** @brief Unsafe class check - const reference member */
     void checkUnsafeClassRefMember();
 
-    /** @brief Check that virtuial function has not least access in derived class */
-    void checkAccessModifierVirtualFunctions();
 private:
     const SymbolDatabase *mSymbolDatabase;
 
@@ -186,7 +183,6 @@ private:
     void copyCtorAndEqOperatorError(const Token *tok, const std::string &classname, bool isStruct, bool hasCopyCtor);
     void overrideError(const Function *funcInBase, const Function *funcInDerived);
     void unsafeClassRefMemberError(const Token *tok, const std::string &varname);
-    void checkAccessModifierVirtualFunctionsError(const Token *tok, const std::string& func);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckClass c(nullptr, settings, errorLogger);
@@ -224,7 +220,6 @@ private:
         c.virtualFunctionCallInConstructorError(nullptr, std::list<const Token *>(), "f");
         c.overrideError(nullptr, nullptr);
         c.unsafeClassRefMemberError(nullptr, "UnsafeClass::var");
-        c.checkAccessModifierVirtualFunctionsError(nullptr, "f");
     }
 
     static std::string myName() {

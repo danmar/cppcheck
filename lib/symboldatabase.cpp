@@ -39,6 +39,9 @@
 SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     : mTokenizer(tokenizer), mSettings(settings), mErrorLogger(errorLogger)
 {
+    if (!tokenizer || !tokenizer->tokens())
+        return;
+
     mIsCpp = isCPP();
 
     if (mSettings->defaultSign == 's' || mSettings->defaultSign == 'S')
@@ -1715,6 +1718,44 @@ void SymbolDatabase::validate() const
     //validateVariables();
 }
 
+void SymbolDatabase::clangSetVariables(const std::vector<const Variable *> &variableList)
+{
+    mVariableList = variableList;
+}
+
+Variable::Variable(const Token *name_, const std::string &clangType,
+                   nonneg int index_, AccessControl access_, const Type *type_,
+                   const Scope *scope_)
+    : mNameToken(name_),
+      mTypeStartToken(nullptr),
+      mTypeEndToken(nullptr),
+      mIndex(index_),
+      mAccess(access_),
+      mFlags(0),
+      mType(type_),
+      mScope(scope_),
+      mValueType(nullptr)
+{
+
+    std::string::size_type pos = clangType.find("[");
+    if (pos != std::string::npos) {
+        setFlag(fIsArray, true);
+        do {
+            const std::string::size_type pos1 = pos+1;
+            pos = clangType.find("]", pos1);
+            Dimension dim;
+            dim.tok = nullptr;
+            dim.known = pos > pos1;
+            if (pos > pos1)
+                dim.num = MathLib::toLongNumber(clangType.substr(pos1, pos-pos1));
+            else
+                dim.num = 0;
+            mDimensions.push_back(dim);
+            ++pos;
+        } while (pos < clangType.size() && clangType[pos] == '[');
+    }
+}
+
 Variable::~Variable()
 {
     delete mValueType;
@@ -1738,7 +1779,10 @@ const Token * Variable::declEndToken() const
 
 void Variable::evaluate(const Settings* settings)
 {
-    const Library * const lib = settings ? &settings->library : nullptr;
+    if (!settings)
+        return;
+
+    const Library * const lib = &settings->library;
 
     if (mNameToken)
         setFlag(fIsArray, arrayDimensions(settings));
@@ -2019,6 +2063,26 @@ Function::Function(const Tokenizer *mTokenizer,
         hasBody(true);
     }
 }
+
+Function::Function(const Token *tokenDef)
+    : tokenDef(tokenDef),
+      argDef(nullptr),
+      token(nullptr),
+      arg(nullptr),
+      retDef(nullptr),
+      retType(nullptr),
+      functionScope(nullptr),
+      nestedIn(nullptr),
+      initArgCount(0),
+      type(eFunction),
+      access(AccessControl::Public),
+      noexceptArg(nullptr),
+      throwArg(nullptr),
+      templateDef(nullptr),
+      mFlags(0)
+{
+}
+
 
 static std::string qualifiedName(const Scope *scope)
 {
@@ -2893,20 +2957,24 @@ void SymbolDatabase::printVariable(const Variable *var, const char *indent) cons
     std::cout << indent << "mTypeStartToken: " << tokenToString(var->typeStartToken(), mTokenizer) << std::endl;
     std::cout << indent << "mTypeEndToken: " << tokenToString(var->typeEndToken(), mTokenizer) << std::endl;
 
-    const Token * autoTok = nullptr;
-    std::cout << indent << "   ";
-    for (const Token * tok = var->typeStartToken(); tok != var->typeEndToken()->next(); tok = tok->next()) {
-        std::cout << " " << tokenType(tok);
-        if (tok->str() == "auto")
-            autoTok = tok;
-    }
-    std::cout << std::endl;
-    if (autoTok) {
-        const ValueType * valueType = autoTok->valueType();
-        std::cout << indent << "    auto valueType: " << valueType << std::endl;
-        if (var->typeStartToken()->valueType()) {
-            std::cout << indent << "        " << valueType->str() << std::endl;
+    if (var->typeStartToken()) {
+        const Token * autoTok = nullptr;
+        std::cout << indent << "   ";
+        for (const Token * tok = var->typeStartToken(); tok != var->typeEndToken()->next(); tok = tok->next()) {
+            std::cout << " " << tokenType(tok);
+            if (tok->str() == "auto")
+                autoTok = tok;
         }
+        std::cout << std::endl;
+        if (autoTok) {
+            const ValueType * valueType = autoTok->valueType();
+            std::cout << indent << "    auto valueType: " << valueType << std::endl;
+            if (var->typeStartToken()->valueType()) {
+                std::cout << indent << "        " << valueType->str() << std::endl;
+            }
+        }
+    } else if (var->valueType()) {
+        std::cout << indent << "   " << var->valueType()->str() << std::endl;
     }
     std::cout << indent << "mIndex: " << var->index() << std::endl;
     std::cout << indent << "mAccess: " << accessControlToString(var->accessControl()) << std::endl;

@@ -43,7 +43,6 @@ h1 {
 
 .error2 {
     background-color: #faa;
-    border: 1px dotted black;
     display: inline-block;
     margin-left: 4px;
 }

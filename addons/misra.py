@@ -23,6 +23,7 @@ import os
 import argparse
 import codecs
 import string
+from collections import defaultdict
 
 try:
     from itertools import izip as zip
@@ -32,7 +33,7 @@ except ImportError:
 
 def grouped(iterable, n):
     """s -> (s0,s1,s2,...sn-1), (sn,sn+1,sn+2,...s2n-1), (s2n,s2n+1,s2n+2,...s3n-1), ..."""
-    return zip(*[iter(iterable)]*n)
+    return zip(*[iter(iterable)] * n)
 
 
 typeBits = {
@@ -119,7 +120,7 @@ def getEssentialTypeCategory(expr):
         # TODO this is incomplete
         e1 = getEssentialTypeCategory(expr.astOperand1)
         e2 = getEssentialTypeCategory(expr.astOperand2)
-        #print('{0}: {1} {2}'.format(expr.str, e1, e2))
+        # print('{0}: {1} {2}'.format(expr.str, e1, e2))
         if e1 and e2 and e1 == e2:
             return e1
         if expr.valueType:
@@ -166,7 +167,8 @@ def getEssentialType(expr):
                 return typeToken.str
             typeToken = typeToken.next
 
-    elif expr.astOperand1 and expr.astOperand2 and expr.str in ('+', '-', '*', '/', '%', '&', '|', '^', '>>', "<<", "?", ":"):
+    elif expr.astOperand1 and expr.astOperand2 and expr.str in (
+    '+', '-', '*', '/', '%', '&', '|', '^', '>>', "<<", "?", ":"):
         if expr.astOperand1.valueType and expr.astOperand1.valueType.pointer > 0:
             return None
         if expr.astOperand2.valueType and expr.astOperand2.valueType.pointer > 0:
@@ -600,7 +602,6 @@ class Define:
         )
 
 
-
 def getAddonRules():
     """Returns dict of MISRA rules handled by this addon."""
     addon_rules = []
@@ -762,17 +763,17 @@ class MisraChecker:
         self.settings = settings
 
         # Test validation rules lists
-        self.verify_expected    = list()
-        self.verify_actual      = list()
+        self.verify_expected = list()
+        self.verify_actual = list()
 
         # List of formatted violation messages
-        self.violations         = dict()
+        self.violations = dict()
 
         # if --rule-texts is specified this dictionary
         # is loaded with descriptions of each rule
         # by rule number (in hundreds).
         # ie rule 1.2 becomes 102
-        self.ruleTexts          = dict()
+        self.ruleTexts = dict()
 
         # Dictionary of dictionaries for rules to suppress
         # Dict1 is keyed by rule number in the hundreds format of
@@ -782,7 +783,7 @@ class MisraChecker:
         # or an item of None which indicates suppress rule for the entire file.
         # The line and symbol name tuple may have None as either of its elements but
         # should not be None for both.
-        self.suppressedRules    = dict()
+        self.suppressedRules = dict()
 
         # List of suppression extracted from the dumpfile
         self.dumpfileSuppressions = None
@@ -791,7 +792,7 @@ class MisraChecker:
         self.filePrefix = None
 
         # Number of all violations suppressed per rule
-        self.suppressionStats   = dict()
+        self.suppressionStats = dict()
 
         self.stdversion = stdversion
 
@@ -964,57 +965,56 @@ class MisraChecker:
         macro = {}
         compile_name = re.compile(r'#define ([a-zA-Z0-9_]+)')
         compile_param = re.compile(r'#define ([a-zA-Z0-9_]+)[(]([a-zA-Z0-9_, ]+)[)]')
+        short_names = {}
+        macro_w_arg = []
         for dir in data.directives:
             res1 = compile_name.match(dir.str)
             if res1:
                 if dir not in macro:
                     macro.setdefault(dir, {})["name"] = []
                     macro.setdefault(dir, {})["params"] = []
-                macro[dir]["name"] = res1.group(1)
+                full_name = res1.group(1)
+                macro[dir]["name"] = full_name
+                short_name = full_name[:num_sign_chars]
+                if short_name in short_names:
+                    _dir = short_names[short_name]
+                    if full_name != macro[_dir]["name"]:
+                        self.reportError(dir, 5, 4)
+                else:
+                    short_names[short_name] = dir
             res2 = compile_param.match(dir.str)
             if res2:
                 res_gp2 = res2.group(2).split(",")
                 res_gp2 = [macroname.replace(" ", "") for macroname in res_gp2]
                 macro[dir]["params"].extend(res_gp2)
-        for mvar in macro:
-            if len(macro[mvar]["params"]) > 0:
-                for i, macroparam1 in enumerate(macro[mvar]["params"]):
-                    for j, macroparam2 in enumerate(macro[mvar]["params"]):
-                        if j > i and macroparam1[:num_sign_chars] == macroparam2[:num_sign_chars]:
-                            self.reportError(mvar, 5, 4)
-
-        for x, m_var1 in enumerate(macro):
-            for y, m_var2 in enumerate(macro):
-                if x < y and macro[m_var1]["name"] != macro[m_var2]["name"] and \
-                        macro[m_var1]["name"][:num_sign_chars] == macro[m_var2]["name"][:num_sign_chars]:
-                    if m_var1.linenr > m_var2.linenr:
+                macro_w_arg.append(dir)
+        for mvar in macro_w_arg:
+            for i, macroparam1 in enumerate(macro[mvar]["params"]):
+                for j, macroparam2 in enumerate(macro[mvar]["params"]):
+                    if j > i and macroparam1[:num_sign_chars] == macroparam2[:num_sign_chars]:
+                        self.reportError(mvar, 5, 4)
+                param = macroparam1
+                if param[:num_sign_chars] in short_names:
+                    m_var1 = short_names[param[:num_sign_chars]]
+                    if m_var1.linenr > mvar.linenr:
                         self.reportError(m_var1, 5, 4)
                     else:
-                        self.reportError(m_var2, 5, 4)
-                for param in macro[m_var2]["params"]:
-                    if macro[m_var1]["name"][:num_sign_chars] == param[:num_sign_chars]:
-                        if m_var1.linenr > m_var2.linenr:
-                            self.reportError(m_var1, 5, 4)
-                        else:
-                            self.reportError(m_var2, 5, 4)
+                        self.reportError(mvar, 5, 4)
 
     def misra_5_5(self, data):
         num_sign_chars = self.get_num_significant_naming_chars(data)
-        macroNames = []
+        macroNames = {}
         compiled = re.compile(r'#define ([A-Za-z0-9_]+)')
         for dir in data.directives:
             res = compiled.match(dir.str)
             if res:
-                macroNames.append(res.group(1))
+                macroNames[res.group(1)[:num_sign_chars]] = dir
         for var in data.variables:
-            for macro in macroNames:
-                if var.nameToken is not None:
-                    if var.nameToken.str[:num_sign_chars] == macro[:num_sign_chars]:
-                        self.reportError(var.nameToken, 5, 5)
+            if var.nameToken and var.nameToken.str[:num_sign_chars] in macroNames:
+                self.reportError(var.nameToken, 5, 5)
         for scope in data.scopes:
-            for macro in macroNames:
-                if scope.className and scope.className[:num_sign_chars] == macro[:num_sign_chars]:
-                    self.reportError(scope.bodyStart, 5, 5)
+            if scope.className and scope.className[:num_sign_chars] in macroNames:
+                self.reportError(scope.bodyStart, 5, 5)
 
     def misra_7_1(self, rawTokens):
         compiled = re.compile(r'^0[0-7]+$')
@@ -1073,8 +1073,8 @@ class MisraChecker:
                 continue
 
             for t1, t2 in itertools.product(
-                list(getTernaryOperandsRecursive(token.astOperand1) or [token.astOperand1]),
-                list(getTernaryOperandsRecursive(token.astOperand2) or [token.astOperand2]),
+                    list(getTernaryOperandsRecursive(token.astOperand1) or [token.astOperand1]),
+                    list(getTernaryOperandsRecursive(token.astOperand2) or [token.astOperand2]),
             ):
                 e1 = getEssentialTypeCategory(t1)
                 e2 = getEssentialTypeCategory(t2)
@@ -1199,11 +1199,11 @@ class MisraChecker:
             if vt1.type == 'void' or vt2.type == 'void':
                 continue
             if (vt1.pointer > 0 and vt1.type == 'record' and
-                vt2.pointer > 0 and vt2.type == 'record' and
+                    vt2.pointer > 0 and vt2.type == 'record' and
                     vt1.typeScopeId != vt2.typeScopeId):
                 self.reportError(token, 11, 3)
             elif (vt1.pointer == vt2.pointer and vt1.pointer > 0 and
-                    vt1.type != vt2.type and vt1.type != 'char'):
+                  vt1.type != vt2.type and vt1.type != 'char'):
                 self.reportError(token, 11, 3)
 
     def misra_11_4(self, data):
@@ -1216,7 +1216,7 @@ class MisraChecker:
                 continue
             if vt2.pointer > 0 and vt1.pointer == 0 and (vt1.isIntegral() or vt1.isEnum()) and vt2.type != 'void':
                 self.reportError(token, 11, 4)
-            elif vt1.pointer > 0 and vt2.pointer == 0 and (vt2.isIntegral() or vt2.isEnum())and vt1.type != 'void':
+            elif vt1.pointer > 0 and vt2.pointer == 0 and (vt2.isIntegral() or vt2.isEnum()) and vt1.type != 'void':
                 self.reportError(token, 11, 4)
 
     def misra_11_5(self, data):
@@ -1230,7 +1230,8 @@ class MisraChecker:
                     if vt1.pointer > 0 and vt1.type != 'void' and vt2.pointer == vt1.pointer and vt2.type == 'void':
                         self.reportError(token, 11, 5)
                 continue
-            if token.astOperand1.astOperand1 and token.astOperand1.astOperand1.str in ('malloc', 'calloc', 'realloc', 'free'):
+            if token.astOperand1.astOperand1 and token.astOperand1.astOperand1.str in (
+            'malloc', 'calloc', 'realloc', 'free'):
                 continue
             vt1 = token.valueType
             vt2 = token.astOperand1.valueType
@@ -1269,8 +1270,8 @@ class MisraChecker:
                     vt1.type != 'void'):
                 self.reportError(token, 11, 7)
             elif (vt1.pointer > 0 and vt2.pointer == 0 and
-                    not vt2.isIntegral() and not vt2.isEnum() and
-                    vt1.type != 'void'):
+                  not vt2.isIntegral() and not vt2.isEnum() and
+                  vt1.type != 'void'):
                 self.reportError(token, 11, 7)
 
     def misra_11_8(self, data):
@@ -1381,7 +1382,7 @@ class MisraChecker:
         # initialization lists and function calls, e.g.:
         # struct S a = {1, 2, 3}, b, c = foo(1, 2), d;
         #                       ^                 ^
-        end_tokens_map = {}
+        end_tokens_map = defaultdict(set)
 
         skip_to = None
         for token in data.tokenlist:
@@ -1399,10 +1400,8 @@ class MisraChecker:
             # Save end tokens from function calls in initialization
             if simpleMatch(token, ') ;'):
                 if (token.isExpandedMacro):
-                    end_tokens_map.setdefault(token.next.linenr, set())
-                    end_tokens_map[token.linenr].add(token.next.column)
+                    end_tokens_map[token.next.linenr].add(token.next.column)
                 else:
-                    end_tokens_map.setdefault(token.linenr, set())
                     end_tokens_map[token.linenr].add(token.column)
             if token.str != ',':
                 continue
@@ -1410,7 +1409,6 @@ class MisraChecker:
                 if token.astParent.str in ('(', '{'):
                     end_token = token.astParent.link
                     if end_token:
-                        end_tokens_map.setdefault(end_token.linenr, set())
                         end_tokens_map[end_token.linenr].add(end_token.column)
                     continue
                 elif token.astParent.str == ',':
@@ -1461,7 +1459,6 @@ class MisraChecker:
                     cur_line = min(maybe_map)
             if state == STATE_CHECK and tok.str == ',':
                 self.reportError(tok, 12, 3)
-
 
     def misra_12_4(self, data):
         if typeBits['INT'] == 16:
@@ -1583,7 +1580,6 @@ class MisraChecker:
                             self.reportError(tn, 14, 2)
                 tn = tn.next
 
-
     def misra_14_4(self, data):
         for token in data.tokenlist:
             if token.str != '(':
@@ -1697,10 +1693,10 @@ class MisraChecker:
                 self.reportError(token, 16, 2)
 
     def misra_16_3(self, rawTokens):
-        STATE_NONE = 0   # default state, not in switch case/default block
+        STATE_NONE = 0  # default state, not in switch case/default block
         STATE_BREAK = 1  # break/comment is seen but not its ';'
-        STATE_OK = 2     # a case/default is allowed (we have seen 'break;'/'comment'/'{'/attribute)
-        STATE_SWITCH = 3 # walking through switch statement scope
+        STATE_OK = 2  # a case/default is allowed (we have seen 'break;'/'comment'/'{'/attribute)
+        STATE_SWITCH = 3  # walking through switch statement scope
 
         state = STATE_NONE
         end_swtich_token = None  # end '}' for the switch scope
@@ -1805,7 +1801,8 @@ class MisraChecker:
 
     def misra_17_1(self, data):
         for token in data.tokenlist:
-            if isFunctionCall(token) and token.astOperand1.str in ('va_list', 'va_arg', 'va_start', 'va_end', 'va_copy'):
+            if isFunctionCall(token) and token.astOperand1.str in (
+            'va_list', 'va_arg', 'va_start', 'va_end', 'va_copy'):
                 self.reportError(token, 17, 1)
             elif token.str == 'va_list':
                 self.reportError(token, 17, 1)
@@ -1953,15 +1950,20 @@ class MisraChecker:
                 self.reportError(token, 19, 2)
 
     def misra_20_1(self, data):
+        token_in_file = {}
+        for token in data.tokenlist:
+            if token.file not in token_in_file:
+                token_in_file[token.file] = int(token.linenr)
+            else:
+                token_in_file[token.file] = min(token_in_file[token.file], int(token.linenr))
+
         for directive in data.directives:
             if not directive.str.startswith('#include'):
                 continue
-            for token in data.tokenlist:
-                if token.file != directive.file:
-                    continue
-                if int(token.linenr) < int(directive.linenr):
-                    self.reportError(directive, 20, 1)
-                    break
+            if directive.file not in token_in_file:
+                continue
+            if token_in_file[directive.file] < int(directive.linenr):
+                self.reportError(directive, 20, 1)
 
     def misra_20_2(self, data):
         for directive in data.directives:
@@ -2044,7 +2046,7 @@ class MisraChecker:
             if mo:
                 dir = mo.group(1)
             if dir not in ['define', 'elif', 'else', 'endif', 'error', 'if', 'ifdef', 'ifndef', 'include',
-                        'pragma', 'undef', 'warning']:
+                           'pragma', 'undef', 'warning']:
                 self.reportError(directive, 20, 13)
 
     def misra_20_14(self, data):
@@ -2052,7 +2054,8 @@ class MisraChecker:
         # the size increases when there are inner #if directives.
         ifStack = []
         for directive in data.directives:
-            if directive.str.startswith('#if ') or directive.str.startswith('#ifdef ') or directive.str.startswith('#ifndef '):
+            if directive.str.startswith('#if ') or directive.str.startswith('#ifdef ') or directive.str.startswith(
+                    '#ifndef '):
                 ifStack.append(directive)
             elif directive.str == '#else' or directive.str.startswith('#elif '):
                 if len(ifStack) == 0:
@@ -2191,9 +2194,9 @@ class MisraChecker:
         return self.violations.keys()
 
     def addSuppressedRule(self, ruleNum,
-                          fileName   = None,
-                          lineNumber = None,
-                          symbolName = None):
+                          fileName=None,
+                          lineNumber=None,
+                          symbolName=None):
         """
         Add a suppression to the suppressions data structure
 
@@ -2384,7 +2387,8 @@ class MisraChecker:
                     else:
                         item_str = str(item[0])
 
-                    outlist.append("%s: %s: %s (%d locations suppressed)" % (float(ruleNum)/100, fname, item_str, self.suppressionStats.get(ruleNum, 0)))
+                    outlist.append("%s: %s: %s (%d locations suppressed)" % (
+                    float(ruleNum) / 100, fname, item_str, self.suppressionStats.get(ruleNum, 0)))
 
         for line in sorted(outlist, reverse=True):
             print("  %s" % line)
@@ -2408,7 +2412,7 @@ class MisraChecker:
             if res:
                 num1 = int(res.group(1))
                 num2 = int(res.group(2))
-                ruleNum = (num1*100)+num2
+                ruleNum = (num1 * 100) + num2
 
                 self.addSuppressedRule(ruleNum)
 
@@ -2476,7 +2480,7 @@ class MisraChecker:
 
         rule = None
         have_severity = False
-        severity_loc  = 0
+        severity_loc = 0
 
         for line in file_stream:
 
@@ -2730,7 +2734,9 @@ def get_args():
     """Generates list of command-line arguments acceptable by misra.py script."""
     parser = cppcheckdata.ArgumentParser()
     parser.add_argument("--rule-texts", type=str, help=RULE_TEXTS_HELP)
-    parser.add_argument("--verify-rule-texts", help="Verify that all supported rules texts are present in given file and exit.", action="store_true")
+    parser.add_argument("--verify-rule-texts",
+                        help="Verify that all supported rules texts are present in given file and exit.",
+                        action="store_true")
     parser.add_argument("--suppress-rules", type=str, help=SUPPRESS_RULES_HELP)
     parser.add_argument("--no-summary", help="Hide summary of violations", action="store_true")
     parser.add_argument("--show-suppressed-rules", help="Print rule suppression list", action="store_true")
@@ -2781,7 +2787,7 @@ def main():
 
         if settings.verify:
             verify_expected = checker.get_verify_expected()
-            verify_actual   = checker.get_verify_actual()
+            verify_actual = checker.get_verify_actual()
 
             for expected in verify_expected:
                 if expected not in verify_actual:
@@ -2808,7 +2814,8 @@ def main():
 
             if settings.show_summary:
                 print("\nMISRA rules violations found:\n\t%s\n" % (
-                    "\n\t".join(["%s: %d" % (viol, len(checker.get_violations(viol))) for viol in checker.get_violation_types()])))
+                    "\n\t".join(["%s: %d" % (viol, len(checker.get_violations(viol))) for viol in
+                                 checker.get_violation_types()])))
 
                 rules_violated = {}
                 for severity, ids in checker.get_violations():
@@ -2816,7 +2823,7 @@ def main():
                         rules_violated[misra_id] = rules_violated.get(misra_id, 0) + 1
                 print("MISRA rules violated:")
                 convert = lambda text: int(text) if text.isdigit() else text
-                misra_sort = lambda key: [ convert(c) for c in re.split(r'[\.-]([0-9]*)', key) ]
+                misra_sort = lambda key: [convert(c) for c in re.split(r'[\.-]([0-9]*)', key)]
                 for misra_id in sorted(rules_violated.keys(), key=misra_sort):
                     res = re.match(r'misra-c2012-([0-9]+)\\.([0-9]+)', misra_id)
                     if res is None:
