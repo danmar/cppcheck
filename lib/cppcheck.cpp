@@ -1307,7 +1307,7 @@ bool CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings 
 {
     std::string allIncludes = "";
     std::string allDefines = "-D"+fileSettings.defines;
-    for (std::string inc : fileSettings.includePaths) {
+    for (const std::string &inc : fileSettings.includePaths) {
         allIncludes = allIncludes + "-I"" + inc + "" ";
     }
     allIncludes = allIncludes + "-I. ";
@@ -1321,31 +1321,22 @@ bool CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings 
 
     const std::string cmd = "clang-tidy -quiet -checks=*,-clang-analyzer-*,-llvm* " + fileSettings.filename + " -- " + allIncludes + allDefines;
 
-    #ifdef _WIN32
-        std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
-    #else
-        std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
-    #endif
-    if (!pipe)
-        throw InternalError(nullptr, "popen failed (command: '" + cmd + "')");
-    char buffer[1024];
-    std::string result;
-    while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr)
-    {
-        result += buffer;
+    std::pair<bool, std::string> result = executeCommand(cmd);
+    if (!result.first) {
+       std::cerr << "Failed to execute '" + cmd + "'" << std::endl;
+       return 0;
     }
 
     // parse output and create error messages
-    std::istringstream istr(result);
+    std::istringstream istr(result.second);
     std::string line;
 
     while (std::getline(istr, line)) {
         if (line.find("error") != std::string::npos || line.find("warning") != std::string::npos) {
-            std::vector<std::string> lineParts;
-            splitString(line, lineParts, ' ');
-            size_t endColumnPos = lineParts[0].find_last_of(':', lineParts[0].length()-1);
-            size_t endLineNumPos = lineParts[0].find_last_of(':', endColumnPos-1);
-            size_t endNamePos = lineParts[0].find_last_of(':', endLineNumPos-1);
+            std::vector<std::string> lineParts = split(line, " ");
+            std::size_t endColumnPos = lineParts[0].find_last_of(':', lineParts[0].length()-1);
+            std::size_t endLineNumPos = lineParts[0].find_last_of(':', endColumnPos-1);
+            std::size_t endNamePos = lineParts[0].find_last_of(':', endLineNumPos-1);
             std::string fixedpath = Path::simplifyPath(lineParts[0].substr(0, endNamePos));
             const std::string strLineNumber = lineParts[0].substr(endNamePos+1, endLineNumPos-endNamePos-1);
             const std::string strColumNumber = lineParts[0].substr(endLineNumPos + 1, endColumnPos-endLineNumPos-1);
@@ -1354,7 +1345,7 @@ bool CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings 
             fixedpath = Path::toNativeSeparators(fixedpath);
 
 
-            for (std::string id : lineParts) {
+            for (const std::string &id : lineParts) {
                 if (id[0] == '[') {
                     ErrorLogger::ErrorMessage errmsg;
                     errmsg.callStack.emplace_back(ErrorLogger::ErrorMessage::FileLocation(fixedpath, lineNumber, column));
@@ -1374,8 +1365,8 @@ bool CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings 
                         errmsg.severity = Severity::SeverityType::style;
 
                     errmsg.file0 = fixedpath;
-                    size_t startOfMsg = line.find_last_of(':')+1;
-                    size_t endOfMsg = line.find('[')-1;
+                    std::size_t startOfMsg = line.find_last_of(':')+1;
+                    std::size_t endOfMsg = line.find('[')-1;
 
                     errmsg.setmsg(line.substr(startOfMsg, endOfMsg - startOfMsg));
                     reportErr(errmsg);
