@@ -183,18 +183,18 @@ matrix:
         - travis_retry sudo apt-get update -qq
         - travis_retry sudo apt-get install libxml2-utils libpcre3
       script:
-        - CXX=g++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck testrunner -j 2 -s
+        - CXX=g++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck check -j 2 -s
         - make clean
-        - CXX=clang++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck testrunner -j 2 -s
+        - CXX=clang++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck check -j 2 -s
 # check if cppcheck builds on osx
     - name: "make osx"
       os: osx
       before_install:
         - true
       script:
-        - CXX=g++ CXXFLAGS="${ORIGINAL_CXXFLAGS}"  make cppcheck testrunner -j 2 -s
+        - CXX=g++ CXXFLAGS="${ORIGINAL_CXXFLAGS}"  make cppcheck check -j 2 -s
         - make clean
-        - CXX=clang++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck testrunner -j 2 -s
+        - CXX=clang++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck check -j 2 -s
 
 script:
 # fail the entire job as soon as one of the subcommands exits non-zero to save time and resources
