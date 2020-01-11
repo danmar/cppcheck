@@ -19,7 +19,7 @@
 
 #include "check.h"
 #include "checkunusedfunctions.h"
-#include "clangastdump.h"
+#include "clangimport.h"
 #include "ctu.h"
 #include "library.h"
 #include "mathlib.h"
@@ -242,13 +242,15 @@ const char * CppCheck::extraVersion()
 unsigned int CppCheck::check(const std::string &path)
 {
     if (mSettings.clang) {
+        mErrorLogger.reportOut(std::string("Checking ") + path + "...");
+
         const std::string clang = Path::isCPP(path) ? "clang++" : "clang";
 
         /* Experimental: import clang ast dump */
-        std::ofstream fout("temp.c");
+        std::ofstream fout("__temp__.c");
         fout << "int x;\n";
         fout.close();
-        const std::string cmd1 = clang + " -v -fsyntax-only temp.c 2>&1";
+        const std::string cmd1 = clang + " -v -fsyntax-only __temp__.c 2>&1";
         const std::pair<bool, std::string> res1 = executeCommand(cmd1);
         if (!res1.first) {
             std::cerr << "Failed to execute '" + cmd1 + "'" << std::endl;
@@ -269,6 +271,8 @@ unsigned int CppCheck::check(const std::string &path)
             }
         }
 
+        //std::cout << "Clang flags: " << flags << std::endl;
+
         for (const std::string &i: mSettings.includePaths)
             flags += "-I" + i + " ";
 
@@ -281,11 +285,16 @@ unsigned int CppCheck::check(const std::string &path)
         //std::cout << "Checking Clang ast dump:\n" << res.second << std::endl;
         std::istringstream ast(res.second);
         Tokenizer tokenizer(&mSettings, this);
-        clangastdump::parseClangAstDump(&tokenizer, ast);
-        //ValueFlow::setValues(&tokenizer.list, const_cast<SymbolDatabase *>(tokenizer.getSymbolDatabase()), this, &mSettings);
+        tokenizer.list.appendFileIfNew(path);
+        clangimport::parseClangAstDump(&tokenizer, ast);
+        ValueFlow::setValues(&tokenizer.list, const_cast<SymbolDatabase *>(tokenizer.getSymbolDatabase()), this, &mSettings);
         if (mSettings.debugnormal)
             tokenizer.printDebugOutput(1);
-        ExprEngine::runChecks(this, &tokenizer, &mSettings);
+
+#ifdef USE_Z3
+        if (mSettings.verification)
+            ExprEngine::runChecks(this, &tokenizer, &mSettings);
+#endif
         return 0;
     }
 

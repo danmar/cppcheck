@@ -14,16 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "clangastdump.h"
+#include "clangimport.h"
 #include "settings.h"
 #include "tokenize.h"
 #include "testsuite.h"
 
 
-class TestClangAstDump: public TestFixture {
+class TestClangImport: public TestFixture {
 public:
-    TestClangAstDump()
-        :TestFixture("TestClangAstDump") {
+    TestClangImport()
+        :TestFixture("TestClangImport") {
     }
 
 
@@ -35,11 +35,18 @@ private:
         TEST_CASE(classTemplateDecl1);
         TEST_CASE(classTemplateDecl2);
         TEST_CASE(continueStmt);
+        TEST_CASE(cstyleCastExpr);
         TEST_CASE(cxxBoolLiteralExpr);
         TEST_CASE(cxxConstructorDecl);
+        TEST_CASE(cxxConstructExpr1);
+        TEST_CASE(cxxConstructExpr2);
         TEST_CASE(cxxMemberCall);
+        TEST_CASE(cxxMethodDecl);
+        TEST_CASE(cxxNullPtrLiteralExpr);
         TEST_CASE(cxxOperatorCallExpr);
-        TEST_CASE(cxxStaticCastExpr);
+        TEST_CASE(cxxRecordDecl1);
+        TEST_CASE(cxxStaticCastExpr1);
+        TEST_CASE(cxxStaticCastExpr2);
         TEST_CASE(forStmt);
         TEST_CASE(funcdecl1);
         TEST_CASE(funcdecl2);
@@ -68,7 +75,7 @@ private:
         Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(clang);
-        clangastdump::parseClangAstDump(&tokenizer, istr);
+        clangimport::parseClangAstDump(&tokenizer, istr);
         return tokenizer.tokens()->stringifyList(true, false, false, true, false);
     }
 
@@ -174,6 +181,13 @@ private:
         ASSERT_EQUALS("void foo ( ) { while ( 0 ) { continue ; } }", parse(clang));
     }
 
+    void cstyleCastExpr() {
+        const char clang[] = "`-VarDecl 0x2336aa0 <1.c:1:1, col:14> col:5 x 'int' cinit\n"
+                             "  `-CStyleCastExpr 0x2336b70 <col:9, col:14> 'int' <NoOp>\n"
+                             "    `-CharacterLiteral 0x2336b40 <col:14> 'int' 97";
+        ASSERT_EQUALS("int x@1 = ( int ) 'a' ;", parse(clang));
+    }
+
     void cxxBoolLiteralExpr() {
         const char clang[] = "`-VarDecl 0x3940608 <a.cpp:1:1, col:10> col:6 x 'bool' cinit\n"
                              "  `-CXXBoolLiteralExpr 0x39406a8 <col:10> 'bool' true";
@@ -191,6 +205,25 @@ private:
         ASSERT_EQUALS("void C ( ) { this . x@1 = 0 ; } int x@1", parse(clang));
     }
 
+    void cxxConstructExpr1() {
+        const char clang[] = "`-FunctionDecl 0x2dd7940 <line:2:1, col:30> col:5 f 'Foo (Foo)'\n"
+                             "  |-ParmVarDecl 0x2dd7880 <col:7, col:11> col:11 used foo 'Foo'\n"
+                             "  `-CompoundStmt 0x2dd80c0 <col:16, col:30>\n"
+                             "    `-ReturnStmt 0x2dd80a8 <col:18, col:25>\n"
+                             "      `-CXXConstructExpr 0x2dd8070 <col:25> 'Foo' 'void (Foo &&) noexcept'\n"
+                             "        `-ImplicitCastExpr 0x2dd7f28 <col:25> 'Foo' xvalue <NoOp>\n"
+                             "          `-DeclRefExpr 0x2dd7a28 <col:25> 'Foo' lvalue ParmVar 0x2dd7880 'foo' 'Foo'";
+        ASSERT_EQUALS("Foo f ( Foo foo@1 ) { return foo@1 ; }", parse(clang));
+    }
+
+    void cxxConstructExpr2() {
+        const char clang[] = "`-FunctionDecl 0x3e44180 <1.cpp:2:1, col:30> col:13 f 'std::string ()'\n"
+                             "  `-CompoundStmt 0x3e4cb80 <col:17, col:30>\n"
+                             "    `-ReturnStmt 0x3e4cb68 <col:19, col:27>\n"
+                             "      `-CXXConstructExpr 0x3e4cb38 <col:26, col:27> 'std::string':'std::__cxx11::basic_string<char>' '....' list";
+        ASSERT_EQUALS("std::string f ( ) { return std::string ( ) ; }", parse(clang));
+    }
+
     void cxxMemberCall() {
         const char clang[] = "`-FunctionDecl 0x320dc80 <line:2:1, col:33> col:6 bar 'void ()'\n"
                              "  `-CompoundStmt 0x323bb08 <col:12, col:33>\n"
@@ -201,6 +234,25 @@ private:
                              "      `-MemberExpr 0x323ba80 <col:24, col:26> '<bound member function type>' .foo 0x320e160\n"
                              "        `-DeclRefExpr 0x323ba58 <col:24> 'C<int>':'C<int>' lvalue Var 0x320df28 'c' 'C<int>':'C<int>'";
         ASSERT_EQUALS("void bar ( ) { C<int> c@1 ; c@1 . foo ( ) ; }", parse(clang));
+    }
+
+    void cxxMethodDecl() {
+        const char clang[] = "|-CXXMethodDecl 0x55c786f5ad60 <line:56:5, col:179> col:10 analyzeFile '_Bool (const std::string &, const std::string &, const std::string &, unsigned long long, std::list<ErrorLogger::ErrorMessage> *)'\n"
+                             "| |-ParmVarDecl 0x55c786f5a4c8 <col:22, col:41> col:41 buildDir 'const std::string &'\n"
+                             "| |-ParmVarDecl 0x55c786f5a580 <col:51, col:70> col:70 sourcefile 'const std::string &'\n"
+                             "| |-ParmVarDecl 0x55c786f5a638 <col:82, col:101> col:101 cfg 'const std::string &'\n"
+                             "| |-ParmVarDecl 0x55c786f5a6a8 <col:106, col:125> col:125 checksum 'unsigned long long'\n"
+                             "| |-ParmVarDecl 0x55c786f5ac00 <col:135, col:173> col:173 errors 'std::list<ErrorLogger::ErrorMessage> *'\n"
+                             "  `-CompoundStmt 0x0 <>";
+        ASSERT_EQUALS("_Bool analyzeFile ( const std::string & buildDir@1 , const std::string & sourcefile@2 , const std::string & cfg@3 , unsigned long long checksum@4 , std::list<ErrorLogger::ErrorMessage> * errors@5 ) { }", parse(clang));
+    }
+
+
+    void cxxNullPtrLiteralExpr() {
+        const char clang[] = "`-VarDecl 0x2a7d650 <1.cpp:1:1, col:17> col:13 p 'const char *' cinit\n"
+                             "  `-ImplicitCastExpr 0x2a7d708 <col:17> 'const char *' <NullToPointer>\n"
+                             "    `-CXXNullPtrLiteralExpr 0x2a7d6f0 <col:17> 'nullptr_t'";
+        ASSERT_EQUALS("const char * p@1 = nullptr ;", parse(clang));
     }
 
     void cxxOperatorCallExpr() {
@@ -217,11 +269,23 @@ private:
         ASSERT_EQUALS("void foo ( ) { C c@1 ; c@1 . operator= ( 4 ) ; }", parse(clang));
     }
 
-    void cxxStaticCastExpr() {
+    void cxxRecordDecl1() {
+        const char clang[] = "`-CXXRecordDecl 0x34cc5f8 <1.cpp:2:1, col:7> col:7 class Foo";
+        ASSERT_EQUALS("", parse(clang));
+    }
+
+    void cxxStaticCastExpr1() {
         const char clang[] = "`-VarDecl 0x2e0e650 <a.cpp:2:1, col:27> col:5 a 'int' cinit\n"
                              "  `-CXXStaticCastExpr 0x2e0e728 <col:9, col:27> 'int' static_cast<int> <NoOp>\n"
                              "    `-IntegerLiteral 0x2e0e6f0 <col:26> 'int' 0";
         ASSERT_EQUALS("int a@1 = static_cast<int> ( 0 ) ;", parse(clang));
+    }
+
+    void cxxStaticCastExpr2() {
+        const char clang[] = "`-VarDecl 0x2e0e650 <a.cpp:2:1, col:27> col:5 a 'int' cinit\n"
+                             "  `-CXXStaticCastExpr 0x3e453e8 <col:12> 'std::_Rb_tree_iterator<std::pair<const std::__cxx11::basic_string<char>, Library::AllocFunc> >' xvalue static_cast<struct std::_Rb_tree_iterator<struct std::pair<const class std::__cxx11::basic_string<char>, struct Library::AllocFunc> > &&> <NoOp>\n"
+                             "    `-DeclRefExpr 0x3e453b0 <col:12> 'std::_Rb_tree_iterator<std::pair<const std::__cxx11::basic_string<char>, Library::AllocFunc> >' lvalue ParmVar 0x3e45250 '' 'std::_Rb_tree_iterator<std::pair<const std::__cxx11::basic_string<char>, Library::AllocFunc> > &&'";
+        ASSERT_EQUALS("int a@1 = static_cast<structstd::_Rb_tree_iterator<structstd::pair<constclassstd::__cxx11::basic_string<char>,structLibrary::AllocFunc>>&&> ( <NoName> ) ;", parse(clang));
     }
 
     void forStmt() {
@@ -469,4 +533,4 @@ private:
     }
 };
 
-REGISTER_TEST(TestClangAstDump)
+REGISTER_TEST(TestClangImport)

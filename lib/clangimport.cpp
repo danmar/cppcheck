@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "clangastdump.h"
+#include "clangimport.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "tokenize.h"
@@ -35,10 +35,13 @@ static const std::string ClassTemplateDecl = "ClassTemplateDecl";
 static const std::string ClassTemplateSpecializationDecl = "ClassTemplateSpecializationDecl";
 static const std::string CompoundStmt = "CompoundStmt";
 static const std::string ContinueStmt = "ContinueStmt";
+static const std::string CStyleCastExpr = "CStyleCastExpr";
 static const std::string CXXBoolLiteralExpr = "CXXBoolLiteralExpr";
 static const std::string CXXConstructorDecl = "CXXConstructorDecl";
+static const std::string CXXConstructExpr = "CXXConstructExpr";
 static const std::string CXXMemberCallExpr = "CXXMemberCallExpr";
 static const std::string CXXMethodDecl = "CXXMethodDecl";
+static const std::string CXXNullPtrLiteralExpr = "CXXNullPtrLiteralExpr";
 static const std::string CXXOperatorCallExpr = "CXXOperatorCallExpr";
 static const std::string CXXRecordDecl = "CXXRecordDecl";
 static const std::string CXXStaticCastExpr = "CXXStaticCastExpr";
@@ -84,17 +87,41 @@ static std::vector<std::string> splitString(const std::string &line)
             pos2 = line.find("\'", pos1+1);
             if (pos2 < (int)line.size() - 3 && line.compare(pos2, 3, "\':\'", 0, 3) == 0)
                 pos2 = line.find("\'", pos2 + 3);
-        } else
+        } else {
             pos2 = line.find(" ", pos1) - 1;
-        ret.push_back(line.substr(pos1, pos2+1-pos1));
-        if (pos2 == std::string::npos)
+            if (std::isalpha(line[pos1]) &&
+                line.find("<", pos1) < pos2 &&
+                line.find("<<",pos1) != line.find("<",pos1) &&
+                line.find(">", pos1) != std::string::npos &&
+                line.find(">", pos1) > pos2) {
+                int level = 0;
+                for (pos2 = pos1; pos2 < line.size(); ++pos2) {
+                    if (line[pos2] == '<')
+                        ++level;
+                    else if (line[pos2] == '>') {
+                        if (level <= 1)
+                            break;
+                        --level;
+                    }
+                }
+                if (level > 1 && pos2 + 1 >= line.size())
+                    return std::vector<std::string> {};
+                pos2 = line.find(" ", pos2);
+                if (pos2 != std::string::npos)
+                    --pos2;
+            }
+        }
+        if (pos2 == std::string::npos) {
+            ret.push_back(line.substr(pos1));
             break;
+        }
+        ret.push_back(line.substr(pos1, pos2+1-pos1));
         pos1 = line.find_first_not_of(" ", pos2 + 1);
     }
     return ret;
 }
 
-namespace clangastdump {
+namespace clangimport {
     struct Data {
         struct Decl {
             Decl(Token *def, Variable *var) : def(def), function(nullptr), var(var) {}
@@ -109,6 +136,7 @@ namespace clangastdump {
             Variable *var;
         };
 
+        const Settings *mSettings = nullptr;
         SymbolDatabase *mSymbolDatabase = nullptr;
 
         void varDecl(const std::string &addr, Token *def, Variable *var) {
@@ -116,7 +144,8 @@ namespace clangastdump {
             mDeclMap.insert(std::pair<std::string, Decl>(addr, decl));
             def->varId(++mVarId);
             def->variable(var);
-            var->setValueType(ValueType(ValueType::Sign::SIGNED, ValueType::Type::INT, 0));
+            if (def->valueType())
+                var->setValueType(*def->valueType());
             notFound(addr);
         }
 
@@ -176,14 +205,17 @@ namespace clangastdump {
         void dumpAst(int num = 0, int indent = 0) const;
         void createTokens1(TokenList *tokenList) {
             //dumpAst();
-            setLocations(tokenList, 0, 1, 1);
+            if (!tokenList->back())
+                setLocations(tokenList, 0, 1, 1);
+            else
+                setLocations(tokenList, tokenList->back()->fileIndex(), tokenList->back()->linenr(), 1);
             createTokens(tokenList);
             if (nodeType == VarDecl || nodeType == RecordDecl || nodeType == TypedefDecl)
                 addtoken(tokenList, ";");
         }
     private:
         Token *createTokens(TokenList *tokenList);
-        Token *addtoken(TokenList *tokenList, const std::string &str);
+        Token *addtoken(TokenList *tokenList, const std::string &str, bool valueType=true);
         void addTypeTokens(TokenList *tokenList, const std::string &str);
         Scope *createScope(TokenList *tokenList, Scope::ScopeType scopeType, AstNodePtr astNode);
         Scope *createScope(TokenList *tokenList, Scope::ScopeType scopeType, const std::vector<AstNodePtr> &children);
@@ -206,35 +238,51 @@ namespace clangastdump {
     };
 }
 
-std::string clangastdump::AstNode::getSpelling() const
+std::string clangimport::AstNode::getSpelling() const
 {
-    if (mExtTokens.back() == "extern")
-        return mExtTokens[mExtTokens.size() - 3];
-    if (mExtTokens[mExtTokens.size() - 2].compare(0,4,"col:") == 0)
+    int retTypeIndex = mExtTokens.size() - 1;
+    if (nodeType == FunctionDecl) {
+        while (mExtTokens[retTypeIndex][0] != '\'')
+            retTypeIndex--;
+    }
+    const std::string &str = mExtTokens[retTypeIndex - 1];
+    if (str.compare(0,4,"col:") == 0)
         return "";
-    if ((mExtTokens[mExtTokens.size() - 2].compare(0,8,"<invalid") == 0))
+    if (str.compare(0,8,"<invalid") == 0)
         return "";
-    return mExtTokens[mExtTokens.size() - 2];
+    return str;
 }
 
-std::string clangastdump::AstNode::getType() const
+std::string clangimport::AstNode::getType() const
 {
-    if (nodeType == BinaryOperator)
-        return unquote(mExtTokens[mExtTokens.size() - 2]);
-    if (nodeType == DeclRefExpr)
-        return unquote(mExtTokens.back());
-    if (nodeType == FunctionDecl)
-        return unquote((mExtTokens.back() == "extern") ?
-                       mExtTokens[mExtTokens.size() - 2] :
-                       mExtTokens.back());
-    if (nodeType == IntegerLiteral)
-        return unquote(mExtTokens[mExtTokens.size() - 2]);
-    if (nodeType == TypedefDecl)
-        return unquote(mExtTokens.back());
-    return "";
+    int typeIndex = 1;
+    typeIndex = 1;
+    while (typeIndex < mExtTokens.size() && mExtTokens[typeIndex][0] != '\'')
+        typeIndex++;
+    if (typeIndex >= mExtTokens.size())
+        return "";
+    std::string type = mExtTokens[typeIndex];
+    if (type.find("\':\'") != std::string::npos)
+        type.erase(type.find("\':\'") + 1);
+    if (type.find(" (") != std::string::npos) {
+        std::string::size_type pos = type.find(" (");
+        type[pos] = '\'';
+        type.erase(pos+1);
+    }
+    if (type.find(" *(") != std::string::npos) {
+        std::string::size_type pos = type.find(" *(") + 2;
+        type[pos] = '\'';
+        type.erase(pos+1);
+    }
+    if (type.find(" &(") != std::string::npos) {
+        std::string::size_type pos = type.find(" &(") + 2;
+        type[pos] = '\'';
+        type.erase(pos+1);
+    }
+    return unquote(type);
 }
 
-std::string clangastdump::AstNode::getTemplateParameters() const
+std::string clangimport::AstNode::getTemplateParameters() const
 {
     if (children.empty() || children[0]->nodeType != TemplateArgument)
         return "";
@@ -251,7 +299,7 @@ std::string clangastdump::AstNode::getTemplateParameters() const
     return templateParameters + ">";
 }
 
-void clangastdump::AstNode::dumpAst(int num, int indent) const
+void clangimport::AstNode::dumpAst(int num, int indent) const
 {
     (void)num;
     std::cout << std::string(indent, ' ') << nodeType;
@@ -266,7 +314,7 @@ void clangastdump::AstNode::dumpAst(int num, int indent) const
     }
 }
 
-void clangastdump::AstNode::setLocations(TokenList *tokenList, int file, int line, int col)
+void clangimport::AstNode::setLocations(TokenList *tokenList, int file, int line, int col)
 {
     for (const std::string &ext: mExtTokens) {
         if (ext.compare(0,5,"<col:") == 0)
@@ -287,31 +335,38 @@ void clangastdump::AstNode::setLocations(TokenList *tokenList, int file, int lin
     }
 }
 
-Token *clangastdump::AstNode::addtoken(TokenList *tokenList, const std::string &str)
+Token *clangimport::AstNode::addtoken(TokenList *tokenList, const std::string &str, bool valueType)
 {
     const Scope *scope = getNestedInScope(tokenList);
     tokenList->addtoken(str, mLine, mFile);
     tokenList->back()->column(mCol);
     tokenList->back()->scope(scope);
-    if (getType() == "int")
-        tokenList->back()->setValueType(new ValueType(ValueType::Sign::SIGNED, ValueType::Type::INT, 0));
+    if (valueType)
+        setValueType(tokenList->back());
     return tokenList->back();
 }
 
-void clangastdump::AstNode::addTypeTokens(TokenList *tokenList, const std::string &str)
+void clangimport::AstNode::addTypeTokens(TokenList *tokenList, const std::string &str)
 {
+    if (str.find("\':\'") != std::string::npos) {
+        addTypeTokens(tokenList, str.substr(0, str.find("\':\'") + 1));
+        return;
+    }
+
     std::string type;
-    if (str.find(" (") != std::string::npos)
-        type = str.substr(1,str.find(" (")-1);
-    else if (str.find("\':\'") != std::string::npos)
-        type = str.substr(1, str.find("\':\'") - 1);
-    else
+    if (str.find(" (") != std::string::npos) {
+        if (str.find("<") != std::string::npos)
+            type = str.substr(1, str.find("<")) + "...>";
+        else
+            type = str.substr(1,str.find(" (")-1);
+    } else
         type = unquote(str);
+
     for (const std::string &s: splitString(type))
-        addtoken(tokenList, s);
+        addtoken(tokenList, s, false);
 }
 
-const Scope *clangastdump::AstNode::getNestedInScope(TokenList *tokenList)
+const Scope *clangimport::AstNode::getNestedInScope(TokenList *tokenList)
 {
     if (!tokenList->back())
         return &mData->mSymbolDatabase->scopeList.front();
@@ -320,32 +375,33 @@ const Scope *clangastdump::AstNode::getNestedInScope(TokenList *tokenList)
     return tokenList->back()->scope();
 }
 
-void clangastdump::AstNode::setValueType(Token *tok)
+void clangimport::AstNode::setValueType(Token *tok)
 {
-    int typeIndex = -1;
-    if (nodeType == CXXStaticCastExpr)
-        typeIndex = mExtTokens.size() - 3;
-    else if (nodeType == UnaryExprOrTypeTraitExpr)
-        typeIndex = mExtTokens.size() - 3;
-    else
+    const std::string &type = getType();
+
+    if (type.find("<") != std::string::npos) {
+        // TODO
+        tok->setValueType(new ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::NONSTD, 0));
         return;
+    }
 
     TokenList decl(nullptr);
-    addTypeTokens(&decl, mExtTokens[typeIndex]);
+    addTypeTokens(&decl, type);
+    if (!decl.front())
+        return;
 
-    if (Token::simpleMatch(decl.front(), "int"))
-        tok->setValueType(new ValueType(ValueType::Sign::SIGNED, ValueType::Type::INT, 0));
-    else if (Token::simpleMatch(decl.front(), "unsigned long"))
-        tok->setValueType(new ValueType(ValueType::Sign::UNSIGNED, ValueType::Type::LONG, 0));
+    ValueType valueType = ValueType::parseDecl(decl.front(), mData->mSettings);
+    if (valueType.type != ValueType::Type::UNKNOWN_TYPE)
+        tok->setValueType(new ValueType(valueType.sign, valueType.type, valueType.pointer, valueType.constness));
 }
 
-Scope *clangastdump::AstNode::createScope(TokenList *tokenList, Scope::ScopeType scopeType, AstNodePtr astNode)
+Scope *clangimport::AstNode::createScope(TokenList *tokenList, Scope::ScopeType scopeType, AstNodePtr astNode)
 {
     std::vector<AstNodePtr> children{astNode};
     return createScope(tokenList, scopeType, children);
 }
 
-Scope *clangastdump::AstNode::createScope(TokenList *tokenList, Scope::ScopeType scopeType, const std::vector<AstNodePtr> &children)
+Scope *clangimport::AstNode::createScope(TokenList *tokenList, Scope::ScopeType scopeType, const std::vector<AstNodePtr> &children)
 {
     SymbolDatabase *symbolDatabase = mData->mSymbolDatabase;
 
@@ -369,7 +425,7 @@ Scope *clangastdump::AstNode::createScope(TokenList *tokenList, Scope::ScopeType
     return scope;
 }
 
-Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
+Token *clangimport::AstNode::createTokens(TokenList *tokenList)
 {
     if (nodeType == ArraySubscriptExpr) {
         Token *array = children[0]->createTokens(tokenList);
@@ -402,6 +458,8 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
             return addtoken(tokenList, "\'\\n\'");
         if (c == '\t')
             return addtoken(tokenList, "\'\\t\'");
+        if (c == '\\')
+            return addtoken(tokenList, "\'\\\\\'");
         if (c < ' ' || c >= 0x80) {
             std::ostringstream hex;
             hex << std::hex << ((c>>4) & 0xf) << (c&0xf);
@@ -432,6 +490,30 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == ContinueStmt)
         return addtoken(tokenList, "continue");
+    if (nodeType == CStyleCastExpr) {
+        Token *par1 = addtoken(tokenList, "(");
+        addTypeTokens(tokenList, '\'' + getType() + '\'');
+        Token *par2 = addtoken(tokenList, ")");
+        par1->link(par2);
+        par2->link(par1);
+        par1->astOperand1(children[0]->createTokens(tokenList));
+        return par1;
+    }
+    if (nodeType == CXXBoolLiteralExpr) {
+        addtoken(tokenList, mExtTokens.back());
+        tokenList->back()->setValueType(new ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::BOOL, 0));
+        return tokenList->back();
+    }
+    if (nodeType == CXXConstructExpr) {
+        if (!children.empty())
+            return children[0]->createTokens(tokenList);
+        addTypeTokens(tokenList, '\'' + getType() + '\'');
+        Token *par1 = addtoken(tokenList, "(");
+        Token *par2 = addtoken(tokenList, ")");
+        par1->link(par2);
+        par2->link(par1);
+        return par1;
+    }
     if (nodeType == CXXConstructorDecl) {
         bool hasBody = false;
         for (AstNodePtr child: children) {
@@ -444,21 +526,19 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
             createTokensFunctionDecl(tokenList);
         return nullptr;
     }
-    if (nodeType == CXXBoolLiteralExpr) {
-        addtoken(tokenList, mExtTokens.back());
-        tokenList->back()->setValueType(new ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::BOOL, 0));
-        return tokenList->back();
-    }
     if (nodeType == CXXMethodDecl) {
         createTokensFunctionDecl(tokenList);
         return nullptr;
     }
     if (nodeType == CXXMemberCallExpr)
         return createTokensCall(tokenList);
+    if (nodeType == CXXNullPtrLiteralExpr)
+        return addtoken(tokenList, "nullptr");
     if (nodeType == CXXOperatorCallExpr)
         return createTokensCall(tokenList);
     if (nodeType == CXXRecordDecl) {
-        createTokensForCXXRecord(tokenList);
+        if (!children.empty())
+            createTokensForCXXRecord(tokenList);
         return nullptr;
     }
     if (nodeType == CXXStaticCastExpr) {
@@ -479,7 +559,8 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         return children[0]->createTokens(tokenList);
     if (nodeType == DeclRefExpr) {
         const std::string addr = mExtTokens[mExtTokens.size() - 3];
-        Token *reftok = addtoken(tokenList, unquote(mExtTokens[mExtTokens.size() - 2]));
+        std::string name = unquote(getSpelling());
+        Token *reftok = addtoken(tokenList, name.empty() ? "<NoName>" : name);
         mData->ref(addr, reftok);
         return reftok;
     }
@@ -522,9 +603,9 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
         return nullptr;
     }
     if (nodeType == IfStmt) {
-        AstNodePtr cond = children[2];
-        AstNodePtr then = children[3];
-        AstNodePtr else_ = children[4];
+        AstNodePtr cond = children[children.size() - 3];
+        AstNodePtr then = children[children.size() - 2];
+        AstNodePtr else_ = children[children.size() - 1];
         Token *iftok = addtoken(tokenList, "if");
         Token *par1 = addtoken(tokenList, "(");
         par1->astOperand1(iftok);
@@ -648,7 +729,7 @@ Token *clangastdump::AstNode::createTokens(TokenList *tokenList)
     return addtoken(tokenList, "?" + nodeType + "?");
 }
 
-Token * clangastdump::AstNode::createTokensCall(TokenList *tokenList)
+Token * clangimport::AstNode::createTokensCall(TokenList *tokenList)
 {
     int firstParam;
     Token *f;
@@ -684,15 +765,11 @@ Token * clangastdump::AstNode::createTokensCall(TokenList *tokenList)
     return par1;
 }
 
-void clangastdump::AstNode::createTokensFunctionDecl(TokenList *tokenList)
+void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
 {
     SymbolDatabase *symbolDatabase = mData->mSymbolDatabase;
-    const int nameIndex = (mExtTokens.back() == "extern") ?
-                          (mExtTokens.size() - 3) :
-                          (mExtTokens.size() - 2);
-    const int retTypeIndex = nameIndex + 1;
-    addTypeTokens(tokenList, mExtTokens[retTypeIndex]);
-    Token *nameToken = addtoken(tokenList, mExtTokens[nameIndex] + getTemplateParameters());
+    addTypeTokens(tokenList, '\'' + getType() + '\'');
+    Token *nameToken = addtoken(tokenList, getSpelling() + getTemplateParameters());
     Scope *nestedIn = const_cast<Scope *>(nameToken->scope());
     symbolDatabase->scopeList.push_back(Scope(nullptr, nullptr, nestedIn));
     Scope &scope = symbolDatabase->scopeList.back();
@@ -722,7 +799,7 @@ void clangastdump::AstNode::createTokensFunctionDecl(TokenList *tokenList)
     par1->link(par2);
     par2->link(par1);
     // Function body
-    if (!children.empty() && children.back()->nodeType == CompoundStmt) {
+    if (mFile == 0 && !children.empty() && children.back()->nodeType == CompoundStmt) {
         Token *bodyStart = addtoken(tokenList, "{");
         bodyStart->scope(&scope);
         children.back()->createTokens(tokenList);
@@ -736,7 +813,7 @@ void clangastdump::AstNode::createTokensFunctionDecl(TokenList *tokenList)
     }
 }
 
-void clangastdump::AstNode::createTokensForCXXRecord(TokenList *tokenList)
+void clangimport::AstNode::createTokensForCXXRecord(TokenList *tokenList)
 {
     Token *classToken = addtoken(tokenList, "class");
     const std::string className = mExtTokens[mExtTokens.size() - 2] + getTemplateParameters();
@@ -759,7 +836,7 @@ void clangastdump::AstNode::createTokensForCXXRecord(TokenList *tokenList)
     scope->definedType = &mData->mSymbolDatabase->typeList.back();
 }
 
-Token * clangastdump::AstNode::createTokensVarDecl(TokenList *tokenList)
+Token * clangimport::AstNode::createTokensVarDecl(TokenList *tokenList)
 {
     const std::string addr = mExtTokens.front();
     int typeIndex = mExtTokens.size() - 1;
@@ -782,7 +859,7 @@ Token * clangastdump::AstNode::createTokensVarDecl(TokenList *tokenList)
     return vartok1;
 }
 
-void clangastdump::parseClangAstDump(Tokenizer *tokenizer, std::istream &f)
+void clangimport::parseClangAstDump(Tokenizer *tokenizer, std::istream &f)
 {
     TokenList *tokenList = &tokenizer->list;
 
@@ -791,7 +868,8 @@ void clangastdump::parseClangAstDump(Tokenizer *tokenizer, std::istream &f)
     symbolDatabase->scopeList.push_back(Scope(nullptr, nullptr, nullptr));
     symbolDatabase->scopeList.back().type = Scope::ScopeType::eGlobal;
 
-    clangastdump::Data data;
+    clangimport::Data data;
+    data.mSettings = tokenizer->getSettings();
     data.mSymbolDatabase = symbolDatabase;
     std::string line;
     std::vector<AstNodePtr> tree;
