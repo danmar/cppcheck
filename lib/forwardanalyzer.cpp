@@ -92,13 +92,13 @@ struct ForwardTraversal
     };
 
     Status checkScope(const Token* endBlock, bool checkReturn=true) {
-        if (checkReturn && isReturnScope(endBlock, &settings->library))
-            return Status::Escaped;
         ForwardAnalyzer::Action a = analyzeRange(endBlock->link(), endBlock);
         if (analyzer->UpdateScope(endBlock, a.isModified())) {
             ForwardTraversal ft = *this;
             ft.updateRange(endBlock->link(), endBlock);
         }            
+        if (checkReturn && isReturnScope(endBlock, &settings->library))
+            return Status::Escaped;
         if (a.isInconclusive()) {
             return Status::Inconclusive;
         } else if (a.isModified()) {
@@ -191,7 +191,7 @@ struct ForwardTraversal
                     // Traverse else block
                     if (Token::simpleMatch(endBlock, "} else {")) {
                         if (checkElse) {
-                            Progress result = updateRange(endCond->next(), endBlock);
+                            Progress result = updateRange(endBlock->tokAt(2), endBlock->linkAt(2));
                             if (result == Progress::Break)
                                 return Progress::Break;
                         } else if (!checkThen) {
@@ -201,7 +201,7 @@ struct ForwardTraversal
                     } else {
                         tok = endBlock;
                     }
-                    if (thenStatus == Status::Escaped && elseStatus == Status::Escaped) {
+                    if (thenStatus == elseStatus && (thenStatus == Status::Escaped || thenStatus == Status::Modified)) {
                         return Progress::Break;
                     } else if (thenStatus == Status::Escaped || elseStatus == Status::Escaped) {
                         if (thenStatus == Status::Modified || elseStatus == Status::Modified) {

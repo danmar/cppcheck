@@ -2258,6 +2258,9 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
             if (Token::Match(parent, "*|[") && value.indirect <= 0)
                 return Action::Read;
 
+            if (Token::simpleMatch(tok->astParent(), "&"))
+                return Action::Invalid;
+
             if (isWritableValue() && Token::Match(parent, "%assign%") && astIsLHS(tok) && parent->astOperand2()->hasKnownValue()) {
                 const Token* rhs = parent->astOperand2();
                 const ValueFlow::Value * rhsValue = getKnownValue(rhs, value.valueKind);
@@ -2266,16 +2269,12 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
                 return Action::Write;
             }
 
+            Action read = Action::Read;
             // increment/decrement
             if (value.intvalue && Token::Match(tok->previous(), "++|-- %name%") || Token::Match(tok, "%name% ++|--")) {
-                Action write = Action::Write;
-                // const bool pre = Token::Match(tok->previous(), "++|--");
-                // if (pre)
-                //     write |= Action::Read;
-                return write;
+                return read | Action::Write;
             }
             // Check for modifications by function calls
-            Action read = Action::Read;
             bool inconclusive = false;
             if (isVariableChangedByFunctionCall(tok, value.indirect, settings, &inconclusive))
                 return read | Action::Invalid;
@@ -2354,8 +2353,11 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
             return false;
         if (scope->type == Scope::eLambda) {
             return !modified || value.isLifetimeValue();
-        } else if (scope->type == Scope::eIf || scope->type == Scope::eElse) {
-            return value.isKnown() || value.isImpossible();
+        } else if (scope->type == Scope::eIf || scope->type == Scope::eElse || scope->type == Scope::eWhile) {
+            if (value.isKnown() || value.isImpossible())
+                return true;
+            const Token* condTok = getCondTok(endBlock);
+            return !astHasVar(condTok, varid) || bifurcate(condTok, {varid}, settings);
         }
 
         return false;
@@ -2364,6 +2366,21 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
     virtual bool SkipLambda(const Token* tok) const OVERRIDE
     {
         return !value.isLifetimeValue();
+    }
+
+    static const Token* getCondTok(const Token * endBlock)
+    {
+        if (!Token::simpleMatch(endBlock, "}"))
+            return nullptr;
+        const Token * startBlock = endBlock->link();
+        if (!Token::simpleMatch(startBlock, "{"))
+            return nullptr;
+        if (Token::simpleMatch(startBlock->previous(), ")")) {
+            return startBlock->previous()->link()->astOperand2();
+        } else if (Token::simpleMatch(startBlock->tokAt(-2), "} else {")) {
+            return getCondTok(startBlock->tokAt(-2));
+        }
+        return nullptr;
     }
 };
 
