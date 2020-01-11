@@ -533,7 +533,8 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     if (nodeType == CXXOperatorCallExpr)
         return createTokensCall(tokenList);
     if (nodeType == CXXRecordDecl) {
-        createTokensForCXXRecord(tokenList);
+        if (!children.empty())
+            createTokensForCXXRecord(tokenList);
         return nullptr;
     }
     if (nodeType == CXXStaticCastExpr) {
