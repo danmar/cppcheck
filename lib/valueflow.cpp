@@ -2003,7 +2003,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symbo
             val.varId = varid;
             ValueFlow::Value val2;
             if (num==1U && Token::Match(tok,"<=|>=")) {
-                if (var->typeStartToken()->isUnsigned()) {
+                if (var->isUnsigned()) {
                     val2 = ValueFlow::Value(tok,0);
                     val2.varId = varid;
                 }
