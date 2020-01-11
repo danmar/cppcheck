@@ -167,6 +167,16 @@ static void fillProgramMemoryFromConditions(ProgramMemory& pm, const Token* tok,
     fillProgramMemoryFromConditions(pm, tok->scope(), tok, settings);
 }
 
+static void fillProgramMemoryFromConditionalExpression(ProgramMemory& pm, const Token* tok, const Settings* settings)
+{
+    const Token* parent = tok->astParent();
+    if (Token::Match(parent, "?|&&|%oror%")) {
+        programMemoryParseCondition(pm, parent->astOperand1(), tok, settings, !Token::simpleMatch(parent, "||"));        
+    } else if (Token::simpleMatch(parent, ":") && Token::simpleMatch(parent->astParent(), "?")) {
+        programMemoryParseCondition(pm, parent->astParent()->astOperand1(), tok, settings, parent->astOperand1() == tok);        
+    }
+}
+
 static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok, const ProgramMemory& state, std::unordered_map<nonneg int, ValueFlow::Value> vars)
 {
     int indentlevel = 0;

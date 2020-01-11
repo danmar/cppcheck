@@ -2289,10 +2289,20 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
         }
         return Action::None;
     }
+    bool isConditional(const Token* tok) const {
+        const Token *parent = tok->astParent();
+        while (parent && !Token::Match(parent, "%oror%|&&|:")) {
+            tok = parent;
+            parent = parent->astParent();
+        }
+        return parent && (parent->str() == ":" || parent->astOperand2() == tok);
+    }
     virtual void Update(Token* tok, Action a) OVERRIDE
     {
-        if (a.isRead())
-            setTokenValue(tok, value, settings);
+        if (a.isRead()) {
+            if (!isConditional(tok) || !value.conditional)
+                setTokenValue(tok, value, settings);
+        }
         if (a.isInconclusive())
             LowerToInconclusive();
         if (a.isWrite()) {
