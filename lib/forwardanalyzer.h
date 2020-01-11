@@ -85,6 +85,15 @@ struct ForwardAnalyzer
             return a;
         }
 
+        friend bool operator==(Action a, Action b) {
+            return a.flag == b.flag;
+        }
+
+        friend bool operator!=(Action a, Action b) {
+            return a.flag != b.flag;
+        }
+
+
     private:
 
         unsigned int flag;

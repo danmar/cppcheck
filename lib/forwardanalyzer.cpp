@@ -75,6 +75,23 @@ struct ForwardTraversal
         return Progress::Continue;
     }
 
+    template<class T, class Predicate>
+    T* findRange(T* start, const Token* end, Predicate pred) {
+        for (T *tok = start; tok && tok != end; tok = tok->next()) {
+            ForwardAnalyzer::Action action = analyzer->Analyze(tok);
+            if (pred(action))
+                return tok;
+        }
+        return nullptr;
+    }
+
+    template<class T>
+    T* findActionRange(T* start, const Token* end, ForwardAnalyzer::Action action) {
+        return findRange(start, end, [&](ForwardAnalyzer::Action a) {
+            return a == action;
+        });
+    }
+
     ForwardAnalyzer::Action analyzeRange(const Token* start, const Token* end) {
         for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
             ForwardAnalyzer::Action action = analyzer->Analyze(tok);
@@ -168,11 +185,18 @@ struct ForwardTraversal
 
                 if (Token::Match(tok, "for|while (")) {
                     Status loopStatus = checkScope(endBlock);
-                    if (loopStatus == Status::Inconclusive)
+                    if (loopStatus == Status::Inconclusive) {
                         analyzer->LowerToInconclusive();
-                    else if (loopStatus == Status::Modified)
-                        analyzer->LowerToPossible();  
-                    updateRange(endBlock->link(), endBlock);
+                    } else if (loopStatus == Status::Modified) {
+                        analyzer->LowerToPossible();
+                        Token * writeTok = findActionRange(endBlock->link(), endBlock, ForwardAnalyzer::Action::Write);
+                        const Token * nextStatement = Token::findmatch(writeTok, ";|}", endBlock);
+                        if (!Token::Match(nextStatement, ";|} break ;"))
+                            return Progress::Break;
+                        if (update(writeTok) == Progress::Break)
+                            return Progress::Break;
+                    }
+                    // updateRange(endBlock->link(), endBlock);
                     tok = endBlock;
                 } else {
                     // Check if condition is true or false
