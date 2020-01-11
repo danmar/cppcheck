@@ -144,7 +144,8 @@ namespace clangimport {
             mDeclMap.insert(std::pair<std::string, Decl>(addr, decl));
             def->varId(++mVarId);
             def->variable(var);
-            var->setValueType(*def->valueType());
+            if (def->valueType())
+                var->setValueType(*def->valueType());
             notFound(addr);
         }
 
@@ -386,6 +387,8 @@ void clangimport::AstNode::setValueType(Token *tok)
 
     TokenList decl(nullptr);
     addTypeTokens(&decl, type);
+    if (!decl.front())
+        return;
 
     ValueType valueType = ValueType::parseDecl(decl.front(), mData->mSettings);
     if (valueType.type != ValueType::Type::UNKNOWN_TYPE)
