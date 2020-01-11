@@ -339,7 +339,7 @@ void execute(const Token *expr,
                 if (intValue == 0 &&
                     expr->str() == "--" &&
                     expr->astOperand1()->variable() &&
-                    expr->astOperand1()->variable()->isUnsigned())
+                    expr->astOperand1()->variable()->typeStartToken()->isUnsigned())
                     *error = true; // overflow
                 *result = intValue + (expr->str() == "++" ? 1 : -1);
                 programMemory->setIntValue(expr->astOperand1()->varId(), *result);

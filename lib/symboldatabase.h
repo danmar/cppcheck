@@ -481,12 +481,6 @@ public:
     }
 
     /**
-     * Is variable unsigned.
-     * @return true only if variable _is_ unsigned. if the sign is unknown, false is returned.
-     */
-    bool isUnsigned() const;
-
-    /**
      * Does variable have a default value.
      * @return true if has a default falue, false if not
      */

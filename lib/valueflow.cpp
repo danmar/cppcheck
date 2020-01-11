@@ -1996,14 +1996,14 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symbo
             if (Token::Match(tok, "<|>")) {
                 if (num != 0)
                     continue;
-                if (var->isUnsigned())
+                if (var->valueType() && var->valueType()->sign != ValueType::Sign::UNSIGNED)
                     continue;
             }
             ValueFlow::Value val(tok, num);
             val.varId = varid;
             ValueFlow::Value val2;
             if (num==1U && Token::Match(tok,"<=|>=")) {
-                if (var->isUnsigned()) {
+                if (var->typeStartToken()->isUnsigned()) {
                     val2 = ValueFlow::Value(tok,0);
                     val2.varId = varid;
                 }
