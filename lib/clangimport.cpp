@@ -267,6 +267,16 @@ std::string clangimport::AstNode::getType() const
         type[pos] = '\'';
         type.erase(pos+1);
     }
+    if (type.find(" *(") != std::string::npos) {
+        std::string::size_type pos = type.find(" *(") + 2;
+        type[pos] = '\'';
+        type.erase(pos+1);
+    }
+    if (type.find(" &(") != std::string::npos) {
+        std::string::size_type pos = type.find(" &(") + 2;
+        type[pos] = '\'';
+        type.erase(pos+1);
+    }
     return unquote(type);
 }
 
