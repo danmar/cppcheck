@@ -1766,6 +1766,11 @@ bool Variable::isPointerArray() const
     return isArray() && nameToken() && nameToken()->previous() && (nameToken()->previous()->str() == "*");
 }
 
+bool Variable::isUnsigned() const
+{
+    return mValueType ? (mValueType->sign == ValueType::Sign::UNSIGNED) : mTypeStartToken->isUnsigned();
+}
+
 const Token * Variable::declEndToken() const
 {
     Token const * declEnd = typeStartToken();
