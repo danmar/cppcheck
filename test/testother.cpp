@@ -4296,7 +4296,7 @@ private:
               "    if ((x == 1) && (x == 0x00000001))\n"
               "        a++;\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '&&' because 'x==1' and 'x==0x00000001' represent the same value.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '&&' because 'x==1' and 'x==0x00000001' represent the same value.\n", errout.str());
 
         check("void f() {\n"
               "    enum { Four = 4 };\n"

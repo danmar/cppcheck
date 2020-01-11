@@ -945,7 +945,7 @@ private:
               "    if ((x == 1) && (x == 0x00000001))\n"
               "        a++;\n"
               "}");
-        TODO_ASSERT_EQUALS("", "[test.cpp:2]: (style) Redundant condition: If 'x == 1', the comparison 'x == 0x00000001' is always true.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f(int x) {\n"
               "    if (x == 1 && x == 3)\n"
