@@ -38,7 +38,8 @@ private:
         TEST_CASE(cstyleCastExpr);
         TEST_CASE(cxxBoolLiteralExpr);
         TEST_CASE(cxxConstructorDecl);
-        TEST_CASE(cxxConstructExpr);
+        TEST_CASE(cxxConstructExpr1);
+        TEST_CASE(cxxConstructExpr2);
         TEST_CASE(cxxMemberCall);
         TEST_CASE(cxxNullPtrLiteralExpr);
         TEST_CASE(cxxOperatorCallExpr);
@@ -202,7 +203,7 @@ private:
         ASSERT_EQUALS("void C ( ) { this . x@1 = 0 ; } int x@1", parse(clang));
     }
 
-    void cxxConstructExpr() {
+    void cxxConstructExpr1() {
         const char clang[] = "`-FunctionDecl 0x2dd7940 <line:2:1, col:30> col:5 f 'Foo (Foo)'\n"
                              "  |-ParmVarDecl 0x2dd7880 <col:7, col:11> col:11 used foo 'Foo'\n"
                              "  `-CompoundStmt 0x2dd80c0 <col:16, col:30>\n"
@@ -211,6 +212,14 @@ private:
                              "        `-ImplicitCastExpr 0x2dd7f28 <col:25> 'Foo' xvalue <NoOp>\n"
                              "          `-DeclRefExpr 0x2dd7a28 <col:25> 'Foo' lvalue ParmVar 0x2dd7880 'foo' 'Foo'";
         ASSERT_EQUALS("Foo f ( Foo foo@1 ) { return foo@1 ; }", parse(clang));
+    }
+
+    void cxxConstructExpr2() {
+        const char clang[] = "`-FunctionDecl 0x3e44180 <1.cpp:2:1, col:30> col:13 f 'std::string ()'\n"
+                             "  `-CompoundStmt 0x3e4cb80 <col:17, col:30>\n"
+                             "    `-ReturnStmt 0x3e4cb68 <col:19, col:27>\n"
+                             "      `-CXXConstructExpr 0x3e4cb38 <col:26, col:27> 'std::string':'std::__cxx11::basic_string<char>' '....' list";
+        ASSERT_EQUALS("std::string f ( ) { return std::string ( ) ; }", parse(clang));
     }
 
     void cxxMemberCall() {

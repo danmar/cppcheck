@@ -253,10 +253,15 @@ std::string clangimport::AstNode::getSpelling() const
 
 std::string clangimport::AstNode::getType() const
 {
-    int typeIndex = mExtTokens.size() - 1;
-    while (typeIndex >= 0 && mExtTokens[typeIndex][0] != '\'')
-        typeIndex--;
-    return typeIndex == -1 ? "" : unquote(mExtTokens[typeIndex]);
+    int typeIndex = 1;
+    typeIndex = 1;
+    while (typeIndex < mExtTokens.size() && mExtTokens[typeIndex][0] != '\'')
+        typeIndex++;
+    if (typeIndex >= mExtTokens.size())
+        return "";
+    if (mExtTokens[typeIndex].find("\':\'") != std::string::npos)
+        return mExtTokens[typeIndex].substr(1, mExtTokens[typeIndex].find("\':\'") - 1);
+    return unquote(mExtTokens[typeIndex]);
 }
 
 std::string clangimport::AstNode::getTemplateParameters() const
@@ -481,18 +486,6 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == ContinueStmt)
         return addtoken(tokenList, "continue");
-    if (nodeType == CXXConstructorDecl) {
-        bool hasBody = false;
-        for (AstNodePtr child: children) {
-            if (child->nodeType == CompoundStmt && !child->children.empty()) {
-                hasBody = true;
-                break;
-            }
-        }
-        if (hasBody)
-            createTokensFunctionDecl(tokenList);
-        return nullptr;
-    }
     if (nodeType == CStyleCastExpr) {
         Token *par1 = addtoken(tokenList, "(");
         addTypeTokens(tokenList, '\'' + getType() + '\'');
@@ -507,8 +500,28 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         tokenList->back()->setValueType(new ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::BOOL, 0));
         return tokenList->back();
     }
-    if (nodeType == CXXConstructExpr)
-        return children[0]->createTokens(tokenList);
+    if (nodeType == CXXConstructExpr) {
+        if (!children.empty())
+            return children[0]->createTokens(tokenList);
+        addTypeTokens(tokenList, '\'' + getType() + '\'');
+        Token *par1 = addtoken(tokenList, "(");
+        Token *par2 = addtoken(tokenList, ")");
+        par1->link(par2);
+        par2->link(par1);
+        return par1;
+    }
+    if (nodeType == CXXConstructorDecl) {
+        bool hasBody = false;
+        for (AstNodePtr child: children) {
+            if (child->nodeType == CompoundStmt && !child->children.empty()) {
+                hasBody = true;
+                break;
+            }
+        }
+        if (hasBody)
+            createTokensFunctionDecl(tokenList);
+        return nullptr;
+    }
     if (nodeType == CXXMethodDecl) {
         createTokensFunctionDecl(tokenList);
         return nullptr;

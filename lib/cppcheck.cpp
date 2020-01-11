@@ -242,6 +242,8 @@ const char * CppCheck::extraVersion()
 unsigned int CppCheck::check(const std::string &path)
 {
     if (mSettings.clang) {
+        mErrorLogger.reportOut(std::string("Checking ") + path + "...");
+
         const std::string clang = Path::isCPP(path) ? "clang++" : "clang";
 
         /* Experimental: import clang ast dump */
@@ -269,6 +271,8 @@ unsigned int CppCheck::check(const std::string &path)
             }
         }
 
+        //std::cout << "Clang flags: " << flags << std::endl;
+
         for (const std::string &i: mSettings.includePaths)
             flags += "-I" + i + " ";
 
@@ -286,7 +290,11 @@ unsigned int CppCheck::check(const std::string &path)
         //ValueFlow::setValues(&tokenizer.list, const_cast<SymbolDatabase *>(tokenizer.getSymbolDatabase()), this, &mSettings);
         if (mSettings.debugnormal)
             tokenizer.printDebugOutput(1);
-        ExprEngine::runChecks(this, &tokenizer, &mSettings);
+
+#ifdef USE_Z3
+        if (mSettings.verification)
+            ExprEngine::runChecks(this, &tokenizer, &mSettings);
+#endif
         return 0;
     }
 
