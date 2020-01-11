@@ -259,9 +259,15 @@ std::string clangimport::AstNode::getType() const
         typeIndex++;
     if (typeIndex >= mExtTokens.size())
         return "";
-    if (mExtTokens[typeIndex].find("\':\'") != std::string::npos)
-        return mExtTokens[typeIndex].substr(1, mExtTokens[typeIndex].find("\':\'") - 1);
-    return unquote(mExtTokens[typeIndex]);
+    std::string type = mExtTokens[typeIndex];
+    if (type.find("\':\'") != std::string::npos)
+        type.erase(type.find("\':\'") + 1);
+    if (type.find(" (") != std::string::npos) {
+        std::string::size_type pos = type.find(" (");
+        type[pos] = '\'';
+        type.erase(pos+1);
+    }
+    return unquote(type);
 }
 
 std::string clangimport::AstNode::getTemplateParameters() const

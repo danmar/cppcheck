@@ -41,6 +41,7 @@ private:
         TEST_CASE(cxxConstructExpr1);
         TEST_CASE(cxxConstructExpr2);
         TEST_CASE(cxxMemberCall);
+        TEST_CASE(cxxMethodDecl);
         TEST_CASE(cxxNullPtrLiteralExpr);
         TEST_CASE(cxxOperatorCallExpr);
         TEST_CASE(cxxRecordDecl1);
@@ -234,6 +235,18 @@ private:
                              "        `-DeclRefExpr 0x323ba58 <col:24> 'C<int>':'C<int>' lvalue Var 0x320df28 'c' 'C<int>':'C<int>'";
         ASSERT_EQUALS("void bar ( ) { C<int> c@1 ; c@1 . foo ( ) ; }", parse(clang));
     }
+
+    void cxxMethodDecl() {
+        const char clang[] = "|-CXXMethodDecl 0x55c786f5ad60 <line:56:5, col:179> col:10 analyzeFile '_Bool (const std::string &, const std::string &, const std::string &, unsigned long long, std::list<ErrorLogger::ErrorMessage> *)'\n"
+                             "| |-ParmVarDecl 0x55c786f5a4c8 <col:22, col:41> col:41 buildDir 'const std::string &'\n"
+                             "| |-ParmVarDecl 0x55c786f5a580 <col:51, col:70> col:70 sourcefile 'const std::string &'\n"
+                             "| |-ParmVarDecl 0x55c786f5a638 <col:82, col:101> col:101 cfg 'const std::string &'\n"
+                             "| |-ParmVarDecl 0x55c786f5a6a8 <col:106, col:125> col:125 checksum 'unsigned long long'\n"
+                             "| |-ParmVarDecl 0x55c786f5ac00 <col:135, col:173> col:173 errors 'std::list<ErrorLogger::ErrorMessage> *'\n"
+                             "  `-CompoundStmt 0x0 <>";
+        ASSERT_EQUALS("_Bool analyzeFile ( const std::string & buildDir@1 , const std::string & sourcefile@2 , const std::string & cfg@3 , unsigned long long checksum@4 , std::list<ErrorLogger::ErrorMessage> * errors@5 ) { }", parse(clang));
+    }
+
 
     void cxxNullPtrLiteralExpr() {
         const char clang[] = "`-VarDecl 0x2a7d650 <1.cpp:1:1, col:17> col:13 p 'const char *' cinit\n"
