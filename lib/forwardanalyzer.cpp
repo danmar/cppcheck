@@ -48,8 +48,8 @@ struct ForwardTraversal
 
     Progress updateConditional(Token* tok) {
         if (Token::Match(tok, "?|&&|%oror%")) {
-            const Token * condTok = tok->astOperand1();
-            if (!condTok)
+            Token * condTok = tok->astOperand1();
+            if (updateRecursive(condTok) == Progress::Break)
                 return Progress::Break;
             Token * childTok = tok->astOperand2();
             bool checkThen, checkElse;
@@ -68,7 +68,7 @@ struct ForwardTraversal
                     return Progress::Continue;
                 if (!checkElse && Token::simpleMatch(tok, "||"))
                     return Progress::Continue;
-                if (updateRecursive(childTok->astOperand2()) == Progress::Break)
+                if (updateRecursive(childTok) == Progress::Break)
                     return Progress::Break;
             }
         }
@@ -172,6 +172,8 @@ struct ForwardTraversal
                         analyzer->LowerToInconclusive();
                     else if (loopStatus == Status::Modified)
                         analyzer->LowerToPossible();  
+                    updateRange(endBlock->link(), endBlock);
+                    tok = endBlock;
                 } else {
                     // Check if condition is true or false
                     bool checkThen, checkElse;
