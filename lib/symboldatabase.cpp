@@ -5530,6 +5530,26 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             parsedecl(type->type()->typeStart, valuetype, defaultSignedness, settings);
         else if (type->str() == "const")
             valuetype->constness |= (1 << (valuetype->pointer - pointer0));
+        else if (settings->clang && type->str().find("::") != std::string::npos && type->str().size() > 2) {
+            TokenList typeTokens(settings);
+            std::string::size_type pos1 = 0;
+            do {
+                std::string::size_type pos2 = type->str().find("::", pos1);
+                if (pos2 == std::string::npos) {
+                    typeTokens.addtoken(type->str().substr(pos1), 0, 0, false);
+                    break;
+                }
+                typeTokens.addtoken(type->str().substr(pos1, pos2 - pos1), 0, 0, false);
+                typeTokens.addtoken("::", 0, 0, false);
+                pos1 = pos2 + 2;
+            }
+            while (pos1 < type->str().size());
+            const Library::Container *container = settings->library.detectContainer(typeTokens.front());
+            if (container) {
+                valuetype->type = ValueType::Type::CONTAINER;
+                valuetype->container = container;
+            }
+        }
         else if (const Library::Container *container = settings->library.detectContainer(type)) {
             valuetype->type = ValueType::Type::CONTAINER;
             valuetype->container = container;
