@@ -1303,7 +1303,7 @@ void CppCheck::getErrorMessages()
     Preprocessor::getErrorMessages(this, &s);
 }
 
-bool CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings )
+void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings )
 {
     std::string allIncludes = "";
     std::string allDefines = "-D"+fileSettings.defines;
@@ -1323,7 +1323,7 @@ bool CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings 
     std::pair<bool, std::string> result = executeCommand(cmd);
     if (!result.first) {
        std::cerr << "Failed to execute '" + cmd + "'" << std::endl;
-       return 0;
+       return;
     }
 
     // parse output and create error messages
@@ -1370,7 +1370,6 @@ bool CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings 
             }
         }
     }
-    return true;
 }
 
 bool CppCheck::analyseWholeProgram()
