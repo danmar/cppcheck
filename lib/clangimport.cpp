@@ -136,6 +136,7 @@ namespace clangimport {
             Variable *var;
         };
 
+        const Settings *mSettings = nullptr;
         SymbolDatabase *mSymbolDatabase = nullptr;
 
         void varDecl(const std::string &addr, Token *def, Variable *var) {
@@ -143,7 +144,7 @@ namespace clangimport {
             mDeclMap.insert(std::pair<std::string, Decl>(addr, decl));
             def->varId(++mVarId);
             def->variable(var);
-            var->setValueType(ValueType(ValueType::Sign::SIGNED, ValueType::Type::INT, 0));
+            var->setValueType(*def->valueType());
             notFound(addr);
         }
 
@@ -386,25 +387,9 @@ void clangimport::AstNode::setValueType(Token *tok)
     TokenList decl(nullptr);
     addTypeTokens(&decl, type);
 
-    if (Token::simpleMatch(decl.front(), "bool"))
-        tok->setValueType(new ValueType(ValueType::Sign::UNSIGNED, ValueType::Type::BOOL, 0));
-    else if (Token::simpleMatch(decl.front(), "int"))
-        tok->setValueType(new ValueType(ValueType::Sign::SIGNED, ValueType::Type::INT, 0));
-    else if (Token::simpleMatch(decl.front(), "unsigned long"))
-        tok->setValueType(new ValueType(ValueType::Sign::UNSIGNED, ValueType::Type::LONG, 0));
-    else if (Token::simpleMatch(decl.front(), "__int128"))
-        tok->setValueType(new ValueType(ValueType::Sign::SIGNED, ValueType::Type::UNKNOWN_INT, 0));
-    else if (tok->isNumber())
-        tok->setValueType(new ValueType(ValueType::Sign::SIGNED, ValueType::Type::INT, 0));
-    else if (tok->tokType() == Token::Type::eChar)
-        // TODO
-        tok->setValueType(new ValueType(ValueType::Sign::SIGNED, ValueType::Type::CHAR, 0));
-    else if (tok->tokType() == Token::Type::eString)
-        // TODO
-        tok->setValueType(new ValueType(ValueType::Sign::SIGNED, ValueType::Type::CHAR, 1));
-    else {
-        //decl.front()->printOut("");
-    }
+    ValueType valueType = ValueType::parseDecl(decl.front(), mData->mSettings);
+    if (valueType.type != ValueType::Type::UNKNOWN_TYPE)
+        tok->setValueType(new ValueType(valueType.sign, valueType.type, valueType.pointer, valueType.constness));
 }
 
 Scope *clangimport::AstNode::createScope(TokenList *tokenList, Scope::ScopeType scopeType, AstNodePtr astNode)
@@ -881,6 +866,7 @@ void clangimport::parseClangAstDump(Tokenizer *tokenizer, std::istream &f)
     symbolDatabase->scopeList.back().type = Scope::ScopeType::eGlobal;
 
     clangimport::Data data;
+    data.mSettings = tokenizer->getSettings();
     data.mSymbolDatabase = symbolDatabase;
     std::string line;
     std::vector<AstNodePtr> tree;
