@@ -1308,9 +1308,8 @@ bool CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings 
     std::string allIncludes = "";
     std::string allDefines = "-D"+fileSettings.defines;
     for (const std::string &inc : fileSettings.includePaths) {
-        allIncludes = allIncludes + "-I"" + inc + "" ";
+        allIncludes = allIncludes + "-I""" + inc + """ ";
     }
-    allIncludes = allIncludes + "-I. ";
 
     std::string::size_type pos = 0u;
     while ((pos = allDefines.find(";", pos)) != std::string::npos)
@@ -1351,10 +1350,6 @@ bool CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings 
                     errmsg.callStack.emplace_back(ErrorLogger::ErrorMessage::FileLocation(fixedpath, lineNumber, column));
 
                     errmsg.id = "clang-tidy-" + id.substr(1, id.length() - 2);
-                    if (line.find("error") != std::string::npos)
-                        errmsg.severity = Severity::SeverityType::error;
-                    else if (line.find("warning") != std::string::npos)
-                        errmsg.severity = Severity::SeverityType::warning;
                     if (errmsg.id.find("performance") != std::string::npos)
                         errmsg.severity = Severity::SeverityType::performance;
                     if (errmsg.id.find("portability") != std::string::npos)
