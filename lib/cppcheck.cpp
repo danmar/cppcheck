@@ -1351,10 +1351,10 @@ bool CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings 
 
                     errmsg.id = "clang-tidy-" + id.substr(1, id.length() - 2);
                     if (errmsg.id.find("performance") != std::string::npos)
-                        errmsg.severity = Severity::SeverityType::performance;
-                    if (errmsg.id.find("portability") != std::string::npos)
+                       errmsg.severity = Severity::SeverityType::performance;
+                    else if (errmsg.id.find("portability") != std::string::npos)
                         errmsg.severity = Severity::SeverityType::portability;
-                    if (errmsg.id.find("cert") != std::string::npos || errmsg.id.find("misc") != std::string::npos || errmsg.id.find("unused") != std::string::npos)
+                    else if (errmsg.id.find("cert") != std::string::npos || errmsg.id.find("misc") != std::string::npos || errmsg.id.find("unused") != std::string::npos)
                         errmsg.severity = Severity::SeverityType::warning;
                     else
                         errmsg.severity = Severity::SeverityType::style;
