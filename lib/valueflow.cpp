@@ -3439,7 +3439,7 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
 
         const Token* endOfVarScope = nullptr;
         if (var && var->isLocal())
-            endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
+            endOfVarScope = var->scope()->bodyEnd;
         else
             endOfVarScope = tok->scope()->bodyEnd;
 
@@ -3489,9 +3489,7 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
         // Variable
     } else if (tok->variable()) {
         const Variable *var = tok->variable();
-        if (!var->typeStartToken() || !var->typeStartToken()->scope())
-            return;
-        const Token *endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
+        const Token *endOfVarScope = var->scope()->bodyEnd;
 
         std::list<ValueFlow::Value> values = tok->values();
         const Token *nextExpression = nextAfterAstRightmostLeaf(parent);
@@ -4082,7 +4080,7 @@ static void valueFlowAfterMove(TokenList *tokenlist, SymbolDatabase* symboldatab
                 if (!var || (!var->isLocal() && !var->isArgument()))
                     continue;
                 const int varId = varTok->varId();
-                const Token * const endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
+                const Token * const endOfVarScope = var->scope()->bodyEnd;
                 setTokenValue(varTok, value, settings);
                 valueFlowForwardVariable(
                     varTok->next(), endOfVarScope, var, varId, values, false, false, tokenlist, errorLogger, settings);
@@ -4106,7 +4104,7 @@ static void valueFlowAfterMove(TokenList *tokenlist, SymbolDatabase* symboldatab
             const Variable *var = varTok->variable();
             if (!var)
                 continue;
-            const Token * const endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
+            const Token * const endOfVarScope = var->scope()->bodyEnd;
 
             ValueFlow::Value value;
             value.valueType = ValueFlow::Value::ValueType::MOVED;
@@ -4144,7 +4142,7 @@ static void valueFlowForwardAssign(Token * const               tok,
                                    ErrorLogger * const         errorLogger,
                                    const Settings * const      settings)
 {
-    const Token * const endOfVarScope = var->nameToken()->scope()->bodyEnd;
+    const Token * const endOfVarScope = var->scope()->bodyEnd;
     if (std::any_of(values.begin(), values.end(), std::mem_fn(&ValueFlow::Value::isLifetimeValue))) {
         valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
         values.remove_if(std::mem_fn(&ValueFlow::Value::isLifetimeValue));
@@ -4932,7 +4930,7 @@ static void valueFlowForLoopSimplifyAfter(Token *fortok, nonneg int varid, const
     const Variable *var = vartok->variable();
     const Token *endToken = nullptr;
     if (var->isLocal())
-        endToken = var->typeStartToken()->scope()->bodyEnd;
+        endToken = var->scope()->bodyEnd;
     else
         endToken = fortok->scope()->bodyEnd;
 
