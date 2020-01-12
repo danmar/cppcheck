@@ -326,8 +326,12 @@ void clangimport::AstNode::setLocations(TokenList *tokenList, int file, int line
             line = std::atoi(ext.substr(6).c_str());
             if (ext.find(", col:") != std::string::npos)
                 col = std::atoi(ext.c_str() + ext.find(", col:") + 6);
-        } else if (ext[0] == '<' && ext.find(":") != std::string::npos)
-            file = tokenList->appendFileIfNew(ext.substr(1,ext.find(":") - 1));
+        } else if (ext[0] == '<' && ext.find(":") != std::string::npos) {
+            std::string::size_type sep1 = ext.find(":");
+            std::string::size_type sep2 = ext.find(":", sep1+1);
+            file = tokenList->appendFileIfNew(ext.substr(1, sep1 - 1));
+            line = MathLib::toLongNumber(ext.substr(sep1+1, sep2-sep1));
+        }
     }
     mFile = file;
     mLine = line;
@@ -625,8 +629,11 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         }
         return nullptr;
     }
-    if (nodeType == ImplicitCastExpr)
-        return children[0]->createTokens(tokenList);
+    if (nodeType == ImplicitCastExpr) {
+        Token *expr = children[0]->createTokens(tokenList);
+        setValueType(expr);
+        return expr;
+    }
     if (nodeType == IntegerLiteral)
         return addtoken(tokenList, mExtTokens.back());
     if (nodeType == NullStmt)
