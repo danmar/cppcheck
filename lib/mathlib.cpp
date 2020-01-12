@@ -319,6 +319,8 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
     if (isBin(str)) {
         biguint ret = 0;
         for (std::string::size_type i = str[0] == '0'?2:3; i < str.length(); i++) {
+            if (str[i] != '1' && str[i] != '0')
+                break;
             ret <<= 1;
             if (str[i] == '1')
                 ret |= 1;
@@ -510,6 +512,8 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
     if (isBin(str)) {
         bigint ret = 0;
         for (std::string::size_type i = str[0] == '0'?2:3; i < str.length(); i++) {
+            if (str[i] != '1' && str[i] != '0')
+                break;
             ret <<= 1;
             if (str[i] == '1')
                 ret |= 1;

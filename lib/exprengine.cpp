@@ -1292,7 +1292,9 @@ static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
         }
     }
     call(data.callbacks, tok->astOperand1(), structValue, &data);
-    return structValue->getValueOfMember(tok->astOperand2()->str());
+    ExprEngine::ValuePtr memberValue = structValue->getValueOfMember(tok->astOperand2()->str());
+    call(data.callbacks, tok, memberValue, &data);
+    return memberValue;
 }
 
 static ExprEngine::ValuePtr executeBinaryOp(const Token *tok, Data &data)
@@ -1746,11 +1748,16 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
     } catch (VerifyException &e) {
         trackExecution.setAbortLine(e.tok->linenr());
         auto bailoutValue = std::make_shared<BailoutValue>();
-        for (const Token *tok = e.tok; tok != functionScope->bodyEnd; tok = tok->next())
+        for (const Token *tok = e.tok; tok != functionScope->bodyEnd; tok = tok->next()) {
+            if (Token::Match(tok, "return|throw|while|if|for (")) {
+                tok = tok->next();
+                continue;
+            }
             call(callbacks, tok, bailoutValue, &data);
+        }
     }
 
-    if (settings->debugVerification && (callbacks.empty() || !trackExecution.isAllOk())) {
+    if (settings->debugVerification && (settings->verbose || callbacks.empty() || !trackExecution.isAllOk())) {
         if (!settings->verificationReport.empty())
             report << "[debug]" << std::endl;
         trackExecution.print(report);
@@ -1854,6 +1861,51 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             return;
         if (!value.isUninit())
             return;
+
+        // lhs in assignment
+        if (tok->astParent()->str() == "=" && tok == tok->astParent()->astOperand1())
+            return;
+
+        // Avoid FP when there is bailout..
+        if (value.type == ExprEngine::ValueType::BailoutValue) {
+            if (tok->hasKnownValue())
+                return;
+            if (tok->function())
+                return;
+            if (Token::Match(tok, "<<|>>|,"))
+                // Only warn about the operands
+                return;
+            // lhs for scope operator
+            if (Token::Match(tok, "%name% ::"))
+                return;
+            if (tok->astParent()->str() == "::" && tok == tok->astParent()->astOperand1())
+                return;
+
+            if (tok->str() == "(")
+                // cast: result is not uninitialized if expression is initialized
+                // function: does not return a uninitialized value
+                return;
+
+            // Containers are not uninitialized
+            std::vector<const Token *> tokens{tok, tok->astOperand1(), tok->astOperand2()};
+            if (Token::Match(tok->previous(), ". %name%"))
+                tokens.push_back(tok->previous()->astOperand1());
+            for (const Token *t: tokens) {
+                if (t && t->valueType() && t->valueType()->pointer == 0 && t->valueType()->container)
+                    return;
+            }
+
+            const Variable *var = tok->variable();
+            if (var && !var->isPointer()) {
+                if (!var->isLocal() || var->isStatic())
+                    return;
+            }
+            if (var && (Token::Match(var->nameToken(), "%name% =") || Token::Match(var->nameToken(), "%varid% ; %varid% =", var->declarationId())))
+                return;
+            if (var && var->nameToken() == tok)
+                return;
+
+        }
 
         // Avoid FP for array declaration
         const Token *parent = tok->astParent();

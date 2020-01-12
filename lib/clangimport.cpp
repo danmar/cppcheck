@@ -392,7 +392,7 @@ void clangimport::AstNode::setValueType(Token *tok)
 
     ValueType valueType = ValueType::parseDecl(decl.front(), mData->mSettings);
     if (valueType.type != ValueType::Type::UNKNOWN_TYPE)
-        tok->setValueType(new ValueType(valueType.sign, valueType.type, valueType.pointer, valueType.constness));
+        tok->setValueType(new ValueType(valueType));
 }
 
 Scope *clangimport::AstNode::createScope(TokenList *tokenList, Scope::ScopeType scopeType, AstNodePtr astNode)
