@@ -1748,8 +1748,13 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
     } catch (VerifyException &e) {
         trackExecution.setAbortLine(e.tok->linenr());
         auto bailoutValue = std::make_shared<BailoutValue>();
-        for (const Token *tok = e.tok; tok != functionScope->bodyEnd; tok = tok->next())
+        for (const Token *tok = e.tok; tok != functionScope->bodyEnd; tok = tok->next()) {
+            if (Token::Match(tok, "return|throw|while|if|for (")) {
+                tok = tok->next();
+                continue;
+            }
             call(callbacks, tok, bailoutValue, &data);
+        }
     }
 
     if (settings->debugVerification && (settings->verbose || callbacks.empty() || !trackExecution.isAllOk())) {
@@ -1856,6 +1861,26 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             return;
         if (!value.isUninit())
             return;
+
+        // Avoid FP when there is bailout..
+        if (value.type == ExprEngine::ValueType::BailoutValue) {
+            if (tok->str() == "(")
+                // cast: result is not uninitialized if expression is initialized
+                // function: does not return a uninitialized value
+                return;
+
+            const Token *tokens[] = {tok, tok->astOperand1(), tok->astOperand2()};
+            for (const Token *t: tokens) {
+                if (t && t->valueType() && t->valueType()->pointer == 0 && t->valueType()->container)
+                    return;
+            }
+
+            const Variable *var = tok->variable();
+            if (var && !var->isPointer()) {
+                if (!var->isLocal() || var->isStatic())
+                    return;
+            }
+        }
 
         // Avoid FP for array declaration
         const Token *parent = tok->astParent();
