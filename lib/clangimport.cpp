@@ -127,9 +127,11 @@ namespace clangimport {
             Decl(Token *def, Variable *var) : def(def), function(nullptr), var(var) {}
             Decl(Token *def, Function *function) : def(def), function(function), var(nullptr) {}
             void ref(Token *tok) {
-                tok->function(function);
+                if (function)
+                    tok->function(function);
                 tok->varId(var ? var->declarationId() : 0);
-                tok->variable(var);
+                if (var)
+                    tok->variable(var);
             }
             Token *def;
             Function *function;
