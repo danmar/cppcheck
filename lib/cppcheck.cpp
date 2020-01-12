@@ -187,12 +187,21 @@ static std::string executeAddon(const AddonInfo &addonInfo, const std::string &d
 static std::vector<std::string> split(const std::string &str, const std::string &sep)
 {
     std::vector<std::string> ret;
-    for (std::string::size_type defineStartPos = 0U; defineStartPos < str.size();) {
-        const std::string::size_type defineEndPos = str.find(sep, defineStartPos);
-        ret.push_back((defineEndPos == std::string::npos) ? str.substr(defineStartPos) : str.substr(defineStartPos, defineEndPos - defineStartPos));
-        if (defineEndPos == std::string::npos)
+    for (std::string::size_type startPos = 0U; startPos < str.size();) {
+        std::string::size_type endPos;
+        if (str[startPos] == '\"') {
+            endPos = str.find("\"", startPos + 1);
+            if (endPos < str.size())
+                endPos++;
+        } else {
+            endPos = str.find(sep, startPos + 1);
+        }
+        if (endPos == std::string::npos) {
+            ret.push_back(str.substr(startPos));
             break;
-        defineStartPos = defineEndPos + 1U;
+        }
+        ret.push_back(str.substr(startPos, endPos - startPos));
+        startPos = str.find_first_not_of(sep, endPos);
     }
     return ret;
 }
