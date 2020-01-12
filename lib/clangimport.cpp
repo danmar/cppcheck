@@ -48,6 +48,7 @@ static const std::string CXXStaticCastExpr = "CXXStaticCastExpr";
 static const std::string CXXThisExpr = "CXXThisExpr";
 static const std::string DeclRefExpr = "DeclRefExpr";
 static const std::string DeclStmt = "DeclStmt";
+static const std::string ExprWithCleanups = "ExprWithCleanups";
 static const std::string FieldDecl = "FieldDecl";
 static const std::string ForStmt = "ForStmt";
 static const std::string FunctionDecl = "FunctionDecl";
@@ -557,8 +558,6 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == CXXThisExpr)
         return addtoken(tokenList, "this");
-    if (nodeType == DeclStmt)
-        return children[0]->createTokens(tokenList);
     if (nodeType == DeclRefExpr) {
         const std::string addr = mExtTokens[mExtTokens.size() - 3];
         std::string name = unquote(getSpelling());
@@ -566,6 +565,10 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         mData->ref(addr, reftok);
         return reftok;
     }
+    if (nodeType == DeclStmt)
+        return children[0]->createTokens(tokenList);
+    if (nodeType == ExprWithCleanups)
+        return children[0]->createTokens(tokenList);
     if (nodeType == FieldDecl)
         return createTokensVarDecl(tokenList);
     if (nodeType == ForStmt) {
@@ -857,6 +860,14 @@ Token * clangimport::AstNode::createTokensVarDecl(TokenList *tokenList)
         eq->astOperand1(vartok1);
         eq->astOperand2(children.back()->createTokens(tokenList));
         return eq;
+    } else if (mExtTokens.back() == "callinit") {
+        Token *par1 = addtoken(tokenList, "(");
+        par1->astOperand1(vartok1);
+        par1->astOperand2(children[0]->createTokens(tokenList));
+        Token *par2 = addtoken(tokenList, ")");
+        par1->link(par2);
+        par2->link(par1);
+        return par1;
     }
     return vartok1;
 }
