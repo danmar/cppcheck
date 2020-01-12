@@ -52,7 +52,9 @@ def check(filename):
         res = re.match(w, line)
         if res is None:
             continue
-        ret.append(int(res.group(1)))
+        linenr = int(res.group(1))
+        if linenr not in ret:
+            ret.append(linenr)
     return ret
 
 wanted = get_error_lines(TESTFILE)
