@@ -55,6 +55,9 @@ struct ForwardTraversal
             bool checkThen, checkElse;
             std::tie(checkThen, checkElse) = checkCond(condTok);
             if (!checkThen && !checkElse) {
+                // Stop if the value is conditional
+                if (analyzer->IsConditional())
+                    return Progress::Break;
                 checkThen = true;
                 checkElse = true;
             }
@@ -186,9 +189,11 @@ struct ForwardTraversal
                 if (Token::Match(tok, "for|while (")) {
                     Status loopStatus = checkScope(endBlock);
                     if (loopStatus == Status::Inconclusive) {
-                        analyzer->LowerToInconclusive();
+                        if (!analyzer->LowerToInconclusive())
+                            return Progress::Break;
                     } else if (loopStatus == Status::Modified) {
-                        analyzer->LowerToPossible();
+                        if (!analyzer->LowerToPossible())
+                            return Progress::Break;
                         Token * writeTok = findRange(endBlock->link(), endBlock, std::mem_fn(&ForwardAnalyzer::Action::isModified));
                         const Token * nextStatement = Token::findmatch(writeTok, ";|}", endBlock);
                         if (!Token::Match(nextStatement, ";|} break ;"))
@@ -203,6 +208,12 @@ struct ForwardTraversal
                     std::tie(checkThen, checkElse) = checkCond(condTok);
                     Status thenStatus = Status::None;
                     Status elseStatus = Status::None;
+
+                    if (!checkThen && !checkElse) {
+                        // Stop if the value is conditional
+                        if (analyzer->IsConditional())
+                            return Progress::Break;
+                    }
 
                     // Traverse then block
                     if (checkThen) {
@@ -290,6 +301,16 @@ struct ForwardTraversal
         while(tok != dest && tok != end)
             tok = tok->next();
         return tok;
+    }
+
+    static bool isConditional(const Token* tok) 
+    {
+        const Token *parent = tok->astParent();
+        while (parent && !Token::Match(parent, "%oror%|&&|:")) {
+            tok = parent;
+            parent = parent->astParent();
+        }
+        return parent && (parent->str() == ":" || parent->astOperand2() == tok);
     }
 };
 

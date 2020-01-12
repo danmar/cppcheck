@@ -2255,7 +2255,7 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
         bool cpp = true;
         if (tok->varId() == varid) {
             const Token * parent = tok->astParent();
-            if (Token::Match(parent, "*|[") && value.indirect <= 0)
+            if (Token::Match(parent, "*|[|.") && value.indirect <= 0)
                 return Action::Read;
 
             if (Token::simpleMatch(tok->astParent(), "&"))
@@ -2288,20 +2288,10 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
         }
         return Action::None;
     }
-    bool isConditional(const Token* tok) const {
-        const Token *parent = tok->astParent();
-        while (parent && !Token::Match(parent, "%oror%|&&|:")) {
-            tok = parent;
-            parent = parent->astParent();
-        }
-        return parent && (parent->str() == ":" || parent->astOperand2() == tok);
-    }
     virtual void Update(Token* tok, Action a) OVERRIDE
     {
-        if (a.isRead()) {
-            if (!isConditional(tok) || !value.conditional)
-                setTokenValue(tok, value, settings);
-        }
+        if (a.isRead())
+            setTokenValue(tok, value, settings);
         if (a.isInconclusive())
             LowerToInconclusive();
         if (a.isWrite()) {
@@ -2344,6 +2334,11 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
             return false;
         value.setInconclusive();
         return true;
+    }
+
+    virtual bool IsConditional() const OVERRIDE
+    {
+        return value.conditional || value.condition;
     }
 
     virtual bool UpdateScope(const Token* endBlock, bool modified) const OVERRIDE

@@ -104,6 +104,7 @@ struct ForwardAnalyzer
     virtual bool LowerToPossible() = 0;
     virtual bool LowerToInconclusive() = 0;
     virtual bool UpdateScope(const Token* endBlock, bool modified) const = 0;
+    virtual bool IsConditional() const = 0;
     virtual bool SkipLambda(const Token* tok) const {
         return true;
     }
