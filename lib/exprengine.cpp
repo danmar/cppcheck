@@ -1900,8 +1900,8 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
                 if (!var->isLocal() || var->isStatic())
                     return;
             }
-                if (var && (Token::Match(var->nameToken(), "%name% =") || Token::Match(var->nameToken(), "%varid% ; %varid% =", var->declarationId())))
-                    return;
+            if (var && (Token::Match(var->nameToken(), "%name% =") || Token::Match(var->nameToken(), "%varid% ; %varid% =", var->declarationId())))
+                return;
             if (var && var->nameToken() == tok)
                 return;
 
