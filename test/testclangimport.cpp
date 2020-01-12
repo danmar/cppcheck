@@ -34,6 +34,7 @@ private:
         TEST_CASE(class1);
         TEST_CASE(classTemplateDecl1);
         TEST_CASE(classTemplateDecl2);
+        TEST_CASE(compoundAssignOperator);
         TEST_CASE(continueStmt);
         TEST_CASE(cstyleCastExpr);
         TEST_CASE(cxxBoolLiteralExpr);
@@ -170,6 +171,15 @@ private:
                              "|   `-CXXConstructorDecl 0x247c828 <col:25> col:25 implicit constexpr C 'void (C<int> &&)' inline default trivial noexcept-unevaluated 0x247c828\n"
                              "|     `-ParmVarDecl 0x247c960 <col:25> col:25 'C<int> &&'\n";
         ASSERT_EQUALS("class C { int foo ( ) { return 0 ; } }", parse(clang));
+    }
+
+    void compoundAssignOperator() {
+        const char clang[] = "`-FunctionDecl 0x3570690 <1.cpp:2:1, col:25> col:6 f 'void ()'\n"
+                             "  `-CompoundStmt 0x3570880 <col:10, col:25>\n"
+                             "    `-CompoundAssignOperator 0x3570848 <col:19, col:22> 'int' lvalue '+=' ComputeLHSTy='int' ComputeResultTy='int'\n"
+                             "      |-DeclRefExpr 0x3570800 <col:19> 'int' lvalue Var 0x3570788 'x' 'int'\n"
+                             "      `-IntegerLiteral 0x3570828 <col:22> 'int' 1";
+        ASSERT_EQUALS("void f ( ) { x += 1 ; }", parse(clang));
     }
 
     void continueStmt() {

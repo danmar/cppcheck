@@ -33,6 +33,7 @@ static const std::string CallExpr = "CallExpr";
 static const std::string CharacterLiteral = "CharacterLiteral";
 static const std::string ClassTemplateDecl = "ClassTemplateDecl";
 static const std::string ClassTemplateSpecializationDecl = "ClassTemplateSpecializationDecl";
+static const std::string CompoundAssignOperator = "CompoundAssignOperator";
 static const std::string CompoundStmt = "CompoundStmt";
 static const std::string ContinueStmt = "ContinueStmt";
 static const std::string CStyleCastExpr = "CStyleCastExpr";
@@ -243,12 +244,22 @@ namespace clangimport {
 
 std::string clangimport::AstNode::getSpelling() const
 {
-    int retTypeIndex = mExtTokens.size() - 1;
-    if (nodeType == FunctionDecl) {
-        while (mExtTokens[retTypeIndex][0] != '\'')
-            retTypeIndex--;
+    if (nodeType == CompoundAssignOperator) {
+        int typeIndex = 1;
+        while (typeIndex < mExtTokens.size() && mExtTokens[typeIndex][0] != '\'')
+            typeIndex++;
+        int nameIndex = typeIndex + 1;
+        while (nameIndex < mExtTokens.size() && mExtTokens[nameIndex][0] != '\'')
+            nameIndex++;
+        return (nameIndex < mExtTokens.size()) ? unquote(mExtTokens[nameIndex]) : "";
     }
-    const std::string &str = mExtTokens[retTypeIndex - 1];
+
+    int typeIndex = mExtTokens.size() - 1;
+    if (nodeType == FunctionDecl) {
+        while (mExtTokens[typeIndex][0] != '\'')
+            typeIndex--;
+    }
+    const std::string &str = mExtTokens[typeIndex - 1];
     if (str.compare(0,4,"col:") == 0)
         return "";
     if (str.compare(0,8,"<invalid") == 0)
@@ -259,7 +270,6 @@ std::string clangimport::AstNode::getSpelling() const
 std::string clangimport::AstNode::getType() const
 {
     int typeIndex = 1;
-    typeIndex = 1;
     while (typeIndex < mExtTokens.size() && mExtTokens[typeIndex][0] != '\'')
         typeIndex++;
     if (typeIndex >= mExtTokens.size())
@@ -486,6 +496,14 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     if (nodeType == ClassTemplateSpecializationDecl) {
         createTokensForCXXRecord(tokenList);
         return nullptr;
+    }
+    if (nodeType == CompoundAssignOperator) {
+        Token *lhs = children[0]->createTokens(tokenList);
+        Token *assign = addtoken(tokenList, getSpelling());
+        Token *rhs = children[1]->createTokens(tokenList);
+        assign->astOperand1(lhs);
+        assign->astOperand2(rhs);
+        return assign;
     }
     if (nodeType == CompoundStmt) {
         for (AstNodePtr child: children) {
