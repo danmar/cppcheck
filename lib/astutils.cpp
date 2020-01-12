@@ -547,6 +547,26 @@ bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2)
     return result;
 }
 
+static bool isSameConstantValue(bool macro, const Token * const tok1, const Token * const tok2)
+{
+    if (tok1 == nullptr || tok2 == nullptr)
+        return false;
+
+    if (!tok1->isNumber() || !tok2->isNumber())
+        return false;
+
+    if (macro && (tok1->isExpandedMacro() || tok2->isExpandedMacro() || tok1->isTemplateArg() || tok2->isTemplateArg()))
+        return false;
+
+    const ValueType * v1 = tok1->valueType();
+    const ValueType * v2 = tok2->valueType();
+
+    if (!v1 || !v2 || v1->sign != v2->sign || v1->type != v2->type || v1->pointer != v2->pointer)
+        return false;
+
+    return isEqualKnownValue(tok1, tok2);
+}
+
 bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors)
 {
     if (tok1 == nullptr && tok2 == nullptr)
@@ -568,6 +588,9 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     }
     if (tok1->str() != tok2->str() && isDifferentKnownValues(tok1, tok2))
         return false;
+    if (isSameConstantValue(macro, tok1, tok2))
+        return true;
+
     // Follow variable
     if (followVar && tok1->str() != tok2->str() && (Token::Match(tok1, "%var%") || Token::Match(tok2, "%var%"))) {
         const Token * varTok1 = followVariableExpression(tok1, cpp, tok2);

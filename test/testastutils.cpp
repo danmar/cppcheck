@@ -36,6 +36,7 @@ private:
         TEST_CASE(findLambdaEndToken);
         TEST_CASE(findLambdaStartToken);
         TEST_CASE(isReturnScope);
+        TEST_CASE(isSameExpression);
         TEST_CASE(isVariableChanged);
         TEST_CASE(isVariableChangedByFunctionCall);
         TEST_CASE(nextAfterAstRightmostLeaf);
@@ -133,6 +134,33 @@ private:
         ASSERT_EQUALS(true, isReturnScope("void negativeTokenOffset() { return; }", -1));
         ASSERT_EQUALS(false, isReturnScope("void zeroTokenOffset() { return; }", 0));
         ASSERT_EQUALS(true, isReturnScope("void positiveTokenOffset() { return; }", 7));
+    }
+
+    bool isSameExpression(const char code[], const char tokStr1[], const char tokStr2[]) {
+        Settings settings;
+        Library library;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), tokStr1);
+        const Token * const tok2 = Token::findsimplematch(tok1->next(), tokStr2);
+        return ::isSameExpression(false, false, tok1, tok2, library, false, false, nullptr);
+    }
+
+    void isSameExpression() {
+        ASSERT_EQUALS(true,  isSameExpression("x = 1 + 1;", "1", "1"));
+        ASSERT_EQUALS(false, isSameExpression("x = 1 + 1u;", "1", "1u"));
+        ASSERT_EQUALS(true,  isSameExpression("x = 1.0 + 1.0;", "1.0", "1.0"));
+        ASSERT_EQUALS(false, isSameExpression("x = 1.0f + 1.0;", "1.0f", "1.0"));
+        ASSERT_EQUALS(false, isSameExpression("x = 1L + 1;", "1L", "1"));
+        ASSERT_EQUALS(true,  isSameExpression("x = 0.0f + 0x0p+0f;", "0.0f", "0x0p+0f"));
+        ASSERT_EQUALS(true,  isSameExpression("x < x;", "x", "x"));
+        ASSERT_EQUALS(false, isSameExpression("x < y;", "x", "y"));
+        ASSERT_EQUALS(true,  isSameExpression("(x + 1) < (x + 1);", "+", "+"));
+        ASSERT_EQUALS(false, isSameExpression("(x + 1) < (x + 1L);", "+", "+"));
+        ASSERT_EQUALS(true,  isSameExpression("(1 + x) < (x + 1);", "+", "+"));
+        ASSERT_EQUALS(false, isSameExpression("(1.0l + x) < (1.0 + x);", "+", "+"));
+        ASSERT_EQUALS(true,  isSameExpression("(0.0 + x) < (x + 0x0p+0);", "+", "+"));
     }
 
     bool isVariableChanged(const char code[], const char startPattern[], const char endPattern[]) {
