@@ -293,9 +293,11 @@ namespace ExprEngine {
         bool isEqual(DataBase * /*dataBase*/, int /*value*/) const OVERRIDE {
             return true;
         }
+        /* FIXME: This is too noisy
         bool isUninit() const OVERRIDE {
             return true;
         }
+        */
     };
 
     typedef std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> Callback;
