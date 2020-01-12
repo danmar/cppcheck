@@ -1292,7 +1292,9 @@ static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
         }
     }
     call(data.callbacks, tok->astOperand1(), structValue, &data);
-    return structValue->getValueOfMember(tok->astOperand2()->str());
+    ExprEngine::ValuePtr memberValue = structValue->getValueOfMember(tok->astOperand2()->str());
+    call(data.callbacks, tok, memberValue, &data);
+    return memberValue;
 }
 
 static ExprEngine::ValuePtr executeBinaryOp(const Token *tok, Data &data)
@@ -1750,7 +1752,7 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
             call(callbacks, tok, bailoutValue, &data);
     }
 
-    if (settings->debugVerification && (callbacks.empty() || !trackExecution.isAllOk())) {
+    if (settings->debugVerification && (settings->verbose || callbacks.empty() || !trackExecution.isAllOk())) {
         if (!settings->verificationReport.empty())
             report << "[debug]" << std::endl;
         trackExecution.print(report);

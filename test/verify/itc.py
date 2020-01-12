@@ -27,7 +27,7 @@ def get_error_lines(filename):
     f = open(filename, 'rt')
     lines = f.readlines()
     for linenr, line in enumerate(lines):
-        if line.find('/* ERROR:') > 0:
+        if line.find('/* ERROR:') > 0 or line.find('/*ERROR:') > 0:
             ret.append(linenr+1)
     return ret
 
@@ -43,9 +43,13 @@ def check(filename):
     stdout = comm[0].decode(encoding='utf-8', errors='ignore')
     stderr = comm[1].decode(encoding='utf-8', errors='ignore')
 
+    w = r'.*zero_division.c:([0-9]+):[0-9]+: error: There is division.*'
+    if TESTFILE.find('uninit_') > 0:
+        w = r'.*c:([0-9]+):[0-9]+: error: .*verificationUninit.*'
+
     ret = []
     for line in stderr.split('\n'):
-        res = re.match(r'.*zero_division.c:([0-9]+):[0-9]+: error: There is division.*', line)
+        res = re.match(w, line)
         if res is None:
             continue
         ret.append(int(res.group(1)))
