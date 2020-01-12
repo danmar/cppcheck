@@ -5542,15 +5542,13 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
                 typeTokens.addtoken(type->str().substr(pos1, pos2 - pos1), 0, 0, false);
                 typeTokens.addtoken("::", 0, 0, false);
                 pos1 = pos2 + 2;
-            }
-            while (pos1 < type->str().size());
+            } while (pos1 < type->str().size());
             const Library::Container *container = settings->library.detectContainer(typeTokens.front());
             if (container) {
                 valuetype->type = ValueType::Type::CONTAINER;
                 valuetype->container = container;
             }
-        }
-        else if (const Library::Container *container = settings->library.detectContainer(type)) {
+        } else if (const Library::Container *container = settings->library.detectContainer(type)) {
             valuetype->type = ValueType::Type::CONTAINER;
             valuetype->container = container;
             while (Token::Match(type, "%name%|::|<")) {
