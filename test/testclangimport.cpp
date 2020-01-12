@@ -40,6 +40,7 @@ private:
         TEST_CASE(cxxConstructorDecl);
         TEST_CASE(cxxConstructExpr1);
         TEST_CASE(cxxConstructExpr2);
+        TEST_CASE(cxxConstructExpr3);
         TEST_CASE(cxxMemberCall);
         TEST_CASE(cxxMethodDecl);
         TEST_CASE(cxxNullPtrLiteralExpr);
@@ -224,6 +225,22 @@ private:
         ASSERT_EQUALS("std::string f ( ) { return std::string ( ) ; }", parse(clang));
     }
 
+    void cxxConstructExpr3() {
+        const char clang[] = "`-FunctionDecl 0x2c585b8 <1.cpp:4:1, col:39> col:6 f 'void ()'\n"
+                             "  `-CompoundStmt 0x2c589d0 <col:10, col:39>\n"
+                             "    |-DeclStmt 0x2c586d0 <col:12, col:19>\n"
+                             "    | `-VarDecl 0x2c58670 <col:12, col:18> col:18 used p 'char *'\n"
+                             "    `-DeclStmt 0x2c589b8 <col:21, col:37>\n"
+                             "      `-VarDecl 0x2c58798 <col:21, col:36> col:33 s 'std::string':'std::__cxx11::basic_string<char>' callinit\n"
+                             "        `-ExprWithCleanups 0x2c589a0 <col:33, col:36> 'std::string':'std::__cxx11::basic_string<char>'\n"
+                             "          `-CXXConstructExpr 0x2c58960 <col:33, col:36> 'std::string':'std::__cxx11::basic_string<char>' 'void (const char *, const std::allocator<char> &)'\n"
+                             "            |-ImplicitCastExpr 0x2c58870 <col:35> 'const char *' <NoOp>\n"
+                             "            | `-ImplicitCastExpr 0x2c58858 <col:35> 'char *' <LValueToRValue>\n"
+                             "            |   `-DeclRefExpr 0x2c58750 <col:35> 'char *' lvalue Var 0x2c58670 'p' 'char *'\n"
+                             "            `-CXXDefaultArgExpr 0x2c58940 <<invalid sloc>> 'const std::allocator<char>':'const std::allocator<char>' lvalue\n";
+        ASSERT_EQUALS("void f ( ) { char * p@1 ; std::string s@2 ( p@1 ) ; }", parse(clang));
+    }
+
     void cxxMemberCall() {
         const char clang[] = "`-FunctionDecl 0x320dc80 <line:2:1, col:33> col:6 bar 'void ()'\n"
                              "  `-CompoundStmt 0x323bb08 <col:12, col:33>\n"
@@ -233,7 +250,7 @@ private:
                              "    `-CXXMemberCallExpr 0x323bab8 <col:24, col:30> 'int':'int'\n"
                              "      `-MemberExpr 0x323ba80 <col:24, col:26> '<bound member function type>' .foo 0x320e160\n"
                              "        `-DeclRefExpr 0x323ba58 <col:24> 'C<int>':'C<int>' lvalue Var 0x320df28 'c' 'C<int>':'C<int>'";
-        ASSERT_EQUALS("void bar ( ) { C<int> c@1 ; c@1 . foo ( ) ; }", parse(clang));
+        ASSERT_EQUALS("void bar ( ) { C<int> c@1 ( C<int> ( ) ) ; c@1 . foo ( ) ; }", parse(clang));
     }
 
     void cxxMethodDecl() {
@@ -266,7 +283,7 @@ private:
                              "      | `-DeclRefExpr 0x3c37250 <col:20> 'void (int)' lvalue CXXMethod 0x3c098c0 'operator=' 'void (int)'\n"
                              "      |-DeclRefExpr 0x3c0a078 <col:19> 'C' lvalue Var 0x3c09ae0 'c' 'C'\n"
                              "      `-IntegerLiteral 0x3c0a0a0 <col:21> 'int' 4";
-        ASSERT_EQUALS("void foo ( ) { C c@1 ; c@1 . operator= ( 4 ) ; }", parse(clang));
+        ASSERT_EQUALS("void foo ( ) { C c@1 ( C ( ) ) ; c@1 . operator= ( 4 ) ; }", parse(clang));
     }
 
     void cxxRecordDecl1() {

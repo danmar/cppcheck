@@ -48,6 +48,7 @@ static const std::string CXXStaticCastExpr = "CXXStaticCastExpr";
 static const std::string CXXThisExpr = "CXXThisExpr";
 static const std::string DeclRefExpr = "DeclRefExpr";
 static const std::string DeclStmt = "DeclStmt";
+static const std::string ExprWithCleanups = "ExprWithCleanups";
 static const std::string FieldDecl = "FieldDecl";
 static const std::string ForStmt = "ForStmt";
 static const std::string FunctionDecl = "FunctionDecl";
@@ -127,9 +128,11 @@ namespace clangimport {
             Decl(Token *def, Variable *var) : def(def), function(nullptr), var(var) {}
             Decl(Token *def, Function *function) : def(def), function(function), var(nullptr) {}
             void ref(Token *tok) {
-                tok->function(function);
+                if (function)
+                    tok->function(function);
                 tok->varId(var ? var->declarationId() : 0);
-                tok->variable(var);
+                if (var)
+                    tok->variable(var);
             }
             Token *def;
             Function *function;
@@ -323,8 +326,12 @@ void clangimport::AstNode::setLocations(TokenList *tokenList, int file, int line
             line = std::atoi(ext.substr(6).c_str());
             if (ext.find(", col:") != std::string::npos)
                 col = std::atoi(ext.c_str() + ext.find(", col:") + 6);
-        } else if (ext[0] == '<' && ext.find(":") != std::string::npos)
-            file = tokenList->appendFileIfNew(ext.substr(1,ext.find(":") - 1));
+        } else if (ext[0] == '<' && ext.find(":") != std::string::npos) {
+            std::string::size_type sep1 = ext.find(":");
+            std::string::size_type sep2 = ext.find(":", sep1+1);
+            file = tokenList->appendFileIfNew(ext.substr(1, sep1 - 1));
+            line = MathLib::toLongNumber(ext.substr(sep1+1, sep2-sep1));
+        }
     }
     mFile = file;
     mLine = line;
@@ -555,8 +562,6 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == CXXThisExpr)
         return addtoken(tokenList, "this");
-    if (nodeType == DeclStmt)
-        return children[0]->createTokens(tokenList);
     if (nodeType == DeclRefExpr) {
         const std::string addr = mExtTokens[mExtTokens.size() - 3];
         std::string name = unquote(getSpelling());
@@ -564,6 +569,10 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         mData->ref(addr, reftok);
         return reftok;
     }
+    if (nodeType == DeclStmt)
+        return children[0]->createTokens(tokenList);
+    if (nodeType == ExprWithCleanups)
+        return children[0]->createTokens(tokenList);
     if (nodeType == FieldDecl)
         return createTokensVarDecl(tokenList);
     if (nodeType == ForStmt) {
@@ -620,8 +629,11 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         }
         return nullptr;
     }
-    if (nodeType == ImplicitCastExpr)
-        return children[0]->createTokens(tokenList);
+    if (nodeType == ImplicitCastExpr) {
+        Token *expr = children[0]->createTokens(tokenList);
+        setValueType(expr);
+        return expr;
+    }
     if (nodeType == IntegerLiteral)
         return addtoken(tokenList, mExtTokens.back());
     if (nodeType == NullStmt)
@@ -855,6 +867,14 @@ Token * clangimport::AstNode::createTokensVarDecl(TokenList *tokenList)
         eq->astOperand1(vartok1);
         eq->astOperand2(children.back()->createTokens(tokenList));
         return eq;
+    } else if (mExtTokens.back() == "callinit") {
+        Token *par1 = addtoken(tokenList, "(");
+        par1->astOperand1(vartok1);
+        par1->astOperand2(children[0]->createTokens(tokenList));
+        Token *par2 = addtoken(tokenList, ")");
+        par1->link(par2);
+        par2->link(par1);
+        return par1;
     }
     return vartok1;
 }
