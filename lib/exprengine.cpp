@@ -1862,14 +1862,34 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
         if (!value.isUninit())
             return;
 
+        // lhs in assignment
+        if (tok->astParent()->str() == "=" && tok == tok->astParent()->astOperand1())
+            return;
+
         // Avoid FP when there is bailout..
         if (value.type == ExprEngine::ValueType::BailoutValue) {
+            if (tok->hasKnownValue())
+                return;
+            if (tok->function())
+                return;
+            if (Token::Match(tok, "<<|>>|,"))
+                // Only warn about the operands
+                return;
+            // lhs for scope operator
+            if (Token::Match(tok, "%name% ::"))
+                return;
+            if (tok->astParent()->str() == "::" && tok == tok->astParent()->astOperand1())
+                return;
+
             if (tok->str() == "(")
                 // cast: result is not uninitialized if expression is initialized
                 // function: does not return a uninitialized value
                 return;
 
-            const Token *tokens[] = {tok, tok->astOperand1(), tok->astOperand2()};
+            // Containers are not uninitialized
+            std::vector<const Token *> tokens{tok, tok->astOperand1(), tok->astOperand2()};
+            if (Token::Match(tok->previous(), ". %name%"))
+                tokens.push_back(tok->previous()->astOperand1());
             for (const Token *t: tokens) {
                 if (t && t->valueType() && t->valueType()->pointer == 0 && t->valueType()->container)
                     return;
@@ -1880,6 +1900,11 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
                 if (!var->isLocal() || var->isStatic())
                     return;
             }
+                if (var && (Token::Match(var->nameToken(), "%name% =") || Token::Match(var->nameToken(), "%varid% ; %varid% =", var->declarationId())))
+                    return;
+            if (var && var->nameToken() == tok)
+                return;
+
         }
 
         // Avoid FP for array declaration
