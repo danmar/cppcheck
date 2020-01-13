@@ -179,6 +179,8 @@ namespace clangimport {
             return ret;
         }
 
+        // "}" tokens that are not end-of-scope
+        std::set<Token *> mNotScope;
     private:
         void notFound(const std::string &addr) {
             auto it = mNotFound.find(addr);
@@ -217,6 +219,7 @@ namespace clangimport {
             createTokens(tokenList);
             if (nodeType == VarDecl || nodeType == RecordDecl || nodeType == TypedefDecl)
                 addtoken(tokenList, ";");
+            mData->mNotScope.clear();
         }
     private:
         Token *createTokens(TokenList *tokenList);
@@ -388,7 +391,7 @@ const Scope *clangimport::AstNode::getNestedInScope(TokenList *tokenList)
 {
     if (!tokenList->back())
         return &mData->mSymbolDatabase->scopeList.front();
-    if (tokenList->back()->str() == "}" && !tokenList->back()->link()->astParent())
+    if (tokenList->back()->str() == "}" && mData->mNotScope.find(tokenList->back()) == mData->mNotScope.end())
         return tokenList->back()->scope()->nestedIn;
     return tokenList->back()->scope();
 }
@@ -666,6 +669,7 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         end->scope(scope);
         start->link(end);
         end->link(start);
+        mData->mNotScope.insert(end);
         return start;
     }
     if (nodeType == IntegerLiteral)
