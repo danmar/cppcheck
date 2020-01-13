@@ -57,6 +57,7 @@ private:
         TEST_CASE(funcdecl4);
         TEST_CASE(functionTemplateDecl1);
         TEST_CASE(functionTemplateDecl2);
+        TEST_CASE(initListExpr);
         TEST_CASE(ifelse);
         TEST_CASE(memberExpr);
         TEST_CASE(namespaceDecl);
@@ -427,6 +428,15 @@ private:
         ASSERT_EQUALS("int foo ( int x@1 ) {\n"
                       "if ( x@1 > 10 ) { }\n"
                       "else { } }", parse(clang));
+    }
+
+    void initListExpr() {
+        const char clang[] = "|-VarDecl 0x397c680 <1.cpp:2:1, col:26> col:11 used ints 'const int [3]' cinit\n"
+                             "| `-InitListExpr 0x397c7d8 <col:20, col:26> 'const int [3]'\n"
+                             "|   |-IntegerLiteral 0x397c720 <col:21> 'int' 1\n"
+                             "|   |-IntegerLiteral 0x397c740 <col:23> 'int' 2\n"
+                             "|   `-IntegerLiteral 0x397c760 <col:25> 'int' 3";
+        ASSERT_EQUALS("const int [3] ints@1 = { 1 , 2 , 3 } ;", parse(clang));
     }
 
     void memberExpr() {

@@ -56,6 +56,7 @@ static const std::string FunctionDecl = "FunctionDecl";
 static const std::string FunctionTemplateDecl = "FunctionTemplateDecl";
 static const std::string IfStmt = "IfStmt";
 static const std::string ImplicitCastExpr = "ImplicitCastExpr";
+static const std::string InitListExpr = "InitListExpr";
 static const std::string IntegerLiteral = "IntegerLiteral";
 static const std::string MemberExpr = "MemberExpr";
 static const std::string NamespaceDecl = "NamespaceDecl";
@@ -387,7 +388,7 @@ const Scope *clangimport::AstNode::getNestedInScope(TokenList *tokenList)
 {
     if (!tokenList->back())
         return &mData->mSymbolDatabase->scopeList.front();
-    if (tokenList->back()->str() == "}")
+    if (tokenList->back()->str() == "}" && !tokenList->back()->link()->astParent())
         return tokenList->back()->scope()->nestedIn;
     return tokenList->back()->scope();
 }
@@ -651,6 +652,21 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         Token *expr = children[0]->createTokens(tokenList);
         setValueType(expr);
         return expr;
+    }
+    if (nodeType == InitListExpr) {
+        const Scope *scope = tokenList->back()->scope();
+        Token *start = addtoken(tokenList, "{");
+        start->scope(scope);
+        for (AstNodePtr child: children) {
+            if (tokenList->back()->str() != "{")
+                addtoken(tokenList, ",");
+            child->createTokens(tokenList);
+        }
+        Token *end = addtoken(tokenList, "}");
+        end->scope(scope);
+        start->link(end);
+        end->link(start);
+        return start;
     }
     if (nodeType == IntegerLiteral)
         return addtoken(tokenList, mExtTokens.back());
