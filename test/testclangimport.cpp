@@ -16,6 +16,7 @@
 
 #include "clangimport.h"
 #include "settings.h"
+#include "symboldatabase.h"
 #include "tokenize.h"
 #include "testsuite.h"
 
@@ -71,6 +72,9 @@ private:
         TEST_CASE(vardecl4);
         TEST_CASE(vardecl5);
         TEST_CASE(whileStmt);
+
+        TEST_CASE(symbolDatabase1);
+        TEST_CASE(symbolDatabase2);
     }
 
     std::string parse(const char clang[]) {
@@ -557,6 +561,50 @@ private:
         ASSERT_EQUALS("void foo ( ) {\n"
                       "while ( 0 ) { ; } }",
                       parse(clang));
+    }
+
+#define GET_SYMBOL_DB(clang) \
+    Settings settings; \
+    Tokenizer tokenizer(&settings, this); \
+    std::istringstream istr(clang); \
+    clangimport::parseClangAstDump(&tokenizer, istr); \
+    const SymbolDatabase *db = tokenizer.getSymbolDatabase(); \
+    ASSERT(db);
+
+    void symbolDatabase1() {
+        const char clang[] = "|-FunctionDecl 0x3aea7a0 <1.cpp:2:1, col:22> col:6 used foo 'void (int, int)'\n"
+                             "| |-ParmVarDecl 0x3aea650 <col:10, col:14> col:14 x 'int'\n"
+                             "| `-ParmVarDecl 0x3aea6c8 <col:17, col:21> col:21 y 'int'\n";
+
+        GET_SYMBOL_DB(clang);
+
+        // There is a function foo that has 2 arguments
+        ASSERT_EQUALS(1, db->functionScopes.size());
+        const Scope *scope = db->functionScopes[0];
+        const Function *func = scope->function;
+        ASSERT_EQUALS(2, func->argCount());
+        ASSERT_EQUALS("x", func->getArgumentVar(0)->name());
+        ASSERT_EQUALS("y", func->getArgumentVar(1)->name());
+        ASSERT_EQUALS(ValueType::Type::INT, func->getArgumentVar(0)->valueType()->type);
+        ASSERT_EQUALS(ValueType::Type::INT, func->getArgumentVar(1)->valueType()->type);
+    }
+
+    void symbolDatabase2() {
+        const char clang[] = "|-FunctionDecl 0x3aea7a0 <1.cpp:2:1, col:22> col:6 used foo 'void (int, int)'\n"
+                             "| |-ParmVarDecl 0x3aea650 <col:10, col:14> col:14 'int'\n"
+                             "| `-ParmVarDecl 0x3aea6c8 <col:17, col:21> col:21 'int'\n";
+
+        GET_SYMBOL_DB(clang);
+
+        // There is a function foo that has 2 arguments
+        ASSERT_EQUALS(1, db->functionScopes.size());
+        const Scope *scope = db->functionScopes[0];
+        const Function *func = scope->function;
+        ASSERT_EQUALS(2, func->argCount());
+        ASSERT_EQUALS(0, (long long)func->getArgumentVar(0)->nameToken());
+        ASSERT_EQUALS(0, (long long)func->getArgumentVar(1)->nameToken());
+        //ASSERT_EQUALS(ValueType::Type::INT, func->getArgumentVar(0)->valueType()->type);
+        //ASSERT_EQUALS(ValueType::Type::INT, func->getArgumentVar(1)->valueType()->type);
     }
 };
 

@@ -811,17 +811,20 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
     mData->funcDecl(mExtTokens.front(), nameToken, scope.function);
     Token *par1 = addtoken(tokenList, "(");
     // Function arguments
-    for (AstNodePtr child: children) {
+    for (int i = 0; i < children.size(); ++i) {
+        AstNodePtr child = children[i];
         if (child->nodeType != ParmVarDecl)
             continue;
         if (tokenList->back() != par1)
             addtoken(tokenList, ",");
         addTypeTokens(tokenList, child->mExtTokens.back());
         const std::string spelling = child->getSpelling();
-        if (!spelling.empty()) {
+        Token *vartok = nullptr;
+        if (!spelling.empty())
+            vartok = child->addtoken(tokenList, spelling);
+        scope.function->argumentList.push_back(Variable(vartok, child->getType(), i, AccessControl::Argument, nullptr, &scope));
+        if (vartok) {
             const std::string addr = child->mExtTokens[0];
-            Token *vartok = addtoken(tokenList, spelling);
-            scope.function->argumentList.push_back(Variable(vartok, nullptr, nullptr, 0, AccessControl::Argument, nullptr, &scope, nullptr));
             mData->varDecl(addr, vartok, &scope.function->argumentList.back());
         }
     }
