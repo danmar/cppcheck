@@ -232,7 +232,7 @@ namespace clangimport {
         void createTokensForCXXRecord(TokenList *tokenList);
         Token *createTokensVarDecl(TokenList *tokenList);
         std::string getSpelling() const;
-        std::string getType() const;
+        std::string getType(int index = 0) const;
         std::string getTemplateParameters() const;
         const Scope *getNestedInScope(TokenList *tokenList);
         void setValueType(Token *tok);
@@ -271,7 +271,7 @@ std::string clangimport::AstNode::getSpelling() const
     return str;
 }
 
-std::string clangimport::AstNode::getType() const
+std::string clangimport::AstNode::getType(int index) const
 {
     int typeIndex = 1;
     while (typeIndex < mExtTokens.size() && mExtTokens[typeIndex][0] != '\'')
@@ -279,8 +279,12 @@ std::string clangimport::AstNode::getType() const
     if (typeIndex >= mExtTokens.size())
         return "";
     std::string type = mExtTokens[typeIndex];
-    if (type.find("\':\'") != std::string::npos)
-        type.erase(type.find("\':\'") + 1);
+    if (type.find("\':\'") != std::string::npos) {
+        if (index == 0)
+            type.erase(type.find("\':\'") + 1);
+        else
+            type.erase(0, type.find("\':\'") + 2);
+    }
     if (type.find(" (") != std::string::npos) {
         std::string::size_type pos = type.find(" (");
         type[pos] = '\'';
@@ -398,22 +402,25 @@ const Scope *clangimport::AstNode::getNestedInScope(TokenList *tokenList)
 
 void clangimport::AstNode::setValueType(Token *tok)
 {
-    const std::string &type = getType();
+    for (int i = 0; i < 2; i++) {
+        const std::string &type = getType(i);
 
-    if (type.find("<") != std::string::npos) {
-        // TODO
-        tok->setValueType(new ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::NONSTD, 0));
-        return;
+        if (type.find("<") != std::string::npos)
+            // TODO
+            continue;
+
+        TokenList decl(nullptr);
+        addTypeTokens(&decl, type);
+        if (!decl.front())
+            break;
+
+        ValueType valueType = ValueType::parseDecl(decl.front(), mData->mSettings);
+        if (valueType.type != ValueType::Type::UNKNOWN_TYPE) {
+            tok->setValueType(new ValueType(valueType));
+            break;
+        }
     }
-
-    TokenList decl(nullptr);
-    addTypeTokens(&decl, type);
-    if (!decl.front())
-        return;
-
-    ValueType valueType = ValueType::parseDecl(decl.front(), mData->mSettings);
-    if (valueType.type != ValueType::Type::UNKNOWN_TYPE)
-        tok->setValueType(new ValueType(valueType));
+    return;
 }
 
 Scope *clangimport::AstNode::createScope(TokenList *tokenList, Scope::ScopeType scopeType, AstNodePtr astNode)
