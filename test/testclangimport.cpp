@@ -57,6 +57,7 @@ private:
         TEST_CASE(funcdecl4);
         TEST_CASE(functionTemplateDecl1);
         TEST_CASE(functionTemplateDecl2);
+        TEST_CASE(initListExpr);
         TEST_CASE(ifelse);
         TEST_CASE(memberExpr);
         TEST_CASE(namespaceDecl);
@@ -73,8 +74,9 @@ private:
         TEST_CASE(vardecl5);
         TEST_CASE(whileStmt);
 
-        TEST_CASE(symbolDatabase1);
-        TEST_CASE(symbolDatabase2);
+        TEST_CASE(symbolDatabaseFunction1);
+        TEST_CASE(symbolDatabaseFunction2);
+        TEST_CASE(symbolDatabaseNodeType1);
     }
 
     std::string parse(const char clang[]) {
@@ -429,6 +431,15 @@ private:
                       "else { } }", parse(clang));
     }
 
+    void initListExpr() {
+        const char clang[] = "|-VarDecl 0x397c680 <1.cpp:2:1, col:26> col:11 used ints 'const int [3]' cinit\n"
+                             "| `-InitListExpr 0x397c7d8 <col:20, col:26> 'const int [3]'\n"
+                             "|   |-IntegerLiteral 0x397c720 <col:21> 'int' 1\n"
+                             "|   |-IntegerLiteral 0x397c740 <col:23> 'int' 2\n"
+                             "|   `-IntegerLiteral 0x397c760 <col:25> 'int' 3";
+        ASSERT_EQUALS("const int [3] ints@1 = { 1 , 2 , 3 } ;", parse(clang));
+    }
+
     void memberExpr() {
         // C code:
         // struct S { int x };
@@ -571,7 +582,7 @@ private:
     const SymbolDatabase *db = tokenizer.getSymbolDatabase(); \
     ASSERT(db);
 
-    void symbolDatabase1() {
+    void symbolDatabaseFunction1() {
         const char clang[] = "|-FunctionDecl 0x3aea7a0 <1.cpp:2:1, col:22> col:6 used foo 'void (int, int)'\n"
                              "| |-ParmVarDecl 0x3aea650 <col:10, col:14> col:14 x 'int'\n"
                              "| `-ParmVarDecl 0x3aea6c8 <col:17, col:21> col:21 y 'int'\n";
@@ -589,7 +600,7 @@ private:
         ASSERT_EQUALS(ValueType::Type::INT, func->getArgumentVar(1)->valueType()->type);
     }
 
-    void symbolDatabase2() {
+    void symbolDatabaseFunction2() {
         const char clang[] = "|-FunctionDecl 0x3aea7a0 <1.cpp:2:1, col:22> col:6 used foo 'void (int, int)'\n"
                              "| |-ParmVarDecl 0x3aea650 <col:10, col:14> col:14 'int'\n"
                              "| `-ParmVarDecl 0x3aea6c8 <col:17, col:21> col:21 'int'\n";
@@ -603,8 +614,25 @@ private:
         ASSERT_EQUALS(2, func->argCount());
         ASSERT_EQUALS(0, (long long)func->getArgumentVar(0)->nameToken());
         ASSERT_EQUALS(0, (long long)func->getArgumentVar(1)->nameToken());
-        //ASSERT_EQUALS(ValueType::Type::INT, func->getArgumentVar(0)->valueType()->type);
-        //ASSERT_EQUALS(ValueType::Type::INT, func->getArgumentVar(1)->valueType()->type);
+    }
+
+    void symbolDatabaseNodeType1() {
+        const char clang[] = "`-FunctionDecl 0x32438c0 <line:5:1, line:7:1> line:5:6 foo 'a::b (a::b)'\n"
+                             "  |-ParmVarDecl 0x32437b0 <col:10, col:15> col:15 used i 'a::b':'long'\n"
+                             "  `-CompoundStmt 0x3243a60 <col:18, line:7:1>\n"
+                             "    `-ReturnStmt 0x3243a48 <line:6:3, col:12>\n"
+                             "      `-BinaryOperator 0x3243a20 <col:10, col:12> 'long' '+'\n"
+                             "        |-ImplicitCastExpr 0x32439f0 <col:10> 'a::b':'long' <LValueToRValue>\n"
+                             "        | `-DeclRefExpr 0x32439a8 <col:10> 'a::b':'long' lvalue ParmVar 0x32437b0 'i' 'a::b':'long'\n"
+                             "        `-ImplicitCastExpr 0x3243a08 <col:12> 'long' <IntegralCast>\n"
+                             "          `-IntegerLiteral 0x32439d0 <col:12> 'int' 1\n";
+
+        GET_SYMBOL_DB(clang);
+
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), "i + 1");
+        ASSERT(!!tok);
+        ASSERT(!!tok->valueType());
+        ASSERT_EQUALS("signed long", tok->valueType()->str());
     }
 };
 
