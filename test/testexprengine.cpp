@@ -137,7 +137,8 @@ private:
 
     std::string trackExecution(const char code[]) {
         Settings settings;
-        settings.debugVerification = true;
+        settings.bugHunting = true;
+        settings.debugBugHunting = true;
         settings.platform(cppcheck::Platform::Unix64);
         settings.library.smartPointers.insert("std::shared_ptr");
         Tokenizer tokenizer(&settings, this);

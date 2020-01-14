@@ -79,14 +79,14 @@
 /*static*/ FILE* CppCheckExecutor::mExceptionOutput = stdout;
 
 CppCheckExecutor::CppCheckExecutor()
-    : mSettings(nullptr), mLatestProgressOutputTime(0), mErrorOutput(nullptr), mVerificationOutput(nullptr), mShowAllErrors(false)
+    : mSettings(nullptr), mLatestProgressOutputTime(0), mErrorOutput(nullptr), mBugHuntingReport(nullptr), mShowAllErrors(false)
 {
 }
 
 CppCheckExecutor::~CppCheckExecutor()
 {
     delete mErrorOutput;
-    delete mVerificationOutput;
+    delete mBugHuntingReport;
 }
 
 bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* const argv[])
@@ -1095,9 +1095,9 @@ void CppCheckExecutor::reportVerification(const std::string &str)
 {
     if (!mSettings || str.empty())
         return;
-    if (!mVerificationOutput)
-        mVerificationOutput = new std::ofstream(mSettings->verificationReport);
-    (*mVerificationOutput) << str << std::endl;
+    if (!mBugHuntingReport)
+        mBugHuntingReport = new std::ofstream(mSettings->bugHuntingReport);
+    (*mBugHuntingReport) << str << std::endl;
 }
 
 void CppCheckExecutor::setExceptionOutput(FILE* exceptionOutput)

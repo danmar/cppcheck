@@ -301,7 +301,7 @@ unsigned int CppCheck::check(const std::string &path)
             tokenizer.printDebugOutput(1);
 
 #ifdef USE_Z3
-        if (mSettings.verification)
+        if (mSettings.bugHunting)
             ExprEngine::runChecks(this, &tokenizer, &mSettings);
 #endif
         return 0;
@@ -838,39 +838,39 @@ void CppCheck::checkRawTokens(const Tokenizer &tokenizer)
 
 void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
 {
-    // call all "runChecks" in all registered Check classes
-    for (Check *check : Check::instances()) {
-        if (Settings::terminated())
-            return;
-
-        if (Tokenizer::isMaxTime())
-            return;
-
-        Timer timerRunChecks(check->name() + "::runChecks", mSettings.showtime, &s_timerResults);
-        check->runChecks(&tokenizer, &mSettings, this);
-    }
-
-    // Verification using ExprEngine..
-    if (mSettings.verification)
+    if (mSettings.bugHunting)
         ExprEngine::runChecks(this, &tokenizer, &mSettings);
+    else {
+        // call all "runChecks" in all registered Check classes
+        for (Check *check : Check::instances()) {
+            if (Settings::terminated())
+                return;
 
-    // Analyse the tokens..
+            if (Tokenizer::isMaxTime())
+                return;
 
-    CTU::FileInfo *fi1 = CTU::getFileInfo(&tokenizer);
-    if (fi1) {
-        mFileInfo.push_back(fi1);
-        mAnalyzerInformation.setFileInfo("ctu", fi1->toString());
-    }
-
-    for (const Check *check : Check::instances()) {
-        Check::FileInfo *fi = check->getFileInfo(&tokenizer, &mSettings);
-        if (fi != nullptr) {
-            mFileInfo.push_back(fi);
-            mAnalyzerInformation.setFileInfo(check->name(), fi->toString());
+            Timer timerRunChecks(check->name() + "::runChecks", mSettings.showtime, &s_timerResults);
+            check->runChecks(&tokenizer, &mSettings, this);
         }
-    }
 
-    executeRules("normal", tokenizer);
+        // Analyse the tokens..
+
+        CTU::FileInfo *fi1 = CTU::getFileInfo(&tokenizer);
+        if (fi1) {
+            mFileInfo.push_back(fi1);
+            mAnalyzerInformation.setFileInfo("ctu", fi1->toString());
+        }
+
+        for (const Check *check : Check::instances()) {
+            Check::FileInfo *fi = check->getFileInfo(&tokenizer, &mSettings);
+            if (fi != nullptr) {
+                mFileInfo.push_back(fi);
+                mAnalyzerInformation.setFileInfo(check->name(), fi->toString());
+            }
+        }
+
+        executeRules("normal", tokenizer);
+    }
 }
 
 //---------------------------------------------------------------------------

@@ -1719,20 +1719,20 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
         // TODO.. what about functions in headers?
         return;
 
-    if (!settings->verifyDiff.empty()) {
+    if (!settings->checkDiff.empty()) {
         const std::string filename = tokenizer->list.getFiles().at(functionScope->bodyStart->fileIndex());
-        bool verify = false;
-        for (const auto &diff: settings->verifyDiff) {
+        bool check = false;
+        for (const auto &diff: settings->checkDiff) {
             if (diff.filename != filename)
                 continue;
             if (diff.fromLine > functionScope->bodyEnd->linenr())
                 continue;
             if (diff.toLine < functionScope->bodyStart->linenr())
                 continue;
-            verify = true;
+            check = true;
             break;
         }
-        if (!verify)
+        if (!check)
             return;
     }
 
@@ -1757,19 +1757,21 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
         }
     }
 
-    if (settings->debugVerification && (settings->verbose || callbacks.empty() || !trackExecution.isAllOk())) {
-        if (!settings->verificationReport.empty())
+    const bool bugHuntingReport = !settings->bugHuntingReport.empty();
+
+    if (settings->debugBugHunting && (settings->verbose || callbacks.empty() || !trackExecution.isAllOk())) {
+        if (bugHuntingReport)
             report << "[debug]" << std::endl;
         trackExecution.print(report);
         if (!callbacks.empty()) {
-            if (!settings->verificationReport.empty())
+            if (bugHuntingReport)
                 report << "[details]" << std::endl;
             trackExecution.report(report, functionScope);
         }
     }
 
     // Write a verification report
-    if (!settings->verificationReport.empty()) {
+    if (bugHuntingReport) {
         report << "[function-report] "
                << Path::stripDirectoryPart(tokenizer->list.getFiles().at(functionScope->bodyStart->fileIndex())) << ":"
                << functionScope->bodyStart->linenr() << ":"
@@ -2044,7 +2046,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
 
     std::ostringstream report;
     ExprEngine::executeAllFunctions(tokenizer, settings, callbacks, report);
-    if (settings->verificationReport.empty())
+    if (settings->bugHuntingReport.empty())
         std::cout << report.str();
     else if (errorLogger)
         errorLogger->reportVerification(report.str());

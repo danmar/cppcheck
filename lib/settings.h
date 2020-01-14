@@ -194,22 +194,22 @@ public:
 
     SafeChecks safeChecks;
 
-    /** @brief Enable verification analysis */
-    bool verification;
+    /** @brief Bug hunting */
+    bool bugHunting;
 
-    /** @brief Verification report filename */
-    std::string verificationReport;
+    /** @brief Debug bug hunting */
+    bool debugBugHunting;
 
-    /** @brief Generate verification debug output */
-    bool debugVerification;
+    /** Filename for bug hunting report */
+    std::string bugHuntingReport;
 
-    /** @brief Verify diff */
+    /** @brief Check diff */
     struct Diff {
         std::string filename;
         int fromLine;
         int toLine;
     };
-    std::vector<Diff> verifyDiff;
+    std::vector<Diff> checkDiff;
 
     /** @brief check unknown function return values */
     std::set<std::string> checkUnknownFunctionReturn;
