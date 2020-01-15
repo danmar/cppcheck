@@ -40,7 +40,7 @@ def check(tc:str, warning_id:str):
                '-DAF_INET=1',
                '-DINADDR_ANY=1',
                '--library=posix',
-               '--verify',
+               '--bug-hunting',
                '--platform=unix64']
         cmd += glob.glob(f)
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -61,8 +61,8 @@ def check(tc:str, warning_id:str):
 
 
 final_report = ''
-#final_report += check('C/testcases/CWE369_Divide_by_Zero/s*/*.c', 'verificationDivByZero')
-final_report += check('C/testcases/CWE457_Use_of_Uninitialized_Variable/s*/*.c', 'verificationUninit')
+final_report += check('C/testcases/CWE369_Divide_by_Zero/s*/*.c', 'verificationDivByZero')
+#final_report += check('C/testcases/CWE457_Use_of_Uninitialized_Variable/s*/*.c', 'verificationUninit')
 
 print(final_report)
 

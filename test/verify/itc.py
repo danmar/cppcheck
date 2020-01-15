@@ -33,7 +33,7 @@ def get_error_lines(filename):
 
 def check(filename):
     cmd = [CPPCHECK_PATH,
-           '--verify',
+           '--bug-hunting',
            '--platform=unix64',
            filename]
     print(' '.join(cmd))
