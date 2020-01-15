@@ -740,7 +740,7 @@ bool ExprEngine::IntRange::isEqual(DataBase *dataBase, int value) const
 
 bool ExprEngine::IntRange::isGreaterThan(DataBase *dataBase, int value) const
 {
-    if (value < minValue || value > maxValue)
+    if (value <= minValue || value >= maxValue)
         return false;
 
     const Data *data = dynamic_cast<Data *>(dataBase);
@@ -769,7 +769,7 @@ bool ExprEngine::IntRange::isGreaterThan(DataBase *dataBase, int value) const
 
 bool ExprEngine::IntRange::isLessThan(DataBase *dataBase, int value) const
 {
-    if (value < minValue || value > maxValue)
+    if (value <= minValue || value >= maxValue)
         return false;
 
     const Data *data = dynamic_cast<Data *>(dataBase);
