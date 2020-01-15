@@ -1170,6 +1170,18 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
 
 static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
 {
+    if (Token::simpleMatch(tok->previous(), "sizeof (")) {
+        ExprEngine::ValuePtr retVal;
+        if (tok->hasKnownIntValue()) {
+            const MathLib::bigint value = tok->getKnownIntValue();
+            retVal = std::make_shared<ExprEngine::IntRange>(std::to_string(value), value, value);
+        } else {
+            retVal = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 1, 0x7fffffff);
+        }
+        call(data.callbacks, tok, retVal, &data);
+        return retVal;
+    }
+
     std::vector<ExprEngine::ValuePtr> argValues;
     for (const Token *argtok : getArguments(tok)) {
         auto val = executeExpression(argtok, data);
