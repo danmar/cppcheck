@@ -204,7 +204,7 @@ namespace {
             for (std::map<nonneg int, ExprEngine::ValuePtr>::iterator it = memory.begin(); it != memory.end();) {
                 unsigned int varid = it->first;
                 const Variable *var = symbolDatabase->getVariableFromVarId(varid);
-                if (var->isGlobal())
+                if (var && var->isGlobal())
                     it = memory.erase(it);
                 else
                     ++it;
