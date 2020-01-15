@@ -1944,7 +1944,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
 
         if (parent->astOperand1()->function()) {
             const Variable *arg = parent->astOperand1()->function()->getArgumentVar(num - 1);
-            if (arg->nameToken()) {
+            if (arg && arg->nameToken()) {
                 std::string bad;
 
                 MathLib::bigint low;
