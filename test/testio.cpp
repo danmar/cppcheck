@@ -73,6 +73,7 @@ private:
 
         TEST_CASE(testPrintfTypeAlias1);
         TEST_CASE(testPrintfAuto); // #8992
+        TEST_CASE(testPrintfParenthesis); // #8489
     }
 
     void check(const char* code, bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified) {
@@ -4803,6 +4804,23 @@ private:
               "    printf(\"%f\", s);\n"
               "}\n", false, true);
         ASSERT_EQUALS("[test.cpp:4]: (portability) %f in format string (no. 1) requires 'double' but the argument type is 'size_t {aka unsigned long}'.\n", errout.str());
+    }
+
+    void testPrintfParenthesis() { // #8489
+        check("void f(int a) {\n"
+              "    printf(\"%f\", (a >> 24) & 0xff);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'signed int'.\n", errout.str());
+
+        check("void f(int a) {\n"
+              "    printf(\"%f\", 0xff & (a >> 24));\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'signed int'.\n", errout.str());
+
+        check("void f(int a) {\n"
+              "    printf(\"%f\", ((a >> 24) + 1) & 0xff);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'signed int'.\n", errout.str());
     }
 };
 
