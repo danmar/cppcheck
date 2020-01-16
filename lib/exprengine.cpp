@@ -602,7 +602,7 @@ struct ExprData {
 #ifdef NEW_Z3
         z3::expr e = context.fpa_const(name.c_str(), 11, 53);
 #else
-        z3::expr e = context.real_val(name.c_str());
+        z3::expr e = context.real_const(name.c_str());
 #endif
         valueExpr.emplace(name, e);
         return e;
