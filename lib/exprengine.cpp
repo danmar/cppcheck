@@ -599,10 +599,10 @@ struct ExprData {
     }
 
     z3::expr addFloat(const std::string &name) {
-#ifdef OLD_Z3
-        z3::expr e = context.real_val(name.c_str());
-#else
+#ifdef NEW_Z3
         z3::expr e = context.fpa_const(name.c_str(), 11, 53);
+#else
+        z3::expr e = context.real_val(name.c_str());
 #endif
         valueExpr.emplace(name, e);
         return e;
@@ -621,10 +621,10 @@ struct ExprData {
         if (b->binop == "/")
             return op1 / op2;
         if (b->binop == "%")
-#ifdef OLD_Z3
-            return op1;
-#else
+#ifdef NEW_Z3
             return op1 % op2;
+#else
+            return op1 - (op1 / op2) * op2;
 #endif
         if (b->binop == "==")
             return int_expr(op1) == int_expr(op2);
@@ -654,10 +654,10 @@ struct ExprData {
             throw VerifyException(nullptr, "Can not solve expressions, operand value is null");
         if (auto intRange = std::dynamic_pointer_cast<ExprEngine::IntRange>(v)) {
             if (intRange->name[0] != '$')
-#ifdef OLD_z3
-                return context.int_val((long long)(intRange->minValue));
-#else
+#ifdef NEW_Z3
                 return context.int_val(int64_t(intRange->minValue));
+#else
+                return context.int_val((long long)(intRange->minValue));
 #endif
             auto it = valueExpr.find(v->name);
             if (it != valueExpr.end())
