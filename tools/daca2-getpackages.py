@@ -121,7 +121,7 @@ def getpackages():
             filenames = []
         elif line.startswith('./pool/main/'):
             path = line[2:-1]
-        elif path and line.endswith(('.orig.tar.gz', '.orig.tar.bz2')):
+        elif path and line.endswith(('.orig.tar.gz', '.orig.tar.bz2', '.orig.tar.xz')):
             filename = line[1 + line.rfind(' '):]
             filenames.append(filename)
 
