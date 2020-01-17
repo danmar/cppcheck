@@ -2187,7 +2187,7 @@ static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, cons
     if (tok->hasKnownIntValue())
         return true;
     if (Token::Match(tok, "%cop%"))
-        return bifurcate(tok->astOperand1(), varids, settings) && bifurcate(tok->astOperand2(), varids, settings, depth);
+        return bifurcate(tok->astOperand1(), varids, settings, depth) && bifurcate(tok->astOperand2(), varids, settings, depth);
     if (Token::Match(tok, "%var%")) {
         if (varids.count(tok->varId()) > 0)
             return true;
@@ -2196,6 +2196,8 @@ static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, cons
             return false;
         const Token* start = var->declEndToken();
         if (!start)
+            return false;
+        if (start->strAt(-1) == ")" || start->strAt(-1) == "}")
             return false;
         if (Token::Match(start, "; %varid% =", var->declarationId()))
             start = start->tokAt(2);
