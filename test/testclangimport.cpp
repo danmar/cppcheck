@@ -65,7 +65,8 @@ private:
         TEST_CASE(typedefDecl1);
         TEST_CASE(typedefDecl2);
         TEST_CASE(typedefDecl3);
-        TEST_CASE(unaryExprOrTypeTraitExpr);
+        TEST_CASE(unaryExprOrTypeTraitExpr1);
+        TEST_CASE(unaryExprOrTypeTraitExpr2);
         TEST_CASE(unaryOperator);
         TEST_CASE(vardecl1);
         TEST_CASE(vardecl2);
@@ -495,11 +496,20 @@ private:
         ASSERT_EQUALS("typedef char * __builtin_ms_va_list ;", parse(clang));
     }
 
-    void unaryExprOrTypeTraitExpr() {
+    void unaryExprOrTypeTraitExpr1() {
         const char clang[] = "`-VarDecl 0x24cc610 <a.cpp:1:1, col:19> col:5 x 'int' cinit\n"
                              "  `-ImplicitCastExpr 0x24cc6e8 <col:9, col:19> 'int' <IntegralCast>\n"
                              "    `-UnaryExprOrTypeTraitExpr 0x24cc6c8 <col:9, col:19> 'unsigned long' sizeof 'int'\n";
         ASSERT_EQUALS("int x@1 = sizeof ( int ) ;", parse(clang));
+    }
+
+    void unaryExprOrTypeTraitExpr2() {
+        const char clang[] = "`-VarDecl 0x27c6c00 <line:3:5, col:23> col:9 x 'int' cinit\n"
+                             "  `-ImplicitCastExpr 0x27c6cc8 <col:13, col:23> 'int' <IntegralCast>\n"
+                             "    `-UnaryExprOrTypeTraitExpr 0x27c6ca8 <col:13, col:23> 'unsigned long' sizeof\n"
+                             "      `-ParenExpr 0x27c6c88 <col:19, col:23> 'char [10]' lvalue\n"
+                             "        `-DeclRefExpr 0x27c6c60 <col:20> 'char [10]' lvalue Var 0x27c6b48 'buf' 'char [10]'";
+        ASSERT_EQUALS("int x@1 = sizeof ( char [10] ) ;", parse(clang));
     }
 
     void unaryOperator() {

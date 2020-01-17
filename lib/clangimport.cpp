@@ -252,9 +252,18 @@ std::string clangimport::AstNode::getSpelling() const
         int typeIndex = 1;
         while (typeIndex < mExtTokens.size() && mExtTokens[typeIndex][0] != '\'')
             typeIndex++;
+        // name is next quoted token
         int nameIndex = typeIndex + 1;
         while (nameIndex < mExtTokens.size() && mExtTokens[nameIndex][0] != '\'')
             nameIndex++;
+        return (nameIndex < mExtTokens.size()) ? unquote(mExtTokens[nameIndex]) : "";
+    }
+
+    if (nodeType == UnaryExprOrTypeTraitExpr) {
+        int typeIndex = 1;
+        while (typeIndex < mExtTokens.size() && mExtTokens[typeIndex][0] != '\'')
+            typeIndex++;
+        int nameIndex = typeIndex + 1;
         return (nameIndex < mExtTokens.size()) ? unquote(mExtTokens[nameIndex]) : "";
     }
 
@@ -759,7 +768,10 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     if (nodeType == UnaryExprOrTypeTraitExpr) {
         Token *tok1 = addtoken(tokenList, getSpelling());
         Token *par1 = addtoken(tokenList, "(");
-        addTypeTokens(tokenList, mExtTokens.back());
+        if (children.empty())
+            addTypeTokens(tokenList, mExtTokens.back());
+        else
+            addTypeTokens(tokenList, children[0]->getType());
         Token *par2 = addtoken(tokenList, ")");
         par1->link(par2);
         par2->link(par1);
