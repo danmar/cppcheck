@@ -80,6 +80,7 @@ private:
         TEST_CASE(symbolDatabaseNodeType1);
 
         TEST_CASE(valueFlow1);
+        TEST_CASE(valueFlow2);
     }
 
     std::string parse(const char clang[]) {
@@ -662,6 +663,22 @@ private:
         tok = tok->next();
         ASSERT(tok->hasKnownIntValue());
         ASSERT_EQUALS(44, tok->getKnownIntValue());
+    }
+
+    void valueFlow2() {
+        const char clang[] = "`-VarDecl 0x4145bc0 <line:2:1, col:20> col:5 sz 'int' cinit\n"
+                             "  `-ImplicitCastExpr 0x4145c88 <col:10, col:20> 'int' <IntegralCast>\n"
+                             "    `-UnaryExprOrTypeTraitExpr 0x4145c68 <col:10, col:20> 'unsigned long' sizeof\n"
+                             "      `-ParenExpr 0x4145c48 <col:16, col:20> 'char [10]' lvalue\n"
+                             "        `-DeclRefExpr 0x4145c20 <col:17> 'char [10]' lvalue Var 0x4145b08 'buf' 'char [10]'";
+
+        GET_SYMBOL_DB(clang);
+
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), "sizeof (");
+        ASSERT(!!tok);
+        tok = tok->next();
+        ASSERT(tok->hasKnownIntValue());
+        ASSERT_EQUALS(10, tok->getKnownIntValue());
     }
 };
 

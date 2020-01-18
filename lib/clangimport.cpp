@@ -976,14 +976,19 @@ static void setValues(Tokenizer *tokenizer, SymbolDatabase *symbolDatabase)
 
     for (Token *tok = const_cast<Token*>(tokenizer->tokens()); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof (")) {
-            int sz = 0;
-            for (Token *typeToken = tok->tokAt(2); typeToken->str() != ")"; typeToken = typeToken->next()) {
-                if (typeToken->type())
-                    sz = typeToken->type()->sizeOf;
-            }
+            ValueType vt = ValueType::parseDecl(tok->tokAt(2), settings);
+            int sz = vt.typeSize(*settings);
             if (sz <= 0)
                 continue;
-            ValueFlow::Value v(sz);
+            int mul = 1;
+            for (Token *arrtok = tok->linkAt(1)->previous(); arrtok; arrtok = arrtok->previous()) {
+                const std::string &a = arrtok->str();
+                if (a.size() > 2 && a[0] == '[' && a.back() == ']')
+                    mul *= std::atoi(a.substr(1).c_str());
+                else
+                    break;
+            }
+            ValueFlow::Value v(mul * sz);
             v.setKnown();
             tok->next()->addValue(v);
         }
