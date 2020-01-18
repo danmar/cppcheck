@@ -6127,10 +6127,10 @@ std::string ValueType::dump() const
     return ret.str();
 }
 
-MathLib::bigint ValueType::typeSize(const cppcheck::Platform &platform) const
+MathLib::bigint ValueType::typeSize(const cppcheck::Platform &platform, bool p) const
 {
-    //if (pointer)
-    //    return platform.sizeof_pointer;
+    if (p && pointer)
+        return platform.sizeof_pointer;
 
     if (typeScope && typeScope->definedType && typeScope->definedType->sizeOf)
         return typeScope->definedType->sizeOf;

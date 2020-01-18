@@ -1222,7 +1222,7 @@ public:
         return typeScope && typeScope->type == Scope::eEnum;
     }
 
-    MathLib::bigint typeSize(const cppcheck::Platform &platform) const;
+    MathLib::bigint typeSize(const cppcheck::Platform &platform, bool p=false) const;
 
     std::string str() const;
     std::string dump() const;
