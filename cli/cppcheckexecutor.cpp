@@ -1091,7 +1091,7 @@ void CppCheckExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
     }
 }
 
-void CppCheckExecutor::reportVerification(const std::string &str)
+void CppCheckExecutor::bughuntingReport(const std::string &str)
 {
     if (!mSettings || str.empty())
         return;

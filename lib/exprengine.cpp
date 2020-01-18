@@ -1794,7 +1794,7 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
         }
     }
 
-    // Write a verification report
+    // Write a report
     if (bugHuntingReport) {
         report << "[function-report] "
                << Path::stripDirectoryPart(tokenizer->list.getFiles().at(functionScope->bodyStart->fileIndex())) << ":"
@@ -1827,7 +1827,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
         if (tok->astParent()->astOperand2() == tok && value.isEqual(dataBase, 0)) {
             dataBase->addError(tok->linenr());
             std::list<const Token*> callstack{tok->astParent()};
-            const char * const id = (tok->valueType() && tok->valueType()->isFloat()) ? "verificationDivByZeroFloat" : "verificationDivByZero";
+            const char * const id = (tok->valueType() && tok->valueType()->isFloat()) ? "bughuntingDivByZeroFloat" : "bughuntingDivByZero";
             ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, id, "There is division, cannot determine that there can't be a division by zero.", CWE(369), false);
             errorLogger->reportErr(errmsg);
         }
@@ -1877,7 +1877,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             errorMessage += " Note that unsigned integer overflow is defined and will wrap around.";
 
         std::list<const Token*> callstack{tok};
-        ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationIntegerOverflow", errorMessage, false);
+        ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingIntegerOverflow", errorMessage, false);
         errorLogger->reportErr(errmsg);
     };
 #endif
@@ -1943,7 +1943,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
 
         dataBase->addError(tok->linenr());
         std::list<const Token*> callstack{tok};
-        ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationUninit", "Cannot determine that '" + tok->expressionString() + "' is initialized", CWE_USE_OF_UNINITIALIZED_VARIABLE, false);
+        ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingUninit", "Cannot determine that '" + tok->expressionString() + "' is initialized", CWE_USE_OF_UNINITIALIZED_VARIABLE, false);
         errorLogger->reportErr(errmsg);
     };
 #endif
@@ -1991,7 +1991,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
                     ErrorLogger::ErrorMessage errmsg(callstack,
                                                      &tokenizer->list,
                                                      Severity::SeverityType::error,
-                                                     "verificationInvalidArgValue",
+                                                     "bughuntingInvalidArgValue",
                                                      "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument value meets the attribute " + bad, CWE(0), false);
                     errorLogger->reportErr(errmsg);
                     return;
@@ -2040,7 +2040,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             if (err) {
                 dataBase->addError(tok->linenr());
                 std::list<const Token*> callstack{tok};
-                ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationInvalidArgValue", "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument value is valid. Bad value: " + bad, CWE(0), false);
+                ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingInvalidArgValue", "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument value is valid. Bad value: " + bad, CWE(0), false);
                 errorLogger->reportErr(errmsg);
                 break;
             }
@@ -2055,7 +2055,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
                 if (v.second->isUninit()) {
                     dataBase->addError(tok->linenr());
                     std::list<const Token*> callstack{tok};
-                    ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationUninitArg", "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument is initialized.", CWE_USE_OF_UNINITIALIZED_VARIABLE, false);
+                    ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingUninitArg", "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument is initialized.", CWE_USE_OF_UNINITIALIZED_VARIABLE, false);
                     errorLogger->reportErr(errmsg);
                     break;
                 }
@@ -2079,5 +2079,5 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
     if (settings->bugHuntingReport.empty())
         std::cout << report.str();
     else if (errorLogger)
-        errorLogger->reportVerification(report.str());
+        errorLogger->bughuntingReport(report.str());
 }

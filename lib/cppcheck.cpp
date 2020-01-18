@@ -1286,9 +1286,9 @@ void CppCheck::reportStatus(unsigned int /*fileindex*/, unsigned int /*filecount
 
 }
 
-void CppCheck::reportVerification(const std::string &str)
+void CppCheck::bughuntingReport(const std::string &str)
 {
-    mErrorLogger.reportVerification(str);
+    mErrorLogger.bughuntingReport(str);
 }
 
 void CppCheck::getErrorMessages()
