@@ -24,7 +24,9 @@ with syntax highlighted source code.
 
 STYLE_FILE = """
 body {
-    font: 13px Arial, Verdana, Sans-Serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
     margin: 0;
     width: auto;
 }
