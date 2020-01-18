@@ -157,6 +157,10 @@ div.verbose div.content {
     list-style-type: none;
     padding-left: 0;
 }
+
+.d-none {
+    display: none;
+}
 """
 
 HTML_HEAD = """
@@ -172,6 +176,7 @@ HTML_HEAD = """
     <script>
       function getStyle(el, styleProp) {
         var y;
+
         if (el.currentStyle) {
           y = el.currentStyle[styleProp];
         } else if (window.getComputedStyle) {
@@ -210,22 +215,18 @@ HTML_HEAD = """
         }
       }
 
-      function setDisplayClass(c, st) {
-        var elements = document.querySelectorAll("." + c);
+      function toggleDisplay(id) {
+        var elements = document.querySelectorAll("." + id);
 
         for (var i = 0, len = elements.length; i < len; i++) {
-          elements[i].style.display = st;
+          elements[i].classList.toggle("d-none");
         }
-      }
-
-      function toggleVisibilityClass(id) {
-        var box = document.getElementById(id);
-        setDisplayClass(id, box.checked ? "" : "none");
       }
 
       function toggleAll() {
         var elements = document.querySelectorAll("input");
 
+        // starting from 1 since 0 is the "toggle all" input
         for (var i = 1, len = elements.length; i < len; i++) {
           var el = elements[i];
 
@@ -235,7 +236,7 @@ HTML_HEAD = """
             el.checked = true;
           }
 
-          toggleVisibilityClass(el.id);
+          toggleDisplay(el.id);
         }
       }
       window.addEventListener("load", initExpandables);
@@ -578,7 +579,7 @@ if __name__ == '__main__':
         except IndexError:
             cnt_min = 0
 
-        stat_fmt = "\n            <tr><td><input type=\"checkbox\" onclick=\"toggleVisibilityClass(this.id)\" id=\"{}\" name=\"{}\" checked></td><td>{}</td><td>{}</td></tr>"
+        stat_fmt = "\n            <tr><td><input type=\"checkbox\" onclick=\"toggleDisplay(this.id)\" id=\"{}\" name=\"{}\" checked></td><td>{}</td><td>{}</td></tr>"
         for occurrences in reversed(range(cnt_min, cnt_max + 1)):
             for _id in [k for k, v in sorted(counter.items()) if v == occurrences]:
                 stat_html.append(stat_fmt.format(_id, _id, dict(counter.most_common())[_id], _id))
