@@ -40,6 +40,7 @@ static const std::string CStyleCastExpr = "CStyleCastExpr";
 static const std::string CXXBoolLiteralExpr = "CXXBoolLiteralExpr";
 static const std::string CXXConstructorDecl = "CXXConstructorDecl";
 static const std::string CXXConstructExpr = "CXXConstructExpr";
+static const std::string CXXForRangeStmt = "CXXForRangeStmt";
 static const std::string CXXMemberCallExpr = "CXXMemberCallExpr";
 static const std::string CXXMethodDecl = "CXXMethodDecl";
 static const std::string CXXNullPtrLiteralExpr = "CXXNullPtrLiteralExpr";
@@ -569,6 +570,28 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         }
         if (hasBody)
             createTokensFunctionDecl(tokenList);
+        return nullptr;
+    }
+    if (nodeType == CXXForRangeStmt) {
+        Token *forToken = addtoken(tokenList, "for");
+        Token *par1 = addtoken(tokenList, "(");
+        children[5]->children[0]->mExtTokens.pop_back();
+        children[5]->children[0]->children.clear();
+        Token *expr1 = children[5]->children[0]->createTokens(tokenList);
+        Token *colon = addtoken(tokenList, ":");
+        Token *expr2 = children[0]->children[0]->children[0]->createTokens(tokenList);
+        Token *par2 = addtoken(tokenList, ")");
+
+        par1->link(par2);
+        par2->link(par1);
+
+        colon->astOperand1(expr1);
+        colon->astOperand2(expr2);
+        par1->astOperand1(forToken);
+        par1->astOperand2(colon);
+
+        Scope *scope = createScope(tokenList, Scope::ScopeType::eFor, children[6]);
+        scope->classDef = forToken;
         return nullptr;
     }
     if (nodeType == CXXMethodDecl) {

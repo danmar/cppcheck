@@ -43,6 +43,7 @@ private:
         TEST_CASE(cxxConstructExpr1);
         TEST_CASE(cxxConstructExpr2);
         TEST_CASE(cxxConstructExpr3);
+        TEST_CASE(cxxForRangeStmt);
         TEST_CASE(cxxMemberCall);
         TEST_CASE(cxxMethodDecl);
         TEST_CASE(cxxNullPtrLiteralExpr);
@@ -259,6 +260,42 @@ private:
                              "            |   `-DeclRefExpr 0x2c58750 <col:35> 'char *' lvalue Var 0x2c58670 'p' 'char *'\n"
                              "            `-CXXDefaultArgExpr 0x2c58940 <<invalid sloc>> 'const std::allocator<char>':'const std::allocator<char>' lvalue\n";
         ASSERT_EQUALS("void f ( ) { char * p@1 ; std::string s@2 ( p@1 ) ; }", parse(clang));
+    }
+
+    void cxxForRangeStmt() {
+        const char clang[] = "`-FunctionDecl 0x4280820 <line:4:1, line:8:1> line:4:6 foo 'void ()'\n"
+                             "  `-CompoundStmt 0x42810f0 <col:12, line:8:1>\n"
+                             "    `-CXXForRangeStmt 0x4281090 <line:5:3, line:7:3>\n"
+                             "      |-DeclStmt 0x4280c30 <line:5:17>\n"
+                             "      | `-VarDecl 0x42809c8 <col:17> col:17 implicit referenced __range1 'char const (&)[6]' cinit\n"
+                             "      |   `-DeclRefExpr 0x42808c0 <col:17> 'const char [6]' lvalue Var 0x4280678 'hello' 'const char [6]'\n"
+                             "      |-DeclStmt 0x4280ef8 <col:15>\n"
+                             "      | `-VarDecl 0x4280ca8 <col:15> col:15 implicit used __begin1 'const char *':'const char *' cinit\n"
+                             "      |   `-ImplicitCastExpr 0x4280e10 <col:15> 'const char *' <ArrayToPointerDecay>\n"
+                             "      |     `-DeclRefExpr 0x4280c48 <col:15> 'char const[6]' lvalue Var 0x42809c8 '__range1' 'char const (&)[6]'\n"
+                             "      |-DeclStmt 0x4280f10 <col:15>\n"
+                             "      | `-VarDecl 0x4280d18 <col:15, col:17> col:15 implicit used __end1 'const char *':'const char *' cinit\n"
+                             "      |   `-BinaryOperator 0x4280e60 <col:15, col:17> 'const char *' '+'\n"
+                             "      |     |-ImplicitCastExpr 0x4280e48 <col:15> 'const char *' <ArrayToPointerDecay>\n"
+                             "      |     | `-DeclRefExpr 0x4280c70 <col:15> 'char const[6]' lvalue Var 0x42809c8 '__range1' 'char const (&)[6]'\n"
+                             "      |     `-IntegerLiteral 0x4280e28 <col:17> 'long' 6\n"
+                             "      |-BinaryOperator 0x4280fa8 <col:15> 'bool' '!='\n"
+                             "      | |-ImplicitCastExpr 0x4280f78 <col:15> 'const char *':'const char *' <LValueToRValue>\n"
+                             "      | | `-DeclRefExpr 0x4280f28 <col:15> 'const char *':'const char *' lvalue Var 0x4280ca8 '__begin1' 'const char *':'const char *'\n"
+                             "      | `-ImplicitCastExpr 0x4280f90 <col:15> 'const char *':'const char *' <LValueToRValue>\n"
+                             "      |   `-DeclRefExpr 0x4280f50 <col:15> 'const char *':'const char *' lvalue Var 0x4280d18 '__end1' 'const char *':'const char *'\n"
+                             "      |-UnaryOperator 0x4280ff8 <col:15> 'const char *':'const char *' lvalue prefix '++'\n"
+                             "      | `-DeclRefExpr 0x4280fd0 <col:15> 'const char *':'const char *' lvalue Var 0x4280ca8 '__begin1' 'const char *':'const char *'\n"
+                             "      |-DeclStmt 0x4280958 <col:8, col:22>\n"
+                             "      | `-VarDecl 0x42808f8 <col:8, col:15> col:13 c1 'char' cinit\n"
+                             "      |   `-ImplicitCastExpr 0x4281078 <col:15> 'char' <LValueToRValue>\n"
+                             "      |     `-UnaryOperator 0x4281058 <col:15> 'const char' lvalue prefix '*' cannot overflow\n"
+                             "      |       `-ImplicitCastExpr 0x4281040 <col:15> 'const char *':'const char *' <LValueToRValue>\n"
+                             "      |         `-DeclRefExpr 0x4281018 <col:15> 'const char *':'const char *' lvalue Var 0x4280ca8 '__begin1' 'const char *':'const char *'\n"
+                             "      `-CompoundStmt 0x42810e0 <col:24, line:7:3>";
+        ASSERT_EQUALS("void foo ( ) {\n"
+                      "for ( char c1@1 : hello ) { } }",
+                      parse(clang));
     }
 
     void cxxMemberCall() {
