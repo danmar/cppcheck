@@ -741,6 +741,8 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
             Scope *recordScope = createScope(tokenList, Scope::ScopeType::eStruct, children);
             mData->mSymbolDatabase->typeList.push_back(Type(classDef, recordScope, classDef->scope()));
             recordScope->definedType = &mData->mSymbolDatabase->typeList.back();
+            if (!recordName.empty())
+                const_cast<Scope *>(classDef->scope())->definedTypesMap[recordName] = recordScope->definedType;
         }
         return nullptr;
     }
@@ -939,6 +941,55 @@ Token * clangimport::AstNode::createTokensVarDecl(TokenList *tokenList)
     return vartok1;
 }
 
+static void setTypes(TokenList *tokenList)
+{
+    for (Token *tok = tokenList->front(); tok; tok = tok->next()) {
+        if (Token::simpleMatch(tok, "sizeof (")) {
+            for (Token *typeToken = tok->tokAt(2); typeToken->str() != ")"; typeToken = typeToken->next()) {
+                if (typeToken->type())
+                    continue;
+                typeToken->type(typeToken->scope()->findType(typeToken->str()));
+            }
+        }
+    }
+}
+
+static void setValues(Tokenizer *tokenizer, SymbolDatabase *symbolDatabase)
+{
+    const Settings * const settings = tokenizer->getSettings();
+
+    for (Scope &scope: symbolDatabase->scopeList) {
+        if (!scope.definedType)
+            continue;
+
+        int typeSize = 0;
+        for (const Variable &var: scope.varlist) {
+            int mul = 1;
+            for (const auto &dim: var.dimensions()) {
+                mul *= dim.num;
+            }
+            if (var.valueType())
+                typeSize += mul * var.valueType()->typeSize(*settings);
+        }
+        scope.definedType->sizeOf = typeSize;
+    }
+
+    for (Token *tok = const_cast<Token*>(tokenizer->tokens()); tok; tok = tok->next()) {
+        if (Token::simpleMatch(tok, "sizeof (")) {
+            int sz = 0;
+            for (Token *typeToken = tok->tokAt(2); typeToken->str() != ")"; typeToken = typeToken->next()) {
+                if (typeToken->type())
+                    sz = typeToken->type()->sizeOf;
+            }
+            if (sz <= 0)
+                continue;
+            ValueFlow::Value v(sz);
+            v.setKnown();
+            tok->next()->addValue(v);
+        }
+    }
+}
+
 void clangimport::parseClangAstDump(Tokenizer *tokenizer, std::istream &f)
 {
     TokenList *tokenList = &tokenizer->list;
@@ -993,5 +1044,7 @@ void clangimport::parseClangAstDump(Tokenizer *tokenizer, std::istream &f)
 
     symbolDatabase->clangSetVariables(data.getVariableList());
     tokenList->clangSetOrigFiles();
+    setTypes(tokenList);
+    setValues(tokenizer, symbolDatabase);
 }
 

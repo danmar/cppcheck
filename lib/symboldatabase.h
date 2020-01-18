@@ -101,6 +101,7 @@ public:
 
     const Token * typeStart;
     const Token * typeEnd;
+    MathLib::bigint sizeOf;
 
     Type(const Token* classDef_ = nullptr, const Scope* classScope_ = nullptr, const Scope* enclosingScope_ = nullptr) :
         classDef(classDef_),
@@ -108,7 +109,8 @@ public:
         enclosingScope(enclosingScope_),
         needInitialization(NeedInitialization::Unknown),
         typeStart(nullptr),
-        typeEnd(nullptr) {
+        typeEnd(nullptr),
+        sizeOf(0) {
         if (classDef_ && classDef_->str() == "enum")
             needInitialization = NeedInitialization::True;
         else if (classDef_ && classDef_->str() == "using") {

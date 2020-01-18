@@ -78,6 +78,8 @@ private:
         TEST_CASE(symbolDatabaseFunction1);
         TEST_CASE(symbolDatabaseFunction2);
         TEST_CASE(symbolDatabaseNodeType1);
+
+        TEST_CASE(valueFlow1);
     }
 
     std::string parse(const char clang[]) {
@@ -586,6 +588,7 @@ private:
 
 #define GET_SYMBOL_DB(clang) \
     Settings settings; \
+    settings.platform(cppcheck::Platform::PlatformType::Unix64); \
     Tokenizer tokenizer(&settings, this); \
     std::istringstream istr(clang); \
     clangimport::parseClangAstDump(&tokenizer, istr); \
@@ -643,6 +646,22 @@ private:
         ASSERT(!!tok);
         ASSERT(!!tok->valueType());
         ASSERT_EQUALS("signed long", tok->valueType()->str());
+    }
+
+    void valueFlow1() {
+        const char clang[] = "|-RecordDecl 0x2fc5a88 <1.c:1:1, line:4:1> line:1:8 struct S definition\n"
+                             "| |-FieldDecl 0x2fc5b48 <line:2:3, col:7> col:7 x 'int'\n"
+                             "| `-FieldDecl 0x2fc5c10 <line:3:3, col:13> col:7 buf 'int [10]'\n"
+                             "`-VarDecl 0x2fc5c70 <line:6:1, col:25> col:5 sz 'int' cinit\n"
+                             "  `-ImplicitCastExpr 0x2fc5d88 <col:10, col:25> 'int' <IntegralCast>\n"
+                             "    `-UnaryExprOrTypeTraitExpr 0x2fc5d68 <col:10, col:25> 'unsigned long' sizeof 'struct S':'struct S'";
+        GET_SYMBOL_DB(clang);
+
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), "sizeof (");
+        ASSERT(!!tok);
+        tok = tok->next();
+        ASSERT(tok->hasKnownIntValue());
+        ASSERT_EQUALS(44, tok->getKnownIntValue());
     }
 };
 
