@@ -6129,10 +6129,10 @@ std::string ValueType::dump() const
 
 MathLib::bigint ValueType::typeSize(const cppcheck::Platform &platform) const
 {
-    if (pointer)
-        return platform.sizeof_pointer;
+    //if (pointer)
+    //    return platform.sizeof_pointer;
 
-    if (typeScope && typeScope->definedType)
+    if (typeScope && typeScope->definedType && typeScope->definedType->sizeOf)
         return typeScope->definedType->sizeOf;
 
     switch (type) {
