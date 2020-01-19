@@ -43,6 +43,10 @@ void ImportProject::ignorePaths(const std::vector<std::string> &ipaths)
                 ignore = true;
                 break;
             }
+			if (isValidGlobPattern(i) && matchglob(i, it->filename)) {
+			    ignore = true;
+			    break;
+			}
             if (!Path::isAbsolute(i)) {
                 i = mPath + i;
                 if (it->filename.size() > i.size() && it->filename.compare(0,i.size(),i)==0) {
