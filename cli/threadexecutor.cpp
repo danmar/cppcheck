@@ -498,7 +498,7 @@ void ThreadExecutor::reportInfo(const ErrorLogger::ErrorMessage &msg)
 
 }
 
-void ThreadExecutor::reportVerification(const std::string  &/*str*/)
+void ThreadExecutor::bughuntingReport(const std::string  &/*str*/)
 {
     // TODO
 }
@@ -561,7 +561,7 @@ void ThreadExecutor::reportInfo(const ErrorLogger::ErrorMessage &/*msg*/)
 
 }
 
-void ThreadExecutor::reportVerification(const std::string &/*str*/)
+void ThreadExecutor::bughuntingReport(const std::string &/*str*/)
 {
 }
 
