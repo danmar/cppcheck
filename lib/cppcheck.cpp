@@ -254,12 +254,11 @@ unsigned int CppCheck::check(const std::string &path)
         mErrorLogger.reportOut(std::string("Checking ") + path + "...");
 
         const std::string clang = Path::isCPP(path) ? "clang++" : "clang";
+        const std::string temp = mSettings.buildDir + "/__temp__.c";
+        const std::string stderr = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "") + ".clang-stderr";
 
         /* Experimental: import clang ast dump */
-        std::ofstream fout("__temp__.c");
-        fout << "int x;\n";
-        fout.close();
-        const std::string cmd1 = clang + " -v -fsyntax-only __temp__.c 2>&1";
+        const std::string cmd1 = clang + " -v -fsyntax-only " + temp + " 2>&1";
         const std::pair<bool, std::string> res1 = executeCommand(cmd1);
         if (!res1.first) {
             std::cerr << "Failed to execute '" + cmd1 + "'" << std::endl;
@@ -285,7 +284,7 @@ unsigned int CppCheck::check(const std::string &path)
         for (const std::string &i: mSettings.includePaths)
             flags += "-I" + i + " ";
 
-        const std::string cmd = clang + " -cc1 -ast-dump " + flags + path;
+        const std::string cmd = clang + " -cc1 -ast-dump " + flags + path + " 2> " + stderr;
         std::pair<bool, std::string> res = executeCommand(cmd);
         if (!res.first) {
             std::cerr << "Failed to execute '" + cmd + "'" << std::endl;

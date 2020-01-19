@@ -916,6 +916,16 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
         }
     }
 
+    if (mSettings->clang) {
+        if (mSettings->buildDir.empty()) {
+            printMessage("If --clang is used then --cppcheck-build-dir must be specified also");
+            return false;
+        }
+        std::ofstream fout(mSettings->buildDir + "/__temp__.c");
+        fout << "int x;\n";
+    }
+
+
     // Default template format..
     if (mSettings->templateFormat.empty()) {
         mSettings->templateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]\\n{code}";
