@@ -22,51 +22,51 @@
 
 class TestUtils : public TestFixture {
 public:
-	TestUtils() : TestFixture("TestUtils") {
-	}
+    TestUtils() : TestFixture("TestUtils") {
+    }
 
 private:
-	void run() OVERRIDE {
-		TEST_CASE(isValidGlobPattern);
-		TEST_CASE(matchglob);
-	}
+    void run() OVERRIDE {
+        TEST_CASE(isValidGlobPattern);
+        TEST_CASE(matchglob);
+    }
 
-	void isValidGlobPattern() {
-		ASSERT_EQUALS(true, ::isValidGlobPattern("*"));
-		ASSERT_EQUALS(true, ::isValidGlobPattern("*x"));
-		ASSERT_EQUALS(true, ::isValidGlobPattern("x*"));
-		ASSERT_EQUALS(true, ::isValidGlobPattern("*/x/*"));
-		ASSERT_EQUALS(true, ::isValidGlobPattern("x/*/z"));
-		ASSERT_EQUALS(false, ::isValidGlobPattern("**"));
-		ASSERT_EQUALS(false, ::isValidGlobPattern("**x"));
-		ASSERT_EQUALS(false, ::isValidGlobPattern("x**"));
+    void isValidGlobPattern() {
+        ASSERT_EQUALS(true, ::isValidGlobPattern("*"));
+        ASSERT_EQUALS(true, ::isValidGlobPattern("*x"));
+        ASSERT_EQUALS(true, ::isValidGlobPattern("x*"));
+        ASSERT_EQUALS(true, ::isValidGlobPattern("*/x/*"));
+        ASSERT_EQUALS(true, ::isValidGlobPattern("x/*/z"));
+        ASSERT_EQUALS(false, ::isValidGlobPattern("**"));
+        ASSERT_EQUALS(false, ::isValidGlobPattern("**x"));
+        ASSERT_EQUALS(false, ::isValidGlobPattern("x**"));
 
-		ASSERT_EQUALS(true, ::isValidGlobPattern("?"));
-		ASSERT_EQUALS(true, ::isValidGlobPattern("?x"));
-		ASSERT_EQUALS(true, ::isValidGlobPattern("x?"));
-		ASSERT_EQUALS(true, ::isValidGlobPattern("?/x/?"));
-		ASSERT_EQUALS(true, ::isValidGlobPattern("x/?/z"));
-		ASSERT_EQUALS(false, ::isValidGlobPattern("??"));
-		ASSERT_EQUALS(false, ::isValidGlobPattern("??x"));
-		ASSERT_EQUALS(false, ::isValidGlobPattern("x??"));
-	}
+        ASSERT_EQUALS(true, ::isValidGlobPattern("?"));
+        ASSERT_EQUALS(true, ::isValidGlobPattern("?x"));
+        ASSERT_EQUALS(true, ::isValidGlobPattern("x?"));
+        ASSERT_EQUALS(true, ::isValidGlobPattern("?/x/?"));
+        ASSERT_EQUALS(true, ::isValidGlobPattern("x/?/z"));
+        ASSERT_EQUALS(false, ::isValidGlobPattern("??"));
+        ASSERT_EQUALS(false, ::isValidGlobPattern("??x"));
+        ASSERT_EQUALS(false, ::isValidGlobPattern("x??"));
+    }
 
-	void matchglob() {
-		ASSERT_EQUALS(true, ::matchglob("*", "xyz"));
-		ASSERT_EQUALS(true, ::matchglob("x*", "xyz"));
-		ASSERT_EQUALS(true, ::matchglob("*z", "xyz"));
-		ASSERT_EQUALS(true, ::matchglob("*y*", "xyz"));
-		ASSERT_EQUALS(true, ::matchglob("*y*", "yz"));
-		ASSERT_EQUALS(false, ::matchglob("*y*", "abc"));
-		ASSERT_EQUALS(true, ::matchglob("*", "x/y/z"));
-		ASSERT_EQUALS(true, ::matchglob("*/y/z", "x/y/z"));
+    void matchglob() {
+        ASSERT_EQUALS(true, ::matchglob("*", "xyz"));
+        ASSERT_EQUALS(true, ::matchglob("x*", "xyz"));
+        ASSERT_EQUALS(true, ::matchglob("*z", "xyz"));
+        ASSERT_EQUALS(true, ::matchglob("*y*", "xyz"));
+        ASSERT_EQUALS(true, ::matchglob("*y*", "yz"));
+        ASSERT_EQUALS(false, ::matchglob("*y*", "abc"));
+        ASSERT_EQUALS(true, ::matchglob("*", "x/y/z"));
+        ASSERT_EQUALS(true, ::matchglob("*/y/z", "x/y/z"));
 
-		ASSERT_EQUALS(false, ::matchglob("?", "xyz"));
-		ASSERT_EQUALS(false, ::matchglob("x?", "xyz"));
-		ASSERT_EQUALS(false, ::matchglob("?z", "xyz"));
-		ASSERT_EQUALS(true, ::matchglob("?y?", "xyz"));
-		ASSERT_EQUALS(true, ::matchglob("?/?/?", "x/y/z"));
-	}
+        ASSERT_EQUALS(false, ::matchglob("?", "xyz"));
+        ASSERT_EQUALS(false, ::matchglob("x?", "xyz"));
+        ASSERT_EQUALS(false, ::matchglob("?z", "xyz"));
+        ASSERT_EQUALS(true, ::matchglob("?y?", "xyz"));
+        ASSERT_EQUALS(true, ::matchglob("?/?/?", "x/y/z"));
+    }
 };
 
 REGISTER_TEST(TestUtils)
