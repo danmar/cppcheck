@@ -270,8 +270,10 @@ std::string clangimport::AstNode::getSpelling() const
 
     int typeIndex = mExtTokens.size() - 1;
     if (nodeType == FunctionDecl) {
-        while (mExtTokens[typeIndex][0] != '\'')
+        while (typeIndex >= 0 && mExtTokens[typeIndex][0] != '\'')
             typeIndex--;
+        if (typeIndex <= 0)
+            return "";
     }
     const std::string &str = mExtTokens[typeIndex - 1];
     if (str.compare(0,4,"col:") == 0)
