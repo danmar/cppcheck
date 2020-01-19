@@ -1824,6 +1824,10 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
         float f = getKnownFloatValue(tok, 0.0f);
         if (f > 0.0f || f < 0.0f)
             return;
+        if (value.type == ExprEngine::ValueType::BailoutValue) {
+            if (Token::simpleMatch(tok->previous(), "sizeof ("))
+                return;
+        }
         if (tok->astParent()->astOperand2() == tok && value.isEqual(dataBase, 0)) {
             dataBase->addError(tok->linenr());
             std::list<const Token*> callstack{tok->astParent()};
