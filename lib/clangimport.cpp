@@ -52,6 +52,7 @@ static const std::string DeclRefExpr = "DeclRefExpr";
 static const std::string DeclStmt = "DeclStmt";
 static const std::string ExprWithCleanups = "ExprWithCleanups";
 static const std::string FieldDecl = "FieldDecl";
+static const std::string FloatingLiteral = "FloatingLiteral";
 static const std::string ForStmt = "ForStmt";
 static const std::string FunctionDecl = "FunctionDecl";
 static const std::string FunctionTemplateDecl = "FunctionTemplateDecl";
@@ -638,6 +639,8 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         return children[0]->createTokens(tokenList);
     if (nodeType == FieldDecl)
         return createTokensVarDecl(tokenList);
+    if (nodeType == FloatingLiteral)
+        return addtoken(tokenList, mExtTokens.back());
     if (nodeType == ForStmt) {
         Token *forToken = addtoken(tokenList, "for");
         Token *par1 = addtoken(tokenList, "(");
