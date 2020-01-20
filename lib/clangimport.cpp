@@ -51,6 +51,7 @@ static const std::string CXXStaticCastExpr = "CXXStaticCastExpr";
 static const std::string CXXThisExpr = "CXXThisExpr";
 static const std::string DeclRefExpr = "DeclRefExpr";
 static const std::string DeclStmt = "DeclStmt";
+static const std::string DoStmt = "DoStmt";
 static const std::string ExprWithCleanups = "ExprWithCleanups";
 static const std::string FieldDecl = "FieldDecl";
 static const std::string FloatingLiteral = "FloatingLiteral";
@@ -646,6 +647,19 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == DeclStmt)
         return children[0]->createTokens(tokenList);
+    if (nodeType == DoStmt) {
+        addtoken(tokenList, "do");
+        createScope(tokenList, Scope::ScopeType::eDo, children[0]);
+        Token *tok1 = addtoken(tokenList, "while");
+        Token *par1 = addtoken(tokenList, "(");
+        Token *expr = children[1]->createTokens(tokenList);
+        Token *par2 = addtoken(tokenList, ")");
+        par1->link(par2);
+        par2->link(par1);
+        par1->astOperand1(tok1);
+        par1->astOperand2(expr);
+        return nullptr;
+    }
     if (nodeType == ExprWithCleanups)
         return children[0]->createTokens(tokenList);
     if (nodeType == FieldDecl)
