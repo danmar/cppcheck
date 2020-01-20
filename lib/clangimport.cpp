@@ -64,6 +64,7 @@ static const std::string ImplicitCastExpr = "ImplicitCastExpr";
 static const std::string InitListExpr = "InitListExpr";
 static const std::string IntegerLiteral = "IntegerLiteral";
 static const std::string LabelStmt = "LabelStmt";
+static const std::string MaterializeTemporaryExpr = "MaterializeTemporaryExpr";
 static const std::string MemberExpr = "MemberExpr";
 static const std::string NamespaceDecl = "NamespaceDecl";
 static const std::string NullStmt = "NullStmt";
@@ -756,20 +757,8 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
             child->createTokens(tokenList);
         return nullptr;
     }
-    if (nodeType == NullStmt)
-        return addtoken(tokenList, ";");
-    if (nodeType == NamespaceDecl) {
-        if (children.empty())
-            return nullptr;
-        Token *defToken = addtoken(tokenList, "namespace");
-        Token *nameToken = (mExtTokens[mExtTokens.size() - 2].compare(0,4,"col:") == 0) ?
-                           addtoken(tokenList, mExtTokens.back()) : nullptr;
-        Scope *scope = createScope(tokenList, Scope::ScopeType::eNamespace, children);
-        scope->classDef = defToken;
-        if (nameToken)
-            scope->className = nameToken->str();
-        return nullptr;
-    }
+    if (nodeType == MaterializeTemporaryExpr)
+        return children[0]->createTokens(tokenList);
     if (nodeType == MemberExpr) {
         Token *s = children[0]->createTokens(tokenList);
         Token *dot = addtoken(tokenList, ".");
@@ -788,6 +777,20 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         dot->astOperand2(member);
         return dot;
     }
+    if (nodeType == NamespaceDecl) {
+        if (children.empty())
+            return nullptr;
+        Token *defToken = addtoken(tokenList, "namespace");
+        Token *nameToken = (mExtTokens[mExtTokens.size() - 2].compare(0,4,"col:") == 0) ?
+                           addtoken(tokenList, mExtTokens.back()) : nullptr;
+        Scope *scope = createScope(tokenList, Scope::ScopeType::eNamespace, children);
+        scope->classDef = defToken;
+        if (nameToken)
+            scope->className = nameToken->str();
+        return nullptr;
+    }
+    if (nodeType == NullStmt)
+        return addtoken(tokenList, ";");
     if (nodeType == ParenExpr) {
         Token *par1 = addtoken(tokenList, "(");
         Token *expr = children[0]->createTokens(tokenList);
