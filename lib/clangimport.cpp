@@ -57,10 +57,12 @@ static const std::string FloatingLiteral = "FloatingLiteral";
 static const std::string ForStmt = "ForStmt";
 static const std::string FunctionDecl = "FunctionDecl";
 static const std::string FunctionTemplateDecl = "FunctionTemplateDecl";
+static const std::string GotoStmt = "GotoStmt";
 static const std::string IfStmt = "IfStmt";
 static const std::string ImplicitCastExpr = "ImplicitCastExpr";
 static const std::string InitListExpr = "InitListExpr";
 static const std::string IntegerLiteral = "IntegerLiteral";
+static const std::string LabelStmt = "LabelStmt";
 static const std::string MemberExpr = "MemberExpr";
 static const std::string NamespaceDecl = "NamespaceDecl";
 static const std::string NullStmt = "NullStmt";
@@ -686,6 +688,12 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         }
         return nullptr;
     }
+    if (nodeType == GotoStmt) {
+        addtoken(tokenList, "goto");
+        addtoken(tokenList, unquote(mExtTokens[mExtTokens.size() - 2]));
+        addtoken(tokenList, ";");
+        return nullptr;
+    }
     if (nodeType == IfStmt) {
         AstNodePtr cond = children[children.size() - 3];
         AstNodePtr then = children[children.size() - 2];
@@ -727,6 +735,13 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == IntegerLiteral)
         return addtoken(tokenList, mExtTokens.back());
+    if (nodeType == LabelStmt) {
+        addtoken(tokenList, unquote(mExtTokens.back()));
+        addtoken(tokenList, ":");
+        for (auto child: children)
+            child->createTokens(tokenList);
+        return nullptr;
+    }
     if (nodeType == NullStmt)
         return addtoken(tokenList, ";");
     if (nodeType == NamespaceDecl) {

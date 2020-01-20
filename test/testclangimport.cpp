@@ -61,6 +61,7 @@ private:
         TEST_CASE(functionTemplateDecl2);
         TEST_CASE(initListExpr);
         TEST_CASE(ifelse);
+        TEST_CASE(labelStmt);
         TEST_CASE(memberExpr);
         TEST_CASE(namespaceDecl);
         TEST_CASE(recordDecl);
@@ -511,6 +512,14 @@ private:
                              "|   |-IntegerLiteral 0x397c740 <col:23> 'int' 2\n"
                              "|   `-IntegerLiteral 0x397c760 <col:25> 'int' 3";
         ASSERT_EQUALS("const int [3] ints@1 = { 1 , 2 , 3 } ;", parse(clang));
+    }
+
+    void labelStmt() {
+        const char clang[] = "`-FunctionDecl 0x2ed1ba0 <1.c:1:1, col:36> col:6 foo 'void (int)'\n"
+                             "  `-CompoundStmt 0x2ed1d00 <col:17, col:36>\n"
+                             "    `-LabelStmt 0x2ed1ce8 <col:19, col:30> 'loop'\n"
+                             "      `-GotoStmt 0x2ed1cd0 <col:25, col:30> 'loop' 0x2ed1c88";
+        ASSERT_EQUALS("void foo ( ) { loop : goto loop ; }", parse(clang));
     }
 
     void memberExpr() {
