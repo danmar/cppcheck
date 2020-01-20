@@ -799,7 +799,7 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         par1->link(par2);
         par2->link(par1);
         par1->astOperand1(tok1);
-        par1->astOperand1(expr);
+        par1->astOperand2(expr);
         createScope(tokenList, Scope::ScopeType::eSwitch, children.back());
         return nullptr;
     }
