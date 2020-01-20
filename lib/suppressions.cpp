@@ -21,6 +21,7 @@
 #include "errorlogger.h"
 #include "mathlib.h"
 #include "path.h"
+#include "utils.h"
 
 #include <tinyxml2.h>
 
