@@ -30,6 +30,7 @@ static const std::string ArraySubscriptExpr = "ArraySubscriptExpr";
 static const std::string BinaryOperator = "BinaryOperator";
 static const std::string BreakStmt = "BreakStmt";
 static const std::string CallExpr = "CallExpr";
+static const std::string CaseStmt = "CaseStmt";
 static const std::string CharacterLiteral = "CharacterLiteral";
 static const std::string ClassTemplateDecl = "ClassTemplateDecl";
 static const std::string ClassTemplateSpecializationDecl = "ClassTemplateSpecializationDecl";
@@ -511,6 +512,13 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == CallExpr)
         return createTokensCall(tokenList);
+    if (nodeType == CaseStmt) {
+        addtoken(tokenList, "case");
+        children[0]->createTokens(tokenList);
+        addtoken(tokenList, ":");
+        children[2]->createTokens(tokenList);
+        return nullptr;
+    }
     if (nodeType == ClassTemplateDecl) {
         for (AstNodePtr child: children) {
             if (child->nodeType == ClassTemplateSpecializationDecl)

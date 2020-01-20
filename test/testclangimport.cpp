@@ -31,6 +31,7 @@ public:
 private:
     void run() OVERRIDE {
         TEST_CASE(breakStmt);
+        TEST_CASE(caseStmt1);
         TEST_CASE(characterLiteral);
         TEST_CASE(class1);
         TEST_CASE(classTemplateDecl1);
@@ -101,6 +102,36 @@ private:
                              "      |-IntegerLiteral 0x2c31bf8 <col:21> 'int' 0\n"
                              "      `-BreakStmt 0x3687c18 <col:24>";
         ASSERT_EQUALS("void foo ( ) { while ( 0 ) { break ; } }", parse(clang));
+    }
+
+    void caseStmt1() {
+        const char clang[] = "`-FunctionDecl 0x2444b60 <1.c:1:1, line:8:1> line:1:6 foo 'void (int)'\n"
+                             "  |-ParmVarDecl 0x2444aa0 <col:10, col:14> col:14 used x 'int'\n"
+                             "  `-CompoundStmt 0x2444e00 <col:17, line:8:1>\n"
+                             "    `-SwitchStmt 0x2444c88 <line:2:5, line:7:5>\n"
+                             "      |-<<<NULL>>>\n"
+                             "      |-<<<NULL>>>\n"
+                             "      |-ImplicitCastExpr 0x2444c70 <line:2:13> 'int' <LValueToRValue>\n"
+                             "      | `-DeclRefExpr 0x2444c48 <col:13> 'int' lvalue ParmVar 0x2444aa0 'x' 'int'\n"
+                             "      `-CompoundStmt 0x2444de0 <col:16, line:7:5>\n"
+                             "        |-CaseStmt 0x2444cd8 <line:3:9, line:5:15>\n"
+                             "        | |-IntegerLiteral 0x2444cb8 <line:3:14> 'int' 16\n"
+                             "        | |-<<<NULL>>>\n"
+                             "        | `-CaseStmt 0x2444d30 <line:4:9, line:5:15>\n"
+                             "        |   |-IntegerLiteral 0x2444d10 <line:4:14> 'int' 32\n"
+                             "        |   |-<<<NULL>>>\n"
+                             "        |   `-BinaryOperator 0x2444db0 <line:5:13, col:15> 'int' '='\n"
+                             "        |     |-DeclRefExpr 0x2444d68 <col:13> 'int' lvalue ParmVar 0x2444aa0 'x' 'int'\n"
+                             "        |     `-IntegerLiteral 0x2444d90 <col:15> 'int' 123\n"
+                             "        `-BreakStmt 0x2444dd8 <line:6:13>";
+        ASSERT_EQUALS("void foo ( int x@1 ) {\n"
+                      "switch ( x@1 ) {\n"
+                      "case 16 :\n"
+                      "case 32 :\n"
+                      "x@1 = 123 ;\n"
+                      "\n"
+                      "\n"
+                      "break ; } }", parse(clang));
     }
 
     void characterLiteral() {
