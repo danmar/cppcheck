@@ -1550,6 +1550,8 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
     for (const Token *tok = this; tok; tok = tok->next()) {
         if (!tok->mImpl->mValues)
             continue;
+        if (tok->mImpl->mValues->empty()) // Values might be removed by removeContradictions
+            continue;
         if (xml)
             out << "    <values id=\"" << tok->mImpl->mValues << "\">" << std::endl;
         else if (line != tok->linenr())
