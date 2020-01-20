@@ -68,6 +68,7 @@ static const std::string ParmVarDecl = "ParmVarDecl";
 static const std::string RecordDecl = "RecordDecl";
 static const std::string ReturnStmt = "ReturnStmt";
 static const std::string StringLiteral = "StringLiteral";
+static const std::string SwitchStmt = "SwitchStmt";
 static const std::string TemplateArgument = "TemplateArgument";
 static const std::string TypedefDecl = "TypedefDecl";
 static const std::string UnaryOperator = "UnaryOperator";
@@ -782,6 +783,18 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == StringLiteral)
         return addtoken(tokenList, mExtTokens.back());
+    if (nodeType == SwitchStmt) {
+        Token *tok1 = addtoken(tokenList, "switch");
+        Token *par1 = addtoken(tokenList, "(");
+        Token *expr = children[children.size() - 2]->createTokens(tokenList);
+        Token *par2 = addtoken(tokenList, ")");
+        par1->link(par2);
+        par2->link(par1);
+        par1->astOperand1(tok1);
+        par1->astOperand1(expr);
+        createScope(tokenList, Scope::ScopeType::eSwitch, children.back());
+        return nullptr;
+    }
     if (nodeType == TypedefDecl) {
         addtoken(tokenList, "typedef");
         addTypeTokens(tokenList, getType());

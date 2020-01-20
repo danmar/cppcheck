@@ -63,6 +63,7 @@ private:
         TEST_CASE(memberExpr);
         TEST_CASE(namespaceDecl);
         TEST_CASE(recordDecl);
+        TEST_CASE(switchStmt);
         TEST_CASE(typedefDecl1);
         TEST_CASE(typedefDecl2);
         TEST_CASE(typedefDecl3);
@@ -513,6 +514,21 @@ private:
         ASSERT_EQUALS("struct S\n"
                       "{ int x@1 ;\n"
                       "int y@2 ; } ;",
+                      parse(clang));
+    }
+
+    void switchStmt() {
+        const char clang[] = "`-FunctionDecl 0x2796ba0 <1.c:1:1, col:35> col:6 foo 'void (int)'\n"
+                             "  |-ParmVarDecl 0x2796ae0 <col:10, col:14> col:14 used x 'int'\n"
+                             "  `-CompoundStmt 0x2796d18 <col:17, col:35>\n"
+                             "    |-SwitchStmt 0x2796cc8 <col:19, col:32>\n"
+                             "    | |-<<<NULL>>>\n"
+                             "    | |-<<<NULL>>>\n"
+                             "    | |-ImplicitCastExpr 0x2796cb0 <col:27> 'int' <LValueToRValue>\n"
+                             "    | | `-DeclRefExpr 0x2796c88 <col:27> 'int' lvalue ParmVar 0x2796ae0 'x' 'int'\n"
+                             "    | `-CompoundStmt 0x2796cf8 <col:30, col:32>\n"
+                             "    `-NullStmt 0x2796d08 <col:33>";
+        ASSERT_EQUALS("void foo ( int x@1 ) { switch ( x@1 ) { } ; }",
                       parse(clang));
     }
 
