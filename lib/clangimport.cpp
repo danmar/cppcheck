@@ -38,6 +38,7 @@ static const std::string CompoundAssignOperator = "CompoundAssignOperator";
 static const std::string CompoundStmt = "CompoundStmt";
 static const std::string ContinueStmt = "ContinueStmt";
 static const std::string CStyleCastExpr = "CStyleCastExpr";
+static const std::string CXXBindTemporaryExpr = "CXXBindTemporaryExpr";
 static const std::string CXXBoolLiteralExpr = "CXXBoolLiteralExpr";
 static const std::string CXXConstructorDecl = "CXXConstructorDecl";
 static const std::string CXXConstructExpr = "CXXConstructExpr";
@@ -48,6 +49,7 @@ static const std::string CXXNullPtrLiteralExpr = "CXXNullPtrLiteralExpr";
 static const std::string CXXOperatorCallExpr = "CXXOperatorCallExpr";
 static const std::string CXXRecordDecl = "CXXRecordDecl";
 static const std::string CXXStaticCastExpr = "CXXStaticCastExpr";
+static const std::string CXXTemporaryObjectExpr = "CXXTemporaryObjectExpr";
 static const std::string CXXThisExpr = "CXXThisExpr";
 static const std::string DeclRefExpr = "DeclRefExpr";
 static const std::string DeclStmt = "DeclStmt";
@@ -561,6 +563,8 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         par1->astOperand1(children[0]->createTokens(tokenList));
         return par1;
     }
+    if (nodeType == CXXBindTemporaryExpr)
+        return children[0]->createTokens(tokenList);
     if (nodeType == CXXBoolLiteralExpr) {
         addtoken(tokenList, mExtTokens.back());
         tokenList->back()->setValueType(new ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::BOOL, 0));
@@ -637,6 +641,8 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         setValueType(par1);
         return par1;
     }
+    if (nodeType == CXXTemporaryObjectExpr && !children.empty())
+        return children[0]->createTokens(tokenList);
     if (nodeType == CXXThisExpr)
         return addtoken(tokenList, "this");
     if (nodeType == DeclRefExpr) {
