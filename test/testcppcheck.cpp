@@ -38,7 +38,7 @@ private:
         std::list<std::string> id;
 
         void reportOut(const std::string & /*outmsg*/) OVERRIDE {}
-        void reportVerification(const std::string & /*str*/) OVERRIDE {}
+        void bughuntingReport(const std::string & /*str*/) OVERRIDE {}
 
         void reportErr(const ErrorLogger::ErrorMessage &msg) OVERRIDE {
             id.push_back(msg.id);

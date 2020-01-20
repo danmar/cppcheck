@@ -72,6 +72,7 @@ private:
         TEST_CASE(functionCall1);
         TEST_CASE(functionCall2);
         TEST_CASE(functionCall3);
+        TEST_CASE(functionCall4);
 
         TEST_CASE(int1);
 
@@ -137,7 +138,8 @@ private:
 
     std::string trackExecution(const char code[]) {
         Settings settings;
-        settings.debugVerification = true;
+        settings.bugHunting = true;
+        settings.debugBugHunting = true;
         settings.platform(cppcheck::Platform::Unix64);
         settings.library.smartPointers.insert("std::shared_ptr");
         Tokenizer tokenizer(&settings, this);
@@ -432,6 +434,10 @@ private:
 
     void functionCall3() {
         ASSERT_EQUALS("-2147483648:2147483647", getRange("int fgets(int, const char *, void *); void f() { int x = -1; fgets(stdin, \"%d\", &x); x=x; }", "x=x"));
+    }
+
+    void functionCall4() {
+        ASSERT_EQUALS("1:2147483647", getRange("void f() { sizeof(data); }", "sizeof(data)"));
     }
 
 

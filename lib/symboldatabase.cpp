@@ -6127,8 +6127,14 @@ std::string ValueType::dump() const
     return ret.str();
 }
 
-MathLib::bigint ValueType::typeSize(const cppcheck::Platform &platform) const
+MathLib::bigint ValueType::typeSize(const cppcheck::Platform &platform, bool p) const
 {
+    if (p && pointer)
+        return platform.sizeof_pointer;
+
+    if (typeScope && typeScope->definedType && typeScope->definedType->sizeOf)
+        return typeScope->definedType->sizeOf;
+
     switch (type) {
     case ValueType::Type::BOOL:
         return platform.sizeof_bool;
@@ -6151,9 +6157,11 @@ MathLib::bigint ValueType::typeSize(const cppcheck::Platform &platform) const
     case ValueType::Type::LONGDOUBLE:
         return platform.sizeof_long_double;
     default:
-        return 0;
+        break;
     };
 
+    // Unknown invalid size
+    return 0;
 }
 
 std::string ValueType::str() const

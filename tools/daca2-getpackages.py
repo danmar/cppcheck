@@ -41,8 +41,12 @@ def wget(filepath):
 def latestvername(names):
     if len(names) == 1:
         return names[0]
-    names.sort(cmp=semver.cmp, key=lambda x: x[x.index(
-        '_')+1:x.index('.orig.tar')-x.index('_')+1])
+    try:
+        names.sort(cmp=semver.compare, key=lambda x: x[x.index('_')+1:x.index('.orig.tar')])
+    except ValueError:
+        # semver.compare() throws an exception if the version is not formatted
+        # like it is required by semver. For example 0.8 is not valid.
+        pass
     return names[-1]
 
 
@@ -117,7 +121,7 @@ def getpackages():
             filenames = []
         elif line.startswith('./pool/main/'):
             path = line[2:-1]
-        elif path and line.endswith(('.orig.tar.gz', '.orig.tar.bz2')):
+        elif path and line.endswith(('.orig.tar.gz', '.orig.tar.bz2', '.orig.tar.xz')):
             filename = line[1 + line.rfind(' '):]
             filenames.append(filename)
 

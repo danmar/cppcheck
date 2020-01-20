@@ -43,6 +43,7 @@ private:
         TEST_CASE(cxxConstructExpr1);
         TEST_CASE(cxxConstructExpr2);
         TEST_CASE(cxxConstructExpr3);
+        TEST_CASE(cxxForRangeStmt);
         TEST_CASE(cxxMemberCall);
         TEST_CASE(cxxMethodDecl);
         TEST_CASE(cxxNullPtrLiteralExpr);
@@ -62,10 +63,12 @@ private:
         TEST_CASE(memberExpr);
         TEST_CASE(namespaceDecl);
         TEST_CASE(recordDecl);
+        TEST_CASE(switchStmt);
         TEST_CASE(typedefDecl1);
         TEST_CASE(typedefDecl2);
         TEST_CASE(typedefDecl3);
-        TEST_CASE(unaryExprOrTypeTraitExpr);
+        TEST_CASE(unaryExprOrTypeTraitExpr1);
+        TEST_CASE(unaryExprOrTypeTraitExpr2);
         TEST_CASE(unaryOperator);
         TEST_CASE(vardecl1);
         TEST_CASE(vardecl2);
@@ -77,6 +80,9 @@ private:
         TEST_CASE(symbolDatabaseFunction1);
         TEST_CASE(symbolDatabaseFunction2);
         TEST_CASE(symbolDatabaseNodeType1);
+
+        TEST_CASE(valueFlow1);
+        TEST_CASE(valueFlow2);
     }
 
     std::string parse(const char clang[]) {
@@ -255,6 +261,42 @@ private:
                              "            |   `-DeclRefExpr 0x2c58750 <col:35> 'char *' lvalue Var 0x2c58670 'p' 'char *'\n"
                              "            `-CXXDefaultArgExpr 0x2c58940 <<invalid sloc>> 'const std::allocator<char>':'const std::allocator<char>' lvalue\n";
         ASSERT_EQUALS("void f ( ) { char * p@1 ; std::string s@2 ( p@1 ) ; }", parse(clang));
+    }
+
+    void cxxForRangeStmt() {
+        const char clang[] = "`-FunctionDecl 0x4280820 <line:4:1, line:8:1> line:4:6 foo 'void ()'\n"
+                             "  `-CompoundStmt 0x42810f0 <col:12, line:8:1>\n"
+                             "    `-CXXForRangeStmt 0x4281090 <line:5:3, line:7:3>\n"
+                             "      |-DeclStmt 0x4280c30 <line:5:17>\n"
+                             "      | `-VarDecl 0x42809c8 <col:17> col:17 implicit referenced __range1 'char const (&)[6]' cinit\n"
+                             "      |   `-DeclRefExpr 0x42808c0 <col:17> 'const char [6]' lvalue Var 0x4280678 'hello' 'const char [6]'\n"
+                             "      |-DeclStmt 0x4280ef8 <col:15>\n"
+                             "      | `-VarDecl 0x4280ca8 <col:15> col:15 implicit used __begin1 'const char *':'const char *' cinit\n"
+                             "      |   `-ImplicitCastExpr 0x4280e10 <col:15> 'const char *' <ArrayToPointerDecay>\n"
+                             "      |     `-DeclRefExpr 0x4280c48 <col:15> 'char const[6]' lvalue Var 0x42809c8 '__range1' 'char const (&)[6]'\n"
+                             "      |-DeclStmt 0x4280f10 <col:15>\n"
+                             "      | `-VarDecl 0x4280d18 <col:15, col:17> col:15 implicit used __end1 'const char *':'const char *' cinit\n"
+                             "      |   `-BinaryOperator 0x4280e60 <col:15, col:17> 'const char *' '+'\n"
+                             "      |     |-ImplicitCastExpr 0x4280e48 <col:15> 'const char *' <ArrayToPointerDecay>\n"
+                             "      |     | `-DeclRefExpr 0x4280c70 <col:15> 'char const[6]' lvalue Var 0x42809c8 '__range1' 'char const (&)[6]'\n"
+                             "      |     `-IntegerLiteral 0x4280e28 <col:17> 'long' 6\n"
+                             "      |-BinaryOperator 0x4280fa8 <col:15> 'bool' '!='\n"
+                             "      | |-ImplicitCastExpr 0x4280f78 <col:15> 'const char *':'const char *' <LValueToRValue>\n"
+                             "      | | `-DeclRefExpr 0x4280f28 <col:15> 'const char *':'const char *' lvalue Var 0x4280ca8 '__begin1' 'const char *':'const char *'\n"
+                             "      | `-ImplicitCastExpr 0x4280f90 <col:15> 'const char *':'const char *' <LValueToRValue>\n"
+                             "      |   `-DeclRefExpr 0x4280f50 <col:15> 'const char *':'const char *' lvalue Var 0x4280d18 '__end1' 'const char *':'const char *'\n"
+                             "      |-UnaryOperator 0x4280ff8 <col:15> 'const char *':'const char *' lvalue prefix '++'\n"
+                             "      | `-DeclRefExpr 0x4280fd0 <col:15> 'const char *':'const char *' lvalue Var 0x4280ca8 '__begin1' 'const char *':'const char *'\n"
+                             "      |-DeclStmt 0x4280958 <col:8, col:22>\n"
+                             "      | `-VarDecl 0x42808f8 <col:8, col:15> col:13 c1 'char' cinit\n"
+                             "      |   `-ImplicitCastExpr 0x4281078 <col:15> 'char' <LValueToRValue>\n"
+                             "      |     `-UnaryOperator 0x4281058 <col:15> 'const char' lvalue prefix '*' cannot overflow\n"
+                             "      |       `-ImplicitCastExpr 0x4281040 <col:15> 'const char *':'const char *' <LValueToRValue>\n"
+                             "      |         `-DeclRefExpr 0x4281018 <col:15> 'const char *':'const char *' lvalue Var 0x4280ca8 '__begin1' 'const char *':'const char *'\n"
+                             "      `-CompoundStmt 0x42810e0 <col:24, line:7:3>";
+        ASSERT_EQUALS("void foo ( ) {\n"
+                      "for ( char c1@1 : hello ) { } }",
+                      parse(clang));
     }
 
     void cxxMemberCall() {
@@ -475,6 +517,21 @@ private:
                       parse(clang));
     }
 
+    void switchStmt() {
+        const char clang[] = "`-FunctionDecl 0x2796ba0 <1.c:1:1, col:35> col:6 foo 'void (int)'\n"
+                             "  |-ParmVarDecl 0x2796ae0 <col:10, col:14> col:14 used x 'int'\n"
+                             "  `-CompoundStmt 0x2796d18 <col:17, col:35>\n"
+                             "    |-SwitchStmt 0x2796cc8 <col:19, col:32>\n"
+                             "    | |-<<<NULL>>>\n"
+                             "    | |-<<<NULL>>>\n"
+                             "    | |-ImplicitCastExpr 0x2796cb0 <col:27> 'int' <LValueToRValue>\n"
+                             "    | | `-DeclRefExpr 0x2796c88 <col:27> 'int' lvalue ParmVar 0x2796ae0 'x' 'int'\n"
+                             "    | `-CompoundStmt 0x2796cf8 <col:30, col:32>\n"
+                             "    `-NullStmt 0x2796d08 <col:33>";
+        ASSERT_EQUALS("void foo ( int x@1 ) { switch ( x@1 ) { } ; }",
+                      parse(clang));
+    }
+
     void typedefDecl1() {
         const char clang[] = "|-TypedefDecl 0x2d60180 <<invalid sloc>> <invalid sloc> implicit __int128_t '__int128'\n"
                              "| `-BuiltinType 0x2d5fe80 '__int128'";
@@ -495,11 +552,20 @@ private:
         ASSERT_EQUALS("typedef char * __builtin_ms_va_list ;", parse(clang));
     }
 
-    void unaryExprOrTypeTraitExpr() {
+    void unaryExprOrTypeTraitExpr1() {
         const char clang[] = "`-VarDecl 0x24cc610 <a.cpp:1:1, col:19> col:5 x 'int' cinit\n"
                              "  `-ImplicitCastExpr 0x24cc6e8 <col:9, col:19> 'int' <IntegralCast>\n"
                              "    `-UnaryExprOrTypeTraitExpr 0x24cc6c8 <col:9, col:19> 'unsigned long' sizeof 'int'\n";
         ASSERT_EQUALS("int x@1 = sizeof ( int ) ;", parse(clang));
+    }
+
+    void unaryExprOrTypeTraitExpr2() {
+        const char clang[] = "`-VarDecl 0x27c6c00 <line:3:5, col:23> col:9 x 'int' cinit\n"
+                             "  `-ImplicitCastExpr 0x27c6cc8 <col:13, col:23> 'int' <IntegralCast>\n"
+                             "    `-UnaryExprOrTypeTraitExpr 0x27c6ca8 <col:13, col:23> 'unsigned long' sizeof\n"
+                             "      `-ParenExpr 0x27c6c88 <col:19, col:23> 'char [10]' lvalue\n"
+                             "        `-DeclRefExpr 0x27c6c60 <col:20> 'char [10]' lvalue Var 0x27c6b48 'buf' 'char [10]'";
+        ASSERT_EQUALS("int x@1 = sizeof ( char [10] ) ;", parse(clang));
     }
 
     void unaryOperator() {
@@ -576,6 +642,7 @@ private:
 
 #define GET_SYMBOL_DB(clang) \
     Settings settings; \
+    settings.platform(cppcheck::Platform::PlatformType::Unix64); \
     Tokenizer tokenizer(&settings, this); \
     std::istringstream istr(clang); \
     clangimport::parseClangAstDump(&tokenizer, istr); \
@@ -633,6 +700,38 @@ private:
         ASSERT(!!tok);
         ASSERT(!!tok->valueType());
         ASSERT_EQUALS("signed long", tok->valueType()->str());
+    }
+
+    void valueFlow1() {
+        const char clang[] = "|-RecordDecl 0x2fc5a88 <1.c:1:1, line:4:1> line:1:8 struct S definition\n"
+                             "| |-FieldDecl 0x2fc5b48 <line:2:3, col:7> col:7 x 'int'\n"
+                             "| `-FieldDecl 0x2fc5c10 <line:3:3, col:13> col:7 buf 'int [10]'\n"
+                             "`-VarDecl 0x2fc5c70 <line:6:1, col:25> col:5 sz 'int' cinit\n"
+                             "  `-ImplicitCastExpr 0x2fc5d88 <col:10, col:25> 'int' <IntegralCast>\n"
+                             "    `-UnaryExprOrTypeTraitExpr 0x2fc5d68 <col:10, col:25> 'unsigned long' sizeof 'struct S':'struct S'";
+        GET_SYMBOL_DB(clang);
+
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), "sizeof (");
+        ASSERT(!!tok);
+        tok = tok->next();
+        ASSERT(tok->hasKnownIntValue());
+        ASSERT_EQUALS(44, tok->getKnownIntValue());
+    }
+
+    void valueFlow2() {
+        const char clang[] = "`-VarDecl 0x4145bc0 <line:2:1, col:20> col:5 sz 'int' cinit\n"
+                             "  `-ImplicitCastExpr 0x4145c88 <col:10, col:20> 'int' <IntegralCast>\n"
+                             "    `-UnaryExprOrTypeTraitExpr 0x4145c68 <col:10, col:20> 'unsigned long' sizeof\n"
+                             "      `-ParenExpr 0x4145c48 <col:16, col:20> 'char [10]' lvalue\n"
+                             "        `-DeclRefExpr 0x4145c20 <col:17> 'char [10]' lvalue Var 0x4145b08 'buf' 'char [10]'";
+
+        GET_SYMBOL_DB(clang);
+
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), "sizeof (");
+        ASSERT(!!tok);
+        tok = tok->next();
+        ASSERT(tok->hasKnownIntValue());
+        ASSERT_EQUALS(10, tok->getKnownIntValue());
     }
 };
 

@@ -23,7 +23,7 @@ ftp://ftp.se.debian.org/debian/pool/main/0/0xffff/0xffff_0.8.orig.tar.gz
 ftp://ftp.se.debian.org/debian/pool/main/a/actionaz/actionaz_3.8.0.orig.tar.gz
 )
 
-for python_exec in "python" "python3"
+for python_exec in "python3"
 do
     for test_package in "${test_packages[@]}"
     do

@@ -2,6 +2,8 @@
 // make USE_Z3=yes
 // ./cppcheck --verify --inline-suppr --enable=information test/testsuites/danmar-verify/uninit.c
 
+#include <string.h>
+
 int array1() {
     int a[10];
     a[0] = 0;
@@ -16,7 +18,7 @@ int array2() {
     return a[2][3];
 }
 
-void local1() {
+int local1() {
     int x;
     // cppcheck-suppress verificationUninit
     // cppcheck-suppress uninitvar
@@ -28,8 +30,8 @@ int pointer1(int *p) {
     return *p;
 }
 
-void pointer2(char *p) {
+int pointer2(char *p) {
     // cppcheck-suppress verificationUninitArg
-    strlen(p);
+    return strlen(p);
 }
 

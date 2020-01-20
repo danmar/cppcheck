@@ -40,6 +40,7 @@ static const std::string CStyleCastExpr = "CStyleCastExpr";
 static const std::string CXXBoolLiteralExpr = "CXXBoolLiteralExpr";
 static const std::string CXXConstructorDecl = "CXXConstructorDecl";
 static const std::string CXXConstructExpr = "CXXConstructExpr";
+static const std::string CXXForRangeStmt = "CXXForRangeStmt";
 static const std::string CXXMemberCallExpr = "CXXMemberCallExpr";
 static const std::string CXXMethodDecl = "CXXMethodDecl";
 static const std::string CXXNullPtrLiteralExpr = "CXXNullPtrLiteralExpr";
@@ -51,6 +52,7 @@ static const std::string DeclRefExpr = "DeclRefExpr";
 static const std::string DeclStmt = "DeclStmt";
 static const std::string ExprWithCleanups = "ExprWithCleanups";
 static const std::string FieldDecl = "FieldDecl";
+static const std::string FloatingLiteral = "FloatingLiteral";
 static const std::string ForStmt = "ForStmt";
 static const std::string FunctionDecl = "FunctionDecl";
 static const std::string FunctionTemplateDecl = "FunctionTemplateDecl";
@@ -66,6 +68,7 @@ static const std::string ParmVarDecl = "ParmVarDecl";
 static const std::string RecordDecl = "RecordDecl";
 static const std::string ReturnStmt = "ReturnStmt";
 static const std::string StringLiteral = "StringLiteral";
+static const std::string SwitchStmt = "SwitchStmt";
 static const std::string TemplateArgument = "TemplateArgument";
 static const std::string TypedefDecl = "TypedefDecl";
 static const std::string UnaryOperator = "UnaryOperator";
@@ -252,16 +255,27 @@ std::string clangimport::AstNode::getSpelling() const
         int typeIndex = 1;
         while (typeIndex < mExtTokens.size() && mExtTokens[typeIndex][0] != '\'')
             typeIndex++;
+        // name is next quoted token
         int nameIndex = typeIndex + 1;
         while (nameIndex < mExtTokens.size() && mExtTokens[nameIndex][0] != '\'')
             nameIndex++;
         return (nameIndex < mExtTokens.size()) ? unquote(mExtTokens[nameIndex]) : "";
     }
 
+    if (nodeType == UnaryExprOrTypeTraitExpr) {
+        int typeIndex = 1;
+        while (typeIndex < mExtTokens.size() && mExtTokens[typeIndex][0] != '\'')
+            typeIndex++;
+        int nameIndex = typeIndex + 1;
+        return (nameIndex < mExtTokens.size()) ? unquote(mExtTokens[nameIndex]) : "";
+    }
+
     int typeIndex = mExtTokens.size() - 1;
     if (nodeType == FunctionDecl) {
-        while (mExtTokens[typeIndex][0] != '\'')
+        while (typeIndex >= 0 && mExtTokens[typeIndex][0] != '\'')
             typeIndex--;
+        if (typeIndex <= 0)
+            return "";
     }
     const std::string &str = mExtTokens[typeIndex - 1];
     if (str.compare(0,4,"col:") == 0)
@@ -562,6 +576,28 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
             createTokensFunctionDecl(tokenList);
         return nullptr;
     }
+    if (nodeType == CXXForRangeStmt) {
+        Token *forToken = addtoken(tokenList, "for");
+        Token *par1 = addtoken(tokenList, "(");
+        children[5]->children[0]->mExtTokens.pop_back();
+        children[5]->children[0]->children.clear();
+        Token *expr1 = children[5]->children[0]->createTokens(tokenList);
+        Token *colon = addtoken(tokenList, ":");
+        Token *expr2 = children[0]->children[0]->children[0]->createTokens(tokenList);
+        Token *par2 = addtoken(tokenList, ")");
+
+        par1->link(par2);
+        par2->link(par1);
+
+        colon->astOperand1(expr1);
+        colon->astOperand2(expr2);
+        par1->astOperand1(forToken);
+        par1->astOperand2(colon);
+
+        Scope *scope = createScope(tokenList, Scope::ScopeType::eFor, children[6]);
+        scope->classDef = forToken;
+        return nullptr;
+    }
     if (nodeType == CXXMethodDecl) {
         createTokensFunctionDecl(tokenList);
         return nullptr;
@@ -604,6 +640,8 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         return children[0]->createTokens(tokenList);
     if (nodeType == FieldDecl)
         return createTokensVarDecl(tokenList);
+    if (nodeType == FloatingLiteral)
+        return addtoken(tokenList, mExtTokens.back());
     if (nodeType == ForStmt) {
         Token *forToken = addtoken(tokenList, "for");
         Token *par1 = addtoken(tokenList, "(");
@@ -732,6 +770,8 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
             Scope *recordScope = createScope(tokenList, Scope::ScopeType::eStruct, children);
             mData->mSymbolDatabase->typeList.push_back(Type(classDef, recordScope, classDef->scope()));
             recordScope->definedType = &mData->mSymbolDatabase->typeList.back();
+            if (!recordName.empty())
+                const_cast<Scope *>(classDef->scope())->definedTypesMap[recordName] = recordScope->definedType;
         }
         return nullptr;
     }
@@ -743,6 +783,18 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == StringLiteral)
         return addtoken(tokenList, mExtTokens.back());
+    if (nodeType == SwitchStmt) {
+        Token *tok1 = addtoken(tokenList, "switch");
+        Token *par1 = addtoken(tokenList, "(");
+        Token *expr = children[children.size() - 2]->createTokens(tokenList);
+        Token *par2 = addtoken(tokenList, ")");
+        par1->link(par2);
+        par2->link(par1);
+        par1->astOperand1(tok1);
+        par1->astOperand1(expr);
+        createScope(tokenList, Scope::ScopeType::eSwitch, children.back());
+        return nullptr;
+    }
     if (nodeType == TypedefDecl) {
         addtoken(tokenList, "typedef");
         addTypeTokens(tokenList, getType());
@@ -759,7 +811,10 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     if (nodeType == UnaryExprOrTypeTraitExpr) {
         Token *tok1 = addtoken(tokenList, getSpelling());
         Token *par1 = addtoken(tokenList, "(");
-        addTypeTokens(tokenList, mExtTokens.back());
+        if (children.empty())
+            addTypeTokens(tokenList, mExtTokens.back());
+        else
+            addTypeTokens(tokenList, children[0]->getType());
         Token *par2 = addtoken(tokenList, ")");
         par1->link(par2);
         par2->link(par1);
@@ -927,6 +982,60 @@ Token * clangimport::AstNode::createTokensVarDecl(TokenList *tokenList)
     return vartok1;
 }
 
+static void setTypes(TokenList *tokenList)
+{
+    for (Token *tok = tokenList->front(); tok; tok = tok->next()) {
+        if (Token::simpleMatch(tok, "sizeof (")) {
+            for (Token *typeToken = tok->tokAt(2); typeToken->str() != ")"; typeToken = typeToken->next()) {
+                if (typeToken->type())
+                    continue;
+                typeToken->type(typeToken->scope()->findType(typeToken->str()));
+            }
+        }
+    }
+}
+
+static void setValues(Tokenizer *tokenizer, SymbolDatabase *symbolDatabase)
+{
+    const Settings * const settings = tokenizer->getSettings();
+
+    for (Scope &scope: symbolDatabase->scopeList) {
+        if (!scope.definedType)
+            continue;
+
+        int typeSize = 0;
+        for (const Variable &var: scope.varlist) {
+            int mul = 1;
+            for (const auto &dim: var.dimensions()) {
+                mul *= dim.num;
+            }
+            if (var.valueType())
+                typeSize += mul * var.valueType()->typeSize(*settings, true);
+        }
+        scope.definedType->sizeOf = typeSize;
+    }
+
+    for (Token *tok = const_cast<Token*>(tokenizer->tokens()); tok; tok = tok->next()) {
+        if (Token::simpleMatch(tok, "sizeof (")) {
+            ValueType vt = ValueType::parseDecl(tok->tokAt(2), settings);
+            int sz = vt.typeSize(*settings, true);
+            if (sz <= 0)
+                continue;
+            int mul = 1;
+            for (Token *arrtok = tok->linkAt(1)->previous(); arrtok; arrtok = arrtok->previous()) {
+                const std::string &a = arrtok->str();
+                if (a.size() > 2 && a[0] == '[' && a.back() == ']')
+                    mul *= std::atoi(a.substr(1).c_str());
+                else
+                    break;
+            }
+            ValueFlow::Value v(mul * sz);
+            v.setKnown();
+            tok->next()->addValue(v);
+        }
+    }
+}
+
 void clangimport::parseClangAstDump(Tokenizer *tokenizer, std::istream &f)
 {
     TokenList *tokenList = &tokenizer->list;
@@ -981,5 +1090,7 @@ void clangimport::parseClangAstDump(Tokenizer *tokenizer, std::istream &f)
 
     symbolDatabase->clangSetVariables(data.getVariableList());
     tokenList->clangSetOrigFiles();
+    setTypes(tokenList);
+    setValues(tokenizer, symbolDatabase);
 }
 
