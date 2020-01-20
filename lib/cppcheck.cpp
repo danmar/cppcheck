@@ -255,7 +255,7 @@ unsigned int CppCheck::check(const std::string &path)
 
         const std::string clang = Path::isCPP(path) ? "clang++" : "clang";
         const std::string temp = mSettings.buildDir + "/__temp__.c";
-        const std::string stderr = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "") + ".clang-stderr";
+        const std::string clangStderr = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "") + ".clang-stderr";
 
         /* Experimental: import clang ast dump */
         const std::string cmd1 = clang + " -v -fsyntax-only " + temp + " 2>&1";
@@ -284,7 +284,7 @@ unsigned int CppCheck::check(const std::string &path)
         for (const std::string &i: mSettings.includePaths)
             flags += "-I" + i + " ";
 
-        const std::string cmd = clang + " -cc1 -ast-dump " + flags + path + " 2> " + stderr;
+        const std::string cmd = clang + " -cc1 -ast-dump " + flags + path + " 2> " + clangStderr;
         std::pair<bool, std::string> res = executeCommand(cmd);
         if (!res.first) {
             std::cerr << "Failed to execute '" + cmd + "'" << std::endl;
@@ -293,7 +293,7 @@ unsigned int CppCheck::check(const std::string &path)
 
         // Ensure there are not syntax errors...
         {
-            std::ifstream fin(stderr);
+            std::ifstream fin(clangStderr);
             while (std::getline(fin, line)) {
                 if (line.find(": fatal error:") != std::string::npos) {
 
