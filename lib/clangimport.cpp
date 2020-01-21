@@ -53,6 +53,7 @@ static const std::string CXXNullPtrLiteralExpr = "CXXNullPtrLiteralExpr";
 static const std::string CXXOperatorCallExpr = "CXXOperatorCallExpr";
 static const std::string CXXRecordDecl = "CXXRecordDecl";
 static const std::string CXXStaticCastExpr = "CXXStaticCastExpr";
+static const std::string CXXStdInitializerListExpr = "CXXStdInitializerListExpr";
 static const std::string CXXTemporaryObjectExpr = "CXXTemporaryObjectExpr";
 static const std::string CXXThisExpr = "CXXThisExpr";
 static const std::string CXXThrowExpr = "CXXThrowExpr";
@@ -680,6 +681,8 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         setValueType(par1);
         return par1;
     }
+    if (nodeType == CXXStdInitializerListExpr)
+        return children[0]->createTokens(tokenList);
     if (nodeType == CXXTemporaryObjectExpr && !children.empty())
         return children[0]->createTokens(tokenList);
     if (nodeType == CXXThisExpr)
@@ -1071,6 +1074,8 @@ Token * clangimport::AstNode::createTokensVarDecl(TokenList *tokenList)
         par1->link(par2);
         par2->link(par1);
         return par1;
+    } else if (mExtTokens.back() == "listinit") {
+        return children[0]->createTokens(tokenList);
     }
     return vartok1;
 }

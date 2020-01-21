@@ -56,6 +56,7 @@ private:
         TEST_CASE(cxxRecordDecl1);
         TEST_CASE(cxxStaticCastExpr1);
         TEST_CASE(cxxStaticCastExpr2);
+        TEST_CASE(cxxStdInitializerListExpr);
         TEST_CASE(cxxThrowExpr);
         TEST_CASE(doStmt);
         TEST_CASE(forStmt);
@@ -448,6 +449,20 @@ private:
                              "  `-CXXStaticCastExpr 0x3e453e8 <col:12> 'std::_Rb_tree_iterator<std::pair<const std::__cxx11::basic_string<char>, Library::AllocFunc> >' xvalue static_cast<struct std::_Rb_tree_iterator<struct std::pair<const class std::__cxx11::basic_string<char>, struct Library::AllocFunc> > &&> <NoOp>\n"
                              "    `-DeclRefExpr 0x3e453b0 <col:12> 'std::_Rb_tree_iterator<std::pair<const std::__cxx11::basic_string<char>, Library::AllocFunc> >' lvalue ParmVar 0x3e45250 '' 'std::_Rb_tree_iterator<std::pair<const std::__cxx11::basic_string<char>, Library::AllocFunc> > &&'";
         ASSERT_EQUALS("int a@1 = static_cast<structstd::_Rb_tree_iterator<structstd::pair<constclassstd::__cxx11::basic_string<char>,structLibrary::AllocFunc>>&&> ( <NoName> ) ;", parse(clang));
+    }
+
+    void cxxStdInitializerListExpr() {
+        const char clang[] = "`-VarDecl 0x2f92060 <1.cpp:3:1, col:25> col:18 x 'std::vector<int>':'std::vector<int, std::allocator<int> >' listinit\n"
+                             "  `-ExprWithCleanups 0x2fb0b40 <col:18, col:25> 'std::vector<int>':'std::vector<int, std::allocator<int> >'\n"
+                             "    `-CXXConstructExpr 0x2fb0b00 <col:18, col:25> 'std::vector<int>':'std::vector<int, std::allocator<int> >' 'void (initializer_list<std::vector<int, std::allocator<int> >::value_type>, const std::vector<int, std::allocator<int> >::allocator_type &)' list std::initializer_list\n"
+                             "      |-CXXStdInitializerListExpr 0x2fb0928 <col:19, col:25> 'initializer_list<std::vector<int, std::allocator<int> >::value_type>':'std::initializer_list<int>'\n"
+                             "      | `-MaterializeTemporaryExpr 0x2fb0910 <col:19, col:25> 'const int [3]' xvalue\n"
+                             "      |   `-InitListExpr 0x2fb08b8 <col:19, col:25> 'const int [3]'\n"
+                             "      |     |-IntegerLiteral 0x2f920c0 <col:20> 'int' 1\n"
+                             "      |     |-IntegerLiteral 0x2f920e0 <col:22> 'int' 2\n"
+                             "      |     `-IntegerLiteral 0x2f92100 <col:24> 'int' 3\n"
+                             "      `-CXXDefaultArgExpr 0x2fb0ae0 <<invalid sloc>> 'const std::vector<int, std::allocator<int> >::allocator_type':'const std::allocator<int>' lvalue";
+        ASSERT_EQUALS("std::vector<int> x@1 { 1 , 2 , 3 } ;", parse(clang));
     }
 
     void cxxThrowExpr() {
