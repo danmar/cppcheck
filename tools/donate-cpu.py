@@ -150,7 +150,7 @@ while True:
         sys.exit(1)
     for ver in cppcheck_versions:
         if ver == 'head':
-            if not compile(cppcheck_path, jobs):
+            if not compile_cppcheck(cppcheck_path, jobs):
                 print('Failed to compile Cppcheck, retry later')
                 sys.exit(1)
         elif not compile_version(work_path, jobs, ver):
