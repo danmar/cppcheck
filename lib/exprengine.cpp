@@ -2074,6 +2074,8 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
         if (!Token::simpleMatch(tok->astParent(), "="))
             return;
         const Token *lhs = tok->astParent()->astOperand1();
+        while (Token::simpleMatch(lhs, "."))
+            lhs = lhs->astOperand2();
         if (!lhs || !lhs->variable() || !lhs->variable()->nameToken())
             return;
 
