@@ -44,6 +44,7 @@ static const std::string CXXBoolLiteralExpr = "CXXBoolLiteralExpr";
 static const std::string CXXConstructorDecl = "CXXConstructorDecl";
 static const std::string CXXConstructExpr = "CXXConstructExpr";
 static const std::string CXXDefaultArgExpr = "CXXDefaultArgExpr";
+static const std::string CXXDeleteExpr = "CXXDeleteExpr";
 static const std::string CXXForRangeStmt = "CXXForRangeStmt";
 static const std::string CXXMemberCallExpr = "CXXMemberCallExpr";
 static const std::string CXXMethodDecl = "CXXMethodDecl";
@@ -606,6 +607,11 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         }
         if (hasBody)
             createTokensFunctionDecl(tokenList);
+        return nullptr;
+    }
+    if (nodeType == CXXDeleteExpr) {
+        addtoken(tokenList, "delete");
+        children[0]->createTokens(tokenList);
         return nullptr;
     }
     if (nodeType == CXXForRangeStmt) {

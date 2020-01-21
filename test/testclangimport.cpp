@@ -45,6 +45,7 @@ private:
         TEST_CASE(cxxConstructExpr1);
         TEST_CASE(cxxConstructExpr2);
         TEST_CASE(cxxConstructExpr3);
+        TEST_CASE(cxxDeleteExpr);
         TEST_CASE(cxxForRangeStmt);
         TEST_CASE(cxxMemberCall);
         TEST_CASE(cxxMethodDecl);
@@ -309,6 +310,16 @@ private:
                              "            |   `-DeclRefExpr 0x2c58750 <col:35> 'char *' lvalue Var 0x2c58670 'p' 'char *'\n"
                              "            `-CXXDefaultArgExpr 0x2c58940 <<invalid sloc>> 'const std::allocator<char>':'const std::allocator<char>' lvalue\n";
         ASSERT_EQUALS("void f ( ) { char * p@1 ; std::string s@2 ( p@1 ) ; }", parse(clang));
+    }
+
+    void cxxDeleteExpr() {
+        const char clang[] = "|-FunctionDecl 0x2e0e740 <1.cpp:1:1, col:28> col:6 f 'void (int *)'\n"
+                             "| |-ParmVarDecl 0x2e0e680 <col:8, col:13> col:13 used p 'int *'\n"
+                             "| `-CompoundStmt 0x2e0ee70 <col:16, col:28>\n"
+                             "|   `-CXXDeleteExpr 0x2e0ee48 <col:18, col:25> 'void' Function 0x2e0ebb8 'operator delete' 'void (void *) noexcept'\n"
+                             "|     `-ImplicitCastExpr 0x2e0e850 <col:25> 'int *' <LValueToRValue>\n"
+                             "|       `-DeclRefExpr 0x2e0e828 <col:25> 'int *' lvalue ParmVar 0x2e0e680 'p' 'int *'";
+        ASSERT_EQUALS("void f ( int * p@1 ) { delete p@1 ; }", parse(clang));
     }
 
     void cxxForRangeStmt() {
