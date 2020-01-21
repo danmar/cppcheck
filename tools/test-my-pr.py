@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 
 # Run this script from your branch with proposed Cppcheck patch to verify your
 # patch against current master. It will compare output of testing bunch of
