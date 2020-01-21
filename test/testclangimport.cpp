@@ -31,6 +31,7 @@ public:
 private:
     void run() OVERRIDE {
         TEST_CASE(breakStmt);
+        TEST_CASE(callExpr);
         TEST_CASE(caseStmt1);
         TEST_CASE(characterLiteral);
         TEST_CASE(class1);
@@ -108,6 +109,22 @@ private:
                              "      |-IntegerLiteral 0x2c31bf8 <col:21> 'int' 0\n"
                              "      `-BreakStmt 0x3687c18 <col:24>";
         ASSERT_EQUALS("void foo ( ) { while ( 0 ) { break ; } }", parse(clang));
+    }
+
+    void callExpr() {
+        const char clang[] = "`-FunctionDecl 0x2444b60 <1.c:1:1, line:8:1> line:1:6 foo 'void (int)'\n"
+                             "  |-ParmVarDecl 0x2444aa0 <col:10, col:14> col:14 used x 'int'\n"
+                             "  `-CompoundStmt 0x2444e00 <col:17, line:8:1>\n"
+                             "    `-CallExpr 0x7f5a6c04b158 <line:1:16, col:60> 'bool'\n"
+                             "      |-ImplicitCastExpr 0x7f5a6c04b140 <col:16, col:23> 'bool (*)(const Token *, const char *, int)' <FunctionToPointerDecay>\n"
+                             "      | `-DeclRefExpr 0x7f5a6c04b0a8 <col:16, col:23> 'bool (const Token *, const char *, int)' lvalue CXXMethod 0x43e5600 'Match' 'bool (const Token *, const char *, int)'\n"
+                             "      |-ImplicitCastExpr 0x7f5a6c04b1c8 <col:29> 'const Token *' <NoOp>\n"
+                             "      | `-ImplicitCastExpr 0x7f5a6c04b1b0 <col:29> 'Token *' <LValueToRValue>\n"
+                             "      |   `-DeclRefExpr 0x7f5a6c04b0e0 <col:29> 'Token *' lvalue Var 0x7f5a6c045968 'tokAfterCondition' 'Token *'\n"
+                             "      |-ImplicitCastExpr 0x7f5a6c04b1e0 <col:48> 'const char *' <ArrayToPointerDecay>\n"
+                             "      | `-StringLiteral 0x7f5a6c04b108 <col:48> 'const char [11]' lvalue \"%name% : {\"\n"
+                             "      `-CXXDefaultArgExpr 0x7f5a6c04b1f8 <<invalid sloc>> 'int'\n";
+        ASSERT_EQUALS("void foo ( int x@1 ) { Match ( tokAfterCondition , \"%name% : {\" ) ; }", parse(clang));
     }
 
     void caseStmt1() {

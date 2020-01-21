@@ -101,6 +101,8 @@ static std::vector<std::string> splitString(const std::string &line)
         std::string::size_type pos2;
         if (line[pos1] == '<')
             pos2 = line.find(">", pos1);
+        else if (line[pos1] == '\"')
+            pos2 = line.find("\"", pos1+1);
         else if (line[pos1] == '\'') {
             pos2 = line.find("\'", pos1+1);
             if (pos2 < (int)line.size() - 3 && line.compare(pos2, 3, "\':\'", 0, 3) == 0)
