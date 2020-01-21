@@ -36,6 +36,7 @@ private:
         TEST_CASE(class1);
         TEST_CASE(classTemplateDecl1);
         TEST_CASE(classTemplateDecl2);
+        TEST_CASE(conditionalExpr);
         TEST_CASE(compoundAssignOperator);
         TEST_CASE(continueStmt);
         TEST_CASE(cstyleCastExpr);
@@ -216,6 +217,18 @@ private:
                              "|   `-CXXConstructorDecl 0x247c828 <col:25> col:25 implicit constexpr C 'void (C<int> &&)' inline default trivial noexcept-unevaluated 0x247c828\n"
                              "|     `-ParmVarDecl 0x247c960 <col:25> col:25 'C<int> &&'\n";
         ASSERT_EQUALS("class C { int foo ( ) { return 0 ; } }", parse(clang));
+    }
+
+    void conditionalExpr() {
+        const char clang[] = "`-VarDecl 0x257cc88 <line:4:1, col:13> col:5 x 'int' cinit\n"
+                             "  `-ConditionalOperator 0x257cda8 <col:9, col:13> 'int'\n"
+                             "    |-ImplicitCastExpr 0x257cd60 <col:9> 'int' <LValueToRValue>\n"
+                             "    | `-DeclRefExpr 0x257cce8 <col:9> 'int' lvalue Var 0x257cae0 'a' 'int'\n"
+                             "    |-ImplicitCastExpr 0x257cd78 <col:11> 'int' <LValueToRValue>\n"
+                             "    | `-DeclRefExpr 0x257cd10 <col:11> 'int' lvalue Var 0x257cb98 'b' 'int'\n"
+                             "    `-ImplicitCastExpr 0x257cd90 <col:13> 'int' <LValueToRValue>\n"
+                             "      `-DeclRefExpr 0x257cd38 <col:13> 'int' lvalue Var 0x257cc10 'c' 'int'";
+        ASSERT_EQUALS("int x@1 = a ? b : c ;", parse(clang));
     }
 
     void compoundAssignOperator() {

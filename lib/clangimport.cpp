@@ -34,6 +34,7 @@ static const std::string CaseStmt = "CaseStmt";
 static const std::string CharacterLiteral = "CharacterLiteral";
 static const std::string ClassTemplateDecl = "ClassTemplateDecl";
 static const std::string ClassTemplateSpecializationDecl = "ClassTemplateSpecializationDecl";
+static const std::string ConditionalOperator = "ConditionalOperator";
 static const std::string CompoundAssignOperator = "CompoundAssignOperator";
 static const std::string CompoundStmt = "CompoundStmt";
 static const std::string ContinueStmt = "ContinueStmt";
@@ -536,6 +537,18 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     if (nodeType == ClassTemplateSpecializationDecl) {
         createTokensForCXXRecord(tokenList);
         return nullptr;
+    }
+    if (nodeType == ConditionalOperator) {
+        Token *expr1 = children[0]->createTokens(tokenList);
+        Token *tok1 = addtoken(tokenList, "?");
+        Token *expr2 = children[1]->createTokens(tokenList);
+        Token *tok2 = addtoken(tokenList, ":");
+        Token *expr3 = children[2]->createTokens(tokenList);
+        tok2->astOperand1(expr2);
+        tok2->astOperand1(expr3);
+        tok1->astOperand1(expr1);
+        tok1->astOperand2(tok2);
+        return tok1;
     }
     if (nodeType == CompoundAssignOperator) {
         Token *lhs = children[0]->createTokens(tokenList);
