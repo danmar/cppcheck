@@ -34,6 +34,7 @@ private:
     void run() OVERRIDE {
 #ifdef USE_Z3
         TEST_CASE(annotation1);
+        TEST_CASE(annotation2);
 
         TEST_CASE(expr1);
         TEST_CASE(expr2);
@@ -153,6 +154,21 @@ private:
 
     void annotation1() {
         const char code[] = "void f(__cppcheck_low__(100) short x) {\n"
+                            "    return x < 10;\n"
+                            "}";
+
+        const char expected[] = "(declare-fun $1 () Int)\n"
+                                "(assert (>= $1 100))\n" // <- annotation
+                                "(assert (and (>= $1 (- 32768)) (<= $1 32767)))\n"
+                                "(assert (< $1 10))\n"
+                                "z3::unsat";
+
+        ASSERT_EQUALS(expected, expr(code, "<"));
+    }
+
+    void annotation2() {
+        const char code[] = "__cppcheck_low__(100) short x;\n"
+                            " void f() {\n"
                             "    return x < 10;\n"
                             "}";
 
@@ -409,9 +425,9 @@ private:
 
     void floatValue3() {
         const char code[] = "void foo(float f) { return f > 12.0; }";
-        const char expected[] = "(declare-fun |12.0| () (_ FloatingPoint 11 53))\n"
-                                "(declare-fun $1 () (_ FloatingPoint 11 53))\n"
-                                "(assert (fp.gt $1 |12.0|))\n"
+        const char expected[] = "(declare-fun |12.0| () Real)\n"
+                                "(declare-fun $1 () Real)\n"
+                                "(assert (> $1 |12.0|))\n"
                                 "z3::sat";
         ASSERT_EQUALS(expected, expr(code, ">"));
     }

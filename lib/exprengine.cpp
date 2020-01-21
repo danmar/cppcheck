@@ -234,6 +234,8 @@ namespace {
                 return ExprEngine::ValuePtr();
             ExprEngine::ValuePtr value = getValueRangeFromValueType(getNewSymbolName(), valueType, *settings);
             if (value) {
+                if (tok->variable() && tok->variable()->nameToken())
+                    addConstraints(value, tok->variable()->nameToken());
                 assignValue(tok, varId, value);
             }
             return value;
