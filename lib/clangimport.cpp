@@ -545,7 +545,7 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         Token *tok2 = addtoken(tokenList, ":");
         Token *expr3 = children[2]->createTokens(tokenList);
         tok2->astOperand1(expr2);
-        tok2->astOperand1(expr3);
+        tok2->astOperand2(expr3);
         tok1->astOperand1(expr1);
         tok1->astOperand2(tok2);
         return tok1;
