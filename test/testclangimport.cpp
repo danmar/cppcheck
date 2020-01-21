@@ -48,6 +48,7 @@ private:
         TEST_CASE(cxxForRangeStmt);
         TEST_CASE(cxxMemberCall);
         TEST_CASE(cxxMethodDecl);
+        TEST_CASE(cxxNewExpr);
         TEST_CASE(cxxNullPtrLiteralExpr);
         TEST_CASE(cxxOperatorCallExpr);
         TEST_CASE(cxxRecordDecl1);
@@ -369,6 +370,17 @@ private:
         ASSERT_EQUALS("_Bool analyzeFile ( const std::string & buildDir@1 , const std::string & sourcefile@2 , const std::string & cfg@3 , unsigned long long checksum@4 , std::list<ErrorLogger::ErrorMessage> * errors@5 ) { }", parse(clang));
     }
 
+    void cxxNewExpr() {
+        const char clang[] = "|-VarDecl 0x3a97680 <1.cpp:2:1, col:14> col:6 i 'int *' cinit\n"
+                             "| `-CXXNewExpr 0x3a97d18 <col:10, col:14> 'int *' Function 0x3a97778 'operator new' 'void *(unsigned long)'\n"
+                             "`-VarDecl 0x3a97d80 <line:3:1, col:21> col:6 j 'int *' cinit\n"
+                             "  `-CXXNewExpr 0x3a97e68 <col:10, col:21> 'int *' array Function 0x3a978c0 'operator new[]' 'void *(unsigned long)'\n"
+                             "    `-ImplicitCastExpr 0x3a97e18 <col:18> 'unsigned long' <IntegralCast>\n"
+                             "      `-IntegerLiteral 0x3a97de0 <col:18> 'int' 100";
+        ASSERT_EQUALS("int * i@1 = new int ;\n"
+                      "int * j@2 = new int [ 100 ] ;",
+                      parse(clang));
+    }
 
     void cxxNullPtrLiteralExpr() {
         const char clang[] = "`-VarDecl 0x2a7d650 <1.cpp:1:1, col:17> col:13 p 'const char *' cinit\n"

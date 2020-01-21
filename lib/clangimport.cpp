@@ -47,6 +47,7 @@ static const std::string CXXDefaultArgExpr = "CXXDefaultArgExpr";
 static const std::string CXXForRangeStmt = "CXXForRangeStmt";
 static const std::string CXXMemberCallExpr = "CXXMemberCallExpr";
 static const std::string CXXMethodDecl = "CXXMethodDecl";
+static const std::string CXXNewExpr = "CXXNewExpr";
 static const std::string CXXNullPtrLiteralExpr = "CXXNullPtrLiteralExpr";
 static const std::string CXXOperatorCallExpr = "CXXOperatorCallExpr";
 static const std::string CXXRecordDecl = "CXXRecordDecl";
@@ -635,6 +636,21 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == CXXMemberCallExpr)
         return createTokensCall(tokenList);
+    if (nodeType == CXXNewExpr) {
+        Token *newtok = addtoken(tokenList, "new");
+        std::string type = getType();
+        if (type.find("*") != std::string::npos)
+            type = type.erase(type.rfind("*"));
+        addTypeTokens(tokenList, type);
+        if (!children.empty()) {
+            Token *bracket1 = addtoken(tokenList, "[");
+            children[0]->createTokens(tokenList);
+            Token *bracket2 = addtoken(tokenList, "]");
+            bracket1->link(bracket2);
+            bracket2->link(bracket1);
+        }
+        return newtok;
+    }
     if (nodeType == CXXNullPtrLiteralExpr)
         return addtoken(tokenList, "nullptr");
     if (nodeType == CXXOperatorCallExpr)
