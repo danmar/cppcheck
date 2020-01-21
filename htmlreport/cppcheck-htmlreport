@@ -527,10 +527,10 @@ if __name__ == '__main__':
 
             output_file.write(HTML_HEAD_END)
             try:
-                lexer = guess_lexer_for_filename(source_filename, '')
+                lexer = guess_lexer_for_filename(source_filename, '', stripnl=False)
             except ClassNotFound:
                 try:
-                    lexer = guess_lexer(content)
+                    lexer = guess_lexer(content, stripnl=False)
                 except ClassNotFound:
                     sys.stderr.write("ERROR: Couldn't determine lexer for the file' " + source_filename + " '. Won't be able to syntax highlight this file.")
                     output_file.write("\n <tr><td colspan=\"5\"> Could not generate content because pygments failed to determine the code type.</td></tr>")
