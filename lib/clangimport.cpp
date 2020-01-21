@@ -42,6 +42,7 @@ static const std::string CXXBindTemporaryExpr = "CXXBindTemporaryExpr";
 static const std::string CXXBoolLiteralExpr = "CXXBoolLiteralExpr";
 static const std::string CXXConstructorDecl = "CXXConstructorDecl";
 static const std::string CXXConstructExpr = "CXXConstructExpr";
+static const std::string CXXDefaultArgExpr = "CXXDefaultArgExpr";
 static const std::string CXXForRangeStmt = "CXXForRangeStmt";
 static const std::string CXXMemberCallExpr = "CXXMemberCallExpr";
 static const std::string CXXMethodDecl = "CXXMethodDecl";
@@ -906,8 +907,11 @@ Token * clangimport::AstNode::createTokensCall(TokenList *tokenList)
     Token *par1 = addtoken(tokenList, "(");
     par1->astOperand1(f);
     Token *parent = par1;
-    for (int c = firstParam; c < children.size(); ++c) {
-        if (c + 1 < children.size()) {
+    int args = 0;
+    while (args < children.size() && children[args]->nodeType != CXXDefaultArgExpr)
+        args++;
+    for (int c = firstParam; c < args; ++c) {
+        if (c + 1 < args) {
             Token *child = children[c]->createTokens(tokenList);
             Token *comma = addtoken(tokenList, ",");
             comma->astOperand1(child);
