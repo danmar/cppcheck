@@ -53,6 +53,7 @@ private:
         TEST_CASE(cxxRecordDecl1);
         TEST_CASE(cxxStaticCastExpr1);
         TEST_CASE(cxxStaticCastExpr2);
+        TEST_CASE(cxxThrowExpr);
         TEST_CASE(doStmt);
         TEST_CASE(forStmt);
         TEST_CASE(funcdecl1);
@@ -407,6 +408,14 @@ private:
                              "  `-CXXStaticCastExpr 0x3e453e8 <col:12> 'std::_Rb_tree_iterator<std::pair<const std::__cxx11::basic_string<char>, Library::AllocFunc> >' xvalue static_cast<struct std::_Rb_tree_iterator<struct std::pair<const class std::__cxx11::basic_string<char>, struct Library::AllocFunc> > &&> <NoOp>\n"
                              "    `-DeclRefExpr 0x3e453b0 <col:12> 'std::_Rb_tree_iterator<std::pair<const std::__cxx11::basic_string<char>, Library::AllocFunc> >' lvalue ParmVar 0x3e45250 '' 'std::_Rb_tree_iterator<std::pair<const std::__cxx11::basic_string<char>, Library::AllocFunc> > &&'";
         ASSERT_EQUALS("int a@1 = static_cast<structstd::_Rb_tree_iterator<structstd::pair<constclassstd::__cxx11::basic_string<char>,structLibrary::AllocFunc>>&&> ( <NoName> ) ;", parse(clang));
+    }
+
+    void cxxThrowExpr() {
+        const char clang[] = "`-FunctionDecl 0x3701690 <1.cpp:2:1, col:23> col:6 foo 'void ()'\n"
+                             "  `-CompoundStmt 0x37017b0 <col:12, col:23>\n"
+                             "    `-CXXThrowExpr 0x3701790 <col:14, col:20> 'void'\n"
+                             "      `-IntegerLiteral 0x3701770 <col:20> 'int' 1";
+        ASSERT_EQUALS("void foo ( ) { throw 1 ; }", parse(clang));
     }
 
     void doStmt() {

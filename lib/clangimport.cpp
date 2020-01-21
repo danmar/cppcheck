@@ -53,6 +53,7 @@ static const std::string CXXRecordDecl = "CXXRecordDecl";
 static const std::string CXXStaticCastExpr = "CXXStaticCastExpr";
 static const std::string CXXTemporaryObjectExpr = "CXXTemporaryObjectExpr";
 static const std::string CXXThisExpr = "CXXThisExpr";
+static const std::string CXXThrowExpr = "CXXThrowExpr";
 static const std::string DeclRefExpr = "DeclRefExpr";
 static const std::string DeclStmt = "DeclStmt";
 static const std::string DoStmt = "DoStmt";
@@ -659,6 +660,11 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         return children[0]->createTokens(tokenList);
     if (nodeType == CXXThisExpr)
         return addtoken(tokenList, "this");
+    if (nodeType == CXXThrowExpr) {
+        Token *t = addtoken(tokenList, "throw");
+        t->astOperand1(children[0]->createTokens(tokenList));
+        return t;
+    }
     if (nodeType == DeclRefExpr) {
         const std::string addr = mExtTokens[mExtTokens.size() - 3];
         std::string name = unquote(getSpelling());
