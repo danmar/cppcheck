@@ -2282,6 +2282,11 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
             return read;
         } else if (!value.isLifetimeValue() && isAliasOf(var, tok, varid, {value}) && isVariableChanged(tok, 0, settings, cpp)) {
             return Action::Invalid;
+        } else if (Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
+            // bailout: global non-const variables
+            if (var->isGlobal() && !var->isConst()) {
+                return Action::Invalid;
+            }
         }
         return Action::None;
     }

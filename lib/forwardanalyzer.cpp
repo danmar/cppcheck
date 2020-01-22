@@ -116,13 +116,29 @@ struct ForwardTraversal
         Inconclusive,
     };
 
-    Status checkScope(const Token* endBlock, bool checkReturn=true) {
+    struct checkScopeOptions
+    {
+        checkScopeOptions()
+        : checkReturn(true), loop(false)
+        {}
+        bool checkReturn;
+        bool loop;
+    };
+
+    Status checkScope(const Token* endBlock, checkScopeOptions options = checkScopeOptions{}) {
         ForwardAnalyzer::Action a = analyzeRange(endBlock->link(), endBlock);
         if (analyzer->UpdateScope(endBlock, a.isModified())) {
             ForwardTraversal ft = *this;
+            if (options.loop) {
+                if (a.isInconclusive()) {
+                    ft.analyzer->LowerToInconclusive();
+                } else if (a.isModified()) {
+                    ft.analyzer->LowerToPossible();
+                }
+            }
             ft.updateRange(endBlock->link(), endBlock);
         }            
-        if (checkReturn && isReturnScope(endBlock, &settings->library))
+        if (options.checkReturn && isReturnScope(endBlock, &settings->library))
             return Status::Escaped;
         if (a.isInconclusive()) {
             return Status::Inconclusive;
@@ -130,6 +146,26 @@ struct ForwardTraversal
             return Status::Modified;
         }
         return Status::None;
+    }
+
+    Progress updateLoop(Token* endBlock) {
+        checkScopeOptions options;
+        options.loop = true;
+        Status loopStatus = checkScope(endBlock);
+        if (loopStatus == Status::Inconclusive) {
+            if (!analyzer->LowerToInconclusive())
+                return Progress::Break;
+        } else if (loopStatus == Status::Modified) {
+            if (!analyzer->LowerToPossible())
+                return Progress::Break;
+            Token * writeTok = findRange(endBlock->link(), endBlock, std::mem_fn(&ForwardAnalyzer::Action::isModified));
+            const Token * nextStatement = Token::findmatch(writeTok, ";|}", endBlock);
+            if (!Token::Match(nextStatement, ";|} break ;"))
+                return Progress::Break;
+        }
+        // TODO: Shoule we traverse the body?
+        // updateRange(endBlock->link(), endBlock);
+        return Progress::Continue;
     }
 
     Progress updateRange(Token* start, const Token* end) {
@@ -193,20 +229,8 @@ struct ForwardTraversal
                     return Progress::Break;
 
                 if (Token::Match(tok, "for|while (")) {
-                    Status loopStatus = checkScope(endBlock);
-                    if (loopStatus == Status::Inconclusive) {
-                        if (!analyzer->LowerToInconclusive())
-                            return Progress::Break;
-                    } else if (loopStatus == Status::Modified) {
-                        if (!analyzer->LowerToPossible())
-                            return Progress::Break;
-                        Token * writeTok = findRange(endBlock->link(), endBlock, std::mem_fn(&ForwardAnalyzer::Action::isModified));
-                        const Token * nextStatement = Token::findmatch(writeTok, ";|}", endBlock);
-                        if (!Token::Match(nextStatement, ";|} break ;"))
-                            return Progress::Break;
-                    }
-                    // TODO: Shoule we traverse the body?
-                    // updateRange(endBlock->link(), endBlock);
+                    if (updateLoop(endBlock) == Progress::Break)
+                        return Progress::Break;
                     tok = endBlock;
                 } else {
                     // Check if condition is true or false
@@ -252,6 +276,11 @@ struct ForwardTraversal
                 }
             } else if (Token::simpleMatch(tok, "} else {")) {
                 tok = tok->linkAt(2);
+            } else if (Token::simpleMatch(tok, "do {")) {
+                Token * endBlock = tok->next()->link();
+                if (updateLoop(endBlock) == Progress::Break)
+                    return Progress::Break;
+                tok = endBlock;
             } else if (Token::Match(tok, "assert|ASSERT (")) {
                 const Token* condTok = tok->next()->astOperand2();
                 bool checkThen, checkElse;
@@ -268,7 +297,9 @@ struct ForwardTraversal
                 return Progress::Break;
             // Skip lambdas
             } else if (Token *lambdaEndToken = findLambdaEndToken(tok)) {
-                if (checkScope(lambdaEndToken, false) == Status::Modified)
+                checkScopeOptions options{};
+                options.checkReturn = false;
+                if (checkScope(lambdaEndToken, options) == Status::Modified)
                     return Progress::Break;
                 tok = lambdaEndToken;
             // Skip unevaluated context
