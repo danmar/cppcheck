@@ -33,6 +33,11 @@ bool ProgramMemory::getTokValue(nonneg int varid, const Token** result) const
     return found;
 }
 
+void ProgramMemory::setUnknown(nonneg int varid)
+{
+    values[varid].valueType = ValueFlow::Value::ValueType::UNINIT;
+}
+
 bool ProgramMemory::hasValue(nonneg int varid)
 {
     return values.find(varid) != values.end();
@@ -202,6 +207,8 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
                 execute(vartok->next()->astOperand2(), &pm, &result, &error);
                 if (!error)
                     pm.setIntValue(vartok->varId(), result);
+                else
+                    pm.setUnknown(vartok->varId());
             }
         }
 

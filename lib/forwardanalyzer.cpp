@@ -20,6 +20,11 @@ struct ForwardTraversal
         return std::make_pair(checkThen, checkElse);
     }
 
+    // bool isAliasing(const Token* tok)
+    // {
+
+    // }
+
     Progress update(Token* tok) {
         ForwardAnalyzer::Action action = analyzer->Analyze(tok);
         if (!action.isNone())
@@ -151,6 +156,7 @@ struct ForwardTraversal
                     analyzer->LowerToPossible();
                 else if (condTok->values().front().intvalue == 0)
                     return Progress::Break;
+                analyzer->Assume(condTok, true);
                 // std::vector<int> result = analyzer->Evaluate(tok);
                 // if (result.empty())
                 //     return Progress::Break;
@@ -209,12 +215,6 @@ struct ForwardTraversal
                     Status thenStatus = Status::None;
                     Status elseStatus = Status::None;
 
-                    if (!checkThen && !checkElse) {
-                        // Stop if the value is conditional
-                        if (analyzer->IsConditional())
-                            return Progress::Break;
-                    }
-
                     // Traverse then block
                     if (checkThen) {
                         if (updateRange(endCond->next(), endBlock) == Progress::Break)
@@ -247,12 +247,22 @@ struct ForwardTraversal
                     } else if (thenStatus == Status::Modified || elseStatus == Status::Modified) {
                         if (!analyzer->LowerToPossible())
                             return Progress::Break;
+                        analyzer->Assume(condTok, elseStatus == Status::Modified);
                     }
                 }
             } else if (Token::simpleMatch(tok, "} else {")) {
                 tok = tok->linkAt(2);
+            } else if (Token::Match(tok, "assert|ASSERT (")) {
+                const Token* condTok = tok->next()->astOperand2();
+                bool checkThen, checkElse;
+                std::tie(checkThen, checkElse) = checkCond(condTok);
+                if (checkElse)
+                    return Progress::Break;
+                if (!checkThen)
+                    analyzer->Assume(condTok, true);
             } else if (Token::Match(tok, "?|&&|%oror%")) {
-                updateConditional(tok);
+                if (updateConditional(tok) == Progress::Break)
+                    return Progress::Break;
                 tok = nextAfterAstRightmostLeaf(tok);
             } else if (Token::simpleMatch(tok, "switch (")) {
                 return Progress::Break;

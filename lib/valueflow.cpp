@@ -2258,9 +2258,6 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
             if (Token::Match(parent, "*|[|.") && value.indirect <= 0)
                 return Action::Read;
 
-            if (Token::simpleMatch(tok->astParent(), "&"))
-                return Action::Invalid;
-
             if (isWritableValue() && Token::Match(parent, "%assign%") && astIsLHS(tok) && parent->astOperand2()->hasKnownValue()) {
                 const Token* rhs = parent->astOperand2();
                 const ValueFlow::Value * rhsValue = getKnownValue(rhs, value.valueKind);
@@ -2283,7 +2280,7 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
             if (isVariableChanged(tok, value.indirect, settings, cpp))
                 return Action::Invalid;
             return read;
-        } else if (isAliasOf(var, tok, varid, {value}) && isVariableChanged(tok, 0, settings, cpp)) {
+        } else if (!value.isLifetimeValue() && isAliasOf(var, tok, varid, {value}) && isVariableChanged(tok, 0, settings, cpp)) {
             return Action::Invalid;
         }
         return Action::None;
@@ -2297,9 +2294,13 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
         if (a.isWrite()) {
             if (Token::Match(tok->astParent(), "%assign%")) {
                 // TODO: Check result
-                evalAssignment(value, tok->astParent()->str(), *getKnownValue(tok->astParent()->astOperand2(), value.valueKind));
-                const std::string info("Compound assignment '" + tok->astParent()->str() + "', assigned value is " + value.infoString());
-                value.errorPath.emplace_back(tok, info);
+                if (evalAssignment(value, tok->astParent()->str(), *getKnownValue(tok->astParent()->astOperand2(), value.valueKind))) {
+                    const std::string info("Compound assignment '" + tok->astParent()->str() + "', assigned value is " + value.infoString());
+                    value.errorPath.emplace_back(tok, info);
+                } else {
+                    // TODO: Dont set to zero
+                    value.intvalue = 0;
+                }
             }
             if (Token::Match(tok->astParent(), "++|--")) {
                 const bool inc   = Token::simpleMatch(tok->astParent(), "++");
@@ -2336,6 +2337,12 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
         return true;
     }
 
+    virtual void Assume(const Token* tok, bool state) OVERRIDE
+    {
+        // TODO: Use this to improve Evaluate
+        value.conditional = true;
+    }
+
     virtual bool IsConditional() const OVERRIDE
     {
         return value.conditional || value.condition;
@@ -2347,9 +2354,13 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
         if (!scope)
             return false;
         if (scope->type == Scope::eLambda) {
-            return !modified || value.isLifetimeValue();
-        } else if (scope->type == Scope::eIf || scope->type == Scope::eElse || scope->type == Scope::eWhile) {
+            return value.isLifetimeValue();
+        } else if (scope->type == Scope::eIf || scope->type == Scope::eElse || scope->type == Scope::eWhile || scope->type == Scope::eFor) {
+            if (IsConditional())
+                return false;
             if (value.isKnown() || value.isImpossible())
+                return true;
+            if (!modified || value.isLifetimeValue())
                 return true;
             const Token* condTok = getCondTok(endBlock);
             return !astHasVar(condTok, varid) || bifurcate(condTok, {varid}, settings);
