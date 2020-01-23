@@ -69,6 +69,7 @@ private:
         TEST_CASE(functionTemplateDecl2);
         TEST_CASE(initListExpr);
         TEST_CASE(ifelse);
+        TEST_CASE(ifStmt);
         TEST_CASE(labelStmt);
         TEST_CASE(memberExpr);
         TEST_CASE(namespaceDecl);
@@ -601,6 +602,17 @@ private:
         ASSERT_EQUALS("int foo ( int x@1 ) {\n"
                       "if ( x@1 > 10 ) { }\n"
                       "else { } }", parse(clang));
+    }
+
+    void ifStmt() {
+        // Clang 8 in cygwin
+        const char clang[] = "`-FunctionDecl 0x41d0690 <2.cpp:1:1, col:24> col:6 foo 'void ()'\n"
+                             "  `-CompoundStmt 0x41d07f0 <col:12, col:24>\n"
+                             "    `-IfStmt 0x41d07b8 <col:14, col:22>\n"
+                             "      |-ImplicitCastExpr 0x41d0790 <col:18> 'bool' <IntegralToBoolean>\n"
+                             "      | `-IntegerLiteral 0x41d0770 <col:18> 'int' 1\n"
+                             "      |-CompoundStmt 0x41d07a8 <col:21, col:22>\n";
+        ASSERT_EQUALS("void foo ( ) { if ( 1 ) { } }", parse(clang));
     }
 
     void initListExpr() {

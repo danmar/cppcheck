@@ -779,9 +779,18 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         return nullptr;
     }
     if (nodeType == IfStmt) {
-        AstNodePtr cond = children[children.size() - 3];
-        AstNodePtr then = children[children.size() - 2];
-        AstNodePtr else_ = children[children.size() - 1];
+        AstNodePtr cond;
+        AstNodePtr thenCode;
+        AstNodePtr elseCode;
+        if (children.size() == 2) {
+            cond = children[children.size() - 2];
+            thenCode = children[children.size() - 1];
+        } else {
+            cond = children[children.size() - 3];
+            thenCode = children[children.size() - 2];
+            elseCode = children[children.size() - 1];
+        }
+
         Token *iftok = addtoken(tokenList, "if");
         Token *par1 = addtoken(tokenList, "(");
         par1->astOperand1(iftok);
@@ -789,10 +798,10 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         Token *par2 = addtoken(tokenList, ")");
         par1->link(par2);
         par2->link(par1);
-        createScope(tokenList, Scope::ScopeType::eIf, then, iftok);
-        if (else_) {
-            else_->addtoken(tokenList, "else");
-            createScope(tokenList, Scope::ScopeType::eElse, else_, tokenList->back());
+        createScope(tokenList, Scope::ScopeType::eIf, thenCode, iftok);
+        if (elseCode) {
+            elseCode->addtoken(tokenList, "else");
+            createScope(tokenList, Scope::ScopeType::eElse, elseCode, tokenList->back());
         }
         return nullptr;
     }
