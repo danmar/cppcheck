@@ -119,8 +119,8 @@ inline static bool isValidGlobPattern(const std::string& pattern)
             if (j != pattern.end() && (*j == '*' || *j == '?')) {
                 return false;
             }
+        }
     }
-}
     return true;
 }
 
