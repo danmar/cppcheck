@@ -151,7 +151,7 @@ struct ForwardTraversal
     Progress updateLoop(Token* endBlock) {
         checkScopeOptions options;
         options.loop = true;
-        Status loopStatus = checkScope(endBlock);
+        Status loopStatus = checkScope(endBlock, options);
         if (loopStatus == Status::Inconclusive) {
             if (!analyzer->LowerToInconclusive())
                 return Progress::Break;
