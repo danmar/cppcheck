@@ -60,6 +60,8 @@ static const std::string CXXThrowExpr = "CXXThrowExpr";
 static const std::string DeclRefExpr = "DeclRefExpr";
 static const std::string DeclStmt = "DeclStmt";
 static const std::string DoStmt = "DoStmt";
+static const std::string EnumConstantDecl = "EnumConstantDecl";
+static const std::string EnumDecl = "EnumDecl";
 static const std::string ExprWithCleanups = "ExprWithCleanups";
 static const std::string FieldDecl = "FieldDecl";
 static const std::string FloatingLiteral = "FloatingLiteral";
@@ -712,6 +714,21 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         par2->link(par1);
         par1->astOperand1(tok1);
         par1->astOperand2(expr);
+        return nullptr;
+    }
+    if (nodeType == EnumConstantDecl)
+        return addtoken(tokenList, getSpelling());
+    if (nodeType == EnumDecl) {
+        Token *enumtok = addtoken(tokenList, "enum");
+        if (mExtTokens[mExtTokens.size() - 3].compare(0,4,"col:") == 0)
+            addtoken(tokenList, mExtTokens.back());
+        createScope(tokenList, Scope::ScopeType::eEnum, children, enumtok);
+        for (Token *tok = enumtok; tok; tok = tok->next()) {
+            if (Token::simpleMatch(tok, "; }"))
+                tok->deleteThis();
+            else if (tok->str() == ";")
+                tok->str(",");
+        }
         return nullptr;
     }
     if (nodeType == ExprWithCleanups)

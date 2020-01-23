@@ -59,6 +59,7 @@ private:
         TEST_CASE(cxxStdInitializerListExpr);
         TEST_CASE(cxxThrowExpr);
         TEST_CASE(doStmt);
+        TEST_CASE(enumDecl);
         TEST_CASE(forStmt);
         TEST_CASE(funcdecl1);
         TEST_CASE(funcdecl2);
@@ -482,6 +483,14 @@ private:
                              "      |   `-DeclRefExpr 0x27fbc68 <col:18> 'int' lvalue Var 0x27fbae0 'x' 'int'\n"
                              "      `-IntegerLiteral 0x27fbcc8 <col:30> 'int' 1";
         ASSERT_EQUALS("void foo ( ) { do { ++ x ; } while ( 1 ) ; }", parse(clang));
+    }
+
+    void enumDecl() {
+        const char clang[] = "`-EnumDecl 0x2660660 <line:3:1, col:16> col:6 referenced abc\n"
+                             "  |-EnumConstantDecl 0x2660720 <col:11> col:11 referenced a 'abc'\n"
+                             "  |-EnumConstantDecl 0x2660768 <col:13> col:13 b 'abc'\n"
+                             "  `-EnumConstantDecl 0x26607b0 <col:15> col:15 c 'abc'";
+        ASSERT_EQUALS("enum abc { a , b , c }", parse(clang));
     }
 
     void forStmt() {
