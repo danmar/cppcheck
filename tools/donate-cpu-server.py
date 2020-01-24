@@ -22,7 +22,7 @@ import operator
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.1"
+SERVER_VERSION = "1.3.2"
 
 OLD_VERSION = '1.90'
 
@@ -67,6 +67,7 @@ def overviewReport() -> str:
     html = '<html><head><title>daca@home</title></head><body>\n'
     html += '<h1>daca@home</h1>\n'
     html += '<a href="crash.html">Crash report</a><br>\n'
+    html += '<a href="timeout.html">Timeout report</a><br>\n'
     html += '<a href="stale.html">Stale report</a><br>\n'
     html += '<a href="diff.html">Diff report</a><br>\n'
     html += '<a href="head.html">HEAD report</a><br>\n'
@@ -82,7 +83,7 @@ def overviewReport() -> str:
 
 
 def fmt(a: str, b: str, c: str = None, d: str = None, e: str = None, link: bool = True) -> str:
-    column_width = [40, 10, 5, 6, 6, 8]
+    column_width = [40, 10, 5, 7, 7, 8]
     ret = a
     while len(ret) < column_width[0]:
         ret += ' '
@@ -214,6 +215,47 @@ def crashReport(results_path: str) -> str:
         html += '\n'.join(stack_trace['stack_trace']) + '\n\n'
     html += '</pre>\n'
 
+    html += '</body></html>\n'
+    return html
+
+
+def timeoutReport(results_path: str) -> str:
+    html = '<html><head><title>Timeout report</title></head><body>\n'
+    html += '<h1>Timeout report</h1>\n'
+    html += '<pre>\n'
+    html += '<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', link=False) + '</b>\n'
+    current_year = datetime.date.today().year
+    for filename in sorted(glob.glob(os.path.expanduser(results_path + '/*'))):
+        if not os.path.isfile(filename):
+            continue
+        datestr = ''
+        with open(filename, 'rt') as file_:
+            for line in file_:
+                line = line.strip()
+                if line.startswith('cppcheck: '):
+                    if OLD_VERSION not in line:
+                        # Package results seem to be too old, skip
+                        break
+                    else:
+                        # Current package, parse on
+                        continue
+                if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
+                    datestr = line
+                if line.startswith('count:'):
+                    if line.find('TO!') < 0:
+                        break
+                    package = filename[filename.rfind('/')+1:]
+                    counts = line.strip().split(' ')
+                    c2 = ''
+                    if counts[2] == 'TO!':
+                        c2 = 'Timeout'
+                    c1 = ''
+                    if counts[1] == 'TO!':
+                        c1 = 'Timeout'
+                    html += fmt(package, datestr, c2, c1) + '\n'
+                    break
+
+    html += '</pre>\n'
     html += '</body></html>\n'
     return html
 
@@ -772,6 +814,9 @@ class HttpClientThread(Thread):
                 httpGetResponse(self.connection, html, 'text/html')
             elif url == 'crash.html':
                 html = crashReport(self.resultPath)
+                httpGetResponse(self.connection, html, 'text/html')
+            elif url == 'timeout.html':
+                html = timeoutReport(self.resultPath)
                 httpGetResponse(self.connection, html, 'text/html')
             elif url == 'stale.html':
                 html = staleReport(self.resultPath)
