@@ -340,12 +340,13 @@ unsigned int CppCheck::check(const std::string &path)
         ValueFlow::setValues(&tokenizer.list, const_cast<SymbolDatabase *>(tokenizer.getSymbolDatabase()), this, &mSettings);
         if (mSettings.debugnormal)
             tokenizer.printDebugOutput(1);
-
 #ifdef USE_Z3
         if (mSettings.bugHunting)
             ExprEngine::runChecks(this, &tokenizer, &mSettings);
+        else
 #endif
-        return 0;
+        checkNormalTokens(tokenizer);
+        return mExitCode;
     }
 
     std::ifstream fin(path);
