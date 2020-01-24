@@ -22,7 +22,7 @@ import operator
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.2"
+SERVER_VERSION = "1.3.3"
 
 OLD_VERSION = '1.90'
 
@@ -964,7 +964,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             print('[' + strDateTime() + '] write:' + url)
 
             # save data
-            res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.(gz|bz2)', url)
+            res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.(gz|bz2|xz)', url)
             if res is None:
                 res = re.match(r'http://cppcheck.sf.net/([a-z]+).tgz', url)
             if res is None:
@@ -1033,7 +1033,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             print('[' + strDateTime() + '] write_info:' + url)
 
             # save data
-            res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.(gz|bz2)', url)
+            res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.(gz|bz2|xz)', url)
             if res is None:
                 res = re.match(r'http://cppcheck.sf.net/([a-z]+).tgz', url)
             if res is None:
