@@ -1038,9 +1038,10 @@ bool isReturnScope(const Token * const endToken, const Library * library, bool f
                     return true;
                 if (function->isAttributeNoreturn())
                     return true;
-            } else if (library) {
-                if (library->isnoreturn(ftok))
-                    return true;
+            } else if (library && library->isnoreturn(ftok)) {
+                return true;
+            } else if (Token::Match(ftok, "exit|abort")) {
+                return true;
             }
             return false;
         }

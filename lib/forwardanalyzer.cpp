@@ -12,7 +12,7 @@ struct ForwardTraversal
     ValuePtr<ForwardAnalyzer> analyzer;
     const Settings* settings;
 
-    std::pair<bool, bool> checkCond(const Token* tok)
+    std::pair<bool, bool> evalCond(const Token* tok)
     {
         std::vector<int> result = analyzer->Evaluate(tok);
         bool checkThen = std::any_of(result.begin(), result.end(), [](int x) { return x; });
@@ -53,7 +53,7 @@ struct ForwardTraversal
                 return Progress::Break;
             Token * childTok = tok->astOperand2();
             bool checkThen, checkElse;
-            std::tie(checkThen, checkElse) = checkCond(condTok);
+            std::tie(checkThen, checkElse) = evalCond(condTok);
             if (!checkThen && !checkElse) {
                 // Stop if the value is conditional
                 if (analyzer->IsConditional())
@@ -240,7 +240,7 @@ struct ForwardTraversal
                         return Progress::Break;
                     // Check if condition is true or false
                     bool checkThen, checkElse;
-                    std::tie(checkThen, checkElse) = checkCond(condTok);
+                    std::tie(checkThen, checkElse) = evalCond(condTok);
                     Status thenStatus = Status::None;
                     Status elseStatus = Status::None;
 
@@ -270,6 +270,8 @@ struct ForwardTraversal
                         if (thenStatus == Status::Modified || elseStatus == Status::Modified) {
                             return Progress::Break;
                         }
+                        if (elseStatus == Status::None)
+                            return Progress::Break;
                     } else if (thenStatus == Status::Inconclusive || elseStatus == Status::Inconclusive) {
                         if (!analyzer->LowerToInconclusive())
                             return Progress::Break;
@@ -289,7 +291,7 @@ struct ForwardTraversal
             } else if (Token::Match(tok, "assert|ASSERT (")) {
                 const Token* condTok = tok->next()->astOperand2();
                 bool checkThen, checkElse;
-                std::tie(checkThen, checkElse) = checkCond(condTok);
+                std::tie(checkThen, checkElse) = evalCond(condTok);
                 if (checkElse)
                     return Progress::Break;
                 if (!checkThen)
@@ -299,6 +301,8 @@ struct ForwardTraversal
                     return Progress::Break;
                 tok = nextAfterAstRightmostLeaf(tok);
             } else if (Token::simpleMatch(tok, "switch (")) {
+                if (updateRecursive(tok->next()->astOperand2()) == Progress::Break)
+                    return Progress::Break;
                 return Progress::Break;
             // Skip lambdas
             } else if (Token *lambdaEndToken = findLambdaEndToken(tok)) {
