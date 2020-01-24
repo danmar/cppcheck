@@ -255,13 +255,13 @@ def run_command(cmd):
     print(cmd)
     startTime = time.time()
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    return_code = RETURN_CODE_TIMEOUT
     try:
         comm = p.communicate(timeout=CPPCHECK_TIMEOUT)
         return_code = p.returncode
     except subprocess.TimeoutExpired:
         p.kill()
         comm = p.communicate()
+        return_code = RETURN_CODE_TIMEOUT
     stop_time = time.time()
     stdout = comm[0].decode(encoding='utf-8', errors='ignore')
     stderr = comm[1].decode(encoding='utf-8', errors='ignore')
