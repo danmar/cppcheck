@@ -654,6 +654,18 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
 
     for (const std::string &c : compileList) {
         for (const ProjectConfiguration &p : projectConfigurationList) {
+
+            if (!guiProject.checkVsConfigs.empty()) {
+                bool doChecking = false;
+                for (std::string config : guiProject.checkVsConfigs)
+                    if (config == p.configuration) {
+                        doChecking = true;
+                        break;
+                    }
+                if(!doChecking) 
+                    continue;
+            }
+
             FileSettings fs;
             fs.filename = Path::simplifyPath(Path::isAbsolute(c) ? c : Path::getPathFromFilename(filename) + c);
             fs.cfg = p.name;
@@ -1018,6 +1030,8 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
             guiProject.libraries = readXmlStringList(node, "", CppcheckXml::LibraryElementName, nullptr);
         else if (strcmp(node->Name(), CppcheckXml::SuppressionsElementName) == 0)
             suppressions = readXmlStringList(node, "", CppcheckXml::SuppressionElementName, nullptr);
+        else if (strcmp(node->Name(), CppcheckXml::VSConfigurationElementName) == 0)
+            guiProject.checkVsConfigs = readXmlStringList(node, "", CppcheckXml::VSConfigurationName, nullptr);
         else if (strcmp(node->Name(), CppcheckXml::PlatformElementName) == 0)
             guiProject.platform = node->GetText();
         else if (strcmp(node->Name(), CppcheckXml::AnalyzeAllVsConfigsElementName) == 0)
@@ -1059,6 +1073,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     settings->userDefines = temp.userDefines;
     settings->userUndefs = temp.userUndefs;
     settings->addons = temp.addons;
+    
     for (const std::string &p : paths)
         guiProject.pathNames.push_back(p);
     for (const std::string &supp : suppressions)

@@ -150,6 +150,9 @@ public:
         for finding include files inside source files. (-I) */
     std::list<std::string> includePaths;
 
+    /** @brief List of selected Visual Studio configurations that should be checks */
+    std::list<std::string> checkVsConfigs;
+
     /** @brief Inconclusive checks */
     bool inconclusive;
 

@@ -90,6 +90,7 @@ public:
         std::vector<std::string> pathNames;
         std::list<std::string> libraries;
         std::list<std::string> excludedPaths;
+        std::list<std::string> checkVsConfigs;
         std::string projectFile;
         std::string platform;
     } guiProject;
