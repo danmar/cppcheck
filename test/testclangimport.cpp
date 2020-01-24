@@ -88,6 +88,7 @@ private:
         TEST_CASE(vardecl5);
         TEST_CASE(whileStmt);
 
+        TEST_CASE(symbolDatabaseEnum1);
         TEST_CASE(symbolDatabaseFunction1);
         TEST_CASE(symbolDatabaseFunction2);
         TEST_CASE(symbolDatabaseNodeType1);
@@ -798,6 +799,38 @@ private:
     clangimport::parseClangAstDump(&tokenizer, istr); \
     const SymbolDatabase *db = tokenizer.getSymbolDatabase(); \
     ASSERT(db);
+
+    void symbolDatabaseEnum1() {
+        const char clang[] = "|-NamespaceDecl 0x29ad5f8 <1.cpp:1:1, line:3:1> line:1:11 ns\n"
+                             "| `-EnumDecl 0x29ad660 <line:2:1, col:16> col:6 referenced abc\n"
+                             "|   |-EnumConstantDecl 0x29ad720 <col:11> col:11 a 'ns::abc'\n"
+                             "|   |-EnumConstantDecl 0x29ad768 <col:13> col:13 b 'ns::abc'\n"
+                             "|   `-EnumConstantDecl 0x29ad7b0 <col:15> col:15 referenced c 'ns::abc'\n"
+                             "`-VarDecl 0x29ad898 <line:5:1, col:22> col:9 x 'ns::abc':'ns::abc' cinit\n"
+                             "  `-DeclRefExpr 0x29ad998 <col:13, col:22> 'ns::abc' EnumConstant 0x29ad7b0 'c' 'ns::abc'\n";
+
+        ASSERT_EQUALS("namespace ns\n"
+                      "{ enum abc { a , b , c } }\n"
+                      "\n"
+                      "\n"
+                      "ns::abc x@1 = c ;", parse(clang));
+
+        GET_SYMBOL_DB(clang);
+
+        // Enum scope and type
+        ASSERT_EQUALS(3, db->scopeList.size());
+        const Scope &enumScope = db->scopeList.back();
+        ASSERT_EQUALS(Scope::ScopeType::eEnum, enumScope.type);
+        ASSERT_EQUALS("abc", enumScope.className);
+        const Type *enumType = enumScope.definedType;
+        ASSERT_EQUALS("abc", enumType->name());
+
+        // Variable
+        const Token *vartok = Token::findsimplematch(tokenizer.tokens(), "x");
+        ASSERT(vartok);
+        ASSERT(vartok->variable());
+        //ASSERT(vartok->variable()->valueType());
+    }
 
     void symbolDatabaseFunction1() {
         const char clang[] = "|-FunctionDecl 0x3aea7a0 <1.cpp:2:1, col:22> col:6 used foo 'void (int, int)'\n"
