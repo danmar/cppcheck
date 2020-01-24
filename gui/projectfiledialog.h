@@ -58,6 +58,9 @@ private:
     */
     QString getRootPath() const;
 
+    QStringList getVsConfigurations() const;
+    void    setVsConfigurations(const QStringList &configs);
+
     QString getImportProject() const;
 
     /** Get Cppcheck build dir */

@@ -240,6 +240,7 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     mUI.mCheckHeaders->setChecked(projectFile->getCheckHeaders());
     mUI.mCheckUnusedTemplates->setChecked(projectFile->getCheckUnusedTemplates());
     mUI.mMaxCtuDepth->setValue(projectFile->getMaxCtuDepth());
+    setVsConfigurations(projectFile->getVsConfigurations());
     setExcludedPaths(projectFile->getExcludedPaths());
     setLibraries(projectFile->getLibraries());
     const QString platform = projectFile->getPlatform();
@@ -370,6 +371,7 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setClangAnalyzer(mUI.mToolClangAnalyzer->isChecked());
     projectFile->setClangTidy(mUI.mToolClangTidy->isChecked());
     projectFile->setTags(mUI.mEditTags->text().split(";", QString::SkipEmptyParts));
+    projectFile->setVSConfigurations(getVsConfigurations());
 }
 
 void ProjectFileDialog::ok()
@@ -429,6 +431,7 @@ void ProjectFileDialog::updatePathsAndDefines()
     mUI.mBtnIncludeUp->setEnabled(!importProject);
     mUI.mBtnIncludeDown->setEnabled(!importProject);
     mUI.mChkAllVsConfigs->setEnabled(fileName.endsWith(".sln") || fileName.endsWith(".vcxproj"));
+    mUI.mEditVsConfiguration->setEnabled(fileName.endsWith(".sln") || fileName.endsWith(".vcxproj"));
 }
 
 void ProjectFileDialog::clearImportProject()
@@ -452,6 +455,24 @@ void ProjectFileDialog::browseImportProject()
         mUI.mEditImportProject->setText(dir.relativeFilePath(fileName));
         updatePathsAndDefines();
     }
+}
+
+QStringList ProjectFileDialog::getVsConfigurations() const
+{
+    const QString configString = mUI.mEditVsConfiguration->text().trimmed();
+    QStringList configs = configString.split(QRegExp("\\s*;\\s*"), QString::SkipEmptyParts);
+    configs.removeDuplicates();
+    return configs;
+}
+
+void ProjectFileDialog::setVsConfigurations(const QStringList &configs)
+{
+    QString allConfigs="";
+    foreach (const QString config, configs) {
+        allConfigs += config +";";
+    }
+    QString newStr = allConfigs.mid(0, allConfigs.lastIndexOf(';'));
+    mUI.mEditVsConfiguration->setText(newStr);
 }
 
 QString ProjectFileDialog::getImportProject() const
