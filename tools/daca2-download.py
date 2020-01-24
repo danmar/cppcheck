@@ -12,7 +12,7 @@ import shutil
 import glob
 import os
 import time
-import semver
+import natsort
 
 DEBIAN = ('ftp://ftp.se.debian.org/debian/',
           'ftp://ftp.debian.org/debian/')
@@ -33,11 +33,8 @@ def wget(filepath):
 
 
 def latestvername(names):
-    if len(names) == 1:
-        return names[0]
-    names.sort(cmp=semver.cmp, key=lambda x: x[x.index(
-        '_')+1:x.index('.orig.tar')-x.index('_')+1])
-    return names[-1]
+    s = natsort.natsorted(names, key=lambda x: x[x.index('_')+1:x.index('.orig.tar')])
+    return s[-1]
 
 
 def getpackages():

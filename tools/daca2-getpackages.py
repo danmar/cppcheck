@@ -19,7 +19,7 @@ import os
 import re
 import datetime
 import time
-import semver
+import natsort
 
 DEBIAN = ('ftp://ftp.de.debian.org/debian/',
           'ftp://ftp.debian.org/debian/')
@@ -39,15 +39,8 @@ def wget(filepath):
 
 
 def latestvername(names):
-    if len(names) == 1:
-        return names[0]
-    try:
-        names.sort(cmp=semver.compare, key=lambda x: x[x.index('_')+1:x.index('.orig.tar')])
-    except ValueError:
-        # semver.compare() throws an exception if the version is not formatted
-        # like it is required by semver. For example 0.8 is not valid.
-        pass
-    return names[-1]
+    s = natsort.natsorted(names, key=lambda x: x[x.index('_')+1:x.index('.orig.tar')])
+    return s[-1]
 
 
 def getpackages():
