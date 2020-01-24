@@ -66,8 +66,6 @@ private:
 
         TEST_CASE(unusedFunction);
 
-        TEST_CASE(matchglob);
-
         TEST_CASE(suppressingSyntaxErrorAndExitCode);
     }
 
@@ -588,23 +586,6 @@ private:
 
     void unusedFunction() {
         ASSERT_EQUALS(0, checkSuppression("void f() {}", "unusedFunction"));
-    }
-
-    void matchglob() {
-        ASSERT_EQUALS(true, Suppressions::matchglob("*", "xyz"));
-        ASSERT_EQUALS(true, Suppressions::matchglob("x*", "xyz"));
-        ASSERT_EQUALS(true, Suppressions::matchglob("*z", "xyz"));
-        ASSERT_EQUALS(true, Suppressions::matchglob("*y*", "xyz"));
-        ASSERT_EQUALS(true, Suppressions::matchglob("*y*", "yz"));
-        ASSERT_EQUALS(false, Suppressions::matchglob("*y*", "abc"));
-        ASSERT_EQUALS(true, Suppressions::matchglob("*", "x/y/z"));
-        ASSERT_EQUALS(true, Suppressions::matchglob("*/y/z", "x/y/z"));
-
-        ASSERT_EQUALS(false, Suppressions::matchglob("?", "xyz"));
-        ASSERT_EQUALS(false, Suppressions::matchglob("x?", "xyz"));
-        ASSERT_EQUALS(false, Suppressions::matchglob("?z", "xyz"));
-        ASSERT_EQUALS(true, Suppressions::matchglob("?y?", "xyz"));
-        ASSERT_EQUALS(true, Suppressions::matchglob("?/?/?", "x/y/z"));
     }
 
     void suppressingSyntaxErrorAndExitCode() {
