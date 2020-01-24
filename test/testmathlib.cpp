@@ -373,6 +373,8 @@ private:
     }
 
     void toDoubleNumber() const {
+        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1"),        0.001);
+        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("0x1"),      0.001);
         ASSERT_EQUALS_DOUBLE(10.0,   MathLib::toDoubleNumber("10"),       0.001);
         ASSERT_EQUALS_DOUBLE(1000.0, MathLib::toDoubleNumber("10E+2"),    0.001);
         ASSERT_EQUALS_DOUBLE(100.0,  MathLib::toDoubleNumber("1.0E+2"),   0.001);

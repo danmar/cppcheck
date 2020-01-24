@@ -234,6 +234,8 @@ namespace {
                 return ExprEngine::ValuePtr();
             ExprEngine::ValuePtr value = getValueRangeFromValueType(getNewSymbolName(), valueType, *settings);
             if (value) {
+                if (tok->variable() && tok->variable()->nameToken())
+                    addConstraints(value, tok->variable()->nameToken());
                 assignValue(tok, varId, value);
             }
             return value;
@@ -752,7 +754,7 @@ bool ExprEngine::IntRange::isEqual(DataBase *dataBase, int value) const
 
 bool ExprEngine::IntRange::isGreaterThan(DataBase *dataBase, int value) const
 {
-    if (value <= minValue || value >= maxValue)
+    if (maxValue <= value)
         return false;
 
     const Data *data = dynamic_cast<Data *>(dataBase);
@@ -781,7 +783,7 @@ bool ExprEngine::IntRange::isGreaterThan(DataBase *dataBase, int value) const
 
 bool ExprEngine::IntRange::isLessThan(DataBase *dataBase, int value) const
 {
-    if (value <= minValue || value >= maxValue)
+    if (minValue >= value)
         return false;
 
     const Data *data = dynamic_cast<Data *>(dataBase);
@@ -2068,9 +2070,42 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
 #endif
     };
 
+    std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> checkAssignment = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
+        if (!Token::simpleMatch(tok->astParent(), "="))
+            return;
+        const Token *lhs = tok->astParent()->astOperand1();
+        while (Token::simpleMatch(lhs, "."))
+            lhs = lhs->astOperand2();
+        if (!lhs || !lhs->variable() || !lhs->variable()->nameToken())
+            return;
+
+        const Token *vartok = lhs->variable()->nameToken();
+
+        MathLib::bigint low;
+        if (vartok->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW, &low)) {
+            if (value.isLessThan(dataBase, low)) {
+                dataBase->addError(tok->linenr());
+                std::list<const Token*> callstack{tok};
+                ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingAssign", "There is assignment, cannot determine that value is greater or equal with " + std::to_string(low), CWE_INCORRECT_CALCULATION, false);
+                errorLogger->reportErr(errmsg);
+            }
+        }
+
+        MathLib::bigint high;
+        if (vartok->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH, &high)) {
+            if (value.isGreaterThan(dataBase, high)) {
+                dataBase->addError(tok->linenr());
+                std::list<const Token*> callstack{tok};
+                ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingAssign", "There is assignment, cannot determine that value is lower or equal with " + std::to_string(high), CWE_INCORRECT_CALCULATION, false);
+                errorLogger->reportErr(errmsg);
+            }
+        }
+    };
+
     std::vector<ExprEngine::Callback> callbacks;
     callbacks.push_back(divByZero);
     callbacks.push_back(checkFunctionCall);
+    callbacks.push_back(checkAssignment);
 #ifdef BUG_HUNTING_INTEGEROVERFLOW
     callbacks.push_back(integerOverflow);
 #endif

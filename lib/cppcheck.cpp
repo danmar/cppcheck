@@ -255,6 +255,7 @@ unsigned int CppCheck::check(const std::string &path)
 
         const std::string clang = Path::isCPP(path) ? "clang++" : "clang";
         const std::string temp = mSettings.buildDir + "/__temp__.c";
+        const std::string clangcmd = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "") + ".clang-cmd";
         const std::string clangStderr = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "") + ".clang-stderr";
 
         /* Experimental: import clang ast dump */
@@ -279,12 +280,14 @@ unsigned int CppCheck::check(const std::string &path)
             }
         }
 
-        //std::cout << "Clang flags: " << flags << std::endl;
-
         for (const std::string &i: mSettings.includePaths)
             flags += "-I" + i + " ";
 
         const std::string cmd = clang + " -cc1 -ast-dump " + flags + path + " 2> " + clangStderr;
+        std::ofstream fout(clangcmd);
+        fout << cmd << std::endl;
+        fout.close();
+
         std::pair<bool, std::string> res = executeCommand(cmd);
         if (!res.first) {
             std::cerr << "Failed to execute '" + cmd + "'" << std::endl;
