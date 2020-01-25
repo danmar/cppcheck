@@ -464,10 +464,11 @@ Scope *clangimport::AstNode::createScope(TokenList *tokenList, Scope::ScopeType 
 {
     SymbolDatabase *symbolDatabase = mData->mSymbolDatabase;
 
-    const Scope *nestedIn = getNestedInScope(tokenList);
+    Scope *nestedIn = const_cast<Scope *>(getNestedInScope(tokenList));
 
     symbolDatabase->scopeList.push_back(Scope(nullptr, nullptr, nestedIn));
     Scope *scope = &symbolDatabase->scopeList.back();
+    nestedIn->nestedList.push_back(scope);
     scope->type = scopeType;
     scope->classDef = def;
     Token *bodyStart = children[0]->addtoken(tokenList, "{");
@@ -720,15 +721,25 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         return addtoken(tokenList, getSpelling());
     if (nodeType == EnumDecl) {
         Token *enumtok = addtoken(tokenList, "enum");
+        Token *nametok = nullptr;
         if (mExtTokens[mExtTokens.size() - 3].compare(0,4,"col:") == 0)
-            addtoken(tokenList, mExtTokens.back());
-        createScope(tokenList, Scope::ScopeType::eEnum, children, enumtok);
+            nametok = addtoken(tokenList, mExtTokens.back());
+        Scope *enumscope = createScope(tokenList, Scope::ScopeType::eEnum, children, enumtok);
+        if (nametok)
+            enumscope->className = nametok->str();
         for (Token *tok = enumtok; tok; tok = tok->next()) {
             if (Token::simpleMatch(tok, "; }"))
                 tok->deleteThis();
             else if (tok->str() == ";")
                 tok->str(",");
         }
+
+        // Create enum type
+        mData->mSymbolDatabase->typeList.push_back(Type(enumtok, enumscope, enumtok->scope()));
+        enumscope->definedType = &mData->mSymbolDatabase->typeList.back();
+        if (nametok)
+            const_cast<Scope *>(enumtok->scope())->definedTypesMap[nametok->str()] = enumscope->definedType;
+
         return nullptr;
     }
     if (nodeType == ExprWithCleanups)
@@ -859,7 +870,8 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         if (children.empty())
             return nullptr;
         Token *defToken = addtoken(tokenList, "namespace");
-        Token *nameToken = (mExtTokens[mExtTokens.size() - 2].compare(0,4,"col:") == 0) ?
+        const std::string &s = mExtTokens[mExtTokens.size() - 2];
+        Token *nameToken = (s.compare(0,4,"col:")==0 || s.compare(0,5,"line:")==0) ?
                            addtoken(tokenList, mExtTokens.back()) : nullptr;
         Scope *scope = createScope(tokenList, Scope::ScopeType::eNamespace, children, defToken);
         if (nameToken)

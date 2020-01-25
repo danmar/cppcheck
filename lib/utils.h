@@ -148,8 +148,7 @@ inline static bool matchglob(const std::string& pattern, const std::string& name
                 // Any character matches unless we're at the end of the name
                 if (*n != '\0') {
                     n++;
-                }
-                else {
+                } else {
                     matching = false;
                 }
                 break;
@@ -157,14 +156,11 @@ inline static bool matchglob(const std::string& pattern, const std::string& name
                 // Non-wildcard characters match literally
                 if (*n == *p) {
                     n++;
-                }
-                else if (*n == '\\' && *p == '/') {
+                } else if (*n == '\\' && *p == '/') {
                     n++;
-                }
-                else if (*n == '/' && *p == '\\') {
+                } else if (*n == '/' && *p == '\\') {
                     n++;
-                }
-                else {
+                } else {
                     matching = false;
                 }
                 break;
