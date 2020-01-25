@@ -99,6 +99,7 @@ private:
 
     std::string parse(const char clang[]) {
         Settings settings;
+        settings.clang = true;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(clang);
         clangimport::parseClangAstDump(&tokenizer, istr);
@@ -793,6 +794,7 @@ private:
 
 #define GET_SYMBOL_DB(clang) \
     Settings settings; \
+    settings.clang = true; \
     settings.platform(cppcheck::Platform::PlatformType::Unix64); \
     Tokenizer tokenizer(&settings, this); \
     std::istringstream istr(clang); \
@@ -829,7 +831,8 @@ private:
         const Token *vartok = Token::findsimplematch(tokenizer.tokens(), "x");
         ASSERT(vartok);
         ASSERT(vartok->variable());
-        //ASSERT(vartok->variable()->valueType());
+        ASSERT(vartok->variable()->valueType());
+        ASSERT_EQUALS(uintptr_t(&enumScope), uintptr_t(vartok->variable()->valueType()->typeScope));
     }
 
     void symbolDatabaseFunction1() {

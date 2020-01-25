@@ -464,10 +464,11 @@ Scope *clangimport::AstNode::createScope(TokenList *tokenList, Scope::ScopeType 
 {
     SymbolDatabase *symbolDatabase = mData->mSymbolDatabase;
 
-    const Scope *nestedIn = getNestedInScope(tokenList);
+    Scope *nestedIn = const_cast<Scope *>(getNestedInScope(tokenList));
 
     symbolDatabase->scopeList.push_back(Scope(nullptr, nullptr, nestedIn));
     Scope *scope = &symbolDatabase->scopeList.back();
+    nestedIn->nestedList.push_back(scope);
     scope->type = scopeType;
     scope->classDef = def;
     Token *bodyStart = children[0]->addtoken(tokenList, "{");
