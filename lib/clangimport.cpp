@@ -471,6 +471,7 @@ Scope *clangimport::AstNode::createScope(TokenList *tokenList, Scope::ScopeType 
     nestedIn->nestedList.push_back(scope);
     scope->type = scopeType;
     scope->classDef = def;
+    scope->check = nestedIn->check;
     Token *bodyStart = children[0]->addtoken(tokenList, "{");
     tokenList->back()->scope(scope);
     for (AstNodePtr astNode: children) {
@@ -1177,6 +1178,7 @@ void clangimport::parseClangAstDump(Tokenizer *tokenizer, std::istream &f)
     SymbolDatabase *symbolDatabase = const_cast<SymbolDatabase *>(tokenizer->getSymbolDatabase());
     symbolDatabase->scopeList.push_back(Scope(nullptr, nullptr, nullptr));
     symbolDatabase->scopeList.back().type = Scope::ScopeType::eGlobal;
+    symbolDatabase->scopeList.back().check = symbolDatabase;
 
     clangimport::Data data;
     data.mSettings = tokenizer->getSettings();
