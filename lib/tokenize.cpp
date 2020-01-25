@@ -2040,6 +2040,10 @@ bool Tokenizer::simplifyUsing()
                 continue;
             }
 
+            // skip enum definitions
+            if (tok1->str() == "enum")
+                skipEnumBody(&tok1);
+
             // check for member function and adjust scope
             if (isMemberFunction(tok1)) {
                 if (!scope1.empty())
