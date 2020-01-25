@@ -35,6 +35,7 @@ static const std::string CharacterLiteral = "CharacterLiteral";
 static const std::string ClassTemplateDecl = "ClassTemplateDecl";
 static const std::string ClassTemplateSpecializationDecl = "ClassTemplateSpecializationDecl";
 static const std::string ConditionalOperator = "ConditionalOperator";
+static const std::string ConstantExpr = "ConstantExpr";
 static const std::string CompoundAssignOperator = "CompoundAssignOperator";
 static const std::string CompoundStmt = "CompoundStmt";
 static const std::string ContinueStmt = "ContinueStmt";
@@ -535,7 +536,7 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         addtoken(tokenList, "case");
         children[0]->createTokens(tokenList);
         addtoken(tokenList, ":");
-        children[2]->createTokens(tokenList);
+        children.back()->createTokens(tokenList);
         return nullptr;
     }
     if (nodeType == ClassTemplateDecl) {
@@ -577,6 +578,8 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         }
         return nullptr;
     }
+    if (nodeType == ConstantExpr)
+        return children[0]->createTokens(tokenList);
     if (nodeType == ContinueStmt)
         return addtoken(tokenList, "continue");
     if (nodeType == CStyleCastExpr) {
