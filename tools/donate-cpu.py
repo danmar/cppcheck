@@ -172,6 +172,7 @@ while True:
         print("No files to process")
         continue
     crash = False
+    timeout = False
     count = ''
     elapsed_time = ''
     results_to_diff = []
@@ -193,6 +194,10 @@ while True:
             if c == -101 and 'error: could not find or open any of the paths given.' in errout:
                 # No sourcefile found (for example only headers present)
                 count += ' 0'
+            elif c == RETURN_CODE_TIMEOUT:
+                # Timeout
+                count += ' TO!'
+                timeout = True
             else:
                 crash = True
                 count += ' Crash!'
@@ -220,7 +225,7 @@ while True:
     info_output += 'info messages:\n' + head_info_msg
     if 'head' in cppcheck_versions:
         output += 'head results:\n' + results_to_diff[cppcheck_versions.index('head')]
-    if not crash:
+    if not crash and not timeout:
         output += 'diff:\n' + diff_results(work_path, cppcheck_versions[0], results_to_diff[0], cppcheck_versions[1], results_to_diff[1]) + '\n'
     if package_url:
         print('=========================================================')

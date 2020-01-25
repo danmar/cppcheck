@@ -13,7 +13,13 @@ import tarfile
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.42"
+CLIENT_VERSION = "1.2.0"
+
+# Timeout for analysis with Cppcheck in seconds
+CPPCHECK_TIMEOUT = 60 * 60
+
+# Return code that is used to mark a timed out analysis
+RETURN_CODE_TIMEOUT = -999
 
 
 def check_requirements():
@@ -249,12 +255,18 @@ def run_command(cmd):
     print(cmd)
     startTime = time.time()
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    comm = p.communicate()
+    try:
+        comm = p.communicate(timeout=CPPCHECK_TIMEOUT)
+        return_code = p.returncode
+    except subprocess.TimeoutExpired:
+        p.kill()
+        comm = p.communicate()
+        return_code = RETURN_CODE_TIMEOUT
     stop_time = time.time()
     stdout = comm[0].decode(encoding='utf-8', errors='ignore')
     stderr = comm[1].decode(encoding='utf-8', errors='ignore')
     elapsed_time = stop_time - startTime
-    return p.returncode, stdout, stderr, elapsed_time
+    return return_code, stdout, stderr, elapsed_time
 
 
 def scan_package(work_path, cppcheck_path, jobs, libraries):
@@ -300,6 +312,9 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
                 else:
                     stacktrace = stdout[last_check_pos:]
         return returncode, stacktrace, '', returncode, options, ''
+    if returncode == RETURN_CODE_TIMEOUT:
+        print('Timeout!')
+        return returncode, stdout, '', elapsed_time, options, ''
     if returncode != 0:
         print('Error!')
         if returncode > 0:

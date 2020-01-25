@@ -74,6 +74,8 @@ static bool isRefPtrArg(const Token *tok)
 static bool isNonReferenceArg(const Token *tok)
 {
     const Variable *var = tok->variable();
+    if (var && !var->valueType())
+        throw InternalError(tok, "var without valueType");
     return (var && var->isArgument() && !var->isReference() && (var->isPointer() || var->valueType()->type >= ValueType::Type::CONTAINER || var->type()));
 }
 
