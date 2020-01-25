@@ -47,7 +47,8 @@ private:
         TEST_CASE(cxxConstructExpr2);
         TEST_CASE(cxxConstructExpr3);
         TEST_CASE(cxxDeleteExpr);
-        TEST_CASE(cxxForRangeStmt);
+        TEST_CASE(cxxForRangeStmt1);
+        TEST_CASE(cxxForRangeStmt2);
         TEST_CASE(cxxMemberCall);
         TEST_CASE(cxxMethodDecl);
         TEST_CASE(cxxNewExpr);
@@ -344,7 +345,7 @@ private:
         ASSERT_EQUALS("void f ( int * p@1 ) { delete p@1 ; }", parse(clang));
     }
 
-    void cxxForRangeStmt() {
+    void cxxForRangeStmt1() {
         const char clang[] = "`-FunctionDecl 0x4280820 <line:4:1, line:8:1> line:4:6 foo 'void ()'\n"
                              "  `-CompoundStmt 0x42810f0 <col:12, line:8:1>\n"
                              "    `-CXXForRangeStmt 0x4281090 <line:5:3, line:7:3>\n"
@@ -377,6 +378,43 @@ private:
                              "      `-CompoundStmt 0x42810e0 <col:24, line:7:3>";
         ASSERT_EQUALS("void foo ( ) {\n"
                       "for ( char c1@1 : hello ) { } }",
+                      parse(clang));
+    }
+
+    void cxxForRangeStmt2() {
+        // clang 9
+        const char clang[] = "`-FunctionDecl 0xc15d98 <line:3:1, col:36> col:6 foo 'void ()'\n"
+                             "  `-CompoundStmt 0xc16668 <col:12, col:36>\n"
+                             "    `-CXXForRangeStmt 0xc165f8 <col:14, col:34>\n"
+                             "      |-<<<NULL>>>\n"
+                             "      |-DeclStmt 0xc161c0 <col:25>\n"
+                             "      | `-VarDecl 0xc15f48 <col:25> col:25 implicit referenced __range1 'int const (&)[4]' cinit\n"
+                             "      |   `-DeclRefExpr 0xc15e38 <col:25> 'const int [4]' lvalue Var 0xc15ac0 'values' 'const int [4]'\n"
+                             "      |-DeclStmt 0xc16498 <col:24>\n"
+                             "      | `-VarDecl 0xc16228 <col:24> col:24 implicit used __begin1 'const int *':'const int *' cinit\n"
+                             "      |   `-ImplicitCastExpr 0xc163b0 <col:24> 'const int *' <ArrayToPointerDecay>\n"
+                             "      |     `-DeclRefExpr 0xc161d8 <col:24> 'int const[4]' lvalue Var 0xc15f48 '__range1' 'int const (&)[4]' non_odr_use_constant\n"
+                             "      |-DeclStmt 0xc164b0 <col:24>\n"
+                             "      | `-VarDecl 0xc162a0 <col:24, col:25> col:24 implicit used __end1 'const int *':'const int *' cinit\n"
+                             "      |   `-BinaryOperator 0xc16400 <col:24, col:25> 'const int *' '+'\n"
+                             "      |     |-ImplicitCastExpr 0xc163e8 <col:24> 'const int *' <ArrayToPointerDecay>\n"
+                             "      |     | `-DeclRefExpr 0xc161f8 <col:24> 'int const[4]' lvalue Var 0xc15f48 '__range1' 'int const (&)[4]' non_odr_use_constant\n"
+                             "      |     `-IntegerLiteral 0xc163c8 <col:25> 'long' 4\n"
+                             "      |-BinaryOperator 0xc16538 <col:24> 'bool' '!='\n"
+                             "      | |-ImplicitCastExpr 0xc16508 <col:24> 'const int *':'const int *' <LValueToRValue>\n"
+                             "      | | `-DeclRefExpr 0xc164c8 <col:24> 'const int *':'const int *' lvalue Var 0xc16228 '__begin1' 'const int *':'const int *'\n"
+                             "      | `-ImplicitCastExpr 0xc16520 <col:24> 'const int *':'const int *' <LValueToRValue>\n"
+                             "      |   `-DeclRefExpr 0xc164e8 <col:24> 'const int *':'const int *' lvalue Var 0xc162a0 '__end1' 'const int *':'const int *'\n"
+                             "      |-UnaryOperator 0xc16578 <col:24> 'const int *':'const int *' lvalue prefix '++'\n"
+                             "      | `-DeclRefExpr 0xc16558 <col:24> 'const int *':'const int *' lvalue Var 0xc16228 '__begin1' 'const int *':'const int *'\n"
+                             "      |-DeclStmt 0xc15ed8 <col:19, col:31>\n"
+                             "      | `-VarDecl 0xc15e70 <col:19, col:24> col:23 v 'int' cinit\n"
+                             "      |   `-ImplicitCastExpr 0xc165e0 <col:24> 'int' <LValueToRValue>\n"
+                             "      |     `-UnaryOperator 0xc165c8 <col:24> 'const int' lvalue prefix '*' cannot overflow\n"
+                             "      |       `-ImplicitCastExpr 0xc165b0 <col:24> 'const int *':'const int *' <LValueToRValue>\n"
+                             "      |         `-DeclRefExpr 0xc16590 <col:24> 'const int *':'const int *' lvalue Var 0xc16228 '__begin1' 'const int *':'const int *'\n"
+                             "      `-CompoundStmt 0xc16658 <col:33, col:34>";
+        ASSERT_EQUALS("void foo ( ) { for ( int v@1 : values ) { } }",
                       parse(clang));
     }
 

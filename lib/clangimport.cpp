@@ -625,11 +625,23 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     if (nodeType == CXXForRangeStmt) {
         Token *forToken = addtoken(tokenList, "for");
         Token *par1 = addtoken(tokenList, "(");
-        children[5]->children[0]->mExtTokens.pop_back();
-        children[5]->children[0]->children.clear();
-        Token *expr1 = children[5]->children[0]->createTokens(tokenList);
+        AstNodePtr varDecl;
+        if (children[6]->nodeType == DeclStmt)
+            varDecl = children[6]->children[0];
+        else
+            varDecl = children[5]->children[0];
+        varDecl->mExtTokens.pop_back();
+        varDecl->children.clear();
+        Token *expr1 = varDecl->createTokens(tokenList);
         Token *colon = addtoken(tokenList, ":");
-        Token *expr2 = children[0]->children[0]->children[0]->createTokens(tokenList);
+        AstNodePtr range;
+        for (int i = 0; i < 2; i++) {
+            if (children[i] && children[i]->nodeType == DeclStmt && children[i]->children[0]->nodeType == VarDecl) {
+                range = children[i]->children[0]->children[0];
+                break;
+            }
+        }
+        Token *expr2 = range->createTokens(tokenList);
         Token *par2 = addtoken(tokenList, ")");
 
         par1->link(par2);
@@ -640,7 +652,7 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         par1->astOperand1(forToken);
         par1->astOperand2(colon);
 
-        createScope(tokenList, Scope::ScopeType::eFor, children[6], forToken);
+        createScope(tokenList, Scope::ScopeType::eFor, children.back(), forToken);
         return nullptr;
     }
     if (nodeType == CXXMethodDecl) {
