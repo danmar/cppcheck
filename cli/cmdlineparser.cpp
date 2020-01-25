@@ -192,33 +192,30 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--safe-functions") == 0)
                 mSettings->safeChecks.externalFunctions = mSettings->safeChecks.internalFunctions = true;
 
-            // Experimental: Verify
-            else if (std::strcmp(argv[i], "--verify") == 0)
-                mSettings->verification = true;
-            else if (std::strncmp(argv[i], "--verify-report=", 16) == 0) {
-                mSettings->verification = true;
-                mSettings->verificationReport = argv[i] + 16;
-            } else if (std::strcmp(argv[i], "--debug-verify") == 0)
-                mSettings->debugVerification = true;
-            else if (std::strncmp(argv[i], "--verify-diff=", 14) == 0) {
-                std::ifstream fin(argv[i] + 14);
-                if (!fin.is_open()) {
-                    printMessage("cppcheck: could not open file " + std::string(argv[i] + 14) + ".");
-                    return false;
-                }
+            // Bug hunting
+            else if (std::strcmp(argv[i], "--bug-hunting") == 0)
+                mSettings->bugHunting = true;
+            else if (std::strcmp(argv[i], "--debug-bug-hunting") == 0)
+                mSettings->bugHunting = mSettings->debugBugHunting = true;
+            /*
+                        else if (std::strncmp(argv[i], "--check-diff=", 13) == 0) {
+                            std::ifstream fin(argv[i] + 13);
+                            if (!fin.is_open()) {
+                                printMessage("cppcheck: could not open file " + std::string(argv[i] + 13) + ".");
+                                return false;
+                            }
 
-                mSettings->verifyDiff = Settings::loadDiffFile(fin);
-                mSettings->verification = true;
+                            mSettings->checkDiff = Settings::loadDiffFile(fin);
 
-                for (const auto &diff: mSettings->verifyDiff) {
-                    if (!Path::acceptFile(diff.filename))
-                        continue;
-                    const std::string filename = Path::fromNativeSeparators(diff.filename);
-                    if (std::find(mPathNames.begin(), mPathNames.end(), filename) == mPathNames.end())
-                        mPathNames.push_back(filename);
-                }
-            }
-
+                            for (const auto &diff: mSettings->bugHuntingDiff) {
+                                if (!Path::acceptFile(diff.filename))
+                                    continue;
+                                const std::string filename = Path::fromNativeSeparators(diff.filename);
+                                if (std::find(mPathNames.begin(), mPathNames.end(), filename) == mPathNames.end())
+                                    mPathNames.push_back(filename);
+                            }
+                        }
+            */
             // Enforce language (--language=, -x)
             else if (std::strncmp(argv[i], "--language=", 11) == 0 || std::strcmp(argv[i], "-x") == 0) {
                 std::string str;
@@ -918,6 +915,16 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             mPathNames.push_back(path);
         }
     }
+
+    if (mSettings->clang) {
+        if (mSettings->buildDir.empty()) {
+            printMessage("If --clang is used then --cppcheck-build-dir must be specified also");
+            return false;
+        }
+        std::ofstream fout(mSettings->buildDir + "/__temp__.c");
+        fout << "int x;\n";
+    }
+
 
     // Default template format..
     if (mSettings->templateFormat.empty()) {

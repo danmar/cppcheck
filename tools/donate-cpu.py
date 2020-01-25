@@ -101,20 +101,13 @@ for arg in sys.argv[1:]:
         print('Unhandled argument: ' + arg)
         sys.exit(1)
 
-if sys.version_info.major < 3:
-    print("#" * 80)
+if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 4):
     print("#" * 80)
     print("IMPORTANT")
-    print("Please consider switching to Python 3.")
-    print("")
-    print("We plan to completely drop Python 2 support")
-    print("for the Donate CPU client in the near future.")
-    print("")
-    print("For further information and reporting complaints, ideas, ... see:")
-    print("https://sourceforge.net/p/cppcheck/discussion/development/thread/86813a8a53/")
+    print("Please run the client with at least Python 3.4, thanks!")
     print("#" * 80)
-    print("#" * 80)
-    time.sleep(5)
+    time.sleep(2)
+    sys.exit(1)
 
 print('Thank you!')
 if not check_requirements():
@@ -157,7 +150,7 @@ while True:
         sys.exit(1)
     for ver in cppcheck_versions:
         if ver == 'head':
-            if not compile(cppcheck_path, jobs):
+            if not compile_cppcheck(cppcheck_path, jobs):
                 print('Failed to compile Cppcheck, retry later')
                 sys.exit(1)
         elif not compile_version(work_path, jobs, ver):

@@ -1386,19 +1386,23 @@ class MisraChecker:
 
         skip_to = None
         for token in data.tokenlist:
-            # Skip tokens in function call body
             if skip_to:
                 if token == skip_to:
                     skip_to = None
                 else:
                     continue
+            # Skip tokens in function call body
             if token.function and token.next and token.next.str == "(":
+                skip_to = token.next.link
+            # Skip tokens in initializer lists
+            if simpleMatch(token, '= {'):
                 skip_to = token.next.link
 
             if token.scope.type in ('Enum', 'Class', 'Struct', 'Global'):
                 continue
-            # Save end tokens from function calls in initialization
-            if simpleMatch(token, ') ;'):
+            # Save last tokens from function calls and initializer lists in
+            # initialization sequence
+            if simpleMatch(token, ') ;') or simpleMatch(token, '} ;'):
                 if (token.isExpandedMacro):
                     end_tokens_map[token.next.linenr].add(token.next.column)
                 else:

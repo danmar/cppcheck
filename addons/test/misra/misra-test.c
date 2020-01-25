@@ -430,6 +430,16 @@ void misra_12_3(int a, int b, int c) { // no warning
   misra_12_3_fn4(misra_12_3_fn7(&a1, 32), &a1);
   misra_12_3_fn6(misra_12_3_fn5(&a1, 32), &a1);
   misra_12_3_fn6(misra_12_3_fn7(&a1, 32), &a1);
+
+  const struct fun_t
+  {
+    int64_t x;
+    uint32_t y;
+  } moreFun[2U] =
+  {
+    { 900000000000000LL, 0x20000UL },
+    { 450000000000000LL, 0x10000UL }
+  };
 }
 
 #define MISRA12_4a 2000000000u

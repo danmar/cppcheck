@@ -81,7 +81,7 @@ public:
      */
     void reportInfo(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
 
-    void reportVerification(const std::string &str) OVERRIDE;
+    void bughuntingReport(const std::string &str) OVERRIDE;
 
     /**
      * Information about how many files have been checked
@@ -190,9 +190,9 @@ private:
     std::ofstream *mErrorOutput;
 
     /**
-     * Verification report
+     * Bug hunting report
      */
-    std::ostream *mVerificationOutput;
+    std::ostream *mBugHuntingReport;
 
     /**
      * Has --errorlist been given?

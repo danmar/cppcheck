@@ -407,7 +407,7 @@ public:
         reportErr(msg);
     }
 
-    virtual void reportVerification(const std::string &str) = 0;
+    virtual void bughuntingReport(const std::string &str) = 0;
 
     /**
      * Report unmatched suppressions

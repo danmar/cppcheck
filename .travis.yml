@@ -105,13 +105,12 @@ matrix:
         - pylint --rcfile=pylintrc_travis addons/*.py
         - pylint --rcfile=pylintrc_travis htmlreport/cppcheck-htmlreport
         - pylint --rcfile=pylintrc_travis htmlreport/*.py
-        - pylint --rcfile=pylintrc_travis --ignore=donate-cpu-server.py tools/*.py
+        - pylint --rcfile=pylintrc_travis --ignore=donate-cpu-server.py --ignore=donate-cpu.py --ignore=donate_cpu_lib.py --ignore=test-my-pr.py tools/*.py
         - python3 -m pylint --rcfile=pylintrc_travis addons/*.py
         - python3 -m pylint --rcfile=pylintrc_travis htmlreport/cppcheck-htmlreport
         - python3 -m pylint --rcfile=pylintrc_travis htmlreport/*.py
         - python3 -m pylint --rcfile=pylintrc_travis tools/*.py
 # check python syntax by compiling some selected scripts
-        - python -m py_compile ./tools/donate-cpu.py
         - python3 -m py_compile ./tools/donate-cpu.py
         - python3 -m py_compile ./tools/donate-cpu-server.py
 # check addons/misc.py

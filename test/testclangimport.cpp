@@ -16,6 +16,7 @@
 
 #include "clangimport.h"
 #include "settings.h"
+#include "symboldatabase.h"
 #include "tokenize.h"
 #include "testsuite.h"
 
@@ -30,10 +31,14 @@ public:
 private:
     void run() OVERRIDE {
         TEST_CASE(breakStmt);
+        TEST_CASE(callExpr);
+        TEST_CASE(caseStmt1);
         TEST_CASE(characterLiteral);
         TEST_CASE(class1);
         TEST_CASE(classTemplateDecl1);
         TEST_CASE(classTemplateDecl2);
+        TEST_CASE(conditionalExpr);
+        TEST_CASE(compoundAssignOperator);
         TEST_CASE(continueStmt);
         TEST_CASE(cstyleCastExpr);
         TEST_CASE(cxxBoolLiteralExpr);
@@ -41,13 +46,20 @@ private:
         TEST_CASE(cxxConstructExpr1);
         TEST_CASE(cxxConstructExpr2);
         TEST_CASE(cxxConstructExpr3);
+        TEST_CASE(cxxDeleteExpr);
+        TEST_CASE(cxxForRangeStmt);
         TEST_CASE(cxxMemberCall);
         TEST_CASE(cxxMethodDecl);
+        TEST_CASE(cxxNewExpr);
         TEST_CASE(cxxNullPtrLiteralExpr);
         TEST_CASE(cxxOperatorCallExpr);
         TEST_CASE(cxxRecordDecl1);
         TEST_CASE(cxxStaticCastExpr1);
         TEST_CASE(cxxStaticCastExpr2);
+        TEST_CASE(cxxStdInitializerListExpr);
+        TEST_CASE(cxxThrowExpr);
+        TEST_CASE(doStmt);
+        TEST_CASE(enumDecl);
         TEST_CASE(forStmt);
         TEST_CASE(funcdecl1);
         TEST_CASE(funcdecl2);
@@ -55,14 +67,19 @@ private:
         TEST_CASE(funcdecl4);
         TEST_CASE(functionTemplateDecl1);
         TEST_CASE(functionTemplateDecl2);
+        TEST_CASE(initListExpr);
         TEST_CASE(ifelse);
+        TEST_CASE(ifStmt);
+        TEST_CASE(labelStmt);
         TEST_CASE(memberExpr);
         TEST_CASE(namespaceDecl);
         TEST_CASE(recordDecl);
+        TEST_CASE(switchStmt);
         TEST_CASE(typedefDecl1);
         TEST_CASE(typedefDecl2);
         TEST_CASE(typedefDecl3);
-        TEST_CASE(unaryExprOrTypeTraitExpr);
+        TEST_CASE(unaryExprOrTypeTraitExpr1);
+        TEST_CASE(unaryExprOrTypeTraitExpr2);
         TEST_CASE(unaryOperator);
         TEST_CASE(vardecl1);
         TEST_CASE(vardecl2);
@@ -70,6 +87,13 @@ private:
         TEST_CASE(vardecl4);
         TEST_CASE(vardecl5);
         TEST_CASE(whileStmt);
+
+        TEST_CASE(symbolDatabaseFunction1);
+        TEST_CASE(symbolDatabaseFunction2);
+        TEST_CASE(symbolDatabaseNodeType1);
+
+        TEST_CASE(valueFlow1);
+        TEST_CASE(valueFlow2);
     }
 
     std::string parse(const char clang[]) {
@@ -88,6 +112,52 @@ private:
                              "      |-IntegerLiteral 0x2c31bf8 <col:21> 'int' 0\n"
                              "      `-BreakStmt 0x3687c18 <col:24>";
         ASSERT_EQUALS("void foo ( ) { while ( 0 ) { break ; } }", parse(clang));
+    }
+
+    void callExpr() {
+        const char clang[] = "`-FunctionDecl 0x2444b60 <1.c:1:1, line:8:1> line:1:6 foo 'void (int)'\n"
+                             "  |-ParmVarDecl 0x2444aa0 <col:10, col:14> col:14 used x 'int'\n"
+                             "  `-CompoundStmt 0x2444e00 <col:17, line:8:1>\n"
+                             "    `-CallExpr 0x7f5a6c04b158 <line:1:16, col:60> 'bool'\n"
+                             "      |-ImplicitCastExpr 0x7f5a6c04b140 <col:16, col:23> 'bool (*)(const Token *, const char *, int)' <FunctionToPointerDecay>\n"
+                             "      | `-DeclRefExpr 0x7f5a6c04b0a8 <col:16, col:23> 'bool (const Token *, const char *, int)' lvalue CXXMethod 0x43e5600 'Match' 'bool (const Token *, const char *, int)'\n"
+                             "      |-ImplicitCastExpr 0x7f5a6c04b1c8 <col:29> 'const Token *' <NoOp>\n"
+                             "      | `-ImplicitCastExpr 0x7f5a6c04b1b0 <col:29> 'Token *' <LValueToRValue>\n"
+                             "      |   `-DeclRefExpr 0x7f5a6c04b0e0 <col:29> 'Token *' lvalue Var 0x7f5a6c045968 'tokAfterCondition' 'Token *'\n"
+                             "      |-ImplicitCastExpr 0x7f5a6c04b1e0 <col:48> 'const char *' <ArrayToPointerDecay>\n"
+                             "      | `-StringLiteral 0x7f5a6c04b108 <col:48> 'const char [11]' lvalue \"%name% : {\"\n"
+                             "      `-CXXDefaultArgExpr 0x7f5a6c04b1f8 <<invalid sloc>> 'int'\n";
+        ASSERT_EQUALS("void foo ( int x@1 ) { Match ( tokAfterCondition , \"%name% : {\" ) ; }", parse(clang));
+    }
+
+    void caseStmt1() {
+        const char clang[] = "`-FunctionDecl 0x2444b60 <1.c:1:1, line:8:1> line:1:6 foo 'void (int)'\n"
+                             "  |-ParmVarDecl 0x2444aa0 <col:10, col:14> col:14 used x 'int'\n"
+                             "  `-CompoundStmt 0x2444e00 <col:17, line:8:1>\n"
+                             "    `-SwitchStmt 0x2444c88 <line:2:5, line:7:5>\n"
+                             "      |-<<<NULL>>>\n"
+                             "      |-<<<NULL>>>\n"
+                             "      |-ImplicitCastExpr 0x2444c70 <line:2:13> 'int' <LValueToRValue>\n"
+                             "      | `-DeclRefExpr 0x2444c48 <col:13> 'int' lvalue ParmVar 0x2444aa0 'x' 'int'\n"
+                             "      `-CompoundStmt 0x2444de0 <col:16, line:7:5>\n"
+                             "        |-CaseStmt 0x2444cd8 <line:3:9, line:5:15>\n"
+                             "        | |-IntegerLiteral 0x2444cb8 <line:3:14> 'int' 16\n"
+                             "        | |-<<<NULL>>>\n"
+                             "        | `-CaseStmt 0x2444d30 <line:4:9, line:5:15>\n"
+                             "        |   |-IntegerLiteral 0x2444d10 <line:4:14> 'int' 32\n"
+                             "        |   |-<<<NULL>>>\n"
+                             "        |   `-BinaryOperator 0x2444db0 <line:5:13, col:15> 'int' '='\n"
+                             "        |     |-DeclRefExpr 0x2444d68 <col:13> 'int' lvalue ParmVar 0x2444aa0 'x' 'int'\n"
+                             "        |     `-IntegerLiteral 0x2444d90 <col:15> 'int' 123\n"
+                             "        `-BreakStmt 0x2444dd8 <line:6:13>";
+        ASSERT_EQUALS("void foo ( int x@1 ) {\n"
+                      "switch ( x@1 ) {\n"
+                      "case 16 :\n"
+                      "case 32 :\n"
+                      "x@1 = 123 ;\n"
+                      "\n"
+                      "\n"
+                      "break ; } }", parse(clang));
     }
 
     void characterLiteral() {
@@ -172,6 +242,27 @@ private:
         ASSERT_EQUALS("class C { int foo ( ) { return 0 ; } }", parse(clang));
     }
 
+    void conditionalExpr() {
+        const char clang[] = "`-VarDecl 0x257cc88 <line:4:1, col:13> col:5 x 'int' cinit\n"
+                             "  `-ConditionalOperator 0x257cda8 <col:9, col:13> 'int'\n"
+                             "    |-ImplicitCastExpr 0x257cd60 <col:9> 'int' <LValueToRValue>\n"
+                             "    | `-DeclRefExpr 0x257cce8 <col:9> 'int' lvalue Var 0x257cae0 'a' 'int'\n"
+                             "    |-ImplicitCastExpr 0x257cd78 <col:11> 'int' <LValueToRValue>\n"
+                             "    | `-DeclRefExpr 0x257cd10 <col:11> 'int' lvalue Var 0x257cb98 'b' 'int'\n"
+                             "    `-ImplicitCastExpr 0x257cd90 <col:13> 'int' <LValueToRValue>\n"
+                             "      `-DeclRefExpr 0x257cd38 <col:13> 'int' lvalue Var 0x257cc10 'c' 'int'";
+        ASSERT_EQUALS("int x@1 = a ? b : c ;", parse(clang));
+    }
+
+    void compoundAssignOperator() {
+        const char clang[] = "`-FunctionDecl 0x3570690 <1.cpp:2:1, col:25> col:6 f 'void ()'\n"
+                             "  `-CompoundStmt 0x3570880 <col:10, col:25>\n"
+                             "    `-CompoundAssignOperator 0x3570848 <col:19, col:22> 'int' lvalue '+=' ComputeLHSTy='int' ComputeResultTy='int'\n"
+                             "      |-DeclRefExpr 0x3570800 <col:19> 'int' lvalue Var 0x3570788 'x' 'int'\n"
+                             "      `-IntegerLiteral 0x3570828 <col:22> 'int' 1";
+        ASSERT_EQUALS("void f ( ) { x += 1 ; }", parse(clang));
+    }
+
     void continueStmt() {
         const char clang[] = "`-FunctionDecl 0x2c31b18 <1.c:1:1, col:34> col:6 foo 'void ()'\n"
                              "  `-CompoundStmt 0x2c31c40 <col:12, col:34>\n"
@@ -241,6 +332,52 @@ private:
         ASSERT_EQUALS("void f ( ) { char * p@1 ; std::string s@2 ( p@1 ) ; }", parse(clang));
     }
 
+    void cxxDeleteExpr() {
+        const char clang[] = "|-FunctionDecl 0x2e0e740 <1.cpp:1:1, col:28> col:6 f 'void (int *)'\n"
+                             "| |-ParmVarDecl 0x2e0e680 <col:8, col:13> col:13 used p 'int *'\n"
+                             "| `-CompoundStmt 0x2e0ee70 <col:16, col:28>\n"
+                             "|   `-CXXDeleteExpr 0x2e0ee48 <col:18, col:25> 'void' Function 0x2e0ebb8 'operator delete' 'void (void *) noexcept'\n"
+                             "|     `-ImplicitCastExpr 0x2e0e850 <col:25> 'int *' <LValueToRValue>\n"
+                             "|       `-DeclRefExpr 0x2e0e828 <col:25> 'int *' lvalue ParmVar 0x2e0e680 'p' 'int *'";
+        ASSERT_EQUALS("void f ( int * p@1 ) { delete p@1 ; }", parse(clang));
+    }
+
+    void cxxForRangeStmt() {
+        const char clang[] = "`-FunctionDecl 0x4280820 <line:4:1, line:8:1> line:4:6 foo 'void ()'\n"
+                             "  `-CompoundStmt 0x42810f0 <col:12, line:8:1>\n"
+                             "    `-CXXForRangeStmt 0x4281090 <line:5:3, line:7:3>\n"
+                             "      |-DeclStmt 0x4280c30 <line:5:17>\n"
+                             "      | `-VarDecl 0x42809c8 <col:17> col:17 implicit referenced __range1 'char const (&)[6]' cinit\n"
+                             "      |   `-DeclRefExpr 0x42808c0 <col:17> 'const char [6]' lvalue Var 0x4280678 'hello' 'const char [6]'\n"
+                             "      |-DeclStmt 0x4280ef8 <col:15>\n"
+                             "      | `-VarDecl 0x4280ca8 <col:15> col:15 implicit used __begin1 'const char *':'const char *' cinit\n"
+                             "      |   `-ImplicitCastExpr 0x4280e10 <col:15> 'const char *' <ArrayToPointerDecay>\n"
+                             "      |     `-DeclRefExpr 0x4280c48 <col:15> 'char const[6]' lvalue Var 0x42809c8 '__range1' 'char const (&)[6]'\n"
+                             "      |-DeclStmt 0x4280f10 <col:15>\n"
+                             "      | `-VarDecl 0x4280d18 <col:15, col:17> col:15 implicit used __end1 'const char *':'const char *' cinit\n"
+                             "      |   `-BinaryOperator 0x4280e60 <col:15, col:17> 'const char *' '+'\n"
+                             "      |     |-ImplicitCastExpr 0x4280e48 <col:15> 'const char *' <ArrayToPointerDecay>\n"
+                             "      |     | `-DeclRefExpr 0x4280c70 <col:15> 'char const[6]' lvalue Var 0x42809c8 '__range1' 'char const (&)[6]'\n"
+                             "      |     `-IntegerLiteral 0x4280e28 <col:17> 'long' 6\n"
+                             "      |-BinaryOperator 0x4280fa8 <col:15> 'bool' '!='\n"
+                             "      | |-ImplicitCastExpr 0x4280f78 <col:15> 'const char *':'const char *' <LValueToRValue>\n"
+                             "      | | `-DeclRefExpr 0x4280f28 <col:15> 'const char *':'const char *' lvalue Var 0x4280ca8 '__begin1' 'const char *':'const char *'\n"
+                             "      | `-ImplicitCastExpr 0x4280f90 <col:15> 'const char *':'const char *' <LValueToRValue>\n"
+                             "      |   `-DeclRefExpr 0x4280f50 <col:15> 'const char *':'const char *' lvalue Var 0x4280d18 '__end1' 'const char *':'const char *'\n"
+                             "      |-UnaryOperator 0x4280ff8 <col:15> 'const char *':'const char *' lvalue prefix '++'\n"
+                             "      | `-DeclRefExpr 0x4280fd0 <col:15> 'const char *':'const char *' lvalue Var 0x4280ca8 '__begin1' 'const char *':'const char *'\n"
+                             "      |-DeclStmt 0x4280958 <col:8, col:22>\n"
+                             "      | `-VarDecl 0x42808f8 <col:8, col:15> col:13 c1 'char' cinit\n"
+                             "      |   `-ImplicitCastExpr 0x4281078 <col:15> 'char' <LValueToRValue>\n"
+                             "      |     `-UnaryOperator 0x4281058 <col:15> 'const char' lvalue prefix '*' cannot overflow\n"
+                             "      |       `-ImplicitCastExpr 0x4281040 <col:15> 'const char *':'const char *' <LValueToRValue>\n"
+                             "      |         `-DeclRefExpr 0x4281018 <col:15> 'const char *':'const char *' lvalue Var 0x4280ca8 '__begin1' 'const char *':'const char *'\n"
+                             "      `-CompoundStmt 0x42810e0 <col:24, line:7:3>";
+        ASSERT_EQUALS("void foo ( ) {\n"
+                      "for ( char c1@1 : hello ) { } }",
+                      parse(clang));
+    }
+
     void cxxMemberCall() {
         const char clang[] = "`-FunctionDecl 0x320dc80 <line:2:1, col:33> col:6 bar 'void ()'\n"
                              "  `-CompoundStmt 0x323bb08 <col:12, col:33>\n"
@@ -264,6 +401,17 @@ private:
         ASSERT_EQUALS("_Bool analyzeFile ( const std::string & buildDir@1 , const std::string & sourcefile@2 , const std::string & cfg@3 , unsigned long long checksum@4 , std::list<ErrorLogger::ErrorMessage> * errors@5 ) { }", parse(clang));
     }
 
+    void cxxNewExpr() {
+        const char clang[] = "|-VarDecl 0x3a97680 <1.cpp:2:1, col:14> col:6 i 'int *' cinit\n"
+                             "| `-CXXNewExpr 0x3a97d18 <col:10, col:14> 'int *' Function 0x3a97778 'operator new' 'void *(unsigned long)'\n"
+                             "`-VarDecl 0x3a97d80 <line:3:1, col:21> col:6 j 'int *' cinit\n"
+                             "  `-CXXNewExpr 0x3a97e68 <col:10, col:21> 'int *' array Function 0x3a978c0 'operator new[]' 'void *(unsigned long)'\n"
+                             "    `-ImplicitCastExpr 0x3a97e18 <col:18> 'unsigned long' <IntegralCast>\n"
+                             "      `-IntegerLiteral 0x3a97de0 <col:18> 'int' 100";
+        ASSERT_EQUALS("int * i@1 = new int ;\n"
+                      "int * j@2 = new int [ 100 ] ;",
+                      parse(clang));
+    }
 
     void cxxNullPtrLiteralExpr() {
         const char clang[] = "`-VarDecl 0x2a7d650 <1.cpp:1:1, col:17> col:13 p 'const char *' cinit\n"
@@ -303,6 +451,47 @@ private:
                              "  `-CXXStaticCastExpr 0x3e453e8 <col:12> 'std::_Rb_tree_iterator<std::pair<const std::__cxx11::basic_string<char>, Library::AllocFunc> >' xvalue static_cast<struct std::_Rb_tree_iterator<struct std::pair<const class std::__cxx11::basic_string<char>, struct Library::AllocFunc> > &&> <NoOp>\n"
                              "    `-DeclRefExpr 0x3e453b0 <col:12> 'std::_Rb_tree_iterator<std::pair<const std::__cxx11::basic_string<char>, Library::AllocFunc> >' lvalue ParmVar 0x3e45250 '' 'std::_Rb_tree_iterator<std::pair<const std::__cxx11::basic_string<char>, Library::AllocFunc> > &&'";
         ASSERT_EQUALS("int a@1 = static_cast<structstd::_Rb_tree_iterator<structstd::pair<constclassstd::__cxx11::basic_string<char>,structLibrary::AllocFunc>>&&> ( <NoName> ) ;", parse(clang));
+    }
+
+    void cxxStdInitializerListExpr() {
+        const char clang[] = "`-VarDecl 0x2f92060 <1.cpp:3:1, col:25> col:18 x 'std::vector<int>':'std::vector<int, std::allocator<int> >' listinit\n"
+                             "  `-ExprWithCleanups 0x2fb0b40 <col:18, col:25> 'std::vector<int>':'std::vector<int, std::allocator<int> >'\n"
+                             "    `-CXXConstructExpr 0x2fb0b00 <col:18, col:25> 'std::vector<int>':'std::vector<int, std::allocator<int> >' 'void (initializer_list<std::vector<int, std::allocator<int> >::value_type>, const std::vector<int, std::allocator<int> >::allocator_type &)' list std::initializer_list\n"
+                             "      |-CXXStdInitializerListExpr 0x2fb0928 <col:19, col:25> 'initializer_list<std::vector<int, std::allocator<int> >::value_type>':'std::initializer_list<int>'\n"
+                             "      | `-MaterializeTemporaryExpr 0x2fb0910 <col:19, col:25> 'const int [3]' xvalue\n"
+                             "      |   `-InitListExpr 0x2fb08b8 <col:19, col:25> 'const int [3]'\n"
+                             "      |     |-IntegerLiteral 0x2f920c0 <col:20> 'int' 1\n"
+                             "      |     |-IntegerLiteral 0x2f920e0 <col:22> 'int' 2\n"
+                             "      |     `-IntegerLiteral 0x2f92100 <col:24> 'int' 3\n"
+                             "      `-CXXDefaultArgExpr 0x2fb0ae0 <<invalid sloc>> 'const std::vector<int, std::allocator<int> >::allocator_type':'const std::allocator<int>' lvalue";
+        ASSERT_EQUALS("std::vector<int> x@1 { 1 , 2 , 3 } ;", parse(clang));
+    }
+
+    void cxxThrowExpr() {
+        const char clang[] = "`-FunctionDecl 0x3701690 <1.cpp:2:1, col:23> col:6 foo 'void ()'\n"
+                             "  `-CompoundStmt 0x37017b0 <col:12, col:23>\n"
+                             "    `-CXXThrowExpr 0x3701790 <col:14, col:20> 'void'\n"
+                             "      `-IntegerLiteral 0x3701770 <col:20> 'int' 1";
+        ASSERT_EQUALS("void foo ( ) { throw 1 ; }", parse(clang));
+    }
+
+    void doStmt() {
+        const char clang[] = "`-FunctionDecl 0x27fbbc8 <line:2:1, col:34> col:6 foo 'void ()'\n"
+                             "  `-CompoundStmt 0x27fbd08 <col:12, col:34>\n"
+                             "    `-DoStmt 0x27fbce8 <col:14, col:31>\n"
+                             "      |-CompoundStmt 0x27fbcb0 <col:17, col:22>\n"
+                             "      | `-UnaryOperator 0x27fbc90 <col:18, col:19> 'int' postfix '++'\n"
+                             "      |   `-DeclRefExpr 0x27fbc68 <col:18> 'int' lvalue Var 0x27fbae0 'x' 'int'\n"
+                             "      `-IntegerLiteral 0x27fbcc8 <col:30> 'int' 1";
+        ASSERT_EQUALS("void foo ( ) { do { ++ x ; } while ( 1 ) ; }", parse(clang));
+    }
+
+    void enumDecl() {
+        const char clang[] = "`-EnumDecl 0x2660660 <line:3:1, col:16> col:6 referenced abc\n"
+                             "  |-EnumConstantDecl 0x2660720 <col:11> col:11 referenced a 'abc'\n"
+                             "  |-EnumConstantDecl 0x2660768 <col:13> col:13 b 'abc'\n"
+                             "  `-EnumConstantDecl 0x26607b0 <col:15> col:15 c 'abc'";
+        ASSERT_EQUALS("enum abc { a , b , c }", parse(clang));
     }
 
     void forStmt() {
@@ -415,6 +604,34 @@ private:
                       "else { } }", parse(clang));
     }
 
+    void ifStmt() {
+        // Clang 8 in cygwin
+        const char clang[] = "`-FunctionDecl 0x41d0690 <2.cpp:1:1, col:24> col:6 foo 'void ()'\n"
+                             "  `-CompoundStmt 0x41d07f0 <col:12, col:24>\n"
+                             "    `-IfStmt 0x41d07b8 <col:14, col:22>\n"
+                             "      |-ImplicitCastExpr 0x41d0790 <col:18> 'bool' <IntegralToBoolean>\n"
+                             "      | `-IntegerLiteral 0x41d0770 <col:18> 'int' 1\n"
+                             "      |-CompoundStmt 0x41d07a8 <col:21, col:22>\n";
+        ASSERT_EQUALS("void foo ( ) { if ( 1 ) { } }", parse(clang));
+    }
+
+    void initListExpr() {
+        const char clang[] = "|-VarDecl 0x397c680 <1.cpp:2:1, col:26> col:11 used ints 'const int [3]' cinit\n"
+                             "| `-InitListExpr 0x397c7d8 <col:20, col:26> 'const int [3]'\n"
+                             "|   |-IntegerLiteral 0x397c720 <col:21> 'int' 1\n"
+                             "|   |-IntegerLiteral 0x397c740 <col:23> 'int' 2\n"
+                             "|   `-IntegerLiteral 0x397c760 <col:25> 'int' 3";
+        ASSERT_EQUALS("const int [3] ints@1 = { 1 , 2 , 3 } ;", parse(clang));
+    }
+
+    void labelStmt() {
+        const char clang[] = "`-FunctionDecl 0x2ed1ba0 <1.c:1:1, col:36> col:6 foo 'void (int)'\n"
+                             "  `-CompoundStmt 0x2ed1d00 <col:17, col:36>\n"
+                             "    `-LabelStmt 0x2ed1ce8 <col:19, col:30> 'loop'\n"
+                             "      `-GotoStmt 0x2ed1cd0 <col:25, col:30> 'loop' 0x2ed1c88";
+        ASSERT_EQUALS("void foo ( ) { loop : goto loop ; }", parse(clang));
+    }
+
     void memberExpr() {
         // C code:
         // struct S { int x };
@@ -450,6 +667,21 @@ private:
                       parse(clang));
     }
 
+    void switchStmt() {
+        const char clang[] = "`-FunctionDecl 0x2796ba0 <1.c:1:1, col:35> col:6 foo 'void (int)'\n"
+                             "  |-ParmVarDecl 0x2796ae0 <col:10, col:14> col:14 used x 'int'\n"
+                             "  `-CompoundStmt 0x2796d18 <col:17, col:35>\n"
+                             "    |-SwitchStmt 0x2796cc8 <col:19, col:32>\n"
+                             "    | |-<<<NULL>>>\n"
+                             "    | |-<<<NULL>>>\n"
+                             "    | |-ImplicitCastExpr 0x2796cb0 <col:27> 'int' <LValueToRValue>\n"
+                             "    | | `-DeclRefExpr 0x2796c88 <col:27> 'int' lvalue ParmVar 0x2796ae0 'x' 'int'\n"
+                             "    | `-CompoundStmt 0x2796cf8 <col:30, col:32>\n"
+                             "    `-NullStmt 0x2796d08 <col:33>";
+        ASSERT_EQUALS("void foo ( int x@1 ) { switch ( x@1 ) { } ; }",
+                      parse(clang));
+    }
+
     void typedefDecl1() {
         const char clang[] = "|-TypedefDecl 0x2d60180 <<invalid sloc>> <invalid sloc> implicit __int128_t '__int128'\n"
                              "| `-BuiltinType 0x2d5fe80 '__int128'";
@@ -470,11 +702,20 @@ private:
         ASSERT_EQUALS("typedef char * __builtin_ms_va_list ;", parse(clang));
     }
 
-    void unaryExprOrTypeTraitExpr() {
+    void unaryExprOrTypeTraitExpr1() {
         const char clang[] = "`-VarDecl 0x24cc610 <a.cpp:1:1, col:19> col:5 x 'int' cinit\n"
                              "  `-ImplicitCastExpr 0x24cc6e8 <col:9, col:19> 'int' <IntegralCast>\n"
                              "    `-UnaryExprOrTypeTraitExpr 0x24cc6c8 <col:9, col:19> 'unsigned long' sizeof 'int'\n";
         ASSERT_EQUALS("int x@1 = sizeof ( int ) ;", parse(clang));
+    }
+
+    void unaryExprOrTypeTraitExpr2() {
+        const char clang[] = "`-VarDecl 0x27c6c00 <line:3:5, col:23> col:9 x 'int' cinit\n"
+                             "  `-ImplicitCastExpr 0x27c6cc8 <col:13, col:23> 'int' <IntegralCast>\n"
+                             "    `-UnaryExprOrTypeTraitExpr 0x27c6ca8 <col:13, col:23> 'unsigned long' sizeof\n"
+                             "      `-ParenExpr 0x27c6c88 <col:19, col:23> 'char [10]' lvalue\n"
+                             "        `-DeclRefExpr 0x27c6c60 <col:20> 'char [10]' lvalue Var 0x27c6b48 'buf' 'char [10]'";
+        ASSERT_EQUALS("int x@1 = sizeof ( char [10] ) ;", parse(clang));
     }
 
     void unaryOperator() {
@@ -547,6 +788,100 @@ private:
         ASSERT_EQUALS("void foo ( ) {\n"
                       "while ( 0 ) { ; } }",
                       parse(clang));
+    }
+
+#define GET_SYMBOL_DB(clang) \
+    Settings settings; \
+    settings.platform(cppcheck::Platform::PlatformType::Unix64); \
+    Tokenizer tokenizer(&settings, this); \
+    std::istringstream istr(clang); \
+    clangimport::parseClangAstDump(&tokenizer, istr); \
+    const SymbolDatabase *db = tokenizer.getSymbolDatabase(); \
+    ASSERT(db);
+
+    void symbolDatabaseFunction1() {
+        const char clang[] = "|-FunctionDecl 0x3aea7a0 <1.cpp:2:1, col:22> col:6 used foo 'void (int, int)'\n"
+                             "| |-ParmVarDecl 0x3aea650 <col:10, col:14> col:14 x 'int'\n"
+                             "| `-ParmVarDecl 0x3aea6c8 <col:17, col:21> col:21 y 'int'\n";
+
+        GET_SYMBOL_DB(clang);
+
+        // There is a function foo that has 2 arguments
+        ASSERT_EQUALS(1, db->functionScopes.size());
+        const Scope *scope = db->functionScopes[0];
+        const Function *func = scope->function;
+        ASSERT_EQUALS(2, func->argCount());
+        ASSERT_EQUALS("x", func->getArgumentVar(0)->name());
+        ASSERT_EQUALS("y", func->getArgumentVar(1)->name());
+        ASSERT_EQUALS(ValueType::Type::INT, func->getArgumentVar(0)->valueType()->type);
+        ASSERT_EQUALS(ValueType::Type::INT, func->getArgumentVar(1)->valueType()->type);
+    }
+
+    void symbolDatabaseFunction2() {
+        const char clang[] = "|-FunctionDecl 0x3aea7a0 <1.cpp:2:1, col:22> col:6 used foo 'void (int, int)'\n"
+                             "| |-ParmVarDecl 0x3aea650 <col:10, col:14> col:14 'int'\n"
+                             "| `-ParmVarDecl 0x3aea6c8 <col:17, col:21> col:21 'int'\n";
+
+        GET_SYMBOL_DB(clang);
+
+        // There is a function foo that has 2 arguments
+        ASSERT_EQUALS(1, db->functionScopes.size());
+        const Scope *scope = db->functionScopes[0];
+        const Function *func = scope->function;
+        ASSERT_EQUALS(2, func->argCount());
+        ASSERT_EQUALS(0, (long long)func->getArgumentVar(0)->nameToken());
+        ASSERT_EQUALS(0, (long long)func->getArgumentVar(1)->nameToken());
+    }
+
+    void symbolDatabaseNodeType1() {
+        const char clang[] = "`-FunctionDecl 0x32438c0 <line:5:1, line:7:1> line:5:6 foo 'a::b (a::b)'\n"
+                             "  |-ParmVarDecl 0x32437b0 <col:10, col:15> col:15 used i 'a::b':'long'\n"
+                             "  `-CompoundStmt 0x3243a60 <col:18, line:7:1>\n"
+                             "    `-ReturnStmt 0x3243a48 <line:6:3, col:12>\n"
+                             "      `-BinaryOperator 0x3243a20 <col:10, col:12> 'long' '+'\n"
+                             "        |-ImplicitCastExpr 0x32439f0 <col:10> 'a::b':'long' <LValueToRValue>\n"
+                             "        | `-DeclRefExpr 0x32439a8 <col:10> 'a::b':'long' lvalue ParmVar 0x32437b0 'i' 'a::b':'long'\n"
+                             "        `-ImplicitCastExpr 0x3243a08 <col:12> 'long' <IntegralCast>\n"
+                             "          `-IntegerLiteral 0x32439d0 <col:12> 'int' 1\n";
+
+        GET_SYMBOL_DB(clang);
+
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), "i + 1");
+        ASSERT(!!tok);
+        ASSERT(!!tok->valueType());
+        ASSERT_EQUALS("signed long", tok->valueType()->str());
+    }
+
+    void valueFlow1() {
+        const char clang[] = "|-RecordDecl 0x2fc5a88 <1.c:1:1, line:4:1> line:1:8 struct S definition\n"
+                             "| |-FieldDecl 0x2fc5b48 <line:2:3, col:7> col:7 x 'int'\n"
+                             "| `-FieldDecl 0x2fc5c10 <line:3:3, col:13> col:7 buf 'int [10]'\n"
+                             "`-VarDecl 0x2fc5c70 <line:6:1, col:25> col:5 sz 'int' cinit\n"
+                             "  `-ImplicitCastExpr 0x2fc5d88 <col:10, col:25> 'int' <IntegralCast>\n"
+                             "    `-UnaryExprOrTypeTraitExpr 0x2fc5d68 <col:10, col:25> 'unsigned long' sizeof 'struct S':'struct S'";
+        GET_SYMBOL_DB(clang);
+
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), "sizeof (");
+        ASSERT(!!tok);
+        tok = tok->next();
+        ASSERT(tok->hasKnownIntValue());
+        ASSERT_EQUALS(44, tok->getKnownIntValue());
+    }
+
+    void valueFlow2() {
+        const char clang[] = "`-VarDecl 0x4145bc0 <line:2:1, col:20> col:5 sz 'int' cinit\n"
+                             "  `-ImplicitCastExpr 0x4145c88 <col:10, col:20> 'int' <IntegralCast>\n"
+                             "    `-UnaryExprOrTypeTraitExpr 0x4145c68 <col:10, col:20> 'unsigned long' sizeof\n"
+                             "      `-ParenExpr 0x4145c48 <col:16, col:20> 'char [10]' lvalue\n"
+                             "        `-DeclRefExpr 0x4145c20 <col:17> 'char [10]' lvalue Var 0x4145b08 'buf' 'char [10]'";
+
+        GET_SYMBOL_DB(clang);
+
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), "sizeof (");
+        ASSERT(!!tok);
+        tok = tok->next();
+        ASSERT(tok->hasKnownIntValue());
+        ASSERT_EQUALS(10, tok->getKnownIntValue());
     }
 };
 

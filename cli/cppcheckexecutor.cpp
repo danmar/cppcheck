@@ -79,14 +79,14 @@
 /*static*/ FILE* CppCheckExecutor::mExceptionOutput = stdout;
 
 CppCheckExecutor::CppCheckExecutor()
-    : mSettings(nullptr), mLatestProgressOutputTime(0), mErrorOutput(nullptr), mVerificationOutput(nullptr), mShowAllErrors(false)
+    : mSettings(nullptr), mLatestProgressOutputTime(0), mErrorOutput(nullptr), mBugHuntingReport(nullptr), mShowAllErrors(false)
 {
 }
 
 CppCheckExecutor::~CppCheckExecutor()
 {
     delete mErrorOutput;
-    delete mVerificationOutput;
+    delete mBugHuntingReport;
 }
 
 bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* const argv[])
@@ -164,7 +164,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         std::list<ImportProject::FileSettings> newList;
 
         for (const ImportProject::FileSettings &fsetting : settings.project.fileSettings) {
-            if (Suppressions::matchglob(mSettings->fileFilter, fsetting.filename)) {
+            if (matchglob(mSettings->fileFilter, fsetting.filename)) {
                 newList.push_back(fsetting);
             }
         }
@@ -189,7 +189,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
     } else if (!mSettings->fileFilter.empty()) {
         std::map<std::string, std::size_t> newMap;
         for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i)
-            if (Suppressions::matchglob(mSettings->fileFilter, i->first)) {
+            if (matchglob(mSettings->fileFilter, i->first)) {
                 newMap[i->first] = i->second;
             }
         mFiles = newMap;
@@ -1093,13 +1093,13 @@ void CppCheckExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
     }
 }
 
-void CppCheckExecutor::reportVerification(const std::string &str)
+void CppCheckExecutor::bughuntingReport(const std::string &str)
 {
     if (!mSettings || str.empty())
         return;
-    if (!mVerificationOutput)
-        mVerificationOutput = new std::ofstream(mSettings->verificationReport);
-    (*mVerificationOutput) << str << std::endl;
+    if (!mBugHuntingReport)
+        mBugHuntingReport = new std::ofstream(mSettings->bugHuntingReport);
+    (*mBugHuntingReport) << str << std::endl;
 }
 
 void CppCheckExecutor::setExceptionOutput(FILE* exceptionOutput)

@@ -30,32 +30,51 @@ static const std::string ArraySubscriptExpr = "ArraySubscriptExpr";
 static const std::string BinaryOperator = "BinaryOperator";
 static const std::string BreakStmt = "BreakStmt";
 static const std::string CallExpr = "CallExpr";
+static const std::string CaseStmt = "CaseStmt";
 static const std::string CharacterLiteral = "CharacterLiteral";
 static const std::string ClassTemplateDecl = "ClassTemplateDecl";
 static const std::string ClassTemplateSpecializationDecl = "ClassTemplateSpecializationDecl";
+static const std::string ConditionalOperator = "ConditionalOperator";
+static const std::string CompoundAssignOperator = "CompoundAssignOperator";
 static const std::string CompoundStmt = "CompoundStmt";
 static const std::string ContinueStmt = "ContinueStmt";
 static const std::string CStyleCastExpr = "CStyleCastExpr";
+static const std::string CXXBindTemporaryExpr = "CXXBindTemporaryExpr";
 static const std::string CXXBoolLiteralExpr = "CXXBoolLiteralExpr";
 static const std::string CXXConstructorDecl = "CXXConstructorDecl";
 static const std::string CXXConstructExpr = "CXXConstructExpr";
+static const std::string CXXDefaultArgExpr = "CXXDefaultArgExpr";
+static const std::string CXXDeleteExpr = "CXXDeleteExpr";
+static const std::string CXXForRangeStmt = "CXXForRangeStmt";
 static const std::string CXXMemberCallExpr = "CXXMemberCallExpr";
 static const std::string CXXMethodDecl = "CXXMethodDecl";
+static const std::string CXXNewExpr = "CXXNewExpr";
 static const std::string CXXNullPtrLiteralExpr = "CXXNullPtrLiteralExpr";
 static const std::string CXXOperatorCallExpr = "CXXOperatorCallExpr";
 static const std::string CXXRecordDecl = "CXXRecordDecl";
 static const std::string CXXStaticCastExpr = "CXXStaticCastExpr";
+static const std::string CXXStdInitializerListExpr = "CXXStdInitializerListExpr";
+static const std::string CXXTemporaryObjectExpr = "CXXTemporaryObjectExpr";
 static const std::string CXXThisExpr = "CXXThisExpr";
+static const std::string CXXThrowExpr = "CXXThrowExpr";
 static const std::string DeclRefExpr = "DeclRefExpr";
 static const std::string DeclStmt = "DeclStmt";
+static const std::string DoStmt = "DoStmt";
+static const std::string EnumConstantDecl = "EnumConstantDecl";
+static const std::string EnumDecl = "EnumDecl";
 static const std::string ExprWithCleanups = "ExprWithCleanups";
 static const std::string FieldDecl = "FieldDecl";
+static const std::string FloatingLiteral = "FloatingLiteral";
 static const std::string ForStmt = "ForStmt";
 static const std::string FunctionDecl = "FunctionDecl";
 static const std::string FunctionTemplateDecl = "FunctionTemplateDecl";
+static const std::string GotoStmt = "GotoStmt";
 static const std::string IfStmt = "IfStmt";
 static const std::string ImplicitCastExpr = "ImplicitCastExpr";
+static const std::string InitListExpr = "InitListExpr";
 static const std::string IntegerLiteral = "IntegerLiteral";
+static const std::string LabelStmt = "LabelStmt";
+static const std::string MaterializeTemporaryExpr = "MaterializeTemporaryExpr";
 static const std::string MemberExpr = "MemberExpr";
 static const std::string NamespaceDecl = "NamespaceDecl";
 static const std::string NullStmt = "NullStmt";
@@ -64,6 +83,7 @@ static const std::string ParmVarDecl = "ParmVarDecl";
 static const std::string RecordDecl = "RecordDecl";
 static const std::string ReturnStmt = "ReturnStmt";
 static const std::string StringLiteral = "StringLiteral";
+static const std::string SwitchStmt = "SwitchStmt";
 static const std::string TemplateArgument = "TemplateArgument";
 static const std::string TypedefDecl = "TypedefDecl";
 static const std::string UnaryOperator = "UnaryOperator";
@@ -84,6 +104,8 @@ static std::vector<std::string> splitString(const std::string &line)
         std::string::size_type pos2;
         if (line[pos1] == '<')
             pos2 = line.find(">", pos1);
+        else if (line[pos1] == '\"')
+            pos2 = line.find("\"", pos1+1);
         else if (line[pos1] == '\'') {
             pos2 = line.find("\'", pos1+1);
             if (pos2 < (int)line.size() - 3 && line.compare(pos2, 3, "\':\'", 0, 3) == 0)
@@ -177,6 +199,8 @@ namespace clangimport {
             return ret;
         }
 
+        // "}" tokens that are not end-of-scope
+        std::set<Token *> mNotScope;
     private:
         void notFound(const std::string &addr) {
             auto it = mNotFound.find(addr);
@@ -215,19 +239,20 @@ namespace clangimport {
             createTokens(tokenList);
             if (nodeType == VarDecl || nodeType == RecordDecl || nodeType == TypedefDecl)
                 addtoken(tokenList, ";");
+            mData->mNotScope.clear();
         }
     private:
         Token *createTokens(TokenList *tokenList);
         Token *addtoken(TokenList *tokenList, const std::string &str, bool valueType=true);
         void addTypeTokens(TokenList *tokenList, const std::string &str);
-        Scope *createScope(TokenList *tokenList, Scope::ScopeType scopeType, AstNodePtr astNode);
-        Scope *createScope(TokenList *tokenList, Scope::ScopeType scopeType, const std::vector<AstNodePtr> &children);
+        Scope *createScope(TokenList *tokenList, Scope::ScopeType scopeType, AstNodePtr astNode, const Token *def);
+        Scope *createScope(TokenList *tokenList, Scope::ScopeType scopeType, const std::vector<AstNodePtr> &children, const Token *def);
         Token *createTokensCall(TokenList *tokenList);
         void createTokensFunctionDecl(TokenList *tokenList);
         void createTokensForCXXRecord(TokenList *tokenList);
         Token *createTokensVarDecl(TokenList *tokenList);
         std::string getSpelling() const;
-        std::string getType() const;
+        std::string getType(int index = 0) const;
         std::string getTemplateParameters() const;
         const Scope *getNestedInScope(TokenList *tokenList);
         void setValueType(Token *tok);
@@ -243,12 +268,33 @@ namespace clangimport {
 
 std::string clangimport::AstNode::getSpelling() const
 {
-    int retTypeIndex = mExtTokens.size() - 1;
-    if (nodeType == FunctionDecl) {
-        while (mExtTokens[retTypeIndex][0] != '\'')
-            retTypeIndex--;
+    if (nodeType == CompoundAssignOperator) {
+        int typeIndex = 1;
+        while (typeIndex < mExtTokens.size() && mExtTokens[typeIndex][0] != '\'')
+            typeIndex++;
+        // name is next quoted token
+        int nameIndex = typeIndex + 1;
+        while (nameIndex < mExtTokens.size() && mExtTokens[nameIndex][0] != '\'')
+            nameIndex++;
+        return (nameIndex < mExtTokens.size()) ? unquote(mExtTokens[nameIndex]) : "";
     }
-    const std::string &str = mExtTokens[retTypeIndex - 1];
+
+    if (nodeType == UnaryExprOrTypeTraitExpr) {
+        int typeIndex = 1;
+        while (typeIndex < mExtTokens.size() && mExtTokens[typeIndex][0] != '\'')
+            typeIndex++;
+        int nameIndex = typeIndex + 1;
+        return (nameIndex < mExtTokens.size()) ? unquote(mExtTokens[nameIndex]) : "";
+    }
+
+    int typeIndex = mExtTokens.size() - 1;
+    if (nodeType == FunctionDecl) {
+        while (typeIndex >= 0 && mExtTokens[typeIndex][0] != '\'')
+            typeIndex--;
+        if (typeIndex <= 0)
+            return "";
+    }
+    const std::string &str = mExtTokens[typeIndex - 1];
     if (str.compare(0,4,"col:") == 0)
         return "";
     if (str.compare(0,8,"<invalid") == 0)
@@ -256,17 +302,20 @@ std::string clangimport::AstNode::getSpelling() const
     return str;
 }
 
-std::string clangimport::AstNode::getType() const
+std::string clangimport::AstNode::getType(int index) const
 {
     int typeIndex = 1;
-    typeIndex = 1;
     while (typeIndex < mExtTokens.size() && mExtTokens[typeIndex][0] != '\'')
         typeIndex++;
     if (typeIndex >= mExtTokens.size())
         return "";
     std::string type = mExtTokens[typeIndex];
-    if (type.find("\':\'") != std::string::npos)
-        type.erase(type.find("\':\'") + 1);
+    if (type.find("\':\'") != std::string::npos) {
+        if (index == 0)
+            type.erase(type.find("\':\'") + 1);
+        else
+            type.erase(0, type.find("\':\'") + 2);
+    }
     if (type.find(" (") != std::string::npos) {
         std::string::size_type pos = type.find(" (");
         type[pos] = '\'';
@@ -377,38 +426,41 @@ const Scope *clangimport::AstNode::getNestedInScope(TokenList *tokenList)
 {
     if (!tokenList->back())
         return &mData->mSymbolDatabase->scopeList.front();
-    if (tokenList->back()->str() == "}")
+    if (tokenList->back()->str() == "}" && mData->mNotScope.find(tokenList->back()) == mData->mNotScope.end())
         return tokenList->back()->scope()->nestedIn;
     return tokenList->back()->scope();
 }
 
 void clangimport::AstNode::setValueType(Token *tok)
 {
-    const std::string &type = getType();
+    for (int i = 0; i < 2; i++) {
+        const std::string &type = getType(i);
 
-    if (type.find("<") != std::string::npos) {
-        // TODO
-        tok->setValueType(new ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::NONSTD, 0));
-        return;
+        if (type.find("<") != std::string::npos)
+            // TODO
+            continue;
+
+        TokenList decl(nullptr);
+        addTypeTokens(&decl, type);
+        if (!decl.front())
+            break;
+
+        ValueType valueType = ValueType::parseDecl(decl.front(), mData->mSettings);
+        if (valueType.type != ValueType::Type::UNKNOWN_TYPE) {
+            tok->setValueType(new ValueType(valueType));
+            break;
+        }
     }
-
-    TokenList decl(nullptr);
-    addTypeTokens(&decl, type);
-    if (!decl.front())
-        return;
-
-    ValueType valueType = ValueType::parseDecl(decl.front(), mData->mSettings);
-    if (valueType.type != ValueType::Type::UNKNOWN_TYPE)
-        tok->setValueType(new ValueType(valueType));
+    return;
 }
 
-Scope *clangimport::AstNode::createScope(TokenList *tokenList, Scope::ScopeType scopeType, AstNodePtr astNode)
+Scope *clangimport::AstNode::createScope(TokenList *tokenList, Scope::ScopeType scopeType, AstNodePtr astNode, const Token *def)
 {
     std::vector<AstNodePtr> children{astNode};
-    return createScope(tokenList, scopeType, children);
+    return createScope(tokenList, scopeType, children, def);
 }
 
-Scope *clangimport::AstNode::createScope(TokenList *tokenList, Scope::ScopeType scopeType, const std::vector<AstNodePtr> &children)
+Scope *clangimport::AstNode::createScope(TokenList *tokenList, Scope::ScopeType scopeType, const std::vector<AstNodePtr> &children, const Token *def)
 {
     SymbolDatabase *symbolDatabase = mData->mSymbolDatabase;
 
@@ -417,6 +469,7 @@ Scope *clangimport::AstNode::createScope(TokenList *tokenList, Scope::ScopeType 
     symbolDatabase->scopeList.push_back(Scope(nullptr, nullptr, nestedIn));
     Scope *scope = &symbolDatabase->scopeList.back();
     scope->type = scopeType;
+    scope->classDef = def;
     Token *bodyStart = children[0]->addtoken(tokenList, "{");
     tokenList->back()->scope(scope);
     for (AstNodePtr astNode: children) {
@@ -476,6 +529,13 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == CallExpr)
         return createTokensCall(tokenList);
+    if (nodeType == CaseStmt) {
+        addtoken(tokenList, "case");
+        children[0]->createTokens(tokenList);
+        addtoken(tokenList, ":");
+        children[2]->createTokens(tokenList);
+        return nullptr;
+    }
     if (nodeType == ClassTemplateDecl) {
         for (AstNodePtr child: children) {
             if (child->nodeType == ClassTemplateSpecializationDecl)
@@ -486,6 +546,26 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     if (nodeType == ClassTemplateSpecializationDecl) {
         createTokensForCXXRecord(tokenList);
         return nullptr;
+    }
+    if (nodeType == ConditionalOperator) {
+        Token *expr1 = children[0]->createTokens(tokenList);
+        Token *tok1 = addtoken(tokenList, "?");
+        Token *expr2 = children[1]->createTokens(tokenList);
+        Token *tok2 = addtoken(tokenList, ":");
+        Token *expr3 = children[2]->createTokens(tokenList);
+        tok2->astOperand1(expr2);
+        tok2->astOperand2(expr3);
+        tok1->astOperand1(expr1);
+        tok1->astOperand2(tok2);
+        return tok1;
+    }
+    if (nodeType == CompoundAssignOperator) {
+        Token *lhs = children[0]->createTokens(tokenList);
+        Token *assign = addtoken(tokenList, getSpelling());
+        Token *rhs = children[1]->createTokens(tokenList);
+        assign->astOperand1(lhs);
+        assign->astOperand2(rhs);
+        return assign;
     }
     if (nodeType == CompoundStmt) {
         for (AstNodePtr child: children) {
@@ -506,6 +586,8 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         par1->astOperand1(children[0]->createTokens(tokenList));
         return par1;
     }
+    if (nodeType == CXXBindTemporaryExpr)
+        return children[0]->createTokens(tokenList);
     if (nodeType == CXXBoolLiteralExpr) {
         addtoken(tokenList, mExtTokens.back());
         tokenList->back()->setValueType(new ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::BOOL, 0));
@@ -533,12 +615,53 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
             createTokensFunctionDecl(tokenList);
         return nullptr;
     }
+    if (nodeType == CXXDeleteExpr) {
+        addtoken(tokenList, "delete");
+        children[0]->createTokens(tokenList);
+        return nullptr;
+    }
+    if (nodeType == CXXForRangeStmt) {
+        Token *forToken = addtoken(tokenList, "for");
+        Token *par1 = addtoken(tokenList, "(");
+        children[5]->children[0]->mExtTokens.pop_back();
+        children[5]->children[0]->children.clear();
+        Token *expr1 = children[5]->children[0]->createTokens(tokenList);
+        Token *colon = addtoken(tokenList, ":");
+        Token *expr2 = children[0]->children[0]->children[0]->createTokens(tokenList);
+        Token *par2 = addtoken(tokenList, ")");
+
+        par1->link(par2);
+        par2->link(par1);
+
+        colon->astOperand1(expr1);
+        colon->astOperand2(expr2);
+        par1->astOperand1(forToken);
+        par1->astOperand2(colon);
+
+        createScope(tokenList, Scope::ScopeType::eFor, children[6], forToken);
+        return nullptr;
+    }
     if (nodeType == CXXMethodDecl) {
         createTokensFunctionDecl(tokenList);
         return nullptr;
     }
     if (nodeType == CXXMemberCallExpr)
         return createTokensCall(tokenList);
+    if (nodeType == CXXNewExpr) {
+        Token *newtok = addtoken(tokenList, "new");
+        std::string type = getType();
+        if (type.find("*") != std::string::npos)
+            type = type.erase(type.rfind("*"));
+        addTypeTokens(tokenList, type);
+        if (!children.empty()) {
+            Token *bracket1 = addtoken(tokenList, "[");
+            children[0]->createTokens(tokenList);
+            Token *bracket2 = addtoken(tokenList, "]");
+            bracket1->link(bracket2);
+            bracket2->link(bracket1);
+        }
+        return newtok;
+    }
     if (nodeType == CXXNullPtrLiteralExpr)
         return addtoken(tokenList, "nullptr");
     if (nodeType == CXXOperatorCallExpr)
@@ -560,8 +683,17 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         setValueType(par1);
         return par1;
     }
+    if (nodeType == CXXStdInitializerListExpr)
+        return children[0]->createTokens(tokenList);
+    if (nodeType == CXXTemporaryObjectExpr && !children.empty())
+        return children[0]->createTokens(tokenList);
     if (nodeType == CXXThisExpr)
         return addtoken(tokenList, "this");
+    if (nodeType == CXXThrowExpr) {
+        Token *t = addtoken(tokenList, "throw");
+        t->astOperand1(children[0]->createTokens(tokenList));
+        return t;
+    }
     if (nodeType == DeclRefExpr) {
         const std::string addr = mExtTokens[mExtTokens.size() - 3];
         std::string name = unquote(getSpelling());
@@ -571,10 +703,40 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == DeclStmt)
         return children[0]->createTokens(tokenList);
+    if (nodeType == DoStmt) {
+        addtoken(tokenList, "do");
+        createScope(tokenList, Scope::ScopeType::eDo, children[0], tokenList->back());
+        Token *tok1 = addtoken(tokenList, "while");
+        Token *par1 = addtoken(tokenList, "(");
+        Token *expr = children[1]->createTokens(tokenList);
+        Token *par2 = addtoken(tokenList, ")");
+        par1->link(par2);
+        par2->link(par1);
+        par1->astOperand1(tok1);
+        par1->astOperand2(expr);
+        return nullptr;
+    }
+    if (nodeType == EnumConstantDecl)
+        return addtoken(tokenList, getSpelling());
+    if (nodeType == EnumDecl) {
+        Token *enumtok = addtoken(tokenList, "enum");
+        if (mExtTokens[mExtTokens.size() - 3].compare(0,4,"col:") == 0)
+            addtoken(tokenList, mExtTokens.back());
+        createScope(tokenList, Scope::ScopeType::eEnum, children, enumtok);
+        for (Token *tok = enumtok; tok; tok = tok->next()) {
+            if (Token::simpleMatch(tok, "; }"))
+                tok->deleteThis();
+            else if (tok->str() == ";")
+                tok->str(",");
+        }
+        return nullptr;
+    }
     if (nodeType == ExprWithCleanups)
         return children[0]->createTokens(tokenList);
     if (nodeType == FieldDecl)
         return createTokensVarDecl(tokenList);
+    if (nodeType == FloatingLiteral)
+        return addtoken(tokenList, mExtTokens.back());
     if (nodeType == ForStmt) {
         Token *forToken = addtoken(tokenList, "for");
         Token *par1 = addtoken(tokenList, "(");
@@ -592,8 +754,7 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         sep1->astOperand2(sep2);
         sep2->astOperand1(expr2);
         sep2->astOperand2(expr3);
-        Scope *scope = createScope(tokenList, Scope::ScopeType::eFor, children[4]);
-        scope->classDef = forToken;
+        createScope(tokenList, Scope::ScopeType::eFor, children[4], forToken);
         return nullptr;
     }
     if (nodeType == FunctionDecl) {
@@ -611,10 +772,25 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         }
         return nullptr;
     }
+    if (nodeType == GotoStmt) {
+        addtoken(tokenList, "goto");
+        addtoken(tokenList, unquote(mExtTokens[mExtTokens.size() - 2]));
+        addtoken(tokenList, ";");
+        return nullptr;
+    }
     if (nodeType == IfStmt) {
-        AstNodePtr cond = children[children.size() - 3];
-        AstNodePtr then = children[children.size() - 2];
-        AstNodePtr else_ = children[children.size() - 1];
+        AstNodePtr cond;
+        AstNodePtr thenCode;
+        AstNodePtr elseCode;
+        if (children.size() == 2) {
+            cond = children[children.size() - 2];
+            thenCode = children[children.size() - 1];
+        } else {
+            cond = children[children.size() - 3];
+            thenCode = children[children.size() - 2];
+            elseCode = children[children.size() - 1];
+        }
+
         Token *iftok = addtoken(tokenList, "if");
         Token *par1 = addtoken(tokenList, "(");
         par1->astOperand1(iftok);
@@ -622,10 +798,10 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         Token *par2 = addtoken(tokenList, ")");
         par1->link(par2);
         par2->link(par1);
-        createScope(tokenList, Scope::ScopeType::eIf, then);
-        if (else_) {
-            else_->addtoken(tokenList, "else");
-            createScope(tokenList, Scope::ScopeType::eElse, else_);
+        createScope(tokenList, Scope::ScopeType::eIf, thenCode, iftok);
+        if (elseCode) {
+            elseCode->addtoken(tokenList, "else");
+            createScope(tokenList, Scope::ScopeType::eElse, elseCode, tokenList->back());
         }
         return nullptr;
     }
@@ -634,22 +810,33 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         setValueType(expr);
         return expr;
     }
+    if (nodeType == InitListExpr) {
+        const Scope *scope = tokenList->back()->scope();
+        Token *start = addtoken(tokenList, "{");
+        start->scope(scope);
+        for (AstNodePtr child: children) {
+            if (tokenList->back()->str() != "{")
+                addtoken(tokenList, ",");
+            child->createTokens(tokenList);
+        }
+        Token *end = addtoken(tokenList, "}");
+        end->scope(scope);
+        start->link(end);
+        end->link(start);
+        mData->mNotScope.insert(end);
+        return start;
+    }
     if (nodeType == IntegerLiteral)
         return addtoken(tokenList, mExtTokens.back());
-    if (nodeType == NullStmt)
-        return addtoken(tokenList, ";");
-    if (nodeType == NamespaceDecl) {
-        if (children.empty())
-            return nullptr;
-        Token *defToken = addtoken(tokenList, "namespace");
-        Token *nameToken = (mExtTokens[mExtTokens.size() - 2].compare(0,4,"col:") == 0) ?
-                           addtoken(tokenList, mExtTokens.back()) : nullptr;
-        Scope *scope = createScope(tokenList, Scope::ScopeType::eNamespace, children);
-        scope->classDef = defToken;
-        if (nameToken)
-            scope->className = nameToken->str();
+    if (nodeType == LabelStmt) {
+        addtoken(tokenList, unquote(mExtTokens.back()));
+        addtoken(tokenList, ":");
+        for (auto child: children)
+            child->createTokens(tokenList);
         return nullptr;
     }
+    if (nodeType == MaterializeTemporaryExpr)
+        return children[0]->createTokens(tokenList);
     if (nodeType == MemberExpr) {
         Token *s = children[0]->createTokens(tokenList);
         Token *dot = addtoken(tokenList, ".");
@@ -668,6 +855,19 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         dot->astOperand2(member);
         return dot;
     }
+    if (nodeType == NamespaceDecl) {
+        if (children.empty())
+            return nullptr;
+        Token *defToken = addtoken(tokenList, "namespace");
+        Token *nameToken = (mExtTokens[mExtTokens.size() - 2].compare(0,4,"col:") == 0) ?
+                           addtoken(tokenList, mExtTokens.back()) : nullptr;
+        Scope *scope = createScope(tokenList, Scope::ScopeType::eNamespace, children, defToken);
+        if (nameToken)
+            scope->className = nameToken->str();
+        return nullptr;
+    }
+    if (nodeType == NullStmt)
+        return addtoken(tokenList, ";");
     if (nodeType == ParenExpr) {
         Token *par1 = addtoken(tokenList, "(");
         Token *expr = children[0]->createTokens(tokenList);
@@ -684,9 +884,11 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         if (children.empty())
             addtoken(tokenList, ";");
         else {
-            Scope *recordScope = createScope(tokenList, Scope::ScopeType::eStruct, children);
+            Scope *recordScope = createScope(tokenList, Scope::ScopeType::eStruct, children, classDef);
             mData->mSymbolDatabase->typeList.push_back(Type(classDef, recordScope, classDef->scope()));
             recordScope->definedType = &mData->mSymbolDatabase->typeList.back();
+            if (!recordName.empty())
+                const_cast<Scope *>(classDef->scope())->definedTypesMap[recordName] = recordScope->definedType;
         }
         return nullptr;
     }
@@ -698,6 +900,18 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == StringLiteral)
         return addtoken(tokenList, mExtTokens.back());
+    if (nodeType == SwitchStmt) {
+        Token *tok1 = addtoken(tokenList, "switch");
+        Token *par1 = addtoken(tokenList, "(");
+        Token *expr = children[children.size() - 2]->createTokens(tokenList);
+        Token *par2 = addtoken(tokenList, ")");
+        par1->link(par2);
+        par2->link(par1);
+        par1->astOperand1(tok1);
+        par1->astOperand2(expr);
+        createScope(tokenList, Scope::ScopeType::eSwitch, children.back(), tok1);
+        return nullptr;
+    }
     if (nodeType == TypedefDecl) {
         addtoken(tokenList, "typedef");
         addTypeTokens(tokenList, getType());
@@ -714,7 +928,10 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     if (nodeType == UnaryExprOrTypeTraitExpr) {
         Token *tok1 = addtoken(tokenList, getSpelling());
         Token *par1 = addtoken(tokenList, "(");
-        addTypeTokens(tokenList, mExtTokens.back());
+        if (children.empty())
+            addTypeTokens(tokenList, mExtTokens.back());
+        else
+            addTypeTokens(tokenList, children[0]->getType());
         Token *par2 = addtoken(tokenList, ")");
         par1->link(par2);
         par2->link(par1);
@@ -735,7 +952,7 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         Token *par2 = addtoken(tokenList, ")");
         par1->link(par2);
         par2->link(par1);
-        createScope(tokenList, Scope::ScopeType::eWhile, body);
+        createScope(tokenList, Scope::ScopeType::eWhile, body, whiletok);
         return nullptr;
     }
     return addtoken(tokenList, "?" + nodeType + "?");
@@ -760,8 +977,11 @@ Token * clangimport::AstNode::createTokensCall(TokenList *tokenList)
     Token *par1 = addtoken(tokenList, "(");
     par1->astOperand1(f);
     Token *parent = par1;
-    for (int c = firstParam; c < children.size(); ++c) {
-        if (c + 1 < children.size()) {
+    int args = 0;
+    while (args < children.size() && children[args]->nodeType != CXXDefaultArgExpr)
+        args++;
+    for (int c = firstParam; c < args; ++c) {
+        if (c + 1 < args) {
             Token *child = children[c]->createTokens(tokenList);
             Token *comma = addtoken(tokenList, ",");
             comma->astOperand1(child);
@@ -793,17 +1013,20 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
     mData->funcDecl(mExtTokens.front(), nameToken, scope.function);
     Token *par1 = addtoken(tokenList, "(");
     // Function arguments
-    for (AstNodePtr child: children) {
+    for (int i = 0; i < children.size(); ++i) {
+        AstNodePtr child = children[i];
         if (child->nodeType != ParmVarDecl)
             continue;
         if (tokenList->back() != par1)
             addtoken(tokenList, ",");
         addTypeTokens(tokenList, child->mExtTokens.back());
         const std::string spelling = child->getSpelling();
-        if (!spelling.empty()) {
+        Token *vartok = nullptr;
+        if (!spelling.empty())
+            vartok = child->addtoken(tokenList, spelling);
+        scope.function->argumentList.push_back(Variable(vartok, child->getType(), i, AccessControl::Argument, nullptr, &scope));
+        if (vartok) {
             const std::string addr = child->mExtTokens[0];
-            Token *vartok = addtoken(tokenList, spelling);
-            scope.function->argumentList.push_back(Variable(vartok, nullptr, nullptr, 0, AccessControl::Argument, nullptr, &scope, nullptr));
             mData->varDecl(addr, vartok, &scope.function->argumentList.back());
         }
     }
@@ -841,8 +1064,7 @@ void clangimport::AstNode::createTokensForCXXRecord(TokenList *tokenList)
         addtoken(tokenList, ";");
         return;
     }
-    Scope *scope = createScope(tokenList, Scope::ScopeType::eClass, children2);
-    scope->classDef = classToken;
+    Scope *scope = createScope(tokenList, Scope::ScopeType::eClass, children2, classToken);
     scope->className = className;
     mData->mSymbolDatabase->typeList.push_back(Type(classToken, scope, classToken->scope()));
     scope->definedType = &mData->mSymbolDatabase->typeList.back();
@@ -875,8 +1097,64 @@ Token * clangimport::AstNode::createTokensVarDecl(TokenList *tokenList)
         par1->link(par2);
         par2->link(par1);
         return par1;
+    } else if (mExtTokens.back() == "listinit") {
+        return children[0]->createTokens(tokenList);
     }
     return vartok1;
+}
+
+static void setTypes(TokenList *tokenList)
+{
+    for (Token *tok = tokenList->front(); tok; tok = tok->next()) {
+        if (Token::simpleMatch(tok, "sizeof (")) {
+            for (Token *typeToken = tok->tokAt(2); typeToken->str() != ")"; typeToken = typeToken->next()) {
+                if (typeToken->type())
+                    continue;
+                typeToken->type(typeToken->scope()->findType(typeToken->str()));
+            }
+        }
+    }
+}
+
+static void setValues(Tokenizer *tokenizer, SymbolDatabase *symbolDatabase)
+{
+    const Settings * const settings = tokenizer->getSettings();
+
+    for (Scope &scope: symbolDatabase->scopeList) {
+        if (!scope.definedType)
+            continue;
+
+        int typeSize = 0;
+        for (const Variable &var: scope.varlist) {
+            int mul = 1;
+            for (const auto &dim: var.dimensions()) {
+                mul *= dim.num;
+            }
+            if (var.valueType())
+                typeSize += mul * var.valueType()->typeSize(*settings, true);
+        }
+        scope.definedType->sizeOf = typeSize;
+    }
+
+    for (Token *tok = const_cast<Token*>(tokenizer->tokens()); tok; tok = tok->next()) {
+        if (Token::simpleMatch(tok, "sizeof (")) {
+            ValueType vt = ValueType::parseDecl(tok->tokAt(2), settings);
+            int sz = vt.typeSize(*settings, true);
+            if (sz <= 0)
+                continue;
+            int mul = 1;
+            for (Token *arrtok = tok->linkAt(1)->previous(); arrtok; arrtok = arrtok->previous()) {
+                const std::string &a = arrtok->str();
+                if (a.size() > 2 && a[0] == '[' && a.back() == ']')
+                    mul *= std::atoi(a.substr(1).c_str());
+                else
+                    break;
+            }
+            ValueFlow::Value v(mul * sz);
+            v.setKnown();
+            tok->next()->addValue(v);
+        }
+    }
 }
 
 void clangimport::parseClangAstDump(Tokenizer *tokenizer, std::istream &f)
@@ -933,5 +1211,7 @@ void clangimport::parseClangAstDump(Tokenizer *tokenizer, std::istream &f)
 
     symbolDatabase->clangSetVariables(data.getVariableList());
     tokenList->clangSetOrigFiles();
+    setTypes(tokenList);
+    setValues(tokenizer, symbolDatabase);
 }
 

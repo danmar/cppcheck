@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 
 # Run this script from your branch with proposed Cppcheck patch to verify your
 # patch against current master. It will compare output of testing bunch of
@@ -49,12 +50,12 @@ if __name__ == "__main__":
         print('Failed to switch to common ancestor of your branch and master')
         sys.exit(1)
 
-    if not lib.compile(master_dir, jobs):
+    if not lib.compile_cppcheck(master_dir, jobs):
         print('Failed to compile master of Cppcheck')
         sys.exit(1)
 
     print('Testing your PR from directory: ' + your_repo_dir)
-    if not lib.compile(your_repo_dir, jobs):
+    if not lib.compile_cppcheck(your_repo_dir, jobs):
         print('Failed to compile your version of Cppcheck')
         sys.exit(1)
 
@@ -118,7 +119,7 @@ if __name__ == "__main__":
                 who = 'Master'
             else:
                 who = 'Your'
-            crashes.append(package + ' ' +  who)
+            crashes.append(package + ' ' + who)
 
         with open(result_file, 'a') as myfile:
             myfile.write(package + '\n')

@@ -254,12 +254,12 @@ unsigned int CppCheck::check(const std::string &path)
         mErrorLogger.reportOut(std::string("Checking ") + path + "...");
 
         const std::string clang = Path::isCPP(path) ? "clang++" : "clang";
+        const std::string temp = mSettings.buildDir + "/__temp__.c";
+        const std::string clangcmd = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "") + ".clang-cmd";
+        const std::string clangStderr = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "") + ".clang-stderr";
 
         /* Experimental: import clang ast dump */
-        std::ofstream fout("__temp__.c");
-        fout << "int x;\n";
-        fout.close();
-        const std::string cmd1 = clang + " -v -fsyntax-only __temp__.c 2>&1";
+        const std::string cmd1 = clang + " -v -fsyntax-only " + temp + " 2>&1";
         const std::pair<bool, std::string> res1 = executeCommand(cmd1);
         if (!res1.first) {
             std::cerr << "Failed to execute '" + cmd1 + "'" << std::endl;
@@ -280,17 +280,58 @@ unsigned int CppCheck::check(const std::string &path)
             }
         }
 
-        //std::cout << "Clang flags: " << flags << std::endl;
-
         for (const std::string &i: mSettings.includePaths)
             flags += "-I" + i + " ";
 
-        const std::string cmd = clang + " -cc1 -ast-dump " + flags + path;
+        const std::string cmd = clang + " -cc1 -ast-dump " + flags + path + " 2> " + clangStderr;
+        std::ofstream fout(clangcmd);
+        fout << cmd << std::endl;
+        fout.close();
+
         std::pair<bool, std::string> res = executeCommand(cmd);
         if (!res.first) {
             std::cerr << "Failed to execute '" + cmd + "'" << std::endl;
             return 0;
         }
+
+        // Ensure there are not syntax errors...
+        {
+            std::ifstream fin(clangStderr);
+            while (std::getline(fin, line)) {
+                if (line.find(": fatal error:") != std::string::npos) {
+
+                    // file:line:column: error: ....
+                    const std::string::size_type pos3 = line.find(": fatal error:");
+                    const std::string::size_type pos2 = line.rfind(":", pos3 - 1);
+                    const std::string::size_type pos1 = line.rfind(":", pos2 - 1);
+
+                    if (pos1 >= pos2 || pos2 >= pos3)
+                        continue;
+
+                    const std::string filename = line.substr(0, pos1);
+                    const std::string linenr = line.substr(pos1+1, pos2-pos1-1);
+                    const std::string colnr = line.substr(pos2+1, pos3-pos2-1);
+                    const std::string msg = line.substr(pos3 + 15);
+
+                    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+                    ErrorLogger::ErrorMessage::FileLocation loc;
+                    loc.setfile(Path::toNativeSeparators(filename));
+                    loc.line = std::atoi(linenr.c_str());
+                    loc.column = std::atoi(colnr.c_str());
+                    locationList.push_back(loc);
+                    ErrorLogger::ErrorMessage errmsg(locationList,
+                                                     loc.getfile(),
+                                                     Severity::error,
+                                                     msg,
+                                                     "syntaxError",
+                                                     false);
+                    reportErr(errmsg);
+
+                    return 0;
+                }
+            }
+        }
+
         //std::cout << "Checking Clang ast dump:\n" << res.second << std::endl;
         std::istringstream ast(res.second);
         Tokenizer tokenizer(&mSettings, this);
@@ -301,7 +342,7 @@ unsigned int CppCheck::check(const std::string &path)
             tokenizer.printDebugOutput(1);
 
 #ifdef USE_Z3
-        if (mSettings.verification)
+        if (mSettings.bugHunting)
             ExprEngine::runChecks(this, &tokenizer, &mSettings);
 #endif
         return 0;
@@ -838,39 +879,39 @@ void CppCheck::checkRawTokens(const Tokenizer &tokenizer)
 
 void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
 {
-    // call all "runChecks" in all registered Check classes
-    for (Check *check : Check::instances()) {
-        if (Settings::terminated())
-            return;
-
-        if (Tokenizer::isMaxTime())
-            return;
-
-        Timer timerRunChecks(check->name() + "::runChecks", mSettings.showtime, &s_timerResults);
-        check->runChecks(&tokenizer, &mSettings, this);
-    }
-
-    // Verification using ExprEngine..
-    if (mSettings.verification)
+    if (mSettings.bugHunting)
         ExprEngine::runChecks(this, &tokenizer, &mSettings);
+    else {
+        // call all "runChecks" in all registered Check classes
+        for (Check *check : Check::instances()) {
+            if (Settings::terminated())
+                return;
 
-    // Analyse the tokens..
+            if (Tokenizer::isMaxTime())
+                return;
 
-    CTU::FileInfo *fi1 = CTU::getFileInfo(&tokenizer);
-    if (fi1) {
-        mFileInfo.push_back(fi1);
-        mAnalyzerInformation.setFileInfo("ctu", fi1->toString());
-    }
-
-    for (const Check *check : Check::instances()) {
-        Check::FileInfo *fi = check->getFileInfo(&tokenizer, &mSettings);
-        if (fi != nullptr) {
-            mFileInfo.push_back(fi);
-            mAnalyzerInformation.setFileInfo(check->name(), fi->toString());
+            Timer timerRunChecks(check->name() + "::runChecks", mSettings.showtime, &s_timerResults);
+            check->runChecks(&tokenizer, &mSettings, this);
         }
-    }
 
-    executeRules("normal", tokenizer);
+        // Analyse the tokens..
+
+        CTU::FileInfo *fi1 = CTU::getFileInfo(&tokenizer);
+        if (fi1) {
+            mFileInfo.push_back(fi1);
+            mAnalyzerInformation.setFileInfo("ctu", fi1->toString());
+        }
+
+        for (const Check *check : Check::instances()) {
+            Check::FileInfo *fi = check->getFileInfo(&tokenizer, &mSettings);
+            if (fi != nullptr) {
+                mFileInfo.push_back(fi);
+                mAnalyzerInformation.setFileInfo(check->name(), fi->toString());
+            }
+        }
+
+        executeRules("normal", tokenizer);
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -1286,9 +1327,9 @@ void CppCheck::reportStatus(unsigned int /*fileindex*/, unsigned int /*filecount
 
 }
 
-void CppCheck::reportVerification(const std::string &str)
+void CppCheck::bughuntingReport(const std::string &str)
 {
-    mErrorLogger.reportVerification(str);
+    mErrorLogger.bughuntingReport(str);
 }
 
 void CppCheck::getErrorMessages()
