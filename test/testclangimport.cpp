@@ -888,8 +888,9 @@ private:
 
     void symbolDatabaseFunction1() {
         const char clang[] = "|-FunctionDecl 0x3aea7a0 <1.cpp:2:1, col:22> col:6 used foo 'void (int, int)'\n"
-                             "| |-ParmVarDecl 0x3aea650 <col:10, col:14> col:14 x 'int'\n"
-                             "| `-ParmVarDecl 0x3aea6c8 <col:17, col:21> col:21 y 'int'\n";
+                             "  |-ParmVarDecl 0x3aea650 <col:10, col:14> col:14 x 'int'\n"
+                             "  |-ParmVarDecl 0x3aea6c8 <col:17, col:21> col:21 y 'int'\n"
+                             "  `-CompoundStmt 0x3d45c48 <col:12>\n";
 
         GET_SYMBOL_DB(clang);
 
@@ -907,7 +908,8 @@ private:
     void symbolDatabaseFunction2() {
         const char clang[] = "|-FunctionDecl 0x3aea7a0 <1.cpp:2:1, col:22> col:6 used foo 'void (int, int)'\n"
                              "| |-ParmVarDecl 0x3aea650 <col:10, col:14> col:14 'int'\n"
-                             "| `-ParmVarDecl 0x3aea6c8 <col:17, col:21> col:21 'int'\n";
+                             "| |-ParmVarDecl 0x3aea6c8 <col:17, col:21> col:21 'int'\n"
+                             "  `-CompoundStmt 0x3d45c48 <col:12>\n";
 
         GET_SYMBOL_DB(clang);
 

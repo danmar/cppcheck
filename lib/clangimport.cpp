@@ -1030,7 +1030,6 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
     Scope *nestedIn = const_cast<Scope *>(nameToken->scope());
     symbolDatabase->scopeList.push_back(Scope(nullptr, nullptr, nestedIn));
     Scope &scope = symbolDatabase->scopeList.back();
-    symbolDatabase->functionScopes.push_back(&scope);
     nestedIn->functionList.push_back(Function(nameToken));
     scope.function = &nestedIn->functionList.back();
     scope.type = Scope::ScopeType::eFunction;
@@ -1060,6 +1059,7 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
     par2->link(par1);
     // Function body
     if (mFile == 0 && !children.empty() && children.back()->nodeType == CompoundStmt) {
+        symbolDatabase->functionScopes.push_back(&scope);
         Token *bodyStart = addtoken(tokenList, "{");
         bodyStart->scope(&scope);
         children.back()->createTokens(tokenList);
