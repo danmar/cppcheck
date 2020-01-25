@@ -253,7 +253,7 @@ unsigned int CppCheck::check(const std::string &path)
     if (mSettings.clang) {
         mErrorLogger.reportOut(std::string("Checking ") + path + "...");
 
-        const std::string clang = Path::isCPP(path) ? "clang++-9" : "clang";
+        const std::string clang = Path::isCPP(path) ? "clang++" : "clang";
         const std::string temp = mSettings.buildDir + "/__temp__.c";
         const std::string clangcmd = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "") + ".clang-cmd";
         const std::string clangStderr = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "") + ".clang-stderr";
