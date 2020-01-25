@@ -3,7 +3,7 @@
 # Downloads all daca2 source code packages.
 #
 # Usage:
-# $ mkdir ~/daca2-packages && python daca2-download.py
+# $ ./daca2-download.py
 
 
 import subprocess

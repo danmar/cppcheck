@@ -5,7 +5,7 @@
 # Usage:
 #
 # cd cppcheck/tools
-# python daca2-getpackages.py
+# ./daca2-getpackages.py
 #
 
 
