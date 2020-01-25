@@ -87,7 +87,8 @@ private:
         TEST_CASE(vardecl3);
         TEST_CASE(vardecl4);
         TEST_CASE(vardecl5);
-        TEST_CASE(whileStmt);
+        TEST_CASE(whileStmt1);
+        TEST_CASE(whileStmt2);
 
         TEST_CASE(symbolDatabaseEnum1);
         TEST_CASE(symbolDatabaseFunction1);
@@ -818,7 +819,7 @@ private:
         ASSERT_EQUALS("const char *const [] sys_errlist@1 ;", parse(clang));
     }
 
-    void whileStmt() {
+    void whileStmt1() {
         const char clang[] = "`-FunctionDecl 0x3d45b18 <1.c:1:1, line:3:1> line:1:6 foo 'void ()'\n"
                              "  `-CompoundStmt 0x3d45c48 <col:12, line:3:1>\n"
                              "    `-WhileStmt 0x3d45c28 <line:2:5, col:14>\n"
@@ -829,6 +830,18 @@ private:
                       "while ( 0 ) { ; } }",
                       parse(clang));
     }
+
+    void whileStmt2() {
+        // clang 9
+        const char clang[] = "`-FunctionDecl 0x1c99ac8 <1.cpp:1:1, col:27> col:6 foo 'void ()'\n"
+                             "  `-CompoundStmt 0x1c99c10 <col:12, col:27>\n"
+                             "    `-WhileStmt 0x1c99bf8 <col:14, col:25>\n"
+                             "      |-ImplicitCastExpr 0x1c99bd0 <col:21> 'bool' <IntegralToBoolean>\n"
+                             "      | `-IntegerLiteral 0x1c99bb0 <col:21> 'int' 1\n"
+                             "      `-CompoundStmt 0x1c99be8 <col:24, col:25>";
+        ASSERT_EQUALS("void foo ( ) { while ( 1 ) { } }", parse(clang));
+    }
+
 
 #define GET_SYMBOL_DB(clang) \
     Settings settings; \

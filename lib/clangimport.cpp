@@ -968,8 +968,8 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     if (nodeType == VarDecl)
         return createTokensVarDecl(tokenList);
     if (nodeType == WhileStmt) {
-        AstNodePtr cond = children[1];
-        AstNodePtr body = children[2];
+        AstNodePtr cond = children[children.size() - 2];
+        AstNodePtr body = children.back();
         Token *whiletok = addtoken(tokenList, "while");
         Token *par1 = addtoken(tokenList, "(");
         par1->astOperand1(whiletok);
