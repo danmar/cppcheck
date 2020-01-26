@@ -148,22 +148,43 @@ static std::vector<std::string> splitString(const std::string &line)
 namespace clangimport {
     struct Data {
         struct Decl {
-            Decl(Token *def, Variable *var) : def(def), function(nullptr), var(var) {}
-            Decl(Token *def, Function *function) : def(def), function(function), var(nullptr) {}
+            Decl(Token *def, Variable *var) : def(def), enumerator(nullptr), function(nullptr), var(var) {}
+            Decl(Token *def, Function *function) : def(def), enumerator(nullptr), function(function), var(nullptr) {}
+            Decl(Token *def, Enumerator *enumerator) : def(def), enumerator(enumerator), function(nullptr), var(nullptr) {}
             void ref(Token *tok) {
+                if (enumerator)
+                    tok->enumerator(enumerator);
                 if (function)
                     tok->function(function);
-                tok->varId(var ? var->declarationId() : 0);
-                if (var)
+                if (var) {
                     tok->variable(var);
+                    tok->varId(var->declarationId());
+                }
             }
             Token *def;
+            Enumerator *enumerator;
             Function *function;
             Variable *var;
         };
 
         const Settings *mSettings = nullptr;
         SymbolDatabase *mSymbolDatabase = nullptr;
+
+        int enumValue = 0;
+
+        void enumDecl(const std::string &addr, Token *nameToken, Enumerator *enumerator) {
+            Decl decl(nameToken, enumerator);
+            mDeclMap.insert(std::pair<std::string, Decl>(addr, decl));
+            nameToken->enumerator(enumerator);
+            notFound(addr);
+        }
+
+        void funcDecl(const std::string &addr, Token *nameToken, Function *function) {
+            Decl decl(nameToken, function);
+            mDeclMap.insert(std::pair<std::string, Decl>(addr, decl));
+            nameToken->function(function);
+            notFound(addr);
+        }
 
         void varDecl(const std::string &addr, Token *def, Variable *var) {
             Decl decl(def, var);
@@ -172,13 +193,6 @@ namespace clangimport {
             def->variable(var);
             if (def->valueType())
                 var->setValueType(*def->valueType());
-            notFound(addr);
-        }
-
-        void funcDecl(const std::string &addr, Token *nameToken, Function *function) {
-            Decl decl(nameToken, function);
-            mDeclMap.insert(std::pair<std::string, Decl>(addr, decl));
-            nameToken->function(function);
             notFound(addr);
         }
 
@@ -469,6 +483,8 @@ Scope *clangimport::AstNode::createScope(TokenList *tokenList, Scope::ScopeType 
 
     symbolDatabase->scopeList.push_back(Scope(nullptr, nullptr, nestedIn));
     Scope *scope = &symbolDatabase->scopeList.back();
+    if (scopeType == Scope::ScopeType::eEnum)
+        scope->enumeratorList.reserve(children.size());
     nestedIn->nestedList.push_back(scope);
     scope->type = scopeType;
     scope->classDef = def;
@@ -733,9 +749,19 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         par1->astOperand2(expr);
         return nullptr;
     }
-    if (nodeType == EnumConstantDecl)
-        return addtoken(tokenList, getSpelling());
+    if (nodeType == EnumConstantDecl) {
+        Token *nameToken = addtoken(tokenList, getSpelling());
+        Scope *scope = const_cast<Scope *>(nameToken->scope());
+        scope->enumeratorList.push_back(Enumerator(nameToken->scope()));
+        Enumerator *e = &scope->enumeratorList.back();
+        e->name = nameToken;
+        e->value = mData->enumValue++;
+        e->value_known = true;
+        mData->enumDecl(mExtTokens.front(), nameToken, e);
+        return nameToken;
+    }
     if (nodeType == EnumDecl) {
+        mData->enumValue = 0;
         Token *enumtok = addtoken(tokenList, "enum");
         Token *nametok = nullptr;
         if (mExtTokens[mExtTokens.size() - 3].compare(0,4,"col:") == 0)
