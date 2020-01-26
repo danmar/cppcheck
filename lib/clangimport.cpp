@@ -489,18 +489,22 @@ Scope *clangimport::AstNode::createScope(TokenList *tokenList, Scope::ScopeType 
     scope->type = scopeType;
     scope->classDef = def;
     scope->check = nestedIn->check;
-    Token *bodyStart = children[0]->addtoken(tokenList, "{");
-    tokenList->back()->scope(scope);
-    for (AstNodePtr astNode: children) {
-        astNode->createTokens(tokenList);
-        if (!Token::Match(tokenList->back(), "[;{}]"))
-            astNode->addtoken(tokenList, ";");
+    if (!children.empty()) {
+        Token *bodyStart = children[0]->addtoken(tokenList, "{");
+        tokenList->back()->scope(scope);
+        for (AstNodePtr astNode: children) {
+            astNode->createTokens(tokenList);
+            if (scopeType == Scope::ScopeType::eEnum)
+                astNode->addtoken(tokenList, ",");
+            else if (!Token::Match(tokenList->back(), "[;{}]"))
+                astNode->addtoken(tokenList, ";");
+        }
+        Token *bodyEnd = children.back()->addtoken(tokenList, "}");
+        bodyStart->link(bodyEnd);
+        bodyEnd->link(bodyStart);
+        scope->bodyStart = bodyStart;
+        scope->bodyEnd = bodyEnd;
     }
-    Token *bodyEnd = children.back()->addtoken(tokenList, "}");
-    bodyStart->link(bodyEnd);
-    bodyEnd->link(bodyStart);
-    scope->bodyStart = bodyStart;
-    scope->bodyEnd = bodyEnd;
     return scope;
 }
 
@@ -769,12 +773,8 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         Scope *enumscope = createScope(tokenList, Scope::ScopeType::eEnum, children, enumtok);
         if (nametok)
             enumscope->className = nametok->str();
-        for (Token *tok = enumtok; tok; tok = tok->next()) {
-            if (Token::simpleMatch(tok, "; }"))
-                tok->deleteThis();
-            else if (tok->str() == ";")
-                tok->str(",");
-        }
+        if (enumscope->bodyEnd && Token::simpleMatch(enumscope->bodyEnd->previous(), ", }"))
+            const_cast<Token *>(enumscope->bodyEnd)->deletePrevious();
 
         // Create enum type
         mData->mSymbolDatabase->typeList.push_back(Type(enumtok, enumscope, enumtok->scope()));
