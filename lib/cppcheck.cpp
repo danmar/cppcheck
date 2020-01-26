@@ -890,6 +890,10 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
             check->runChecks(&tokenizer, &mSettings, this);
         }
 
+        if (mSettings.clang)
+            // TODO: Use CTU for Clang analysis
+            return;
+
         // Analyse the tokens..
 
         CTU::FileInfo *fi1 = CTU::getFileInfo(&tokenizer);
