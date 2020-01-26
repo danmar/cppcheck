@@ -7,6 +7,7 @@ import sys
 import socket
 import time
 import re
+import signal
 import tarfile
 import shlex
 
@@ -249,12 +250,12 @@ def has_include(path, includes):
 def run_command(cmd):
     print(cmd)
     startTime = time.time()
-    p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
     try:
         comm = p.communicate(timeout=CPPCHECK_TIMEOUT)
         return_code = p.returncode
     except subprocess.TimeoutExpired:
-        p.kill()
+        os.killpg(os.getpgid(p.pid), signal.SIGTERM)  # Send the signal to all the process groups
         comm = p.communicate()
         return_code = RETURN_CODE_TIMEOUT
     stop_time = time.time()
