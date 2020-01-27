@@ -96,6 +96,8 @@ void CheckVaarg::referenceAs_va_start_error(const Token *tok, const std::string&
 
 void CheckVaarg::va_list_usage()
 {
+    if (mSettings->clang)
+        return;
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Variable* var : symbolDatabase->variableList()) {
         if (!var || var->isPointer() || var->isReference() || var->isArray() || !var->scope() || var->typeStartToken()->str() != "va_list")
