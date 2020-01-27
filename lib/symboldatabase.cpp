@@ -5182,8 +5182,17 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
     const ValueType *vt2 = parent->astOperand2() ? parent->astOperand2()->valueType() : nullptr;
 
     if (vt1 && Token::Match(parent, "<<|>>")) {
-        if (!mIsCpp || (vt2 && vt2->isIntegral()))
-            setValueType(parent, *vt1);
+        if (!mIsCpp || (vt2 && vt2->isIntegral())) {
+            if (vt1->type < ValueType::Type::BOOL || vt1->type >= ValueType::Type::INT)
+                setValueType(parent, *vt1);
+            else {
+                ValueType vt(*vt1);
+                vt.type = ValueType::Type::INT; // Integer promotion
+                vt.sign = ValueType::Sign::SIGNED;
+                setValueType(parent, vt);
+            }
+
+        }
         return;
     }
 
