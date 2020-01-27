@@ -62,6 +62,9 @@ public:
 
     /** @brief Run checks against the normal token list */
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+        if (settings->clang)
+            return;
+
         CheckUninitVar checkUninitVar(tokenizer, settings, errorLogger);
         checkUninitVar.check();
         checkUninitVar.valueFlowUninit();

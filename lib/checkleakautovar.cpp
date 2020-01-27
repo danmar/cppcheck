@@ -175,6 +175,9 @@ void CheckLeakAutoVar::doubleFreeError(const Token *tok, const Token *prevFreeTo
 
 void CheckLeakAutoVar::check()
 {
+    if (mSettings->clang)
+        return;
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     // Local variables that are known to be non-zero.

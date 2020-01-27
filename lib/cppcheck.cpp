@@ -340,12 +340,8 @@ unsigned int CppCheck::check(const std::string &path)
         ValueFlow::setValues(&tokenizer.list, const_cast<SymbolDatabase *>(tokenizer.getSymbolDatabase()), this, &mSettings);
         if (mSettings.debugnormal)
             tokenizer.printDebugOutput(1);
-
-#ifdef USE_Z3
-        if (mSettings.bugHunting)
-            ExprEngine::runChecks(this, &tokenizer, &mSettings);
-#endif
-        return 0;
+        checkNormalTokens(tokenizer);
+        return mExitCode;
     }
 
     std::ifstream fin(path);
@@ -893,6 +889,10 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
             Timer timerRunChecks(check->name() + "::runChecks", mSettings.showtime, &s_timerResults);
             check->runChecks(&tokenizer, &mSettings, this);
         }
+
+        if (mSettings.clang)
+            // TODO: Use CTU for Clang analysis
+            return;
 
         // Analyse the tokens..
 

@@ -2040,6 +2040,10 @@ bool Tokenizer::simplifyUsing()
                 continue;
             }
 
+            // skip enum definitions
+            if (tok1->str() == "enum")
+                skipEnumBody(&tok1);
+
             // check for member function and adjust scope
             if (isMemberFunction(tok1)) {
                 if (!scope1.empty())
@@ -9469,7 +9473,7 @@ void Tokenizer::findGarbageCode() const
         if (Token::simpleMatch(tok, ".") &&
             !Token::simpleMatch(tok->previous(), ".") &&
             !Token::simpleMatch(tok->next(), ".") &&
-            !Token::Match(tok->previous(), "{|, . %name% [=.]") &&
+            !Token::Match(tok->previous(), "{|, . %name% =|.|[") &&
             !Token::Match(tok->previous(), ", . %name%")) {
             if (!Token::Match(tok->previous(), "%name%|)|]|>|}"))
                 syntaxError(tok, tok->strAt(-1) + " " + tok->str() + " " + tok->strAt(1));

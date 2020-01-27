@@ -276,6 +276,7 @@ TESTOBJ =     test/options.o \
               test/testunusedfunctions.o \
               test/testunusedprivfunc.o \
               test/testunusedvar.o \
+              test/testutils.o \
               test/testvaarg.o \
               test/testvalueflow.o \
               test/testvarid.o
@@ -526,7 +527,7 @@ $(libcppdir)/programmemory.o: lib/programmemory.cpp lib/astutils.h lib/config.h 
 $(libcppdir)/settings.o: lib/settings.cpp lib/config.h lib/errorlogger.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/timer.h lib/utils.h lib/valueflow.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(libcppdir)/settings.o $(libcppdir)/settings.cpp
 
-$(libcppdir)/suppressions.o: lib/suppressions.cpp externals/tinyxml/tinyxml2.h lib/config.h lib/errorlogger.h lib/mathlib.h lib/path.h lib/suppressions.h
+$(libcppdir)/suppressions.o: lib/suppressions.cpp externals/tinyxml/tinyxml2.h lib/config.h lib/errorlogger.h lib/mathlib.h lib/path.h lib/suppressions.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(libcppdir)/suppressions.o $(libcppdir)/suppressions.cpp
 
 $(libcppdir)/symboldatabase.o: lib/symboldatabase.cpp lib/astutils.h lib/config.h lib/errorlogger.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h
@@ -741,6 +742,9 @@ test/testunusedprivfunc.o: test/testunusedprivfunc.cpp externals/simplecpp/simpl
 
 test/testunusedvar.o: test/testunusedvar.cpp lib/check.h lib/checkunusedvar.h lib/config.h lib/errorlogger.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h test/testsuite.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testunusedvar.o test/testunusedvar.cpp
+
+test/testutils.o: test/testutils.cpp lib/config.h lib/errorlogger.h lib/suppressions.h lib/utils.h test/testsuite.h
+	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testutils.o test/testutils.cpp
 
 test/testvaarg.o: test/testvaarg.cpp lib/check.h lib/checkvaarg.h lib/config.h lib/errorlogger.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h test/testsuite.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testvaarg.o test/testvaarg.cpp

@@ -1091,6 +1091,9 @@ void CheckUnusedVar::checkFunctionVariableUsage()
     if (!mSettings->isEnabled(Settings::STYLE))
         return;
 
+    if (mSettings->clang)
+        return;
+
     // Parse all executing scopes..
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 

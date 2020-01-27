@@ -1723,7 +1723,7 @@ void SymbolDatabase::clangSetVariables(const std::vector<const Variable *> &vari
     mVariableList = variableList;
 }
 
-Variable::Variable(const Token *name_, const std::string &clangType,
+Variable::Variable(const Token *name_, const std::string &clangType, const Token *start,
                    nonneg int index_, AccessControl access_, const Type *type_,
                    const Scope *scope_)
     : mNameToken(name_),
@@ -1736,6 +1736,8 @@ Variable::Variable(const Token *name_, const std::string &clangType,
       mScope(scope_),
       mValueType(nullptr)
 {
+    if (start && start->str() == "static")
+        setFlag(fIsStatic, true);
 
     std::string::size_type pos = clangType.find("[");
     if (pos != std::string::npos) {
@@ -3141,16 +3143,15 @@ void SymbolDatabase::printOut(const char *title) const
                 std::cout << "int";
             std::cout << std::endl;
             std::cout << "    enumClass: " << scope->enumClass << std::endl;
-            for (std::vector<Enumerator>::const_iterator enumerator = scope->enumeratorList.begin(); enumerator != scope->enumeratorList.end(); ++enumerator) {
-                std::cout << "        Enumerator: " << enumerator->name->str() << " = ";
-                if (enumerator->value_known) {
-                    std::cout << enumerator->value;
-                }
+            for (const Enumerator &enumerator : scope->enumeratorList) {
+                std::cout << "        Enumerator: " << enumerator.name->str() << " = ";
+                if (enumerator.value_known)
+                    std::cout << enumerator.value;
 
-                if (enumerator->start) {
-                    const Token * tok = enumerator->start;
-                    std::cout << (enumerator->value_known ? " " : "") << "[" << tok->str();
-                    while (tok && tok != enumerator->end) {
+                if (enumerator.start) {
+                    const Token * tok = enumerator.start;
+                    std::cout << (enumerator.value_known ? " " : "") << "[" << tok->str();
+                    while (tok && tok != enumerator.end) {
                         if (tok->next())
                             std::cout << " " << tok->next()->str();
                         tok = tok->next();
@@ -5183,8 +5184,17 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
     const ValueType *vt2 = parent->astOperand2() ? parent->astOperand2()->valueType() : nullptr;
 
     if (vt1 && Token::Match(parent, "<<|>>")) {
-        if (!mIsCpp || (vt2 && vt2->isIntegral()))
-            setValueType(parent, *vt1);
+        if (!mIsCpp || (vt2 && vt2->isIntegral())) {
+            if (vt1->type < ValueType::Type::BOOL || vt1->type >= ValueType::Type::INT)
+                setValueType(parent, *vt1);
+            else {
+                ValueType vt(*vt1);
+                vt.type = ValueType::Type::INT; // Integer promotion
+                vt.sign = ValueType::Sign::SIGNED;
+                setValueType(parent, vt);
+            }
+
+        }
         return;
     }
 
@@ -5547,6 +5557,11 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             if (container) {
                 valuetype->type = ValueType::Type::CONTAINER;
                 valuetype->container = container;
+            } else {
+                const Scope *scope = type->scope();
+                valuetype->typeScope = scope->check->findScope(typeTokens.front(), scope);
+                if (valuetype->typeScope)
+                    valuetype->type = (scope->type == Scope::ScopeType::eClass) ? ValueType::Type::RECORD : ValueType::Type::NONSTD;
             }
         } else if (const Library::Container *container = settings->library.detectContainer(type)) {
             valuetype->type = ValueType::Type::CONTAINER;
