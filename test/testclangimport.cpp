@@ -87,6 +87,7 @@ private:
         TEST_CASE(vardecl3);
         TEST_CASE(vardecl4);
         TEST_CASE(vardecl5);
+        TEST_CASE(vardecl6);
         TEST_CASE(whileStmt1);
         TEST_CASE(whileStmt2);
 
@@ -817,6 +818,12 @@ private:
     void vardecl5() {
         const char clang[] = "|-VarDecl 0x2e31fc0 <line:27:1, col:38> col:26 sys_errlist 'const char *const []' extern";
         ASSERT_EQUALS("const char *const [] sys_errlist@1 ;", parse(clang));
+    }
+
+    void vardecl6() {
+        const char clang[] = "`-VarDecl 0x278e170 <1.c:1:1, col:16> col:12 x 'int' static cinit\n"
+                             "  `-IntegerLiteral 0x278e220 <col:16> 'int' 3";
+        ASSERT_EQUALS("static int x@1 = 3 ;", parse(clang));
     }
 
     void whileStmt1() {

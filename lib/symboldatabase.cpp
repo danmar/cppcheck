@@ -1723,7 +1723,7 @@ void SymbolDatabase::clangSetVariables(const std::vector<const Variable *> &vari
     mVariableList = variableList;
 }
 
-Variable::Variable(const Token *name_, const std::string &clangType,
+Variable::Variable(const Token *name_, const std::string &clangType, const Token *start,
                    nonneg int index_, AccessControl access_, const Type *type_,
                    const Scope *scope_)
     : mNameToken(name_),
@@ -1736,6 +1736,8 @@ Variable::Variable(const Token *name_, const std::string &clangType,
       mScope(scope_),
       mValueType(nullptr)
 {
+    if (start && start->str() == "static")
+        setFlag(fIsStatic, true);
 
     std::string::size_type pos = clangType.find("[");
     if (pos != std::string::npos) {
