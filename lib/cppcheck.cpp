@@ -258,14 +258,13 @@ unsigned int CppCheck::check(const std::string &path)
         const std::string clangcmd = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "") + ".clang-cmd";
         const std::string clangStderr = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "") + ".clang-stderr";
 
-        /* Experimental: import clang ast dump */
         const std::string cmd1 = clang + " -v -fsyntax-only " + temp + " 2>&1";
-        const std::pair<bool, std::string> res1 = executeCommand(cmd1);
-        if (!res1.first) {
+        const std::pair<bool, std::string> &result1 = executeCommand(cmd1);
+        if (!result1.first || result1.second.find(" -cc1 ") == std::string::npos) {
             std::cerr << "Failed to execute '" + cmd1 + "'" << std::endl;
             return 0;
         }
-        std::istringstream details(res1.second);
+        std::istringstream details(result1.second);
         std::string line;
         std::string flags;
         while (std::getline(details, line)) {
@@ -288,8 +287,8 @@ unsigned int CppCheck::check(const std::string &path)
         fout << cmd << std::endl;
         fout.close();
 
-        std::pair<bool, std::string> res = executeCommand(cmd);
-        if (!res.first) {
+        const std::pair<bool, std::string> &result2 = executeCommand(cmd);
+        if (!result2.first || result2.second.find("TranslationUnitDecl") == std::string::npos) {
             std::cerr << "Failed to execute '" + cmd + "'" << std::endl;
             return 0;
         }
@@ -332,8 +331,8 @@ unsigned int CppCheck::check(const std::string &path)
             }
         }
 
-        //std::cout << "Checking Clang ast dump:\n" << res.second << std::endl;
-        std::istringstream ast(res.second);
+        //std::cout << "Checking Clang ast dump:\n" << result2.second << std::endl;
+        std::istringstream ast(result2.second);
         Tokenizer tokenizer(&mSettings, this);
         tokenizer.list.appendFileIfNew(path);
         clangimport::parseClangAstDump(&tokenizer, ast);
