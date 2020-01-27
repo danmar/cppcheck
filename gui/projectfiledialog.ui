@@ -78,7 +78,7 @@
             <item>
              <widget class="QLabel" name="mLabelVSConfig">
               <property name="text">
-               <string>Visual Studio Configuration</string>
+               <string>Selected VS Configurations</string>
               </property>
              </widget>
             </item>

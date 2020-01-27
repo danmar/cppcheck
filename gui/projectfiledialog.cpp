@@ -194,7 +194,7 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
     connect(mUI.mBtnRemoveSuppression, &QPushButton::clicked, this, &ProjectFileDialog::removeSuppression);
     connect(mUI.mListSuppressions, &QListWidget::doubleClicked, this, &ProjectFileDialog::editSuppression);
     connect(mUI.mBtnBrowseMisraFile, &QPushButton::clicked, this, &ProjectFileDialog::browseMisraFile);
-
+    connect(mUI.mChkAllVsConfigs, &QCheckBox::clicked, this, &ProjectFileDialog::checkAllVSConfigs);
     loadFromProjectFile(projectFile);
 }
 
@@ -225,6 +225,11 @@ static void updateAddonCheckBox(QCheckBox *cb, const ProjectFile *projectFile, c
         cb->setEnabled(false);
         cb->setText(cb->text() + QObject::tr(" (Not found)"));
     }
+}
+
+void ProjectFileDialog::checkAllVSConfigs()
+{
+    mUI.mEditVsConfiguration->setEnabled(!mUI.mChkAllVsConfigs->isChecked());
 }
 
 void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)

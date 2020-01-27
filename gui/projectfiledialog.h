@@ -259,6 +259,11 @@ protected slots:
      */
     void browseMisraFile();
 
+    /**
+     * @brief Check for all VS configurations
+     */
+    void checkAllVSConfigs();
+
 protected:
 
     /**
