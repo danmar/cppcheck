@@ -621,8 +621,16 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                 for (const tinyxml2::XMLElement *cfg = node->FirstChildElement(); cfg; cfg = cfg->NextSiblingElement()) {
                     if (std::strcmp(cfg->Name(), "ProjectConfiguration") == 0) {
                         const ProjectConfiguration p(cfg);
-                        if (p.platform != ProjectConfiguration::Unknown)
+                        if (p.platform != ProjectConfiguration::Unknown) {
                             projectConfigurationList.emplace_back(cfg);
+                            bool alreadyIn = false;
+                            for (std::string conf : mAllVSConfigs) {
+                                if (conf.find(p.configuration) != std::string::npos)
+                                    alreadyIn = true;
+                            }
+                            if(!alreadyIn)
+                                mAllVSConfigs.emplace_back(p.configuration);
+                        }
                     }
                 }
             } else {
@@ -987,6 +995,7 @@ static std::string istream_to_string(std::istream &istr)
     return std::string(std::istreambuf_iterator<char>(istr), eos);
 }
 
+
 bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *settings)
 {
     tinyxml2::XMLDocument doc;
@@ -1112,4 +1121,9 @@ void ImportProject::selectOneVsConfig(Settings::PlatformType platform)
             ++it;
         }
     }
+}
+
+std::list<std::string> &ImportProject::getVSConfigs()
+{
+    return mAllVSConfigs;
 }

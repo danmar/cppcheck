@@ -33,6 +33,7 @@
 #include "projectfile.h"
 #include "library.h"
 #include "platforms.h"
+#include "importproject.h"
 
 /** Return paths from QListWidget */
 static QStringList getPaths(const QListWidget *list)
@@ -57,6 +58,16 @@ static const cppcheck::Platform::PlatformType builtinPlatforms[] = {
 };
 
 static const int numberOfBuiltinPlatforms = sizeof(builtinPlatforms) / sizeof(builtinPlatforms[0]);
+
+QStringList ProjectFileDialog::getProjectConfigs(const QString &fileName) {
+    QStringList ret;
+    ImportProject importer;
+    Settings projSettings;
+    importer.import(fileName.toStdString(), &projSettings);
+    for (const std::string &cfg : importer.getVSConfigs())
+        ret << QString::fromStdString(cfg);
+    return ret;
+}
 
 ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
     : QDialog(parent)
@@ -459,6 +470,7 @@ void ProjectFileDialog::browseImportProject()
     if (!fileName.isEmpty()) {
         mUI.mEditImportProject->setText(dir.relativeFilePath(fileName));
         updatePathsAndDefines();
+        setVsConfigurations(getProjectConfigs(fileName));
     }
 }
 
