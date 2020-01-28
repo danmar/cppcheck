@@ -1323,6 +1323,8 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
     // TODO: This is a bailout so that old code is used in simple cases. Remove the old code and always use the AST type.
     if (!Token::Match(arg, "%str% ,|)") && !(Token::Match(arg,"%var%") && arg->variable() && arg->variable()->isArray())) {
         const Token *top = arg;
+        while (top->str() == "(" && !top->isCast())
+            top = top->next();
         while (top->astParent() && top->astParent()->str() != "," && top->astParent() != arg->previous())
             top = top->astParent();
         const ValueType *valuetype = top->argumentType();

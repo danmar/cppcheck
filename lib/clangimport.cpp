@@ -1077,7 +1077,7 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
         Token *vartok = nullptr;
         if (!spelling.empty())
             vartok = child->addtoken(tokenList, spelling);
-        scope.function->argumentList.push_back(Variable(vartok, child->getType(), i, AccessControl::Argument, nullptr, &scope));
+        scope.function->argumentList.push_back(Variable(vartok, child->getType(), nullptr, i, AccessControl::Argument, nullptr, &scope));
         if (vartok) {
             const std::string addr = child->mExtTokens[0];
             mData->varDecl(addr, vartok, &scope.function->argumentList.back());
@@ -1127,6 +1127,9 @@ void clangimport::AstNode::createTokensForCXXRecord(TokenList *tokenList)
 Token * clangimport::AstNode::createTokensVarDecl(TokenList *tokenList)
 {
     const std::string addr = mExtTokens.front();
+    const Token *startToken = nullptr;
+    if (std::find(mExtTokens.cbegin(), mExtTokens.cend(), "static") != mExtTokens.cend())
+        startToken = addtoken(tokenList, "static");
     int typeIndex = mExtTokens.size() - 1;
     while (typeIndex > 1 && std::isalpha(mExtTokens[typeIndex][0]))
         typeIndex--;
@@ -1136,7 +1139,7 @@ Token * clangimport::AstNode::createTokensVarDecl(TokenList *tokenList)
     Token *vartok1 = addtoken(tokenList, name);
     Scope *scope = const_cast<Scope *>(tokenList->back()->scope());
     const AccessControl accessControl = (scope->type == Scope::ScopeType::eGlobal) ? (AccessControl::Global) : (AccessControl::Local);
-    scope->varlist.push_back(Variable(vartok1, type, 0, accessControl, nullptr, scope));
+    scope->varlist.push_back(Variable(vartok1, type, startToken, 0, accessControl, nullptr, scope));
     mData->varDecl(addr, vartok1, &scope->varlist.back());
     if (mExtTokens.back() == "cinit") {
         Token *eq = addtoken(tokenList, "=");

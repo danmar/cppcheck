@@ -84,6 +84,8 @@ public:
 
     void selectOneVsConfig(cppcheck::Platform::PlatformType platform);
 
+    std::list<std::string> &getVSConfigs();
+
     // Cppcheck GUI output
     struct {
         std::string analyzeAllVsConfigs;
@@ -109,6 +111,7 @@ private:
     void importBcb6Prj(const std::string &projectFilename);
 
     std::string mPath;
+    std::list<std::string> mAllVSConfigs;
 };
 
 

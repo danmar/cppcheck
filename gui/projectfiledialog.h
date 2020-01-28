@@ -259,6 +259,11 @@ protected slots:
      */
     void browseMisraFile();
 
+    /**
+     * @brief Check for all VS configurations
+     */
+    void checkAllVSConfigs();
+
 protected:
 
     /**
@@ -298,6 +303,8 @@ protected:
     int getSuppressionIndex(const QString &shortText) const;
 
 private:
+    QStringList getProjectConfigs(const QString &fileName);
+
     Ui::ProjectFile mUI;
 
     /**
