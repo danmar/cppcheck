@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>888</width>
-    <height>585</height>
+    <height>573</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -76,6 +76,19 @@
              </widget>
             </item>
             <item>
+             <spacer name="horizontalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
              <widget class="QLabel" name="mLabelVSConfig">
               <property name="text">
                <string>Selected VS Configurations</string>
@@ -83,7 +96,11 @@
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="mEditVsConfiguration"/>
+             <widget class="QListWidget" name="mListVsConfigs">
+              <property name="selectionMode">
+               <enum>QAbstractItemView::MultiSelection</enum>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
