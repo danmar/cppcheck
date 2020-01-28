@@ -112,6 +112,14 @@ struct ForwardTraversal
         }
     }
 
+    static bool hasGoto(const Token* endBlock) {
+        return Token::findsimplematch(endBlock->link(), "goto", endBlock);
+    }
+
+    bool isEscapeScope(const Token* endBlock) {
+        return isReturnScope(endBlock, &settings->library);
+    }
+
     enum class Status {
         None,
         Escaped,
@@ -119,30 +127,14 @@ struct ForwardTraversal
         Inconclusive,
     };
 
-    struct checkScopeOptions
-    {
-        checkScopeOptions()
-        : checkReturn(true), loop(false)
-        {}
-        bool checkReturn;
-        bool loop;
-    };
-
     ForwardAnalyzer::Action analyzeScope(const Token* endBlock) {
         return analyzeRange(endBlock->link(), endBlock);       
     }
         
-    Status checkScope(const Token* endBlock, bool checkReturn=true) {
+    ForwardAnalyzer::Action checkScope(const Token* endBlock) {
         ForwardAnalyzer::Action a = analyzeScope(endBlock);
-        forkScope(endBlock, a.isModified());            
-        if (checkReturn && isReturnScope(endBlock, &settings->library))
-            return Status::Escaped;
-        if (a.isInconclusive()) {
-            return Status::Inconclusive;
-        } else if (a.isModified()) {
-            return Status::Modified;
-        }
-        return Status::None;
+        forkScope(endBlock, a.isModified()); 
+        return a;
     }
 
     Progress updateLoop(Token* endBlock, Token* condTok) {
@@ -184,6 +176,9 @@ struct ForwardTraversal
                     return Progress::Break;
                 tok = skipTo(tok, scope->bodyEnd, end);
                 if (!analyzer->LowerToPossible())
+                    return Progress::Break;
+                // TODO: Dont break, instead move to the outer scope
+                if (!tok)
                     return Progress::Break;
             } else if (Token::Match(tok, "%name% :")) {
                 if (!analyzer->LowerToPossible())
@@ -241,44 +236,61 @@ struct ForwardTraversal
                     // Check if condition is true or false
                     bool checkThen, checkElse;
                     std::tie(checkThen, checkElse) = evalCond(condTok);
-                    Status thenStatus = Status::None;
-                    Status elseStatus = Status::None;
+                    ForwardAnalyzer::Action thenAction = ForwardAnalyzer::Action::None;
+                    ForwardAnalyzer::Action elseAction = ForwardAnalyzer::Action::None;
+                    bool hasElse = false;
+                    bool bail = false;
 
                     // Traverse then block
+                    bool returnThen = isEscapeScope(endBlock);
+                    bool returnElse = false;
                     if (checkThen) {
                         if (updateRange(endCond->next(), endBlock) == Progress::Break)
                             return Progress::Break;
                     } else if (!checkElse) {
-                        thenStatus = checkScope(endBlock);
+                        thenAction = checkScope(endBlock);
+                        if (hasGoto(endBlock))
+                            bail = true;
                     }
                     // Traverse else block
                     if (Token::simpleMatch(endBlock, "} else {")) {
+                        hasElse = true;
+                        returnElse = isEscapeScope(endBlock->linkAt(2));
                         if (checkElse) {
                             Progress result = updateRange(endBlock->tokAt(2), endBlock->linkAt(2));
                             if (result == Progress::Break)
                                 return Progress::Break;
                         } else if (!checkThen) {
-                            elseStatus = checkScope(endBlock->linkAt(2));
+                            elseAction = checkScope(endBlock->linkAt(2));
+                            if (hasGoto(endBlock))
+                                bail = true;
                         }
                         tok = endBlock->linkAt(2);
                     } else {
                         tok = endBlock;
                     }
-                    if (thenStatus == elseStatus && (thenStatus == Status::Escaped || thenStatus == Status::Modified)) {
+                    if (bail)
                         return Progress::Break;
-                    } else if (thenStatus == Status::Escaped || elseStatus == Status::Escaped) {
-                        if (thenStatus == Status::Modified || elseStatus == Status::Modified) {
+                    if (returnThen && returnElse)
+                        return Progress::Break;
+                    else if (thenAction.isModified() && elseAction.isModified())
+                        return Progress::Break;
+                    else if ((returnThen || returnElse) && (thenAction.isModified() || elseAction.isModified()))
+                        return Progress::Break;
+                    // Conditional return
+                    if (returnThen && !hasElse) {
+                        if (analyzer->IsConditional())
                             return Progress::Break;
-                        }
-                        if (elseStatus == Status::None)
-                            return Progress::Break;
-                    } else if (thenStatus == Status::Inconclusive || elseStatus == Status::Inconclusive) {
+                        analyzer->Assume(condTok, false);
+                    }
+                    if (thenAction.isInconclusive() || elseAction.isInconclusive()) {
                         if (!analyzer->LowerToInconclusive())
                             return Progress::Break;
-                    } else if (thenStatus == Status::Modified || elseStatus == Status::Modified) {
+                    }
+                    else if (thenAction.isModified() || elseAction.isModified()) {
                         if (!analyzer->LowerToPossible())
                             return Progress::Break;
-                        analyzer->Assume(condTok, elseStatus == Status::Modified);
+                        analyzer->Assume(condTok, elseAction.isModified());
                     }
                 }
             } else if (Token::simpleMatch(tok, "} else {")) {
@@ -306,7 +318,7 @@ struct ForwardTraversal
                 return Progress::Break;
             // Skip lambdas
             } else if (Token *lambdaEndToken = findLambdaEndToken(tok)) {
-                if (checkScope(lambdaEndToken, false) == Status::Modified)
+                if (checkScope(lambdaEndToken).isModified())
                     return Progress::Break;
                 tok = lambdaEndToken;
             // Skip unevaluated context
@@ -346,9 +358,12 @@ struct ForwardTraversal
 
     static Token* skipTo(Token* tok, const Token* dest, const Token* end = nullptr)
     {
-        while(tok != dest && tok != end)
-            tok = tok->next();
-        return tok;
+        if (end && dest->index() > end->index())
+            return nullptr;
+        int i = dest->index() - tok->index();
+        if (i > 0)
+            return tok->tokAt(dest->index() - tok->index());
+        return nullptr;
     }
 
     static bool isConditional(const Token* tok) 
