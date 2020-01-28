@@ -332,8 +332,13 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     }
     mUI.mEditTags->setText(projectFile->getTags().join(';'));
     updatePathsAndDefines();
-    if(mUI.mEditImportProject->text().endsWith(".sln") || mUI.mEditImportProject->text().endsWith(".vcxproj"))
+    if(mUI.mEditImportProject->text().endsWith(".sln") || mUI.mEditImportProject->text().endsWith(".vcxproj")) {
         setVsConfigurations(getProjectConfigs(mUI.mEditImportProject->text()));
+        foreach(const QString &cfg, projectFile->getVsConfigurations()) {
+            QList<QListWidgetItem*> items = mUI.mListVsConfigs->findItems(cfg, Qt::MatchFlag::MatchExactly);
+            items[0]->setSelected(true);
+        }
+    }
     else
         mUI.mListVsConfigs->setEnabled(false);
 
@@ -478,6 +483,7 @@ void ProjectFileDialog::browseImportProject()
         mUI.mEditImportProject->setText(dir.relativeFilePath(fileName));
         updatePathsAndDefines();
         setVsConfigurations(getProjectConfigs(fileName));
+        mUI.mListVsConfigs->selectAll();
     }
 }
 
@@ -494,7 +500,6 @@ void ProjectFileDialog::setVsConfigurations(const QStringList &configs)
 {
     mUI.mListVsConfigs->clear();
     mUI.mListVsConfigs->addItems(configs);
-    mUI.mListVsConfigs->selectAll();
 }
 
 QString ProjectFileDialog::getImportProject() const

@@ -623,13 +623,7 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                         const ProjectConfiguration p(cfg);
                         if (p.platform != ProjectConfiguration::Unknown) {
                             projectConfigurationList.emplace_back(cfg);
-                            bool alreadyIn = false;
-                            for (std::string conf : mAllVSConfigs) {
-                                if (conf.find(p.configuration) != std::string::npos)
-                                    alreadyIn = true;
-                            }
-                            if(!alreadyIn)
-                                mAllVSConfigs.emplace_back(p.configuration);
+                            mAllVSConfigs.insert(p.configuration);
                         }
                     }
                 }
@@ -1123,7 +1117,7 @@ void ImportProject::selectOneVsConfig(Settings::PlatformType platform)
     }
 }
 
-std::list<std::string> &ImportProject::getVSConfigs()
+std::list<std::string> ImportProject::getVSConfigs()
 {
-    return mAllVSConfigs;
-}
+    return std::list<std::string> (mAllVSConfigs.begin(), mAllVSConfigs.end());
+} 
