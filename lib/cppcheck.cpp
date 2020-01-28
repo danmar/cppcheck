@@ -1389,11 +1389,15 @@ void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings 
         if (line.find("error") == std::string::npos && line.find("warning") == std::string::npos)
             continue;
 
-        std::size_t endNamePos = line.find_first_of(':', 2);
-        std::size_t endLinePos = line.find_first_of(':', endNamePos + 2);
-        std::size_t endColumnPos = line.find_first_of(':', endLinePos + 2);
-        std::size_t endMsgTypePos = line.find_first_of(':', endColumnPos + 2);
-        std::size_t endErrorPos = line.rfind('[', std::string::npos);
+        std::size_t endColumnPos = line.find(": error:");
+        if (endColumnPos == std::string::npos) {
+            endColumnPos = line.find(": warning:");
+        }
+
+        const std::size_t endLinePos = line.rfind(":", endColumnPos-1);
+        const std::size_t endNamePos = line.rfind(":", endLinePos - 1);
+        const std::size_t endMsgTypePos = line.find_first_of(':', endColumnPos + 2);
+        const std::size_t endErrorPos = line.rfind('[', std::string::npos);
         
         const std::string lineNumString = line.substr(endNamePos + 1, endLinePos - endNamePos - 1);
         const std::string columnNumString = line.substr(endLinePos + 1, endColumnPos - endLinePos - 1);
