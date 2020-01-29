@@ -216,6 +216,8 @@ bool isConstVarExpression(const Token *tok, const char * skipMatch = nullptr);
 
 const Variable *getLHSVariable(const Token *tok);
 
+std::vector<const Variable*> getLHSVariables(const Token *tok);
+
 bool isScopeBracket(const Token* tok);
 
 /**

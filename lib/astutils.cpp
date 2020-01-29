@@ -1515,6 +1515,38 @@ bool isConstVarExpression(const Token *tok, const char* skipMatch)
     return false;
 }
 
+static void getLHSVariablesRecursive(std::vector<const Variable*>& vars, const Token *tok)
+{
+    if (!tok)
+        return;
+    if (vars.empty() && Token::Match(tok, "*|&|&&|[")) {
+        getLHSVariablesRecursive(vars, tok->astOperand1());
+        if (!vars.empty() || Token::simpleMatch(tok, "["))
+            return;
+        getLHSVariablesRecursive(vars, tok->astOperand2());
+    } else if (Token::Match(tok->previous(), "this . %var%")) {
+        getLHSVariablesRecursive(vars, tok->next());
+    } else if (Token::simpleMatch(tok, ".")) {
+        getLHSVariablesRecursive(vars, tok->astOperand1());
+        getLHSVariablesRecursive(vars, tok->astOperand2());
+    } else if (tok->variable()) {
+        vars.push_back(tok->variable());
+    }
+}
+
+std::vector<const Variable*> getLHSVariables(const Token *tok)
+{
+    std::vector<const Variable*> result;
+    if (!Token::Match(tok, "%assign%"))
+        return result;
+    if (!tok->astOperand1())
+        return result;
+    if (tok->astOperand1()->varId() > 0 && tok->astOperand1()->variable())
+        return {tok->astOperand1()->variable()};
+    getLHSVariablesRecursive(result, tok->astOperand1());
+    return result;
+}
+
 static const Variable *getLHSVariableRecursive(const Token *tok)
 {
     if (!tok)

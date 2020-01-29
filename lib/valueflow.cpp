@@ -2283,8 +2283,12 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
                 return Action::Invalid;
             }
             return read;
-        } else if (!value.isLifetimeValue() && isAliasOf(var, tok, varid, {value}) && isVariableChanged(tok, 0, settings, cpp)) {
-            return Action::Invalid;
+        } else if (!value.isLifetimeValue() && isAliasOf(var, tok, varid, {value})) {
+            int indirect = 0;
+            if (tok->valueType())
+                indirect = tok->valueType()->pointer;
+            if (isVariableChanged(tok, indirect, settings, cpp))
+                return Action::Invalid;
         } else if (Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
             // bailout: global non-const variables
             if (var->isGlobal() && !var->isConst()) {
@@ -3629,13 +3633,15 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
         if (!isLifetimeBorrowed(parent->astOperand2(), settings))
             return;
 
-        const Variable* var = getLHSVariable(parent);
+        std::vector<const Variable*> vars = getLHSVariables(parent);
 
         const Token* endOfVarScope = nullptr;
-        if (var && var->isLocal())
-            endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
-        else
-            endOfVarScope = tok->scope()->bodyEnd;
+        for(const Variable* var:vars) {
+            if (var && var->isLocal())
+                endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
+            else if (!endOfVarScope)
+                endOfVarScope = tok->scope()->bodyEnd;
+        }
 
         // Only forward lifetime values
         std::list<ValueFlow::Value> values = parent->astOperand2()->values();
@@ -3653,7 +3659,7 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
                     val.lifetimeKind = ValueFlow::Value::LifetimeKind::Object;
             }
         }
-        if (var) {
+        for(const Variable* var:vars) {
             valueFlowForwardVariable(const_cast<Token*>(nextExpression),
                                      endOfVarScope,
                                      var,

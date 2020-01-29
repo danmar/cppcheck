@@ -224,7 +224,7 @@ struct ForwardTraversal
                 // info.errorPath.emplace_back(condTok, "Assuming condition is true.");
                 // Traverse a loop a second time
                 if (Token::Match(blockStart, "for|while (")) {
-                    return Progress::Break;
+                    // return Progress::Break;
 #if 0
                     const Token* endCond = blockStart->linkAt(1);
                     bool traverseLoop = true;
