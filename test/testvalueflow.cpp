@@ -1810,7 +1810,7 @@ private:
                "    y = 42 / x;\n" // <- x is 2
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 0));
-        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 5U, 2));
+        ASSERT_EQUALS(true, testValueOfX(code, 5U, 2));
 
         code = "void f(int mode) {\n"
                "    struct ABC *x;\n"

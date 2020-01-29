@@ -2365,10 +2365,10 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
                 return false;
             if (value.isKnown() || value.isImpossible())
                 return true;
-            if (!modified || value.isLifetimeValue())
+            if (value.isLifetimeValue())
                 return true;
             const Token* condTok = getCondTok(endBlock);
-            return !astHasVar(condTok, varid) || bifurcate(condTok, {varid}, settings);
+            return bifurcate(condTok, {varid}, settings);
         }
 
         return false;

@@ -32,8 +32,18 @@ struct ForwardTraversal
     Progress updateRecursive(Token* tok) {
         if (!tok)
             return Progress::Continue;
+        // Check for lambda expression
+        if (Token *lambdaEndToken = findLambdaEndToken(tok)) {
+            if (checkScope(lambdaEndToken).isModified())
+                return Progress::Break;
+            else
+                return Progress::Continue;
+        }
         if (tok->astOperand1() && updateRecursive(tok->astOperand1()) == Progress::Break)
             return Progress::Break;
+        if (isUnevaluated(tok))
+            return Progress::Continue;
+        // Check for conditional expression
         if (Token::Match(tok, "?|&&|%oror%")) {
             if (updateConditional(tok) == Progress::Break)
                 return Progress::Break;
@@ -96,12 +106,14 @@ struct ForwardTraversal
     }
 
     ForwardAnalyzer::Action analyzeRange(const Token* start, const Token* end) {
+        ForwardAnalyzer::Action result = ForwardAnalyzer::Action::None;
         for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
             ForwardAnalyzer::Action action = analyzer->Analyze(tok);
             if (action.isModified() || action.isInconclusive())
                 return action;
+            result = action;
         }
-        return ForwardAnalyzer::Action::None;
+        return result;
     }
 
     void forkScope(const Token* endBlock, bool isModified=false)
@@ -170,7 +182,18 @@ struct ForwardTraversal
                 return Progress::Break;
             }
 
-            if (Token::simpleMatch(tok, "break")) {
+            // Evaluate RHS of assignment before LHS
+            if (Token* assignTok = assignExpr(tok)) {
+                if (updateRecursive(assignTok->astOperand2()) == Progress::Break)
+                    return Progress::Break;
+                if (updateRecursive(assignTok->astOperand1()) == Progress::Break)
+                    return Progress::Break;
+                if (update(assignTok) == Progress::Break)
+                    return Progress::Break;
+                tok = nextAfterAstRightmostLeaf(assignTok);
+                if (!tok)
+                    return Progress::Break;
+            } else if (Token::simpleMatch(tok, "break")) {
                 const Scope* scope = findBreakScope(tok->scope());
                 if (!scope)
                     return Progress::Break;
@@ -188,9 +211,10 @@ struct ForwardTraversal
                 const Token * condTok = getCondTok(blockStart);
                 if (!condTok)
                     return Progress::Break;
-                if (!condTok->hasKnownIntValue())
-                    analyzer->LowerToPossible();
-                else if (condTok->values().front().intvalue == 0)
+                if (!condTok->hasKnownIntValue()) {
+                    if (!analyzer->LowerToPossible())
+                        return Progress::Break;
+                } else if (condTok->values().front().intvalue == 0)
                     return Progress::Break;
                 analyzer->Assume(condTok, true);
                 // std::vector<int> result = analyzer->Evaluate(tok);
@@ -278,7 +302,7 @@ struct ForwardTraversal
                     else if ((returnThen || returnElse) && (thenAction.isModified() || elseAction.isModified()))
                         return Progress::Break;
                     // Conditional return
-                    if (returnThen && !hasElse) {
+                    if (returnThen && !hasElse && !checkThen) {
                         if (analyzer->IsConditional())
                             return Progress::Break;
                         analyzer->Assume(condTok, false);
@@ -322,8 +346,8 @@ struct ForwardTraversal
                     return Progress::Break;
                 tok = lambdaEndToken;
             // Skip unevaluated context
-            } else if (Token::Match(tok, "sizeof|decltype (")) {
-                tok = tok->next()->link();
+            } else if (isUnevaluated(tok)) {
+                tok = tok->link();
             } else {
                 if (update(tok) == Progress::Break)
                     return Progress::Break;
@@ -333,6 +357,23 @@ struct ForwardTraversal
                 break;
         }
         return Progress::Continue;
+    }
+
+    static bool isUnevaluated(const Token* tok)
+    {
+        if (Token::Match(tok->previous(), "sizeof|decltype ("))
+            return true;
+        return false;
+    }
+
+    static Token* assignExpr(Token* tok)
+    {
+        while(tok->astParent() && astIsLHS(tok)) {
+            if (Token::Match(tok->astParent(), "%assign%"))
+                return tok->astParent();
+            tok = tok->astParent();
+        }
+        return nullptr;
     }
 
     template<class T>
