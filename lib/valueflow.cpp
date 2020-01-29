@@ -2361,12 +2361,12 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
         if (scope->type == Scope::eLambda) {
             return value.isLifetimeValue();
         } else if (scope->type == Scope::eIf || scope->type == Scope::eElse || scope->type == Scope::eWhile || scope->type == Scope::eFor) {
-            if (IsConditional())
-                return false;
             if (value.isKnown() || value.isImpossible())
                 return true;
             if (value.isLifetimeValue())
                 return true;
+            if (IsConditional())
+                return false;
             const Token* condTok = getCondTok(endBlock);
             return bifurcate(condTok, {varid}, settings);
         }

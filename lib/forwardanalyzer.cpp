@@ -175,7 +175,7 @@ struct ForwardTraversal
 
     Progress updateRange(Token* start, const Token* end) {
         for (Token *tok = start; tok && tok != end; tok = tok->next()) {
-            if (Token::Match(tok, "asm|goto|continue|case"))
+            if (Token::Match(tok, "asm|goto|continue"))
                 return Progress::Break;
             if (Token::Match(tok, "return|throw") || isEscapeFunction(tok, &settings->library)) {
                 updateRecursive(tok);
@@ -203,7 +203,7 @@ struct ForwardTraversal
                 // TODO: Dont break, instead move to the outer scope
                 if (!tok)
                     return Progress::Break;
-            } else if (Token::Match(tok, "%name% :")) {
+            } else if (Token::Match(tok, "%name% :") || Token::simpleMatch(tok, "case")) {
                 if (!analyzer->LowerToPossible())
                     return Progress::Break;
             } else if (Token::simpleMatch(tok, "}") && Token::simpleMatch(tok->link()->previous(), ") {") && Token::Match(tok->link()->linkAt(-1)->previous(), "if|while|for (")) {
