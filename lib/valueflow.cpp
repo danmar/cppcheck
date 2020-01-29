@@ -2255,7 +2255,7 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
         bool cpp = true;
         if (tok->varId() == varid) {
             const Token * parent = tok->astParent();
-            if (Token::Match(parent, "*|[|.") && value.indirect <= 0)
+            if ((Token::Match(parent, "*|[") || (parent && parent->originalName() == "->")) && value.indirect <= 0)
                 return Action::Read;
 
             if (isWritableValue() && Token::Match(parent, "%assign%") && astIsLHS(tok) && parent->astOperand2()->hasKnownValue()) {
@@ -2350,7 +2350,7 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
 
     virtual bool IsConditional() const OVERRIDE
     {
-        return value.conditional || value.condition;
+        return value.conditional;// || value.condition;
     }
 
     virtual bool UpdateScope(const Token* endBlock, bool modified) const OVERRIDE
