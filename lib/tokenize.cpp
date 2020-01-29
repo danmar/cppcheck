@@ -2996,6 +2996,11 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
         if (tok2->isName()) {
             if (cpp && Token::Match(tok2, "namespace|public|private|protected"))
                 return false;
+            if (cpp && Token::simpleMatch(tok2, "decltype (")) {
+                typeCount = 1;
+                tok2 = tok2->linkAt(1)->next();
+                continue;
+            }
             if (Token::Match(tok2, "struct|union|enum") || (!c && Token::Match(tok2, "class|typename"))) {
                 hasstruct = true;
                 typeCount = 0;

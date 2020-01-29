@@ -3460,6 +3460,7 @@ private:
         ASSERT_EQUALS("int a [ 8 ] ;", tok("int a[5+6/2];"));
         ASSERT_EQUALS("int a [ 4 ] ;", tok("int a[(10)-1-5];"));
         ASSERT_EQUALS("int a [ i - 9 ] ;", tok("int a[i - 10 + 1];"));
+        ASSERT_EQUALS("int a [ i - 11 ] ;", tok("int a[i - 10 - 1];"));
 
         ASSERT_EQUALS("x = y ;", tok("x=0+y+0-0;"));
         ASSERT_EQUALS("x = 0 ;", tok("x=0*y;"));
