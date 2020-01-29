@@ -1396,7 +1396,7 @@ void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings 
 
         const std::size_t endLinePos = line.rfind(":", endColumnPos-1);
         const std::size_t endNamePos = line.rfind(":", endLinePos - 1);
-        const std::size_t endMsgTypePos = line.find_first_of(':', endColumnPos + 2);
+        const std::size_t endMsgTypePos = line.find(':', endColumnPos + 2);
         const std::size_t endErrorPos = line.rfind('[', std::string::npos);
         
         const std::string lineNumString = line.substr(endNamePos + 1, endLinePos - endNamePos - 1);

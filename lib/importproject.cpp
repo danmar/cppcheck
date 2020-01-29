@@ -1027,8 +1027,8 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
         else if (strcmp(node->Name(), CppcheckXml::TagsElementName) == 0)
             node->Attribute(CppcheckXml::TagElementName); // FIXME: Write some warning
         else if (strcmp(node->Name(), CppcheckXml::ToolsElementName) == 0) {
-            std::list<std::string> toolList = readXmlStringList(node, "", CppcheckXml::ToolElementName, nullptr);
-            for (std::string &toolName : toolList) {
+            const std::list<std::string> toolList = readXmlStringList(node, "", CppcheckXml::ToolElementName, nullptr);
+            for (const std::string &toolName : toolList) {
                 if (toolName == std::string(CppcheckXml::ClangTidy))
                     temp.clangTidy = true;
             }
