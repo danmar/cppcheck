@@ -2277,8 +2277,11 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
                 return read | Action::Invalid;
             if (inconclusive)
                 return read | Action::Inconclusive;
-            if (isVariableChanged(tok, value.indirect, settings, cpp))
+            if (isVariableChanged(tok, value.indirect, settings, cpp)) {
+                if (Token::Match(parent, "*|[|."))
+                    return read | Action::Invalid;
                 return Action::Invalid;
+            }
             return read;
         } else if (!value.isLifetimeValue() && isAliasOf(var, tok, varid, {value}) && isVariableChanged(tok, 0, settings, cpp)) {
             return Action::Invalid;
