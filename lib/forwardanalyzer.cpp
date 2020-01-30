@@ -7,7 +7,8 @@ struct ForwardTraversal
 {
     enum class Progress {
         Continue,
-        Break
+        Break,
+        Skip
     };
     ValuePtr<ForwardAnalyzer> analyzer;
     const Settings* settings;
@@ -29,30 +30,47 @@ struct ForwardTraversal
         return Progress::Continue;
     }
 
-    Progress updateRecursive(Token* tok) {
-        if (!tok)
-            return Progress::Continue;
-        // Check for lambda expression
-        if (Token *lambdaEndToken = findLambdaEndToken(tok)) {
-            if (checkScope(lambdaEndToken).isModified())
-                return Progress::Break;
-            else
-                return Progress::Continue;
-        }
-        if (tok->astOperand1() && updateRecursive(tok->astOperand1()) == Progress::Break)
+    Progress updateTok(Token* tok, Token** out = nullptr)
+    {
+        if (Token::Match(tok, "asm|goto|continue|setjmp|longjmp"))
             return Progress::Break;
-        if (isUnevaluated(tok))
-            return Progress::Continue;
-        // Check for conditional expression
-        if (Token::Match(tok, "?|&&|%oror%")) {
+        else if (Token::Match(tok, "return|throw") || isEscapeFunction(tok, &settings->library)) {
+            updateRecursive(tok->astOperand1());
+            updateRecursive(tok->astOperand2());
+            return Progress::Break;
+        } else if (isUnevaluated(tok)) {
+            if (out)
+                *out = tok->link();
+            return Progress::Skip;
+        } else if (Token::Match(tok, "?|&&|%oror%")) {
             if (updateConditional(tok) == Progress::Break)
                 return Progress::Break;
+            if (out)
+                *out = nextAfterAstRightmostLeaf(tok);
+            return Progress::Skip;
+        // Skip lambdas
+        } else if (Token *lambdaEndToken = findLambdaEndToken(tok)) {
+            if (checkScope(lambdaEndToken).isModified())
+                return Progress::Break;
+            if (out)
+                *out = lambdaEndToken;
         } else {
             if (update(tok) == Progress::Break)
                 return Progress::Break;
-            if (tok->astOperand2() && updateRecursive(tok->astOperand2()) == Progress::Break)
-                return Progress::Break;
         }
+        return Progress::Continue;
+    }
+
+    Progress updateRecursive(Token* tok) {
+        if (!tok)
+            return Progress::Continue;
+        if (updateRecursive(tok->astOperand1()) == Progress::Break)
+            return Progress::Break;
+        Progress p = updateTok(tok);
+        if (p == Progress::Break)
+            return Progress::Break;
+        if (p == Progress::Continue && updateRecursive(tok->astOperand2()) == Progress::Break)
+            return Progress::Break;
         return Progress::Continue;
     }
 
@@ -175,12 +193,7 @@ struct ForwardTraversal
 
     Progress updateRange(Token* start, const Token* end) {
         for (Token *tok = start; tok && tok != end; tok = tok->next()) {
-            if (Token::Match(tok, "asm|goto|continue"))
-                return Progress::Break;
-            if (Token::Match(tok, "return|throw") || isEscapeFunction(tok, &settings->library)) {
-                updateRecursive(tok);
-                return Progress::Break;
-            }
+            Token * next = nullptr;
 
             // Evaluate RHS of assignment before LHS
             if (Token* assignTok = assignExpr(tok)) {
@@ -332,25 +345,15 @@ struct ForwardTraversal
                     return Progress::Break;
                 if (!checkThen)
                     analyzer->Assume(condTok, true);
-            } else if (Token::Match(tok, "?|&&|%oror%")) {
-                if (updateConditional(tok) == Progress::Break)
-                    return Progress::Break;
-                tok = nextAfterAstRightmostLeaf(tok);
             } else if (Token::simpleMatch(tok, "switch (")) {
                 if (updateRecursive(tok->next()->astOperand2()) == Progress::Break)
                     return Progress::Break;
                 return Progress::Break;
-            // Skip lambdas
-            } else if (Token *lambdaEndToken = findLambdaEndToken(tok)) {
-                if (checkScope(lambdaEndToken).isModified())
-                    return Progress::Break;
-                tok = lambdaEndToken;
-            // Skip unevaluated context
-            } else if (isUnevaluated(tok)) {
-                tok = tok->link();
             } else {
-                if (update(tok) == Progress::Break)
+                if (updateTok(tok, &next) == Progress::Break)
                     return Progress::Break;
+                if (next)
+                    tok = next;
             }
             // Prevent infinite recursion
             if (tok->next() == start)
