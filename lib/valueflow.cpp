@@ -2278,7 +2278,7 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
             if (inconclusive)
                 return read | Action::Inconclusive;
             if (isVariableChanged(tok, value.indirect, settings, cpp)) {
-                if (Token::Match(parent, "*|[|."))
+                if (Token::Match(parent, "*|[|.|++|--"))
                     return read | Action::Invalid;
                 return Action::Invalid;
             }
