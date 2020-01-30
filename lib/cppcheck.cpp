@@ -1352,6 +1352,83 @@ void CppCheck::getErrorMessages()
     Preprocessor::getErrorMessages(this, &s);
 }
 
+void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings )
+{
+    std::string allIncludes = "";
+    std::string allDefines = "-D"+fileSettings.defines;
+    for (const std::string &inc : fileSettings.includePaths) {
+        allIncludes = allIncludes + "-I\"" + inc + "\" ";
+    }
+
+    std::string::size_type pos = 0u;
+    while ((pos = allDefines.find(";", pos)) != std::string::npos)
+    {
+        allDefines.replace(pos, 1, " -D");
+        pos += 3;
+    }
+
+    const std::string cmd = "clang-tidy -quiet -checks=*,-clang-analyzer-*,-llvm* \"" + fileSettings.filename + "\" -- " + allIncludes + allDefines;
+    std::pair<bool, std::string> result = executeCommand(cmd);
+    if (!result.first) {
+       std::cerr << "Failed to execute '" + cmd + "'" << std::endl;
+       return;
+    }
+
+    // parse output and create error messages
+    std::istringstream istr(result.second);
+    std::string line;
+
+    if (!mSettings.buildDir.empty())
+    {
+        const std::string analyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, fileSettings.filename, "");
+        std::ofstream fcmd(analyzerInfoFile + ".clang-tidy-cmd");
+        fcmd << istr.str();
+    }
+
+    while (std::getline(istr, line)) {
+        if (line.find("error") == std::string::npos && line.find("warning") == std::string::npos)
+            continue;
+
+        std::size_t endColumnPos = line.find(": error:");
+        if (endColumnPos == std::string::npos) {
+            endColumnPos = line.find(": warning:");
+        }
+
+        const std::size_t endLinePos = line.rfind(":", endColumnPos-1);
+        const std::size_t endNamePos = line.rfind(":", endLinePos - 1);
+        const std::size_t endMsgTypePos = line.find(':', endColumnPos + 2);
+        const std::size_t endErrorPos = line.rfind('[', std::string::npos);
+        
+        const std::string lineNumString = line.substr(endNamePos + 1, endLinePos - endNamePos - 1);
+        const std::string columnNumString = line.substr(endLinePos + 1, endColumnPos - endLinePos - 1);
+        const std::string errorTypeString = line.substr(endColumnPos + 1, endMsgTypePos - endColumnPos - 1);
+        const std::string messageString = line.substr(endMsgTypePos + 1, endErrorPos - endMsgTypePos - 1);
+        const std::string errorString = line.substr(endErrorPos, line.length());
+
+        std::string fixedpath = Path::simplifyPath(line.substr(0, endNamePos));
+        const int64_t lineNumber = std::atol(lineNumString.c_str());
+        const int64_t column = std::atol(columnNumString.c_str());
+        fixedpath = Path::toNativeSeparators(fixedpath);
+
+        ErrorLogger::ErrorMessage errmsg;
+        errmsg.callStack.emplace_back(ErrorLogger::ErrorMessage::FileLocation(fixedpath, lineNumber, column));
+
+        errmsg.id = "clang-tidy-" + errorString.substr(1, errorString.length() - 2);
+        if (errmsg.id.find("performance") != std::string::npos)
+            errmsg.severity = Severity::SeverityType::performance;
+        else if (errmsg.id.find("portability") != std::string::npos)
+            errmsg.severity = Severity::SeverityType::portability;
+        else if (errmsg.id.find("cert") != std::string::npos || errmsg.id.find("misc") != std::string::npos || errmsg.id.find("unused") != std::string::npos)
+            errmsg.severity = Severity::SeverityType::warning;
+        else
+            errmsg.severity = Severity::SeverityType::style;
+
+        errmsg.file0 = fixedpath;
+        errmsg.setmsg(messageString);
+        reportErr(errmsg);
+    }
+}
+
 bool CppCheck::analyseWholeProgram()
 {
     bool errors = false;

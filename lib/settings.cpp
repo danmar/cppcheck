@@ -35,6 +35,7 @@ Settings::Settings()
       checkHeaders(true),
       checkUnusedTemplates(false),
       clang(false),
+      clangTidy(false),
       debugSimplified(false),
       debugnormal(false),
       debugwarnings(false),
