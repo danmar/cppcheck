@@ -219,40 +219,19 @@ struct ForwardTraversal
             } else if (Token::Match(tok, "%name% :") || Token::simpleMatch(tok, "case")) {
                 if (!analyzer->LowerToPossible())
                     return Progress::Break;
-            } else if (Token::simpleMatch(tok, "}") && Token::simpleMatch(tok->link()->previous(), ") {") && Token::Match(tok->link()->linkAt(-1)->previous(), "if|while|for (")) {
-                const Token * blockStart = tok->link()->linkAt(-1)->previous();
-                const Token * condTok = getCondTok(blockStart);
+            } else if (Token::simpleMatch(tok, "}") && 
+                    Token::Match(tok->link()->previous(), ")|else {")) {
+                const bool inElse = Token::simpleMatch(tok->link()->previous(), "else {");
+                const Token * condTok = getCondTokFromEnd(tok);
                 if (!condTok)
                     return Progress::Break;
                 if (!condTok->hasKnownIntValue()) {
                     if (!analyzer->LowerToPossible())
                         return Progress::Break;
-                } else if (condTok->values().front().intvalue == 0)
+                } else if (condTok->values().front().intvalue == !inElse) {
                     return Progress::Break;
-                analyzer->Assume(condTok, true);
-                // std::vector<int> result = analyzer->Evaluate(tok);
-                // if (result.empty())
-                //     return Progress::Break;
-
-                // info.errorPath.emplace_back(condTok, "Assuming condition is true.");
-                // Traverse a loop a second time
-                if (Token::Match(blockStart, "for|while (")) {
-                    // return Progress::Break;
-#if 0
-                    const Token* endCond = blockStart->linkAt(1);
-                    bool traverseLoop = true;
-                    // Only traverse simple for loops
-                    if (Token::simpleMatch(blockStart, "for") && !Token::Match(endCond->tokAt(-3), "; ++|--|%var% %var%|++|-- ) {"))
-                        traverseLoop = false;
-                    // Traverse loop a second time
-                    if (traverseLoop) {
-                        // Traverse condition
-                        if (updateRecursive(condTok) == Progress::Break)
-                            return Progress::Break;
-                        // TODO: Should we traverse the body: updateRange(tok->link(), tok)?
-                    }
-#endif
                 }
+                analyzer->Assume(condTok, !inElse);
                 if (Token::simpleMatch(tok, "} else {"))
                     tok = tok->linkAt(2);
             } else if (Token::Match(tok, "if|while|for (") && Token::simpleMatch(tok->next()->link(), ") {")) {
@@ -391,6 +370,22 @@ struct ForwardTraversal
         if (Token::simpleMatch(tok->next()->astOperand2(), ";"))
             return tok->next()->astOperand2()->astOperand1();
         return tok->next()->astOperand2();
+    }
+
+    template<class T>
+    static T* getCondTokFromEnd(T * endBlock)
+    {
+        if (!Token::simpleMatch(endBlock, "}"))
+            return nullptr;
+        T * startBlock = endBlock->link();
+        if (!Token::simpleMatch(startBlock, "{"))
+            return nullptr;
+        if (Token::simpleMatch(startBlock->previous(), ")")) {
+            return getCondTok(startBlock->previous()->link());
+        } else if (Token::simpleMatch(startBlock->tokAt(-2), "} else {")) {
+            return getCondTokFromEnd(startBlock->tokAt(-2));
+        }
+        return nullptr;
     }
 
     static const Scope* findBreakScope(const Scope * scope)

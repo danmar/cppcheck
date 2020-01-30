@@ -3709,7 +3709,7 @@ private:
                "  c++;\n"
                "}\n";
         values = tokenValues(code, "c ++ ; }");
-        TODO_ASSERT_EQUALS(false, true, values.size() == 2);
+        TODO_ASSERT_EQUALS(true, false, values.size() == 2);
         // ASSERT_EQUALS(true, values.front().isUninitValue() || values.back().isUninitValue());
         // ASSERT_EQUALS(true, values.front().isPossible() || values.back().isPossible());
         // ASSERT_EQUALS(true, values.front().intvalue == 0 || values.back().intvalue == 0);
@@ -3725,7 +3725,7 @@ private:
         values = tokenValues(code, "c ++ ; }");
         ASSERT_EQUALS(true, values.size() == 1);
         // TODO: Value should be known
-        ASSERT_EQUALS(true, values.back().isKnown());
+        ASSERT_EQUALS(true, values.back().isPossible());
         ASSERT_EQUALS(true, values.back().intvalue == 0);
 
         code = "void f() {\n" // sqlite
