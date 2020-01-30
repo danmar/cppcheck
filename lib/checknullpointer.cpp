@@ -537,18 +537,7 @@ void CheckNullPointer::arithmetic()
                 continue;
             if (numericOperand && numericOperand->valueType() && !numericOperand->valueType()->isIntegral())
                 continue;
-            MathLib::bigint checkValue = 0;
-            // When using an assign op, the value read from
-            // valueflow has already been updated, so instead of
-            // checking for zero we check that the value is equal
-            // to RHS
-            if (tok->astOperand2() && tok->astOperand2()->hasKnownIntValue()) {
-                if (tok->str() == "-=")
-                    checkValue -= tok->astOperand2()->values().front().intvalue;
-                else if (tok->str() == "+=")
-                    checkValue = tok->astOperand2()->values().front().intvalue;
-            }
-            const ValueFlow::Value *value = pointerOperand->getValue(checkValue);
+            const ValueFlow::Value *value = pointerOperand->getValue(0);
             if (!value)
                 continue;
             if (!mSettings->inconclusive && value->isInconclusive())

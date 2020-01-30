@@ -2183,12 +2183,12 @@ static void valueFlowForwardExpression(Token* startToken,
     }
 }
 
-static const ValueFlow::Value* getKnownValue(const Token* tok, ValueFlow::Value::ValueKind kind)
+static const ValueFlow::Value* getKnownValue(const Token* tok, ValueFlow::Value::ValueType type)
 {
     if (!tok)
         return nullptr;
     auto it = std::find_if(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
-        return v.isKnown() && v.valueKind == kind;
+        return v.isKnown() && v.valueType == type;
     });
     if (it != tok->values().end())
         return &*it;
@@ -2258,15 +2258,20 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
             if ((Token::Match(parent, "*|[") || (parent && parent->originalName() == "->")) && value.indirect <= 0)
                 return Action::Read;
 
+            Action read = Action::Read;
             if (isWritableValue() && Token::Match(parent, "%assign%") && astIsLHS(tok) && parent->astOperand2()->hasKnownValue()) {
                 const Token* rhs = parent->astOperand2();
-                const ValueFlow::Value * rhsValue = getKnownValue(rhs, value.valueKind);
+                const ValueFlow::Value * rhsValue = getKnownValue(rhs, ValueFlow::Value::ValueType::INT);
+                Action a = Action::None;
                 if (!rhsValue)
-                    return Action::Invalid;
-                return Action::Write;
+                    a = Action::Invalid;
+                else
+                    a = Action::Write;
+                if (!Token::simpleMatch(parent, "="))
+                    a |= Action::Read;
+                return a;
             }
 
-            Action read = Action::Read;
             // increment/decrement
             if (value.intvalue && Token::Match(tok->previous(), "++|-- %name%") || Token::Match(tok, "%name% ++|--")) {
                 return read | Action::Write;
@@ -2306,7 +2311,7 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
         if (a.isWrite()) {
             if (Token::Match(tok->astParent(), "%assign%")) {
                 // TODO: Check result
-                if (evalAssignment(value, tok->astParent()->str(), *getKnownValue(tok->astParent()->astOperand2(), value.valueKind))) {
+                if (evalAssignment(value, tok->astParent()->str(), *getKnownValue(tok->astParent()->astOperand2(), ValueFlow::Value::ValueType::INT))) {
                     const std::string info("Compound assignment '" + tok->astParent()->str() + "', assigned value is " + value.infoString());
                     value.errorPath.emplace_back(tok, info);
                 } else {
