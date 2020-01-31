@@ -126,7 +126,9 @@ matrix:
         - cd ../../
 # check addons/misra.py
         - cd addons/test
-        - ${CPPCHECK} --dump misra/misra-test.c
+        # We'll force C89 standard to enable an additional verification for
+        # rules 5.4 and 5.5 which have standard-dependent options.
+        - ${CPPCHECK} --dump misra/misra-test.c --std=c89
         - python3 ../misra.py -verify misra/misra-test.c.dump
         - ${CPPCHECK} --dump misra/misra-test.cpp
         - python3 ../misra.py -verify misra/misra-test.cpp.dump
