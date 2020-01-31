@@ -2058,7 +2058,7 @@ private:
               "    if (hasFailed) {}\n"
               "  }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (style) Condition '!hasFailed' is always true\n", errout.str());
     }
 
     void oppositeInnerCondition2() {

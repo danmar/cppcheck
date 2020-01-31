@@ -1420,8 +1420,7 @@ private:
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
             "[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
-            "[test.cpp:4]: (debug) valueflow.cpp:1131:valueFlowReverse bailout: variable x stopping on goto label\n"
-            "[test.cpp:2]: (debug) valueflow.cpp:1813:valueFlowForwardVariable bailout: variable x. noreturn conditional scope.\n",
+            "[test.cpp:4]: (debug) valueflow.cpp:1131:valueFlowReverse bailout: variable x stopping on goto label\n",
             errout.str());
 
         // #5721 - FP
@@ -1437,8 +1436,7 @@ private:
                 "}\n");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
             "[test.cpp:2]: (debug) valueflow.cpp:1035:valueFlowReverse bailout: assignment of abc\n"
-            "[test.cpp:8]: (debug) valueflow.cpp:1131:valueFlowReverse bailout: variable abc stopping on goto label\n"
-            "[test.cpp:3]: (debug) valueflow.cpp:1813:valueFlowForwardVariable bailout: variable abc. noreturn conditional scope.\n",
+            "[test.cpp:8]: (debug) valueflow.cpp:1131:valueFlowReverse bailout: variable abc stopping on goto label\n",
             errout.str());
     }
 
@@ -2564,7 +2562,7 @@ private:
                "    return a == 1 ? x : 0;\n"  // <- x is 26
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 13));
-        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 4U, 26));
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 26));
     }
 
     void valueFlowForwardLambda() {
