@@ -664,7 +664,7 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                         doChecking = true;
                         break;
                     }
-                if(!doChecking) 
+                if (!doChecking)
                     continue;
             }
 
@@ -1125,4 +1125,4 @@ void ImportProject::selectOneVsConfig(Settings::PlatformType platform)
 std::list<std::string> ImportProject::getVSConfigs()
 {
     return std::list<std::string> (mAllVSConfigs.begin(), mAllVSConfigs.end());
-} 
+}

@@ -1352,7 +1352,7 @@ void CppCheck::getErrorMessages()
     Preprocessor::getErrorMessages(this, &s);
 }
 
-void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings )
+void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings)
 {
     std::string allIncludes = "";
     std::string allDefines = "-D"+fileSettings.defines;
@@ -1361,8 +1361,7 @@ void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings 
     }
 
     std::string::size_type pos = 0u;
-    while ((pos = allDefines.find(";", pos)) != std::string::npos)
-    {
+    while ((pos = allDefines.find(";", pos)) != std::string::npos) {
         allDefines.replace(pos, 1, " -D");
         pos += 3;
     }
@@ -1370,16 +1369,15 @@ void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings 
     const std::string cmd = "clang-tidy -quiet -checks=*,-clang-analyzer-*,-llvm* \"" + fileSettings.filename + "\" -- " + allIncludes + allDefines;
     std::pair<bool, std::string> result = executeCommand(cmd);
     if (!result.first) {
-       std::cerr << "Failed to execute '" + cmd + "'" << std::endl;
-       return;
+        std::cerr << "Failed to execute '" + cmd + "'" << std::endl;
+        return;
     }
 
     // parse output and create error messages
     std::istringstream istr(result.second);
     std::string line;
 
-    if (!mSettings.buildDir.empty())
-    {
+    if (!mSettings.buildDir.empty()) {
         const std::string analyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, fileSettings.filename, "");
         std::ofstream fcmd(analyzerInfoFile + ".clang-tidy-cmd");
         fcmd << istr.str();
@@ -1398,9 +1396,9 @@ void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings 
         const std::size_t endNamePos = line.rfind(":", endLinePos - 1);
         const std::size_t endMsgTypePos = line.find(':', endColumnPos + 2);
         const std::size_t endErrorPos = line.rfind('[', std::string::npos);
-        if(endLinePos==std::string::npos || endNamePos==std::string::npos || endMsgTypePos==std::string::npos || endErrorPos==std::string::npos)
+        if (endLinePos==std::string::npos || endNamePos==std::string::npos || endMsgTypePos==std::string::npos || endErrorPos==std::string::npos)
             continue;
-        
+
         const std::string lineNumString = line.substr(endNamePos + 1, endLinePos - endNamePos - 1);
         const std::string columnNumString = line.substr(endLinePos + 1, endColumnPos - endLinePos - 1);
         const std::string errorTypeString = line.substr(endColumnPos + 1, endMsgTypePos - endColumnPos - 1);
