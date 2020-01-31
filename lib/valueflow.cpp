@@ -2275,7 +2275,7 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
             }
 
             // increment/decrement
-            if (value.intvalue && Token::Match(tok->previous(), "++|-- %name%") || Token::Match(tok, "%name% ++|--")) {
+            if (value.intvalue && (Token::Match(tok->previous(), "++|-- %name%") || Token::Match(tok, "%name% ++|--"))) {
                 return read | Action::Write;
             }
             // Check for modifications by function calls
@@ -2356,7 +2356,7 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
         return true;
     }
 
-    virtual void Assume(const Token* tok, bool state) OVERRIDE
+    virtual void Assume(const Token*, bool) OVERRIDE
     {
         // TODO: Use this to improve Evaluate
         value.conditional = true;
@@ -2367,7 +2367,7 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
         return value.conditional;// || value.condition;
     }
 
-    virtual bool UpdateScope(const Token* endBlock, bool modified) const OVERRIDE
+    virtual bool UpdateScope(const Token* endBlock, bool) const OVERRIDE
     {
         const Scope* scope = endBlock->scope();
         if (!scope)
@@ -2394,10 +2394,10 @@ static bool valueFlowForwardVariable(Token* const startToken,
                                      const Variable* const var,
                                      const nonneg int varid,
                                      std::list<ValueFlow::Value> values,
-                                     const bool constValue,
-                                     const bool subFunction,
-                                     TokenList* const tokenlist,
-                                     ErrorLogger* const errorLogger,
+                                     const bool,
+                                     const bool,
+                                     TokenList* const,
+                                     ErrorLogger* const,
                                      const Settings* const settings)
 {
 #if 1
