@@ -258,6 +258,7 @@ ProgramMemory getProgramMemory(const Token *tok, nonneg int varid, const ValueFl
     ProgramMemory programMemory;
     programMemory.replace(getInitialProgramState(tok, value.tokvalue));
     programMemory.replace(getInitialProgramState(tok, value.condition));
+    fillProgramMemoryFromConditions(programMemory, tok, nullptr);
     programMemory.setValue(varid, value);
     if (value.varId)
         programMemory.setIntValue(value.varId, value.varvalue);

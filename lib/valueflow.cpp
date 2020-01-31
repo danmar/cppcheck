@@ -2270,7 +2270,7 @@ struct VariableForwardAnalyzer : ForwardAnalyzer {
             }
 
             // increment/decrement
-            if (value.intvalue && (Token::Match(tok->previous(), "++|-- %name%") || Token::Match(tok, "%name% ++|--"))) {
+            if (value.valueType == ValueFlow::Value::ValueType::INT && (Token::Match(tok->previous(), "++|-- %name%") || Token::Match(tok, "%name% ++|--"))) {
                 return read | Action::Write;
             }
             // Check for modifications by function calls

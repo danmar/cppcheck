@@ -61,7 +61,7 @@ struct ForwardTraversal {
     {
         if (!tok)
             return Progress::Continue;
-        if (updateRecursive(tok->astOperand1()) == Progress::Break)
+        if (tok->astOperand1() && updateRecursive(tok->astOperand1()) == Progress::Break)
             return Progress::Break;
         Progress p = updateTok(tok);
         if (p == Progress::Break)
