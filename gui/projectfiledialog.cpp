@@ -340,7 +340,10 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
         }
     }
     else
+    {
+        mUI.mListVsConfigs->clear();
         mUI.mListVsConfigs->setEnabled(false);
+    }
 
 }
 
@@ -460,6 +463,8 @@ void ProjectFileDialog::updatePathsAndDefines()
     mUI.mBtnIncludeDown->setEnabled(!importProject);
     mUI.mChkAllVsConfigs->setEnabled(fileName.endsWith(".sln") || fileName.endsWith(".vcxproj"));
     mUI.mListVsConfigs->setEnabled(fileName.endsWith(".sln") || fileName.endsWith(".vcxproj"));
+    if(!mUI.mListVsConfigs->isEnabled())
+        mUI.mListVsConfigs->clear();
 }
 
 void ProjectFileDialog::clearImportProject()
