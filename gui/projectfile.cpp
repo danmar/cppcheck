@@ -65,6 +65,7 @@ void ProjectFile::clear()
     mMaxCtuDepth = 10;
     mCheckUnknownFunctionReturn.clear();
     mSafeChecks.clear();
+    mVsConfigurations.clear();
 }
 
 bool ProjectFile::read(const QString &filename)
@@ -174,6 +175,9 @@ bool ProjectFile::read(const QString &filename)
             if (xmlReader.name() == CppcheckXml::MaxCtuDepthElementName)
                 mMaxCtuDepth = readInt(xmlReader, mMaxCtuDepth);
 
+            // VSConfiguration
+            if (xmlReader.name() == CppcheckXml::VSConfigurationElementName)
+                readVsConfigurations(xmlReader);
             break;
 
         case QXmlStreamReader::EndElement:
@@ -466,6 +470,44 @@ void ProjectFile::readExcludes(QXmlStreamReader &reader)
     } while (!allRead);
 }
 
+void ProjectFile::readVsConfigurations(QXmlStreamReader &reader)
+{
+    QXmlStreamReader::TokenType type;
+    do {
+        type = reader.readNext();
+        switch (type) {
+        case QXmlStreamReader::StartElement:
+            // Read library-elements
+            if (reader.name().toString() == CppcheckXml::VSConfigurationName) {
+                QString config;
+                type = reader.readNext();
+                if (type == QXmlStreamReader::Characters) {
+                    config = reader.text().toString();
+                }
+                mVsConfigurations << config;
+            }
+            break;
+
+        case QXmlStreamReader::EndElement:
+            if (reader.name().toString() != CppcheckXml::VSConfigurationName)
+                return;
+            break;
+
+        // Not handled
+        case QXmlStreamReader::NoToken:
+        case QXmlStreamReader::Invalid:
+        case QXmlStreamReader::StartDocument:
+        case QXmlStreamReader::EndDocument:
+        case QXmlStreamReader::Characters:
+        case QXmlStreamReader::Comment:
+        case QXmlStreamReader::DTD:
+        case QXmlStreamReader::EntityReference:
+        case QXmlStreamReader::ProcessingInstruction:
+            break;
+        }
+    } while (true);
+}
+
 void ProjectFile::readPlatform(QXmlStreamReader &reader)
 {
     do {
@@ -619,6 +661,11 @@ void ProjectFile::setAddons(const QStringList &addons)
     mAddons = addons;
 }
 
+void ProjectFile::setVSConfigurations(const QStringList &vsConfigs)
+{
+    mVsConfigurations = vsConfigs;
+}
+
 bool ProjectFile::write(const QString &filename)
 {
     if (!filename.isEmpty())
@@ -692,6 +739,13 @@ bool ProjectFile::write(const QString &filename)
             xmlWriter.writeEndElement();
         }
         xmlWriter.writeEndElement();
+    }
+
+    if (!mVsConfigurations.isEmpty()) {
+        writeStringList(xmlWriter,
+                        mVsConfigurations,
+                        CppcheckXml::VSConfigurationElementName,
+                        CppcheckXml::VSConfigurationName);
     }
 
     writeStringList(xmlWriter,

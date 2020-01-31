@@ -125,6 +125,14 @@ public:
     }
 
     /**
+    * @brief Get list of paths to exclude from the check.
+    * @return list of paths.
+    */
+    QStringList getVsConfigurations() const {
+        return mVsConfigurations;
+    }
+
+    /**
     * @brief Get list libraries.
     * @return list of libraries.
     */
@@ -272,6 +280,11 @@ public:
      */
     void setAddons(const QStringList &addons);
 
+    /** @brief Set list of Visual Studio configurations to be checked
+     *  @param vsConfigs List of configurations
+     */
+    void setVSConfigurations(const QStringList &vsConfigs);
+
     /**
      * @brief Set tags.
      * @param tags tag list
@@ -395,6 +408,12 @@ protected:
     void readExcludes(QXmlStreamReader &reader);
 
     /**
+     * @brief Read lists of Visual Studio configurations
+     * @param reader XML stream reader.
+     */
+    void readVsConfigurations(QXmlStreamReader &reader);
+
+    /**
      * @brief Read platform text.
      * @param reader XML stream reader.
      */
@@ -457,6 +476,9 @@ private:
      * for the set platform is analyzed.
      */
     bool mAnalyzeAllVsConfigs;
+
+    /** Check only a selected VS configuration */
+    QStringList mVsConfigurations;
 
     /** Check code in headers */
     bool mCheckHeaders;
