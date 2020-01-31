@@ -621,8 +621,10 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                 for (const tinyxml2::XMLElement *cfg = node->FirstChildElement(); cfg; cfg = cfg->NextSiblingElement()) {
                     if (std::strcmp(cfg->Name(), "ProjectConfiguration") == 0) {
                         const ProjectConfiguration p(cfg);
-                        if (p.platform != ProjectConfiguration::Unknown)
+                        if (p.platform != ProjectConfiguration::Unknown) {
                             projectConfigurationList.emplace_back(cfg);
+                            mAllVSConfigs.insert(p.configuration);
+                        }
                     }
                 }
             } else {
@@ -654,6 +656,18 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
 
     for (const std::string &c : compileList) {
         for (const ProjectConfiguration &p : projectConfigurationList) {
+
+            if (!guiProject.checkVsConfigs.empty()) {
+                bool doChecking = false;
+                for (std::string config : guiProject.checkVsConfigs)
+                    if (config == p.configuration) {
+                        doChecking = true;
+                        break;
+                    }
+                if(!doChecking) 
+                    continue;
+            }
+
             FileSettings fs;
             fs.filename = Path::simplifyPath(Path::isAbsolute(c) ? c : Path::getPathFromFilename(filename) + c);
             fs.cfg = p.name;
@@ -975,6 +989,7 @@ static std::string istream_to_string(std::istream &istr)
     return std::string(std::istreambuf_iterator<char>(istr), eos);
 }
 
+
 bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *settings)
 {
     tinyxml2::XMLDocument doc;
@@ -1018,6 +1033,8 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
             guiProject.libraries = readXmlStringList(node, "", CppcheckXml::LibraryElementName, nullptr);
         else if (strcmp(node->Name(), CppcheckXml::SuppressionsElementName) == 0)
             suppressions = readXmlStringList(node, "", CppcheckXml::SuppressionElementName, nullptr);
+        else if (strcmp(node->Name(), CppcheckXml::VSConfigurationElementName) == 0)
+            guiProject.checkVsConfigs = readXmlStringList(node, "", CppcheckXml::VSConfigurationName, nullptr);
         else if (strcmp(node->Name(), CppcheckXml::PlatformElementName) == 0)
             guiProject.platform = node->GetText();
         else if (strcmp(node->Name(), CppcheckXml::AnalyzeAllVsConfigsElementName) == 0)
@@ -1064,6 +1081,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     settings->userUndefs = temp.userUndefs;
     settings->addons = temp.addons;
     settings->clangTidy = temp.clangTidy;
+
     for (const std::string &p : paths)
         guiProject.pathNames.push_back(p);
     for (const std::string &supp : suppressions)
@@ -1103,3 +1121,8 @@ void ImportProject::selectOneVsConfig(Settings::PlatformType platform)
         }
     }
 }
+
+std::list<std::string> ImportProject::getVSConfigs()
+{
+    return std::list<std::string> (mAllVSConfigs.begin(), mAllVSConfigs.end());
+} 

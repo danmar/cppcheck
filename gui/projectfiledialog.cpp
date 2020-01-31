@@ -26,6 +26,7 @@
 #include <QDir>
 #include <QSettings>
 #include <QProcess>
+#include <QListView>
 #include "common.h"
 #include "newsuppressiondialog.h"
 #include "projectfiledialog.h"
@@ -33,6 +34,7 @@
 #include "projectfile.h"
 #include "library.h"
 #include "platforms.h"
+#include "importproject.h"
 
 /** Return paths from QListWidget */
 static QStringList getPaths(const QListWidget *list)
@@ -57,6 +59,16 @@ static const cppcheck::Platform::PlatformType builtinPlatforms[] = {
 };
 
 static const int numberOfBuiltinPlatforms = sizeof(builtinPlatforms) / sizeof(builtinPlatforms[0]);
+
+QStringList ProjectFileDialog::getProjectConfigs(const QString &fileName) {
+    QStringList ret;
+    ImportProject importer;
+    Settings projSettings;
+    importer.import(fileName.toStdString(), &projSettings);
+    for (const std::string &cfg : importer.getVSConfigs())
+        ret << QString::fromStdString(cfg);
+    return ret;
+}
 
 ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
     : QDialog(parent)
@@ -194,7 +206,7 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
     connect(mUI.mBtnRemoveSuppression, &QPushButton::clicked, this, &ProjectFileDialog::removeSuppression);
     connect(mUI.mListSuppressions, &QListWidget::doubleClicked, this, &ProjectFileDialog::editSuppression);
     connect(mUI.mBtnBrowseMisraFile, &QPushButton::clicked, this, &ProjectFileDialog::browseMisraFile);
-
+    connect(mUI.mChkAllVsConfigs, &QCheckBox::clicked, this, &ProjectFileDialog::checkAllVSConfigs);
     loadFromProjectFile(projectFile);
 }
 
@@ -225,6 +237,13 @@ static void updateAddonCheckBox(QCheckBox *cb, const ProjectFile *projectFile, c
         cb->setEnabled(false);
         cb->setText(cb->text() + QObject::tr(" (Not found)"));
     }
+}
+
+void ProjectFileDialog::checkAllVSConfigs()
+{
+    if(mUI.mChkAllVsConfigs->isChecked())
+        mUI.mListVsConfigs->selectAll();
+    mUI.mListVsConfigs->setEnabled(!mUI.mChkAllVsConfigs->isChecked());
 }
 
 void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
@@ -313,6 +332,16 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     }
     mUI.mEditTags->setText(projectFile->getTags().join(';'));
     updatePathsAndDefines();
+    if(mUI.mEditImportProject->text().endsWith(".sln") || mUI.mEditImportProject->text().endsWith(".vcxproj")) {
+        setVsConfigurations(getProjectConfigs(mUI.mEditImportProject->text()));
+        foreach(const QString &cfg, projectFile->getVsConfigurations()) {
+            QList<QListWidgetItem*> items = mUI.mListVsConfigs->findItems(cfg, Qt::MatchFlag::MatchExactly);
+            items[0]->setSelected(true);
+        }
+    }
+    else
+        mUI.mListVsConfigs->setEnabled(false);
+
 }
 
 void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
@@ -370,6 +399,7 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setClangAnalyzer(mUI.mToolClangAnalyzer->isChecked());
     projectFile->setClangTidy(mUI.mToolClangTidy->isChecked());
     projectFile->setTags(mUI.mEditTags->text().split(";", QString::SkipEmptyParts));
+    projectFile->setVSConfigurations(getVsConfigurations());
 }
 
 void ProjectFileDialog::ok()
@@ -429,6 +459,7 @@ void ProjectFileDialog::updatePathsAndDefines()
     mUI.mBtnIncludeUp->setEnabled(!importProject);
     mUI.mBtnIncludeDown->setEnabled(!importProject);
     mUI.mChkAllVsConfigs->setEnabled(fileName.endsWith(".sln") || fileName.endsWith(".vcxproj"));
+    mUI.mListVsConfigs->setEnabled(fileName.endsWith(".sln") || fileName.endsWith(".vcxproj"));
 }
 
 void ProjectFileDialog::clearImportProject()
@@ -451,7 +482,24 @@ void ProjectFileDialog::browseImportProject()
     if (!fileName.isEmpty()) {
         mUI.mEditImportProject->setText(dir.relativeFilePath(fileName));
         updatePathsAndDefines();
+        setVsConfigurations(getProjectConfigs(fileName));
+        mUI.mListVsConfigs->selectAll();
     }
+}
+
+QStringList ProjectFileDialog::getVsConfigurations() const
+{
+    QStringList configs;
+    foreach(QListWidgetItem *item, mUI.mListVsConfigs->selectedItems())
+            configs << item->text();
+
+    return configs;
+}
+
+void ProjectFileDialog::setVsConfigurations(const QStringList &configs)
+{
+    mUI.mListVsConfigs->clear();
+    mUI.mListVsConfigs->addItems(configs);
 }
 
 QString ProjectFileDialog::getImportProject() const
