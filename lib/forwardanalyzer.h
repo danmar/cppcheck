@@ -106,9 +106,6 @@ struct ForwardAnalyzer
     virtual bool UpdateScope(const Token* endBlock, bool modified) const = 0;
     virtual bool IsConditional() const = 0;
     virtual void Assume(const Token* tok, bool state) = 0;
-    virtual bool SkipLambda(const Token* tok) const {
-        return true;
-    }
     virtual ~ForwardAnalyzer() {}
 };
 

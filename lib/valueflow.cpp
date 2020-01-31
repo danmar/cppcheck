@@ -2385,11 +2385,6 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
 
         return false;
     }
-
-    virtual bool SkipLambda(const Token* tok) const OVERRIDE
-    {
-        return !value.isLifetimeValue();
-    }
 };
 
 static bool valueFlowForwardVariable(Token* const startToken,
