@@ -366,36 +366,6 @@ struct ForwardTraversal
         return nullptr;
     }
 
-    template<class T>
-    static T* getCondTok(T* tok)
-    {
-        if (!tok)
-            return nullptr;
-        if (Token::simpleMatch(tok, "("))
-            return getCondTok(tok->previous());
-        if (Token::simpleMatch(tok, "for") && Token::simpleMatch(tok->next()->astOperand2(), ";") && tok->next()->astOperand2()->astOperand2())
-            return tok->next()->astOperand2()->astOperand2()->astOperand1();
-        if (Token::simpleMatch(tok->next()->astOperand2(), ";"))
-            return tok->next()->astOperand2()->astOperand1();
-        return tok->next()->astOperand2();
-    }
-
-    template<class T>
-    static T* getCondTokFromEnd(T * endBlock)
-    {
-        if (!Token::simpleMatch(endBlock, "}"))
-            return nullptr;
-        T * startBlock = endBlock->link();
-        if (!Token::simpleMatch(startBlock, "{"))
-            return nullptr;
-        if (Token::simpleMatch(startBlock->previous(), ")")) {
-            return getCondTok(startBlock->previous()->link());
-        } else if (Token::simpleMatch(startBlock->tokAt(-2), "} else {")) {
-            return getCondTokFromEnd(startBlock->tokAt(-2));
-        }
-        return nullptr;
-    }
-
     static const Scope* findBreakScope(const Scope * scope)
     {
         while(scope && scope->type != Scope::eWhile && scope->type != Scope::eFor && scope->type != Scope::eSwitch)

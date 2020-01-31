@@ -2379,7 +2379,7 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
                 return true;
             if (IsConditional())
                 return false;
-            const Token* condTok = getCondTok(endBlock);
+            const Token* condTok = getCondTokFromEnd(endBlock);
             return bifurcate(condTok, {varid}, settings);
         }
 
@@ -2389,21 +2389,6 @@ struct VariableForwardAnalyzer : ForwardAnalyzer
     virtual bool SkipLambda(const Token* tok) const OVERRIDE
     {
         return !value.isLifetimeValue();
-    }
-
-    static const Token* getCondTok(const Token * endBlock)
-    {
-        if (!Token::simpleMatch(endBlock, "}"))
-            return nullptr;
-        const Token * startBlock = endBlock->link();
-        if (!Token::simpleMatch(startBlock, "{"))
-            return nullptr;
-        if (Token::simpleMatch(startBlock->previous(), ")")) {
-            return startBlock->previous()->link()->astOperand2();
-        } else if (Token::simpleMatch(startBlock->tokAt(-2), "} else {")) {
-            return getCondTok(startBlock->tokAt(-2));
-        }
-        return nullptr;
     }
 };
 

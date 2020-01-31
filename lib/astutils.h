@@ -100,6 +100,12 @@ const Token* getParentMember(const Token * tok);
 bool astIsLHS(const Token* tok);
 bool astIsRHS(const Token* tok);
 
+Token* getCondTok(Token* tok);
+const Token* getCondTok(const Token* tok);
+
+Token* getCondTokFromEnd(Token * endBlock);
+const Token* getCondTokFromEnd(const Token * endBlock);
+
 bool precedes(const Token * tok1, const Token * tok2);
 
 bool exprDependsOnThis(const Token* expr, nonneg int depth = 0);

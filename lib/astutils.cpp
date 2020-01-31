@@ -365,6 +365,54 @@ bool astIsRHS(const Token* tok)
     return parent->astOperand2() == tok;
 }
 
+template<class T>
+static T* getCondTokImpl(T* tok)
+{
+    if (!tok)
+        return nullptr;
+    if (Token::simpleMatch(tok, "("))
+        return getCondTok(tok->previous());
+    if (Token::simpleMatch(tok, "for") && Token::simpleMatch(tok->next()->astOperand2(), ";") && tok->next()->astOperand2()->astOperand2())
+        return tok->next()->astOperand2()->astOperand2()->astOperand1();
+    if (Token::simpleMatch(tok->next()->astOperand2(), ";"))
+        return tok->next()->astOperand2()->astOperand1();
+    return tok->next()->astOperand2();
+}
+
+template<class T>
+static T* getCondTokFromEndImpl(T * endBlock)
+{
+    if (!Token::simpleMatch(endBlock, "}"))
+        return nullptr;
+    T * startBlock = endBlock->link();
+    if (!Token::simpleMatch(startBlock, "{"))
+        return nullptr;
+    if (Token::simpleMatch(startBlock->previous(), ")")) {
+        return getCondTok(startBlock->previous()->link());
+    } else if (Token::simpleMatch(startBlock->tokAt(-2), "} else {")) {
+        return getCondTokFromEnd(startBlock->tokAt(-2));
+    }
+    return nullptr;
+}
+
+Token* getCondTok(Token* tok)
+{
+    return getCondTokImpl(tok);
+}
+const Token* getCondTok(const Token* tok)
+{
+    return getCondTokImpl(tok);
+}
+
+Token* getCondTokFromEnd(Token * endBlock)
+{
+    return getCondTokFromEndImpl(endBlock);
+}
+const Token* getCondTokFromEnd(const Token * endBlock)
+{
+    return getCondTokFromEndImpl(endBlock);
+}
+
 static const Token * getVariableInitExpression(const Variable * var)
 {
     if (!var || !var->declEndToken())
