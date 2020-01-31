@@ -806,10 +806,10 @@ class MisraChecker:
         )
 
     def get_num_significant_naming_chars(self, cfg):
-        if cfg.standards and cfg.standards.c == "c99":
-            return 63
-        else:
+        if cfg.standards and cfg.standards.c == "c89":
             return 31
+        else:
+            return 63
 
     def misra_2_7(self, data):
         for func in data.functions:
