@@ -537,7 +537,7 @@ void CheckNullPointer::arithmetic()
                 continue;
             if (numericOperand && numericOperand->valueType() && !numericOperand->valueType()->isIntegral())
                 continue;
-            const ValueFlow::Value *value = pointerOperand->getValue(0);
+            const ValueFlow::Value* value = pointerOperand->getValue(0);
             if (!value)
                 continue;
             if (!mSettings->inconclusive && value->isInconclusive())

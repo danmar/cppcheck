@@ -33,10 +33,7 @@ bool ProgramMemory::getTokValue(nonneg int varid, const Token** result) const
     return found;
 }
 
-void ProgramMemory::setUnknown(nonneg int varid)
-{
-    values[varid].valueType = ValueFlow::Value::ValueType::UNINIT;
-}
+void ProgramMemory::setUnknown(nonneg int varid) { values[varid].valueType = ValueFlow::Value::ValueType::UNINIT; }
 
 bool ProgramMemory::hasValue(nonneg int varid)
 {
@@ -176,9 +173,9 @@ static void fillProgramMemoryFromConditionalExpression(ProgramMemory& pm, const 
 {
     const Token* parent = tok->astParent();
     if (Token::Match(parent, "?|&&|%oror%")) {
-        programMemoryParseCondition(pm, parent->astOperand1(), tok, settings, !Token::simpleMatch(parent, "||"));        
+        programMemoryParseCondition(pm, parent->astOperand1(), tok, settings, !Token::simpleMatch(parent, "||"));
     } else if (Token::simpleMatch(parent, ":") && Token::simpleMatch(parent->astParent(), "?")) {
-        programMemoryParseCondition(pm, parent->astParent()->astOperand1(), tok, settings, parent->astOperand1() == tok);        
+        programMemoryParseCondition(pm, parent->astParent()->astOperand1(), tok, settings, parent->astOperand1() == tok);
     }
 }
 

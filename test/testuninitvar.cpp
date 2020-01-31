@@ -4494,10 +4494,9 @@ private:
                         "    c->x = 42;\n"
                         "    return c->x;\n"
                         "}\n");
-        ASSERT_EQUALS(
-          "[test.cpp:6]: (error) Uninitialized variable: c\n" 
-          "[test.cpp:7]: (error) Uninitialized variable: c\n", 
-          errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: c\n"
+                      "[test.cpp:7]: (error) Uninitialized variable: c\n",
+                      errout.str());
 
         valueFlowUninit("struct A {\n"
                         "    double x;\n"

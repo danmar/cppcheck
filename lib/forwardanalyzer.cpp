@@ -3,13 +3,8 @@
 #include "settings.h"
 #include "symboldatabase.h"
 
-struct ForwardTraversal
-{
-    enum class Progress {
-        Continue,
-        Break,
-        Skip
-    };
+struct ForwardTraversal {
+    enum class Progress { Continue, Break, Skip };
     ValuePtr<ForwardAnalyzer> analyzer;
     const Settings* settings;
 
@@ -21,7 +16,8 @@ struct ForwardTraversal
         return std::make_pair(checkThen, checkElse);
     }
 
-    Progress update(Token* tok) {
+    Progress update(Token* tok)
+    {
         ForwardAnalyzer::Action action = analyzer->Analyze(tok);
         if (!action.isNone())
             analyzer->Update(tok, action);
@@ -48,8 +44,8 @@ struct ForwardTraversal
             if (out)
                 *out = nextAfterAstRightmostLeaf(tok);
             return Progress::Skip;
-        // Skip lambdas
-        } else if (Token *lambdaEndToken = findLambdaEndToken(tok)) {
+            // Skip lambdas
+        } else if (Token* lambdaEndToken = findLambdaEndToken(tok)) {
             if (checkScope(lambdaEndToken).isModified())
                 return Progress::Break;
             if (out)
@@ -61,7 +57,8 @@ struct ForwardTraversal
         return Progress::Continue;
     }
 
-    Progress updateRecursive(Token* tok) {
+    Progress updateRecursive(Token* tok)
+    {
         if (!tok)
             return Progress::Continue;
         if (updateRecursive(tok->astOperand1()) == Progress::Break)
@@ -74,12 +71,13 @@ struct ForwardTraversal
         return Progress::Continue;
     }
 
-    Progress updateConditional(Token* tok) {
+    Progress updateConditional(Token* tok)
+    {
         if (Token::Match(tok, "?|&&|%oror%")) {
-            Token * condTok = tok->astOperand1();
+            Token* condTok = tok->astOperand1();
             if (updateRecursive(condTok) == Progress::Break)
                 return Progress::Break;
-            Token * childTok = tok->astOperand2();
+            Token* childTok = tok->astOperand2();
             bool checkThen, checkElse;
             std::tie(checkThen, checkElse) = evalCond(condTok);
             if (!checkThen && !checkElse) {
@@ -106,9 +104,10 @@ struct ForwardTraversal
         return Progress::Continue;
     }
 
-    template<class T, class Predicate>
-    T* findRange(T* start, const Token* end, Predicate pred) {
-        for (T *tok = start; tok && tok != end; tok = tok->next()) {
+    template <class T, class Predicate>
+    T* findRange(T* start, const Token* end, Predicate pred)
+    {
+        for (T* tok = start; tok && tok != end; tok = tok->next()) {
             ForwardAnalyzer::Action action = analyzer->Analyze(tok);
             if (pred(action))
                 return tok;
@@ -116,16 +115,16 @@ struct ForwardTraversal
         return nullptr;
     }
 
-    template<class T>
-    T* findActionRange(T* start, const Token* end, ForwardAnalyzer::Action action) {
-        return findRange(start, end, [&](ForwardAnalyzer::Action a) {
-            return a == action;
-        });
+    template <class T>
+    T* findActionRange(T* start, const Token* end, ForwardAnalyzer::Action action)
+    {
+        return findRange(start, end, [&](ForwardAnalyzer::Action a) { return a == action; });
     }
 
-    ForwardAnalyzer::Action analyzeRange(const Token* start, const Token* end) {
+    ForwardAnalyzer::Action analyzeRange(const Token* start, const Token* end)
+    {
         ForwardAnalyzer::Action result = ForwardAnalyzer::Action::None;
-        for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
+        for (const Token* tok = start; tok && tok != end; tok = tok->next()) {
             ForwardAnalyzer::Action action = analyzer->Analyze(tok);
             if (action.isModified() || action.isInconclusive())
                 return action;
@@ -134,7 +133,7 @@ struct ForwardTraversal
         return result;
     }
 
-    void forkScope(const Token* endBlock, bool isModified=false)
+    void forkScope(const Token* endBlock, bool isModified = false)
     {
         if (analyzer->UpdateScope(endBlock, isModified)) {
             ForwardTraversal ft = *this;
@@ -142,11 +141,10 @@ struct ForwardTraversal
         }
     }
 
-    static bool hasGoto(const Token* endBlock) {
-        return Token::findsimplematch(endBlock->link(), "goto", endBlock);
-    }
+    static bool hasGoto(const Token* endBlock) { return Token::findsimplematch(endBlock->link(), "goto", endBlock); }
 
-    bool isEscapeScope(const Token* endBlock, bool unknown = false) {
+    bool isEscapeScope(const Token* endBlock, bool unknown = false)
+    {
         const Token* ftok = nullptr;
         bool r = isReturnScope(endBlock, &settings->library, &ftok);
         if (!r && ftok)
@@ -161,17 +159,17 @@ struct ForwardTraversal
         Inconclusive,
     };
 
-    ForwardAnalyzer::Action analyzeScope(const Token* endBlock) {
-        return analyzeRange(endBlock->link(), endBlock);       
-    }
-        
-    ForwardAnalyzer::Action checkScope(const Token* endBlock) {
+    ForwardAnalyzer::Action analyzeScope(const Token* endBlock) { return analyzeRange(endBlock->link(), endBlock); }
+
+    ForwardAnalyzer::Action checkScope(const Token* endBlock)
+    {
         ForwardAnalyzer::Action a = analyzeScope(endBlock);
-        forkScope(endBlock, a.isModified()); 
+        forkScope(endBlock, a.isModified());
         return a;
     }
 
-    Progress updateLoop(Token* endBlock, Token* condTok) {
+    Progress updateLoop(Token* endBlock, Token* condTok)
+    {
         ForwardAnalyzer::Action a = analyzeScope(endBlock);
         if (a.isInconclusive()) {
             if (!analyzer->LowerToInconclusive())
@@ -183,10 +181,10 @@ struct ForwardTraversal
         // Traverse condition after lowering
         if (condTok && updateRecursive(condTok) == Progress::Break)
             return Progress::Break;
-        forkScope(endBlock, a.isModified()); 
+        forkScope(endBlock, a.isModified());
         if (a.isModified()) {
-            Token * writeTok = findRange(endBlock->link(), endBlock, std::mem_fn(&ForwardAnalyzer::Action::isModified));
-            const Token * nextStatement = Token::findmatch(writeTok, ";|}", endBlock);
+            Token* writeTok = findRange(endBlock->link(), endBlock, std::mem_fn(&ForwardAnalyzer::Action::isModified));
+            const Token* nextStatement = Token::findmatch(writeTok, ";|}", endBlock);
             if (!Token::Match(nextStatement, ";|} break ;"))
                 return Progress::Break;
         }
@@ -195,9 +193,10 @@ struct ForwardTraversal
         return Progress::Continue;
     }
 
-    Progress updateRange(Token* start, const Token* end) {
-        for (Token *tok = start; tok && tok != end; tok = tok->next()) {
-            Token * next = nullptr;
+    Progress updateRange(Token* start, const Token* end)
+    {
+        for (Token* tok = start; tok && tok != end; tok = tok->next()) {
+            Token* next = nullptr;
 
             // Evaluate RHS of assignment before LHS
             if (Token* assignTok = assignExpr(tok)) {
@@ -223,10 +222,9 @@ struct ForwardTraversal
             } else if (Token::Match(tok, "%name% :") || Token::simpleMatch(tok, "case")) {
                 if (!analyzer->LowerToPossible())
                     return Progress::Break;
-            } else if (Token::simpleMatch(tok, "}") && 
-                    Token::Match(tok->link()->previous(), ")|else {")) {
+            } else if (Token::simpleMatch(tok, "}") && Token::Match(tok->link()->previous(), ")|else {")) {
                 const bool inElse = Token::simpleMatch(tok->link()->previous(), "else {");
-                const Token * condTok = getCondTokFromEnd(tok);
+                const Token* condTok = getCondTokFromEnd(tok);
                 if (!condTok)
                     return Progress::Break;
                 if (!condTok->hasKnownIntValue()) {
@@ -239,9 +237,9 @@ struct ForwardTraversal
                 if (Token::simpleMatch(tok, "} else {"))
                     tok = tok->linkAt(2);
             } else if (Token::Match(tok, "if|while|for (") && Token::simpleMatch(tok->next()->link(), ") {")) {
-                Token * endCond = tok->next()->link();
-                Token * endBlock = endCond->next()->link();
-                Token * condTok = getCondTok(tok);
+                Token* endCond = tok->next()->link();
+                Token* endBlock = endCond->next()->link();
+                Token* condTok = getCondTok(tok);
                 if (!condTok)
                     return Progress::Break;
 
@@ -310,8 +308,7 @@ struct ForwardTraversal
                     if (thenAction.isInconclusive() || elseAction.isInconclusive()) {
                         if (!analyzer->LowerToInconclusive())
                             return Progress::Break;
-                    }
-                    else if (thenAction.isModified() || elseAction.isModified()) {
+                    } else if (thenAction.isModified() || elseAction.isModified()) {
                         if (!analyzer->LowerToPossible())
                             return Progress::Break;
                         analyzer->Assume(condTok, elseAction.isModified());
@@ -320,7 +317,7 @@ struct ForwardTraversal
             } else if (Token::simpleMatch(tok, "} else {")) {
                 tok = tok->linkAt(2);
             } else if (Token::simpleMatch(tok, "do {")) {
-                Token * endBlock = tok->next()->link();
+                Token* endBlock = tok->next()->link();
                 if (updateLoop(endBlock, nullptr) == Progress::Break)
                     return Progress::Break;
                 tok = endBlock;
@@ -358,7 +355,7 @@ struct ForwardTraversal
 
     static Token* assignExpr(Token* tok)
     {
-        while(tok->astParent() && astIsLHS(tok)) {
+        while (tok->astParent() && astIsLHS(tok)) {
             if (Token::Match(tok->astParent(), "%assign%"))
                 return tok->astParent();
             tok = tok->astParent();
@@ -366,9 +363,9 @@ struct ForwardTraversal
         return nullptr;
     }
 
-    static const Scope* findBreakScope(const Scope * scope)
+    static const Scope* findBreakScope(const Scope* scope)
     {
-        while(scope && scope->type != Scope::eWhile && scope->type != Scope::eFor && scope->type != Scope::eSwitch)
+        while (scope && scope->type != Scope::eWhile && scope->type != Scope::eFor && scope->type != Scope::eSwitch)
             scope = scope->nestedIn;
         return scope;
     }
@@ -383,9 +380,9 @@ struct ForwardTraversal
         return nullptr;
     }
 
-    static bool isConditional(const Token* tok) 
+    static bool isConditional(const Token* tok)
     {
-        const Token *parent = tok->astParent();
+        const Token* parent = tok->astParent();
         while (parent && !Token::Match(parent, "%oror%|&&|:")) {
             tok = parent;
             parent = parent->astParent();

@@ -90,7 +90,7 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
 bool isTemporary(bool cpp, const Token* tok, const Library* library);
 
 const Token * nextAfterAstRightmostLeaf(const Token * tok);
-Token * nextAfterAstRightmostLeaf(Token * tok);
+Token* nextAfterAstRightmostLeaf(Token* tok);
 
 Token* astParentSkipParens(Token* tok);
 const Token* astParentSkipParens(const Token* tok);
@@ -103,8 +103,8 @@ bool astIsRHS(const Token* tok);
 Token* getCondTok(Token* tok);
 const Token* getCondTok(const Token* tok);
 
-Token* getCondTokFromEnd(Token * endBlock);
-const Token* getCondTokFromEnd(const Token * endBlock);
+Token* getCondTokFromEnd(Token* endBlock);
+const Token* getCondTokFromEnd(const Token* endBlock);
 
 bool precedes(const Token * tok1, const Token * tok2);
 
@@ -135,10 +135,13 @@ bool isWithoutSideEffects(bool cpp, const Token* tok);
 
 bool isUniqueExpression(const Token* tok);
 
-bool isEscapeFunction(const Token* ftok, const Library * library);
+bool isEscapeFunction(const Token* ftok, const Library* library);
 
 /** Is scope a return scope (scope will unconditionally return) */
-bool isReturnScope(const Token * const endToken, const Library * library=nullptr, const Token** unknownFunc = nullptr,  bool functionScope=false);
+bool isReturnScope(const Token* const endToken,
+                   const Library* library = nullptr,
+                   const Token** unknownFunc = nullptr,
+                   bool functionScope = false);
 
 /// Return the token to the function and the argument number
 const Token * getTokenArgumentFunction(const Token * tok, int& argn);
@@ -205,7 +208,7 @@ const Token *findLambdaStartToken(const Token *last);
  * \return nullptr or the }
  */
 const Token *findLambdaEndToken(const Token *first);
-Token *findLambdaEndToken(Token *first);
+Token* findLambdaEndToken(Token* first);
 
 bool isLikelyStream(bool cpp, const Token *stream);
 
@@ -222,7 +225,7 @@ bool isConstVarExpression(const Token *tok, const char * skipMatch = nullptr);
 
 const Variable *getLHSVariable(const Token *tok);
 
-std::vector<const Variable*> getLHSVariables(const Token *tok);
+std::vector<const Variable*> getLHSVariables(const Token* tok);
 
 bool isScopeBracket(const Token* tok);
 
