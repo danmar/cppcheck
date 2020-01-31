@@ -146,8 +146,12 @@ struct ForwardTraversal
         return Token::findsimplematch(endBlock->link(), "goto", endBlock);
     }
 
-    bool isEscapeScope(const Token* endBlock) {
-        return isReturnScope(endBlock, &settings->library);
+    bool isEscapeScope(const Token* endBlock, bool unknown = false) {
+        const Token* ftok = nullptr;
+        bool r = isReturnScope(endBlock, &settings->library, &ftok);
+        if (!r && ftok)
+            return unknown;
+        return r;
     }
 
     enum class Status {
@@ -258,7 +262,7 @@ struct ForwardTraversal
                     bool bail = false;
 
                     // Traverse then block
-                    bool returnThen = isEscapeScope(endBlock);
+                    bool returnThen = isEscapeScope(endBlock, true);
                     bool returnElse = false;
                     if (checkThen) {
                         if (updateRange(endCond->next(), endBlock) == Progress::Break)
@@ -271,7 +275,7 @@ struct ForwardTraversal
                     // Traverse else block
                     if (Token::simpleMatch(endBlock, "} else {")) {
                         hasElse = true;
-                        returnElse = isEscapeScope(endBlock->linkAt(2));
+                        returnElse = isEscapeScope(endBlock->linkAt(2), true);
                         if (checkElse) {
                             Progress result = updateRange(endBlock->tokAt(2), endBlock->linkAt(2));
                             if (result == Progress::Break)
@@ -294,10 +298,14 @@ struct ForwardTraversal
                     else if ((returnThen || returnElse) && (thenAction.isModified() || elseAction.isModified()))
                         return Progress::Break;
                     // Conditional return
-                    if (returnThen && !hasElse && !checkThen) {
-                        if (analyzer->IsConditional())
+                    if (returnThen && !hasElse) {
+                        if (checkThen) {
                             return Progress::Break;
-                        analyzer->Assume(condTok, false);
+                        } else {
+                            if (analyzer->IsConditional())
+                                return Progress::Break;
+                            analyzer->Assume(condTok, false);
+                        }
                     }
                     if (thenAction.isInconclusive() || elseAction.isInconclusive()) {
                         if (!analyzer->LowerToInconclusive())

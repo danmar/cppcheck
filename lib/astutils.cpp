@@ -1006,7 +1006,7 @@ bool isEscapeFunction(const Token* ftok, const Library * library)
     return false;
 }
 
-bool isReturnScope(const Token * const endToken, const Library * library, bool functionScope)
+bool isReturnScope(const Token * const endToken, const Library * library, const Token** unknownFunc, bool functionScope)
 {
     if (!endToken || endToken->str() != "}")
         return false;
@@ -1019,7 +1019,7 @@ bool isReturnScope(const Token * const endToken, const Library * library, bool f
 
     if (Token::simpleMatch(prev, "}")) {
         if (Token::simpleMatch(prev->link()->tokAt(-2), "} else {"))
-            return isReturnScope(prev, library, functionScope) && isReturnScope(prev->link()->tokAt(-2), library, functionScope);
+            return isReturnScope(prev, library, unknownFunc, functionScope) && isReturnScope(prev->link()->tokAt(-2), library, unknownFunc, functionScope);
         if (Token::simpleMatch(prev->link()->previous(), ") {") &&
             Token::simpleMatch(prev->link()->linkAt(-1)->previous(), "switch (") &&
             !Token::findsimplematch(prev->link(), "break", prev)) {
@@ -1028,7 +1028,7 @@ bool isReturnScope(const Token * const endToken, const Library * library, bool f
         if (isEscaped(prev->link()->astTop(), functionScope))
             return true;
         if (Token::Match(prev->link()->previous(), "[;{}] {"))
-            return isReturnScope(prev, library, functionScope);
+            return isReturnScope(prev, library, unknownFunc, functionScope);
     } else if (Token::simpleMatch(prev, ";")) {
         if (Token::simpleMatch(prev->previous(), ") ;") && Token::Match(prev->linkAt(-1)->tokAt(-2), "[;{}] %name% (")) {
             const Token * ftok = prev->linkAt(-1)->previous();
@@ -1043,6 +1043,8 @@ bool isReturnScope(const Token * const endToken, const Library * library, bool f
             } else if (Token::Match(ftok, "exit|abort")) {
                 return true;
             }
+            if (unknownFunc && !function && library && library->functions.count(library->getFunctionName(ftok)) == 0)
+                *unknownFunc = ftok;
             return false;
         }
         if (Token::simpleMatch(prev->previous(), ") ;") && prev->previous()->link() &&
