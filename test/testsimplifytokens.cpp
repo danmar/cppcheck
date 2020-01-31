@@ -3452,6 +3452,11 @@ private:
         }
 
         ASSERT_EQUALS("a [ 4 ] ;", tok("a[1+3|4];"));
+        ASSERT_EQUALS("a [ 4U ] ;", tok("a[1+3|4U];"));
+        ASSERT_EQUALS("a [ 3 ] ;", tok("a[1+2&3];"));
+        ASSERT_EQUALS("a [ 3U ] ;", tok("a[1+2&3U];"));
+        ASSERT_EQUALS("a [ 5 ] ;", tok("a[1-0^4];"));
+        ASSERT_EQUALS("a [ 5U ] ;", tok("a[1-0^4U];"));
 
         ASSERT_EQUALS("x = 1 + 2 * y ;", tok("x=1+2*y;"));
         ASSERT_EQUALS("x = 7 ;", tok("x=1+2*3;"));
@@ -3460,6 +3465,7 @@ private:
         ASSERT_EQUALS("int a [ 8 ] ;", tok("int a[5+6/2];"));
         ASSERT_EQUALS("int a [ 4 ] ;", tok("int a[(10)-1-5];"));
         ASSERT_EQUALS("int a [ i - 9 ] ;", tok("int a[i - 10 + 1];"));
+        ASSERT_EQUALS("int a [ i - 11 ] ;", tok("int a[i - 10 - 1];"));
 
         ASSERT_EQUALS("x = y ;", tok("x=0+y+0-0;"));
         ASSERT_EQUALS("x = 0 ;", tok("x=0*y;"));

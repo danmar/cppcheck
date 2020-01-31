@@ -136,6 +136,9 @@ public:
      */
     bool analyseWholeProgram();
 
+    /** Analyze all files using clang-tidy */
+    void analyseClangTidy(const ImportProject::FileSettings &fileSettings);
+
     /** analyse whole program use .analyzeinfo files */
     void analyseWholeProgram(const std::string &buildDir, const std::map<std::string, std::size_t> &files);
 

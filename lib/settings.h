@@ -99,6 +99,9 @@ public:
     /** Use Clang */
     bool clang;
 
+    /** Use clang-tidy */
+    bool clangTidy;
+
     /** @brief include paths excluded from checking the configuration */
     std::set<std::string> configExcludePaths;
 

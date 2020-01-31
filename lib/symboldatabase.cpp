@@ -3417,6 +3417,10 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
         const Token* nameTok  = nullptr;
 
         do {
+            if (Token::simpleMatch(tok, "decltype (")) {
+                tok = tok->linkAt(1)->next();
+                continue;
+            }
             if (tok != startTok && !nameTok && Token::Match(tok, "( & %var% ) [")) {
                 nameTok = tok->tokAt(2);
                 endTok = nameTok->previous();
