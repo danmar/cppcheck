@@ -656,7 +656,7 @@ class Configuration:
     functions = []
     variables = []
     valueflow = []
-    standards = []
+    standards = None
 
     def __init__(self, name):
         self.name = name
@@ -666,7 +666,7 @@ class Configuration:
         self.functions = []
         self.variables = []
         self.valueflow = []
-        self.standards = []
+        self.standards = Standards()
 
     def set_tokens_links(self):
         """Set next/previous links between tokens."""
@@ -762,10 +762,18 @@ class Standards:
         posix        If Posix was used
     """
 
-    def __init__(self, standardsnode):
-        self.c = standardsnode.find("c").get("version")
-        self.cpp = standardsnode.find("cpp").get("version")
-        self.posix = standardsnode.find("posix") is not None
+    c = ""
+    cpp = ""
+    posix = False
+
+    def set_c(self, node):
+        self.c = node.get("version")
+
+    def set_cpp(self, node):
+        self.cpp = node.get("version")
+
+    def set_posix(self, node):
+        self.posix = node.get("posix") is not None
 
     def __repr__(self):
         attrs = ["c", "cpp", "posix"]
@@ -896,11 +904,15 @@ class CppcheckData:
                     cfg = None
                     cfg_arguments = []
 
-            # Parse nested elemenets of configuration node
+            # Parse standards
             elif node.tag == "standards" and event == 'start':
                 continue
-            elif node.tag == "standards" and event == 'end':
-                cfg.standards = Standards(node)
+            elif node.tag == 'c' and event == 'start':
+                cfg.standards.set_c(node)
+            elif node.tag == 'cpp' and event == 'start':
+                cfg.standards.set_cpp(node)
+            elif node.tag == 'posix' and event == 'start':
+                cfg.standards.set_posix(node)
 
             # Parse directives list
             elif node.tag == 'directive' and event == 'start':
