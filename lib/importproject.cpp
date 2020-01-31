@@ -43,6 +43,10 @@ void ImportProject::ignorePaths(const std::vector<std::string> &ipaths)
                 ignore = true;
                 break;
             }
+            if (isValidGlobPattern(i) && matchglob(i, it->filename)) {
+                ignore = true;
+                break;
+            }
             if (!Path::isAbsolute(i)) {
                 i = mPath + i;
                 if (it->filename.size() > i.size() && it->filename.compare(0,i.size(),i)==0) {
@@ -1022,9 +1026,13 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
             temp.addons = readXmlStringList(node, "", CppcheckXml::AddonElementName, nullptr);
         else if (strcmp(node->Name(), CppcheckXml::TagsElementName) == 0)
             node->Attribute(CppcheckXml::TagElementName); // FIXME: Write some warning
-        else if (strcmp(node->Name(), CppcheckXml::ToolsElementName) == 0)
-            node->Attribute(CppcheckXml::ToolElementName); // FIXME: Write some warning
-        else if (strcmp(node->Name(), CppcheckXml::CheckHeadersElementName) == 0)
+        else if (strcmp(node->Name(), CppcheckXml::ToolsElementName) == 0) {
+            const std::list<std::string> toolList = readXmlStringList(node, "", CppcheckXml::ToolElementName, nullptr);
+            for (const std::string &toolName : toolList) {
+                if (toolName == std::string(CppcheckXml::ClangTidy))
+                    temp.clangTidy = true;
+            }
+        } else if (strcmp(node->Name(), CppcheckXml::CheckHeadersElementName) == 0)
             temp.checkHeaders = (strcmp(node->GetText(), "true") == 0);
         else if (strcmp(node->Name(), CppcheckXml::CheckUnusedTemplatesElementName) == 0)
             temp.checkUnusedTemplates = (strcmp(node->GetText(), "true") == 0);
@@ -1055,6 +1063,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     settings->userDefines = temp.userDefines;
     settings->userUndefs = temp.userUndefs;
     settings->addons = temp.addons;
+    settings->clangTidy = temp.clangTidy;
     for (const std::string &p : paths)
         guiProject.pathNames.push_back(p);
     for (const std::string &supp : suppressions)

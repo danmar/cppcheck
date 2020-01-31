@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 
 # Run this script from your branch with proposed Cppcheck patch to verify your
 # patch against current master. It will compare output of testing bunch of
@@ -49,12 +50,12 @@ if __name__ == "__main__":
         print('Failed to switch to common ancestor of your branch and master')
         sys.exit(1)
 
-    if not lib.compile(master_dir, jobs):
+    if not lib.compile_cppcheck(master_dir, jobs):
         print('Failed to compile master of Cppcheck')
         sys.exit(1)
 
     print('Testing your PR from directory: ' + your_repo_dir)
-    if not lib.compile(your_repo_dir, jobs):
+    if not lib.compile_cppcheck(your_repo_dir, jobs):
         print('Failed to compile your version of Cppcheck')
         sys.exit(1)
 
@@ -68,6 +69,7 @@ if __name__ == "__main__":
 
     packages_processed = 0
     crashes = []
+    timeouts = []
 
     while packages_processed < args.p and len(packages_idxs) > 0:
         package = lib.get_package(lib.server_address, packages_idxs.pop())
@@ -89,12 +91,18 @@ if __name__ == "__main__":
         master_crashed = False
         your_crashed = False
 
+        master_timeout = False
+        your_timeout = False
+
         libraries = lib.get_libraries()
         c, errout, info, time, cppcheck_options, timing_info = lib.scan_package(work_path, master_dir, jobs, libraries)
         if c < 0:
             if c == -101 and 'error: could not find or open any of the paths given.' in errout:
                 # No sourcefile found (for example only headers present)
                 print('Error: 101')
+            elif c == lib.RETURN_CODE_TIMEOUT:
+                print('Master timed out!')
+                master_timeout = True
             else:
                 print('Master crashed!')
                 master_crashed = True
@@ -105,6 +113,9 @@ if __name__ == "__main__":
             if c == -101 and 'error: could not find or open any of the paths given.' in errout:
                 # No sourcefile found (for example only headers present)
                 print('Error: 101')
+            elif c == lib.RETURN_CODE_TIMEOUT:
+                print('Your code timed out!')
+                your_timeout = True
             else:
                 print('Your code crashed!')
                 your_crashed = True
@@ -118,7 +129,17 @@ if __name__ == "__main__":
                 who = 'Master'
             else:
                 who = 'Your'
-            crashes.append(package + ' ' +  who)
+            crashes.append(package + ' ' + who)
+
+        if master_timeout or your_timeout:
+            who = None
+            if master_timeout and your_timeout:
+                who = 'Both'
+            elif master_timeout:
+                who = 'Master'
+            else:
+                who = 'Your'
+            timeouts.append(package + ' ' + who)
 
         with open(result_file, 'a') as myfile:
             myfile.write(package + '\n')
@@ -132,5 +153,9 @@ if __name__ == "__main__":
     with open(result_file, 'a') as myfile:
         myfile.write('\n\ncrashes\n')
         myfile.write('\n'.join(crashes))
+
+    with open(result_file, 'a') as myfile:
+        myfile.write('\n\ntimeouts\n')
+        myfile.write('\n'.join(timeouts))
 
     print('Result saved to: ' + result_file)

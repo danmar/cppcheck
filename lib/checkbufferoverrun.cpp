@@ -214,7 +214,10 @@ static bool getDimensionsEtc(const Token * const arrayToken, const Settings *set
         Dimension dim;
         dim.known = value->isKnown();
         dim.tok = nullptr;
-        dim.num = value->intvalue / array->valueType()->typeSize(*settings);
+        const int typeSize = array->valueType()->typeSize(*settings);
+        if (typeSize == 0)
+            return false;
+        dim.num = value->intvalue / typeSize;
         dimensions->emplace_back(dim);
     }
     return !dimensions->empty();

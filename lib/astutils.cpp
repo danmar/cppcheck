@@ -1752,8 +1752,10 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 if (conditionStart && conditionEnd) {
                     bool used = false;
                     for (const Token *condTok = conditionStart; condTok != conditionEnd; condTok = condTok->next()) {
-                        if (exprVarIds.find(condTok->varId()) != exprVarIds.end())
+                        if (exprVarIds.find(condTok->varId()) != exprVarIds.end()) {
                             used = true;
+                            break;
+                        }
                     }
                     if (used)
                         return Result(Result::Type::BAILOUT);

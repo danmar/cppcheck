@@ -1,11 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Get list of debian packages
 #
 # Usage:
 #
 # cd cppcheck/tools
-# python daca2-getpackages.py
+# ./daca2-getpackages.py
 #
 
 
@@ -19,7 +19,7 @@ import os
 import re
 import datetime
 import time
-import semver
+import natsort
 
 DEBIAN = ('ftp://ftp.de.debian.org/debian/',
           'ftp://ftp.debian.org/debian/')
@@ -39,11 +39,8 @@ def wget(filepath):
 
 
 def latestvername(names):
-    if len(names) == 1:
-        return names[0]
-    names.sort(cmp=semver.cmp, key=lambda x: x[x.index(
-        '_')+1:x.index('.orig.tar')-x.index('_')+1])
-    return names[-1]
+    s = natsort.natsorted(names, key=lambda x: x[x.index('_')+1:x.index('.orig.tar')])
+    return s[-1]
 
 
 def getpackages():
@@ -117,7 +114,7 @@ def getpackages():
             filenames = []
         elif line.startswith('./pool/main/'):
             path = line[2:-1]
-        elif path and line.endswith(('.orig.tar.gz', '.orig.tar.bz2')):
+        elif path and line.endswith(('.orig.tar.gz', '.orig.tar.bz2', '.orig.tar.xz')):
             filename = line[1 + line.rfind(' '):]
             filenames.append(filename)
 

@@ -152,6 +152,7 @@ namespace CppcheckXml {
     const char CheckUnusedTemplatesElementName[] = "check-unused-templates";
     const char MaxCtuDepthElementName[] = "max-ctu-depth";
     const char CheckUnknownFunctionReturn[] = "check-unknown-function-return-values";
+    const char ClangTidy[] = "clang-tidy";
     const char Name[] = "name";
 }
 

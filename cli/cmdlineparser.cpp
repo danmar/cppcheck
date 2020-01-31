@@ -192,33 +192,30 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--safe-functions") == 0)
                 mSettings->safeChecks.externalFunctions = mSettings->safeChecks.internalFunctions = true;
 
-            // Experimental: Verify
-            else if (std::strcmp(argv[i], "--verify") == 0)
-                mSettings->verification = true;
-            else if (std::strncmp(argv[i], "--verify-report=", 16) == 0) {
-                mSettings->verification = true;
-                mSettings->verificationReport = argv[i] + 16;
-            } else if (std::strcmp(argv[i], "--debug-verify") == 0)
-                mSettings->debugVerification = true;
-            else if (std::strncmp(argv[i], "--verify-diff=", 14) == 0) {
-                std::ifstream fin(argv[i] + 14);
-                if (!fin.is_open()) {
-                    printMessage("cppcheck: could not open file " + std::string(argv[i] + 14) + ".");
-                    return false;
-                }
+            // Bug hunting
+            else if (std::strcmp(argv[i], "--bug-hunting") == 0)
+                mSettings->bugHunting = true;
+            else if (std::strcmp(argv[i], "--debug-bug-hunting") == 0)
+                mSettings->bugHunting = mSettings->debugBugHunting = true;
+            /*
+                        else if (std::strncmp(argv[i], "--check-diff=", 13) == 0) {
+                            std::ifstream fin(argv[i] + 13);
+                            if (!fin.is_open()) {
+                                printMessage("cppcheck: could not open file " + std::string(argv[i] + 13) + ".");
+                                return false;
+                            }
 
-                mSettings->verifyDiff = Settings::loadDiffFile(fin);
-                mSettings->verification = true;
+                            mSettings->checkDiff = Settings::loadDiffFile(fin);
 
-                for (const auto &diff: mSettings->verifyDiff) {
-                    if (!Path::acceptFile(diff.filename))
-                        continue;
-                    const std::string filename = Path::fromNativeSeparators(diff.filename);
-                    if (std::find(mPathNames.begin(), mPathNames.end(), filename) == mPathNames.end())
-                        mPathNames.push_back(filename);
-                }
-            }
-
+                            for (const auto &diff: mSettings->bugHuntingDiff) {
+                                if (!Path::acceptFile(diff.filename))
+                                    continue;
+                                const std::string filename = Path::fromNativeSeparators(diff.filename);
+                                if (std::find(mPathNames.begin(), mPathNames.end(), filename) == mPathNames.end())
+                                    mPathNames.push_back(filename);
+                            }
+                        }
+            */
             // Enforce language (--language=, -x)
             else if (std::strncmp(argv[i], "--language=", 11) == 0 || std::strcmp(argv[i], "-x") == 0) {
                 std::string str;
@@ -375,6 +372,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 // Enable also XML if version is set
                 mSettings->xml = true;
             }
+
+            // use a file filter
+            else if (std::strncmp(argv[i], "--file-filter=", 14) == 0)
+                mSettings->fileFilter = std::string(argv[i] + 14);
 
             // Only print something when there are errors
             else if (std::strcmp(argv[i], "-q") == 0 || std::strcmp(argv[i], "--quiet") == 0)
@@ -915,6 +916,16 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
         }
     }
 
+    if (mSettings->clang) {
+        if (mSettings->buildDir.empty()) {
+            printMessage("If --clang is used then --cppcheck-build-dir must be specified also");
+            return false;
+        }
+        std::ofstream fout(mSettings->buildDir + "/__temp__.c");
+        fout << "int x;\n";
+    }
+
+
     // Default template format..
     if (mSettings->templateFormat.empty()) {
         mSettings->templateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]\\n{code}";
@@ -1035,6 +1046,9 @@ void CmdLineParser::printHelp()
               "    --exitcode-suppressions=<file>\n"
               "                         Used when certain messages should be displayed but\n"
               "                         should not cause a non-zero exitcode.\n"
+              "    --file-filter=<str>  Analyze only those files matching the given filter str\n"
+              "                         Example: --file-filter=*bar.cpp analyzes only files\n"
+              "                                  that end with bar.cpp.\n"
               "    --file-list=<file>   Specify the files to check in a text file. Add one\n"
               "                         filename per line. When file is '-,' the file list will\n"
               "                         be read from standard input.\n"

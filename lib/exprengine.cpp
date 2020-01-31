@@ -204,7 +204,7 @@ namespace {
             for (std::map<nonneg int, ExprEngine::ValuePtr>::iterator it = memory.begin(); it != memory.end();) {
                 unsigned int varid = it->first;
                 const Variable *var = symbolDatabase->getVariableFromVarId(varid);
-                if (var->isGlobal())
+                if (var && var->isGlobal())
                     it = memory.erase(it);
                 else
                     ++it;
@@ -234,6 +234,8 @@ namespace {
                 return ExprEngine::ValuePtr();
             ExprEngine::ValuePtr value = getValueRangeFromValueType(getNewSymbolName(), valueType, *settings);
             if (value) {
+                if (tok->variable() && tok->variable()->nameToken())
+                    addConstraints(value, tok->variable()->nameToken());
                 assignValue(tok, varId, value);
             }
             return value;
@@ -599,7 +601,11 @@ struct ExprData {
     }
 
     z3::expr addFloat(const std::string &name) {
+#ifdef NEW_Z3
         z3::expr e = context.fpa_const(name.c_str(), 11, 53);
+#else
+        z3::expr e = context.real_const(name.c_str());
+#endif
         valueExpr.emplace(name, e);
         return e;
     }
@@ -617,7 +623,11 @@ struct ExprData {
         if (b->binop == "/")
             return op1 / op2;
         if (b->binop == "%")
+#ifdef NEW_Z3
             return op1 % op2;
+#else
+            return op1 - (op1 / op2) * op2;
+#endif
         if (b->binop == "==")
             return int_expr(op1) == int_expr(op2);
         if (b->binop == "!=")
@@ -646,7 +656,11 @@ struct ExprData {
             throw VerifyException(nullptr, "Can not solve expressions, operand value is null");
         if (auto intRange = std::dynamic_pointer_cast<ExprEngine::IntRange>(v)) {
             if (intRange->name[0] != '$')
+#ifdef NEW_Z3
                 return context.int_val(int64_t(intRange->minValue));
+#else
+                return context.int_val((long long)(intRange->minValue));
+#endif
             auto it = valueExpr.find(v->name);
             if (it != valueExpr.end())
                 return it->second;
@@ -740,7 +754,7 @@ bool ExprEngine::IntRange::isEqual(DataBase *dataBase, int value) const
 
 bool ExprEngine::IntRange::isGreaterThan(DataBase *dataBase, int value) const
 {
-    if (value < minValue || value > maxValue)
+    if (maxValue <= value)
         return false;
 
     const Data *data = dynamic_cast<Data *>(dataBase);
@@ -769,7 +783,7 @@ bool ExprEngine::IntRange::isGreaterThan(DataBase *dataBase, int value) const
 
 bool ExprEngine::IntRange::isLessThan(DataBase *dataBase, int value) const
 {
-    if (value < minValue || value > maxValue)
+    if (minValue >= value)
         return false;
 
     const Data *data = dynamic_cast<Data *>(dataBase);
@@ -1170,6 +1184,18 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
 
 static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
 {
+    if (Token::simpleMatch(tok->previous(), "sizeof (")) {
+        ExprEngine::ValuePtr retVal;
+        if (tok->hasKnownIntValue()) {
+            const MathLib::bigint value = tok->getKnownIntValue();
+            retVal = std::make_shared<ExprEngine::IntRange>(std::to_string(value), value, value);
+        } else {
+            retVal = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 1, 0x7fffffff);
+        }
+        call(data.callbacks, tok, retVal, &data);
+        return retVal;
+    }
+
     std::vector<ExprEngine::ValuePtr> argValues;
     for (const Token *argtok : getArguments(tok)) {
         auto val = executeExpression(argtok, data);
@@ -1292,7 +1318,9 @@ static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
         }
     }
     call(data.callbacks, tok->astOperand1(), structValue, &data);
-    return structValue->getValueOfMember(tok->astOperand2()->str());
+    ExprEngine::ValuePtr memberValue = structValue->getValueOfMember(tok->astOperand2()->str());
+    call(data.callbacks, tok, memberValue, &data);
+    return memberValue;
 }
 
 static ExprEngine::ValuePtr executeBinaryOp(const Token *tok, Data &data)
@@ -1717,20 +1745,20 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
         // TODO.. what about functions in headers?
         return;
 
-    if (!settings->verifyDiff.empty()) {
+    if (!settings->checkDiff.empty()) {
         const std::string filename = tokenizer->list.getFiles().at(functionScope->bodyStart->fileIndex());
-        bool verify = false;
-        for (const auto &diff: settings->verifyDiff) {
+        bool check = false;
+        for (const auto &diff: settings->checkDiff) {
             if (diff.filename != filename)
                 continue;
             if (diff.fromLine > functionScope->bodyEnd->linenr())
                 continue;
             if (diff.toLine < functionScope->bodyStart->linenr())
                 continue;
-            verify = true;
+            check = true;
             break;
         }
-        if (!verify)
+        if (!check)
             return;
     }
 
@@ -1746,23 +1774,30 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
     } catch (VerifyException &e) {
         trackExecution.setAbortLine(e.tok->linenr());
         auto bailoutValue = std::make_shared<BailoutValue>();
-        for (const Token *tok = e.tok; tok != functionScope->bodyEnd; tok = tok->next())
+        for (const Token *tok = e.tok; tok != functionScope->bodyEnd; tok = tok->next()) {
+            if (Token::Match(tok, "return|throw|while|if|for (")) {
+                tok = tok->next();
+                continue;
+            }
             call(callbacks, tok, bailoutValue, &data);
+        }
     }
 
-    if (settings->debugVerification && (callbacks.empty() || !trackExecution.isAllOk())) {
-        if (!settings->verificationReport.empty())
+    const bool bugHuntingReport = !settings->bugHuntingReport.empty();
+
+    if (settings->debugBugHunting && (settings->verbose || callbacks.empty() || !trackExecution.isAllOk())) {
+        if (bugHuntingReport)
             report << "[debug]" << std::endl;
         trackExecution.print(report);
         if (!callbacks.empty()) {
-            if (!settings->verificationReport.empty())
+            if (bugHuntingReport)
                 report << "[details]" << std::endl;
             trackExecution.report(report, functionScope);
         }
     }
 
-    // Write a verification report
-    if (!settings->verificationReport.empty()) {
+    // Write a report
+    if (bugHuntingReport) {
         report << "[function-report] "
                << Path::stripDirectoryPart(tokenizer->list.getFiles().at(functionScope->bodyStart->fileIndex())) << ":"
                << functionScope->bodyStart->linenr() << ":"
@@ -1791,16 +1826,20 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
         float f = getKnownFloatValue(tok, 0.0f);
         if (f > 0.0f || f < 0.0f)
             return;
+        if (value.type == ExprEngine::ValueType::BailoutValue) {
+            if (Token::simpleMatch(tok->previous(), "sizeof ("))
+                return;
+        }
         if (tok->astParent()->astOperand2() == tok && value.isEqual(dataBase, 0)) {
             dataBase->addError(tok->linenr());
-            std::list<const Token*> callstack{tok->astParent()};
-            const char * const id = (tok->valueType() && tok->valueType()->isFloat()) ? "verificationDivByZeroFloat" : "verificationDivByZero";
+            std::list<const Token*> callstack{settings->clang ? tok : tok->astParent()};
+            const char * const id = (tok->valueType() && tok->valueType()->isFloat()) ? "bughuntingDivByZeroFloat" : "bughuntingDivByZero";
             ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, id, "There is division, cannot determine that there can't be a division by zero.", CWE(369), false);
             errorLogger->reportErr(errmsg);
         }
     };
 
-#ifdef VERIFY_INTEGEROVERFLOW
+#ifdef BUG_HUNTING_INTEGEROVERFLOW
     std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> integerOverflow = [&](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
         if (!tok->isArithmeticalOp() || !tok->valueType() || !tok->valueType()->isIntegral() || tok->valueType()->pointer > 0)
             return;
@@ -1844,16 +1883,62 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             errorMessage += " Note that unsigned integer overflow is defined and will wrap around.";
 
         std::list<const Token*> callstack{tok};
-        ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationIntegerOverflow", errorMessage, false);
+        ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingIntegerOverflow", errorMessage, false);
         errorLogger->reportErr(errmsg);
     };
 #endif
 
+#ifdef BUG_HUNTING_UNINIT
     std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> uninit = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
         if (!tok->astParent())
             return;
         if (!value.isUninit())
             return;
+
+        // lhs in assignment
+        if (tok->astParent()->str() == "=" && tok == tok->astParent()->astOperand1())
+            return;
+
+        // Avoid FP when there is bailout..
+        if (value.type == ExprEngine::ValueType::BailoutValue) {
+            if (tok->hasKnownValue())
+                return;
+            if (tok->function())
+                return;
+            if (Token::Match(tok, "<<|>>|,"))
+                // Only warn about the operands
+                return;
+            // lhs for scope operator
+            if (Token::Match(tok, "%name% ::"))
+                return;
+            if (tok->astParent()->str() == "::" && tok == tok->astParent()->astOperand1())
+                return;
+
+            if (tok->str() == "(")
+                // cast: result is not uninitialized if expression is initialized
+                // function: does not return a uninitialized value
+                return;
+
+            // Containers are not uninitialized
+            std::vector<const Token *> tokens{tok, tok->astOperand1(), tok->astOperand2()};
+            if (Token::Match(tok->previous(), ". %name%"))
+                tokens.push_back(tok->previous()->astOperand1());
+            for (const Token *t: tokens) {
+                if (t && t->valueType() && t->valueType()->pointer == 0 && t->valueType()->container)
+                    return;
+            }
+
+            const Variable *var = tok->variable();
+            if (var && !var->isPointer()) {
+                if (!var->isLocal() || var->isStatic())
+                    return;
+            }
+            if (var && (Token::Match(var->nameToken(), "%name% =") || Token::Match(var->nameToken(), "%varid% ; %varid% =", var->declarationId())))
+                return;
+            if (var && var->nameToken() == tok)
+                return;
+
+        }
 
         // Avoid FP for array declaration
         const Token *parent = tok->astParent();
@@ -1864,9 +1949,10 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
 
         dataBase->addError(tok->linenr());
         std::list<const Token*> callstack{tok};
-        ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationUninit", "Cannot determine that '" + tok->expressionString() + "' is initialized", CWE_USE_OF_UNINITIALIZED_VARIABLE, false);
+        ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingUninit", "Cannot determine that '" + tok->expressionString() + "' is initialized", CWE_USE_OF_UNINITIALIZED_VARIABLE, false);
         errorLogger->reportErr(errmsg);
     };
+#endif
 
     std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> checkFunctionCall = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
         if (!Token::Match(tok->astParent(), "[(,]"))
@@ -1890,7 +1976,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
 
         if (parent->astOperand1()->function()) {
             const Variable *arg = parent->astOperand1()->function()->getArgumentVar(num - 1);
-            if (arg->nameToken()) {
+            if (arg && arg->nameToken()) {
                 std::string bad;
 
                 MathLib::bigint low;
@@ -1911,7 +1997,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
                     ErrorLogger::ErrorMessage errmsg(callstack,
                                                      &tokenizer->list,
                                                      Severity::SeverityType::error,
-                                                     "verificationInvalidArgValue",
+                                                     "bughuntingInvalidArgValue",
                                                      "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument value meets the attribute " + bad, CWE(0), false);
                     errorLogger->reportErr(errmsg);
                     return;
@@ -1960,12 +2046,13 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             if (err) {
                 dataBase->addError(tok->linenr());
                 std::list<const Token*> callstack{tok};
-                ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationInvalidArgValue", "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument value is valid. Bad value: " + bad, CWE(0), false);
+                ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingInvalidArgValue", "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument value is valid. Bad value: " + bad, CWE(0), false);
                 errorLogger->reportErr(errmsg);
                 break;
             }
         }
 
+#ifdef BUG_HUNTING_UNINIT
         // Uninitialized function argument..
         if (settings->library.isuninitargbad(parent->astOperand1(), num) && settings->library.isnullargbad(parent->astOperand1(), num) && value.type == ExprEngine::ValueType::ArrayValue) {
             const ExprEngine::ArrayValue &arrayValue = static_cast<const ExprEngine::ArrayValue &>(value);
@@ -1974,10 +2061,43 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
                 if (v.second->isUninit()) {
                     dataBase->addError(tok->linenr());
                     std::list<const Token*> callstack{tok};
-                    ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "verificationUninitArg", "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument is initialized.", CWE_USE_OF_UNINITIALIZED_VARIABLE, false);
+                    ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingUninitArg", "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument is initialized.", CWE_USE_OF_UNINITIALIZED_VARIABLE, false);
                     errorLogger->reportErr(errmsg);
                     break;
                 }
+            }
+        }
+#endif
+    };
+
+    std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> checkAssignment = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
+        if (!Token::simpleMatch(tok->astParent(), "="))
+            return;
+        const Token *lhs = tok->astParent()->astOperand1();
+        while (Token::simpleMatch(lhs, "."))
+            lhs = lhs->astOperand2();
+        if (!lhs || !lhs->variable() || !lhs->variable()->nameToken())
+            return;
+
+        const Token *vartok = lhs->variable()->nameToken();
+
+        MathLib::bigint low;
+        if (vartok->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW, &low)) {
+            if (value.isLessThan(dataBase, low)) {
+                dataBase->addError(tok->linenr());
+                std::list<const Token*> callstack{tok};
+                ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingAssign", "There is assignment, cannot determine that value is greater or equal with " + std::to_string(low), CWE_INCORRECT_CALCULATION, false);
+                errorLogger->reportErr(errmsg);
+            }
+        }
+
+        MathLib::bigint high;
+        if (vartok->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH, &high)) {
+            if (value.isGreaterThan(dataBase, high)) {
+                dataBase->addError(tok->linenr());
+                std::list<const Token*> callstack{tok};
+                ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingAssign", "There is assignment, cannot determine that value is lower or equal with " + std::to_string(high), CWE_INCORRECT_CALCULATION, false);
+                errorLogger->reportErr(errmsg);
             }
         }
     };
@@ -1985,15 +2105,18 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
     std::vector<ExprEngine::Callback> callbacks;
     callbacks.push_back(divByZero);
     callbacks.push_back(checkFunctionCall);
-#ifdef VERIFY_INTEGEROVERFLOW
+    callbacks.push_back(checkAssignment);
+#ifdef BUG_HUNTING_INTEGEROVERFLOW
     callbacks.push_back(integerOverflow);
 #endif
+#ifdef BUG_HUNTING_UNINIT
     callbacks.push_back(uninit);
+#endif
 
     std::ostringstream report;
     ExprEngine::executeAllFunctions(tokenizer, settings, callbacks, report);
-    if (settings->verificationReport.empty())
+    if (settings->bugHuntingReport.empty())
         std::cout << report.str();
     else if (errorLogger)
-        errorLogger->reportVerification(report.str());
+        errorLogger->bughuntingReport(report.str());
 }

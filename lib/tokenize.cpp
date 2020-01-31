@@ -2040,6 +2040,10 @@ bool Tokenizer::simplifyUsing()
                 continue;
             }
 
+            // skip enum definitions
+            if (tok1->str() == "enum")
+                skipEnumBody(&tok1);
+
             // check for member function and adjust scope
             if (isMemberFunction(tok1)) {
                 if (!scope1.empty())
@@ -2992,6 +2996,11 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
         if (tok2->isName()) {
             if (cpp && Token::Match(tok2, "namespace|public|private|protected"))
                 return false;
+            if (cpp && Token::simpleMatch(tok2, "decltype (")) {
+                typeCount = 1;
+                tok2 = tok2->linkAt(1)->next();
+                continue;
+            }
             if (Token::Match(tok2, "struct|union|enum") || (!c && Token::Match(tok2, "class|typename"))) {
                 hasstruct = true;
                 typeCount = 0;
@@ -9469,7 +9478,7 @@ void Tokenizer::findGarbageCode() const
         if (Token::simpleMatch(tok, ".") &&
             !Token::simpleMatch(tok->previous(), ".") &&
             !Token::simpleMatch(tok->next(), ".") &&
-            !Token::Match(tok->previous(), "{|, . %name% [=.]") &&
+            !Token::Match(tok->previous(), "{|, . %name% =|.|[") &&
             !Token::Match(tok->previous(), ", . %name%")) {
             if (!Token::Match(tok->previous(), "%name%|)|]|>|}"))
                 syntaxError(tok, tok->strAt(-1) + " " + tok->str() + " " + tok->strAt(1));

@@ -1507,6 +1507,11 @@ void Token::astStringVerboseRecursive(std::string& ret, const nonneg int indent1
     ret += mStr;
     if (mImpl->mValueType)
         ret += " \'" + mImpl->mValueType->str() + '\'';
+    if (function()) {
+        std::ostringstream ostr;
+        ostr << "0x" << std::hex << function();
+        ret += " f:" + ostr.str();
+    }
     ret += '\n';
 
     if (mImpl->mAstOperand1) {
@@ -1544,6 +1549,8 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
         out << "\n\n##Value flow" << std::endl;
     for (const Token *tok = this; tok; tok = tok->next()) {
         if (!tok->mImpl->mValues)
+            continue;
+        if (tok->mImpl->mValues->empty()) // Values might be removed by removeContradictions
             continue;
         if (xml)
             out << "    <values id=\"" << tok->mImpl->mValues << "\">" << std::endl;

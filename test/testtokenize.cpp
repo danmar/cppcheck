@@ -75,6 +75,7 @@ private:
         TEST_CASE(tokenize35);  // #8361
         TEST_CASE(tokenize36);  // #8436
         TEST_CASE(tokenize37);  // #8550
+        TEST_CASE(tokenize38);  // #9569
 
         TEST_CASE(validate);
 
@@ -880,6 +881,12 @@ private:
         const char expS [] = "class name { public: static void init ( ) { } } ; "
                              "void foo ( ) { return name :: init ( ) ; }";
         ASSERT_EQUALS(expS, tokenizeAndStringify(codeS));
+    }
+
+    void tokenize38() { // #9569
+        const char code[] = "using Binary = std::vector<char>; enum Type { Binary };";
+        const char exp[]  = "enum Type { Binary } ;";
+        ASSERT_EQUALS(exp, tokenizeAndStringify(code));
     }
 
     void validate() {
@@ -7968,6 +7975,12 @@ private:
         ASSERT_NO_THROW(tokenizeAndStringify("S s = { .ab.a=2, .ab.b=3 };"));
 
         ASSERT_NO_THROW(tokenizeAndStringify("extern \"C\" typedef void FUNC();"));
+
+        // Ticket #9572
+        ASSERT_NO_THROW(tokenizeAndStringify("struct poc { "
+                                             "  struct { int d; } port[1]; "
+                                             "}; "
+                                             "struct poc p = { .port[0] = {.d = 3} };"));
     }
 
 

@@ -1723,7 +1723,7 @@ void SymbolDatabase::clangSetVariables(const std::vector<const Variable *> &vari
     mVariableList = variableList;
 }
 
-Variable::Variable(const Token *name_, const std::string &clangType,
+Variable::Variable(const Token *name_, const std::string &clangType, const Token *start,
                    nonneg int index_, AccessControl access_, const Type *type_,
                    const Scope *scope_)
     : mNameToken(name_),
@@ -1736,6 +1736,8 @@ Variable::Variable(const Token *name_, const std::string &clangType,
       mScope(scope_),
       mValueType(nullptr)
 {
+    if (start && start->str() == "static")
+        setFlag(fIsStatic, true);
 
     std::string::size_type pos = clangType.find("[");
     if (pos != std::string::npos) {
@@ -1764,6 +1766,11 @@ Variable::~Variable()
 bool Variable::isPointerArray() const
 {
     return isArray() && nameToken() && nameToken()->previous() && (nameToken()->previous()->str() == "*");
+}
+
+bool Variable::isUnsigned() const
+{
+    return mValueType ? (mValueType->sign == ValueType::Sign::UNSIGNED) : mTypeStartToken->isUnsigned();
 }
 
 const Token * Variable::declEndToken() const
@@ -3136,16 +3143,15 @@ void SymbolDatabase::printOut(const char *title) const
                 std::cout << "int";
             std::cout << std::endl;
             std::cout << "    enumClass: " << scope->enumClass << std::endl;
-            for (std::vector<Enumerator>::const_iterator enumerator = scope->enumeratorList.begin(); enumerator != scope->enumeratorList.end(); ++enumerator) {
-                std::cout << "        Enumerator: " << enumerator->name->str() << " = ";
-                if (enumerator->value_known) {
-                    std::cout << enumerator->value;
-                }
+            for (const Enumerator &enumerator : scope->enumeratorList) {
+                std::cout << "        Enumerator: " << enumerator.name->str() << " = ";
+                if (enumerator.value_known)
+                    std::cout << enumerator.value;
 
-                if (enumerator->start) {
-                    const Token * tok = enumerator->start;
-                    std::cout << (enumerator->value_known ? " " : "") << "[" << tok->str();
-                    while (tok && tok != enumerator->end) {
+                if (enumerator.start) {
+                    const Token * tok = enumerator.start;
+                    std::cout << (enumerator.value_known ? " " : "") << "[" << tok->str();
+                    while (tok && tok != enumerator.end) {
                         if (tok->next())
                             std::cout << " " << tok->next()->str();
                         tok = tok->next();
@@ -3411,6 +3417,10 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
         const Token* nameTok  = nullptr;
 
         do {
+            if (Token::simpleMatch(tok, "decltype (")) {
+                tok = tok->linkAt(1)->next();
+                continue;
+            }
             if (tok != startTok && !nameTok && Token::Match(tok, "( & %var% ) [")) {
                 nameTok = tok->tokAt(2);
                 endTok = nameTok->previous();
@@ -5178,8 +5188,17 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
     const ValueType *vt2 = parent->astOperand2() ? parent->astOperand2()->valueType() : nullptr;
 
     if (vt1 && Token::Match(parent, "<<|>>")) {
-        if (!mIsCpp || (vt2 && vt2->isIntegral()))
-            setValueType(parent, *vt1);
+        if (!mIsCpp || (vt2 && vt2->isIntegral())) {
+            if (vt1->type < ValueType::Type::BOOL || vt1->type >= ValueType::Type::INT)
+                setValueType(parent, *vt1);
+            else {
+                ValueType vt(*vt1);
+                vt.type = ValueType::Type::INT; // Integer promotion
+                vt.sign = ValueType::Sign::SIGNED;
+                setValueType(parent, vt);
+            }
+
+        }
         return;
     }
 
@@ -5525,7 +5544,30 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             parsedecl(type->type()->typeStart, valuetype, defaultSignedness, settings);
         else if (type->str() == "const")
             valuetype->constness |= (1 << (valuetype->pointer - pointer0));
-        else if (const Library::Container *container = settings->library.detectContainer(type)) {
+        else if (settings->clang && type->str().find("::") != std::string::npos && type->str().size() > 2) {
+            TokenList typeTokens(settings);
+            std::string::size_type pos1 = 0;
+            do {
+                std::string::size_type pos2 = type->str().find("::", pos1);
+                if (pos2 == std::string::npos) {
+                    typeTokens.addtoken(type->str().substr(pos1), 0, 0, false);
+                    break;
+                }
+                typeTokens.addtoken(type->str().substr(pos1, pos2 - pos1), 0, 0, false);
+                typeTokens.addtoken("::", 0, 0, false);
+                pos1 = pos2 + 2;
+            } while (pos1 < type->str().size());
+            const Library::Container *container = settings->library.detectContainer(typeTokens.front());
+            if (container) {
+                valuetype->type = ValueType::Type::CONTAINER;
+                valuetype->container = container;
+            } else {
+                const Scope *scope = type->scope();
+                valuetype->typeScope = scope->check->findScope(typeTokens.front(), scope);
+                if (valuetype->typeScope)
+                    valuetype->type = (scope->type == Scope::ScopeType::eClass) ? ValueType::Type::RECORD : ValueType::Type::NONSTD;
+            }
+        } else if (const Library::Container *container = settings->library.detectContainer(type)) {
             valuetype->type = ValueType::Type::CONTAINER;
             valuetype->container = container;
             while (Token::Match(type, "%name%|::|<")) {
@@ -6104,8 +6146,14 @@ std::string ValueType::dump() const
     return ret.str();
 }
 
-MathLib::bigint ValueType::typeSize(const cppcheck::Platform &platform) const
+MathLib::bigint ValueType::typeSize(const cppcheck::Platform &platform, bool p) const
 {
+    if (p && pointer)
+        return platform.sizeof_pointer;
+
+    if (typeScope && typeScope->definedType && typeScope->definedType->sizeOf)
+        return typeScope->definedType->sizeOf;
+
     switch (type) {
     case ValueType::Type::BOOL:
         return platform.sizeof_bool;
@@ -6128,9 +6176,11 @@ MathLib::bigint ValueType::typeSize(const cppcheck::Platform &platform) const
     case ValueType::Type::LONGDOUBLE:
         return platform.sizeof_long_double;
     default:
-        return 0;
+        break;
     };
 
+    // Unknown invalid size
+    return 0;
 }
 
 std::string ValueType::str() const

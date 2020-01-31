@@ -866,6 +866,9 @@ void CheckOther::unreachableCodeError(const Token *tok, bool inconclusive)
 //---------------------------------------------------------------------------
 void CheckOther::checkVariableScope()
 {
+    if (mSettings->clang)
+        return;
+
     if (!mSettings->isEnabled(Settings::STYLE))
         return;
 
@@ -1975,9 +1978,11 @@ void CheckOther::checkDuplicateExpression()
                         for (const Token *assignTok = Token::findsimplematch(var2, ";"); assignTok && assignTok != varScope->bodyEnd; assignTok = assignTok->next()) {
                             if (Token::Match(assignTok, "%varid% = %var%", var1->varId()) && Token::Match(assignTok, "%var% = %varid%", var2->varId())) {
                                 assigned = true;
+                                break;
                             }
                             if (Token::Match(assignTok, "%varid% = %var%", var2->varId()) && Token::Match(assignTok, "%var% = %varid%", var1->varId())) {
                                 assigned = true;
+                                break;
                             }
                         }
                         if (!assigned && !isUniqueExpression(tok->astOperand2()))

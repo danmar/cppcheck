@@ -219,6 +219,7 @@ private:
         TEST_CASE(functionArgs13); // #7697
         TEST_CASE(functionArgs14); // #9055
         TEST_CASE(functionArgs15); // #7159
+        TEST_CASE(functionArgs16); // #9591
 
         TEST_CASE(functionImplicitlyVirtual);
 
@@ -2307,6 +2308,21 @@ private:
         ASSERT_EQUALS(1, method.argCount());
         ASSERT_EQUALS(1, method.initializedArgCount());
         ASSERT_EQUALS(0, method.minArgCount());
+    }
+
+    void functionArgs16() { // #9591
+        const char code[] =
+            "struct A { int var; };\n"
+            "void foo(int x, decltype(A::var) *&p) {}";
+        GET_SYMBOL_DB(code);
+        ASSERT(db);
+        const Scope *scope = db->functionScopes.front();
+        const Function *func = scope->function;
+        ASSERT_EQUALS(2, func->argCount());
+        const Variable *arg2 = func->getArgumentVar(1);
+        ASSERT_EQUALS("p", arg2->name());
+        ASSERT(arg2->isPointer());
+        ASSERT(arg2->isReference());
     }
 
     void functionImplicitlyVirtual() {
@@ -6564,6 +6580,7 @@ private:
         ASSERT_EQUALS("signed int", typeOf("a = 12 >> x;", ">>", "test.c"));
         ASSERT_EQUALS("",           typeOf("a = 12 << x;", "<<", "test.cpp")); // << might be overloaded
         ASSERT_EQUALS("signed int", typeOf("a = 12 << x;", "<<", "test.c"));
+        ASSERT_EQUALS("signed int", typeOf("a = true << 1U;", "<<"));
 
         // assignment => result has same type as lhs
         ASSERT_EQUALS("unsigned short", typeOf("unsigned short x; x = 3;", "="));

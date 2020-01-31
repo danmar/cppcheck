@@ -272,6 +272,11 @@ private:
         // from binary
         ASSERT_EQUALS(0,    MathLib::toLongNumber("0b0"));
         ASSERT_EQUALS(1,    MathLib::toLongNumber("0b1"));
+        ASSERT_EQUALS(1,    MathLib::toLongNumber("0b1U"));
+        ASSERT_EQUALS(1,    MathLib::toLongNumber("0b1L"));
+        ASSERT_EQUALS(1,    MathLib::toLongNumber("0b1LU"));
+        ASSERT_EQUALS(1,    MathLib::toLongNumber("0b1LL"));
+        ASSERT_EQUALS(1,    MathLib::toLongNumber("0b1LLU"));
         ASSERT_EQUALS(1,    MathLib::toLongNumber("+0b1"));
         ASSERT_EQUALS(-1,   MathLib::toLongNumber("-0b1"));
         ASSERT_EQUALS(215,  MathLib::toLongNumber("0b11010111"));
@@ -347,6 +352,13 @@ private:
         ASSERT_EQUALS(10000U, MathLib::toULongNumber("1e4"));
         ASSERT_EQUALS(0xFF00000000000000UL, MathLib::toULongNumber("0xFF00000000000000UL"));
         ASSERT_EQUALS(0x0A00000000000000UL, MathLib::toULongNumber("0x0A00000000000000UL"));
+        ASSERT_EQUALS(0,  MathLib::toULongNumber("0b0"));
+        ASSERT_EQUALS(1,  MathLib::toULongNumber("0b1"));
+        ASSERT_EQUALS(1,  MathLib::toULongNumber("0b1U"));
+        ASSERT_EQUALS(1,  MathLib::toULongNumber("0b1L"));
+        ASSERT_EQUALS(1,  MathLib::toULongNumber("0b1LU"));
+        ASSERT_EQUALS(1,  MathLib::toULongNumber("0b1LL"));
+        ASSERT_EQUALS(1,  MathLib::toULongNumber("0b1LLU"));
         ASSERT_EQUALS(9U, MathLib::toULongNumber("011"));
         ASSERT_EQUALS(5U, MathLib::toULongNumber("0b101"));
 
@@ -361,6 +373,8 @@ private:
     }
 
     void toDoubleNumber() const {
+        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1"),        0.001);
+        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("0x1"),      0.001);
         ASSERT_EQUALS_DOUBLE(10.0,   MathLib::toDoubleNumber("10"),       0.001);
         ASSERT_EQUALS_DOUBLE(1000.0, MathLib::toDoubleNumber("10E+2"),    0.001);
         ASSERT_EQUALS_DOUBLE(100.0,  MathLib::toDoubleNumber("1.0E+2"),   0.001);

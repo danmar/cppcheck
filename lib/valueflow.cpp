@@ -2004,7 +2004,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symbo
             val.varId = varid;
             ValueFlow::Value val2;
             if (num==1U && Token::Match(tok,"<=|>=")) {
-                if (var->typeStartToken()->isUnsigned()) {
+                if (var->isUnsigned()) {
                     val2 = ValueFlow::Value(tok,0);
                     val2.varId = varid;
                 }
@@ -2205,7 +2205,7 @@ static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, cons
     if (tok->hasKnownIntValue())
         return true;
     if (Token::Match(tok, "%cop%"))
-        return bifurcate(tok->astOperand1(), varids, settings) && bifurcate(tok->astOperand2(), varids, settings, depth);
+        return bifurcate(tok->astOperand1(), varids, settings, depth) && bifurcate(tok->astOperand2(), varids, settings, depth);
     if (Token::Match(tok, "%var%")) {
         if (varids.count(tok->varId()) > 0)
             return true;
@@ -2214,6 +2214,8 @@ static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, cons
             return false;
         const Token* start = var->declEndToken();
         if (!start)
+            return false;
+        if (start->strAt(-1) == ")" || start->strAt(-1) == "}")
             return false;
         if (Token::Match(start, "; %varid% =", var->declarationId()))
             start = start->tokAt(2);
@@ -3674,9 +3676,7 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
         // Variable
     } else if (tok->variable()) {
         const Variable *var = tok->variable();
-        if (!var->typeStartToken() || !var->typeStartToken()->scope())
-            return;
-        const Token *endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
+        const Token *endOfVarScope = var->scope()->bodyEnd;
 
         std::list<ValueFlow::Value> values = tok->values();
         const Token *nextExpression = nextAfterAstRightmostLeaf(parent);
@@ -4267,7 +4267,7 @@ static void valueFlowAfterMove(TokenList *tokenlist, SymbolDatabase* symboldatab
                 if (!var || (!var->isLocal() && !var->isArgument()))
                     continue;
                 const int varId = varTok->varId();
-                const Token * const endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
+                const Token * const endOfVarScope = var->scope()->bodyEnd;
                 setTokenValue(varTok, value, settings);
                 valueFlowForwardVariable(
                     varTok->next(), endOfVarScope, var, varId, values, false, false, tokenlist, errorLogger, settings);
@@ -4291,7 +4291,7 @@ static void valueFlowAfterMove(TokenList *tokenlist, SymbolDatabase* symboldatab
             const Variable *var = varTok->variable();
             if (!var)
                 continue;
-            const Token * const endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
+            const Token * const endOfVarScope = var->scope()->bodyEnd;
 
             ValueFlow::Value value;
             value.valueType = ValueFlow::Value::ValueType::MOVED;
@@ -4329,7 +4329,7 @@ static void valueFlowForwardAssign(Token * const               tok,
                                    ErrorLogger * const         errorLogger,
                                    const Settings * const      settings)
 {
-    const Token * const endOfVarScope = var->nameToken()->scope()->bodyEnd;
+    const Token * const endOfVarScope = var->scope()->bodyEnd;
     if (std::any_of(values.begin(), values.end(), std::mem_fn(&ValueFlow::Value::isLifetimeValue))) {
         valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
         values.remove_if(std::mem_fn(&ValueFlow::Value::isLifetimeValue));
@@ -5117,7 +5117,7 @@ static void valueFlowForLoopSimplifyAfter(Token *fortok, nonneg int varid, const
     const Variable *var = vartok->variable();
     const Token *endToken = nullptr;
     if (var->isLocal())
-        endToken = var->typeStartToken()->scope()->bodyEnd;
+        endToken = var->scope()->bodyEnd;
     else
         endToken = fortok->scope()->bodyEnd;
 

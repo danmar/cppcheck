@@ -132,6 +132,7 @@ private:
         TEST_CASE(valueFlowCrashIncompleteCode);
 
         TEST_CASE(valueFlowCrash);
+        TEST_CASE(valueFlowCrashConstructorInitialization);
     }
 
     static bool isNotTokValue(const ValueFlow::Value &val) {
@@ -4395,6 +4396,33 @@ private:
                "    return r;\n"
                "}\n";
         valueOfTok(code, "0");
+    }
+
+    void valueFlowCrashConstructorInitialization() { // #9577
+        const char* code;
+        code = "void Error()\n"
+               "{\n"
+               "    VfsPath path(\"\");\n"
+               "    path = path / amtype;\n"
+               "    size_t base = 0;\n"
+               "    VfsPath standard(\"standard\");\n"
+               "    if (path != standard)\n"
+               "    {\n"
+               "    }\n"
+               "}";
+        valueOfTok(code, "path");
+
+        code = "void Error()\n"
+               "{\n"
+               "    VfsPath path;\n"
+               "    path = path / amtype;\n"
+               "    size_t base = 0;\n"
+               "    VfsPath standard(\"standard\");\n"
+               "    if (path != standard)\n"
+               "    {\n"
+               "    }\n"
+               "}";
+        valueOfTok(code, "path");
     }
 };
 

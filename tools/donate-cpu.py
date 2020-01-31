@@ -101,20 +101,13 @@ for arg in sys.argv[1:]:
         print('Unhandled argument: ' + arg)
         sys.exit(1)
 
-if sys.version_info.major < 3:
-    print("#" * 80)
+if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 4):
     print("#" * 80)
     print("IMPORTANT")
-    print("Please consider switching to Python 3.")
-    print("")
-    print("We plan to completely drop Python 2 support")
-    print("for the Donate CPU client in the near future.")
-    print("")
-    print("For further information and reporting complaints, ideas, ... see:")
-    print("https://sourceforge.net/p/cppcheck/discussion/development/thread/86813a8a53/")
+    print("Please run the client with at least Python 3.4, thanks!")
     print("#" * 80)
-    print("#" * 80)
-    time.sleep(5)
+    time.sleep(2)
+    sys.exit(1)
 
 print('Thank you!')
 if not check_requirements():
@@ -157,7 +150,7 @@ while True:
         sys.exit(1)
     for ver in cppcheck_versions:
         if ver == 'head':
-            if not compile(cppcheck_path, jobs):
+            if not compile_cppcheck(cppcheck_path, jobs):
                 print('Failed to compile Cppcheck, retry later')
                 sys.exit(1)
         elif not compile_version(work_path, jobs, ver):
@@ -179,6 +172,7 @@ while True:
         print("No files to process")
         continue
     crash = False
+    timeout = False
     count = ''
     elapsed_time = ''
     results_to_diff = []
@@ -200,6 +194,10 @@ while True:
             if c == -101 and 'error: could not find or open any of the paths given.' in errout:
                 # No sourcefile found (for example only headers present)
                 count += ' 0'
+            elif c == RETURN_CODE_TIMEOUT:
+                # Timeout
+                count += ' TO!'
+                timeout = True
             else:
                 crash = True
                 count += ' Crash!'
@@ -227,7 +225,7 @@ while True:
     info_output += 'info messages:\n' + head_info_msg
     if 'head' in cppcheck_versions:
         output += 'head results:\n' + results_to_diff[cppcheck_versions.index('head')]
-    if not crash:
+    if not crash and not timeout:
         output += 'diff:\n' + diff_results(work_path, cppcheck_versions[0], results_to_diff[0], cppcheck_versions[1], results_to_diff[1]) + '\n'
     if package_url:
         print('=========================================================')

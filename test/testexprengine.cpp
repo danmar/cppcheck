@@ -34,6 +34,7 @@ private:
     void run() OVERRIDE {
 #ifdef USE_Z3
         TEST_CASE(annotation1);
+        TEST_CASE(annotation2);
 
         TEST_CASE(expr1);
         TEST_CASE(expr2);
@@ -72,6 +73,7 @@ private:
         TEST_CASE(functionCall1);
         TEST_CASE(functionCall2);
         TEST_CASE(functionCall3);
+        TEST_CASE(functionCall4);
 
         TEST_CASE(int1);
 
@@ -137,7 +139,8 @@ private:
 
     std::string trackExecution(const char code[]) {
         Settings settings;
-        settings.debugVerification = true;
+        settings.bugHunting = true;
+        settings.debugBugHunting = true;
         settings.platform(cppcheck::Platform::Unix64);
         settings.library.smartPointers.insert("std::shared_ptr");
         Tokenizer tokenizer(&settings, this);
@@ -151,6 +154,21 @@ private:
 
     void annotation1() {
         const char code[] = "void f(__cppcheck_low__(100) short x) {\n"
+                            "    return x < 10;\n"
+                            "}";
+
+        const char expected[] = "(declare-fun $1 () Int)\n"
+                                "(assert (>= $1 100))\n" // <- annotation
+                                "(assert (and (>= $1 (- 32768)) (<= $1 32767)))\n"
+                                "(assert (< $1 10))\n"
+                                "z3::unsat";
+
+        ASSERT_EQUALS(expected, expr(code, "<"));
+    }
+
+    void annotation2() {
+        const char code[] = "__cppcheck_low__(100) short x;\n"
+                            " void f() {\n"
                             "    return x < 10;\n"
                             "}";
 
@@ -407,9 +425,9 @@ private:
 
     void floatValue3() {
         const char code[] = "void foo(float f) { return f > 12.0; }";
-        const char expected[] = "(declare-fun |12.0| () (_ FloatingPoint 11 53))\n"
-                                "(declare-fun $1 () (_ FloatingPoint 11 53))\n"
-                                "(assert (fp.gt $1 |12.0|))\n"
+        const char expected[] = "(declare-fun |12.0| () Real)\n"
+                                "(declare-fun $1 () Real)\n"
+                                "(assert (> $1 |12.0|))\n"
                                 "z3::sat";
         ASSERT_EQUALS(expected, expr(code, ">"));
     }
@@ -432,6 +450,10 @@ private:
 
     void functionCall3() {
         ASSERT_EQUALS("-2147483648:2147483647", getRange("int fgets(int, const char *, void *); void f() { int x = -1; fgets(stdin, \"%d\", &x); x=x; }", "x=x"));
+    }
+
+    void functionCall4() {
+        ASSERT_EQUALS("1:2147483647", getRange("void f() { sizeof(data); }", "sizeof(data)"));
     }
 
 

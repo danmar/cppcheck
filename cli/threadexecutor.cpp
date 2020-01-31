@@ -348,7 +348,7 @@ void ThreadExecutor::reportInfo(const ErrorLogger::ErrorMessage &msg)
     writeToPipe(REPORT_INFO, msg.serialize());
 }
 
-void ThreadExecutor::reportVerification(const std::string &str)
+void ThreadExecutor::bughuntingReport(const std::string &str)
 {
     writeToPipe(REPORT_VERIFICATION, str.c_str());
 }
@@ -498,7 +498,7 @@ void ThreadExecutor::reportInfo(const ErrorLogger::ErrorMessage &msg)
 
 }
 
-void ThreadExecutor::reportVerification(const std::string  &/*str*/)
+void ThreadExecutor::bughuntingReport(const std::string  &/*str*/)
 {
     // TODO
 }
@@ -561,7 +561,7 @@ void ThreadExecutor::reportInfo(const ErrorLogger::ErrorMessage &/*msg*/)
 
 }
 
-void ThreadExecutor::reportVerification(const std::string &/*str*/)
+void ThreadExecutor::bughuntingReport(const std::string &/*str*/)
 {
 }
 

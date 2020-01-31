@@ -80,8 +80,8 @@ build_script:
 
 test_script:
   - build\bin\testrunner.exe -q
-  - IF EXIST bin\debug\testrunner.exe bin\debug\testrunner.exe
-  - IF EXIST bin\testrunner.exe bin\testrunner.exe
+  - IF EXIST bin\debug\testrunner.exe bin\debug\testrunner.exe -q
+  - IF EXIST bin\testrunner.exe bin\testrunner.exe -q
   - cd test\cli
   - python -m pytest test-helloworld.py
   - python -m pytest test-inline-suppress.py

@@ -146,8 +146,10 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
             const std::map<int, VariableValue> variableValue;
             bool init = false;
             for (const Token *parent = var.nameToken(); parent; parent = parent->astParent()) {
-                if (parent->str() == "=")
+                if (parent->str() == "=") {
                     init = true;
+                    break;
+                }
             }
             if (!init)
                 checkScopeForVariable(tok, var, nullptr, nullptr, &alloc, emptyString, variableValue);

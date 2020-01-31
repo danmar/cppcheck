@@ -194,6 +194,8 @@ private:
         TEST_CASE(usingNamespace3);
 
         TEST_CASE(setVarIdStructMembers1);
+
+        TEST_CASE(decltype1);
     }
 
     std::string tokenize(const char code[], bool simplify = false, const char filename[] = "test.cpp") {
@@ -3085,6 +3087,12 @@ private:
                                 "3: foo@1 . size@2 = 0 ;\n"
                                 "4: return ( ( uint8_t ) ( foo@1 ) . size@2 ) ;\n"
                                 "5: }\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void decltype1() {
+        const char code[] = "void foo(int x, decltype(A::b) *p);";
+        const char expected[] = "1: void foo ( int x@1 , decltype ( A :: b ) * p@2 ) ;\n";
         ASSERT_EQUALS(expected, tokenize(code));
     }
 };

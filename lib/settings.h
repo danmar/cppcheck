@@ -79,6 +79,9 @@ public:
     /** @brief --cppcheck-build-dir */
     std::string buildDir;
 
+    /** @brief --file-filter for analyzing special files */
+    std::string fileFilter;
+
     /** Is the 'configuration checking' wanted? */
     bool checkConfiguration;
 
@@ -95,6 +98,9 @@ public:
 
     /** Use Clang */
     bool clang;
+
+    /** Use clang-tidy */
+    bool clangTidy;
 
     /** @brief include paths excluded from checking the configuration */
     std::set<std::string> configExcludePaths;
@@ -191,22 +197,22 @@ public:
 
     SafeChecks safeChecks;
 
-    /** @brief Enable verification analysis */
-    bool verification;
+    /** @brief Bug hunting */
+    bool bugHunting;
 
-    /** @brief Verification report filename */
-    std::string verificationReport;
+    /** @brief Debug bug hunting */
+    bool debugBugHunting;
 
-    /** @brief Generate verification debug output */
-    bool debugVerification;
+    /** Filename for bug hunting report */
+    std::string bugHuntingReport;
 
-    /** @brief Verify diff */
+    /** @brief Check diff */
     struct Diff {
         std::string filename;
         int fromLine;
         int toLine;
     };
-    std::vector<Diff> verifyDiff;
+    std::vector<Diff> checkDiff;
 
     /** @brief check unknown function return values */
     std::set<std::string> checkUnknownFunctionReturn;

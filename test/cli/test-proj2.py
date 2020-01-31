@@ -29,6 +29,15 @@ def cppcheck_local(args):
     os.chdir(cwd)
     return (ret, stdout, stderr)
 
+def test_file_filter():
+    ret, stdout, stderr = cppcheck(['proj2/','--file-filter=proj2/a/*'])
+    file1 = os.path.join('proj2', 'a', 'a.c')
+    file2 = os.path.join('proj2', 'b', 'b.c')
+    assert ret == 0
+    assert stdout.find('Checking %s ...' % (file1)) >= 0
+    ret, stdout, stderr = cppcheck(['proj2/','--file-filter=proj2/b*'])
+    assert ret == 0
+    assert stdout.find('Checking %s ...' % (file2)) >= 0
 
 def test_local_path():
     create_compile_commands()
@@ -150,4 +159,3 @@ def test_gui_project_loads_absolute_vs_solution():
                             import_project=os.path.join(os.getcwd(), 'proj2', 'proj2.sln').replace('\\', '/'))
     ret, stdout, stderr = cppcheck(['--project=test.cppcheck'])
     assert stderr == ERR_A + ERR_B
-

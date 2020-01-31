@@ -1,18 +1,21 @@
-# Test if --verify works using the juliet testsuite
+# Test if --bug-hunting works using the juliet testsuite
 # The Juliet test suite can be downloaded from:
 # https://samate.nist.gov/SRD/testsuite.php
 
 import glob
 import os
 import re
+import shutil
 import sys
 import subprocess
 
 JULIET_PATH = os.path.expanduser('~/juliet')
-if sys.argv[0] in ('test/verify/juliet.py', './test/verify/juliet.py'):
+if sys.argv[0] in ('test/bug-hunting/juliet.py', './test/bug-hunting/juliet.py'):
     CPPCHECK_PATH = './cppcheck'
 else:
     CPPCHECK_PATH = '../../cppcheck'
+
+RUN_CLANG = ('--clang' in sys.argv)
 
 def get_files(juliet_path:str, test_cases:str):
     ret = []
@@ -40,13 +43,19 @@ def check(tc:str, warning_id:str):
                '-DAF_INET=1',
                '-DINADDR_ANY=1',
                '--library=posix',
-               '--verify',
+               '--bug-hunting',
                '--platform=unix64']
+        if RUN_CLANG:
+            cmd += ['--clang', '--cppcheck-build-dir=juliet-build-dir']
+            if not os.path.isdir('juliet-build-dir'):
+                os.mkdir('juliet-build-dir')
         cmd += glob.glob(f)
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         comm = p.communicate()
         stdout = comm[0].decode(encoding='utf-8', errors='ignore')
         stderr = comm[1].decode(encoding='utf-8', errors='ignore')
+        if RUN_CLANG:
+            shutil.rmtree('juliet-build-dir')
 
         if warning_id in stderr:
             num_ok += 1
@@ -61,8 +70,8 @@ def check(tc:str, warning_id:str):
 
 
 final_report = ''
-#final_report += check('C/testcases/CWE369_Divide_by_Zero/s*/*.c', 'verificationDivByZero')
-final_report += check('C/testcases/CWE457_Use_of_Uninitialized_Variable/s*/*.c', 'verificationUninit')
+final_report += check('C/testcases/CWE369_Divide_by_Zero/s*/*.c', 'bughuntingDivByZero')
+#final_report += check('C/testcases/CWE457_Use_of_Uninitialized_Variable/s*/*.c', 'verificationUninit')
 
 print(final_report)
 

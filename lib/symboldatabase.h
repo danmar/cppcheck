@@ -101,6 +101,7 @@ public:
 
     const Token * typeStart;
     const Token * typeEnd;
+    MathLib::bigint sizeOf;
 
     Type(const Token* classDef_ = nullptr, const Scope* classScope_ = nullptr, const Scope* enclosingScope_ = nullptr) :
         classDef(classDef_),
@@ -108,7 +109,8 @@ public:
         enclosingScope(enclosingScope_),
         needInitialization(NeedInitialization::Unknown),
         typeStart(nullptr),
-        typeEnd(nullptr) {
+        typeEnd(nullptr),
+        sizeOf(0) {
         if (classDef_ && classDef_->str() == "enum")
             needInitialization = NeedInitialization::True;
         else if (classDef_ && classDef_->str() == "using") {
@@ -235,7 +237,7 @@ public:
         evaluate(settings);
     }
 
-    Variable(const Token *name_, const std::string &clangType,
+    Variable(const Token *name_, const std::string &clangType, const Token *start,
              nonneg int index_, AccessControl access_, const Type *type_,
              const Scope *scope_);
 
@@ -479,6 +481,12 @@ public:
     bool isRValueReference() const {
         return getFlag(fIsRValueRef);
     }
+
+    /**
+     * Is variable unsigned.
+     * @return true only if variable _is_ unsigned. if the sign is unknown, false is returned.
+     */
+    bool isUnsigned() const;
 
     /**
      * Does variable have a default value.
@@ -1214,7 +1222,7 @@ public:
         return typeScope && typeScope->type == Scope::eEnum;
     }
 
-    MathLib::bigint typeSize(const cppcheck::Platform &platform) const;
+    MathLib::bigint typeSize(const cppcheck::Platform &platform, bool p=false) const;
 
     std::string str() const;
     std::string dump() const;
