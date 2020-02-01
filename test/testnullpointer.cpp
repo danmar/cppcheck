@@ -90,6 +90,7 @@ private:
         TEST_CASE(nullpointer48); // #9196
         TEST_CASE(nullpointer49); // #7804
         TEST_CASE(nullpointer50); // #6462
+        TEST_CASE(nullpointer51);
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1692,6 +1693,20 @@ private:
             errout.str());
     }
 
+    void nullpointer51() {
+        check("struct a {\n"
+              "  a *b();\n"
+              "};\n"
+              "bool c(a *, const char *);\n"
+              "a *d(a *e) {\n"
+              "  if (e) {}\n"
+              "  if (c(e, \"\"))\n"
+              "    return nullptr;\n"
+              "  return e->b();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void nullpointer_addressOf() { // address of
         check("void f() {\n"
               "  struct X *x = 0;\n"
@@ -2107,7 +2122,7 @@ private:
               "    if (!p) {}\n"
               "    return q ? p->x : 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition '!p' is redundant or there is possible null pointer dereference: p.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition '!p' is redundant or there is possible null pointer dereference: p.\n", "", errout.str());
 
         check("int f(ABC *p) {\n" // FP : return &&
               "    if (!p) {}\n"
