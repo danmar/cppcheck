@@ -1083,8 +1083,7 @@ public:
     /** Add token value. Return true if value is added. */
     bool addValue(const ValueFlow::Value &value);
 
-    template<class Predicate>
-    void removeValues(Predicate pred) {
+    void removeValues(std::function<bool(const ValueFlow::Value &)> pred) {
         if (mImpl->mValues)
             mImpl->mValues->remove_if(pred);
     }
