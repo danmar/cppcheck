@@ -946,6 +946,8 @@ private:
         ASSERT_EQUALS(true, MathLib::isNullValue("0x0"));
         ASSERT_EQUALS(true, MathLib::isNullValue("+0x0"));
         ASSERT_EQUALS(true, MathLib::isNullValue("-0x0"));
+        ASSERT_EQUALS(true, MathLib::isNullValue("+0X0"));
+        ASSERT_EQUALS(true, MathLib::isNullValue("-0X0"));
         // unsigned integer zero value
         ASSERT_EQUALS(true, MathLib::isNullValue("0U"));
         ASSERT_EQUALS(true, MathLib::isNullValue("+0U"));
@@ -1004,6 +1006,8 @@ private:
         ASSERT_EQUALS(true, MathLib::isNullValue("0E0"));
         ASSERT_EQUALS(true, MathLib::isNullValue("+0E0"));
         ASSERT_EQUALS(true, MathLib::isNullValue("-0E0"));
+        ASSERT_EQUALS(true, MathLib::isNullValue("+0e0"));
+        ASSERT_EQUALS(true, MathLib::isNullValue("-0e0"));
         // integer scientific notation
         ASSERT_EQUALS(true, MathLib::isNullValue("0E1"));
         ASSERT_EQUALS(true, MathLib::isNullValue("+0E1"));
@@ -1066,6 +1070,7 @@ private:
         ASSERT_EQUALS(true, MathLib::isNullValue("-0.f"));
         // floating point scientific notation (suffix f)
         ASSERT_EQUALS(true, MathLib::isNullValue("0.0f"));
+        ASSERT_EQUALS(true, MathLib::isNullValue("0.0F"));
         ASSERT_EQUALS(true, MathLib::isNullValue("+0.0f"));
         ASSERT_EQUALS(true, MathLib::isNullValue("-0.0f"));
         // floating point scientific notation (suffix f)
@@ -1080,6 +1085,12 @@ private:
         ASSERT_EQUALS(true, MathLib::isNullValue("00.00E+1f"));
         ASSERT_EQUALS(true, MathLib::isNullValue("+00.00E+1f"));
         ASSERT_EQUALS(true, MathLib::isNullValue("-00.00E+1f"));
+        // hex float
+        ASSERT_EQUALS(true, MathLib::isNullValue("0x0p3"));
+        ASSERT_EQUALS(true, MathLib::isNullValue("0X0P3"));
+        ASSERT_EQUALS(true, MathLib::isNullValue("0X0p-3"));
+        ASSERT_EQUALS(true, MathLib::isNullValue("-0x0p3"));
+        ASSERT_EQUALS(true, MathLib::isNullValue("+0x0p3"));
 
         // binary numbers
         ASSERT_EQUALS(true, MathLib::isNullValue("0b00"));
@@ -1093,6 +1104,18 @@ private:
         ASSERT_EQUALS(false, MathLib::isNullValue("0.1"));
         ASSERT_EQUALS(false, MathLib::isNullValue("1.0"));
         ASSERT_EQUALS(false, MathLib::isNullValue("0.01"));
+        ASSERT_EQUALS(false, MathLib::isNullValue("0xF"));
+        ASSERT_EQUALS(false, MathLib::isNullValue("0XFF"));
+        ASSERT_EQUALS(false, MathLib::isNullValue("0b01"));
+        ASSERT_EQUALS(false, MathLib::isNullValue("0B01"));
+        ASSERT_EQUALS(false, MathLib::isNullValue("0x1p0"));
+        ASSERT_EQUALS(false, MathLib::isNullValue("0x1P0"));
+        ASSERT_EQUALS(false, MathLib::isNullValue("0xap0"));
+        ASSERT_EQUALS(false, MathLib::isNullValue("0xbp0"));
+        ASSERT_EQUALS(false, MathLib::isNullValue("0xcp0"));
+        ASSERT_EQUALS(false, MathLib::isNullValue("0xdp0"));
+        ASSERT_EQUALS(false, MathLib::isNullValue("0xep0"));
+        ASSERT_EQUALS(false, MathLib::isNullValue("0xfp0"));
         ASSERT_EQUALS(false, MathLib::isNullValue("-00.01e-12"));
         ASSERT_EQUALS(false, MathLib::isNullValue("-00.01e+12"));
         ASSERT_EQUALS(false, MathLib::isNullValue(""));
