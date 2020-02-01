@@ -3051,6 +3051,14 @@ private:
                "    a = x;\n" // <- max value is 3
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 5U, 3));
+
+        code = "void f() {\n"
+               "    int x;\n"
+               "    for (x = 0; x < 10; x++)\n"
+               "        x;\n"
+               "}";
+        std::list<ValueFlow::Value> values = tokenValues(code, "x <");
+        ASSERT(std::none_of(values.begin(), values.end(), std::mem_fn(&ValueFlow::Value::isUninitValue)));
     }
 
     void valueFlowSubFunction() {

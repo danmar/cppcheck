@@ -240,9 +240,11 @@ struct ForwardTraversal {
                 Token* endCond = tok->next()->link();
                 Token* endBlock = endCond->next()->link();
                 Token* condTok = getCondTok(tok);
+                Token* initTok = getInitTok(tok);
                 if (!condTok)
                     return Progress::Break;
-
+                if (initTok && updateRecursive(initTok) == Progress::Break)
+                    return Progress::Break;
                 if (Token::Match(tok, "for|while (")) {
                     if (updateLoop(endBlock, condTok) == Progress::Break)
                         return Progress::Break;
@@ -389,6 +391,23 @@ struct ForwardTraversal {
         }
         return parent && (parent->str() == ":" || parent->astOperand2() == tok);
     }
+
+    template <class T>
+    static T* getInitTok(T* tok)
+    {
+        if (!tok)
+            return nullptr;
+        if (Token::Match(tok, "%name% ("))
+            return getInitTok(tok->next());
+        if (!Token::simpleMatch(tok, "("))
+            return nullptr;
+        if (!Token::simpleMatch(tok->astOperand2(), ";"))
+            return nullptr;
+        if (Token::simpleMatch(tok->astOperand2()->astOperand1(), ";"))
+            return nullptr;
+        return tok->astOperand2()->astOperand1();
+    }
+
 };
 
 void valueFlowGenericForward(Token* start, const Token* end, const ValuePtr<ForwardAnalyzer>& fa, const Settings* settings)
