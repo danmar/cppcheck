@@ -517,8 +517,7 @@ static void followVariableExpressionError(const Token *tok1, const Token *tok2, 
     errors->push_back(item);
 }
 
-template<class Predicate, class F>
-static void findTokenValue(const Token* const tok, Predicate pred, F f)
+static void findTokenValue(const Token* const tok, std::function<bool(const ValueFlow::Value &)> pred, std::function<void(const ValueFlow::Value &)> f)
 {
     auto x = std::find_if(tok->values().begin(), tok->values().end(), pred);
     if (x != tok->values().end())
