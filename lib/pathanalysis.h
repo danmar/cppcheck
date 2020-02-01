@@ -36,8 +36,7 @@ struct PathAnalysis {
             return Progress::Continue;
         });
     }
-    template<class Predicate>
-    Info forwardFind(Predicate pred) {
+    Info forwardFind(std::function<bool(const Info&)> pred) {
         Info result{};
         forward([&](const Info& info) {
             if (pred(info)) {
