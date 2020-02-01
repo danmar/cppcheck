@@ -29,13 +29,7 @@ struct PathAnalysis {
     };
 
     void forward(const std::function<Progress(const Info&)>& f) const;
-    template<class F>
-    void forwardAll(F f) {
-        forward([&](const Info& info) {
-            f(info);
-            return Progress::Continue;
-        });
-    }
+
     Info forwardFind(std::function<bool(const Info&)> pred) {
         Info result{};
         forward([&](const Info& info) {
