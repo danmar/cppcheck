@@ -108,29 +108,27 @@ def compile_cppcheck(cppcheck_path, jobs):
 
 def get_cppcheck_versions(server_address):
     print('Connecting to server to get Cppcheck versions..')
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
-        sock.connect(server_address)
-        sock.send(b'GetCppcheckVersions\n')
-        versions = sock.recv(256)
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.connect(server_address)
+            sock.send(b'GetCppcheckVersions\n')
+            versions = sock.recv(256)
     except socket.error as err:
         print('Failed to get cppcheck versions: ' + str(err))
         return None
-    sock.close()
     return versions.decode('utf-8').split()
 
 
 def get_packages_count(server_address):
     print('Connecting to server to get count of packages..')
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
-        sock.connect(server_address)
-        sock.send(b'getPackagesCount\n')
-        packages = int(sock.recv(64))
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.connect(server_address)
+            sock.send(b'getPackagesCount\n')
+            packages = int(sock.recv(64))
     except socket.error as err:
         print('Failed to get count of packages: ' + str(err))
         return None
-    sock.close()
     return packages
 
 
@@ -213,22 +211,21 @@ def unpack_package(work_path, tgz):
     os.chdir(temp_path)
     found = False
     if tarfile.is_tarfile(tgz):
-        tf = tarfile.open(tgz)
-        for member in tf:
-            if member.name.startswith(('/', '..')):
-                # Skip dangerous file names
-                continue
-            elif member.name.lower().endswith(('.c', '.cpp', '.cxx', '.cc', '.c++', '.h', '.hpp',
-                                               '.h++', '.hxx', '.hh', '.tpp', '.txx', '.qml',
-                                               '.sln', '.vcproj', '.vcxproj')):
-                try:
-                    tf.extract(member.name)
-                    found = True
-                except OSError:
-                    pass
-                except AttributeError:
-                    pass
-        tf.close()
+        with tarfile.open(tgz) as tf:
+            for member in tf:
+                if member.name.startswith(('/', '..')):
+                    # Skip dangerous file names
+                    continue
+                elif member.name.lower().endswith(('.c', '.cpp', '.cxx', '.cc', '.c++', '.h', '.hpp',
+                                                   '.h++', '.hxx', '.hh', '.tpp', '.txx', '.qml',
+                                                   '.sln', '.vcproj', '.vcxproj')):
+                    try:
+                        tf.extract(member.name)
+                        found = True
+                    except OSError:
+                        pass
+                    except AttributeError:
+                        pass
     os.chdir(work_path)
     return found
 
@@ -240,12 +237,8 @@ def has_include(path, includes):
         for name in files:
             filename = os.path.join(root, name)
             try:
-                if sys.version_info.major < 3:
-                    f = open(filename, 'rt')
-                else:
-                    f = open(filename, 'rt', errors='ignore')
-                filedata = f.read()
-                f.close()
+                with open(filename, 'rt', errors='ignore') as f:
+                    filedata = f.read()
                 if re.search(re_expr, filedata, re.MULTILINE):
                     return True
             except IOError:
@@ -418,11 +411,10 @@ def upload_results(package, results, server_address):
     max_retries = 4
     for retry in range(max_retries):
         try:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.connect(server_address)
-            cmd = 'write\n'
-            send_all(sock, cmd + package + '\n' + results + '\nDONE')
-            sock.close()
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                sock.connect(server_address)
+                cmd = 'write\n'
+                send_all(sock, cmd + package + '\n' + results + '\nDONE')
             print('Results have been successfully uploaded.')
             return True
         except socket.error as err:
@@ -439,10 +431,9 @@ def upload_info(package, info_output, server_address):
     max_retries = 3
     for retry in range(max_retries):
         try:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.connect(server_address)
-            send_all(sock, 'write_info\n' + package + '\n' + info_output + '\nDONE')
-            sock.close()
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                sock.connect(server_address)
+                send_all(sock, 'write_info\n' + package + '\n' + info_output + '\nDONE')
             print('Information output has been successfully uploaded.')
             return True
         except socket.error as err:
