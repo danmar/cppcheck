@@ -4612,8 +4612,7 @@ static bool isInBounds(const ValueFlow::Value& value, MathLib::bigint x)
     return true;
 }
 
-template<class Compare>
-static const ValueFlow::Value* getCompareIntValue(const std::list<ValueFlow::Value>& values, Compare compare)
+static const ValueFlow::Value* getCompareIntValue(const std::list<ValueFlow::Value>& values, std::function<bool(MathLib::bigint, MathLib::bigint)> compare)
 {
     const ValueFlow::Value* result = nullptr;
     for (const ValueFlow::Value& value : values) {
