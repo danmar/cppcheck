@@ -38,6 +38,7 @@ class CPPCHECKLIB ValuePtr {
     ValuePtr() : ptr(nullptr), clone() {}
 
     template <class U>
+    // cppcheck-suppress noExplicitConstructor
     ValuePtr(const U& value) : ptr(cloner<U>::apply(&value)), clone(&cloner<U>::apply)
     {}
 

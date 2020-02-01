@@ -30,6 +30,7 @@ struct ForwardAnalyzer {
 
         Action() : flag(0) {}
 
+        // cppcheck-suppress noExplicitConstructor
         Action(unsigned int f) : flag(f) {}
 
         enum {

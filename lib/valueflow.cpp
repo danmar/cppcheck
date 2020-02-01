@@ -2242,7 +2242,7 @@ struct VariableForwardAnalyzer : ForwardAnalyzer {
     ValueFlow::Value value;
     const Settings* settings;
 
-    VariableForwardAnalyzer() {}
+    VariableForwardAnalyzer() = default;
 
     bool isWritableValue() const { return value.isIntValue() || value.isFloatValue(); }
 
@@ -2259,7 +2259,7 @@ struct VariableForwardAnalyzer : ForwardAnalyzer {
                 parent->astOperand2()->hasKnownValue()) {
                 const Token* rhs = parent->astOperand2();
                 const ValueFlow::Value* rhsValue = getKnownValue(rhs, ValueFlow::Value::ValueType::INT);
-                Action a = Action::None;
+                Action a;
                 if (!rhsValue)
                     a = Action::Invalid;
                 else
