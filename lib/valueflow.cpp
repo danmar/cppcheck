@@ -4619,7 +4619,7 @@ static const ValueFlow::Value* getCompareIntValue(const std::list<ValueFlow::Val
         if (!value.isIntValue())
             continue;
         if (result)
-            result = &std::min(value, *result, [&](const ValueFlow::Value& x, const ValueFlow::Value& y) {
+            result = &std::min(value, *result, [compare](const ValueFlow::Value& x, const ValueFlow::Value& y) {
             return compare(x.intvalue, y.intvalue);
         });
         else
