@@ -2363,7 +2363,11 @@ struct VariableForwardAnalyzer : ForwardAnalyzer {
 
     virtual bool IsConditional() const OVERRIDE
     {
-        return value.conditional || value.condition;
+        if (value.conditional)
+            return true;
+        if (value.condition)
+            return !value.isImpossible();
+        return false;
     }
 
     virtual bool UpdateScope(const Token* endBlock, bool) const OVERRIDE
