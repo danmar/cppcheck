@@ -255,9 +255,10 @@ void ImportProject::FileSettings::parseCommand(const std::string &command)
             defs += ';';
         } else if (F=='U')
             undefs.insert(fval);
-        else if (F=='I')
-            includePaths.push_back(fval);
-        else if (F=='s' && fval.compare(0,2,"td") == 0) {
+        else if (F=='I') {
+            if (std::find(includePaths.begin(), includePaths.end(), fval) == includePaths.end())
+                includePaths.push_back(fval);
+        } else if (F=='s' && fval.compare(0,2,"td") == 0) {
             ++pos;
             const std::string stdval = readUntil(command, &pos, " ");
             standard = stdval;
