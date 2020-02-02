@@ -475,7 +475,7 @@ ExprEngine::ConditionalValue::Vector ExprEngine::ArrayValue::read(ExprEngine::Va
                 continue;
             }
             if (auto i = std::dynamic_pointer_cast<ExprEngine::IntRange>(index)) {
-                if (stringLiteral && i->minValue >= 0 && i->minValue == i->maxValue) {
+                if (i->minValue >= 0 && i->minValue == i->maxValue) {
                     int c = 0;
                     if (i->minValue < stringLiteral->size())
                         c = stringLiteral->string[i->minValue];
