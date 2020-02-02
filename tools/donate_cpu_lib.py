@@ -135,20 +135,21 @@ def get_packages_count(server_address):
 
 
 def get_package(server_address, package_index=None):
-    print('Connecting to server to get assigned work..')
     package = b''
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        sock.connect(server_address)
-        if package_index is None:
-            sock.send(b'get\n')
-        else:
-            request = 'getPackageIdx:' + str(package_index) + '\n'
-            sock.send(request.encode())
-        package = sock.recv(256)
-    except socket.error:
-        pass
-    sock.close()
+    while not package:
+        print('Connecting to server to get assigned work..')
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                sock.connect(server_address)
+                if package_index is None:
+                    sock.send(b'get\n')
+                else:
+                    request = 'getPackageIdx:' + str(package_index) + '\n'
+                    sock.send(request.encode())
+                package = sock.recv(256)
+        except socket.error:
+            print("network or server might be temporarily down.. will try again in 30 seconds..")
+            time.sleep(30)
     return package.decode('utf-8')
 
 

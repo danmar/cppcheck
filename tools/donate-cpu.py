@@ -160,10 +160,6 @@ while True:
         package = package_url
     else:
         package = get_package(server_address)
-    while len(package) == 0:
-        print("network or server might be temporarily down.. will try again in 30 seconds..")
-        time.sleep(30)
-        package = get_package(server_address)
     tgz = download_package(work_path, package, bandwidth_limit)
     if tgz is None:
         print("No package downloaded")
