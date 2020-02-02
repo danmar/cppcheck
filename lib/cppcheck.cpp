@@ -362,9 +362,10 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
     temp.mSettings.userDefines += fs.cppcheckDefines();
     temp.mSettings.includePaths = fs.includePaths;
     temp.mSettings.userUndefs = fs.undefs;
-    if (fs.platformType != Settings::Unspecified) {
+    if (fs.platformType != Settings::Unspecified)
         temp.mSettings.platform(fs.platformType);
-    }
+    if (mSettings.clang)
+        temp.check(Path::simplifyPath(fs.filename));
     std::ifstream fin(fs.filename);
     return temp.checkFile(Path::simplifyPath(fs.filename), fs.cfg, fin);
 }
