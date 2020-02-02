@@ -1082,6 +1082,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     settings->userDefines = temp.userDefines;
     settings->userUndefs = temp.userUndefs;
     settings->addons = temp.addons;
+    settings->clang = temp.clang;
     settings->clangTidy = temp.clangTidy;
 
     for (const std::string &p : paths)
