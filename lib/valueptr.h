@@ -37,37 +37,37 @@ class CPPCHECKLIB ValuePtr {
     using element_type = T;
     using cloner_type = decltype(&cloner<T>::apply);
 
-    ValuePtr() : ptr(nullptr), clone() {}
+    ValuePtr() : mPtr(nullptr), mClone() {}
 
     template <class U>
     // cppcheck-suppress noExplicitConstructor
-    ValuePtr(const U& value) : ptr(cloner<U>::apply(&value)), clone(&cloner<U>::apply)
+    ValuePtr(const U& value) : mPtr(cloner<U>::apply(&value)), mClone(&cloner<U>::apply)
     {}
 
-    ValuePtr(const ValuePtr& rhs) : ptr(nullptr), clone(rhs.clone)
+    ValuePtr(const ValuePtr& rhs) : mPtr(nullptr), mClone(rhs.mClone)
     {
         if (rhs) {
-            ptr.reset(clone(rhs.get()));
+            mPtr.reset(mClone(rhs.get()));
         }
     }
-    ValuePtr(ValuePtr&& rhs) : ptr(std::move(rhs.ptr)), clone(std::move(rhs.clone)) {}
+    ValuePtr(ValuePtr&& rhs) : mPtr(std::move(rhs.mPtr)), mClone(std::move(rhs.mClone)) {}
 
-    pointer release() { return ptr.release(); }
+    pointer release() { return mPtr.release(); }
 
-    T* get() noexcept { return ptr.get(); }
-    const T* get() const noexcept { return ptr.get(); }
+    T* get() NOEXCEPT { return mPtr.get(); }
+    const T* get() const NOEXCEPT { return mPtr.get(); }
 
     T& operator*() { return *get(); }
     const T& operator*() const { return *get(); }
 
-    T* operator->() noexcept { return get(); }
-    const T* operator->() const noexcept { return get(); }
+    T* operator->() NOEXCEPT { return get(); }
+    const T* operator->() const NOEXCEPT { return get(); }
 
     void swap(ValuePtr& rhs)
     {
         using std::swap;
-        swap(ptr, rhs.ptr);
-        swap(clone, rhs.clone);
+        swap(mPtr, rhs.mPtr);
+        swap(mClone, rhs.mClone);
     }
 
     ValuePtr<T>& operator=(ValuePtr rhs)
@@ -76,12 +76,12 @@ class CPPCHECKLIB ValuePtr {
         return *this;
     }
 
-    operator bool() const noexcept { return !!ptr; }
+    operator bool() const NOEXCEPT { return !!mPtr; }
     ~ValuePtr() {}
 
   private:
-    std::shared_ptr<T> ptr;
-    cloner_type clone;
+    std::shared_ptr<T> mPtr;
+    cloner_type mClone;
 };
 
 #endif

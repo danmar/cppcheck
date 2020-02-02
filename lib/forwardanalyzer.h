@@ -28,10 +28,10 @@ class Settings;
 struct ForwardAnalyzer {
     struct Action {
 
-        Action() : flag(0) {}
+        Action() : mFlag(0) {}
 
         // cppcheck-suppress noExplicitConstructor
-        Action(unsigned int f) : flag(f) {}
+        Action(unsigned int f) : mFlag(f) {}
 
         enum {
             None = 0,
@@ -41,9 +41,9 @@ struct ForwardAnalyzer {
             Inconclusive = (1 << 3),
         };
 
-        void set(unsigned int f, bool state = true) { flag = state ? flag | f : flag & ~f; }
+        void set(unsigned int f, bool state = true) { mFlag = state ? mFlag | f : mFlag & ~f; }
 
-        bool get(unsigned int f) const { return ((flag & f) != 0); }
+        bool get(unsigned int f) const { return ((mFlag & f) != 0); }
 
         bool isRead() const { return get(Read); }
 
@@ -53,13 +53,13 @@ struct ForwardAnalyzer {
 
         bool isInconclusive() const { return get(Inconclusive); }
 
-        bool isNone() const { return flag == None; }
+        bool isNone() const { return mFlag == None; }
 
         bool isModified() const { return isWrite() || isInvalid(); }
 
         Action& operator|=(Action a)
         {
-            set(a.flag);
+            set(a.mFlag);
             return *this;
         }
 
@@ -69,12 +69,12 @@ struct ForwardAnalyzer {
             return a;
         }
 
-        friend bool operator==(Action a, Action b) { return a.flag == b.flag; }
+        friend bool operator==(Action a, Action b) { return a.mFlag == b.mFlag; }
 
-        friend bool operator!=(Action a, Action b) { return a.flag != b.flag; }
+        friend bool operator!=(Action a, Action b) { return a.mFlag != b.mFlag; }
 
       private:
-        unsigned int flag;
+        unsigned int mFlag;
     };
     /// Analyze a token
     virtual Action Analyze(const Token* tok) const = 0;
