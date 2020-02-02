@@ -254,14 +254,14 @@ unsigned int CppCheck::check(const std::string &path)
         mErrorLogger.reportOut(std::string("Checking ") + path + "...");
 
         const std::string clang = Path::isCPP(path) ? "clang++" : "clang";
-        const std::string temp = mSettings.buildDir + "/__temp__.c";
+        const std::string temp = mSettings.buildDir + (Path::isCPP(path) ? "/__temp__.cpp" : "/__temp__.c");
         const std::string clangcmd = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "") + ".clang-cmd";
         const std::string clangStderr = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "") + ".clang-stderr";
 
         const std::string cmd1 = clang + " -v -fsyntax-only " + temp + " 2>&1";
         const std::pair<bool, std::string> &result1 = executeCommand(cmd1);
         if (!result1.first || result1.second.find(" -cc1 ") == std::string::npos) {
-            std::cerr << "Failed to execute '" + cmd1 + "'" << std::endl;
+            mErrorLogger.reportOut("Failed to execute '" + cmd1 + "':" + result1.second);
             return 0;
         }
         std::istringstream details(result1.second);

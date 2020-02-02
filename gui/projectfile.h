@@ -363,6 +363,9 @@ public:
         mCheckUnknownFunctionReturn = s;
     }
 
+    /** Use Clang parser */
+    bool clangParser;
+
 protected:
 
     /**

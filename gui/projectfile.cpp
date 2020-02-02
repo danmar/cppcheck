@@ -45,6 +45,7 @@ ProjectFile::ProjectFile(const QString &filename, QObject *parent) :
 
 void ProjectFile::clear()
 {
+    clangParser = false;
     mRootPath.clear();
     mBuildDir.clear();
     mImportProject.clear();
@@ -110,6 +111,9 @@ bool ProjectFile::read(const QString &filename)
 
             if (xmlReader.name() == CppcheckXml::AnalyzeAllVsConfigsElementName)
                 mAnalyzeAllVsConfigs = readBool(xmlReader);
+
+            if (xmlReader.name() == CppcheckXml::Parser)
+                clangParser = true;
 
             if (xmlReader.name() == CppcheckXml::CheckHeadersElementName)
                 mCheckHeaders = readBool(xmlReader);
@@ -708,6 +712,12 @@ bool ProjectFile::write(const QString &filename)
     xmlWriter.writeStartElement(CppcheckXml::AnalyzeAllVsConfigsElementName);
     xmlWriter.writeCharacters(mAnalyzeAllVsConfigs ? "true" : "false");
     xmlWriter.writeEndElement();
+
+    if (clangParser) {
+        xmlWriter.writeStartElement(CppcheckXml::Parser);
+        xmlWriter.writeCharacters("clang");
+        xmlWriter.writeEndElement();
+    }
 
     xmlWriter.writeStartElement(CppcheckXml::CheckHeadersElementName);
     xmlWriter.writeCharacters(mCheckHeaders ? "true" : "false");

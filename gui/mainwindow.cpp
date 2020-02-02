@@ -839,6 +839,8 @@ Settings MainWindow::getCppcheckSettings()
             result.userDefines += define.toStdString();
         }
 
+        result.clang = mProjectFile->clangParser;
+
         const QStringList undefines = mProjectFile->getUndefines();
         foreach (QString undefine, undefines)
             result.userUndefs.insert(undefine.toStdString());

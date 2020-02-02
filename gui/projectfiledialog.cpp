@@ -260,6 +260,10 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     mUI.mCheckHeaders->setChecked(projectFile->getCheckHeaders());
     mUI.mCheckUnusedTemplates->setChecked(projectFile->getCheckUnusedTemplates());
     mUI.mMaxCtuDepth->setValue(projectFile->getMaxCtuDepth());
+    if (projectFile->clangParser)
+        mUI.mBtnClangParser->setChecked(true);
+    else
+        mUI.mBtnCppcheckParser->setChecked(true);
     setExcludedPaths(projectFile->getExcludedPaths());
     setLibraries(projectFile->getLibraries());
     const QString platform = projectFile->getPlatform();
@@ -361,6 +365,7 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setCheckPaths(getCheckPaths());
     projectFile->setExcludedPaths(getExcludedPaths());
     projectFile->setLibraries(getLibraries());
+    projectFile->clangParser = mUI.mBtnClangParser->isChecked();
     if (mUI.mComboBoxPlatform->currentText().endsWith(".xml"))
         projectFile->setPlatform(mUI.mComboBoxPlatform->currentText());
     else {

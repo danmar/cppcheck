@@ -345,6 +345,32 @@
         </widget>
        </item>
        <item>
+        <widget class="QGroupBox" name="groupBox_10">
+         <property name="title">
+          <string>Parser</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_14">
+          <item>
+           <widget class="QRadioButton" name="mBtnCppcheckParser">
+            <property name="text">
+             <string>Cppcheck (built in)</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="mBtnClangParser">
+            <property name="text">
+             <string>Clang</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <widget class="QGroupBox" name="groupBox_6">
          <property name="title">
           <string>Platform</string>
