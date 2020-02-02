@@ -16,8 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GUARD_VALUEPTR_HPP
-#define GUARD_VALUEPTR_HPP
+//---------------------------------------------------------------------------
+#ifndef valueptrH
+#define valueptrH
+//---------------------------------------------------------------------------
 
 #include "config.h"
 #include <functional>

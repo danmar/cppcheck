@@ -278,7 +278,7 @@ static bool hasToken(const Token * startTok, const Token * stopTok, const Token 
 }
 
 template <class T>
-T* nextAfterAstRightmostLeafGeneric(T* tok)
+static T* nextAfterAstRightmostLeafGeneric(T* tok)
 {
     const Token * rightmostLeaf = tok;
     if (!rightmostLeaf || !rightmostLeaf->astOperand1())
