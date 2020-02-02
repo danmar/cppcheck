@@ -1551,7 +1551,10 @@ bool isNullOperand(const Token *expr)
 {
     if (!expr)
         return false;
-    if (Token::Match(expr, "( %name% %name%| * )") && Token::Match(expr->astOperand1(), "0|NULL|nullptr"))
+    if (Token::Match(expr, "( %name% %name%| * )") &&
+        (Token::Match(expr->astOperand1(), "NULL|nullptr") ||
+         (MathLib::isNullValue(expr->astOperand1()->str()) &&
+          MathLib::isInt(expr->astOperand1()->str()))))
         return true;
     return Token::Match(expr, "NULL|nullptr");
 }
