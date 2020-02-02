@@ -380,44 +380,46 @@ class MatchCompiler:
         )
 
     def _replaceTokenMatch(self, line, linenr, filename):
-        while True:
-            is_simplematch = False
-            pos1 = line.find('Token::Match(')
-            if pos1 == -1:
-                is_simplematch = True
-                pos1 = line.find('Token::simpleMatch(')
-            if pos1 == -1:
-                break
+        for func in ('Match', 'simpleMatch'):
+            is_simplematch = func == 'simpleMatch'
+            pattern_start = 0
+            while True:
+                pos1 = line.find('Token::' + func + '(', pattern_start)
+                if pos1 == -1:
+                    break
 
-            res = self.parseMatch(line, pos1)
-            if res is None:
-                break
+                res = self.parseMatch(line, pos1)
+                if res is None:
+                    break
 
-            # assert that Token::Match has either 2 or 3 arguments
-            assert(len(res) == 3 or len(res) == 4)
+                # assert that Token::Match has either 2 or 3 arguments
+                assert(len(res) == 3 or len(res) == 4)
 
-            end_pos = len(res[0])
-            tok = res[1]
-            raw_pattern = res[2]
-            varId = None
-            if len(res) == 4:
-                varId = res[3]
+                end_pos = len(res[0])
+                tok = res[1]
+                raw_pattern = res[2]
+                varId = None
+                if len(res) == 4:
+                    varId = res[3]
 
-            res = re.match(r'\s*"((?:.|\\")*?)"\s*$', raw_pattern)
-            if res is None:
-                if self._showSkipped:
-                    print(filename + ":" + str(linenr) + " skipping match pattern:" + raw_pattern)
-                break  # Non-const pattern - bailout
+                pattern_start = pos1 + end_pos
+                res = re.match(r'\s*"((?:.|\\")*?)"\s*$', raw_pattern)
+                if res is None:
+                    if self._showSkipped:
+                        print(filename + ":" + str(linenr) + " skipping match pattern:" + raw_pattern)
+                    continue # Non-const pattern - bailout
 
-            pattern = res.group(1)
-            line = self._replaceSpecificTokenMatch(
-                is_simplematch,
-                line,
-                pos1,
-                end_pos,
-                pattern,
-                tok,
-                varId)
+                pattern = res.group(1)
+                orig_len = len(line)
+                line = self._replaceSpecificTokenMatch(
+                    is_simplematch,
+                    line,
+                    pos1,
+                    end_pos,
+                    pattern,
+                    tok,
+                    varId)
+                pattern_start += len(line) - orig_len
 
         return line
 
