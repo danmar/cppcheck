@@ -22,7 +22,7 @@ import operator
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.3"
+SERVER_VERSION = "1.3.4"
 
 OLD_VERSION = '1.90'
 
@@ -82,8 +82,7 @@ def overviewReport() -> str:
     return html
 
 
-def fmt(a: str, b: str, c: str = None, d: str = None, e: str = None, link: bool = True) -> str:
-    column_width = [40, 10, 5, 7, 7, 8]
+def fmt(a: str, b: str, c: str = None, d: str = None, e: str = None, link: bool = True, column_width = [40, 10, 5, 7, 7, 8]) -> str:
     ret = a
     while len(ret) < column_width[0]:
         ret += ' '
@@ -615,12 +614,9 @@ def timeReport(resultPath: str) -> str:
     html = '<html><head><title>Time report</title></head><body>\n'
     html += '<h1>Time report</h1>\n'
     html += '<pre>\n'
-    column_widths = [25, 10, 10, 10]
+    column_width = [40, 10, 10, 10, 10]
     html += '<b>'
-    html += 'Package '.ljust(column_widths[0]) + ' ' + \
-            OLD_VERSION.rjust(column_widths[1]) + ' ' + \
-            'Head'.rjust(column_widths[2]) + ' ' + \
-            'Factor'.rjust(column_widths[3])
+    html += fmt('Package', OLD_VERSION, 'Head', 'Factor', column_width=column_width)
     html += '</b>\n'
 
     total_time_base = 0.0
@@ -656,10 +652,8 @@ def timeReport(resultPath: str) -> str:
                     time_factor = time_head / time_base
                 else:
                     time_factor = 0.0
-                html += filename[len(resultPath)+1:].ljust(column_widths[0]) + ' ' + \
-                    split_line[2].rjust(column_widths[1]) + ' ' + \
-                    split_line[1].rjust(column_widths[2]) + ' ' + \
-                    '{:.2f}'.format(time_factor).rjust(column_widths[3]) + '\n'
+                html += fmt(filename[len(resultPath)+1:], split_line[2], split_line[1],
+                    '{:.2f}'.format(time_factor), column_width=column_width) + '\n'
             break
 
     html += '\n'
@@ -670,10 +664,10 @@ def timeReport(resultPath: str) -> str:
     else:
         total_time_factor = 0.0
     html += 'Time for all packages (not just the ones listed above):\n'
-    html += 'Total time: '.ljust(column_widths[0]) + ' ' + \
-            '{:.1f}'.format(total_time_base).rjust(column_widths[1]) + ' ' + \
-            '{:.1f}'.format(total_time_head).rjust(column_widths[2]) + ' ' + \
-            '{:.2f}'.format(total_time_factor).rjust(column_widths[3])
+    html += fmt('Total time:',
+            '{:.1f}'.format(total_time_base),
+            '{:.1f}'.format(total_time_head),
+            '{:.2f}'.format(total_time_factor), link=False, column_width=column_width)
 
     html += '\n'
     html += '</pre>\n'

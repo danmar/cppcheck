@@ -251,7 +251,8 @@ const char * CppCheck::extraVersion()
 unsigned int CppCheck::check(const std::string &path)
 {
     if (mSettings.clang) {
-        mErrorLogger.reportOut(std::string("Checking ") + path + "...");
+        if (!mSettings.quiet)
+            mErrorLogger.reportOut(std::string("Checking ") + path + "...");
 
         const std::string clang = Path::isCPP(path) ? "clang++" : "clang";
         const std::string temp = mSettings.buildDir + (Path::isCPP(path) ? "/__temp__.cpp" : "/__temp__.c");
@@ -364,8 +365,10 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
     temp.mSettings.userUndefs = fs.undefs;
     if (fs.platformType != Settings::Unspecified)
         temp.mSettings.platform(fs.platformType);
-    if (mSettings.clang)
+    if (mSettings.clang) {
+        temp.mSettings.includePaths.insert(temp.mSettings.includePaths.end(), fs.systemIncludePaths.cbegin(), fs.systemIncludePaths.cend());
         temp.check(Path::simplifyPath(fs.filename));
+    }
     std::ifstream fin(fs.filename);
     return temp.checkFile(Path::simplifyPath(fs.filename), fs.cfg, fin);
 }
