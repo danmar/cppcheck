@@ -37,10 +37,8 @@
 #  define NOEXCEPT
 #endif
 
-template<class T>
-struct id_type : T {};
-
-#define REQUIRES(msg, ...) class=typename std::enable_if<id_type<decltype(__VA_ARGS__)>::value>::type
+#define REQUIRES_BOOL(...) std::enable_if<true, decltype(__VA_ARGS__)>::type::value
+#define REQUIRES(msg, ...) class=typename std::enable_if<REQUIRES_BOOL(__VA_ARGS__)>::type
 
 #include <string>
 static const std::string emptyString;
