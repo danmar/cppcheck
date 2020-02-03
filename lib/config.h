@@ -37,7 +37,7 @@
 #  define NOEXCEPT
 #endif
 
-#define REQUIRES(msg, ...) class=typename std::enable_if<bool(__VA_ARGS__)>::type
+#define REQUIRES(msg, ...) class=typename std::enable_if<(__VA_ARGS__)>::type
 
 #include <string>
 static const std::string emptyString;
