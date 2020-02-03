@@ -37,7 +37,14 @@
 #  define NOEXCEPT
 #endif
 
-#define REQUIRES(msg, ...) class=typename std::enable_if<(__VA_ARGS__)>::type
+
+template<class T>
+constexpr bool as_bool(T x)
+{
+    return x;
+}
+
+#define REQUIRES(msg, ...) class=typename std::enable_if<as_bool(__VA_ARGS__)>::type
 
 #include <string>
 static const std::string emptyString;
