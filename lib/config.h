@@ -37,7 +37,7 @@
 #  define NOEXCEPT
 #endif
 
-#define REQUIRES_BOOL(...) std::enable_if<true, decltype(__VA_ARGS__)>::type::value
+#define REQUIRES_BOOL(...) std::enable_if<true, decltype(std::integral_constant<bool, (__VA_ARGS__)>{})>::type::value
 #define REQUIRES(msg, ...) class=typename std::enable_if<REQUIRES_BOOL(__VA_ARGS__)>::type
 
 #include <string>
