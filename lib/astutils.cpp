@@ -277,7 +277,7 @@ static bool hasToken(const Token * startTok, const Token * stopTok, const Token 
     return false;
 }
 
-template <class T, REQUIRES("Only Token class is expected", std::is_convertible<T*, const Token*>())>
+template <class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>{})>
 static T* nextAfterAstRightmostLeafGeneric(T* tok)
 {
     const Token * rightmostLeaf = tok;
@@ -359,7 +359,7 @@ bool astIsRHS(const Token* tok)
     return parent->astOperand2() == tok;
 }
 
-template <class T, REQUIRES("Only Token class is expected", std::is_convertible<T*, const Token*>())>
+template <class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>{})>
 static T* getCondTokImpl(T* tok)
 {
     if (!tok)
@@ -374,7 +374,7 @@ static T* getCondTokImpl(T* tok)
     return tok->next()->astOperand2();
 }
 
-template <class T, REQUIRES("Only Token class is expected", std::is_convertible<T*, const Token*>())>
+template <class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>{})>
 static T* getCondTokFromEndImpl(T* endBlock)
 {
     if (!Token::simpleMatch(endBlock, "}"))
