@@ -3137,6 +3137,14 @@ private:
             ASSERT_EQUALS(exp, tok(code));
         }
         {
+            const char code[] = "template <long a, bool = 0 != a> struct b {};\n"
+                                "b<1> b1;";
+            const char exp[] = "struct b<1,true> ; "
+                               "b<1,true> b1 ; "
+                               "struct b<1,true> { } ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
             const char code[] = "template <long a, bool = a < 0> struct b {};\n"
                                 "b<1> b1;";
             const char exp[] = "struct b<1,false> ; "
@@ -3146,6 +3154,22 @@ private:
         }
         {
             const char code[] = "template <long a, bool = 0 < a> struct b {};\n"
+                                "b<1> b1;";
+            const char exp[] = "struct b<1,true> ; "
+                               "b<1,true> b1 ; "
+                               "struct b<1,true> { } ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            const char code[] = "template <long a, bool = 0 <= a> struct b {};\n"
+                                "b<1> b1;";
+            const char exp[] = "struct b<1,true> ; "
+                               "b<1,true> b1 ; "
+                               "struct b<1,true> { } ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            const char code[] = "template <long a, bool = a >= 0> struct b {};\n"
                                 "b<1> b1;";
             const char exp[] = "struct b<1,true> ; "
                                "b<1,true> b1 ; "
