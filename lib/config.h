@@ -37,14 +37,7 @@
 #  define NOEXCEPT
 #endif
 
-
-template<class T>
-constexpr bool as_bool(T x)
-{
-    return x;
-}
-
-#define REQUIRES(msg, ...) class=typename std::enable_if<as_bool(__VA_ARGS__)>::type
+#define REQUIRES(msg, ...) class=typename std::enable_if<decltype(__VA_ARGS__)::value>::type
 
 #include <string>
 static const std::string emptyString;
