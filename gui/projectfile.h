@@ -366,6 +366,8 @@ public:
     /** Use Clang parser */
     bool clangParser;
 
+    /** Bug hunting */
+    bool bugHunting;
 protected:
 
     /**

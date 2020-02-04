@@ -840,6 +840,7 @@ Settings MainWindow::getCppcheckSettings()
         }
 
         result.clang = mProjectFile->clangParser;
+        result.bugHunting = mProjectFile->bugHunting;
 
         const QStringList undefines = mProjectFile->getUndefines();
         foreach (QString undefine, undefines)

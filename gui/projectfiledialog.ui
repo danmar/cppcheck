@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>888</width>
-    <height>546</height>
+    <height>600</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -388,6 +388,13 @@
           <string>Analysis</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_9">
+          <item>
+           <widget class="QCheckBox" name="mBugHunting">
+            <property name="text">
+             <string>Bug hunting</string>
+            </property>
+           </widget>
+          </item>
           <item>
            <widget class="QCheckBox" name="mCheckHeaders">
             <property name="text">
