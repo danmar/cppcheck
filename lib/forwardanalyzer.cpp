@@ -10,7 +10,7 @@ struct ForwardTraversal {
 
     std::pair<bool, bool> evalCond(const Token* tok)
     {
-        std::vector<int> result = analyzer->Evaluate(tok);
+        std::vector<int> result = analyzer->evaluate(tok);
         bool checkThen = std::any_of(result.begin(), result.end(), [](int x) { return x; });
         bool checkElse = std::any_of(result.begin(), result.end(), [](int x) { return !x; });
         return std::make_pair(checkThen, checkElse);
@@ -18,9 +18,9 @@ struct ForwardTraversal {
 
     Progress update(Token* tok)
     {
-        ForwardAnalyzer::Action action = analyzer->Analyze(tok);
+        ForwardAnalyzer::Action action = analyzer->analyze(tok);
         if (!action.isNone())
-            analyzer->Update(tok, action);
+            analyzer->update(tok, action);
         if (action.isInvalid())
             return Progress::Break;
         return Progress::Continue;
@@ -82,7 +82,7 @@ struct ForwardTraversal {
             std::tie(checkThen, checkElse) = evalCond(condTok);
             if (!checkThen && !checkElse) {
                 // Stop if the value is conditional
-                if (analyzer->IsConditional())
+                if (analyzer->isConditional())
                     return Progress::Break;
                 checkThen = true;
                 checkElse = true;
@@ -108,7 +108,7 @@ struct ForwardTraversal {
     T* findRange(T* start, const Token* end, Predicate pred)
     {
         for (T* tok = start; tok && tok != end; tok = tok->next()) {
-            ForwardAnalyzer::Action action = analyzer->Analyze(tok);
+            ForwardAnalyzer::Action action = analyzer->analyze(tok);
             if (pred(action))
                 return tok;
         }
@@ -125,7 +125,7 @@ struct ForwardTraversal {
     {
         ForwardAnalyzer::Action result = ForwardAnalyzer::Action::None;
         for (const Token* tok = start; tok && tok != end; tok = tok->next()) {
-            ForwardAnalyzer::Action action = analyzer->Analyze(tok);
+            ForwardAnalyzer::Action action = analyzer->analyze(tok);
             if (action.isModified() || action.isInconclusive())
                 return action;
             result = action;
@@ -135,7 +135,7 @@ struct ForwardTraversal {
 
     void forkScope(const Token* endBlock, bool isModified = false)
     {
-        if (analyzer->UpdateScope(endBlock, isModified)) {
+        if (analyzer->updateScope(endBlock, isModified)) {
             ForwardTraversal ft = *this;
             ft.updateRange(endBlock->link(), endBlock);
         }
@@ -172,10 +172,10 @@ struct ForwardTraversal {
     {
         ForwardAnalyzer::Action a = analyzeScope(endBlock);
         if (a.isInconclusive()) {
-            if (!analyzer->LowerToInconclusive())
+            if (!analyzer->lowerToInconclusive())
                 return Progress::Break;
         } else if (a.isModified()) {
-            if (!analyzer->LowerToPossible())
+            if (!analyzer->lowerToPossible())
                 return Progress::Break;
         }
         // Traverse condition after lowering
@@ -214,13 +214,13 @@ struct ForwardTraversal {
                 if (!scope)
                     return Progress::Break;
                 tok = skipTo(tok, scope->bodyEnd, end);
-                if (!analyzer->LowerToPossible())
+                if (!analyzer->lowerToPossible())
                     return Progress::Break;
                 // TODO: Dont break, instead move to the outer scope
                 if (!tok)
                     return Progress::Break;
             } else if (Token::Match(tok, "%name% :") || Token::simpleMatch(tok, "case")) {
-                if (!analyzer->LowerToPossible())
+                if (!analyzer->lowerToPossible())
                     return Progress::Break;
             } else if (Token::simpleMatch(tok, "}") && Token::Match(tok->link()->previous(), ")|else {")) {
                 const bool inElse = Token::simpleMatch(tok->link()->previous(), "else {");
@@ -228,12 +228,12 @@ struct ForwardTraversal {
                 if (!condTok)
                     return Progress::Break;
                 if (!condTok->hasKnownIntValue()) {
-                    if (!analyzer->LowerToPossible())
+                    if (!analyzer->lowerToPossible())
                         return Progress::Break;
                 } else if (condTok->values().front().intvalue == !inElse) {
                     return Progress::Break;
                 }
-                analyzer->Assume(condTok, !inElse);
+                analyzer->assume(condTok, !inElse);
                 if (Token::simpleMatch(tok, "} else {"))
                     tok = tok->linkAt(2);
             } else if (Token::Match(tok, "if|while|for (") && Token::simpleMatch(tok->next()->link(), ") {")) {
@@ -302,18 +302,18 @@ struct ForwardTraversal {
                         if (checkThen) {
                             return Progress::Break;
                         } else {
-                            if (analyzer->IsConditional())
+                            if (analyzer->isConditional())
                                 return Progress::Break;
-                            analyzer->Assume(condTok, false);
+                            analyzer->assume(condTok, false);
                         }
                     }
                     if (thenAction.isInconclusive() || elseAction.isInconclusive()) {
-                        if (!analyzer->LowerToInconclusive())
+                        if (!analyzer->lowerToInconclusive())
                             return Progress::Break;
                     } else if (thenAction.isModified() || elseAction.isModified()) {
-                        if (!analyzer->LowerToPossible())
+                        if (!analyzer->lowerToPossible())
                             return Progress::Break;
-                        analyzer->Assume(condTok, elseAction.isModified());
+                        analyzer->assume(condTok, elseAction.isModified());
                     }
                 }
             } else if (Token::simpleMatch(tok, "} else {")) {
@@ -330,7 +330,7 @@ struct ForwardTraversal {
                 if (checkElse)
                     return Progress::Break;
                 if (!checkThen)
-                    analyzer->Assume(condTok, true);
+                    analyzer->assume(condTok, true);
             } else if (Token::simpleMatch(tok, "switch (")) {
                 if (updateRecursive(tok->next()->astOperand2()) == Progress::Break)
                     return Progress::Break;

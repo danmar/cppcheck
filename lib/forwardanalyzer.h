@@ -77,21 +77,21 @@ struct ForwardAnalyzer {
         unsigned int mFlag;
     };
     /// Analyze a token
-    virtual Action Analyze(const Token* tok) const = 0;
+    virtual Action analyze(const Token* tok) const = 0;
     /// Update the state of the value
-    virtual void Update(Token* tok, Action a) = 0;
+    virtual void update(Token* tok, Action a) = 0;
     /// Try to evaluate the value of a token(most likely a condition)
-    virtual std::vector<int> Evaluate(const Token* tok) const = 0;
+    virtual std::vector<int> evaluate(const Token* tok) const = 0;
     /// Lower any values to possible
-    virtual bool LowerToPossible() = 0;
+    virtual bool lowerToPossible() = 0;
     /// Lower any values to inconclusive
-    virtual bool LowerToInconclusive() = 0;
+    virtual bool lowerToInconclusive() = 0;
     /// If the analysis is unsure whether to update a scope, this will return true if the analysis should bifurcate the scope
-    virtual bool UpdateScope(const Token* endBlock, bool modified) const = 0;
+    virtual bool updateScope(const Token* endBlock, bool modified) const = 0;
     /// If the value is conditional
-    virtual bool IsConditional() const = 0;
+    virtual bool isConditional() const = 0;
     /// The condtion that wil be assumes during analysis
-    virtual void Assume(const Token* tok, bool state) = 0;
+    virtual void assume(const Token* tok, bool state) = 0;
     virtual ~ForwardAnalyzer() {}
 };
 
