@@ -2950,8 +2950,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         assert(mTokenList.validateToken(tok2)); // that assertion fails on examples from #6021
 
         const Token *startToken = tok2;
-        while (Token::Match(startToken->tokAt(-2), "%name% :: %name%") ||
-               Token::Match(startToken->tokAt(-2), "> :: %name%")) {
+        while (Token::Match(startToken->tokAt(-2), ">|%name% :: %name%")) {
             if (startToken->strAt(-2) == ">") {
                 const Token * tok3 = startToken->tokAt(-2)->findOpeningBracket();
                 if (tok3)
@@ -3012,8 +3011,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         assert(mTokenList.validateToken(tok2)); // that assertion fails on examples from #6021
 
         Token *startToken = tok2;
-        while (Token::Match(startToken->tokAt(-2), "%name% :: %name%") ||
-               Token::Match(startToken->tokAt(-2), "> :: %name%")) {
+        while (Token::Match(startToken->tokAt(-2), ">|%name% :: %name%")) {
             if (startToken->strAt(-2) == ">") {
                 const Token * tok3 = startToken->tokAt(-2)->findOpeningBracket();
                 if (tok3)
