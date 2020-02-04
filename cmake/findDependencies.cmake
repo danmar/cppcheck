@@ -11,6 +11,7 @@ if (HAVE_RULES)
     if (NOT PCRE)
         message(FATAL_ERROR "pcre dependency for RULES has not been found")
     endif()
+    find_path(PCRE_INCLUDE pcre.h)
 endif()
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
