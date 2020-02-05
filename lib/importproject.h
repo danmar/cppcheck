@@ -81,6 +81,7 @@ public:
         void setIncludePaths(const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables);
     };
     std::list<FileSettings> fileSettings;
+    Type mType;
 
     void selectOneVsConfig(cppcheck::Platform::PlatformType platform);
 
