@@ -716,10 +716,10 @@ bool TemplateSimplifier::getTemplateDeclarations()
             continue;
         // skip to last nested template parameter
         const Token *tok1 = tok;
-        while (tok1 && tok1->next() && Token::simpleMatch(tok1->next()->findClosingBracket(), "> template <")) {
+        while (tok1 && tok1->next()) {
             const Token *closing = tok1->next()->findClosingBracket();
-            if (!closing)
-                syntaxError(tok1->next());
+            if (!Token::simpleMatch(closing, "> template <"))
+                break;
             tok1 = closing->next();
         }
         if (!tok1)
