@@ -1029,6 +1029,10 @@ union __union_21_1 { int a; }; // 21.1 19.2
 typedef union { int a; } _union_21_1_t; // 21.1 19.2
 typedef union { int a; } _Union_21_1_t; // 21.1 19.2
 typedef union { int a; } __union_21_1_t; // 21.1 19.2
+#define sqrt bar      // 21.1
+#define cos mycos     // 21.1
+#define sin foo       // 21.1
+#undef __LINE__       // 21.1 20.5
 
 void misra_21_3() {
   p1=malloc(10); // 21.3
