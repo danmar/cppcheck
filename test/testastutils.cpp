@@ -119,6 +119,10 @@ private:
         ASSERT_EQUALS(true, isNullOperand("(void*)0;"));
         ASSERT_EQUALS(true, isNullOperand("(void*)0U;"));
         ASSERT_EQUALS(true, isNullOperand("(void*)0x0LL;"));
+        ASSERT_EQUALS(true, isNullOperand("NULL;"));
+        ASSERT_EQUALS(true, isNullOperand("nullptr;"));
+        ASSERT_EQUALS(true, isNullOperand("(void*)NULL;"));
+        ASSERT_EQUALS(true, isNullOperand("static_cast<int*>(0);"));
         ASSERT_EQUALS(false, isNullOperand("0;"));
         ASSERT_EQUALS(false, isNullOperand("(void*)0.0;"));
         ASSERT_EQUALS(false, isNullOperand("(void*)1;"));
