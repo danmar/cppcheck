@@ -220,7 +220,7 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
     return ret;
 }
 
-bool isTemporary(bool cpp, const Token* tok, const Library* library)
+bool isTemporary(bool cpp, const Token* tok, const Library* library, bool unknown)
 {
     if (!tok)
         return false;
@@ -251,7 +251,7 @@ bool isTemporary(bool cpp, const Token* tok, const Library* library)
             std::string returnType = library->returnValueType(ftok);
             return !returnType.empty() && returnType.back() != '&';
         } else {
-            return false;
+            return unknown;
         }
     }
     return true;
