@@ -1238,8 +1238,11 @@ void TemplateSimplifier::simplifyTemplateAliases()
                 while (tok2 && !Token::Match(tok2, "[,>;{}]")) {
                     if (tok2->link() && Token::Match(tok2, "(|["))
                         tok2 = tok2->link();
-                    else if (tok2->str() == "<")
+                    else if (tok2->str() == "<") {
                         tok2 = tok2->findClosingBracket();
+                        if (!tok2)
+                            break;
+                    }
                     tok2 = tok2->next();
                 }
 
