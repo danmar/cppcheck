@@ -955,6 +955,7 @@ union misra_19_2 { }; // 19.2
 #include "notfound.h" // 20.1
 
 #define int short // 20.4
+#define inline "foo" // no warning in C90 standard
 #undef X  // 20.5
 
 #define M_20_7_1(A)  (A+1) // 20.7
