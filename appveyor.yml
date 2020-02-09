@@ -71,12 +71,12 @@ build_script:
   - copy bin\cppcheck.exe ..
   - cd ..
   # build gui..
-  - ECHO MYQTDIR=%MYQTDIR%
-  - 'IF defined MYQTDIR cd gui'
-  - 'IF defined MYQTDIR set QTDIR=%MYQTDIR%'
-  - 'IF defined MYQTDIR %QTDIR%\bin\qmake'
-  - 'IF defined MYQTDIR nmake'
-  - 'IF defined MYQTDIR cd ..'
+  #- ECHO MYQTDIR=%MYQTDIR%
+  #- 'IF defined MYQTDIR cd gui'
+  #- 'IF defined MYQTDIR set QTDIR=%MYQTDIR%'
+  #- 'IF defined MYQTDIR %QTDIR%\bin\qmake'
+  #- 'IF defined MYQTDIR nmake'
+  #- 'IF defined MYQTDIR cd ..'
 
 test_script:
   - build\bin\testrunner.exe -q
