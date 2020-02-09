@@ -1171,7 +1171,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                     continue;
             }
             // Do not warn about assignment with NULL
-            if (FwdAnalysis::isNullOperand(tok->astOperand2()))
+            if (isNullOperand(tok->astOperand2()))
                 continue;
 
             if (!tok->astOperand1())

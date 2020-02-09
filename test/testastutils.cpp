@@ -35,6 +35,7 @@ private:
     void run() OVERRIDE {
         TEST_CASE(findLambdaEndToken);
         TEST_CASE(findLambdaStartToken);
+        TEST_CASE(isNullOperand);
         TEST_CASE(isReturnScope);
         TEST_CASE(isSameExpression);
         TEST_CASE(isVariableChanged);
@@ -104,6 +105,27 @@ private:
         ASSERT_EQUALS(true, findLambdaStartToken("[](void) mutable -> const * int { return x; }"));
         ASSERT_EQUALS(true, findLambdaStartToken("[](void) constexpr -> const ** int { return x; }"));
         ASSERT_EQUALS(true, findLambdaStartToken("[](void) constexpr -> const * const* int { return x; }"));
+    }
+
+    bool isNullOperand(const char code[]) {
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        return ::isNullOperand(tokenizer.tokens());
+    }
+
+    void isNullOperand() {
+        ASSERT_EQUALS(true, isNullOperand("(void*)0;"));
+        ASSERT_EQUALS(true, isNullOperand("(void*)0U;"));
+        ASSERT_EQUALS(true, isNullOperand("(void*)0x0LL;"));
+        ASSERT_EQUALS(true, isNullOperand("NULL;"));
+        ASSERT_EQUALS(true, isNullOperand("nullptr;"));
+        ASSERT_EQUALS(true, isNullOperand("(void*)NULL;"));
+        ASSERT_EQUALS(true, isNullOperand("static_cast<int*>(0);"));
+        ASSERT_EQUALS(false, isNullOperand("0;"));
+        ASSERT_EQUALS(false, isNullOperand("(void*)0.0;"));
+        ASSERT_EQUALS(false, isNullOperand("(void*)1;"));
     }
 
     bool isReturnScope(const char code[], int offset) {

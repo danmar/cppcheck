@@ -1547,6 +1547,20 @@ static bool isUnchanged(const Token *startToken, const Token *endToken, const st
     return true;
 }
 
+bool isNullOperand(const Token *expr)
+{
+    if (!expr)
+        return false;
+    if (Token::Match(expr, "static_cast|const_cast|dynamic_cast|reinterpret_cast <"))
+        expr = expr->astParent();
+    else if (!expr->isCast())
+        return Token::Match(expr, "NULL|nullptr");
+    if (expr->valueType() && expr->valueType()->pointer == 0)
+        return false;
+    const Token *castOp = expr->astOperand2() ? expr->astOperand2() : expr->astOperand1();
+    return Token::Match(castOp, "NULL|nullptr") || (MathLib::isInt(castOp->str()) && MathLib::isNullValue(castOp->str()));
+}
+
 struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<int> &exprVarIds, bool local, bool inInnerClass, int depth)
 {
     // Parse the given tokens
@@ -2036,13 +2050,4 @@ bool FwdAnalysis::isEscapedAlias(const Token* expr)
         }
     }
     return false;
-}
-
-bool FwdAnalysis::isNullOperand(const Token *expr)
-{
-    if (!expr)
-        return false;
-    if (Token::Match(expr, "( %name% %name%| * )") && Token::Match(expr->astOperand1(), "0|NULL|nullptr"))
-        return true;
-    return Token::Match(expr, "NULL|nullptr");
 }
