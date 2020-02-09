@@ -66,7 +66,7 @@ void ProjectFile::clear()
     mCheckUnusedTemplates = false;
     mMaxCtuDepth = 10;
     mCheckUnknownFunctionReturn.clear();
-    mSafeChecks.clear();
+    safeChecks.clear();
     mVsConfigurations.clear();
 }
 
@@ -163,7 +163,7 @@ bool ProjectFile::read(const QString &filename)
 
             // check all function parameter values
             if (xmlReader.name() == Settings::SafeChecks::XmlRootName)
-                mSafeChecks.loadFromXml(xmlReader);
+                safeChecks.loadFromXml(xmlReader);
 
             // Addons
             if (xmlReader.name() == CppcheckXml::AddonsElementName)
@@ -819,7 +819,7 @@ bool ProjectFile::write(const QString &filename)
                     CppcheckXml::CheckUnknownFunctionReturn,
                     CppcheckXml::Name);
 
-    mSafeChecks.saveToXml(xmlWriter);
+    safeChecks.saveToXml(xmlWriter);
 
     writeStringList(xmlWriter,
                     mAddons,

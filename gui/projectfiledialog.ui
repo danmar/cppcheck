@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>888</width>
-    <height>600</height>
+    <width>800</width>
+    <height>617</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="mTabPathsAndDefines">
       <attribute name="title">
@@ -131,6 +131,12 @@
             </item>
             <item>
              <widget class="QListWidget" name="mListVsConfigs">
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>100</height>
+               </size>
+              </property>
               <property name="selectionMode">
                <enum>QAbstractItemView::MultiSelection</enum>
               </property>
@@ -168,7 +174,14 @@
           </layout>
          </item>
          <item>
-          <widget class="QListWidget" name="mListCheckPaths"/>
+          <widget class="QListWidget" name="mListCheckPaths">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>140</height>
+            </size>
+           </property>
+          </widget>
          </item>
          <item>
           <layout class="QVBoxLayout" name="mLayoutCheckPathsButtons">
@@ -354,11 +367,52 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="mTabChecking">
+     <widget class="QWidget" name="mTabTypesAndFunctions">
       <attribute name="title">
-       <string>Checking</string>
+       <string>Types and Functions</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_15">
+       <item>
+        <widget class="QGroupBox" name="groupBox_6">
+         <property name="title">
+          <string>Platform</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_12">
+          <item>
+           <widget class="QComboBox" name="mComboBoxPlatform"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_3">
+         <property name="title">
+          <string>Libraries</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <widget class="QListWidget" name="mLibraries"/>
+          </item>
+          <item>
+           <widget class="QLabel" name="mLabelLibrariesNote">
+            <property name="text">
+             <string>Note: Put your own custom .cfg files in the same folder as the project file. You should see them above.</string>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="mTabAnalysis">
+      <attribute name="title">
+       <string>Analysis</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_18">
        <item>
         <widget class="QGroupBox" name="groupBox_2">
          <property name="title">
@@ -407,28 +461,38 @@
        <item>
         <widget class="QGroupBox" name="groupBox_6">
          <property name="title">
-          <string>Platform</string>
+          <string>Check that code is safe</string>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_12">
+         <layout class="QVBoxLayout" name="verticalLayout_19">
           <item>
-           <widget class="QComboBox" name="mComboBoxPlatform"/>
+           <widget class="QCheckBox" name="mBugHunting">
+            <property name="text">
+             <string>Bug hunting -- Detect all bugs. Generates mostly noise.</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="mBtnSafeClasses">
+            <property name="text">
+             <string>Check that each class has a safe public interface</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
        </item>
        <item>
         <widget class="QGroupBox" name="groupBox_9">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="title">
-          <string>Analysis</string>
+          <string>Limit analysis</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_9">
-          <item>
-           <widget class="QCheckBox" name="mBugHunting">
-            <property name="text">
-             <string>Bug hunting</string>
-            </property>
-           </widget>
-          </item>
           <item>
            <widget class="QCheckBox" name="mCheckHeaders">
             <property name="text">
@@ -477,28 +541,6 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox_3">
-         <property name="title">
-          <string>Libraries</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_2">
-          <item>
-           <widget class="QListWidget" name="mLibraries"/>
-          </item>
-          <item>
-           <widget class="QLabel" name="mLabelLibrariesNote">
-            <property name="text">
-             <string>Note: Put your own custom .cfg files in the same folder as the project file. You should see them above.</string>
-            </property>
-            <property name="wordWrap">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
         <spacer name="verticalSpacer_7">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -506,7 +548,7 @@
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
-           <height>96</height>
+           <height>73</height>
           </size>
          </property>
         </spacer>
@@ -650,9 +692,9 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="mTabAddonsAndTools">
+     <widget class="QWidget" name="mTabAddons">
       <attribute name="title">
-       <string>Addons and tools</string>
+       <string>Addons</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_10">
        <item>

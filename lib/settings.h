@@ -170,6 +170,10 @@ public:
         static const char XmlInternalFunctions[];
         static const char XmlExternalVariables[];
 
+        void clear() {
+            classes = externalFunctions = internalFunctions = externalVariables = false;
+        }
+
         /**
          * Public interface of classes
          * - public function parameters can have any value
