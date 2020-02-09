@@ -631,8 +631,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             }
 
             // --project-configuration
-            else if (std::strncmp(argv[i], "--project-configuration", 23) == 0) {
-                mVSConfig = argv[i] + 8;
+            else if (std::strncmp(argv[i], "--project-configuration=", 24) == 0) {
+                mVSConfig = argv[i] + 24;
                 if (!mVSConfig.empty() && (mSettings->project.mType == ImportProject::Type::VS_SLN || mSettings->project.mType == ImportProject::Type::VS_VCXPROJ))
                     mSettings->project.ignoreOtherConfigs(mVSConfig);
             }
