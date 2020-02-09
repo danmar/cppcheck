@@ -983,53 +983,15 @@ union misra_19_2 { }; // 19.2
 #define _macro_starts_with_lower 1 // no warning
 static int _file_scope_id_21_1 = 42; // no warning
 static int _file_scope_id_21_1_fn() { return 42; } // no warning
-static int __file_scope_id_21_1 = 42; // 21.1
-static int __file_scope_id_21_1_fn() { return 42; } // 21.1
-static int _File_scope_id_21_1 = 42; // 21.1
-static int _File_scope_id_21_1_fn() { return 42; } // 21.1
-int _external_scope_id_21_1 = 42; // 21.1
-int _external_scope_id_21_1_fn() { return 42; } // 21.1
-int __external_scope_id_21_1 = 42; // 21.1
-int __external_scope_id_21_1_fn() { return 42; } // 21.1
-int _External_scope_id_21_1 = 42; // 21.1
-int _External_scope_id_21_1_fn() { return 42; } // 21.1
-int errno = 42; // 21.1 5.5
 int misra_21_1() {
-    int _a = 42; // 21.1
+    int _a = 42; // no warning: only directives affected
     errno = EINVAL; // no warning
     _a ++; // no warning
     _exit(1); // no warning
     return _a; // no warning
 }
-int _misra_21_1_1(); // 21.1
 static int _misra_21_1_2(); // no warning
 #define errno 11 // 21.1
-struct _struct_21_1 { int a; }; // 21.1
-struct _Struct_21_1 { int a; }; // 21.1
-struct __struct_21_1 { int a; }; // 21.1
-typedef struct { int a; } _struct_21_1_t; // 21.1
-typedef struct { int a; } _Struct_21_1_t; // 21.1
-typedef struct { int a; } __struct_21_1_t; // 21.1
-enum _enum_21_1 { ENUM211_1 }; // 21.1
-enum _Enum_21_1 { ENUM211_2 }; // 21.1
-enum __enum_21_1 { ENUM211_3 }; // 21.1
-enum __enum_21_1 { ENUM211_3 }; // 21.1
-typedef enum { ENUM211_4 } _enum_21_1_t; // 21.1
-typedef enum { ENUM211_5 } _Enum_21_1_t; // 21.1
-typedef enum { ENUM211_6 } __enum_21_1_t; // 21.1
-enum enum_21_1_valid_id {
-    ENUM211_7,
-    _ENUM211_8, // 21.1
-    __ENUM211_9, // 21.1
-    _eNUM211_10, // 21.1
-    enum211_11
-};
-union _union_21_1 { int a; }; // 21.1 19.2
-union _Union_21_1 { int a; }; // 21.1 19.2
-union __union_21_1 { int a; }; // 21.1 19.2
-typedef union { int a; } _union_21_1_t; // 21.1 19.2
-typedef union { int a; } _Union_21_1_t; // 21.1 19.2
-typedef union { int a; } __union_21_1_t; // 21.1 19.2
 
 void misra_21_3() {
   p1=malloc(10); // 21.3

@@ -2077,35 +2077,6 @@ class MisraChecker:
             if res:
                 self.reportError(directive, 21, 1)
 
-        type_name_tokens = (t for t in data.tokenlist if t.typeScopeId)
-        type_fields_tokens = (t for t in data.tokenlist if t.valueType and t.valueType.typeScopeId)
-
-        # Search for forbidden identifiers
-        for i in itertools.chain(data.variables, data.functions, type_name_tokens, type_fields_tokens):
-            token = i
-            if isinstance(i, cppcheckdata.Variable):
-                token = i.nameToken
-            elif isinstance(i, cppcheckdata.Function):
-                token = i.tokenDef
-            if not token:
-                continue
-            if len(token.str) < 2:
-                continue
-            if token.str == 'errno':
-                self.reportError(token, 21, 1)
-            if token.str[0] == '_':
-                if (token.str[1] in string.ascii_uppercase) or (token.str[1] == '_'):
-                    self.reportError(token, 21, 1)
-
-                # Allow identifiers with file scope visibility (static)
-                if token.scope.type == 'Global':
-                    if token.variable and token.variable.isStatic:
-                        continue
-                    if token.function and token.function.isStatic:
-                        continue
-
-                self.reportError(token, 21, 1)
-
     def misra_21_3(self, data):
         for token in data.tokenlist:
             if isFunctionCall(token) and (token.astOperand1.str in ('malloc', 'calloc', 'realloc', 'free')):
