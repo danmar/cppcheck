@@ -2501,6 +2501,13 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:3] -> [test.cpp:4]: (error) Using iterator to temporary.\n",
             errout.str());
+
+        check("std::string f() {\n"
+              "    std::stringstream tmp;\n"
+              "    const std::string &str = tmp.str();\n"
+              "    return std::string(str.c_str(), 1);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void invalidLifetime() {
