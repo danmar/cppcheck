@@ -111,6 +111,9 @@ PathAnalysis::Progress PathAnalysis::forwardRange(const Token* startToken, const
                     // TODO: Should we traverse the body: forwardRange(tok->link(), tok, info, f)?
                 }
             }
+            if (Token::simpleMatch(tok, "} else {")) {
+                tok = tok->linkAt(2);
+            }
         } else if (Token::Match(tok, "if|while|for (") && Token::simpleMatch(tok->next()->link(), ") {")) {
             const Token * endCond = tok->next()->link();
             const Token * endBlock = endCond->next()->link();
