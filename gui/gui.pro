@@ -6,7 +6,8 @@ CONFIG += warn_on debug
 DEPENDPATH += . \
     ../lib
 INCLUDEPATH += . \
-    ../lib
+    ../lib \
+    ../z3
 QT += widgets
 QT += printsupport
 
@@ -14,10 +15,14 @@ contains(LINKCORE, [yY][eE][sS]) {
     LIBS += -l../bin/cppcheck-core
     DEFINES += CPPCHECKLIB_IMPORT
 }
-LIBS += -L$$PWD/../externals
+LIBS += -L$$PWD/../externals -L$$PWD/../z3
 
 # z3
-LIBS += -lz3
+win32 {
+    LIBS += -llibz3
+} else {
+    LIBS += -lz3
+}
 QMAKE_CXXFLAGS += -DUSE_Z3
 
 DESTDIR = .
