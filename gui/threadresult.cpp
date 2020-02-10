@@ -27,7 +27,7 @@
 #include "errorlogger.h"
 #include "threadresult.h"
 
-ThreadResult::ThreadResult() : mMaxProgress(0), mProgress(0), mFilesChecked(0), mTotalFiles(0)
+ThreadResult::ThreadResult() : QObject(), ErrorLogger(), mMaxProgress(0), mProgress(0), mFilesChecked(0), mTotalFiles(0)
 {
     //ctor
 }
@@ -136,4 +136,11 @@ int ThreadResult::getFileCount() const
 {
     QMutexLocker locker(&mutex);
     return mFiles.size() + mFileSettings.size();
+}
+
+void ThreadResult::bughuntingReport(const std::string &str)
+{
+    if (str.empty())
+        return;
+    emit bughuntingReportLine(QString::fromStdString(str));
 }
