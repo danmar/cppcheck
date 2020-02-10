@@ -435,7 +435,12 @@ void ResultsView::debugError(const ErrorItem &item)
 
 void ResultsView::bughuntingReportLine(QString line)
 {
-    mUI.mListSafeFunctions->addItem(line);
+    for (QString s: line.split("\n")) {
+        if (s.isEmpty())
+            continue;
+        if (s.startsWith("[function-report] "))
+            mUI.mListSafeFunctions->addItem(s.mid(s.lastIndexOf(":") + 1));
+    }
 }
 
 void ResultsView::logClear()
