@@ -1342,11 +1342,16 @@ bool MathLib::isNullValue(const std::string &str)
     if (str.empty() || (!std::isdigit(static_cast<unsigned char>(str[0])) && (str[0] != '.' && str[0] != '-' && str[0] != '+')))
         return false; // Has to be a number
 
+    if (!isInt(str) && !isFloat(str))
+        return false;
+    bool isHex = isIntHex(str) || isFloatHex(str);
     for (char i : str) {
         if (std::isdigit(static_cast<unsigned char>(i)) && i != '0') // May not contain digits other than 0
             return false;
-        if (i == 'E' || i == 'e')
+        if (i == 'p' || i == 'P' || (!isHex && (i == 'E' || i == 'e')))
             return true;
+        if (isHex && isxdigit(i) && i != '0')
+            return false;
     }
     return true;
 }

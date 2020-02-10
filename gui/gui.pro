@@ -16,6 +16,10 @@ contains(LINKCORE, [yY][eE][sS]) {
 }
 LIBS += -L$$PWD/../externals
 
+# z3
+LIBS += -lz3
+QMAKE_CXXFLAGS += -DUSE_Z3
+
 DESTDIR = .
 RCC_DIR = temp
 MOC_DIR = temp

@@ -517,8 +517,7 @@ static void followVariableExpressionError(const Token *tok1, const Token *tok2, 
     errors->push_back(item);
 }
 
-template<class Predicate, class F>
-static void findTokenValue(const Token* const tok, Predicate pred, F f)
+static void findTokenValue(const Token* const tok, std::function<bool(const ValueFlow::Value &)> pred, std::function<void(const ValueFlow::Value &)> f)
 {
     auto x = std::find_if(tok->values().begin(), tok->values().end(), pred);
     if (x != tok->values().end())
@@ -547,6 +546,26 @@ bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2)
     return result;
 }
 
+static bool isSameConstantValue(bool macro, const Token * const tok1, const Token * const tok2)
+{
+    if (tok1 == nullptr || tok2 == nullptr)
+        return false;
+
+    if (!tok1->isNumber() || !tok2->isNumber())
+        return false;
+
+    if (macro && (tok1->isExpandedMacro() || tok2->isExpandedMacro() || tok1->isTemplateArg() || tok2->isTemplateArg()))
+        return false;
+
+    const ValueType * v1 = tok1->valueType();
+    const ValueType * v2 = tok2->valueType();
+
+    if (!v1 || !v2 || v1->sign != v2->sign || v1->type != v2->type || v1->pointer != v2->pointer)
+        return false;
+
+    return isEqualKnownValue(tok1, tok2);
+}
+
 bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors)
 {
     if (tok1 == nullptr && tok2 == nullptr)
@@ -568,19 +587,22 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     }
     if (tok1->str() != tok2->str() && isDifferentKnownValues(tok1, tok2))
         return false;
+    if (isSameConstantValue(macro, tok1, tok2))
+        return true;
+
     // Follow variable
     if (followVar && tok1->str() != tok2->str() && (Token::Match(tok1, "%var%") || Token::Match(tok2, "%var%"))) {
         const Token * varTok1 = followVariableExpression(tok1, cpp, tok2);
-        if (varTok1->str() == tok2->str()) {
+        if ((varTok1->str() == tok2->str()) || isSameConstantValue(macro, varTok1, tok2)) {
             followVariableExpressionError(tok1, varTok1, errors);
             return isSameExpression(cpp, macro, varTok1, tok2, library, true, followVar, errors);
         }
         const Token * varTok2 = followVariableExpression(tok2, cpp, tok1);
-        if (tok1->str() == varTok2->str()) {
+        if ((tok1->str() == varTok2->str()) || isSameConstantValue(macro, tok1, varTok2)) {
             followVariableExpressionError(tok2, varTok2, errors);
             return isSameExpression(cpp, macro, tok1, varTok2, library, true, followVar, errors);
         }
-        if (varTok1->str() == varTok2->str()) {
+        if ((varTok1->str() == varTok2->str()) || isSameConstantValue(macro, varTok1, varTok2)) {
             followVariableExpressionError(tok1, varTok1, errors);
             followVariableExpressionError(tok2, varTok2, errors);
             return isSameExpression(cpp, macro, varTok1, varTok2, library, true, followVar, errors);
@@ -1525,6 +1547,20 @@ static bool isUnchanged(const Token *startToken, const Token *endToken, const st
     return true;
 }
 
+bool isNullOperand(const Token *expr)
+{
+    if (!expr)
+        return false;
+    if (Token::Match(expr, "static_cast|const_cast|dynamic_cast|reinterpret_cast <"))
+        expr = expr->astParent();
+    else if (!expr->isCast())
+        return Token::Match(expr, "NULL|nullptr");
+    if (expr->valueType() && expr->valueType()->pointer == 0)
+        return false;
+    const Token *castOp = expr->astOperand2() ? expr->astOperand2() : expr->astOperand1();
+    return Token::Match(castOp, "NULL|nullptr") || (MathLib::isInt(castOp->str()) && MathLib::isNullValue(castOp->str()));
+}
+
 struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<int> &exprVarIds, bool local, bool inInnerClass, int depth)
 {
     // Parse the given tokens
@@ -2014,13 +2050,4 @@ bool FwdAnalysis::isEscapedAlias(const Token* expr)
         }
     }
     return false;
-}
-
-bool FwdAnalysis::isNullOperand(const Token *expr)
-{
-    if (!expr)
-        return false;
-    if (Token::Match(expr, "( %name% %name%| * )") && Token::Match(expr->astOperand1(), "0|NULL|nullptr"))
-        return true;
-    return Token::Match(expr, "NULL|nullptr");
 }

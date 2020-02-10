@@ -839,6 +839,9 @@ Settings MainWindow::getCppcheckSettings()
             result.userDefines += define.toStdString();
         }
 
+        result.clang = mProjectFile->clangParser;
+        result.bugHunting = mProjectFile->bugHunting;
+
         const QStringList undefines = mProjectFile->getUndefines();
         foreach (QString undefine, undefines)
             result.userUndefs.insert(undefine.toStdString());
@@ -888,10 +891,10 @@ Settings MainWindow::getCppcheckSettings()
         result.maxCtuDepth = mProjectFile->getMaxCtuDepth();
         result.checkHeaders = mProjectFile->getCheckHeaders();
         result.checkUnusedTemplates = mProjectFile->getCheckUnusedTemplates();
-        result.safeChecks.classes = mProjectFile->getSafeChecks().classes;
-        result.safeChecks.externalFunctions = mProjectFile->getSafeChecks().externalFunctions;
-        result.safeChecks.internalFunctions = mProjectFile->getSafeChecks().internalFunctions;
-        result.safeChecks.externalVariables = mProjectFile->getSafeChecks().externalVariables;
+        result.safeChecks.classes = mProjectFile->safeChecks.classes;
+        result.safeChecks.externalFunctions = mProjectFile->safeChecks.externalFunctions;
+        result.safeChecks.internalFunctions = mProjectFile->safeChecks.internalFunctions;
+        result.safeChecks.externalVariables = mProjectFile->safeChecks.externalVariables;
         foreach (QString s, mProjectFile->getCheckUnknownFunctionReturn())
             result.checkUnknownFunctionReturn.insert(s.toStdString());
     }

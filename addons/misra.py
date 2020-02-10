@@ -70,40 +70,33 @@ def rawlink(rawtoken):
     return rawtoken
 
 
-KEYWORDS = {
-    'auto',
-    'break',
-    'case',
-    'char',
-    'const',
-    'continue',
-    'default',
-    'do',
-    'double',
-    'else',
-    'enum',
-    'extern',
-    'float',
-    'for',
-    'goto',
-    'if',
-    'int',
-    'long',
-    'register',
-    'return',
-    'short',
-    'signed',
-    'sizeof',
-    'static',
-    'struct',
-    'switch',
-    'typedef',
-    'union',
-    'unsigned',
-    'void',
-    'volatile',
-    'while'
+# Reserved keywords defined in ISO/IEC9899:1990 -- ch 6.1.1
+C90_KEYWORDS = {
+    'auto', 'break', 'double', 'else', 'enum', 'extern', 'float', 'for',
+    'goto', 'if', 'case', 'char', 'const', 'continue', 'default', 'do', 'int',
+    'long', 'struct', 'switch', 'register', 'typedef', 'union', 'unsigned',
+    'void', 'volatile', 'while', 'return', 'short', 'signed', 'sizeof',
+    'static'
 }
+
+
+# Reserved keywords defined in ISO/IEC 9899 WF14/N1256 -- ch. 6.4.1
+C99_KEYWORDS = {
+    'auto', 'break', 'case', 'char', 'const', 'continue', 'default', 'do',
+    'double', 'else', 'enum', 'extern', 'float', 'for', 'goto', 'if', 'inline',
+    'int', 'long', 'register', 'restrict', 'return', 'short', 'signed',
+    'sizeof', 'static', 'struct', 'switch', 'typedef', 'union', 'unsigned',
+    'void', 'volatile', 'while', '_Bool', '_Complex', '_Imaginary'
+}
+
+
+def isKeyword(keyword, standard='c99'):
+    kw_set = {}
+    if standard == 'c89':
+        kw_set = C90_KEYWORDS
+    elif standard == 'c99':
+        kw_set = C99_KEYWORDS
+    return keyword in kw_set
 
 
 def getEssentialTypeCategory(expr):
@@ -218,14 +211,14 @@ def isCast(expr):
     return True
 
 
-def isFunctionCall(expr):
+def isFunctionCall(expr, std='c99'):
     if not expr:
         return False
     if expr.str != '(' or not expr.astOperand1:
         return False
     if expr.astOperand1 != expr.previous:
         return False
-    if expr.astOperand1.str in KEYWORDS:
+    if isKeyword(expr.astOperand1.str, std):
         return False
     return True
 
@@ -806,10 +799,10 @@ class MisraChecker:
         )
 
     def get_num_significant_naming_chars(self, cfg):
-        if cfg.standards and cfg.standards.c == "c99":
-            return 63
-        else:
+        if cfg.standards and cfg.standards.c == "c89":
             return 31
+        else:
+            return 63
 
     def misra_2_7(self, data):
         for func in data.functions:
@@ -1838,7 +1831,7 @@ class MisraChecker:
             tok = scope.bodyStart
             while tok != scope.bodyEnd:
                 tok = tok.next
-                if not isFunctionCall(tok):
+                if not isFunctionCall(tok, data.standards.c):
                     continue
                 f = tok.astOperand1.function
                 if f is not None and f not in calls:
@@ -1998,7 +1991,7 @@ class MisraChecker:
     def misra_20_4(self, data):
         for directive in data.directives:
             res = re.search(r'#define ([a-z][a-z0-9_]+)', directive.str)
-            if res and (res.group(1) in KEYWORDS):
+            if res and isKeyword(res.group(1), data.standards.c):
                 self.reportError(directive, 20, 4)
 
     def misra_20_5(self, data):
@@ -2083,35 +2076,6 @@ class MisraChecker:
             res = re.search(re_forbidden_macro, directive.str)
             if res:
                 self.reportError(directive, 21, 1)
-
-        type_name_tokens = (t for t in data.tokenlist if t.typeScopeId)
-        type_fields_tokens = (t for t in data.tokenlist if t.valueType and t.valueType.typeScopeId)
-
-        # Search for forbidden identifiers
-        for i in itertools.chain(data.variables, data.functions, type_name_tokens, type_fields_tokens):
-            token = i
-            if isinstance(i, cppcheckdata.Variable):
-                token = i.nameToken
-            elif isinstance(i, cppcheckdata.Function):
-                token = i.tokenDef
-            if not token:
-                continue
-            if len(token.str) < 2:
-                continue
-            if token.str == 'errno':
-                self.reportError(token, 21, 1)
-            if token.str[0] == '_':
-                if (token.str[1] in string.ascii_uppercase) or (token.str[1] == '_'):
-                    self.reportError(token, 21, 1)
-
-                # Allow identifiers with file scope visibility (static)
-                if token.scope.type == 'Global':
-                    if token.variable and token.variable.isStatic:
-                        continue
-                    if token.function and token.function.isStatic:
-                        continue
-
-                self.reportError(token, 21, 1)
 
     def misra_21_3(self, data):
         for token in data.tokenlist:

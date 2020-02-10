@@ -1141,7 +1141,7 @@ Token * clangimport::AstNode::createTokensVarDecl(TokenList *tokenList)
     const AccessControl accessControl = (scope->type == Scope::ScopeType::eGlobal) ? (AccessControl::Global) : (AccessControl::Local);
     scope->varlist.push_back(Variable(vartok1, type, startToken, 0, accessControl, nullptr, scope));
     mData->varDecl(addr, vartok1, &scope->varlist.back());
-    if (mExtTokens.back() == "cinit") {
+    if (mExtTokens.back() == "cinit" && !children.empty()) {
         Token *eq = addtoken(tokenList, "=");
         eq->astOperand1(vartok1);
         eq->astOperand2(children.back()->createTokens(tokenList));

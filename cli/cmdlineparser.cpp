@@ -921,8 +921,6 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             printMessage("If --clang is used then --cppcheck-build-dir must be specified also");
             return false;
         }
-        std::ofstream fout(mSettings->buildDir + "/__temp__.c");
-        fout << "int x;\n";
     }
 
 
