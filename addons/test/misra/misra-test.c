@@ -2,9 +2,29 @@
 // ~/cppcheck/cppcheck --dump misra-test.c && python ../../misra.py -verify misra-test.c.dump
 
 #include "path\file.h" // 20.2
+
 #include /*abc*/ "file.h" // no warning
+/*foo*/#include "file.h" // no warning
+#include "./file.h" // no warning
+#include \
+    "file.h"
+#include /*abc*/ \
+    "file.h"
+#include "fi" "le.h" // 20.3 (strings are concatenated after preprocessing)
+#include "fi" <le.h> // 20.3
+#include <fi> <le.h> // 20.3
 #include PATH "file.h" // 20.3
+#define H_20_3_ok "file.h"
+#include H_20_3_ok
+#include file.h // 20.3
+#define H_20_3_bad file.h
+#include H_20_3_bad // TODO: 20.3 Trac #9606
+#include "//file.h" // 20.2
+#include "//file.h" H_20_3_bad // 20.2 20.3
+//#include H_20_3_bad // no warning
+#include H_20_3_ok H_20_3_ok // 20.3
 #include<file.h> // no warning
+
 #include <setjmp.h> // 21.4
 #include <signal.h> // 21.5
 #include <stdio.h> //21.6

@@ -1971,22 +1971,32 @@ class MisraChecker:
                     self.reportError(directive, 20, 2)
                     break
 
-    def misra_20_3(self, rawTokens):
-        linenr = -1
-        for token in rawTokens:
-            if token.str.startswith('/') or token.linenr == linenr:
+    def misra_20_3(self, data):
+        for directive in data.directives:
+            if not directive.str.startswith('#include '):
                 continue
-            linenr = token.linenr
-            if not simpleMatch(token, '# include'):
-                continue
-            headerToken = token.next.next
-            num = 0
-            while headerToken and headerToken.linenr == linenr:
-                if not headerToken.str.startswith('/*') and not headerToken.str.startswith('//'):
-                    num += 1
-                headerToken = headerToken.next
-            if num != 1:
-                self.reportError(token, 20, 3)
+
+            words = directive.str.split(' ')
+
+            # If include directive contains more than two words, here would be
+            # violation anyway.
+            if len(words) > 2:
+                self.reportError(directive, 20, 3)
+
+            # Handle include directives with not quoted argument
+            elif len(words) > 1:
+                filename = words[1]
+                if not ((filename.startswith('"') and
+                         filename.endswith('"')) or
+                        (filename.startswith('<') and
+                         filename.endswith('>'))):
+                    # We are handle only directly included files in the
+                    # following format: #include file.h
+                    # Cases with macro expansion provided by MISRA document are
+                    # skipped because we don't always have access to directive
+                    # definition.
+                    if '.' in filename:
+                        self.reportError(directive, 20, 3)
 
     def misra_20_4(self, data):
         for directive in data.directives:
@@ -2642,8 +2652,7 @@ class MisraChecker:
             self.executeCheck(1902, self.misra_19_2, cfg)
             self.executeCheck(2001, self.misra_20_1, cfg)
             self.executeCheck(2002, self.misra_20_2, cfg)
-            if cfgNumber == 0:
-                self.executeCheck(2003, self.misra_20_3, data.rawTokens)
+            self.executeCheck(2003, self.misra_20_3, cfg)
             self.executeCheck(2004, self.misra_20_4, cfg)
             self.executeCheck(2005, self.misra_20_5, cfg)
             self.executeCheck(2006, self.misra_20_7, cfg)
