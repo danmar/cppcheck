@@ -4095,6 +4095,18 @@ private:
               "    z += y;\n"
               "}\n",true);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::vector<char> v)\n"
+              "{\n"
+              "    auto *cur = v.data();\n"
+              "    auto *end = cur + v.size();\n"
+              "    while (cur < end) {\n"
+              "        v.erase(v.begin(), FindNext(v));\n"
+              "        cur = v.data();\n"
+              "        end = cur + v.size();\n"
+              "    }\n"
+              "}\n",true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void findInsert() {

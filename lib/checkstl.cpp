@@ -747,10 +747,7 @@ void CheckStl::invalidContainer()
                 continue;
             if (!isInvalidMethod(tok))
                 continue;
-            // Skip if the variable is assigned to
-            unsigned int skipVarId = 0;
-            if (Token::Match(tok->astTop(), "%assign%") && Token::Match(tok->astTop()->previous(), "%var%"))
-                skipVarId = tok->astTop()->previous()->varId();
+            std::set<nonneg int> skipVarIds;
             const Token * endToken = nextAfterAstRightmostLeaf(tok->next()->astParent());
             if (!endToken)
                 endToken = tok->next();
@@ -759,8 +756,12 @@ void CheckStl::invalidContainer()
             PathAnalysis::Info info = PathAnalysis{endToken, library} .forwardFind([&](const PathAnalysis::Info& info) {
                 if (!info.tok->variable())
                     return false;
-                if (info.tok->varId() == skipVarId)
+                if (info.tok->varId() == 0)
                     return false;
+                if (skipVarIds.count(info.tok->varId()) > 0)
+                    return false;
+                if (isVariableChanged(info.tok, 0, mSettings, true))
+                    skipVarIds.insert(info.tok->varId());
                 if (info.tok->variable()->isReference() &&
                     !isVariableDecl(info.tok) &&
                     reaches(info.tok->variable()->nameToken(), tok, library, nullptr)) {
