@@ -748,6 +748,9 @@ void CheckStl::invalidContainer()
             if (!isInvalidMethod(tok))
                 continue;
             std::set<nonneg int> skipVarIds;
+            // Skip if the variable is assigned to
+            if (Token::Match(tok->astTop(), "%assign%") && Token::Match(tok->astTop()->previous(), "%var%"))
+                skipVarIds.insert(tok->astTop()->previous()->varId());
             const Token * endToken = nextAfterAstRightmostLeaf(tok->next()->astParent());
             if (!endToken)
                 endToken = tok->next();
@@ -760,7 +763,7 @@ void CheckStl::invalidContainer()
                     return false;
                 if (skipVarIds.count(info.tok->varId()) > 0)
                     return false;
-                if (isVariableChanged(info.tok, 0, mSettings, true))
+                if (Token::Match(info.tok->astParent(), "%assign%") && astIsLHS(info.tok))
                     skipVarIds.insert(info.tok->varId());
                 if (info.tok->variable()->isReference() &&
                     !isVariableDecl(info.tok) &&
