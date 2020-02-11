@@ -96,6 +96,9 @@ const Token* astParentSkipParens(const Token* tok);
 
 const Token* getParentMember(const Token * tok);
 
+bool astIsLHS(const Token* tok);
+bool astIsRHS(const Token* tok);
+
 bool precedes(const Token * tok1, const Token * tok2);
 
 bool exprDependsOnThis(const Token* expr, nonneg int depth = 0);

@@ -1,4 +1,5 @@
 #include "pathanalysis.h"
+#include "astutils.h"
 #include "library.h"
 #include "mathlib.h"
 #include "settings.h"
@@ -25,6 +26,16 @@ static const Token* getCondTok(const Token* tok)
     if (Token::simpleMatch(tok->next()->astOperand2(), ";"))
         return tok->next()->astOperand2()->astOperand1();
     return tok->next()->astOperand2();
+}
+
+static const Token* assignExpr(const Token* tok)
+{
+    while (tok->astParent() && astIsLHS(tok)) {
+        if (Token::Match(tok->astParent(), "%assign%"))
+            return tok->astParent();
+        tok = tok->astParent();
+    }
+    return nullptr;
 }
 
 std::pair<bool, bool> PathAnalysis::checkCond(const Token * tok, bool& known)
@@ -67,11 +78,19 @@ PathAnalysis::Progress PathAnalysis::forwardRange(const Token* startToken, const
     for (const Token *tok = startToken; tok && tok != endToken; tok = tok->next()) {
         if (Token::Match(tok, "asm|goto|break|continue"))
             return Progress::Break;
-        if (Token::Match(tok, "return|throw")) {
+        else if (Token::Match(tok, "return|throw")) {
             forwardRecursive(tok, info, f);
             return Progress::Break;
-        }
-        if (Token::simpleMatch(tok, "}") && Token::simpleMatch(tok->link()->previous(), ") {") && Token::Match(tok->link()->linkAt(-1)->previous(), "if|while|for (")) {
+        // Evaluate RHS of assignment before LHS
+        } else if (const Token* assignTok = assignExpr(tok)) {
+            if (forwardRecursive(assignTok->astOperand2(), info, f) == Progress::Break)
+                return Progress::Break;
+            if (forwardRecursive(assignTok->astOperand1(), info, f) == Progress::Break)
+                return Progress::Break;
+            tok = nextAfterAstRightmostLeaf(assignTok);
+            if (!tok)
+                return Progress::Break;
+        } else if (Token::simpleMatch(tok, "}") && Token::simpleMatch(tok->link()->previous(), ") {") && Token::Match(tok->link()->linkAt(-1)->previous(), "if|while|for (")) {
             const Token * blockStart = tok->link()->linkAt(-1)->previous();
             const Token * condTok = getCondTok(blockStart);
             if (!condTok)
@@ -92,8 +111,10 @@ PathAnalysis::Progress PathAnalysis::forwardRange(const Token* startToken, const
                     // TODO: Should we traverse the body: forwardRange(tok->link(), tok, info, f)?
                 }
             }
-        }
-        if (Token::Match(tok, "if|while|for (") && Token::simpleMatch(tok->next()->link(), ") {")) {
+            if (Token::simpleMatch(tok, "} else {")) {
+                tok = tok->linkAt(2);
+            }
+        } else if (Token::Match(tok, "if|while|for (") && Token::simpleMatch(tok->next()->link(), ") {")) {
             const Token * endCond = tok->next()->link();
             const Token * endBlock = endCond->next()->link();
             const Token * condTok = getCondTok(tok);
