@@ -1738,7 +1738,9 @@ class MisraChecker:
 
     def misra_13_1(self, data):
         for token in data.tokenlist:
-            if not simpleMatch(token, '= {'):
+            if simpleMatch(token, ") {") and token.next.astParent == token.link:
+                pass
+            elif not simpleMatch(token, '= {'):
                 continue
             init = token.next
             end = init.link

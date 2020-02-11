@@ -1,5 +1,5 @@
 // To test:
-// ~/cppcheck/cppcheck --dump misra-test.c && python ../../misra.py -verify misra-test.c.dump
+// ~/cppcheck/cppcheck --dump --suppress=uninitvar --suppress=uninitStructMember misra/misra-test.c --std=c89 && python3 ../misra.py -verify misra/misra-test.c.dump
 
 #include "path\file.h" // 20.2
 
@@ -475,11 +475,14 @@ void misra_12_4() {
 }
 
 struct misra_13_1_t { int a; int b; };
+uint8_t misra_13_1_x = 0;
+void misra_13_1_bar(uint8_t a[2]);
 void misra_13_1(int *p) {
   volatile int v;
   int a1[3] = {0, (*p)++, 2}; // 13.1
   int a2[3] = {0, ((*p) += 1), 2}; // 13.1
   int a3[3] = {0, ((*p) = 19), 2}; // 13.1
+  misra_13_1_bar((uint8_t[2]){ misra_13_1_x++, misra_13_1_x++ } ); // 13.1
   int b[2] = {v,1};
   struct misra_13_1_t c = { .a=4, .b=5 }; // no fp
   volatile int vv;
