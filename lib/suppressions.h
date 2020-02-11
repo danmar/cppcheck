@@ -78,10 +78,11 @@ public:
         /**
          * Parse inline suppression in comment
          * @param comment the full comment text
+         * @param startIndex start position to find "cppcheck-suppress"
          * @param errorMessage output parameter for error message (wrong suppression attribute)
-         * @return true if it is a inline comment.
+         * @return next search start position of "cppcheck-suppress", -1 means has not find "cppcheck-suppress"
          */
-        bool parseComment(std::string comment, std::string *errorMessage);
+        int parseComment(std::string comment, unsigned int startIndex, std::string *errorMessage);
 
         bool isSuppressed(const ErrorMessage &errmsg) const;
 

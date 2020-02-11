@@ -81,15 +81,19 @@ static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSe
     std::list<Suppressions::Suppression> inlineSuppressions;
     for (const simplecpp::Token *tok = tokens.cfront(); tok; tok = tok->next) {
         if (tok->comment) {
-            Suppressions::Suppression s;
-            std::string errmsg;
-            if (!s.parseComment(tok->str(), &errmsg))
-                continue;
-            if (!errmsg.empty())
-                bad->push_back(BadInlineSuppression(tok->location, errmsg));
-            if (!s.errorId.empty())
-                inlineSuppressions.push_back(s);
-            continue;
+			int nextStartIndex = 0;
+			while (nextStartIndex>= 0) {
+                Suppressions::Suppression s;
+                std::string errmsg;
+				nextStartIndex = s.parseComment(tok->str(), nextStartIndex, &errmsg);
+                if (nextStartIndex < 0)
+                    break;
+                if (!errmsg.empty())
+                    bad->push_back(BadInlineSuppression(tok->location, errmsg));
+                if (!s.errorId.empty())
+                    inlineSuppressions.push_back(s);
+			}
+			continue;
         }
 
         if (inlineSuppressions.empty())
@@ -110,7 +114,7 @@ static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSe
         // Add the suppressions.
         for (Suppressions::Suppression &suppr : inlineSuppressions) {
             suppr.fileName = relativeFilename;
-            suppr.lineNumber = tok->location.line;
+            suppr.lineNumber = tok->location.line-2;
             mSettings.nomsg.addSuppression(suppr);
         }
         inlineSuppressions.clear();
