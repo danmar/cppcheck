@@ -1123,6 +1123,7 @@ private:
         ASSERT_EQUALS(false, MathLib::isNullValue("x"));
         ASSERT_EQUALS(false, MathLib::isNullValue("garbage"));
         ASSERT_EQUALS(false, MathLib::isNullValue("UL"));
+        ASSERT_EQUALS(false, MathLib::isNullValue("-ENOMEM"));
     }
 
     void incdec() const {

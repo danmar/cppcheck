@@ -324,6 +324,11 @@ public slots:
     void debugError(const ErrorItem &item);
 
     /**
+     * \brief bughunting report line
+     */
+    void bughuntingReportLine(QString line);
+
+    /**
      * \brief Clear log messages
      */
     void logClear();

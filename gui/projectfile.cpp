@@ -46,6 +46,7 @@ ProjectFile::ProjectFile(const QString &filename, QObject *parent) :
 void ProjectFile::clear()
 {
     clangParser = false;
+    bugHunting = false;
     mRootPath.clear();
     mBuildDir.clear();
     mImportProject.clear();
@@ -65,7 +66,7 @@ void ProjectFile::clear()
     mCheckUnusedTemplates = false;
     mMaxCtuDepth = 10;
     mCheckUnknownFunctionReturn.clear();
-    mSafeChecks.clear();
+    safeChecks.clear();
     mVsConfigurations.clear();
 }
 
@@ -115,6 +116,9 @@ bool ProjectFile::read(const QString &filename)
             if (xmlReader.name() == CppcheckXml::Parser)
                 clangParser = true;
 
+            if (xmlReader.name() == CppcheckXml::BugHunting)
+                bugHunting = true;
+
             if (xmlReader.name() == CppcheckXml::CheckHeadersElementName)
                 mCheckHeaders = readBool(xmlReader);
 
@@ -159,7 +163,7 @@ bool ProjectFile::read(const QString &filename)
 
             // check all function parameter values
             if (xmlReader.name() == Settings::SafeChecks::XmlRootName)
-                mSafeChecks.loadFromXml(xmlReader);
+                safeChecks.loadFromXml(xmlReader);
 
             // Addons
             if (xmlReader.name() == CppcheckXml::AddonsElementName)
@@ -719,6 +723,11 @@ bool ProjectFile::write(const QString &filename)
         xmlWriter.writeEndElement();
     }
 
+    if (bugHunting) {
+        xmlWriter.writeStartElement(CppcheckXml::BugHunting);
+        xmlWriter.writeEndElement();
+    }
+
     xmlWriter.writeStartElement(CppcheckXml::CheckHeadersElementName);
     xmlWriter.writeCharacters(mCheckHeaders ? "true" : "false");
     xmlWriter.writeEndElement();
@@ -810,7 +819,7 @@ bool ProjectFile::write(const QString &filename)
                     CppcheckXml::CheckUnknownFunctionReturn,
                     CppcheckXml::Name);
 
-    mSafeChecks.saveToXml(xmlWriter);
+    safeChecks.saveToXml(xmlWriter);
 
     writeStringList(xmlWriter,
                     mAddons,

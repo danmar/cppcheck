@@ -70,42 +70,6 @@ def rawlink(rawtoken):
     return rawtoken
 
 
-KEYWORDS = {
-    'auto',
-    'break',
-    'case',
-    'char',
-    'const',
-    'continue',
-    'default',
-    'do',
-    'double',
-    'else',
-    'enum',
-    'extern',
-    'float',
-    'for',
-    'goto',
-    'if',
-    'int',
-    'long',
-    'register',
-    'return',
-    'short',
-    'signed',
-    'sizeof',
-    'static',
-    'struct',
-    'switch',
-    'typedef',
-    'union',
-    'unsigned',
-    'void',
-    'volatile',
-    'while'
-}
-
-
 # Identifiers described in Section 7 "Library" of C90 Standard
 # Based on ISO/IEC9899:1990 Annex D -- Library summary and
 # Annex E -- Implementation limits.
@@ -367,6 +331,35 @@ def isStdLibId(id_, standard='c99'):
     return False
 
 
+# Reserved keywords defined in ISO/IEC9899:1990 -- ch 6.1.1
+C90_KEYWORDS = {
+    'auto', 'break', 'double', 'else', 'enum', 'extern', 'float', 'for',
+    'goto', 'if', 'case', 'char', 'const', 'continue', 'default', 'do', 'int',
+    'long', 'struct', 'switch', 'register', 'typedef', 'union', 'unsigned',
+    'void', 'volatile', 'while', 'return', 'short', 'signed', 'sizeof',
+    'static'
+}
+
+
+# Reserved keywords defined in ISO/IEC 9899 WF14/N1256 -- ch. 6.4.1
+C99_KEYWORDS = {
+    'auto', 'break', 'case', 'char', 'const', 'continue', 'default', 'do',
+    'double', 'else', 'enum', 'extern', 'float', 'for', 'goto', 'if', 'inline',
+    'int', 'long', 'register', 'restrict', 'return', 'short', 'signed',
+    'sizeof', 'static', 'struct', 'switch', 'typedef', 'union', 'unsigned',
+    'void', 'volatile', 'while', '_Bool', '_Complex', '_Imaginary'
+}
+
+
+def isKeyword(keyword, standard='c99'):
+    kw_set = {}
+    if standard == 'c89':
+        kw_set = C90_KEYWORDS
+    elif standard == 'c99':
+        kw_set = C99_KEYWORDS
+    return keyword in kw_set
+
+
 def getEssentialTypeCategory(expr):
     if not expr:
         return None
@@ -479,14 +472,14 @@ def isCast(expr):
     return True
 
 
-def isFunctionCall(expr):
+def isFunctionCall(expr, std='c99'):
     if not expr:
         return False
     if expr.str != '(' or not expr.astOperand1:
         return False
     if expr.astOperand1 != expr.previous:
         return False
-    if expr.astOperand1.str in KEYWORDS:
+    if isKeyword(expr.astOperand1.str, std):
         return False
     return True
 
@@ -2099,7 +2092,7 @@ class MisraChecker:
             tok = scope.bodyStart
             while tok != scope.bodyEnd:
                 tok = tok.next
-                if not isFunctionCall(tok):
+                if not isFunctionCall(tok, data.standards.c):
                     continue
                 f = tok.astOperand1.function
                 if f is not None and f not in calls:
@@ -2239,27 +2232,37 @@ class MisraChecker:
                     self.reportError(directive, 20, 2)
                     break
 
-    def misra_20_3(self, rawTokens):
-        linenr = -1
-        for token in rawTokens:
-            if token.str.startswith('/') or token.linenr == linenr:
+    def misra_20_3(self, data):
+        for directive in data.directives:
+            if not directive.str.startswith('#include '):
                 continue
-            linenr = token.linenr
-            if not simpleMatch(token, '# include'):
-                continue
-            headerToken = token.next.next
-            num = 0
-            while headerToken and headerToken.linenr == linenr:
-                if not headerToken.str.startswith('/*') and not headerToken.str.startswith('//'):
-                    num += 1
-                headerToken = headerToken.next
-            if num != 1:
-                self.reportError(token, 20, 3)
+
+            words = directive.str.split(' ')
+
+            # If include directive contains more than two words, here would be
+            # violation anyway.
+            if len(words) > 2:
+                self.reportError(directive, 20, 3)
+
+            # Handle include directives with not quoted argument
+            elif len(words) > 1:
+                filename = words[1]
+                if not ((filename.startswith('"') and
+                         filename.endswith('"')) or
+                        (filename.startswith('<') and
+                         filename.endswith('>'))):
+                    # We are handle only directly included files in the
+                    # following format: #include file.h
+                    # Cases with macro expansion provided by MISRA document are
+                    # skipped because we don't always have access to directive
+                    # definition.
+                    if '.' in filename:
+                        self.reportError(directive, 20, 3)
 
     def misra_20_4(self, data):
         for directive in data.directives:
             res = re.search(r'#define ([a-z][a-z0-9_]+)', directive.str)
-            if res and (res.group(1) in KEYWORDS):
+            if res and isKeyword(res.group(1), data.standards.c):
                 self.reportError(directive, 20, 4)
 
     def misra_20_5(self, data):
@@ -2353,35 +2356,6 @@ class MisraChecker:
             name = m.group(1)
             if isStdLibId(name, data.standards.c):
                 self.reportError(d, 21, 1)
-
-        type_name_tokens = (t for t in data.tokenlist if t.typeScopeId)
-        type_fields_tokens = (t for t in data.tokenlist if t.valueType and t.valueType.typeScopeId)
-
-        # Search for forbidden identifiers
-        for i in itertools.chain(data.variables, data.functions, type_name_tokens, type_fields_tokens):
-            token = i
-            if isinstance(i, cppcheckdata.Variable):
-                token = i.nameToken
-            elif isinstance(i, cppcheckdata.Function):
-                token = i.tokenDef
-            if not token:
-                continue
-            if len(token.str) < 2:
-                continue
-            if token.str == 'errno':
-                self.reportError(token, 21, 1)
-            if token.str[0] == '_':
-                if (token.str[1] in string.ascii_uppercase) or (token.str[1] == '_'):
-                    self.reportError(token, 21, 1)
-
-                # Allow identifiers with file scope visibility (static)
-                if token.scope.type == 'Global':
-                    if token.variable and token.variable.isStatic:
-                        continue
-                    if token.function and token.function.isStatic:
-                        continue
-
-                self.reportError(token, 21, 1)
 
     def misra_21_3(self, data):
         for token in data.tokenlist:
@@ -2948,8 +2922,7 @@ class MisraChecker:
             self.executeCheck(1902, self.misra_19_2, cfg)
             self.executeCheck(2001, self.misra_20_1, cfg)
             self.executeCheck(2002, self.misra_20_2, cfg)
-            if cfgNumber == 0:
-                self.executeCheck(2003, self.misra_20_3, data.rawTokens)
+            self.executeCheck(2003, self.misra_20_3, cfg)
             self.executeCheck(2004, self.misra_20_4, cfg)
             self.executeCheck(2005, self.misra_20_5, cfg)
             self.executeCheck(2006, self.misra_20_7, cfg)

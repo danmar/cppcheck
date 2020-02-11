@@ -87,7 +87,7 @@ std::string astCanonicalType(const Token *expr);
 /** Is given syntax tree a variable comparison against value */
 const Token * astIsVariableComparison(const Token *tok, const std::string &comp, const std::string &rhs, const Token **vartok=nullptr);
 
-bool isTemporary(bool cpp, const Token* tok, const Library* library);
+bool isTemporary(bool cpp, const Token* tok, const Library* library, bool unknown = false);
 
 const Token * nextAfterAstRightmostLeaf(const Token * tok);
 
@@ -211,6 +211,7 @@ const Variable *getLHSVariable(const Token *tok);
 
 bool isScopeBracket(const Token* tok);
 
+bool isNullOperand(const Token *expr);
 /**
  * Forward data flow analysis for checks
  *  - unused value
@@ -252,8 +253,6 @@ public:
     bool possiblyAliased(const Token *expr, const Token *startToken) const;
 
     std::set<int> getExprVarIds(const Token* expr, bool* localOut = nullptr, bool* unknownVarIdOut = nullptr) const;
-
-    static bool isNullOperand(const Token *expr);
 private:
     static bool isEscapedAlias(const Token* expr);
 
