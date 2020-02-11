@@ -38,8 +38,3 @@ endif()
 
 add_library(lib_objs OBJECT ${srcs_lib} ${hdrs})
 
-if (HAVE_RULES)
-    target_link_libraries(lib_objs ${PCRE_LIBRARY})
-    target_include_directories(lib_objs SYSTEM PUBLIC ${PCRE_INCLUDE})
-endif()
-
