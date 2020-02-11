@@ -841,11 +841,11 @@ class Define:
         self.args = []
         self.expansionList = ''
 
-        res = re.match(r'#define [A-Za-z0-9_]+\(([A-Za-z0-9_,]+)\)[ ]+(.*)', directive.str)
+        res = re.match(r'#define [A-Za-z0-9_]+\(([A-Za-z0-9_, ]+)\)[ ]+(.*)', directive.str)
         if res is None:
             return
 
-        self.args = res.group(1).split(',')
+        self.args = res.group(1).strip().split(',')
         self.expansionList = res.group(2)
 
     def __repr__(self):
