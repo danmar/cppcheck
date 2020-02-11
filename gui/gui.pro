@@ -7,7 +7,7 @@ DEPENDPATH += . \
     ../lib
 INCLUDEPATH += . \
     ../lib \
-    ../z3
+    ../externals/z3/include
 QT += widgets
 QT += printsupport
 
@@ -15,7 +15,7 @@ contains(LINKCORE, [yY][eE][sS]) {
     LIBS += -l../bin/cppcheck-core
     DEFINES += CPPCHECKLIB_IMPORT
 }
-LIBS += -L$$PWD/../externals -L$$PWD/../z3
+LIBS += -L$$PWD/../externals -L$$PWD/../externals/z3/bin
 
 # z3
 win32 {

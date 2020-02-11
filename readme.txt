@@ -22,6 +22,14 @@ Compiling
 
     When building the command line tool, PCRE is optional. It is used if you build with rules.
 
+    For "bug hunting" you need Z3. Installing Z3:
+     * debian: "sudo apt-get install libz3-dev
+     * windows:
+       32-bit: https://github.com/Z3Prover/z3/releases/download/z3-4.8.7/z3-4.8.7-x86-win.zip
+       64-bit: https://github.com/Z3Prover/z3/releases/download/z3-4.8.7/z3-4.8.7-x64-win.zip
+    If you do not want to install z3 in some "system" include/lib paths you can put the files in
+    cppcheck/externals/z3/include and cppcheck/externals/z3/bin
+
     There are multiple compilation choices:
       * qmake - cross platform build tool
       * cmake - cross platform build tool
