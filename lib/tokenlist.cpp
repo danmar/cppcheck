@@ -504,6 +504,8 @@ static bool iscast(const Token *tok)
             tok2 = tok2->link()->next();
 
         if (tok2->str() == ")") {
+            if (Token::Match(tok2->previous(), "&|&& )"))
+                return true;
             if (Token::simpleMatch(tok2, ") (") && Token::simpleMatch(tok2->linkAt(1), ") ."))
                 return true;
             return type || tok2->strAt(-1) == "*" || Token::simpleMatch(tok2, ") ~") ||
