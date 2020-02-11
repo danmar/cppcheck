@@ -74,7 +74,7 @@ public:
     */
     void reportOut(const std::string &outmsg) override;
     void reportErr(const ErrorLogger::ErrorMessage &msg) override;
-    void bughuntingReport(const std::string &/*str*/) override {}
+    void bughuntingReport(const std::string &str) override;
 
 public slots:
 
@@ -111,6 +111,9 @@ signals:
     * @param item Error data
     */
     void debugError(const ErrorItem &item);
+
+    /** @brief bug hunting report */
+    void bughuntingReportLine(QString line);
 
 protected:
 

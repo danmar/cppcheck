@@ -990,6 +990,8 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
                 possibleParent = getAstParentSkipPossibleCastAndAddressOf(possibleParent, &unknown);
             if (possibleParent && Token::Match(possibleParent->previous(), "decltype|sizeof ("))
                 return false;
+            if (possibleParent && isLikelyStreamRead(mTokenizer->isCPP(), possibleParent))
+                return false;
         }
         if (Token::Match(possibleParent, "[(,]")) {
             if (unknown)
@@ -1401,7 +1403,7 @@ Check::FileInfo *CheckUninitVar::getFileInfo() const
         return nullptr;
 
     MyFileInfo *fileInfo = new MyFileInfo;
-    fileInfo->unsafeUsage = unsafeUsage     ;
+    fileInfo->unsafeUsage = unsafeUsage;
     return fileInfo;
 }
 

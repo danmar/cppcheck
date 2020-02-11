@@ -194,6 +194,9 @@ void ThreadHandler::initialize(ResultsView *view)
 
     connect(&mResults, &ThreadResult::debugError,
             this, &ThreadHandler::debugError);
+
+    connect(&mResults, &ThreadResult::bughuntingReportLine,
+            this, &ThreadHandler::bughuntingReportLine);
 }
 
 void ThreadHandler::loadSettings(QSettings &settings)

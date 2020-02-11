@@ -26,6 +26,8 @@
 
 #include "suppressions.h"
 
+#include <settings.h>
+
 /// @addtogroup GUI
 /// @{
 
@@ -122,6 +124,14 @@ public:
     */
     QStringList getExcludedPaths() const {
         return ProjectFile::fromNativeSeparators(mExcludedPaths);
+    }
+
+    /**
+    * @brief Get list of paths to exclude from the check.
+    * @return list of paths.
+    */
+    QStringList getVsConfigurations() const {
+        return mVsConfigurations;
     }
 
     /**
@@ -272,6 +282,11 @@ public:
      */
     void setAddons(const QStringList &addons);
 
+    /** @brief Set list of Visual Studio configurations to be checked
+     *  @param vsConfigs List of configurations
+     */
+    void setVSConfigurations(const QStringList &vsConfigs);
+
     /**
      * @brief Set tags.
      * @param tags tag list
@@ -295,52 +310,15 @@ public:
     }
 
     /** Do not only check how interface is used. Also check that interface is safe. */
-    class SafeChecks {
+    class SafeChecks : public Settings::SafeChecks {
     public:
-        SafeChecks() : classes(false), externalFunctions(false), internalFunctions(false), externalVariables(false) {}
-
-        void clear() {
-            classes = externalFunctions = internalFunctions = externalVariables = false;
-        }
+        SafeChecks() : Settings::SafeChecks() {}
 
         void loadFromXml(QXmlStreamReader &xmlReader);
         void saveToXml(QXmlStreamWriter &xmlWriter) const;
-
-        /**
-         * Public interface of classes
-         * - public function parameters can have any value
-         * - public functions can be called in any order
-         * - public variables can have any value
-         */
-        bool classes;
-
-        /**
-         * External functions
-         * - external functions can be called in any order
-         * - function parameters can have any values
-         */
-        bool externalFunctions;
-
-        /**
-         * Experimental: assume that internal functions can be used in any way
-         * This is only available in the GUI.
-         */
-        bool internalFunctions;
-
-        /**
-         * Global variables that can be modified outside the TU.
-         * - Such variable can have "any" value
-         */
-        bool externalVariables;
     };
 
-    /** Safe checks */
-    SafeChecks getSafeChecks() const {
-        return mSafeChecks;
-    }
-    void setSafeChecks(SafeChecks safeChecks) {
-        mSafeChecks = safeChecks;
-    }
+    SafeChecks safeChecks;
 
     /** Check unknown function return values */
     QStringList getCheckUnknownFunctionReturn() const {
@@ -350,6 +328,11 @@ public:
         mCheckUnknownFunctionReturn = s;
     }
 
+    /** Use Clang parser */
+    bool clangParser;
+
+    /** Bug hunting */
+    bool bugHunting;
 protected:
 
     /**
@@ -393,6 +376,12 @@ protected:
      * @param reader XML stream reader.
      */
     void readExcludes(QXmlStreamReader &reader);
+
+    /**
+     * @brief Read lists of Visual Studio configurations
+     * @param reader XML stream reader.
+     */
+    void readVsConfigurations(QXmlStreamReader &reader);
 
     /**
      * @brief Read platform text.
@@ -458,6 +447,9 @@ private:
      */
     bool mAnalyzeAllVsConfigs;
 
+    /** Check only a selected VS configuration */
+    QStringList mVsConfigurations;
+
     /** Check code in headers */
     bool mCheckHeaders;
 
@@ -522,8 +514,6 @@ private:
 
     /** Max CTU depth */
     int mMaxCtuDepth;
-
-    SafeChecks mSafeChecks;
 
     QStringList mCheckUnknownFunctionReturn;
 

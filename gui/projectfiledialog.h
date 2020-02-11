@@ -58,6 +58,9 @@ private:
     */
     QString getRootPath() const;
 
+    QStringList getVsConfigurations() const;
+    void    setVsConfigurations(const QStringList &configs);
+
     QString getImportProject() const;
 
     /** Get Cppcheck build dir */
@@ -256,6 +259,11 @@ protected slots:
      */
     void browseMisraFile();
 
+    /**
+     * @brief Check for all VS configurations
+     */
+    void checkAllVSConfigs();
+
 protected:
 
     /**
@@ -295,6 +303,8 @@ protected:
     int getSuppressionIndex(const QString &shortText) const;
 
 private:
+    QStringList getProjectConfigs(const QString &fileName);
+
     Ui::ProjectFile mUI;
 
     /**

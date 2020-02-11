@@ -251,17 +251,18 @@ const char * CppCheck::extraVersion()
 unsigned int CppCheck::check(const std::string &path)
 {
     if (mSettings.clang) {
-        mErrorLogger.reportOut(std::string("Checking ") + path + "...");
+        if (!mSettings.quiet)
+            mErrorLogger.reportOut(std::string("Checking ") + path + "...");
 
         const std::string clang = Path::isCPP(path) ? "clang++" : "clang";
-        const std::string temp = mSettings.buildDir + "/__temp__.c";
+        const std::string temp = mSettings.buildDir + (Path::isCPP(path) ? "/__temp__.cpp" : "/__temp__.c");
         const std::string clangcmd = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "") + ".clang-cmd";
         const std::string clangStderr = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "") + ".clang-stderr";
 
         const std::string cmd1 = clang + " -v -fsyntax-only " + temp + " 2>&1";
         const std::pair<bool, std::string> &result1 = executeCommand(cmd1);
         if (!result1.first || result1.second.find(" -cc1 ") == std::string::npos) {
-            std::cerr << "Failed to execute '" + cmd1 + "'" << std::endl;
+            mErrorLogger.reportOut("Failed to execute '" + cmd1 + "':" + result1.second);
             return 0;
         }
         std::istringstream details(result1.second);
@@ -362,8 +363,11 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
     temp.mSettings.userDefines += fs.cppcheckDefines();
     temp.mSettings.includePaths = fs.includePaths;
     temp.mSettings.userUndefs = fs.undefs;
-    if (fs.platformType != Settings::Unspecified) {
+    if (fs.platformType != Settings::Unspecified)
         temp.mSettings.platform(fs.platformType);
+    if (mSettings.clang) {
+        temp.mSettings.includePaths.insert(temp.mSettings.includePaths.end(), fs.systemIncludePaths.cbegin(), fs.systemIncludePaths.cend());
+        temp.check(Path::simplifyPath(fs.filename));
     }
     std::ifstream fin(fs.filename);
     return temp.checkFile(Path::simplifyPath(fs.filename), fs.cfg, fin);
@@ -1352,7 +1356,7 @@ void CppCheck::getErrorMessages()
     Preprocessor::getErrorMessages(this, &s);
 }
 
-void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings )
+void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings)
 {
     std::string allIncludes = "";
     std::string allDefines = "-D"+fileSettings.defines;
@@ -1361,8 +1365,7 @@ void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings 
     }
 
     std::string::size_type pos = 0u;
-    while ((pos = allDefines.find(";", pos)) != std::string::npos)
-    {
+    while ((pos = allDefines.find(";", pos)) != std::string::npos) {
         allDefines.replace(pos, 1, " -D");
         pos += 3;
     }
@@ -1370,16 +1373,15 @@ void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings 
     const std::string cmd = "clang-tidy -quiet -checks=*,-clang-analyzer-*,-llvm* \"" + fileSettings.filename + "\" -- " + allIncludes + allDefines;
     std::pair<bool, std::string> result = executeCommand(cmd);
     if (!result.first) {
-       std::cerr << "Failed to execute '" + cmd + "'" << std::endl;
-       return;
+        std::cerr << "Failed to execute '" + cmd + "'" << std::endl;
+        return;
     }
 
     // parse output and create error messages
     std::istringstream istr(result.second);
     std::string line;
 
-    if (!mSettings.buildDir.empty())
-    {
+    if (!mSettings.buildDir.empty()) {
         const std::string analyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, fileSettings.filename, "");
         std::ofstream fcmd(analyzerInfoFile + ".clang-tidy-cmd");
         fcmd << istr.str();
@@ -1398,7 +1400,9 @@ void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings 
         const std::size_t endNamePos = line.rfind(":", endLinePos - 1);
         const std::size_t endMsgTypePos = line.find(':', endColumnPos + 2);
         const std::size_t endErrorPos = line.rfind('[', std::string::npos);
-        
+        if (endLinePos==std::string::npos || endNamePos==std::string::npos || endMsgTypePos==std::string::npos || endErrorPos==std::string::npos)
+            continue;
+
         const std::string lineNumString = line.substr(endNamePos + 1, endLinePos - endNamePos - 1);
         const std::string columnNumString = line.substr(endLinePos + 1, endColumnPos - endLinePos - 1);
         const std::string errorTypeString = line.substr(endColumnPos + 1, endMsgTypePos - endColumnPos - 1);

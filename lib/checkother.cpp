@@ -448,8 +448,9 @@ void CheckOther::checkRedundantAssignment()
                         continue;
                 }
 
+                const Token* rhs = tok->astOperand2();
                 // Do not warn about assignment with 0 / NULL
-                if (Token::simpleMatch(tok->astOperand2(), "0") || FwdAnalysis::isNullOperand(tok->astOperand2()))
+                if ((rhs && MathLib::isNullValue(rhs->str())) || isNullOperand(rhs))
                     continue;
 
                 if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isReference())

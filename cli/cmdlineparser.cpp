@@ -184,19 +184,6 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--inconclusive") == 0)
                 mSettings->inconclusive = true;
 
-            // Experimental: Safe checking
-            else if (std::strcmp(argv[i], "--safe-classes") == 0)
-                mSettings->safeChecks.classes = true;
-
-            // Experimental: Safe checking
-            else if (std::strcmp(argv[i], "--safe-functions") == 0)
-                mSettings->safeChecks.externalFunctions = mSettings->safeChecks.internalFunctions = true;
-
-            // Bug hunting
-            else if (std::strcmp(argv[i], "--bug-hunting") == 0)
-                mSettings->bugHunting = true;
-            else if (std::strcmp(argv[i], "--debug-bug-hunting") == 0)
-                mSettings->bugHunting = mSettings->debugBugHunting = true;
             /*
                         else if (std::strncmp(argv[i], "--check-diff=", 13) == 0) {
                             std::ifstream fin(argv[i] + 13);
@@ -921,8 +908,6 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             printMessage("If --clang is used then --cppcheck-build-dir must be specified also");
             return false;
         }
-        std::ofstream fout(mSettings->buildDir + "/__temp__.c");
-        fout << "int x;\n";
     }
 
 

@@ -2632,7 +2632,7 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, ValueFlow::Value:
             } else if (Token::simpleMatch(var->declEndToken(), "=")) {
                 errorPath.emplace_back(var->declEndToken(), "Assigned to reference.");
                 const Token *vartok = var->declEndToken()->astOperand2();
-                if (vartok == tok || (var->isConst() && isTemporary(true, vartok, nullptr)))
+                if (vartok == tok || (var->isConst() && isTemporary(true, vartok, nullptr, true)))
                     return {{tok, true, std::move(errorPath)}};
                 if (vartok)
                     return getLifetimeTokens(vartok, std::move(errorPath), depth - 1);
@@ -4015,15 +4015,14 @@ static bool isInBounds(const ValueFlow::Value& value, MathLib::bigint x)
     return true;
 }
 
-template<class Compare>
-static const ValueFlow::Value* getCompareIntValue(const std::list<ValueFlow::Value>& values, Compare compare)
+static const ValueFlow::Value* getCompareIntValue(const std::list<ValueFlow::Value>& values, std::function<bool(MathLib::bigint, MathLib::bigint)> compare)
 {
     const ValueFlow::Value* result = nullptr;
     for (const ValueFlow::Value& value : values) {
         if (!value.isIntValue())
             continue;
         if (result)
-            result = &std::min(value, *result, [&](const ValueFlow::Value& x, const ValueFlow::Value& y) {
+            result = &std::min(value, *result, [compare](const ValueFlow::Value& x, const ValueFlow::Value& y) {
             return compare(x.intvalue, y.intvalue);
         });
         else

@@ -70,40 +70,294 @@ def rawlink(rawtoken):
     return rawtoken
 
 
-KEYWORDS = {
-    'auto',
-    'break',
-    'case',
-    'char',
-    'const',
-    'continue',
-    'default',
-    'do',
-    'double',
-    'else',
-    'enum',
-    'extern',
-    'float',
-    'for',
-    'goto',
-    'if',
-    'int',
-    'long',
-    'register',
-    'return',
-    'short',
-    'signed',
-    'sizeof',
-    'static',
-    'struct',
-    'switch',
-    'typedef',
-    'union',
-    'unsigned',
-    'void',
-    'volatile',
-    'while'
+# Identifiers described in Section 7 "Library" of C90 Standard
+# Based on ISO/IEC9899:1990 Annex D -- Library summary and
+# Annex E -- Implementation limits.
+C90_STDLIB_IDENTIFIERS = {
+    # D.1 Errors
+    'errno.h': ['EDOM', 'ERANGE', 'errno'],
+    # D.2 Common definitions
+    'stddef.h': ['NULL', 'offsetof', 'ptrdiff_t', 'size_t', 'wchar_t'],
+    # D.3 Diagnostics
+    'assert.h': ['NDEBUG', 'assert'],
+    # D.4 Character handling
+    'ctype.h': [
+        'isalnum', 'isalpha', 'isblank', 'iscntrl', 'isdigit',
+        'isgraph', 'islower', 'isprint', 'ispunct', 'isspace',
+        'isupper', 'isxdigit', 'tolower', 'toupper',
+    ],
+    # D.5 Localization
+    'locale.h': [
+        'LC_ALL', 'LC_COLLATE', 'LC_CTYPE', 'LC_MONETARY',
+        'LC_NUMERIC', 'LC_TIME', 'NULL', 'lconv',
+        'setlocale', 'localeconv',
+    ],
+    # D.6 Mathematics
+    'math.h': [
+        'HUGE_VAL' 'acos', 'asin' , 'atan2', 'cos', 'sin', 'tan', 'cosh',
+        'sinh', 'tanh', 'exp', 'frexp', 'ldexp', 'log', 'loglO', 'modf',
+        'pow', 'sqrt', 'ceil', 'fabs', 'floor', 'fmod',
+    ],
+    # D.7 Nonlocal jumps
+    'setjmp.h': ['jmp_buf', 'setjmp', 'longjmp'],
+    # D.8 Signal handling
+    'signal.h': [
+        'sig_atomic_t', 'SIG_DFL', 'SIG_ERR', 'SIG_IGN', 'SIGABRT', 'SIGFPE',
+        'SIGILL', 'SIGINT', 'SIGSEGV', 'SIGTERM', 'signal', 'raise',
+    ],
+    # D.9 Variable arguments
+    'stdarg.h': ['va_list', 'va_start', 'va_arg', 'va_end'],
+    # D.10 Input/output
+    'stdio.h': [
+        '_IOFBF', '_IOLBF', '_IONBF', 'BUFSIZ', 'EOF', 'FILE', 'FILENAME_MAX',
+        'FOPEN_MAX', 'fpos_t', 'L_tmpnam', 'NULL', 'SEEK_CUR', 'SEEK_END',
+        'SEEK_SET', 'size_t', 'stderr', 'stdin', 'stdout', 'TMP_MAX',
+        'remove', 'rename', 'tmpfile', 'tmpnam', 'fclose', 'fflush', 'fopen',
+        'freopen', 'setbuf', 'setvbuf', 'fprintf', 'fscanf', 'printf',
+        'scanf', 'sprintf', 'sscanf', 'vfprintf', 'vprintf', 'vsprintf',
+        'fgetc', 'fgets', 'fputc', 'fputs', 'getc', 'getchar', 'gets', 'putc',
+        'putchar', 'puts', 'ungetc', 'fread', 'fwrite', 'fgetpos', 'fseek',
+        'fsetpos', 'rewind', 'clearerr', 'feof', 'ferror', 'perror',
+    ],
+    # D.11 General utilities
+    'stdlib.h': [
+        'EXIT_FAILURE', 'EXIT_SUCCESS', 'MB_CUR_MAX', 'NULL', 'RAND_MAX',
+        'div_t', 'ldiv_t', 'wchar_t', 'atof', 'atoi', 'strtod', 'rand',
+        'srand', 'calloc', 'free', 'malloc', 'realloc', 'abort', 'atexit',
+        'exit', 'getenv', 'system', 'bsearch', 'qsort', 'abs', 'div', 'ldiv',
+        'mblen', 'mbtowc', 'wctomb', 'mbstowcs', 'wcstombs',
+    ],
+    # D.12 String handling
+    'string.h': [
+        'NULL', 'size_t', 'memcpy', 'memmove', 'strcpy', 'strncpy', 'strcat',
+        'strncat', 'memcmp', 'strcmp', 'strcoll', 'strncmp', 'strxfrm',
+        'memchr', 'strchr', 'strcspn', 'strpbrk', 'strrchr', 'strspn',
+        'strstr', 'strtok', 'memset', 'strerror', 'strlen',
+    ],
+    # D.13 Date and time
+    'time.h': [
+        'CLK_TCK', 'NULL', 'clock_t', 'time_t', 'size_t', 'tm', 'clock',
+        'difftime', 'mktime', 'time', 'asctime', 'ctime', 'gmtime',
+        'localtime', 'strftime',
+    ],
+    # Annex E: Implementation limits
+    'limits.h': [
+        'CHAR_BIT', 'SCHAR_MIN', 'SCHAR_MAX', 'UCHAR_MAX', 'CHAR_MIN',
+        'CHAR_MAX', 'MB_LEN_MAX', 'SHRT_MIN', 'SHRT_MAX', 'USHRT_MAX',
+        'INT_MIN', 'INT_MAX', 'UINT_MAX', 'LONG_MIN', 'LONG_MAX', 'ULONG_MAX',
+        ],
+    'float.h': [
+        'FLT_ROUNDS', 'FLT_RADIX', 'FLT_MANT_DIG', 'DBL_MANT_DIG',
+        'LDBL_MANT_DIG', 'DECIMAL_DIG', 'FLT_DIG', 'DBL_DIG', 'LDBL_DIG',
+        'DBL_MIN_EXP', 'LDBL_MIN_EXP', 'FLT_MIN_10_EXP', 'DBL_MIN_10_EXP',
+        'LDBL_MIN_10_EXP', 'FLT_MAX_EXP', 'DBL_MAX_EXP', 'LDBL_MAX_EXP',
+        'FLT_MAX_10_EXP', 'DBL_MAX_10_EXP', 'LDBL_MAX_10_EXP', 'FLT_MAX',
+        'DBL_MAX', 'LDBL_MAX', 'FLT_MIN', 'DBL_MIN', 'LDBL_MIN',
+        'FLT_EPSILON', 'DBL_EPSILON', 'LDBL_EPSILON'
+    ],
 }
+
+
+# Identifiers described in Section 7 "Library" of C99 Standard
+# Based on ISO/IEC 9899 WF14/N1256 Annex B -- Library summary
+C99_STDLIB_IDENTIFIERS = {
+    # B.1 Diagnostics
+    'assert.h': C90_STDLIB_IDENTIFIERS['assert.h'],
+    # B.2 Complex
+    'complex.h': [
+        'complex', 'imaginary', 'I', '_Complex_I', '_Imaginary_I',
+        'CX_LIMITED_RANGE',
+        'cacos', 'cacosf', 'cacosl',
+        'casin', 'casinf', 'casinl',
+        'catan', 'catanf', 'catanl',
+        'ccos', 'ccosf', 'ccosl',
+        'csin', 'csinf', 'csinl',
+        'ctan', 'ctanf', 'ctanl',
+        'cacosh', 'cacoshf', 'cacoshl',
+        'casinh', 'casinhf', 'casinhl',
+        'catanh', 'catanhf', 'catanhl',
+        'ccosh', 'ccoshf', 'ccoshl',
+        'csinh', 'csinhf', 'csinhl',
+        'ctanh', 'ctanhf', 'ctanhl',
+        'cexp', 'cexpf', 'cexpl',
+        'clog', 'clogf', 'clogl',
+        'cabs', 'cabsf', 'cabsl',
+        'cpow', 'cpowf', 'cpowl',
+        'csqrt', 'csqrtf', 'csqrtl',
+        'carg', 'cargf', 'cargl',
+        'cimag', 'cimagf', 'cimagl',
+        'conj', 'conjf', 'conjl',
+        'cproj', 'cprojf', 'cprojl',
+        'creal', 'crealf', 'creall',
+    ],
+    # B.3 Character handling
+    'ctype.h': C90_STDLIB_IDENTIFIERS['ctype.h'],
+    # B.4 Errors
+    'errno.h': C90_STDLIB_IDENTIFIERS['errno.h'] + ['EILSEQ'],
+    # B.5 Floating-point environment
+    'fenv.h': [
+        'fenv_t', 'FE_OVERFLOW', 'FE_TOWARDZERO',
+        'fexcept_t', 'FE_UNDERFLOW', 'FE_UPWARD',
+        'FE_DIVBYZERO', 'FE_ALL_EXCEPT', 'FE_DFL_ENV',
+        'FE_INEXACT', 'FE_DOWNWARD',
+        'FE_INVALID', 'FE_TONEAREST',
+        'FENV_ACCESS',
+        'feclearexcept', 'fegetexceptflag', 'fegetround',
+        'fesetround', 'fegetenv', 'feholdexcept',
+        'fesetenv', 'feupdateenv',
+    ],
+    # B.6 Characteristics of floating types
+    'float.h': C90_STDLIB_IDENTIFIERS['float.h'] + ['FLT_EVAL_METHOD'],
+    # B.7 Format conversion of integer types
+    'inttypes.h': [
+        'imaxdiv_t', 'imaxabs', 'imaxdiv', 'strtoimax',
+        'strtoumax', 'wcstoimax', 'wcstoumax',
+    ],
+    # B.8 Alternative spellings
+    'iso646.h': [
+        'and', 'and_eq', 'bitand', 'bitor', 'compl', 'not', 'not_eq',
+        'or', 'or_eq', 'xor', 'xor_eq',
+    ],
+    # B.9 Size of integer types
+    'limits.h': C90_STDLIB_IDENTIFIERS['limits.h'] +
+    ['LLONG_MIN', 'LLONG_MAX', 'ULLONG_MAX'],
+    # B.10 Localization
+    'locale.h': C90_STDLIB_IDENTIFIERS['locale.h'],
+    # B.11 Mathematics
+    'math.h': C90_STDLIB_IDENTIFIERS['math.h'] + [
+        'float_t', 'double_t', 'HUGE_VAL', 'HUGE_VALF', 'HUGE_VALL',
+        'INFINITY', 'NAN', 'FP_INFINITE', 'FP_NAN', 'FP_NORMAL',
+        'FP_SUBNORMAL', 'FP_ZERO', 'FP_FAST_FMA', 'FP_FAST_FMAF',
+        'FP_FAST_FMAL', 'FP_ILOGB0', 'FP_ILOGBNAN', 'MATH_ERRNO',
+        'MATH_ERREXCEPT', 'math_errhandling', 'FP_CONTRACT', 'fpclassify',
+        'isfinite', 'isinf', 'isnan', 'isnormal', 'signbit', 'acosf', 'acosl',
+        'asinf', 'asinl', 'atanf', 'atanl', 'atan2', 'atan2f', 'atan2l',
+        'cosf', 'cosl', 'sinf', 'sinl', 'tanf', 'tanl', 'acosh', 'acoshf',
+        'acoshl', 'asinh', 'asinhf', 'asinhl', 'atanh', 'atanhf', 'atanhl',
+        'cosh', 'coshf', 'coshl', 'sinh', 'sinhf', 'sinhl', 'tanh', 'tanhf',
+        'tanhl', 'expf', 'expl', 'exp2', 'exp2f', 'exp2l', 'expm1', 'expm1f',
+        'expm1l', 'frexpf', 'frexpl', 'ilogb', 'ilogbf', 'ilogbl', 'float',
+        'ldexpl', 'logf', 'logl', 'log10f', 'log10l', 'log1p', 'log1pf',
+        'log1pl', 'log2', 'log2f', 'log2l', 'logb', 'logbf', 'logbl', 'modff',
+        'modfl', 'scalbn', 'scalbnf', 'scalbnl', 'scalbln', 'scalblnf',
+        'scalblnl', 'hypotl', 'powf', 'powl', 'sqrtf', 'sqrtl', 'erf', 'erff',
+        'erfl', 'erfc', 'erfcf', 'erfcl', 'lgamma', 'lgammaf', 'lgammal',
+        'tgamma', 'tgammaf', 'tgammal', 'ceilf', 'ceill', 'floorf', 'floorl',
+        'nearbyint', 'nearbyintf', 'nearbyintl', 'rint', 'rintf', 'rintl',
+        'lrint', 'lrintf', 'lrintl', 'llrint', 'llrintf', 'llrintl', 'round',
+        'roundf', 'roundl', 'lround', 'lroundf', 'lroundl', 'llround',
+        'llroundf', 'llroundl', 'trunc', 'truncf', 'truncl', 'fmodf', 'fmodl',
+        'remainder', 'remainderf', 'remainderl', 'remquo', 'remquof',
+        'remquol', 'copysign', 'copysignf', 'copysignl', 'nan', 'nanf',
+        'nanl', 'nextafter', 'nextafterf', 'nextafterl', 'nexttoward',
+        'nexttowardf', 'nexttowardl', 'fdim', 'fdimf', 'fdiml', 'fmax',
+        'fmaxf', 'fmaxl', 'fmin', 'fminf', 'fminl', 'fmal', 'isgreater',
+        'isgreaterequal', 'isless', 'islessequal', 'islessgreater',
+        'isunordered',
+    ],
+    # B.12 Nonlocal jumps
+    'setjmp.h': C90_STDLIB_IDENTIFIERS['setjmp.h'],
+    # B.13 Signal handling
+    'signal.h': C90_STDLIB_IDENTIFIERS['signal.h'],
+    # B.14 Variable arguments
+    'stdarg.h': C90_STDLIB_IDENTIFIERS['stdarg.h'] + ['va_copy'],
+    # B.15 Boolean type and values
+    'stdbool.h': ['bool', 'true', 'false', '__bool_true_false_are_defined'],
+    # B.16 Common definitions
+    'stddef.h': C90_STDLIB_IDENTIFIERS['stddef.h'],
+    # B.17 Integer types
+    'stdint.h': [
+        'intptr_t', 'uintptr_t', 'intmax_t', 'uintmax_t', 'INTN_MIN',
+        'INTN_MAX', 'UINTN_MAX', 'INT_LEASTN_MIN', 'INT_LEASTN_MAX',
+        'UINT_LEASTN_MAX', 'INT_FASTN_MIN', 'INT_FASTN_MAX', 'UINT_FASTN_MAX',
+        'INTPTR_MIN', 'INTPTR_MAX', 'UINTPTR_MAX', 'INTMAX_MIN', 'INTMAX_MAX',
+        'UINTMAX_MAX', 'PTRDIFF_MIN', 'PTRDIFF_MAX', 'SIG_ATOMIC_MIN',
+        'SIG_ATOMIC_MAX', 'SIZE_MAX', 'WCHAR_MIN', 'WCHAR_MAX', 'WINT_MIN',
+        'WINT_MAX', 'INTN_C', 'UINTN_C', 'INTMAX_C', 'UINTMAX_C',
+    ] + ['%s%d_t' % (n, v) for n,v in itertools.product(
+    ['int', 'uint', 'int_least', 'uint_least', 'int_fast', 'uint_fast'],
+    [8, 16,32,64])],
+    # B.18 Input/output
+    'stdio.h': C90_STDLIB_IDENTIFIERS['stdio.h'] + [
+        'mode', 'restrict', 'snprintf', 'vfscanf', 'vscanf',
+        'vsnprintf', 'vsscanf',
+    ],
+    # B.19 General utilities
+    'stdlib.h': C90_STDLIB_IDENTIFIERS['stdlib.h'] + [
+        '_Exit', 'labs', 'llabs', 'lldiv', 'lldiv_t', 'strtof', 'strtol',
+        'strtold', 'strtoll', 'strtoul', 'strtoull'
+    ],
+    # B.20 String handling
+    'string.h': C90_STDLIB_IDENTIFIERS['string.h'],
+    # B.21 Type-generic math
+    'tgmath.h': [
+        'acos', 'asin', 'atan', 'acosh', 'asinh', 'atanh', 'cos', 'sin', 'tan',
+        'cosh', 'sinh', 'tanh', 'exp', 'log', 'pow', 'sqrt', 'fabs', 'atan2',
+        'cbrt', 'ceil', 'copysign', 'erf', 'erfc', 'exp2', 'expm1', 'fdim',
+        'floor', 'fma', 'fmax', 'fmin', 'fmod', 'frexp', 'hypot', 'ilogb',
+        'ldexp', 'lgamma', 'llrint', 'llround', 'log10', 'log1p', 'log2',
+        'logb', 'lrint', 'lround', 'nearbyint', 'nextafter', 'nexttoward',
+        'remainder', 'remquo', 'rint', 'round', 'scalbn', 'scalbln', 'tgamma',
+        'trunc', 'carg', 'cimag', 'conj', 'cproj', 'creal',
+    ],
+    # B.22 Date and time
+    'time.h': C90_STDLIB_IDENTIFIERS['time.h'] + ['CLOCKS_PER_SEC'],
+    # B.23 Extended multibyte/wide character utilities
+    'wchar.h': [
+        'wchar_t', 'size_t', 'mbstate_t', 'wint_t', 'tm', 'NULL', 'WCHAR_MAX',
+        'WCHAR_MIN', 'WEOF', 'fwprintf', 'fwscanf', 'swprintf', 'swscanf',
+        'vfwprintf', 'vfwscanf', 'vswprintf', 'vswscanf', 'vwprintf',
+        'vwscanf', 'wprintf', 'wscanf', 'fgetwc', 'fgetws', 'fputwc', 'fputws',
+        'fwide', 'getwc', 'getwchar', 'putwc', 'putwchar', 'ungetwc', 'wcstod',
+        'wcstof', 'double', 'int', 'long', 'long', 'long', 'wcscpy', 'wcsncpy',
+        'wmemcpy', 'wmemmove', 'wcscat', 'wcsncat', 'wcscmp', 'wcscoll',
+        'wcsncmp', 'wcsxfrm', 'wmemcmp', 'wcschr', 'wcscspn', 'wcspbrk',
+        'wcsrchr', 'wcsspn', 'wcsstr', 'wcstok', 'wmemchr', 'wcslen',
+        'wmemset', 'wcsftime', 'btowc', 'wctob', 'mbsinit', 'mbrlen',
+        'mbrtowc', 'wcrtomb', 'mbsrtowcs', 'wcsrtombs',
+    ],
+}
+
+
+def isStdLibId(id_, standard='c99'):
+    id_lists = []
+    if standard == 'c89':
+        id_lists = C90_STDLIB_IDENTIFIERS.values()
+    elif standard == 'c99':
+        id_lists = C99_STDLIB_IDENTIFIERS.values()
+    for l in id_lists:
+        if id_ in l:
+            return True
+    return False
+
+
+# Reserved keywords defined in ISO/IEC9899:1990 -- ch 6.1.1
+C90_KEYWORDS = {
+    'auto', 'break', 'double', 'else', 'enum', 'extern', 'float', 'for',
+    'goto', 'if', 'case', 'char', 'const', 'continue', 'default', 'do', 'int',
+    'long', 'struct', 'switch', 'register', 'typedef', 'union', 'unsigned',
+    'void', 'volatile', 'while', 'return', 'short', 'signed', 'sizeof',
+    'static'
+}
+
+
+# Reserved keywords defined in ISO/IEC 9899 WF14/N1256 -- ch. 6.4.1
+C99_KEYWORDS = {
+    'auto', 'break', 'case', 'char', 'const', 'continue', 'default', 'do',
+    'double', 'else', 'enum', 'extern', 'float', 'for', 'goto', 'if', 'inline',
+    'int', 'long', 'register', 'restrict', 'return', 'short', 'signed',
+    'sizeof', 'static', 'struct', 'switch', 'typedef', 'union', 'unsigned',
+    'void', 'volatile', 'while', '_Bool', '_Complex', '_Imaginary'
+}
+
+
+def isKeyword(keyword, standard='c99'):
+    kw_set = {}
+    if standard == 'c89':
+        kw_set = C90_KEYWORDS
+    elif standard == 'c99':
+        kw_set = C99_KEYWORDS
+    return keyword in kw_set
 
 
 def getEssentialTypeCategory(expr):
@@ -218,14 +472,14 @@ def isCast(expr):
     return True
 
 
-def isFunctionCall(expr):
+def isFunctionCall(expr, std='c99'):
     if not expr:
         return False
     if expr.str != '(' or not expr.astOperand1:
         return False
     if expr.astOperand1 != expr.previous:
         return False
-    if expr.astOperand1.str in KEYWORDS:
+    if isKeyword(expr.astOperand1.str, std):
         return False
     return True
 
@@ -806,10 +1060,10 @@ class MisraChecker:
         )
 
     def get_num_significant_naming_chars(self, cfg):
-        if cfg.standards and cfg.standards.c == "c99":
-            return 63
-        else:
+        if cfg.standards and cfg.standards.c == "c89":
             return 31
+        else:
+            return 63
 
     def misra_2_7(self, data):
         for func in data.functions:
@@ -1838,7 +2092,7 @@ class MisraChecker:
             tok = scope.bodyStart
             while tok != scope.bodyEnd:
                 tok = tok.next
-                if not isFunctionCall(tok):
+                if not isFunctionCall(tok, data.standards.c):
                     continue
                 f = tok.astOperand1.function
                 if f is not None and f not in calls:
@@ -1978,27 +2232,37 @@ class MisraChecker:
                     self.reportError(directive, 20, 2)
                     break
 
-    def misra_20_3(self, rawTokens):
-        linenr = -1
-        for token in rawTokens:
-            if token.str.startswith('/') or token.linenr == linenr:
+    def misra_20_3(self, data):
+        for directive in data.directives:
+            if not directive.str.startswith('#include '):
                 continue
-            linenr = token.linenr
-            if not simpleMatch(token, '# include'):
-                continue
-            headerToken = token.next.next
-            num = 0
-            while headerToken and headerToken.linenr == linenr:
-                if not headerToken.str.startswith('/*') and not headerToken.str.startswith('//'):
-                    num += 1
-                headerToken = headerToken.next
-            if num != 1:
-                self.reportError(token, 20, 3)
+
+            words = directive.str.split(' ')
+
+            # If include directive contains more than two words, here would be
+            # violation anyway.
+            if len(words) > 2:
+                self.reportError(directive, 20, 3)
+
+            # Handle include directives with not quoted argument
+            elif len(words) > 1:
+                filename = words[1]
+                if not ((filename.startswith('"') and
+                         filename.endswith('"')) or
+                        (filename.startswith('<') and
+                         filename.endswith('>'))):
+                    # We are handle only directly included files in the
+                    # following format: #include file.h
+                    # Cases with macro expansion provided by MISRA document are
+                    # skipped because we don't always have access to directive
+                    # definition.
+                    if '.' in filename:
+                        self.reportError(directive, 20, 3)
 
     def misra_20_4(self, data):
         for directive in data.directives:
             res = re.search(r'#define ([a-z][a-z0-9_]+)', directive.str)
-            if res and (res.group(1) in KEYWORDS):
+            if res and isKeyword(res.group(1), data.standards.c):
                 self.reportError(directive, 20, 4)
 
     def misra_20_5(self, data):
@@ -2075,43 +2339,23 @@ class MisraChecker:
                     ifStack.pop()
 
     def misra_21_1(self, data):
-        # Reference: n1570 7.1.3 - Reserved identifiers
-        re_forbidden_macro = re.compile(r'#define (errno|_[_A-Z]+)')
+        re_forbidden_macro = re.compile(r'#(?:define|undef) _[_A-Z]+')
+        re_macro_name = re.compile(r'#(?:define|undef) (.+)[ $]')
 
-        # Search for forbidden identifiers in macro names
-        for directive in data.directives:
-            res = re.search(re_forbidden_macro, directive.str)
-            if res:
-                self.reportError(directive, 21, 1)
-
-        type_name_tokens = (t for t in data.tokenlist if t.typeScopeId)
-        type_fields_tokens = (t for t in data.tokenlist if t.valueType and t.valueType.typeScopeId)
-
-        # Search for forbidden identifiers
-        for i in itertools.chain(data.variables, data.functions, type_name_tokens, type_fields_tokens):
-            token = i
-            if isinstance(i, cppcheckdata.Variable):
-                token = i.nameToken
-            elif isinstance(i, cppcheckdata.Function):
-                token = i.tokenDef
-            if not token:
+        for d in data.directives:
+            # Search for forbidden identifiers
+            m = re.search(re_forbidden_macro, d.str)
+            if m:
+                self.reportError(d, 21, 1)
                 continue
-            if len(token.str) < 2:
+
+            # Search standard library identifiers in macro names
+            m = re.search(re_macro_name, d.str)
+            if not m:
                 continue
-            if token.str == 'errno':
-                self.reportError(token, 21, 1)
-            if token.str[0] == '_':
-                if (token.str[1] in string.ascii_uppercase) or (token.str[1] == '_'):
-                    self.reportError(token, 21, 1)
-
-                # Allow identifiers with file scope visibility (static)
-                if token.scope.type == 'Global':
-                    if token.variable and token.variable.isStatic:
-                        continue
-                    if token.function and token.function.isStatic:
-                        continue
-
-                self.reportError(token, 21, 1)
+            name = m.group(1)
+            if isStdLibId(name, data.standards.c):
+                self.reportError(d, 21, 1)
 
     def misra_21_3(self, data):
         for token in data.tokenlist:
@@ -2678,8 +2922,7 @@ class MisraChecker:
             self.executeCheck(1902, self.misra_19_2, cfg)
             self.executeCheck(2001, self.misra_20_1, cfg)
             self.executeCheck(2002, self.misra_20_2, cfg)
-            if cfgNumber == 0:
-                self.executeCheck(2003, self.misra_20_3, data.rawTokens)
+            self.executeCheck(2003, self.misra_20_3, cfg)
             self.executeCheck(2004, self.misra_20_4, cfg)
             self.executeCheck(2005, self.misra_20_5, cfg)
             self.executeCheck(2006, self.misra_20_7, cfg)

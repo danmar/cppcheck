@@ -166,6 +166,7 @@ private:
         TEST_CASE(incompleteArrayFill);
 
         TEST_CASE(redundantVarAssignment);
+        TEST_CASE(redundantVarAssignment_trivial);
         TEST_CASE(redundantVarAssignment_struct);
         TEST_CASE(redundantVarAssignment_7133);
         TEST_CASE(redundantVarAssignment_stackoverflow);
@@ -6602,6 +6603,42 @@ private:
         ASSERT_EQUALS("test.cpp:4:style:Variable '*var' is reassigned a value before the old one has been used.\n"
                       "test.cpp:3:note:*var is assigned\n"
                       "test.cpp:4:note:*var is overwritten\n", errout.str());
+    }
+
+    void redundantVarAssignment_trivial() {
+        check("void f() {\n"
+              "   int a = 0;\n"
+              "   a = 4;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "   int a;\n"
+              "   a = 0;\n"
+              "   a = 4;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "   unsigned a;\n"
+              "   a = 0u;\n"
+              "   a = 2u;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "   void* a;\n"
+              "   a = (void*)0;\n"
+              "   a = p;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "   void* a;\n"
+              "   a = (void*)0U;\n"
+              "   a = p;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void redundantVarAssignment_struct() {

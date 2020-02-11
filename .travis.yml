@@ -20,7 +20,7 @@ env:
 before_install:
 # install needed deps
  - travis_retry sudo apt-get update -qq
- - travis_retry sudo apt-get install -qq python3-pip qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet python3-dev liblua5.3-dev libcurl3 libcairo2-dev libsigc++-2.0-dev tidy libopencv-dev
+ - travis_retry sudo apt-get install -qq python3-pip qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet python3-dev liblua5.3-dev libcurl3 libcairo2-dev libsigc++-2.0-dev tidy libopencv-dev libz3-dev
 # Python 2 modules 
  - travis_retry python2 -m pip install --user pytest==4.6.4
  - travis_retry python2 -m pip install --user pylint
@@ -126,7 +126,9 @@ matrix:
         - cd ../../
 # check addons/misra.py
         - cd addons/test
-        - ${CPPCHECK} --dump misra/misra-test.c
+        # We'll force C89 standard to enable an additional verification for
+        # rules 5.4 and 5.5 which have standard-dependent options.
+        - ${CPPCHECK} --dump misra/misra-test.c --std=c89
         - python3 ../misra.py -verify misra/misra-test.c.dump
         - ${CPPCHECK} --dump misra/misra-test.cpp
         - python3 ../misra.py -verify misra/misra-test.cpp.dump
