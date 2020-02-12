@@ -2229,7 +2229,7 @@ class MisraChecker:
         for directive in data.directives:
             if not directive.str.startswith('#include '):
                 continue
-            for pattern in ('\\', '//', '/*', "'"):
+            for pattern in ('\\', '//', '/*', ',', "'"):
                 if pattern in directive.str:
                     self.reportError(directive, 20, 2)
                     break
