@@ -34,6 +34,11 @@
 #include <sstream>
 
 
+ImportProject::ImportProject()
+{
+    projectType = Type::UNKNOWN;
+}
+
 void ImportProject::ignorePaths(const std::vector<std::string> &ipaths)
 {
     for (std::list<FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
