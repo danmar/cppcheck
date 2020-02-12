@@ -182,16 +182,14 @@ void Suppressions::ErrorMessage::setFileName(const std::string &s)
 
 int Suppressions::Suppression::parseComment(std::string comment, unsigned int startIndex, std::string *errorMessage)
 {
-	size_t position;
-
 	if (comment.size() < 2)
 		return -1;
 
-	position = comment.find("cppcheck-suppress", startIndex);
-	if (position == std::string::npos)
+	size_t suppress_position = comment.find("cppcheck-suppress", startIndex);
+	if (suppress_position == std::string::npos)
 		return -1;
 
-	std::istringstream iss(comment.substr(position));
+	std::istringstream iss(comment.substr(suppress_position));
 	std::string suppress_word;
 	iss >> suppress_word;
 
@@ -199,26 +197,26 @@ int Suppressions::Suppression::parseComment(std::string comment, unsigned int st
 	if (suppress_word.length()<=18 || suppress_word[17]!=':' || suppress_word[18]=='@') {
         if (errorMessage && errorMessage->empty())
             *errorMessage = "Bad suppression attribute '" + suppress_word + "'. legal format is cppcheck-suppress:errorId or cppcheck-suppress:errorId@symbol";
-		return startIndex+suppress_word.length();
+		return suppress_position+suppress_word.length();
 	}
 
 	//'@' is optional
-	position = suppress_word.find("@");
-	if (position == std::string::npos) {    //no need parse symbol name
+	size_t symbol_position = suppress_word.find("@");
+	if (symbol_position == std::string::npos) {    //no need parse symbol name
 		errorId = suppress_word.substr(18);
 	}
 	else {                                  //need parse symbol name
 	    //if '@' exist, there must has symbol after '@'
-	    if (suppress_word.length()<=position+1) {
+	    if (suppress_word.length()<=symbol_position+1) {
             if (errorMessage && errorMessage->empty())
                 *errorMessage = "Bad suppression attribute '" + suppress_word + "'. legal format is cppcheck-suppress:errorId or cppcheck-suppress:errorId@symbol";
-			return startIndex+suppress_word.length();
+			return suppress_position+suppress_word.length();
 	    }
-		errorId = suppress_word.substr(18, position-18);
-		symbolName = suppress_word.substr(position+1);
+		errorId = suppress_word.substr(18, symbol_position-18);
+		symbolName = suppress_word.substr(symbol_position+1);
 	}
 
-    return startIndex+suppress_word.length();
+    return suppress_position+suppress_word.length();
 }
 
 bool Suppressions::Suppression::isSuppressed(const Suppressions::ErrorMessage &errmsg) const
