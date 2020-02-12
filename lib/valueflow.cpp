@@ -5772,7 +5772,7 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
 {
     // declaration
     for (const Variable *var : symboldatabase->variableList()) {
-        if (!var || !var->isLocal() || var->isPointer() || var->isReference())
+        if (!var || !var->isLocal() || var->isPointer() || var->isReference() || var->isStatic())
             continue;
         if (!var->valueType() || !var->valueType()->container)
             continue;

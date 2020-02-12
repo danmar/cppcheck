@@ -4053,6 +4053,13 @@ private:
                "}";
         ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "s ["), 5));
 
+        code = "void f() {\n"
+               "    static std::string s;\n"
+               "    if (s.size() == 0)\n"
+               "        s = x;\n"
+               "}";
+        ASSERT(tokenValues(code, "s . size").empty());
+
         // valueFlowContainerForward, loop
         code = "void f() {\n"
                "    std::stack<Token *> links;\n"
