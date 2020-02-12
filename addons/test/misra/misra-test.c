@@ -2,6 +2,11 @@
 // ~/cppcheck/cppcheck --dump --suppress=uninitvar --suppress=uninitStructMember misra/misra-test.c --std=c89 && python3 ../misra.py -verify misra/misra-test.c.dump
 
 #include "path\file.h" // 20.2
+#include "file//.h" // 20.2
+#include "file/*.h" // 20.2
+#include "file'.h" // 20.2
+#include <file,.h> // 20.2
+#include "file,.h" // 20.2
 
 #include /*abc*/ "file.h" // no warning
 /*foo*/#include "file.h" // no warning
