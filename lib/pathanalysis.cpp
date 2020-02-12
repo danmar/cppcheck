@@ -81,7 +81,7 @@ PathAnalysis::Progress PathAnalysis::forwardRange(const Token* startToken, const
         else if (Token::Match(tok, "return|throw")) {
             forwardRecursive(tok, info, f);
             return Progress::Break;
-        // Evaluate RHS of assignment before LHS
+            // Evaluate RHS of assignment before LHS
         } else if (const Token* assignTok = assignExpr(tok)) {
             if (forwardRecursive(assignTok->astOperand2(), info, f) == Progress::Break)
                 return Progress::Break;
