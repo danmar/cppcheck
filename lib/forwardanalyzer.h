@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GUARD_FORWARDANALYZER_H
-#define GUARD_FORWARDANALYZER_H
+#ifndef forwardanalyzerH
+#define forwardanalyzerH
 
 #include "token.h"
 #include "valueptr.h"
