@@ -81,19 +81,19 @@ static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSe
     std::list<Suppressions::Suppression> inlineSuppressions;
     for (const simplecpp::Token *tok = tokens.cfront(); tok; tok = tok->next) {
         if (tok->comment) {
-			int nextStartIndex = 0;
-			while (nextStartIndex>= 0) {
+            int nextStartIndex = 0;
+            while (nextStartIndex>= 0) {
                 Suppressions::Suppression s;
                 std::string errmsg;
-				nextStartIndex = s.parseComment(tok->str(), nextStartIndex, &errmsg);
+                nextStartIndex = s.parseComment(tok->str(), nextStartIndex, &errmsg);
                 if (nextStartIndex < 0)
                     break;
                 if (!errmsg.empty())
                     bad->push_back(BadInlineSuppression(tok->location, errmsg));
                 if (!s.errorId.empty())
                     inlineSuppressions.push_back(s);
-			}
-			continue;
+            }
+            continue;
         }
 
         if (inlineSuppressions.empty())
