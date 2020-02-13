@@ -220,6 +220,8 @@ private:
         TEST_CASE(override1);
         TEST_CASE(overrideCVRefQualifiers);
 
+        TEST_CASE(checkThisUseAfterFree);
+
         TEST_CASE(unsafeClassRefMember);
     }
 
@@ -7166,6 +7168,144 @@ private:
     void unsafeClassRefMember() {
         checkUnsafeClassRefMember("class C { C(const std::string &s) : s(s) {} const std::string &s; };");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Unsafe class: The const reference member 'C::s' is initialized by a const reference constructor argument. You need to be careful about lifetime issues.\n", errout.str());
+    }
+
+    void checkThisUseAfterFree(const char code[]) {
+        // Clear the error log
+        errout.str("");
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings1, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Check..
+        CheckClass checkClass(&tokenizer, &settings1, this);
+        checkClass.checkThisUseAfterFree();
+    }
+
+    void checkThisUseAfterFree() {
+        setMultiline();
+
+        // Calling method..
+        checkThisUseAfterFree("class C {\n"
+                              "public:\n"
+                              "  void dostuff() { delete mInstance; hello(); }\n"
+                              "private:\n"
+                              "  static C *mInstance;\n"
+                              "  void hello() {}\n"
+                              "};");
+        ASSERT_EQUALS("test.cpp:3:warning:Calling method 'hello()' when 'this' might be invalid\n"
+                      "test.cpp:5:note:Assuming 'mInstance' is used as 'this'\n"
+                      "test.cpp:3:note:Delete 'mInstance', invalidating 'this'\n"
+                      "test.cpp:3:note:Call method when 'this' is invalid\n",
+                      errout.str());
+
+        checkThisUseAfterFree("class C {\n"
+                              "public:\n"
+                              "  void dostuff() { mInstance.reset(); hello(); }\n"
+                              "private:\n"
+                              "  static std::shared_ptr<C> mInstance;\n"
+                              "  void hello() {}\n"
+                              "};");
+        ASSERT_EQUALS("test.cpp:3:warning:Calling method 'hello()' when 'this' might be invalid\n"
+                      "test.cpp:5:note:Assuming 'mInstance' is used as 'this'\n"
+                      "test.cpp:3:note:Delete 'mInstance', invalidating 'this'\n"
+                      "test.cpp:3:note:Call method when 'this' is invalid\n",
+                      errout.str());
+
+        checkThisUseAfterFree("class C {\n"
+                              "public:\n"
+                              "  void dostuff() { reset(); hello(); }\n"
+                              "private:\n"
+                              "  static std::shared_ptr<C> mInstance;\n"
+                              "  void hello();\n"
+                              "  void reset() { mInstance.reset(); }\n"
+                              "};");
+        ASSERT_EQUALS("test.cpp:3:warning:Calling method 'hello()' when 'this' might be invalid\n"
+                      "test.cpp:5:note:Assuming 'mInstance' is used as 'this'\n"
+                      "test.cpp:7:note:Delete 'mInstance', invalidating 'this'\n"
+                      "test.cpp:3:note:Call method when 'this' is invalid\n",
+                      errout.str());
+
+        // Use member..
+        checkThisUseAfterFree("class C {\n"
+                              "public:\n"
+                              "  void dostuff() { delete self; x = 123; }\n"
+                              "private:\n"
+                              "  static C *self;\n"
+                              "  int x;\n"
+                              "};");
+        ASSERT_EQUALS("test.cpp:3:warning:Using member 'x' when 'this' might be invalid\n"
+                      "test.cpp:5:note:Assuming 'self' is used as 'this'\n"
+                      "test.cpp:3:note:Delete 'self', invalidating 'this'\n"
+                      "test.cpp:3:note:Call method when 'this' is invalid\n",
+                      errout.str());
+
+        checkThisUseAfterFree("class C {\n"
+                              "public:\n"
+                              "  void dostuff() { delete self; x[1] = 123; }\n"
+                              "private:\n"
+                              "  static C *self;\n"
+                              "  std::map<int,int> x;\n"
+                              "};");
+        ASSERT_EQUALS("test.cpp:3:warning:Using member 'x' when 'this' might be invalid\n"
+                      "test.cpp:5:note:Assuming 'self' is used as 'this'\n"
+                      "test.cpp:3:note:Delete 'self', invalidating 'this'\n"
+                      "test.cpp:3:note:Call method when 'this' is invalid\n",
+                      errout.str());
+
+        // Assign 'shared_from_this()' to non-static smart pointer
+        checkThisUseAfterFree("class C {\n"
+                              "public:\n"
+                              "  void hold() { mInstance = shared_from_this(); }\n"
+                              "  void dostuff() { mInstance.reset(); hello(); }\n"
+                              "private:\n"
+                              "  std::shared_ptr<C> mInstance;\n"
+                              "  void hello() {}\n"
+                              "};");
+        ASSERT_EQUALS("test.cpp:4:warning:Calling method 'hello()' when 'this' might be invalid\n"
+                      "test.cpp:6:note:Assuming 'mInstance' is used as 'this'\n"
+                      "test.cpp:4:note:Delete 'mInstance', invalidating 'this'\n"
+                      "test.cpp:4:note:Call method when 'this' is invalid\n",
+                      errout.str());
+
+        // Avoid FP..
+        checkThisUseAfterFree("class C {\n"
+                              "public:\n"
+                              "  void dostuff() { delete self; x = 123; }\n"
+                              "private:\n"
+                              "  C *self;\n"
+                              "  int x;\n"
+                              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkThisUseAfterFree("class C {\n"
+                              "public:\n"
+                              "  void hold() { mInstance = shared_from_this(); }\n"
+                              "  void dostuff() { if (x) { mInstance.reset(); return; } hello(); }\n"
+                              "private:\n"
+                              "  std::shared_ptr<C> mInstance;\n"
+                              "  void hello() {}\n"
+                              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkThisUseAfterFree("class C\n"
+                              "{\n"
+                              "public:\n"
+                              "    explicit C(const QString& path) : mPath( path ) {}\n"
+                              "\n"
+                              "    static void initialize(const QString& path) {\n" // <- avoid fp in static method
+                              "        if (instanceSingleton)\n"
+                              "            delete instanceSingleton;\n"
+                              "        instanceSingleton = new C(path);\n"
+                              "    }\n"
+                              "private:\n"
+                              "    static C* instanceSingleton;\n"
+                              "};\n"
+                              "\n"
+                              "C* C::instanceSingleton;");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
