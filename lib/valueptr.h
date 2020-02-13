@@ -29,10 +29,12 @@ template <class T>
 class CPPCHECKLIB ValuePtr {
     template <class U>
     struct cloner {
-        static T* apply(const T* x) { return new U(*static_cast<const U*>(x)); }
+        static T* apply(const T* x) {
+            return new U(*static_cast<const U*>(x));
+        }
     };
 
-  public:
+public:
     using pointer = T*;
     using element_type = T;
     using cloner_type = decltype(&cloner<T>::apply);
@@ -44,42 +46,51 @@ class CPPCHECKLIB ValuePtr {
     ValuePtr(const U& value) : mPtr(cloner<U>::apply(&value)), mClone(&cloner<U>::apply)
     {}
 
-    ValuePtr(const ValuePtr& rhs) : mPtr(nullptr), mClone(rhs.mClone)
-    {
+    ValuePtr(const ValuePtr& rhs) : mPtr(nullptr), mClone(rhs.mClone) {
         if (rhs) {
             mPtr.reset(mClone(rhs.get()));
         }
     }
     ValuePtr(ValuePtr&& rhs) : mPtr(std::move(rhs.mPtr)), mClone(std::move(rhs.mClone)) {}
 
-    pointer release() { return mPtr.release(); }
+    pointer release() {
+        return mPtr.release();
+    }
 
     T* get() NOEXCEPT { return mPtr.get(); }
-    const T* get() const NOEXCEPT { return mPtr.get(); }
+    const T* get() const NOEXCEPT {
+        return mPtr.get();
+    }
 
-    T& operator*() { return *get(); }
-    const T& operator*() const { return *get(); }
+    T& operator*() {
+        return *get();
+    }
+    const T& operator*() const {
+        return *get();
+    }
 
     T* operator->() NOEXCEPT { return get(); }
-    const T* operator->() const NOEXCEPT { return get(); }
+    const T* operator->() const NOEXCEPT {
+        return get();
+    }
 
-    void swap(ValuePtr& rhs)
-    {
+    void swap(ValuePtr& rhs) {
         using std::swap;
         swap(mPtr, rhs.mPtr);
         swap(mClone, rhs.mClone);
     }
 
-    ValuePtr<T>& operator=(ValuePtr rhs)
-    {
+    ValuePtr<T>& operator=(ValuePtr rhs) {
         swap(rhs);
         return *this;
     }
 
-    operator bool() const NOEXCEPT { return !!mPtr; }
+    operator bool() const NOEXCEPT {
+        return !!mPtr;
+    }
     ~ValuePtr() {}
 
-  private:
+private:
     std::shared_ptr<T> mPtr;
     cloner_type mClone;
 };

@@ -33,7 +33,10 @@ bool ProgramMemory::getTokValue(nonneg int varid, const Token** result) const
     return found;
 }
 
-void ProgramMemory::setUnknown(nonneg int varid) { values[varid].valueType = ValueFlow::Value::ValueType::UNINIT; }
+void ProgramMemory::setUnknown(nonneg int varid)
+{
+    values[varid].valueType = ValueFlow::Value::ValueType::UNINIT;
+}
 
 bool ProgramMemory::hasValue(nonneg int varid)
 {

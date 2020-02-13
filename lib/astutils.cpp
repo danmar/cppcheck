@@ -296,8 +296,14 @@ static T* nextAfterAstRightmostLeafGeneric(T* tok)
     return rightmostLeaf->next();
 }
 
-const Token* nextAfterAstRightmostLeaf(const Token* tok) { return nextAfterAstRightmostLeafGeneric(tok); }
-Token* nextAfterAstRightmostLeaf(Token* tok) { return nextAfterAstRightmostLeafGeneric(tok); }
+const Token* nextAfterAstRightmostLeaf(const Token* tok)
+{
+    return nextAfterAstRightmostLeafGeneric(tok);
+}
+Token* nextAfterAstRightmostLeaf(Token* tok)
+{
+    return nextAfterAstRightmostLeafGeneric(tok);
+}
 
 const Token* astParentSkipParens(const Token* tok)
 {
@@ -390,11 +396,23 @@ static T* getCondTokFromEndImpl(T* endBlock)
     return nullptr;
 }
 
-Token* getCondTok(Token* tok) { return getCondTokImpl(tok); }
-const Token* getCondTok(const Token* tok) { return getCondTokImpl(tok); }
+Token* getCondTok(Token* tok)
+{
+    return getCondTokImpl(tok);
+}
+const Token* getCondTok(const Token* tok)
+{
+    return getCondTokImpl(tok);
+}
 
-Token* getCondTokFromEnd(Token* endBlock) { return getCondTokFromEndImpl(endBlock); }
-const Token* getCondTokFromEnd(const Token* endBlock) { return getCondTokFromEndImpl(endBlock); }
+Token* getCondTokFromEnd(Token* endBlock)
+{
+    return getCondTokFromEndImpl(endBlock);
+}
+const Token* getCondTokFromEnd(const Token* endBlock)
+{
+    return getCondTokFromEndImpl(endBlock);
+}
 
 static const Token * getVariableInitExpression(const Variable * var)
 {
@@ -1478,8 +1496,14 @@ T* findLambdaEndTokenGeneric(T* first)
     return nullptr;
 }
 
-const Token* findLambdaEndToken(const Token* first) { return findLambdaEndTokenGeneric(first); }
-Token* findLambdaEndToken(Token* first) { return findLambdaEndTokenGeneric(first); }
+const Token* findLambdaEndToken(const Token* first)
+{
+    return findLambdaEndTokenGeneric(first);
+}
+Token* findLambdaEndToken(Token* first)
+{
+    return findLambdaEndTokenGeneric(first);
+}
 
 bool isLikelyStream(bool cpp, const Token *stream)
 {

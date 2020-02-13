@@ -2244,10 +2244,11 @@ struct VariableForwardAnalyzer : ForwardAnalyzer {
 
     VariableForwardAnalyzer() = default;
 
-    bool isWritableValue() const { return value.isIntValue() || value.isFloatValue(); }
+    bool isWritableValue() const {
+        return value.isIntValue() || value.isFloatValue();
+    }
 
-    virtual Action analyze(const Token* tok) const OVERRIDE
-    {
+    virtual Action analyze(const Token* tok) const OVERRIDE {
         bool cpp = true;
         if (tok->varId() == varid) {
             const Token* parent = tok->astParent();
@@ -2299,8 +2300,7 @@ struct VariableForwardAnalyzer : ForwardAnalyzer {
         }
         return Action::None;
     }
-    virtual void update(Token* tok, Action a) OVERRIDE
-    {
+    virtual void update(Token* tok, Action a) OVERRIDE {
         if (a.isRead())
             setTokenValue(tok, value, settings);
         if (a.isInconclusive())
@@ -2328,8 +2328,7 @@ struct VariableForwardAnalyzer : ForwardAnalyzer {
             }
         }
     }
-    virtual std::vector<int> evaluate(const Token* tok) const OVERRIDE
-    {
+    virtual std::vector<int> evaluate(const Token* tok) const OVERRIDE {
         if (tok->hasKnownIntValue())
             return {static_cast<int>(tok->values().front().intvalue)};
         std::vector<int> result;
@@ -2340,29 +2339,25 @@ struct VariableForwardAnalyzer : ForwardAnalyzer {
             result.push_back(0);
         return result;
     }
-    virtual bool lowerToPossible() OVERRIDE
-    {
+    virtual bool lowerToPossible() OVERRIDE {
         if (value.isImpossible())
             return false;
         value.changeKnownToPossible();
         return true;
     }
-    virtual bool lowerToInconclusive() OVERRIDE
-    {
+    virtual bool lowerToInconclusive() OVERRIDE {
         if (value.isImpossible())
             return false;
         value.setInconclusive();
         return true;
     }
 
-    virtual void assume(const Token*, bool) OVERRIDE
-    {
+    virtual void assume(const Token*, bool) OVERRIDE {
         // TODO: Use this to improve Evaluate
         value.conditional = true;
     }
 
-    virtual bool isConditional() const OVERRIDE
-    {
+    virtual bool isConditional() const OVERRIDE {
         if (value.conditional)
             return true;
         if (value.condition)
@@ -2370,8 +2365,7 @@ struct VariableForwardAnalyzer : ForwardAnalyzer {
         return false;
     }
 
-    virtual bool updateScope(const Token* endBlock, bool) const OVERRIDE
-    {
+    virtual bool updateScope(const Token* endBlock, bool) const OVERRIDE {
         const Scope* scope = endBlock->scope();
         if (!scope)
             return false;

@@ -41,39 +41,57 @@ struct ForwardAnalyzer {
             Inconclusive = (1 << 3),
         };
 
-        void set(unsigned int f, bool state = true) { mFlag = state ? mFlag | f : mFlag & ~f; }
+        void set(unsigned int f, bool state = true) {
+            mFlag = state ? mFlag | f : mFlag & ~f;
+        }
 
-        bool get(unsigned int f) const { return ((mFlag & f) != 0); }
+        bool get(unsigned int f) const {
+            return ((mFlag & f) != 0);
+        }
 
-        bool isRead() const { return get(Read); }
+        bool isRead() const {
+            return get(Read);
+        }
 
-        bool isWrite() const { return get(Write); }
+        bool isWrite() const {
+            return get(Write);
+        }
 
-        bool isInvalid() const { return get(Invalid); }
+        bool isInvalid() const {
+            return get(Invalid);
+        }
 
-        bool isInconclusive() const { return get(Inconclusive); }
+        bool isInconclusive() const {
+            return get(Inconclusive);
+        }
 
-        bool isNone() const { return mFlag == None; }
+        bool isNone() const {
+            return mFlag == None;
+        }
 
-        bool isModified() const { return isWrite() || isInvalid(); }
+        bool isModified() const {
+            return isWrite() || isInvalid();
+        }
 
-        Action& operator|=(Action a)
-        {
+        Action& operator|=(Action a) {
             set(a.mFlag);
             return *this;
         }
 
-        friend Action operator|(Action a, Action b)
-        {
+        friend Action operator|(Action a, Action b) {
             a |= b;
             return a;
         }
 
-        friend bool operator==(Action a, Action b) { return a.mFlag == b.mFlag; }
+        friend bool operator==(Action a, Action b) {
+            return a.mFlag == b.mFlag;
+        }
 
-        friend bool operator!=(Action a, Action b) { return a.mFlag != b.mFlag; }
+        friend bool operator!=(Action a, Action b) {
+            return a.mFlag != b.mFlag;
+        }
 
-      private:
+    private:
         unsigned int mFlag;
     };
     /// Analyze a token
