@@ -33,6 +33,8 @@ bool ProgramMemory::getTokValue(nonneg int varid, const Token** result) const
     return found;
 }
 
+void ProgramMemory::setUnknown(nonneg int varid) { values[varid].valueType = ValueFlow::Value::ValueType::UNINIT; }
+
 bool ProgramMemory::hasValue(nonneg int varid)
 {
     return values.find(varid) != values.end();
@@ -167,6 +169,16 @@ static void fillProgramMemoryFromConditions(ProgramMemory& pm, const Token* tok,
     fillProgramMemoryFromConditions(pm, tok->scope(), tok, settings);
 }
 
+static void fillProgramMemoryFromConditionalExpression(ProgramMemory& pm, const Token* tok, const Settings* settings)
+{
+    const Token* parent = tok->astParent();
+    if (Token::Match(parent, "?|&&|%oror%")) {
+        programMemoryParseCondition(pm, parent->astOperand1(), tok, settings, !Token::simpleMatch(parent, "||"));
+    } else if (Token::simpleMatch(parent, ":") && Token::simpleMatch(parent->astParent(), "?")) {
+        programMemoryParseCondition(pm, parent->astParent()->astOperand1(), tok, settings, parent->astOperand1() == tok);
+    }
+}
+
 static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok, const ProgramMemory& state, std::unordered_map<nonneg int, ValueFlow::Value> vars)
 {
     int indentlevel = 0;
@@ -192,6 +204,8 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
                 execute(vartok->next()->astOperand2(), &pm, &result, &error);
                 if (!error)
                     pm.setIntValue(vartok->varId(), result);
+                else
+                    pm.setUnknown(vartok->varId());
             }
         }
 
@@ -244,6 +258,7 @@ ProgramMemory getProgramMemory(const Token *tok, nonneg int varid, const ValueFl
     ProgramMemory programMemory;
     programMemory.replace(getInitialProgramState(tok, value.tokvalue));
     programMemory.replace(getInitialProgramState(tok, value.condition));
+    fillProgramMemoryFromConditions(programMemory, tok, nullptr);
     programMemory.setValue(varid, value);
     if (value.varId)
         programMemory.setIntValue(value.varId, value.varvalue);

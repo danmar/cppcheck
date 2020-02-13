@@ -277,7 +277,8 @@ static bool hasToken(const Token * startTok, const Token * stopTok, const Token 
     return false;
 }
 
-const Token * nextAfterAstRightmostLeaf(const Token * tok)
+template <class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
+static T* nextAfterAstRightmostLeafGeneric(T* tok)
 {
     const Token * rightmostLeaf = tok;
     if (!rightmostLeaf || !rightmostLeaf->astOperand1())
@@ -294,6 +295,9 @@ const Token * nextAfterAstRightmostLeaf(const Token * tok)
         rightmostLeaf = rightmostLeaf->link();
     return rightmostLeaf->next();
 }
+
+const Token* nextAfterAstRightmostLeaf(const Token* tok) { return nextAfterAstRightmostLeafGeneric(tok); }
+Token* nextAfterAstRightmostLeaf(Token* tok) { return nextAfterAstRightmostLeafGeneric(tok); }
 
 const Token* astParentSkipParens(const Token* tok)
 {
@@ -354,6 +358,43 @@ bool astIsRHS(const Token* tok)
         return false;
     return parent->astOperand2() == tok;
 }
+
+template <class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
+static T* getCondTokImpl(T* tok)
+{
+    if (!tok)
+        return nullptr;
+    if (Token::simpleMatch(tok, "("))
+        return getCondTok(tok->previous());
+    if (Token::simpleMatch(tok, "for") && Token::simpleMatch(tok->next()->astOperand2(), ";") &&
+        tok->next()->astOperand2()->astOperand2())
+        return tok->next()->astOperand2()->astOperand2()->astOperand1();
+    if (Token::simpleMatch(tok->next()->astOperand2(), ";"))
+        return tok->next()->astOperand2()->astOperand1();
+    return tok->next()->astOperand2();
+}
+
+template <class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
+static T* getCondTokFromEndImpl(T* endBlock)
+{
+    if (!Token::simpleMatch(endBlock, "}"))
+        return nullptr;
+    T* startBlock = endBlock->link();
+    if (!Token::simpleMatch(startBlock, "{"))
+        return nullptr;
+    if (Token::simpleMatch(startBlock->previous(), ")")) {
+        return getCondTok(startBlock->previous()->link());
+    } else if (Token::simpleMatch(startBlock->tokAt(-2), "} else {")) {
+        return getCondTokFromEnd(startBlock->tokAt(-2));
+    }
+    return nullptr;
+}
+
+Token* getCondTok(Token* tok) { return getCondTokImpl(tok); }
+const Token* getCondTok(const Token* tok) { return getCondTokImpl(tok); }
+
+Token* getCondTokFromEnd(Token* endBlock) { return getCondTokFromEndImpl(endBlock); }
+const Token* getCondTokFromEnd(const Token* endBlock) { return getCondTokFromEndImpl(endBlock); }
 
 static const Token * getVariableInitExpression(const Variable * var)
 {
@@ -1001,7 +1042,24 @@ static bool isEscapedOrJump(const Token* tok, bool functionsScope)
         return Token::Match(tok, "return|goto|throw|continue|break");
 }
 
-bool isReturnScope(const Token * const endToken, const Library * library, bool functionScope)
+bool isEscapeFunction(const Token* ftok, const Library* library)
+{
+    if (!Token::Match(ftok, "%name% ("))
+        return false;
+    const Function* function = ftok->function();
+    if (function) {
+        if (function->isEscapeFunction())
+            return true;
+        if (function->isAttributeNoreturn())
+            return true;
+    } else if (library) {
+        if (library->isnoreturn(ftok))
+            return true;
+    }
+    return false;
+}
+
+bool isReturnScope(const Token* const endToken, const Library* library, const Token** unknownFunc, bool functionScope)
 {
     if (!endToken || endToken->str() != "}")
         return false;
@@ -1014,7 +1072,8 @@ bool isReturnScope(const Token * const endToken, const Library * library, bool f
 
     if (Token::simpleMatch(prev, "}")) {
         if (Token::simpleMatch(prev->link()->tokAt(-2), "} else {"))
-            return isReturnScope(prev, library, functionScope) && isReturnScope(prev->link()->tokAt(-2), library, functionScope);
+            return isReturnScope(prev, library, unknownFunc, functionScope) &&
+                   isReturnScope(prev->link()->tokAt(-2), library, unknownFunc, functionScope);
         if (Token::simpleMatch(prev->link()->previous(), ") {") &&
             Token::simpleMatch(prev->link()->linkAt(-1)->previous(), "switch (") &&
             !Token::findsimplematch(prev->link(), "break", prev)) {
@@ -1023,7 +1082,7 @@ bool isReturnScope(const Token * const endToken, const Library * library, bool f
         if (isEscaped(prev->link()->astTop(), functionScope))
             return true;
         if (Token::Match(prev->link()->previous(), "[;{}] {"))
-            return isReturnScope(prev, library, functionScope);
+            return isReturnScope(prev, library, unknownFunc, functionScope);
     } else if (Token::simpleMatch(prev, ";")) {
         if (Token::simpleMatch(prev->previous(), ") ;") && Token::Match(prev->linkAt(-1)->tokAt(-2), "[;{}] %name% (")) {
             const Token * ftok = prev->linkAt(-1)->previous();
@@ -1033,10 +1092,13 @@ bool isReturnScope(const Token * const endToken, const Library * library, bool f
                     return true;
                 if (function->isAttributeNoreturn())
                     return true;
-            } else if (library) {
-                if (library->isnoreturn(ftok))
-                    return true;
+            } else if (library && library->isnoreturn(ftok)) {
+                return true;
+            } else if (Token::Match(ftok, "exit|abort")) {
+                return true;
             }
+            if (unknownFunc && !function && library && library->functions.count(library->getFunctionName(ftok)) == 0)
+                *unknownFunc = ftok;
             return false;
         }
         if (Token::simpleMatch(prev->previous(), ") ;") && prev->previous()->link() &&
@@ -1398,7 +1460,8 @@ const Token *findLambdaStartToken(const Token *last)
     return nullptr;
 }
 
-const Token *findLambdaEndToken(const Token *first)
+template <class T>
+T* findLambdaEndTokenGeneric(T* first)
 {
     if (!first || first->str() != "[")
         return nullptr;
@@ -1414,6 +1477,9 @@ const Token *findLambdaEndToken(const Token *first)
         return tok->astOperand1()->link();
     return nullptr;
 }
+
+const Token* findLambdaEndToken(const Token* first) { return findLambdaEndTokenGeneric(first); }
+Token* findLambdaEndToken(Token* first) { return findLambdaEndTokenGeneric(first); }
 
 bool isLikelyStream(bool cpp, const Token *stream)
 {
@@ -1497,6 +1563,38 @@ bool isConstVarExpression(const Token *tok, const char* skipMatch)
     if (tok->variable())
         return tok->variable()->isConst() && tok->variable()->nameToken() && tok->variable()->nameToken()->hasKnownValue();
     return false;
+}
+
+static void getLHSVariablesRecursive(std::vector<const Variable*>& vars, const Token* tok)
+{
+    if (!tok)
+        return;
+    if (vars.empty() && Token::Match(tok, "*|&|&&|[")) {
+        getLHSVariablesRecursive(vars, tok->astOperand1());
+        if (!vars.empty() || Token::simpleMatch(tok, "["))
+            return;
+        getLHSVariablesRecursive(vars, tok->astOperand2());
+    } else if (Token::Match(tok->previous(), "this . %var%")) {
+        getLHSVariablesRecursive(vars, tok->next());
+    } else if (Token::simpleMatch(tok, ".")) {
+        getLHSVariablesRecursive(vars, tok->astOperand1());
+        getLHSVariablesRecursive(vars, tok->astOperand2());
+    } else if (tok->variable()) {
+        vars.push_back(tok->variable());
+    }
+}
+
+std::vector<const Variable*> getLHSVariables(const Token* tok)
+{
+    std::vector<const Variable*> result;
+    if (!Token::Match(tok, "%assign%"))
+        return result;
+    if (!tok->astOperand1())
+        return result;
+    if (tok->astOperand1()->varId() > 0 && tok->astOperand1()->variable())
+        return {tok->astOperand1()->variable()};
+    getLHSVariablesRecursive(result, tok->astOperand1());
+    return result;
 }
 
 static const Variable *getLHSVariableRecursive(const Token *tok)
