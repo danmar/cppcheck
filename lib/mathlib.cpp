@@ -1293,7 +1293,9 @@ std::string MathLib::tan(const std::string &tok)
 
 std::string MathLib::abs(const std::string &tok)
 {
-    return toString(std::abs(toDoubleNumber(tok)));
+    if (isNegative(tok))
+        return tok.substr(1, tok.length() - 1);
+    return tok;
 }
 
 bool MathLib::isEqual(const std::string &first, const std::string &second)
