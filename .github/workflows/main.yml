@@ -1,0 +1,20 @@
+# Syntax reference https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions
+# Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: |
+        make -j2
+
+    - name: Test
+      run: |
+        make -j2 check
