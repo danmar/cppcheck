@@ -230,6 +230,8 @@ std::vector<const Variable*> getLHSVariables(const Token* tok);
 bool isScopeBracket(const Token* tok);
 
 bool isNullOperand(const Token *expr);
+
+bool isGlobalData(const Token *expr, bool cpp);
 /**
  * Forward data flow analysis for checks
  *  - unused value

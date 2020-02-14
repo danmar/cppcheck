@@ -1710,6 +1710,74 @@ bool isNullOperand(const Token *expr)
     return Token::Match(castOp, "NULL|nullptr") || (MathLib::isInt(castOp->str()) && MathLib::isNullValue(castOp->str()));
 }
 
+bool isGlobalData(const Token *expr, bool cpp)
+{
+    bool globalData = false;
+    visitAstNodes(expr,
+    [&](const Token *tok) {
+        if (tok->varId() && !tok->variable()) {
+            // Bailout, this is probably global
+            globalData = true;
+            return ChildrenToVisit::none;
+        }
+        if (tok->originalName() == "->") {
+            // TODO check if pointer points at local data
+            globalData = true;
+            return ChildrenToVisit::none;
+        } else if (Token::Match(tok, "[*[]") && tok->astOperand1() && tok->astOperand1()->variable()) {
+            // TODO check if pointer points at local data
+            const Variable *lhsvar = tok->astOperand1()->variable();
+            const ValueType *lhstype = tok->astOperand1()->valueType();
+            if (lhsvar->isPointer()) {
+                globalData = true;
+                return ChildrenToVisit::none;
+            } else if (lhsvar->isArgument() && lhsvar->isArray()) {
+                globalData = true;
+                return ChildrenToVisit::none;
+            } else if (lhsvar->isArgument() && (!lhstype || (lhstype->type <= ValueType::Type::VOID && !lhstype->container))) {
+                globalData = true;
+                return ChildrenToVisit::none;
+            }
+        }
+        if (tok->varId() == 0 && tok->isName() && tok->previous()->str() != ".") {
+            globalData = true;
+            return ChildrenToVisit::none;
+        }
+        if (tok->variable()) {
+            // TODO : Check references
+            if (tok->variable()->isReference() && tok != tok->variable()->nameToken()) {
+                globalData = true;
+                return ChildrenToVisit::none;
+            }
+            if (tok->variable()->isExtern()) {
+                globalData = true;
+                return ChildrenToVisit::none;
+            }
+            if (tok->previous()->str() != "." && !tok->variable()->isLocal() && !tok->variable()->isArgument()) {
+                globalData = true;
+                return ChildrenToVisit::none;
+            }
+            if (tok->variable()->isArgument() && tok->variable()->isPointer() && tok != expr) {
+                globalData = true;
+                return ChildrenToVisit::none;
+            }
+            if (tok->variable()->isPointerArray()) {
+                globalData = true;
+                return ChildrenToVisit::none;
+            }
+        }
+        // Unknown argument type => it might be some reference type..
+        if (cpp && tok->str() == "." && tok->astOperand1() && tok->astOperand1()->variable() && !tok->astOperand1()->valueType()) {
+            globalData = true;
+            return ChildrenToVisit::none;
+        }
+        if (Token::Match(tok, ".|["))
+            return ChildrenToVisit::op1;
+        return ChildrenToVisit::op1_and_op2;
+    });
+    return globalData;
+}
+
 struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<int> &exprVarIds, bool local, bool inInnerClass, int depth)
 {
     // Parse the given tokens
@@ -1972,70 +2040,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
 
 bool FwdAnalysis::isGlobalData(const Token *expr) const
 {
-    bool globalData = false;
-    visitAstNodes(expr,
-    [&](const Token *tok) {
-        if (tok->varId() && !tok->variable()) {
-            // Bailout, this is probably global
-            globalData = true;
-            return ChildrenToVisit::none;
-        }
-        if (tok->originalName() == "->") {
-            // TODO check if pointer points at local data
-            globalData = true;
-            return ChildrenToVisit::none;
-        } else if (Token::Match(tok, "[*[]") && tok->astOperand1() && tok->astOperand1()->variable()) {
-            // TODO check if pointer points at local data
-            const Variable *lhsvar = tok->astOperand1()->variable();
-            const ValueType *lhstype = tok->astOperand1()->valueType();
-            if (lhsvar->isPointer()) {
-                globalData = true;
-                return ChildrenToVisit::none;
-            } else if (lhsvar->isArgument() && lhsvar->isArray()) {
-                globalData = true;
-                return ChildrenToVisit::none;
-            } else if (lhsvar->isArgument() && (!lhstype || (lhstype->type <= ValueType::Type::VOID && !lhstype->container))) {
-                globalData = true;
-                return ChildrenToVisit::none;
-            }
-        }
-        if (tok->varId() == 0 && tok->isName() && tok->previous()->str() != ".") {
-            globalData = true;
-            return ChildrenToVisit::none;
-        }
-        if (tok->variable()) {
-            // TODO : Check references
-            if (tok->variable()->isReference() && tok != tok->variable()->nameToken()) {
-                globalData = true;
-                return ChildrenToVisit::none;
-            }
-            if (tok->variable()->isExtern()) {
-                globalData = true;
-                return ChildrenToVisit::none;
-            }
-            if (tok->previous()->str() != "." && !tok->variable()->isLocal() && !tok->variable()->isArgument()) {
-                globalData = true;
-                return ChildrenToVisit::none;
-            }
-            if (tok->variable()->isArgument() && tok->variable()->isPointer() && tok != expr) {
-                globalData = true;
-                return ChildrenToVisit::none;
-            }
-            if (tok->variable()->isPointerArray()) {
-                globalData = true;
-                return ChildrenToVisit::none;
-            }
-        }
-        // Unknown argument type => it might be some reference type..
-        if (mCpp && tok->str() == "." && tok->astOperand1() && tok->astOperand1()->variable() && !tok->astOperand1()->valueType()) {
-            globalData = true;
-            return ChildrenToVisit::none;
-        }
-        if (Token::Match(tok, ".|["))
-            return ChildrenToVisit::op1;
-        return ChildrenToVisit::op1_and_op2;
-    });
-    return globalData;
+    return ::isGlobalData(expr, mCpp);
 }
 
 std::set<int> FwdAnalysis::getExprVarIds(const Token* expr, bool* localOut, bool* unknownVarIdOut) const

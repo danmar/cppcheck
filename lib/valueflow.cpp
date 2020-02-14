@@ -2501,6 +2501,70 @@ static bool valueFlowForwardVariable(Token* const startToken,
     return true;
 }
 
+struct ExpressionForwardAnalyzer : SingleValueFlowForwardAnalyzer {
+    const Token* expr;
+    std::unordered_map<nonneg int, const Variable*> varids;
+    bool local;
+
+    ExpressionForwardAnalyzer()
+    : SingleValueFlowForwardAnalyzer(), expr(nullptr), varids()
+    {}
+
+    ExpressionForwardAnalyzer(const Token* e, const ValueFlow::Value& val, const TokenList* t)
+    : SingleValueFlowForwardAnalyzer(val, t), expr(e), varids() {
+
+        setupExprVarIds();
+    }
+
+    static bool nonLocal(const Variable* var, bool deref)
+    {
+        return !var || (!var->isLocal() && !var->isArgument()) || (deref && var->isArgument() && var->isPointer()) || var->isStatic() || var->isReference() || var->isExtern();
+    }
+
+    void setupExprVarIds()
+    {
+        // all variable ids in expr.
+        std::set<int> exprVarIds;
+        local = true;
+        // bool unknownVarId = false;
+        visitAstNodes(expr,
+        [&](const Token *tok) {
+            if (tok->varId() == 0 && tok->isName() && tok->previous()->str() != ".") {
+                // unknown variable
+                // unknownVarId = true;
+                return ChildrenToVisit::none;
+            }
+            if (tok->varId() > 0) {
+                varids[tok->varId()] = tok->variable();
+                if (!Token::simpleMatch(tok->previous(), ".")) {
+                    const Variable *var = tok->variable();
+                    if (var && var->isReference() && var->isLocal() && Token::Match(var->nameToken(), "%var% [=(]") && !isGlobalData(var->nameToken()->next()->astOperand2(), isCPP()))
+                        return ChildrenToVisit::none;
+                    const bool deref = tok->astParent() && (tok->astParent()->isUnaryOp("*") || (tok->astParent()->str() == "[" && tok == tok->astParent()->astOperand1()));
+                    local &= !nonLocal(tok->variable(), deref);
+                }
+            }
+            return ChildrenToVisit::op1_and_op2;
+        });
+    }
+
+    virtual const std::unordered_map<nonneg int, const Variable*>& getVars() const OVERRIDE {
+        return varids;
+    }
+
+    virtual bool match(const Token* tok) const OVERRIDE {
+        return isSameExpression(isCPP(), true, expr, tok, getSettings()->library, true, true);
+    }
+
+    virtual ProgramState getProgramState() const OVERRIDE {
+        return {};
+    }
+
+    virtual bool isGlobal() const OVERRIDE {
+        return !local;
+    }
+};
+
 static void valueFlowForwardExpression(Token* startToken,
                                        const Token* endToken,
                                        const Token* exprTok,
@@ -2508,21 +2572,9 @@ static void valueFlowForwardExpression(Token* startToken,
                                        const TokenList* const tokenlist,
                                        const Settings* settings)
 {
-    FwdAnalysis fwdAnalysis(tokenlist->isCPP(), settings->library);
-    for (const FwdAnalysis::KnownAndToken read : fwdAnalysis.valueFlow(exprTok, startToken, endToken)) {
-        for (const ValueFlow::Value& value : values) {
-            // Don't set inconclusive values
-            if (value.isInconclusive())
-                continue;
-            ValueFlow::Value v = value;
-            if (v.isImpossible()) {
-                if (read.known)
-                    continue;
-            } else if (!read.known) {
-                v.valueKind = ValueFlow::Value::ValueKind::Possible;
-            }
-            setTokenValue(const_cast<Token*>(read.token), v, settings);
-        }
+    for (const ValueFlow::Value& v : values) {
+        ExpressionForwardAnalyzer a(exprTok, v, tokenlist);
+        valueFlowGenericForward(startToken, endToken, a, settings);
     }
 }
 
