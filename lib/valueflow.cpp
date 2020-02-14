@@ -2514,11 +2514,11 @@ struct ExpressionForwardAnalyzer : SingleValueFlowForwardAnalyzer {
     bool unknown;
 
     ExpressionForwardAnalyzer()
-    : SingleValueFlowForwardAnalyzer(), expr(nullptr), varids(), local(false), unknown(false)
+    : SingleValueFlowForwardAnalyzer(), expr(nullptr), varids(), local(true), unknown(false)
     {}
 
     ExpressionForwardAnalyzer(const Token* e, const ValueFlow::Value& val, const TokenList* t)
-    : SingleValueFlowForwardAnalyzer(val, t), expr(e), varids(), local(false), unknown(false) {
+    : SingleValueFlowForwardAnalyzer(val, t), expr(e), varids(), local(true), unknown(false) {
 
         setupExprVarIds();
     }
@@ -2530,9 +2530,6 @@ struct ExpressionForwardAnalyzer : SingleValueFlowForwardAnalyzer {
 
     void setupExprVarIds()
     {
-        // all variable ids in expr.
-        std::set<int> exprVarIds;
-        local = true;
         visitAstNodes(expr,
         [&](const Token *tok) {
             if (tok->varId() == 0 && tok->isName() && tok->previous()->str() != ".") {
