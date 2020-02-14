@@ -2158,31 +2158,6 @@ static std::set<int> getIndirections(const std::list<ValueFlow::Value>& values)
     return result;
 }
 
-static void valueFlowForwardExpression(Token* startToken,
-                                       const Token* endToken,
-                                       const Token* exprTok,
-                                       const std::list<ValueFlow::Value>& values,
-                                       const TokenList* const tokenlist,
-                                       const Settings* settings)
-{
-    FwdAnalysis fwdAnalysis(tokenlist->isCPP(), settings->library);
-    for (const FwdAnalysis::KnownAndToken read : fwdAnalysis.valueFlow(exprTok, startToken, endToken)) {
-        for (const ValueFlow::Value& value : values) {
-            // Don't set inconclusive values
-            if (value.isInconclusive())
-                continue;
-            ValueFlow::Value v = value;
-            if (v.isImpossible()) {
-                if (read.known)
-                    continue;
-            } else if (!read.known) {
-                v.valueKind = ValueFlow::Value::ValueKind::Possible;
-            }
-            setTokenValue(const_cast<Token*>(read.token), v, settings);
-        }
-    }
-}
-
 static const ValueFlow::Value* getKnownValue(const Token* tok, ValueFlow::Value::ValueType type)
 {
     if (!tok)
@@ -2235,24 +2210,80 @@ static void addCondition(std::list<ValueFlow::Value>& values, const Token* condT
             v.errorPath.emplace_back(condTok, "Assuming condition is false.");
 }
 
-struct VariableForwardAnalyzer : ForwardAnalyzer {
-    Token* start;
-    const Variable* var;
-    nonneg int varid;
-    ValueFlow::Value value;
-    const Settings* settings;
+struct SelectMapKeys
+{
+    template<class Pair>
+    typename Pair::first_type operator()(const Pair& p) const
+    {
+        return p.first;
+    }
+};
 
-    VariableForwardAnalyzer() = default;
+struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
+    const TokenList* tokenlist;
 
-    bool isWritableValue() const {
-        return value.isIntValue() || value.isFloatValue();
+    ValueFlowForwardAnalyzer()
+    : tokenlist(nullptr)
+    {}
+
+    ValueFlowForwardAnalyzer(const TokenList* t)
+    : tokenlist(t)
+    {}
+
+    virtual int getIndirect() const = 0;
+
+    virtual bool match(const Token* tok) const = 0;
+
+    virtual bool isAlias(const Token* tok) const = 0;
+
+    using ProgramState = std::unordered_map<nonneg int, ValueFlow::Value>;
+
+    virtual ProgramState getProgramState() const = 0;
+
+    virtual bool isWritableValue() const {
+        return false;
+    }
+
+    virtual bool isGlobal() const {
+        return false;
+    }
+
+    bool isCPP() const {
+        return tokenlist->isCPP();
+    }
+
+    const Settings* getSettings() const {
+        return tokenlist->getSettings();
+    }
+
+    virtual Action isModified(const Token* tok) const {
+        Action read = Action::Read;
+        bool inconclusive = false;
+        if (isVariableChangedByFunctionCall(tok, getIndirect(), getSettings(), &inconclusive))
+            return read | Action::Invalid;
+        if (inconclusive)
+            return read | Action::Inconclusive;
+        if (isVariableChanged(tok, getIndirect(), getSettings(), isCPP())) {
+            if (Token::Match(tok->astParent(), "*|[|.|++|--"))
+                return read | Action::Invalid;
+            return Action::Invalid;
+        }
+        return read;
+    }
+
+    virtual Action isAliasModified(const Token* tok) const {
+        int indirect = 0;
+        if (tok->valueType())
+            indirect = tok->valueType()->pointer;
+        if (isVariableChanged(tok, indirect, getSettings(), isCPP()))
+            return Action::Invalid;
+        return Action::None;
     }
 
     virtual Action analyze(const Token* tok) const OVERRIDE {
-        bool cpp = true;
-        if (tok->varId() == varid) {
+        if (match(tok)) {
             const Token* parent = tok->astParent();
-            if ((Token::Match(parent, "*|[") || (parent && parent->originalName() == "->")) && value.indirect <= 0)
+            if ((Token::Match(parent, "*|[") || (parent && parent->originalName() == "->")) && getIndirect() <= 0)
                 return Action::Read;
 
             Action read = Action::Read;
@@ -2271,74 +2302,80 @@ struct VariableForwardAnalyzer : ForwardAnalyzer {
             }
 
             // increment/decrement
-            if (value.valueType == ValueFlow::Value::ValueType::INT && (Token::Match(tok->previous(), "++|-- %name%") || Token::Match(tok, "%name% ++|--"))) {
+            if (isWritableValue() && (Token::Match(tok->previous(), "++|-- %name%") || Token::Match(tok, "%name% ++|--"))) {
                 return read | Action::Write;
             }
             // Check for modifications by function calls
-            bool inconclusive = false;
-            if (isVariableChangedByFunctionCall(tok, value.indirect, settings, &inconclusive))
-                return read | Action::Invalid;
-            if (inconclusive)
-                return read | Action::Inconclusive;
-            if (isVariableChanged(tok, value.indirect, settings, cpp)) {
-                if (Token::Match(parent, "*|[|.|++|--"))
-                    return read | Action::Invalid;
-                return Action::Invalid;
-            }
-            return read;
-        } else if (!value.isLifetimeValue() && isAliasOf(var, tok, varid, {value})) {
-            int indirect = 0;
-            if (tok->valueType())
-                indirect = tok->valueType()->pointer;
-            if (isVariableChanged(tok, indirect, settings, cpp))
-                return Action::Invalid;
+            return isModified(tok);
+        } else if (isAlias(tok)) {
+            return isAliasModified(tok);
         } else if (Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
             // bailout: global non-const variables
-            if (var->isGlobal() && !var->isConst()) {
+            if (isGlobal()) {
                 return Action::Invalid;
             }
         }
         return Action::None;
     }
-    virtual void update(Token* tok, Action a) OVERRIDE {
-        if (a.isRead())
-            setTokenValue(tok, value, settings);
-        if (a.isInconclusive())
-            lowerToInconclusive();
-        if (a.isWrite()) {
-            if (Token::Match(tok->astParent(), "%assign%")) {
-                // TODO: Check result
-                if (evalAssignment(value,
-                                   tok->astParent()->str(),
-                                   *getKnownValue(tok->astParent()->astOperand2(), ValueFlow::Value::ValueType::INT))) {
-                    const std::string info("Compound assignment '" + tok->astParent()->str() + "', assigned value is " +
-                                           value.infoString());
-                    value.errorPath.emplace_back(tok, info);
-                } else {
-                    // TODO: Dont set to zero
-                    value.intvalue = 0;
-                }
-            }
-            if (Token::Match(tok->astParent(), "++|--")) {
-                const bool inc = Token::simpleMatch(tok->astParent(), "++");
-                value.intvalue += (inc ? 1 : -1);
-                const std::string info(tok->str() + " is " + std::string(inc ? "incremented" : "decremented") +
-                                       "', new value is " + value.infoString());
-                value.errorPath.emplace_back(tok, info);
-            }
-        }
-    }
+
     virtual std::vector<int> evaluate(const Token* tok) const OVERRIDE {
         if (tok->hasKnownIntValue())
             return {static_cast<int>(tok->values().front().intvalue)};
         std::vector<int> result;
-        ProgramMemory programMemory = getProgramMemory(tok, varid, value);
+        ProgramState ps = getProgramState();
+        ProgramMemory programMemory = getProgramMemory(tok, ps);
         if (conditionIsTrue(tok, programMemory))
             result.push_back(1);
         if (conditionIsFalse(tok, programMemory))
             result.push_back(0);
         return result;
     }
+};
+
+struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
+    ValueFlow::Value value;
+
+    SingleValueFlowForwardAnalyzer()
+    : ValueFlowForwardAnalyzer()
+    {}
+
+    SingleValueFlowForwardAnalyzer(const ValueFlow::Value& v, const TokenList* t)
+    : ValueFlowForwardAnalyzer(t), value(v)
+    {}
+
+    virtual const std::unordered_map<nonneg int, const Variable*>& getVars() const = 0;
+
+    virtual int getIndirect() const OVERRIDE {
+        return value.indirect;
+    }
+
+    virtual bool isAlias(const Token* tok) const OVERRIDE {
+        if (value.isLifetimeValue())
+            return false;
+        for(const auto& p:getVars()) {
+            nonneg int varid = p.first;
+            const Variable* var = p.second;
+            if (tok->varId() == varid)
+                return true;
+            if (isAliasOf(var, tok, varid, {value}))
+                return true;
+        }
+        return false;
+    }
+
+    virtual bool isWritableValue() const OVERRIDE {
+        return value.isIntValue() || value.isFloatValue();
+    }
+
+    virtual bool isGlobal() const OVERRIDE {
+        for(const auto&p:getVars()) {
+            const Variable* var = p.second;
+            if (var->isGlobal() && !var->isConst())
+                return true;
+        }
+        return false;
+    }
+
     virtual bool lowerToPossible() OVERRIDE {
         if (value.isImpossible())
             return false;
@@ -2365,6 +2402,35 @@ struct VariableForwardAnalyzer : ForwardAnalyzer {
         return false;
     }
 
+    virtual void update(Token* tok, Action a) OVERRIDE {
+        if (a.isRead())
+            setTokenValue(tok, value, getSettings());
+        if (a.isInconclusive())
+            lowerToInconclusive();
+        if (a.isWrite()) {
+            if (Token::Match(tok->astParent(), "%assign%")) {
+                // TODO: Check result
+                if (evalAssignment(value,
+                                   tok->astParent()->str(),
+                                   *getKnownValue(tok->astParent()->astOperand2(), ValueFlow::Value::ValueType::INT))) {
+                    const std::string info("Compound assignment '" + tok->astParent()->str() + "', assigned value is " +
+                                           value.infoString());
+                    value.errorPath.emplace_back(tok, info);
+                } else {
+                    // TODO: Dont set to zero
+                    value.intvalue = 0;
+                }
+            }
+            if (Token::Match(tok->astParent(), "++|--")) {
+                const bool inc = Token::simpleMatch(tok->astParent(), "++");
+                value.intvalue += (inc ? 1 : -1);
+                const std::string info(tok->str() + " is " + std::string(inc ? "incremented" : "decremented") +
+                                       "', new value is " + value.infoString());
+                value.errorPath.emplace_back(tok, info);
+            }
+        }
+    }
+
     virtual bool updateScope(const Token* endBlock, bool) const OVERRIDE {
         const Scope* scope = endBlock->scope();
         if (!scope)
@@ -2380,10 +2446,40 @@ struct VariableForwardAnalyzer : ForwardAnalyzer {
             if (isConditional())
                 return false;
             const Token* condTok = getCondTokFromEnd(endBlock);
-            return bifurcate(condTok, {varid}, settings);
+            std::set<nonneg int> varids;
+            std::transform(getVars().begin(), getVars().end(), std::inserter(varids, varids.begin()), SelectMapKeys{});
+            return bifurcate(condTok, varids, getSettings());
         }
 
         return false;
+    }
+};
+
+struct VariableForwardAnalyzer : SingleValueFlowForwardAnalyzer {
+    const Variable* var;
+    std::unordered_map<nonneg int, const Variable*> varids;
+
+    VariableForwardAnalyzer()
+    : SingleValueFlowForwardAnalyzer()
+    {}
+
+    VariableForwardAnalyzer(const Variable* v, const ValueFlow::Value& val, const TokenList* t)
+    : SingleValueFlowForwardAnalyzer(val, t), var(v) {
+        varids[var->declarationId()] = var;
+    }
+
+    virtual const std::unordered_map<nonneg int, const Variable*>& getVars() const OVERRIDE {
+        return varids;
+    }
+
+    virtual bool match(const Token* tok) const OVERRIDE {
+        return tok->varId() == var->declarationId();
+    }
+
+    virtual ProgramState getProgramState() const OVERRIDE {
+        ProgramState ps;
+        ps[var->declarationId()] = value;
+        return ps;
     }
 };
 
@@ -2394,20 +2490,40 @@ static bool valueFlowForwardVariable(Token* const startToken,
                                      std::list<ValueFlow::Value> values,
                                      const bool,
                                      const bool,
-                                     TokenList* const,
+                                     TokenList* const tokenlist,
                                      ErrorLogger* const,
                                      const Settings* const settings)
 {
-    VariableForwardAnalyzer a;
-    a.start = startToken;
-    a.var = var;
-    a.varid = varid;
-    a.settings = settings;
     for (ValueFlow::Value& v : values) {
-        a.value = v;
+        VariableForwardAnalyzer a(var, v, tokenlist);
         valueFlowGenericForward(startToken, endToken, a, settings);
     }
     return true;
+}
+
+static void valueFlowForwardExpression(Token* startToken,
+                                       const Token* endToken,
+                                       const Token* exprTok,
+                                       const std::list<ValueFlow::Value>& values,
+                                       const TokenList* const tokenlist,
+                                       const Settings* settings)
+{
+    FwdAnalysis fwdAnalysis(tokenlist->isCPP(), settings->library);
+    for (const FwdAnalysis::KnownAndToken read : fwdAnalysis.valueFlow(exprTok, startToken, endToken)) {
+        for (const ValueFlow::Value& value : values) {
+            // Don't set inconclusive values
+            if (value.isInconclusive())
+                continue;
+            ValueFlow::Value v = value;
+            if (v.isImpossible()) {
+                if (read.known)
+                    continue;
+            } else if (!read.known) {
+                v.valueKind = ValueFlow::Value::ValueKind::Possible;
+            }
+            setTokenValue(const_cast<Token*>(read.token), v, settings);
+        }
+    }
 }
 
 static const Token* parseBinaryIntOp(const Token* expr, MathLib::bigint& known)
