@@ -2129,7 +2129,7 @@ static bool isAliasOf(const Variable * var, const Token *tok, nonneg int varid, 
         return false;
     if (isAliasOf(tok, varid))
         return true;
-    if (!var->isPointer())
+    if (var && !var->isPointer())
         return false;
     // Search through non value aliases
     for (const ValueFlow::Value &val : values) {
