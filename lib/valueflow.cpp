@@ -2426,7 +2426,7 @@ struct VariableForwardAnalyzer : SingleValueFlowForwardAnalyzer {
 static bool valueFlowForwardVariable(Token* const startToken,
                                      const Token* const endToken,
                                      const Variable* const var,
-                                     const nonneg int varid,
+                                     const nonneg int,
                                      std::list<ValueFlow::Value> values,
                                      const bool,
                                      const bool,
