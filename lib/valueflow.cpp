@@ -2248,6 +2248,10 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
         return false;
     }
 
+    virtual bool invalid() const {
+        return false;
+    }
+
     bool isCPP() const {
         return tokenlist->isCPP();
     }
@@ -2281,6 +2285,8 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
     }
 
     virtual Action analyze(const Token* tok) const OVERRIDE {
+        if (invalid())
+            return Action::Invalid;
         if (match(tok)) {
             const Token* parent = tok->astParent();
             if ((Token::Match(parent, "*|[") || (parent && parent->originalName() == "->")) && getIndirect() <= 0)
@@ -2505,13 +2511,14 @@ struct ExpressionForwardAnalyzer : SingleValueFlowForwardAnalyzer {
     const Token* expr;
     std::unordered_map<nonneg int, const Variable*> varids;
     bool local;
+    bool unknown;
 
     ExpressionForwardAnalyzer()
-    : SingleValueFlowForwardAnalyzer(), expr(nullptr), varids()
+    : SingleValueFlowForwardAnalyzer(), expr(nullptr), varids(), local(false), unknown(false)
     {}
 
     ExpressionForwardAnalyzer(const Token* e, const ValueFlow::Value& val, const TokenList* t)
-    : SingleValueFlowForwardAnalyzer(val, t), expr(e), varids() {
+    : SingleValueFlowForwardAnalyzer(val, t), expr(e), varids(), local(false), unknown(false) {
 
         setupExprVarIds();
     }
@@ -2526,12 +2533,11 @@ struct ExpressionForwardAnalyzer : SingleValueFlowForwardAnalyzer {
         // all variable ids in expr.
         std::set<int> exprVarIds;
         local = true;
-        // bool unknownVarId = false;
         visitAstNodes(expr,
         [&](const Token *tok) {
             if (tok->varId() == 0 && tok->isName() && tok->previous()->str() != ".") {
                 // unknown variable
-                // unknownVarId = true;
+                unknown = true;
                 return ChildrenToVisit::none;
             }
             if (tok->varId() > 0) {
@@ -2546,6 +2552,10 @@ struct ExpressionForwardAnalyzer : SingleValueFlowForwardAnalyzer {
             }
             return ChildrenToVisit::op1_and_op2;
         });
+    }
+
+    virtual bool invalid() const OVERRIDE {
+        return unknown;
     }
 
     virtual const std::unordered_map<nonneg int, const Variable*>& getVars() const OVERRIDE {
