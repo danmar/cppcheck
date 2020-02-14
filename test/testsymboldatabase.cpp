@@ -151,6 +151,7 @@ private:
         TEST_CASE(VariableValueType1);
         TEST_CASE(VariableValueType2);
         TEST_CASE(VariableValueType3);
+        TEST_CASE(VariableValueType4); // smart pointer type
 
         TEST_CASE(findVariableType1);
         TEST_CASE(findVariableType2);
@@ -915,6 +916,17 @@ private:
             TODO_ASSERT_EQUALS(ValueType::Type::LONGLONG, ValueType::Type::UNKNOWN_INT, x->valueType()->type);
             ASSERT_EQUALS(ValueType::Sign::UNSIGNED, x->valueType()->sign);
         }
+    }
+
+    void VariableValueType4() {
+        GET_SYMBOL_DB("class C {\n"
+                      "public:\n"
+                      "  std::shared_ptr<C> x;\n"
+                      "};");
+
+        const Variable* const x = db->getVariableFromVarId(1);
+        ASSERT(x->valueType());
+        ASSERT(x->valueType()->smartPointerType);
     }
 
     void findVariableType1() {
