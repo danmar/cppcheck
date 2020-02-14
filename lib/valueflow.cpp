@@ -145,25 +145,6 @@ static void lowerToPossible(std::list<ValueFlow::Value>& values, int indirect = 
     removeImpossible(values, indirect);
 }
 
-static void lowerToInconclusive(std::list<ValueFlow::Value>& values, const Settings* settings, int indirect = -1)
-{
-    if (settings->inconclusive) {
-        removeImpossible(values, indirect);
-        for (ValueFlow::Value& v : values) {
-            if (indirect >= 0 && v.indirect != indirect)
-                continue;
-            v.setInconclusive();
-        }
-    } else {
-        // Remove all values if the inconclusive flags is not set
-        values.remove_if([&](const ValueFlow::Value& v) {
-            if (indirect >= 0 && v.indirect != indirect)
-                return false;
-            return true;
-        });
-    }
-}
-
 static void changePossibleToKnown(std::list<ValueFlow::Value>& values, int indirect = -1)
 {
     for (ValueFlow::Value& v : values) {
@@ -2015,20 +1996,6 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symbo
     }
 }
 
-static void removeValues(std::list<ValueFlow::Value> &values, const std::list<ValueFlow::Value> &valuesToRemove)
-{
-    for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end();) {
-        const bool found = std::any_of(valuesToRemove.cbegin(), valuesToRemove.cend(),
-        [=](const ValueFlow::Value &v2) {
-            return it->intvalue == v2.intvalue;
-        });
-        if (found)
-            values.erase(it++);
-        else
-            ++it;
-    }
-}
-
 static void valueFlowAST(Token *tok, nonneg int varid, const ValueFlow::Value &value, const Settings *settings)
 {
     if (!tok)
@@ -2055,21 +2022,6 @@ static void valueFlowAST(Token *tok, nonneg int varid, const ValueFlow::Value &v
             return;
     }
     valueFlowAST(tok->astOperand2(), varid, value, settings);
-}
-
-/** if known variable is changed in loop body, change it to a possible value */
-static bool handleKnownValuesInLoop(const Token                 *startToken,
-                                    const Token                 *endToken,
-                                    std::list<ValueFlow::Value> *values,
-                                    nonneg int                  varid,
-                                    bool                        globalvar,
-                                    const Settings              *settings)
-{
-    const bool isChanged = isVariableChanged(startToken, endToken, varid, globalvar, settings, true);
-    if (!isChanged)
-        return false;
-    lowerToPossible(*values);
-    return isChanged;
 }
 
 static bool evalAssignment(ValueFlow::Value &lhsValue, const std::string &assign, const ValueFlow::Value &rhsValue)
@@ -2149,15 +2101,6 @@ static bool isAliasOf(const Variable * var, const Token *tok, nonneg int varid, 
     return false;
 }
 
-static std::set<int> getIndirections(const std::list<ValueFlow::Value>& values)
-{
-    std::set<int> result;
-    std::transform(values.begin(), values.end(), std::inserter(result, result.end()), [](const ValueFlow::Value& v) {
-        return std::max(0, v.indirect);
-    });
-    return result;
-}
-
 static void valueFlowForwardExpression(Token* startToken,
                                        const Token* endToken,
                                        const Token* exprTok,
@@ -2224,15 +2167,6 @@ static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, cons
         return false;
     }
     return false;
-}
-
-static void addCondition(std::list<ValueFlow::Value>& values, const Token* condTok, bool assume)
-{
-    for (ValueFlow::Value& v : values)
-        if (assume)
-            v.errorPath.emplace_back(condTok, "Assuming condition is true.");
-        else
-            v.errorPath.emplace_back(condTok, "Assuming condition is false.");
 }
 
 struct VariableForwardAnalyzer : ForwardAnalyzer {
