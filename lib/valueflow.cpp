@@ -2460,11 +2460,11 @@ struct VariableForwardAnalyzer : SingleValueFlowForwardAnalyzer {
     std::unordered_map<nonneg int, const Variable*> varids;
 
     VariableForwardAnalyzer()
-    : SingleValueFlowForwardAnalyzer()
+    : SingleValueFlowForwardAnalyzer(), var(nullptr), varids()
     {}
 
     VariableForwardAnalyzer(const Variable* v, const ValueFlow::Value& val, const TokenList* t)
-    : SingleValueFlowForwardAnalyzer(val, t), var(v) {
+    : SingleValueFlowForwardAnalyzer(val, t), var(v), varids() {
         varids[var->declarationId()] = var;
     }
 
