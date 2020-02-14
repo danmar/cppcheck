@@ -65,6 +65,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     setValueTypeInTokenList(false);
     createSymbolDatabaseSetFunctionPointers(true);
     createSymbolDatabaseSetTypePointers();
+    createSymbolDatabaseSetSmartPointerType();
     createSymbolDatabaseEnums();
     createSymbolDatabaseEscapeFunctions();
     createSymbolDatabaseIncompleteVars();
@@ -1113,6 +1114,19 @@ void SymbolDatabase::createSymbolDatabaseSetTypePointers()
         const Type *type = findVariableType(tok->scope(), tok);
         if (type)
             const_cast<Token *>(tok)->type(type);
+    }
+}
+
+void SymbolDatabase::createSymbolDatabaseSetSmartPointerType()
+{
+    for (Scope &scope: scopeList) {
+        for (Variable &var: scope.varlist) {
+            if (var.valueType() && var.valueType()->smartPointerTypeToken && !var.valueType()->smartPointerType) {
+                ValueType vt(*var.valueType());
+                vt.smartPointerType = vt.smartPointerTypeToken->type();
+                var.setValueType(vt);
+            }
+        }
     }
 }
 
@@ -5507,7 +5521,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
 {
     const Token * const previousType = type;
     const unsigned int pointer0 = valuetype->pointer;
-    while (Token::Match(type->previous(), "%name%"))
+    while (Token::Match(type->previous(), "%name%") && !endsWith(type->previous()->str(), ':'))
         type = type->previous();
     valuetype->sign = ValueType::Sign::UNKNOWN_SIGN;
     if (!valuetype->typeScope && !valuetype->smartPointerType)
