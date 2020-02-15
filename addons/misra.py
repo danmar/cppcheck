@@ -1877,6 +1877,26 @@ class MisraChecker:
                 scope = scope.nestedIn
             if not scope:
                 self.reportError(token, 15, 3)
+            # Jump crosses from one switch-clause to another is non-compliant
+            elif scope.type == 'Switch':
+                # Search for start of a current case block
+                tcase_start = token
+                while tcase_start and tcase_start.str not in ('case', 'default'):
+                    tcase_start = tcase_start.previous
+                # Make sure that goto label doesn't occurs in the other
+                # switch-clauses
+                if tcase_start:
+                    t = scope.bodyStart
+                    in_this_case = False
+                    while t and t != scope.bodyEnd:
+                        if t == tcase_start:
+                            in_this_case = True
+                        if in_this_case and t.str not in ('case', 'default'):
+                            in_this_case = False
+                        if t == tok and not in_this_case:
+                            self.reportError(token, 15, 3)
+                            break
+                        t = t.next
 
     def misra_15_5(self, data):
         for token in data.tokenlist:
