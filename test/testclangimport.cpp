@@ -98,6 +98,8 @@ private:
 
         TEST_CASE(valueFlow1);
         TEST_CASE(valueFlow2);
+
+        TEST_CASE(valueType1);
     }
 
     std::string parse(const char clang[]) {
@@ -978,6 +980,23 @@ private:
         tok = tok->next();
         ASSERT(tok->hasKnownIntValue());
         ASSERT_EQUALS(10, tok->getKnownIntValue());
+    }
+
+    void valueType1() {
+        const char clang[] = "`-FunctionDecl 0x32438c0 <line:5:1, line:7:1> line:5:6 foo 'a::b (a::b)'\n"
+                             "  |-ParmVarDecl 0x32437b0 <col:10, col:15> col:15 used i 'a::b':'long'\n"
+                             "  `-CompoundStmt 0x3243a60 <col:18, line:7:1>\n"
+                             "    `-ReturnStmt 0x3243a48 <line:6:3, col:12>\n"
+                             "      `-ImplicitCastExpr 0x2176ca8 <col:9> 'int' <IntegralCast>\n"
+                             "        `-ImplicitCastExpr 0x2176c90 <col:9> 'bool' <LValueToRValue>\n"
+                             "          `-DeclRefExpr 0x2176c60 <col:9> 'bool' lvalue Var 0x2176bd0 'e' 'bool'\n";
+
+        GET_SYMBOL_DB(clang);
+
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), "e");
+        ASSERT(!!tok);
+        ASSERT(!!tok->valueType());
+        ASSERT_EQUALS("bool", tok->valueType()->str());
     }
 };
 

@@ -860,7 +860,8 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == ImplicitCastExpr) {
         Token *expr = children[0]->createTokens(tokenList);
-        setValueType(expr);
+        if (!expr->valueType())
+            setValueType(expr);
         return expr;
     }
     if (nodeType == InitListExpr) {
