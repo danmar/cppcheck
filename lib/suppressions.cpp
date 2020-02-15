@@ -180,43 +180,40 @@ void Suppressions::ErrorMessage::setFileName(const std::string &s)
     mFileName = Path::simplifyPath(s);
 }
 
-int Suppressions::Suppression::parseComment(std::string comment, unsigned int startIndex, std::string *errorMessage)
+bool Suppressions::Suppression::parseComment(std::string comment, std::string *errorMessage)
 {
     if (comment.size() < 2)
-        return -1;
+        return false;
 
-    size_t suppress_position = comment.find("cppcheck-suppress", startIndex);
-    if (suppress_position == std::string::npos)
-        return -1;
+    if (comment.find(';') != std::string::npos)
+        comment.erase(comment.find(';'));
 
-    std::istringstream iss(comment.substr(suppress_position));
-    std::string suppress_word;
-    iss >> suppress_word;
+    if (comment.find("//", 2) != std::string::npos)
+        comment.erase(comment.find("//",2));
 
-    //there must has a ':' after cppcheck-suppress, and ':' must not adjoins '@'
-    if (suppress_word.length()<=18 || suppress_word[17]!=':' || suppress_word[18]=='@') {
-        if (errorMessage && errorMessage->empty())
-            *errorMessage = "Bad suppression attribute '" + suppress_word + "'. legal format is cppcheck-suppress:errorId or cppcheck-suppress:errorId@symbol";
-        return suppress_position+suppress_word.length();
+    if (comment.compare(comment.size() - 2, 2, "*/") == 0)
+        comment.erase(comment.size() - 2, 2);
+
+    std::istringstream iss(comment.substr(2));
+    std::string word;
+    iss >> word;
+    if (word != "cppcheck-suppress")
+        return false;
+    iss >> errorId;
+    if (!iss)
+        return false;
+    while (iss) {
+        iss >> word;
+        if (!iss)
+            break;
+        if (word.find_first_not_of("+-*/%#;") == std::string::npos)
+            break;
+        if (word.compare(0,11,"symbolName=")==0)
+            symbolName = word.substr(11);
+        else if (errorMessage && errorMessage->empty())
+            *errorMessage = "Bad suppression attribute '" + word + "'. You can write comments in the comment after a ; or //. Valid suppression attributes; symbolName=sym";
     }
-
-    //'@' is optional
-    size_t symbol_position = suppress_word.find("@");
-    if (symbol_position == std::string::npos) {    //no need parse symbol name
-        errorId = suppress_word.substr(18);
-    }
-    else {                                  //need parse symbol name
-        //if '@' exist, there must has symbol after '@'
-        if (suppress_word.length()<=symbol_position+1) {
-            if (errorMessage && errorMessage->empty())
-                *errorMessage = "Bad suppression attribute '" + suppress_word + "'. legal format is cppcheck-suppress:errorId or cppcheck-suppress:errorId@symbol";
-            return suppress_position+suppress_word.length();
-        }
-        errorId = suppress_word.substr(18, symbol_position-18);
-        symbolName = suppress_word.substr(symbol_position+1);
-    }
-
-    return suppress_position+suppress_word.length();
+    return true;
 }
 
 bool Suppressions::Suppression::isSuppressed(const Suppressions::ErrorMessage &errmsg) const
