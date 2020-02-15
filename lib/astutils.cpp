@@ -1321,7 +1321,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     if (tok->variable() && Token::Match(tok2->astParent(), ". %name%") && isFunctionCall(tok2->astParent()->next()) && tok2->astParent()->astOperand1() == tok2) {
         const Variable * var = tok->variable();
         bool isConst = var && var->isConst();
-        if (!isConst && var) {
+        if (!isConst) {
             const ValueType * valueType = var->valueType();
             isConst = (valueType && valueType->pointer == 1 && valueType->constness == 1);
         }

@@ -1225,7 +1225,7 @@ static bool isLambdaCaptureList(const Token * tok)
     if (!tok->astOperand1() || tok->astOperand1()->str() != "(")
         return false;
     const Token * params = tok->astOperand1();
-    if (!params || !params->astOperand1() || params->astOperand1()->str() != "{")
+    if (!params->astOperand1() || params->astOperand1()->str() != "{")
         return false;
     return true;
 }
@@ -1323,8 +1323,6 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         while (tok2 && tok2 != endPar && tok2->str() != ";") {
             if (tok2->str() == "<" && tok2->link()) {
                 tok2 = tok2->link();
-                if (!tok2)
-                    break;
             } else if (Token::Match(tok2, "%name% %op%|(|[|.|:|::") || Token::Match(tok2->previous(), "[(;{}] %cop%|(")) {
                 init1 = tok2;
                 AST_state state1(cpp);

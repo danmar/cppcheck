@@ -1184,14 +1184,14 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
 
             if (membertok) {
                 const Variable *var = tok->variable();
-                if (var && var->typeScope()) {
+                if (var->typeScope()) {
                     const Variable *membervar = var->typeScope()->getVariable(membertok->str());
                     if (membervar) {
                         membertok->variable(membervar);
                         if (membertok->varId() == 0 || mVariableList[membertok->varId()] == nullptr)
                             fixVarId(varIds, tok, const_cast<Token *>(membertok), membervar);
                     }
-                } else if (const ::Type *type = var ? var->smartPointerType() : nullptr) {
+                } else if (const ::Type *type = var->smartPointerType()) {
                     const Scope *classScope = type->classScope;
                     const Variable *membervar = classScope ? classScope->getVariable(membertok->str()) : nullptr;
                     if (membervar) {
@@ -1199,7 +1199,7 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
                         if (membertok->varId() == 0 || mVariableList[membertok->varId()] == nullptr)
                             fixVarId(varIds, tok, const_cast<Token *>(membertok), membervar);
                     }
-                } else if (var && tok->valueType() && tok->valueType()->type == ValueType::CONTAINER) {
+                } else if (tok->valueType() && tok->valueType()->type == ValueType::CONTAINER) {
                     if (Token::Match(var->typeStartToken(), "std :: %type% < %type% *| *| >")) {
                         const Type * type = var->typeStartToken()->tokAt(4)->type();
                         if (type && type->classScope && type->classScope->definedType) {
