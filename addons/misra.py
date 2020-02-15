@@ -1895,6 +1895,7 @@ class MisraChecker:
                             in_this_case = False
                         if t == tok and not in_this_case:
                             self.reportError(token, 15, 3)
+                            break
                         t = t.next
 
     def misra_15_5(self, data):
