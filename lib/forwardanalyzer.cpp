@@ -345,6 +345,8 @@ struct ForwardTraversal {
                         if (!analyzer->lowerToInconclusive())
                             return Progress::Break;
                     } else if (thenAction.isModified() || elseAction.isModified()) {
+                        if (!hasElse && analyzer->isConditional())
+                            return Progress::Break;
                         if (!analyzer->lowerToPossible())
                             return Progress::Break;
                         analyzer->assume(condTok, elseAction.isModified());

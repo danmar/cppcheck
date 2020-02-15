@@ -2489,6 +2489,12 @@ struct ExpressionForwardAnalyzer : SingleValueFlowForwardAnalyzer {
         return unknown;
     }
 
+    virtual std::vector<int> evaluate(const Token* tok) const OVERRIDE {
+        if (tok->hasKnownIntValue())
+            return {static_cast<int>(tok->values().front().intvalue)};
+        return {};
+    }
+
     virtual const std::unordered_map<nonneg int, const Variable*>& getVars() const OVERRIDE {
         return varids;
     }
