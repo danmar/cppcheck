@@ -21,8 +21,8 @@ struct ForwardTraversal {
         return std::make_pair(checkThen, checkElse);
     }
 
-    template<class T, class F, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
-    Progress traverseTok(T* tok, F f, bool traverseUnknown, T** out = nullptr) {
+    template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
+    Progress traverseTok(T* tok, std::function<Progress(T*)> f, bool traverseUnknown, T** out = nullptr) {
         if (Token::Match(tok, "asm|goto|continue|setjmp|longjmp"))
             return Progress::Break;
         else if (Token::Match(tok, "return|throw") || isEscapeFunction(tok, &settings->library)) {
@@ -52,8 +52,8 @@ struct ForwardTraversal {
         return Progress::Continue;
     }
 
-    template<class T, class F, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
-    Progress traverseRecursive(T* tok, F f, bool traverseUnknown) {
+    template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
+    Progress traverseRecursive(T* tok, std::function<Progress(T*)> f, bool traverseUnknown) {
         if (!tok)
             return Progress::Continue;
         if (tok->astOperand1() && traverseRecursive(tok->astOperand1(), f, traverseUnknown) == Progress::Break)
@@ -109,11 +109,17 @@ struct ForwardTraversal {
     }
 
     Progress updateTok(Token* tok, Token** out = nullptr) {
-        return traverseTok(tok, [&](Token* tok2) { return update(tok2); }, false, out);
+        std::function<Progress(Token*)> f = [this](Token* tok2) {
+            return update(tok2);
+        };
+        return traverseTok(tok, f, false, out);
     }
 
     Progress updateRecursive(Token* tok) {
-        return traverseRecursive(tok, [&](Token* tok2) { return update(tok2); }, false);
+        std::function<Progress(Token*)> f = [this](Token* tok2) {
+            return update(tok2);
+        };
+        return traverseRecursive(tok, f, false);
     }
 
     template <class T, class Predicate>
@@ -128,7 +134,7 @@ struct ForwardTraversal {
 
     ForwardAnalyzer::Action analyzeRecursive(const Token* start) {
         ForwardAnalyzer::Action result = ForwardAnalyzer::Action::None;
-        auto f = [&](const Token* tok) {
+        std::function<Progress(const Token *)> f = [&](const Token* tok) {
             result = analyzer->analyze(tok);
             if (result.isModified() || result.isInconclusive())
                 return Progress::Break;
