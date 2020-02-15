@@ -293,7 +293,7 @@ struct ForwardTraversal {
                     std::tie(checkThen, checkElse) = evalCond(condTok);
                     ForwardAnalyzer::Action thenAction = ForwardAnalyzer::Action::None;
                     ForwardAnalyzer::Action elseAction = ForwardAnalyzer::Action::None;
-                    bool hasElse = false;
+                    bool hasElse = Token::simpleMatch(endBlock, "} else {");
                     bool bail = false;
 
                     // Traverse then block
@@ -308,8 +308,7 @@ struct ForwardTraversal {
                             bail = true;
                     }
                     // Traverse else block
-                    if (Token::simpleMatch(endBlock, "} else {")) {
-                        hasElse = true;
+                    if (hasElse) {
                         returnElse = isEscapeScope(endBlock->linkAt(2), true);
                         if (checkElse) {
                             Progress result = updateRange(endBlock->tokAt(2), endBlock->linkAt(2));

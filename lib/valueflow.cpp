@@ -5444,6 +5444,9 @@ static void valueFlowFwdAnalysis(const TokenList *tokenlist, const Settings *set
             tok = tok->linkAt(1);
         if (tok->str() != "=" || !tok->astOperand1() || !tok->astOperand2())
             continue;
+        // Skip variables
+        if (tok->astOperand1()->variable())
+            continue;
         if (!tok->scope()->isExecutable())
             continue;
         if (!tok->astOperand2()->hasKnownIntValue())
