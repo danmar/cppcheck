@@ -207,6 +207,7 @@ private:
         TEST_CASE(argument);
         TEST_CASE(argumentClass);
         TEST_CASE(escapeAlias); // #9150
+        TEST_CASE(volatileData); // #9280
     }
 
     void checkStructMemberUsage(const char code[]) {
@@ -4638,6 +4639,15 @@ private:
             "    }\n"
             "};\n"
         );
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void volatileData() {
+        functionVariableUsage(
+            "struct Data { unsigned int n; };\n"
+            "int main() {\n"
+            "  (*(volatile struct Data*)0x4200).n = 1;\n"
+            "}");
         ASSERT_EQUALS("", errout.str());
     }
 };
