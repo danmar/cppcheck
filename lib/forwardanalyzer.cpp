@@ -122,8 +122,8 @@ struct ForwardTraversal {
         return traverseRecursive(tok, f, false);
     }
 
-    template <class T, class Predicate>
-    T* findRange(T* start, const Token* end, Predicate pred) {
+    template <class T>
+    T* findRange(T* start, const Token* end, std::function<bool(ForwardAnalyzer::Action)> pred) {
         for (T* tok = start; tok && tok != end; tok = tok->next()) {
             ForwardAnalyzer::Action action = analyzer->analyze(tok);
             if (pred(action))
