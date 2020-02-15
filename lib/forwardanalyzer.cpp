@@ -416,8 +416,7 @@ struct ForwardTraversal {
         return parent && (parent->str() == ":" || parent->astOperand2() == tok);
     }
 
-    template <class T>
-    static T* getInitTok(T* tok) {
+    static Token* getInitTok(Token* tok) {
         if (!tok)
             return nullptr;
         if (Token::Match(tok, "%name% ("))
@@ -431,8 +430,7 @@ struct ForwardTraversal {
         return tok->astOperand2()->astOperand1();
     }
 
-    template <class T>
-    static T* getStepTok(T* tok) {
+    static Token* getStepTok(Token* tok) {
         if (!tok)
             return nullptr;
         if (Token::Match(tok, "%name% ("))
