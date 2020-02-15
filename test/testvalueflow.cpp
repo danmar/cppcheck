@@ -2805,6 +2805,7 @@ private:
 
     void valueFlowForLoop() {
         const char *code;
+        ValueFlow::Value value;
 
         code = "void f() {\n"
                "    for (int x = 0; x < 10; x++)\n"
@@ -3063,6 +3064,31 @@ private:
                "}";
         std::list<ValueFlow::Value> values = tokenValues(code, "x <");
         ASSERT(std::none_of(values.begin(), values.end(), std::mem_fn(&ValueFlow::Value::isUninitValue)));
+
+        // #9637
+        code = "void f() {\n"
+               "    unsigned int x = 0;\n"
+               "    for (x = 0; x < 2; x++) {}\n"
+               "}\n";
+        value = valueOfTok(code, "x <");
+        ASSERT(value.isPossible());
+        ASSERT_EQUALS(value.intvalue, 0);
+
+        code = "void f() {\n"
+               "    unsigned int x = 0;\n"
+               "    for (;x < 2; x++) {}\n"
+               "}\n";
+        value = valueOfTok(code, "x <");
+        ASSERT(value.isPossible());
+        ASSERT_EQUALS(0, value.intvalue);
+
+        code = "void f() {\n"
+               "    unsigned int x = 1;\n"
+               "    for (x = 0; x < 2; x++) {}\n"
+               "}\n";
+        value = valueOfTok(code, "x <");
+        ASSERT(value.isPossible());
+        ASSERT_EQUALS(0, value.intvalue);
     }
 
     void valueFlowSubFunction() {
