@@ -2504,7 +2504,7 @@ struct ExpressionForwardAnalyzer : SingleValueFlowForwardAnalyzer {
     }
 
     virtual ProgramState getProgramState() const OVERRIDE {
-        return {};
+        return ProgramState{};
     }
 
     virtual bool isGlobal() const OVERRIDE {
