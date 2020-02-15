@@ -712,7 +712,7 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         return false;
     if (tok1->isSigned() != tok2->isSigned())
         return false;
-    if (pure && tok1->isName() && tok1->next()->str() == "(" && tok1->str() != "sizeof") {
+    if (pure && tok1->isName() && tok1->next()->str() == "(" && tok1->str() != "sizeof" && !(tok1->variable() && tok1 == tok1->variable()->nameToken())) {
         if (!tok1->function()) {
             if (Token::simpleMatch(tok1->previous(), ".")) {
                 const Token *lhs = tok1->previous();
