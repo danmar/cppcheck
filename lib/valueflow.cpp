@@ -2144,11 +2144,9 @@ static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, cons
     return false;
 }
 
-struct SelectMapKeys
-{
+struct SelectMapKeys {
     template<class Pair>
-    typename Pair::first_type operator()(const Pair& p) const
-    {
+    typename Pair::first_type operator()(const Pair& p) const {
         return p.first;
     }
 };
@@ -2157,11 +2155,11 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
     const TokenList* tokenlist;
 
     ValueFlowForwardAnalyzer()
-    : tokenlist(nullptr)
+        : tokenlist(nullptr)
     {}
 
     ValueFlowForwardAnalyzer(const TokenList* t)
-    : tokenlist(t)
+        : tokenlist(t)
     {}
 
     virtual int getIndirect() const = 0;
@@ -2276,11 +2274,11 @@ struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
     ValueFlow::Value value;
 
     SingleValueFlowForwardAnalyzer()
-    : ValueFlowForwardAnalyzer()
+        : ValueFlowForwardAnalyzer()
     {}
 
     SingleValueFlowForwardAnalyzer(const ValueFlow::Value& v, const TokenList* t)
-    : ValueFlowForwardAnalyzer(t), value(v)
+        : ValueFlowForwardAnalyzer(t), value(v)
     {}
 
     virtual const std::unordered_map<nonneg int, const Variable*>& getVars() const = 0;
@@ -2292,7 +2290,7 @@ struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
     virtual bool isAlias(const Token* tok) const OVERRIDE {
         if (value.isLifetimeValue())
             return false;
-        for(const auto& p:getVars()) {
+        for (const auto& p:getVars()) {
             nonneg int varid = p.first;
             const Variable* var = p.second;
             if (tok->varId() == varid)
@@ -2308,7 +2306,7 @@ struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
     }
 
     virtual bool isGlobal() const OVERRIDE {
-        for(const auto&p:getVars()) {
+        for (const auto&p:getVars()) {
             const Variable* var = p.second;
             if (var->isGlobal() && !var->isConst())
                 return true;
@@ -2400,11 +2398,11 @@ struct VariableForwardAnalyzer : SingleValueFlowForwardAnalyzer {
     std::unordered_map<nonneg int, const Variable*> varids;
 
     VariableForwardAnalyzer()
-    : SingleValueFlowForwardAnalyzer(), var(nullptr), varids()
+        : SingleValueFlowForwardAnalyzer(), var(nullptr), varids()
     {}
 
     VariableForwardAnalyzer(const Variable* v, const ValueFlow::Value& val, const TokenList* t)
-    : SingleValueFlowForwardAnalyzer(val, t), var(v), varids() {
+        : SingleValueFlowForwardAnalyzer(val, t), var(v), varids() {
         varids[var->declarationId()] = var;
     }
 
@@ -2448,22 +2446,20 @@ struct ExpressionForwardAnalyzer : SingleValueFlowForwardAnalyzer {
     bool unknown;
 
     ExpressionForwardAnalyzer()
-    : SingleValueFlowForwardAnalyzer(), expr(nullptr), varids(), local(true), unknown(false)
+        : SingleValueFlowForwardAnalyzer(), expr(nullptr), varids(), local(true), unknown(false)
     {}
 
     ExpressionForwardAnalyzer(const Token* e, const ValueFlow::Value& val, const TokenList* t)
-    : SingleValueFlowForwardAnalyzer(val, t), expr(e), varids(), local(true), unknown(false) {
+        : SingleValueFlowForwardAnalyzer(val, t), expr(e), varids(), local(true), unknown(false) {
 
         setupExprVarIds();
     }
 
-    static bool nonLocal(const Variable* var, bool deref)
-    {
+    static bool nonLocal(const Variable* var, bool deref) {
         return !var || (!var->isLocal() && !var->isArgument()) || (deref && var->isArgument() && var->isPointer()) || var->isStatic() || var->isReference() || var->isExtern();
     }
 
-    void setupExprVarIds()
-    {
+    void setupExprVarIds() {
         visitAstNodes(expr,
         [&](const Token *tok) {
             if (tok->varId() == 0 && tok->isName() && tok->previous()->str() != ".") {
@@ -2492,7 +2488,7 @@ struct ExpressionForwardAnalyzer : SingleValueFlowForwardAnalyzer {
     virtual std::vector<int> evaluate(const Token* tok) const OVERRIDE {
         if (tok->hasKnownIntValue())
             return {static_cast<int>(tok->values().front().intvalue)};
-        return std::vector<int>{};
+        return std::vector<int> {};
     }
 
     virtual const std::unordered_map<nonneg int, const Variable*>& getVars() const OVERRIDE {

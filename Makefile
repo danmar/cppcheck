@@ -513,7 +513,7 @@ $(libcppdir)/mathlib.o: lib/mathlib.cpp lib/config.h lib/errorlogger.h lib/mathl
 $(libcppdir)/path.o: lib/path.cpp externals/simplecpp/simplecpp.h lib/config.h lib/path.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(libcppdir)/path.o $(libcppdir)/path.cpp
 
-$(libcppdir)/pathanalysis.o: lib/pathanalysis.cpp lib/config.h lib/errorlogger.h lib/importproject.h lib/library.h lib/mathlib.h lib/pathanalysis.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/utils.h lib/valueflow.h
+$(libcppdir)/pathanalysis.o: lib/pathanalysis.cpp lib/astutils.h lib/config.h lib/errorlogger.h lib/importproject.h lib/library.h lib/mathlib.h lib/pathanalysis.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/utils.h lib/valueflow.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(libcppdir)/pathanalysis.o $(libcppdir)/pathanalysis.cpp
 
 $(libcppdir)/pathmatch.o: lib/pathmatch.cpp lib/config.h lib/path.h lib/pathmatch.h lib/utils.h

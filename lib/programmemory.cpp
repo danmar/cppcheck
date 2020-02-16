@@ -249,14 +249,14 @@ static ProgramMemory getInitialProgramState(const Token* tok,
 ProgramMemory getProgramMemory(const Token *tok, const std::unordered_map<nonneg int, ValueFlow::Value>& vars)
 {
     ProgramMemory programMemory;
-    for(const auto& p:vars) {
+    for (const auto& p:vars) {
         const ValueFlow::Value &value = p.second;
         programMemory.replace(getInitialProgramState(tok, value.tokvalue));
         programMemory.replace(getInitialProgramState(tok, value.condition));
     }
     fillProgramMemoryFromConditions(programMemory, tok, nullptr);
     ProgramMemory state;
-    for(const auto& p:vars) {
+    for (const auto& p:vars) {
         nonneg int varid = p.first;
         const ValueFlow::Value &value = p.second;
         programMemory.setValue(varid, value);
