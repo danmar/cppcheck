@@ -7656,6 +7656,10 @@ private:
         ASSERT_EQUALS("n0=", testAst("TrivialDefCtor{[2][2]}[1][1].n = 0;"));
         ASSERT_EQUALS("aT12,3,{1[=", testAst("a = T{1, 2, 3}[1];"));
 
+        // Type{data}()
+        ASSERT_EQUALS("ab{(=", testAst("a=b{}();"));
+        ASSERT_EQUALS("abc{((=", testAst("a=b(c{}());"));
+
         // ({..})
         ASSERT_EQUALS("a{+d+ bc+", testAst("a+({b+c;})+d"));
         ASSERT_EQUALS("a{d*+ bc+", testAst("a+({b+c;})*d"));
