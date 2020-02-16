@@ -110,7 +110,7 @@ static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSe
         // Add the suppressions.
         for (Suppressions::Suppression &suppr : inlineSuppressions) {
             suppr.fileName = relativeFilename;
-            suppr.lineNumber = tok->location.line-1;
+            suppr.lineNumber = tok->location.line;
             mSettings.nomsg.addSuppression(suppr);
         }
         inlineSuppressions.clear();
