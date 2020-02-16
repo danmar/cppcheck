@@ -112,6 +112,13 @@ std::string Suppressions::parseXmlFile(const char *filename)
     return "";
 }
 
+std::vector<Suppressions::Suppression> Suppressions::parseComment(std::string comment, std::string *errorMessageconst)
+{
+    std::vector<Suppression> suppressions;
+
+    return suppressions;
+}
+
 std::string Suppressions::addSuppressionLine(const std::string &line)
 {
     std::istringstream lineStream(line);
