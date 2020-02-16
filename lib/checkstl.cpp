@@ -749,8 +749,18 @@ void CheckStl::invalidContainer()
                 continue;
             std::set<nonneg int> skipVarIds;
             // Skip if the variable is assigned to
-            if (Token::Match(tok->astTop(), "%assign%") && Token::Match(tok->astTop()->previous(), "%var%"))
-                skipVarIds.insert(tok->astTop()->previous()->varId());
+            const Token* assignExpr = tok;
+            while (assignExpr->astParent()) {
+                bool isRHS = astIsRHS(assignExpr);
+                assignExpr = assignExpr->astParent();
+                if (Token::Match(assignExpr, "%assign%")) {
+                    if (!isRHS)
+                        assignExpr = nullptr;
+                    break;
+                }
+            }
+            if (Token::Match(assignExpr, "%assign%") && Token::Match(assignExpr->astOperand1(), "%var%"))
+                skipVarIds.insert(assignExpr->astOperand1()->varId());
             const Token * endToken = nextAfterAstRightmostLeaf(tok->next()->astParent());
             if (!endToken)
                 endToken = tok->next();
