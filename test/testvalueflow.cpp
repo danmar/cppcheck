@@ -1665,7 +1665,7 @@ private:
                "    if (condition2) x = 789;\n"
                "    a = 2 + x;\n" // <- either assignment "x=123" is redundant or x can be 123 here.
                "}";
-        ASSERT_EQUALS(true,  testValueOfX(code, 5U, 123));
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 5U, 123));
 
         code = "void f(int a) {\n"
                "    int x = 123;\n"
@@ -2717,7 +2717,9 @@ private:
                "    s.x++;\n"
                "}";
         values = tokenValues(code, "<");
-        ASSERT_EQUALS(true, values.empty());
+        ASSERT_EQUALS(1, values.size());
+        ASSERT(values.front().isPossible());
+        ASSERT_EQUALS(true, values.front().intvalue);
 
         code = "void f() {\n"
                "  S s;\n"
@@ -2755,7 +2757,9 @@ private:
                "  }\n"
                "}";
         values = tokenValues(code, ">");
-        ASSERT_EQUALS(true, values.empty());
+        ASSERT_EQUALS(1, values.size());
+        ASSERT(values.front().isPossible());
+        ASSERT_EQUALS(true, values.front().intvalue);
 
         code = "void foo() {\n"
                "    struct ISO_PVD_s pvd;\n"
@@ -3647,7 +3651,11 @@ private:
                "    int x;\n"
                "    f(x=3), return x+3;\n"
                "}";
-        ASSERT_EQUALS(0U, tokenValues(code, "x +").size());
+        values = tokenValues(code, "x +");
+        ASSERT_EQUALS(true, values.empty());
+        // ASSERT_EQUALS(1U, values.size());
+        // ASSERT(values.front().isIntValue());
+        // ASSERT_EQUALS(3, values.front().intvalue);
 
         // #8195
         code = "void foo(std::istream &is) {\n"
@@ -3677,8 +3685,7 @@ private:
                "    x = 1;\n"
                "  if (x>1) {}\n"
                "}";
-        values = tokenValues(code, "x >");
-        ASSERT_EQUALS(true, values.size() == 1U && values.front().isIntValue());
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 8U, 1));
 
         // #8348 - noreturn else
         code = "int test_input_int(int a, int b) {\n"

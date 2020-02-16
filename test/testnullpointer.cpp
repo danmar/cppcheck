@@ -91,6 +91,7 @@ private:
         TEST_CASE(nullpointer49); // #7804
         TEST_CASE(nullpointer50); // #6462
         TEST_CASE(nullpointer51);
+        TEST_CASE(nullpointer52);
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1703,6 +1704,46 @@ private:
               "  if (c(e, \"\"))\n"
               "    return nullptr;\n"
               "  return e->b();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer52() {
+        check("int f(int a, int* b) {\n"
+              "    int* c = nullptr;\n"
+              "    if(b) c = b;\n"
+              "    if (!c) c = &a;\n"
+              "    return *c;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(int a, int* b) {\n"
+              "    int* c = nullptr;\n"
+              "    if(b) c = b;\n"
+              "    bool d = !c;\n"
+              "    if (d) c = &a;\n"
+              "    return *c;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { int* x; };\n"
+              "int f(int a, int* b) {\n"
+              "    A c;\n"
+              "    c.x = nullptr;\n"
+              "    if(b) c.x = b;\n"
+              "    if (!c.x) c.x = &a;\n"
+              "    return *c.x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { int* x; };\n"
+              "int f(int a, int* b) {\n"
+              "    A c;\n"
+              "    c.x = nullptr;\n"
+              "    if(b) c.x = b;\n"
+              "    bool d = !c.x;\n"
+              "    if (!d) c.x = &a;\n"
+              "    return *c.x;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

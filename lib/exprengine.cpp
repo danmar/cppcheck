@@ -1573,7 +1573,7 @@ static void execute(const Token *start, const Token *end, Data &data)
                 if (Token::Match(tok2, "%assign%")) {
                     if (Token::Match(tok2->astOperand1(), ". %name% =") && tok2->astOperand1()->astOperand1() && tok2->astOperand1()->astOperand1()->valueType()) {
                         const Token *structToken = tok2->astOperand1()->astOperand1();
-                        if (!structToken || !structToken->valueType() || !structToken->varId())
+                        if (!structToken->valueType() || !structToken->varId())
                             throw VerifyException(tok2, "Unhandled assignment in loop");
                         const Scope *structScope = structToken->valueType()->typeScope;
                         if (!structScope)

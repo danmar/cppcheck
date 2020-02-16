@@ -1067,7 +1067,7 @@ void Tokenizer::simplifyTypedef()
                         const Token *func = temp->link()->previous();
                         if (temp->str() != ")")
                             continue;
-                        if (!func || !func->previous()) // Ticket #4239
+                        if (!func->previous()) // Ticket #4239
                             continue;
 
                         /** @todo add support for multi-token operators */
