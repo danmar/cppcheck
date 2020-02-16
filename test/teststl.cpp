@@ -4111,6 +4111,13 @@ private:
               "    }\n"
               "}\n",true);
         ASSERT_EQUALS("", errout.str());
+
+        // #9598
+        check("void f(std::vector<std::string> v) {\n"
+              "    for (auto it = v.begin(); it != v.end(); it = v.erase(it))\n"
+              "        *it;\n"
+              "}\n",true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void findInsert() {
