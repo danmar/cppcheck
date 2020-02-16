@@ -120,7 +120,7 @@ public:
      * Parse multi inline suppression in comment
      * @param comment the full comment text
      * @param errorMessage output parameter for error message (wrong suppression attribute)
-     * @return empty vector if it is a inline comment.
+     * @return empty vector if something wrong.
      */
     std::vector<Suppression> parseComment(std::string comment, std::string *errorMessageconst);
 
