@@ -487,6 +487,8 @@ private:
         TEST_CASE(unknownType); // #8952
 
         TEST_CASE(unknownMacroBeforeReturn);
+
+        TEST_CASE(cppcast);
     }
 
     std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Native, const char* filename = "test.cpp", bool cpp11 = true) {
@@ -8334,6 +8336,22 @@ private:
 
     void unknownMacroBeforeReturn() {
         ASSERT_THROW(tokenizeAndStringify("int f() { X return 0; }"), InternalError);
+    }
+
+    void cppcast() {
+        const char code[] = "a = const_cast<int>(x);\n"
+                            "a = dynamic_cast<int>(x);\n"
+                            "a = reinterpret_cast<int>(x);\n"
+                            "a = static_cast<int>(x);\n";
+
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+            ASSERT_EQUALS(tok->str() == "(", tok->isCast());
+        }
     }
 };
 

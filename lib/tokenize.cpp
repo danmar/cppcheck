@@ -4638,6 +4638,14 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Link < with >
     createLinks2();
 
+    // Mark C++ casts
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "const_cast|dynamic_cast|reinterpret_cast|static_cast <") && Token::simpleMatch(tok->linkAt(1), "> (")) {
+            tok = tok->linkAt(1)->next();
+            tok->isCast(true);
+        }
+    }
+
     // specify array size
     arraySize();
 
