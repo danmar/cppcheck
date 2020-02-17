@@ -2048,6 +2048,7 @@ private:
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(returnedValue); // #9298
+        TEST_CASE(fclose_false_positive); // #9575
     }
 
     void returnedValue() { // #9298
@@ -2059,6 +2060,12 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
     }
+
+    void fclose_false_positive() { // #9575
+        check("int  f(FILE *fp) { return fclose(fp); }");
+        ASSERT_EQUALS("", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestLeakAutoVarStrcpy)
