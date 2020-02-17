@@ -267,6 +267,10 @@ static void conditionAlwaysTrueOrFalse(const Token *tok, const std::map<int, Var
             return;
         }
 
+        if (variableValue.empty()) {
+            return;
+        }
+
         const Token *vartok, *numtok;
         if (tok->astOperand2() && tok->astOperand2()->isNumber()) {
             vartok = tok->astOperand1();
