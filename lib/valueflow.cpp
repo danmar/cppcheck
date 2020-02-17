@@ -2366,7 +2366,7 @@ struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
                                            value.infoString());
                     value.errorPath.emplace_back(tok, info);
                 } else {
-                    // TODO: Dont set to zero
+                    // TODO: Don't set to zero
                     value.intvalue = 0;
                 }
             }

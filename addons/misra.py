@@ -796,7 +796,7 @@ def isTernaryOperator(token):
 
 
 def getTernaryOperandsRecursive(token):
-    """Returns list of ternary operands including nested onces."""
+    """Returns list of ternary operands including nested ones."""
     if not isTernaryOperator(token):
         return []
     result = []
