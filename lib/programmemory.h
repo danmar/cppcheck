@@ -32,6 +32,16 @@ struct ProgramMemory {
     void insert(const ProgramMemory &pm);
 };
 
+struct ProgramMemoryState {
+    ProgramMemory state;
+    std::map<int, const Token*> origins;
+
+    void addInitialState(const Token* tok);
+
+    void assume(const Token* tok, bool state);
+
+};
+
 void execute(const Token *expr,
              ProgramMemory * const programMemory,
              MathLib::bigint *result,

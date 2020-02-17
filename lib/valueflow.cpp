@@ -2327,8 +2327,10 @@ struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
         return true;
     }
 
-    virtual void assume(const Token*, bool) OVERRIDE {
+    virtual void assume(const Token* tok, bool state) OVERRIDE {
         // TODO: Use this to improve Evaluate
+        std::string s = state ? "true" : "false";
+        value.errorPath.emplace_back(tok, "Assuming condition is " + s);
         value.conditional = true;
     }
 
