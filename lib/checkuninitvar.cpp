@@ -873,8 +873,7 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
             if (isVariableUsage(tok, var.isPointer(), alloc))
                 usetok = tok;
             else if (tok->strAt(1) == "=") {
-                // Is var used in rhs?
-                bool rhs = false;
+                bool varIsUsedInRhs = false;
                 std::stack<const Token *> tokens;
                 tokens.push(tok->next()->astOperand2());
                 while (!tokens.empty()) {
@@ -883,8 +882,7 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
                     if (!t)
                         continue;
                     if (t->varId() == var.declarationId()) {
-                        // var is used in rhs
-                        rhs = true;
+                        varIsUsedInRhs = true;
                         break;
                     }
                     if (Token::simpleMatch(t->previous(),"sizeof ("))
@@ -892,7 +890,7 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
                     tokens.push(t->astOperand1());
                     tokens.push(t->astOperand2());
                 }
-                if (!rhs)
+                if (!varIsUsedInRhs)
                     return true;
             } else {
                 return true;
