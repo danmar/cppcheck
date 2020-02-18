@@ -2496,6 +2496,10 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(std::set<int> s) {\n"
+              "    if (auto result = s.find(123); result != s.end()) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
         // ---------------------------
         // std::find
