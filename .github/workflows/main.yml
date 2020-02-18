@@ -7,10 +7,11 @@ on: [push, pull_request]
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: [ubuntu-latest, macos-latest]
 
     steps:
     - uses: actions/checkout@v2
+
     - name: Build
       run: |
         make -j2
@@ -18,3 +19,8 @@ jobs:
     - name: Test
       run: |
         make -j2 check
+
+    - name: Validate
+      run: |
+        make validateCFG
+        make validatePlatforms
