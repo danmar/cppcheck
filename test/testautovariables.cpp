@@ -2528,7 +2528,7 @@ private:
               "    }\n"
               "    f();\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3] -> [test.cpp:4] -> [test.cpp:7]: (error) Using lambda that captures local variable 'b' that is out of scope.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4] -> [test.cpp:7]: (error) Using lambda that captures local variable 'b' that is out of scope.\n", errout.str());
 
         check("void f(bool b)  {\n"
               "  int* x;\n"
@@ -2539,7 +2539,7 @@ private:
               "  x[3];\n"
               "}\n");
         ASSERT_EQUALS(
-            "[test.cpp:5] -> [test.cpp:3] -> [test.cpp:4] -> [test.cpp:7]: (error) Using pointer to local variable 'y' that is out of scope.\n",
+            "[test.cpp:5] -> [test.cpp:4] -> [test.cpp:7]: (error) Using pointer to local variable 'y' that is out of scope.\n",
             errout.str());
 
         check("void foo(int a) {\n"
@@ -2607,7 +2607,7 @@ private:
               "  }\n"
               "  *p = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3] -> [test.cpp:4] -> [test.cpp:7]: (error) Using pointer to local variable 'x' that is out of scope.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4] -> [test.cpp:7]: (error) Using pointer to local variable 'x' that is out of scope.\n", errout.str());
 
         // FP: don't warn in subfunction
         check("void f(struct KEY *key) {\n"
@@ -2647,7 +2647,7 @@ private:
               "    if (former_hover != pitem)\n"
               "        dosth();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3] -> [test.cpp:4] -> [test.cpp:7]: (error) Using pointer to local variable 'item' that is out of scope.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4] -> [test.cpp:7]: (error) Using pointer to local variable 'item' that is out of scope.\n", errout.str());
 
         // #6575
         check("void trp_deliver_signal()  {\n"
@@ -2671,7 +2671,7 @@ private:
               "        return *iPtr;\n"
               "    return 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3] -> [test.cpp:4] -> [test.cpp:8]: (error) Using pointer to local variable 'x' that is out of scope.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4] -> [test.cpp:8]: (error) Using pointer to local variable 'x' that is out of scope.\n", errout.str());
     }
 
 };

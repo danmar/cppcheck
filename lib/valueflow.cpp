@@ -2327,15 +2327,21 @@ struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
         return true;
     }
 
-    virtual void assume(const Token* tok, bool state) OVERRIDE {
+    virtual void assume(const Token* tok, bool state, const Token* at) OVERRIDE {
         // Update program state
         pms.removeModifiedVars(tok);
         pms.addState(tok, getProgramState());
         pms.assume(tok, state);
 
-        std::string s = state ? "true" : "false";
-        value.errorPath.emplace_back(tok, "Assuming condition is " + s);
-        value.conditional = true;
+        const bool isAssert = Token::Match(at, "assert|ASSERT");
+        const bool isEndScope = Token::simpleMatch(at, "}");
+
+        if (!isAssert && !isEndScope) {
+            std::string s = state ? "true" : "false";
+            value.errorPath.emplace_back(tok, "Assuming condition is " + s);
+        }
+        if (!isAssert)
+            value.conditional = true;
     }
 
     virtual bool isConditional() const OVERRIDE {
