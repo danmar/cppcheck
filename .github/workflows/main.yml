@@ -7,20 +7,24 @@ on: [push, pull_request]
 jobs:
   build:
 
-    runs-on: [ubuntu-latest, macos-latest]
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+        runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Build
-      run: |
-        make -j2
+      - name: Build
+        run: |
+          make -j2
 
-    - name: Test
-      run: |
-        make -j2 check
+      - name: Test
+        run: |
+          make -j2 check
 
-    - name: Validate
-      run: |
-        make validateCFG
-        make validatePlatforms
+      - name: Validate
+        run: |
+          make validateCFG
+          make validatePlatforms
