@@ -706,7 +706,7 @@
           <item>
            <widget class="QLabel" name="label_addons_require_python">
             <property name="text">
-             <string>Note: Addons require &lt;a href=&quot;https://www.python.org/&quot;&gt;Python&lt;/a&gt; beeing installed.</string>
+             <string>Note: Addons require &lt;a href=&quot;https://www.python.org/&quot;&gt;Python&lt;/a&gt; being installed.</string>
             </property>
             <property name="openExternalLinks">
              <bool>true</bool>

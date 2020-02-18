@@ -1753,6 +1753,9 @@ Variable::Variable(const Token *name_, const std::string &clangType, const Token
     if (start && start->str() == "static")
         setFlag(fIsStatic, true);
 
+    if (endsWith(clangType, " &", 2))
+        setFlag(fIsReference, true);
+
     std::string::size_type pos = clangType.find("[");
     if (pos != std::string::npos) {
         setFlag(fIsArray, true);

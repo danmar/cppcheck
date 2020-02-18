@@ -223,7 +223,7 @@ struct ForwardTraversal {
             if (stepTok && updateRecursive(stepTok) == Progress::Break)
                 return Progress::Break;
         }
-        // TODO: Shoule we traverse the body?
+        // TODO: Should we traverse the body?
         // updateRange(endBlock->link(), endBlock);
         return Progress::Continue;
     }
@@ -250,7 +250,7 @@ struct ForwardTraversal {
                 tok = skipTo(tok, scope->bodyEnd, end);
                 if (!analyzer->lowerToPossible())
                     return Progress::Break;
-                // TODO: Dont break, instead move to the outer scope
+                // TODO: Don't break, instead move to the outer scope
                 if (!tok)
                     return Progress::Break;
             } else if (Token::Match(tok, "%name% :") || Token::simpleMatch(tok, "case")) {

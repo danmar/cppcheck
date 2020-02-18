@@ -357,6 +357,10 @@ static void combineValueProperties(const ValueFlow::Value &value1, const ValueFl
         if (value1.bound == ValueFlow::Value::Bound::Lower || value2.bound == ValueFlow::Value::Bound::Lower)
             result->bound = ValueFlow::Value::Bound::Lower;
     }
+    if (value1.path != value2.path)
+        result->path = -1;
+    else
+        result->path = value1.path;
 }
 
 static const Token *getCastTypeStartToken(const Token *parent)
@@ -380,6 +384,9 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
     if (!tok->addValue(value))
         return;
 
+    if (value.path < 0)
+        return;
+
     Token *parent = tok->astParent();
     if (!parent)
         return;
@@ -389,6 +396,8 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
         if (parent->str() == "+") {
             for (const ValueFlow::Value &value1 : parent->astOperand1()->values()) {
                 for (const ValueFlow::Value &value2 : parent->astOperand2()->values()) {
+                    if (value1.path != value2.path)
+                        continue;
                     ValueFlow::Value result;
                     result.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
                     if (value1.isContainerSizeValue() && value2.isContainerSizeValue())
@@ -551,6 +560,8 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
             if (value1.isTokValue() && (!parent->isComparisonOp() || value1.tokvalue->tokType() != Token::eString))
                 continue;
             for (const ValueFlow::Value &value2 : parent->astOperand2()->values()) {
+                if (value1.path != value2.path)
+                    continue;
                 if (noninvertible && value2.isImpossible())
                     continue;
                 if (!value2.isIntValue() && !value2.isFloatValue() && !value2.isTokValue())
@@ -2367,7 +2378,7 @@ struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
                                            value.infoString());
                     value.errorPath.emplace_back(tok, info);
                 } else {
-                    // TODO: Dont set to zero
+                    // TODO: Don't set to zero
                     value.intvalue = 0;
                 }
             }
@@ -4805,65 +4816,73 @@ static void valueFlowLibraryFunction(Token *tok, const std::string &returnValue,
         setTokenValues(tok, results, settings);
 }
 
-static void valueFlowSubFunction(TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings)
+static void valueFlowSubFunction(TokenList* tokenlist, SymbolDatabase* symboldatabase,  ErrorLogger* errorLogger, const Settings* settings)
 {
-    for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
-        if (!Token::Match(tok, "%name% ("))
+    for (const Scope* scope : symboldatabase->functionScopes) {
+        const Function* function = scope->function;
+        if (!function)
             continue;
-
-        const Function * const calledFunction = tok->function();
-        if (!calledFunction) {
-            // library function?
-            const std::string& returnValue(settings->library.returnValue(tok));
-            if (!returnValue.empty())
-                valueFlowLibraryFunction(tok->next(), returnValue, settings);
-            continue;
-        }
-
-        const Scope * const calledFunctionScope = calledFunction->functionScope;
-        if (!calledFunctionScope)
-            continue;
-
-        // TODO: Rewrite this. It does not work well to inject 1 argument at a time.
-        const std::vector<const Token *> &callArguments = getArguments(tok);
-        for (int argnr = 0U; argnr < callArguments.size(); ++argnr) {
-            const Token *argtok = callArguments[argnr];
-            // Get function argument
-            const Variable * const argvar = calledFunction->getArgumentVar(argnr);
-            if (!argvar)
-                break;
-
-            // passing value(s) to function
-            std::list<ValueFlow::Value> argvalues(getFunctionArgumentValues(argtok));
-
-            // Don't forward lifetime values
-            argvalues.remove_if(std::mem_fn(&ValueFlow::Value::isLifetimeValue));
-
-            if (argvalues.empty())
+        int id = 0;
+        for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+            if (!Token::Match(tok, "%name% ("))
                 continue;
 
-            // Error path..
-            for (ValueFlow::Value &v : argvalues) {
-                const std::string nr = MathLib::toString(argnr + 1) + getOrdinalText(argnr + 1);
-
-                v.errorPath.emplace_back(argtok,
-                                         "Calling function '" +
-                                         calledFunction->name() +
-                                         "', " +
-                                         nr +
-                                         " argument '" +
-                                         argtok->expressionString() +
-                                         "' value is " +
-                                         v.infoString());
+            const Function * const calledFunction = tok->function();
+            if (!calledFunction) {
+                // library function?
+                const std::string& returnValue(settings->library.returnValue(tok));
+                if (!returnValue.empty())
+                    valueFlowLibraryFunction(tok->next(), returnValue, settings);
+                continue;
             }
 
-            // passed values are not "known"..
-            lowerToPossible(argvalues);
+            const Scope * const calledFunctionScope = calledFunction->functionScope;
+            if (!calledFunctionScope)
+                continue;
 
-            valueFlowInjectParameter(tokenlist, errorLogger, settings, argvar, calledFunctionScope, argvalues);
-            // FIXME: We need to rewrite the valueflow analysis to better handle multiple arguments
-            if (!argvalues.empty())
-                break;
+            id++;
+            // TODO: Rewrite this. It does not work well to inject 1 argument at a time.
+            const std::vector<const Token *> &callArguments = getArguments(tok);
+            for (int argnr = 0U; argnr < callArguments.size(); ++argnr) {
+                const Token *argtok = callArguments[argnr];
+                // Get function argument
+                const Variable * const argvar = calledFunction->getArgumentVar(argnr);
+                if (!argvar)
+                    break;
+
+                // passing value(s) to function
+                std::list<ValueFlow::Value> argvalues(getFunctionArgumentValues(argtok));
+
+                // Don't forward lifetime values
+                argvalues.remove_if(std::mem_fn(&ValueFlow::Value::isLifetimeValue));
+
+                if (argvalues.empty())
+                    continue;
+
+                // Error path..
+                for (ValueFlow::Value &v : argvalues) {
+                    const std::string nr = MathLib::toString(argnr + 1) + getOrdinalText(argnr + 1);
+
+                    v.errorPath.emplace_back(argtok,
+                                             "Calling function '" +
+                                             calledFunction->name() +
+                                             "', " +
+                                             nr +
+                                             " argument '" +
+                                             argtok->expressionString() +
+                                             "' value is " +
+                                             v.infoString());
+                    v.path = 256 * v.path + id;
+                }
+
+                // passed values are not "known"..
+                lowerToPossible(argvalues);
+
+                valueFlowInjectParameter(tokenlist, errorLogger, settings, argvar, calledFunctionScope, argvalues);
+                // FIXME: We need to rewrite the valueflow analysis to better handle multiple arguments
+                if (!argvalues.empty())
+                    break;
+            }
         }
     }
 }
@@ -5764,6 +5783,7 @@ ValueFlow::Value::Value(const Token* c, long long val)
       conditional(false),
       defaultArg(false),
       indirect(0),
+      path(0),
       lifetimeKind(LifetimeKind::Object),
       lifetimeScope(LifetimeScope::Local),
       valueKind(ValueKind::Possible)
@@ -5845,7 +5865,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
         valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowSwitchVariable(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowForLoop(tokenlist, symboldatabase, errorLogger, settings);
-        valueFlowSubFunction(tokenlist, errorLogger, settings);
+        valueFlowSubFunction(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowFunctionDefaultParameter(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowUninit(tokenlist, symboldatabase, errorLogger, settings);
         if (tokenlist->isCPP()) {

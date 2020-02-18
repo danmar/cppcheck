@@ -94,6 +94,7 @@ private:
         TEST_CASE(symbolDatabaseEnum1);
         TEST_CASE(symbolDatabaseFunction1);
         TEST_CASE(symbolDatabaseFunction2);
+        TEST_CASE(symbolDatabaseFunction3);
         TEST_CASE(symbolDatabaseNodeType1);
 
         TEST_CASE(valueFlow1);
@@ -929,6 +930,23 @@ private:
         ASSERT_EQUALS(2, func->argCount());
         ASSERT_EQUALS(0, (long long)func->getArgumentVar(0)->nameToken());
         ASSERT_EQUALS(0, (long long)func->getArgumentVar(1)->nameToken());
+    }
+
+    void symbolDatabaseFunction3() { // #9640
+        const char clang[] = "`-FunctionDecl 0x238fcd8 <9640.cpp:1:1, col:26> col:6 used bar 'bool (const char, int &)'\n"
+                             "  |-ParmVarDecl 0x238fb10 <col:10, col:16> col:20 'const char'\n"
+                             "  |-ParmVarDecl 0x238fbc0 <col:22, col:25> col:26 'int &'\n"
+                             "  `-CompoundStmt 0x3d45c48 <col:12>\n";
+
+        GET_SYMBOL_DB(clang);
+
+        // There is a function foo that has 2 arguments
+        ASSERT_EQUALS(1, db->functionScopes.size());
+        const Scope *scope = db->functionScopes[0];
+        const Function *func = scope->function;
+        ASSERT_EQUALS(2, func->argCount());
+        ASSERT_EQUALS(false, func->getArgumentVar(0)->isReference());
+        ASSERT_EQUALS(true, func->getArgumentVar(1)->isReference());
     }
 
     void symbolDatabaseNodeType1() {

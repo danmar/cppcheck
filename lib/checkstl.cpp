@@ -1092,7 +1092,11 @@ void CheckStl::if_find()
         if ((scope.type != Scope::eIf && scope.type != Scope::eWhile) || !scope.classDef)
             continue;
 
-        for (const Token *tok = scope.classDef->next(); tok->str() != "{"; tok = tok->next()) {
+        const Token *conditionStart = scope.classDef->next();
+        if (conditionStart && Token::simpleMatch(conditionStart->astOperand2(), ";"))
+            conditionStart = conditionStart->astOperand2();
+
+        for (const Token *tok = conditionStart; tok->str() != "{"; tok = tok->next()) {
             const Token* funcTok = nullptr;
             const Library::Container* container = nullptr;
 
