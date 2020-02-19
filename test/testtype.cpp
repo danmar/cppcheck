@@ -212,10 +212,10 @@ private:
         settings.addEnabled("warning");
 
         check("x = (int)0x10000 * (int)0x10000;", &settings);
-        ASSERT_EQUALS("[test.cpp:1]: (error) Signed integer overflow for expression '(int)65536*(int)65536'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Signed integer overflow for expression '(int)0x10000*(int)0x10000'.\n", errout.str());
 
         check("x = (long)0x10000 * (long)0x10000;", &settings);
-        ASSERT_EQUALS("[test.cpp:1]: (error) Signed integer overflow for expression '(long)65536*(long)65536'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Signed integer overflow for expression '(long)0x10000*(long)0x10000'.\n", errout.str());
 
         check("void foo() {\n"
               "    int intmax = 0x7fffffff;\n"

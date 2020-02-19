@@ -3090,7 +3090,7 @@ private:
     void cAlternativeTokens() {
         ASSERT_EQUALS("void f ( ) { err |= ( ( r & s ) && ! t ) ; }",
                       tok("void f() { err or_eq ((r bitand s) and not t); }", "test.c", false));
-        ASSERT_EQUALS("void f ( ) const { r = f ( a [ 4 ] | 15 , ~ c , ! d ) ; }",
+        ASSERT_EQUALS("void f ( ) const { r = f ( a [ 4 ] | 0x0F , ~ c , ! d ) ; }",
                       tok("void f() const { r = f(a[4] bitor 0x0F, compl c, not d) ; }", "test.c", false));
 
     }
@@ -3386,12 +3386,12 @@ private:
 
         {
             const char code[] = "int vals[] = { 0x13, 1?0x01:0x00 };";
-            ASSERT_EQUALS("int vals [ 2 ] = { 19 , 1 } ;", tok(code));
+            ASSERT_EQUALS("int vals [ 2 ] = { 0x13 , 0x01 } ;", tok(code));
         }
 
         {
             const char code[] = "int vals[] = { 0x13, 0?0x01:0x00 };";
-            ASSERT_EQUALS("int vals [ 2 ] = { 19 , 0 } ;", tok(code));
+            ASSERT_EQUALS("int vals [ 2 ] = { 0x13 , 0x00 } ;", tok(code));
         }
 
         {
@@ -4901,7 +4901,7 @@ private:
                             "    unsigned char override[] = {0x01, 0x02};\n"
                             "    doSomething(override, sizeof(override));\n"
                             "}\n";
-        ASSERT_EQUALS("void fun ( ) { char override [ 2 ] = { 1 , 2 } ; doSomething ( override , 2 ) ; }",
+        ASSERT_EQUALS("void fun ( ) { char override [ 2 ] = { 0x01 , 0x02 } ; doSomething ( override , 2 ) ; }",
                       tok(code, true));
     }
 

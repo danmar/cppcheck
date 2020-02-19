@@ -6496,12 +6496,37 @@ private:
         s.long_bit = 32;
         s.long_long_bit = 64;
 
+        Settings sSameSize;
+        sSameSize.int_bit = 32;
+        sSameSize.long_bit = 64;
+        sSameSize.long_long_bit = 64;
+
         // numbers
         ASSERT_EQUALS("signed int", typeOf("1;", "1", "test.c", &s));
+        ASSERT_EQUALS("signed int", typeOf("(-1);", "-1", "test.c", &s));
         ASSERT_EQUALS("signed int", typeOf("32767;", "32767", "test.c", &s));
+        ASSERT_EQUALS("signed int", typeOf("(-32767);", "-32767", "test.c", &s));
         ASSERT_EQUALS("signed long", typeOf("32768;", "32768", "test.c", &s));
+        ASSERT_EQUALS("signed long", typeOf("(-32768);", "-32768", "test.c", &s));
+        ASSERT_EQUALS("signed long", typeOf("32768l;", "32768l", "test.c", &s));
         ASSERT_EQUALS("unsigned int", typeOf("32768U;", "32768U", "test.c", &s));
         ASSERT_EQUALS("signed long long", typeOf("2147483648;", "2147483648", "test.c", &s));
+        ASSERT_EQUALS("unsigned long", typeOf("2147483648u;", "2147483648u", "test.c", &s));
+        ASSERT_EQUALS("signed long long", typeOf("2147483648L;", "2147483648L", "test.c", &s));
+        ASSERT_EQUALS("unsigned long long", typeOf("18446744069414584320;", "18446744069414584320", "test.c", &s));
+        ASSERT_EQUALS("signed int", typeOf("0xFF;", "0xFF", "test.c", &s));
+        ASSERT_EQUALS("unsigned int", typeOf("0xFFU;", "0xFFU", "test.c", &s));
+        ASSERT_EQUALS("unsigned int", typeOf("0xFFFF;", "0xFFFF", "test.c", &s));
+        ASSERT_EQUALS("signed long", typeOf("0xFFFFFF;", "0xFFFFFF", "test.c", &s));
+        ASSERT_EQUALS("unsigned long", typeOf("0xFFFFFFU;", "0xFFFFFFU", "test.c", &s));
+        ASSERT_EQUALS("unsigned long", typeOf("0xFFFFFFFF;", "0xFFFFFFFF", "test.c", &s));
+        ASSERT_EQUALS("signed long long", typeOf("0xFFFFFFFFFFFF;", "0xFFFFFFFFFFFF", "test.c", &s));
+        ASSERT_EQUALS("unsigned long long", typeOf("0xFFFFFFFFFFFFU;", "0xFFFFFFFFFFFFU", "test.c", &s));
+        ASSERT_EQUALS("unsigned long long", typeOf("0xFFFFFFFF00000000;", "0xFFFFFFFF00000000", "test.c", &s));
+
+        ASSERT_EQUALS("signed long", typeOf("2147483648;", "2147483648", "test.c", &sSameSize));
+        ASSERT_EQUALS("unsigned long", typeOf("0xc000000000000000;", "0xc000000000000000", "test.c", &sSameSize));
+
         ASSERT_EQUALS("unsigned int", typeOf("1U;", "1U"));
         ASSERT_EQUALS("signed long", typeOf("1L;", "1L"));
         ASSERT_EQUALS("unsigned long", typeOf("1UL;", "1UL"));
@@ -6516,11 +6541,26 @@ private:
         ASSERT_EQUALS("signed long long", typeOf("1ll;", "1ll"));
         ASSERT_EQUALS("unsigned long long", typeOf("1ull;", "1ull"));
         ASSERT_EQUALS("unsigned long long", typeOf("1llu;", "1llu"));
+        ASSERT_EQUALS("signed int", typeOf("01;", "01"));
+        ASSERT_EQUALS("unsigned int", typeOf("01U;", "01U"));
+        ASSERT_EQUALS("signed long", typeOf("01L;", "01L"));
+        ASSERT_EQUALS("unsigned long", typeOf("01UL;", "01UL"));
+        ASSERT_EQUALS("signed long long", typeOf("01LL;", "01LL"));
+        ASSERT_EQUALS("unsigned long long", typeOf("01ULL;", "01ULL"));
+        ASSERT_EQUALS("signed int", typeOf("0B1;", "0B1"));
+        ASSERT_EQUALS("signed int", typeOf("0b1;", "0b1"));
+        ASSERT_EQUALS("unsigned int", typeOf("0b1U;", "0b1U"));
+        ASSERT_EQUALS("signed long", typeOf("0b1L;", "0b1L"));
+        ASSERT_EQUALS("unsigned long", typeOf("0b1UL;", "0b1UL"));
+        ASSERT_EQUALS("signed long long", typeOf("0b1LL;", "0b1LL"));
+        ASSERT_EQUALS("unsigned long long", typeOf("0b1ULL;", "0b1ULL"));
         ASSERT_EQUALS("float", typeOf("1.0F;", "1.0F"));
         ASSERT_EQUALS("float", typeOf("1.0f;", "1.0f"));
         ASSERT_EQUALS("double", typeOf("1.0;", "1.0"));
         ASSERT_EQUALS("double", typeOf("1E3;", "1E3"));
+        ASSERT_EQUALS("double", typeOf("0x1.2p3;", "0x1.2p3"));
         ASSERT_EQUALS("long double", typeOf("1.23L;", "1.23L"));
+        ASSERT_EQUALS("long double", typeOf("1.23l;", "1.23l"));
 
         // Constant calculations
         ASSERT_EQUALS("signed int", typeOf("1 + 2;", "+"));

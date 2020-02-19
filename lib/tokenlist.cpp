@@ -132,20 +132,6 @@ void TokenList::addtoken(std::string str, const nonneg int lineno, const nonneg 
         }
     }
 
-    // Replace hexadecimal value with decimal
-    const bool isHex = MathLib::isIntHex(str) ;
-    if (isHex || MathLib::isOct(str) || MathLib::isBin(str)) {
-        // TODO: It would be better if TokenList didn't simplify hexadecimal numbers
-        std::string suffix;
-        if (isHex &&
-            str.size() == (2 + mSettings->int_bit / 4) &&
-            (str[2] >= '8') &&  // includes A-F and a-f
-            MathLib::getSuffix(str).empty()
-           )
-            suffix = "U";
-        str = MathLib::value(str).str() + suffix;
-    }
-
     if (mTokensFrontBack.back) {
         mTokensFrontBack.back->insertToken(str);
     } else {
@@ -164,20 +150,6 @@ void TokenList::addtoken(std::string str, const Token *locationTok)
 {
     if (str.empty())
         return;
-
-    // Replace hexadecimal value with decimal
-    const bool isHex = MathLib::isIntHex(str) ;
-    if (isHex || MathLib::isOct(str) || MathLib::isBin(str)) {
-        // TODO: It would be better if TokenList didn't simplify hexadecimal numbers
-        std::string suffix;
-        if (isHex &&
-            str.size() == (2 + mSettings->int_bit / 4) &&
-            (str[2] >= '8') &&  // includes A-F and a-f
-            MathLib::getSuffix(str).empty()
-           )
-            suffix = "U";
-        str = MathLib::value(str).str() + suffix;
-    }
 
     if (mTokensFrontBack.back) {
         mTokensFrontBack.back->insertToken(str);
@@ -365,22 +337,6 @@ void TokenList::createTokens(const simplecpp::TokenList *tokenList)
     for (const simplecpp::Token *tok = tokenList->cfront(); tok; tok = tok->next) {
 
         std::string str = tok->str();
-
-        // Replace hexadecimal value with decimal
-        // TODO: Remove this
-        const bool isHex = MathLib::isIntHex(str) ;
-        if (isHex || MathLib::isOct(str) || MathLib::isBin(str)) {
-            // TODO: It would be better if TokenList didn't simplify hexadecimal numbers
-            std::string suffix;
-            if (isHex &&
-                mSettings &&
-                str.size() == (2 + mSettings->int_bit / 4) &&
-                (str[2] >= '8') &&  // includes A-F and a-f
-                MathLib::getSuffix(str).empty()
-               )
-                suffix = "U";
-            str = MathLib::value(str).str() + suffix;
-        }
 
         // Float literal
         if (str.size() > 1 && str[0] == '.' && std::isdigit(str[1]))

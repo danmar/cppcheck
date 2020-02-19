@@ -622,7 +622,7 @@ private:
         ASSERT_EQUALS("; x = ( a + m ) & p [ n ] ;", tokenizeAndStringify("; x = ( a + m ) & p [ n ] ;", true));*/
         // "*(p+1)" => "p[1]"
         ASSERT_EQUALS("; x = p [ 1 ] ;", tokenizeAndStringify("; x = * ( p + 1 ) ;", true));
-        ASSERT_EQUALS("; x = p [ 10 ] ;", tokenizeAndStringify("; x = * ( p + 0xA ) ;", true));
+        ASSERT_EQUALS("; x = p [ 0xA ] ;", tokenizeAndStringify("; x = * ( p + 0xA ) ;", true));
         ASSERT_EQUALS("; x = p [ n ] ;", tokenizeAndStringify("; x = * ( p + n ) ;", true));
         ASSERT_EQUALS("; x = y * ( p + n ) ;", tokenizeAndStringify("; x = y * ( p + n ) ;", true));
         ASSERT_EQUALS("; x = 10 * ( p + n ) ;", tokenizeAndStringify("; x = 10 * ( p + n ) ;", true));
@@ -631,7 +631,7 @@ private:
 
         // "*(p-1)" => "p[-1]" and "*(p-n)" => "p[-n]"
         ASSERT_EQUALS("; x = p [ -1 ] ;", tokenizeAndStringify("; x = *(p - 1);", true));
-        ASSERT_EQUALS("; x = p [ -10 ] ;", tokenizeAndStringify("; x = *(p - 0xA);", true));
+        ASSERT_EQUALS("; x = p [ -0xA ] ;", tokenizeAndStringify("; x = *(p - 0xA);", true));
         ASSERT_EQUALS("; x = p [ - n ] ;", tokenizeAndStringify("; x = *(p - n);", true));
         ASSERT_EQUALS("; x = y * ( p - 1 ) ;", tokenizeAndStringify("; x = y * (p - 1);", true));
         ASSERT_EQUALS("; x = 10 * ( p - 1 ) ;", tokenizeAndStringify("; x = 10 * (p - 1);", true));
@@ -700,21 +700,21 @@ private:
 
     // Ticket #2361: 0X10 => 16
     void tokenize14() {
-        ASSERT_EQUALS("; 16 ;", tokenizeAndStringify(";0x10;"));
-        ASSERT_EQUALS("; 16 ;", tokenizeAndStringify(";0X10;"));
-        ASSERT_EQUALS("; 292 ;", tokenizeAndStringify(";0444;"));
+        ASSERT_EQUALS("; 0x10 ;", tokenizeAndStringify(";0x10;"));
+        ASSERT_EQUALS("; 0X10 ;", tokenizeAndStringify(";0X10;"));
+        ASSERT_EQUALS("; 0444 ;", tokenizeAndStringify(";0444;"));
     }
 
     // Ticket #8050
     void tokenizeHexWithSuffix() {
-        ASSERT_EQUALS("; 16777215 ;", tokenizeAndStringify(";0xFFFFFF;"));
-        ASSERT_EQUALS("; 16777215U ;", tokenizeAndStringify(";0xFFFFFFu;"));
-        ASSERT_EQUALS("; 16777215UL ;", tokenizeAndStringify(";0xFFFFFFul;"));
+        ASSERT_EQUALS("; 0xFFFFFF ;", tokenizeAndStringify(";0xFFFFFF;"));
+        ASSERT_EQUALS("; 0xFFFFFFu ;", tokenizeAndStringify(";0xFFFFFFu;"));
+        ASSERT_EQUALS("; 0xFFFFFFul ;", tokenizeAndStringify(";0xFFFFFFul;"));
 
         // Number of digits decides about internal representation...
-        ASSERT_EQUALS("; 4294967295U ;", tokenizeAndStringify(";0xFFFFFFFF;"));
-        ASSERT_EQUALS("; 4294967295U ;", tokenizeAndStringify(";0xFFFFFFFFu;"));
-        ASSERT_EQUALS("; 4294967295UL ;", tokenizeAndStringify(";0xFFFFFFFFul;"));
+        ASSERT_EQUALS("; 0xFFFFFFFF ;", tokenizeAndStringify(";0xFFFFFFFF;"));
+        ASSERT_EQUALS("; 0xFFFFFFFFu ;", tokenizeAndStringify(";0xFFFFFFFFu;"));
+        ASSERT_EQUALS("; 0xFFFFFFFFul ;", tokenizeAndStringify(";0xFFFFFFFFul;"));
     }
 
     // Ticket #2429: 0.125
@@ -757,7 +757,7 @@ private:
     }
 
     void tokenize21() { // tokenize 0x0E-7
-        ASSERT_EQUALS("14 - 7 ;", tokenizeAndStringify("0x0E-7;"));
+        ASSERT_EQUALS("0x0E - 7 ;", tokenizeAndStringify("0x0E-7;"));
     }
 
     void tokenize22() { // tokenize special marker $ from preprocessor
@@ -2981,7 +2981,7 @@ private:
                                 "char * p ;\n"
                                 "char * q ;\n"
                                 "\n"
-                                "switch ( x & 3 )\n"
+                                "switch ( x & 0x3 )\n"
                                 "{\n"
                                 "case 1 : ;\n"
                                 "p = x ;\n"
@@ -3125,7 +3125,7 @@ private:
 
         {
             const char code[] = "module ( a , a , sizeof ( a ) , 0444 ) ;";
-            ASSERT_EQUALS("module ( a , a , sizeof ( a ) , 292 ) ;", tokenizeAndStringify(code));
+            ASSERT_EQUALS("module ( a , a , sizeof ( a ) , 0444 ) ;", tokenizeAndStringify(code));
         }
 
         ASSERT_EQUALS("void f ( int x ) { }", tokenizeAndStringify("void f(x) int x; { }"));

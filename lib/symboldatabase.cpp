@@ -5752,31 +5752,41 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings)
                     type = ValueType::Type::LONGDOUBLE;
                 setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, type, 0U));
             } else if (MathLib::isInt(tok->str())) {
-                const bool unsignedSuffix = (tok->str().find_last_of("uU") != std::string::npos);
+                const std::string tokStr = MathLib::abs(tok->str());
+                const bool unsignedSuffix = (tokStr.find_last_of("uU") != std::string::npos);
                 ValueType::Sign sign = unsignedSuffix ? ValueType::Sign::UNSIGNED : ValueType::Sign::SIGNED;
-                ValueType::Type type;
-                const MathLib::bigint value = MathLib::toLongNumber(tok->str());
-                if (mSettings->platformType == cppcheck::Platform::Unspecified)
-                    type = ValueType::Type::INT;
-                else if (mSettings->isIntValue(unsignedSuffix ? (value >> 1) : value))
-                    type = ValueType::Type::INT;
-                else if (mSettings->isLongValue(unsignedSuffix ? (value >> 1) : value))
-                    type = ValueType::Type::LONG;
-                else
-                    type = ValueType::Type::LONGLONG;
-                if (MathLib::isIntHex(tok->str()))
-                    sign = ValueType::Sign::UNSIGNED;
-                for (std::size_t pos = tok->str().size() - 1U; pos > 0U; --pos) {
-                    const char suffix = tok->str()[pos];
+                ValueType::Type type = ValueType::Type::INT;
+                const MathLib::biguint value = MathLib::toULongNumber(tokStr);
+                for (std::size_t pos = tokStr.size() - 1U; pos > 0U; --pos) {
+                    const char suffix = tokStr[pos];
                     if (suffix == 'u' || suffix == 'U')
                         sign = ValueType::Sign::UNSIGNED;
                     else if (suffix == 'l' || suffix == 'L')
                         type = (type == ValueType::Type::INT) ? ValueType::Type::LONG : ValueType::Type::LONGLONG;
-                    else if (pos > 2U && suffix == '4' && tok->str()[pos - 1] == '6' && tok->str()[pos - 2] == 'i') {
+                    else if (pos > 2U && suffix == '4' && tokStr[pos - 1] == '6' && tokStr[pos - 2] == 'i') {
                         type = ValueType::Type::LONGLONG;
                         pos -= 2;
                     } else break;
                 }
+                if (mSettings->platformType != cppcheck::Platform::Unspecified) {
+                    if (type <= ValueType::Type::INT && mSettings->isIntValue(unsignedSuffix ? (value >> 1) : value))
+                        type = ValueType::Type::INT;
+                    else if (type <= ValueType::Type::INT && !MathLib::isDec(tokStr) && mSettings->isIntValue(value >> 2)) {
+                        type = ValueType::Type::INT;
+                        sign = ValueType::Sign::UNSIGNED;
+                    } else if (type <= ValueType::Type::LONG && mSettings->isLongValue(unsignedSuffix ? (value >> 1) : value))
+                        type = ValueType::Type::LONG;
+                    else if (type <= ValueType::Type::LONG && !MathLib::isDec(tokStr) && mSettings->isLongValue(value >> 2)) {
+                        type = ValueType::Type::LONG;
+                        sign = ValueType::Sign::UNSIGNED;
+                    } else if (mSettings->isLongLongValue(unsignedSuffix ? (value >> 1) : value))
+                        type = ValueType::Type::LONGLONG;
+                    else {
+                        type = ValueType::Type::LONGLONG;
+                        sign = ValueType::Sign::UNSIGNED;
+                    }
+                }
+
                 setValueType(tok, ValueType(sign, type, 0U));
             }
         } else if (tok->isComparisonOp() || tok->tokType() == Token::eLogicalOp) {
