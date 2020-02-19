@@ -1436,6 +1436,52 @@ void SymbolDatabase::setArrayDimensionsUsingValueFlow()
             Dimension &dimension = const_cast<Dimension &>(const_dimension);
             if (dimension.num != 0 || !dimension.tok)
                 continue;
+
+            if (Token::Match(dimension.tok->previous(), "[<,]")) {
+                if (dimension.known)
+                    continue;
+                if (!Token::Match(dimension.tok->previous(), "[<,]"))
+                    continue;
+
+                // In template arguments, there might not be AST
+                // Determine size by using the "raw tokens"
+                TokenList tokenList(mSettings);
+                tokenList.addtoken(";", 0, 0, false);
+                bool fail = false;
+                for (const Token *tok = dimension.tok; tok && !Token::Match(tok, "[,>]"); tok = tok->next()) {
+                    if (!tok->isName())
+                        tokenList.addtoken(tok->str(), 0, 0, false);
+
+                    else if (tok->hasKnownIntValue())
+                        tokenList.addtoken(std::to_string(tok->getKnownIntValue()), 0, 0, false);
+
+                    else {
+                        fail = true;
+                        break;
+                    }
+                }
+
+                if (fail)
+                    continue;
+
+                tokenList.addtoken(";", 0, 0, false);
+
+                for (Token *tok = tokenList.front(); tok;) {
+                    if (TemplateSimplifier::simplifyNumericCalculations(tok, false))
+                        tok = tokenList.front();
+                    else
+                        tok = tok->next();
+                }
+
+                if (Token::Match(tokenList.front(), "; %num% ;")) {
+                    dimension.known = true;
+                    dimension.num = MathLib::toLongNumber(tokenList.front()->next()->str());
+                }
+
+                continue;
+            }
+
+            // Normal array [..dimension..]
             dimension.known = false;
 
             // check for a single token dimension
@@ -2836,17 +2882,13 @@ bool Variable::arrayDimensions(const Settings* settings)
             for (int i = 0; i < container->size_templateArgNo && tok; i++) {
                 tok = tok->nextTemplateArgument();
             }
-            if (tok) {
-                while (!tok->astParent() && !Token::Match(tok->next(), "[,<>]"))
-                    tok = tok->next();
-                while (tok->astParent() && !Token::Match(tok->astParent(), "[,<>]"))
-                    tok = tok->astParent();
+            if (Token::Match(tok, "%num% [,>]")) {
                 dimension_.tok = tok;
-                ValueFlow::valueFlowConstantFoldAST(const_cast<Token *>(dimension_.tok), settings);
-                if (tok->hasKnownIntValue()) {
-                    dimension_.num = tok->getKnownIntValue();
-                    dimension_.known = true;
-                }
+                dimension_.known = true;
+                dimension_.num = MathLib::toLongNumber(tok->str());
+            } else if (tok) {
+                dimension_.tok = tok;
+                dimension_.known = false;
             }
             mDimensions.push_back(dimension_);
             return true;

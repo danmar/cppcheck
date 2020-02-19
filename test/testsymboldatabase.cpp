@@ -110,7 +110,8 @@ private:
         settings2.platform(Settings::Unspecified);
 
         TEST_CASE(array);
-        TEST_CASE(stlarray);
+        TEST_CASE(stlarray1);
+        TEST_CASE(stlarray2);
 
         TEST_CASE(test_isVariableDeclarationCanHandleNull);
         TEST_CASE(test_isVariableDeclarationIdentifiesSimpleDeclaration);
@@ -436,13 +437,28 @@ private:
         ASSERT_EQUALS(12U, v->dimension(0));
     }
 
-    void stlarray() {
-        GET_SYMBOL_DB("std::array<int, (16 + 4)> arr;");
+    void stlarray1() {
+        GET_SYMBOL_DB("std::array<int, 16 + 4> arr;");
         ASSERT(db != nullptr);
         if (!db)
             return;
-        ASSERT(db->variableList().size() == 2); // the first one is not used
+        ASSERT_EQUALS(2, db->variableList().size()); // the first one is not used
         const Variable * v = db->getVariableFromVarId(1);
+        ASSERT(v != nullptr);
+        if (!v)
+            return;
+        ASSERT(v->isArray());
+        ASSERT_EQUALS(1U, v->dimensions().size());
+        ASSERT_EQUALS(20U, v->dimension(0));
+    }
+
+    void stlarray2() {
+        GET_SYMBOL_DB("constexpr int sz = 16; std::array<int, sz + 4> arr;");
+        ASSERT(db != nullptr);
+        if (!db)
+            return;
+        ASSERT_EQUALS(3, db->variableList().size()); // the first one is not used
+        const Variable * v = db->getVariableFromVarId(2);
         ASSERT(v != nullptr);
         if (!v)
             return;
