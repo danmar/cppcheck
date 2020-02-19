@@ -22,7 +22,7 @@ import operator
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.4"
+SERVER_VERSION = "1.3.5"
 
 OLD_VERSION = '1.90'
 
@@ -82,7 +82,9 @@ def overviewReport() -> str:
     return html
 
 
-def fmt(a: str, b: str, c: str = None, d: str = None, e: str = None, link: bool = True, column_width = [40, 10, 5, 7, 7, 8]) -> str:
+def fmt(a: str, b: str, c: str = None, d: str = None, e: str = None, link: bool = True, column_width=None) -> str:
+    if column_width is None:
+        column_width = [40, 10, 5, 7, 7, 8]
     ret = a
     while len(ret) < column_width[0]:
         ret += ' '
@@ -616,7 +618,7 @@ def timeReport(resultPath: str) -> str:
     html += '<pre>\n'
     column_width = [40, 10, 10, 10, 10]
     html += '<b>'
-    html += fmt('Package', OLD_VERSION, 'Head', 'Factor', column_width=column_width)
+    html += fmt('Package', OLD_VERSION, 'Head', 'Factor', link=False, column_width=column_width)
     html += '</b>\n'
 
     total_time_base = 0.0
