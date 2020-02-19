@@ -249,7 +249,7 @@ void ProgramMemoryState::insert(const ProgramMemory &pm, const Token* origin)
 {
     if(origin)
         for(auto&& p:pm.values)
-            origins.emplace(p.first, origin);
+            origins.insert(std::make_pair(p.first, origin));
     state.insert(pm);
 }
 
