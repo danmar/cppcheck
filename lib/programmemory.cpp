@@ -12,7 +12,7 @@ void ProgramMemory::setValue(nonneg int varid, const ValueFlow::Value &value)
 
 bool ProgramMemory::getIntValue(nonneg int varid, MathLib::bigint* result) const
 {
-    const std::map<int, ValueFlow::Value>::const_iterator it = values.find(varid);
+    const ProgramMemory::Map::const_iterator it = values.find(varid);
     const bool found = it != values.end() && it->second.isIntValue();
     if (found)
         *result = it->second.intvalue;
@@ -26,7 +26,7 @@ void ProgramMemory::setIntValue(nonneg int varid, MathLib::bigint value)
 
 bool ProgramMemory::getTokValue(nonneg int varid, const Token** result) const
 {
-    const std::map<int, ValueFlow::Value>::const_iterator it = values.find(varid);
+    const ProgramMemory::Map::const_iterator it = values.find(varid);
     const bool found = it != values.end() && it->second.isTokValue();
     if (found)
         *result = it->second.tokvalue;
@@ -69,7 +69,6 @@ void ProgramMemory::insert(const ProgramMemory &pm)
     for (auto&& p:pm.values)
         values.insert(p);
 }
-
 
 bool conditionIsFalse(const Token *condition, const ProgramMemory &programMemory)
 {
@@ -117,7 +116,7 @@ static void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, con
             return;
         if (!truevalue.isIntValue())
             return;
-        if (isVariableChanged(tok->next(), endTok, vartok->varId(), false, settings, true))
+        if (endTok && isVariableChanged(tok->next(), endTok, vartok->varId(), false, settings, true))
             return;
         pm.setIntValue(vartok->varId(),  then ? truevalue.intvalue : falsevalue.intvalue);
     } else if (Token::Match(tok, "%var%")) {
@@ -125,7 +124,7 @@ static void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, con
             return;
         if (then && !astIsPointer(tok) && !astIsBool(tok))
             return;
-        if (isVariableChanged(tok->next(), endTok, tok->varId(), false, settings, true))
+        if (endTok && isVariableChanged(tok->next(), endTok, tok->varId(), false, settings, true))
             return;
         pm.setIntValue(tok->varId(), then);
     } else if (Token::simpleMatch(tok, "!")) {
@@ -172,7 +171,7 @@ static void fillProgramMemoryFromConditions(ProgramMemory& pm, const Token* tok,
     fillProgramMemoryFromConditions(pm, tok->scope(), tok, settings);
 }
 
-static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok, const ProgramMemory& state, std::unordered_map<nonneg int, ValueFlow::Value> vars)
+static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok, const ProgramMemory& state, ProgramMemory::Map vars)
 {
     int indentlevel = 0;
     for (const Token *tok2 = tok; tok2; tok2 = tok2->previous()) {
@@ -234,7 +233,7 @@ static void removeModifiedVars(ProgramMemory& pm, const Token* tok, const Token*
 
 static ProgramMemory getInitialProgramState(const Token* tok,
         const Token* origin,
-        const std::unordered_map<nonneg int, ValueFlow::Value>& vars = std::unordered_map<nonneg int, ValueFlow::Value> {})
+        const ProgramMemory::Map& vars = ProgramMemory::Map {})
 {
     ProgramMemory pm;
     if (origin) {
@@ -246,7 +245,67 @@ static ProgramMemory getInitialProgramState(const Token* tok,
     return pm;
 }
 
-ProgramMemory getProgramMemory(const Token *tok, const std::unordered_map<nonneg int, ValueFlow::Value>& vars)
+void ProgramMemoryState::insert(const ProgramMemory &pm, const Token* origin)
+{
+    if(origin)
+        for(auto&& p:pm.values)
+            origins.insert(std::make_pair(p.first, origin));
+    state.insert(pm);
+}
+
+void ProgramMemoryState::replace(const ProgramMemory &pm, const Token* origin)
+{
+    if(origin)
+        for(auto&& p:pm.values)
+            origins[p.first] = origin;
+    state.replace(pm);
+}
+
+void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& vars)
+{
+    ProgramMemory pm;
+    fillProgramMemoryFromConditions(pm, tok, nullptr);
+    ProgramMemory local;
+    for (const auto& p:vars) {
+        nonneg int varid = p.first;
+        const ValueFlow::Value &value = p.second;
+        pm.setValue(varid, value);
+        if (value.varId)
+            pm.setIntValue(value.varId, value.varvalue);
+    }
+    local = pm;
+    fillProgramMemoryFromAssignments(pm, tok, local, vars);
+    replace(pm, tok);
+}
+
+void ProgramMemoryState::assume(const Token* tok, bool b)
+{
+    ProgramMemory pm = state;
+    programMemoryParseCondition(pm, tok, nullptr, nullptr, b);
+    insert(pm, tok);
+}
+
+void ProgramMemoryState::removeModifiedVars(const Token* tok)
+{
+    for (auto i = state.values.begin(), last = state.values.end(); i != last;) {
+        if (isVariableChanged(origins[i->first], tok, i->first, false, nullptr, true)) {
+            origins.erase(i->first);
+            i = state.values.erase(i);
+        } else {
+            ++i;
+        }
+    }
+}
+
+ProgramMemory ProgramMemoryState::get(const Token *tok, const ProgramMemory::Map& vars) const
+{
+    ProgramMemoryState local = *this;
+    local.addState(tok, vars);
+    local.removeModifiedVars(tok);
+    return local.state;
+}
+
+ProgramMemory getProgramMemory(const Token *tok, const ProgramMemory::Map& vars)
 {
     ProgramMemory programMemory;
     for (const auto& p:vars) {
@@ -262,8 +321,8 @@ ProgramMemory getProgramMemory(const Token *tok, const std::unordered_map<nonneg
         programMemory.setValue(varid, value);
         if (value.varId)
             programMemory.setIntValue(value.varId, value.varvalue);
-        state = programMemory;
     }
+    state = programMemory;
     fillProgramMemoryFromAssignments(programMemory, tok, state, vars);
     return programMemory;
 }

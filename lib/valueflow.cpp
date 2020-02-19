@@ -2164,13 +2164,14 @@ struct SelectMapKeys {
 
 struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
     const TokenList* tokenlist;
+    ProgramMemoryState pms;
 
     ValueFlowForwardAnalyzer()
-        : tokenlist(nullptr)
+        : tokenlist(nullptr), pms()
     {}
 
     ValueFlowForwardAnalyzer(const TokenList* t)
-        : tokenlist(t)
+        : tokenlist(t), pms()
     {}
 
     virtual int getIndirect() const = 0;
@@ -2271,11 +2272,10 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
         if (tok->hasKnownIntValue())
             return {static_cast<int>(tok->values().front().intvalue)};
         std::vector<int> result;
-        ProgramState ps = getProgramState();
-        ProgramMemory programMemory = getProgramMemory(tok, ps);
-        if (conditionIsTrue(tok, programMemory))
+        ProgramMemory pm = pms.get(tok, getProgramState());
+        if (conditionIsTrue(tok, pm))
             result.push_back(1);
-        if (conditionIsFalse(tok, programMemory))
+        if (conditionIsFalse(tok, pm))
             result.push_back(0);
         return result;
     }
@@ -2338,9 +2338,21 @@ struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
         return true;
     }
 
-    virtual void assume(const Token*, bool) OVERRIDE {
-        // TODO: Use this to improve Evaluate
-        value.conditional = true;
+    virtual void assume(const Token* tok, bool state, const Token* at) OVERRIDE {
+        // Update program state
+        pms.removeModifiedVars(tok);
+        pms.addState(tok, getProgramState());
+        pms.assume(tok, state);
+
+        const bool isAssert = Token::Match(at, "assert|ASSERT");
+        const bool isEndScope = Token::simpleMatch(at, "}");
+
+        if (!isAssert && !isEndScope) {
+            std::string s = state ? "true" : "false";
+            value.errorPath.emplace_back(tok, "Assuming condition is " + s);
+        }
+        if (!isAssert)
+            value.conditional = true;
     }
 
     virtual bool isConditional() const OVERRIDE {
@@ -4488,7 +4500,7 @@ static void valueFlowForLoop(TokenList *tokenlist, SymbolDatabase* symboldatabas
         } else {
             ProgramMemory mem1, mem2, memAfter;
             if (valueFlowForLoop2(tok, &mem1, &mem2, &memAfter)) {
-                std::map<int, ValueFlow::Value>::const_iterator it;
+                ProgramMemory::Map::const_iterator it;
                 for (it = mem1.values.begin(); it != mem1.values.end(); ++it) {
                     if (!it->second.isIntValue())
                         continue;

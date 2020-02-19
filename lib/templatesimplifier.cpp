@@ -3025,9 +3025,10 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
                 startToken = startToken->tokAt(-2);
         }
 
-        if (Token::Match(startToken->previous(), ";|{|}|=|const") &&
-            (!specialized && !instantiateMatch(tok2, typeParametersInDeclaration.size(), isfunc ? "(" : isVar ? ";|%op%|(" : "*|&|::| %name%")))
-            return false;
+        // TODO: re-enable when specialized check is removed
+        // if (Token::Match(startToken->previous(), ";|{|}|=|const") &&
+        //     (!specialized && !instantiateMatch(tok2, typeParametersInDeclaration.size(), isfunc ? "(" : isVar ? ";|%op%|(" : "*|&|::| %name%")))
+        //     return false;
 
         // already simplified
         if (!Token::Match(tok2, "%name% <"))

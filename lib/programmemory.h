@@ -9,7 +9,8 @@
 #include <unordered_map>
 
 struct ProgramMemory {
-    std::map<int, ValueFlow::Value> values;
+    using Map = std::unordered_map<nonneg int, ValueFlow::Value>;
+    Map values;
 
     void setValue(nonneg int varid, const ValueFlow::Value &value);
 
@@ -30,6 +31,23 @@ struct ProgramMemory {
     void replace(const ProgramMemory &pm);
 
     void insert(const ProgramMemory &pm);
+};
+
+struct ProgramMemoryState {
+    ProgramMemory state;
+    std::map<nonneg int, const Token*> origins;
+
+    void insert(const ProgramMemory &pm, const Token* origin = nullptr);
+    void replace(const ProgramMemory &pm, const Token* origin = nullptr);
+
+    void addState(const Token* tok, const ProgramMemory::Map& vars);
+
+    void assume(const Token* tok, bool b);
+
+    void removeModifiedVars(const Token* tok);
+
+    ProgramMemory get(const Token *tok, const ProgramMemory::Map& vars) const;
+
 };
 
 void execute(const Token *expr,
@@ -56,7 +74,7 @@ bool conditionIsTrue(const Token *condition, const ProgramMemory &programMemory)
  */
 ProgramMemory getProgramMemory(const Token *tok, nonneg int varid, const ValueFlow::Value &value);
 
-ProgramMemory getProgramMemory(const Token *tok, const std::unordered_map<nonneg int, ValueFlow::Value>& vars);
+ProgramMemory getProgramMemory(const Token *tok, const ProgramMemory::Map& vars);
 
 #endif
 

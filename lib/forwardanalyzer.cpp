@@ -267,7 +267,7 @@ struct ForwardTraversal {
                 } else if (condTok->values().front().intvalue == !inElse) {
                     return Progress::Break;
                 }
-                analyzer->assume(condTok, !inElse);
+                analyzer->assume(condTok, !inElse, tok);
                 if (Token::simpleMatch(tok, "} else {"))
                     tok = tok->linkAt(2);
             } else if (Token::Match(tok, "if|while|for (") && Token::simpleMatch(tok->next()->link(), ") {")) {
@@ -366,7 +366,7 @@ struct ForwardTraversal {
                 if (checkElse)
                     return Progress::Break;
                 if (!checkThen)
-                    analyzer->assume(condTok, true);
+                    analyzer->assume(condTok, true, tok);
             } else if (Token::simpleMatch(tok, "switch (")) {
                 if (updateRecursive(tok->next()->astOperand2()) == Progress::Break)
                     return Progress::Break;
