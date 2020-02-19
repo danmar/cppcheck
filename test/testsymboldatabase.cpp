@@ -2537,10 +2537,9 @@ private:
 
     void symboldatabase5() {
         // ticket #2178 - segmentation fault
-        check("int CL_INLINE_DECL(integer_decode_float) (int x) {\n"
-              "    return (sign ? cl_I() : 0);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_THROW(check("int CL_INLINE_DECL(integer_decode_float) (int x) {\n"
+                           "    return (sign ? cl_I() : 0);\n"
+                           "}"), InternalError);
     }
 
     void symboldatabase6() {

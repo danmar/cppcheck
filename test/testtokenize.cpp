@@ -466,6 +466,8 @@ private:
 
         TEST_CASE(sizeofAddParentheses);
 
+        TEST_CASE(reportUnknownMacrosInNonExecutableScopes);
+
         // Make sure the Tokenizer::findGarbageCode() does not have false positives
         // The TestGarbage ensures that there are true positives
         TEST_CASE(findGarbageCode);
@@ -7957,6 +7959,12 @@ private:
         ASSERT_EQUALS("sizeof ( a [ 2 ] . b ) + 3 ;", tokenizeAndStringify("sizeof a[2].b+3;"));
         ASSERT_EQUALS("f ( 0 , sizeof ( ptr . bar ) ) ;", tokenizeAndStringify("f(0, sizeof ptr->bar );"));
         ASSERT_EQUALS("sizeof ( a ) > sizeof ( & main ) ;", tokenizeAndStringify("sizeof a > sizeof &main;"));
+    }
+
+    void reportUnknownMacrosInNonExecutableScopes() {
+        const char code[] = "MY_UNKNOWN_IMP1(IInStream)\n"
+                            "STDMETHOD(Read)(void *data, UInt32 size, UInt32 *processedSize) { if (ptr); }";
+        ASSERT_THROW(tokenizeAndStringify(code), InternalError);
     }
 
     void findGarbageCode() { // Test Tokenizer::findGarbageCode()

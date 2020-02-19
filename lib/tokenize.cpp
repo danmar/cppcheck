@@ -4302,6 +4302,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     createLinks();
 
+    reportUnknownMacrosInNonExecutableScopes();
+
     simplifyHeaders();
 
     // Remove __asm..
@@ -9281,6 +9283,29 @@ static const Token *findUnmatchedTernaryOp(const Token * const begin, const Toke
 static bool isCPPAttribute(const Token * tok)
 {
     return Token::simpleMatch(tok, "[ [") && tok->link() && tok->link()->previous() == tok->linkAt(1);
+}
+
+void Tokenizer::reportUnknownMacrosInNonExecutableScopes()
+{
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        // Skip executable scopes..
+        if (tok->str() == "{") {
+            const Token *prev = tok->previous();
+            while (prev && prev->isName())
+                prev = prev->previous();
+            if (prev && prev->str() == ")")
+                tok = tok->link();
+        }
+
+        if (Token::Match(tok, "%name% (") && tok->isUpperCaseName() && Token::simpleMatch(tok->linkAt(1), ") (") && Token::simpleMatch(tok->linkAt(1)->linkAt(1), ") {")) {
+            const Token *bodyStart = tok->linkAt(1)->linkAt(1)->tokAt(2);
+            const Token *bodyEnd = tok->link();
+            for (const Token *tok2 = bodyStart; tok2 && tok2 != bodyEnd; tok2 = tok2->next()) {
+                if (Token::Match(tok2, "if|switch|for|while|return"))
+                    unknownMacroError(tok);
+            }
+        }
+    }
 }
 
 void Tokenizer::findGarbageCode() const
