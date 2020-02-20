@@ -53,7 +53,8 @@ private:
     }
 
     void findLambdaEndToken() {
-        ASSERT(nullptr == ::findLambdaEndToken(nullptr));
+        const Token* nullTok = nullptr;
+        ASSERT(nullptr == ::findLambdaEndToken(nullTok));
         ASSERT_EQUALS(false, findLambdaEndToken("void f() { }"));
         ASSERT_EQUALS(true, findLambdaEndToken("[]{ }"));
         ASSERT_EQUALS(true, findLambdaEndToken("[]{ return 0; }"));

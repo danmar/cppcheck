@@ -4346,7 +4346,7 @@ private:
                         "    if (b == 'x') {}\n"
                         "    if (a) {}\n"
                         "}");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Uninitialized variable: a\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:8]: (error) Uninitialized variable: a\n", "", errout.str());
 
         valueFlowUninit("void h() {\n"
                         "  int i;\n"
@@ -4494,7 +4494,9 @@ private:
                         "    c->x = 42;\n"
                         "    return c->x;\n"
                         "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: c\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: c\n"
+                      "[test.cpp:7]: (error) Uninitialized variable: c\n",
+                      errout.str());
 
         valueFlowUninit("struct A {\n"
                         "    double x;\n"

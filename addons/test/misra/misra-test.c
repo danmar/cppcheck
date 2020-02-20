@@ -696,6 +696,28 @@ void misra_15_3() {
       L1:
     } else {}
   } else {}
+
+  switch (x) {
+  case 0:
+      if (x == y) {
+          goto L2; // 15.3 15.1
+      }
+      goto L2; // 15.3 15.1
+    L3:
+      foo();
+      if (a == 0x42) {
+          // Compliant:
+          goto L3; // 15.1 15.2
+      }
+      break;
+  case 1:
+      y = x;
+  L2:
+      ++x;
+      break;
+  default:
+      break;
+  }
 }
 
 int misra_15_5() {

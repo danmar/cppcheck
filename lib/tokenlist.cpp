@@ -132,20 +132,6 @@ void TokenList::addtoken(std::string str, const nonneg int lineno, const nonneg 
         }
     }
 
-    // Replace hexadecimal value with decimal
-    const bool isHex = MathLib::isIntHex(str) ;
-    if (isHex || MathLib::isOct(str) || MathLib::isBin(str)) {
-        // TODO: It would be better if TokenList didn't simplify hexadecimal numbers
-        std::string suffix;
-        if (isHex &&
-            str.size() == (2 + mSettings->int_bit / 4) &&
-            (str[2] >= '8') &&  // includes A-F and a-f
-            MathLib::getSuffix(str).empty()
-           )
-            suffix = "U";
-        str = MathLib::value(str).str() + suffix;
-    }
-
     if (mTokensFrontBack.back) {
         mTokensFrontBack.back->insertToken(str);
     } else {
@@ -164,20 +150,6 @@ void TokenList::addtoken(std::string str, const Token *locationTok)
 {
     if (str.empty())
         return;
-
-    // Replace hexadecimal value with decimal
-    const bool isHex = MathLib::isIntHex(str) ;
-    if (isHex || MathLib::isOct(str) || MathLib::isBin(str)) {
-        // TODO: It would be better if TokenList didn't simplify hexadecimal numbers
-        std::string suffix;
-        if (isHex &&
-            str.size() == (2 + mSettings->int_bit / 4) &&
-            (str[2] >= '8') &&  // includes A-F and a-f
-            MathLib::getSuffix(str).empty()
-           )
-            suffix = "U";
-        str = MathLib::value(str).str() + suffix;
-    }
 
     if (mTokensFrontBack.back) {
         mTokensFrontBack.back->insertToken(str);
@@ -365,22 +337,6 @@ void TokenList::createTokens(const simplecpp::TokenList *tokenList)
     for (const simplecpp::Token *tok = tokenList->cfront(); tok; tok = tok->next) {
 
         std::string str = tok->str();
-
-        // Replace hexadecimal value with decimal
-        // TODO: Remove this
-        const bool isHex = MathLib::isIntHex(str) ;
-        if (isHex || MathLib::isOct(str) || MathLib::isBin(str)) {
-            // TODO: It would be better if TokenList didn't simplify hexadecimal numbers
-            std::string suffix;
-            if (isHex &&
-                mSettings &&
-                str.size() == (2 + mSettings->int_bit / 4) &&
-                (str[2] >= '8') &&  // includes A-F and a-f
-                MathLib::getSuffix(str).empty()
-               )
-                suffix = "U";
-            str = MathLib::value(str).str() + suffix;
-        }
 
         // Float literal
         if (str.size() > 1 && str[0] == '.' && std::isdigit(str[1]))
@@ -912,7 +868,8 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
             const std::size_t oldOpSize = state.op.size();
             compileExpression(tok, state);
             tok = tok2;
-            if ((tok->previous() && tok->previous()->isName() && (!Token::Match(tok->previous(), "return|case") && (!state.cpp || !Token::Match(tok->previous(), "throw|delete"))))
+            if (Token::simpleMatch(tok->previous(), "} (")
+                || (tok->previous() && tok->previous()->isName() && !Token::Match(tok->previous(), "return|case") && (!state.cpp || !Token::Match(tok->previous(), "throw|delete")))
                 || (tok->strAt(-1) == "]" && (!state.cpp || !Token::Match(tok->linkAt(-1)->previous(), "new|delete")))
                 || (tok->strAt(-1) == ">" && tok->linkAt(-1))
                 || (tok->strAt(-1) == ")" && !iscast(tok->linkAt(-1))) // Don't treat brackets to clarify precedence as function calls
@@ -1225,7 +1182,7 @@ static bool isLambdaCaptureList(const Token * tok)
     if (!tok->astOperand1() || tok->astOperand1()->str() != "(")
         return false;
     const Token * params = tok->astOperand1();
-    if (!params || !params->astOperand1() || params->astOperand1()->str() != "{")
+    if (!params->astOperand1() || params->astOperand1()->str() != "{")
         return false;
     return true;
 }
@@ -1323,8 +1280,6 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         while (tok2 && tok2 != endPar && tok2->str() != ";") {
             if (tok2->str() == "<" && tok2->link()) {
                 tok2 = tok2->link();
-                if (!tok2)
-                    break;
             } else if (Token::Match(tok2, "%name% %op%|(|[|.|:|::") || Token::Match(tok2->previous(), "[(;{}] %cop%|(")) {
                 init1 = tok2;
                 AST_state state1(cpp);

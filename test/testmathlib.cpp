@@ -1157,13 +1157,15 @@ private:
         ASSERT_EQUALS("0.0", MathLib::tan("0"));
     }
     void abs() const {
-        ASSERT_EQUALS("0.0", MathLib::abs("0"));
-        ASSERT_EQUALS("0.0", MathLib::abs("+0"));
-        ASSERT_EQUALS("0.0", MathLib::abs("-0"));
-        ASSERT_EQUALS("1.0", MathLib::abs("+1"));
-        ASSERT_EQUALS("1.0", MathLib::abs("+1.0"));
-        ASSERT_EQUALS("1.0", MathLib::abs("-1"));
+        ASSERT_EQUALS("", MathLib::abs(""));
+        ASSERT_EQUALS("0", MathLib::abs("0"));
+        ASSERT_EQUALS("+0", MathLib::abs("+0"));
+        ASSERT_EQUALS("0", MathLib::abs("-0"));
+        ASSERT_EQUALS("+1", MathLib::abs("+1"));
+        ASSERT_EQUALS("+1.0", MathLib::abs("+1.0"));
+        ASSERT_EQUALS("1", MathLib::abs("-1"));
         ASSERT_EQUALS("1.0", MathLib::abs("-1.0"));
+        ASSERT_EQUALS("9007199254740991", MathLib::abs("9007199254740991"));
     }
 
     void toString() const {

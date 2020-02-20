@@ -328,7 +328,7 @@ void CheckFunctions::memsetZeroBytes()
                 if (WRONG_DATA(arguments.size() != 3U, tok))
                     continue;
                 const Token* lastParamTok = arguments[2];
-                if (lastParamTok->str() == "0")
+                if (MathLib::isNullValue(lastParamTok->str()))
                     memsetZeroBytesError(tok);
             }
         }

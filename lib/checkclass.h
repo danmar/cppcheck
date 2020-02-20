@@ -73,11 +73,13 @@ public:
         checkClass.virtualDestructor();
         checkClass.checkConst();
         checkClass.copyconstructors();
-        checkClass.checkVirtualFunctionCallInConstructor();
+        // FIXME: Only report warnings for inherited classes
+        // checkClass.checkVirtualFunctionCallInConstructor();
         checkClass.checkDuplInheritedMembers();
         checkClass.checkExplicitConstructors();
         checkClass.checkCopyCtorAndEqOperator();
         checkClass.checkOverride();
+        checkClass.checkThisUseAfterFree();
         checkClass.checkUnsafeClassRefMember();
     }
 
@@ -143,6 +145,9 @@ public:
     /** @brief Check that the override keyword is used when overriding virtual functions */
     void checkOverride();
 
+    /** @brief When "self pointer" is destroyed, 'this' might become invalid. */
+    void checkThisUseAfterFree();
+
     /** @brief Unsafe class check - const reference member */
     void checkUnsafeClassRefMember();
 
@@ -182,6 +187,7 @@ private:
     void duplInheritedMembersError(const Token* tok1, const Token* tok2, const std::string &derivedName, const std::string &baseName, const std::string &variableName, bool derivedIsStruct, bool baseIsStruct);
     void copyCtorAndEqOperatorError(const Token *tok, const std::string &classname, bool isStruct, bool hasCopyCtor);
     void overrideError(const Function *funcInBase, const Function *funcInDerived);
+    void thisUseAfterFree(const Token *self, const Token *free, const Token *use);
     void unsafeClassRefMemberError(const Token *tok, const std::string &varname);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
@@ -219,6 +225,7 @@ private:
         c.pureVirtualFunctionCallInConstructorError(nullptr, std::list<const Token *>(), "f");
         c.virtualFunctionCallInConstructorError(nullptr, std::list<const Token *>(), "f");
         c.overrideError(nullptr, nullptr);
+        c.thisUseAfterFree(nullptr, nullptr, nullptr);
         c.unsafeClassRefMemberError(nullptr, "UnsafeClass::var");
     }
 
@@ -248,6 +255,7 @@ private:
                "- Duplicated inherited data members\n"
                // disabled for now "- If 'copy constructor' defined, 'operator=' also should be defined and vice versa\n"
                "- Check that arbitrary usage of public interface does not result in division by zero\n"
+               "- Delete \"self pointer\" and then access 'this'\n"
                "- Check that the 'override' keyword is used when overriding virtual functions\n";
     }
 
@@ -340,6 +348,12 @@ private:
     static bool canNotCopy(const Scope *scope);
 
     static bool canNotMove(const Scope *scope);
+
+    /**
+     * @brief Helper for checkThisUseAfterFree
+     */
+    bool checkThisUseAfterFreeRecursive(const Scope *classScope, const Function *func, const Variable *selfPointer, std::set<const Function *> callstack, const Token **freeToken);
+
 };
 /// @}
 //---------------------------------------------------------------------------

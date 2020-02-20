@@ -1337,6 +1337,7 @@ private:
     void createSymbolDatabaseSetFunctionPointers(bool firstPass);
     void createSymbolDatabaseSetVariablePointers();
     void createSymbolDatabaseSetTypePointers();
+    void createSymbolDatabaseSetSmartPointerType();
     void createSymbolDatabaseEnums();
     void createSymbolDatabaseEscapeFunctions();
     void createSymbolDatabaseIncompleteVars();

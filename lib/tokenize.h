@@ -634,6 +634,9 @@ private:
      */
     void validate() const;
 
+    /** Detect unknown macros and throw unknownMacro */
+    void reportUnknownMacrosInNonExecutableScopes();
+
     /** Detect garbage code and call syntaxError() if found. */
     void findGarbageCode() const;
 
