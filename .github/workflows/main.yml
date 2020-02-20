@@ -16,6 +16,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Add missing software
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get install libxml2-utils
+
       - name: Build
         run: |
           make -j2
