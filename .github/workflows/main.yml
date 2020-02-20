@@ -21,12 +21,12 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get install libxml2-utils
-          sudo apt-get install z3
+          sudo apt-get install z3 libz3-dev
 
       - name: Install missing software on macos
         if: matrix.os == 'macos-latest'
         run: |
-          brew install z3
+          brew install z3 libz3-dev
 
       - name: Build cppcheck
         run: |
