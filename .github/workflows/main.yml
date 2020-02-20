@@ -30,15 +30,15 @@ jobs:
 
       - name: Build cppcheck
         run: |
-          make -j2
+          make -j2 CXXFLAGS="-DUSE_Z3"
 
       - name: Build test
         run: |
-          make -j2 testrunner
+          make -j2 testrunner CXXFLAGS="-DUSE_Z3"
 
       - name: Test
         run: |
-          make -j2 check
+          make -j2 check CXXFLAGS="-DUSE_Z3"
 
       - name: Validate
         run: |
