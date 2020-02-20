@@ -7,14 +7,40 @@ on: [push, pull_request]
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+      fail-fast: true
+
+    runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Build
-      run: |
-        make -j2
+      - uses: actions/checkout@v2
 
-    - name: Test
-      run: |
-        make -j2 check
+      - name: Install missing software on ubuntu
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get install libxml2-utils
+          sudo apt-get install z3 libz3-dev
+
+      - name: Install missing software on macos
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install z3
+
+      - name: Build cppcheck
+        run: |
+          make -j2 USE_Z3=yes
+
+      - name: Build test
+        run: |
+          make -j2 testrunner USE_Z3=yes
+
+      - name: Test
+        run: |
+          make -j2 check USE_Z3=yes
+
+      - name: Validate
+        run: |
+          make validateCFG
+          make validatePlatforms
