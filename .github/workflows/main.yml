@@ -26,7 +26,7 @@ jobs:
       - name: Install missing software on macos
         if: matrix.os == 'macos-latest'
         run: |
-          brew install z3 libz3-dev
+          brew install z3
 
       - name: Build cppcheck
         run: |
