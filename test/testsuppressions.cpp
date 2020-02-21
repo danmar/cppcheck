@@ -54,6 +54,9 @@ private:
         TEST_CASE(inlinesuppress_symbolname);
         TEST_CASE(inlinesuppress_comment);
 
+        TEST_CASE(multi_inlinesuppress);
+        TEST_CASE(multi_inlinesuppress_comment);
+
         TEST_CASE(globalSuppressions); // Testing that global suppressions work (#8515)
 
         TEST_CASE(inlinesuppress_unusedFunction); // #4210 - unusedFunction
@@ -465,6 +468,103 @@ private:
         ASSERT_EQUALS("", errMsg);
         ASSERT_EQUALS(true, s.parseComment("// cppcheck-suppress abc -- some comment", &errMsg));
         ASSERT_EQUALS("", errMsg);
+    }
+
+    void multi_inlinesuppress() {
+        Suppressions ss;
+        std::vector<Suppressions::Suppression> suppressions;
+        std::string errMsg;
+
+        errMsg = "";
+        suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress[errorId]", &errMsg);
+        ASSERT_EQUALS(1, suppressions.size());
+        ASSERT_EQUALS("errorId", suppressions[0].errorId);
+        ASSERT_EQUALS("", suppressions[0].symbolName);
+        ASSERT_EQUALS("", errMsg);
+
+        errMsg = "";
+        suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress[errorId symbolName=arr]", &errMsg);
+        ASSERT_EQUALS(1, suppressions.size());
+        ASSERT_EQUALS("errorId", suppressions[0].errorId);
+        ASSERT_EQUALS("arr", suppressions[0].symbolName);
+        ASSERT_EQUALS("", errMsg);
+
+        errMsg = "";
+        suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress[errorId symbolName=]", &errMsg);
+        ASSERT_EQUALS(1, suppressions.size());
+        ASSERT_EQUALS("errorId", suppressions[0].errorId);
+        ASSERT_EQUALS("", suppressions[0].symbolName);
+        ASSERT_EQUALS("", errMsg);
+
+        errMsg = "";
+        suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress[errorId1, errorId2 symbolName=arr]", &errMsg);
+        ASSERT_EQUALS(2, suppressions.size());
+        ASSERT_EQUALS("errorId1", suppressions[0].errorId);
+        ASSERT_EQUALS("", suppressions[0].symbolName);
+        ASSERT_EQUALS("errorId2", suppressions[1].errorId);
+        ASSERT_EQUALS("arr", suppressions[1].symbolName);
+        ASSERT_EQUALS("", errMsg);
+
+        errMsg = "";
+        suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress [errorId]", &errMsg);
+        ASSERT_EQUALS(0, suppressions.size());
+        ASSERT_EQUALS(false, errMsg.empty());
+
+        errMsg = "";
+        suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress[]", &errMsg);
+        ASSERT_EQUALS(0, suppressions.size());
+        ASSERT_EQUALS(false, errMsg.empty());
+
+        errMsg = "";
+        suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress[errorId", &errMsg);
+        ASSERT_EQUALS(0, suppressions.size());
+        ASSERT_EQUALS(false, errMsg.empty());
+
+        errMsg = "";
+        suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress errorId", &errMsg);
+        ASSERT_EQUALS(0, suppressions.size());
+        ASSERT_EQUALS(false, errMsg.empty());
+
+        errMsg = "";
+        suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress[errorId1 errorId2 symbolName=arr]", &errMsg);
+        ASSERT_EQUALS(0, suppressions.size());
+        ASSERT_EQUALS(false, errMsg.empty());
+
+        errMsg = "";
+        suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress[errorId1, errorId2 symbol=arr]", &errMsg);
+        ASSERT_EQUALS(0, suppressions.size());
+        ASSERT_EQUALS(false, errMsg.empty());
+
+        errMsg = "";
+        suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress[errorId1, errorId2 symbolName]", &errMsg);
+        ASSERT_EQUALS(0, suppressions.size());
+        ASSERT_EQUALS(false, errMsg.empty());
+    }
+
+    void multi_inlinesuppress_comment() {
+        Suppressions ss;
+        std::vector<Suppressions::Suppression> suppressions;
+        std::string errMsg;
+
+        errMsg = "";
+        suppressions=ss.parseMultiSuppressComment("//cppcheck-suppress[errorId1, errorId2 symbolName=arr]", &errMsg);
+        ASSERT_EQUALS(2, suppressions.size());
+        ASSERT_EQUALS(true, errMsg.empty());
+
+        errMsg = "";
+        suppressions=ss.parseMultiSuppressComment("//some text cppcheck-suppress[errorId1, errorId2 symbolName=arr]", &errMsg);
+        ASSERT_EQUALS(2, suppressions.size());
+        ASSERT_EQUALS(true, errMsg.empty());
+
+        errMsg = "";
+        suppressions=ss.parseMultiSuppressComment("//cppcheck-suppress[errorId1, errorId2 symbolName=arr] some text", &errMsg);
+        ASSERT_EQUALS(2, suppressions.size());
+        ASSERT_EQUALS(true, errMsg.empty());
+
+        errMsg = "";
+        suppressions=ss.parseMultiSuppressComment("//some text cppcheck-suppress[errorId1, errorId2 symbolName=arr] some text", &errMsg);
+        ASSERT_EQUALS(2, suppressions.size());
+        ASSERT_EQUALS(true, errMsg.empty());
     }
 
     void globalSuppressions() { // Testing that Cppcheck::useGlobalSuppressions works (#8515)
