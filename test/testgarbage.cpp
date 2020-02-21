@@ -245,6 +245,7 @@ private:
         TEST_CASE(garbageCode211); // #8764
         TEST_CASE(garbageCode212); // #8765
         TEST_CASE(garbageCode213); // #8758
+        TEST_CASE(garbageCode214);
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -1664,6 +1665,17 @@ private:
 
     void garbageCode213() { // #8758
         ASSERT_THROW(checkCode("{\"\"[(1||)];}"), InternalError);
+    }
+
+    void garbageCode214() {
+        checkCode("void\n"
+                  "f(a, b, h)\n"
+                  "struct g *a; {\n"
+                  "    long e;\n"
+                  "    if (e) {\n"
+                  "        (void) d((long) !b, c ? FALSE : TRUE);\n"
+                  "    }\n"
+                  "}\n");
     }
 
     void syntaxErrorFirstToken() {
