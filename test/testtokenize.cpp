@@ -375,7 +375,8 @@ private:
 
         TEST_CASE(borland);
 
-        TEST_CASE(Qt);
+        TEST_CASE(simplifyQtSignalsSlots1);
+        TEST_CASE(simplifyQtSignalsSlots2);
 
         TEST_CASE(simplifySQL);
 
@@ -5802,7 +5803,7 @@ private:
     }
 
     void bitfields14() { // #4561 - crash for 'signals:'
-        ASSERT_EQUALS("class x { signals : } ;", tokenizeAndStringify("class x { signals: };\n",false));
+        ASSERT_EQUALS("class x { protected: } ;", tokenizeAndStringify("class x { signals: };\n",false));
     }
 
     void bitfields15() { // #7747 - enum Foo {A,B}:4;
@@ -6018,7 +6019,7 @@ private:
                       tokenizeAndStringify("class Fred { __property int x = { } };", false, true, Settings::Win32A));
     }
 
-    void Qt() {
+    void simplifyQtSignalsSlots1() {
         const char code1[] = "class Counter : public QObject "
                              "{ "
                              "    Q_OBJECT "
@@ -6132,6 +6133,12 @@ private:
                                "} ;";
 
         ASSERT_EQUALS(result4, tokenizeAndStringify(code4,false));
+    }
+
+    void simplifyQtSignalsSlots2() {
+        const char code1[] = "class Foo::Bar: public QObject { private slots: };";
+        const char result1[] = "class Foo :: Bar : public QObject { private: } ;";
+        ASSERT_EQUALS(result1, tokenizeAndStringify(code1,false));
     }
 
     void simplifySQL() {

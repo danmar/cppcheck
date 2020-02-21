@@ -10837,7 +10837,7 @@ void Tokenizer::simplifyQtSignalsSlots()
         if (Token::Match(tok, "emit|Q_EMIT %name% (") &&
             Token::simpleMatch(tok->linkAt(2), ") ;")) {
             tok->deleteThis();
-        } else if (!Token::Match(tok, "class %name% :"))
+        } else if (!Token::Match(tok, "class %name% :|::|{"))
             continue;
 
         if (tok->previous() && tok->previous()->str() == "enum") {
@@ -10859,7 +10859,9 @@ void Tokenizer::simplifyQtSignalsSlots()
                     break;
                 else
                     --indentlevel;
-            }
+            } else if (tok2->str() == ";" && indentlevel == 0)
+                break;
+
             if (tok2->strAt(1) == "Q_OBJECT")
                 tok2->deleteNext();
 
