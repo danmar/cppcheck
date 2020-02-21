@@ -247,16 +247,16 @@ static ProgramMemory getInitialProgramState(const Token* tok,
 
 void ProgramMemoryState::insert(const ProgramMemory &pm, const Token* origin)
 {
-    if(origin)
-        for(auto&& p:pm.values)
+    if (origin)
+        for (auto&& p:pm.values)
             origins.insert(std::make_pair(p.first, origin));
     state.insert(pm);
 }
 
 void ProgramMemoryState::replace(const ProgramMemory &pm, const Token* origin)
 {
-    if(origin)
-        for(auto&& p:pm.values)
+    if (origin)
+        for (auto&& p:pm.values)
             origins[p.first] = origin;
     state.replace(pm);
 }
