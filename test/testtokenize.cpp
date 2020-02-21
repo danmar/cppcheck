@@ -7517,6 +7517,8 @@ private:
         ASSERT_EQUALS("ifx3=y;(", testAst("if (int x=3; y)"));
 
         ASSERT_EQUALS("forx0=x;;(", testAst("for (int x=0; x;);"));
+
+        ASSERT_EQUALS("0f1(||", testAst("; 0 || f(1);"));
     }
 
     void astexpr2() { // limit for large expressions
