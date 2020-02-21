@@ -7808,6 +7808,8 @@ private:
 
         ASSERT_EQUALS("yz.(return", testAst("return (x)(y).z;"));
 
+        ASSERT_EQUALS("fon!(restoring01:?,(", testAst("f((long) !on, restoring ? 0 : 1);"));
+
         // not cast
         ASSERT_EQUALS("AB||", testAst("(A)||(B)"));
         ASSERT_EQUALS("abc[1&=", testAst("a = (b[c]) & 1;"));

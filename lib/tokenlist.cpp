@@ -445,7 +445,7 @@ static bool iscast(const Token *tok)
     if (Token::Match(tok->link(), ") }|)|]|;"))
         return false;
 
-    if (Token::Match(tok->link(), ") %cop%") && !Token::Match(tok->link(), ") [&*+-~]"))
+    if (Token::Match(tok->link(), ") %cop%") && !Token::Match(tok->link(), ") [&*+-~!]"))
         return false;
 
     if (Token::Match(tok->previous(), "= ( %name% ) {") && tok->next()->varId() == 0)
