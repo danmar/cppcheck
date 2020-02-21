@@ -307,7 +307,8 @@ private:
         // suppress uninitvar inline
         (this->*check)("void f() {\n"
                        "    int a;\n"
-                       "    a++;// cppcheck-suppress:uninitvar\n"
+                       "    // cppcheck-suppress uninitvar\n"
+                       "    a++;\n"
                        "}\n",
                        "");
         ASSERT_EQUALS("", errout.str());
@@ -315,8 +316,9 @@ private:
         // suppress uninitvar inline
         (this->*check)("void f() {\n"
                        "    int a;\n"
-                       "    a++;// cppcheck-suppress:uninitvar\n"
+                       "    // cppcheck-suppress uninitvar\n"
                        "\n"
+                       "    a++;\n"
                        "}\n",
                        "");
         ASSERT_EQUALS("", errout.str());
@@ -324,7 +326,8 @@ private:
         // suppress uninitvar inline
         (this->*check)("void f() {\n"
                        "    int a;\n"
-                       "    a++;/* cppcheck-suppress:uninitvar */\n"
+                       "    /* cppcheck-suppress uninitvar */\n"
+                       "    a++;\n"
                        "}\n",
                        "");
         ASSERT_EQUALS("", errout.str());
@@ -332,8 +335,9 @@ private:
         // suppress uninitvar inline
         (this->*check)("void f() {\n"
                        "    int a;\n"
-                       "    a++;/* cppcheck-suppress:uninitvar */\n"
+                       "    /* cppcheck-suppress uninitvar */\n"
                        "\n"
+                       "    a++;\n"
                        "}\n",
                        "");
         ASSERT_EQUALS("", errout.str());
@@ -344,7 +348,8 @@ private:
                        "        foo\n"
                        "    }"
                        "    int a;\n"
-                       "    a++;// cppcheck-suppress:uninitvar\n"
+                       "    // cppcheck-suppress uninitvar\n"
+                       "    a++;\n"
                        "}",
                        "");
         ASSERT_EQUALS("", errout.str());
@@ -352,7 +357,8 @@ private:
         // suppress uninitvar inline, without error present
         (this->*check)("void f() {\n"
                        "    int a;\n"
-                       "    b++;// cppcheck-suppress:uninitvar\n"
+                       "    // cppcheck-suppress uninitvar\n"
+                       "    b++;\n"
                        "}\n",
                        "");
         ASSERT_EQUALS("[test.cpp:4]: (information) Unmatched suppression: uninitvar\n", errout.str());
@@ -419,41 +425,15 @@ private:
     void inlinesuppress() {
         Suppressions::Suppression s;
         std::string msg;
-        msg.clear();
-        ASSERT_EQUALS(-1, s.parseComment("/* some text */", 0, &msg));
-        ASSERT_EQUALS(true, msg.empty());
-		
-        msg.clear();
-        ASSERT_EQUALS(20, s.parseComment("/* cppcheck-suppress */", 0, &msg));
-        ASSERT_EQUALS(false, msg.empty());
+        ASSERT_EQUALS(false, s.parseComment("/* some text */", &msg));
+        ASSERT_EQUALS(false, s.parseComment("/* cppcheck-suppress */", &msg));
 
         msg.clear();
-        ASSERT_EQUALS(21, s.parseComment("/* cppcheck-suppress: */", 0, &msg));
-        ASSERT_EQUALS(false, msg.empty());
+        ASSERT_EQUALS(true, s.parseComment("/* cppcheck-suppress id */", &msg));
+        ASSERT_EQUALS("", msg);
 
-        msg.clear();
-        ASSERT_EQUALS(28, s.parseComment("/* cppcheck-suppress:errorId */", 0, &msg));
-        ASSERT_EQUALS(true, msg.empty());
-
-        msg.clear();
-        ASSERT_EQUALS(29, s.parseComment("/* cppcheck-suppress:errorId@ */", 0, &msg));
-        ASSERT_EQUALS(false, msg.empty());
-
-        msg.clear();
-        ASSERT_EQUALS(35, s.parseComment("/* cppcheck-suppress:errorId@symbol */", 0, &msg));
-        ASSERT_EQUALS(true, msg.empty());
-
-        msg.clear();
-        ASSERT_EQUALS(28, s.parseComment("/* cppcheck-suppress:errorId cppcheck-suppress:errorId@symbol */", 0, &msg));
-        ASSERT_EQUALS(true, msg.empty());
-
-        msg.clear();
-        ASSERT_EQUALS(61, s.parseComment("/* cppcheck-suppress:errorId cppcheck-suppress:errorId@symbol */", 28, &msg));
-        ASSERT_EQUALS(true, msg.empty());
-
-        msg.clear();
-        ASSERT_EQUALS(-1, s.parseComment("/* cppcheck-suppress:errorId cppcheck-suppress:errorId@symbol */", 61, &msg));
-        ASSERT_EQUALS(true, msg.empty());
+        ASSERT_EQUALS(true, s.parseComment("/* cppcheck-suppress id some text */", &msg));
+        ASSERT_EQUALS("Bad suppression attribute 'some'. You can write comments in the comment after a ; or //. Valid suppression attributes; symbolName=sym", msg);
     }
 
     void inlinesuppress_symbolname() {
@@ -461,14 +441,16 @@ private:
 
         checkSuppression("void f() {\n"
                          "    int a;\n"
-                         "    a++;/* cppcheck-suppress:uninitvar@a */\n"
+                         "    /* cppcheck-suppress uninitvar symbolName=a */\n"
+                         "    a++;\n"
                          "}\n",
                          "");
         ASSERT_EQUALS("", errout.str());
 
         checkSuppression("void f() {\n"
                          "    int a,b;\n"
-                         "    a++; b++;/* cppcheck-suppress:uninitvar@b */\n"
+                         "    /* cppcheck-suppress uninitvar symbolName=b */\n"
+                         "    a++; b++;\n"
                          "}\n",
                          "");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a\n", errout.str());
@@ -476,19 +458,13 @@ private:
 
     void inlinesuppress_comment() {
         Suppressions::Suppression s;
-        std::string msg;
-
-        msg.clear();
-        ASSERT_EQUALS(38, s.parseComment("/* some text cppcheck-suppress:errorId some text cppcheck-suppress:errorId@symbol some text */", 0, &msg));
-        ASSERT_EQUALS(true, msg.empty());
-
-        msg.clear();
-        ASSERT_EQUALS(81, s.parseComment("/* some text cppcheck-suppress:errorId some text cppcheck-suppress:errorId@symbol some text */", 38, &msg));
-        ASSERT_EQUALS(true, msg.empty());
-
-        msg.clear();
-        ASSERT_EQUALS(-1, s.parseComment("/* some text cppcheck-suppress:errorId some text cppcheck-suppress:errorId@symbol some text */", 81, &msg));
-        ASSERT_EQUALS(true, msg.empty());
+        std::string errMsg;
+        ASSERT_EQUALS(true, s.parseComment("// cppcheck-suppress abc ; some comment", &errMsg));
+        ASSERT_EQUALS("", errMsg);
+        ASSERT_EQUALS(true, s.parseComment("// cppcheck-suppress abc // some comment", &errMsg));
+        ASSERT_EQUALS("", errMsg);
+        ASSERT_EQUALS(true, s.parseComment("// cppcheck-suppress abc -- some comment", &errMsg));
+        ASSERT_EQUALS("", errMsg);
     }
 
     void globalSuppressions() { // Testing that Cppcheck::useGlobalSuppressions works (#8515)
@@ -535,8 +511,10 @@ private:
         const char code[] =
             "struct Point\n"
             "{\n"
-            "    int x;// cppcheck-suppress:unusedStructMember\n"
-            "    int y;// cppcheck-suppress:unusedStructMember\n"
+            "    // cppcheck-suppress unusedStructMember\n"
+            "    int x;\n"
+            "    // cppcheck-suppress unusedStructMember\n"
+            "    int y;\n"
             "};";
         cppCheck.check("/somewhere/test.cpp", code);
         ASSERT_EQUALS("",errout.str());
@@ -555,7 +533,8 @@ private:
         files["test.cpp"] = "double result(0.0);\n"
                             "_asm\n"
                             "{\n"
-                            "   push  EAX               ; save EAX for callers // cppcheck-suppress:syntaxError\n"
+                            "   // cppcheck-suppress syntaxError\n"
+                            "   push  EAX               ; save EAX for callers \n"
                             "   mov   EAX,Real10        ; get the address pointed to by Real10\n"
                             "   fld   TBYTE PTR [EAX]   ; load an extended real (10 bytes)\n"
                             "   fstp  QWORD PTR result  ; store a double (8 bytes)\n"
