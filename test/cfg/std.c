@@ -3986,6 +3986,14 @@ bool invalidFunctionArgBool_isprint(bool b, int c)
     return isprint(c != 0);
 }
 
+bool invalidFunctionArgBool_isblank(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)isblank(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return isblank(c != 0);
+}
+
 bool invalidFunctionArgBool_ispunct(bool b, int c)
 {
     // cppcheck-suppress invalidFunctionArgBool
