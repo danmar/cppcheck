@@ -1478,6 +1478,14 @@ private:
                        "}", "test.cpp", false);
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory is allocated but not initialized: buffer\n", errout.str());
 
+        checkUninitVar("void f(){\n"
+                       "   char *strMsg = \"This is a message\";\n"
+                       "   char *buffer=static_cast<char*>(malloc(128*sizeof(char)));\n"
+                       "   strcpy(strMsg,buffer);\n"
+                       "   free(buffer);\n"
+                       "}", "test.cpp", false);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory is allocated but not initialized: buffer\n", errout.str());
+
         // #3845
         checkUninitVar("int foo() {\n"
                        "    int a[1] = {5};\n"
