@@ -76,6 +76,7 @@ private:
         TEST_CASE(assign17); // #9047
         TEST_CASE(assign18);
         TEST_CASE(assign19);
+        TEST_CASE(assign20); // #9187
 
         TEST_CASE(isAutoDealloc);
 
@@ -411,6 +412,13 @@ private:
               "    free((void*)p);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void assign20() { // #9187
+        check("void f() {\n"
+              "    char *p = static_cast<int>(malloc(10));\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: p\n", errout.str());
     }
 
     void isAutoDealloc() {
