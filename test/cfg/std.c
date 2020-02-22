@@ -3978,6 +3978,14 @@ bool invalidFunctionArgBool_islower(bool b, int c)
     return islower(c != 0);
 }
 
+bool invalidFunctionArgBool_iswcntrl(bool b, wint_t c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)iswcntrl(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return iswcntrl(c != 0);
+}
+
 bool invalidFunctionArgBool_isprint(bool b, int c)
 {
     // cppcheck-suppress invalidFunctionArgBool
