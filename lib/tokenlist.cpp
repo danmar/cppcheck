@@ -43,6 +43,40 @@ TokenList::TokenList(const Settings* settings) :
     mIsC(false),
     mIsCpp(false)
 {
+    mKeywords.insert("auto");
+    mKeywords.insert("break");
+    mKeywords.insert("case");
+    mKeywords.insert("char");
+    mKeywords.insert("const");
+    mKeywords.insert("continue");
+    mKeywords.insert("default");
+    mKeywords.insert("do");
+    mKeywords.insert("double");
+    mKeywords.insert("else");
+    mKeywords.insert("enum");
+    mKeywords.insert("extern");
+    mKeywords.insert("float");
+    mKeywords.insert("for");
+    mKeywords.insert("goto");
+    mKeywords.insert("if");
+    mKeywords.insert("inline");
+    mKeywords.insert("int");
+    mKeywords.insert("long");
+    mKeywords.insert("register");
+    mKeywords.insert("restrict");
+    mKeywords.insert("return");
+    mKeywords.insert("short");
+    mKeywords.insert("signed");
+    mKeywords.insert("sizeof");
+    mKeywords.insert("static");
+    mKeywords.insert("struct");
+    mKeywords.insert("switch");
+    mKeywords.insert("typedef");
+    mKeywords.insert("union");
+    mKeywords.insert("unsigned");
+    mKeywords.insert("void");
+    mKeywords.insert("volatile");
+    mKeywords.insert("while");
 }
 
 TokenList::~TokenList()
@@ -89,6 +123,38 @@ int TokenList::appendFileIfNew(const std::string &fileName)
         } else {
             mIsC = mSettings->enforcedLang == Settings::C || (mSettings->enforcedLang == Settings::None && Path::isC(getSourceFilePath()));
             mIsCpp = mSettings->enforcedLang == Settings::CPP || (mSettings->enforcedLang == Settings::None && Path::isCPP(getSourceFilePath()));
+        }
+
+        if (mIsCpp) {
+            mKeywords.insert("catch");
+            mKeywords.insert("delete");
+            mKeywords.insert("class");
+            mKeywords.insert("const_cast");
+            mKeywords.insert("delete");
+            mKeywords.insert("dynamic_cast");
+            mKeywords.insert("explicit");
+            mKeywords.insert("export");
+            mKeywords.insert("false");
+            mKeywords.insert("friend");
+            mKeywords.insert("mutable");
+            mKeywords.insert("namespace");
+            mKeywords.insert("new");
+            mKeywords.insert("operator");
+            mKeywords.insert("private");
+            mKeywords.insert("protected");
+            mKeywords.insert("public");
+            mKeywords.insert("reinterpret_cast");
+            mKeywords.insert("static_cast");
+            mKeywords.insert("template");
+            mKeywords.insert("this");
+            mKeywords.insert("throw");
+            mKeywords.insert("true");
+            mKeywords.insert("try");
+            mKeywords.insert("typeid");
+            mKeywords.insert("typename");
+            mKeywords.insert("using");
+            mKeywords.insert("virtual");
+            mKeywords.insert("wchar_t");
         }
     }
     return mFiles.size() - 1;
@@ -140,7 +206,7 @@ void TokenList::addtoken(std::string str, const nonneg int lineno, const nonneg 
         mTokensFrontBack.back->str(str);
     }
 
-    if (isCPP() && str == "delete")
+    if (isKeyword(str))
         mTokensFrontBack.back->isKeyword(true);
     mTokensFrontBack.back->linenr(lineno);
     mTokensFrontBack.back->fileIndex(fileno);
@@ -1690,3 +1756,7 @@ void TokenList::simplifyStdType()
     }
 }
 
+bool TokenList::isKeyword(const std::string &str) const
+{
+    return mKeywords.find(str) != mKeywords.end();
+}

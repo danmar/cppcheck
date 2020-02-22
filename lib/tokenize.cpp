@@ -4302,7 +4302,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     createLinks();
 
-    reportUnknownMacrosInNonExecutableScopes();
+    reportUnknownMacros();
 
     simplifyHeaders();
 
@@ -9285,8 +9285,21 @@ static bool isCPPAttribute(const Token * tok)
     return Token::simpleMatch(tok, "[ [") && tok->link() && tok->link()->previous() == tok->linkAt(1);
 }
 
-void Tokenizer::reportUnknownMacrosInNonExecutableScopes()
+void Tokenizer::reportUnknownMacros()
 {
+    // Report unknown macros used in expressions "%name% %num%"
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "%name% %num%")) {
+            // A keyword is not an unknown macro
+            if (list.isKeyword(tok->str()))
+                continue;
+
+            if (Token::Match(tok->previous(), "%op%|("))
+                unknownMacroError(tok);
+        }
+    }
+
+    // Report unknown macros in non-executable scopes..
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         // Skip executable scopes..
         if (tok->str() == "{") {
@@ -9298,6 +9311,10 @@ void Tokenizer::reportUnknownMacrosInNonExecutableScopes()
         }
 
         if (Token::Match(tok, "%name% (") && tok->isUpperCaseName() && Token::simpleMatch(tok->linkAt(1), ") (") && Token::simpleMatch(tok->linkAt(1)->linkAt(1), ") {")) {
+            // A keyword is not an unknown macro
+            if (list.isKeyword(tok->str()))
+                continue;
+
             const Token *bodyStart = tok->linkAt(1)->linkAt(1)->tokAt(2);
             const Token *bodyEnd = tok->link();
             for (const Token *tok2 = bodyStart; tok2 && tok2 != bodyEnd; tok2 = tok2->next()) {
