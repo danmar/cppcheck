@@ -76,27 +76,71 @@ namespace {
     };
 }
 
-static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSettings, std::list<BadInlineSuppression> *bad)
+static void parseCommentToken(const simplecpp::Token *tok, std::list<Suppressions::Suppression> &inlineSuppressions, std::list<BadInlineSuppression> *bad)
 {
-    std::list<Suppressions::Suppression> inlineSuppressions;
-    for (const simplecpp::Token *tok = tokens.cfront(); tok; tok = tok->next) {
-        if (tok->comment) {
-            Suppressions::Suppression s;
+    static Suppressions suppressions;
+
+    size_t position=tok->str().find("cppcheck-suppress");
+    if (position != std::string::npos) {
+        if ((tok->str().length() > position+17) && (tok->str()[position+17] == '[')) {  //multi suppress format
             std::string errmsg;
-            if (!s.parseComment(tok->str(), &errmsg))
-                continue;
+            std::vector<Suppressions::Suppression> ss;
+            ss = suppressions.parseMultiSuppressComment(tok->str(), &errmsg);
+
             if (!errmsg.empty())
                 bad->push_back(BadInlineSuppression(tok->location, errmsg));
+
+            for (std::vector<Suppressions::Suppression>::iterator iter = ss.begin(); iter!=ss.end(); ++iter) {
+                if (!(*iter).errorId.empty())
+                    inlineSuppressions.push_back(*iter);
+            }
+        }
+        else {  //single suppress format
+            std::string errmsg;
+            Suppressions::Suppression s;
+            if (!s.parseComment(tok->str(), &errmsg))
+                return;
+
             if (!s.errorId.empty())
                 inlineSuppressions.push_back(s);
+
+            if (!errmsg.empty())
+                bad->push_back(BadInlineSuppression(tok->location, errmsg));
+        }
+    }
+
+    return;
+}
+
+static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSettings, std::list<BadInlineSuppression> *bad)
+{
+    const simplecpp::Token *current_non_comment_tok;
+    std::list<Suppressions::Suppression> inlineSuppressions;
+
+    for (const simplecpp::Token *tok = tokens.cfront(); tok; /*none*/) {
+        //parse all comment before current non-comment tok
+        if (tok->comment) {
+            parseCommentToken(tok, inlineSuppressions, bad);
+            tok = tok->next;
             continue;
         }
 
-        if (inlineSuppressions.empty())
+        current_non_comment_tok = tok;
+
+        //parse all comment tok after current non-comment tok in the same line
+        for (tok = tok->next; tok; tok = tok->next) {
+            if ((tok->location.line != current_non_comment_tok->location.line) || !(tok->comment))
+                break;
+            parseCommentToken(tok, inlineSuppressions, bad);
+        }
+
+        //if there is no suppress, jump it!
+        if (inlineSuppressions.empty()) {
             continue;
+        }
 
         // Relative filename
-        std::string relativeFilename(tok->location.file());
+        std::string relativeFilename(current_non_comment_tok->location.file());
         if (mSettings.relativePaths) {
             for (const std::string & basePath : mSettings.basePaths) {
                 const std::string bp = basePath + "/";
@@ -110,7 +154,7 @@ static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSe
         // Add the suppressions.
         for (Suppressions::Suppression &suppr : inlineSuppressions) {
             suppr.fileName = relativeFilename;
-            suppr.lineNumber = tok->location.line;
+            suppr.lineNumber = current_non_comment_tok->location.line;
             mSettings.nomsg.addSuppression(suppr);
         }
         inlineSuppressions.clear();
