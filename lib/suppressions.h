@@ -122,7 +122,7 @@ public:
      * @param errorMessage output parameter for error message (wrong suppression attribute)
      * @return empty vector if something wrong.
      */
-    std::vector<Suppression> parseMultiSuppressComment(std::string comment, std::string *errorMessageconst);
+    std::vector<Suppression> parseMultiSuppressComment(std::string comment, std::string *errorMessage);
 
     /**
      * @brief Don't show the given error.

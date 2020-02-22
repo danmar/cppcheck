@@ -122,12 +122,11 @@ std::vector<Suppressions::Suppression> Suppressions::parseMultiSuppressComment(s
     if (suppress_position == std::string::npos)
         return suppressions;
 
-    //legal format is "cppcheck-suppress[errorId, errorId symbolName=arr]"
     size_t start_position = comment.find("[", suppress_position);
     size_t end_position = comment.find("]", suppress_position);
     if (   start_position == std::string::npos 
         || end_position == std::string::npos 
-        || start_position != suppress_position+17 //between "cppcheck-suppress" and "[" there must no space
+        || start_position != suppress_position+17 //there must be no space before "["
         || start_position >= end_position)
     {
         if (errorMessage && errorMessage->empty())
@@ -136,7 +135,6 @@ std::vector<Suppressions::Suppression> Suppressions::parseMultiSuppressComment(s
     }
 
     //extract supressions
-    size_t previou_comma_position = 0;
     size_t current_comma_position = 0;
     std::string suppression_word;
     //multi_suppressions_word maybe "[errorId1, errorId2 symbolName=arr", who just has left bracket
@@ -144,7 +142,7 @@ std::vector<Suppressions::Suppression> Suppressions::parseMultiSuppressComment(s
     do
     {
         //single suppression word
-        previou_comma_position=current_comma_position;
+        size_t previou_comma_position=current_comma_position;
         current_comma_position=multi_suppressions_word.find(",", previou_comma_position+1);  //find "," after previous comma
         if (current_comma_position == std::string::npos)
         {
