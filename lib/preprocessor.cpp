@@ -78,35 +78,47 @@ namespace {
 
 static void parseCommentToken(const simplecpp::Token *tok, std::list<Suppressions::Suppression> &inlineSuppressions, std::list<BadInlineSuppression> *bad)
 {
-    const std::size_t position=tok->str().find("cppcheck-suppress");
-    if (position != std::string::npos) {
-        if ((tok->str().length() > position+17) && (tok->str()[position+17] == '[')) {  //multi suppress format
-            std::string errmsg;
-            std::vector<Suppressions::Suppression> ss;
-            ss = Suppressions::parseMultiSuppressComment(tok->str(), &errmsg);
+    if (tok->str().size() < 19)
+        return;
+    const std::string::size_type pos1 = tok->str().find_first_not_of("/* \t");
+    if (pos1 == std::string::npos)
+        return;
+    if (pos1 + 17 >= tok->str().size())
+        return;
+    if (tok->str().compare(pos1, 17, "cppcheck-suppress") != 0)
+        return;
 
-            if (!errmsg.empty())
-                bad->push_back(BadInlineSuppression(tok->location, errmsg));
+    // skip spaces after "cppcheck-suppress"
+    const std::string::size_type pos2 = tok->str().find_first_not_of(" ", pos1+17);
+    if (pos2 == std::string::npos)
+        return;
 
-            for (std::vector<Suppressions::Suppression>::iterator iter = ss.begin(); iter!=ss.end(); ++iter) {
-                if (!(*iter).errorId.empty())
-                    inlineSuppressions.push_back(*iter);
-            }
-        } else { //single suppress format
-            std::string errmsg;
-            Suppressions::Suppression s;
-            if (!s.parseComment(tok->str(), &errmsg))
-                return;
+    if (tok->str()[pos2] == '[') {
+        // multi suppress format
+        std::string errmsg;
+        std::vector<Suppressions::Suppression> ss;
+        ss = Suppressions::parseMultiSuppressComment(tok->str(), &errmsg);
 
-            if (!s.errorId.empty())
-                inlineSuppressions.push_back(s);
+        if (!errmsg.empty())
+            bad->push_back(BadInlineSuppression(tok->location, errmsg));
 
-            if (!errmsg.empty())
-                bad->push_back(BadInlineSuppression(tok->location, errmsg));
+        for (std::vector<Suppressions::Suppression>::iterator iter = ss.begin(); iter!=ss.end(); ++iter) {
+            if (!(*iter).errorId.empty())
+                inlineSuppressions.push_back(*iter);
         }
-    }
+    } else {
+        //single suppress format
+        std::string errmsg;
+        Suppressions::Suppression s;
+        if (!s.parseComment(tok->str(), &errmsg))
+            return;
 
-    return;
+        if (!s.errorId.empty())
+            inlineSuppressions.push_back(s);
+
+        if (!errmsg.empty())
+            bad->push_back(BadInlineSuppression(tok->location, errmsg));
+    }
 }
 
 static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSettings, std::list<BadInlineSuppression> *bad)
