@@ -2174,7 +2174,7 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
         : tokenlist(t), pms()
     {}
 
-    virtual int getIndirect() const = 0;
+    virtual int getIndirect(const Token* tok) const = 0;
 
     virtual bool match(const Token* tok) const = 0;
 
@@ -2207,11 +2207,11 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
     virtual Action isModified(const Token* tok) const {
         Action read = Action::Read;
         bool inconclusive = false;
-        if (isVariableChangedByFunctionCall(tok, getIndirect(), getSettings(), &inconclusive))
+        if (isVariableChangedByFunctionCall(tok, getIndirect(tok), getSettings(), &inconclusive))
             return read | Action::Invalid;
         if (inconclusive)
             return read | Action::Inconclusive;
-        if (isVariableChanged(tok, getIndirect(), getSettings(), isCPP())) {
+        if (isVariableChanged(tok, getIndirect(tok), getSettings(), isCPP())) {
             if (Token::Match(tok->astParent(), "*|[|.|++|--"))
                 return read | Action::Invalid;
             return Action::Invalid;
@@ -2233,7 +2233,7 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
             return Action::Invalid;
         if (match(tok)) {
             const Token* parent = tok->astParent();
-            if ((Token::Match(parent, "*|[") || (parent && parent->originalName() == "->")) && getIndirect() <= 0)
+            if ((Token::Match(parent, "*|[") || (parent && parent->originalName() == "->")) && getIndirect(tok) <= 0)
                 return Action::Read;
 
             Action read = Action::Read;
@@ -2294,7 +2294,7 @@ struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
 
     virtual const std::unordered_map<nonneg int, const Variable*>& getVars() const = 0;
 
-    virtual int getIndirect() const OVERRIDE {
+    virtual int getIndirect(const Token*) const OVERRIDE {
         return value.indirect;
     }
 
@@ -4521,6 +4521,207 @@ static void valueFlowForLoop(TokenList *tokenlist, SymbolDatabase* symboldatabas
     }
 }
 
+struct MultiValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
+    std::unordered_map<nonneg int, ValueFlow::Value> values;
+    std::unordered_map<nonneg int, const Variable*> vars;
+
+    ValueFlow::Value value;
+
+    MultiValueFlowForwardAnalyzer()
+        : ValueFlowForwardAnalyzer(), values(), vars()
+    {}
+
+    MultiValueFlowForwardAnalyzer(const std::unordered_map<const Variable*, ValueFlow::Value>& args, const TokenList* t)
+        : ValueFlowForwardAnalyzer(t), values(), vars()
+    {
+        for(const auto& p:args) {
+            values[p.first->declarationId()] = p.second;
+            vars[p.first->declarationId()] = p.first;
+        }
+    }
+
+    virtual const std::unordered_map<nonneg int, const Variable*>& getVars() const {
+        return vars;
+    }
+
+    virtual int getIndirect(const Token*) const OVERRIDE {
+        return value.indirect;
+    }
+
+    virtual bool isAlias(const Token* tok) const OVERRIDE {
+        if (value.isLifetimeValue())
+            return false;
+        for (const auto& p:getVars()) {
+            nonneg int varid = p.first;
+            const Variable* var = p.second;
+            if (tok->varId() == varid)
+                return true;
+            if (isAliasOf(var, tok, varid, {value}))
+                return true;
+        }
+        return false;
+    }
+
+    virtual bool isGlobal() const OVERRIDE {
+        return false;
+    }
+
+    virtual bool lowerToPossible() OVERRIDE {
+        for(auto&& p:values) {
+            if (p.second.isImpossible())
+                return false;
+            p.second.changeKnownToPossible();
+        }
+        return true;
+    }
+    virtual bool lowerToInconclusive() OVERRIDE {
+        for(auto&& p:values) {
+            if (p.second.isImpossible())
+                return false;
+            p.second.setInconclusive();
+        }
+        return true;
+    }
+
+    virtual void assume(const Token* tok, bool state, const Token* at) OVERRIDE {
+        // Update program state
+        pms.removeModifiedVars(tok);
+        pms.addState(tok, getProgramState());
+        pms.assume(tok, state);
+
+        const bool isAssert = Token::Match(at, "assert|ASSERT");
+        const bool isEndScope = Token::simpleMatch(at, "}");
+
+        if (!isAssert && !isEndScope) {
+            std::string s = state ? "true" : "false";
+            for(auto&& p:values) {
+                p.second.errorPath.emplace_back(tok, "Assuming condition is " + s);
+            }
+        }
+        if (!isAssert) {
+            for(auto&& p:values) {
+                p.second.conditional = true;
+            }
+        }
+    }
+
+    virtual bool isConditional() const OVERRIDE {
+        for(auto&& p:values) {
+            if (p.second.conditional)
+                return true;
+            if (p.second.condition)
+                return !p.second.isImpossible();
+        }
+        return false;
+    }
+
+    virtual void update(Token* tok, Action a) OVERRIDE {
+        if (tok->varId() == 0)
+            return;
+        ValueFlow::Value& value = values.at(tok->varId());
+        if (a.isRead())
+            setTokenValue(tok, value, getSettings());
+        if (a.isInconclusive())
+            lowerToInconclusive();
+        if (a.isWrite()) {
+            if (Token::Match(tok->astParent(), "%assign%")) {
+                // TODO: Check result
+                if (evalAssignment(value,
+                                   tok->astParent()->str(),
+                                   *getKnownValue(tok->astParent()->astOperand2(), ValueFlow::Value::ValueType::INT))) {
+                    const std::string info("Compound assignment '" + tok->astParent()->str() + "', assigned value is " +
+                                           value.infoString());
+                    value.errorPath.emplace_back(tok, info);
+                } else {
+                    // TODO: Don't set to zero
+                    value.intvalue = 0;
+                }
+            }
+            if (Token::Match(tok->astParent(), "++|--")) {
+                const bool inc = Token::simpleMatch(tok->astParent(), "++");
+                value.intvalue += (inc ? 1 : -1);
+                const std::string info(tok->str() + " is " + std::string(inc ? "incremented" : "decremented") +
+                                       "', new value is " + value.infoString());
+                value.errorPath.emplace_back(tok, info);
+            }
+        }
+    }
+
+    virtual bool updateScope(const Token* endBlock, bool) const OVERRIDE {
+        // const Scope* scope = endBlock->scope();
+        // if (!scope)
+        //     return false;
+        // if (scope->type == Scope::eLambda) {
+        //     return value.isLifetimeValue();
+        // } else if (scope->type == Scope::eIf || scope->type == Scope::eElse || scope->type == Scope::eWhile ||
+        //            scope->type == Scope::eFor) {
+        //     if (value.isKnown() || value.isImpossible())
+        //         return true;
+        //     if (value.isLifetimeValue())
+        //         return true;
+        //     if (isConditional())
+        //         return false;
+        //     const Token* condTok = getCondTokFromEnd(endBlock);
+        //     std::set<nonneg int> varids;
+        //     std::transform(getVars().begin(), getVars().end(), std::inserter(varids, varids.begin()), SelectMapKeys{});
+        //     return bifurcate(condTok, varids, getSettings());
+        // }
+
+        return false;
+    }
+
+    virtual bool match(const Token* tok) const OVERRIDE {
+        return values.count(tok->varId()) > 0;
+    }
+
+    virtual ProgramState getProgramState() const OVERRIDE {
+        ProgramState ps;
+        for(const auto& p:values)
+            ps[p.first] = p.second;
+        return ps;
+    }
+};
+
+static void valueFlowInjectParameter(TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings, const Scope* functionScope, const std::unordered_map<const Variable*, std::list<ValueFlow::Value>>& vars)
+{
+    using Args = std::vector<std::unordered_map<const Variable*, ValueFlow::Value>>;
+    Args args(1);
+    // Compute cartesian product of all arguments
+    for(const auto& p:vars) {
+        if (p.second.empty())
+            continue;
+        args.back()[p.first] = p.second.front();
+    }
+    for(const auto& p:vars) {
+        std::for_each(std::next(p.second.begin()), p.second.end(), [&](const ValueFlow::Value& value) {
+            Args new_args;
+            for(auto arg:args) {
+                arg[p.first] = value;
+                new_args.push_back(arg);
+            }
+            std::copy(new_args.begin(), new_args.end(), std::back_inserter(args));
+        });
+    }
+
+    for(const auto& arg:args) {
+        if (arg.empty())
+            continue;
+        bool skip = false;
+        // Make sure all arguments are the same path
+        MathLib::bigint path = arg.begin()->second.path;
+        for(const auto& p:arg) {
+            if (p.second.path != path) {
+                skip = true;
+                break;
+            }
+        }
+        if (skip)
+            continue;
+        MultiValueFlowForwardAnalyzer a(arg, tokenlist);
+        valueFlowGenericForward(const_cast<Token*>(functionScope->bodyStart), functionScope->bodyEnd, a, settings);
+    }
+}
+
 static void valueFlowInjectParameter(TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings, const Variable* arg, const Scope* functionScope, const std::list<ValueFlow::Value>& argvalues)
 {
     // Is argument passed by value or const reference, and is it a known non-class type?
@@ -4841,6 +5042,7 @@ static void valueFlowSubFunction(TokenList* tokenlist, SymbolDatabase* symboldat
                 continue;
 
             id++;
+            std::unordered_map<const Variable*, std::list<ValueFlow::Value>> argvars;
             // TODO: Rewrite this. It does not work well to inject 1 argument at a time.
             const std::vector<const Token *> &callArguments = getArguments(tok);
             for (int argnr = 0U; argnr < callArguments.size(); ++argnr) {
@@ -4855,6 +5057,8 @@ static void valueFlowSubFunction(TokenList* tokenlist, SymbolDatabase* symboldat
 
                 // Don't forward lifetime values
                 argvalues.remove_if(std::mem_fn(&ValueFlow::Value::isLifetimeValue));
+                // Don't forward container sizes for now since programmemory can't evaluate conditions
+                argvalues.remove_if(std::mem_fn(&ValueFlow::Value::isContainerSizeValue));
 
                 if (argvalues.empty())
                     continue;
@@ -4878,11 +5082,9 @@ static void valueFlowSubFunction(TokenList* tokenlist, SymbolDatabase* symboldat
                 // passed values are not "known"..
                 lowerToPossible(argvalues);
 
-                valueFlowInjectParameter(tokenlist, errorLogger, settings, argvar, calledFunctionScope, argvalues);
-                // FIXME: We need to rewrite the valueflow analysis to better handle multiple arguments
-                if (!argvalues.empty())
-                    break;
+                argvars[argvar] = argvalues;
             }
+            valueFlowInjectParameter(tokenlist, errorLogger, settings, calledFunctionScope, argvars);
         }
     }
 }
