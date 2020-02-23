@@ -7672,6 +7672,7 @@ private:
         // Type{data}()
         ASSERT_EQUALS("ab{(=", testAst("a=b{}();"));
         ASSERT_EQUALS("abc{((=", testAst("a=b(c{}());"));
+        ASSERT_EQUALS("f( xNULL!=0(x(:?", testAst("void f() { {} ((x != NULL) ? (void)0 : x()); }"));
 
         // ({..})
         ASSERT_EQUALS("a{+d+ bc+", testAst("a+({b+c;})+d"));
