@@ -622,20 +622,22 @@ private:
         ASSERT_EQUALS(2, suppressions.size());
         ASSERT_EQUALS(true, errMsg.empty());
 
+        //error, shouldn't have "some text" at beginning
         errMsg = "";
         suppressions=ss.parseMultiSuppressComment("//some text cppcheck-suppress[errorId1, errorId2 symbolName=arr]", &errMsg);
-        ASSERT_EQUALS(2, suppressions.size());
-        ASSERT_EQUALS(true, errMsg.empty());
+        ASSERT_EQUALS(0, suppressions.size());
+        ASSERT_EQUALS(false, errMsg.empty());
 
         errMsg = "";
         suppressions=ss.parseMultiSuppressComment("//cppcheck-suppress[errorId1, errorId2 symbolName=arr] some text", &errMsg);
         ASSERT_EQUALS(2, suppressions.size());
         ASSERT_EQUALS(true, errMsg.empty());
 
+        //error, shouldn't have "some text" at beginning
         errMsg = "";
         suppressions=ss.parseMultiSuppressComment("//some text cppcheck-suppress[errorId1, errorId2 symbolName=arr] some text", &errMsg);
-        ASSERT_EQUALS(2, suppressions.size());
-        ASSERT_EQUALS(true, errMsg.empty());
+        ASSERT_EQUALS(0, suppressions.size());
+        ASSERT_EQUALS(false, errMsg.empty());
 
         errMsg = "";
         suppressions=ss.parseMultiSuppressComment("/*cppcheck-suppress[errorId1, errorId2 symbolName=arr]*/", &errMsg);
