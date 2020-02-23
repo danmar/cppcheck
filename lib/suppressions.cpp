@@ -130,11 +130,10 @@ std::vector<Suppressions::Suppression> Suppressions::parseMultiSuppressComment(s
 
     const std::size_t start_position = comment.find("[", suppress_position);
     const std::size_t end_position = comment.find("]", suppress_position);
-    if (   start_position == std::string::npos 
-        || end_position == std::string::npos 
+    if (start_position == std::string::npos
+        || end_position == std::string::npos
         || start_position != suppress_position+17 //there must be no space before "["
-        || start_position >= end_position)
-    {
+        || start_position >= end_position) {
         if (errorMessage && errorMessage->empty())
             *errorMessage = "Bad multi suppression '" + comment + "'. legal format is cppcheck-suppress[errorId, errorId symbolName=arr, ...]";
         return suppressions;
@@ -144,19 +143,15 @@ std::vector<Suppressions::Suppression> Suppressions::parseMultiSuppressComment(s
     std::size_t current_comma_position = 0;
     //multi_suppressions_word maybe "[errorId1, errorId2 symbolName=arr", who just has left bracket
     std::string multi_suppressions_word = comment.substr(start_position, end_position-start_position);
-    do
-    {
+    do {
         std::string suppression_word;
 
         //single suppression word
         const std::size_t previous_comma_position=current_comma_position;
         current_comma_position=multi_suppressions_word.find(",", previous_comma_position+1);  //find "," after previous comma
-        if (current_comma_position == std::string::npos)
-        {
+        if (current_comma_position == std::string::npos) {
             suppression_word = multi_suppressions_word.substr(previous_comma_position+1);
-        }
-        else
-        {
+        } else {
             suppression_word = multi_suppressions_word.substr(previous_comma_position+1, current_comma_position-previous_comma_position-1);
         }
 
@@ -168,27 +163,22 @@ std::vector<Suppressions::Suppression> Suppressions::parseMultiSuppressComment(s
         std::istringstream iss(suppression_word);
 
         iss >> errorId;
-        if (!iss)
-        {
+        if (!iss) {
             if (errorMessage && errorMessage->empty())
                 *errorMessage = "Bad multi suppression '" + comment + "'. legal format is cppcheck-suppress[errorId, errorId symbolName=arr, ...]";
             suppressions.clear();
             return suppressions;
         }
 
-        while (iss) 
-        {
+        while (iss) {
             iss >> word;
             if (!iss)
                 break;
             if (word.find_first_not_of("+-*/%#;") == std::string::npos)
                 break;
-            if (word.compare(0, 11, "symbolName=") == 0)
-            {
+            if (word.compare(0, 11, "symbolName=") == 0) {
                 symbolName = word.substr(11);
-            }
-            else
-            {
+            } else {
                 if (errorMessage && errorMessage->empty())
                     *errorMessage = "Bad multi suppression '" + comment + "'. legal format is cppcheck-suppress[errorId, errorId symbolName=arr, ...]";
                 suppressions.clear();
@@ -200,7 +190,7 @@ std::vector<Suppressions::Suppression> Suppressions::parseMultiSuppressComment(s
         s.symbolName = symbolName;
         suppressions.push_back(s);
 
-    } while(current_comma_position!=std::string::npos);
+    } while (current_comma_position!=std::string::npos);
 
     return suppressions;
 }

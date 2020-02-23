@@ -92,8 +92,7 @@ static void parseCommentToken(const simplecpp::Token *tok, std::list<Suppression
                 if (!(*iter).errorId.empty())
                     inlineSuppressions.push_back(*iter);
             }
-        }
-        else {  //single suppress format
+        } else { //single suppress format
             std::string errmsg;
             Suppressions::Suppression s;
             if (!s.parseComment(tok->str(), &errmsg))
