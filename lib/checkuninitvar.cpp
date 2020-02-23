@@ -713,7 +713,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             if (var.isPointer() && Token::simpleMatch(tok->next(), "=")) {
                 const Token *rhs = tok->next()->astOperand2();
                 while (rhs && rhs->isCast())
-                    rhs = rhs->astOperand1();
+                    rhs = rhs->astOperand2() ? rhs->astOperand2() : rhs->astOperand1();
                 if (rhs && Token::Match(rhs->previous(), "%name% (") &&
                     mSettings->library.returnuninitdata.count(rhs->previous()->str()) > 0U) {
                     *alloc = NO_CTOR_CALL;
