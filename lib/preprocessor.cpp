@@ -32,6 +32,11 @@
 #include <iterator> // back_inserter
 #include <utility>
 
+static bool sameline(const simplecpp::Token *tok1, const simplecpp::Token *tok2)
+{
+    return tok1 && tok2 && tok1->location.sameline(tok2->location);
+}
+
 /**
  * Remove heading and trailing whitespaces from the input parameter.
  * If string is all spaces/tabs, return empty string.
@@ -76,42 +81,42 @@ namespace {
     };
 }
 
-static void parseCommentToken(const simplecpp::Token *tok, std::list<Suppressions::Suppression> &inlineSuppressions, std::list<BadInlineSuppression> *bad)
+static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std::list<Suppressions::Suppression> &inlineSuppressions, std::list<BadInlineSuppression> *bad)
 {
-    if (tok->str().size() < 19)
-        return;
-    const std::string::size_type pos1 = tok->str().find_first_not_of("/* \t");
+    const std::string &comment = tok->str();
+    if (comment.size() < 19)
+        return false;
+    const std::string::size_type pos1 = comment.find_first_not_of("/* \t");
     if (pos1 == std::string::npos)
-        return;
-    if (pos1 + 17 >= tok->str().size())
-        return;
-    if (tok->str().compare(pos1, 17, "cppcheck-suppress") != 0)
-        return;
+        return false;
+    if (pos1 + 17 >= comment.size())
+        return false;
+    if (comment.compare(pos1, 17, "cppcheck-suppress") != 0)
+        return false;
 
     // skip spaces after "cppcheck-suppress"
-    const std::string::size_type pos2 = tok->str().find_first_not_of(" ", pos1+17);
+    const std::string::size_type pos2 = comment.find_first_not_of(" ", pos1+17);
     if (pos2 == std::string::npos)
-        return;
+        return false;
 
-    if (tok->str()[pos2] == '[') {
+    if (comment[pos2] == '[') {
         // multi suppress format
         std::string errmsg;
-        std::vector<Suppressions::Suppression> ss;
-        ss = Suppressions::parseMultiSuppressComment(tok->str(), &errmsg);
+        std::vector<Suppressions::Suppression> suppressions = Suppressions::parseMultiSuppressComment(comment, &errmsg);
 
         if (!errmsg.empty())
             bad->push_back(BadInlineSuppression(tok->location, errmsg));
 
-        for (std::vector<Suppressions::Suppression>::iterator iter = ss.begin(); iter!=ss.end(); ++iter) {
-            if (!(*iter).errorId.empty())
-                inlineSuppressions.push_back(*iter);
+        for (const Suppressions::Suppression &s : suppressions) {
+            if (!s.errorId.empty())
+                inlineSuppressions.push_back(s);
         }
     } else {
         //single suppress format
         std::string errmsg;
         Suppressions::Suppression s;
-        if (!s.parseComment(tok->str(), &errmsg))
-            return;
+        if (!s.parseComment(comment, &errmsg))
+            return false;
 
         if (!s.errorId.empty())
             inlineSuppressions.push_back(s);
@@ -119,37 +124,36 @@ static void parseCommentToken(const simplecpp::Token *tok, std::list<Suppression
         if (!errmsg.empty())
             bad->push_back(BadInlineSuppression(tok->location, errmsg));
     }
+
+    return true;
 }
 
 static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSettings, std::list<BadInlineSuppression> *bad)
 {
-    const simplecpp::Token *current_non_comment_tok;
-    std::list<Suppressions::Suppression> inlineSuppressions;
+    for (const simplecpp::Token *tok = tokens.cfront(); tok; tok = tok ? tok->next : nullptr) {
+        if (!tok->comment)
+            continue;
 
-    for (const simplecpp::Token *tok = tokens.cfront(); tok; /*none*/) {
-        //parse all comment before current non-comment tok
-        if (tok->comment) {
-            parseCommentToken(tok, inlineSuppressions, bad);
+        std::list<Suppressions::Suppression> inlineSuppressions;
+        if (!parseInlineSuppressionCommentToken(tok, inlineSuppressions, bad))
+            continue;
+
+        if (!sameline(tok->previous, tok)) {
+            // find code after comment..
             tok = tok->next;
-            continue;
-        }
-
-        current_non_comment_tok = tok;
-
-        //parse all comment tok after current non-comment tok in the same line
-        for (tok = tok->next; tok; tok = tok->next) {
-            if ((tok->location.line != current_non_comment_tok->location.line) || !(tok->comment))
+            while (tok && tok->comment) {
+                parseInlineSuppressionCommentToken(tok, inlineSuppressions, bad);
+                tok = tok->next;
+            }
+            if (!tok)
                 break;
-            parseCommentToken(tok, inlineSuppressions, bad);
         }
 
-        //if there is no suppress, jump it!
-        if (inlineSuppressions.empty()) {
+        if (inlineSuppressions.empty())
             continue;
-        }
 
         // Relative filename
-        std::string relativeFilename(current_non_comment_tok->location.file());
+        std::string relativeFilename(tok->location.file());
         if (mSettings.relativePaths) {
             for (const std::string & basePath : mSettings.basePaths) {
                 const std::string bp = basePath + "/";
@@ -163,10 +167,9 @@ static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSe
         // Add the suppressions.
         for (Suppressions::Suppression &suppr : inlineSuppressions) {
             suppr.fileName = relativeFilename;
-            suppr.lineNumber = current_non_comment_tok->location.line;
+            suppr.lineNumber = tok->location.line;
             mSettings.nomsg.addSuppression(suppr);
         }
-        inlineSuppressions.clear();
     }
 }
 
@@ -217,11 +220,6 @@ void Preprocessor::setDirectives(const simplecpp::TokenList &tokens)
             mDirectives.push_back(directive);
         }
     }
-}
-
-static bool sameline(const simplecpp::Token *tok1, const simplecpp::Token *tok2)
-{
-    return tok1 && tok2 && tok1->location.sameline(tok2->location);
 }
 
 static std::string readcondition(const simplecpp::Token *iftok, const std::set<std::string> &defined, const std::set<std::string> &undefined)
