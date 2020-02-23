@@ -118,9 +118,15 @@ std::vector<Suppressions::Suppression> Suppressions::parseMultiSuppressComment(s
     if (comment.size() < 2)
         return suppressions;
 
-    const std::size_t suppress_position = comment.find("cppcheck-suppress");
+    const std::size_t first_non_blank_position = comment.find_first_not_of(" \t\n", 2);
+    const std::size_t suppress_position = comment.find("cppcheck-suppress", 2);
     if (suppress_position == std::string::npos)
         return suppressions;
+    if (suppress_position != first_non_blank_position) {
+        if (errorMessage && errorMessage->empty())
+            *errorMessage = "Bad multi suppression '" + comment + "'. there shouldn't have non-blank character before cppcheck-suppress";
+        return suppressions;
+    }
 
     const std::size_t start_position = comment.find("[", suppress_position);
     const std::size_t end_position = comment.find("]", suppress_position);
