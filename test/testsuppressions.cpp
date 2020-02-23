@@ -329,6 +329,14 @@ private:
         // suppress uninitvar inline
         (this->*check)("void f() {\n"
                        "    int a;\n"
+                       "    a++;// cppcheck-suppress uninitvar\n"
+                       "}\n",
+                       "");
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress uninitvar inline
+        (this->*check)("void f() {\n"
+                       "    int a;\n"
                        "    /* cppcheck-suppress uninitvar */\n"
                        "    a++;\n"
                        "}\n",
@@ -341,6 +349,69 @@ private:
                        "    /* cppcheck-suppress uninitvar */\n"
                        "\n"
                        "    a++;\n"
+                       "}\n",
+                       "");
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress uninitvar inline
+        (this->*check)("void f() {\n"
+                       "    int a;\n"
+                       "    a++;/* cppcheck-suppress uninitvar */\n"
+                       "}\n",
+                       "");
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress uninitvar inline
+        (this->*check)("void f() {\n"
+                       "    int a;\n"
+                       "    // cppcheck-suppress[uninitvar]\n"
+                       "    a++;\n"
+                       "}\n",
+                       "");
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress uninitvar inline
+        (this->*check)("void f() {\n"
+                       "    int a;\n"
+                       "    // cppcheck-suppress[uninitvar]\n"
+                       "    a++;\n"
+                       "\n"
+                       "    a++;\n"
+                       "}\n",
+                       "");
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress uninitvar inline
+        (this->*check)("void f() {\n"
+                       "    int a;\n"
+                       "    a++;// cppcheck-suppress[uninitvar]\n"
+                       "}\n",
+                       "");
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress uninitvar inline
+        (this->*check)("void f() {\n"
+                       "    int a;\n"
+                       "    /* cppcheck-suppress[uninitvar]*/\n"
+                       "    a++;\n"
+                       "}\n",
+                       "");
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress uninitvar inline
+        (this->*check)("void f() {\n"
+                       "    int a;\n"
+                       "    /* cppcheck-suppress[uninitvar]*/\n"
+                       "\n"
+                       "    a++;\n"
+                       "}\n",
+                       "");
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress uninitvar inline
+        (this->*check)("void f() {\n"
+                       "    int a;\n"
+                       "    a++;/* cppcheck-suppress[uninitvar]*/\n"
                        "}\n",
                        "");
         ASSERT_EQUALS("", errout.str());
@@ -563,6 +634,11 @@ private:
 
         errMsg = "";
         suppressions=ss.parseMultiSuppressComment("//some text cppcheck-suppress[errorId1, errorId2 symbolName=arr] some text", &errMsg);
+        ASSERT_EQUALS(2, suppressions.size());
+        ASSERT_EQUALS(true, errMsg.empty());
+
+        errMsg = "";
+        suppressions=ss.parseMultiSuppressComment("/*cppcheck-suppress[errorId1, errorId2 symbolName=arr]*/", &errMsg);
         ASSERT_EQUALS(2, suppressions.size());
         ASSERT_EQUALS(true, errMsg.empty());
     }
