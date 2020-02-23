@@ -26,6 +26,7 @@
 #include <list>
 #include <set>
 #include <string>
+#include <vector>
 
 /// @addtogroup Core
 /// @{
@@ -114,6 +115,14 @@ public:
      * @return error message. empty upon success
      */
     std::string parseXmlFile(const char *filename);
+
+    /**
+     * Parse multi inline suppression in comment
+     * @param comment the full comment text
+     * @param errorMessage output parameter for error message (wrong suppression attribute)
+     * @return empty vector if something wrong.
+     */
+    static std::vector<Suppression> parseMultiSuppressComment(std::string comment, std::string *errorMessage);
 
     /**
      * @brief Don't show the given error.
