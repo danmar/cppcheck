@@ -118,12 +118,12 @@ std::vector<Suppressions::Suppression> Suppressions::parseMultiSuppressComment(s
     if (comment.size() < 2)
         return suppressions;
 
-    size_t suppress_position = comment.find("cppcheck-suppress");
+    const std::size_t suppress_position = comment.find("cppcheck-suppress");
     if (suppress_position == std::string::npos)
         return suppressions;
 
-    size_t start_position = comment.find("[", suppress_position);
-    size_t end_position = comment.find("]", suppress_position);
+    const std::size_t start_position = comment.find("[", suppress_position);
+    const std::size_t end_position = comment.find("]", suppress_position);
     if (   start_position == std::string::npos 
         || end_position == std::string::npos 
         || start_position != suppress_position+17 //there must be no space before "["
@@ -135,22 +135,23 @@ std::vector<Suppressions::Suppression> Suppressions::parseMultiSuppressComment(s
     }
 
     //extract supressions
-    size_t current_comma_position = 0;
-    std::string suppression_word;
+    std::size_t current_comma_position = 0;
     //multi_suppressions_word maybe "[errorId1, errorId2 symbolName=arr", who just has left bracket
     std::string multi_suppressions_word = comment.substr(start_position, end_position-start_position);
     do
     {
+        std::string suppression_word;
+
         //single suppression word
-        size_t previou_comma_position=current_comma_position;
-        current_comma_position=multi_suppressions_word.find(",", previou_comma_position+1);  //find "," after previous comma
+        const std::size_t previous_comma_position=current_comma_position;
+        current_comma_position=multi_suppressions_word.find(",", previous_comma_position+1);  //find "," after previous comma
         if (current_comma_position == std::string::npos)
         {
-            suppression_word = multi_suppressions_word.substr(previou_comma_position+1);
+            suppression_word = multi_suppressions_word.substr(previous_comma_position+1);
         }
         else
         {
-            suppression_word = multi_suppressions_word.substr(previou_comma_position+1, current_comma_position-previou_comma_position-1);
+            suppression_word = multi_suppressions_word.substr(previous_comma_position+1, current_comma_position-previous_comma_position-1);
         }
 
         //parse single suppression word

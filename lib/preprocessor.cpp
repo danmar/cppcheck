@@ -78,14 +78,12 @@ namespace {
 
 static void parseCommentToken(const simplecpp::Token *tok, std::list<Suppressions::Suppression> &inlineSuppressions, std::list<BadInlineSuppression> *bad)
 {
-    static Suppressions suppressions;
-
-    size_t position=tok->str().find("cppcheck-suppress");
+    const std::size_t position=tok->str().find("cppcheck-suppress");
     if (position != std::string::npos) {
         if ((tok->str().length() > position+17) && (tok->str()[position+17] == '[')) {  //multi suppress format
             std::string errmsg;
             std::vector<Suppressions::Suppression> ss;
-            ss = suppressions.parseMultiSuppressComment(tok->str(), &errmsg);
+            ss = Suppressions::parseMultiSuppressComment(tok->str(), &errmsg);
 
             if (!errmsg.empty())
                 bad->push_back(BadInlineSuppression(tok->location, errmsg));
