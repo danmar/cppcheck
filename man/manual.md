@@ -357,9 +357,15 @@ To suppress the error message, a comment can be added:
 
     void f() {
         char arr[5];
+        arr[10] = 0;    // cppcheck-suppress[arrayIndexOutOfBounds]
+    }
 
-        // cppcheck-suppress arrayIndexOutOfBounds
-        arr[10] = 0;
+Also you can put suppress ahead of the code, but there shouldn't have any other code before suppress comment in the same line:
+
+    void f() {
+        char arr[5];
+        // cppcheck-suppress[arrayIndexOutOfBounds]
+        arr[10] = 0;    
     }
 
 Now the `--inline-suppr` flag can be used to suppress the warning. No error is reported when invoking cppcheck this way:
@@ -368,12 +374,20 @@ Now the `--inline-suppr` flag can be used to suppress the warning. No error is r
 
 You can specify that the inline suppression only applies to a specific symbol:
 
-    // cppcheck-suppress arrayIndexOutOfBounds symbolName=arr
+    // cppcheck-suppress[arrayIndexOutOfBounds symbolName=arr]
 
-You can write comments for the suppress, however is recommended to use ; or // to specify where they start:
+You can use comma to separate multi inline suppression in the same suppress comment:
 
-    // cppcheck-suppress arrayIndexOutOfBounds ; some comment
-    // cppcheck-suppress arrayIndexOutOfBounds // some comment
+    // cppcheck-suppress[uninitvar, arrayIndexOutOfBounds symbolName=arr]
+
+You can write other comments after suppress:
+
+    // cppcheck-suppress[arrayIndexOutOfBounds symbolName=arr] some comment
+
+The old inline suppress format can also be supported, they need ; or // to specify where other comments start:
+
+    // cppcheck-suppress arrayIndexOutOfBounds symbolName=arr ;  some comment
+    // cppcheck-suppress arrayIndexOutOfBounds symbolName=arr // some comment
 
 # XML output
 
