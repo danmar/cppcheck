@@ -2162,6 +2162,13 @@ struct SelectMapKeys {
     }
 };
 
+struct SelectMapValues {
+    template<class Pair>
+    typename Pair::second_type operator()(const Pair& p) const {
+        return p.second;
+    }
+};
+
 struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
     const TokenList* tokenlist;
     ProgramMemoryState pms;
@@ -2196,7 +2203,10 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
         return 0;
     }
 
-    virtual bool isWritableValue() const {
+    virtual bool isWritableValue(const Token* tok) const {
+        const ValueFlow::Value* value = getValue(tok);
+        if (value)
+            return value->isIntValue() || value->isFloatValue();
         return false;
     }
 
@@ -2249,7 +2259,7 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
                 return Action::Read;
 
             Action read = Action::Read;
-            if (isWritableValue() && Token::Match(parent, "%assign%") && astIsLHS(tok) &&
+            if (isWritableValue(tok) && Token::Match(parent, "%assign%") && astIsLHS(tok) &&
                 parent->astOperand2()->hasKnownValue()) {
                 const Token* rhs = parent->astOperand2();
                 const ValueFlow::Value* rhsValue = getKnownValue(rhs, ValueFlow::Value::ValueType::INT);
@@ -2264,7 +2274,7 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
             }
 
             // increment/decrement
-            if (isWritableValue() && (Token::Match(tok->previous(), "++|-- %name%") || Token::Match(tok, "%name% ++|--"))) {
+            if (isWritableValue(tok) && (Token::Match(tok->previous(), "++|-- %name%") || Token::Match(tok, "%name% ++|--"))) {
                 return read | Action::Write;
             }
             // Check for modifications by function calls
@@ -2355,10 +2365,10 @@ struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
 
     virtual const std::unordered_map<nonneg int, const Variable*>& getVars() const = 0;
 
-    virtual const ValueFlow::Value* getValue(const Token* tok) const OVERRIDE {
+    virtual const ValueFlow::Value* getValue(const Token*) const OVERRIDE {
         return &value;
     }
-    virtual ValueFlow::Value* getValue(const Token* tok) OVERRIDE {
+    virtual ValueFlow::Value* getValue(const Token*) OVERRIDE {
         return &value;
     }
 
@@ -2382,10 +2392,6 @@ struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
                 return true;
         }
         return false;
-    }
-
-    virtual bool isWritableValue() const OVERRIDE {
-        return value.isIntValue() || value.isFloatValue();
     }
 
     virtual bool isGlobal() const OVERRIDE {
@@ -4570,7 +4576,7 @@ struct MultiValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
         return vars;
     }
 
-    virtual const ValueFlow::Value* getValue(const Token* tok) const {
+    virtual const ValueFlow::Value* getValue(const Token* tok) const OVERRIDE {
         if (tok->varId() == 0)
             return nullptr;
         auto it = values.find(tok->varId());
@@ -4578,7 +4584,7 @@ struct MultiValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
             return nullptr;
         return &it->second;
     }
-    virtual ValueFlow::Value* getValue(const Token* tok) {
+    virtual ValueFlow::Value* getValue(const Token* tok) OVERRIDE {
         if (tok->varId() == 0)
             return nullptr;
         auto it = values.find(tok->varId());
@@ -4587,13 +4593,13 @@ struct MultiValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
         return &it->second;
     }
 
-    virtual void makeConditional() {
+    virtual void makeConditional() OVERRIDE {
         for(auto&& p:values) {
             p.second.conditional = true;
         }
     }
 
-    virtual void addErrorPath(const Token* tok, const std::string& s) {
+    virtual void addErrorPath(const Token* tok, const std::string& s) OVERRIDE {
         for(auto&& p:values) {
             p.second.errorPath.emplace_back(tok, "Assuming condition is " + s);
         }
@@ -4645,24 +4651,31 @@ struct MultiValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
     }
 
     virtual bool updateScope(const Token* endBlock, bool) const OVERRIDE {
-        // const Scope* scope = endBlock->scope();
-        // if (!scope)
-        //     return false;
-        // if (scope->type == Scope::eLambda) {
-        //     return value.isLifetimeValue();
-        // } else if (scope->type == Scope::eIf || scope->type == Scope::eElse || scope->type == Scope::eWhile ||
-        //            scope->type == Scope::eFor) {
-        //     if (value.isKnown() || value.isImpossible())
-        //         return true;
-        //     if (value.isLifetimeValue())
-        //         return true;
-        //     if (isConditional())
-        //         return false;
-        //     const Token* condTok = getCondTokFromEnd(endBlock);
-        //     std::set<nonneg int> varids;
-        //     std::transform(getVars().begin(), getVars().end(), std::inserter(varids, varids.begin()), SelectMapKeys{});
-        //     return bifurcate(condTok, varids, getSettings());
-        // }
+        const Scope* scope = endBlock->scope();
+        if (!scope)
+            return false;
+        if (scope->type == Scope::eLambda) {
+            return value.isLifetimeValue();
+        } else if (scope->type == Scope::eIf || scope->type == Scope::eElse || scope->type == Scope::eWhile ||
+                   scope->type == Scope::eFor) {
+            auto pred = [](const ValueFlow::Value& value) {
+                if (value.isKnown())
+                    return true;
+                if (value.isImpossible())
+                    return true;
+                if (value.isLifetimeValue())
+                    return true;
+                return false;
+            };
+            if (std::all_of(values.begin(), values.end(), std::bind(pred, std::bind(SelectMapValues{}, std::placeholders::_1))))
+                return true;
+            if (isConditional())
+                return false;
+            const Token* condTok = getCondTokFromEnd(endBlock);
+            std::set<nonneg int> varids;
+            std::transform(getVars().begin(), getVars().end(), std::inserter(varids, varids.begin()), SelectMapKeys{});
+            return bifurcate(condTok, varids, getSettings());
+        }
 
         return false;
     }

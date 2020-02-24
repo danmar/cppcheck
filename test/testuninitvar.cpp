@@ -4560,6 +4560,17 @@ private:
                         "  f(&i);\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // # 9631
+        valueFlowUninit("static void g(bool * result, int num, int num2, size_t * buflen) {\n"
+                        "  if (*result && *buflen >= 5) {}\n"
+                        "}\n"
+                        "void f() {\n"
+                        "  size_t bytesCopied;\n"
+                        "  bool copied_all = true;\n"
+                        "  g(&copied_all, 5, 6, &bytesCopied);\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:2]: (error) Uninitialized variable: *buflen\n", errout.str());
     }
 
     void uninitvar_memberfunction() {
