@@ -20,6 +20,7 @@ jobs:
       - name: Install missing software on ubuntu
         if: matrix.os == 'ubuntu-latest'
         run: |
+          sudo apt update
           sudo apt-get install libxml2-utils
           sudo apt-get install z3 libz3-dev
 

@@ -376,7 +376,7 @@ You can specify that the inline suppression only applies to a specific symbol:
 
     // cppcheck-suppress[arrayIndexOutOfBounds symbolName=arr]
 
-You can use comma to separate multi inline suppression in the same suppress comment:
+You can use comma to separate multiple inline suppression in the same suppress comment:
 
     // cppcheck-suppress[uninitvar, arrayIndexOutOfBounds symbolName=arr]
 
