@@ -3906,6 +3906,126 @@ void invalidFunctionArgBool_abs(bool b, double x, double y)
     (void)abs(x<y); // #5635
 }
 
+int invalidFunctionArgBool_tolower(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)tolower(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return tolower(c != 0);
+}
+
+int invalidFunctionArgBool_toupper(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)toupper(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return toupper(c != 0);
+}
+
+bool invalidFunctionArgBool_iscntrl(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)iscntrl(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return iscntrl(c != 0);
+}
+
+bool invalidFunctionArgBool_isalpha(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)isalpha(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return isalpha(c != 0);
+}
+
+bool invalidFunctionArgBool_isalnum(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)isalnum(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return isalnum(c != 0);
+}
+
+bool invalidFunctionArgBool_isspace(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)isspace(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return isspace(c != 0);
+}
+
+bool invalidFunctionArgBool_isdigit(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)isdigit(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return isdigit(c != 0);
+}
+
+bool invalidFunctionArgBool_isgraph(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)isgraph(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return isgraph(c != 0);
+}
+
+bool invalidFunctionArgBool_islower(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)islower(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return islower(c != 0);
+}
+
+bool invalidFunctionArgBool_iswcntrl(bool b, wint_t c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)iswcntrl(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return iswcntrl(c != 0);
+}
+
+bool invalidFunctionArgBool_isprint(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)isprint(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return isprint(c != 0);
+}
+
+bool invalidFunctionArgBool_isblank(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)isblank(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return isblank(c != 0);
+}
+
+bool invalidFunctionArgBool_ispunct(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)ispunct(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return ispunct(c != 0);
+}
+
+bool invalidFunctionArgBool_isupper(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)isupper(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return isupper(c != 0);
+}
+
+bool invalidFunctionArgBool_isxdigit(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)isxdigit(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return isxdigit(c != 0);
+}
+
 void invalidFunctionArg(char c)
 {
     // cppcheck-suppress asctime_sCalled

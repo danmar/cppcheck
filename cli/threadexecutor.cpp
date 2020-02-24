@@ -36,6 +36,9 @@
 #include <sys/loadavg.h>
 #endif
 #ifdef THREADING_MODEL_FORK
+#if defined(__linux__)
+#include <sys/prctl.h>
+#endif
 #include <sys/select.h>
 #include <sys/wait.h>
 #include <fcntl.h>
@@ -204,6 +207,9 @@ unsigned int ThreadExecutor::check()
                 std::cerr << "#### ThreadExecutor::check, Failed to create child process: "<< std::strerror(errno) << std::endl;
                 std::exit(EXIT_FAILURE);
             } else if (pid == 0) {
+#if defined(__linux__)
+                prctl(PR_SET_PDEATHSIG, SIGHUP);
+#endif
                 close(pipes[0]);
                 mWpipe = pipes[1];
 

@@ -2440,7 +2440,7 @@ void CheckClass::virtualFunctionCallInConstructorError(
         }
     }
 
-    reportError(errorPath, Severity::warning, "virtualCallInConstructor",
+    reportError(errorPath, Severity::style, "virtualCallInConstructor",
                 "Virtual function '" + funcname + "' is called from " + scopeFunctionTypeName + " '" + constructorName + "' at line " + MathLib::toString(lineNumber) + ". Dynamic binding is not used.", CWE(0U), false);
 }
 
@@ -2623,6 +2623,101 @@ void CheckClass::overrideError(const Function *funcInBase, const Function *funcI
                 "The " + funcType + " '$symbol' overrides a " + funcType + " in a base class but is not marked with a 'override' specifier.",
                 CWE(0U) /* Unknown CWE! */,
                 false);
+}
+
+void CheckClass::checkThisUseAfterFree()
+{
+    if (!mSettings->isEnabled(Settings::WARNING))
+        return;
+
+    for (const Scope * classScope : mSymbolDatabase->classAndStructScopes) {
+
+        for (const Variable &var : classScope->varlist) {
+            // Find possible "self pointer".. pointer/smartpointer member variable of "self" type.
+            if (var.valueType() && var.valueType()->smartPointerType != classScope->definedType && var.valueType()->typeScope != classScope) {
+                const ValueType valueType = ValueType::parseDecl(var.typeStartToken(), mSettings);
+                if (valueType.smartPointerType != classScope->definedType)
+                    continue;
+            }
+
+            // If variable is not static, check that "this" is assigned
+            if (!var.isStatic()) {
+                bool hasAssign = false;
+                for (const Function &func : classScope->functionList) {
+                    if (func.type != Function::Type::eFunction || !func.hasBody())
+                        continue;
+                    for (const Token *tok = func.functionScope->bodyStart; tok != func.functionScope->bodyEnd; tok = tok->next()) {
+                        if (Token::Match(tok, "%varid% = this|shared_from_this", var.declarationId())) {
+                            hasAssign = true;
+                            break;
+                        }
+                    }
+                    if (hasAssign)
+                        break;
+                }
+                if (!hasAssign)
+                    continue;
+            }
+
+            // Check usage of self pointer..
+            for (const Function &func : classScope->functionList) {
+                if (func.type != Function::Type::eFunction || !func.hasBody())
+                    continue;
+
+                const Token * freeToken = nullptr;
+                std::set<const Function *> callstack;
+                checkThisUseAfterFreeRecursive(classScope, &func, &var, callstack, &freeToken);
+            }
+        }
+    }
+}
+
+bool CheckClass::checkThisUseAfterFreeRecursive(const Scope *classScope, const Function *func, const Variable *selfPointer, std::set<const Function *> callstack, const Token **freeToken)
+{
+    if (!func || !func->functionScope)
+        return false;
+
+    // avoid recursion
+    if (callstack.count(func))
+        return false;
+    callstack.insert(func);
+
+    const Token * const bodyStart = func->functionScope->bodyStart;
+    const Token * const bodyEnd = func->functionScope->bodyEnd;
+    for (const Token *tok = bodyStart; tok != bodyEnd; tok = tok->next()) {
+        const bool isDestroyed = *freeToken != nullptr && !func->isStatic();
+        if (Token::Match(tok, "delete %var% ;") && selfPointer == tok->next()->variable()) {
+            *freeToken = tok;
+            tok = tok->tokAt(2);
+        } else if (Token::Match(tok, "%var% . reset ( )") && selfPointer == tok->variable())
+            *freeToken = tok;
+        else if (Token::Match(tok->previous(), "!!. %name% (") && tok->function() && tok->function()->nestedIn == classScope) {
+            if (isDestroyed) {
+                thisUseAfterFree(selfPointer->nameToken(), *freeToken, tok);
+                return true;
+            }
+            if (checkThisUseAfterFreeRecursive(classScope, tok->function(), selfPointer, callstack, freeToken))
+                return true;
+        } else if (isDestroyed && Token::Match(tok->previous(), "!!. %name%") && tok->variable() && tok->variable()->scope() == classScope && !tok->variable()->isStatic() && !tok->variable()->isArgument()) {
+            thisUseAfterFree(selfPointer->nameToken(), *freeToken, tok);
+            return true;
+        } else if (*freeToken && Token::Match(tok, "return|throw"))
+            // TODO
+            return tok->str() == "throw";
+    }
+    return false;
+}
+
+void CheckClass::thisUseAfterFree(const Token *self, const Token *free, const Token *use)
+{
+    std::string selfPointer = self ? self->str() : "ptr";
+    const ErrorPath errorPath = { ErrorPathItem(self, "Assuming '" + selfPointer + "' is used as 'this'"), ErrorPathItem(free, "Delete '" + selfPointer + "', invalidating 'this'"), ErrorPathItem(use, "Call method when 'this' is invalid") };
+    const std::string usestr = use ? use->str() : "x";
+    const std::string usemsg = use && use->function() ? ("Calling method '" + usestr + "()'") : ("Using member '" + usestr + "'");
+    reportError(errorPath, Severity::warning, "thisUseAfterFree",
+                "$symbol:" + selfPointer + "\n" +
+                usemsg + " when 'this' might be invalid",
+                CWE(0), false);
 }
 
 void CheckClass::checkUnsafeClassRefMember()

@@ -15,19 +15,6 @@ const Scope* PathAnalysis::findOuterScope(const Scope * scope)
     return scope;
 }
 
-static const Token* getCondTok(const Token* tok)
-{
-    if (!tok)
-        return nullptr;
-    if (Token::simpleMatch(tok, "("))
-        return getCondTok(tok->previous());
-    if (Token::simpleMatch(tok, "for") && Token::simpleMatch(tok->next()->astOperand2(), ";") && tok->next()->astOperand2()->astOperand2())
-        return tok->next()->astOperand2()->astOperand2()->astOperand1();
-    if (Token::simpleMatch(tok->next()->astOperand2(), ";"))
-        return tok->next()->astOperand2()->astOperand1();
-    return tok->next()->astOperand2();
-}
-
 static const Token* assignExpr(const Token* tok)
 {
     while (tok->astParent() && astIsLHS(tok)) {
@@ -81,7 +68,7 @@ PathAnalysis::Progress PathAnalysis::forwardRange(const Token* startToken, const
         else if (Token::Match(tok, "return|throw")) {
             forwardRecursive(tok, info, f);
             return Progress::Break;
-        // Evaluate RHS of assignment before LHS
+            // Evaluate RHS of assignment before LHS
         } else if (const Token* assignTok = assignExpr(tok)) {
             if (forwardRecursive(assignTok->astOperand2(), info, f) == Progress::Break)
                 return Progress::Break;

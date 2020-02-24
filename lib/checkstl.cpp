@@ -749,8 +749,18 @@ void CheckStl::invalidContainer()
                 continue;
             std::set<nonneg int> skipVarIds;
             // Skip if the variable is assigned to
-            if (Token::Match(tok->astTop(), "%assign%") && Token::Match(tok->astTop()->previous(), "%var%"))
-                skipVarIds.insert(tok->astTop()->previous()->varId());
+            const Token* assignExpr = tok;
+            while (assignExpr->astParent()) {
+                bool isRHS = astIsRHS(assignExpr);
+                assignExpr = assignExpr->astParent();
+                if (Token::Match(assignExpr, "%assign%")) {
+                    if (!isRHS)
+                        assignExpr = nullptr;
+                    break;
+                }
+            }
+            if (Token::Match(assignExpr, "%assign%") && Token::Match(assignExpr->astOperand1(), "%var%"))
+                skipVarIds.insert(assignExpr->astOperand1()->varId());
             const Token * endToken = nextAfterAstRightmostLeaf(tok->next()->astParent());
             if (!endToken)
                 endToken = tok->next();
@@ -1082,7 +1092,11 @@ void CheckStl::if_find()
         if ((scope.type != Scope::eIf && scope.type != Scope::eWhile) || !scope.classDef)
             continue;
 
-        for (const Token *tok = scope.classDef->next(); tok->str() != "{"; tok = tok->next()) {
+        const Token *conditionStart = scope.classDef->next();
+        if (conditionStart && Token::simpleMatch(conditionStart->astOperand2(), ";"))
+            conditionStart = conditionStart->astOperand2();
+
+        for (const Token *tok = conditionStart; tok->str() != "{"; tok = tok->next()) {
             const Token* funcTok = nullptr;
             const Library::Container* container = nullptr;
 

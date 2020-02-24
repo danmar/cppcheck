@@ -43,6 +43,40 @@ TokenList::TokenList(const Settings* settings) :
     mIsC(false),
     mIsCpp(false)
 {
+    mKeywords.insert("auto");
+    mKeywords.insert("break");
+    mKeywords.insert("case");
+    mKeywords.insert("char");
+    mKeywords.insert("const");
+    mKeywords.insert("continue");
+    mKeywords.insert("default");
+    mKeywords.insert("do");
+    mKeywords.insert("double");
+    mKeywords.insert("else");
+    mKeywords.insert("enum");
+    mKeywords.insert("extern");
+    mKeywords.insert("float");
+    mKeywords.insert("for");
+    mKeywords.insert("goto");
+    mKeywords.insert("if");
+    mKeywords.insert("inline");
+    mKeywords.insert("int");
+    mKeywords.insert("long");
+    mKeywords.insert("register");
+    mKeywords.insert("restrict");
+    mKeywords.insert("return");
+    mKeywords.insert("short");
+    mKeywords.insert("signed");
+    mKeywords.insert("sizeof");
+    mKeywords.insert("static");
+    mKeywords.insert("struct");
+    mKeywords.insert("switch");
+    mKeywords.insert("typedef");
+    mKeywords.insert("union");
+    mKeywords.insert("unsigned");
+    mKeywords.insert("void");
+    mKeywords.insert("volatile");
+    mKeywords.insert("while");
 }
 
 TokenList::~TokenList()
@@ -90,6 +124,38 @@ int TokenList::appendFileIfNew(const std::string &fileName)
             mIsC = mSettings->enforcedLang == Settings::C || (mSettings->enforcedLang == Settings::None && Path::isC(getSourceFilePath()));
             mIsCpp = mSettings->enforcedLang == Settings::CPP || (mSettings->enforcedLang == Settings::None && Path::isCPP(getSourceFilePath()));
         }
+
+        if (mIsCpp) {
+            mKeywords.insert("catch");
+            mKeywords.insert("delete");
+            mKeywords.insert("class");
+            mKeywords.insert("const_cast");
+            mKeywords.insert("delete");
+            mKeywords.insert("dynamic_cast");
+            mKeywords.insert("explicit");
+            mKeywords.insert("export");
+            mKeywords.insert("false");
+            mKeywords.insert("friend");
+            mKeywords.insert("mutable");
+            mKeywords.insert("namespace");
+            mKeywords.insert("new");
+            mKeywords.insert("operator");
+            mKeywords.insert("private");
+            mKeywords.insert("protected");
+            mKeywords.insert("public");
+            mKeywords.insert("reinterpret_cast");
+            mKeywords.insert("static_cast");
+            mKeywords.insert("template");
+            mKeywords.insert("this");
+            mKeywords.insert("throw");
+            mKeywords.insert("true");
+            mKeywords.insert("try");
+            mKeywords.insert("typeid");
+            mKeywords.insert("typename");
+            mKeywords.insert("using");
+            mKeywords.insert("virtual");
+            mKeywords.insert("wchar_t");
+        }
     }
     return mFiles.size() - 1;
 }
@@ -132,20 +198,6 @@ void TokenList::addtoken(std::string str, const nonneg int lineno, const nonneg 
         }
     }
 
-    // Replace hexadecimal value with decimal
-    const bool isHex = MathLib::isIntHex(str) ;
-    if (isHex || MathLib::isOct(str) || MathLib::isBin(str)) {
-        // TODO: It would be better if TokenList didn't simplify hexadecimal numbers
-        std::string suffix;
-        if (isHex &&
-            str.size() == (2 + mSettings->int_bit / 4) &&
-            (str[2] >= '8') &&  // includes A-F and a-f
-            MathLib::getSuffix(str).empty()
-           )
-            suffix = "U";
-        str = MathLib::value(str).str() + suffix;
-    }
-
     if (mTokensFrontBack.back) {
         mTokensFrontBack.back->insertToken(str);
     } else {
@@ -154,7 +206,7 @@ void TokenList::addtoken(std::string str, const nonneg int lineno, const nonneg 
         mTokensFrontBack.back->str(str);
     }
 
-    if (isCPP() && str == "delete")
+    if (isKeyword(str))
         mTokensFrontBack.back->isKeyword(true);
     mTokensFrontBack.back->linenr(lineno);
     mTokensFrontBack.back->fileIndex(fileno);
@@ -164,20 +216,6 @@ void TokenList::addtoken(std::string str, const Token *locationTok)
 {
     if (str.empty())
         return;
-
-    // Replace hexadecimal value with decimal
-    const bool isHex = MathLib::isIntHex(str) ;
-    if (isHex || MathLib::isOct(str) || MathLib::isBin(str)) {
-        // TODO: It would be better if TokenList didn't simplify hexadecimal numbers
-        std::string suffix;
-        if (isHex &&
-            str.size() == (2 + mSettings->int_bit / 4) &&
-            (str[2] >= '8') &&  // includes A-F and a-f
-            MathLib::getSuffix(str).empty()
-           )
-            suffix = "U";
-        str = MathLib::value(str).str() + suffix;
-    }
 
     if (mTokensFrontBack.back) {
         mTokensFrontBack.back->insertToken(str);
@@ -366,22 +404,6 @@ void TokenList::createTokens(const simplecpp::TokenList *tokenList)
 
         std::string str = tok->str();
 
-        // Replace hexadecimal value with decimal
-        // TODO: Remove this
-        const bool isHex = MathLib::isIntHex(str) ;
-        if (isHex || MathLib::isOct(str) || MathLib::isBin(str)) {
-            // TODO: It would be better if TokenList didn't simplify hexadecimal numbers
-            std::string suffix;
-            if (isHex &&
-                mSettings &&
-                str.size() == (2 + mSettings->int_bit / 4) &&
-                (str[2] >= '8') &&  // includes A-F and a-f
-                MathLib::getSuffix(str).empty()
-               )
-                suffix = "U";
-            str = MathLib::value(str).str() + suffix;
-        }
-
         // Float literal
         if (str.size() > 1 && str[0] == '.' && std::isdigit(str[1]))
             str = '0' + str;
@@ -489,7 +511,7 @@ static bool iscast(const Token *tok)
     if (Token::Match(tok->link(), ") }|)|]|;"))
         return false;
 
-    if (Token::Match(tok->link(), ") %cop%") && !Token::Match(tok->link(), ") [&*+-~]"))
+    if (Token::Match(tok->link(), ") %cop%") && !Token::Match(tok->link(), ") [&*+-~!]"))
         return false;
 
     if (Token::Match(tok->previous(), "= ( %name% ) {") && tok->next()->varId() == 0)
@@ -912,7 +934,8 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
             const std::size_t oldOpSize = state.op.size();
             compileExpression(tok, state);
             tok = tok2;
-            if ((tok->previous() && tok->previous()->isName() && (!Token::Match(tok->previous(), "return|case") && (!state.cpp || !Token::Match(tok->previous(), "throw|delete"))))
+            if ((oldOpSize > 0 && Token::simpleMatch(tok->previous(), "} ("))
+                || (tok->previous() && tok->previous()->isName() && !Token::Match(tok->previous(), "return|case") && (!state.cpp || !Token::Match(tok->previous(), "throw|delete")))
                 || (tok->strAt(-1) == "]" && (!state.cpp || !Token::Match(tok->linkAt(-1)->previous(), "new|delete")))
                 || (tok->strAt(-1) == ">" && tok->linkAt(-1))
                 || (tok->strAt(-1) == ")" && !iscast(tok->linkAt(-1))) // Don't treat brackets to clarify precedence as function calls
@@ -1225,7 +1248,7 @@ static bool isLambdaCaptureList(const Token * tok)
     if (!tok->astOperand1() || tok->astOperand1()->str() != "(")
         return false;
     const Token * params = tok->astOperand1();
-    if (!params || !params->astOperand1() || params->astOperand1()->str() != "{")
+    if (!params->astOperand1() || params->astOperand1()->str() != "{")
         return false;
     return true;
 }
@@ -1323,8 +1346,6 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         while (tok2 && tok2 != endPar && tok2->str() != ";") {
             if (tok2->str() == "<" && tok2->link()) {
                 tok2 = tok2->link();
-                if (!tok2)
-                    break;
             } else if (Token::Match(tok2, "%name% %op%|(|[|.|:|::") || Token::Match(tok2->previous(), "[(;{}] %cop%|(")) {
                 init1 = tok2;
                 AST_state state1(cpp);
@@ -1431,7 +1452,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
             tok = typetok;
     }
 
-    if (Token::Match(tok, "return|case") || (cpp && tok->str() == "throw") || !tok->previous() || Token::Match(tok, "%name% %op%|(|[|.|::|<|?|;") || Token::Match(tok->previous(), "[;{}] %cop%|++|--|( !!{")) {
+    if (Token::Match(tok, "return|case") || (cpp && tok->str() == "throw") || !tok->previous() || Token::Match(tok, "%name% %op%|(|[|.|::|<|?|;") || Token::Match(tok->previous(), "[;{}] %cop%|++|--|( !!{") || Token::Match(tok->previous(), "[;{}] %num%")) {
         if (cpp && (Token::Match(tok->tokAt(-2), "[;{}] new|delete %name%") || Token::Match(tok->tokAt(-3), "[;{}] :: new|delete %name%")))
             tok = tok->previous();
 
@@ -1735,3 +1756,7 @@ void TokenList::simplifyStdType()
     }
 }
 
+bool TokenList::isKeyword(const std::string &str) const
+{
+    return mKeywords.find(str) != mKeywords.end();
+}

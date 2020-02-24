@@ -28,6 +28,17 @@
 #  define OVERRIDE
 #endif
 
+// C++11 noexcept
+#if (defined(__GNUC__) && (__GNUC__ >= 5)) \
+  || (defined(__clang__) && (defined (__cplusplus)) && (__cplusplus >= 201103L)) \
+  || defined(__CPPCHECK__)
+#  define NOEXCEPT noexcept
+#else
+#  define NOEXCEPT
+#endif
+
+#define REQUIRES(msg, ...) class=typename std::enable_if<__VA_ARGS__::value>::type
+
 #include <string>
 static const std::string emptyString;
 

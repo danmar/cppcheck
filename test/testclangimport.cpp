@@ -94,10 +94,13 @@ private:
         TEST_CASE(symbolDatabaseEnum1);
         TEST_CASE(symbolDatabaseFunction1);
         TEST_CASE(symbolDatabaseFunction2);
+        TEST_CASE(symbolDatabaseFunction3);
         TEST_CASE(symbolDatabaseNodeType1);
 
         TEST_CASE(valueFlow1);
         TEST_CASE(valueFlow2);
+
+        TEST_CASE(valueType1);
     }
 
     std::string parse(const char clang[]) {
@@ -929,6 +932,23 @@ private:
         ASSERT_EQUALS(0, (long long)func->getArgumentVar(1)->nameToken());
     }
 
+    void symbolDatabaseFunction3() { // #9640
+        const char clang[] = "`-FunctionDecl 0x238fcd8 <9640.cpp:1:1, col:26> col:6 used bar 'bool (const char, int &)'\n"
+                             "  |-ParmVarDecl 0x238fb10 <col:10, col:16> col:20 'const char'\n"
+                             "  |-ParmVarDecl 0x238fbc0 <col:22, col:25> col:26 'int &'\n"
+                             "  `-CompoundStmt 0x3d45c48 <col:12>\n";
+
+        GET_SYMBOL_DB(clang);
+
+        // There is a function foo that has 2 arguments
+        ASSERT_EQUALS(1, db->functionScopes.size());
+        const Scope *scope = db->functionScopes[0];
+        const Function *func = scope->function;
+        ASSERT_EQUALS(2, func->argCount());
+        ASSERT_EQUALS(false, func->getArgumentVar(0)->isReference());
+        ASSERT_EQUALS(true, func->getArgumentVar(1)->isReference());
+    }
+
     void symbolDatabaseNodeType1() {
         const char clang[] = "`-FunctionDecl 0x32438c0 <line:5:1, line:7:1> line:5:6 foo 'a::b (a::b)'\n"
                              "  |-ParmVarDecl 0x32437b0 <col:10, col:15> col:15 used i 'a::b':'long'\n"
@@ -978,6 +998,23 @@ private:
         tok = tok->next();
         ASSERT(tok->hasKnownIntValue());
         ASSERT_EQUALS(10, tok->getKnownIntValue());
+    }
+
+    void valueType1() {
+        const char clang[] = "`-FunctionDecl 0x32438c0 <line:5:1, line:7:1> line:5:6 foo 'a::b (a::b)'\n"
+                             "  |-ParmVarDecl 0x32437b0 <col:10, col:15> col:15 used i 'a::b':'long'\n"
+                             "  `-CompoundStmt 0x3243a60 <col:18, line:7:1>\n"
+                             "    `-ReturnStmt 0x3243a48 <line:6:3, col:12>\n"
+                             "      `-ImplicitCastExpr 0x2176ca8 <col:9> 'int' <IntegralCast>\n"
+                             "        `-ImplicitCastExpr 0x2176c90 <col:9> 'bool' <LValueToRValue>\n"
+                             "          `-DeclRefExpr 0x2176c60 <col:9> 'bool' lvalue Var 0x2176bd0 'e' 'bool'\n";
+
+        GET_SYMBOL_DB(clang);
+
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), "e");
+        ASSERT(!!tok);
+        ASSERT(!!tok->valueType());
+        ASSERT_EQUALS("bool", tok->valueType()->str());
     }
 };
 

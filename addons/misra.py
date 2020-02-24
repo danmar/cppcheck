@@ -796,7 +796,7 @@ def isTernaryOperator(token):
 
 
 def getTernaryOperandsRecursive(token):
-    """Returns list of ternary operands including nested onces."""
+    """Returns list of ternary operands including nested ones."""
     if not isTernaryOperator(token):
         return []
     result = []
@@ -841,11 +841,11 @@ class Define:
         self.args = []
         self.expansionList = ''
 
-        res = re.match(r'#define [A-Za-z0-9_]+\(([A-Za-z0-9_,]+)\)[ ]+(.*)', directive.str)
+        res = re.match(r'#define [A-Za-z0-9_]+\(([A-Za-z0-9_, ]+)\)[ ]+(.*)', directive.str)
         if res is None:
             return
 
-        self.args = res.group(1).split(',')
+        self.args = res.group(1).strip().split(',')
         self.expansionList = res.group(2)
 
     def __repr__(self):
@@ -1738,7 +1738,9 @@ class MisraChecker:
 
     def misra_13_1(self, data):
         for token in data.tokenlist:
-            if not simpleMatch(token, '= {'):
+            if simpleMatch(token, ") {") and token.next.astParent == token.link:
+                pass
+            elif not simpleMatch(token, '= {'):
                 continue
             init = token.next
             end = init.link
@@ -1875,6 +1877,26 @@ class MisraChecker:
                 scope = scope.nestedIn
             if not scope:
                 self.reportError(token, 15, 3)
+            # Jump crosses from one switch-clause to another is non-compliant
+            elif scope.type == 'Switch':
+                # Search for start of a current case block
+                tcase_start = token
+                while tcase_start and tcase_start.str not in ('case', 'default'):
+                    tcase_start = tcase_start.previous
+                # Make sure that goto label doesn't occurs in the other
+                # switch-clauses
+                if tcase_start:
+                    t = scope.bodyStart
+                    in_this_case = False
+                    while t and t != scope.bodyEnd:
+                        if t == tcase_start:
+                            in_this_case = True
+                        if in_this_case and t.str not in ('case', 'default'):
+                            in_this_case = False
+                        if t == tok and not in_this_case:
+                            self.reportError(token, 15, 3)
+                            break
+                        t = t.next
 
     def misra_15_5(self, data):
         for token in data.tokenlist:
@@ -2227,7 +2249,7 @@ class MisraChecker:
         for directive in data.directives:
             if not directive.str.startswith('#include '):
                 continue
-            for pattern in ('\\', '//', '/*', "'"):
+            for pattern in ('\\', '//', '/*', ',', "'"):
                 if pattern in directive.str:
                     self.reportError(directive, 20, 2)
                     break

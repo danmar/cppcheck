@@ -44,6 +44,7 @@ matrix:
   allow_failures:
     - name: "rerun dmake?"
       compiler: clang
+    - name: "make ubuntu 14.04 trusty"
 # defined extra jobs that run besides what is configured in the build matrix
   include:
 # -fsanitize=undefined

@@ -1,7 +1,12 @@
 // To test:
-// ~/cppcheck/cppcheck --dump misra-test.c && python ../../misra.py -verify misra-test.c.dump
+// ~/cppcheck/cppcheck --dump --suppress=uninitvar --suppress=uninitStructMember misra/misra-test.c --std=c89 && python3 ../misra.py -verify misra/misra-test.c.dump
 
 #include "path\file.h" // 20.2
+#include "file//.h" // 20.2
+#include "file/*.h" // 20.2
+#include "file'.h" // 20.2
+#include <file,.h> // 20.2
+#include "file,.h" // 20.2
 
 #include /*abc*/ "file.h" // no warning
 /*foo*/#include "file.h" // no warning
@@ -475,11 +480,14 @@ void misra_12_4() {
 }
 
 struct misra_13_1_t { int a; int b; };
+uint8_t misra_13_1_x = 0;
+void misra_13_1_bar(uint8_t a[2]);
 void misra_13_1(int *p) {
   volatile int v;
   int a1[3] = {0, (*p)++, 2}; // 13.1
   int a2[3] = {0, ((*p) += 1), 2}; // 13.1
   int a3[3] = {0, ((*p) = 19), 2}; // 13.1
+  misra_13_1_bar((uint8_t[2]){ misra_13_1_x++, misra_13_1_x++ } ); // 13.1
   int b[2] = {v,1};
   struct misra_13_1_t c = { .a=4, .b=5 }; // no fp
   volatile int vv;
@@ -688,6 +696,28 @@ void misra_15_3() {
       L1:
     } else {}
   } else {}
+
+  switch (x) {
+  case 0:
+      if (x == y) {
+          goto L2; // 15.3 15.1
+      }
+      goto L2; // 15.3 15.1
+    L3:
+      foo();
+      if (a == 0x42) {
+          // Compliant:
+          goto L3; // 15.1 15.2
+      }
+      break;
+  case 1:
+      y = x;
+  L2:
+      ++x;
+      break;
+  default:
+      break;
+  }
 }
 
 int misra_15_5() {
@@ -983,6 +1013,7 @@ union misra_19_2 { }; // 19.2
 #define M_20_7_3(A)  ((A)+A) // 20.7
 #define M_20_7_4(A)  x##A // 20.10 this test was written to see there are not FPs
 #define M_20_7_5(A,B)  f(A, B) // no warning
+#define MUL(a  ,b ) ( a * b ) // 20.7
 
 #define M_20_10(a) (#a) // 20.10
 

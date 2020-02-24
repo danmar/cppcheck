@@ -60,8 +60,20 @@ namespace cppcheck {
             return value >= min_value(int_bit) && value <= max_value(int_bit);
         }
 
+        bool isIntValue(unsigned long long value) const {
+            return value <= max_value(int_bit);
+        }
+
         bool isLongValue(long long value) const {
             return value >= min_value(long_bit) && value <= max_value(long_bit);
+        }
+
+        bool isLongValue(unsigned long long value) const {
+            return value <= max_value(long_bit);
+        }
+
+        bool isLongLongValue(unsigned long long value) const {
+            return value <= max_value(long_long_bit);
         }
 
         nonneg int char_bit;       /// bits in char

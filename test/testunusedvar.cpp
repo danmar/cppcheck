@@ -162,6 +162,7 @@ private:
         TEST_CASE(localvarStruct6);
         TEST_CASE(localvarStruct7);
         TEST_CASE(localvarStruct8);
+        TEST_CASE(localvarStruct9);
         TEST_CASE(localvarStructArray);
 
         TEST_CASE(localvarOp);          // Usage with arithmetic operators
@@ -206,6 +207,7 @@ private:
         TEST_CASE(argument);
         TEST_CASE(argumentClass);
         TEST_CASE(escapeAlias); // #9150
+        TEST_CASE(volatileData); // #9280
     }
 
     void checkStructMemberUsage(const char code[]) {
@@ -3465,6 +3467,16 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void localvarStruct9() {
+        functionVariableUsage("struct XY { int x; int y; };\n"
+                              "\n"
+                              "void foo() {\n"
+                              "      struct XY xy(get());\n"
+                              "      return xy.x + xy.y;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void localvarStructArray() {
         // #3633 - detect that struct array is assigned a value
         functionVariableUsage("void f() {\n"
@@ -4627,6 +4639,15 @@ private:
             "    }\n"
             "};\n"
         );
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void volatileData() {
+        functionVariableUsage(
+            "struct Data { unsigned int n; };\n"
+            "int main() {\n"
+            "  (*(volatile struct Data*)0x4200).n = 1;\n"
+            "}");
         ASSERT_EQUALS("", errout.str());
     }
 };

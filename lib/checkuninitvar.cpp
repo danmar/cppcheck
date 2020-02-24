@@ -267,6 +267,10 @@ static void conditionAlwaysTrueOrFalse(const Token *tok, const std::map<int, Var
             return;
         }
 
+        if (variableValue.empty()) {
+            return;
+        }
+
         const Token *vartok, *numtok;
         if (tok->astOperand2() && tok->astOperand2()->isNumber()) {
             vartok = tok->astOperand1();
@@ -709,7 +713,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             if (var.isPointer() && Token::simpleMatch(tok->next(), "=")) {
                 const Token *rhs = tok->next()->astOperand2();
                 while (rhs && rhs->isCast())
-                    rhs = rhs->astOperand1();
+                    rhs = rhs->astOperand2() ? rhs->astOperand2() : rhs->astOperand1();
                 if (rhs && Token::Match(rhs->previous(), "%name% (") &&
                     mSettings->library.returnuninitdata.count(rhs->previous()->str()) > 0U) {
                     *alloc = NO_CTOR_CALL;
@@ -869,8 +873,7 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
             if (isVariableUsage(tok, var.isPointer(), alloc))
                 usetok = tok;
             else if (tok->strAt(1) == "=") {
-                // Is var used in rhs?
-                bool rhs = false;
+                bool varIsUsedInRhs = false;
                 std::stack<const Token *> tokens;
                 tokens.push(tok->next()->astOperand2());
                 while (!tokens.empty()) {
@@ -879,8 +882,7 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
                     if (!t)
                         continue;
                     if (t->varId() == var.declarationId()) {
-                        // var is used in rhs
-                        rhs = true;
+                        varIsUsedInRhs = true;
                         break;
                     }
                     if (Token::simpleMatch(t->previous(),"sizeof ("))
@@ -888,7 +890,7 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
                     tokens.push(t->astOperand1());
                     tokens.push(t->astOperand2());
                 }
-                if (!rhs)
+                if (!varIsUsedInRhs)
                     return true;
             } else {
                 return true;

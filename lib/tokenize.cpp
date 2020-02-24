@@ -1067,7 +1067,7 @@ void Tokenizer::simplifyTypedef()
                         const Token *func = temp->link()->previous();
                         if (temp->str() != ")")
                             continue;
-                        if (!func || !func->previous()) // Ticket #4239
+                        if (!func->previous()) // Ticket #4239
                             continue;
 
                         /** @todo add support for multi-token operators */
@@ -4302,6 +4302,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     createLinks();
 
+    reportUnknownMacros();
+
     simplifyHeaders();
 
     // Remove __asm..
@@ -4637,6 +4639,14 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // Link < with >
     createLinks2();
+
+    // Mark C++ casts
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "const_cast|dynamic_cast|reinterpret_cast|static_cast <") && Token::simpleMatch(tok->linkAt(1), "> (")) {
+            tok = tok->linkAt(1)->next();
+            tok->isCast(true);
+        }
+    }
 
     // specify array size
     arraySize();
@@ -9275,6 +9285,46 @@ static bool isCPPAttribute(const Token * tok)
     return Token::simpleMatch(tok, "[ [") && tok->link() && tok->link()->previous() == tok->linkAt(1);
 }
 
+void Tokenizer::reportUnknownMacros()
+{
+    // Report unknown macros used in expressions "%name% %num%"
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "%name% %num%")) {
+            // A keyword is not an unknown macro
+            if (list.isKeyword(tok->str()))
+                continue;
+
+            if (Token::Match(tok->previous(), "%op%|("))
+                unknownMacroError(tok);
+        }
+    }
+
+    // Report unknown macros in non-executable scopes..
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        // Skip executable scopes..
+        if (tok->str() == "{") {
+            const Token *prev = tok->previous();
+            while (prev && prev->isName())
+                prev = prev->previous();
+            if (prev && prev->str() == ")")
+                tok = tok->link();
+        }
+
+        if (Token::Match(tok, "%name% (") && tok->isUpperCaseName() && Token::simpleMatch(tok->linkAt(1), ") (") && Token::simpleMatch(tok->linkAt(1)->linkAt(1), ") {")) {
+            // A keyword is not an unknown macro
+            if (list.isKeyword(tok->str()))
+                continue;
+
+            const Token *bodyStart = tok->linkAt(1)->linkAt(1)->tokAt(2);
+            const Token *bodyEnd = tok->link();
+            for (const Token *tok2 = bodyStart; tok2 && tok2 != bodyEnd; tok2 = tok2->next()) {
+                if (Token::Match(tok2, "if|switch|for|while|return"))
+                    unknownMacroError(tok);
+            }
+        }
+    }
+}
+
 void Tokenizer::findGarbageCode() const
 {
     const bool isCPP11  = isCPP() && mSettings->standards.cpp >= Standards::CPP11;
@@ -10804,7 +10854,7 @@ void Tokenizer::simplifyQtSignalsSlots()
         if (Token::Match(tok, "emit|Q_EMIT %name% (") &&
             Token::simpleMatch(tok->linkAt(2), ") ;")) {
             tok->deleteThis();
-        } else if (!Token::Match(tok, "class %name% :"))
+        } else if (!Token::Match(tok, "class %name% :|::|{"))
             continue;
 
         if (tok->previous() && tok->previous()->str() == "enum") {
@@ -10826,7 +10876,9 @@ void Tokenizer::simplifyQtSignalsSlots()
                     break;
                 else
                     --indentlevel;
-            }
+            } else if (tok2->str() == ";" && indentlevel == 0)
+                break;
+
             if (tok2->strAt(1) == "Q_OBJECT")
                 tok2->deleteNext();
 

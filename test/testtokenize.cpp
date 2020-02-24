@@ -375,7 +375,8 @@ private:
 
         TEST_CASE(borland);
 
-        TEST_CASE(Qt);
+        TEST_CASE(simplifyQtSignalsSlots1);
+        TEST_CASE(simplifyQtSignalsSlots2);
 
         TEST_CASE(simplifySQL);
 
@@ -466,6 +467,8 @@ private:
 
         TEST_CASE(sizeofAddParentheses);
 
+        TEST_CASE(reportUnknownMacros);
+
         // Make sure the Tokenizer::findGarbageCode() does not have false positives
         // The TestGarbage ensures that there are true positives
         TEST_CASE(findGarbageCode);
@@ -487,6 +490,8 @@ private:
         TEST_CASE(unknownType); // #8952
 
         TEST_CASE(unknownMacroBeforeReturn);
+
+        TEST_CASE(cppcast);
     }
 
     std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Native, const char* filename = "test.cpp", bool cpp11 = true) {
@@ -620,7 +625,7 @@ private:
         ASSERT_EQUALS("; x = ( a + m ) & p [ n ] ;", tokenizeAndStringify("; x = ( a + m ) & p [ n ] ;", true));*/
         // "*(p+1)" => "p[1]"
         ASSERT_EQUALS("; x = p [ 1 ] ;", tokenizeAndStringify("; x = * ( p + 1 ) ;", true));
-        ASSERT_EQUALS("; x = p [ 10 ] ;", tokenizeAndStringify("; x = * ( p + 0xA ) ;", true));
+        ASSERT_EQUALS("; x = p [ 0xA ] ;", tokenizeAndStringify("; x = * ( p + 0xA ) ;", true));
         ASSERT_EQUALS("; x = p [ n ] ;", tokenizeAndStringify("; x = * ( p + n ) ;", true));
         ASSERT_EQUALS("; x = y * ( p + n ) ;", tokenizeAndStringify("; x = y * ( p + n ) ;", true));
         ASSERT_EQUALS("; x = 10 * ( p + n ) ;", tokenizeAndStringify("; x = 10 * ( p + n ) ;", true));
@@ -629,7 +634,7 @@ private:
 
         // "*(p-1)" => "p[-1]" and "*(p-n)" => "p[-n]"
         ASSERT_EQUALS("; x = p [ -1 ] ;", tokenizeAndStringify("; x = *(p - 1);", true));
-        ASSERT_EQUALS("; x = p [ -10 ] ;", tokenizeAndStringify("; x = *(p - 0xA);", true));
+        ASSERT_EQUALS("; x = p [ -0xA ] ;", tokenizeAndStringify("; x = *(p - 0xA);", true));
         ASSERT_EQUALS("; x = p [ - n ] ;", tokenizeAndStringify("; x = *(p - n);", true));
         ASSERT_EQUALS("; x = y * ( p - 1 ) ;", tokenizeAndStringify("; x = y * (p - 1);", true));
         ASSERT_EQUALS("; x = 10 * ( p - 1 ) ;", tokenizeAndStringify("; x = 10 * (p - 1);", true));
@@ -698,21 +703,21 @@ private:
 
     // Ticket #2361: 0X10 => 16
     void tokenize14() {
-        ASSERT_EQUALS("; 16 ;", tokenizeAndStringify(";0x10;"));
-        ASSERT_EQUALS("; 16 ;", tokenizeAndStringify(";0X10;"));
-        ASSERT_EQUALS("; 292 ;", tokenizeAndStringify(";0444;"));
+        ASSERT_EQUALS("; 0x10 ;", tokenizeAndStringify(";0x10;"));
+        ASSERT_EQUALS("; 0X10 ;", tokenizeAndStringify(";0X10;"));
+        ASSERT_EQUALS("; 0444 ;", tokenizeAndStringify(";0444;"));
     }
 
     // Ticket #8050
     void tokenizeHexWithSuffix() {
-        ASSERT_EQUALS("; 16777215 ;", tokenizeAndStringify(";0xFFFFFF;"));
-        ASSERT_EQUALS("; 16777215U ;", tokenizeAndStringify(";0xFFFFFFu;"));
-        ASSERT_EQUALS("; 16777215UL ;", tokenizeAndStringify(";0xFFFFFFul;"));
+        ASSERT_EQUALS("; 0xFFFFFF ;", tokenizeAndStringify(";0xFFFFFF;"));
+        ASSERT_EQUALS("; 0xFFFFFFu ;", tokenizeAndStringify(";0xFFFFFFu;"));
+        ASSERT_EQUALS("; 0xFFFFFFul ;", tokenizeAndStringify(";0xFFFFFFul;"));
 
         // Number of digits decides about internal representation...
-        ASSERT_EQUALS("; 4294967295U ;", tokenizeAndStringify(";0xFFFFFFFF;"));
-        ASSERT_EQUALS("; 4294967295U ;", tokenizeAndStringify(";0xFFFFFFFFu;"));
-        ASSERT_EQUALS("; 4294967295UL ;", tokenizeAndStringify(";0xFFFFFFFFul;"));
+        ASSERT_EQUALS("; 0xFFFFFFFF ;", tokenizeAndStringify(";0xFFFFFFFF;"));
+        ASSERT_EQUALS("; 0xFFFFFFFFu ;", tokenizeAndStringify(";0xFFFFFFFFu;"));
+        ASSERT_EQUALS("; 0xFFFFFFFFul ;", tokenizeAndStringify(";0xFFFFFFFFul;"));
     }
 
     // Ticket #2429: 0.125
@@ -755,7 +760,7 @@ private:
     }
 
     void tokenize21() { // tokenize 0x0E-7
-        ASSERT_EQUALS("14 - 7 ;", tokenizeAndStringify("0x0E-7;"));
+        ASSERT_EQUALS("0x0E - 7 ;", tokenizeAndStringify("0x0E-7;"));
     }
 
     void tokenize22() { // tokenize special marker $ from preprocessor
@@ -2979,7 +2984,7 @@ private:
                                 "char * p ;\n"
                                 "char * q ;\n"
                                 "\n"
-                                "switch ( x & 3 )\n"
+                                "switch ( x & 0x3 )\n"
                                 "{\n"
                                 "case 1 : ;\n"
                                 "p = x ;\n"
@@ -3123,7 +3128,7 @@ private:
 
         {
             const char code[] = "module ( a , a , sizeof ( a ) , 0444 ) ;";
-            ASSERT_EQUALS("module ( a , a , sizeof ( a ) , 292 ) ;", tokenizeAndStringify(code));
+            ASSERT_EQUALS("module ( a , a , sizeof ( a ) , 0444 ) ;", tokenizeAndStringify(code));
         }
 
         ASSERT_EQUALS("void f ( int x ) { }", tokenizeAndStringify("void f(x) int x; { }"));
@@ -5798,7 +5803,7 @@ private:
     }
 
     void bitfields14() { // #4561 - crash for 'signals:'
-        ASSERT_EQUALS("class x { signals : } ;", tokenizeAndStringify("class x { signals: };\n",false));
+        ASSERT_EQUALS("class x { protected: } ;", tokenizeAndStringify("class x { signals: };\n",false));
     }
 
     void bitfields15() { // #7747 - enum Foo {A,B}:4;
@@ -6014,7 +6019,7 @@ private:
                       tokenizeAndStringify("class Fred { __property int x = { } };", false, true, Settings::Win32A));
     }
 
-    void Qt() {
+    void simplifyQtSignalsSlots1() {
         const char code1[] = "class Counter : public QObject "
                              "{ "
                              "    Q_OBJECT "
@@ -6128,6 +6133,12 @@ private:
                                "} ;";
 
         ASSERT_EQUALS(result4, tokenizeAndStringify(code4,false));
+    }
+
+    void simplifyQtSignalsSlots2() {
+        const char code1[] = "class Foo::Bar: public QObject { private slots: };";
+        const char result1[] = "class Foo :: Bar : public QObject { private: } ;";
+        ASSERT_EQUALS(result1, tokenizeAndStringify(code1,false));
     }
 
     void simplifySQL() {
@@ -7506,6 +7517,8 @@ private:
         ASSERT_EQUALS("ifx3=y;(", testAst("if (int x=3; y)"));
 
         ASSERT_EQUALS("forx0=x;;(", testAst("for (int x=0; x;);"));
+
+        ASSERT_EQUALS("0f1(||", testAst("; 0 || f(1);"));
     }
 
     void astexpr2() { // limit for large expressions
@@ -7656,6 +7669,11 @@ private:
         ASSERT_EQUALS("n0=", testAst("TrivialDefCtor{[2][2]}[1][1].n = 0;"));
         ASSERT_EQUALS("aT12,3,{1[=", testAst("a = T{1, 2, 3}[1];"));
 
+        // Type{data}()
+        ASSERT_EQUALS("ab{(=", testAst("a=b{}();"));
+        ASSERT_EQUALS("abc{((=", testAst("a=b(c{}());"));
+        ASSERT_EQUALS("f( xNULL!=0(x(:?", testAst("void f() { {} ((x != NULL) ? (void)0 : x()); }"));
+
         // ({..})
         ASSERT_EQUALS("a{+d+ bc+", testAst("a+({b+c;})+d"));
         ASSERT_EQUALS("a{d*+ bc+", testAst("a+({b+c;})*d"));
@@ -7799,6 +7817,8 @@ private:
         ASSERT_EQUALS("xa.0=b.0=,c.0=,{(=", testAst("x = (struct abc) { .a=0, .b=0, .c=0 };"));
 
         ASSERT_EQUALS("yz.(return", testAst("return (x)(y).z;"));
+
+        ASSERT_EQUALS("fon!(restoring01:?,(", testAst("f((long) !on, restoring ? 0 : 1);"));
 
         // not cast
         ASSERT_EQUALS("AB||", testAst("(A)||(B)"));
@@ -7951,6 +7971,15 @@ private:
         ASSERT_EQUALS("sizeof ( a [ 2 ] . b ) + 3 ;", tokenizeAndStringify("sizeof a[2].b+3;"));
         ASSERT_EQUALS("f ( 0 , sizeof ( ptr . bar ) ) ;", tokenizeAndStringify("f(0, sizeof ptr->bar );"));
         ASSERT_EQUALS("sizeof ( a ) > sizeof ( & main ) ;", tokenizeAndStringify("sizeof a > sizeof &main;"));
+    }
+
+    void reportUnknownMacros() {
+        const char code1[] = "MY_UNKNOWN_IMP1(IInStream)\n"
+                             "STDMETHOD(Read)(void *data, UInt32 size, UInt32 *processedSize) { if (ptr); }";
+        ASSERT_THROW(tokenizeAndStringify(code1), InternalError);
+
+        const char code2[] = "void foo() { dostuff(x 0); }";
+        ASSERT_THROW(tokenizeAndStringify(code2), InternalError);
     }
 
     void findGarbageCode() { // Test Tokenizer::findGarbageCode()
@@ -8330,6 +8359,22 @@ private:
 
     void unknownMacroBeforeReturn() {
         ASSERT_THROW(tokenizeAndStringify("int f() { X return 0; }"), InternalError);
+    }
+
+    void cppcast() {
+        const char code[] = "a = const_cast<int>(x);\n"
+                            "a = dynamic_cast<int>(x);\n"
+                            "a = reinterpret_cast<int>(x);\n"
+                            "a = static_cast<int>(x);\n";
+
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+            ASSERT_EQUALS(tok->str() == "(", tok->isCast());
+        }
     }
 };
 
