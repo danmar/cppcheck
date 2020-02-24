@@ -2174,7 +2174,12 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
         : tokenlist(t), pms()
     {}
 
-    virtual int getIndirect(const Token* tok) const = 0;
+    virtual const ValueFlow::Value* getValue(const Token* tok) const = 0;
+    virtual ValueFlow::Value* getValue(const Token* tok) = 0;
+
+    virtual void makeConditional() = 0;
+
+    virtual void addErrorPath(const Token* tok, const std::string& s) = 0;
 
     virtual bool match(const Token* tok) const = 0;
 
@@ -2183,6 +2188,13 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
     using ProgramState = std::unordered_map<nonneg int, ValueFlow::Value>;
 
     virtual ProgramState getProgramState() const = 0;
+
+    virtual int getIndirect(const Token* tok) const {
+        const ValueFlow::Value* value = getValue(tok);
+        if (value)
+            return value->indirect;
+        return 0;
+    }
 
     virtual bool isWritableValue() const {
         return false;
@@ -2279,6 +2291,55 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
             result.push_back(0);
         return result;
     }
+
+    virtual void assume(const Token* tok, bool state, const Token* at) OVERRIDE {
+        // Update program state
+        pms.removeModifiedVars(tok);
+        pms.addState(tok, getProgramState());
+        pms.assume(tok, state);
+
+        const bool isAssert = Token::Match(at, "assert|ASSERT");
+        const bool isEndScope = Token::simpleMatch(at, "}");
+
+        if (!isAssert && !isEndScope) {
+            std::string s = state ? "true" : "false";
+            addErrorPath(tok, "Assuming condition is " + s);
+        }
+        if (!isAssert)
+            makeConditional();
+    }
+
+    virtual void update(Token* tok, Action a) OVERRIDE {
+        ValueFlow::Value* value = getValue(tok);
+        if (!value)
+            return;
+        if (a.isRead())
+            setTokenValue(tok, *value, getSettings());
+        if (a.isInconclusive())
+            lowerToInconclusive();
+        if (a.isWrite()) {
+            if (Token::Match(tok->astParent(), "%assign%")) {
+                // TODO: Check result
+                if (evalAssignment(*value,
+                                   tok->astParent()->str(),
+                                   *getKnownValue(tok->astParent()->astOperand2(), ValueFlow::Value::ValueType::INT))) {
+                    const std::string info("Compound assignment '" + tok->astParent()->str() + "', assigned value is " +
+                                           value->infoString());
+                    value->errorPath.emplace_back(tok, info);
+                } else {
+                    // TODO: Don't set to zero
+                    value->intvalue = 0;
+                }
+            }
+            if (Token::Match(tok->astParent(), "++|--")) {
+                const bool inc = Token::simpleMatch(tok->astParent(), "++");
+                value->intvalue += (inc ? 1 : -1);
+                const std::string info(tok->str() + " is " + std::string(inc ? "incremented" : "decremented") +
+                                       "', new value is " + value->infoString());
+                value->errorPath.emplace_back(tok, info);
+            }
+        }
+    }
 };
 
 struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
@@ -2294,8 +2355,19 @@ struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
 
     virtual const std::unordered_map<nonneg int, const Variable*>& getVars() const = 0;
 
-    virtual int getIndirect(const Token*) const OVERRIDE {
-        return value.indirect;
+    virtual const ValueFlow::Value* getValue(const Token* tok) const OVERRIDE {
+        return &value;
+    }
+    virtual ValueFlow::Value* getValue(const Token* tok) OVERRIDE {
+        return &value;
+    }
+
+    virtual void makeConditional() OVERRIDE {
+        value.conditional = true;
+    }
+
+    virtual void addErrorPath(const Token* tok, const std::string& s) OVERRIDE {
+        value.errorPath.emplace_back(tok, s);
     }
 
     virtual bool isAlias(const Token* tok) const OVERRIDE {
@@ -2338,58 +2410,12 @@ struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
         return true;
     }
 
-    virtual void assume(const Token* tok, bool state, const Token* at) OVERRIDE {
-        // Update program state
-        pms.removeModifiedVars(tok);
-        pms.addState(tok, getProgramState());
-        pms.assume(tok, state);
-
-        const bool isAssert = Token::Match(at, "assert|ASSERT");
-        const bool isEndScope = Token::simpleMatch(at, "}");
-
-        if (!isAssert && !isEndScope) {
-            std::string s = state ? "true" : "false";
-            value.errorPath.emplace_back(tok, "Assuming condition is " + s);
-        }
-        if (!isAssert)
-            value.conditional = true;
-    }
-
     virtual bool isConditional() const OVERRIDE {
         if (value.conditional)
             return true;
         if (value.condition)
             return !value.isImpossible();
         return false;
-    }
-
-    virtual void update(Token* tok, Action a) OVERRIDE {
-        if (a.isRead())
-            setTokenValue(tok, value, getSettings());
-        if (a.isInconclusive())
-            lowerToInconclusive();
-        if (a.isWrite()) {
-            if (Token::Match(tok->astParent(), "%assign%")) {
-                // TODO: Check result
-                if (evalAssignment(value,
-                                   tok->astParent()->str(),
-                                   *getKnownValue(tok->astParent()->astOperand2(), ValueFlow::Value::ValueType::INT))) {
-                    const std::string info("Compound assignment '" + tok->astParent()->str() + "', assigned value is " +
-                                           value.infoString());
-                    value.errorPath.emplace_back(tok, info);
-                } else {
-                    // TODO: Don't set to zero
-                    value.intvalue = 0;
-                }
-            }
-            if (Token::Match(tok->astParent(), "++|--")) {
-                const bool inc = Token::simpleMatch(tok->astParent(), "++");
-                value.intvalue += (inc ? 1 : -1);
-                const std::string info(tok->str() + " is " + std::string(inc ? "incremented" : "decremented") +
-                                       "', new value is " + value.infoString());
-                value.errorPath.emplace_back(tok, info);
-            }
-        }
     }
 
     virtual bool updateScope(const Token* endBlock, bool) const OVERRIDE {
@@ -4544,8 +4570,33 @@ struct MultiValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
         return vars;
     }
 
-    virtual int getIndirect(const Token*) const OVERRIDE {
-        return value.indirect;
+    virtual const ValueFlow::Value* getValue(const Token* tok) const {
+        if (tok->varId() == 0)
+            return nullptr;
+        auto it = values.find(tok->varId());
+        if (it == values.end())
+            return nullptr;
+        return &it->second;
+    }
+    virtual ValueFlow::Value* getValue(const Token* tok) {
+        if (tok->varId() == 0)
+            return nullptr;
+        auto it = values.find(tok->varId());
+        if (it == values.end())
+            return nullptr;
+        return &it->second;
+    }
+
+    virtual void makeConditional() {
+        for(auto&& p:values) {
+            p.second.conditional = true;
+        }
+    }
+
+    virtual void addErrorPath(const Token* tok, const std::string& s) {
+        for(auto&& p:values) {
+            p.second.errorPath.emplace_back(tok, "Assuming condition is " + s);
+        }
     }
 
     virtual bool isAlias(const Token* tok) const OVERRIDE {
@@ -4583,28 +4634,6 @@ struct MultiValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
         return true;
     }
 
-    virtual void assume(const Token* tok, bool state, const Token* at) OVERRIDE {
-        // Update program state
-        pms.removeModifiedVars(tok);
-        pms.addState(tok, getProgramState());
-        pms.assume(tok, state);
-
-        const bool isAssert = Token::Match(at, "assert|ASSERT");
-        const bool isEndScope = Token::simpleMatch(at, "}");
-
-        if (!isAssert && !isEndScope) {
-            std::string s = state ? "true" : "false";
-            for(auto&& p:values) {
-                p.second.errorPath.emplace_back(tok, "Assuming condition is " + s);
-            }
-        }
-        if (!isAssert) {
-            for(auto&& p:values) {
-                p.second.conditional = true;
-            }
-        }
-    }
-
     virtual bool isConditional() const OVERRIDE {
         for(auto&& p:values) {
             if (p.second.conditional)
@@ -4613,38 +4642,6 @@ struct MultiValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
                 return !p.second.isImpossible();
         }
         return false;
-    }
-
-    virtual void update(Token* tok, Action a) OVERRIDE {
-        if (tok->varId() == 0)
-            return;
-        ValueFlow::Value& value = values.at(tok->varId());
-        if (a.isRead())
-            setTokenValue(tok, value, getSettings());
-        if (a.isInconclusive())
-            lowerToInconclusive();
-        if (a.isWrite()) {
-            if (Token::Match(tok->astParent(), "%assign%")) {
-                // TODO: Check result
-                if (evalAssignment(value,
-                                   tok->astParent()->str(),
-                                   *getKnownValue(tok->astParent()->astOperand2(), ValueFlow::Value::ValueType::INT))) {
-                    const std::string info("Compound assignment '" + tok->astParent()->str() + "', assigned value is " +
-                                           value.infoString());
-                    value.errorPath.emplace_back(tok, info);
-                } else {
-                    // TODO: Don't set to zero
-                    value.intvalue = 0;
-                }
-            }
-            if (Token::Match(tok->astParent(), "++|--")) {
-                const bool inc = Token::simpleMatch(tok->astParent(), "++");
-                value.intvalue += (inc ? 1 : -1);
-                const std::string info(tok->str() + " is " + std::string(inc ? "incremented" : "decremented") +
-                                       "', new value is " + value.infoString());
-                value.errorPath.emplace_back(tok, info);
-            }
-        }
     }
 
     virtual bool updateScope(const Token* endBlock, bool) const OVERRIDE {
