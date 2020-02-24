@@ -4557,8 +4557,6 @@ struct MultiValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
     std::unordered_map<nonneg int, ValueFlow::Value> values;
     std::unordered_map<nonneg int, const Variable*> vars;
 
-    ValueFlow::Value value;
-
     MultiValueFlowForwardAnalyzer()
         : ValueFlowForwardAnalyzer(), values(), vars()
     {}
@@ -4606,14 +4604,14 @@ struct MultiValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
     }
 
     virtual bool isAlias(const Token* tok) const OVERRIDE {
-        if (value.isLifetimeValue())
-            return false;
         for (const auto& p:getVars()) {
             nonneg int varid = p.first;
             const Variable* var = p.second;
             if (tok->varId() == varid)
                 return true;
-            if (isAliasOf(var, tok, varid, {value}))
+            std::list<ValueFlow::Value> vals;
+            std::transform(values.begin(), values.end(), std::back_inserter(vals), SelectMapValues{});
+            if (isAliasOf(var, tok, varid, vals))
                 return true;
         }
         return false;
@@ -4655,7 +4653,11 @@ struct MultiValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
         if (!scope)
             return false;
         if (scope->type == Scope::eLambda) {
-            return value.isLifetimeValue();
+            for(const auto& p:values) {
+                if (!p.second.isLifetimeValue())
+                    return false;
+            }
+            return true;
         } else if (scope->type == Scope::eIf || scope->type == Scope::eElse || scope->type == Scope::eWhile ||
                    scope->type == Scope::eFor) {
             auto pred = [](const ValueFlow::Value& value) {
