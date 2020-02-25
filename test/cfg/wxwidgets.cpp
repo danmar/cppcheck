@@ -176,9 +176,9 @@ void uninitvar_wxStaticText(wxStaticText &s)
 {
     // no warning
     s.Wrap(-1);
-    bool uninitBool;
+    int uninitInt;
     // cppcheck-suppress uninitvar
-    s.Wrap(uninitBool);
+    s.Wrap(uninitInt);
 }
 
 void uninitvar_wxString_NumberConversion(const wxString &str, const int numberBase)
