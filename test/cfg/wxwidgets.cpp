@@ -25,6 +25,15 @@
 #include <wx/sizer.h>
 #include <wx/string.h>
 #include <wx/textctrl.h>
+#include <wx/propgrid/property.h>
+
+bool invalidFunctionArgBool_wxPGProperty_Hide(wxPGProperty *pg, bool hide, int flags)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)pg->Hide(hide, true);
+    // No warning is expected for
+    return pg->Hide(hide, flags);
+}
 
 wxTextCtrlHitTestResult nullPointer_wxTextCtrl_HitTest(wxTextCtrl &txtCtrl, const wxPoint &pos)
 {
