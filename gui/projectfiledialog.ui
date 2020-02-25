@@ -459,7 +459,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox_6">
+        <widget class="QGroupBox" name="groupBox_11">
          <property name="title">
           <string>Check that code is safe</string>
          </property>
