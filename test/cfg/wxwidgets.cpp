@@ -27,6 +27,12 @@
 #include <wx/textctrl.h>
 #include <wx/propgrid/property.h>
 
+wxSizerItem* invalidFunctionArgBool_wxSizer_Add(wxSizer *sizer, wxWindow * window, const wxSizerFlags &flags)
+{
+    // No warning is expected for
+    return sizer->Add(window,flags);
+}
+
 bool invalidFunctionArgBool_wxPGProperty_Hide(wxPGProperty *pg, bool hide, int flags)
 {
     // cppcheck-suppress invalidFunctionArgBool
