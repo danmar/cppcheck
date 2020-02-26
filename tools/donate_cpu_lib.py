@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.2.3"
+CLIENT_VERSION = "1.2.4"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 60 * 60
@@ -100,9 +100,12 @@ def compile_cppcheck(cppcheck_path, jobs):
     print('Compiling Cppcheck..')
     try:
         os.chdir(cppcheck_path)
-        subprocess.call(['make', jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g'])
-        subprocess.call([cppcheck_path + '/cppcheck', '--version'])
     except OSError:
+        return False
+    try:
+        subprocess.check_call(['make', jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g'])
+        subprocess.check_call([cppcheck_path + '/cppcheck', '--version'])
+    except subprocess.CalledProcessError:
         return False
     return True
 
