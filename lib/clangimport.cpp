@@ -275,7 +275,6 @@ namespace clangimport {
         int mFile  = 0;
         int mLine  = 1;
         int mCol   = 1;
-        int mVarId = 0;
         std::vector<std::string> mExtTokens;
         Data *mData;
     };
