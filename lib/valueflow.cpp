@@ -103,8 +103,6 @@
 #include <stack>
 #include <vector>
 
-static const int TIMEOUT = 10; // Do not repeat ValueFlow analysis more than 10 seconds
-
 static void bailoutInternal(TokenList *tokenlist, ErrorLogger *errorLogger, const Token *tok, const std::string &what, const std::string &file, int line, const std::string &function)
 {
     std::list<ErrorLogger::ErrorMessage::FileLocation> callstack(1, ErrorLogger::ErrorMessage::FileLocation(tok, tokenlist));
