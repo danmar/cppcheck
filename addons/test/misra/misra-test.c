@@ -267,7 +267,7 @@ void misra_10_1_ternary()
     int8_t i8;
     int16_t i16;
 
-    a = ui16 << ui16;
+    a = ui16 << ui16; // 10.6
     a = ui16 << (get_bool(42) ? ui16 : ui16);
     a = ui16 << (get_bool(42) ? ui16 : (get_bool(34) ? ui16 : ui16)); // 10.4
     a = ui16 << (get_bool(42) ? (get_bool(34) ? ui16 : ui16) : ui16); // 10.4
@@ -304,6 +304,10 @@ void misra_10_6(u8 x, u32 a, u32 b, char c1, char c2) {
   u16 z = ~u8 x ;//10.6
   u32 c = ( u16) ( u32 a + u32 b ); //10.6
   s32 i = c1 - c2; // FIXME: False positive for 10.6 (this is compliant). Trac #9488
+}
+void misra_10_6_1(uint32_t *a, uint16_t b, uint16_t c)
+{
+    *a = b + c ; // 10.6
 }
 
 void misra_10_8(u8 x, s32 a, s32 b) {
