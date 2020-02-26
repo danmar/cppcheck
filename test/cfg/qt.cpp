@@ -379,7 +379,7 @@ void MacroTest2_test()
 #endif
 }
 
-void validCode(int * pIntPtr)
+void validCode(int * pIntPtr, QString & qstrArg)
 {
     if (QFile::exists("test")) {
     }
@@ -404,6 +404,19 @@ void validCode(int * pIntPtr)
     Q_DECLARE_LOGGING_CATEGORY(logging_category_test);
     QT_FORWARD_DECLARE_CLASS(forwardDeclaredClass);
     QT_FORWARD_DECLARE_STRUCT(forwardDeclaredStruct);
+
+    //#9650
+    QString qstr1(qstrArg);
+    if (qstr1.length() == 1) {
+    } else {
+        qstr1.chop(1);
+        if (qstr1.length() == 1) {}
+    }
+    if (qstr1.length() == 1) {
+    } else {
+        qstr1.remove(1);
+        if (qstr1.length() == 1) {}
+    }
 }
 
 void ignoredReturnValue()
