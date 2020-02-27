@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.2.3"
+CLIENT_VERSION = "1.2.4"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 60 * 60
@@ -292,6 +292,9 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
         sig_start_pos = sig_pos + len(sig_msg)
         sig_num = int(stderr[sig_start_pos:stderr.find(' ', sig_start_pos)])
     print('cppcheck finished with ' + str(returncode) + ('' if sig_num == -1 else ' (signal ' + str(sig_num) + ')'))
+    if returncode == RETURN_CODE_TIMEOUT:
+        print('Timeout!')
+        return returncode, stdout, '', elapsed_time, options, ''
     # generate stack trace for SIGSEGV, SIGABRT, SIGILL, SIGFPE, SIGBUS
     if returncode in (-11, -6, -4, -8, -7) or sig_num in (11, 6, 4, 8, 7):
         print('Crash!')
@@ -308,9 +311,6 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
                 else:
                     stacktrace = stdout[last_check_pos:]
         return returncode, stacktrace, '', returncode, options, ''
-    if returncode == RETURN_CODE_TIMEOUT:
-        print('Timeout!')
-        return returncode, stdout, '', elapsed_time, options, ''
     if returncode != 0:
         print('Error!')
         if returncode > 0:
