@@ -7,6 +7,7 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
+#include <stdlib.h>
 #include <gtk/gtk.h>
 #include <glib.h>
 
@@ -420,4 +421,11 @@ void g_strchug_g_strchomp_test(gchar * str1)
     gchar * str3;
     // cppcheck-suppress uninitvar
     g_strchomp(str3);
+}
+
+void g_abort_test()
+{
+    g_abort();
+    //cppcheck-suppress unreachableCode
+    printf("Never reached");
 }
