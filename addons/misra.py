@@ -36,6 +36,14 @@ def grouped(iterable, n):
     return zip(*[iter(iterable)] * n)
 
 
+INT_TYPES = ['bool', 'char', 'short', 'int', 'long', 'long long']
+
+
+STDINT_TYPES = ['%s%d_t' % (n, v) for n, v in itertools.product(
+        ['int', 'uint', 'int_least', 'uint_least', 'int_fast', 'uint_fast'],
+        [8, 16, 32, 64])]
+
+
 typeBits = {
     'CHAR': None,
     'SHORT': None,
@@ -44,6 +52,10 @@ typeBits = {
     'LONG_LONG': None,
     'POINTER': None
 }
+
+
+def isUnsignedType(ty):
+    return ty == 'unsigned' or ty.startswith('uint')
 
 
 def simpleMatch(token, pattern):
@@ -274,9 +286,7 @@ C99_STDLIB_IDENTIFIERS = {
         'UINTMAX_MAX', 'PTRDIFF_MIN', 'PTRDIFF_MAX', 'SIG_ATOMIC_MIN',
         'SIG_ATOMIC_MAX', 'SIZE_MAX', 'WCHAR_MIN', 'WCHAR_MAX', 'WINT_MIN',
         'WINT_MAX', 'INTN_C', 'UINTN_C', 'INTMAX_C', 'UINTMAX_C',
-    ] + ['%s%d_t' % (n, v) for n,v in itertools.product(
-    ['int', 'uint', 'int_least', 'uint_least', 'int_fast', 'uint_fast'],
-    [8, 16,32,64])],
+    ] + STDINT_TYPES,
     # B.18 Input/output
     'stdio.h': C90_STDLIB_IDENTIFIERS['stdio.h'] + [
         'mode', 'restrict', 'snprintf', 'vfscanf', 'vscanf',
@@ -417,7 +427,7 @@ def getEssentialType(expr):
     if expr.variable:
         typeToken = expr.variable.typeStartToken
         while typeToken and typeToken.isName:
-            if typeToken.str in ('char', 'short', 'int', 'long', 'float', 'double'):
+            if typeToken.str in INT_TYPES + STDINT_TYPES + ['float', 'double']:
                 return typeToken.str
             typeToken = typeToken.next
 
@@ -431,15 +441,10 @@ def getEssentialType(expr):
         e2 = getEssentialType(expr.astOperand2)
         if not e1 or not e2:
             return None
-        types = ['bool', 'char', 'short', 'int', 'long', 'long long']
-        try:
-            i1 = types.index(e1)
-            i2 = types.index(e2)
-            if i2 >= i1:
-                return types[i2]
-            return types[i1]
-        except ValueError:
-            return None
+        if bitsOfEssentialType(e2) >= bitsOfEssentialType(e1):
+            return e2
+        else:
+            return e1
     elif expr.str == "~":
         e1 = getEssentialType(expr.astOperand1)
         return e1
@@ -447,20 +452,22 @@ def getEssentialType(expr):
     return None
 
 
-def bitsOfEssentialType(expr):
-    type = getEssentialType(expr)
-    if type is None:
+def bitsOfEssentialType(ty):
+    if ty is None:
         return 0
-    if type == 'char':
+    if ty == 'char':
         return typeBits['CHAR']
-    if type == 'short':
+    if ty == 'short':
         return typeBits['SHORT']
-    if type == 'int':
+    if ty == 'int':
         return typeBits['INT']
-    if type == 'long':
+    if ty == 'long':
         return typeBits['LONG']
-    if type == 'long long':
+    if ty == 'long long':
         return typeBits['LONG_LONG']
+    for sty in STDINT_TYPES:
+        if ty == sty:
+            return int(''.join(filter(str.isdigit, sty)))
     return 0
 
 
@@ -1335,9 +1342,9 @@ class MisraChecker:
                 if not e1 or not e2:
                     continue
                 if token.str in ('<<', '>>'):
-                    if e1 != 'unsigned':
+                    if not isUnsignedType(e1):
                         self.reportError(token, 10, 1)
-                    elif e2 != 'unsigned' and not token.astOperand2.isNumber:
+                    elif not isUnsignedType(e2) and not token.astOperand2.isNumber:
                         self.reportError(token, 10, 1)
                 elif token.str in ('~', '&', '|', '^'):
                     e1_et = getEssentialType(token.astOperand1)
@@ -1392,16 +1399,13 @@ class MisraChecker:
             if not vt2 or vt2.pointer > 0:
                 continue
             try:
-                intTypes = ['char', 'short', 'int', 'long', 'long long']
-                index1 = intTypes.index(vt1.type)
                 if isCast(token.astOperand2):
                     e = vt2.type
                 else:
                     e = getEssentialType(token.astOperand2)
                 if not e:
                     continue
-                index2 = intTypes.index(e)
-                if index1 > index2:
+                if bitsOfEssentialType(vt1.type) > bitsOfEssentialType(e):
                     self.reportError(token, 10, 6)
             except ValueError:
                 pass
@@ -1431,13 +1435,10 @@ class MisraChecker:
                 self.reportError(token, 10, 8)
             else:
                 try:
-                    intTypes = ['char', 'short', 'int', 'long', 'long long']
-                    index1 = intTypes.index(token.valueType.type)
                     e = getEssentialType(token.astOperand1)
                     if not e:
                         continue
-                    index2 = intTypes.index(e)
-                    if index1 > index2:
+                    if bitsOfEssentialType(token.valueType.type) > bitsOfEssentialType(e):
                         self.reportError(token, 10, 8)
                 except ValueError:
                     pass
@@ -1625,7 +1626,7 @@ class MisraChecker:
                     maxval = val.intvalue
             if maxval == 0:
                 continue
-            sz = bitsOfEssentialType(token.astOperand1)
+            sz = bitsOfEssentialType(getEssentialType(token.astOperand1))
             if sz <= 0:
                 continue
             if maxval >= sz:
