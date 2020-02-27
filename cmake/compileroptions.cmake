@@ -80,6 +80,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-unused-function")
 
    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wdocumentation")
+   #set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wrange-loop-analysis") # added in Clang 4.0.0
 
    if(ENABLE_COVERAGE OR ENABLE_COVERAGE_XML)
       MESSAGE(FATAL_ERROR "Not use clang for generate code coverage. Use gcc. ")

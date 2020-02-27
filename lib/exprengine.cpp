@@ -462,7 +462,7 @@ ExprEngine::ConditionalValue::Vector ExprEngine::ArrayValue::read(ExprEngine::Va
     ExprEngine::ConditionalValue::Vector ret;
     if (!index)
         return ret;
-    for (const auto indexAndValue : data) {
+    for (const auto& indexAndValue : data) {
         if (::isEqual(index, indexAndValue.index))
             ret.clear();
         if (isNonOverlapping(index, indexAndValue.index))
@@ -542,7 +542,7 @@ std::string ExprEngine::ArrayValue::getSymbolicExpression() const
 {
     std::ostringstream ostr;
     ostr << "size=" << (size ? size->name : std::string("(null)"));
-    for (const auto indexAndValue : data) {
+    for (const auto& indexAndValue : data) {
         ostr << ",["
              << (!indexAndValue.index ? std::string(":") : indexAndValue.index->name)
              << "]="
