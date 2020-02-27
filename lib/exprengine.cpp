@@ -1346,7 +1346,7 @@ static ExprEngine::ValuePtr executeAddressOf(const Token *tok, Data &data)
 {
     auto addr = std::make_shared<ExprEngine::AddressOfValue>(data.getNewSymbolName(), tok->astOperand1()->varId());
     call(data.callbacks, tok, addr, &data);
-    return addr;
+    return std::move(addr);
 }
 
 static ExprEngine::ValuePtr executeDeref(const Token *tok, Data &data)
@@ -1391,7 +1391,7 @@ static ExprEngine::ValuePtr executeKnownMacro(const Token *tok, Data &data)
 {
     auto val = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), tok->getKnownIntValue(), tok->getKnownIntValue());
     call(data.callbacks, tok, val, &data);
-    return val;
+    return std::move(val);
 }
 
 static ExprEngine::ValuePtr executeNumber(const Token *tok, Data &data)
@@ -1400,12 +1400,12 @@ static ExprEngine::ValuePtr executeNumber(const Token *tok, Data &data)
         long double value = MathLib::toDoubleNumber(tok->str());
         auto v = std::make_shared<ExprEngine::FloatRange>(tok->str(), value, value);
         call(data.callbacks, tok, v, &data);
-        return v;
+        return std::move(v);
     }
     int128_t value = MathLib::toLongNumber(tok->str());
     auto v = std::make_shared<ExprEngine::IntRange>(tok->str(), value, value);
     call(data.callbacks, tok, v, &data);
-    return v;
+    return std::move(v);
 }
 
 static ExprEngine::ValuePtr executeStringLiteral(const Token *tok, Data &data)
@@ -1667,7 +1667,7 @@ static ExprEngine::ValuePtr createStructVal(const Scope *structScope, bool unini
                 structValue->member[member.name()] = memberValue;
         }
     }
-    return structValue;
+    return std::move(structValue);
 }
 
 static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
