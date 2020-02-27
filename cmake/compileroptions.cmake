@@ -79,6 +79,8 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-sign-compare")
    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-unused-function")
 
+   set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wdocumentation")
+
    if(ENABLE_COVERAGE OR ENABLE_COVERAGE_XML)
       MESSAGE(FATAL_ERROR "Not use clang for generate code coverage. Use gcc. ")
    endif()
