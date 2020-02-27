@@ -1342,6 +1342,43 @@ static Token * findAstTop(Token *tok1, Token *tok2)
 static Token * createAstAtToken(Token *tok, bool cpp)
 {
     if (Token::simpleMatch(tok, "for (")) {
+        if (cpp && Token::Match(tok, "for ( const| auto &|&&| [")) {
+            Token *decl = Token::findsimplematch(tok, "[");
+            if (Token::simpleMatch(decl->link(), "] :")) {
+                AST_state state1(cpp);
+                while (decl && decl->str() != "]") {
+                    if (Token::Match(decl, "%name% ,|]")) {
+                        state1.op.push(decl);
+                    } else if (decl->str() == ",") {
+                        if (!state1.op.empty()) {
+                            decl->astOperand1(state1.op.top());
+                            state1.op.pop();
+                        }
+                        if (!state1.op.empty()) {
+                            state1.op.top()->astOperand2(decl);
+                            state1.op.pop();
+                        }
+                        state1.op.push(decl);
+                    }
+                    decl = decl->next();
+                }
+                if (state1.op.size() > 1) {
+                    Token *lastName = state1.op.top();
+                    state1.op.pop();
+                    state1.op.top()->astOperand2(lastName);
+                }
+                decl = decl->next();
+
+                Token *colon = decl;
+                compileExpression(decl, state1);
+
+                tok->next()->astOperand1(tok);
+                tok->next()->astOperand2(colon);
+
+                return decl;
+            }
+        }
+
         Token *tok2 = skipDecl(tok->tokAt(2));
         Token *init1 = nullptr;
         Token * const endPar = tok->next()->link();
