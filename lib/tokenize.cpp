@@ -3429,6 +3429,15 @@ void Tokenizer::setVarIdPass1()
                 continue;
 
             bool decl;
+            if (isCPP() && Token::Match(tok->previous(), "for ( const| auto &|&&| [")) {
+                tok2 = Token::findsimplematch(tok, "[");
+                while (tok2 && tok2->str() != "]") {
+                    if (Token::Match(tok2, "%name% [,]]"))
+                        variableMap.addVariable(tok2->str());
+                    tok2 = tok2->next();
+                }
+                continue;
+            }
             try { /* Ticket #8151 */
                 decl = setVarIdParseDeclaration(&tok2, variableMap.map(), scopeStack.top().isExecutable, isCPP(), isC());
             } catch (const Token * errTok) {
