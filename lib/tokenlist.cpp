@@ -1346,7 +1346,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
             Token *decl = Token::findsimplematch(tok, "[");
             if (Token::simpleMatch(decl->link(), "] :")) {
                 AST_state state1(cpp);
-                while (decl && decl->str() != "]") {
+                while (decl->str() != "]") {
                     if (Token::Match(decl, "%name% ,|]")) {
                         state1.op.push(decl);
                     } else if (decl->str() == ",") {
