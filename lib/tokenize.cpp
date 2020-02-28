@@ -9332,6 +9332,15 @@ void Tokenizer::reportUnknownMacros()
             }
         }
     }
+
+    // String concatenation with unknown macros
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "%str% %name% (") && Token::Match(tok->linkAt(2), ") %str%")) {
+            if (list.isKeyword(tok->next()->str()))
+                continue;
+            unknownMacroError(tok->next());
+        }
+    }
 }
 
 void Tokenizer::findGarbageCode() const

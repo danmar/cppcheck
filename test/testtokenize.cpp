@@ -7982,6 +7982,9 @@ private:
 
         const char code2[] = "void foo() { dostuff(x 0); }";
         ASSERT_THROW(tokenizeAndStringify(code2), InternalError);
+
+        const char code3[] = "f(\"1\" __stringify(48) \"1\");";
+        ASSERT_THROW(tokenizeAndStringify(code3), InternalError);
     }
 
     void findGarbageCode() { // Test Tokenizer::findGarbageCode()
