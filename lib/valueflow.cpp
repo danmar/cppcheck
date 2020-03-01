@@ -4560,9 +4560,8 @@ struct MultiValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
     {}
 
     MultiValueFlowForwardAnalyzer(const std::unordered_map<const Variable*, ValueFlow::Value>& args, const TokenList* t)
-        : ValueFlowForwardAnalyzer(t), values(), vars()
-    {
-        for(const auto& p:args) {
+        : ValueFlowForwardAnalyzer(t), values(), vars() {
+        for (const auto& p:args) {
             values[p.first->declarationId()] = p.second;
             vars[p.first->declarationId()] = p.first;
         }
@@ -4590,13 +4589,13 @@ struct MultiValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
     }
 
     virtual void makeConditional() OVERRIDE {
-        for(auto&& p:values) {
+        for (auto&& p:values) {
             p.second.conditional = true;
         }
     }
 
     virtual void addErrorPath(const Token* tok, const std::string& s) OVERRIDE {
-        for(auto&& p:values) {
+        for (auto&& p:values) {
             p.second.errorPath.emplace_back(tok, "Assuming condition is " + s);
         }
     }
@@ -4620,7 +4619,7 @@ struct MultiValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
     }
 
     virtual bool lowerToPossible() OVERRIDE {
-        for(auto&& p:values) {
+        for (auto&& p:values) {
             if (p.second.isImpossible())
                 return false;
             p.second.changeKnownToPossible();
@@ -4628,7 +4627,7 @@ struct MultiValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
         return true;
     }
     virtual bool lowerToInconclusive() OVERRIDE {
-        for(auto&& p:values) {
+        for (auto&& p:values) {
             if (p.second.isImpossible())
                 return false;
             p.second.setInconclusive();
@@ -4637,7 +4636,7 @@ struct MultiValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
     }
 
     virtual bool isConditional() const OVERRIDE {
-        for(auto&& p:values) {
+        for (auto&& p:values) {
             if (p.second.conditional)
                 return true;
             if (p.second.condition)
@@ -4651,7 +4650,7 @@ struct MultiValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
         if (!scope)
             return false;
         if (scope->type == Scope::eLambda) {
-            for(const auto& p:values) {
+            for (const auto& p:values) {
                 if (!p.second.isLifetimeValue())
                     return false;
             }
@@ -4686,7 +4685,7 @@ struct MultiValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
 
     virtual ProgramState getProgramState() const OVERRIDE {
         ProgramState ps;
-        for(const auto& p:values)
+        for (const auto& p:values)
             ps[p.first] = p.second;
         return ps;
     }
@@ -4697,15 +4696,15 @@ static void valueFlowInjectParameter(TokenList* tokenlist, ErrorLogger* errorLog
     using Args = std::vector<std::unordered_map<const Variable*, ValueFlow::Value>>;
     Args args(1);
     // Compute cartesian product of all arguments
-    for(const auto& p:vars) {
+    for (const auto& p:vars) {
         if (p.second.empty())
             continue;
         args.back()[p.first] = p.second.front();
     }
-    for(const auto& p:vars) {
+    for (const auto& p:vars) {
         std::for_each(std::next(p.second.begin()), p.second.end(), [&](const ValueFlow::Value& value) {
             Args new_args;
-            for(auto arg:args) {
+            for (auto arg:args) {
                 arg[p.first] = value;
                 new_args.push_back(arg);
             }
@@ -4713,13 +4712,13 @@ static void valueFlowInjectParameter(TokenList* tokenlist, ErrorLogger* errorLog
         });
     }
 
-    for(const auto& arg:args) {
+    for (const auto& arg:args) {
         if (arg.empty())
             continue;
         bool skip = false;
         // Make sure all arguments are the same path
         MathLib::bigint path = arg.begin()->second.path;
-        for(const auto& p:arg) {
+        for (const auto& p:arg) {
             if (p.second.path != path) {
                 skip = true;
                 break;
