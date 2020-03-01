@@ -92,6 +92,7 @@ private:
         TEST_CASE(nullpointer50); // #6462
         TEST_CASE(nullpointer51);
         TEST_CASE(nullpointer52);
+        TEST_CASE(nullpointer53); // #8005
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1746,6 +1747,18 @@ private:
               "    return *c.x;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer53() {
+        check("void f(int nParams, int* params) {\n"
+              "  for (int n=1; n<nParams+10; ++n) {\n"
+              "    params[n]=42;\n"
+              "  }\n"
+              "}\n"
+              "void bar() {\n"
+              "  f(0, 0);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Possible null pointer dereference: params\n", errout.str());
     }
 
     void nullpointer_addressOf() { // address of
