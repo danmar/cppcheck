@@ -2814,10 +2814,10 @@ private:
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (portability) Undefined behaviour, when 'i' is 123 the pointer arithmetic 'x+i' is out of bounds.\n", errout.str());
 
         check("void f(int i) {\n"
-            "    char x[10];\n"
-            "    if (i == -1) {}\n"
-            "    dostuff(x+i);\n"
-            "}");
+              "    char x[10];\n"
+              "    if (i == -1) {}\n"
+              "    dostuff(x+i);\n"
+              "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (portability) Undefined behaviour, when 'i' is -1 the pointer arithmetic 'x+i' is out of bounds.\n", errout.str());
 
         check("void f() {\n" // #6350 - fp when there is cast of buffer
