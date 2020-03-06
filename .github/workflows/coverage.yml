@@ -22,7 +22,7 @@ jobs:
 
       - name: Compile instrumented
         run: |
-          make testrunner CXXFLAGS="-g -fprofile-arcs -ftest-coverage" USE_Z3=yes -j2
+          make test CXXFLAGS="-g -fprofile-arcs -ftest-coverage" USE_Z3=yes -j2
           
       - name: Generate coverage report
         run: |
@@ -33,3 +33,8 @@ jobs:
           lcov --directory ./ --capture --output-file lcov_tmp.info -b ./
           lcov --extract lcov_tmp.info "$(pwd)/*" --output-file lcov.info
           genhtml lcov.info -o coverage_report --frame --legend --demangle-cpp
+          
+      - uses: actions/upload-artifact@v1
+        with:
+         name: Coverage results
+         path: coverage_report
