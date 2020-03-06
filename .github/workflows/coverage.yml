@@ -18,11 +18,16 @@ jobs:
           sudo apt-get install libxml2-utils
           sudo apt-get install z3 libz3-dev
           sudo apt-get install lcov
+          pip install lcov_cobertura
 
+      - name: Compile instrumented
+        run: |
+          make testrunner CXXFLAGS="-g -fprofile-arcs -ftest-coverage" USE_Z3=yes -j2
+          
       - name: Generate coverage report
         run: |
           rm -rf coverage_report
-          make test CXXFLAGS="-g -fprofile-arcs -ftest-coverage" -j2
+          ./testrunner
           test/cfg/runtests.sh
           gcov lib/*.cpp -o lib/
           lcov --directory ./ --capture --output-file lcov_tmp.info -b ./
