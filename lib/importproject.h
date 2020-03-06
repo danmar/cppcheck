@@ -84,12 +84,15 @@ public:
 
     void selectOneVsConfig(cppcheck::Platform::PlatformType platform);
 
+    std::list<std::string> getVSConfigs();
+
     // Cppcheck GUI output
     struct {
         std::string analyzeAllVsConfigs;
         std::vector<std::string> pathNames;
         std::list<std::string> libraries;
         std::list<std::string> excludedPaths;
+        std::list<std::string> checkVsConfigs;
         std::string projectFile;
         std::string platform;
     } guiProject;
@@ -108,6 +111,7 @@ private:
     void importBcb6Prj(const std::string &projectFilename);
 
     std::string mPath;
+    std::set<std::string> mAllVSConfigs;
 };
 
 
@@ -118,6 +122,8 @@ namespace CppcheckXml {
     const char BuildDirElementName[] = "builddir";
     const char ImportProjectElementName[] = "importproject";
     const char AnalyzeAllVsConfigsElementName[] = "analyze-all-vs-configs";
+    const char Parser[] = "parser";
+    const char BugHunting[] = "bug-hunting";
     const char IncludeDirElementName[] = "includedir";
     const char DirElementName[] = "dir";
     const char DirNameAttrib[] = "name";
@@ -154,6 +160,8 @@ namespace CppcheckXml {
     const char CheckUnknownFunctionReturn[] = "check-unknown-function-return-values";
     const char ClangTidy[] = "clang-tidy";
     const char Name[] = "name";
+    const char VSConfigurationElementName[] = "vs-configurations";
+    const char VSConfigurationName[] = "config";
 }
 
 /// @}

@@ -112,6 +112,61 @@ std::string Suppressions::parseXmlFile(const char *filename)
     return "";
 }
 
+std::vector<Suppressions::Suppression> Suppressions::parseMultiSuppressComment(const std::string &comment, std::string *errorMessage)
+{
+    std::vector<Suppression> suppressions;
+
+    // If this function is called we assume that comment starts with "cppcheck-suppress[".
+    const std::string::size_type start_position = comment.find("[");
+    const std::string::size_type end_position = comment.find("]", start_position);
+    if (end_position == std::string::npos) {
+        if (errorMessage && errorMessage->empty())
+            *errorMessage = "Bad multi suppression '" + comment + "'. legal format is cppcheck-suppress[errorId, errorId symbolName=arr, ...]";
+        return suppressions;
+    }
+
+    // parse all suppressions
+    for (std::string::size_type pos = start_position; pos < end_position;) {
+        const std::string::size_type pos1 = pos + 1;
+        pos = comment.find(",", pos1);
+        const std::string::size_type pos2 = (pos < end_position) ? pos : end_position;
+        if (pos1 == pos2)
+            continue;
+
+        Suppression s;
+        std::istringstream iss(comment.substr(pos1, pos2-pos1));
+
+        iss >> s.errorId;
+        if (!iss) {
+            if (errorMessage && errorMessage->empty())
+                *errorMessage = "Bad multi suppression '" + comment + "'. legal format is cppcheck-suppress[errorId, errorId symbolName=arr, ...]";
+            suppressions.clear();
+            return suppressions;
+        }
+
+        while (iss) {
+            std::string word;
+            iss >> word;
+            if (!iss)
+                break;
+            if (word.find_first_not_of("+-*/%#;") == std::string::npos)
+                break;
+            if (word.compare(0, 11, "symbolName=") == 0) {
+                s.symbolName = word.substr(11);
+            } else {
+                if (errorMessage && errorMessage->empty())
+                    *errorMessage = "Bad multi suppression '" + comment + "'. legal format is cppcheck-suppress[errorId, errorId symbolName=arr, ...]";
+                suppressions.clear();
+                return suppressions;
+            }
+        }
+
+        suppressions.push_back(s);
+    }
+
+    return suppressions;
+}
+
 std::string Suppressions::addSuppressionLine(const std::string &line)
 {
     std::istringstream lineStream(line);

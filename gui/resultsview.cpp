@@ -433,6 +433,16 @@ void ResultsView::debugError(const ErrorItem &item)
     mUI.mListLog->addItem(item.ToString());
 }
 
+void ResultsView::bughuntingReportLine(QString line)
+{
+    for (QString s: line.split("\n")) {
+        if (s.isEmpty())
+            continue;
+        if (s.startsWith("[function-report] "))
+            mUI.mListSafeFunctions->addItem(s.mid(s.lastIndexOf(":") + 1));
+    }
+}
+
 void ResultsView::logClear()
 {
     mUI.mListLog->clear();

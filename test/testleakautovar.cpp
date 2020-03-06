@@ -76,6 +76,7 @@ private:
         TEST_CASE(assign17); // #9047
         TEST_CASE(assign18);
         TEST_CASE(assign19);
+        TEST_CASE(assign20); // #9187
 
         TEST_CASE(isAutoDealloc);
 
@@ -411,6 +412,13 @@ private:
               "    free((void*)p);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void assign20() { // #9187
+        check("void f() {\n"
+              "    char *p = static_cast<int>(malloc(10));\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: p\n", errout.str());
     }
 
     void isAutoDealloc() {
@@ -2048,6 +2056,7 @@ private:
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(returnedValue); // #9298
+        TEST_CASE(fclose_false_positive); // #9575
     }
 
     void returnedValue() { // #9298
@@ -2059,6 +2068,12 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
     }
+
+    void fclose_false_positive() { // #9575
+        check("int  f(FILE *fp) { return fclose(fp); }");
+        ASSERT_EQUALS("", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestLeakAutoVarStrcpy)

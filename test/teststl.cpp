@@ -2152,7 +2152,9 @@ private:
               "        *it;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4] -> [test.cpp:6] -> [test.cpp:3] -> [test.cpp:4]: (error) Using iterator to local container 'vec' that may be invalid.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:6] -> [test.cpp:3] -> [test.cpp:9]: (error, inconclusive) Using iterator to local container 'vec' that may be invalid.\n",
+            errout.str());
     }
 
     void pushback13() {
@@ -2213,14 +2215,16 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // TODO: This shouldn't be inconclusive
         check("void f(const std::vector<Bar>& bars) {\n"
               "    for(std::vector<Bar>::iterator i = bars.begin(); i != bars.end(); ++i) {\n"
               "        bars.insert(i, bar);\n"
               "        i = bars.insert(i, bar);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2] -> [test.cpp:2] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:2]: (error) Using iterator to local container 'bars' that may be invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:4]: (error, inconclusive) Using iterator to local container 'bars' that may be invalid.\n", errout.str());
 
+        // TODO: This shouldn't be inconclusive
         check("void* f(const std::vector<Bar>& bars) {\n"
               "    std::vector<Bar>::iterator i = bars.begin();\n"
               "    bars.insert(i, Bar());\n"
@@ -2228,7 +2232,7 @@ private:
               "    void* v = &i->foo;\n"
               "    return v;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:4] -> [test.cpp:1] -> [test.cpp:5] -> [test.cpp:4] -> [test.cpp:1] -> [test.cpp:6]: (error) Using pointer to local variable 'bars' that may be invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:4]: (error, inconclusive) Using iterator to local container 'bars' that may be invalid.\n", errout.str());
     }
 
     void insert2() {
@@ -2492,6 +2496,10 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(std::set<int> s) {\n"
+              "    if (auto result = s.find(123); result != s.end()) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
         // ---------------------------
         // std::find
@@ -4093,6 +4101,25 @@ private:
               "    std::string z;\n"
               "    z += \"\";\n"
               "    z += y;\n"
+              "}\n",true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::vector<char> v)\n"
+              "{\n"
+              "    auto *cur = v.data();\n"
+              "    auto *end = cur + v.size();\n"
+              "    while (cur < end) {\n"
+              "        v.erase(v.begin(), FindNext(v));\n"
+              "        cur = v.data();\n"
+              "        end = cur + v.size();\n"
+              "    }\n"
+              "}\n",true);
+        ASSERT_EQUALS("", errout.str());
+
+        // #9598
+        check("void f(std::vector<std::string> v) {\n"
+              "    for (auto it = v.begin(); it != v.end(); it = v.erase(it))\n"
+              "        *it;\n"
               "}\n",true);
         ASSERT_EQUALS("", errout.str());
     }

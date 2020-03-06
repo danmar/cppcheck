@@ -7,12 +7,16 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
+#include <stdlib.h>
 #include <gtk/gtk.h>
 #include <glib.h>
 
 
-void validCode(int argInt)
+void validCode(int argInt, GHashTableIter * hash_table_iter, GHashTable * hash_table)
 {
+    g_assert_cmpint(4 + 1, >=, 5);
+    g_assert_cmpstr("test", ==, "test");
+
     // if G_UNLIKELY is not defined this results in a syntax error
     if G_UNLIKELY(argInt == 1) {
     } else if (G_UNLIKELY(argInt == 2)) {
@@ -59,6 +63,10 @@ void validCode(int argInt)
         gsize result_val = 1;
         g_once_init_leave(&init_val, result_val);
     }
+
+    g_hash_table_iter_replace(hash_table_iter, g_strdup("test"));
+    g_hash_table_insert(hash_table, g_strdup("key"), g_strdup("value"));
+    g_hash_table_replace(hash_table, g_strdup("key"), g_strdup("value"));
 }
 
 void g_malloc_test()
@@ -413,4 +421,11 @@ void g_strchug_g_strchomp_test(gchar * str1)
     gchar * str3;
     // cppcheck-suppress uninitvar
     g_strchomp(str3);
+}
+
+void g_abort_test()
+{
+    g_abort();
+    //cppcheck-suppress unreachableCode
+    printf("Never reached");
 }

@@ -136,6 +136,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mThread, &ThreadHandler::done, this, &MainWindow::analysisDone);
     connect(mThread, &ThreadHandler::log, mUI.mResults, &ResultsView::log);
     connect(mThread, &ThreadHandler::debugError, mUI.mResults, &ResultsView::debugError);
+    connect(mThread, &ThreadHandler::bughuntingReportLine, mUI.mResults, &ResultsView::bughuntingReportLine);
     connect(mUI.mResults, &ResultsView::gotResults, this, &MainWindow::resultsAdded);
     connect(mUI.mResults, &ResultsView::resultsHidden, mUI.mActionShowHidden, &QAction::setEnabled);
     connect(mUI.mResults, &ResultsView::checkSelected, this, &MainWindow::performSelectedFilesCheck);
@@ -839,6 +840,10 @@ Settings MainWindow::getCppcheckSettings()
             result.userDefines += define.toStdString();
         }
 
+        result.clang = mProjectFile->clangParser;
+        result.bugHunting = mProjectFile->bugHunting;
+        result.bugHuntingReport = " ";
+
         const QStringList undefines = mProjectFile->getUndefines();
         foreach (QString undefine, undefines)
             result.userUndefs.insert(undefine.toStdString());
@@ -888,10 +893,10 @@ Settings MainWindow::getCppcheckSettings()
         result.maxCtuDepth = mProjectFile->getMaxCtuDepth();
         result.checkHeaders = mProjectFile->getCheckHeaders();
         result.checkUnusedTemplates = mProjectFile->getCheckUnusedTemplates();
-        result.safeChecks.classes = mProjectFile->getSafeChecks().classes;
-        result.safeChecks.externalFunctions = mProjectFile->getSafeChecks().externalFunctions;
-        result.safeChecks.internalFunctions = mProjectFile->getSafeChecks().internalFunctions;
-        result.safeChecks.externalVariables = mProjectFile->getSafeChecks().externalVariables;
+        result.safeChecks.classes = mProjectFile->safeChecks.classes;
+        result.safeChecks.externalFunctions = mProjectFile->safeChecks.externalFunctions;
+        result.safeChecks.internalFunctions = mProjectFile->safeChecks.internalFunctions;
+        result.safeChecks.externalVariables = mProjectFile->safeChecks.externalVariables;
         foreach (QString s, mProjectFile->getCheckUnknownFunctionReturn())
             result.checkUnknownFunctionReturn.insert(s.toStdString());
     }

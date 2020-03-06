@@ -448,8 +448,9 @@ void CheckOther::checkRedundantAssignment()
                         continue;
                 }
 
+                const Token* rhs = tok->astOperand2();
                 // Do not warn about assignment with 0 / NULL
-                if (Token::simpleMatch(tok->astOperand2(), "0") || FwdAnalysis::isNullOperand(tok->astOperand2()))
+                if ((rhs && MathLib::isNullValue(rhs->str())) || isNullOperand(rhs))
                     continue;
 
                 if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isReference())
@@ -2099,10 +2100,10 @@ void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, 
 
     const std::string& op = opTok ? opTok->str() : "&&";
     std::string msg = "Same expression on both sides of \'" + op + "\'";
-    std::string id = "duplicateExpression";
-    if (expr1 != expr2) {
+    const char *id = "duplicateExpression";
+    if (expr1 != expr2 && (!opTok || !opTok->isArithmeticalOp())) {
         id = "knownConditionTrueFalse";
-        std::string exprMsg = "The expression \'" + expr1 + " " + op +  " " + expr2 + "\' is always ";
+        std::string exprMsg = "The comparison \'" + expr1 + " " + op +  " " + expr2 + "\' is always ";
         if (Token::Match(opTok, "==|>=|<="))
             msg = exprMsg + "true";
         else if (Token::Match(opTok, "!=|>|<"))
@@ -2111,7 +2112,7 @@ void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, 
             msg += " because '" + expr1 + "' and '" + expr2 + "' represent the same value";
     }
 
-    reportError(errors, Severity::style, id.c_str(), msg + ".\n"
+    reportError(errors, Severity::style, id, msg + ".\n"
                 "Finding the same expression on both sides of an operator is suspicious and might "
                 "indicate a cut and paste or logic error. Please examine this code carefully to "
                 "determine if it is correct.", CWE398, false);

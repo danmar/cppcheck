@@ -22,6 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "mathlib.h"
 #include "utils.h"
 
 #include <list>
@@ -69,6 +70,7 @@ namespace ValueFlow {
               conditional(false),
               defaultArg(false),
               indirect(0),
+              path(0),
               lifetimeKind(LifetimeKind::Object),
               lifetimeScope(LifetimeScope::Local),
               valueKind(ValueKind::Possible)
@@ -246,6 +248,9 @@ namespace ValueFlow {
         bool defaultArg;
 
         int indirect;
+
+        /** Path id */
+        MathLib::bigint path;
 
         enum class LifetimeKind {Object, Lambda, Iterator, Address} lifetimeKind;
 

@@ -1478,6 +1478,14 @@ private:
                        "}", "test.cpp", false);
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory is allocated but not initialized: buffer\n", errout.str());
 
+        checkUninitVar("void f(){\n"
+                       "   char *strMsg = \"This is a message\";\n"
+                       "   char *buffer=static_cast<char*>(malloc(128*sizeof(char)));\n"
+                       "   strcpy(strMsg,buffer);\n"
+                       "   free(buffer);\n"
+                       "}", "test.cpp", false);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory is allocated but not initialized: buffer\n", errout.str());
+
         // #3845
         checkUninitVar("int foo() {\n"
                        "    int a[1] = {5};\n"
@@ -4346,7 +4354,7 @@ private:
                         "    if (b == 'x') {}\n"
                         "    if (a) {}\n"
                         "}");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Uninitialized variable: a\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:8]: (error) Uninitialized variable: a\n", "", errout.str());
 
         valueFlowUninit("void h() {\n"
                         "  int i;\n"
@@ -4494,7 +4502,9 @@ private:
                         "    c->x = 42;\n"
                         "    return c->x;\n"
                         "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: c\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: c\n"
+                      "[test.cpp:7]: (error) Uninitialized variable: c\n",
+                      errout.str());
 
         valueFlowUninit("struct A {\n"
                         "    double x;\n"
@@ -4558,6 +4568,17 @@ private:
                         "  f(&i);\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // # 9631
+        valueFlowUninit("static void g(bool * result, int num, int num2, size_t * buflen) {\n"
+                        "  if (*result && *buflen >= 5) {}\n"
+                        "}\n"
+                        "void f() {\n"
+                        "  size_t bytesCopied;\n"
+                        "  bool copied_all = true;\n"
+                        "  g(&copied_all, 5, 6, &bytesCopied);\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:2]: (error) Uninitialized variable: *buflen\n", errout.str());
     }
 
     void uninitvar_memberfunction() {
@@ -4684,6 +4705,15 @@ private:
 
         ctu("void f(int *p) {\n"
             "    a = sizeof(*p);\n"
+            "}\n"
+            "int main() {\n"
+            "  int x;\n"
+            "  f(&x);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        ctu("void f(int *v) {\n"
+            "  std::cin >> *v;\n"
             "}\n"
             "int main() {\n"
             "  int x;\n"

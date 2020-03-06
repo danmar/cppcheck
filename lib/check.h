@@ -126,27 +126,23 @@ protected:
     ErrorLogger * const mErrorLogger;
 
     /** report an error */
-    template<typename T, typename U>
-    void reportError(const Token *tok, const Severity::SeverityType severity, const T id, const U msg) {
+    void reportError(const Token *tok, const Severity::SeverityType severity, const std::string &id, const std::string &msg) {
         reportError(tok, severity, id, msg, CWE(0U), false);
     }
 
     /** report an error */
-    template<typename T, typename U>
-    void reportError(const Token *tok, const Severity::SeverityType severity, const T id, const U msg, const CWE &cwe, bool inconclusive) {
+    void reportError(const Token *tok, const Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe, bool inconclusive) {
         const std::list<const Token *> callstack(1, tok);
         reportError(callstack, severity, id, msg, cwe, inconclusive);
     }
 
     /** report an error */
-    template<typename T, typename U>
-    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const T id, const U msg) {
+    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg) {
         reportError(callstack, severity, id, msg, CWE(0U), false);
     }
 
     /** report an error */
-    template<typename T, typename U>
-    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const T id, const U msg, const CWE &cwe, bool inconclusive) {
+    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe, bool inconclusive) {
         const ErrorLogger::ErrorMessage errmsg(callstack, mTokenizer ? &mTokenizer->list : nullptr, severity, id, msg, cwe, inconclusive);
         if (mErrorLogger)
             mErrorLogger->reportErr(errmsg);

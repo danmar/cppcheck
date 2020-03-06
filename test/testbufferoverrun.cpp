@@ -128,6 +128,7 @@ private:
         TEST_CASE(array_index_47); // #5849
         TEST_CASE(array_index_48); // #9478
         TEST_CASE(array_index_49); // #8653
+        TEST_CASE(array_index_50);
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1509,6 +1510,18 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void array_index_50() {
+        check("void f(const char * str) {\n"
+              "    int len = strlen(str);\n"
+              "    (void)str[len - 1];\n"
+              "}\n"
+              "void g() {\n"
+              "    f(\"12345678\");\n"
+              "    f(\"12345\");\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void array_index_multidim() {
         check("void f()\n"
               "{\n"
@@ -2799,6 +2812,13 @@ private:
               "    dostuff(x+i);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (portability) Undefined behaviour, when 'i' is 123 the pointer arithmetic 'x+i' is out of bounds.\n", errout.str());
+
+        check("void f(int i) {\n"
+              "    char x[10];\n"
+              "    if (i == -1) {}\n"
+              "    dostuff(x+i);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (portability) Undefined behaviour, when 'i' is -1 the pointer arithmetic 'x+i' is out of bounds.\n", errout.str());
 
         check("void f() {\n" // #6350 - fp when there is cast of buffer
               "  wchar_t buf[64];\n"

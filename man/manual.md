@@ -353,7 +353,25 @@ The output is:
     cppcheck test.c
     [test.c:3]: (error) Array 'arr[5]' index 10 out of bounds
 
-To suppress the error message, a comment can be added:
+To activate inline suppressions:
+
+    cppcheck --inline-suppr test.c
+
+### Format
+
+You can suppress a warning `aaaa` with:
+
+    // cppcheck-suppress aaaa
+
+Suppressing multiple ids in one comment by using []:
+
+    // cppcheck-suppress [aaaa, bbbb]
+
+### Comment before code or on same line
+
+The comment can be put before the code or at the same line as the code;
+
+Before the code:
 
     void f() {
         char arr[5];
@@ -362,18 +380,65 @@ To suppress the error message, a comment can be added:
         arr[10] = 0;
     }
 
-Now the `--inline-suppr` flag can be used to suppress the warning. No error is reported when invoking cppcheck this way:
+Or at the same line as the code:
 
-    cppcheck --inline-suppr test.c
+    void f() {
+        char arr[5];
+
+        arr[10] = 0;  // cppcheck-suppress arrayIndexOutOfBounds
+    }
+
+### Multiple suppressions
+
+For a line of code there might be several warnings you want to suppress.
+
+There are several options;
+
+Using 2 suppression comments before code:
+
+    void f() {
+        char arr[5];
+
+        // cppcheck-suppress arrayIndexOutOfBounds
+        // cppcheck-suppress zerodiv
+        arr[10] = arr[10] / 0;
+    }
+
+Using 1 suppression comment before the code:
+
+    void f() {
+        char arr[5];
+
+        // cppcheck-suppress[arrayIndexOutOfBounds,zerodiv]
+        arr[10] = arr[10] / 0;
+    }
+
+Suppression comment on the same line as the code:
+
+    void f() {
+        char arr[5];
+
+        arr[10] = arr[10] / 0;  // cppcheck-suppress[arrayIndexOutOfBounds,zerodiv]
+    }
+
+
+### Symbol name
 
 You can specify that the inline suppression only applies to a specific symbol:
 
-    // cppcheck-suppress arrayIndexOutOfBounds symbolName=arr
+    // cppcheck-suppress aaaa symbolName=arr
 
-You can write comments for the suppress, however is recommended to use ; or // to specify where they start:
+Or
 
-    // cppcheck-suppress arrayIndexOutOfBounds ; some comment
-    // cppcheck-suppress arrayIndexOutOfBounds // some comment
+    // cppcheck-suppress[aaaa symbolName=arr, bbbb]
+
+### Comment about suppression
+
+You can write comments about a suppression like so:
+
+    // cppcheck-suppress[warningid] some comment
+    // cppcheck-suppress warningid ; some comment
+    // cppcheck-suppress warningid // some comment
 
 # XML output
 

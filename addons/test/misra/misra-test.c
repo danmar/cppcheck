@@ -1,10 +1,35 @@
 // To test:
-// ~/cppcheck/cppcheck --dump misra-test.c && python ../../misra.py -verify misra-test.c.dump
+// ~/cppcheck/cppcheck --dump --suppress=uninitvar --suppress=uninitStructMember misra/misra-test.c --std=c89 && python3 ../misra.py -verify misra/misra-test.c.dump
 
 #include "path\file.h" // 20.2
+#include "file//.h" // 20.2
+#include "file/*.h" // 20.2
+#include "file'.h" // 20.2
+#include <file,.h> // 20.2
+#include "file,.h" // 20.2
+
 #include /*abc*/ "file.h" // no warning
+/*foo*/#include "file.h" // no warning
+#include "./file.h" // no warning
+#include \
+    "file.h"
+#include /*abc*/ \
+    "file.h"
+#include "fi" "le.h" // 20.3 (strings are concatenated after preprocessing)
+#include "fi" <le.h> // 20.3
+#include <fi> <le.h> // 20.3
 #include PATH "file.h" // 20.3
+#define H_20_3_ok "file.h"
+#include H_20_3_ok
+#include file.h // 20.3
+#define H_20_3_bad file.h
+#include H_20_3_bad // TODO: 20.3 Trac #9606
+#include "//file.h" // 20.2
+#include "//file.h" H_20_3_bad // 20.2 20.3
+//#include H_20_3_bad // no warning
+#include H_20_3_ok H_20_3_ok // 20.3
 #include<file.h> // no warning
+
 #include <setjmp.h> // 21.4
 #include <signal.h> // 21.5
 #include <stdio.h> //21.6
@@ -242,7 +267,7 @@ void misra_10_1_ternary()
     int8_t i8;
     int16_t i16;
 
-    a = ui16 << ui16;
+    a = ui16 << ui16; // 10.6
     a = ui16 << (get_bool(42) ? ui16 : ui16);
     a = ui16 << (get_bool(42) ? ui16 : (get_bool(34) ? ui16 : ui16)); // 10.4
     a = ui16 << (get_bool(42) ? (get_bool(34) ? ui16 : ui16) : ui16); // 10.4
@@ -279,6 +304,10 @@ void misra_10_6(u8 x, u32 a, u32 b, char c1, char c2) {
   u16 z = ~u8 x ;//10.6
   u32 c = ( u16) ( u32 a + u32 b ); //10.6
   s32 i = c1 - c2; // FIXME: False positive for 10.6 (this is compliant). Trac #9488
+}
+void misra_10_6_1(uint32_t *a, uint16_t b, uint16_t c)
+{
+    *a = b + c ; // 10.6
 }
 
 void misra_10_8(u8 x, s32 a, s32 b) {
@@ -455,11 +484,14 @@ void misra_12_4() {
 }
 
 struct misra_13_1_t { int a; int b; };
+uint8_t misra_13_1_x = 0;
+void misra_13_1_bar(uint8_t a[2]);
 void misra_13_1(int *p) {
   volatile int v;
   int a1[3] = {0, (*p)++, 2}; // 13.1
   int a2[3] = {0, ((*p) += 1), 2}; // 13.1
   int a3[3] = {0, ((*p) = 19), 2}; // 13.1
+  misra_13_1_bar((uint8_t[2]){ misra_13_1_x++, misra_13_1_x++ } ); // 13.1
   int b[2] = {v,1};
   struct misra_13_1_t c = { .a=4, .b=5 }; // no fp
   volatile int vv;
@@ -668,6 +700,28 @@ void misra_15_3() {
       L1:
     } else {}
   } else {}
+
+  switch (x) {
+  case 0:
+      if (x == y) {
+          goto L2; // 15.3 15.1
+      }
+      goto L2; // 15.3 15.1
+    L3:
+      foo();
+      if (a == 0x42) {
+          // Compliant:
+          goto L3; // 15.1 15.2
+      }
+      break;
+  case 1:
+      y = x;
+  L2:
+      ++x;
+      break;
+  default:
+      break;
+  }
 }
 
 int misra_15_5() {
@@ -955,6 +1009,7 @@ union misra_19_2 { }; // 19.2
 #include "notfound.h" // 20.1
 
 #define int short // 20.4
+#define inline "foo" // no warning in C90 standard
 #undef X  // 20.5
 
 #define M_20_7_1(A)  (A+1) // 20.7
@@ -962,6 +1017,7 @@ union misra_19_2 { }; // 19.2
 #define M_20_7_3(A)  ((A)+A) // 20.7
 #define M_20_7_4(A)  x##A // 20.10 this test was written to see there are not FPs
 #define M_20_7_5(A,B)  f(A, B) // no warning
+#define MUL(a  ,b ) ( a * b ) // 20.7
 
 #define M_20_10(a) (#a) // 20.10
 
@@ -982,53 +1038,15 @@ union misra_19_2 { }; // 19.2
 #define _macro_starts_with_lower 1 // no warning
 static int _file_scope_id_21_1 = 42; // no warning
 static int _file_scope_id_21_1_fn() { return 42; } // no warning
-static int __file_scope_id_21_1 = 42; // 21.1
-static int __file_scope_id_21_1_fn() { return 42; } // 21.1
-static int _File_scope_id_21_1 = 42; // 21.1
-static int _File_scope_id_21_1_fn() { return 42; } // 21.1
-int _external_scope_id_21_1 = 42; // 21.1
-int _external_scope_id_21_1_fn() { return 42; } // 21.1
-int __external_scope_id_21_1 = 42; // 21.1
-int __external_scope_id_21_1_fn() { return 42; } // 21.1
-int _External_scope_id_21_1 = 42; // 21.1
-int _External_scope_id_21_1_fn() { return 42; } // 21.1
-int errno = 42; // 21.1 5.5
 int misra_21_1() {
-    int _a = 42; // 21.1
+    int _a = 42; // no warning: only directives affected
     errno = EINVAL; // no warning
     _a ++; // no warning
     _exit(1); // no warning
     return _a; // no warning
 }
-int _misra_21_1_1(); // 21.1
 static int _misra_21_1_2(); // no warning
 #define errno 11 // 21.1
-struct _struct_21_1 { int a; }; // 21.1
-struct _Struct_21_1 { int a; }; // 21.1
-struct __struct_21_1 { int a; }; // 21.1
-typedef struct { int a; } _struct_21_1_t; // 21.1
-typedef struct { int a; } _Struct_21_1_t; // 21.1
-typedef struct { int a; } __struct_21_1_t; // 21.1
-enum _enum_21_1 { ENUM211_1 }; // 21.1
-enum _Enum_21_1 { ENUM211_2 }; // 21.1
-enum __enum_21_1 { ENUM211_3 }; // 21.1
-enum __enum_21_1 { ENUM211_3 }; // 21.1
-typedef enum { ENUM211_4 } _enum_21_1_t; // 21.1
-typedef enum { ENUM211_5 } _Enum_21_1_t; // 21.1
-typedef enum { ENUM211_6 } __enum_21_1_t; // 21.1
-enum enum_21_1_valid_id {
-    ENUM211_7,
-    _ENUM211_8, // 21.1
-    __ENUM211_9, // 21.1
-    _eNUM211_10, // 21.1
-    enum211_11
-};
-union _union_21_1 { int a; }; // 21.1 19.2
-union _Union_21_1 { int a; }; // 21.1 19.2
-union __union_21_1 { int a; }; // 21.1 19.2
-typedef union { int a; } _union_21_1_t; // 21.1 19.2
-typedef union { int a; } _Union_21_1_t; // 21.1 19.2
-typedef union { int a; } __union_21_1_t; // 21.1 19.2
 
 void misra_21_3() {
   p1=malloc(10); // 21.3

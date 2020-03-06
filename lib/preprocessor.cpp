@@ -32,6 +32,11 @@
 #include <iterator> // back_inserter
 #include <utility>
 
+static bool sameline(const simplecpp::Token *tok1, const simplecpp::Token *tok2)
+{
+    return tok1 && tok2 && tok1->location.sameline(tok2->location);
+}
+
 /**
  * Remove heading and trailing whitespaces from the input parameter.
  * If string is all spaces/tabs, return empty string.
@@ -76,20 +81,72 @@ namespace {
     };
 }
 
-static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSettings, std::list<BadInlineSuppression> *bad)
+static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std::list<Suppressions::Suppression> &inlineSuppressions, std::list<BadInlineSuppression> *bad)
 {
-    std::list<Suppressions::Suppression> inlineSuppressions;
-    for (const simplecpp::Token *tok = tokens.cfront(); tok; tok = tok->next) {
-        if (tok->comment) {
-            Suppressions::Suppression s;
-            std::string errmsg;
-            if (!s.parseComment(tok->str(), &errmsg))
-                continue;
-            if (!errmsg.empty())
-                bad->push_back(BadInlineSuppression(tok->location, errmsg));
+    const std::string &comment = tok->str();
+    if (comment.size() < 19)
+        return false;
+    const std::string::size_type pos1 = comment.find_first_not_of("/* \t");
+    if (pos1 == std::string::npos)
+        return false;
+    if (pos1 + 17 >= comment.size())
+        return false;
+    if (comment.compare(pos1, 17, "cppcheck-suppress") != 0)
+        return false;
+
+    // skip spaces after "cppcheck-suppress"
+    const std::string::size_type pos2 = comment.find_first_not_of(" ", pos1+17);
+    if (pos2 == std::string::npos)
+        return false;
+
+    if (comment[pos2] == '[') {
+        // multi suppress format
+        std::string errmsg;
+        std::vector<Suppressions::Suppression> suppressions = Suppressions::parseMultiSuppressComment(comment, &errmsg);
+
+        if (!errmsg.empty())
+            bad->push_back(BadInlineSuppression(tok->location, errmsg));
+
+        for (const Suppressions::Suppression &s : suppressions) {
             if (!s.errorId.empty())
                 inlineSuppressions.push_back(s);
+        }
+    } else {
+        //single suppress format
+        std::string errmsg;
+        Suppressions::Suppression s;
+        if (!s.parseComment(comment, &errmsg))
+            return false;
+
+        if (!s.errorId.empty())
+            inlineSuppressions.push_back(s);
+
+        if (!errmsg.empty())
+            bad->push_back(BadInlineSuppression(tok->location, errmsg));
+    }
+
+    return true;
+}
+
+static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSettings, std::list<BadInlineSuppression> *bad)
+{
+    for (const simplecpp::Token *tok = tokens.cfront(); tok; tok = tok ? tok->next : nullptr) {
+        if (!tok->comment)
             continue;
+
+        std::list<Suppressions::Suppression> inlineSuppressions;
+        if (!parseInlineSuppressionCommentToken(tok, inlineSuppressions, bad))
+            continue;
+
+        if (!sameline(tok->previous, tok)) {
+            // find code after comment..
+            tok = tok->next;
+            while (tok && tok->comment) {
+                parseInlineSuppressionCommentToken(tok, inlineSuppressions, bad);
+                tok = tok->next;
+            }
+            if (!tok)
+                break;
         }
 
         if (inlineSuppressions.empty())
@@ -113,7 +170,6 @@ static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSe
             suppr.lineNumber = tok->location.line;
             mSettings.nomsg.addSuppression(suppr);
         }
-        inlineSuppressions.clear();
     }
 }
 
@@ -164,11 +220,6 @@ void Preprocessor::setDirectives(const simplecpp::TokenList &tokens)
             mDirectives.push_back(directive);
         }
     }
-}
-
-static bool sameline(const simplecpp::Token *tok1, const simplecpp::Token *tok2)
-{
-    return tok1 && tok2 && tok1->location.sameline(tok2->location);
 }
 
 static std::string readcondition(const simplecpp::Token *iftok, const std::set<std::string> &defined, const std::set<std::string> &undefined)

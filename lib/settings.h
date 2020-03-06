@@ -153,6 +153,9 @@ public:
         for finding include files inside source files. (-I) */
     std::list<std::string> includePaths;
 
+    /** @brief List of selected Visual Studio configurations that should be checks */
+    std::list<std::string> checkVsConfigs;
+
     /** @brief Inconclusive checks */
     bool inconclusive;
 
@@ -166,6 +169,10 @@ public:
         static const char XmlExternalFunctions[];
         static const char XmlInternalFunctions[];
         static const char XmlExternalVariables[];
+
+        void clear() {
+            classes = externalFunctions = internalFunctions = externalVariables = false;
+        }
 
         /**
          * Public interface of classes

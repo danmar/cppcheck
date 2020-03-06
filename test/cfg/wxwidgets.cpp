@@ -25,6 +25,21 @@
 #include <wx/sizer.h>
 #include <wx/string.h>
 #include <wx/textctrl.h>
+#include <wx/propgrid/property.h>
+
+wxSizerItem* invalidFunctionArgBool_wxSizer_Add(wxSizer *sizer, wxWindow * window, const wxSizerFlags &flags)
+{
+    // No warning is expected for
+    return sizer->Add(window,flags);
+}
+
+bool invalidFunctionArgBool_wxPGProperty_Hide(wxPGProperty *pg, bool hide, int flags)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)pg->Hide(hide, true);
+    // No warning is expected for
+    return pg->Hide(hide, flags);
+}
 
 wxTextCtrlHitTestResult nullPointer_wxTextCtrl_HitTest(wxTextCtrl &txtCtrl, const wxPoint &pos)
 {
@@ -167,9 +182,9 @@ void uninitvar_wxStaticText(wxStaticText &s)
 {
     // no warning
     s.Wrap(-1);
-    bool uninitBool;
+    int uninitInt;
     // cppcheck-suppress uninitvar
-    s.Wrap(uninitBool);
+    s.Wrap(uninitInt);
 }
 
 void uninitvar_wxString_NumberConversion(const wxString &str, const int numberBase)

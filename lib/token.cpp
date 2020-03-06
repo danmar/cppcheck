@@ -1646,6 +1646,8 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                 if (value.indirect > 0)
                     for (int i=0; i<value.indirect; i++)
                         out << "*";
+                if (value.path > 0)
+                    out << "@" << value.path;
             }
         }
         if (xml)

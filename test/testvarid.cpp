@@ -166,6 +166,8 @@ private:
         TEST_CASE(varid_trailing_return2); // #9066
         TEST_CASE(varid_parameter_pack); // #9383
 
+        TEST_CASE(varid_for_auto_cpp17);
+
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
         TEST_CASE(varidclass3);
@@ -2548,6 +2550,22 @@ private:
                             "3: foo ( parameters@1 ... ) ;\n"
                             "4: }\n";
         ASSERT_EQUALS(exp1, tokenize(code1));
+    }
+
+    void varid_for_auto_cpp17() {
+        const char code[] = "void f() {\n"
+                            "  for (auto [x,y,z]: xyz) {\n"
+                            "    x+y+z;\n"
+                            "  }\n"
+                            "  x+y+z;\n"
+                            "}";
+        const char exp1[] = "1: void f ( ) {\n"
+                            "2: for ( auto [ x@1 , y@2 , z@3 ] : xyz ) {\n"
+                            "3: x@1 + y@2 + z@3 ;\n"
+                            "4: }\n"
+                            "5: x + y + z ;\n"
+                            "6: }\n";
+        ASSERT_EQUALS(exp1, tokenize(code));
     }
 
     void varidclass1() {

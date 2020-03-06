@@ -113,6 +113,7 @@ private:
         TEST_CASE(returnReference16); // #9433
         TEST_CASE(returnReference17); // #9461
         TEST_CASE(returnReference18); // #9482
+        TEST_CASE(returnReference19); // #9597
         TEST_CASE(returnReferenceFunction);
         TEST_CASE(returnReferenceContainer);
         TEST_CASE(returnReferenceLiteral);
@@ -1303,6 +1304,14 @@ private:
               "auto f(T& x) -> decltype(x);\n"
               "int& g(int* x) {\n"
               "    return f(*x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // #9597
+    void returnReference19() {
+        check("struct C : B {\n"
+              "    const B &f() const { return (const B &)*this; }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -2501,6 +2510,13 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:3] -> [test.cpp:4]: (error) Using iterator to temporary.\n",
             errout.str());
+
+        check("std::string f() {\n"
+              "    std::stringstream tmp;\n"
+              "    const std::string &str = tmp.str();\n"
+              "    return std::string(str.c_str(), 1);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void invalidLifetime() {

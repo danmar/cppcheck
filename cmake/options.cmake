@@ -36,6 +36,7 @@ else()
 endif()
 
 option(BUILD_TESTS          "Build tests"                                                   OFF)
+option(ENABLE_CHECK_INTERNAL "Enable internal checks"                                       OFF)
 option(BUILD_GUI            "Build the qt application"                                      OFF)
 option(WITH_QCHART          "When building GUI(need BUILD_GUI=ON), use Qt5 Charts"          OFF)
 

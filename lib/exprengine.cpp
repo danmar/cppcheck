@@ -475,7 +475,7 @@ ExprEngine::ConditionalValue::Vector ExprEngine::ArrayValue::read(ExprEngine::Va
                 continue;
             }
             if (auto i = std::dynamic_pointer_cast<ExprEngine::IntRange>(index)) {
-                if (stringLiteral && i->minValue >= 0 && i->minValue == i->maxValue) {
+                if (i->minValue >= 0 && i->minValue == i->maxValue) {
                     int c = 0;
                     if (i->minValue < stringLiteral->size())
                         c = stringLiteral->string[i->minValue];
@@ -1573,7 +1573,7 @@ static void execute(const Token *start, const Token *end, Data &data)
                 if (Token::Match(tok2, "%assign%")) {
                     if (Token::Match(tok2->astOperand1(), ". %name% =") && tok2->astOperand1()->astOperand1() && tok2->astOperand1()->astOperand1()->valueType()) {
                         const Token *structToken = tok2->astOperand1()->astOperand1();
-                        if (!structToken || !structToken->valueType() || !structToken->varId())
+                        if (!structToken->valueType() || !structToken->varId())
                             throw VerifyException(tok2, "Unhandled assignment in loop");
                         const Scope *structScope = structToken->valueType()->typeScope;
                         if (!structScope)

@@ -65,6 +65,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     setValueTypeInTokenList(false);
     createSymbolDatabaseSetFunctionPointers(true);
     createSymbolDatabaseSetTypePointers();
+    createSymbolDatabaseSetSmartPointerType();
     createSymbolDatabaseEnums();
     createSymbolDatabaseEscapeFunctions();
     createSymbolDatabaseIncompleteVars();
@@ -1116,6 +1117,19 @@ void SymbolDatabase::createSymbolDatabaseSetTypePointers()
     }
 }
 
+void SymbolDatabase::createSymbolDatabaseSetSmartPointerType()
+{
+    for (Scope &scope: scopeList) {
+        for (Variable &var: scope.varlist) {
+            if (var.valueType() && var.valueType()->smartPointerTypeToken && !var.valueType()->smartPointerType) {
+                ValueType vt(*var.valueType());
+                vt.smartPointerType = vt.smartPointerTypeToken->type();
+                var.setValueType(vt);
+            }
+        }
+    }
+}
+
 void SymbolDatabase::fixVarId(VarIdMap & varIds, const Token * vartok, Token * membertok, const Variable * membervar)
 {
     VarIdMap::iterator varId = varIds.find(vartok->varId());
@@ -1170,14 +1184,14 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
 
             if (membertok) {
                 const Variable *var = tok->variable();
-                if (var && var->typeScope()) {
+                if (var->typeScope()) {
                     const Variable *membervar = var->typeScope()->getVariable(membertok->str());
                     if (membervar) {
                         membertok->variable(membervar);
                         if (membertok->varId() == 0 || mVariableList[membertok->varId()] == nullptr)
                             fixVarId(varIds, tok, const_cast<Token *>(membertok), membervar);
                     }
-                } else if (const ::Type *type = var ? var->smartPointerType() : nullptr) {
+                } else if (const ::Type *type = var->smartPointerType()) {
                     const Scope *classScope = type->classScope;
                     const Variable *membervar = classScope ? classScope->getVariable(membertok->str()) : nullptr;
                     if (membervar) {
@@ -1185,7 +1199,7 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
                         if (membertok->varId() == 0 || mVariableList[membertok->varId()] == nullptr)
                             fixVarId(varIds, tok, const_cast<Token *>(membertok), membervar);
                     }
-                } else if (var && tok->valueType() && tok->valueType()->type == ValueType::CONTAINER) {
+                } else if (tok->valueType() && tok->valueType()->type == ValueType::CONTAINER) {
                     if (Token::Match(var->typeStartToken(), "std :: %type% < %type% *| *| >")) {
                         const Type * type = var->typeStartToken()->tokAt(4)->type();
                         if (type && type->classScope && type->classScope->definedType) {
@@ -1406,7 +1420,7 @@ void SymbolDatabase::createSymbolDatabaseEscapeFunctions()
         Function * function = scope.function;
         if (!function)
             continue;
-        function->isEscapeFunction(isReturnScope(scope.bodyEnd, &mSettings->library, true));
+        function->isEscapeFunction(isReturnScope(scope.bodyEnd, &mSettings->library, nullptr, true));
     }
 }
 
@@ -1422,6 +1436,52 @@ void SymbolDatabase::setArrayDimensionsUsingValueFlow()
             Dimension &dimension = const_cast<Dimension &>(const_dimension);
             if (dimension.num != 0 || !dimension.tok)
                 continue;
+
+            if (Token::Match(dimension.tok->previous(), "[<,]")) {
+                if (dimension.known)
+                    continue;
+                if (!Token::Match(dimension.tok->previous(), "[<,]"))
+                    continue;
+
+                // In template arguments, there might not be AST
+                // Determine size by using the "raw tokens"
+                TokenList tokenList(mSettings);
+                tokenList.addtoken(";", 0, 0, false);
+                bool fail = false;
+                for (const Token *tok = dimension.tok; tok && !Token::Match(tok, "[,>]"); tok = tok->next()) {
+                    if (!tok->isName())
+                        tokenList.addtoken(tok->str(), 0, 0, false);
+
+                    else if (tok->hasKnownIntValue())
+                        tokenList.addtoken(std::to_string(tok->getKnownIntValue()), 0, 0, false);
+
+                    else {
+                        fail = true;
+                        break;
+                    }
+                }
+
+                if (fail)
+                    continue;
+
+                tokenList.addtoken(";", 0, 0, false);
+
+                for (Token *tok = tokenList.front(); tok;) {
+                    if (TemplateSimplifier::simplifyNumericCalculations(tok, false))
+                        tok = tokenList.front();
+                    else
+                        tok = tok->next();
+                }
+
+                if (Token::Match(tokenList.front(), "; %num% ;")) {
+                    dimension.known = true;
+                    dimension.num = MathLib::toLongNumber(tokenList.front()->next()->str());
+                }
+
+                continue;
+            }
+
+            // Normal array [..dimension..]
             dimension.known = false;
 
             // check for a single token dimension
@@ -1738,6 +1798,9 @@ Variable::Variable(const Token *name_, const std::string &clangType, const Token
 {
     if (start && start->str() == "static")
         setFlag(fIsStatic, true);
+
+    if (endsWith(clangType, " &", 2))
+        setFlag(fIsReference, true);
 
     std::string::size_type pos = clangType.find("[");
     if (pos != std::string::npos) {
@@ -2819,17 +2882,13 @@ bool Variable::arrayDimensions(const Settings* settings)
             for (int i = 0; i < container->size_templateArgNo && tok; i++) {
                 tok = tok->nextTemplateArgument();
             }
-            if (tok) {
-                while (!tok->astParent() && !Token::Match(tok->next(), "[,<>]"))
-                    tok = tok->next();
-                while (tok->astParent() && !Token::Match(tok->astParent(), "[,<>]"))
-                    tok = tok->astParent();
+            if (Token::Match(tok, "%num% [,>]")) {
                 dimension_.tok = tok;
-                ValueFlow::valueFlowConstantFoldAST(const_cast<Token *>(dimension_.tok), settings);
-                if (tok->hasKnownIntValue()) {
-                    dimension_.num = tok->getKnownIntValue();
-                    dimension_.known = true;
-                }
+                dimension_.known = true;
+                dimension_.num = MathLib::toLongNumber(tok->str());
+            } else if (tok) {
+                dimension_.tok = tok;
+                dimension_.known = false;
             }
             mDimensions.push_back(dimension_);
             return true;
@@ -4570,7 +4629,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
             else if (funcarg->isPointer() && Token::Match(arguments[j], "nullptr|NULL ,|)"))
                 same++;
 
-            else if (arguments[j]->isNumber() && funcarg->isPointer() && MathLib::isNullValue(arguments[j]->str()))
+            else if (funcarg->isPointer() && MathLib::isNullValue(arguments[j]->str()))
                 fallback1++;
 
             // Try to evaluate the apparently more complex expression
@@ -5507,7 +5566,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
 {
     const Token * const previousType = type;
     const unsigned int pointer0 = valuetype->pointer;
-    while (Token::Match(type->previous(), "%name%"))
+    while (Token::Match(type->previous(), "%name%") && !endsWith(type->previous()->str(), ':'))
         type = type->previous();
     valuetype->sign = ValueType::Sign::UNKNOWN_SIGN;
     if (!valuetype->typeScope && !valuetype->smartPointerType)
@@ -5693,31 +5752,41 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings)
                     type = ValueType::Type::LONGDOUBLE;
                 setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, type, 0U));
             } else if (MathLib::isInt(tok->str())) {
-                const bool unsignedSuffix = (tok->str().find_last_of("uU") != std::string::npos);
+                const std::string tokStr = MathLib::abs(tok->str());
+                const bool unsignedSuffix = (tokStr.find_last_of("uU") != std::string::npos);
                 ValueType::Sign sign = unsignedSuffix ? ValueType::Sign::UNSIGNED : ValueType::Sign::SIGNED;
-                ValueType::Type type;
-                const MathLib::bigint value = MathLib::toLongNumber(tok->str());
-                if (mSettings->platformType == cppcheck::Platform::Unspecified)
-                    type = ValueType::Type::INT;
-                else if (mSettings->isIntValue(unsignedSuffix ? (value >> 1) : value))
-                    type = ValueType::Type::INT;
-                else if (mSettings->isLongValue(unsignedSuffix ? (value >> 1) : value))
-                    type = ValueType::Type::LONG;
-                else
-                    type = ValueType::Type::LONGLONG;
-                if (MathLib::isIntHex(tok->str()))
-                    sign = ValueType::Sign::UNSIGNED;
-                for (std::size_t pos = tok->str().size() - 1U; pos > 0U; --pos) {
-                    const char suffix = tok->str()[pos];
+                ValueType::Type type = ValueType::Type::INT;
+                const MathLib::biguint value = MathLib::toULongNumber(tokStr);
+                for (std::size_t pos = tokStr.size() - 1U; pos > 0U; --pos) {
+                    const char suffix = tokStr[pos];
                     if (suffix == 'u' || suffix == 'U')
                         sign = ValueType::Sign::UNSIGNED;
                     else if (suffix == 'l' || suffix == 'L')
                         type = (type == ValueType::Type::INT) ? ValueType::Type::LONG : ValueType::Type::LONGLONG;
-                    else if (pos > 2U && suffix == '4' && tok->str()[pos - 1] == '6' && tok->str()[pos - 2] == 'i') {
+                    else if (pos > 2U && suffix == '4' && tokStr[pos - 1] == '6' && tokStr[pos - 2] == 'i') {
                         type = ValueType::Type::LONGLONG;
                         pos -= 2;
                     } else break;
                 }
+                if (mSettings->platformType != cppcheck::Platform::Unspecified) {
+                    if (type <= ValueType::Type::INT && mSettings->isIntValue(unsignedSuffix ? (value >> 1) : value))
+                        type = ValueType::Type::INT;
+                    else if (type <= ValueType::Type::INT && !MathLib::isDec(tokStr) && mSettings->isIntValue(value >> 2)) {
+                        type = ValueType::Type::INT;
+                        sign = ValueType::Sign::UNSIGNED;
+                    } else if (type <= ValueType::Type::LONG && mSettings->isLongValue(unsignedSuffix ? (value >> 1) : value))
+                        type = ValueType::Type::LONG;
+                    else if (type <= ValueType::Type::LONG && !MathLib::isDec(tokStr) && mSettings->isLongValue(value >> 2)) {
+                        type = ValueType::Type::LONG;
+                        sign = ValueType::Sign::UNSIGNED;
+                    } else if (mSettings->isLongLongValue(unsignedSuffix ? (value >> 1) : value))
+                        type = ValueType::Type::LONGLONG;
+                    else {
+                        type = ValueType::Type::LONGLONG;
+                        sign = ValueType::Sign::UNSIGNED;
+                    }
+                }
+
                 setValueType(tok, ValueType(sign, type, 0U));
             }
         } else if (tok->isComparisonOp() || tok->tokType() == Token::eLogicalOp) {

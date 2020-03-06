@@ -22,6 +22,16 @@
 #include <pthread.h>
 #include <syslog.h>
 #include <stdarg.h>
+#include <ctype.h>
+#include <stdbool.h>
+
+bool invalidFunctionArgBool_isascii(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)isascii(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return isascii(c != 0);
+}
 
 void uninitvar_putenv(char * envstr)
 {

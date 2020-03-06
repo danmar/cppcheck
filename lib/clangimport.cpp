@@ -275,7 +275,6 @@ namespace clangimport {
         int mFile  = 0;
         int mLine  = 1;
         int mCol   = 1;
-        int mVarId = 0;
         std::vector<std::string> mExtTokens;
         Data *mData;
     };
@@ -860,7 +859,8 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == ImplicitCastExpr) {
         Token *expr = children[0]->createTokens(tokenList);
-        setValueType(expr);
+        if (!expr->valueType())
+            setValueType(expr);
         return expr;
     }
     if (nodeType == InitListExpr) {
@@ -1141,7 +1141,7 @@ Token * clangimport::AstNode::createTokensVarDecl(TokenList *tokenList)
     const AccessControl accessControl = (scope->type == Scope::ScopeType::eGlobal) ? (AccessControl::Global) : (AccessControl::Local);
     scope->varlist.push_back(Variable(vartok1, type, startToken, 0, accessControl, nullptr, scope));
     mData->varDecl(addr, vartok1, &scope->varlist.back());
-    if (mExtTokens.back() == "cinit") {
+    if (mExtTokens.back() == "cinit" && !children.empty()) {
         Token *eq = addtoken(tokenList, "=");
         eq->astOperand1(vartok1);
         eq->astOperand2(children.back()->createTokens(tokenList));
