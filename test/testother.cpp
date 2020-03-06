@@ -580,9 +580,8 @@ private:
               "    f1(123,y);\n"
               "    if (y>0){}\n"
               "}");
-        TODO_ASSERT_EQUALS(
+        ASSERT_EQUALS(
             "[test.cpp:4] -> [test.cpp:1]: (warning) Either the condition 'y>0' is redundant or there is division by zero at line 1.\n",
-            "",
             errout.str());
 
         // avoid false positives when variable is changed after division
