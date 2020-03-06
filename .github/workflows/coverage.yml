@@ -1,6 +1,6 @@
 # Syntax reference https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions
 # Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
-name: CI
+name: Coverage
 
 on: [push, pull_request]
 
