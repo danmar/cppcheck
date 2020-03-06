@@ -13,13 +13,18 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Install missing software on ubuntu
-        if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt update
           sudo apt-get install libxml2-utils
           sudo apt-get install z3 libz3-dev
-
+          sudo apt-get install lcov
 
       - name: Generate coverage report
         run: |
-          ./generate_coverage_report
+          rm -rf coverage_report
+          make test CXXFLAGS="-g -fprofile-arcs -ftest-coverage -j2"
+          test/cfg/runtests.sh
+          gcov lib/*.cpp -o lib/
+          lcov --directory ./ --capture --output-file lcov_tmp.info -b ./
+          lcov --extract lcov_tmp.info "$(pwd)/*" --output-file lcov.info
+          genhtml lcov.info -o coverage_report --frame --legend --demangle-cpp
