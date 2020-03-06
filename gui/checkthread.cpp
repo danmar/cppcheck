@@ -70,7 +70,7 @@ void CheckThread::run()
         const std::string &buildDir = mCppcheck.settings().buildDir;
         if (!buildDir.empty()) {
             std::map<std::string,std::size_t> files2;
-            for (QString file : mFiles)
+            for (const QString& file : mFiles)
                 files2[file.toStdString()] = 0;
             mCppcheck.analyseWholeProgram(buildDir, files2);
         }

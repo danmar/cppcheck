@@ -384,7 +384,7 @@ private:
      * @param filename filename (no path)
      * @return True if no error
      */
-    bool tryLoadLibrary(Library *library, QString filename);
+    bool tryLoadLibrary(Library *library, const QString& filename);
 
     /**
      * @brief Update project MRU items in File-menu.

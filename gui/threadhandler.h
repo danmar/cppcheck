@@ -128,7 +128,7 @@ public:
     *
     * @param files list of files to be checked
     */
-    void setCheckFiles(QStringList files);
+    void setCheckFiles(const QStringList& files);
 
     /**
     * @brief Is checking running?

@@ -762,7 +762,7 @@ Library::Error MainWindow::loadLibrary(Library *library, const QString &filename
     return ret;
 }
 
-bool MainWindow::tryLoadLibrary(Library *library, QString filename)
+bool MainWindow::tryLoadLibrary(Library *library, const QString& filename)
 {
     const Library::Error error = loadLibrary(library, filename);
     if (error.errorcode != Library::ErrorCode::OK) {
