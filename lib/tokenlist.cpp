@@ -1535,8 +1535,12 @@ void TokenList::validateAst() const
             throw InternalError(tok, "Syntax Error: AST broken, binary operator has only one operand.", InternalError::AST);
 
         // Syntax error if we encounter "?" with operand2 that is not ":"
-        if (tok->astOperand2() && tok->str() == "?" && tok->astOperand2()->str() != ":")
-            throw InternalError(tok, "Syntax Error: AST broken, ternary operator lacks ':'.", InternalError::AST);
+        if (tok->str() == "?") {
+            if (!tok->astOperand1() || !tok->astOperand2())
+                throw InternalError(tok, "AST broken, ternary operator missing operand(s)", InternalError::AST);
+            else if (tok->astOperand2()->str() != ":")
+                throw InternalError(tok, "Syntax Error: AST broken, ternary operator lacks ':'.", InternalError::AST);
+        }
 
         // Check for endless recursion
         const Token* parent = tok->astParent();
