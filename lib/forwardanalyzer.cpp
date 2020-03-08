@@ -232,6 +232,11 @@ struct ForwardTraversal {
         for (Token* tok = start; tok && tok != end; tok = tok->next()) {
             Token* next = nullptr;
 
+            if (tok->str() == "(" && tok->isCast()) {
+                tok = tok->link();
+                continue;
+            }
+
             // Evaluate RHS of assignment before LHS
             if (Token* assignTok = assignExpr(tok)) {
                 if (updateRecursive(assignTok->astOperand2()) == Progress::Break)
