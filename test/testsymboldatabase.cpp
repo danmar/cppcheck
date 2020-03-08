@@ -2952,8 +2952,6 @@ private:
     }
 
     void symboldatabase45() {
-        // TODO: Do not throw AST validation exception
-/*
         GET_SYMBOL_DB("typedef struct {\n"
                       "    unsigned long bits;\n"
                       "} S;\n"
@@ -2982,7 +2980,6 @@ private:
         ASSERT_EQUALS(Scope::eStruct, scope->type);
         ++scope;
         ASSERT_EQUALS(Scope::eFunction, scope->type);
-*/
     }
 
     void symboldatabase46() { // #6171 (anonymous namespace)
