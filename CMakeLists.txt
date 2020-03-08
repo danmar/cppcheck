@@ -1,6 +1,8 @@
 project(Cppcheck)
 cmake_minimum_required(VERSION 2.8.11)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 include(GNUInstallDirs)
 
 include(cmake/versions.cmake)
@@ -30,3 +32,4 @@ ADD_SUBDIRECTORY(gui)   # Graphical application
 ADD_SUBDIRECTORY(tools/triage)   # Triage tool
 
 include(cmake/printInfo.cmake)
+include(cmake/clang_tidy.cmake)
