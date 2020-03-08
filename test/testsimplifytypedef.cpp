@@ -2402,9 +2402,8 @@ private:
                                 "struct bstr bstr0 ( const char * s ) { "
                                 "return ( struct bstr ) { ( unsigned char * ) s , s ? strlen ( s ) : 0 } ; "
                                 "}";
-        TODO_ASSERT_THROW(tok(code, false), InternalError); // TODO: Do not produce bad AST
-        //ASSERT_EQUALS(expected, tok(code, false));
-        //ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyTypedef118() { // #5749

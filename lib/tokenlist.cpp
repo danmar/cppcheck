@@ -994,7 +994,7 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
             castTok->isCast(true);
             tok = tok->link()->next();
             const int inArrayAssignment = state.inArrayAssignment;
-            if (Token::Match(tok, "{ . %name% ="))
+            if (tok && tok->str() == "{")
                 state.inArrayAssignment = 1;
             compilePrecedence3(tok, state);
             state.inArrayAssignment = inArrayAssignment;
