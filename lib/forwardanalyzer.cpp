@@ -232,7 +232,7 @@ struct ForwardTraversal {
         for (Token* tok = start; tok && tok != end; tok = tok->next()) {
             Token* next = nullptr;
 
-            if (tok->str() == "(" && tok->isCast()) {
+            if (tok->str() == "(" && !tok->astOperand2() && tok->isCast()) {
                 tok = tok->link();
                 continue;
             }
