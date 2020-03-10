@@ -7988,6 +7988,12 @@ private:
 
         const char code3[] = "f(\"1\" __stringify(48) \"1\");";
         ASSERT_THROW(tokenizeAndStringify(code3), InternalError);
+
+        const char code4[] = "struct Foo {\n"
+                             "  virtual MACRO(int) f1() {}\n"
+                             "  virtual MACRO(int) f2() {}\n"
+                             "};";
+        ASSERT_THROW(tokenizeAndStringify(code4), InternalError);
     }
 
     void findGarbageCode() { // Test Tokenizer::findGarbageCode()
