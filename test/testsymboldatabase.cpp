@@ -28,6 +28,7 @@
 
 #include <climits>
 #include <cstddef>
+#include <cstdint>
 #include <list>
 #include <map>
 #include <set>
