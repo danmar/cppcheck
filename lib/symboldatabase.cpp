@@ -3776,6 +3776,15 @@ AccessControl Scope::defaultAccess() const
     }
 }
 
+void Scope::addVariable(const Token *token_, const Token *start_, const Token *end_,
+    AccessControl access_, const Type *type_, const Scope *scope_, const Settings* settings)
+{
+    // keep possible size_t -> int truncation outside emplace_back() to have a single line
+    // C4267 VC++ warning instead of several dozens lines
+    const int varIndex = varlist.size();
+    varlist.emplace_back(token_, start_, end_, varIndex, access_, type_, scope_, settings);
+}
+
 // Get variable list..
 void Scope::getVariableList(const Settings* settings)
 {
