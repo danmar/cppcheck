@@ -2,7 +2,7 @@
 # Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
 name: Coverage
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   build:
