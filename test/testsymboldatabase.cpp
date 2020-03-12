@@ -28,6 +28,7 @@
 
 #include <climits>
 #include <cstddef>
+#include <cstdint>
 #include <list>
 #include <map>
 #include <set>
@@ -313,6 +314,7 @@ private:
         TEST_CASE(symboldatabase82);
         TEST_CASE(symboldatabase83); // #9431
         TEST_CASE(symboldatabase84);
+        TEST_CASE(symboldatabase85);
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
 
@@ -4548,6 +4550,22 @@ private:
             ASSERT(scope->functionList.front().isNoExcept() == true);
             ASSERT_EQUALS("", errout.str());
         }
+    }
+
+    void symboldatabase85() {
+        GET_SYMBOL_DB("class Fred {\n"
+                      "  enum Mode { Mode1, Mode2, Mode3 };\n"
+                      "  void f() { _mode = x; }\n"
+                      "  Mode _mode;\n"
+                      "  DECLARE_PROPERTY_FIELD(_mode);\n"
+                      "};");
+        const Token *vartok1 = Token::findsimplematch(tokenizer.tokens(), "_mode =");
+        ASSERT(vartok1);
+        ASSERT(vartok1->variable());
+        ASSERT(vartok1->variable()->scope());
+
+        const Token *vartok2 = Token::findsimplematch(tokenizer.tokens(), "( _mode ) ;")->next();
+        ASSERT_EQUALS(std::intptr_t(vartok1->variable()), std::intptr_t(vartok2->variable()));
     }
 
     void createSymbolDatabaseFindAllScopes1() {

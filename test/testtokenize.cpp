@@ -914,14 +914,17 @@ private:
         tokenizeAndStringify("void f() {switch (n) { case 0:; break;}}");
         ASSERT_EQUALS("", errout.str());
 
-        tokenizeAndStringify("void f() {switch (n) { case 0?1:2 : z(); break;}}");
-        ASSERT_EQUALS("", errout.str());
+        // TODO: Do not throw AST validation exception
+        TODO_ASSERT_THROW(tokenizeAndStringify("void f() {switch (n) { case 0?1:2 : z(); break;}}"), InternalError);
+        //ASSERT_EQUALS("", errout.str());
 
-        tokenizeAndStringify("void f() {switch (n) { case 0?(1?3:4):2 : z(); break;}}");
+        // TODO: Do not throw AST validation exception
+        TODO_ASSERT_THROW(tokenizeAndStringify("void f() {switch (n) { case 0?(1?3:4):2 : z(); break;}}"), InternalError);
         ASSERT_EQUALS("", errout.str());
 
         //allow GCC '({ %name%|%num%|%bool% ; })' statement expression extension
-        tokenizeAndStringify("void f() {switch (n) { case 0?({0;}):1: z(); break;}}");
+        // TODO: Do not throw AST validation exception
+        TODO_ASSERT_THROW(tokenizeAndStringify("void f() {switch (n) { case 0?({0;}):1: z(); break;}}"), InternalError);
         ASSERT_EQUALS("", errout.str());
 
         //'b' can be or a macro or an undefined enum
@@ -2732,7 +2735,7 @@ private:
                             "  BENCH1(q = _mhz_M(n); n = 1;)\n"
                             "  use_pointer(q);\n"
                             "}";
-        tokenizeAndStringify(code, true); // don't hang
+        ASSERT_THROW(tokenizeAndStringify(code, true), InternalError);
     }
 
     void simplifyKnownVariables52() { // #4728 "= x %op%"
@@ -5335,7 +5338,7 @@ private:
         ASSERT_EQUALS("void f ( ) { ab : ; { & b = 0 ; } }", tokenizeAndStringify("void f() { ab: { &b=0;} }"));
         ASSERT_EQUALS("void f ( ) { ab : ; { & ( * b . x ) = 0 ; } }", tokenizeAndStringify("void f() { ab: {&(*b.x)=0;} }"));
         //with unhandled MACRO() code
-        ASSERT_EQUALS("void f ( ) { MACRO ( ab : b = 0 ; , foo ) }", tokenizeAndStringify("void f() { MACRO(ab: b=0;, foo)}"));
+        ASSERT_THROW(tokenizeAndStringify("void f() { MACRO(ab: b=0;, foo)}"), InternalError);
         ASSERT_EQUALS("void f ( ) { MACRO ( bar , ab : { & ( * b . x ) = 0 ; } ) }", tokenizeAndStringify("void f() { MACRO(bar, ab: {&(*b.x)=0;})}"));
     }
 
@@ -7581,7 +7584,7 @@ private:
                             " : \"\");\n"
                             "}\n";
         // Ensure that the AST is validated for the simplified token list
-        tokenizeAndStringify(code); // this does not crash/hang
+        TODO_ASSERT_THROW(tokenizeAndStringify(code), InternalError); // this should not crash/hang
         ASSERT_THROW(tokenizeAndStringify(code,true), InternalError); // when parentheses are simplified the AST will be wrong
     }
 
@@ -7985,6 +7988,17 @@ private:
 
         const char code3[] = "f(\"1\" __stringify(48) \"1\");";
         ASSERT_THROW(tokenizeAndStringify(code3), InternalError);
+
+        const char code4[] = "struct Foo {\n"
+                             "  virtual MACRO(int) f1() {}\n"
+                             "  virtual MACRO(int) f2() {}\n"
+                             "};";
+        ASSERT_THROW(tokenizeAndStringify(code4), InternalError);
+
+        const char code5[] = "void foo() {\n"
+                             "  EVALUATE(123, int x=a; int y=b+c;);\n"
+                             "}";
+        ASSERT_THROW(tokenizeAndStringify(code5), InternalError);
     }
 
     void findGarbageCode() { // Test Tokenizer::findGarbageCode()
@@ -8335,8 +8349,8 @@ private:
     }
 
     void checkConfiguration() {
-        checkConfig("void f() { DEBUG(x();y()); }");
-        ASSERT_EQUALS("[test.cpp:1]: (information) Ensure that 'DEBUG' is defined either using -I, --include or -D.\n", errout.str());
+        ASSERT_THROW(checkConfig("void f() { DEBUG(x();y()); }"), InternalError);
+        //ASSERT_EQUALS("[test.cpp:1]: (information) Ensure that 'DEBUG' is defined either using -I, --include or -D.\n", errout.str());
     }
 
     void unknownType() { // #8952

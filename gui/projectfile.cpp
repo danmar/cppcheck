@@ -241,7 +241,7 @@ void ProjectFile::readBuildDir(QXmlStreamReader &reader)
         case QXmlStreamReader::ProcessingInstruction:
             break;
         }
-    } while (1);
+    } while (true);
 }
 
 void ProjectFile::readImportProject(QXmlStreamReader &reader)
@@ -266,7 +266,7 @@ void ProjectFile::readImportProject(QXmlStreamReader &reader)
         case QXmlStreamReader::ProcessingInstruction:
             break;
         }
-    } while (1);
+    } while (true);
 }
 
 bool ProjectFile::readBool(QXmlStreamReader &reader)
@@ -291,7 +291,7 @@ bool ProjectFile::readBool(QXmlStreamReader &reader)
         case QXmlStreamReader::ProcessingInstruction:
             break;
         }
-    } while (1);
+    } while (true);
 }
 
 int ProjectFile::readInt(QXmlStreamReader &reader, int defaultValue)
@@ -316,7 +316,7 @@ int ProjectFile::readInt(QXmlStreamReader &reader, int defaultValue)
         case QXmlStreamReader::ProcessingInstruction:
             break;
         }
-    } while (1);
+    } while (true);
 }
 
 void ProjectFile::readIncludeDirs(QXmlStreamReader &reader)
@@ -537,7 +537,7 @@ void ProjectFile::readPlatform(QXmlStreamReader &reader)
         case QXmlStreamReader::ProcessingInstruction:
             break;
         }
-    } while (1);
+    } while (true);
 }
 
 
@@ -912,7 +912,7 @@ void ProjectFile::SafeChecks::loadFromXml(QXmlStreamReader &xmlReader)
         case QXmlStreamReader::ProcessingInstruction:
             break;
         }
-    } while (1);
+    } while (true);
 }
 
 void ProjectFile::SafeChecks::saveToXml(QXmlStreamWriter &xmlWriter) const

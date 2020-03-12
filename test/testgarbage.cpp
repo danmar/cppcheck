@@ -1238,7 +1238,7 @@ private:
     }
 
     void garbageCode156() { // #7120
-        checkCode("struct {}a; d f() { c ? : } {}a.p");
+        ASSERT_THROW(checkCode("struct {}a; d f() { c ? : } {}a.p"), InternalError);
     }
 
     void garbageCode157() { // #7131
@@ -1482,10 +1482,10 @@ private:
     }
 
     void garbageCode184() { // #7699
-        checkCode("unsigned int AquaSalSystem::GetDisplayScreenCount() {\n"
-                  "    NSArray* pScreens = [NSScreen screens];\n"
-                  "    return pScreens ? [pScreens count] : 1;\n"
-                  "}");
+        ASSERT_THROW(checkCode("unsigned int AquaSalSystem::GetDisplayScreenCount() {\n"
+                               "    NSArray* pScreens = [NSScreen screens];\n"
+                               "    return pScreens ? [pScreens count] : 1;\n"
+                               "}"), InternalError);
     }
 
     void garbageCode185() { // #6011 crash in libreoffice failure to create proper AST

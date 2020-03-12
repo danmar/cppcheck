@@ -232,6 +232,17 @@ struct ForwardTraversal {
         for (Token* tok = start; tok && tok != end; tok = tok->next()) {
             Token* next = nullptr;
 
+            // Skip casts..
+            if (tok->str() == "(" && !tok->astOperand2() && tok->isCast()) {
+                tok = tok->link();
+                continue;
+            }
+            // Skip template arguments..
+            if (tok->str() == "<" && tok->link()) {
+                tok = tok->link();
+                continue;
+            }
+
             // Evaluate RHS of assignment before LHS
             if (Token* assignTok = assignExpr(tok)) {
                 if (updateRecursive(assignTok->astOperand2()) == Progress::Break)

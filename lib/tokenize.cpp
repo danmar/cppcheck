@@ -9308,7 +9308,23 @@ void Tokenizer::reportUnknownMacros()
         }
     }
 
+    // Report unknown macros that contain several statements "MACRO(a;b;c)"
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        if (!Token::Match(tok, "%name% ("))
+            continue;
+        if (!tok->isUpperCaseName())
+            continue;
+        const Token *endTok = tok->linkAt(1);
+        for (const Token *inner = tok->tokAt(2); inner != endTok; inner = inner->next()) {
+            if (Token::Match(inner, "[[({]"))
+                inner = inner->link();
+            else if (inner->str() == ";")
+                unknownMacroError(inner);
+        }
+    }
+
     // Report unknown macros in non-executable scopes..
+    std::set<std::string> possible;
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         // Skip executable scopes..
         if (tok->str() == "{") {
@@ -9317,7 +9333,10 @@ void Tokenizer::reportUnknownMacros()
                 prev = prev->previous();
             if (prev && prev->str() == ")")
                 tok = tok->link();
-        }
+            else
+                possible.clear();
+        } else if (tok->str() == "}")
+            possible.clear();
 
         if (Token::Match(tok, "%name% (") && tok->isUpperCaseName() && Token::simpleMatch(tok->linkAt(1), ") (") && Token::simpleMatch(tok->linkAt(1)->linkAt(1), ") {")) {
             // A keyword is not an unknown macro
@@ -9330,6 +9349,11 @@ void Tokenizer::reportUnknownMacros()
                 if (Token::Match(tok2, "if|switch|for|while|return"))
                     unknownMacroError(tok);
             }
+        } else if (Token::Match(tok, "%name% (") && tok->isUpperCaseName() && Token::Match(tok->linkAt(1), ") %name% (") && Token::Match(tok->linkAt(1)->linkAt(2), ") [;{]")) {
+            if (possible.count(tok->str()) == 0)
+                possible.insert(tok->str());
+            else
+                unknownMacroError(tok);
         }
     }
 
