@@ -2735,7 +2735,7 @@ private:
                             "  BENCH1(q = _mhz_M(n); n = 1;)\n"
                             "  use_pointer(q);\n"
                             "}";
-        tokenizeAndStringify(code, true); // don't hang
+        ASSERT_THROW(tokenizeAndStringify(code, true), InternalError);
     }
 
     void simplifyKnownVariables52() { // #4728 "= x %op%"
@@ -5338,7 +5338,7 @@ private:
         ASSERT_EQUALS("void f ( ) { ab : ; { & b = 0 ; } }", tokenizeAndStringify("void f() { ab: { &b=0;} }"));
         ASSERT_EQUALS("void f ( ) { ab : ; { & ( * b . x ) = 0 ; } }", tokenizeAndStringify("void f() { ab: {&(*b.x)=0;} }"));
         //with unhandled MACRO() code
-        ASSERT_EQUALS("void f ( ) { MACRO ( ab : b = 0 ; , foo ) }", tokenizeAndStringify("void f() { MACRO(ab: b=0;, foo)}"));
+        ASSERT_THROW(tokenizeAndStringify("void f() { MACRO(ab: b=0;, foo)}"), InternalError);
         ASSERT_EQUALS("void f ( ) { MACRO ( bar , ab : { & ( * b . x ) = 0 ; } ) }", tokenizeAndStringify("void f() { MACRO(bar, ab: {&(*b.x)=0;})}"));
     }
 
@@ -7994,6 +7994,11 @@ private:
                              "  virtual MACRO(int) f2() {}\n"
                              "};";
         ASSERT_THROW(tokenizeAndStringify(code4), InternalError);
+
+        const char code5[] = "void foo() {\n"
+                             "  EVALUATE(123, int x=a; int y=b+c;);\n"
+                             "}";
+        ASSERT_THROW(tokenizeAndStringify(code5), InternalError);
     }
 
     void findGarbageCode() { // Test Tokenizer::findGarbageCode()
@@ -8344,8 +8349,8 @@ private:
     }
 
     void checkConfiguration() {
-        checkConfig("void f() { DEBUG(x();y()); }");
-        ASSERT_EQUALS("[test.cpp:1]: (information) Ensure that 'DEBUG' is defined either using -I, --include or -D.\n", errout.str());
+        ASSERT_THROW(checkConfig("void f() { DEBUG(x();y()); }"), InternalError);
+        //ASSERT_EQUALS("[test.cpp:1]: (information) Ensure that 'DEBUG' is defined either using -I, --include or -D.\n", errout.str());
     }
 
     void unknownType() { // #8952

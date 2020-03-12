@@ -9308,6 +9308,21 @@ void Tokenizer::reportUnknownMacros()
         }
     }
 
+    // Report unknown macros that contain several statements "MACRO(a;b;c)"
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        if (!Token::Match(tok, "%name% ("))
+            continue;
+        if (!tok->isUpperCaseName())
+            continue;
+        const Token *endTok = tok->linkAt(1);
+        for (const Token *inner = tok->tokAt(2); inner != endTok; inner = inner->next()) {
+            if (Token::Match(inner, "[[({]"))
+                inner = inner->link();
+            else if (inner->str() == ";")
+                unknownMacroError(inner);
+        }
+    }
+
     // Report unknown macros in non-executable scopes..
     std::set<std::string> possible;
     for (const Token *tok = tokens(); tok; tok = tok->next()) {

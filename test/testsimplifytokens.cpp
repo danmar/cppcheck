@@ -3550,9 +3550,7 @@ private:
             ASSERT_EQUALS("void f ( int i ) { goto label ; { label : ; exit ( 0 ) ; } }", tokWithStdLib("void f (int i) { goto label; switch(i) { label: exit(0); } }"));
             //ticket #3148
             ASSERT_EQUALS("void f ( ) { MACRO ( exit ( 0 ) ) }", tokWithStdLib("void f() { MACRO(exit(0)) }"));
-            ASSERT_EQUALS("void f ( ) { MACRO ( exit ( 0 ) ; , NULL ) }", tokWithStdLib("void f() { MACRO(exit(0);, NULL) }"));
             ASSERT_EQUALS("void f ( ) { MACRO ( bar1 , exit ( 0 ) ) }", tokWithStdLib("void f() { MACRO(bar1, exit(0)) }"));
-            ASSERT_EQUALS("void f ( ) { MACRO ( exit ( 0 ) ; bar2 , foo ) }", tokWithStdLib("void f() { MACRO(exit(0); bar2, foo) }"));
         }
 
         {
