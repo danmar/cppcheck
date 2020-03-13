@@ -44,5 +44,5 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
           # file: ./coverage.xml # optional
           flags: unittests # optional
-          name: cppcheck-amai2012 # optional
+          name: ${{ github.repository }} # optional
           fail_ci_if_error: true # optional (default = false):  
