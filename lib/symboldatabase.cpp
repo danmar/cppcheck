@@ -1855,7 +1855,10 @@ void Variable::evaluate(const Settings* settings)
     const Library * const lib = &settings->library;
 
     if (mNameToken)
+    {
         setFlag(fIsArray, arrayDimensions(settings));
+        setFlag(fIsMaybeUnused, mNameToken->isMaybeUnused());
+    }
 
     if (mTypeStartToken)
         setValueType(ValueType::parseDecl(mTypeStartToken,settings));

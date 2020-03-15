@@ -10174,6 +10174,15 @@ void Tokenizer::simplifyCPPAttribute()
                 else
                     head->previous()->isAttributeNodiscard(true);
             }
+        } else if (Token::Match(tok->tokAt(2), "maybe_unused"))
+        {
+            Token* identifier = tok->link()->next();            
+            while (!Token::Match(identifier, "%name%")) //Find the type
+                identifier = identifier->next();
+            identifier = identifier->next(); //Move past it
+            while (!Token::Match(identifier, "%name%")) //Find the variable name
+                identifier = identifier->next();
+            identifier->isMaybeUnused(true);
         } else if (Token::Match(tok->previous(), ") [ [ expects|ensures|assert default|audit|axiom| : %name% <|<=|>|>= %num% ] ]")) {
             const Token *vartok = tok->tokAt(4);
             if (vartok->str() == ":")

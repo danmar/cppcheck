@@ -148,6 +148,7 @@ private:
         TEST_CASE(localvarconst1);
         TEST_CASE(localvarconst2);
         TEST_CASE(localvarreturn); // ticket #9167
+        TEST_CASE(localvarmaybeunused);
 
         TEST_CASE(localvarthrow); // ticket #3687
 
@@ -4146,6 +4147,14 @@ private:
                               "    };\n"
                               "    return MyInt;\n"
                               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarmaybeunused() {
+        functionVariableUsage(
+            "int main() {"
+            "[[maybe_unused]] int x;"
+            "}");
         ASSERT_EQUALS("", errout.str());
     }
 

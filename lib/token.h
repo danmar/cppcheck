@@ -541,6 +541,12 @@ public:
     void isAttributeNodiscard(const bool value) {
         setFlag(fIsAttributeNodiscard, value);
     }
+    bool isMaybeUnused() const {
+        return getFlag(fIsMaybeUnused);
+    }
+    void isMaybeUnused(const bool value) {
+        setFlag(fIsMaybeUnused, value);
+    }
     void setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint value) {
         mImpl->setCppcheckAttribute(type, value);
     }
@@ -1155,6 +1161,7 @@ private:
         fIncompleteVar          = (1 << 25),
         fConstexpr              = (1 << 26),
         fExternC                = (1 << 27),
+        fIsMaybeUnused          = (1 << 28), // [[maybe_unsed]]
     };
 
     Token::Type mTokType;
