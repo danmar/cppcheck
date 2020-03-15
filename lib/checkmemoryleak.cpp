@@ -551,7 +551,7 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
 
                 // Check that another copy of the pointer wasn't saved earlier in the function
                 if (Token::findmatch(scope->bodyStart, "%name% = %varid% ;", tok, tok->varId()) ||
-                    Token::findmatch(scope->bodyStart, "[{};] %varid% = %name% [;=]", tok, tok->varId()))
+                    Token::findmatch(scope->bodyStart, "[{};] %varid% = *| %name% .| %name%| [;=]", tok, tok->varId()))
                     continue;
 
                 const Token* tokEndRealloc = reallocTok->linkAt(1);
@@ -559,7 +559,7 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
                 if (Token::simpleMatch(tokEndRealloc->next(), "; if (") &&
                     notvar(tokEndRealloc->tokAt(3)->astOperand2(), tok->varId())) {
                     const Token* tokEndBrace = tokEndRealloc->linkAt(3)->linkAt(1);
-                    if (tokEndBrace && mTokenizer->IsScopeNoReturn(tokEndBrace))
+                    if (tokEndBrace && mTokenizer->isScopeNoReturn(tokEndBrace))
                         continue;
                 }
 
@@ -606,8 +606,8 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
     const std::string& classname = scope->className;
 
     // Check if member variable has been allocated and deallocated..
-    CheckMemoryLeak::AllocType Alloc = CheckMemoryLeak::No;
-    CheckMemoryLeak::AllocType Dealloc = CheckMemoryLeak::No;
+    CheckMemoryLeak::AllocType memberAlloc = CheckMemoryLeak::No;
+    CheckMemoryLeak::AllocType memberDealloc = CheckMemoryLeak::No;
 
     bool allocInConstructor = false;
     bool deallocInDestructor = false;
@@ -619,7 +619,7 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
         if (!func.hasBody()) {
             if (destructor) { // implementation for destructor is not seen => assume it deallocates all variables properly
                 deallocInDestructor = true;
-                Dealloc = CheckMemoryLeak::Many;
+                memberDealloc = CheckMemoryLeak::Many;
             }
             continue;
         }
@@ -652,16 +652,16 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
                         if (constructor)
                             allocInConstructor = true;
 
-                        if (Alloc != No && Alloc != alloc)
+                        if (memberAlloc != No && memberAlloc != alloc)
                             alloc = CheckMemoryLeak::Many;
 
-                        if (alloc != CheckMemoryLeak::Many && Dealloc != CheckMemoryLeak::No && Dealloc != CheckMemoryLeak::Many && Dealloc != alloc) {
+                        if (alloc != CheckMemoryLeak::Many && memberDealloc != CheckMemoryLeak::No && memberDealloc != CheckMemoryLeak::Many && memberDealloc != alloc) {
                             std::list<const Token *> callstack;
                             callstack.push_back(tok);
                             mismatchAllocDealloc(callstack, classname + "::" + varname);
                         }
 
-                        Alloc = alloc;
+                        memberAlloc = alloc;
                     }
                 }
 
@@ -679,16 +679,16 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
                         deallocInDestructor = true;
 
                     // several types of allocation/deallocation?
-                    if (Dealloc != CheckMemoryLeak::No && Dealloc != dealloc)
+                    if (memberDealloc != CheckMemoryLeak::No && memberDealloc != dealloc)
                         dealloc = CheckMemoryLeak::Many;
 
-                    if (dealloc != CheckMemoryLeak::Many && Alloc != CheckMemoryLeak::No &&  Alloc != Many && Alloc != dealloc) {
+                    if (dealloc != CheckMemoryLeak::Many && memberAlloc != CheckMemoryLeak::No &&  memberAlloc != Many && memberAlloc != dealloc) {
                         std::list<const Token *> callstack;
                         callstack.push_back(tok);
                         mismatchAllocDealloc(callstack, classname + "::" + varname);
                     }
 
-                    Dealloc = dealloc;
+                    memberDealloc = dealloc;
                 }
 
                 // Function call .. possible deallocation
@@ -702,9 +702,9 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
     }
 
     if (allocInConstructor && !deallocInDestructor) {
-        unsafeClassError(tokVarname, classname, classname + "::" + varname /*, Alloc*/);
-    } else if (Alloc != CheckMemoryLeak::No && Dealloc == CheckMemoryLeak::No) {
-        unsafeClassError(tokVarname, classname, classname + "::" + varname /*, Alloc*/);
+        unsafeClassError(tokVarname, classname, classname + "::" + varname /*, memberAlloc*/);
+    } else if (memberAlloc != CheckMemoryLeak::No && memberDealloc == CheckMemoryLeak::No) {
+        unsafeClassError(tokVarname, classname, classname + "::" + varname /*, memberAlloc*/);
     }
 }
 
@@ -759,6 +759,9 @@ void CheckMemoryLeakInClass::publicAllocationError(const Token *tok, const std::
 
 void CheckMemoryLeakStructMember::check()
 {
+    if (mSettings->clang)
+        return;
+
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Variable* var : symbolDatabase->variableList()) {
         if (!var || !var->isLocal() || var->isStatic() || var->isReference())
@@ -999,7 +1002,8 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
         if ((mTokenizer->isCPP() && functionName == "delete") ||
             functionName == "free" ||
             functionName == "fclose" ||
-            functionName == "realloc")
+            functionName == "realloc" ||
+            functionName == "return")
             continue;
 
         if (!CheckMemoryLeakInFunction::test_white_list(functionName, mSettings, mTokenizer->isCPP()))

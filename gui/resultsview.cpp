@@ -251,7 +251,7 @@ void ResultsView::setCheckDirectory(const QString &dir)
     mUI.mTree->setCheckDirectory(dir);
 }
 
-QString ResultsView::getCheckDirectory(void)
+QString ResultsView::getCheckDirectory()
 {
     return mUI.mTree->getCheckDirectory();
 }
@@ -431,6 +431,16 @@ void ResultsView::log(const QString &str)
 void ResultsView::debugError(const ErrorItem &item)
 {
     mUI.mListLog->addItem(item.ToString());
+}
+
+void ResultsView::bughuntingReportLine(const QString& line)
+{
+    for (const QString& s: line.split("\n")) {
+        if (s.isEmpty())
+            continue;
+        if (s.startsWith("[function-report] "))
+            mUI.mListSafeFunctions->addItem(s.mid(s.lastIndexOf(":") + 1));
+    }
 }
 
 void ResultsView::logClear()

@@ -318,13 +318,23 @@ public:
     static nonneg int getStrLength(const Token *tok);
 
     /**
-     * @return sizeof of C-string.
+     * @return array length of C-string.
      *
      * Should be called for %%str%% tokens only.
      *
      * @param tok token with C-string
      **/
-    static nonneg int getStrSize(const Token *tok);
+    static nonneg int getStrArraySize(const Token *tok);
+
+    /**
+     * @return sizeof of C-string.
+     *
+     * Should be called for %%str%% tokens only.
+     *
+     * @param tok token with C-string
+     * @param settings Settings
+     **/
+    static nonneg int getStrSize(const Token *tok, const Settings *const);
 
     /**
      * @return char of C-string at index (possible escaped "\\n")
@@ -578,6 +588,13 @@ public:
         setFlag(fConstexpr, b);
     }
 
+    bool isExternC() const {
+        return getFlag(fExternC);
+    }
+    void isExternC(bool b) {
+        setFlag(fExternC, b);
+    }
+
 
     bool isBitfield() const {
         return mImpl->mBits > 0;
@@ -595,6 +612,30 @@ public:
         mImpl->mBits = b;
     }
 
+    bool isUtf8() const {
+        return (((mTokType == eString) && isPrefixStringCharLiteral(mStr, '"', "u8")) ||
+                ((mTokType == eChar) && isPrefixStringCharLiteral(mStr, '\'', "u8")));
+    }
+
+    bool isUtf16() const {
+        return (((mTokType == eString) && isPrefixStringCharLiteral(mStr, '"', "u")) ||
+                ((mTokType == eChar) && isPrefixStringCharLiteral(mStr, '\'', "u")));
+    }
+
+    bool isUtf32() const {
+        return (((mTokType == eString) && isPrefixStringCharLiteral(mStr, '"', "U")) ||
+                ((mTokType == eChar) && isPrefixStringCharLiteral(mStr, '\'', "U")));
+    }
+
+    bool isCChar() const {
+        return (((mTokType == eString) && isPrefixStringCharLiteral(mStr, '"', "")) ||
+                ((mTokType ==  eChar) && isPrefixStringCharLiteral(mStr, '\'', "") && mStr.length() == 3));
+    }
+
+    bool isCMultiChar() const {
+        return (((mTokType ==  eChar) && isPrefixStringCharLiteral(mStr, '\'', "")) &&
+                (mStr.length() > 3));
+    }
     /**
      * @brief Is current token a template argument?
      *
@@ -955,7 +996,7 @@ public:
     }
 
     const std::list<ValueFlow::Value>& values() const {
-        return mImpl->mValues ? *mImpl->mValues : mImpl->mEmptyValueList;
+        return mImpl->mValues ? *mImpl->mValues : TokenImpl::mEmptyValueList;
     }
 
     /**
@@ -988,8 +1029,8 @@ public:
     const ValueFlow::Value * getValue(const MathLib::bigint val) const {
         if (!mImpl->mValues)
             return nullptr;
-        const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value &value) {
-            return value.isIntValue() && value.intvalue == val;
+        const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value& value) {
+            return value.isIntValue() && !value.isImpossible() && value.intvalue == val;
         });
         return it == mImpl->mValues->end() ? nullptr : &*it;;
     }
@@ -1001,6 +1042,8 @@ public:
         for (const ValueFlow::Value &value : *mImpl->mValues) {
             if (!value.isIntValue())
                 continue;
+            if (value.isImpossible())
+                continue;
             if ((!ret || value.intvalue > ret->intvalue) &&
                 ((value.condition != nullptr) == condition))
                 ret = &value;
@@ -1011,8 +1054,9 @@ public:
     const ValueFlow::Value * getMovedValue() const {
         if (!mImpl->mValues)
             return nullptr;
-        const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value &value) {
-            return value.isMovedValue() && value.moveKind != ValueFlow::Value::MoveKind::NonMovedVariable;
+        const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value& value) {
+            return value.isMovedValue() && !value.isImpossible() &&
+                   value.moveKind != ValueFlow::Value::MoveKind::NonMovedVariable;
         });
         return it == mImpl->mValues->end() ? nullptr : &*it;;
     }
@@ -1025,22 +1069,21 @@ public:
     const ValueFlow::Value * getContainerSizeValue(const MathLib::bigint val) const {
         if (!mImpl->mValues)
             return nullptr;
-        const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value &value) {
-            return value.isContainerSizeValue() && value.intvalue == val;
+        const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value& value) {
+            return value.isContainerSizeValue() && !value.isImpossible() && value.intvalue == val;
         });
         return it == mImpl->mValues->end() ? nullptr : &*it;
     }
 
     const Token *getValueTokenMaxStrLength() const;
-    const Token *getValueTokenMinStrSize() const;
+    const Token *getValueTokenMinStrSize(const Settings *settings) const;
 
     const Token *getValueTokenDeadPointer() const;
 
     /** Add token value. Return true if value is added. */
     bool addValue(const ValueFlow::Value &value);
 
-    template<class Predicate>
-    void removeValues(Predicate pred) {
+    void removeValues(std::function<bool(const ValueFlow::Value &)> pred) {
         if (mImpl->mValues)
             mImpl->mValues->remove_if(pred);
     }
@@ -1111,6 +1154,7 @@ private:
         fAtAddress              = (1 << 24), // @ 0x4000
         fIncompleteVar          = (1 << 25),
         fConstexpr              = (1 << 26),
+        fExternC                = (1 << 27),
     };
 
     Token::Type mTokType;

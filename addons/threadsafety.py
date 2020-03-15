@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # This script analyses Cppcheck dump files to locate threadsafety issues
 # - warn about static local objects
@@ -27,9 +27,10 @@ def checkstatic(data):
 for arg in sys.argv[1:]:
     if arg.startswith('-'):
         continue
-    print('Checking ' + arg + '...')
-    data = cppcheckdata.parsedump(arg)
-    for cfg in data.configurations:
-        if len(data.configurations) > 1:
-            print('Checking ' + arg + ', config "' + cfg.name + '"...')
+
+    print('Checking %s...' % arg)
+    data = cppcheckdata.CppcheckData(arg)
+
+    for cfg in data.iterconfigurations():
+        print('Checking %s, config %s...' % (arg, cfg.name))
         checkstatic(cfg)

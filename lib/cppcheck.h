@@ -55,7 +55,7 @@ public:
     /**
      * @brief Destructor.
      */
-    virtual ~CppCheck();
+    ~CppCheck() OVERRIDE;
 
     /**
      * @brief This starts the actual checking. Note that you must call
@@ -113,7 +113,7 @@ public:
      * @brief Terminate checking. The checking will be terminated as soon as possible.
      */
     void terminate() {
-        mSettings.terminate();
+        Settings::terminate();
     }
 
     /**
@@ -135,6 +135,9 @@ public:
      * Return true if an error is reported.
      */
     bool analyseWholeProgram();
+
+    /** Analyze all files using clang-tidy */
+    void analyseClangTidy(const ImportProject::FileSettings &fileSettings);
 
     /** analyse whole program use .analyzeinfo files */
     void analyseWholeProgram(const std::string &buildDir, const std::map<std::string, std::size_t> &files);
@@ -186,14 +189,16 @@ private:
      * "[filepath:line number] Message", e.g.
      * "[main.cpp:4] Uninitialized member variable"
      */
-    virtual void reportErr(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
+    void reportErr(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
 
     /**
      * @brief Information about progress is directed here.
      *
      * @param outmsg Message to show, e.g. "Checking main.cpp..."
      */
-    virtual void reportOut(const std::string &outmsg) OVERRIDE;
+    void reportOut(const std::string &outmsg) OVERRIDE;
+
+    void bughuntingReport(const std::string &str) OVERRIDE;
 
     std::list<std::string> mErrorList;
     Settings mSettings;
@@ -203,7 +208,7 @@ private:
     /**
      * Output information messages.
      */
-    virtual void reportInfo(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
+    void reportInfo(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
 
     ErrorLogger &mErrorLogger;
 

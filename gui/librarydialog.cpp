@@ -271,7 +271,7 @@ void LibraryDialog::sortFunctions(bool sort)
     }
 }
 
-void LibraryDialog::filterFunctions(QString filter)
+void LibraryDialog::filterFunctions(const QString& filter)
 {
     QList<QListWidgetItem *> allItems = mUi->functions->findItems(QString(), Qt::MatchContains);
 

@@ -25,6 +25,7 @@
 #include <cctype>
 #include <cstddef>
 #include <string>
+#include <stack>
 
 inline bool endsWith(const std::string &str, char c)
 {
@@ -34,6 +35,56 @@ inline bool endsWith(const std::string &str, char c)
 inline bool endsWith(const std::string &str, const char end[], std::size_t endlen)
 {
     return (str.size() >= endlen) && (str.compare(str.size()-endlen, endlen, end)==0);
+}
+
+inline static bool isPrefixStringCharLiteral(const std::string &str, char q, const std::string& p)
+{
+    if (!endsWith(str, q))
+        return false;
+    if ((str.length() + 1) > p.length() && (str.compare(0, p.size() + 1, p + q) == 0))
+        return true;
+    return false;
+}
+
+inline static bool isStringCharLiteral(const std::string &str, char q)
+{
+    for (const std::string & p: {
+    "", "u8", "u", "U", "L"
+}) {
+        if (isPrefixStringCharLiteral(str, q, p))
+            return true;
+    }
+    return false;
+}
+
+inline static bool isStringLiteral(const std::string &str)
+{
+    return isStringCharLiteral(str, '"');
+}
+
+inline static bool isCharLiteral(const std::string &str)
+{
+    return isStringCharLiteral(str, '\'');
+}
+
+inline static std::string getStringCharLiteral(const std::string &str, char q)
+{
+    const std::size_t quotePos = str.find(q);
+    return str.substr(quotePos + 1U, str.size() - quotePos - 2U);
+}
+
+inline static std::string getStringLiteral(const std::string &str)
+{
+    if (isStringLiteral(str))
+        return getStringCharLiteral(str, '"');
+    return "";
+}
+
+inline static std::string getCharLiteral(const std::string &str)
+{
+    if (isCharLiteral(str))
+        return getStringCharLiteral(str, '\'');
+    return "";
 }
 
 inline static const char *getOrdinalText(int i)
@@ -58,6 +109,83 @@ inline static int caseInsensitiveStringCompare(const std::string &lhs, const std
             return (c1 < c2) ? -1 : 1;
     }
     return 0;
+}
+
+inline static bool isValidGlobPattern(const std::string& pattern)
+{
+    for (std::string::const_iterator i = pattern.begin(); i != pattern.end(); ++i) {
+        if (*i == '*' || *i == '?') {
+            std::string::const_iterator j = i + 1;
+            if (j != pattern.end() && (*j == '*' || *j == '?')) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+inline static bool matchglob(const std::string& pattern, const std::string& name)
+{
+    const char* p = pattern.c_str();
+    const char* n = name.c_str();
+    std::stack<std::pair<const char*, const char*> > backtrack;
+
+    for (;;) {
+        bool matching = true;
+        while (*p != '\0' && matching) {
+            switch (*p) {
+            case '*':
+                // Step forward until we match the next character after *
+                while (*n != '\0' && *n != p[1]) {
+                    n++;
+                }
+                if (*n != '\0') {
+                    // If this isn't the last possibility, save it for later
+                    backtrack.push(std::make_pair(p, n));
+                }
+                break;
+            case '?':
+                // Any character matches unless we're at the end of the name
+                if (*n != '\0') {
+                    n++;
+                } else {
+                    matching = false;
+                }
+                break;
+            default:
+                // Non-wildcard characters match literally
+                if (*n == *p) {
+                    n++;
+                } else if (*n == '\\' && *p == '/') {
+                    n++;
+                } else if (*n == '/' && *p == '\\') {
+                    n++;
+                } else {
+                    matching = false;
+                }
+                break;
+            }
+            p++;
+        }
+
+        // If we haven't failed matching and we've reached the end of the name, then success
+        if (matching && *n == '\0') {
+            return true;
+        }
+
+        // If there are no other paths to try, then fail
+        if (backtrack.empty()) {
+            return false;
+        }
+
+        // Restore pointers from backtrack stack
+        p = backtrack.top().first;
+        n = backtrack.top().second;
+        backtrack.pop();
+
+        // Advance name pointer by one because the current position didn't work
+        n++;
+    }
 }
 
 #define UNUSED(x) (void)(x)

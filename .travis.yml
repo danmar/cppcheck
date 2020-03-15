@@ -11,6 +11,8 @@ env:
 #   unfortunately we need this to stay within 50min timelimit given by travis.
     - CXXFLAGS="${ORIGINAL_CXXFLAGS} -O2 -march=native -Wstrict-aliasing=2 -Werror=strict-aliasing"
     - CPPCHECK=${TRAVIS_BUILD_DIR}/cppcheck
+    - ASAN_OPTIONS=detect_stack_use_after_return=1
+    - UBSAN_OPTIONS=print_stacktrace=1
   matrix:
     - CXXFLAGS="${CXXFLAGS} -DCHECK_INTERNAL"
     - CXXFLAGS="${CXXFLAGS} -DCHECK_INTERNAL" MAKEFLAGS="HAVE_RULES=yes" MATCHCOMPILER=yes VERIFY=1
@@ -18,11 +20,23 @@ env:
 before_install:
 # install needed deps
  - travis_retry sudo apt-get update -qq
- - travis_retry sudo apt-get install -qq python-pygments qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet python3-dev liblua5.3-dev libcurl3
+ - travis_retry sudo apt-get install -qq python3-pip qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet python3-dev liblua5.3-dev libcurl3 libcairo2-dev libsigc++-2.0-dev tidy libopencv-dev libz3-dev
+# Python 2 modules 
  - travis_retry python2 -m pip install --user pytest==4.6.4
  - travis_retry python2 -m pip install --user pylint
  - travis_retry python2 -m pip install --user unittest2
- - travis_retry python2 -m pip install --user pexpect
+ - travis_retry python2 -m pip install --user pexpect # imported by tools/ci.py
+ - travis_retry python2 -m pip install --user pygments
+# Python 3 modules
+ - travis_retry python3 -m pip install --user setuptools --upgrade
+ - travis_retry python3 -m pip install --user pytest
+ - travis_retry python3 -m pip install --user pylint
+ - travis_retry python3 -m pip install --user unittest2
+ - travis_retry python3 -m pip install --user pexpect # imported by tools/ci.py
+ - travis_retry python3 -m pip install --user requests # imported by tools/pr.py
+ - travis_retry python3 -m pip install --user pygments
+ - travis_retry sudo python3 -m pip install demjson # installs jsonlint => sudo required
+ - travis_retry python3 -m pip install --user natsort
 
 matrix:
 # do notify immediately about it when a job of a build fails.
@@ -30,23 +44,24 @@ matrix:
   allow_failures:
     - name: "rerun dmake?"
       compiler: clang
+    - name: "make ubuntu 14.04 trusty"
 # defined extra jobs that run besides what is configured in the build matrix
   include:
 # -fsanitize=undefined
     - name: "undefined behaviour sanitizers"
       compiler: gcc
       script:
-        - CXXFLAGS="-fsanitize=undefined -fno-sanitize-recover=all -Og -g3" make cppcheck test checkcfg -j 2
+        - CXXFLAGS="-fsanitize=undefined -fno-sanitize-recover=all -Og -g3" make cppcheck check checkcfg -j 2 -s
 # -fsanitize=address
     - name: "address sanitizers"
       compiler: gcc
       script:
-         - CXXFLAGS="-fsanitize=address -Og -g3" make cppcheck test checkcfg -j 2
+         - CXXFLAGS="-fsanitize=address -Og -g3" make cppcheck check checkcfg -j 2 -s
 # check a lot of stuff that only needs to be checked in a single configuration
     - name: "misc"
       compiler: clang
       script:
-        - make -j 2
+        - make -j 2 -s
 # run extra tests
         - tools/generate_and_run_more_tests.sh
 # check for missing CWE entries
@@ -57,12 +72,13 @@ matrix:
         - make validatePlatforms
 # Validate Result XML
         - make validateXML
-# note: trusty on travis has python pygments disabled so disable these tests on travis
-## check htmlreport stuff
-#  - ./htmlreport/test_htmlreport.py
-#  - cd htmlreport
-#  - ./check.sh
-#  - cd ../
+# Validate rule files
+        - make validateRules
+# check htmlreport stuff
+        - ./htmlreport/test_htmlreport.py
+        - cd htmlreport
+        - ./check.sh
+        - cd ../
 # check if DESTDIR works  TODO: actually execute this
         - mkdir install_test
         - echo $CXXFLAGS
@@ -86,14 +102,16 @@ matrix:
         - python -m compileall ./addons
         - python3 -m compileall ./addons
 # run pylint
-#        - pylint --rcfile=pylintrc_travis addons/y2038/*.py ! First resolve https://trac.cppcheck.net/ticket/9210 "y2038 addon no longer working"
         - pylint --rcfile=pylintrc_travis addons/*.py
+        - pylint --rcfile=pylintrc_travis htmlreport/cppcheck-htmlreport
         - pylint --rcfile=pylintrc_travis htmlreport/*.py
-        - pylint --rcfile=pylintrc_travis tools/*.py
+        - pylint --rcfile=pylintrc_travis --ignore=donate-cpu-server.py --ignore=donate-cpu.py --ignore=donate_cpu_lib.py --ignore=test-my-pr.py tools/*.py
+        - python3 -m pylint --rcfile=pylintrc_travis addons/*.py
+        - python3 -m pylint --rcfile=pylintrc_travis htmlreport/cppcheck-htmlreport
+        - python3 -m pylint --rcfile=pylintrc_travis htmlreport/*.py
+        - python3 -m pylint --rcfile=pylintrc_travis tools/*.py
 # check python syntax by compiling some selected scripts
-        - python -m py_compile ./tools/donate-cpu.py
         - python3 -m py_compile ./tools/donate-cpu.py
-        - python -m py_compile ./tools/donate-cpu-server.py
         - python3 -m py_compile ./tools/donate-cpu-server.py
 # check addons/misc.py
         - cd addons/test
@@ -109,7 +127,9 @@ matrix:
         - cd ../../
 # check addons/misra.py
         - cd addons/test
-        - ${CPPCHECK} --dump misra/misra-test.c
+        # We'll force C89 standard to enable an additional verification for
+        # rules 5.4 and 5.5 which have standard-dependent options.
+        - ${CPPCHECK} --dump misra/misra-test.c --std=c89
         - python3 ../misra.py -verify misra/misra-test.c.dump
         - ${CPPCHECK} --dump misra/misra-test.cpp
         - python3 ../misra.py -verify misra/misra-test.cpp.dump
@@ -124,6 +144,8 @@ matrix:
         - cd addons/test
         - ${CPPCHECK} --dump naming_test.c
         - python3 ../naming.py --var='[a-z].*' --function='[a-z].*' naming_test.c.dump
+        - ${CPPCHECK} --dump naming_test.cpp
+        - python3 ../naming.py --var='[a-z].*' --function='[a-z].*' naming_test.cpp.dump
         - cd ../..
 # check addons/namingng.py
         - cd addons/test
@@ -133,8 +155,15 @@ matrix:
 # try CMake
         - mkdir cmake.output
         - cd cmake.output
-        - cmake -G "Unix Makefiles" ..
+        - cmake -G "Unix Makefiles" -DBUILD_TESTS=On ..
+        - make -j2 check
         - cd ..
+# -funsigned-char
+        - make clean
+        - make -j2 CXXFLAGS=-funsigned-char testrunner
+        - ./testrunner TestSymbolDatabase
+# check .json files
+        - find . -name '*.json' -not -path '*/\.*' | xargs jsonlint -s
 
 # check if dmake needs to be rerun (this job may fail)
     - name: "rerun dmake?"
@@ -155,18 +184,18 @@ matrix:
         - travis_retry sudo apt-get update -qq
         - travis_retry sudo apt-get install libxml2-utils libpcre3
       script:
-        - CXX=g++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck testrunner -j 2
+        - CXX=g++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck check -j 2 -s
         - make clean
-        - CXX=clang++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck testrunner -j 2
+        - CXX=clang++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck check -j 2 -s
 # check if cppcheck builds on osx
     - name: "make osx"
       os: osx
       before_install:
         - true
       script:
-        - CXX=g++ CXXFLAGS="${ORIGINAL_CXXFLAGS}"  make cppcheck testrunner -j 2
+        - CXX=g++ CXXFLAGS="${ORIGINAL_CXXFLAGS}"  make cppcheck check -j 2 -s
         - make clean
-        - CXX=clang++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck testrunner -j 2
+        - CXX=clang++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck check -j 2 -s
 
 script:
 # fail the entire job as soon as one of the subcommands exits non-zero to save time and resources
@@ -176,13 +205,13 @@ script:
 # check with TEST_MATHLIB_VALUE enabled
   - touch lib/mathlib.cpp test/testmathlib.cpp
   - echo $CXXFLAGS
-  - make -s test -j2 CPPFLAGS=-DTEST_MATHLIB_VALUE
+  - make -s check -j2 CPPFLAGS=-DTEST_MATHLIB_VALUE
   - touch lib/mathlib.cpp test/testmathlib.cpp
 # syntax checking of cppcheck source code with -DNONNEG
   - ls lib/*.cpp | xargs -n 1 -P 2 g++ -fsyntax-only -std=c++0x -Ilib -Iexternals -Iexternals/simplecpp -Iexternals/tinyxml -DNONNEG
 # compile cppcheck, default build
   - echo $CXXFLAGS
-  - make -s test -j2
+  - make -s check -j2
 # compile gui
   - cd gui
   - qmake
@@ -192,12 +221,12 @@ script:
   - cd ../
 # self check lib/cli
   - mkdir b1
-  - ${CPPCHECK} -j2 --template=gcc --cppcheck-build-dir=b1 -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --inconclusive --enable=style,performance,portability,warning,internal --exception-handling cli lib
+  - ${CPPCHECK} -q -j2 --template=gcc --cppcheck-build-dir=b1 -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --inconclusive --enable=style,performance,portability,warning,internal --exception-handling cli lib
 # check gui with qt settings
   - mkdir b2
-  - ${CPPCHECK} -j2 --template=gcc --cppcheck-build-dir=b2 -D__CPPCHECK__ -DQT_VERSION=0x050000 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=qt --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ --enable=style,performance,portability,warning,internal --exception-handling gui/*.cpp
+  - ${CPPCHECK} -q -j2 --template=gcc --cppcheck-build-dir=b2 -D__CPPCHECK__ -DQT_VERSION=0x050000 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=qt --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ --enable=style,performance,portability,warning,internal --exception-handling gui/*.cpp
 # self check test and tools
-  - ${CPPCHECK} -j2 --template=gcc -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --inconclusive --enable=style,performance,portability,warning,internal --exception-handling test/*.cpp tools
+  - ${CPPCHECK} -q -j2 --template=gcc -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --inconclusive --enable=style,performance,portability,warning,internal --exception-handling test/*.cpp tools
 # Build gui
   - cd ./gui
 # clean rebuild
@@ -209,7 +238,7 @@ script:
   - cd ../
 # Build gui/test
   - cd gui/test/projectfile
-  - qmake && make && ./test-projectfile
+  - qmake && make -s -j2 && ./test-projectfile
   - cd -
 # Build triage
   - cd ./tools/triage
@@ -224,6 +253,7 @@ script:
   - cd -
 # Testing addons
   - python -m pytest addons/test/test-*.py
+  - PYTHONPATH=./addons python3 -m pytest addons/test/test-*.py
 
 notifications:
   irc:

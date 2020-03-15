@@ -20,7 +20,7 @@
 
 #include "valueflow.h"
 
-bool Settings::mTerminated;
+std::atomic<bool> Settings::mTerminated;
 
 const char Settings::SafeChecks::XmlRootName[] = "safe-checks";
 const char Settings::SafeChecks::XmlClasses[] = "class-public";
@@ -34,6 +34,8 @@ Settings::Settings()
       checkLibrary(false),
       checkHeaders(true),
       checkUnusedTemplates(false),
+      clang(false),
+      clangTidy(false),
       debugSimplified(false),
       debugnormal(false),
       debugwarnings(false),
@@ -45,11 +47,14 @@ Settings::Settings()
       experimental(false),
       force(false),
       inconclusive(false),
+      bugHunting(false),
+      debugBugHunting(false),
       inlineSuppressions(false),
       jobs(1),
       jointSuppressionReport(false),
       loadAverage(0),
       maxConfigs(12),
+      checkAllConfigurations(true),
       maxCtuDepth(2),
       preprocessOnly(false),
       quiet(false),
@@ -145,4 +150,40 @@ bool Settings::isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck) 
     if (!inconclusive && (inconclusiveCheck || value->isInconclusive()))
         return false;
     return true;
+}
+
+std::vector<Settings::Diff> Settings::loadDiffFile(std::istream &istr)
+{
+    std::vector<Settings::Diff> ret;
+    std::string line;
+    std::string filename;
+    while (std::getline(istr, line)) {
+        if (line.compare(0, 11, "diff --git ") == 0) {
+            std::string::size_type pos = line.rfind(" b/");
+            if (pos == std::string::npos)
+                continue;
+            filename = line.substr(pos+3);
+        }
+        if (line.compare(0,4,"@@ -") == 0) {
+            std::string::size_type pos1 = line.find(" ",4);
+            if (pos1 == std::string::npos)
+                continue;
+            std::string::size_type pos2 = line.find(" ",pos1 + 1);
+            if (pos2 == std::string::npos || pos2 < pos1+3)
+                continue;
+            if (line[pos1+1] != '+')
+                continue;
+            std::string::size_type posComma = line.find(",", pos1);
+            if (posComma > pos2)
+                continue;
+            std::string line1 = line.substr(pos1 + 2, posComma - pos1 - 2);
+            std::string line2 = line.substr(posComma+1, pos2 - posComma - 1);
+            Diff diff;
+            diff.filename = filename;
+            diff.fromLine = std::atoi(line1.c_str());
+            diff.toLine = std::atoi(line1.c_str()) + std::atoi(line2.c_str());
+            ret.push_back(diff);
+        }
+    }
+    return ret;
 }

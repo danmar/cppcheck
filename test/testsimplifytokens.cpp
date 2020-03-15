@@ -90,7 +90,14 @@ private:
 
         TEST_CASE(cast);
         TEST_CASE(iftruefalse);
+
         TEST_CASE(combine_strings);
+        TEST_CASE(combine_wstrings);
+        TEST_CASE(combine_ustrings);
+        TEST_CASE(combine_Ustrings);
+        TEST_CASE(combine_u8strings);
+        TEST_CASE(combine_mixedstrings);
+
         TEST_CASE(double_plus);
         TEST_CASE(redundant_plus);
         TEST_CASE(redundant_plus_numbers);
@@ -142,11 +149,6 @@ private:
         TEST_CASE(whileAssign4); // links
         TEST_CASE(doWhileAssign); // varid
         TEST_CASE(test_4881); // similar to doWhileAssign (#4911), taken from #4881 with full code
-
-        TEST_CASE(combine_wstrings);
-        TEST_CASE(combine_ustrings);
-        TEST_CASE(combine_Ustrings);
-        TEST_CASE(combine_u8strings);
 
         // Simplify "not" to "!" (#345)
         TEST_CASE(not1);
@@ -1804,54 +1806,61 @@ private:
     void combine_wstrings() {
         const char code[] =  "a = L\"hello \"  L\"world\" ;\n";
 
-        const char expected[] =  "a = \"hello world\" ;";
+        const char expected[] =  "a = L\"hello world\" ;";
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
-        ASSERT_EQUALS(true, tokenizer.tokens()->tokAt(2)->isLong());
     }
 
     void combine_ustrings() {
         const char code[] =  "abcd = u\"ab\" u\"cd\";";
 
-        const char expected[] =  "abcd = \"abcd\" ;";
+        const char expected[] =  "abcd = u\"abcd\" ;";
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
-        ASSERT_EQUALS(true, tokenizer.tokens()->tokAt(2)->isLong());
     }
 
     void combine_Ustrings() {
         const char code[] =  "abcd = U\"ab\" U\"cd\";";
 
-        const char expected[] =  "abcd = \"abcd\" ;";
+        const char expected[] =  "abcd = U\"abcd\" ;";
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
-        ASSERT_EQUALS(true, tokenizer.tokens()->tokAt(2)->isLong());
     }
 
     void combine_u8strings() {
         const char code[] =  "abcd = u8\"ab\" u8\"cd\";";
 
-        const char expected[] =  "abcd = \"abcd\" ;";
-
+        const char expected[] =  "abcd = u8\"abcd\" ;";
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
-        ASSERT_EQUALS(false, tokenizer.tokens()->tokAt(2)->isLong());
+    }
+
+    void combine_mixedstrings() {
+        const char code[] = "abcdef = \"ab\" L\"cd\" \"ef\";";
+
+        const char expected[] =  "abcdef = L\"abcdef\" ;";
+
+        Tokenizer tokenizer(&settings0, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
     }
 
     void double_plus() {
@@ -3081,7 +3090,7 @@ private:
     void cAlternativeTokens() {
         ASSERT_EQUALS("void f ( ) { err |= ( ( r & s ) && ! t ) ; }",
                       tok("void f() { err or_eq ((r bitand s) and not t); }", "test.c", false));
-        ASSERT_EQUALS("void f ( ) const { r = f ( a [ 4 ] | 15 , ~ c , ! d ) ; }",
+        ASSERT_EQUALS("void f ( ) const { r = f ( a [ 4 ] | 0x0F , ~ c , ! d ) ; }",
                       tok("void f() const { r = f(a[4] bitor 0x0F, compl c, not d) ; }", "test.c", false));
 
     }
@@ -3343,17 +3352,21 @@ private:
 
         {
             const char code[] = "void f () { switch(n) { case 1?0:foo(): break; }}";
-            ASSERT_EQUALS("void f ( ) { switch ( n ) { case 0 : ; break ; } }", tok(code));
+            // TODO Do not throw AST validation exception
+            TODO_ASSERT_THROW(tok(code), InternalError);
+            //ASSERT_EQUALS("void f ( ) { switch ( n ) { case 0 : ; break ; } }", tok(code));
         }
 
         {
             const char code[] = "void f () { switch(n) { case 1?0?1:0:foo(): break; }}";
-            TODO_ASSERT_EQUALS("void f ( ) { switch ( n ) { case 0 : ; break ; } }", "void f ( ) { switch ( n ) { case ( 0 ) : ; break ; } }", tok(code));
+            // TODO Do not throw AST validation exception
+            TODO_ASSERT_THROW(tok(code), InternalError);
         }
 
         {
             const char code[] = "void f () { switch(n) { case 0?foo():1: break; }}";
-            ASSERT_EQUALS("void f ( ) { switch ( n ) { case 1 : ; break ; } }", tok(code));
+            // TODO Do not throw AST validation exception
+            TODO_ASSERT_THROW(tok(code), InternalError);
         }
 
         {
@@ -3377,12 +3390,12 @@ private:
 
         {
             const char code[] = "int vals[] = { 0x13, 1?0x01:0x00 };";
-            ASSERT_EQUALS("int vals [ 2 ] = { 19 , 1 } ;", tok(code));
+            ASSERT_EQUALS("int vals [ 2 ] = { 0x13 , 0x01 } ;", tok(code));
         }
 
         {
             const char code[] = "int vals[] = { 0x13, 0?0x01:0x00 };";
-            ASSERT_EQUALS("int vals [ 2 ] = { 19 , 0 } ;", tok(code));
+            ASSERT_EQUALS("int vals [ 2 ] = { 0x13 , 0x00 } ;", tok(code));
         }
 
         {
@@ -3409,10 +3422,9 @@ private:
         }
 
         {
-            ASSERT_EQUALS("; type = decay_t < decltype ( declval < T > ( ) ) > ;",
-                          tok("; type = decay_t<decltype(true ? declval<T>() : declval<U>())>;"));
-            ASSERT_EQUALS("; type = decay_t < decltype ( declval < U > ( ) ) > ;",
-                          tok("; type = decay_t<decltype(false ? declval<T>() : declval<U>())>;"));
+            // TODO Do not throw AST validation exception
+            TODO_ASSERT_THROW(tok("; type = decay_t<decltype(true ? declval<T>() : declval<U>())>;"), InternalError);
+            TODO_ASSERT_THROW(tok("; type = decay_t<decltype(false ? declval<T>() : declval<U>())>;"), InternalError);
         }
     }
 
@@ -3443,6 +3455,11 @@ private:
         }
 
         ASSERT_EQUALS("a [ 4 ] ;", tok("a[1+3|4];"));
+        ASSERT_EQUALS("a [ 4U ] ;", tok("a[1+3|4U];"));
+        ASSERT_EQUALS("a [ 3 ] ;", tok("a[1+2&3];"));
+        ASSERT_EQUALS("a [ 3U ] ;", tok("a[1+2&3U];"));
+        ASSERT_EQUALS("a [ 5 ] ;", tok("a[1-0^4];"));
+        ASSERT_EQUALS("a [ 5U ] ;", tok("a[1-0^4U];"));
 
         ASSERT_EQUALS("x = 1 + 2 * y ;", tok("x=1+2*y;"));
         ASSERT_EQUALS("x = 7 ;", tok("x=1+2*3;"));
@@ -3451,6 +3468,7 @@ private:
         ASSERT_EQUALS("int a [ 8 ] ;", tok("int a[5+6/2];"));
         ASSERT_EQUALS("int a [ 4 ] ;", tok("int a[(10)-1-5];"));
         ASSERT_EQUALS("int a [ i - 9 ] ;", tok("int a[i - 10 + 1];"));
+        ASSERT_EQUALS("int a [ i - 11 ] ;", tok("int a[i - 10 - 1];"));
 
         ASSERT_EQUALS("x = y ;", tok("x=0+y+0-0;"));
         ASSERT_EQUALS("x = 0 ;", tok("x=0*y;"));
@@ -3532,9 +3550,7 @@ private:
             ASSERT_EQUALS("void f ( int i ) { goto label ; { label : ; exit ( 0 ) ; } }", tokWithStdLib("void f (int i) { goto label; switch(i) { label: exit(0); } }"));
             //ticket #3148
             ASSERT_EQUALS("void f ( ) { MACRO ( exit ( 0 ) ) }", tokWithStdLib("void f() { MACRO(exit(0)) }"));
-            ASSERT_EQUALS("void f ( ) { MACRO ( exit ( 0 ) ; , NULL ) }", tokWithStdLib("void f() { MACRO(exit(0);, NULL) }"));
             ASSERT_EQUALS("void f ( ) { MACRO ( bar1 , exit ( 0 ) ) }", tokWithStdLib("void f() { MACRO(bar1, exit(0)) }"));
-            ASSERT_EQUALS("void f ( ) { MACRO ( exit ( 0 ) ; bar2 , foo ) }", tokWithStdLib("void f() { MACRO(exit(0); bar2, foo) }"));
         }
 
         {
@@ -4886,7 +4902,7 @@ private:
                             "    unsigned char override[] = {0x01, 0x02};\n"
                             "    doSomething(override, sizeof(override));\n"
                             "}\n";
-        ASSERT_EQUALS("void fun ( ) { char override [ 2 ] = { 1 , 2 } ; doSomething ( override , 2 ) ; }",
+        ASSERT_EQUALS("void fun ( ) { char override [ 2 ] = { 0x01 , 0x02 } ; doSomething ( override , 2 ) ; }",
                       tok(code, true));
     }
 

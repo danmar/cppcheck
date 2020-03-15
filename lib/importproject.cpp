@@ -39,11 +39,20 @@ void ImportProject::ignorePaths(const std::vector<std::string> &ipaths)
     for (std::list<FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
         bool ignore = false;
         for (std::string i : ipaths) {
-            if (!Path::isAbsolute(i))
-                i = mPath + i;
             if (it->filename.size() > i.size() && it->filename.compare(0,i.size(),i)==0) {
                 ignore = true;
                 break;
+            }
+            if (isValidGlobPattern(i) && matchglob(i, it->filename)) {
+                ignore = true;
+                break;
+            }
+            if (!Path::isAbsolute(i)) {
+                i = mPath + i;
+                if (it->filename.size() > i.size() && it->filename.compare(0,i.size(),i)==0) {
+                    ignore = true;
+                    break;
+                }
             }
         }
         if (ignore)
@@ -137,7 +146,7 @@ static bool simplifyPathWithVariables(std::string &s, std::map<std::string, std:
 
 void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables)
 {
-    std::list<std::string> I;
+    std::list<std::string> listInc;
     // only parse each includePath once - so remove duplicates
     std::list<std::string> uniqueIncludePaths = in;
     uniqueIncludePaths.sort();
@@ -152,7 +161,7 @@ void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, c
         if (s[0] == '/' || (s.size() > 1U && s.compare(1,2,":/") == 0)) {
             if (!endsWith(s,'/'))
                 s += '/';
-            I.push_back(s);
+            listInc.push_back(s);
             continue;
         }
 
@@ -167,9 +176,9 @@ void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, c
         }
         if (s.empty())
             continue;
-        I.push_back(s + '/');
+        listInc.push_back(s + '/');
     }
-    includePaths.swap(I);
+    includePaths.swap(listInc);
 }
 
 ImportProject::Type ImportProject::import(const std::string &filename, Settings *settings)
@@ -246,9 +255,10 @@ void ImportProject::FileSettings::parseCommand(const std::string &command)
             defs += ';';
         } else if (F=='U')
             undefs.insert(fval);
-        else if (F=='I')
-            includePaths.push_back(fval);
-        else if (F=='s' && fval.compare(0,2,"td") == 0) {
+        else if (F=='I') {
+            if (std::find(includePaths.begin(), includePaths.end(), fval) == includePaths.end())
+                includePaths.push_back(fval);
+        } else if (F=='s' && fval.compare(0,2,"td") == 0) {
             ++pos;
             const std::string stdval = readUntil(command, &pos, " ");
             standard = stdval;
@@ -612,8 +622,10 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                 for (const tinyxml2::XMLElement *cfg = node->FirstChildElement(); cfg; cfg = cfg->NextSiblingElement()) {
                     if (std::strcmp(cfg->Name(), "ProjectConfiguration") == 0) {
                         const ProjectConfiguration p(cfg);
-                        if (p.platform != ProjectConfiguration::Unknown)
+                        if (p.platform != ProjectConfiguration::Unknown) {
                             projectConfigurationList.emplace_back(cfg);
+                            mAllVSConfigs.insert(p.configuration);
+                        }
                     }
                 }
             } else {
@@ -621,7 +633,7 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                     if (std::strcmp(e->Name(), "ClCompile") == 0) {
                         const char *include = e->Attribute("Include");
                         if (include && Path::acceptFile(include))
-                            compileList.push_back(include);
+                            compileList.emplace_back(include);
                     }
                 }
             }
@@ -645,6 +657,18 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
 
     for (const std::string &c : compileList) {
         for (const ProjectConfiguration &p : projectConfigurationList) {
+
+            if (!guiProject.checkVsConfigs.empty()) {
+                bool doChecking = false;
+                for (std::string config : guiProject.checkVsConfigs)
+                    if (config == p.configuration) {
+                        doChecking = true;
+                        break;
+                    }
+                if (!doChecking)
+                    continue;
+            }
+
             FileSettings fs;
             fs.filename = Path::simplifyPath(Path::isAbsolute(c) ? c : Path::getPathFromFilename(filename) + c);
             fs.cfg = p.name;
@@ -695,7 +719,7 @@ void ImportProject::importBcb6Prj(const std::string &projectFilename)
                 if (std::strcmp(f->Name(), "FILE") == 0) {
                     const char *filename = f->Attribute("FILENAME");
                     if (filename && Path::acceptFile(filename))
-                        compileList.push_back(filename);
+                        compileList.emplace_back(filename);
                 }
             }
         } else if (std::strcmp(node->Name(), "MACROS") == 0) {
@@ -731,13 +755,13 @@ void ImportProject::importBcb6Prj(const std::string &projectFilename)
     {
         std::string arg;
 
-        for (int i = 0; i < cflag1.size(); ++i) {
-            if (cflag1.at(i) == ' ' && !arg.empty()) {
+        for (char i : cflag1) {
+            if (i == ' ' && !arg.empty()) {
                 cflags.insert(arg);
                 arg.clear();
                 continue;
             }
-            arg += cflag1.at(i);
+            arg += i;
         }
 
         if (!arg.empty()) {
@@ -966,6 +990,7 @@ static std::string istream_to_string(std::istream &istr)
     return std::string(std::istreambuf_iterator<char>(istr), eos);
 }
 
+
 bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *settings)
 {
     tinyxml2::XMLDocument doc;
@@ -1009,17 +1034,25 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
             guiProject.libraries = readXmlStringList(node, "", CppcheckXml::LibraryElementName, nullptr);
         else if (strcmp(node->Name(), CppcheckXml::SuppressionsElementName) == 0)
             suppressions = readXmlStringList(node, "", CppcheckXml::SuppressionElementName, nullptr);
+        else if (strcmp(node->Name(), CppcheckXml::VSConfigurationElementName) == 0)
+            guiProject.checkVsConfigs = readXmlStringList(node, "", CppcheckXml::VSConfigurationName, nullptr);
         else if (strcmp(node->Name(), CppcheckXml::PlatformElementName) == 0)
             guiProject.platform = node->GetText();
         else if (strcmp(node->Name(), CppcheckXml::AnalyzeAllVsConfigsElementName) == 0)
             guiProject.analyzeAllVsConfigs = node->GetText();
+        else if (strcmp(node->Name(), CppcheckXml::Parser) == 0)
+            temp.clang = true;
         else if (strcmp(node->Name(), CppcheckXml::AddonsElementName) == 0)
             temp.addons = readXmlStringList(node, "", CppcheckXml::AddonElementName, nullptr);
         else if (strcmp(node->Name(), CppcheckXml::TagsElementName) == 0)
             node->Attribute(CppcheckXml::TagElementName); // FIXME: Write some warning
-        else if (strcmp(node->Name(), CppcheckXml::ToolsElementName) == 0)
-            node->Attribute(CppcheckXml::ToolElementName); // FIXME: Write some warning
-        else if (strcmp(node->Name(), CppcheckXml::CheckHeadersElementName) == 0)
+        else if (strcmp(node->Name(), CppcheckXml::ToolsElementName) == 0) {
+            const std::list<std::string> toolList = readXmlStringList(node, "", CppcheckXml::ToolElementName, nullptr);
+            for (const std::string &toolName : toolList) {
+                if (toolName == std::string(CppcheckXml::ClangTidy))
+                    temp.clangTidy = true;
+            }
+        } else if (strcmp(node->Name(), CppcheckXml::CheckHeadersElementName) == 0)
             temp.checkHeaders = (strcmp(node->GetText(), "true") == 0);
         else if (strcmp(node->Name(), CppcheckXml::CheckUnusedTemplatesElementName) == 0)
             temp.checkUnusedTemplates = (strcmp(node->GetText(), "true") == 0);
@@ -1050,6 +1083,9 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     settings->userDefines = temp.userDefines;
     settings->userUndefs = temp.userUndefs;
     settings->addons = temp.addons;
+    settings->clang = temp.clang;
+    settings->clangTidy = temp.clangTidy;
+
     for (const std::string &p : paths)
         guiProject.pathNames.push_back(p);
     for (const std::string &supp : suppressions)
@@ -1088,4 +1124,9 @@ void ImportProject::selectOneVsConfig(Settings::PlatformType platform)
             ++it;
         }
     }
+}
+
+std::list<std::string> ImportProject::getVSConfigs()
+{
+    return std::list<std::string> (mAllVSConfigs.begin(), mAllVSConfigs.end());
 }

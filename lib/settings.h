@@ -30,6 +30,7 @@
 #include "suppressions.h"
 #include "timer.h"
 
+#include <atomic>
 #include <list>
 #include <set>
 #include <string>
@@ -65,7 +66,7 @@ private:
     int mEnabled;
 
     /** @brief terminate checking */
-    static bool mTerminated;
+    static std::atomic<bool> mTerminated;
 
 public:
     Settings();
@@ -77,6 +78,9 @@ public:
 
     /** @brief --cppcheck-build-dir */
     std::string buildDir;
+
+    /** @brief --file-filter for analyzing special files */
+    std::string fileFilter;
 
     /** Is the 'configuration checking' wanted? */
     bool checkConfiguration;
@@ -91,6 +95,12 @@ public:
 
     /** Check unused templates */
     bool checkUnusedTemplates;
+
+    /** Use Clang */
+    bool clang;
+
+    /** Use clang-tidy */
+    bool clangTidy;
 
     /** @brief include paths excluded from checking the configuration */
     std::set<std::string> configExcludePaths;
@@ -143,6 +153,9 @@ public:
         for finding include files inside source files. (-I) */
     std::list<std::string> includePaths;
 
+    /** @brief List of selected Visual Studio configurations that should be checks */
+    std::list<std::string> checkVsConfigs;
+
     /** @brief Inconclusive checks */
     bool inconclusive;
 
@@ -156,6 +169,10 @@ public:
         static const char XmlExternalFunctions[];
         static const char XmlInternalFunctions[];
         static const char XmlExternalVariables[];
+
+        void clear() {
+            classes = externalFunctions = internalFunctions = externalVariables = false;
+        }
 
         /**
          * Public interface of classes
@@ -187,6 +204,23 @@ public:
 
     SafeChecks safeChecks;
 
+    /** @brief Bug hunting */
+    bool bugHunting;
+
+    /** @brief Debug bug hunting */
+    bool debugBugHunting;
+
+    /** Filename for bug hunting report */
+    std::string bugHuntingReport;
+
+    /** @brief Check diff */
+    struct Diff {
+        std::string filename;
+        int fromLine;
+        int toLine;
+    };
+    std::vector<Diff> checkDiff;
+
     /** @brief check unknown function return values */
     std::set<std::string> checkUnknownFunctionReturn;
 
@@ -214,6 +248,9 @@ public:
     /** @brief Maximum number of configurations to check before bailing.
         Default is 12. (--max-configs=N) */
     unsigned int maxConfigs;
+
+    /** @brief --check all configurations */
+    bool checkAllConfigurations;
 
     /** @brief --max-ctu-depth */
     int maxCtuDepth;
@@ -302,8 +339,8 @@ public:
      * @return true for the file to be excluded.
      */
     bool configurationExcluded(const std::string &file) const {
-        for (std::set<std::string>::const_iterator i=configExcludePaths.begin(); i!=configExcludePaths.end(); ++i) {
-            if (file.length()>=i->length() && file.compare(0,i->length(),*i)==0) {
+        for (const std::string & configExcludePath : configExcludePaths) {
+            if (file.length()>=configExcludePath.length() && file.compare(0,configExcludePath.length(),configExcludePath)==0) {
                 return true;
             }
         }
@@ -346,6 +383,8 @@ public:
     * @return true if the value can be shown
     */
     bool isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck=false) const;
+
+    static std::vector<Diff> loadDiffFile(std::istream &istr);
 
     /** Is posix library specified? */
     bool posix() const {

@@ -33,6 +33,8 @@ private:
 
     void run() OVERRIDE {
         settings.addEnabled("style");
+        settings.addEnabled("information");
+        settings.checkLibrary = true;
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(emptyclass);  // #5355 - False positive: Variable is not assigned a value.
@@ -159,6 +161,8 @@ private:
         TEST_CASE(localvarStruct5);
         TEST_CASE(localvarStruct6);
         TEST_CASE(localvarStruct7);
+        TEST_CASE(localvarStruct8);
+        TEST_CASE(localvarStruct9);
         TEST_CASE(localvarStructArray);
 
         TEST_CASE(localvarOp);          // Usage with arithmetic operators
@@ -201,7 +205,9 @@ private:
         TEST_CASE(bracesInitCpp11);// #7895 - "int var{123}" initialization
 
         TEST_CASE(argument);
+        TEST_CASE(argumentClass);
         TEST_CASE(escapeAlias); // #9150
+        TEST_CASE(volatileData); // #9280
     }
 
     void checkStructMemberUsage(const char code[]) {
@@ -3442,6 +3448,35 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void localvarStruct8() {
+        functionVariableUsage("struct s {\n"
+                              "     union {\n"
+                              "         struct {\n"
+                              "             int fld1 : 16;\n"
+                              "             int fld2 : 16;\n"
+                              "         };\n"
+                              "         int raw;\n"
+                              "     };\n"
+                              "};\n"
+                              "\n"
+                              "void foo() {\n"
+                              "      struct s test;\n"
+                              "      test.raw = 0x100;\n"
+                              "      dostuff(test.fld1, test.fld2);\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarStruct9() {
+        functionVariableUsage("struct XY { int x; int y; };\n"
+                              "\n"
+                              "void foo() {\n"
+                              "      struct XY xy(get());\n"
+                              "      return xy.x + xy.y;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void localvarStructArray() {
         // #3633 - detect that struct array is assigned a value
         functionVariableUsage("void f() {\n"
@@ -3534,13 +3569,18 @@ private:
                               "}");
         ASSERT_EQUALS("", errout.str());
 
-        // FIXME : this is probably inconclusive
-        functionVariableUsage("void f() {\n"
+        functionVariableUsage("void f() {\n"  // unknown class => library configuration is needed
                               "  Fred fred;\n"
                               "  int *a; a = b;\n"
                               "  fred += a;\n"
                               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'fred' is assigned a value that is never used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (information) --check-library: Provide <type-checks><unusedvar> configuration for Fred\n", errout.str());
+
+        functionVariableUsage("void f() {\n"
+                              "  std::pair<int,int> fred;\n"  // class with library configuration
+                              "  fred = x;\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'fred' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvarFor() {
@@ -3724,6 +3764,13 @@ private:
                               "        x = 0;\n"
                               "    else\n"
                               "        x++;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo(int value) {\n"
+                              "    static int array[16] = {0};\n"
+                              "    if(array[value]) {}\n"
+                              "    array[value] = 1;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }
@@ -4571,6 +4618,14 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'foo.x' is assigned a value that is never used.\n", errout.str());
     }
 
+    void argumentClass() {
+        functionVariableUsage(
+            "void foo(std::insert_iterator<C> it) {\n"
+            "  it = 123;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void escapeAlias() {
         functionVariableUsage(
             "struct A {\n"
@@ -4584,6 +4639,15 @@ private:
             "    }\n"
             "};\n"
         );
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void volatileData() {
+        functionVariableUsage(
+            "struct Data { unsigned int n; };\n"
+            "int main() {\n"
+            "  (*(volatile struct Data*)0x4200).n = 1;\n"
+            "}");
         ASSERT_EQUALS("", errout.str());
     }
 };

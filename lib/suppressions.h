@@ -26,6 +26,7 @@
 #include <list>
 #include <set>
 #include <string>
+#include <vector>
 
 /// @addtogroup Core
 /// @{
@@ -116,6 +117,14 @@ public:
     std::string parseXmlFile(const char *filename);
 
     /**
+     * Parse multi inline suppression in comment
+     * @param comment the full comment text
+     * @param errorMessage output parameter for error message (wrong suppression attribute)
+     * @return empty vector if something wrong.
+     */
+    static std::vector<Suppression> parseMultiSuppressComment(const std::string &comment, std::string *errorMessage);
+
+    /**
      * @brief Don't show the given error.
      * @param line Description of error to suppress (in id:file:line format).
      * @return error message. empty upon success
@@ -162,7 +171,6 @@ public:
      */
     std::list<Suppression> getUnmatchedGlobalSuppressions(const bool unusedFunctionChecking) const;
 
-    static bool matchglob(const std::string &pattern, const std::string &name);
 private:
     /** @brief List of error which the user doesn't want to see. */
     std::list<Suppression> mSuppressions;

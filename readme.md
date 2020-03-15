@@ -1,8 +1,8 @@
 # **Cppcheck** 
 
-|Linux Build Status|Windows Build Status|Coverity Scan Build Status|
-|:--:|:--:|:--:|
-|[![Linux Build Status](https://img.shields.io/travis/danmar/cppcheck/master.svg?label=Linux%20build)](https://travis-ci.org/danmar/cppcheck)|[![Windows Build Status](https://img.shields.io/appveyor/ci/danmar/cppcheck/master.svg?label=Windows%20build)](https://ci.appveyor.com/project/danmar/cppcheck/branch/master)|[![Coverity Scan Build Status](https://img.shields.io/coverity/scan/512.svg)](https://scan.coverity.com/projects/512)|
+|Linux Build Status|Windows Build Status|OSS-Fuzz|Coverity Scan Build Status|License|
+|:--:|:--:|:--:|:--:|:-:|
+|[![Linux Build Status](https://img.shields.io/travis/danmar/cppcheck/master.svg?label=Linux%20build)](https://travis-ci.org/danmar/cppcheck)|[![Windows Build Status](https://img.shields.io/appveyor/ci/danmar/cppcheck/master.svg?label=Windows%20build)](https://ci.appveyor.com/project/danmar/cppcheck/branch/master)|[![OSS-Fuzz](https://oss-fuzz-build-logs.storage.googleapis.com/badges/cppcheck.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:cppcheck)|[![Coverity Scan Build Status](https://img.shields.io/coverity/scan/512.svg)](https://scan.coverity.com/projects/512)|[![License](https://img.shields.io/badge/license-GPL3.0-blue.svg)](https://opensource.org/licenses/GPL-3.0) 
 
 ## About the name
 
@@ -13,6 +13,17 @@ Despite the name, Cppcheck is designed for both C and C++.
 ## Manual
 
 A manual is available [online](http://cppcheck.sourceforge.net/manual.pdf).
+
+## Donate CPU
+
+Cppcheck is a hobby project with limited resources. You can help us by donating CPU (1 core or as many as you like). It is simple:
+
+ 1. Download (and extract) Cppcheck source code
+ 2. Run script: python cppcheck/tools/donate-cpu.py
+
+The script will analyse debian source code and upload the results to a cppcheck server. We need these results both to improve Cppcheck and to detect regressions.
+
+You can stop the script whenever you like with Ctrl C.
 
 ## Compiling
 

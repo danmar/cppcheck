@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Misc: Uncategorized checks that might be moved to some better addon later
 #
@@ -49,10 +49,10 @@ def isStringLiteral(tokenString):
     return tokenString.startswith('"')
 
 # check data
-def stringConcatInArrayInit(configurations, rawTokens):
+def stringConcatInArrayInit(data):
     # Get all string macros
     stringMacros = []
-    for cfg in configurations:
+    for cfg in data.iterconfigurations():
         for directive in cfg.directives:
             res = re.match(r'#define[ ]+([A-Za-z0-9_]+)[ ]+".*', directive.str)
             if res:
@@ -62,12 +62,12 @@ def stringConcatInArrayInit(configurations, rawTokens):
 
     # Check code
     arrayInit = False
-    for i in range(len(rawTokens)):
+    for i in range(len(data.rawTokens)):
         if i < 2:
             continue
-        tok1 = rawTokens[i-2].str
-        tok2 = rawTokens[i-1].str
-        tok3 = rawTokens[i-0].str
+        tok1 = data.rawTokens[i-2].str
+        tok2 = data.rawTokens[i-1].str
+        tok3 = data.rawTokens[i-0].str
         if tok3 == '}':
             arrayInit = False
         elif tok1 == ']' and tok2 == '=' and tok3 == '{':
@@ -76,11 +76,11 @@ def stringConcatInArrayInit(configurations, rawTokens):
             isString2 = (isStringLiteral(tok2) or (tok2 in stringMacros))
             isString3 = (isStringLiteral(tok3) or (tok3 in stringMacros))
             if isString2 and isString3:
-                reportError(rawTokens[i], 'style', 'String concatenation in array initialization, missing comma?', 'stringConcatInArrayInit')
+                reportError(data.rawTokens[i], 'style', 'String concatenation in array initialization, missing comma?', 'stringConcatInArrayInit')
 
 
 def implicitlyVirtual(data):
-    for cfg in data.configurations:
+    for cfg in data.iterconfigurations():
         for function in cfg.functions:
             if function.isImplicitlyVirtual is None:
                 continue
@@ -89,7 +89,7 @@ def implicitlyVirtual(data):
             reportError(function.tokenDef, 'style', 'Function \'' + function.name + '\' overrides base class function but is not marked with \'virtual\' keyword.', 'implicitlyVirtual')
 
 def ellipsisStructArg(data):
-    for cfg in data.configurations:
+    for cfg in data.iterconfigurations():
         for tok in cfg.tokenlist:
             if tok.str != '(':
                 continue
@@ -137,8 +137,9 @@ def ellipsisStructArg(data):
 for arg in sys.argv[1:]:
     if arg in ['-debug', '-verify', '--cli']:
         continue
-    print('Checking ' + arg + '...')
-    data = cppcheckdata.parsedump(arg)
+
+    print("Checking %s..." % arg)
+    data = cppcheckdata.CppcheckData(arg)
 
     if VERIFY:
         VERIFY_ACTUAL = []
@@ -149,7 +150,7 @@ for arg in sys.argv[1:]:
                     if word in ['stringConcatInArrayInit', 'implicitlyVirtual', 'ellipsisStructArg']:
                         VERIFY_EXPECTED.append(str(tok.linenr) + ':' + word)
 
-    stringConcatInArrayInit(data.configurations, data.rawTokens)
+    stringConcatInArrayInit(data)
     implicitlyVirtual(data)
     ellipsisStructArg(data)
 

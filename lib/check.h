@@ -126,27 +126,23 @@ protected:
     ErrorLogger * const mErrorLogger;
 
     /** report an error */
-    template<typename T, typename U>
-    void reportError(const Token *tok, const Severity::SeverityType severity, const T id, const U msg) {
+    void reportError(const Token *tok, const Severity::SeverityType severity, const std::string &id, const std::string &msg) {
         reportError(tok, severity, id, msg, CWE(0U), false);
     }
 
     /** report an error */
-    template<typename T, typename U>
-    void reportError(const Token *tok, const Severity::SeverityType severity, const T id, const U msg, const CWE &cwe, bool inconclusive) {
+    void reportError(const Token *tok, const Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe, bool inconclusive) {
         const std::list<const Token *> callstack(1, tok);
         reportError(callstack, severity, id, msg, cwe, inconclusive);
     }
 
     /** report an error */
-    template<typename T, typename U>
-    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const T id, const U msg) {
+    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg) {
         reportError(callstack, severity, id, msg, CWE(0U), false);
     }
 
     /** report an error */
-    template<typename T, typename U>
-    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const T id, const U msg, const CWE &cwe, bool inconclusive) {
+    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe, bool inconclusive) {
         const ErrorLogger::ErrorMessage errmsg(callstack, mTokenizer ? &mTokenizer->list : nullptr, severity, id, msg, cwe, inconclusive);
         if (mErrorLogger)
             mErrorLogger->reportErr(errmsg);
@@ -162,34 +158,19 @@ protected:
             reportError(errmsg);
     }
 
-    ErrorPath getErrorPath(const Token *errtok, const ValueFlow::Value *value, const std::string &bug) const {
-        ErrorPath errorPath;
-        if (!value) {
-            errorPath.emplace_back(errtok,bug);
-        } else if (mSettings->verbose || mSettings->xml || !mSettings->templateLocation.empty()) {
-            errorPath = value->errorPath;
-            errorPath.emplace_back(errtok,bug);
-        } else {
-            if (value->condition)
-                errorPath.emplace_back(value->condition, "condition '" + value->condition->expressionString() + "'");
-            //else if (!value->isKnown() || value->defaultArg)
-            //    errorPath = value->callstack;
-            errorPath.emplace_back(errtok,bug);
-        }
-        return errorPath;
-    }
+    ErrorPath getErrorPath(const Token* errtok, const ValueFlow::Value* value, const std::string& bug) const;
 
     /**
      * Use WRONG_DATA in checkers when you check for wrong data. That
      * will call this method
      */
     bool wrongData(const Token *tok, bool condition, const char *str);
-private:
-    const std::string mName;
 
     /** disabled assignment operator and copy constructor */
     void operator=(const Check &) = delete;
     Check(const Check &) = delete;
+private:
+    const std::string mName;
 };
 
 /// @}

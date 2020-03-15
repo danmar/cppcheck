@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="ru_RU" sourcelanguage="ru_RU">
+<TS version="2.1" language="ru_RU">
 <context>
     <name>About</name>
     <message>
@@ -22,7 +22,7 @@
         <location filename="about.ui" line="81"/>
         <source>Copyright © 2007-2019 Cppcheck team.</source>
         <oldsource>Copyright © 2007-2018 Cppcheck team.</oldsource>
-        <translation type="unfinished"></translation>
+        <translation>Copyright © 2007-2019 Cppcheck team.</translation>
     </message>
     <message>
         <location filename="about.ui" line="91"/>
@@ -44,7 +44,12 @@ of the GNU General Public License version 3</source>
 &lt;li&gt;picojson&lt;/li&gt;
 &lt;li&gt;pcre&lt;/li&gt;
 &lt;li&gt;qt&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;
+&lt;p&gt;Создано при использовании библиотек:&lt;/p&gt;&lt;ul&gt;
+&lt;li&gt;tinyxml2&lt;/li&gt;
+&lt;li&gt;picojson&lt;/li&gt;
+&lt;li&gt;pcre&lt;/li&gt;
+&lt;li&gt;qt&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
 </context>
 <context>
@@ -268,18 +273,18 @@ Parameters: -l(line) (file)</source>
         <location filename="librarydialog.cpp" line="96"/>
         <source>Cannot open file %1.</source>
         <oldsource>Can not open file %1.</oldsource>
-        <translation type="unfinished">Невозможно открыть файл %1.</translation>
+        <translation>Невозможно открыть файл %1.</translation>
     </message>
     <message>
         <location filename="librarydialog.cpp" line="108"/>
         <source>Failed to load %1. %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка загрузки %1. %2.</translation>
     </message>
     <message>
         <location filename="librarydialog.cpp" line="145"/>
         <source>Cannot save file %1.</source>
         <oldsource>Can not save file %1.</oldsource>
-        <translation type="unfinished">Невозможно сохранить файл %1.</translation>
+        <translation>Невозможно сохранить файл %1.</translation>
     </message>
     <message>
         <location filename="librarydialog.cpp" line="157"/>
@@ -434,20 +439,20 @@ Parameters: -l(line) (file)</source>
         <location filename="mainwindow.cpp" line="553"/>
         <location filename="mainwindow.cpp" line="658"/>
         <location filename="mainwindow.cpp" line="680"/>
-        <location filename="mainwindow.cpp" line="1113"/>
-        <location filename="mainwindow.cpp" line="1238"/>
-        <location filename="mainwindow.cpp" line="1359"/>
-        <location filename="mainwindow.cpp" line="1499"/>
-        <location filename="mainwindow.cpp" line="1522"/>
-        <location filename="mainwindow.cpp" line="1593"/>
-        <location filename="mainwindow.cpp" line="1667"/>
+        <location filename="mainwindow.cpp" line="1117"/>
+        <location filename="mainwindow.cpp" line="1242"/>
+        <location filename="mainwindow.cpp" line="1363"/>
+        <location filename="mainwindow.cpp" line="1503"/>
+        <location filename="mainwindow.cpp" line="1526"/>
+        <location filename="mainwindow.cpp" line="1597"/>
+        <location filename="mainwindow.cpp" line="1671"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="131"/>
         <source>A&amp;nalyze</source>
-        <translation type="unfinished"></translation>
+        <translation>Анализ</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="183"/>
@@ -482,7 +487,7 @@ Parameters: -l(line) (file)</source>
         <location filename="mainwindow.ui" line="145"/>
         <source>&amp;C standard</source>
         <oldsource>C standard</oldsource>
-        <translation type="unfinished">Стандарт C</translation>
+        <translation>&amp;Стандарт C</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="170"/>
@@ -514,7 +519,7 @@ Parameters: -l(line) (file)</source>
         <location filename="mainwindow.ui" line="256"/>
         <source>Analyze files</source>
         <oldsource>Check files</oldsource>
-        <translation type="unfinished">Проверить файлы</translation>
+        <translation>Проверить файлы</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="259"/>
@@ -531,7 +536,7 @@ Parameters: -l(line) (file)</source>
         <location filename="mainwindow.ui" line="274"/>
         <source>Analyze directory</source>
         <oldsource>Check directory</oldsource>
-        <translation type="unfinished">Проверка директории</translation>
+        <translation>Проверка каталога</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="277"/>
@@ -562,7 +567,7 @@ Parameters: -l(line) (file)</source>
         <location filename="mainwindow.ui" line="313"/>
         <source>Stop analysis</source>
         <oldsource>Stop checking</oldsource>
-        <translation type="unfinished">Остановить проверку</translation>
+        <translation>Остановить проверку</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="316"/>
@@ -656,17 +661,17 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="mainwindow.ui" line="598"/>
         <source>Show Cppcheck results</source>
-        <translation type="unfinished"></translation>
+        <translation>Просмотр результатов Cppcheck</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="610"/>
         <source>Clang</source>
-        <translation type="unfinished"></translation>
+        <translation>Clang</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="613"/>
         <source>Show Clang results</source>
-        <translation type="unfinished"></translation>
+        <translation>Просмотр результатов Clang</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="621"/>
@@ -766,11 +771,11 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Enforce C++</source>
-        <translation type="obsolete">Принудительно C++</translation>
+        <translation type="vanished">Принудительно C++</translation>
     </message>
     <message>
         <source>Enforce C</source>
-        <translation type="obsolete">Принудительно C</translation>
+        <translation type="vanished">Принудительно C</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="392"/>
@@ -786,22 +791,22 @@ Parameters: -l(line) (file)</source>
         <location filename="mainwindow.ui" line="286"/>
         <source>&amp;Reanalyze modified files</source>
         <oldsource>&amp;Recheck modified files</oldsource>
-        <translation type="unfinished">Заново проверить измененные файлы</translation>
+        <translation>Заново проверить измененные файлы</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="298"/>
         <source>Reanal&amp;yze all files</source>
-        <translation type="unfinished"></translation>
+        <translation>Заново проверить все файлы</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="363"/>
         <source>Style war&amp;nings</source>
-        <translation type="unfinished"></translation>
+        <translation>Стилистические предупреждения</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="381"/>
         <source>E&amp;rrors</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибки</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="397"/>
@@ -856,7 +861,7 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="mainwindow.ui" line="468"/>
         <source>Sh&amp;ow Scratchpad...</source>
-        <translation type="unfinished"></translation>
+        <translation>Показать Блокнот</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="473"/>
@@ -891,27 +896,27 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="mainwindow.ui" line="521"/>
         <source>&amp;Warnings</source>
-        <translation type="unfinished"></translation>
+        <translation>Предупреждения</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="539"/>
         <source>Per&amp;formance warnings</source>
-        <translation type="unfinished"></translation>
+        <translation>Предупреждения производительности</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="565"/>
         <source>&amp;Information</source>
-        <translation type="unfinished"></translation>
+        <translation>Информационные предупреждения</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="580"/>
         <source>&amp;Portability</source>
-        <translation type="unfinished"></translation>
+        <translation>Предупреждения переносимости</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="680"/>
         <source>P&amp;latforms</source>
-        <translation type="unfinished"></translation>
+        <translation>Платформы</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="694"/>
@@ -946,47 +951,47 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="mainwindow.ui" line="758"/>
         <source>&amp;Library Editor...</source>
-        <translation type="unfinished"></translation>
+        <translation>Редактор библиотеки</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="769"/>
         <source>&amp;Auto-detect language</source>
-        <translation type="unfinished"></translation>
+        <translation>Автоматическое определение языка</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="777"/>
         <source>&amp;Enforce C++</source>
-        <translation type="unfinished"></translation>
+        <translation>Принудительно C++</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="785"/>
         <source>E&amp;nforce C</source>
-        <translation type="unfinished"></translation>
+        <translation>Принудительно C</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="796"/>
         <source>C++14</source>
-        <translation type="unfinished">C++14</translation>
+        <translation>C++14</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="804"/>
         <source>Reanalyze and check library</source>
-        <translation type="unfinished"></translation>
+        <translation>Повторный анализ библиотеки</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="812"/>
         <source>Check configuration (defines, includes)</source>
-        <translation type="unfinished"></translation>
+        <translation>Проверить конфигурацию (defines, includes)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="820"/>
         <source>C++17</source>
-        <translation type="unfinished">C++17</translation>
+        <translation>C++17</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="831"/>
         <source>C++20</source>
-        <translation type="unfinished">C++20</translation>
+        <translation>C++20</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="423"/>
@@ -1039,7 +1044,7 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="mainwindow.cpp" line="629"/>
         <source>Select configuration</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбор конфигурации</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="659"/>
@@ -1094,12 +1099,12 @@ Do you want to proceed checking without using any of these project files?</sourc
         <translation type="obsolete">Не удалось загрузить %1. Установленный Cppcheck поврежден. Вы можете использовать ключ --data-dir=&lt;directory&gt; в командной строке, чтобы указать, где расположен этот файл.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1280"/>
+        <location filename="mainwindow.cpp" line="1284"/>
         <source>License</source>
         <translation>Лицензия</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1287"/>
+        <location filename="mainwindow.cpp" line="1291"/>
         <source>Authors</source>
         <translation>Авторы</translation>
     </message>
@@ -1109,13 +1114,13 @@ Do you want to proceed checking without using any of these project files?</sourc
         <translation type="obsolete">XML файлы версии 2 (*.xml);;XML файлы версии 1 (*.xml);;Текстовые файлы  (*.txt);;CSV файлы (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1302"/>
+        <location filename="mainwindow.cpp" line="1306"/>
         <source>Save the report file</source>
         <translation>Сохранить файл с отчетом</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1129"/>
-        <location filename="mainwindow.cpp" line="1309"/>
+        <location filename="mainwindow.cpp" line="1133"/>
+        <location filename="mainwindow.cpp" line="1313"/>
         <source>XML files (*.xml)</source>
         <translation>XML-файлы (*.xml)</translation>
     </message>
@@ -1131,7 +1136,7 @@ This is probably because the settings were changed between the Cppcheck versions
     <message>
         <location filename="mainwindow.cpp" line="554"/>
         <source>You must close the project file before selecting new files or directories!</source>
-        <translation>Вы должны закрыть проект перед выбором новых файлов или директорий!</translation>
+        <translation>Вы должны закрыть проект перед выбором новых файлов или каталогов!</translation>
     </message>
     <message>
         <source>Select files to check</source>
@@ -1147,32 +1152,32 @@ This is probably because the settings were changed between the Cppcheck versions
     <message>
         <location filename="mainwindow.cpp" line="793"/>
         <source>Duplicate platform type</source>
-        <translation type="unfinished"></translation>
+        <translation>Дубликат типа платформы</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="796"/>
         <source>Platform type redefined</source>
-        <translation type="unfinished"></translation>
+        <translation>Переобъявление типа платформы</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="799"/>
         <source>Unknown element</source>
-        <translation type="unfinished"></translation>
+        <translation>Неизвестный элемент</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="802"/>
         <source>Unknown issue</source>
-        <translation type="unfinished"></translation>
+        <translation>Неизвестная проблема</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="828"/>
         <source>Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="828"/>
         <source>Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=&lt;directory&gt; at the command line to specify where this file is located. Please note that --data-dir is supposed to be used by installation scripts and therefore the GUI does not start when it is used, all that happens is that the setting is configured.</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно загрузить %1. Cppcheck установлен некорректно. Вы можете использовать --data-dir=&lt;directory&gt; в командной строке для указания расположения файлов конфигурации. Обратите внимание, что --data-dir предназначен для использования сценариями установки. При включении данной опции, графический интерфейс пользователя не запускается.</translation>
     </message>
     <message>
         <source>Current results will be cleared.
@@ -1183,7 +1188,7 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
 Открытые нового XML файла приведет к очистке текущих результатов. Продолжить?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1131"/>
+        <location filename="mainwindow.cpp" line="1135"/>
         <source>Open the report file</source>
         <translation>Открыть файл с отчетом</translation>
     </message>
@@ -1204,17 +1209,17 @@ Do you want to stop the checking and exit Cppcheck?</source>
         <translation type="obsolete">XML файлы версии 2 (*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1313"/>
+        <location filename="mainwindow.cpp" line="1317"/>
         <source>Text files (*.txt)</source>
         <translation>Текстовые файлы (*.txt)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1317"/>
+        <location filename="mainwindow.cpp" line="1321"/>
         <source>CSV files (*.csv)</source>
         <translation>CSV файлы(*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1361"/>
+        <location filename="mainwindow.cpp" line="1365"/>
         <source>Cppcheck - %1</source>
         <translation>Cppcheck - %1</translation>
     </message>
@@ -1231,31 +1236,31 @@ The user interface language has been reset to English. Open the Preferences-dial
 The user interface language has been reset to English. Open the Preferences-dialog to select any of the available languages.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1407"/>
+        <location filename="mainwindow.cpp" line="1411"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation>Файлы проекта (*.cppcheck);;Все файлы(*.*)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1409"/>
+        <location filename="mainwindow.cpp" line="1413"/>
         <source>Select Project File</source>
         <translation>Выберите файл проекта</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="159"/>
-        <location filename="mainwindow.cpp" line="1437"/>
-        <location filename="mainwindow.cpp" line="1562"/>
+        <location filename="mainwindow.cpp" line="1441"/>
+        <location filename="mainwindow.cpp" line="1566"/>
         <source>Project:</source>
         <translation>Проект:</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="481"/>
         <source>No suitable files found to analyze!</source>
-        <translation type="unfinished"></translation>
+        <translation>Не найдено подходящих файлов для анализа</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="568"/>
         <source>C/C++ Source</source>
-        <translation type="unfinished"></translation>
+        <translation>Исходный код C/C++</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="569"/>
@@ -1265,82 +1270,89 @@ The user interface language has been reset to English. Open the Preferences-dial
     <message>
         <location filename="mainwindow.cpp" line="570"/>
         <source>Visual Studio</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Visual Studio</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="571"/>
         <source>Borland C++ Builder 6</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Borland C++ Builder 6</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="574"/>
         <source>Select files to analyze</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбор файлов для анализа</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="589"/>
         <source>Select directory to analyze</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбор каталога для анализа</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="629"/>
         <source>Select the configuration that will be analyzed</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбор используемой конфигурации</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="681"/>
         <source>Found project files from the directory.
 
 Do you want to proceed analysis without using any of these project files?</source>
-        <translation type="unfinished"></translation>
+        <translation>Обнаружены файлы проекты из каталога.
+
+Вы хотите продолжить анализ без использования этих файлов проекта?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1114"/>
+        <location filename="mainwindow.cpp" line="1118"/>
         <source>Current results will be cleared.
 
 Opening a new XML file will clear current results.
 Do you want to proceed?</source>
-        <translation type="unfinished"></translation>
+        <translation>Текущие результаты будут очищены.
+
+Открытие нового XML-файла приведет к очистке текущих результатов.
+Вы хотите продолжить?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1234"/>
+        <location filename="mainwindow.cpp" line="1238"/>
         <source>Analyzer is running.
 
 Do you want to stop the analysis and exit Cppcheck?</source>
-        <translation type="unfinished"></translation>
+        <translation>Анализатор запущен.
+
+Вы хотите остановить анализ и выйти из Cppcheck?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1300"/>
+        <location filename="mainwindow.cpp" line="1304"/>
         <source>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
-        <translation type="unfinished"></translation>
+        <translation>XML файлы (*.xml);;Текстовые файлы (*.txt);;CSV файлы (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1500"/>
+        <location filename="mainwindow.cpp" line="1504"/>
         <source>Build dir &apos;%1&apos; does not exist, create it?</source>
-        <translation type="unfinished"></translation>
+        <translation>Директория для сборки &apos;%1&apos; не существует, создать?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1523"/>
+        <location filename="mainwindow.cpp" line="1527"/>
         <source>Failed to import &apos;%1&apos;, analysis is stopped</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно импортировать &apos;%1&apos;, анализ остановлен</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1547"/>
+        <location filename="mainwindow.cpp" line="1551"/>
         <source>Project files (*.cppcheck)</source>
-        <translation type="unfinished"></translation>
+        <translation>Файлы проекта (*.cppcheck)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1549"/>
+        <location filename="mainwindow.cpp" line="1553"/>
         <source>Select Project Filename</source>
         <translation>Выберите имя файла для проекта</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1594"/>
+        <location filename="mainwindow.cpp" line="1598"/>
         <source>No project file loaded</source>
         <translation>Файл с проектом не загружен</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1662"/>
+        <location filename="mainwindow.cpp" line="1666"/>
         <source>The project file
 
 %1
@@ -1407,7 +1419,20 @@ Options:
     -d &lt;directory&gt;          Specify the directory that was checked to generate the results xml specified with -l
     -v, --version           Show program version
     --data-dir=&lt;directory&gt;  Specify directory where GUI datafiles are located (translations, cfg)</oldsource>
-        <translation type="unfinished"></translation>
+        <translation>Cppcheck GUI.
+
+Синтаксис:
+    cppcheck-gui [ОПЦИИ] [файлы или пути]
+
+Опции:
+    -h, --help              Выдать подсказку на стандартный вывод и успешно завершиться.
+    -p &lt;file&gt;               Открыть указанный файл проекта и начать проверку
+    -l &lt;file&gt;               Открыть xml-файл с полученными результатами
+    -d &lt;directory&gt;          Указать каталог, который был проверен для создания результатов xml, указанных с помощью -l
+    -v, --version           Выдать информацию о версии на стандартный вывод и успешно завершиться.
+    --data-dir=&lt;directory&gt;  Этот параметр предназначен для сценариев установки, чтобы они могли
+                            настроить каталог, в котором расположены файлы данных (конфигурация, переводы).
+                            Графический интерфейс пользователя не будет запущен, если указана эта опция.</translation>
     </message>
     <message>
         <location filename="main.cpp" line="121"/>
@@ -1420,32 +1445,32 @@ Options:
     <message>
         <location filename="newsuppressiondialog.ui" line="17"/>
         <source>New suppression</source>
-        <translation type="unfinished"></translation>
+        <translation>Новое подавление</translation>
     </message>
     <message>
         <location filename="newsuppressiondialog.ui" line="25"/>
         <source>Error ID</source>
-        <translation type="unfinished"></translation>
+        <translation>ID</translation>
     </message>
     <message>
         <location filename="newsuppressiondialog.ui" line="32"/>
         <source>File name</source>
-        <translation type="unfinished"></translation>
+        <translation>Имя файла</translation>
     </message>
     <message>
         <location filename="newsuppressiondialog.ui" line="42"/>
         <source>Line number</source>
-        <translation type="unfinished"></translation>
+        <translation>Номер строки</translation>
     </message>
     <message>
         <location filename="newsuppressiondialog.ui" line="52"/>
         <source>Symbol name</source>
-        <translation type="unfinished"></translation>
+        <translation>Имя символа</translation>
     </message>
     <message>
         <location filename="newsuppressiondialog.cpp" line="52"/>
         <source>Edit suppression</source>
-        <translation type="unfinished"></translation>
+        <translation>Редактировать подавление</translation>
     </message>
 </context>
 <context>
@@ -1514,24 +1539,24 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="24"/>
         <source>Paths and Defines</source>
-        <translation type="unfinished"></translation>
+        <translation>Каталоги и определения</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="30"/>
         <source>Import Project (Visual studio / compile database/ Borland C++ Builder 6)</source>
         <oldsource>Import Project (Visual studio / compile database)</oldsource>
-        <translation type="unfinished"></translation>
+        <translation>Импорт проекта (Visual studio / compile database/ Borland C++ Builder 6)</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="163"/>
         <source>Defines must be separated by a semicolon. Example: DEF1;DEF2=5;DEF3=int</source>
         <oldsource>Defines must be separated by a semicolon &apos;;&apos;</oldsource>
-        <translation type="unfinished">Defines должны быть разделены точкой с запятой &apos;;&apos;</translation>
+        <translation>Defines должны быть разделены точкой с запятой &apos;;&apos;</translation>
     </message>
     <message>
         <source>&amp;Root:</source>
         <oldsource>Root:</oldsource>
-        <translation type="obsolete">Корневая директория:</translation>
+        <translation type="obsolete">Корневой каталог:</translation>
     </message>
     <message>
         <source>Libraries:</source>
@@ -1540,43 +1565,43 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="393"/>
         <source>Note: Put your own custom .cfg files in the same folder as the project file. You should see them above.</source>
-        <translation>Note: Положите свои .cfg-файлы в одну директорию с файлом проекта. Вы увидите их сверху.</translation>
+        <translation>Положите свои .cfg-файлы в один каталог с файлом проекта. Вы увидите их сверху.</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="597"/>
+        <location filename="projectfiledialog.ui" line="607"/>
         <source>MISRA C 2012</source>
-        <translation type="unfinished"></translation>
+        <translation>MISRA C 2012</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="606"/>
+        <location filename="projectfiledialog.ui" line="616"/>
         <source>Misra rule texts</source>
-        <translation type="unfinished"></translation>
+        <translation>Файл с текстами правил MISRA</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="613"/>
+        <location filename="projectfiledialog.ui" line="623"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy/paste the text from Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012 pdf to a text file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Скопируйте текст из Appendix A &amp;quot;Summary of guidelines&amp;quot; из фала правил MISRA C 2012 pdf в текстовый файл.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="620"/>
+        <location filename="projectfiledialog.ui" line="630"/>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation>...</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="69"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;You have a choice:&lt;/p&gt;&lt;p&gt; * Analyze all Debug and Release configurations&lt;/p&gt;&lt;p&gt; * Only analyze the first matching Debug configuration&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Выберите:&lt;/p&gt;&lt;p&gt; * Анализ всех конфигураций Debug и Release&lt;/p&gt;&lt;p&gt; * Анализ только первой подходящей конфигурации Debug&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="60"/>
         <location filename="projectfiledialog.ui" line="309"/>
         <source>Browse...</source>
-        <translation type="unfinished"></translation>
+        <translation>Обзор...</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="72"/>
         <source>Analyze all Visual Studio configurations</source>
-        <translation type="unfinished"></translation>
+        <translation>Анализировать все конфигурации Visual Studio</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="86"/>
@@ -1608,47 +1633,52 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="174"/>
         <source>Undefines:</source>
-        <translation type="unfinished"></translation>
+        <translation>Удаленные макроопределения:</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="184"/>
         <source>Undefines must be separated by a semicolon. Example: UNDEF1;UNDEF2;UNDEF3</source>
-        <translation type="unfinished"></translation>
+        <translation>Удаленные макроопределения должны быть разделены точкой с запятой, например: UNDEF1;UNDEF2;UNDEF3</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="197"/>
         <source>Include Paths:</source>
-        <translation type="unfinished"></translation>
+        <translation>Пути заголовочных файлов:</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="331"/>
         <source>Analysis</source>
-        <translation type="unfinished"></translation>
+        <translation>Анализ</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="337"/>
         <source>Check code in headers  (slower analysis, more results)</source>
-        <translation type="unfinished"></translation>
+        <translation>Проверить код в заголовочных файлах</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="347"/>
         <source>Check code in unused templates  (slower and less accurate analysis)</source>
-        <translation type="unfinished"></translation>
+        <translation>Проверить код в неиспользуемых шаблонах</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="356"/>
         <source>Max CTU depth</source>
-        <translation type="unfinished"></translation>
+        <translation>Максимальная глубина CTU</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="450"/>
         <source>Exclude source files in paths</source>
+        <translation>Исключить исходные файлы в путях</translation>
+    </message>
+    <message>
+        <location filename="projectfiledialog.ui" line="569"/>
+        <source>Note: Addons require &lt;a href=&quot;https://www.python.org/&quot;&gt;Python&lt;/a&gt; beeing installed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="632"/>
+        <location filename="projectfiledialog.ui" line="642"/>
         <source>External tools</source>
-        <translation type="unfinished"></translation>
+        <translation>Внешние инструменты</translation>
     </message>
     <message>
         <source>Includes</source>
@@ -1671,37 +1701,37 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="294"/>
         <source>Checking</source>
-        <translation type="unfinished"></translation>
+        <translation>Проверка</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="319"/>
         <source>Platform</source>
-        <translation type="unfinished"></translation>
+        <translation>Платформа</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="420"/>
         <source>Warning options</source>
-        <translation type="unfinished"></translation>
+        <translation>Опции предупреждений</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="426"/>
         <source>Root path:</source>
-        <translation type="unfinished"></translation>
+        <translation>Корневой каталог:</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="438"/>
         <source>Warning tags (separated by semicolon)</source>
-        <translation type="unfinished"></translation>
+        <translation>Теги предупреждений (через &apos;;&apos;)</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="300"/>
         <source>Cppcheck build dir (whole program analysis, incremental analysis, statistics, etc)</source>
-        <translation type="unfinished"></translation>
+        <translation>Каталог сборки Cppcheck</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="384"/>
         <source>Libraries</source>
-        <translation type="unfinished"></translation>
+        <translation>Библиотеки</translation>
     </message>
     <message>
         <source>Exclude</source>
@@ -1710,7 +1740,7 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="500"/>
         <source>Suppressions</source>
-        <translation type="unfinished"></translation>
+        <translation>Подавления</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="511"/>
@@ -1720,47 +1750,47 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="557"/>
         <source>Addons and tools</source>
-        <translation type="unfinished"></translation>
+        <translation>Дополнения</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="563"/>
         <source>Addons</source>
-        <translation type="unfinished"></translation>
+        <translation>Дополнения</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="569"/>
+        <location filename="projectfiledialog.ui" line="579"/>
         <source>Y2038</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="576"/>
+        <location filename="projectfiledialog.ui" line="586"/>
         <source>Thread safety</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="583"/>
+        <location filename="projectfiledialog.ui" line="593"/>
         <source>Coding standards</source>
-        <translation type="unfinished"></translation>
+        <translation>Стандарты кодирования</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="590"/>
+        <location filename="projectfiledialog.ui" line="600"/>
         <source>Cert</source>
-        <translation type="unfinished"></translation>
+        <translation>Cert</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="645"/>
+        <location filename="projectfiledialog.ui" line="655"/>
         <source>Clang analyzer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="638"/>
+        <location filename="projectfiledialog.ui" line="648"/>
         <source>Clang-tidy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="153"/>
         <source>Defines:</source>
-        <translation>Макросы:</translation>
+        <translation>Объявленные макроопределения:</translation>
     </message>
 </context>
 <context>
@@ -1773,7 +1803,7 @@ Options:
     <message>
         <location filename="projectfiledialog.cpp" line="409"/>
         <source>Select Cppcheck build dir</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбрать директорию сборки Cppcheck</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="637"/>
@@ -1788,17 +1818,17 @@ Options:
     <message>
         <location filename="projectfiledialog.cpp" line="305"/>
         <source>(no rule texts file)</source>
-        <translation type="unfinished"></translation>
+        <translation>(файл с текстами правил недоступен)</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="311"/>
         <source>Clang-tidy (not found)</source>
-        <translation type="unfinished"></translation>
+        <translation>Clang-tidy (не найден)</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="445"/>
         <source>Visual Studio</source>
-        <translation type="unfinished"></translation>
+        <translation>Visual Studio</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="446"/>
@@ -1808,12 +1838,12 @@ Options:
     <message>
         <location filename="projectfiledialog.cpp" line="447"/>
         <source>Borland C++ Builder 6</source>
-        <translation type="unfinished"></translation>
+        <translation>Borland C++ Builder 6</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="448"/>
         <source>Import Project</source>
-        <translation type="unfinished"></translation>
+        <translation>Импорт проекта</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="657"/>
@@ -1823,12 +1853,12 @@ Options:
     <message>
         <location filename="projectfiledialog.cpp" line="742"/>
         <source>Select MISRA rule texts file</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбрать файл текстов правил MISRA</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="742"/>
         <source>Misra rule texts file (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Файл текстов правил MISRA (%1)</translation>
     </message>
 </context>
 <context>
@@ -1881,7 +1911,7 @@ Options:
     <message>
         <location filename="projectfiledialog.cpp" line="226"/>
         <source> (Not found)</source>
-        <translation type="unfinished"></translation>
+        <translation> (Недоступно)</translation>
     </message>
     <message>
         <location filename="codeeditstylecontrols.cpp" line="69"/>
@@ -2073,27 +2103,27 @@ Options:
     <message>
         <location filename="resultstree.cpp" line="614"/>
         <source>Copy</source>
-        <translation type="unfinished"></translation>
+        <translation>Копировать</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="797"/>
         <source>Could not find file:</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно найти файл:</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="801"/>
         <source>Please select the folder &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Выберите каталог &apos;%1&apos;</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="802"/>
         <source>Select Directory &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбрать каталог &apos;%1&apos;</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="804"/>
         <source>Please select the directory where file is located.</source>
-        <translation type="unfinished"></translation>
+        <translation>Укажите каталог с расположением файла.</translation>
     </message>
     <message>
         <source>[Inconclusive]</source>
@@ -2107,7 +2137,7 @@ Options:
     <message>
         <location filename="resultstree.cpp" line="249"/>
         <source>note</source>
-        <translation type="unfinished"></translation>
+        <translation>заметка</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="613"/>
@@ -2143,7 +2173,7 @@ Options:
     <message>
         <location filename="resultstree.cpp" line="617"/>
         <source>Suppress selected id(s)</source>
-        <translation type="unfinished"></translation>
+        <translation>Подавить выбранные id</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="618"/>
@@ -2154,12 +2184,12 @@ Options:
         <location filename="resultstree.cpp" line="648"/>
         <location filename="resultstree.cpp" line="1343"/>
         <source>Tag</source>
-        <translation type="unfinished"></translation>
+        <translation>Тег</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="650"/>
         <source>No tag</source>
-        <translation type="unfinished"></translation>
+        <translation>Тег отсутствует</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="693"/>
@@ -2223,7 +2253,7 @@ Please select the directory where file is located.</source>
     <message>
         <location filename="resultstree.cpp" line="1343"/>
         <source>Since date</source>
-        <translation type="unfinished"></translation>
+        <translation>Начиная с даты</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="294"/>
@@ -2300,7 +2330,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="resultsview.cpp" line="338"/>
         <source>XML format version 1 is no longer supported.</source>
-        <translation type="unfinished"></translation>
+        <translation>XML формат версии 1 больше не поддерживается.</translation>
     </message>
     <message>
         <source>Summary</source>
@@ -2313,7 +2343,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="resultsview.cpp" line="399"/>
         <source>First included by</source>
-        <translation type="unfinished"></translation>
+        <translation>Только первый включенный</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="402"/>
@@ -2323,17 +2353,17 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="resultsview.cpp" line="471"/>
         <source>Clear Log</source>
-        <translation type="unfinished"></translation>
+        <translation>Очистить лог</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="472"/>
         <source>Copy this Log entry</source>
-        <translation type="unfinished"></translation>
+        <translation>Скопировать данную запись</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="473"/>
         <source>Copy complete Log</source>
-        <translation type="unfinished"></translation>
+        <translation>Скопировать полный лог</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="159"/>
@@ -2354,12 +2384,12 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="resultsview.ui" line="82"/>
         <source>Analysis Log</source>
-        <translation type="unfinished"></translation>
+        <translation>Лог анализа</translation>
     </message>
     <message>
         <location filename="resultsview.ui" line="104"/>
         <source>Warning Details</source>
-        <translation type="unfinished"></translation>
+        <translation>Детали предупреждения</translation>
     </message>
 </context>
 <context>
@@ -2372,12 +2402,12 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="scratchpad.ui" line="20"/>
         <source>Copy or write some C/C++ code here:</source>
-        <translation type="unfinished"></translation>
+        <translation>Исходный код C/C++:</translation>
     </message>
     <message>
         <location filename="scratchpad.ui" line="37"/>
         <source>Optionally enter a filename (mainly for automatic language detection) and click on &quot;Check&quot;:</source>
-        <translation type="unfinished"></translation>
+        <translation>При необходимости введите имя файла и нажмите &quot;Проверить&quot;:</translation>
     </message>
     <message>
         <location filename="scratchpad.ui" line="71"/>
@@ -2465,64 +2495,64 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="settings.ui" line="287"/>
         <source>Addons</source>
-        <translation type="unfinished"></translation>
+        <translation>Дополнения</translation>
     </message>
     <message>
         <location filename="settings.ui" line="293"/>
         <source>Python binary (leave this empty to use python in the PATH)</source>
-        <translation type="unfinished"></translation>
+        <translation>Python (оставьте пустым для использования python из PATH)</translation>
     </message>
     <message>
         <location filename="settings.ui" line="302"/>
         <location filename="settings.ui" line="334"/>
         <location filename="settings.ui" line="379"/>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation>...</translation>
     </message>
     <message>
         <location filename="settings.ui" line="312"/>
         <source>Misra addon</source>
-        <translation type="unfinished"></translation>
+        <translation>Дополнение MISRA</translation>
     </message>
     <message>
         <location filename="settings.ui" line="320"/>
         <source>Misra rule texts file</source>
-        <translation type="unfinished"></translation>
+        <translation>Файл с текстами правил MISRA: </translation>
     </message>
     <message>
         <location filename="settings.ui" line="327"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy/paste the text from Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012 pdf to a text file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Скопируйте текст из Appendix A &amp;quot;Summary of guidelines&amp;quot; из фала правил MISRA C 2012 pdf в текстовый файл.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="settings.ui" line="360"/>
         <source>Clang</source>
-        <translation type="unfinished"></translation>
+        <translation>Clang</translation>
     </message>
     <message>
         <location filename="settings.ui" line="366"/>
         <source>Clang path (leave empty to use system PATH)</source>
-        <translation type="unfinished"></translation>
+        <translation>Clang (оставьте пустым для использования clang из PATH)</translation>
     </message>
     <message>
         <location filename="settings.ui" line="389"/>
         <source>Visual Studio headers</source>
-        <translation type="unfinished"></translation>
+        <translation>Заголовочные файлы Visual Studio</translation>
     </message>
     <message>
         <location filename="settings.ui" line="395"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Paths to Visual Studio headers, separated by semicolon &apos;;&apos;.&lt;/p&gt;&lt;p&gt;You can open a Visual Studio command prompt, write &amp;quot;SET INCLUDE&amp;quot;. Then copy/paste the paths.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Путь до заголовочных файлов Visual Studio headers, разделенных символом &apos;;&apos;.&lt;/p&gt;&lt;p&gt;Вы можете открыть командную строку Visual Studio, ввести &amp;quot;SET INCLUDE&amp;quot; и скопировать пути.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="settings.ui" line="425"/>
         <source>Code Editor</source>
-        <translation type="unfinished"></translation>
+        <translation>Редактор</translation>
     </message>
     <message>
         <location filename="settings.ui" line="431"/>
         <source>Code Editor Style</source>
-        <translation type="unfinished"></translation>
+        <translation>Оформление</translation>
     </message>
     <message>
         <location filename="settings.ui" line="437"/>
@@ -2636,17 +2666,17 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="settingsdialog.cpp" line="318"/>
         <source>Select python binary</source>
-        <translation type="unfinished"></translation>
+        <translation>Выберите исполняемый файл python</translation>
     </message>
     <message>
         <location filename="settingsdialog.cpp" line="325"/>
         <source>Select MISRA File</source>
-        <translation type="unfinished"></translation>
+        <translation>Выберите файл текстов правил MISRA</translation>
     </message>
     <message>
         <location filename="settingsdialog.cpp" line="356"/>
         <source>Select clang path</source>
-        <translation type="unfinished"></translation>
+        <translation>Выберите исполняемый файл clang</translation>
     </message>
     <message>
         <source>Select include directory</source>
@@ -2687,12 +2717,12 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="stats.ui" line="108"/>
         <source>Defines:</source>
-        <translation>Макросы:</translation>
+        <translation>Объявленные макроопределения:</translation>
     </message>
     <message>
         <location filename="stats.ui" line="131"/>
         <source>Undefines:</source>
-        <translation type="unfinished"></translation>
+        <translation>Удаленные макроопределения:</translation>
     </message>
     <message>
         <location filename="stats.ui" line="165"/>
@@ -2748,12 +2778,12 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="stats.ui" line="363"/>
         <source>History</source>
-        <translation type="unfinished"></translation>
+        <translation>История</translation>
     </message>
     <message>
         <location filename="stats.ui" line="369"/>
         <source>File:</source>
-        <translation type="unfinished"></translation>
+        <translation>Файл:</translation>
     </message>
     <message>
         <location filename="stats.ui" line="407"/>
@@ -2763,7 +2793,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="stats.ui" line="414"/>
         <source>Pdf Export</source>
-        <translation type="unfinished"></translation>
+        <translation>Экспорт PDF</translation>
     </message>
     <message>
         <location filename="statsdialog.cpp" line="113"/>
@@ -2818,7 +2848,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="statsdialog.cpp" line="152"/>
         <source>Export PDF</source>
-        <translation type="unfinished"></translation>
+        <translation>Экспорт PDF</translation>
     </message>
     <message>
         <location filename="statsdialog.cpp" line="174"/>
@@ -2838,12 +2868,12 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="statsdialog.cpp" line="178"/>
         <source>Defines</source>
-        <translation>Макросы</translation>
+        <translation>Объявленные макроопределения:</translation>
     </message>
     <message>
         <location filename="statsdialog.cpp" line="179"/>
         <source>Undefines</source>
-        <translation type="unfinished"></translation>
+        <translation>Удаленные макроопределения:</translation>
     </message>
     <message>
         <location filename="statsdialog.cpp" line="181"/>
@@ -2869,12 +2899,12 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="statsdialog.cpp" line="65"/>
         <source>File: </source>
-        <translation type="unfinished"></translation>
+        <translation>Файл: </translation>
     </message>
     <message>
         <location filename="statsdialog.cpp" line="65"/>
         <source>No cppcheck build dir</source>
-        <translation type="unfinished"></translation>
+        <translation>Не задана директория сборки</translation>
     </message>
     <message>
         <location filename="statsdialog.cpp" line="141"/>
@@ -2949,12 +2979,12 @@ The user interface language has been reset to English. Open the Preferences-dial
     <message>
         <location filename="common.cpp" line="52"/>
         <source>All supported files (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Все поддерживаемые файлы (%1)</translation>
     </message>
     <message>
         <location filename="common.cpp" line="57"/>
         <source>All files (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Все файлы (%1)</translation>
     </message>
 </context>
 </TS>

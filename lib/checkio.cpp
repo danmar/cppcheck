@@ -566,6 +566,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                 const bool scan,
                                 const bool scanf_s)
 {
+    const bool isWindows = mSettings->isWindowsPlatform();
     const bool printWarning = mSettings->isEnabled(Settings::WARNING);
     const std::string &formatString = formatStringTok->str();
 
@@ -841,7 +842,8 @@ void CheckIO::checkFormatString(const Token * const tok,
                                                 invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
                                             break;
                                         case 'z':
-                                            if (!typesMatch(argInfo.typeToken->originalName(), "ssize_t"))
+                                            if (!(typesMatch(argInfo.typeToken->originalName(), "ssize_t") ||
+                                                  (isWindows && typesMatch(argInfo.typeToken->originalName(), "SSIZE_T"))))
                                                 invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
                                             break;
                                         case 't':
@@ -934,7 +936,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                             case 'z':
                             case 'L':
                                 // Expect an alphabetical character after these specifiers
-                                if (i != formatString.end() && !isalpha(*(i+1))) {
+                                if ((i + 1) != formatString.end() && !isalpha(*(i+1))) {
                                     specifier += *i;
                                     invalidLengthModifierError(tok, numFormat, specifier);
                                     done = true;
@@ -956,7 +958,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                 if (argListTok->tokType() != Token::eString &&
                                     argInfo.isKnownType() && !argInfo.isArrayOrPointer()) {
                                     if (!Token::Match(argInfo.typeToken, "char|wchar_t")) {
-                                        if (!(!argInfo.isArrayOrPointer() && argInfo.element))
+                                        if (!argInfo.element)
                                             invalidPrintfArgTypeError_s(tok, numFormat, &argInfo);
                                     }
                                 }
@@ -1095,7 +1097,8 @@ void CheckIO::checkFormatString(const Token * const tok,
                                                 invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
                                             break;
                                         case 'z':
-                                            if (!typesMatch(argInfo.typeToken->originalName(), "ssize_t"))
+                                            if (!(typesMatch(argInfo.typeToken->originalName(), "ssize_t") ||
+                                                  (isWindows && typesMatch(argInfo.typeToken->originalName(), "SSIZE_T"))))
                                                 invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
                                             break;
                                         case 'L':
@@ -1219,8 +1222,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                             case 'h': // Can be 'hh' (signed char or unsigned char) or 'h' (short int or unsigned short int)
                             case 'l': { // Can be 'll' (long long int or unsigned long long int) or 'l' (long int or unsigned long int)
                                 // If the next character is the same (which makes 'hh' or 'll') then expect another alphabetical character
-                                const bool isSecondCharAvailable = ((i + 1) != formatString.end());
-                                if (i != formatString.end() && isSecondCharAvailable && *(i + 1) == *i) {
+                                if (i != formatString.end() && (i + 1) != formatString.end() && *(i + 1) == *i) {
                                     if (!isalpha(*(i + 2))) {
                                         std::string modifier;
                                         modifier += *i;
@@ -1259,7 +1261,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                             case 't': // ptrdiff_t
                             case 'L': // long double
                                 // Expect an alphabetical character after these specifiers
-                                if (i != formatString.end() && !isalpha(*(i+1))) {
+                                if ((i + 1) != formatString.end() && !isalpha(*(i+1))) {
                                     specifier += *i;
                                     invalidLengthModifierError(tok, numFormat, specifier);
                                     done = true;
@@ -1321,6 +1323,8 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
     // TODO: This is a bailout so that old code is used in simple cases. Remove the old code and always use the AST type.
     if (!Token::Match(arg, "%str% ,|)") && !(Token::Match(arg,"%var%") && arg->variable() && arg->variable()->isArray())) {
         const Token *top = arg;
+        while (top->str() == "(" && !top->isCast())
+            top = top->next();
         while (top->astParent() && top->astParent()->str() != "," && top->astParent() != arg->previous())
             top = top->astParent();
         const ValueType *valuetype = top->argumentType();
@@ -1561,8 +1565,8 @@ bool CheckIO::ArgumentInfo::isStdVectorOrString()
         return true;
     } else if (variableInfo->type() && !variableInfo->type()->derivedFrom.empty()) {
         const std::vector<Type::BaseInfo>& derivedFrom = variableInfo->type()->derivedFrom;
-        for (std::size_t i = 0, size = derivedFrom.size(); i < size; ++i) {
-            const Token* nameTok = derivedFrom[i].nameTok;
+        for (const Type::BaseInfo & i : derivedFrom) {
+            const Token* nameTok = i.nameTok;
             if (Token::Match(nameTok, "std :: vector|array <")) {
                 typeToken = nameTok->tokAt(4);
                 _template = true;

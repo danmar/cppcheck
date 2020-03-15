@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Downloads all daca2 source code packages.
 #
 # Usage:
-# $ mkdir ~/daca2-packages && python daca2-download.py
+# $ ./daca2-download.py
 
 
 import subprocess
@@ -12,6 +12,7 @@ import shutil
 import glob
 import os
 import time
+import natsort
 
 DEBIAN = ('ftp://ftp.se.debian.org/debian/',
           'ftp://ftp.debian.org/debian/')
@@ -31,6 +32,11 @@ def wget(filepath):
     return False
 
 
+def latestvername(names):
+    s = natsort.natsorted(names, key=lambda x: x[x.index('_')+1:x.index('.orig.tar')])
+    return s[-1]
+
+
 def getpackages():
     if not wget('ls-lR.gz'):
         return []
@@ -43,17 +49,20 @@ def getpackages():
     path = None
     archives = []
     filename = None
+    filenames = []
     for line in lines:
         line = line.strip()
         if len(line) < 4:
             if filename:
-                archives.append(path + '/' + filename)
+                archives.append(path + '/' + latestvername(filenames))
             path = None
             filename = None
+            filenames = []
         elif line[:12] == './pool/main/':
             path = line[2:-1]
         elif path and '.orig.tar.' in line:
             filename = line[1 + line.rfind(' '):]
+            filenames.append(filename)
 
     for a in archives:
         print(a)

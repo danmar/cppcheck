@@ -319,6 +319,8 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
     if (isBin(str)) {
         biguint ret = 0;
         for (std::string::size_type i = str[0] == '0'?2:3; i < str.length(); i++) {
+            if (str[i] != '1' && str[i] != '0')
+                break;
             ret <<= 1;
             if (str[i] == '1')
                 ret |= 1;
@@ -347,8 +349,8 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
 static unsigned int encodeMultiChar(const std::string& str)
 {
     unsigned int retval = 0;
-    for (std::string::const_iterator it=str.begin(); it!=str.end(); ++it) {
-        retval = (retval << 8) | *it;
+    for (char it : str) {
+        retval = (retval << 8) | it;
     }
     return retval;
 }
@@ -510,6 +512,8 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
     if (isBin(str)) {
         bigint ret = 0;
         for (std::string::size_type i = str[0] == '0'?2:3; i < str.length(); i++) {
+            if (str[i] != '1' && str[i] != '0')
+                break;
             ret <<= 1;
             if (str[i] == '1')
                 ret |= 1;
@@ -531,8 +535,8 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
             return static_cast<bigint>(doubleval);
     }
 
-    if (str[0] == '\'' && str.size() >= 3U && endsWith(str,'\'')) {
-        return characterLiteralToLongNumber(str.substr(1,str.size()-2));
+    if (isCharLiteral(str)) {
+        return characterLiteralToLongNumber(getCharLiteral(str));
     }
 
     if (str[0] == '-') {
@@ -588,7 +592,7 @@ static double myStod(const std::string& str, std::string::const_iterator from, s
 
 // Assuming a limited support of built-in hexadecimal floats (see C99, C++17) that is a fall-back implementation.
 // Performance has been optimized WRT to heap activity, however the calculation part is not optimized.
-static double FloatHexToDoubleNumber(const std::string& str)
+static double floatHexToDoubleNumber(const std::string& str)
 {
     const std::size_t p = str.find_first_of("pP",3);
     const double factor1 = myStod(str, str.begin() + 2, str.begin()+p, 16);
@@ -600,8 +604,8 @@ static double FloatHexToDoubleNumber(const std::string& str)
 
 double MathLib::toDoubleNumber(const std::string &str)
 {
-    if (str[0] == '\'' && str.size() >= 3U && endsWith(str,'\''))
-        return characterLiteralToLongNumber(str.substr(1,str.size()-2));
+    if (isCharLiteral(str))
+        return characterLiteralToLongNumber(getCharLiteral(str));
     if (isIntHex(str))
         return static_cast<double>(toLongNumber(str));
     // nullcheck
@@ -613,7 +617,7 @@ double MathLib::toDoubleNumber(const std::string &str)
         return std::strtod(str.c_str(), nullptr);
 #endif
     if (isFloatHex(str))
-        return FloatHexToDoubleNumber(str);
+        return floatHexToDoubleNumber(str);
     // otherwise, convert to double
     std::istringstream istr(str);
     istr.imbue(std::locale::classic());
@@ -740,7 +744,7 @@ bool MathLib::isPositive(const std::string &str)
     return !MathLib::isNegative(str);
 }
 
-static bool _isValidIntegerSuffix(std::string::const_iterator it, std::string::const_iterator end, bool supportMicrosoftExtensions=true)
+static bool isValidIntegerSuffixIt(std::string::const_iterator it, std::string::const_iterator end, bool supportMicrosoftExtensions=true)
 {
     enum { START, SUFFIX_U, SUFFIX_UL, SUFFIX_ULL, SUFFIX_L, SUFFIX_LU, SUFFIX_LL, SUFFIX_LLU, SUFFIX_I, SUFFIX_I6, SUFFIX_I64, SUFFIX_UI, SUFFIX_UI6, SUFFIX_UI64 } state = START;
     for (; it != end; ++it) {
@@ -826,7 +830,7 @@ static bool _isValidIntegerSuffix(std::string::const_iterator it, std::string::c
 
 bool MathLib::isValidIntegerSuffix(const std::string& str, bool supportMicrosoftExtensions)
 {
-    return _isValidIntegerSuffix(str.begin(), str.end(), supportMicrosoftExtensions);
+    return isValidIntegerSuffixIt(str.begin(), str.end(), supportMicrosoftExtensions);
 }
 
 
@@ -868,7 +872,7 @@ bool MathLib::isOct(const std::string& str)
             if (isOctalDigit(static_cast<unsigned char>(*it)))
                 state = Status::DIGITS;
             else
-                return _isValidIntegerSuffix(it,str.end());
+                return isValidIntegerSuffixIt(it,str.end());
             break;
         }
     }
@@ -909,7 +913,7 @@ bool MathLib::isIntHex(const std::string& str)
             if (isxdigit(static_cast<unsigned char>(*it)))
                 ; //  state = DIGIT;
             else
-                return _isValidIntegerSuffix(it,str.end());
+                return isValidIntegerSuffixIt(it,str.end());
             break;
         }
     }
@@ -1040,7 +1044,7 @@ bool MathLib::isBin(const std::string& str)
             if (*it == '0' || *it == '1')
                 ; //  state = DIGIT;
             else
-                return _isValidIntegerSuffix(it,str.end());
+                return isValidIntegerSuffixIt(it,str.end());
             break;
         }
     }
@@ -1069,7 +1073,7 @@ bool MathLib::isDec(const std::string & str)
             if (isdigit(static_cast<unsigned char>(*it)))
                 state = DIGIT;
             else
-                return _isValidIntegerSuffix(it,str.end());
+                return isValidIntegerSuffixIt(it,str.end());
             break;
         }
     }
@@ -1289,7 +1293,9 @@ std::string MathLib::tan(const std::string &tok)
 
 std::string MathLib::abs(const std::string &tok)
 {
-    return toString(std::abs(toDoubleNumber(tok)));
+    if (isNegative(tok))
+        return tok.substr(1, tok.length() - 1);
+    return tok;
 }
 
 bool MathLib::isEqual(const std::string &first, const std::string &second)
@@ -1338,11 +1344,16 @@ bool MathLib::isNullValue(const std::string &str)
     if (str.empty() || (!std::isdigit(static_cast<unsigned char>(str[0])) && (str[0] != '.' && str[0] != '-' && str[0] != '+')))
         return false; // Has to be a number
 
-    for (size_t i = 0; i < str.size(); i++) {
-        if (std::isdigit(static_cast<unsigned char>(str[i])) && str[i] != '0') // May not contain digits other than 0
+    if (!isInt(str) && !isFloat(str))
+        return false;
+    bool isHex = isIntHex(str) || isFloatHex(str);
+    for (char i : str) {
+        if (std::isdigit(static_cast<unsigned char>(i)) && i != '0') // May not contain digits other than 0
             return false;
-        if (str[i] == 'E' || str[i] == 'e')
+        if (i == 'p' || i == 'P' || (!isHex && (i == 'E' || i == 'e')))
             return true;
+        if (isHex && isxdigit(i) && i != '0')
+            return false;
     }
     return true;
 }

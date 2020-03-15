@@ -3,7 +3,6 @@ title: Cppcheck .cfg format
 subtitle: Version 1.90 dev
 author: Cppcheck team
 lang: en
-toc: true
 documentclass: report
 ---
 
@@ -171,6 +170,10 @@ Here is the minimal windows.cfg:
         <arg nr="3"/>
       </function>
     </def>
+
+The `indirect` attribute can be set to control the indirection of uninitialized memory allowed. Setting `indirect` to `0` means no uninitialized memory is allowed. Setting it to `1` allows a pointer to uninitialized memory. Setting it to `2` allows a pointer to pointer to uninitialized memory.
+
+By default, cppcheck will use an indirect value of `0` unless `not-null` is used. When `not-null` is used, then `indirect` will default to `1`. 
 
 ### Null pointers
 
@@ -484,6 +487,24 @@ The first argument that the function takes is a pointer. It must not be a null p
 
 The second argument the function takes is a pointer. It must not be null. And it must point at initialized data. Using `<not-null>` and `<not-uninit>` is correct. Moreover it must point at a zero-terminated string so `<strz>` is also used.
 
+# `<type-checks>`; check or suppress
+
+The `<type-checks>`configuration tells Cppcheck to show or suppress warnings for a certain type.
+
+Example:
+
+    <?xml version="1.0"?>
+    <def>
+      <type-checks>
+        <unusedvar>
+          <check>foo</check>
+          <suppress>bar</suppress>
+        </unusedvar>
+      </type-checks>
+    </def>
+
+In the `unusedvar` checking the `foo` type will be checked. Warnings for `bar` type variables will be suppressed.
+
 # `<define>`
 
 Libraries can be used to define preprocessor macros as well. For example:
@@ -526,6 +547,8 @@ The size of the type is specified in bytes. Possible values for the "sign" attri
 # `<container>`
 
 A lot of C++ libraries, among those the STL itself, provide containers with very similar functionality. Libraries can be used to tell cppcheck about their behaviour. Each container needs a unique ID. It can optionally have a startPattern, which must be a valid Token::Match pattern and an endPattern that is compared to the linked token of the first token with such a link. The optional attribute "inherits" takes an ID from a previously defined container.
+
+The `hasInitializerListConstructor` attribute can be set when the container has a constructor taking an initializer list.
 
 Inside the `<container>` tag, functions can be defined inside of the tags `<size>`, `<access>` and `<other>` (on your choice). Each of them can specify an action like "resize" and/or the result it yields, for example "end-iterator".
 

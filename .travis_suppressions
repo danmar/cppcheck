@@ -6,6 +6,8 @@ noValidConfiguration
 shadowFunction
 functionConst
 functionStatic
+bitwiseOnBoolean
+hidingInheritedPublic
 
 # temporary suppressions - fix the warnings!
 duplicateBranch:lib/checkunusedvar.cpp

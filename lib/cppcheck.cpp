@@ -19,6 +19,7 @@
 
 #include "check.h"
 #include "checkunusedfunctions.h"
+#include "clangimport.h"
 #include "ctu.h"
 #include "library.h"
 #include "mathlib.h"
@@ -32,6 +33,8 @@
 #include "tokenlist.h"
 #include "version.h"
 
+#include "exprengine.h"
+
 #define PICOJSON_USE_INT64
 #include <picojson.h>
 #include <simplecpp.h>
@@ -44,6 +47,7 @@
 #include <vector>
 #include <memory>
 #include <iostream> // <- TEMPORARY
+#include <cstdio>
 
 #ifdef HAVE_RULES
 #define PCRE_STATIC
@@ -53,7 +57,7 @@
 static const char Version[] = CPPCHECK_VERSION_STRING;
 static const char ExtraVersion[] = "";
 
-static TimerResults S_timerResults;
+static TimerResults s_timerResults;
 
 // CWE ids used
 static const CWE CWE398(398U);  // Indicator of Poor Code Quality
@@ -113,6 +117,10 @@ namespace {
                 return "Failed to open " + fileName;
             picojson::value json;
             fin >> json;
+            std::string json_error = picojson::get_last_error();
+            if (!json_error.empty()) {
+                return "Loading " + fileName + " failed. " + json_error;
+            }
             if (!json.is<picojson::object>())
                 return "Loading " + fileName + " failed. Bad json.";
             picojson::object obj = json.get<picojson::object>();
@@ -130,7 +138,26 @@ namespace {
 
 static std::string executeAddon(const AddonInfo &addonInfo, const std::string &dumpFile)
 {
-    const std::string cmd = "python \"" + addonInfo.scriptFile + "\" --cli" + addonInfo.args + " \"" + dumpFile + "\"";
+    // Can python be executed?
+    {
+        const std::string cmd = "python --version 2>&1";
+
+#ifdef _WIN32
+        std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
+#else
+        std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+#endif
+        if (!pipe)
+            throw InternalError(nullptr, "popen failed (command: '" + cmd + "')");
+        char buffer[1024];
+        std::string result;
+        while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr)
+            result += buffer;
+        if (result.compare(0, 7, "Python ", 0, 7) != 0 || result.size() > 50)
+            throw InternalError(nullptr, "Failed to execute '" + cmd + "' (" + result + ")");
+    }
+
+    const std::string cmd = "python \"" + addonInfo.scriptFile + "\" --cli" + addonInfo.args + " \"" + dumpFile + "\" 2>&1";
 
 #ifdef _WIN32
     std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
@@ -138,26 +165,63 @@ static std::string executeAddon(const AddonInfo &addonInfo, const std::string &d
     std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
 #endif
     if (!pipe)
-        return "";
+        throw InternalError(nullptr, "popen failed (command: '" + cmd + "')");
     char buffer[1024];
     std::string result;
     while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr) {
         result += buffer;
     }
+
+    // Validate output..
+    std::istringstream istr(result);
+    std::string line;
+    while (std::getline(istr, line)) {
+        if (line.compare(0,9,"Checking ", 0, 9) != 0 && !line.empty() && line[0] != '{')
+            throw InternalError(nullptr, "Failed to execute '" + cmd + "'. " + result);
+    }
+
+    // Valid results
     return result;
 }
 
 static std::vector<std::string> split(const std::string &str, const std::string &sep)
 {
     std::vector<std::string> ret;
-    for (std::string::size_type defineStartPos = 0U; defineStartPos < str.size();) {
-        const std::string::size_type defineEndPos = str.find(sep, defineStartPos);
-        ret.push_back((defineEndPos == std::string::npos) ? str.substr(defineStartPos) : str.substr(defineStartPos, defineEndPos - defineStartPos));
-        if (defineEndPos == std::string::npos)
+    for (std::string::size_type startPos = 0U; startPos < str.size();) {
+        std::string::size_type endPos;
+        if (str[startPos] == '\"') {
+            endPos = str.find("\"", startPos + 1);
+            if (endPos < str.size())
+                endPos++;
+        } else {
+            endPos = str.find(sep, startPos + 1);
+        }
+        if (endPos == std::string::npos) {
+            ret.push_back(str.substr(startPos));
             break;
-        defineStartPos = defineEndPos + 1U;
+        }
+        ret.push_back(str.substr(startPos, endPos - startPos));
+        startPos = str.find_first_not_of(sep, endPos);
     }
     return ret;
+}
+
+static std::pair<bool,std::string> executeCommand(const std::string &cmd)
+{
+#ifdef _WIN32
+    std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
+#else
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+#endif
+
+    if (!pipe)
+        return std::pair<bool, std::string>(false, "");
+
+    char buffer[1024];
+    std::string result;
+    while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr)
+        result += buffer;
+    return std::pair<bool, std::string>(true, result);
 }
 
 CppCheck::CppCheck(ErrorLogger &errorLogger, bool useGlobalSuppressions)
@@ -171,7 +235,7 @@ CppCheck::~CppCheck()
         delete mFileInfo.back();
         mFileInfo.pop_back();
     }
-    S_timerResults.ShowResults(mSettings.showtime);
+    s_timerResults.showResults(mSettings.showtime);
 }
 
 const char * CppCheck::version()
@@ -186,6 +250,100 @@ const char * CppCheck::extraVersion()
 
 unsigned int CppCheck::check(const std::string &path)
 {
+    if (mSettings.clang) {
+        if (!mSettings.quiet)
+            mErrorLogger.reportOut(std::string("Checking ") + path + "...");
+
+        const std::string clang = Path::isCPP(path) ? "clang++" : "clang";
+        const std::string temp = mSettings.buildDir + (Path::isCPP(path) ? "/__temp__.cpp" : "/__temp__.c");
+        const std::string clangcmd = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "") + ".clang-cmd";
+        const std::string clangStderr = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "") + ".clang-stderr";
+
+        const std::string cmd1 = clang + " -v -fsyntax-only " + temp + " 2>&1";
+        const std::pair<bool, std::string> &result1 = executeCommand(cmd1);
+        if (!result1.first || result1.second.find(" -cc1 ") == std::string::npos) {
+            mErrorLogger.reportOut("Failed to execute '" + cmd1 + "':" + result1.second);
+            return 0;
+        }
+        std::istringstream details(result1.second);
+        std::string line;
+        std::string flags;
+        while (std::getline(details, line)) {
+            if (line.find(" -internal-isystem ") == std::string::npos)
+                continue;
+            const std::vector<std::string> options = split(line, " ");
+            for (int i = 0; i+1 < options.size(); i++) {
+                if (endsWith(options[i], "-isystem", 8))
+                    flags += options[i] + " " + options[i+1] + " ";
+                if (options[i] == "-fcxx-exceptions")
+                    flags += "-fcxx-exceptions ";
+            }
+        }
+
+        for (const std::string &i: mSettings.includePaths)
+            flags += "-I" + i + " ";
+
+        const std::string cmd = clang + " -cc1 -ast-dump " + flags + path + " 2> " + clangStderr;
+        std::ofstream fout(clangcmd);
+        fout << cmd << std::endl;
+        fout.close();
+
+        const std::pair<bool, std::string> &result2 = executeCommand(cmd);
+        if (!result2.first || result2.second.find("TranslationUnitDecl") == std::string::npos) {
+            std::cerr << "Failed to execute '" + cmd + "'" << std::endl;
+            return 0;
+        }
+
+        // Ensure there are not syntax errors...
+        {
+            std::ifstream fin(clangStderr);
+            while (std::getline(fin, line)) {
+                if (line.find(": fatal error:") != std::string::npos) {
+
+                    // file:line:column: error: ....
+                    const std::string::size_type pos3 = line.find(": fatal error:");
+                    const std::string::size_type pos2 = line.rfind(":", pos3 - 1);
+                    const std::string::size_type pos1 = line.rfind(":", pos2 - 1);
+
+                    if (pos1 >= pos2 || pos2 >= pos3)
+                        continue;
+
+                    const std::string filename = line.substr(0, pos1);
+                    const std::string linenr = line.substr(pos1+1, pos2-pos1-1);
+                    const std::string colnr = line.substr(pos2+1, pos3-pos2-1);
+                    const std::string msg = line.substr(pos3 + 15);
+
+                    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+                    ErrorLogger::ErrorMessage::FileLocation loc;
+                    loc.setfile(Path::toNativeSeparators(filename));
+                    loc.line = std::atoi(linenr.c_str());
+                    loc.column = std::atoi(colnr.c_str());
+                    locationList.push_back(loc);
+                    ErrorLogger::ErrorMessage errmsg(locationList,
+                                                     loc.getfile(),
+                                                     Severity::error,
+                                                     msg,
+                                                     "syntaxError",
+                                                     false);
+                    reportErr(errmsg);
+
+                    return 0;
+                }
+            }
+        }
+
+        //std::cout << "Checking Clang ast dump:\n" << result2.second << std::endl;
+        std::istringstream ast(result2.second);
+        Tokenizer tokenizer(&mSettings, this);
+        tokenizer.list.appendFileIfNew(path);
+        clangimport::parseClangAstDump(&tokenizer, ast);
+        ValueFlow::setValues(&tokenizer.list, const_cast<SymbolDatabase *>(tokenizer.getSymbolDatabase()), this, &mSettings);
+        if (mSettings.debugnormal)
+            tokenizer.printDebugOutput(1);
+        checkNormalTokens(tokenizer);
+        return mExitCode;
+    }
+
     std::ifstream fin(path);
     return checkFile(Path::simplifyPath(path), emptyString, fin);
 }
@@ -205,8 +363,11 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
     temp.mSettings.userDefines += fs.cppcheckDefines();
     temp.mSettings.includePaths = fs.includePaths;
     temp.mSettings.userUndefs = fs.undefs;
-    if (fs.platformType != Settings::Unspecified) {
+    if (fs.platformType != Settings::Unspecified)
         temp.mSettings.platform(fs.platformType);
+    if (mSettings.clang) {
+        temp.mSettings.includePaths.insert(temp.mSettings.includePaths.end(), fs.systemIncludePaths.cbegin(), fs.systemIncludePaths.cend());
+        temp.check(Path::simplifyPath(fs.filename));
     }
     std::ifstream fin(fs.filename);
     return temp.checkFile(Path::simplifyPath(fs.filename), fs.cfg, fin);
@@ -221,7 +382,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     if (!Path::acceptFile(filename))
         mSettings.debugwarnings = false;
 
-    if (mSettings.terminated())
+    if (Settings::terminated())
         return mExitCode;
 
     if (!mSettings.quiet) {
@@ -269,6 +430,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
             case simplecpp::Output::SYNTAX_ERROR:
             case simplecpp::Output::UNHANDLED_CHAR_ERROR:
+            case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
                 err = true;
                 break;
             case simplecpp::Output::WARNING:
@@ -276,7 +438,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             case simplecpp::Output::PORTABILITY_BACKSLASH:
                 err = false;
                 break;
-            };
+            }
 
             if (err) {
                 const ErrorLogger::ErrorMessage::FileLocation loc1(output.location.file(), output.location.line, output.location.col);
@@ -293,7 +455,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             }
         }
 
-        preprocessor.loadFiles(tokens1, files);
+        if (!preprocessor.loadFiles(tokens1, files))
+            return mExitCode;
 
         if (!mSettings.plistOutput.empty()) {
             std::string filename2;
@@ -384,8 +547,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         preprocessor.setPlatformInfo(&tokens1);
 
         // Get configurations..
-        if (mSettings.userDefines.empty() || mSettings.force) {
-            Timer t("Preprocessor::getConfigs", mSettings.showtime, &S_timerResults);
+        if ((mSettings.checkAllConfigurations && mSettings.userDefines.empty()) || mSettings.force) {
+            Timer t("Preprocessor::getConfigs", mSettings.showtime, &s_timerResults);
             configurations = preprocessor.getConfigs(tokens1);
         } else {
             configurations.insert(mSettings.userDefines);
@@ -430,7 +593,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         std::list<std::string> configurationError;
         for (const std::string &currCfg : configurations) {
             // bail out if terminated
-            if (mSettings.terminated())
+            if (Settings::terminated())
                 break;
 
             // Check only a few configurations (default 12), after that bail out, unless --force
@@ -451,9 +614,9 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             }
 
             if (mSettings.preprocessOnly) {
-                Timer t("Preprocessor::getcode", mSettings.showtime, &S_timerResults);
+                Timer t("Preprocessor::getcode", mSettings.showtime, &s_timerResults);
                 std::string codeWithoutCfg = preprocessor.getcode(tokens1, mCurrentConfig, files, true);
-                t.Stop();
+                t.stop();
 
                 if (codeWithoutCfg.compare(0,5,"#file") == 0)
                     codeWithoutCfg.insert(0U, "//");
@@ -472,16 +635,16 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
             Tokenizer mTokenizer(&mSettings, this);
             if (mSettings.showtime != SHOWTIME_MODES::SHOWTIME_NONE)
-                mTokenizer.setTimerResults(&S_timerResults);
+                mTokenizer.setTimerResults(&s_timerResults);
 
             try {
                 bool result;
 
                 // Create tokens, skip rest of iteration if failed
-                Timer timer("Tokenizer::createTokens", mSettings.showtime, &S_timerResults);
+                Timer timer("Tokenizer::createTokens", mSettings.showtime, &s_timerResults);
                 const simplecpp::TokenList &tokensP = preprocessor.preprocess(tokens1, mCurrentConfig, files, true);
                 mTokenizer.createTokens(&tokensP);
-                timer.Stop();
+                timer.stop();
                 hasValidConfig = true;
 
                 // If only errors are printed, print filename after the check
@@ -502,9 +665,9 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 checkRawTokens(mTokenizer);
 
                 // Simplify tokens into normal form, skip rest of iteration if failed
-                Timer timer2("Tokenizer::simplifyTokens1", mSettings.showtime, &S_timerResults);
+                Timer timer2("Tokenizer::simplifyTokens1", mSettings.showtime, &s_timerResults);
                 result = mTokenizer.simplifyTokens1(mCurrentConfig);
-                timer2.Stop();
+                timer2.stop();
                 if (!result)
                     continue;
 
@@ -541,13 +704,13 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 // simplify more if required, skip rest of iteration if failed
                 if (mSimplify && hasRule("simple")) {
                     // if further simplification fails then skip rest of iteration
-                    Timer timer3("Tokenizer::simplifyTokenList2", mSettings.showtime, &S_timerResults);
+                    Timer timer3("Tokenizer::simplifyTokenList2", mSettings.showtime, &s_timerResults);
                     result = mTokenizer.simplifyTokenList2();
-                    timer3.Stop();
+                    timer3.stop();
                     if (!result)
                         continue;
 
-                    if (!mSettings.terminated())
+                    if (!Settings::terminated())
                         executeRules("simple", mTokenizer);
                 }
 
@@ -612,6 +775,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 const std::string &failedToGetAddonInfo = addonInfo.getAddonInfo(addon, mSettings.exename);
                 if (!failedToGetAddonInfo.empty()) {
                     reportOut(failedToGetAddonInfo);
+                    mExitCode = 1;
                     continue;
                 }
                 const std::string results = executeAddon(addonInfo, dumpFile);
@@ -650,6 +814,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     reportErr(errmsg);
                 }
             }
+            std::remove(dumpFile.c_str());
         }
 
     } catch (const std::runtime_error &e) {
@@ -713,35 +878,43 @@ void CppCheck::checkRawTokens(const Tokenizer &tokenizer)
 
 void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
 {
-    // call all "runChecks" in all registered Check classes
-    for (Check *check : Check::instances()) {
-        if (mSettings.terminated())
-            return;
+    if (mSettings.bugHunting)
+        ExprEngine::runChecks(this, &tokenizer, &mSettings);
+    else {
+        // call all "runChecks" in all registered Check classes
+        for (Check *check : Check::instances()) {
+            if (Settings::terminated())
+                return;
 
-        if (tokenizer.isMaxTime())
-            return;
+            if (Tokenizer::isMaxTime())
+                return;
 
-        Timer timerRunChecks(check->name() + "::runChecks", mSettings.showtime, &S_timerResults);
-        check->runChecks(&tokenizer, &mSettings, this);
-    }
-
-    // Analyse the tokens..
-
-    CTU::FileInfo *fi1 = CTU::getFileInfo(&tokenizer);
-    if (fi1) {
-        mFileInfo.push_back(fi1);
-        mAnalyzerInformation.setFileInfo("ctu", fi1->toString());
-    }
-
-    for (const Check *check : Check::instances()) {
-        Check::FileInfo *fi = check->getFileInfo(&tokenizer, &mSettings);
-        if (fi != nullptr) {
-            mFileInfo.push_back(fi);
-            mAnalyzerInformation.setFileInfo(check->name(), fi->toString());
+            Timer timerRunChecks(check->name() + "::runChecks", mSettings.showtime, &s_timerResults);
+            check->runChecks(&tokenizer, &mSettings, this);
         }
-    }
 
-    executeRules("normal", tokenizer);
+        if (mSettings.clang)
+            // TODO: Use CTU for Clang analysis
+            return;
+
+        // Analyse the tokens..
+
+        CTU::FileInfo *fi1 = CTU::getFileInfo(&tokenizer);
+        if (fi1) {
+            mFileInfo.push_back(fi1);
+            mAnalyzerInformation.setFileInfo("ctu", fi1->toString());
+        }
+
+        for (const Check *check : Check::instances()) {
+            Check::FileInfo *fi = check->getFileInfo(&tokenizer, &mSettings);
+            if (fi != nullptr) {
+                mFileInfo.push_back(fi);
+                mAnalyzerInformation.setFileInfo(check->name(), fi->toString());
+            }
+        }
+
+        executeRules("normal", tokenizer);
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -1157,6 +1330,11 @@ void CppCheck::reportStatus(unsigned int /*fileindex*/, unsigned int /*filecount
 
 }
 
+void CppCheck::bughuntingReport(const std::string &str)
+{
+    mErrorLogger.bughuntingReport(str);
+}
+
 void CppCheck::getErrorMessages()
 {
     Settings s(mSettings);
@@ -1176,6 +1354,83 @@ void CppCheck::getErrorMessages()
         (*it)->getErrorMessages(this, &s);
 
     Preprocessor::getErrorMessages(this, &s);
+}
+
+void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings)
+{
+    std::string allIncludes = "";
+    std::string allDefines = "-D"+fileSettings.defines;
+    for (const std::string &inc : fileSettings.includePaths) {
+        allIncludes = allIncludes + "-I\"" + inc + "\" ";
+    }
+
+    std::string::size_type pos = 0u;
+    while ((pos = allDefines.find(";", pos)) != std::string::npos) {
+        allDefines.replace(pos, 1, " -D");
+        pos += 3;
+    }
+
+    const std::string cmd = "clang-tidy -quiet -checks=*,-clang-analyzer-*,-llvm* \"" + fileSettings.filename + "\" -- " + allIncludes + allDefines;
+    std::pair<bool, std::string> result = executeCommand(cmd);
+    if (!result.first) {
+        std::cerr << "Failed to execute '" + cmd + "'" << std::endl;
+        return;
+    }
+
+    // parse output and create error messages
+    std::istringstream istr(result.second);
+    std::string line;
+
+    if (!mSettings.buildDir.empty()) {
+        const std::string analyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, fileSettings.filename, "");
+        std::ofstream fcmd(analyzerInfoFile + ".clang-tidy-cmd");
+        fcmd << istr.str();
+    }
+
+    while (std::getline(istr, line)) {
+        if (line.find("error") == std::string::npos && line.find("warning") == std::string::npos)
+            continue;
+
+        std::size_t endColumnPos = line.find(": error:");
+        if (endColumnPos == std::string::npos) {
+            endColumnPos = line.find(": warning:");
+        }
+
+        const std::size_t endLinePos = line.rfind(":", endColumnPos-1);
+        const std::size_t endNamePos = line.rfind(":", endLinePos - 1);
+        const std::size_t endMsgTypePos = line.find(':', endColumnPos + 2);
+        const std::size_t endErrorPos = line.rfind('[', std::string::npos);
+        if (endLinePos==std::string::npos || endNamePos==std::string::npos || endMsgTypePos==std::string::npos || endErrorPos==std::string::npos)
+            continue;
+
+        const std::string lineNumString = line.substr(endNamePos + 1, endLinePos - endNamePos - 1);
+        const std::string columnNumString = line.substr(endLinePos + 1, endColumnPos - endLinePos - 1);
+        const std::string errorTypeString = line.substr(endColumnPos + 1, endMsgTypePos - endColumnPos - 1);
+        const std::string messageString = line.substr(endMsgTypePos + 1, endErrorPos - endMsgTypePos - 1);
+        const std::string errorString = line.substr(endErrorPos, line.length());
+
+        std::string fixedpath = Path::simplifyPath(line.substr(0, endNamePos));
+        const int64_t lineNumber = std::atol(lineNumString.c_str());
+        const int64_t column = std::atol(columnNumString.c_str());
+        fixedpath = Path::toNativeSeparators(fixedpath);
+
+        ErrorLogger::ErrorMessage errmsg;
+        errmsg.callStack.emplace_back(ErrorLogger::ErrorMessage::FileLocation(fixedpath, lineNumber, column));
+
+        errmsg.id = "clang-tidy-" + errorString.substr(1, errorString.length() - 2);
+        if (errmsg.id.find("performance") != std::string::npos)
+            errmsg.severity = Severity::SeverityType::performance;
+        else if (errmsg.id.find("portability") != std::string::npos)
+            errmsg.severity = Severity::SeverityType::portability;
+        else if (errmsg.id.find("cert") != std::string::npos || errmsg.id.find("misc") != std::string::npos || errmsg.id.find("unused") != std::string::npos)
+            errmsg.severity = Severity::SeverityType::warning;
+        else
+            errmsg.severity = Severity::SeverityType::style;
+
+        errmsg.file0 = fixedpath;
+        errmsg.setmsg(messageString);
+        reportErr(errmsg);
+    }
 }
 
 bool CppCheck::analyseWholeProgram()

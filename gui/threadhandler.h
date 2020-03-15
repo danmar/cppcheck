@@ -128,7 +128,7 @@ public:
     *
     * @param files list of files to be checked
     */
-    void setCheckFiles(QStringList files);
+    void setCheckFiles(const QStringList& files);
 
     /**
     * @brief Is checking running?
@@ -188,6 +188,8 @@ signals:
     void log(const QString &msg);
 
     void debugError(const ErrorItem &item);
+
+    void bughuntingReportLine(QString line);
 
 public slots:
 

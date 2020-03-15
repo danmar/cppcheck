@@ -50,6 +50,7 @@ private:
         TEST_CASE(importCompileCommandsArgumentsSection); // Handle arguments section
         TEST_CASE(importCompileCommandsNoCommandSection); // gracefully handles malformed json
         TEST_CASE(importCppcheckGuiProject);
+        TEST_CASE(ignorePaths);
     }
 
     void setDefines() const {
@@ -184,6 +185,24 @@ private:
         ASSERT_EQUALS("cli/", project.guiProject.pathNames[0]);
         ASSERT_EQUALS(1, s.includePaths.size());
         ASSERT_EQUALS("lib/", s.includePaths.front());
+    }
+
+    void ignorePaths() {
+        ImportProject::FileSettings fs1, fs2;
+        fs1.filename = "foo/bar";
+        fs2.filename = "qwe/rty";
+        TestImporter project;
+        project.fileSettings = {fs1, fs2};
+
+        project.ignorePaths({"*foo", "bar*"});
+        ASSERT_EQUALS(2, project.fileSettings.size());
+
+        project.ignorePaths({"foo/*"});
+        ASSERT_EQUALS(1, project.fileSettings.size());
+        ASSERT_EQUALS("qwe/rty", project.fileSettings.front().filename);
+
+        project.ignorePaths({ "*e/r*" });
+        ASSERT_EQUALS(0, project.fileSettings.size());
     }
 };
 

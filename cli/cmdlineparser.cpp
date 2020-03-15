@@ -44,42 +44,42 @@
 #include <tinyxml2.h>
 #endif
 
-static void addFilesToList(const std::string& FileList, std::vector<std::string>& PathNames)
+static void addFilesToList(const std::string& fileList, std::vector<std::string>& pathNames)
 {
     // To keep things initially simple, if the file can't be opened, just be silent and move on.
-    std::istream *Files;
-    std::ifstream Infile;
-    if (FileList == "-") { // read from stdin
-        Files = &std::cin;
+    std::istream *files;
+    std::ifstream infile;
+    if (fileList == "-") { // read from stdin
+        files = &std::cin;
     } else {
-        Infile.open(FileList);
-        Files = &Infile;
+        infile.open(fileList);
+        files = &infile;
     }
-    if (Files && *Files) {
-        std::string FileName;
-        while (std::getline(*Files, FileName)) { // next line
-            if (!FileName.empty()) {
-                PathNames.push_back(FileName);
+    if (files && *files) {
+        std::string fileName;
+        while (std::getline(*files, fileName)) { // next line
+            if (!fileName.empty()) {
+                pathNames.push_back(fileName);
             }
         }
     }
 }
 
-static bool addIncludePathsToList(const std::string& FileList, std::list<std::string>* PathNames)
+static bool addIncludePathsToList(const std::string& fileList, std::list<std::string>* pathNames)
 {
-    std::ifstream Files(FileList);
-    if (Files) {
-        std::string PathName;
-        while (std::getline(Files, PathName)) { // next line
-            if (!PathName.empty()) {
-                PathName = Path::removeQuotationMarks(PathName);
-                PathName = Path::fromNativeSeparators(PathName);
+    std::ifstream files(fileList);
+    if (files) {
+        std::string pathName;
+        while (std::getline(files, pathName)) { // next line
+            if (!pathName.empty()) {
+                pathName = Path::removeQuotationMarks(pathName);
+                pathName = Path::fromNativeSeparators(pathName);
 
                 // If path doesn't end with / or \, add it
-                if (!endsWith(PathName, '/'))
-                    PathName += '/';
+                if (!endsWith(pathName, '/'))
+                    pathName += '/';
 
-                PathNames->push_back(PathName);
+                pathNames->push_back(pathName);
             }
         }
         return true;
@@ -87,10 +87,10 @@ static bool addIncludePathsToList(const std::string& FileList, std::list<std::st
     return false;
 }
 
-static bool addPathsToSet(const std::string& FileName, std::set<std::string>* set)
+static bool addPathsToSet(const std::string& fileName, std::set<std::string>* set)
 {
     std::list<std::string> templist;
-    if (!addIncludePathsToList(FileName, &templist))
+    if (!addIncludePathsToList(fileName, &templist))
         return false;
     set->insert(templist.begin(), templist.end());
     return true;
@@ -133,6 +133,9 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--addon=", 8) == 0)
                 mSettings->addons.emplace_back(argv[i]+8);
 
+            else if (std::strcmp(argv[i], "--clang") == 0)
+                mSettings->clang = true;
+
             else if (std::strncmp(argv[i], "--cppcheck-build-dir=", 21) == 0) {
                 mSettings->buildDir = Path::fromNativeSeparators(argv[i] + 21);
                 if (endsWith(mSettings->buildDir, '/'))
@@ -165,7 +168,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->maxCtuDepth = std::atoi(argv[i] + 16);
 
             else if (std::strcmp(argv[i], "--experimental-fast") == 0)
-                // TODO: Reomve this flag!
+                // TODO: Remove this flag!
                 ;
 
             // (Experimental) exception handling inside cppcheck client
@@ -181,14 +184,29 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--inconclusive") == 0)
                 mSettings->inconclusive = true;
 
-            // Experimental: Safe checking
-            else if (std::strcmp(argv[i], "--safe-classes") == 0)
-                mSettings->safeChecks.classes = true;
+            // A --bug-hunting flag is needed by the tests
+            else if (std::strcmp(argv[i], "--bug-hunting") == 0)
+                mSettings->bugHunting = true;
 
-            // Experimental: Safe checking
-            else if (std::strcmp(argv[i], "--safe-functions") == 0)
-                mSettings->safeChecks.externalFunctions = mSettings->safeChecks.internalFunctions = true;
+            /*
+                        else if (std::strncmp(argv[i], "--check-diff=", 13) == 0) {
+                            std::ifstream fin(argv[i] + 13);
+                            if (!fin.is_open()) {
+                                printMessage("cppcheck: could not open file " + std::string(argv[i] + 13) + ".");
+                                return false;
+                            }
 
+                            mSettings->checkDiff = Settings::loadDiffFile(fin);
+
+                            for (const auto &diff: mSettings->bugHuntingDiff) {
+                                if (!Path::acceptFile(diff.filename))
+                                    continue;
+                                const std::string filename = Path::fromNativeSeparators(diff.filename);
+                                if (std::find(mPathNames.begin(), mPathNames.end(), filename) == mPathNames.end())
+                                    mPathNames.push_back(filename);
+                            }
+                        }
+            */
             // Enforce language (--language=, -x)
             else if (std::strncmp(argv[i], "--language=", 11) == 0 || std::strcmp(argv[i], "-x") == 0) {
                 std::string str;
@@ -345,6 +363,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 // Enable also XML if version is set
                 mSettings->xml = true;
             }
+
+            // use a file filter
+            else if (std::strncmp(argv[i], "--file-filter=", 14) == 0)
+                mSettings->fileFilter = std::string(argv[i] + 14);
 
             // Only print something when there are errors
             else if (std::strcmp(argv[i], "-q") == 0 || std::strcmp(argv[i], "--quiet") == 0)
@@ -541,6 +563,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // --project
             else if (std::strncmp(argv[i], "--project=", 10) == 0) {
+                mSettings->checkAllConfigurations = false; // Can be overridden with --max-configs or --force
                 const std::string projectFile = argv[i]+10;
                 ImportProject::Type projType = mSettings->project.import(projectFile, mSettings);
                 if (projType == ImportProject::Type::CPPCHECK_GUI) {
@@ -732,9 +755,9 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--doc") == 0) {
                 std::ostringstream doc;
                 // Get documentation..
-                for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
-                    const std::string& name((*it)->name());
-                    const std::string info((*it)->classInfo());
+                for (const Check * it : Check::instances()) {
+                    const std::string& name(it->name());
+                    const std::string info(it->classInfo());
                     if (!name.empty() && !info.empty())
                         doc << "## " << name << " ##\n"
                             << info << "\n";
@@ -884,6 +907,14 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
         }
     }
 
+    if (mSettings->clang) {
+        if (mSettings->buildDir.empty()) {
+            printMessage("If --clang is used then --cppcheck-build-dir must be specified also");
+            return false;
+        }
+    }
+
+
     // Default template format..
     if (mSettings->templateFormat.empty()) {
         mSettings->templateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]\\n{code}";
@@ -892,6 +923,9 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
     }
 
     mSettings->project.ignorePaths(mIgnoredPaths);
+
+    if (mSettings->force || maxconfigs)
+        mSettings->checkAllConfigurations = true;
 
     if (mSettings->force)
         mSettings->maxConfigs = ~0U;
@@ -1001,6 +1035,9 @@ void CmdLineParser::printHelp()
               "    --exitcode-suppressions=<file>\n"
               "                         Used when certain messages should be displayed but\n"
               "                         should not cause a non-zero exitcode.\n"
+              "    --file-filter=<str>  Analyze only those files matching the given filter str\n"
+              "                         Example: --file-filter=*bar.cpp analyzes only files\n"
+              "                                  that end with bar.cpp.\n"
               "    --file-list=<file>   Specify the files to check in a text file. Add one\n"
               "                         filename per line. When file is '-,' the file list will\n"
               "                         be read from standard input.\n"
@@ -1131,6 +1168,10 @@ void CmdLineParser::printHelp()
               "    --suppressions-list=<file>\n"
               "                         Suppress warnings listed in the file. Each suppression\n"
               "                         is in the same format as <spec> above.\n"
+              "    --suppress-xml=<file>\n"
+              "                         Suppress warnings listed in a xml file. XML file should\n"
+              "                         follow the manual.pdf format specified in section.\n"
+              "                         `6.4 XML suppressions` .\n"
               "    --template='<text>'  Format the error messages. Available fields:\n"
               "                           {file}              file name\n"
               "                           {line}              line number\n"
@@ -1151,8 +1192,8 @@ void CmdLineParser::printHelp()
               "                         '{file}:{line},{severity},{id},{message}' or\n"
               "                         '{file}({line}):({severity}) {message}' or\n"
               "                         '{callstack} {message}'\n"
-              "                         Pre-defined templates: gcc, vs, edit, cppcheck1\n"
-              "                         The default format is 'gcc'.\n"
+              "                         Pre-defined templates: gcc (default), cppcheck1 (old default), vs, edit.\n"
+              // Note: template daca2 also exists, but is for internal use (cppcheck scripts).
               "    --template-location='<text>'\n"
               "                         Format error message location. If this is not provided\n"
               "                         then no extra location info is shown.\n"
@@ -1182,7 +1223,7 @@ void CmdLineParser::printHelp()
               "  cppcheck --quiet ../myproject/\n"
               "\n"
               "  # Check test.cpp, enable all checks:\n"
-              "  cppcheck --enable=all --inconclusive --std=posix test.cpp\n"
+              "  cppcheck --enable=all --inconclusive --library=posix test.cpp\n"
               "\n"
               "  # Check f.cpp and search include files from inc1/ and inc2/:\n"
               "  cppcheck -I inc1/ -I inc2/ f.cpp\n"

@@ -45,6 +45,11 @@ static bool isHex(const std::string &s)
     return s.size()>2 && (s.compare(0,2,"0x")==0 || s.compare(0,2,"0X")==0);
 }
 
+static bool isOct(const std::string &s)
+{
+    return s.size()>1 && (s[0]=='0') && (s[1] >= '0') && (s[1] < '8');
+}
+
 
 static const simplecpp::TokenString DEFINE("define");
 static const simplecpp::TokenString UNDEF("undef");
@@ -76,9 +81,12 @@ static long long stringToLL(const std::string &s)
 {
     long long ret;
     const bool hex = isHex(s);
-    std::istringstream istr(hex ? s.substr(2) : s);
+    const bool oct = isOct(s);
+    std::istringstream istr(hex ? s.substr(2) : oct ? s.substr(1) : s);
     if (hex)
         istr >> std::hex;
+    else if (oct)
+        istr >> std::oct;
     istr >> ret;
     return ret;
 }
@@ -87,9 +95,12 @@ static unsigned long long stringToULL(const std::string &s)
 {
     unsigned long long ret;
     const bool hex = isHex(s);
-    std::istringstream istr(hex ? s.substr(2) : s);
+    const bool oct = isOct(s);
+    std::istringstream istr(hex ? s.substr(2) : oct ? s.substr(1) : s);
     if (hex)
         istr >> std::hex;
+    else if (oct)
+        istr >> std::oct;
     istr >> ret;
     return ret;
 }
@@ -126,6 +137,12 @@ static bool isAlternativeUnaryOp(const simplecpp::Token *tok, const std::string 
             (tok->next && (tok->next->name || tok->next->number)));
 }
 
+static std::string replaceAll(std::string s, const std::string& from, const std::string& to)
+{
+    for (size_t pos = s.find(from); pos != std::string::npos; pos = s.find(from, pos + to.size()))
+        s.replace(pos, from.size(), to);
+    return s;
+}
 
 const std::string simplecpp::Location::emptyFileName;
 
@@ -487,7 +504,7 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
                 } else if (lastline == "# line %num%") {
                     lineDirective(location.fileIndex, std::atol(cback()->str().c_str()), &location);
                 } else if (lastline == "# %num% %str%" || lastline == "# line %num% %str%") {
-                    lineDirective(fileIndex(cback()->str().substr(1U, cback()->str().size() - 2U)),
+                    lineDirective(fileIndex(replaceAll(cback()->str().substr(1U, cback()->str().size() - 2U),"\\\\","\\")),
                                   std::atol(cback()->previous->str().c_str()), &location);
                 }
                 // #endfile
@@ -757,7 +774,7 @@ void simplecpp::TokenList::combineOperators()
             if (tok->previous && tok->previous->number) {
                 tok->setstr(tok->previous->str() + '.');
                 deleteToken(tok->previous);
-                if (isFloatSuffix(tok->next) || (tok->next && tok->next->startsWithOneOf("Ee"))) {
+                if (isFloatSuffix(tok->next) || (tok->next && tok->next->startsWithOneOf("AaBbCcDdEeFfPp"))) {
                     tok->setstr(tok->str() + tok->next->str());
                     deleteToken(tok->next);
                 }
@@ -769,7 +786,10 @@ void simplecpp::TokenList::combineOperators()
         }
         // match: [0-9.]+E [+-] [0-9]+
         const char lastChar = tok->str()[tok->str().size() - 1];
-        if (tok->number && !isHex(tok->str()) && (lastChar == 'E' || lastChar == 'e') && tok->next && tok->next->isOneOf("+-") && tok->next->next && tok->next->next->number) {
+        if (tok->number && !isOct(tok->str()) &&
+            ((!isHex(tok->str()) && (lastChar == 'E' || lastChar == 'e')) ||
+             (isHex(tok->str()) && (lastChar == 'P' || lastChar == 'p'))) &&
+            tok->next && tok->next->isOneOf("+-") && tok->next->next && tok->next->next->number) {
             tok->setstr(tok->str() + tok->next->op + tok->next->next->str());
             deleteToken(tok->next);
             deleteToken(tok->next);
@@ -830,7 +850,7 @@ void simplecpp::TokenList::combineOperators()
         } else if ((tok->op == '<' || tok->op == '>') && tok->op == tok->next->op) {
             tok->setstr(tok->str() + tok->next->str());
             deleteToken(tok->next);
-            if (tok->next && tok->next->op == '=') {
+            if (tok->next && tok->next->op == '=' && tok->next->next && tok->next->next->op != '=') {
                 tok->setstr(tok->str() + tok->next->str());
                 deleteToken(tok->next);
             }
@@ -1122,12 +1142,20 @@ std::string simplecpp::TokenList::readUntil(std::istream &istr, const Location &
         backslash = false;
         ret += ch;
         if (ch == '\\') {
-            const char next = readChar(istr, bom);
-            if (next == '\r' || next == '\n') {
-                ret.erase(ret.size()-1U);
-                backslash = (next == '\r');
-            }
-            ret += next;
+            bool update_ch = false;
+            char next = 0;
+            do {
+                next = readChar(istr, bom);
+                if (next == '\r' || next == '\n') {
+                    ret.erase(ret.size()-1U);
+                    backslash = (next == '\r');
+                    update_ch = false;
+                } else if (next == '\\')
+                    update_ch = !update_ch;
+                ret += next;
+            } while (next == '\\');
+            if (update_ch)
+                ch = next;
         }
     }
 
@@ -2404,8 +2432,16 @@ std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::To
             continue;
 
         std::ifstream fin(filename.c_str());
-        if (!fin.is_open())
+        if (!fin.is_open()) {
+            if (outputList) {
+                simplecpp::Output err(fileNumbers);
+                err.type = simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND;
+                err.location = Location(fileNumbers);
+                err.msg = "Can not open include file '" + filename + "' that is explicitly included.";
+                outputList->push_back(err);
+            }
             continue;
+        }
 
         TokenList *tokenlist = new TokenList(fin, fileNumbers, filename, outputList);
         if (!tokenlist->front()) {

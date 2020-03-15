@@ -101,6 +101,7 @@ public:
 
     const Token * typeStart;
     const Token * typeEnd;
+    MathLib::bigint sizeOf;
 
     Type(const Token* classDef_ = nullptr, const Scope* classScope_ = nullptr, const Scope* enclosingScope_ = nullptr) :
         classDef(classDef_),
@@ -108,7 +109,8 @@ public:
         enclosingScope(enclosingScope_),
         needInitialization(NeedInitialization::Unknown),
         typeStart(nullptr),
-        typeEnd(nullptr) {
+        typeEnd(nullptr),
+        sizeOf(0) {
         if (classDef_ && classDef_->str() == "enum")
             needInitialization = NeedInitialization::True;
         else if (classDef_ && classDef_->str() == "using") {
@@ -234,6 +236,10 @@ public:
           mValueType(nullptr) {
         evaluate(settings);
     }
+
+    Variable(const Token *name_, const std::string &clangType, const Token *start,
+             nonneg int index_, AccessControl access_, const Type *type_,
+             const Scope *scope_);
 
     ~Variable();
 
@@ -477,6 +483,12 @@ public:
     }
 
     /**
+     * Is variable unsigned.
+     * @return true only if variable _is_ unsigned. if the sign is unknown, false is returned.
+     */
+    bool isUnsigned() const;
+
+    /**
      * Does variable have a default value.
      * @return true if has a default falue, false if not
      */
@@ -616,6 +628,8 @@ public:
         return mAccess;
     }
 
+    std::string getTypeName() const;
+
 private:
     // only symbol database can change the type
     friend class SymbolDatabase;
@@ -662,6 +676,9 @@ private:
 };
 
 class CPPCHECKLIB Function {
+    // only symbol database can change this
+    friend class SymbolDatabase;
+
     /** @brief flags mask used to access specific bit. */
     enum {
         fHasBody               = (1 << 0),  ///< @brief has implementation
@@ -711,6 +728,7 @@ public:
     enum Type { eConstructor, eCopyConstructor, eMoveConstructor, eOperatorEqual, eDestructor, eFunction, eLambda };
 
     Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *scope, const Token *tokDef, const Token *tokArgDef);
+    explicit Function(const Token *tokenDef);
 
     const std::string &name() const {
         return tokenDef->str();
@@ -865,11 +883,11 @@ public:
 
     static bool argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, nonneg int path_length);
 
-    static bool returnsReference(const Function *function);
+    static bool returnsReference(const Function* function, bool unknown = false);
 
     const Token* returnDefEnd() const {
         if (this->hasTrailingReturnType()) {
-            return Token::findsimplematch(retDef, "{");
+            return Token::findmatch(retDef, "{|;");
         } else {
             return tokenDef;
         }
@@ -989,9 +1007,9 @@ public:
     std::vector<Enumerator> enumeratorList;
 
     const Enumerator * findEnumerator(const std::string & name) const {
-        for (int i = 0, end = enumeratorList.size(); i < end; ++i) {
-            if (enumeratorList[i].name->str() == name)
-                return &enumeratorList[i];
+        for (const Enumerator & i : enumeratorList) {
+            if (i.name->str() == name)
+                return &i;
         }
         return nullptr;
     }
@@ -1063,11 +1081,7 @@ public:
 
     void addVariable(const Token *token_, const Token *start_,
                      const Token *end_, AccessControl access_, const Type *type_,
-                     const Scope *scope_, const Settings* settings) {
-        varlist.emplace_back(token_, start_, end_, varlist.size(),
-                             access_,
-                             type_, scope_, settings);
-    }
+                     const Scope *scope_, const Settings* settings);
 
     /** @brief initialize varlist */
     void getVariableList(const Settings* settings);
@@ -1128,17 +1142,60 @@ public:
     nonneg int constness;               ///< bit 0=data, bit 1=*, bit 2=**
     const Scope *typeScope;               ///< if the type definition is seen this point out the type scope
     const ::Type *smartPointerType;       ///< Smart pointer type
+    const Token* smartPointerTypeToken;   ///< Smart pointer type token
     const Library::Container *container;  ///< If the type is a container defined in a cfg file, this is the used container
     const Token *containerTypeToken;      ///< The container type token. the template argument token that defines the container element type.
     std::string originalTypeName;         ///< original type name as written in the source code. eg. this might be "uint8_t" when type is CHAR.
 
-    ValueType() : sign(UNKNOWN_SIGN), type(UNKNOWN_TYPE), bits(0), pointer(0U), constness(0U), typeScope(nullptr), smartPointerType(nullptr), container(nullptr), containerTypeToken(nullptr) {}
-    ValueType(const ValueType &vt) : sign(vt.sign), type(vt.type), bits(vt.bits), pointer(vt.pointer), constness(vt.constness), typeScope(vt.typeScope), smartPointerType(vt.smartPointerType), container(vt.container), containerTypeToken(vt.containerTypeToken), originalTypeName(vt.originalTypeName) {}
-    ValueType(enum Sign s, enum Type t, nonneg int p) : sign(s), type(t), bits(0), pointer(p), constness(0U), typeScope(nullptr), smartPointerType(nullptr), container(nullptr), containerTypeToken(nullptr) {}
-    ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c) : sign(s), type(t), bits(0), pointer(p), constness(c), typeScope(nullptr), smartPointerType(nullptr), container(nullptr), containerTypeToken(nullptr) {}
-    ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c, const std::string &otn) : sign(s), type(t), bits(0), pointer(p), constness(c), typeScope(nullptr), smartPointerType(nullptr), container(nullptr), containerTypeToken(nullptr), originalTypeName(otn) {}
-    ValueType &operator=(const ValueType &other) = delete;
-
+    ValueType()
+        : sign(UNKNOWN_SIGN),
+          type(UNKNOWN_TYPE),
+          bits(0),
+          pointer(0U),
+          constness(0U),
+          typeScope(nullptr),
+          smartPointerType(nullptr),
+          smartPointerTypeToken(nullptr),
+          container(nullptr),
+          containerTypeToken(nullptr)
+    {}
+    ValueType(enum Sign s, enum Type t, nonneg int p)
+        : sign(s),
+          type(t),
+          bits(0),
+          pointer(p),
+          constness(0U),
+          typeScope(nullptr),
+          smartPointerType(nullptr),
+          smartPointerTypeToken(nullptr),
+          container(nullptr),
+          containerTypeToken(nullptr)
+    {}
+    ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c)
+        : sign(s),
+          type(t),
+          bits(0),
+          pointer(p),
+          constness(c),
+          typeScope(nullptr),
+          smartPointerType(nullptr),
+          smartPointerTypeToken(nullptr),
+          container(nullptr),
+          containerTypeToken(nullptr)
+    {}
+    ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c, const std::string& otn)
+        : sign(s),
+          type(t),
+          bits(0),
+          pointer(p),
+          constness(c),
+          typeScope(nullptr),
+          smartPointerType(nullptr),
+          smartPointerTypeToken(nullptr),
+          container(nullptr),
+          containerTypeToken(nullptr),
+          originalTypeName(otn)
+    {}
     static ValueType parseDecl(const Token *type, const Settings *settings);
 
     static Type typeFromString(const std::string &typestr, bool longType);
@@ -1161,7 +1218,7 @@ public:
         return typeScope && typeScope->type == Scope::eEnum;
     }
 
-    MathLib::bigint typeSize(const cppcheck::Platform &platform) const;
+    MathLib::bigint typeSize(const cppcheck::Platform &platform, bool p=false) const;
 
     std::string str() const;
     std::string dump() const;
@@ -1256,6 +1313,8 @@ public:
     /** Set array dimensions when valueflow analysis is completed */
     void setArrayDimensionsUsingValueFlow();
 
+    void clangSetVariables(const std::vector<const Variable *> &variableList);
+
 private:
     friend class Scope;
     friend class Function;
@@ -1274,6 +1333,7 @@ private:
     void createSymbolDatabaseSetFunctionPointers(bool firstPass);
     void createSymbolDatabaseSetVariablePointers();
     void createSymbolDatabaseSetTypePointers();
+    void createSymbolDatabaseSetSmartPointerType();
     void createSymbolDatabaseEnums();
     void createSymbolDatabaseEscapeFunctions();
     void createSymbolDatabaseIncompleteVars();

@@ -10,8 +10,9 @@ import operator
 
 from collections import Counter
 from pygments import highlight
-from pygments.lexers import guess_lexer_for_filename
-from pygments.formatters import HtmlFormatter
+from pygments.lexers import guess_lexer, guess_lexer_for_filename
+from pygments.formatters import HtmlFormatter  # pylint: disable=no-name-in-module
+from pygments.util import ClassNotFound
 from xml.sax import parse as xml_parse
 from xml.sax import SAXParseException as XmlParseException
 from xml.sax.handler import ContentHandler as XmlContentHandler
@@ -23,7 +24,9 @@ with syntax highlighted source code.
 
 STYLE_FILE = """
 body {
-    font: 13px Arial, Verdana, Sans-Serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
     margin: 0;
     width: auto;
 }
@@ -32,8 +35,70 @@ h1 {
     margin: 10px;
 }
 
-#footer > p {
+.header {
+    border-bottom: thin solid #aaa;
+}
+
+.footer {
+    border-top: thin solid #aaa;
+    font-size: 90%;
+    margin-top: 5px;
+}
+
+.footer ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.footer > p {
     margin: 4px;
+}
+
+.wrapper {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+}
+
+#menu,
+#menu_index {
+    text-align: left;
+    width: 350px;
+    height: 90vh;
+    min-height: 200px;
+    overflow: auto;
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    padding: 0 15px 15px 15px;
+}
+
+#menu > a {
+    display: block;
+    margin-left: 10px;
+    font-size: 12px;
+    z-index: 1;
+}
+
+#content,
+#content_index {
+    background-color: #fff;
+    -webkit-box-sizing: content-box;
+    -moz-box-sizing: content-box;
+    box-sizing: content-box;
+    padding: 0 15px 15px 15px;
+    width: calc(100% - 350px);
+    height: 100%;
+    overflow-x: auto;
+}
+
+#filename {
+    margin-left: 10px;
+    font-size: 12px;
+    z-index: 1;
 }
 
 .error {
@@ -42,37 +107,35 @@ h1 {
 
 .error2 {
     background-color: #faa;
-    border: 1px dotted black;
     display: inline-block;
     margin-left: 4px;
 }
 
 .inconclusive {
-    background-color: #B6B6B4;
+    background-color: #b6b6b4;
 }
 
 .inconclusive2 {
-    background-color: #B6B6B4;
-    border: 1px dotted black;
+    background-color: #b6b6b4;
     display: inline-block;
     margin-left: 4px;
 }
 
-div.verbose {
+.verbose {
     display: inline-block;
     vertical-align: top;
     cursor: help;
 }
 
-div.verbose div.content {
+.verbose .content {
     display: none;
     position: absolute;
     padding: 10px;
     margin: 4px;
     max-width: 40%;
     white-space: pre-wrap;
-    border: 1px solid black;
-    background-color: #FFFFCC;
+    border: 1px solid #000;
+    background-color: #ffffcc;
     cursor: auto;
 }
 
@@ -80,100 +143,26 @@ div.verbose div.content {
     padding: 1px;
 }
 
-#header {
-    border-bottom: thin solid #aaa;
-}
-
-#menu {
-    float: left;
-    margin-top: 5px;
-    text-align: left;
-    width: 150px;
-    height: 75%;
-    position: fixed;
-    overflow: auto;
-    z-index: 1;
-}
-
-#menu_index {
-    float: left;
-    margin-top: 5px;
-    padding-left: 5px;
-    text-align: left;
-    width: 300px;
-    height: 75%;
-    position: fixed;
-    overflow: auto;
-    z-index: 1;
-}
-
-#menu > a {
-    display: block;
-    margin-left: 10px;
-    font: 12px;
-    z-index: 1;
-}
-
-#filename  {
-    margin-left: 10px;
-    font: 12px;
-    z-index: 1;
-}
-
 .highlighttable {
-    background-color:white;
+    background-color: #fff;
     z-index: 10;
     position: relative;
-    margin: -10 px;
-}
-
-#content {
-    background-color: white;
-    -webkit-box-sizing: content-box;
-    -moz-box-sizing: content-box;
-    box-sizing: content-box;
-    float: left;
-    margin: 5px;
-    margin-left: 10px;
-    padding: 0 10px 10px 10px;
-    width: 80%;
-    padding-left: 150px;
-}
-
-#content_index {
-    background-color: white;
-    -webkit-box-sizing: content-box;
-    -moz-box-sizing: content-box;
-    box-sizing: content-box;
-    float: left;
-    margin: 5px;
-    margin-left: 10px;
-    padding: 0 10px 10px 10px;
-    width: 80%;
-    padding-left: 300px;
+    margin: -10px;
 }
 
 .linenos {
     border-right: thin solid #aaa;
-    color: lightgray;
+    color: #d3d3d3;
     padding-right: 6px;
 }
 
-#footer {
-    border-top: thin solid #aaa;
-    clear: both;
-    font-size: 90%;
-    margin-top: 5px;
-}
-
-#footer ul {
-    list-style-type: none;
-    padding-left: 0;
+.d-none {
+    display: none;
 }
 """
 
 HTML_HEAD = """
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -182,93 +171,109 @@ HTML_HEAD = """
     <style>
 %s
     </style>
-    <script language="javascript">
-      function getStyle(el,styleProp) {
-        if (el.currentStyle)
-          var y = el.currentStyle[styleProp];
-        else if (window.getComputedStyle)
-          var y = document.defaultView.getComputedStyle(el,null).getPropertyValue(styleProp);
+    <script>
+      function getStyle(el, styleProp) {
+        var y;
+
+        if (el.currentStyle) {
+          y = el.currentStyle[styleProp];
+        } else if (window.getComputedStyle) {
+          y = document.defaultView.getComputedStyle(el, null).getPropertyValue(styleProp);
+        }
+
         return y;
       }
+
       function toggle() {
         var el = this.expandable_content;
         var mark = this.expandable_marker;
-        if (el.style.display == "block") {
+
+        if (el.style.display === "block") {
           el.style.display = "none";
-          mark.innerHTML = "[+]";
+          mark.textContent = "[+]";
         } else {
           el.style.display = "block";
-          mark.innerHTML = "[-]";
+          mark.textContent = "[-]";
         }
       }
-      function init_expandables() {
-        var elts = document.getElementsByClassName("expandable");
-        for (var i = 0; i < elts.length; i++) {
-          var el = elts[i];
-          var clickable = el.getElementsByTagName("span")[0];
-          var marker = clickable.getElementsByClassName("marker")[0];
-          var content = el.getElementsByClassName("content")[0];
+
+      function initExpandables() {
+        var elements = document.querySelectorAll(".expandable");
+
+        for (var i = 0, len = elements.length; i < len; i++) {
+          var el = elements[i];
+          var clickable = el.querySelector("span");
+          var marker = clickable.querySelector(".marker");
+          var content = el.querySelector(".content");
           var width = clickable.clientWidth - parseInt(getStyle(content, "padding-left")) - parseInt(getStyle(content, "padding-right"));
           content.style.width = width + "px";
           clickable.expandable_content = content;
           clickable.expandable_marker = marker;
-          clickable.onclick = toggle;
+          clickable.addEventListener("click", toggle);
         }
-      }
-      function set_class_display(c, st) {
-        var elements = document.querySelectorAll('.' + c),
-            len = elements.length;
-        for (i = 0; i < len; i++) {
-            elements[i].style.display = st;
-        }
-      }
-      function toggle_class_visibility(id) {
-        var box = document.getElementById(id);
-        set_class_display(id, box.checked ? '' : 'none');
-      }
-      function toggle_all(){
-        var elts = document.getElementsByTagName("input");
-        for (var i = 1; i < elts.length; i++) {           
-          var el = elts[i];
-          el.checked ? el.checked=false : el.checked=true;
-          toggle_class_visibility(el.id);        
-        }            
       }
 
+      function toggleDisplay(id) {
+        var elements = document.querySelectorAll("." + id);
+
+        for (var i = 0, len = elements.length; i < len; i++) {
+          elements[i].classList.toggle("d-none");
+        }
+      }
+
+      function toggleAll() {
+        var elements = document.querySelectorAll("input");
+
+        // starting from 1 since 0 is the "toggle all" input
+        for (var i = 1, len = elements.length; i < len; i++) {
+          var el = elements[i];
+
+          if (el.checked) {
+            el.checked = false;
+          } else {
+            el.checked = true;
+          }
+
+          toggleDisplay(el.id);
+        }
+      }
+      window.addEventListener("load", initExpandables);
     </script>
   </head>
-  <body onload="init_expandables()">
-      <div id="header">
-        <h1>Cppcheck report - %s: %s </h1>
-      </div>
-      <div id="menu" dir="rtl">
+  <body>
+    <div id="header" class="header">
+      <h1>Cppcheck report - %s: %s</h1>
+    </div>
+    <div class="wrapper">
+      <div id="menu">
        <p id="filename"><a href="index.html">Defects:</a> %s</p>
 """
 
 HTML_HEAD_END = """
-      </div>
-      <div id="content">
+    </div>
+    <div id="content">
 """
 
 HTML_FOOTER = """
-      </div>
-      <div id="footer">
-        <p>
-         Cppcheck %s - a tool for static C/C++ code analysis</br>
-         </br>
-         Internet: <a href="http://cppcheck.net">http://cppcheck.net</a></br>
-         IRC: <a href="irc://irc.freenode.net/cppcheck">irc://irc.freenode.net/cppcheck</a></br>
-        <p>
-      </div>
+      </div> <!-- /.wrapper -->
+    </div>
+    <div id="footer" class="footer">
+      <p>
+        Cppcheck %s - a tool for static C/C++ code analysis<br>
+        <br>
+        Internet: <a href="http://cppcheck.net">http://cppcheck.net</a><br>
+        IRC: <a href="irc://irc.freenode.net/cppcheck">irc://irc.freenode.net/cppcheck</a><br>
+      </p>
+    </div>
   </body>
 </html>
 """
 
-HTML_ERROR = "<span class='error2'>&lt;--- %s</span>\n"
-HTML_INCONCLUSIVE = "<span class='inconclusive2'>&lt;--- %s</span>\n"
+HTML_ERROR = "<span class=\"error2\">&lt;--- %s</span>\n"
+HTML_INCONCLUSIVE = "<span class=\"inconclusive2\">&lt;--- %s</span>\n"
 
-HTML_EXPANDABLE_ERROR = "<div class='verbose expandable'><span class='error2'>&lt;--- %s <span class='marker'>[+]</span></span><div class='content'>%s</div></div>\n"""
-HTML_EXPANDABLE_INCONCLUSIVE = "<div class='verbose expandable'><span class='inconclusive2'>&lt;--- %s <span class='marker'>[+]</span></span><div class='content'>%s</div></div>\n"""
+HTML_EXPANDABLE_ERROR = "<div class=\"verbose expandable\"><span class=\"error2\">&lt;--- %s <span class=\"marker\">[+]</span></span><div class=\"content\">%s</div></div>\n"""
+HTML_EXPANDABLE_INCONCLUSIVE = "<div class=\"verbose expandable\"><span class=\"inconclusive2\">&lt;--- %s <span class=\"marker\">[+]</span></span><div class=\"content\">%s</div></div>\n"""
 
 # escape() and unescape() takes care of &, < and >.
 html_escape_table = {
@@ -518,16 +523,19 @@ if __name__ == '__main__':
                                filename.split('/')[-1]))
 
             for error in sorted(errors, key=lambda k: k['line']):
-                output_file.write("<a href='%s#line-%d'> %s %s</a>" % (data['htmlfile'], error['line'], error['id'],   error['line']))
+                output_file.write("<a href=\"%s#line-%d\"> %s %s</a>" % (data['htmlfile'], error['line'], error['id'],   error['line']))
 
             output_file.write(HTML_HEAD_END)
             try:
-                lexer = guess_lexer_for_filename(source_filename, '')
-            except:
-                sys.stderr.write("ERROR: Couldn't determine lexer for the file' " + source_filename + " '. Won't be able to syntax highlight this file.")
-                output_file.write("\n <tr><td colspan='5'> Could not generated content because pygments failed to retrieve the determine code type.</td></tr>")
-                output_file.write("\n <tr><td colspan='5'> Sorry about this.</td></tr>")
-                continue
+                lexer = guess_lexer_for_filename(source_filename, '', stripnl=False)
+            except ClassNotFound:
+                try:
+                    lexer = guess_lexer(content, stripnl=False)
+                except ClassNotFound:
+                    sys.stderr.write("ERROR: Couldn't determine lexer for the file' " + source_filename + " '. Won't be able to syntax highlight this file.")
+                    output_file.write("\n <tr><td colspan=\"5\"> Could not generate content because pygments failed to determine the code type.</td></tr>")
+                    output_file.write("\n <tr><td colspan=\"5\"> Sorry about this.</td></tr>")
+                    continue
 
             if options.source_encoding:
                 lexer.encoding = options.source_encoding
@@ -569,36 +577,35 @@ if __name__ == '__main__':
         except IndexError:
             cnt_min = 0
 
-        stat_fmt = "            <tr><td><input type='checkbox' onclick='toggle_class_visibility(this.id)' id='{}' name='{}' checked></td><td>{}</td><td>{}</td></tr>"
+        stat_fmt = "\n            <tr><td><input type=\"checkbox\" onclick=\"toggleDisplay(this.id)\" id=\"{}\" name=\"{}\" checked></td><td>{}</td><td>{}</td></tr>"
         for occurrences in reversed(range(cnt_min, cnt_max + 1)):
             for _id in [k for k, v in sorted(counter.items()) if v == occurrences]:
                 stat_html.append(stat_fmt.format(_id, _id, dict(counter.most_common())[_id], _id))
 
-        output_file.write(HTML_HEAD.replace('id="menu" dir="rtl"', 'id="menu_index"', 1).replace("Defects:", "Defect summary;", 1) % (options.title, '', options.title, '', ''))
-        output_file.write('       <table>')
-        output_file.write('           <tr><th>Show</th><th>#</th><th>Defect ID</th></tr>')
-        output_file.write('<label><input type="checkbox" onclick="toggle_all()" checked/> Toggle all</label>')
+        output_file.write(HTML_HEAD.replace('id="menu"', 'id="menu_index"', 1).replace("Defects:", "Defect summary;", 1) % (options.title, '', options.title, '', ''))
+        output_file.write('\n       <label><input type="checkbox" onclick="toggleAll()" checked> Toggle all</label>')
+        output_file.write('\n       <table>')
+        output_file.write('\n           <tr><th>Show</th><th>#</th><th>Defect ID</th></tr>')
         output_file.write(''.join(stat_html))
-        output_file.write('           <tr><td></td><td>' + str(stats_count) + '</td><td>total</td></tr>')
-        output_file.write('       </table>')
-        output_file.write('       <a href="stats.html">Statistics</a></p>')
+        output_file.write('\n           <tr><td></td><td>' + str(stats_count) + '</td><td>total</td></tr>')
+        output_file.write('\n       </table>')
+        output_file.write('\n       <p><a href="stats.html">Statistics</a></p>')
         output_file.write(HTML_HEAD_END.replace("content", "content_index", 1))
-        output_file.write('       <table>\n')
 
-        output_file.write(
-            '       <tr><th>Line</th><th>Id</th><th>CWE</th><th>Severity</th><th>Message</th></tr>')
+        output_file.write('\n       <table>')
+        output_file.write('\n       <tr><th>Line</th><th>Id</th><th>CWE</th><th>Severity</th><th>Message</th></tr>')
         for filename, data in sorted(files.items()):
             if filename in decode_errors:  # don't print a link but a note
-                output_file.write("\n       <tr><td colspan='5'>%s</td></tr>" % (filename))
-                output_file.write("\n       <tr><td colspan='5'> Could not generated due to UnicodeDecodeError</td></tr>")
+                output_file.write("\n       <tr><td colspan=\"5\">%s</td></tr>" % (filename))
+                output_file.write("\n       <tr><td colspan=\"5\"> Could not generated due to UnicodeDecodeError</td></tr>")
             else:
                 if filename.endswith('*'):  # assume unmatched suppression
                     output_file.write(
-                        "\n       <tr><td colspan='5'>%s</td></tr>" %
+                        "\n       <tr><td colspan=\"5\">%s</td></tr>" %
                         (filename))
                 else:
                     output_file.write(
-                        "\n       <tr><td colspan='5'><a href='%s'>%s</a></td></tr>" %
+                        "\n       <tr><td colspan=\"5\"><a href=\"%s\">%s</a></td></tr>" %
                         (data['htmlfile'], filename))
 
                 for error in sorted(data['errors'], key=lambda k: k['line']):
@@ -612,7 +619,7 @@ if __name__ == '__main__':
 
                     try:
                         if error['cwe']:
-                            cwe_url = "<a href='https://cwe.mitre.org/data/definitions/" + error['cwe'] + ".html'>" + error['cwe'] + "</a>"
+                            cwe_url = "<a href=\"https://cwe.mitre.org/data/definitions/" + error['cwe'] + ".html\">" + error['cwe'] + "</a>"
                     except KeyError:
                         cwe_url = ""
 
@@ -621,18 +628,18 @@ if __name__ == '__main__':
                     if error['id'] == 'missingInclude':
                         output_file.write(
                             '\n         <tr class="%s"><td></td><td>%s</td><td></td><td>%s</td><td>%s</td></tr>' %
-                            (error['id'], error['id'], error['severity'], error['msg']))
+                            (error['id'], error['id'], error['severity'], html_escape(error['msg'])))
                     elif (error['id'] == 'unmatchedSuppression') and filename.endswith('*'):
                         output_file.write(
                             '\n         <tr class="%s"><td></td><td>%s</td><td></td><td>%s</td><td %s>%s</td></tr>' %
                             (error['id'], error['id'], error['severity'], error_class,
-                             error['msg']))
+                             html_escape(error['msg'])))
                     else:
                         output_file.write(
                             '\n       <tr class="%s"><td><a href="%s#line-%d">%d</a></td><td>%s</td><td>%s</td><td>%s</td><td %s>%s</td></tr>' %
                             (error['id'], data['htmlfile'], error['line'], error['line'],
                              error['id'], cwe_url, error['severity'], error_class,
-                             error['msg']))
+                             html_escape(error['msg'])))
 
         output_file.write('\n       </table>')
         output_file.write(HTML_FOOTER % contentHandler.versionCppcheck)
@@ -663,7 +670,7 @@ if __name__ == '__main__':
 
     with io.open(os.path.join(options.report_dir, 'stats.html'), 'w') as stats_file:
 
-        stats_file.write(HTML_HEAD.replace('id="menu" dir="rtl"', 'id="menu_index"', 1).replace("Defects:", "Back to summary", 1) % (options.title, '', options.title, 'Statistics', ''))
+        stats_file.write(HTML_HEAD.replace('id="menu"', 'id="menu_index"', 1).replace("Defects:", "Back to summary", 1) % (options.title, '', options.title, 'Statistics', ''))
         stats_file.write(HTML_HEAD_END.replace("content", "content_index", 1))
 
         for sev in SEVERITIES:
@@ -681,10 +688,10 @@ if __name__ == '__main__':
                         continue
                 # don't print "0 style" etc, if no style warnings were found
                 if (_sum == 0):
-                    break
+                    continue
             except KeyError:
                 continue
-            stats_file.write("<p>Top 10 files for " + sev + " severity, total findings: " + str(_sum) + "</br>\n")
+            stats_file.write("<p>Top 10 files for " + sev + " severity, total findings: " + str(_sum) + "<br>\n")
 
             # sort, so that the file with the most severities per type is first
             stats_list_sorted = sorted(stats_templist.items(), key=operator.itemgetter(1, 0), reverse=True)
@@ -697,10 +704,12 @@ if __name__ == '__main__':
                 if (it == 0):
                     LENGTH = len(str(i[1]))  # <- length of longest number, now get the difference and try to  make other numbers align to it
 
-                stats_file.write("&#160;" * 3 + str(i[1]) + "&#160;" * (1 + LENGTH - len(str(i[1]))) + "<a href=\"" + files[i[0]]['htmlfile'] + "\">  " + i[0] + "</a></br>\n")
+                stats_file.write("&#160;" * 3 + str(i[1]) + "&#160;" * (1 + LENGTH - len(str(i[1]))) + "<a href=\"" + files[i[0]]['htmlfile'] + "\">  " + i[0] + "</a><br>\n")
                 it += 1
                 if (it == 10):  # print only the top 10
                     break
             stats_file.write("</p>\n")
+
+        stats_file.write(HTML_FOOTER % contentHandler.versionCppcheck)
 
     print("\nOpen '" + options.report_dir + "/index.html' to see the results.")

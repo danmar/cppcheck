@@ -45,6 +45,7 @@
     <ClCompile Include="testcppcheck.cpp" />
     <ClCompile Include="testerrorlogger.cpp" />
     <ClCompile Include="testexceptionsafety.cpp" />
+    <ClCompile Include="testexprengine.cpp" />
     <ClCompile Include="testfilelister.cpp" />
     <ClCompile Include="testgarbage.cpp" />
     <ClCompile Include="testimportproject.cpp" />
@@ -91,6 +92,7 @@
     <ClCompile Include="testunusedfunctions.cpp" />
     <ClCompile Include="testunusedprivfunc.cpp" />
     <ClCompile Include="testunusedvar.cpp" />
+    <ClCompile Include="testutils.cpp" />
     <ClCompile Include="testvaarg.cpp" />
     <ClCompile Include="testvalueflow.cpp" />
     <ClCompile Include="testvarid.cpp" />

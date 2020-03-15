@@ -11,9 +11,43 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdarg.h>
+#include <sys/time.h>
+#include <sys/mman.h>
 #ifndef __CYGWIN__
 #include <sys/epoll.h>
 #endif
+
+// #9323, #9331
+void syntaxError_timercmp(struct timeval t)
+{
+    (void)timercmp(&t, &t, <);
+    (void)timercmp(&t, &t, <=);
+    (void)timercmp(&t, &t, ==);
+    (void)timercmp(&t, &t, !=);
+    (void)timercmp(&t, &t, >=);
+    (void)timercmp(&t, &t, >);
+}
+
+// False negative: #9346
+void uninitvar_timercmp(struct timeval t)
+{
+    struct timeval uninit;
+    (void)timercmp(&t, &uninit, <);
+    (void)timercmp(&uninit, &t, <=);
+    (void)timercmp(&uninit, &uninit, ==);
+}
+
+void nullPointer_timercmp(struct timeval t)
+{
+    struct timeval *p=0;
+    // cppcheck-suppress nullPointer
+    (void)timercmp(&t, p, <);
+    // cppcheck-suppress nullPointer
+    (void)timercmp(p, &t, <=);
+    // cppcheck-suppress nullPointer
+    (void)timercmp(p, p, ==);
+}
 
 // Declaration necessary because there is no specific / portable header.
 extern void *xcalloc(size_t nmemb, size_t size);
@@ -75,12 +109,18 @@ int no_resourceLeak_mkostemp_02(char *template, int flags)
     return mkostemp(template, flags);
 }
 
-void valid_code(int argInt1)
+void valid_code(int argInt1, va_list valist_arg, int * parg)
 {
     char *p;
 
     if (__builtin_expect(argInt1, 0)) {}
     if (__builtin_expect_with_probability(argInt1 + 1, 2, 0.5)) {}
+    if (__glibc_unlikely(argInt1 != 0)) {}
+    if (__glibc_likely(parg != NULL)) {}
+    void *ax1 = __builtin_assume_aligned(parg, 16);
+    printf("%p", ax1);
+    void *ax2 = __builtin_assume_aligned(parg, 32, 8);
+    printf("%p", ax2);
 
     p = (char *)malloc(10);
     free(p);
@@ -99,6 +139,20 @@ void valid_code(int argInt1)
     __builtin_prefetch(p, 0, 1);
 
     if (__builtin_types_compatible_p(int, char)) {}
+
+    char * pStr = NULL;
+    if (vasprintf(&pStr, "%d %d", valist_arg) != -1) {
+        free(pStr);
+    }
+
+    printf("%d", 0b010);
+    printf("%d", __extension__ 0b10001000);
+
+    if (__alignof__(int) == 4) {}
+
+    void * p_mmap = mmap(NULL, 1, PROT_NONE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
+    printf("%p", p_mmap);
+    munmap(p_mmap, 1);
 }
 
 void ignoreleak(void)
@@ -123,6 +177,13 @@ void memleak_xmalloc()
 {
     char *p = (char*)xmalloc(10);
     p[9] = 0;
+    // cppcheck-suppress memleak
+}
+
+void memleak_mmap()
+{
+    void * p_mmap = mmap(NULL, 1, PROT_NONE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
+    printf("%p", p_mmap);
     // cppcheck-suppress memleak
 }
 

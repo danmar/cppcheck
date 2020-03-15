@@ -47,13 +47,14 @@ class ThreadExecutor : public ErrorLogger {
 public:
     ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger);
     ThreadExecutor(const ThreadExecutor &) = delete;
-    virtual ~ThreadExecutor();
+    ~ThreadExecutor() OVERRIDE;
     void operator=(const ThreadExecutor &) = delete;
     unsigned int check();
 
-    virtual void reportOut(const std::string &outmsg) OVERRIDE;
-    virtual void reportErr(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
-    virtual void reportInfo(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
+    void reportOut(const std::string &outmsg) OVERRIDE;
+    void reportErr(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
+    void reportInfo(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
+    void bughuntingReport(const std::string &str) OVERRIDE;
 
     /**
      * @brief Add content to a file, to be used in unit testing.
@@ -75,7 +76,7 @@ private:
     /** @brief Key is file name, and value is the content of the file */
     std::map<std::string, std::string> mFileContents;
 private:
-    enum PipeSignal {REPORT_OUT='1',REPORT_ERROR='2', REPORT_INFO='3', CHILD_END='4'};
+    enum PipeSignal {REPORT_OUT='1',REPORT_ERROR='2', REPORT_INFO='3', REPORT_VERIFICATION='4', CHILD_END='5'};
 
     /**
      * Read from the pipe, parse and handle what ever is in there.

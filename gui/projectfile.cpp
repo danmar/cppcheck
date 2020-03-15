@@ -45,6 +45,8 @@ ProjectFile::ProjectFile(const QString &filename, QObject *parent) :
 
 void ProjectFile::clear()
 {
+    clangParser = false;
+    bugHunting = false;
     mRootPath.clear();
     mBuildDir.clear();
     mImportProject.clear();
@@ -64,7 +66,8 @@ void ProjectFile::clear()
     mCheckUnusedTemplates = false;
     mMaxCtuDepth = 10;
     mCheckUnknownFunctionReturn.clear();
-    mSafeChecks.clear();
+    safeChecks.clear();
+    mVsConfigurations.clear();
 }
 
 bool ProjectFile::read(const QString &filename)
@@ -110,6 +113,12 @@ bool ProjectFile::read(const QString &filename)
             if (xmlReader.name() == CppcheckXml::AnalyzeAllVsConfigsElementName)
                 mAnalyzeAllVsConfigs = readBool(xmlReader);
 
+            if (xmlReader.name() == CppcheckXml::Parser)
+                clangParser = true;
+
+            if (xmlReader.name() == CppcheckXml::BugHunting)
+                bugHunting = true;
+
             if (xmlReader.name() == CppcheckXml::CheckHeadersElementName)
                 mCheckHeaders = readBool(xmlReader);
 
@@ -154,7 +163,7 @@ bool ProjectFile::read(const QString &filename)
 
             // check all function parameter values
             if (xmlReader.name() == Settings::SafeChecks::XmlRootName)
-                mSafeChecks.loadFromXml(xmlReader);
+                safeChecks.loadFromXml(xmlReader);
 
             // Addons
             if (xmlReader.name() == CppcheckXml::AddonsElementName)
@@ -168,12 +177,15 @@ bool ProjectFile::read(const QString &filename)
                 mClangTidy = tools.contains(CLANG_TIDY);
             }
 
-            if (insideProject && xmlReader.name() == CppcheckXml::TagsElementName)
+            if (xmlReader.name() == CppcheckXml::TagsElementName)
                 readStringList(mTags, xmlReader, CppcheckXml::TagElementName);
 
-            if (insideProject && xmlReader.name() == CppcheckXml::MaxCtuDepthElementName)
+            if (xmlReader.name() == CppcheckXml::MaxCtuDepthElementName)
                 mMaxCtuDepth = readInt(xmlReader, mMaxCtuDepth);
 
+            // VSConfiguration
+            if (xmlReader.name() == CppcheckXml::VSConfigurationElementName)
+                readVsConfigurations(xmlReader);
             break;
 
         case QXmlStreamReader::EndElement:
@@ -229,7 +241,7 @@ void ProjectFile::readBuildDir(QXmlStreamReader &reader)
         case QXmlStreamReader::ProcessingInstruction:
             break;
         }
-    } while (1);
+    } while (true);
 }
 
 void ProjectFile::readImportProject(QXmlStreamReader &reader)
@@ -254,7 +266,7 @@ void ProjectFile::readImportProject(QXmlStreamReader &reader)
         case QXmlStreamReader::ProcessingInstruction:
             break;
         }
-    } while (1);
+    } while (true);
 }
 
 bool ProjectFile::readBool(QXmlStreamReader &reader)
@@ -279,7 +291,7 @@ bool ProjectFile::readBool(QXmlStreamReader &reader)
         case QXmlStreamReader::ProcessingInstruction:
             break;
         }
-    } while (1);
+    } while (true);
 }
 
 int ProjectFile::readInt(QXmlStreamReader &reader, int defaultValue)
@@ -304,7 +316,7 @@ int ProjectFile::readInt(QXmlStreamReader &reader, int defaultValue)
         case QXmlStreamReader::ProcessingInstruction:
             break;
         }
-    } while (1);
+    } while (true);
 }
 
 void ProjectFile::readIncludeDirs(QXmlStreamReader &reader)
@@ -466,6 +478,44 @@ void ProjectFile::readExcludes(QXmlStreamReader &reader)
     } while (!allRead);
 }
 
+void ProjectFile::readVsConfigurations(QXmlStreamReader &reader)
+{
+    QXmlStreamReader::TokenType type;
+    do {
+        type = reader.readNext();
+        switch (type) {
+        case QXmlStreamReader::StartElement:
+            // Read library-elements
+            if (reader.name().toString() == CppcheckXml::VSConfigurationName) {
+                QString config;
+                type = reader.readNext();
+                if (type == QXmlStreamReader::Characters) {
+                    config = reader.text().toString();
+                }
+                mVsConfigurations << config;
+            }
+            break;
+
+        case QXmlStreamReader::EndElement:
+            if (reader.name().toString() != CppcheckXml::VSConfigurationName)
+                return;
+            break;
+
+        // Not handled
+        case QXmlStreamReader::NoToken:
+        case QXmlStreamReader::Invalid:
+        case QXmlStreamReader::StartDocument:
+        case QXmlStreamReader::EndDocument:
+        case QXmlStreamReader::Characters:
+        case QXmlStreamReader::Comment:
+        case QXmlStreamReader::DTD:
+        case QXmlStreamReader::EntityReference:
+        case QXmlStreamReader::ProcessingInstruction:
+            break;
+        }
+    } while (true);
+}
+
 void ProjectFile::readPlatform(QXmlStreamReader &reader)
 {
     do {
@@ -487,7 +537,7 @@ void ProjectFile::readPlatform(QXmlStreamReader &reader)
         case QXmlStreamReader::ProcessingInstruction:
             break;
         }
-    } while (1);
+    } while (true);
 }
 
 
@@ -619,6 +669,11 @@ void ProjectFile::setAddons(const QStringList &addons)
     mAddons = addons;
 }
 
+void ProjectFile::setVSConfigurations(const QStringList &vsConfigs)
+{
+    mVsConfigurations = vsConfigs;
+}
+
 bool ProjectFile::write(const QString &filename)
 {
     if (!filename.isEmpty())
@@ -662,6 +717,17 @@ bool ProjectFile::write(const QString &filename)
     xmlWriter.writeCharacters(mAnalyzeAllVsConfigs ? "true" : "false");
     xmlWriter.writeEndElement();
 
+    if (clangParser) {
+        xmlWriter.writeStartElement(CppcheckXml::Parser);
+        xmlWriter.writeCharacters("clang");
+        xmlWriter.writeEndElement();
+    }
+
+    if (bugHunting) {
+        xmlWriter.writeStartElement(CppcheckXml::BugHunting);
+        xmlWriter.writeEndElement();
+    }
+
     xmlWriter.writeStartElement(CppcheckXml::CheckHeadersElementName);
     xmlWriter.writeCharacters(mCheckHeaders ? "true" : "false");
     xmlWriter.writeEndElement();
@@ -692,6 +758,13 @@ bool ProjectFile::write(const QString &filename)
             xmlWriter.writeEndElement();
         }
         xmlWriter.writeEndElement();
+    }
+
+    if (!mVsConfigurations.isEmpty()) {
+        writeStringList(xmlWriter,
+                        mVsConfigurations,
+                        CppcheckXml::VSConfigurationElementName,
+                        CppcheckXml::VSConfigurationName);
     }
 
     writeStringList(xmlWriter,
@@ -746,7 +819,7 @@ bool ProjectFile::write(const QString &filename)
                     CppcheckXml::CheckUnknownFunctionReturn,
                     CppcheckXml::Name);
 
-    mSafeChecks.saveToXml(xmlWriter);
+    safeChecks.saveToXml(xmlWriter);
 
     writeStringList(xmlWriter,
                     mAddons,
@@ -839,7 +912,7 @@ void ProjectFile::SafeChecks::loadFromXml(QXmlStreamReader &xmlReader)
         case QXmlStreamReader::ProcessingInstruction:
             break;
         }
-    } while (1);
+    } while (true);
 }
 
 void ProjectFile::SafeChecks::saveToXml(QXmlStreamWriter &xmlWriter) const

@@ -56,14 +56,32 @@ static std::string objfiles(const std::vector<std::string> &files)
 
 static void getDeps(const std::string &filename, std::vector<std::string> &depfiles)
 {
+    static const std::vector<std::string> externalfolders = {"externals",
+                                                             "externals/simplecpp",
+                                                             "externals/tinyxml"
+                                                            };
+
     // Is the dependency already included?
     if (std::find(depfiles.begin(), depfiles.end(), filename) != depfiles.end())
         return;
 
     std::ifstream f(filename.c_str());
     if (! f.is_open()) {
-        if (filename.compare(0, 4, "cli/") == 0 || filename.compare(0, 5, "test/") == 0)
+        /*
+         * Recursively search for includes in other directories.
+         * Files are searched according to the following priority:
+         * [test, tools] -> cli -> lib -> externals
+         */
+        if (filename.compare(0, 4, "cli/") == 0)
             getDeps("lib" + filename.substr(filename.find('/')), depfiles);
+        else if (filename.compare(0, 5, "test/") == 0)
+            getDeps("cli" + filename.substr(filename.find('/')), depfiles);
+        else if (filename.compare(0, 6, "tools/") == 0)
+            getDeps("cli" + filename.substr(filename.find('/')), depfiles);
+        else if (filename.compare(0, 4, "lib/") == 0) {
+            for (const std::string & external : externalfolders)
+                getDeps(external + filename.substr(filename.find('/')), depfiles);
+        }
         return;
     }
     if (filename.find(".c") == std::string::npos)
@@ -76,12 +94,19 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
     std::string line;
     while (std::getline(f, line)) {
         std::string::size_type pos1 = line.find("#include \"");
-        if (pos1 == std::string::npos)
-            continue;
+        char rightBracket = '\"';
+        if (pos1 == std::string::npos) {
+            pos1 = line.find("#include <");
+            rightBracket = '>';
+            if (pos1 == std::string::npos)
+                continue;
+        }
+
         pos1 += 10;
 
-        std::string::size_type pos2 = line.find('\"', pos1);
-        std::string hfile(path + line.substr(pos1, pos2 - pos1));
+        std::string::size_type pos2 = line.find(rightBracket, pos1);
+        std::string hfile = path + line.substr(pos1, pos2 - pos1);
+
         if (hfile.find("/../") != std::string::npos)    // TODO: Ugly fix
             hfile.erase(0, 4 + hfile.find("/../"));
         getDeps(hfile, depfiles);
@@ -95,6 +120,7 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
         fout << objfile(file) << ": " << file;
         std::vector<std::string> depfiles;
         getDeps(file, depfiles);
+        std::sort(depfiles.begin(), depfiles.end());
         for (const std::string &depfile : depfiles)
             fout << " " << depfile;
         fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS)" << (external?" -w":"") << " $(UNDEF_STRICT_ANSI) -c -o " << objfile(file) << " " << builddir(file) << "\n\n";
@@ -191,6 +217,13 @@ int main(int argc, char **argv)
     fout << "# To compile with rules, use 'make HAVE_RULES=yes'\n";
     makeConditionalVariable(fout, "HAVE_RULES", "no");
 
+    // Z3 is an optional dependency now..
+    makeConditionalVariable(fout, "USE_Z3", "no");
+    fout << "ifeq ($(USE_Z3),yes)\n"
+         << "    CPPFLAGS += -DUSE_Z3\n"
+         << "    LIBS += -lz3\n"
+         << "endif\n";
+
     // use match compiler..
     fout << "# use match compiler\n";
     fout << "ifeq ($(SRCDIR),build)\n"
@@ -198,10 +231,18 @@ int main(int argc, char **argv)
          << "    MATCHCOMPILER:=yes\n"
          << "endif\n";
     fout << "ifeq ($(MATCHCOMPILER),yes)\n"
+         << "    # Find available Python interpreter\n"
+         << "    PYTHON_INTERPRETER := $(shell which python)\n"
+         << "    ifndef PYTHON_INTERPRETER\n"
+         << "        PYTHON_INTERPRETER := $(shell which python3)\n"
+         << "    endif\n"
+         << "    ifndef PYTHON_INTERPRETER\n"
+         << "        $(error Did not find a Python interpreter)\n"
+         << "    endif\n"
          << "    ifdef VERIFY\n"
-         << "        matchcompiler_S := $(shell python tools/matchcompiler.py --verify)\n"
+         << "        matchcompiler_S := $(shell $(PYTHON_INTERPRETER) tools/matchcompiler.py --verify)\n"
          << "    else\n"
-         << "        matchcompiler_S := $(shell python tools/matchcompiler.py)\n"
+         << "        matchcompiler_S := $(shell $(PYTHON_INTERPRETER) tools/matchcompiler.py)\n"
          << "    endif\n"
          << "    libcppdir:=build\n"
          << "else\n"
@@ -427,7 +468,8 @@ int main(int argc, char **argv)
     fout << ".PHONY: validateCFG\n";
     fout << "%.checked:%.cfg\n";
     fout << "\txmllint --noout --relaxng cfg/cppcheck-cfg.rng $<\n";
-    fout << "validateCFG: ${ConfigFilesCHECKED}\n\n";
+    fout << "validateCFG: ${ConfigFilesCHECKED}\n";
+    fout << "\txmllint --noout cfg/cppcheck-cfg.rng\n\n";
     fout << "# Validation of platforms files:\n";
     fout << "PlatformFiles := $(wildcard platforms/*.xml)\n";
     fout << "PlatformFilesCHECKED := $(patsubst %.xml,%.checked,$(PlatformFiles))\n";
@@ -439,14 +481,18 @@ int main(int argc, char **argv)
     fout << "/tmp/errorlist.xml: cppcheck\n";
     fout << "\t./cppcheck --errorlist >$@\n";
     fout << "/tmp/example.xml: cppcheck\n";
-    fout << "\t./cppcheck --xml --enable=all --inconclusive --suppress=operatorEqVarError:*check.h -j 4 cli externals gui lib test 2>/tmp/example.xml\n";
+    fout << "\t./cppcheck --xml --enable=all --inconclusive --suppress=operatorEqVarError:*check.h --max-configs=1 -j 4 cli externals gui lib test 2>/tmp/example.xml\n";
     fout << "createXMLExamples:/tmp/errorlist.xml /tmp/example.xml\n";
     fout << ".PHONY: validateXML\n";
     fout << "validateXML: createXMLExamples\n";
+    fout << "\txmllint --noout cppcheck-errors.rng\n";
     fout << "\txmllint --noout --relaxng cppcheck-errors.rng /tmp/errorlist.xml\n";
     fout << "\txmllint --noout --relaxng cppcheck-errors.rng /tmp/example.xml\n";
     fout << "\ncheckCWEEntries: /tmp/errorlist.xml\n";
     fout << "\t./tools/listErrorsWithoutCWE.py -F /tmp/errorlist.xml\n";
+    fout << ".PHONY: validateRules\n",
+         fout << "validateRules:\n";
+    fout << "\txmllint --noout rules/*.xml\n";
 
     fout << "\n###### Build\n\n";
 

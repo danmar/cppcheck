@@ -48,7 +48,7 @@ public:
     /**
      * Destructor
      */
-    virtual ~CppCheckExecutor();
+    ~CppCheckExecutor() OVERRIDE;
 
     /**
      * Starts the checking.
@@ -69,17 +69,19 @@ public:
      *
      * @param outmsg Progress message e.g. "Checking main.cpp..."
      */
-    virtual void reportOut(const std::string &outmsg) OVERRIDE;
+    void reportOut(const std::string &outmsg) OVERRIDE;
 
     /** xml output of errors */
-    virtual void reportErr(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
+    void reportErr(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
 
     void reportProgress(const std::string &filename, const char stage[], const std::size_t value) OVERRIDE;
 
     /**
      * Output information messages.
      */
-    virtual void reportInfo(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
+    void reportInfo(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
+
+    void bughuntingReport(const std::string &str) OVERRIDE;
 
     /**
      * Information about how many files have been checked
@@ -186,6 +188,11 @@ private:
      * Error output
      */
     std::ofstream *mErrorOutput;
+
+    /**
+     * Bug hunting report
+     */
+    std::ostream *mBugHuntingReport;
 
     /**
      * Has --errorlist been given?

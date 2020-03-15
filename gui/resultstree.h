@@ -128,7 +128,7 @@ public:
     * @return Directory containing source files
     */
 
-    QString getCheckDirectory(void);
+    QString getCheckDirectory();
 
     /**
     * @brief Check if there are any visible results in view.

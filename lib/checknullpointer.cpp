@@ -40,9 +40,6 @@ namespace {
     CheckNullPointer instance;
 }
 
-static const CWE CWE476(476U);  // NULL Pointer Dereference
-static const CWE CWE682(682U);  // Incorrect Calculation
-
 //---------------------------------------------------------------------------
 
 static bool checkNullpointerFunctionCallPlausibility(const Function* func, unsigned int arg)
@@ -166,6 +163,9 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
         }
     }
 
+    if (tok->str() == "(" && !tok->scope()->isExecutable())
+        return false;
+
     const Token* parent = tok->astParent();
     if (!parent)
         return false;
@@ -194,7 +194,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
         return false;
 
     // read/write member variable
-    if (firstOperand && parent->str() == "." && (!parent->astParent() || parent->astParent()->str() != "&")) {
+    if (firstOperand && parent->originalName() == "->" && (!parent->astParent() || parent->astParent()->str() != "&")) {
         if (!parent->astParent() || parent->astParent()->str() != "(" || parent->astParent() == tok->previous())
             return true;
         unknown = true;
@@ -318,6 +318,24 @@ void CheckNullPointer::nullPointerLinkedList()
     }
 }
 
+static bool isNullablePointer(const Token* tok, const Settings* settings)
+{
+    if (!tok)
+        return false;
+    if (Token::simpleMatch(tok, "new") && tok->varId() == 0)
+        return false;
+    if (astIsPointer(tok))
+        return true;
+    if (astIsSmartPointer(tok))
+        return true;
+    if (Token::simpleMatch(tok, "."))
+        return isNullablePointer(tok->astOperand2(), settings);
+    if (const Variable* var = tok->variable()) {
+        return (var->isPointer() || var->isSmartPointer());
+    }
+    return false;
+}
+
 void CheckNullPointer::nullPointerByDeRefAndChec()
 {
     const bool printInconclusive = (mSettings->inconclusive);
@@ -328,11 +346,10 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
             continue;
         }
 
-        const Variable *var = tok->variable();
-        if (!var || tok == var->nameToken())
+        if (Token::Match(tok, "%num%|%char%|%str%"))
             continue;
 
-        if (!var->isPointer() && !var->isSmartPointer())
+        if (!isNullablePointer(tok, mSettings))
             continue;
 
         // Can pointer be NULL?
@@ -347,11 +364,11 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
         bool unknown = false;
         if (!isPointerDeRef(tok,unknown)) {
             if (unknown)
-                nullPointerError(tok, tok->str(), value, true);
+                nullPointerError(tok, tok->expressionString(), value, true);
             continue;
         }
 
-        nullPointerError(tok, tok->str(), value, value->isInconclusive());
+        nullPointerError(tok, tok->expressionString(), value, value->isInconclusive());
     }
 }
 
@@ -467,14 +484,14 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
     const std::string errmsgdefarg("$symbol:" + varname + "\nPossible null pointer dereference if the default parameter value is used: $symbol");
 
     if (!tok) {
-        reportError(tok, Severity::error, "nullPointer", "Null pointer dereference", CWE476, false);
-        reportError(tok, Severity::warning, "nullPointerDefaultArg", errmsgdefarg, CWE476, false);
-        reportError(tok, Severity::warning, "nullPointerRedundantCheck", errmsgcond, CWE476, false);
+        reportError(tok, Severity::error, "nullPointer", "Null pointer dereference", CWE_NULL_POINTER_DEREFERENCE, false);
+        reportError(tok, Severity::warning, "nullPointerDefaultArg", errmsgdefarg, CWE_NULL_POINTER_DEREFERENCE, false);
+        reportError(tok, Severity::warning, "nullPointerRedundantCheck", errmsgcond, CWE_NULL_POINTER_DEREFERENCE, false);
         return;
     }
 
     if (!value) {
-        reportError(tok, Severity::error, "nullPointer", "Null pointer dereference", CWE476, inconclusive);
+        reportError(tok, Severity::error, "nullPointer", "Null pointer dereference", CWE_NULL_POINTER_DEREFERENCE, inconclusive);
         return;
     }
 
@@ -484,9 +501,9 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
     const ErrorPath errorPath = getErrorPath(tok, value, "Null pointer dereference");
 
     if (value->condition) {
-        reportError(errorPath, Severity::warning, "nullPointerRedundantCheck", errmsgcond, CWE476, inconclusive || value->isInconclusive());
+        reportError(errorPath, Severity::warning, "nullPointerRedundantCheck", errmsgcond, CWE_NULL_POINTER_DEREFERENCE, inconclusive || value->isInconclusive());
     } else if (value->defaultArg) {
-        reportError(errorPath, Severity::warning, "nullPointerDefaultArg", errmsgdefarg, CWE476, inconclusive || value->isInconclusive());
+        reportError(errorPath, Severity::warning, "nullPointerDefaultArg", errmsgdefarg, CWE_NULL_POINTER_DEREFERENCE, inconclusive || value->isInconclusive());
     } else {
         std::string errmsg;
         errmsg = std::string(value->isKnown() ? "Null" : "Possible null") + " pointer dereference";
@@ -497,7 +514,7 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
                     value->isKnown() ? Severity::error : Severity::warning,
                     "nullPointer",
                     errmsg,
-                    CWE476, inconclusive || value->isInconclusive());
+                    CWE_NULL_POINTER_DEREFERENCE, inconclusive || value->isInconclusive());
     }
 }
 
@@ -520,18 +537,7 @@ void CheckNullPointer::arithmetic()
                 continue;
             if (numericOperand && numericOperand->valueType() && !numericOperand->valueType()->isIntegral())
                 continue;
-            MathLib::bigint checkValue = 0;
-            // When using an assign op, the value read from
-            // valueflow has already been updated, so instead of
-            // checking for zero we check that the value is equal
-            // to RHS
-            if (tok->astOperand2() && tok->astOperand2()->hasKnownIntValue()) {
-                if (tok->str() == "-=")
-                    checkValue -= tok->astOperand2()->values().front().intvalue;
-                else if (tok->str() == "+=")
-                    checkValue = tok->astOperand2()->values().front().intvalue;
-            }
-            const ValueFlow::Value *value = pointerOperand->getValue(checkValue);
+            const ValueFlow::Value* value = pointerOperand->getValue(0);
             if (!value)
                 continue;
             if (!mSettings->inconclusive && value->isInconclusive())
@@ -570,7 +576,7 @@ void CheckNullPointer::pointerArithmeticError(const Token* tok, const ValueFlow:
                 Severity::error,
                 "nullPointerArithmetic",
                 errmsg,
-                CWE682,
+                CWE_INCORRECT_CALCULATION,
                 inconclusive);
 }
 
@@ -588,7 +594,7 @@ void CheckNullPointer::redundantConditionWarning(const Token* tok, const ValueFl
                 Severity::warning,
                 "nullPointerArithmeticRedundantCheck",
                 errmsg,
-                CWE682,
+                CWE_INCORRECT_CALCULATION,
                 inconclusive);
 }
 
@@ -661,7 +667,7 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::
                                                        warning ? Severity::warning : Severity::error,
                                                        "Null pointer dereference: " + unsafeUsage.myArgumentName,
                                                        "ctunullpointer",
-                                                       CWE476, false);
+                                                       CWE_NULL_POINTER_DEREFERENCE, false);
                 errorLogger.reportErr(errmsg);
 
                 foundErrors = true;

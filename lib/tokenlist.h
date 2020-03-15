@@ -186,6 +186,10 @@ public:
      */
     void simplifyStdType();
 
+    void clangSetOrigFiles();
+
+    bool isKeyword(const std::string &str) const;
+
 private:
 
     /** Disable copy constructor, no implementation */
@@ -206,8 +210,11 @@ private:
     /** settings */
     const Settings* mSettings;
 
+    std::set<std::string> mKeywords;
+
     /** File is known to be C/C++ code */
-    bool mIsC, mIsCpp;
+    bool mIsC;
+    bool mIsCpp;
 };
 
 /// @}

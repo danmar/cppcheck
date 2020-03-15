@@ -1,10 +1,13 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
-# 1. Create a folder daca2 in your HOME folder
-# 2. Put cppcheck-head in daca2. It should be built with all optimisations.
-# 3. Optional: Put a file called "suppressions.txt" in the daca2 folder.
-# 4. Optional: tweak FTPSERVER and FTPPATH in this script below.
-# 5. Run the daca2 script:  python daca2.py FOLDER
+# Get list of debian packages
+#
+# Usage:
+#
+# cd cppcheck/tools
+# ./daca2-getpackages.py
+#
+
 
 import argparse
 import logging
@@ -13,10 +16,12 @@ import sys
 import shutil
 import glob
 import os
+import re
 import datetime
 import time
+import natsort
 
-DEBIAN = ('ftp://ftp.se.debian.org/debian/',
+DEBIAN = ('ftp://ftp.de.debian.org/debian/',
           'ftp://ftp.debian.org/debian/')
 
 def wget(filepath):
@@ -31,6 +36,11 @@ def wget(filepath):
         print('Sleep for 10 seconds..')
         time.sleep(10)
     return False
+
+
+def latestvername(names):
+    s = natsort.natsorted(names, key=lambda x: x[x.index('_')+1:x.index('.orig.tar')])
+    return s[-1]
 
 
 def getpackages():
@@ -79,23 +89,39 @@ def getpackages():
     #
 
     path = None
+    previous_path = ''
     archives = []
     filename = None
+    filenames = []
     for line in lines:
         line = line.strip()
         if len(line) < 4:
             if filename:
-                archives.append(DEBIAN[0] + path + '/' + filename)
+                res1 = re.match(r'(.*)-[0-9.]+$', path)
+                if res1 is None:
+                    res1 = re.match(r'(.*)[-.][0-9.]+$', path)
+                res2 = re.match(r'(.*)-[0-9.]+$', previous_path)
+                if res2 is None:
+                    res2 = re.match(r'(.*)[-.][0-9.]+$', previous_path)
+                if res1 is None or res2 is None or res1.group(1) != res2.group(1):
+                    archives.append(path + '/' + latestvername(filenames))
+                else:
+                    archives[-1] = path + '/' + latestvername(filenames)
+            if path:
+                previous_path = path
             path = None
             filename = None
+            filenames = []
         elif line.startswith('./pool/main/'):
             path = line[2:-1]
-        elif path and line.endswith(('.orig.tar.gz', '.orig.tar.bz2')):
+        elif path and line.endswith(('.orig.tar.gz', '.orig.tar.bz2', '.orig.tar.xz')):
             filename = line[1 + line.rfind(' '):]
+            filenames.append(filename)
 
     return archives
 
 
 
 for p in getpackages():
-    print(p)
+    print(DEBIAN[0] + p)
+

@@ -3,7 +3,6 @@ title: Cppcheck manual
 subtitle: Version 1.90 dev
 author: Cppcheck team
 lang: en
-toc: true
 documentclass: report
 ---
 
@@ -83,6 +82,16 @@ We don't know which approach (project file or manual configuration) will give yo
 
 Later chapters will describe this in more detail.
 
+### Check files matching a given file filter
+
+With `--file-filter=<str>` you can set a file filter and only those files matching the filter will be checked.
+
+For example: if you want to check only those files and folders starting from a subfolder src/ that start with "test" you have to type:
+
+    cppcheck src/ --file-filter=src/test*
+
+Cppcheck first collects all files in src/ and will apply the filter after that. So the filter must start with the given start folder. 
+
 ### Excluding a file or folder from checking
 
 To exclude a file or folder, there are two options. The first option is to only provide the paths and files you want to check.
@@ -95,7 +104,7 @@ The second option is to use -i, with it you specify files/paths to ignore. With 
 
     cppcheck -isrc/c src
 
-This option does not currently work with the `--project` option and is only valid when supplying an input directory. To ignore multiple directories supply the -i multiple times. The following command ignores both the src/b and src/c directories.
+This option is only valid when supplying an input directory. To ignore multiple directories supply the -i multiple times. The following command ignores both the src/b and src/c directories.
 
     cppcheck -isrc/b -isrc/c
 
@@ -139,6 +148,10 @@ You can import and use Cppcheck GUI project files in the command line tool:
 
 The Cppcheck GUI has a few options that are not available in the command line directly. To use these options you can import a GUI project file. We want to keep the command line tool usage simple and limit the options by intention.
 
+To ignore certain folders in the project you can use `-i`. This will skip analysis of source files in the `foo` folder.
+
+    cppcheck --project=foobar.cppcheck -ifoo
+
 ## CMake
 
 Generate a compile database:
@@ -148,6 +161,11 @@ Generate a compile database:
 The file `compile_commands.json` is created in the current folder. Now run Cppcheck like this:
 
     cppcheck --project=compile_commands.json
+
+To ignore certain folders you can use `-i`. This will skip analysis of source files in the `foo` folder.
+
+    cppcheck --project=compile_commands.json -ifoo
+
 
 ## Visual Studio
 
@@ -163,11 +181,20 @@ Running Cppcheck on a Visual Studio project:
 
 In the `Cppcheck GUI` you have the choice to only analyze a single debug configuration. If you want to use this choice on the command line then create a `Cppcheck GUI` project with this activated and then import the GUI project file on the command line.
 
+To ignore certain folders in the project you can use `-i`. This will skip analysis of source files in the `foo` folder.
+
+    cppcheck --project=foobar.vcxproj -ifoo
+
 ## C++ Builder 6
 
 Running Cppcheck on a C++ Builder 6 project:
 
     cppcheck --project=foobar.bpr
+
+
+To ignore certain folders in the project you can use `-i`. This will skip analysis of source files in the `foo` folder.
+
+    cppcheck --project=foobar.bpr -ifoo
 
 ## Other
 
@@ -183,7 +210,7 @@ You should use a platform configuration that match your target.
 
 By default Cppcheck uses native platform configuration that works well if your code is compiled and executed locally.
 
-Cppcheck has builtin configurations for Unix and Windows targets. You can easily use these with the --platform command line flag.
+Cppcheck has builtin configurations for Unix and Windows targets. You can easily use these with the `--platform` command line flag.
 
 You can also create your own custom platform configuration in a XML file. Here is an example:
 
@@ -265,7 +292,7 @@ You can suppress certain types of errors. The format for such a suppression is o
 
 The `error id` is the id that you want to suppress. The easiest way to get it is to use the --template=gcc command line flag. The id is shown in brackets.
 
-The filename may include the wildcard characters \* or ?, which match any sequence of characters or any single character respectively. It is recommended that you use "/" as path separator on all operating systems.
+The filename may include the wildcard characters \* or ?, which match any sequence of characters or any single character respectively. It is recommended that you use "/" as path separator on all operating systems. The filename must match the filename in the reported warning exactly. For instance, if the warning contains a relative path then the suppression must match that relative path.
 
 ## Command line suppression
 
@@ -326,7 +353,25 @@ The output is:
     cppcheck test.c
     [test.c:3]: (error) Array 'arr[5]' index 10 out of bounds
 
-To suppress the error message, a comment can be added:
+To activate inline suppressions:
+
+    cppcheck --inline-suppr test.c
+
+### Format
+
+You can suppress a warning `aaaa` with:
+
+    // cppcheck-suppress aaaa
+
+Suppressing multiple ids in one comment by using []:
+
+    // cppcheck-suppress [aaaa, bbbb]
+
+### Comment before code or on same line
+
+The comment can be put before the code or at the same line as the code;
+
+Before the code:
 
     void f() {
         char arr[5];
@@ -335,18 +380,65 @@ To suppress the error message, a comment can be added:
         arr[10] = 0;
     }
 
-Now the `--inline-suppr` flag can be used to suppress the warning. No error is reported when invoking cppcheck this way:
+Or at the same line as the code:
 
-    cppcheck --inline-suppr test.c
+    void f() {
+        char arr[5];
+
+        arr[10] = 0;  // cppcheck-suppress arrayIndexOutOfBounds
+    }
+
+### Multiple suppressions
+
+For a line of code there might be several warnings you want to suppress.
+
+There are several options;
+
+Using 2 suppression comments before code:
+
+    void f() {
+        char arr[5];
+
+        // cppcheck-suppress arrayIndexOutOfBounds
+        // cppcheck-suppress zerodiv
+        arr[10] = arr[10] / 0;
+    }
+
+Using 1 suppression comment before the code:
+
+    void f() {
+        char arr[5];
+
+        // cppcheck-suppress[arrayIndexOutOfBounds,zerodiv]
+        arr[10] = arr[10] / 0;
+    }
+
+Suppression comment on the same line as the code:
+
+    void f() {
+        char arr[5];
+
+        arr[10] = arr[10] / 0;  // cppcheck-suppress[arrayIndexOutOfBounds,zerodiv]
+    }
+
+
+### Symbol name
 
 You can specify that the inline suppression only applies to a specific symbol:
 
-    // cppcheck-suppress arrayIndexOutOfBounds symbolName=arr
+    // cppcheck-suppress aaaa symbolName=arr
 
-You can write comments for the suppress, however is recommended to use ; or // to specify where they start:
+Or
 
-    // cppcheck-suppress arrayIndexOutOfBounds ; some comment
-    // cppcheck-suppress arrayIndexOutOfBounds // some comment
+    // cppcheck-suppress[aaaa symbolName=arr, bbbb]
+
+### Comment about suppression
+
+You can write comments about a suppression like so:
+
+    // cppcheck-suppress[warningid] some comment
+    // cppcheck-suppress warningid ; some comment
+    // cppcheck-suppress warningid // some comment
 
 # XML output
 
@@ -360,7 +452,7 @@ Here is a sample report:
 
     <?xml version="1.0" encoding="UTF-8"?>
     <results version="2">
-      <cppcheck version="1.66">
+      <cppcheck version="1.66"/>
       <errors>
         <error id="someError" severity="error" msg="short error text"
            verbose="long error text" inconclusive="true" cwe="312">
@@ -597,40 +689,59 @@ Carriage return
 
 # Addons
 
-Addons are scripts with extra checks. Cppcheck is distributed with a few addons.
+Addons are scripts that analyses Cppcheck dump files to check compatibility with secure coding standards and to locate various issues.
+
+Cppcheck is distributed with a few addons which are listed below.
+
+## Supported addons
+
+### cert.py
+
+[cert.py](https://github.com/danmar/cppcheck/blob/master/addons/cert.py) checks for compliance with the safe programming standard [SEI CERT](http://www.cert.org/secure-coding/).
+
+### misra.py
+
+[misra.py](https://github.com/danmar/cppcheck/blob/master/addons/misra.py) is used to verify compliance with MISRA C 2012 - a proprietary set of guidelines to avoid such questionable code, developed for embedded systems.
+
+Since this standard is proprietary, cppcheck does not display error text by specifying only the number of violated rules (for example, [c2012-21.3]). If you want to display full texts for violated rules, you will need to create a text file containing MISRA rules, which you will have to pass when calling the script with `--rule-texts` key. Some examples of rule texts files available in [tests directory](https://github.com/danmar/cppcheck/blob/master/addons/test/misra/).
+
+You can also suppress some unwanted rules using `--suppress-rules` option. Suppressed rules should be set as comma-separated listed, for example: `--suppress-rules 21.1,18.7`. The full list of supported rules is available on [Cppcheck](http://cppcheck.sourceforge.net/misra.php) home page.
+
+### y2038.py
+
+[y2038.py](https://github.com/danmar/cppcheck/blob/master/addons/y2038.py) checks Linux system for [year 2038 problem](https://en.wikipedia.org/wiki/Year_2038_problem) safety. This required [modified environment](https://github.com/3adev/y2038). See complete description [here](https://github.com/danmar/cppcheck/blob/master/addons/doc/y2038.txt).
+
+### threadsafety.py
+
+[threadsafety.py](https://github.com/danmar/cppcheck/blob/master/addons/threadsafety.py) analyse Cppcheck dump files to locate thread safety issues like static local objects used by multiple threads.
 
 ## Running Addons
 
-Addons are standalone scripts that are executed separately.
+Addons could be run through Cppcheck command line utility as follows:
 
-To manually run an addon:
+    cppcheck --addon=misra.py somefile.c
 
-    cppcheck --dump somefile.c
-    python misc.py somefile.c.dump
+This will launch all Cppcheck checks and additionally calls specific checks provided by selected addon.
 
-To run the same addon through Cppcheck directly:
-
-    cppcheck --addon=misc.py somefile.c
-
-Some addons need extra arguments. For example misra.py can be executed manually like this:
-
-    cppcheck --dump somefile.c
-    python misra.py --rule-texts=misra.txt somefile.c.dump
-
-You can configure how you want to execute an addon in a json file, for example put this in misra.json:
+Some addons need extra arguments. You can configure how you want to execute an addon in a json file. For example put this in misra.json:
 
     {
         "script": "misra.py",
-        "args": [ "--rule-texts=misra.txt" ]
+        "args": [
+            "--rule-texts=misra.txt",
+            "--suppress-rules 17.3,21.12"
+        ]
     }
 
 And then the configuration can be executed on the cppcheck command line:
 
     cppcheck --addon=misra.json somefile.c
 
-## Help about an addon
+By default Cppcheck would search addon at standard path which was specified in installation process. You also can set this path directly, for example:
 
-You can read about how to use a Cppcheck addon by looking in the addon. The comments at the top of the file should have a description.
+    cppcheck --addon=/opt/cppcheck/configurations/my_misra.json somefile.c
+
+This allows you create and manage multiple configuration files for different projects.
 
 # Library configuration
 
@@ -671,3 +782,98 @@ An example usage:
 
     ./cppcheck gui/test.cpp --xml 2> err.xml
     htmlreport/cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.
+
+# Verification
+
+Cppcheck will tell you if it can't determine that your code is safe.
+
+All bugs you find with dynamic analysis and fuzzing will be revealed. And then more bugs.
+
+This analysis is noisy. Because of the noise, it will probably not be practical to use this for instance in continuous integration. Some possible use cases where more noise could be tolerated;
+ * you are writing new code and want to ensure it is safe.
+ * you are reviewing code and want to get hints about possible UB.
+ * you need extra help troubleshooting a weird bug.
+ * you tagged a release candidate and want to check if the code is safe.
+
+## Philosopphy
+
+It is very important that we do warn about all unsafe code. We want that users can feel fully confident about the code we say is "safe".
+
+However, a sloppy analysis that will report too much noise will not be useful. We need to have strong heuristics to avoid false positives.
+
+At the moment there is no whole program analysis but that will be added later to avoid definite false positives.
+
+The focus will be to detect "hidden" bugs. Good candidates are undefined behavior that does not cause a crash immediately but will just cause strange behavior.
+ * Buffer overflows
+ * Uninitialized variables
+ * Usage of dead pointers
+
+## Compiling
+
+make USE_Z3=yes
+
+## Verification for work-in-progress
+
+It is possible to instantly verify your code changes directly in your editor.
+
+You can for instance configure a save action like this:
+
+    cd repo ; git diff > temp.diff ; cppcheck --verify-diff=temp.diff
+
+Ensure that the warnings are sent to your editor and displayed.
+
+From now on, only use 'git commit' when you think all the verification warnings you get looks safe.
+
+With this method, Cppcheck will verify all functions that you are modifying.
+
+## Verification during review
+
+... well I am hoping it will be possible to integrate cppcheck verification in github, gerrit, etc.
+
+## Annotations
+
+To silence Cppcheck verification warnings it is possible to use annotations.
+
+Example code:
+
+    void foo(int x) {
+        return 10000 / x;
+    }
+
+Cppcheck verification will say that there is division and it can't determine that it's not division by zero.
+
+Example code with SAL annotation:
+
+    void foo(int _In_range_(1,1000) x) {
+        return 10000 / x;
+    }
+
+Example code with Cppcheck annotation:
+
+    void foo(int __cppcheck_low__(1) x) {
+        return 10000 / x;
+    }
+
+## Function calls
+
+For a reliable verification it will be very important that `--check-library` is used, you need to ensure that critical library functions are configured.
+
+### Uninitialized variables
+
+When `const` is used for pointer arguments that will be seen as a annotation.
+
+This function:
+
+    void foo(char *p);
+
+Cppcheck will assume that `p` points at uninitialized memory. When `foo` is checked it will be ensured that it initializes the memory.
+
+This function:
+
+    void foo(const char *p);
+
+Cppcheck will assume that `p` points at initialized memory. If you call `foo` and pass a pointer to uninitialized memory we will warn.
+
+TODO: Further annotations to specify how a function initializes memory will be required.
+
+

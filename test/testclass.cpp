@@ -217,10 +217,10 @@ private:
         TEST_CASE(explicitConstructors);
         TEST_CASE(copyCtorAndEqOperator);
 
-        TEST_CASE(unsafeClassDivZero);
-
         TEST_CASE(override1);
         TEST_CASE(overrideCVRefQualifiers);
+
+        TEST_CASE(checkThisUseAfterFree);
 
         TEST_CASE(unsafeClassRefMember);
     }
@@ -931,6 +931,14 @@ private:
                              "   F&operator=(const F&);"
                              "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkCopyConstructor("struct F {\n"
+                             "   int* i;\n"
+                             "   F() { i = new int(); }\n"
+                             "   F(const F &f);\n"
+                             "   F& operator=(const F&);"
+                             "};");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Struct 'F' does not have a destructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
 
         checkCopyConstructor("struct Data { int x; int y; };\n"
                              "struct F {\n"
@@ -2497,35 +2505,35 @@ private:
     }
 
     void virtualDestructor4() {
-        // Derived class doesn't have a destructor => no error
+        // Derived class doesn't have a destructor => undefined behaviour according to paragraph 3 in [expr.delete]
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : public Base { };"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : private Fred, public Base { };"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
     }
 
     void virtualDestructor5() {
-        // Derived class has empty destructor => no error
+        // Derived class has empty destructor => undefined behaviour according to paragraph 3 in [expr.delete]
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : public Base { public: ~Derived() {} };"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : public Base { public: ~Derived(); }; Derived::~Derived() {}"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
     }
 
     void virtualDestructor6() {
@@ -6830,21 +6838,21 @@ private:
                                  "};\n"
                                  "A::A()\n"
                                  "{f();}\n");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:3]: (warning) Virtual function 'f' is called from constructor 'A()' at line 7. Dynamic binding is not used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:3]: (style) Virtual function 'f' is called from constructor 'A()' at line 7. Dynamic binding is not used.\n", errout.str());
 
         checkVirtualFunctionCall("class A {\n"
                                  "    virtual int f();\n"
                                  "    A() {f();}\n"
                                  "};\n"
                                  "int A::f() { return 1; }\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Virtual function 'f' is called from constructor 'A()' at line 3. Dynamic binding is not used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style) Virtual function 'f' is called from constructor 'A()' at line 3. Dynamic binding is not used.\n", errout.str());
 
         checkVirtualFunctionCall("class A : B {\n"
                                  "    int f() override;\n"
                                  "    A() {f();}\n"
                                  "};\n"
                                  "int A::f() { return 1; }\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Virtual function 'f' is called from constructor 'A()' at line 3. Dynamic binding is not used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style) Virtual function 'f' is called from constructor 'A()' at line 3. Dynamic binding is not used.\n", errout.str());
 
         checkVirtualFunctionCall("class B {\n"
                                  "    virtual int f() = 0;\n"
@@ -6854,7 +6862,7 @@ private:
                                  "    A() {f();}\n"
                                  "};\n"
                                  "int A::f() { return 1; }\n");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:5]: (warning) Virtual function 'f' is called from constructor 'A()' at line 6. Dynamic binding is not used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:5]: (style) Virtual function 'f' is called from constructor 'A()' at line 6. Dynamic binding is not used.\n", errout.str());
 
         checkVirtualFunctionCall("class A\n"
                                  "{\n"
@@ -7058,47 +7066,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkUnsafeClassDivZero(const char code[]) {
-        // Clear the error log
-        errout.str("");
-        Settings settings;
-        settings.addEnabled("style");
-
-        // Tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        // Check..
-        CheckClass checkClass(&tokenizer, &settings, this);
-        checkClass.checkUnsafeClassDivZero(true);
-    }
-
-    void unsafeClassDivZero() {
-        checkUnsafeClassDivZero("class A {\n"
-                                "public:\n"
-                                "  void dostuff(int x);\n"
-                                "}\n"
-                                "void A::dostuff(int x) { int a = 1000 / x; }");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Public interface of A is not safe. When calling A::dostuff(), if parameter x is 0 that leads to division by zero.\n", errout.str());
-
-        checkUnsafeClassDivZero("class A {\n"
-                                "public:\n"
-                                "  void f1();\n"
-                                "  void f2(int x);\n"
-                                "}\n"
-                                "void A::f1() {}\n"
-                                "void A::f2(int x) { int a = 1000 / x; }");
-        ASSERT_EQUALS("[test.cpp:7]: (style) Public interface of A is not safe. When calling A::f2(), if parameter x is 0 that leads to division by zero.\n", errout.str());
-
-        checkUnsafeClassDivZero("class A {\n"
-                                "public:\n"
-                                "  void operator/(int x);\n"
-                                "}\n"
-                                "void A::operator/(int x) { int a = 1000 / x; }");
-        ASSERT_EQUALS("", errout.str());
-    }
-
     void checkOverride(const char code[]) {
         // Clear the error log
         errout.str("");
@@ -7152,6 +7119,15 @@ private:
                       "};");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:9]: (style) The destructor '~C' overrides a destructor in a base class but is not marked with a 'override' specifier.\n", errout.str());
 
+        checkOverride("struct Base {\n"
+                      "    virtual void foo();\n"
+                      "};\n"
+                      "\n"
+                      "struct Derived: public Base {\n"
+                      "   void foo() override;\n"
+                      "   void foo(int);\n"
+                      "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void overrideCVRefQualifiers() {
@@ -7192,6 +7168,144 @@ private:
     void unsafeClassRefMember() {
         checkUnsafeClassRefMember("class C { C(const std::string &s) : s(s) {} const std::string &s; };");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Unsafe class: The const reference member 'C::s' is initialized by a const reference constructor argument. You need to be careful about lifetime issues.\n", errout.str());
+    }
+
+    void checkThisUseAfterFree(const char code[]) {
+        // Clear the error log
+        errout.str("");
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings1, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Check..
+        CheckClass checkClass(&tokenizer, &settings1, this);
+        checkClass.checkThisUseAfterFree();
+    }
+
+    void checkThisUseAfterFree() {
+        setMultiline();
+
+        // Calling method..
+        checkThisUseAfterFree("class C {\n"
+                              "public:\n"
+                              "  void dostuff() { delete mInstance; hello(); }\n"
+                              "private:\n"
+                              "  static C *mInstance;\n"
+                              "  void hello() {}\n"
+                              "};");
+        ASSERT_EQUALS("test.cpp:3:warning:Calling method 'hello()' when 'this' might be invalid\n"
+                      "test.cpp:5:note:Assuming 'mInstance' is used as 'this'\n"
+                      "test.cpp:3:note:Delete 'mInstance', invalidating 'this'\n"
+                      "test.cpp:3:note:Call method when 'this' is invalid\n",
+                      errout.str());
+
+        checkThisUseAfterFree("class C {\n"
+                              "public:\n"
+                              "  void dostuff() { mInstance.reset(); hello(); }\n"
+                              "private:\n"
+                              "  static std::shared_ptr<C> mInstance;\n"
+                              "  void hello() {}\n"
+                              "};");
+        ASSERT_EQUALS("test.cpp:3:warning:Calling method 'hello()' when 'this' might be invalid\n"
+                      "test.cpp:5:note:Assuming 'mInstance' is used as 'this'\n"
+                      "test.cpp:3:note:Delete 'mInstance', invalidating 'this'\n"
+                      "test.cpp:3:note:Call method when 'this' is invalid\n",
+                      errout.str());
+
+        checkThisUseAfterFree("class C {\n"
+                              "public:\n"
+                              "  void dostuff() { reset(); hello(); }\n"
+                              "private:\n"
+                              "  static std::shared_ptr<C> mInstance;\n"
+                              "  void hello();\n"
+                              "  void reset() { mInstance.reset(); }\n"
+                              "};");
+        ASSERT_EQUALS("test.cpp:3:warning:Calling method 'hello()' when 'this' might be invalid\n"
+                      "test.cpp:5:note:Assuming 'mInstance' is used as 'this'\n"
+                      "test.cpp:7:note:Delete 'mInstance', invalidating 'this'\n"
+                      "test.cpp:3:note:Call method when 'this' is invalid\n",
+                      errout.str());
+
+        // Use member..
+        checkThisUseAfterFree("class C {\n"
+                              "public:\n"
+                              "  void dostuff() { delete self; x = 123; }\n"
+                              "private:\n"
+                              "  static C *self;\n"
+                              "  int x;\n"
+                              "};");
+        ASSERT_EQUALS("test.cpp:3:warning:Using member 'x' when 'this' might be invalid\n"
+                      "test.cpp:5:note:Assuming 'self' is used as 'this'\n"
+                      "test.cpp:3:note:Delete 'self', invalidating 'this'\n"
+                      "test.cpp:3:note:Call method when 'this' is invalid\n",
+                      errout.str());
+
+        checkThisUseAfterFree("class C {\n"
+                              "public:\n"
+                              "  void dostuff() { delete self; x[1] = 123; }\n"
+                              "private:\n"
+                              "  static C *self;\n"
+                              "  std::map<int,int> x;\n"
+                              "};");
+        ASSERT_EQUALS("test.cpp:3:warning:Using member 'x' when 'this' might be invalid\n"
+                      "test.cpp:5:note:Assuming 'self' is used as 'this'\n"
+                      "test.cpp:3:note:Delete 'self', invalidating 'this'\n"
+                      "test.cpp:3:note:Call method when 'this' is invalid\n",
+                      errout.str());
+
+        // Assign 'shared_from_this()' to non-static smart pointer
+        checkThisUseAfterFree("class C {\n"
+                              "public:\n"
+                              "  void hold() { mInstance = shared_from_this(); }\n"
+                              "  void dostuff() { mInstance.reset(); hello(); }\n"
+                              "private:\n"
+                              "  std::shared_ptr<C> mInstance;\n"
+                              "  void hello() {}\n"
+                              "};");
+        ASSERT_EQUALS("test.cpp:4:warning:Calling method 'hello()' when 'this' might be invalid\n"
+                      "test.cpp:6:note:Assuming 'mInstance' is used as 'this'\n"
+                      "test.cpp:4:note:Delete 'mInstance', invalidating 'this'\n"
+                      "test.cpp:4:note:Call method when 'this' is invalid\n",
+                      errout.str());
+
+        // Avoid FP..
+        checkThisUseAfterFree("class C {\n"
+                              "public:\n"
+                              "  void dostuff() { delete self; x = 123; }\n"
+                              "private:\n"
+                              "  C *self;\n"
+                              "  int x;\n"
+                              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkThisUseAfterFree("class C {\n"
+                              "public:\n"
+                              "  void hold() { mInstance = shared_from_this(); }\n"
+                              "  void dostuff() { if (x) { mInstance.reset(); return; } hello(); }\n"
+                              "private:\n"
+                              "  std::shared_ptr<C> mInstance;\n"
+                              "  void hello() {}\n"
+                              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkThisUseAfterFree("class C\n"
+                              "{\n"
+                              "public:\n"
+                              "    explicit C(const QString& path) : mPath( path ) {}\n"
+                              "\n"
+                              "    static void initialize(const QString& path) {\n" // <- avoid fp in static method
+                              "        if (instanceSingleton)\n"
+                              "            delete instanceSingleton;\n"
+                              "        instanceSingleton = new C(path);\n"
+                              "    }\n"
+                              "private:\n"
+                              "    static C* instanceSingleton;\n"
+                              "};\n"
+                              "\n"
+                              "C* C::instanceSingleton;");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

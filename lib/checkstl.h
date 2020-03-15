@@ -54,7 +54,7 @@ public:
     }
 
     /** run checks, the token list is not simplified */
-    virtual void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         if (!tokenizer->isCPP()) {
             return;
         }
@@ -110,6 +110,8 @@ public:
     void iterators();
 
     void invalidContainer();
+
+    bool checkIteratorPair(const Token* tok1, const Token* tok2);
 
     /**
      * Mismatching containers:
@@ -195,9 +197,7 @@ private:
     void iteratorsError(const Token* tok, const std::string& containerName1, const std::string& containerName2);
     void iteratorsError(const Token* tok, const Token* containerTok, const std::string& containerName1, const std::string& containerName2);
     void iteratorsError(const Token* tok, const Token* containerTok, const std::string& containerName);
-    void iteratorsCmpError(const Token* cmpOperatorTok, const Token* containerTok1, const Token* containerTok2, const std::string& containerName1, const std::string& containerName2);
-    void iteratorsCmpError(const Token* cmpOperatorTok, const Token* containerTok1, const Token* containerTok2, const std::string& containerName);
-    void mismatchingContainersError(const Token* tok);
+    void mismatchingContainersError(const Token* tok1, const Token* tok2);
     void mismatchingContainerExpressionError(const Token *tok1, const Token *tok2);
     void sameIteratorExpressionError(const Token *tok);
     void stlBoundariesError(const Token* tok);
@@ -220,8 +220,6 @@ private:
 
     void useStlAlgorithmError(const Token *tok, const std::string &algoName);
 
-    bool compareIteratorAgainstDifferentContainer(const Token* operatorTok, const Token* containerTok, const nonneg int iteratorId, const std::map<int, const Token*>& iteratorScopeBeginInfo);
-
     void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE {
         ErrorPath errorPath;
         CheckStl c(nullptr, settings, errorLogger);
@@ -230,10 +228,8 @@ private:
         c.iteratorsError(nullptr, "container1", "container2");
         c.iteratorsError(nullptr, nullptr, "container0", "container1");
         c.iteratorsError(nullptr, nullptr, "container");
-        c.iteratorsCmpError(nullptr, nullptr, nullptr, "container1", "container2");
-        c.iteratorsCmpError(nullptr, nullptr, nullptr, "container");
         c.invalidContainerError(nullptr, nullptr, nullptr, errorPath);
-        c.mismatchingContainersError(nullptr);
+        c.mismatchingContainersError(nullptr, nullptr);
         c.mismatchingContainerExpressionError(nullptr, nullptr);
         c.sameIteratorExpressionError(nullptr);
         c.dereferenceErasedError(nullptr, nullptr, "iter", false);

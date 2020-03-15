@@ -69,7 +69,7 @@ void ThreadHandler::setCheckFiles(bool all)
     }
 }
 
-void ThreadHandler::setCheckFiles(QStringList files)
+void ThreadHandler::setCheckFiles(const QStringList& files)
 {
     if (mRunningThreadCount == 0) {
         mResults.setFiles(files);
@@ -194,6 +194,9 @@ void ThreadHandler::initialize(ResultsView *view)
 
     connect(&mResults, &ThreadResult::debugError,
             this, &ThreadHandler::debugError);
+
+    connect(&mResults, &ThreadResult::bughuntingReportLine,
+            this, &ThreadHandler::bughuntingReportLine);
 }
 
 void ThreadHandler::loadSettings(QSettings &settings)
@@ -284,5 +287,5 @@ QDateTime ThreadHandler::getCheckStartTime() const
 
 void ThreadHandler::setCheckStartTime(QDateTime checkStartTime)
 {
-    mCheckStartTime = checkStartTime;
+    mCheckStartTime = std::move(checkStartTime);
 }

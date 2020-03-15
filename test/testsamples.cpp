@@ -64,8 +64,7 @@ private:
             if (i->first.find("memleak") != std::string::npos)
                 continue;
             CLEAR_REDIRECT_ERROUT;
-            char* path = new char[i->first.size() + 1];
-            strcpy(path, i->first.c_str());
+            const char* const path = i->first.c_str();
             const char * const argv[] = {
 #ifdef _WIN32
                 ".\\..\\testrunner",
@@ -92,7 +91,6 @@ private:
                     actual.erase(actual.find("..\\"), 3); // Remove '..\'
                 ASSERT_EQUALS_MSG(expected, actual, i->first);
             }
-            delete[] path;
         }
     }
 

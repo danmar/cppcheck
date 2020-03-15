@@ -54,6 +54,9 @@ private:
         TEST_CASE(inlinesuppress_symbolname);
         TEST_CASE(inlinesuppress_comment);
 
+        TEST_CASE(multi_inlinesuppress);
+        TEST_CASE(multi_inlinesuppress_comment);
+
         TEST_CASE(globalSuppressions); // Testing that global suppressions work (#8515)
 
         TEST_CASE(inlinesuppress_unusedFunction); // #4210 - unusedFunction
@@ -65,8 +68,6 @@ private:
         TEST_CASE(symbol);
 
         TEST_CASE(unusedFunction);
-
-        TEST_CASE(matchglob);
 
         TEST_CASE(suppressingSyntaxErrorAndExitCode);
     }
@@ -189,7 +190,7 @@ private:
         settings.jointSuppressionReport = true;
         if (!suppression.empty()) {
             std::string r = settings.nomsg.addSuppressionLine(suppression);
-            ASSERT_EQUALS("", r);
+            EXPECT_EQ("", r);
         }
 
         unsigned int exitCode = 0;
@@ -216,7 +217,7 @@ private:
         settings.inlineSuppressions = true;
         settings.addEnabled("information");
         if (!suppression.empty()) {
-            ASSERT_EQUALS("", settings.nomsg.addSuppressionLine(suppression));
+            EXPECT_EQ("", settings.nomsg.addSuppressionLine(suppression));
         }
         ThreadExecutor executor(files, settings, *this);
         for (std::map<std::string, std::size_t>::const_iterator i = files.begin(); i != files.end(); ++i)
@@ -328,6 +329,14 @@ private:
         // suppress uninitvar inline
         (this->*check)("void f() {\n"
                        "    int a;\n"
+                       "    a++;// cppcheck-suppress uninitvar\n"
+                       "}\n",
+                       "");
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress uninitvar inline
+        (this->*check)("void f() {\n"
+                       "    int a;\n"
                        "    /* cppcheck-suppress uninitvar */\n"
                        "    a++;\n"
                        "}\n",
@@ -340,6 +349,69 @@ private:
                        "    /* cppcheck-suppress uninitvar */\n"
                        "\n"
                        "    a++;\n"
+                       "}\n",
+                       "");
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress uninitvar inline
+        (this->*check)("void f() {\n"
+                       "    int a;\n"
+                       "    a++;/* cppcheck-suppress uninitvar */\n"
+                       "}\n",
+                       "");
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress uninitvar inline
+        (this->*check)("void f() {\n"
+                       "    int a;\n"
+                       "    // cppcheck-suppress[uninitvar]\n"
+                       "    a++;\n"
+                       "}\n",
+                       "");
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress uninitvar inline
+        (this->*check)("void f() {\n"
+                       "    int a;\n"
+                       "    // cppcheck-suppress[uninitvar]\n"
+                       "    a++;\n"
+                       "\n"
+                       "    a++;\n"
+                       "}\n",
+                       "");
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress uninitvar inline
+        (this->*check)("void f() {\n"
+                       "    int a;\n"
+                       "    a++;// cppcheck-suppress[uninitvar]\n"
+                       "}\n",
+                       "");
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress uninitvar inline
+        (this->*check)("void f() {\n"
+                       "    int a;\n"
+                       "    /* cppcheck-suppress[uninitvar]*/\n"
+                       "    a++;\n"
+                       "}\n",
+                       "");
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress uninitvar inline
+        (this->*check)("void f() {\n"
+                       "    int a;\n"
+                       "    /* cppcheck-suppress[uninitvar]*/\n"
+                       "\n"
+                       "    a++;\n"
+                       "}\n",
+                       "");
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress uninitvar inline
+        (this->*check)("void f() {\n"
+                       "    int a;\n"
+                       "    a++;/* cppcheck-suppress[uninitvar]*/\n"
                        "}\n",
                        "");
         ASSERT_EQUALS("", errout.str());
@@ -469,6 +541,93 @@ private:
         ASSERT_EQUALS("", errMsg);
     }
 
+    void multi_inlinesuppress() {
+        Suppressions ss;
+        std::vector<Suppressions::Suppression> suppressions;
+        std::string errMsg;
+
+        errMsg = "";
+        suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress[errorId]", &errMsg);
+        ASSERT_EQUALS(1, suppressions.size());
+        ASSERT_EQUALS("errorId", suppressions[0].errorId);
+        ASSERT_EQUALS("", suppressions[0].symbolName);
+        ASSERT_EQUALS("", errMsg);
+
+        errMsg = "";
+        suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress[errorId symbolName=arr]", &errMsg);
+        ASSERT_EQUALS(1, suppressions.size());
+        ASSERT_EQUALS("errorId", suppressions[0].errorId);
+        ASSERT_EQUALS("arr", suppressions[0].symbolName);
+        ASSERT_EQUALS("", errMsg);
+
+        errMsg = "";
+        suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress[errorId symbolName=]", &errMsg);
+        ASSERT_EQUALS(1, suppressions.size());
+        ASSERT_EQUALS("errorId", suppressions[0].errorId);
+        ASSERT_EQUALS("", suppressions[0].symbolName);
+        ASSERT_EQUALS("", errMsg);
+
+        errMsg = "";
+        suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress[errorId1, errorId2 symbolName=arr]", &errMsg);
+        ASSERT_EQUALS(2, suppressions.size());
+        ASSERT_EQUALS("errorId1", suppressions[0].errorId);
+        ASSERT_EQUALS("", suppressions[0].symbolName);
+        ASSERT_EQUALS("errorId2", suppressions[1].errorId);
+        ASSERT_EQUALS("arr", suppressions[1].symbolName);
+        ASSERT_EQUALS("", errMsg);
+
+        errMsg = "";
+        suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress[]", &errMsg);
+        ASSERT_EQUALS(0, suppressions.size());
+        ASSERT_EQUALS(true, errMsg.empty());
+
+        errMsg = "";
+        suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress[errorId", &errMsg);
+        ASSERT_EQUALS(0, suppressions.size());
+        ASSERT_EQUALS(false, errMsg.empty());
+
+        errMsg = "";
+        suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress errorId", &errMsg);
+        ASSERT_EQUALS(0, suppressions.size());
+        ASSERT_EQUALS(false, errMsg.empty());
+
+        errMsg = "";
+        suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress[errorId1 errorId2 symbolName=arr]", &errMsg);
+        ASSERT_EQUALS(0, suppressions.size());
+        ASSERT_EQUALS(false, errMsg.empty());
+
+        errMsg = "";
+        suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress[errorId1, errorId2 symbol=arr]", &errMsg);
+        ASSERT_EQUALS(0, suppressions.size());
+        ASSERT_EQUALS(false, errMsg.empty());
+
+        errMsg = "";
+        suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress[errorId1, errorId2 symbolName]", &errMsg);
+        ASSERT_EQUALS(0, suppressions.size());
+        ASSERT_EQUALS(false, errMsg.empty());
+    }
+
+    void multi_inlinesuppress_comment() {
+        Suppressions ss;
+        std::vector<Suppressions::Suppression> suppressions;
+        std::string errMsg;
+
+        errMsg = "";
+        suppressions=ss.parseMultiSuppressComment("//cppcheck-suppress[errorId1, errorId2 symbolName=arr]", &errMsg);
+        ASSERT_EQUALS(2, suppressions.size());
+        ASSERT_EQUALS(true, errMsg.empty());
+
+        errMsg = "";
+        suppressions=ss.parseMultiSuppressComment("//cppcheck-suppress[errorId1, errorId2 symbolName=arr] some text", &errMsg);
+        ASSERT_EQUALS(2, suppressions.size());
+        ASSERT_EQUALS(true, errMsg.empty());
+
+        errMsg = "";
+        suppressions=ss.parseMultiSuppressComment("/*cppcheck-suppress[errorId1, errorId2 symbolName=arr]*/", &errMsg);
+        ASSERT_EQUALS(2, suppressions.size());
+        ASSERT_EQUALS(true, errMsg.empty());
+    }
+
     void globalSuppressions() { // Testing that Cppcheck::useGlobalSuppressions works (#8515)
         errout.str("");
 
@@ -509,7 +668,7 @@ private:
         settings.addEnabled("style");
         settings.inlineSuppressions = true;
         settings.relativePaths = true;
-        settings.basePaths.push_back("/somewhere");
+        settings.basePaths.emplace_back("/somewhere");
         const char code[] =
             "struct Point\n"
             "{\n"
@@ -522,7 +681,7 @@ private:
         ASSERT_EQUALS("",errout.str());
     }
 
-    void suppressingSyntaxErrors() { // syntaxErrors should be suppressable (#7076)
+    void suppressingSyntaxErrors() { // syntaxErrors should be suppressible (#7076)
         std::map<std::string, std::string> files;
         files["test.cpp"] = "if if\n";
 
@@ -530,7 +689,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void suppressingSyntaxErrorsInline() { // syntaxErrors should be suppressable (#5917)
+    void suppressingSyntaxErrorsInline() { // syntaxErrors should be suppressible (#5917)
         std::map<std::string, std::string> files;
         files["test.cpp"] = "double result(0.0);\n"
                             "_asm\n"
@@ -546,7 +705,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void suppressingSyntaxErrorsWhileFileRead() { // syntaxError while file read should be suppressable (PR #1333)
+    void suppressingSyntaxErrorsWhileFileRead() { // syntaxError while file read should be suppressible (PR #1333)
         std::map<std::string, std::string> files;
         files["test.cpp"] = "CONST (genType, KS_CONST) genService[KS_CFG_NR_OF_NVM_BLOCKS] =\n"
                             "{\n"
@@ -588,23 +747,6 @@ private:
 
     void unusedFunction() {
         ASSERT_EQUALS(0, checkSuppression("void f() {}", "unusedFunction"));
-    }
-
-    void matchglob() {
-        ASSERT_EQUALS(true, Suppressions::matchglob("*", "xyz"));
-        ASSERT_EQUALS(true, Suppressions::matchglob("x*", "xyz"));
-        ASSERT_EQUALS(true, Suppressions::matchglob("*z", "xyz"));
-        ASSERT_EQUALS(true, Suppressions::matchglob("*y*", "xyz"));
-        ASSERT_EQUALS(true, Suppressions::matchglob("*y*", "yz"));
-        ASSERT_EQUALS(false, Suppressions::matchglob("*y*", "abc"));
-        ASSERT_EQUALS(true, Suppressions::matchglob("*", "x/y/z"));
-        ASSERT_EQUALS(true, Suppressions::matchglob("*/y/z", "x/y/z"));
-
-        ASSERT_EQUALS(false, Suppressions::matchglob("?", "xyz"));
-        ASSERT_EQUALS(false, Suppressions::matchglob("x?", "xyz"));
-        ASSERT_EQUALS(false, Suppressions::matchglob("?z", "xyz"));
-        ASSERT_EQUALS(true, Suppressions::matchglob("?y?", "xyz"));
-        ASSERT_EQUALS(true, Suppressions::matchglob("?/?/?", "x/y/z"));
     }
 
     void suppressingSyntaxErrorAndExitCode() {

@@ -79,13 +79,14 @@
 /*static*/ FILE* CppCheckExecutor::mExceptionOutput = stdout;
 
 CppCheckExecutor::CppCheckExecutor()
-    : mSettings(nullptr), mLatestProgressOutputTime(0), mErrorOutput(nullptr), mShowAllErrors(false)
+    : mSettings(nullptr), mLatestProgressOutputTime(0), mErrorOutput(nullptr), mBugHuntingReport(nullptr), mShowAllErrors(false)
 {
 }
 
 CppCheckExecutor::~CppCheckExecutor()
 {
     delete mErrorOutput;
+    delete mBugHuntingReport;
 }
 
 bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* const argv[])
@@ -96,12 +97,12 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
     if (success) {
         if (parser.getShowVersion() && !parser.getShowErrorMessages()) {
-            const char * const extraVersion = cppcheck->extraVersion();
+            const char * const extraVersion = CppCheck::extraVersion();
             if (*extraVersion != 0)
-                std::cout << "Cppcheck " << cppcheck->version() << " ("
+                std::cout << "Cppcheck " << CppCheck::version() << " ("
                           << extraVersion << ')' << std::endl;
             else
-                std::cout << "Cppcheck " << cppcheck->version() << std::endl;
+                std::cout << "Cppcheck " << CppCheck::version() << std::endl;
         }
 
         if (parser.getShowErrorMessages()) {
@@ -112,7 +113,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         }
 
         if (parser.exitAfterPrinting()) {
-            settings.terminate();
+            Settings::terminate();
             return true;
         }
     } else {
@@ -158,7 +159,22 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 #else
     const bool caseSensitive = true;
 #endif
-    if (!pathnames.empty()) {
+    if (!mSettings->project.fileSettings.empty() && !mSettings->fileFilter.empty()) {
+        // filter only for the selected filenames from all project files
+        std::list<ImportProject::FileSettings> newList;
+
+        for (const ImportProject::FileSettings &fsetting : settings.project.fileSettings) {
+            if (matchglob(mSettings->fileFilter, fsetting.filename)) {
+                newList.push_back(fsetting);
+            }
+        }
+        if (!newList.empty())
+            settings.project.fileSettings = newList;
+        else {
+            std::cout << "cppcheck: error: could not find any files matching the filter." << std::endl;
+            return false;
+        }
+    } else if (!pathnames.empty()) {
         // Execute recursiveAddFiles() to each given file parameter
         const PathMatch matcher(ignored, caseSensitive);
         for (const std::string &pathname : pathnames)
@@ -170,7 +186,20 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         if (!ignored.empty())
             std::cout << "cppcheck: Maybe all paths were ignored?" << std::endl;
         return false;
+    } else if (!mSettings->fileFilter.empty() && settings.project.fileSettings.empty()) {
+        std::map<std::string, std::size_t> newMap;
+        for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i)
+            if (matchglob(mSettings->fileFilter, i->first)) {
+                newMap[i->first] = i->second;
+            }
+        mFiles = newMap;
+        if (mFiles.empty()) {
+            std::cout << "cppcheck: error: could not find any files matching the filter." << std::endl;
+            return false;
+        }
+
     }
+
     return true;
 }
 
@@ -189,7 +218,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     if (!parseFromArgs(&cppCheck, argc, argv)) {
         return EXIT_FAILURE;
     }
-    if (settings.terminated()) {
+    if (Settings::terminated()) {
         return EXIT_SUCCESS;
     }
     if (cppCheck.settings().exceptionHandling) {
@@ -208,7 +237,7 @@ void CppCheckExecutor::setSettings(const Settings &settings)
  * \return size of array
  * */
 template<typename T, int size>
-std::size_t GetArrayLength(const T(&)[size])
+std::size_t getArrayLength(const T(&)[size])
 {
     return size;
 }
@@ -228,7 +257,7 @@ static void print_stacktrace(FILE* output, bool demangling, int maxdepth, bool l
 #define ADDRESSDISPLAYLENGTH ((sizeof(long)==8)?12:8)
     const int fd = fileno(output);
     void *callstackArray[32]= {nullptr}; // the less resources the better...
-    const int currentdepth = backtrace(callstackArray, (int)GetArrayLength(callstackArray));
+    const int currentdepth = backtrace(callstackArray, (int)getArrayLength(callstackArray));
     const int offset=2; // some entries on top are within our own exception handling code or libc
     if (maxdepth<0)
         maxdepth=currentdepth-offset;
@@ -256,7 +285,7 @@ static void print_stacktrace(FILE* output, bool demangling, int maxdepth, bool l
                         char input_buffer[1024]= {0};
                         strncpy(input_buffer, firstBracketName+1, plus-firstBracketName-1);
                         char output_buffer[2048]= {0};
-                        size_t length = GetArrayLength(output_buffer);
+                        size_t length = getArrayLength(output_buffer);
                         int status=0;
                         // We're violating the specification - passing stack address instead of malloc'ed heap.
                         // Benefit is that no further heap is required, while there is sufficient stack...
@@ -539,7 +568,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
 namespace {
     const ULONG maxnamelength = 512;
     struct IMAGEHLP_SYMBOL64_EXT : public IMAGEHLP_SYMBOL64 {
-        TCHAR NameExt[maxnamelength]; // actually no need to worry about character encoding here
+        TCHAR nameExt[maxnamelength]; // actually no need to worry about character encoding here
     };
     typedef BOOL (WINAPI *fpStackWalk64)(DWORD, HANDLE, HANDLE, LPSTACKFRAME64, PVOID, PREAD_PROCESS_MEMORY_ROUTINE64, PFUNCTION_TABLE_ACCESS_ROUTINE64, PGET_MODULE_BASE_ROUTINE64, PTRANSLATE_ADDRESS_ROUTINE64);
     fpStackWalk64 pStackWalk64;
@@ -574,7 +603,7 @@ namespace {
     }
 
 
-    void PrintCallstack(FILE* outputFile, PEXCEPTION_POINTERS ex)
+    void printCallstack(FILE* outputFile, PEXCEPTION_POINTERS ex)
     {
         if (!loadDbgHelp())
             return;
@@ -628,7 +657,7 @@ namespace {
                 break;
             pSymGetSymFromAddr64(hProcess, (ULONG64)stack.AddrPC.Offset, &displacement, &symbol);
             TCHAR undname[maxnamelength]= {0};
-            pUnDecorateSymbolName((const TCHAR*)symbol.Name, (PTSTR)undname, (DWORD)GetArrayLength(undname), UNDNAME_COMPLETE);
+            pUnDecorateSymbolName((const TCHAR*)symbol.Name, (PTSTR)undname, (DWORD)getArrayLength(undname), UNDNAME_COMPLETE);
             if (beyond_main>=0)
                 ++beyond_main;
             if (_tcscmp(undname, _T("main"))==0)
@@ -751,7 +780,7 @@ namespace {
             break;
         }
         fputc('\n', outputFile);
-        PrintCallstack(outputFile, ex);
+        printCallstack(outputFile, ex);
         fflush(outputFile);
         return EXCEPTION_EXECUTE_HANDLER;
     }
@@ -889,14 +918,15 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
                 }
             }
         } else {
-
             // filesettings
-            c = 0;
+            // check all files of the project
             for (const ImportProject::FileSettings &fs : settings.project.fileSettings) {
                 returnValue += cppcheck.check(fs);
                 ++c;
                 if (!settings.quiet)
                     reportStatus(c, settings.project.fileSettings.size(), c, settings.project.fileSettings.size());
+                if (settings.clangTidy)
+                    cppcheck.analyseClangTidy(fs);
             }
         }
 
@@ -1061,6 +1091,15 @@ void CppCheckExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
     } else {
         reportErr(msg.toString(mSettings->verbose, mSettings->templateFormat, mSettings->templateLocation));
     }
+}
+
+void CppCheckExecutor::bughuntingReport(const std::string &str)
+{
+    if (!mSettings || str.empty())
+        return;
+    if (!mBugHuntingReport)
+        mBugHuntingReport = new std::ofstream(mSettings->bugHuntingReport);
+    (*mBugHuntingReport) << str << std::endl;
 }
 
 void CppCheckExecutor::setExceptionOutput(FILE* exceptionOutput)

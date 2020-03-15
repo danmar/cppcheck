@@ -131,7 +131,7 @@ public:
     * @return Directory containing source files
     */
 
-    QString getCheckDirectory(void);
+    QString getCheckDirectory();
 
     /**
     * @brief Inform the view that checking has started
@@ -322,6 +322,11 @@ public slots:
      * \brief debug message
      */
     void debugError(const ErrorItem &item);
+
+    /**
+     * \brief bughunting report line
+     */
+    void bughuntingReportLine(const QString& line);
 
     /**
      * \brief Clear log messages

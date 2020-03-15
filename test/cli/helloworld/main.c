@@ -6,3 +6,6 @@ int main() {
     return 0;
 }
 
+#ifdef SOME_CONFIG
+void foo();
+#endif

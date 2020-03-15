@@ -182,16 +182,13 @@ static int getMinFormatStringOutputLength(const std::vector<const Token*> &param
 
 //---------------------------------------------------------------------------
 
-static bool getDimensionsEtc(const Token * const arrayToken, const Settings *settings, std::vector<Dimension> * const dimensions, ErrorPath * const errorPath, bool * const mightBeLarger)
+static bool getDimensionsEtc(const Token * const arrayToken, const Settings *settings, std::vector<Dimension> * const dimensions, ErrorPath * const errorPath, bool * const mightBeLarger, MathLib::bigint* path)
 {
     const Token *array = arrayToken;
     while (Token::Match(array, ".|::"))
         array = array->astOperand2();
 
-    if (!array->variable())
-        return false;
-
-    if (array->variable()->isArray() && !array->variable()->dimensions().empty()) {
+    if (array->variable() && array->variable()->isArray() && !array->variable()->dimensions().empty()) {
         *dimensions = array->variable()->dimensions();
         if (dimensions->size() >= 1 && ((*dimensions)[0].num <= 1 || !(*dimensions)[0].tok)) {
             visitAstNodes(arrayToken,
@@ -203,27 +200,32 @@ static bool getDimensionsEtc(const Token * const arrayToken, const Settings *set
                 return ChildrenToVisit::op1_and_op2;
             });
         }
-    } else if (const Token *stringLiteral = array->getValueTokenMinStrSize()) {
+    } else if (const Token *stringLiteral = array->getValueTokenMinStrSize(settings)) {
         Dimension dim;
         dim.tok = nullptr;
-        dim.num = Token::getStrSize(stringLiteral);
+        dim.num = Token::getStrArraySize(stringLiteral);
         dim.known = array->hasKnownValue();
         dimensions->emplace_back(dim);
     } else if (array->valueType() && array->valueType()->pointer >= 1 && array->valueType()->isIntegral()) {
         const ValueFlow::Value *value = getBufferSizeValue(array);
         if (!value)
             return false;
+        if (path)
+            *path = value->path;
         *errorPath = value->errorPath;
         Dimension dim;
         dim.known = value->isKnown();
         dim.tok = nullptr;
-        dim.num = value->intvalue / array->valueType()->typeSize(*settings);
+        const int typeSize = array->valueType()->typeSize(*settings);
+        if (typeSize == 0)
+            return false;
+        dim.num = value->intvalue / typeSize;
         dimensions->emplace_back(dim);
     }
     return !dimensions->empty();
 }
 
-static std::vector<const ValueFlow::Value *> getOverrunIndexValues(const Token *tok, const Token *arrayToken, const std::vector<Dimension> &dimensions, const std::vector<const Token *> &indexTokens)
+static std::vector<const ValueFlow::Value *> getOverrunIndexValues(const Token *tok, const Token *arrayToken, const std::vector<Dimension> &dimensions, const std::vector<const Token *> &indexTokens, MathLib::bigint path)
 {
     const Token *array = arrayToken;
     while (Token::Match(array, ".|::"))
@@ -239,12 +241,14 @@ static std::vector<const ValueFlow::Value *> getOverrunIndexValues(const Token *
             indexValues.push_back(value);
             if (!value)
                 continue;
+            if (value->path != path)
+                continue;
             if (!value->isKnown()) {
                 if (!allKnown)
                     continue;
                 allKnown = false;
             }
-            if (array->variable()->isArray() && dimensions[i].num == 0)
+            if (array->variable() && array->variable()->isArray() && dimensions[i].num == 0)
                 continue;
             if (value->intvalue == dimensions[i].num)
                 equal = true;
@@ -275,7 +279,7 @@ void CheckBufferOverrun::arrayIndex()
         const Token *array = tok->astOperand1();
         while (Token::Match(array, ".|::"))
             array = array->astOperand2();
-        if (!array|| !array->variable() || array->variable()->nameToken() == array)
+        if (!array || ((!array->variable() || array->variable()->nameToken() == array) && array->tokType() != Token::eString))
             continue;
         if (!array->scope()->isExecutable()) {
             // LHS in non-executable scope => This is just a definition
@@ -285,6 +289,9 @@ void CheckBufferOverrun::arrayIndex()
             if (!parent || parent == parent->astParent()->astOperand1())
                 continue;
         }
+
+        if (astIsContainer(array))
+            continue;
 
         std::vector<const Token *> indexTokens;
         for (const Token *tok2 = tok; tok2 && tok2->str() == "["; tok2 = tok2->link()->next()) {
@@ -300,12 +307,13 @@ void CheckBufferOverrun::arrayIndex()
         std::vector<Dimension> dimensions;
         ErrorPath errorPath;
         bool mightBeLarger = false;
-        if (!getDimensionsEtc(tok->astOperand1(), mSettings, &dimensions, &errorPath, &mightBeLarger))
+        MathLib::bigint path = 0;
+        if (!getDimensionsEtc(tok->astOperand1(), mSettings, &dimensions, &errorPath, &mightBeLarger, &path))
             continue;
 
         // Positive index
         if (!mightBeLarger) { // TODO check arrays with dim 1 also
-            const std::vector<const ValueFlow::Value *> &indexValues = getOverrunIndexValues(tok, tok->astOperand1(), dimensions, indexTokens);
+            const std::vector<const ValueFlow::Value *> &indexValues = getOverrunIndexValues(tok, tok->astOperand1(), dimensions, indexTokens, path);
             if (!indexValues.empty())
                 arrayIndexError(tok, dimensions, indexValues);
         }
@@ -313,8 +321,8 @@ void CheckBufferOverrun::arrayIndex()
         // Negative index
         bool neg = false;
         std::vector<const ValueFlow::Value *> negativeIndexes;
-        for (int i = 0; i < indexTokens.size(); ++i) {
-            const ValueFlow::Value *negativeValue = indexTokens[i]->getValueLE(-1, mSettings);
+        for (const Token * indexToken : indexTokens) {
+            const ValueFlow::Value *negativeValue = indexToken->getValueLE(-1, mSettings);
             negativeIndexes.emplace_back(negativeValue);
             if (negativeValue)
                 neg = true;
@@ -449,14 +457,15 @@ void CheckBufferOverrun::pointerArithmetic()
         std::vector<Dimension> dimensions;
         ErrorPath errorPath;
         bool mightBeLarger = false;
-        if (!getDimensionsEtc(arrayToken, mSettings, &dimensions, &errorPath, &mightBeLarger))
+        MathLib::bigint path = 0;
+        if (!getDimensionsEtc(arrayToken, mSettings, &dimensions, &errorPath, &mightBeLarger, &path))
             continue;
 
         if (tok->str() == "+") {
             // Positive index
             if (!mightBeLarger) { // TODO check arrays with dim 1 also
                 const std::vector<const Token *> indexTokens{indexToken};
-                const std::vector<const ValueFlow::Value *> &indexValues = getOverrunIndexValues(tok, arrayToken, dimensions, indexTokens);
+                const std::vector<const ValueFlow::Value *> &indexValues = getOverrunIndexValues(tok, arrayToken, dimensions, indexTokens, path);
                 if (!indexValues.empty())
                     pointerArithmeticError(tok, indexToken, indexValues.front());
             }
@@ -588,6 +597,8 @@ void CheckBufferOverrun::bufferOverflow()
                     argtok = argtok->astOperand2();
                 if (!argtok || !argtok->variable())
                     continue;
+                if (argtok->valueType() && argtok->valueType()->pointer == 0)
+                    continue;
                 // TODO: strcpy(buf+10, "hello");
                 const ValueFlow::Value bufferSize = getBufferSize(argtok);
                 if (bufferSize.intvalue <= 1)
@@ -631,7 +642,7 @@ void CheckBufferOverrun::arrayIndexThenCheck()
                 // Iterate AST upwards
                 const Token* tok2 = tok;
                 const Token* tok3 = tok2;
-                while (tok2->astParent() && tok2->tokType() != Token::eLogicalOp) {
+                while (tok2->astParent() && tok2->tokType() != Token::eLogicalOp && tok2->str() != "?") {
                     tok3 = tok2;
                     tok2 = tok2->astParent();
                 }

@@ -264,7 +264,7 @@ void CheckFunctions::checkMathFunctions()
                 // fmod ( x , y) If y is zero, then either a range error will occur or the function will return zero (implementation-defined).
                 else if (Token::Match(tok, "fmod|fmodf|fmodl (")) {
                     const Token* nextArg = tok->tokAt(2)->nextArgument();
-                    if (nextArg && nextArg->isNumber() && MathLib::isNullValue(nextArg->str()))
+                    if (nextArg && MathLib::isNullValue(nextArg->str()))
                         mathfunctionCallWarning(tok, 2);
                 }
                 // pow ( x , y) If x is zero, and y is negative --> division by zero
@@ -328,7 +328,7 @@ void CheckFunctions::memsetZeroBytes()
                 if (WRONG_DATA(arguments.size() != 3U, tok))
                     continue;
                 const Token* lastParamTok = arguments[2];
-                if (lastParamTok->str() == "0")
+                if (MathLib::isNullValue(lastParamTok->str()))
                     memsetZeroBytesError(tok);
             }
         }
@@ -415,16 +415,16 @@ void CheckFunctions::checkLibraryMatchFunctions()
     if (!mSettings->checkLibrary || !mSettings->isEnabled(Settings::INFORMATION))
         return;
 
-    bool New = false;
+    bool insideNew = false;
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (!tok->scope() || !tok->scope()->isExecutable())
             continue;
 
         if (tok->str() == "new")
-            New = true;
+            insideNew = true;
         else if (tok->str() == ";")
-            New = false;
-        else if (New)
+            insideNew = false;
+        else if (insideNew)
             continue;
 
         if (!Token::Match(tok, "%name% (") || Token::Match(tok, "asm|sizeof|catch"))

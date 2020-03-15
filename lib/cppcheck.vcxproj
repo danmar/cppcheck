@@ -74,16 +74,20 @@
     <ClCompile Include="checkunusedfunctions.cpp" />
     <ClCompile Include="checkunusedvar.cpp" />
     <ClCompile Include="checkvaarg.cpp" />
+    <ClCompile Include="clangimport.cpp" />
     <ClCompile Include="cppcheck.cpp" />
     <ClCompile Include="ctu.cpp" />
     <ClCompile Include="errorlogger.cpp" />
+    <ClCompile Include="exprengine.cpp" />
     <ClCompile Include="library.cpp" />
     <ClCompile Include="mathlib.cpp" />
     <ClCompile Include="path.cpp" />
+    <ClCompile Include="pathanalysis.cpp" />
     <ClCompile Include="pathmatch.cpp" />
     <ClCompile Include="platform.cpp" />
     <ClCompile Include="preprocessor.cpp" />
     <ClCompile Include="importproject.cpp" />
+    <ClCompile Include="programmemory.cpp" />
     <ClCompile Include="settings.cpp" />
     <ClCompile Include="suppressions.cpp" />
     <ClCompile Include="symboldatabase.cpp" />
@@ -93,6 +97,7 @@
     <ClCompile Include="tokenize.cpp" />
     <ClCompile Include="tokenlist.cpp" />
     <ClCompile Include="valueflow.cpp" />
+    <ClCompile Include="forwardanalyzer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\externals\simplecpp\simplecpp.h" />
@@ -125,6 +130,7 @@
     <ClInclude Include="checkunusedfunctions.h" />
     <ClInclude Include="checkunusedvar.h" />
     <ClInclude Include="checkvaarg.h" />
+    <ClInclude Include="clangimport.h" />
     <ClInclude Include="config.h" />
     <ClInclude Include="cppcheck.h" />
     <ClInclude Include="ctu.h" />

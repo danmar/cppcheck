@@ -12,7 +12,6 @@
 #include <dirent.h>
 #include <sys/mman.h>
 #include <sys/socket.h>
-#include <sys/time.h>
 #include <dlfcn.h>
 #include <fcntl.h>
 // unavailable on some linux systems #include <ndbm.h>
@@ -23,13 +22,35 @@
 #include <pthread.h>
 #include <syslog.h>
 #include <stdarg.h>
+#include <ctype.h>
+#include <stdbool.h>
 
-// #9323, #9331
-void verify_timercmp(struct timeval t)
+bool invalidFunctionArgBool_isascii(bool b, int c)
 {
-    (void)timercmp(&t, &t, <);
-    (void)timercmp(&t, &t, >);
-    (void)timercmp(&t, &t, !=);
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)isascii(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return isascii(c != 0);
+}
+
+void uninitvar_putenv(char * envstr)
+{
+    // No warning is expected
+    (void)putenv(envstr);
+
+    char * p;
+    // cppcheck-suppress uninitvar
+    (void)putenv(p);
+}
+
+void nullPointer_putenv(char * envstr)
+{
+    // No warning is expected
+    (void)putenv(envstr);
+
+    char * p=NULL;
+    // cppcheck-suppress nullPointer
+    (void)putenv(p);
 }
 
 void memleak_scandir(void)

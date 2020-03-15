@@ -57,6 +57,11 @@ environment:
 
 install:
   - pip install pytest
+  - SET p=x86
+  - IF "%platform%"=="x64" SET p=x64
+  - curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-4.8.7/z3-4.8.7-%p%-win.zip -o z3-4.8.7-win.zip
+  - 7z x z3-4.8.7-win.zip -oexternals -r -y
+  - move externals\z3-4.8.7-%p%-win externals\z3
 
 build_script:
   - ECHO Building %configuration% %platform% with MSVC %VisualStudioVersion% using %PlatformToolset% PlatformToolset
@@ -80,8 +85,8 @@ build_script:
 
 test_script:
   - build\bin\testrunner.exe -q
-  - IF EXIST bin\debug\testrunner.exe bin\debug\testrunner.exe
-  - IF EXIST bin\testrunner.exe bin\testrunner.exe
+  - IF EXIST bin\debug\testrunner.exe bin\debug\testrunner.exe -q
+  - IF EXIST bin\testrunner.exe bin\testrunner.exe -q
   - cd test\cli
   - python -m pytest test-helloworld.py
   - python -m pytest test-inline-suppress.py
