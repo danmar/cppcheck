@@ -2699,6 +2699,15 @@ private:
                                "    delete base;\n"
                                "}\n", true);
         ASSERT_EQUALS("[test.cpp:3]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
+        
+        // class Base destructor is not virtual but protected -> no error
+        checkVirtualDestructor("class Base {\n"
+                               "public:\n"
+                               "    virtual void foo(){}\n"
+                               "protected:\n"
+                               "    ~Base(){}\n"
+                               "};\n", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkNoMemset(const char code[]) {
