@@ -61,7 +61,8 @@ namespace cppcheck {
         }
 
         bool isIntValue(unsigned long long value) const {
-            return value <= max_value(int_bit);
+            unsigned long long intMax = max_value(int_bit);
+            return value <= intMax;
         }
 
         bool isLongValue(long long value) const {
@@ -69,11 +70,13 @@ namespace cppcheck {
         }
 
         bool isLongValue(unsigned long long value) const {
-            return value <= max_value(long_bit);
+            unsigned long long longMax = max_value(long_bit);
+            return value <= longMax;
         }
 
         bool isLongLongValue(unsigned long long value) const {
-            return value <= max_value(long_long_bit);
+            unsigned long long longLongMax = max_value(long_long_bit);
+            return value <= longLongMax;
         }
 
         nonneg int char_bit;       /// bits in char
