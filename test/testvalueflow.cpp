@@ -4444,6 +4444,14 @@ private:
                "    return r;\n"
                "}\n";
         valueOfTok(code, "0");
+
+        code = "void fa(int &colors) {\n"
+               "  for (int i = 0; i != 6; ++i) {}\n"
+               "}\n"
+               "void fb(not_null<int*> parent, int &&colors2) {\n"
+               "  dostuff(1);\n"
+               "}\n";
+        valueOfTok(code, "x");
     }
 
     void valueFlowCrashConstructorInitialization() { // #9577
