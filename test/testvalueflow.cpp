@@ -132,6 +132,7 @@ private:
         TEST_CASE(valueFlowCrashIncompleteCode);
 
         TEST_CASE(valueFlowCrash);
+        TEST_CASE(valueFlowHang);
         TEST_CASE(valueFlowCrashConstructorInitialization);
     }
 
@@ -4450,6 +4451,49 @@ private:
                "}\n"
                "void fb(not_null<int*> parent, int &&colors2) {\n"
                "  dostuff(1);\n"
+               "}\n";
+        valueOfTok(code, "x");
+    }
+
+    void valueFlowHang() {
+        const char* code;
+        // #9659
+        code = "float arr1[4][4] = {0.0};\n"
+               "float arr2[4][4] = {0.0};\n"
+               "void f() {\n"
+               "    if(arr1[0][0] == 0.0 &&\n"
+               "       arr1[0][1] == 0.0 &&\n"
+               "       arr1[0][2] == 0.0 &&\n"
+               "       arr1[0][3] == 0.0 &&\n"
+               "       arr1[1][0] == 0.0 &&\n"
+               "       arr1[1][1] == 0.0 &&\n"
+               "       arr1[1][2] == 0.0 &&\n"
+               "       arr1[1][3] == 0.0 &&\n"
+               "       arr1[2][0] == 0.0 &&\n"
+               "       arr1[2][1] == 0.0 &&\n"
+               "       arr1[2][2] == 0.0 &&\n"
+               "       arr1[2][3] == 0.0 &&\n"
+               "       arr1[3][0] == 0.0 &&\n"
+               "       arr1[3][1] == 0.0 &&\n"
+               "       arr1[3][2] == 0.0 &&\n"
+               "       arr1[3][3] == 0.0 &&\n"
+               "       arr2[0][0] == 0.0 &&\n"
+               "       arr2[0][1] == 0.0 &&\n"
+               "       arr2[0][2] == 0.0 &&\n"
+               "       arr2[0][3] == 0.0 &&\n"
+               "       arr2[1][0] == 0.0 &&\n"
+               "       arr2[1][1] == 0.0 &&\n"
+               "       arr2[1][2] == 0.0 &&\n"
+               "       arr2[1][3] == 0.0 &&\n"
+               "       arr2[2][0] == 0.0 &&\n"
+               "       arr2[2][1] == 0.0 &&\n"
+               "       arr2[2][2] == 0.0 &&\n"
+               "       arr2[2][3] == 0.0 &&\n"
+               "       arr2[3][0] == 0.0 &&\n"
+               "       arr2[3][1] == 0.0 &&\n"
+               "       arr2[3][2] == 0.0 &&\n"
+               "       arr2[3][3] == 0.0\n"
+               "       ) {}\n"
                "}\n";
         valueOfTok(code, "x");
     }
