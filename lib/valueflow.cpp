@@ -4496,12 +4496,15 @@ static void valueFlowForLoopSimplifyAfter(Token *fortok, nonneg int varid, const
     else
         endToken = fortok->scope()->bodyEnd;
 
+    Token* blockTok = fortok->linkAt(1)->linkAt(1);
     std::list<ValueFlow::Value> values;
     values.emplace_back(num);
     values.back().errorPath.emplace_back(fortok,"After for loop, " + var->name() + " has value " + values.back().infoString());
 
-    valueFlowForwardVariable(
-        fortok->linkAt(1)->linkAt(1)->next(), endToken, var, varid, values, false, false, tokenlist, errorLogger, settings);
+    if (blockTok != endToken) {
+        valueFlowForwardVariable(
+            blockTok->next(), endToken, var, varid, values, false, false, tokenlist, errorLogger, settings);
+    }
 }
 
 static void valueFlowForLoop(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
