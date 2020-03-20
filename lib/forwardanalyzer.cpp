@@ -2,6 +2,7 @@
 #include "astutils.h"
 #include "settings.h"
 #include "symboldatabase.h"
+#include "token.h"
 
 #include <functional>
 
@@ -70,8 +71,6 @@ struct ForwardTraversal {
     Progress traverseConditional(T* tok, F f, bool traverseUnknown) {
         if (Token::Match(tok, "?|&&|%oror%")) {
             T* condTok = tok->astOperand1();
-            if (traverseRecursive(condTok, f, traverseUnknown) == Progress::Break)
-                return Progress::Break;
             T* childTok = tok->astOperand2();
             bool checkThen, checkElse;
             std::tie(checkThen, checkElse) = evalCond(condTok);
