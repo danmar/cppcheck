@@ -4453,6 +4453,14 @@ private:
                "  dostuff(1);\n"
                "}\n";
         valueOfTok(code, "x");
+
+        code = "void a() {\n"
+               "  static int x = 0;\n"
+               "  struct c {\n"
+               "    c(c &&) { ++x; }\n"
+               "  };\n"
+               "}\n";
+        valueOfTok(code, "x");
     }
 
     void valueFlowHang() {
