@@ -46,6 +46,10 @@ struct ForwardTraversal {
                 return Progress::Break;
             if (out)
                 *out = lambdaEndToken;
+            // Skip class scope
+        } else if (Token::simpleMatch(tok, "{") && tok->scope() && tok->scope()->isClassOrStruct()) {
+            if (out)
+                *out = tok->link();
         } else {
             if (f(tok) == Progress::Break)
                 return Progress::Break;
