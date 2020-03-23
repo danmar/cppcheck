@@ -2261,6 +2261,17 @@ private:
               "    ptr = &arr[2];\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9639
+        check("struct Fred {\n"
+              "    std::string s;\n"
+              "};\n"
+              "const Fred &getFred();\n"
+              "const char * f() {\n"
+              "  const Fred &fred = getFred();\n"
+              "  return fred.s.c_str();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeFunction() {

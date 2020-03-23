@@ -401,7 +401,7 @@ static bool isInScope(const Token * tok, const Scope * scope)
     if (!scope)
         return false;
     const Variable * var = tok->variable();
-    if (var && (var->isGlobal() || var->isStatic() || var->isExtern() || var->isReference()))
+    if (var && (var->isGlobal() || var->isStatic() || var->isExtern()))
         return false;
     if (tok->scope() && tok->scope()->isNestedIn(scope))
         return true;
@@ -505,7 +505,6 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
         for (const ValueFlow::Value& val:tok->values()) {
             if (!val.isLocalLifetimeValue())
                 continue;
-            // const Token * tokvalue = getParentLifetime(val.tokvalue);
             for(const LifetimeToken& lt :getLifetimeTokens(getParentLifetime(val.tokvalue))) {
                 const Token * tokvalue = lt.token;
                 if (Token::Match(tok->astParent(), "return|throw")) {
