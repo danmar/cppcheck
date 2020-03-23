@@ -185,7 +185,7 @@ void ApplicationList::clear()
     mDefaultApplicationIndex = -1;
 }
 
-bool ApplicationList::checkAndAddApplication(QString appPath, QString name, QString parameters)
+bool ApplicationList::checkAndAddApplication(const QString& appPath, const QString& name, const QString& parameters)
 {
     if (QFileInfo(appPath).exists() && QFileInfo(appPath).isExecutable()) {
         Application app;

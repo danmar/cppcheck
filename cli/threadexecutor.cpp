@@ -471,6 +471,8 @@ unsigned int __stdcall ThreadExecutor::threadProc(void *args)
             ++itFileSettings;
             LeaveCriticalSection(&threadExecutor->mFileSync);
             result += fileChecker.check(fs);
+            if (threadExecutor->mSettings.clangTidy)
+                fileChecker.analyseClangTidy(fs);
         }
 
         EnterCriticalSection(&threadExecutor->mFileSync);

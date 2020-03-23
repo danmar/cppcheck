@@ -1081,11 +1081,7 @@ public:
 
     void addVariable(const Token *token_, const Token *start_,
                      const Token *end_, AccessControl access_, const Type *type_,
-                     const Scope *scope_, const Settings* settings) {
-        varlist.emplace_back(token_, start_, end_, varlist.size(),
-                             access_,
-                             type_, scope_, settings);
-    }
+                     const Scope *scope_, const Settings* settings);
 
     /** @brief initialize varlist */
     void getVariableList(const Settings* settings);

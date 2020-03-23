@@ -2,6 +2,7 @@
 #include "astutils.h"
 #include "settings.h"
 #include "symboldatabase.h"
+#include "token.h"
 
 #include <functional>
 
@@ -45,6 +46,10 @@ struct ForwardTraversal {
                 return Progress::Break;
             if (out)
                 *out = lambdaEndToken;
+            // Skip class scope
+        } else if (Token::simpleMatch(tok, "{") && tok->scope() && tok->scope()->isClassOrStruct()) {
+            if (out)
+                *out = tok->link();
         } else {
             if (f(tok) == Progress::Break)
                 return Progress::Break;
@@ -70,8 +75,6 @@ struct ForwardTraversal {
     Progress traverseConditional(T* tok, F f, bool traverseUnknown) {
         if (Token::Match(tok, "?|&&|%oror%")) {
             T* condTok = tok->astOperand1();
-            if (traverseRecursive(condTok, f, traverseUnknown) == Progress::Break)
-                return Progress::Break;
             T* childTok = tok->astOperand2();
             bool checkThen, checkElse;
             std::tie(checkThen, checkElse) = evalCond(condTok);
@@ -231,6 +234,17 @@ struct ForwardTraversal {
     Progress updateRange(Token* start, const Token* end) {
         for (Token* tok = start; tok && tok != end; tok = tok->next()) {
             Token* next = nullptr;
+
+            // Skip casts..
+            if (tok->str() == "(" && !tok->astOperand2() && tok->isCast()) {
+                tok = tok->link();
+                continue;
+            }
+            // Skip template arguments..
+            if (tok->str() == "<" && tok->link()) {
+                tok = tok->link();
+                continue;
+            }
 
             // Evaluate RHS of assignment before LHS
             if (Token* assignTok = assignExpr(tok)) {

@@ -1243,7 +1243,7 @@ void ResultsTree::setCheckDirectory(const QString &dir)
 }
 
 
-QString ResultsTree::getCheckDirectory(void)
+QString ResultsTree::getCheckDirectory()
 {
     return mCheckPath;
 }

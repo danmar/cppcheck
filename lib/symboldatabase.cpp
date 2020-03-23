@@ -3552,6 +3552,9 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
         while (Token::Match(startTok, "enum|struct|const|volatile"))
             startTok = startTok->next();
 
+        if (startTok == nameTok)
+            break;
+
         argumentList.emplace_back(nameTok, startTok, endTok, count++, AccessControl::Argument, argType, functionScope, symbolDatabase->mSettings);
 
         if (tok->str() == ")") {
@@ -3771,6 +3774,15 @@ AccessControl Scope::defaultAccess() const
     default:
         return AccessControl::Local;
     }
+}
+
+void Scope::addVariable(const Token *token_, const Token *start_, const Token *end_,
+                        AccessControl access_, const Type *type_, const Scope *scope_, const Settings* settings)
+{
+    // keep possible size_t -> int truncation outside emplace_back() to have a single line
+    // C4267 VC++ warning instead of several dozens lines
+    const int varIndex = varlist.size();
+    varlist.emplace_back(token_, start_, end_, varIndex, access_, type_, scope_, settings);
 }
 
 // Get variable list..
