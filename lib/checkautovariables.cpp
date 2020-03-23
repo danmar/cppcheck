@@ -505,39 +505,41 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
         for (const ValueFlow::Value& val:tok->values()) {
             if (!val.isLocalLifetimeValue())
                 continue;
-            const Token * tokvalue = getParentLifetime(val.tokvalue);
-            if (Token::Match(tok->astParent(), "return|throw")) {
-                if (getPointerDepth(tok) < getPointerDepth(tokvalue))
-                    continue;
-                if (!isLifetimeBorrowed(tok, mSettings))
-                    continue;
-                if ((tokvalue->variable() && isInScope(tokvalue->variable()->nameToken(), scope)) ||
-                    isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok, &mSettings->library)) {
-                    errorReturnDanglingLifetime(tok, &val);
-                    break;
-                }
-            } else if (tokvalue->variable() && isDeadScope(tokvalue->variable()->nameToken(), tok->scope())) {
-                errorInvalidLifetime(tok, &val);
-                break;
-            } else if (!tokvalue->variable() && isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok, &mSettings->library)) {
-                errorDanglingTemporaryLifetime(tok, &val);
-                break;
-            } else if (tokvalue->variable() && isInScope(tokvalue->variable()->nameToken(), tok->scope())) {
-                const Variable * var = nullptr;
-                const Token * tok2 = tok;
-                if (Token::simpleMatch(tok->astParent(), "=")) {
-                    if (tok->astParent()->astOperand2() == tok) {
-                        var = getLHSVariable(tok->astParent());
-                        tok2 = tok->astParent()->astOperand1();
+            for(const LifetimeToken& lt :getLifetimeTokens(getParentLifetime(val.tokvalue))) {
+                const Token * tokvalue = lt.token;
+                if (Token::Match(tok->astParent(), "return|throw")) {
+                    if (getPointerDepth(tok) < getPointerDepth(tokvalue))
+                        continue;
+                    if (!isLifetimeBorrowed(tok, mSettings))
+                        continue;
+                    if ((tokvalue->variable() && isInScope(tokvalue->variable()->nameToken(), scope)) ||
+                        isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok, &mSettings->library)) {
+                        errorReturnDanglingLifetime(tok, &val);
+                        break;
                     }
-                } else if (tok->variable() && tok->variable()->declarationId() == tok->varId()) {
-                    var = tok->variable();
-                }
-                if (!isLifetimeBorrowed(tok, mSettings))
-                    continue;
-                if (var && !var->isLocal() && !var->isArgument() && !isVariableChanged(tok->next(), tok->scope()->bodyEnd, var->declarationId(), var->isGlobal(), mSettings, mTokenizer->isCPP())) {
-                    errorDanglngLifetime(tok2, &val);
+                } else if (tokvalue->variable() && isDeadScope(tokvalue->variable()->nameToken(), tok->scope())) {
+                    errorInvalidLifetime(tok, &val);
                     break;
+                } else if (!tokvalue->variable() && isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok, &mSettings->library)) {
+                    errorDanglingTemporaryLifetime(tok, &val);
+                    break;
+                } else if (tokvalue->variable() && isInScope(tokvalue->variable()->nameToken(), tok->scope())) {
+                    const Variable * var = nullptr;
+                    const Token * tok2 = tok;
+                    if (Token::simpleMatch(tok->astParent(), "=")) {
+                        if (tok->astParent()->astOperand2() == tok) {
+                            var = getLHSVariable(tok->astParent());
+                            tok2 = tok->astParent()->astOperand1();
+                        }
+                    } else if (tok->variable() && tok->variable()->declarationId() == tok->varId()) {
+                        var = tok->variable();
+                    }
+                    if (!isLifetimeBorrowed(tok, mSettings))
+                        continue;
+                    if (var && !var->isLocal() && !var->isArgument() && !isVariableChanged(tok->next(), tok->scope()->bodyEnd, var->declarationId(), var->isGlobal(), mSettings, mTokenizer->isCPP())) {
+                        errorDanglngLifetime(tok2, &val);
+                        break;
+                    }
                 }
             }
         }
