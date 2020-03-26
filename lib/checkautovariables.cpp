@@ -505,7 +505,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
         for (const ValueFlow::Value& val:tok->values()) {
             if (!val.isLocalLifetimeValue())
                 continue;
-            for(const LifetimeToken& lt :getLifetimeTokens(getParentLifetime(val.tokvalue))) {
+            for (const LifetimeToken& lt :getLifetimeTokens(getParentLifetime(val.tokvalue))) {
                 const Token * tokvalue = lt.token;
                 if (Token::Match(tok->astParent(), "return|throw")) {
                     if (getPointerDepth(tok) < getPointerDepth(tokvalue))
