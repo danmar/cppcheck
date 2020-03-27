@@ -1899,17 +1899,9 @@ private:
         // cases should be fixed whenever this other bug is fixed
         ASSERT_EQUALS(2U, actual.size());
 
-        if (actual.find("A") == actual.end()) {
-            ASSERT_EQUALS("A is checked", "failed");
-        } else {
-            ASSERT_EQUALS("A is checked", "A is checked");
-        }
+        ASSERT_EQUALS_MSG(true, (actual.find("A") != actual.end()), "A is expected to be checked but it was not checked");
 
-        if (actual.find("A;A;B") != actual.end()) {
-            ASSERT_EQUALS("A;A;B is NOT checked", "failed");
-        } else {
-            ASSERT_EQUALS("A;A;B is NOT checked", "A;A;B is NOT checked");
-        }
+        ASSERT_EQUALS_MSG(true, (actual.find("A;A;B") == actual.end()), "A;A;B is expected to NOT be checked but it was checked");
     }
 
     void invalid_define_1() {
