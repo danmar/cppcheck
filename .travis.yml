@@ -164,6 +164,8 @@ matrix:
         - ./testrunner TestSymbolDatabase
 # check .json files
         - find . -name '*.json' -not -path '*/\.*' | xargs jsonlint -s
+# build OSS-Fuzz clients
+        - make -j2 CXXFLAGS="-fsanitize=address" -C oss-fuzz
 
 # check if dmake needs to be rerun (this job may fail)
     - name: "rerun dmake?"
