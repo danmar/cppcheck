@@ -28,5 +28,6 @@ add_subdirectory(cli)   # Client application
 add_subdirectory(test)  # Tests
 ADD_SUBDIRECTORY(gui)   # Graphical application
 ADD_SUBDIRECTORY(tools/triage)   # Triage tool
+add_subdirectory(oss-fuzz) # OSS-Fuzz clients
 
 include(cmake/printInfo.cmake REQUIRED)

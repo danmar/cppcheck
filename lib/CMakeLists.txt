@@ -37,4 +37,7 @@ else()
 endif()
 
 add_library(lib_objs OBJECT ${srcs_lib} ${hdrs})
-
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    add_library(lib_objs_sanitized OBJECT ${srcs_lib} ${hdrs})
+    target_compile_options(lib_objs_sanitized PRIVATE -fsanitize=address)
+endif()
