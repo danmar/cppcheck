@@ -19,11 +19,22 @@ public:
         cppcheck.check("test.cpp", code);
     }
 
-    void reportOut(const std::string &outmsg) { }
-    void reportErr(const ErrorLogger::ErrorMessage &msg) {}
+    void reportOut(const std::string &outmsg) OVERRIDE {
+		(void)outmsg;
+    }
+    void reportErr(const ErrorLogger::ErrorMessage &msg) OVERRIDE {
+		(void)msg;
+    }
     void reportProgress(const std::string& filename,
                         const char stage[],
-                        const unsigned int value) {}
+                        const std::size_t value) OVERRIDE {
+		(void)filename;
+		(void)stage;
+		(void)value;
+    }
+	void bughuntingReport(const std::string &str) OVERRIDE {
+		(void)str;
+    }
 };
 
 
