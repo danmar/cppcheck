@@ -18,7 +18,7 @@ fuzz-client:	main.cpp	type2.cpp	type2.h
 	${CXX} -std=c++11 -g -O1 ${CXXFLAGS} -fsanitize=fuzzer -o fuzz-client ${INCLUDE_DIR} ${SRC_FILES}
 
 translate:	translate.cpp	type2.cpp	type2.h
-	g++ -o translate type2.cpp translate.cpp
+	g++ -std=c++11 -o translate type2.cpp translate.cpp
 
 clean:
 	rm -f oss-fuzz-client fuzz-client translate
