@@ -105,6 +105,9 @@ public:
     /** @brief include paths excluded from checking the configuration */
     std::set<std::string> configExcludePaths;
 
+    /** @brief Are we running from DACA script? */
+    bool daca;
+
     /** @brief Is --debug-simplified given? */
     bool debugSimplified;
 
