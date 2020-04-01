@@ -42,12 +42,12 @@ private:
         TEST_CASE(ispositive);
         TEST_CASE(isFloat);
         TEST_CASE(isDecimalFloat);
-        TEST_CASE(isGreater)
-        TEST_CASE(isGreaterEqual)
-        TEST_CASE(isEqual)
-        TEST_CASE(isNotEqual)
-        TEST_CASE(isLess)
-        TEST_CASE(isLessEqual)
+        TEST_CASE(isGreater);
+        TEST_CASE(isGreaterEqual);
+        TEST_CASE(isEqual);
+        TEST_CASE(isNotEqual);
+        TEST_CASE(isLess);
+        TEST_CASE(isLessEqual);
         TEST_CASE(calculate);
         TEST_CASE(calculate1);
         TEST_CASE(typesuffix);
@@ -307,7 +307,7 @@ private:
         ASSERT_EQUALS((int)('AB'),    MathLib::toLongNumber("'AB'"));
         ASSERT_EQUALS((int)('ABC'),    MathLib::toLongNumber("'ABC'"));
         ASSERT_EQUALS((int)('ABCD'),    MathLib::toLongNumber("'ABCD'"));
-        ASSERT_EQUALS((int)('ABCDE'),    MathLib::toLongNumber("'ABCDE'"));
+        //ASSERT_EQUALS((int)('ABCDE'),    MathLib::toLongNumber("'ABCDE'"));
         // END Implementation-specific results
 #endif
         ASSERT_EQUALS((int)('\0'),   MathLib::toLongNumber("'\\0'"));

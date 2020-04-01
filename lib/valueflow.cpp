@@ -5494,7 +5494,7 @@ static bool isContainerSizeChanged(nonneg int varId, const Token *start, const T
             case Library::Container::Action::FIND:
             case Library::Container::Action::CHANGE_CONTENT:
                 break;
-            };
+            }
         }
         if (isContainerSizeChangedByFunction(tok, depth))
             return true;
@@ -5791,7 +5791,7 @@ static void valueFlowDynamicBufferSize(TokenList *tokenlist, SymbolDatabase *sym
                         sizeValue = Token::getStrLength(value.tokvalue) + 1; // Add one for the null terminator
                 }
                 break;
-            };
+            }
             if (sizeValue < 0)
                 continue;
 
@@ -5841,7 +5841,7 @@ static bool getMinMaxValues(const ValueType *vt, const cppcheck::Platform &platf
         break;
     default:
         return false;
-    };
+    }
 
     if (bits == 1) {
         *minValue = 0;
@@ -6056,7 +6056,7 @@ std::string ValueFlow::Value::infoString() const
         return "size=" + MathLib::toString(intvalue);
     case LIFETIME:
         return "lifetime=" + tokvalue->str();
-    };
+    }
     throw InternalError(nullptr, "Invalid ValueFlow Value type");
 }
 

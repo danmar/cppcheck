@@ -151,7 +151,7 @@ private:
 
 
     void nooptions() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck"};
         CmdLineParser parser(&settings);
         ASSERT(parser.parseFromArgs(1, argv));
@@ -159,7 +159,7 @@ private:
     }
 
     void helpshort() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-h"};
         CmdLineParser parser(&settings);
         ASSERT(parser.parseFromArgs(2, argv));
@@ -167,7 +167,7 @@ private:
     }
 
     void helplong() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--help"};
         CmdLineParser parser(&settings);
         ASSERT(parser.parseFromArgs(2, argv));
@@ -175,7 +175,7 @@ private:
     }
 
     void showversion() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--version"};
         CmdLineParser parser(&settings);
         ASSERT(parser.parseFromArgs(2, argv));
@@ -183,7 +183,7 @@ private:
     }
 
     void onefile() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "file.cpp"};
         CmdLineParser parser(&settings);
         ASSERT(parser.parseFromArgs(2, argv));
@@ -192,7 +192,7 @@ private:
     }
 
     void onepath() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "src"};
         CmdLineParser parser(&settings);
         ASSERT(parser.parseFromArgs(2, argv));
@@ -201,7 +201,7 @@ private:
     }
 
     void optionwithoutfile() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-v"};
         CmdLineParser parser(&settings);
         ASSERT_EQUALS(false, parser.parseFromArgs(2, argv));
@@ -209,7 +209,7 @@ private:
     }
 
     void verboseshort() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-v", "file.cpp"};
         settings.verbose = false;
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -217,7 +217,7 @@ private:
     }
 
     void verboselong() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--verbose", "file.cpp"};
         settings.verbose = false;
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -225,7 +225,7 @@ private:
     }
 
     void debugSimplified() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--debug-simplified", "file.cpp"};
         settings.debugSimplified = false;
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -233,7 +233,7 @@ private:
     }
 
     void debugwarnings() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--debug-warnings", "file.cpp"};
         settings.debugwarnings = false;
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -241,7 +241,7 @@ private:
     }
 
     void forceshort() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-f", "file.cpp"};
         settings.force = false;
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -249,7 +249,7 @@ private:
     }
 
     void forcelong() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--force", "file.cpp"};
         settings.force = false;
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -257,7 +257,7 @@ private:
     }
 
     void relativePaths() {
-        REDIRECT;
+        REDIRECT
         settings.relativePaths = false;
 
         const char * const argvs[] = {"cppcheck", "-rp", "file.cpp"};
@@ -292,7 +292,7 @@ private:
     }
 
     void quietshort() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-q", "file.cpp"};
         settings.quiet = false;
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -300,7 +300,7 @@ private:
     }
 
     void quietlong() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--quiet", "file.cpp"};
         settings.quiet = false;
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -308,28 +308,28 @@ private:
     }
 
     void defines_noarg() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-D"};
         // Fails since -D has no param
         ASSERT_EQUALS(false, defParser.parseFromArgs(2, argv));
     }
 
     void defines_noarg2() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-D", "-v", "file.cpp"};
         // Fails since -D has no param
         ASSERT_EQUALS(false, defParser.parseFromArgs(4, argv));
     }
 
     void defines_noarg3() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-D", "--quiet", "file.cpp"};
         // Fails since -D has no param
         ASSERT_EQUALS(false, defParser.parseFromArgs(4, argv));
     }
 
     void defines() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-D_WIN32", "file.cpp"};
         settings.userDefines.clear();
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -337,15 +337,15 @@ private:
     }
 
     void defines2() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-D_WIN32", "-DNODEBUG", "file.cpp"};
-        settings.userDefines.clear();;
+        settings.userDefines.clear();
         ASSERT(defParser.parseFromArgs(4, argv));
         ASSERT_EQUALS("_WIN32=1;NODEBUG=1", settings.userDefines);
     }
 
     void defines3() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-D", "DEBUG", "file.cpp"};
         settings.userDefines.clear();
         ASSERT(defParser.parseFromArgs(4, argv));
@@ -353,7 +353,7 @@ private:
     }
 
     void defines4() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-DDEBUG=", "file.cpp"}; // #5137 - defining empty macro
         settings.userDefines.clear();
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -361,7 +361,7 @@ private:
     }
 
     void enforceLanguage() {
-        REDIRECT;
+        REDIRECT
         {
             const char * const argv[] = {"cppcheck", "file.cpp"};
             settings.enforcedLang = Settings::None;
@@ -401,14 +401,14 @@ private:
     }
 
     void includesnopath() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-I"};
         // Fails since -I has no param
         ASSERT_EQUALS(false, defParser.parseFromArgs(2, argv));
     }
 
     void includes() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-I", "include", "file.cpp"};
         settings.includePaths.clear();
         ASSERT(defParser.parseFromArgs(4, argv));
@@ -416,7 +416,7 @@ private:
     }
 
     void includesslash() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-I", "include/", "file.cpp"};
         settings.includePaths.clear();
         ASSERT(defParser.parseFromArgs(4, argv));
@@ -424,7 +424,7 @@ private:
     }
 
     void includesbackslash() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-I", "include\\", "file.cpp"};
         settings.includePaths.clear();
         ASSERT(defParser.parseFromArgs(4, argv));
@@ -432,7 +432,7 @@ private:
     }
 
     void includesnospace() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-Iinclude", "file.cpp"};
         settings.includePaths.clear();
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -440,7 +440,7 @@ private:
     }
 
     void includes2() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-I", "include/", "-I", "framework/", "file.cpp"};
         settings.includePaths.clear();
         ASSERT(defParser.parseFromArgs(6, argv));
@@ -450,21 +450,21 @@ private:
     }
 
     void includesFile() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--includes-file=fileThatDoesNotExist.txt", "file.cpp"};
         settings.includePaths.clear();
         ASSERT_EQUALS(false, defParser.parseFromArgs(3, argv));
     }
 
     void configExcludesFile() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--config-excludes-file=fileThatDoesNotExist.txt", "file.cpp"};
         settings.includePaths.clear();
         ASSERT_EQUALS(false, defParser.parseFromArgs(3, argv));
     }
 
     void enabledAll() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--enable=all", "file.cpp"};
         settings = Settings();
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -476,7 +476,7 @@ private:
     }
 
     void enabledStyle() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--enable=style", "file.cpp"};
         settings = Settings();
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -489,7 +489,7 @@ private:
     }
 
     void enabledPerformance() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--enable=performance", "file.cpp"};
         settings = Settings();
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -502,7 +502,7 @@ private:
     }
 
     void enabledPortability() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--enable=portability", "file.cpp"};
         settings = Settings();
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -515,7 +515,7 @@ private:
     }
 
     void enabledUnusedFunction() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--enable=unusedFunction", "file.cpp"};
         settings = Settings();
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -523,7 +523,7 @@ private:
     }
 
     void enabledMissingInclude() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--enable=missingInclude", "file.cpp"};
         settings = Settings();
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -532,7 +532,7 @@ private:
 
 #ifdef CHECK_INTERNAL
     void enabledInternal() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--enable=internal", "file.cpp"};
         settings = Settings();
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -541,7 +541,7 @@ private:
 #endif
 
     void enabledMultiple() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--enable=missingInclude,portability,warning", "file.cpp"};
         settings = Settings();
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -554,7 +554,7 @@ private:
     }
 
     void inconclusive() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--inconclusive"};
         settings.inconclusive = false;
         ASSERT(defParser.parseFromArgs(2, argv));
@@ -562,7 +562,7 @@ private:
     }
 
     void errorExitcode() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--error-exitcode=5", "file.cpp"};
         settings.exitCode = 0;
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -570,7 +570,7 @@ private:
     }
 
     void errorExitcodeMissing() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--error-exitcode=", "file.cpp"};
         settings.exitCode = 0;
         // Fails since exit code not given
@@ -578,7 +578,7 @@ private:
     }
 
     void errorExitcodeStr() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--error-exitcode=foo", "file.cpp"};
         settings.exitCode = 0;
         // Fails since invalid exit code
@@ -587,7 +587,7 @@ private:
 
     void exitcodeSuppressionsOld() {
         // TODO: Fails since cannot open the file
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--exitcode-suppressions", "suppr.txt", "file.cpp"};
         settings.exitCode = 0;
         TODO_ASSERT_EQUALS(true, false, defParser.parseFromArgs(4, argv));
@@ -595,7 +595,7 @@ private:
 
     void exitcodeSuppressions() {
         // TODO: Fails since cannot open the file
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--exitcode-suppressions=suppr.txt", "file.cpp"};
         settings.exitCode = 0;
         TODO_ASSERT_EQUALS(true, false, defParser.parseFromArgs(3, argv));
@@ -603,7 +603,7 @@ private:
 
     void exitcodeSuppressionsNoFile() {
         // TODO: Fails since cannot open the file
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--exitcode-suppressions", "file.cpp"};
         settings.exitCode = 0;
         TODO_ASSERT_EQUALS(true, false, defParser.parseFromArgs(3, argv));
@@ -611,7 +611,7 @@ private:
 
     void fileList() {
         // TODO: Fails since cannot open the file
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--file-list", "files.txt", "file.cpp"};
         TODO_ASSERT_EQUALS(true, false, defParser.parseFromArgs(4, argv));
     }
@@ -619,19 +619,19 @@ private:
     /*    void fileListStdin() {
             // TODO: Give it some stdin to read from, fails because the list of
             // files in stdin (_pathnames) is empty
-            REDIRECT;
+            REDIRECT
             const char * const argv[] = {"cppcheck", "--file-list=-", "file.cpp"};
             TODO_ASSERT_EQUALS(true, false, defParser.parseFromArgs(3, argv));
         } */
 
     void inlineSuppr() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--inline-suppr", "file.cpp"};
         ASSERT(defParser.parseFromArgs(3, argv));
     }
 
     void jobs() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-j", "3", "file.cpp"};
         settings.jobs = 0;
         ASSERT(defParser.parseFromArgs(4, argv));
@@ -639,7 +639,7 @@ private:
     }
 
     void jobsMissingCount() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-j", "file.cpp"};
         settings.jobs = 0;
         // Fails since -j is missing thread count
@@ -647,7 +647,7 @@ private:
     }
 
     void jobsInvalid() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-j", "e", "file.cpp"};
         settings.jobs = 0;
         // Fails since invalid count given for -j
@@ -655,7 +655,7 @@ private:
     }
 
     void maxConfigs() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-f", "--max-configs=12", "file.cpp"};
         settings.force = false;
         settings.maxConfigs = 12;
@@ -665,28 +665,28 @@ private:
     }
 
     void maxConfigsMissingCount() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--max-configs=", "file.cpp"};
         // Fails since --max-configs= is missing limit
         ASSERT_EQUALS(false, defParser.parseFromArgs(3, argv));
     }
 
     void maxConfigsInvalid() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--max-configs=e", "file.cpp"};
         // Fails since invalid count given for --max-configs=
         ASSERT_EQUALS(false, defParser.parseFromArgs(3, argv));
     }
 
     void maxConfigsTooSmall() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--max-configs=0", "file.cpp"};
         // Fails since limit must be greater than 0
         ASSERT_EQUALS(false, defParser.parseFromArgs(3, argv));
     }
 
     void reportProgressTest() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--report-progress", "file.cpp"};
         settings.reportProgress = false;
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -694,7 +694,7 @@ private:
     }
 
     void stdc99() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--std=c99", "file.cpp"};
         settings.standards.c = Standards::C89;
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -702,7 +702,7 @@ private:
     }
 
     void stdcpp11() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--std=c++11", "file.cpp"};
         settings.standards.cpp = Standards::CPP03;
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -710,7 +710,7 @@ private:
     }
 
     void platform() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--platform=win64", "file.cpp"};
         settings.platform(Settings::Unspecified);
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -719,20 +719,20 @@ private:
 
     void suppressionsOld() {
         // TODO: Fails because there is no suppr.txt file!
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--suppressions", "suppr.txt", "file.cpp"};
         ASSERT(!defParser.parseFromArgs(4, argv));
     }
 
     void suppressions() {
         // TODO: Fails because there is no suppr.txt file!
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--suppressions-list=suppr.txt", "file.cpp"};
         TODO_ASSERT_EQUALS(true, false, defParser.parseFromArgs(3, argv));
     }
 
     void suppressionsNoFile() {
-        REDIRECT;
+        REDIRECT
         {
             CLEAR_REDIRECT_OUTPUT;
             const char * const argv[] = {"cppcheck", "--suppressions-list=", "file.cpp"};
@@ -764,7 +764,7 @@ private:
     }
 
     void suppressionSingle() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--suppress=uninitvar", "file.cpp"};
         settings = Settings();
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -772,7 +772,7 @@ private:
     }
 
     void suppressionSingleFile() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--suppress=uninitvar:file.cpp", "file.cpp"};
         settings = Settings();
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -780,7 +780,7 @@ private:
     }
 
     void suppressionTwo() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--suppress=uninitvar,noConstructor", "file.cpp"};
         settings = Settings();
         TODO_ASSERT_EQUALS(true, false, defParser.parseFromArgs(3, argv));
@@ -789,7 +789,7 @@ private:
     }
 
     void suppressionTwoSeparate() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--suppress=uninitvar", "--suppress=noConstructor", "file.cpp"};
         settings = Settings();
         ASSERT(defParser.parseFromArgs(4, argv));
@@ -798,7 +798,7 @@ private:
     }
 
     void templates() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--template", "{file}:{line},{severity},{id},{message}", "file.cpp"};
         settings.templateFormat.clear();
         ASSERT(defParser.parseFromArgs(4, argv));
@@ -806,7 +806,7 @@ private:
     }
 
     void templatesGcc() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--template", "gcc", "file.cpp"};
         settings.templateFormat.clear();
         ASSERT(defParser.parseFromArgs(4, argv));
@@ -814,7 +814,7 @@ private:
     }
 
     void templatesVs() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--template", "vs", "file.cpp"};
         settings.templateFormat.clear();
         ASSERT(defParser.parseFromArgs(4, argv));
@@ -822,7 +822,7 @@ private:
     }
 
     void templatesEdit() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--template", "edit", "file.cpp"};
         settings.templateFormat.clear();
         ASSERT(defParser.parseFromArgs(4, argv));
@@ -830,7 +830,7 @@ private:
     }
 
     void xml() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--xml", "file.cpp"};
         settings.xml_version = 1;
         settings.xml = false;
@@ -840,7 +840,7 @@ private:
     }
 
     void xmlver2() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--xml-version=2", "file.cpp"};
         settings.xml_version = 1;
         settings.xml = false;
@@ -850,7 +850,7 @@ private:
     }
 
     void xmlver2both() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--xml", "--xml-version=2", "file.cpp"};
         settings.xml_version = 1;
         settings.xml = false;
@@ -860,7 +860,7 @@ private:
     }
 
     void xmlver2both2() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--xml-version=2", "--xml", "file.cpp"};
         settings.xml_version = 1;
         settings.xml = false;
@@ -870,28 +870,28 @@ private:
     }
 
     void xmlverunknown() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--xml", "--xml-version=3", "file.cpp"};
         // FAils since unknown XML format version
         ASSERT_EQUALS(false, defParser.parseFromArgs(4, argv));
     }
 
     void xmlverinvalid() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--xml", "--xml-version=a", "file.cpp"};
         // FAils since unknown XML format version
         ASSERT_EQUALS(false, defParser.parseFromArgs(4, argv));
     }
 
     void doc() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--doc"};
         ASSERT(defParser.parseFromArgs(2, argv));
         ASSERT(defParser.exitAfterPrinting());
     }
 
     void showtime() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--showtime=summary"};
         settings.showtime = SHOWTIME_MODES::SHOWTIME_NONE;
         ASSERT(defParser.parseFromArgs(2, argv));
@@ -899,14 +899,14 @@ private:
     }
 
     void errorlist1() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--errorlist"};
         ASSERT(defParser.parseFromArgs(2, argv));
         ASSERT(defParser.getShowErrorMessages());
     }
 
     void errorlistverbose1() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--verbose", "--errorlist"};
         settings.verbose = false;
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -914,7 +914,7 @@ private:
     }
 
     void errorlistverbose2() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--errorlist", "--verbose"};
         settings.verbose = false;
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -922,7 +922,7 @@ private:
     }
 
     void ignorepathsnopath() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-i"};
         CmdLineParser parser(&settings);
         // Fails since no ignored path given
@@ -932,7 +932,7 @@ private:
 
     /*
         void ignorepaths1() {
-            REDIRECT;
+            REDIRECT
             const char * const argv[] = {"cppcheck", "-isrc", "file.cpp"};
             CmdLineParser parser(&settings);
             ASSERT(parser.parseFromArgs(3, argv));
@@ -941,7 +941,7 @@ private:
         }
 
         void ignorepaths2() {
-            REDIRECT;
+            REDIRECT
             const char * const argv[] = {"cppcheck", "-i", "src", "file.cpp"};
             CmdLineParser parser(&settings);
             ASSERT(parser.parseFromArgs(4, argv));
@@ -950,7 +950,7 @@ private:
         }
 
         void ignorepaths3() {
-            REDIRECT;
+            REDIRECT
             const char * const argv[] = {"cppcheck", "-isrc", "-imodule", "file.cpp"};
             CmdLineParser parser(&settings);
             ASSERT(parser.parseFromArgs(4, argv));
@@ -960,7 +960,7 @@ private:
         }
     */
     void ignorepaths4() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-i", "src", "-i", "module", "file.cpp"};
         CmdLineParser parser(&settings);
         ASSERT(parser.parseFromArgs(6, argv));
@@ -970,7 +970,7 @@ private:
     }
     /*
         void ignorefilepaths1() {
-            REDIRECT;
+            REDIRECT
             const char * const argv[] = {"cppcheck", "-ifoo.cpp", "file.cpp"};
             CmdLineParser parser(&settings);
             ASSERT(parser.parseFromArgs(3, argv));
@@ -979,7 +979,7 @@ private:
         }
     */
     void ignorefilepaths2() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-isrc/foo.cpp", "file.cpp"};
         CmdLineParser parser(&settings);
         ASSERT(parser.parseFromArgs(3, argv));
@@ -988,7 +988,7 @@ private:
     }
 
     void checkconfig() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--check-config", "file.cpp"};
         settings.checkConfiguration = false;
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -996,13 +996,13 @@ private:
     }
 
     void unknownParam() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "--foo", "file.cpp"};
         ASSERT(!defParser.parseFromArgs(3, argv));
     }
 
     void undefs() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-U_WIN32", "file.cpp"};
         settings = Settings();
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -1011,7 +1011,7 @@ private:
     }
 
     void undefs2() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-U_WIN32", "-UNODEBUG", "file.cpp"};
         settings = Settings();
         ASSERT(defParser.parseFromArgs(4, argv));
@@ -1021,21 +1021,21 @@ private:
     }
 
     void undefs_noarg() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-U"};
         // Fails since -U has no param
         ASSERT_EQUALS(false, defParser.parseFromArgs(2, argv));
     }
 
     void undefs_noarg2() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-U", "-v", "file.cpp"};
         // Fails since -U has no param
         ASSERT_EQUALS(false, defParser.parseFromArgs(4, argv));
     }
 
     void undefs_noarg3() {
-        REDIRECT;
+        REDIRECT
         const char * const argv[] = {"cppcheck", "-U", "--quiet", "file.cpp"};
         // Fails since -U has no param
         ASSERT_EQUALS(false, defParser.parseFromArgs(4, argv));

@@ -504,7 +504,7 @@ static bool findPath(const std::string &callId,
                 if (unsafeValue < 0 || unsafeValue >= functionCall->callArgValue)
                     break;
                 continue;
-            };
+            }
             path[index] = functionCall;
             return true;
         }

@@ -98,25 +98,25 @@ public:
 extern std::ostringstream errout;
 extern std::ostringstream output;
 
-#define TEST_CASE( NAME )  if ( prepareTest(#NAME) ) { setVerbose(false); NAME(); }
+#define TEST_CASE( NAME )  do { if ( prepareTest(#NAME) ) { setVerbose(false); NAME(); } } while(false)
 #define ASSERT( CONDITION )  if (!assert_(__FILE__, __LINE__, CONDITION)) return
 #define ASSERT_EQUALS( EXPECTED , ACTUAL )  if (!assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL)) return
 #define ASSERT_EQUALS_WITHOUT_LINENUMBERS( EXPECTED , ACTUAL )  assertEqualsWithoutLineNumbers(__FILE__, __LINE__, EXPECTED, ACTUAL)
 #define ASSERT_EQUALS_DOUBLE( EXPECTED , ACTUAL, TOLERANCE )  assertEqualsDouble(__FILE__, __LINE__, EXPECTED, ACTUAL, TOLERANCE)
 #define ASSERT_EQUALS_MSG( EXPECTED , ACTUAL, MSG )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL, MSG)
-#define ASSERT_THROW( CMD, EXCEPTION ) try { CMD ; assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&) { } catch (...) { assertThrowFail(__FILE__, __LINE__); }
-#define ASSERT_THROW_EQUALS( CMD, EXCEPTION, EXPECTED ) try { CMD ; assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&e) { assertEquals(__FILE__, __LINE__, EXPECTED, e.errorMessage); } catch (...) { assertThrowFail(__FILE__, __LINE__); }
-#define ASSERT_NO_THROW( CMD ) try { CMD ; } catch (...) { assertNoThrowFail(__FILE__, __LINE__); }
-#define TODO_ASSERT_THROW( CMD, EXCEPTION ) try { CMD ; } catch (const EXCEPTION&) { } catch (...) { assertThrow(__FILE__, __LINE__); }
-#define TODO_ASSERT( CONDITION ) { const bool condition=(CONDITION); todoAssertEquals(__FILE__, __LINE__, true, false, condition); }
+#define ASSERT_THROW( CMD, EXCEPTION ) do { try { CMD ; assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&) { } catch (...) { assertThrowFail(__FILE__, __LINE__); } } while(false)
+#define ASSERT_THROW_EQUALS( CMD, EXCEPTION, EXPECTED ) do { try { CMD ; assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&e) { assertEquals(__FILE__, __LINE__, EXPECTED, e.errorMessage); } catch (...) { assertThrowFail(__FILE__, __LINE__); } } while(false)
+#define ASSERT_NO_THROW( CMD ) do { try { CMD ; } catch (...) { assertNoThrowFail(__FILE__, __LINE__); } } while(false)
+#define TODO_ASSERT_THROW( CMD, EXCEPTION ) do { try { CMD ; } catch (const EXCEPTION&) { } catch (...) { assertThrow(__FILE__, __LINE__); } } while(false)
+#define TODO_ASSERT( CONDITION ) do { const bool condition=(CONDITION); todoAssertEquals(__FILE__, __LINE__, true, false, condition); } while(false)
 #define TODO_ASSERT_EQUALS( WANTED , CURRENT , ACTUAL ) todoAssertEquals(__FILE__, __LINE__, WANTED, CURRENT, ACTUAL)
 #define EXPECT_EQ( EXPECTED, ACTUAL ) assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL)
 #define REGISTER_TEST( CLASSNAME ) namespace { CLASSNAME instance_##CLASSNAME; }
 
 #ifdef _WIN32
-#define LOAD_LIB_2( LIB, NAME ) { if (((LIB).load("./testrunner", "../cfg/" NAME).errorcode != Library::OK) && ((LIB).load("./testrunner", "cfg/" NAME).errorcode != Library::OK)) { complainMissingLib(NAME); return; } }
+#define LOAD_LIB_2( LIB, NAME ) do { { if (((LIB).load("./testrunner", "../cfg/" NAME).errorcode != Library::OK) && ((LIB).load("./testrunner", "cfg/" NAME).errorcode != Library::OK)) { complainMissingLib(NAME); return; } } } while(false)
 #else
-#define LOAD_LIB_2( LIB, NAME ) { if (((LIB).load("./testrunner", "cfg/" NAME).errorcode != Library::OK) && ((LIB).load("./bin/testrunner", "bin/cfg/" NAME).errorcode != Library::OK)) { complainMissingLib(NAME); return; } }
+#define LOAD_LIB_2( LIB, NAME ) do { { if (((LIB).load("./testrunner", "cfg/" NAME).errorcode != Library::OK) && ((LIB).load("./bin/testrunner", "bin/cfg/" NAME).errorcode != Library::OK)) { complainMissingLib(NAME); return; } } } while(false)
 #endif
 
 #endif

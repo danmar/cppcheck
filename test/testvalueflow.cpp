@@ -810,12 +810,14 @@ private:
         ASSERT_EQUALS(1, values.back().intvalue);
 
 #define CHECK(A, B)                              \
+        do {                                     \
         code = "void f() {\n"                    \
                "    x = sizeof(" A ");\n"        \
                "}";                              \
         values = tokenValues(code,"( " A " )");  \
         ASSERT_EQUALS(1U, values.size());        \
-        ASSERT_EQUALS(B, values.back().intvalue);
+        ASSERT_EQUALS(B, values.back().intvalue);\
+        } while(false)
 
         // standard types
         CHECK("void *", settings.sizeof_pointer);
@@ -849,13 +851,15 @@ private:
         ASSERT_EQUALS(10, values.back().intvalue);
 
 #define CHECK(A, B, C, D)                         \
+        do {                                      \
         code = "enum " A " E " B " { E0, E1 };\n" \
                "void f() {\n"                     \
                "    x = sizeof(" C ");\n"         \
                "}";                               \
         values = tokenValues(code,"( " C " )");   \
         ASSERT_EQUALS(1U, values.size());         \
-        ASSERT_EQUALS(D, values.back().intvalue);
+        ASSERT_EQUALS(D, values.back().intvalue); \
+        } while(false)
 
         // enums
         CHECK("", "", "E", settings.sizeof_int);
@@ -922,6 +926,7 @@ private:
 #undef CHECK
 
 #define CHECK(A, B)                                   \
+        do {                                          \
         code = "enum E " A " { E0, E1 };\n"           \
                "void f() {\n"                         \
                "    E arrE[] = { E0, E1 };\n"         \
@@ -929,7 +934,8 @@ private:
                "}";                                   \
         values = tokenValues(code,"( arrE )");        \
         ASSERT_EQUALS(1U, values.size());             \
-        ASSERT_EQUALS(B * 2U, values.back().intvalue);
+        ASSERT_EQUALS(B * 2U, values.back().intvalue);\
+        } while(false)
 
         // enum array
         CHECK("", settings.sizeof_int);
@@ -955,6 +961,7 @@ private:
 #undef CHECK
 
 #define CHECK(A, B)                                   \
+        do {                                          \
         code = "enum class E " A " { E0, E1 };\n"     \
                "void f() {\n"                         \
                "    E arrE[] = { E::E0, E::E1 };\n"   \
@@ -962,7 +969,8 @@ private:
                "}";                                   \
         values = tokenValues(code,"( arrE )");        \
         ASSERT_EQUALS(1U, values.size());             \
-        ASSERT_EQUALS(B * 2U, values.back().intvalue);
+        ASSERT_EQUALS(B * 2U, values.back().intvalue);\
+        } while(false)
 
         // enum array
         CHECK("", settings.sizeof_int);

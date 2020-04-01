@@ -104,7 +104,7 @@ void VarInfo::print()
         default:
             status = "?";
             break;
-        };
+        }
 
         std::cout << "status=" << status << " "
                   << "alloctype='" << it->second.type << "' "

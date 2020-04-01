@@ -43,11 +43,13 @@ struct InternalError;
 #define GET_SYMBOL_DB(code) \
     Tokenizer tokenizer(&settings1, this); \
     const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code, "test.cpp"); \
-    ASSERT(db);
+    ASSERT(db); \
+    do {} while(false)
 
 #define GET_SYMBOL_DB_C(code) \
     Tokenizer tokenizer(&settings1, this); \
-    const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code, "test.c");
+    const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code, "test.c"); \
+    do {} while(false)
 
 class TestSymbolDatabase: public TestFixture {
 public:
@@ -1232,7 +1234,7 @@ private:
     }
 
     void hasRegularFunction() {
-        GET_SYMBOL_DB("void func() { }\n")
+        GET_SYMBOL_DB("void func() { }\n");
 
         // 2 scopes: Global and Function
         ASSERT(db && db->scopeList.size() == 2);
@@ -1256,7 +1258,7 @@ private:
     }
 
     void hasRegularFunction_trailingReturnType() {
-        GET_SYMBOL_DB("auto func() -> int { }")
+        GET_SYMBOL_DB("auto func() -> int { }");
 
         // 2 scopes: Global and Function
         ASSERT(db && db->scopeList.size() == 2);
@@ -1280,7 +1282,7 @@ private:
     }
 
     void hasInlineClassFunction() {
-        GET_SYMBOL_DB("class Fred { void func() { } };\n")
+        GET_SYMBOL_DB("class Fred { void func() { } };\n");
 
         // 3 scopes: Global, Class, and Function
         ASSERT(db && db->scopeList.size() == 3);
@@ -1309,7 +1311,7 @@ private:
 
 
     void hasInlineClassFunction_trailingReturnType() {
-        GET_SYMBOL_DB("class Fred { auto func() -> int { } };")
+        GET_SYMBOL_DB("class Fred { auto func() -> int { } };");
 
         // 3 scopes: Global, Class, and Function
         ASSERT(db && db->scopeList.size() == 3);
@@ -1337,7 +1339,7 @@ private:
     }
 
     void hasMissingInlineClassFunction() {
-        GET_SYMBOL_DB("class Fred { void func(); };\n")
+        GET_SYMBOL_DB("class Fred { void func(); };\n");
 
         // 2 scopes: Global and Class (no Function scope because there is no function implementation)
         ASSERT(db && db->scopeList.size() == 2);
@@ -1386,7 +1388,7 @@ private:
     }
 
     void hasClassFunction() {
-        GET_SYMBOL_DB("class Fred { void func(); }; void Fred::func() { }\n")
+        GET_SYMBOL_DB("class Fred { void func(); }; void Fred::func() { }\n");
 
         // 3 scopes: Global, Class, and Function
         ASSERT(db && db->scopeList.size() == 3);
@@ -1436,7 +1438,7 @@ private:
     }
 
     void hasRegularFunctionReturningFunctionPointer() {
-        GET_SYMBOL_DB("void (*func(int f))(char) { }\n")
+        GET_SYMBOL_DB("void (*func(int f))(char) { }\n");
 
         // 2 scopes: Global and Function
         ASSERT(db && db->scopeList.size() == 2);
@@ -1457,7 +1459,7 @@ private:
     }
 
     void hasInlineClassFunctionReturningFunctionPointer() {
-        GET_SYMBOL_DB("class Fred { void (*func(int f))(char) { } };\n")
+        GET_SYMBOL_DB("class Fred { void (*func(int f))(char) { } };\n");
 
         // 3 scopes: Global, Class, and Function
         ASSERT(db && db->scopeList.size() == 3);
@@ -1478,7 +1480,7 @@ private:
     }
 
     void hasMissingInlineClassFunctionReturningFunctionPointer() {
-        GET_SYMBOL_DB("class Fred { void (*func(int f))(char); };\n")
+        GET_SYMBOL_DB("class Fred { void (*func(int f))(char); };\n");
 
         // 2 scopes: Global and Class (no Function scope because there is no function implementation)
         ASSERT(db && db->scopeList.size() == 2);
@@ -1499,7 +1501,7 @@ private:
     }
 
     void hasClassFunctionReturningFunctionPointer() {
-        GET_SYMBOL_DB("class Fred { void (*func(int f))(char); }; void (*Fred::func(int f))(char) { }\n")
+        GET_SYMBOL_DB("class Fred { void (*func(int f))(char); }; void (*Fred::func(int f))(char) { }\n");
 
         // 3 scopes: Global, Class, and Function
         ASSERT(db && db->scopeList.size() == 3);
@@ -1520,7 +1522,7 @@ private:
     }
 
     void methodWithRedundantScope() {
-        GET_SYMBOL_DB("class Fred { void Fred::func() {} };\n")
+        GET_SYMBOL_DB("class Fred { void Fred::func() {} };\n");
 
         // 3 scopes: Global, Class, and Function
         ASSERT(db && db->scopeList.size() == 3);
@@ -1672,7 +1674,7 @@ private:
     }
 
     void functionDeclarationTemplate() {
-        GET_SYMBOL_DB("std::map<int, string> foo() {}")
+        GET_SYMBOL_DB("std::map<int, string> foo() {}");
 
         // 2 scopes: Global and Function
         ASSERT(db && db->scopeList.size() == 2 && findFunctionByName("foo", &db->scopeList.back()));
@@ -1690,7 +1692,7 @@ private:
     }
 
     void functionDeclarations() {
-        GET_SYMBOL_DB("void foo();\nvoid foo();\nint foo(int i);\nvoid foo() {}")
+        GET_SYMBOL_DB("void foo();\nvoid foo();\nint foo(int i);\nvoid foo() {}");
 
         // 2 scopes: Global and Function
         ASSERT(db && db->scopeList.size() == 2 && findFunctionByName("foo", &db->scopeList.back()));
@@ -1813,7 +1815,7 @@ private:
     }
 
     void classWithFriend() {
-        GET_SYMBOL_DB("class Foo {}; class Bar1 { friend class Foo; }; class Bar2 { friend Foo; };")
+        GET_SYMBOL_DB("class Foo {}; class Bar1 { friend class Foo; }; class Bar2 { friend Foo; };");
         // 3 scopes: Global, 3 classes
         ASSERT(db && db->scopeList.size() == 4);
         if (db) {
@@ -1833,7 +1835,7 @@ private:
 
     void parseFunctionCorrect() {
         // ticket 3188 - "if" statement parsed as function
-        GET_SYMBOL_DB("void func(i) int i; { if (i == 1) return; }\n")
+        GET_SYMBOL_DB("void func(i) int i; { if (i == 1) return; }\n");
         ASSERT(db != nullptr);
 
         // 3 scopes: Global, function, if
@@ -1846,7 +1848,7 @@ private:
     void parseFunctionDeclarationCorrect() {
         GET_SYMBOL_DB("void func();\n"
                       "int bar() {}\n"
-                      "void func() {}")
+                      "void func() {}");
         ASSERT_EQUALS(3, db->findScopeByName("func")->bodyStart->linenr());
     }
 
@@ -1860,7 +1862,7 @@ private:
     }
 
     void hasGlobalVariables1() {
-        GET_SYMBOL_DB("int i;\n")
+        GET_SYMBOL_DB("int i;\n");
 
         ASSERT(db && db->scopeList.size() == 1);
         if (db && db->scopeList.size() == 1) {
@@ -1875,7 +1877,7 @@ private:
     }
 
     void hasGlobalVariables2() {
-        GET_SYMBOL_DB("int array[2][2];\n")
+        GET_SYMBOL_DB("int array[2][2];\n");
 
         ASSERT(db && db->scopeList.size() == 1);
         if (db && db->scopeList.size() == 1) {
@@ -1890,7 +1892,7 @@ private:
     }
 
     void hasGlobalVariables3() {
-        GET_SYMBOL_DB("int array[2][2] = { { 0, 0 }, { 0, 0 } };\n")
+        GET_SYMBOL_DB("int array[2][2] = { { 0, 0 }, { 0, 0 } };\n");
 
         ASSERT(db && db->scopeList.size() == 1);
         if (db && db->scopeList.size() == 1) {
@@ -5281,7 +5283,7 @@ private:
                       "        power.nodeResults().size();\n"
                       "        assert(power.nodeResults().size()==ground.nodeResults().size());\n"
                       "    }\n"
-                      "};")
+                      "};");
         const Token *callfunc = Token::findsimplematch(tokenizer.tokens(), "power . nodeResults ( ) . size ( ) ;");
         ASSERT_EQUALS("", errout.str());
         ASSERT_EQUALS(true, db != nullptr); // not null
@@ -6060,9 +6062,11 @@ private:
         ASSERT_EQUALS((int)ValueType::MatchResult::NOMATCH, (int)ValueType::matchParameter(&vt_const_float_pointer, &vt_long_long));
     }
 
-#define FUNC(x) const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
+#define FUNC(x) do { \
+                const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
                 ASSERT_EQUALS(true, x != nullptr);                                  \
-                if (x) ASSERT_EQUALS(true, x->isNoExcept());
+                if (x) ASSERT_EQUALS(true, x->isNoExcept()); \
+                } while(false)
 
     void noexceptFunction1() {
         GET_SYMBOL_DB("void func1() noexcept;\n"
@@ -6091,9 +6095,11 @@ private:
         }
     }
 
-#define CLASS_FUNC(x, y, z) const Function *x = findFunctionByName(#x, y); \
+#define CLASS_FUNC(x, y, z) do { \
+                         const Function *x = findFunctionByName(#x, y); \
                          ASSERT_EQUALS(true, x != nullptr);             \
-                         if (x) ASSERT_EQUALS(z, x->isNoExcept());
+                         if (x) ASSERT_EQUALS(z, x->isNoExcept()); \
+                         } while(false)
 
     void noexceptFunction3() {
         GET_SYMBOL_DB("struct Fred {\n"
@@ -6159,9 +6165,11 @@ private:
         }
     }
 
-#define FUNC_THROW(x) const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
+#define FUNC_THROW(x) do { \
+                      const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
                       ASSERT_EQUALS(true, x != nullptr);                                  \
-                      if (x) ASSERT_EQUALS(true, x->isThrow());
+                      if (x) ASSERT_EQUALS(true, x->isThrow()); \
+                      } while(false)
 
     void throwFunction1() {
         GET_SYMBOL_DB("void func1() throw();\n"
@@ -6179,9 +6187,11 @@ private:
         }
     }
 
-#define CLASS_FUNC_THROW(x, y) const Function *x = findFunctionByName(#x, y); \
+#define CLASS_FUNC_THROW(x, y) do { \
+                               const Function *x = findFunctionByName(#x, y); \
                                ASSERT_EQUALS(true, x != nullptr);             \
-                               if (x) ASSERT_EQUALS(true, x->isThrow());
+                               if (x) ASSERT_EQUALS(true, x->isThrow()); \
+                               } while(false)
     void throwFunction2() {
         GET_SYMBOL_DB("struct Fred {\n"
                       "    void func1() throw();\n"
