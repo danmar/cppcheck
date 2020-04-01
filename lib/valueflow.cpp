@@ -4717,6 +4717,14 @@ static void valueFlowInjectParameter(TokenList* tokenlist, ErrorLogger* errorLog
         std::for_each(std::next(p.second.begin()), p.second.end(), [&](const ValueFlow::Value& value) {
             Args new_args;
             for (auto arg:args) {
+                if (value.path != 0) {
+                    for(const auto& q:arg) {
+                        if (q.second.path == 0)
+                            continue;
+                        if (q.second.path != value.path)
+                            return;
+                    }
+                }
                 arg[p.first] = value;
                 new_args.push_back(arg);
             }
