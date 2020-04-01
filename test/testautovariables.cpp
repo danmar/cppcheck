@@ -1326,6 +1326,23 @@ private:
               "    return a()();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("auto a() {\n"
+              "    return []() -> int& {\n"
+              "        static int b;\n"
+              "        return b;\n"
+              "    };\n"
+              "}\n"
+              "const int& c() {\n"
+              "    return a()();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::function<int&()> a();\n"
+              "int& b() {\n"
+              "    return a()();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void returnReferenceFunction() {
