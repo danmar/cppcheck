@@ -4705,9 +4705,26 @@ static void valueFlowInjectParameter(TokenList* tokenlist, ErrorLogger* errorLog
         args.back()[p.first] = p.second.front();
     }
     for (const auto& p:vars) {
+        if (args.size() > 256) {
+            std::string fname = "<unknown>";
+            Function* f = functionScope->function;
+            if (f)
+                fname = f->name();
+            if (settings->debugwarnings)
+                bailout(tokenlist, errorLogger, functionScope->bodyStart, "Too many argument passed to " + fname);
+            break;
+        }
         std::for_each(std::next(p.second.begin()), p.second.end(), [&](const ValueFlow::Value& value) {
             Args new_args;
             for (auto arg:args) {
+                if (value.path != 0) {
+                    for(const auto& q:arg) {
+                        if (q.second.path == 0)
+                            continue;
+                        if (q.second.path != value.path)
+                            return;
+                    }
+                }
                 arg[p.first] = value;
                 new_args.push_back(arg);
             }
