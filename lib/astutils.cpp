@@ -254,6 +254,11 @@ bool isTemporary(bool cpp, const Token* tok, const Library* library, bool unknow
             return unknown;
         }
     }
+    if (tok->isCast())
+        return false;
+    // Currying a function is unknown in cppcheck
+    if (Token::simpleMatch(tok, "(") && Token::simpleMatch(tok->astOperand1(), "("))
+        return unknown;
     return true;
 }
 
