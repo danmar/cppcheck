@@ -108,7 +108,7 @@ struct ForwardAnalyzer {
     virtual bool updateScope(const Token* endBlock, bool modified) const = 0;
     /// If the value is conditional
     virtual bool isConditional() const = 0;
-    /// The condtion that wil be assumes during analysis
+    /// The condition that will be assumed during analysis
     virtual void assume(const Token* tok, bool state, const Token* at = nullptr) = 0;
     virtual ~ForwardAnalyzer() {}
 };
