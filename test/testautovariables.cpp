@@ -114,6 +114,7 @@ private:
         TEST_CASE(returnReference17); // #9461
         TEST_CASE(returnReference18); // #9482
         TEST_CASE(returnReference19); // #9597
+        TEST_CASE(returnReference20); // #9536
         TEST_CASE(returnReferenceFunction);
         TEST_CASE(returnReferenceContainer);
         TEST_CASE(returnReferenceLiteral);
@@ -1312,6 +1313,17 @@ private:
     void returnReference19() {
         check("struct C : B {\n"
               "    const B &f() const { return (const B &)*this; }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // #9536
+    void returnReference20() {
+        check("struct a {\n"
+              "    int& operator()() const;\n"
+              "};\n"
+              "int& b() {\n"
+              "    return a()();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
