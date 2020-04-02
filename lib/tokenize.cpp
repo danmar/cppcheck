@@ -2876,7 +2876,7 @@ void Tokenizer::simplifyCaseRange()
 
 void Tokenizer::calculateScopes()
 {
-    for (auto tok = list.front(); tok; tok = tok->next())
+    for (auto *tok = list.front(); tok; tok = tok->next())
         tok->scopeInfo(nullptr);
 
     std::string nextScopeNameAddition;

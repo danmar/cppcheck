@@ -100,7 +100,7 @@ private:
         std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> f = [&](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
             if (tok->str() != binop)
                 return;
-            auto b = dynamic_cast<const ExprEngine::BinOpResult *>(&value);
+            const auto *b = dynamic_cast<const ExprEngine::BinOpResult *>(&value);
             if (!b)
                 return;
             if (!ret.empty())
