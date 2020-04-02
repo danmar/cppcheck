@@ -3384,9 +3384,17 @@ static void valueFlowLifetimeConstructor(Token* tok, TokenList* tokenlist, Error
         valueFlowLifetimeConstructor(tok, Token::typeOf(parent->previous()), tokenlist, errorLogger, settings);
     } else if (Token::simpleMatch(tok, "{") && hasInitList(parent)) {
         std::vector<const Token *> args = getArguments(tok);
-        for (const Token *argtok : args) {
-            LifetimeStore ls{argtok, "Passed to initializer list.", ValueFlow::Value::LifetimeKind::Object};
-            ls.byVal(tok, tokenlist, errorLogger, settings);
+        // Assume range constructor if passed a pair of iterators
+        if (astIsContainer(parent) && args.size() == 2 && astIsIterator(args[0]) && astIsIterator(args[1])) {
+            for (const Token *argtok : args) {
+                LifetimeStore ls{argtok, "Passed to initializer list.", ValueFlow::Value::LifetimeKind::Object};
+                ls.byDerefCopy(tok, tokenlist, errorLogger, settings);
+            }
+        } else {
+            for (const Token *argtok : args) {
+                LifetimeStore ls{argtok, "Passed to initializer list.", ValueFlow::Value::LifetimeKind::Object};
+                ls.byVal(tok, tokenlist, errorLogger, settings);
+            }
         }
     } else if (const Type* t = Token::typeOf(tok->previous())) {
         valueFlowLifetimeConstructor(tok, t, tokenlist, errorLogger, settings);

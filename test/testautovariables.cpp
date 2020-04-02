@@ -2476,6 +2476,14 @@ private:
               "    return {&x, &x};\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("std::vector<std::string> f() {\n"
+              "    std::set<std::string> x;\n"
+              "    x.insert(\"1\");\n"
+              "    x.insert(\"2\");\n"
+              "    return { x.begin(), x.end() };\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeImplicitConversion() {
