@@ -77,6 +77,7 @@ public:
         checkStl.negativeIndex();
 
         checkStl.invalidContainer();
+        checkStl.invalidContainerLoop();
         checkStl.mismatchingContainers();
 
         checkStl.stlBoundaries();
@@ -110,6 +111,8 @@ public:
     void iterators();
 
     void invalidContainer();
+    
+    void invalidContainerLoop();
 
     bool checkIteratorPair(const Token* tok1, const Token* tok2);
 
@@ -205,6 +208,7 @@ private:
     void checkFindInsertError(const Token *tok);
     void sizeError(const Token* tok);
     void redundantIfRemoveError(const Token* tok);
+    void invalidContainerLoopError(const Token *tok, const Token * loopTok);
     void invalidContainerError(const Token *tok, const Token * contTok, const ValueFlow::Value *val, ErrorPath errorPath);
     void invalidContainerReferenceError(const Token* tok, const Token* contTok, ErrorPath errorPath);
 
@@ -228,6 +232,7 @@ private:
         c.iteratorsError(nullptr, "container1", "container2");
         c.iteratorsError(nullptr, nullptr, "container0", "container1");
         c.iteratorsError(nullptr, nullptr, "container");
+        c.invalidContainerLoopError(nullptr, nullptr);
         c.invalidContainerError(nullptr, nullptr, nullptr, errorPath);
         c.mismatchingContainersError(nullptr, nullptr);
         c.mismatchingContainerExpressionError(nullptr, nullptr);
