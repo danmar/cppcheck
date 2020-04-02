@@ -3384,9 +3384,17 @@ static void valueFlowLifetimeConstructor(Token* tok, TokenList* tokenlist, Error
         valueFlowLifetimeConstructor(tok, Token::typeOf(parent->previous()), tokenlist, errorLogger, settings);
     } else if (Token::simpleMatch(tok, "{") && hasInitList(parent)) {
         std::vector<const Token *> args = getArguments(tok);
-        for (const Token *argtok : args) {
-            LifetimeStore ls{argtok, "Passed to initializer list.", ValueFlow::Value::LifetimeKind::Object};
-            ls.byVal(tok, tokenlist, errorLogger, settings);
+        // Assume range constructor if passed a pair of iterators
+        if (astIsContainer(parent) && args.size() == 2 && astIsIterator(args[0]) && astIsIterator(args[1])) {
+            for (const Token *argtok : args) {
+                LifetimeStore ls{argtok, "Passed to initializer list.", ValueFlow::Value::LifetimeKind::Object};
+                ls.byDerefCopy(tok, tokenlist, errorLogger, settings);
+            }
+        } else {
+            for (const Token *argtok : args) {
+                LifetimeStore ls{argtok, "Passed to initializer list.", ValueFlow::Value::LifetimeKind::Object};
+                ls.byVal(tok, tokenlist, errorLogger, settings);
+            }
         }
     } else if (const Type* t = Token::typeOf(tok->previous())) {
         valueFlowLifetimeConstructor(tok, t, tokenlist, errorLogger, settings);
@@ -4705,9 +4713,26 @@ static void valueFlowInjectParameter(TokenList* tokenlist, ErrorLogger* errorLog
         args.back()[p.first] = p.second.front();
     }
     for (const auto& p:vars) {
+        if (args.size() > 256) {
+            std::string fname = "<unknown>";
+            Function* f = functionScope->function;
+            if (f)
+                fname = f->name();
+            if (settings->debugwarnings)
+                bailout(tokenlist, errorLogger, functionScope->bodyStart, "Too many argument passed to " + fname);
+            break;
+        }
         std::for_each(std::next(p.second.begin()), p.second.end(), [&](const ValueFlow::Value& value) {
             Args new_args;
             for (auto arg:args) {
+                if (value.path != 0) {
+                    for(const auto& q:arg) {
+                        if (q.second.path == 0)
+                            continue;
+                        if (q.second.path != value.path)
+                            return;
+                    }
+                }
                 arg[p.first] = value;
                 new_args.push_back(arg);
             }

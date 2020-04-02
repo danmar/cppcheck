@@ -3111,6 +3111,33 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 7U, 0));
         ASSERT_EQUALS(true, testValueOfX(code, 7U, 17));
         ASSERT_EQUALS(true, testValueOfX(code, 7U, 42));
+
+        code = "void g(int, int) {}\n"
+               "void f(int x, int y) {\n"
+               "    g(x, y);\n"
+               "}\n"
+               "void h() {\n"
+               "    f(0, 0);\n"
+               "    f(1, 1);\n"
+               "    f(2, 2);\n"
+               "    f(3, 3);\n"
+               "    f(4, 4);\n"
+               "    f(5, 5);\n"
+               "    f(6, 6);\n"
+               "    f(7, 7);\n"
+               "    f(8, 8);\n"
+               "    f(9, 9);\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 1));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 2));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 3));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 4));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 5));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 6));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 7));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 8));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 9));
     }
     void valueFlowFunctionReturn() {
         const char *code;
