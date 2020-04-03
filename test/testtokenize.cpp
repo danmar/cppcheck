@@ -8237,6 +8237,14 @@ private:
                                              "};\n"
                                              "void e(\n"
                                              "    int, a<void()> f = [] {});\n"))
+
+        // #9644
+        ASSERT_NO_THROW(tokenizeAndStringify("void a() {\n"
+                                             "  char b[]{};\n"
+                                             "  auto c = [](int d) {\n"
+                                             "    for (char e = 0; d;) {}\n"
+                                             "  };\n"
+                                             "}\n"))
     }
     void checkIfCppCast() {
         ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
