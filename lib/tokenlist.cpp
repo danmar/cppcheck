@@ -1505,9 +1505,15 @@ static Token * createAstAtToken(Token *tok, bool cpp)
     }
 
     if (cpp && tok->str() == "{" && iscpp11init(tok)) {
+        Token * const tok1 = tok;
         AST_state state(cpp);
         compileExpression(tok, state);
-        return tok;
+        const Token * const endToken = tok;
+        if (endToken == tok1 || !endToken)
+            return tok1;
+
+        createAstAtTokenInner(tok1->next(), endToken, cpp);
+        return endToken->previous();
     }
 
     return tok;

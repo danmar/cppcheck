@@ -2381,12 +2381,13 @@ struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
     virtual bool isAlias(const Token* tok) const OVERRIDE {
         if (value.isLifetimeValue())
             return false;
+        const std::list<ValueFlow::Value> vals{value};
         for (const auto& p:getVars()) {
             nonneg int varid = p.first;
             const Variable* var = p.second;
             if (tok->varId() == varid)
                 return true;
-            if (isAliasOf(var, tok, varid, {value}))
+            if (isAliasOf(var, tok, varid, vals))
                 return true;
         }
         return false;
@@ -4612,13 +4613,14 @@ struct MultiValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
     }
 
     virtual bool isAlias(const Token* tok) const OVERRIDE {
+        std::list<ValueFlow::Value> vals;
+        std::transform(values.begin(), values.end(), std::back_inserter(vals), SelectMapValues{});
+
         for (const auto& p:getVars()) {
             nonneg int varid = p.first;
             const Variable* var = p.second;
             if (tok->varId() == varid)
                 return true;
-            std::list<ValueFlow::Value> vals;
-            std::transform(values.begin(), values.end(), std::back_inserter(vals), SelectMapValues{});
             if (isAliasOf(var, tok, varid, vals))
                 return true;
         }

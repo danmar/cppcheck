@@ -710,12 +710,35 @@ void CheckStl::mismatchingContainers()
 
 static bool isInvalidMethod(const Token * tok)
 {
-    if (Token::Match(tok->next(), ". assign|clear"))
+    if (Token::Match(tok->next(), ". assign|clear|swap"))
         return true;
     if (Token::Match(tok->next(), "%assign%"))
         return true;
-    if (isVector(tok) && Token::Match(tok->next(), ". insert|emplace|emplace_back|push_back|erase|pop_back|reserve ("))
-        return true;
+    if (const Library::Container * c = tok->valueType()->container) {
+        Library::Container::Action action = c->getAction(tok->strAt(2));
+        if (c->unstableErase) {
+            if (action == Library::Container::Action::ERASE)
+                return true;
+        }
+        if (c->unstableInsert) {
+            if (action == Library::Container::Action::RESIZE)
+                return true;
+            if (action == Library::Container::Action::CLEAR)
+                return true;
+            if (action == Library::Container::Action::PUSH)
+                return true;
+            if (action == Library::Container::Action::POP)
+                return true;
+            if (action == Library::Container::Action::INSERT)
+                return true;
+            if (action == Library::Container::Action::CHANGE)
+                return true;
+            if (action == Library::Container::Action::CHANGE_INTERNAL)
+                return true;
+            if (Token::Match(tok->next(), ". insert|emplace"))
+                return true;
+        }
+    }
     return false;
 }
 

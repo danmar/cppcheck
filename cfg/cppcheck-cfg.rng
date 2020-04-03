@@ -391,6 +391,19 @@
                   <value>std-like</value>
                 </attribute>
               </optional>
+              <optional>
+                <attribute name="unstable">
+                  <list>
+                    <oneOrMore>
+                      <data type="string"/>
+                      <choice>
+                        <value>erase</value>
+                        <value>insert</value>
+                      </choice>
+                    </oneOrMore>
+                  </list>
+                </attribute>
+              </optional>
               <empty/>
             </element>
             <element name="size">
