@@ -868,10 +868,10 @@ void CheckStl::invalidContainerLoop()
 void CheckStl::invalidContainerLoopError(const Token *tok, const Token * loopTok)
 {
     ErrorPath errorPath;
-    std::string method = tok ? tok->strAt(2) : "erase";
+    const std::string method = tok ? tok->strAt(2) : "erase";
     errorPath.emplace_back(loopTok, "Iterating container here.");
 
-    std::string msg = "Calling '" + method + "' while iterating the container is invalid.";
+    const std::string msg = "Calling '" + method + "' while iterating the container is invalid.";
     errorPath.emplace_back(tok, "");
     reportError(errorPath, Severity::error, "invalidContainerLoop", msg, CWE664, false);
 }
