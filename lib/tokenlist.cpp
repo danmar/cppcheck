@@ -1309,21 +1309,6 @@ static void createAstAtTokenInner(Token * const tok1, const Token *endToken, boo
                 const Token * const endToken2 = tok->link();
                 for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
                     tok = createAstAtToken(tok, cpp);
-            } else if (const Token * lambdaEnd = findLambdaEndScope(tok)) {
-                Token *bodyStart = lambdaEnd->link();
-                if (Token::Match(bodyStart, ". %name%") && bodyStart->originalName() == "->") {
-                    bodyStart = bodyStart->next();
-                    while (Token::Match(bodyStart, "%name%|::"))
-                        bodyStart = bodyStart->next();
-                    if (Token::simpleMatch(bodyStart, "<") && Token::simpleMatch(bodyStart->link(), "> {"))
-                        bodyStart = bodyStart->link()->next();
-                }
-                if (Token::simpleMatch(bodyStart, "{")) {
-                    tok = bodyStart;
-                    const Token * const endToken2 = tok->link();
-                    for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
-                        tok = createAstAtToken(tok, cpp);
-                }
             }
         }
     }
