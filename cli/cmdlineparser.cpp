@@ -134,7 +134,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->addons.emplace_back(argv[i]+8);
 
             else if (std::strncmp(argv[i],"--python=",9) == 0)
-                mSettings->addonPython.assign(argv[i]+8);
+                mSettings->addonPython.assign(argv[i]+9);
 
             else if (std::strcmp(argv[i], "--clang") == 0)
                 mSettings->clang = true;
