@@ -136,11 +136,12 @@ namespace {
     };
 }
 
-static std::string executeAddon(const AddonInfo &addonInfo, const std::string &dumpFile)
-{
+static std::string executeAddon(const AddonInfo &addonInfo,
+                                const std::string &pythonExe,
+                                const std::string &dumpFile) {
     // Can python be executed?
     {
-        const std::string cmd = "python --version 2>&1";
+        const std::string cmd = pythonExe + " --version 2>&1";
 
 #ifdef _WIN32
         std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
@@ -157,7 +158,7 @@ static std::string executeAddon(const AddonInfo &addonInfo, const std::string &d
             throw InternalError(nullptr, "Failed to execute '" + cmd + "' (" + result + ")");
     }
 
-    const std::string cmd = "python \"" + addonInfo.scriptFile + "\" --cli" + addonInfo.args + " \"" + dumpFile + "\" 2>&1";
+    const std::string cmd = pythonExe + " \"" + addonInfo.scriptFile + "\" --cli" + addonInfo.args + " \"" + dumpFile + "\" 2>&1";
 
 #ifdef _WIN32
     std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
@@ -778,7 +779,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     mExitCode = 1;
                     continue;
                 }
-                const std::string results = executeAddon(addonInfo, dumpFile);
+                const std::string results =
+                    executeAddon(addonInfo, mSettings.addonPython, dumpFile);
                 std::istringstream istr(results);
                 std::string line;
 

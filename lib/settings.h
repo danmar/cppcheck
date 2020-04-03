@@ -73,6 +73,9 @@ public:
 
     std::list<std::string> addons;
 
+    /** @brief Path to the python interpreter to be used to run addons. */
+    std::string addonPython;
+
     /** @brief Paths used as base for conversion to relative paths. */
     std::vector<std::string> basePaths;
 
