@@ -827,7 +827,7 @@ const Token* getLoopContainer(const Token* tok)
 {
     if (!Token::simpleMatch(tok, "for ("))
         return nullptr;
-    const Token * sepTok = Token::findsimplematch(tok->next(), ":", tok->next()->link());
+    const Token * sepTok = tok->next()->astOperand2();
     if (!Token::simpleMatch(sepTok, ":"))
         return nullptr;
     return sepTok->astOperand2();
