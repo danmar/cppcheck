@@ -8240,6 +8240,14 @@ private:
                                              "};\n"
                                              "void e(\n"
                                              "    int, a<void()> f = [] {});\n"))
+
+        // #9537
+        ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
+                                             "  template <typename b> a(b) {}\n"
+                                             "};\n"
+                                             "a c{[] {\n"
+                                             "  if (0) {}\n"
+                                             "}};\n"))
     }
     void checkIfCppCast() {
         ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
