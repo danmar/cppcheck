@@ -7887,6 +7887,9 @@ private:
                       testAst("a = [&]() -> std::pair<int, int> { return 0; };\n"
                               "b = [=]() { for (i = 0; i != 10; ++i); };"));
 
+        // #9662
+        ASSERT_EQUALS("b{[{ stdunique_ptr::0nullptrnullptr:?{", testAst("auto b{[] { std::unique_ptr<void *>{0 ? nullptr : nullptr}; }};"));
+
     }
 
     void astcase() {
