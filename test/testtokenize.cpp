@@ -7887,6 +7887,9 @@ private:
                       testAst("a = [&]() -> std::pair<int, int> { return 0; };\n"
                               "b = [=]() { for (i = 0; i != 10; ++i); };"));
 
+        // #9662
+        ASSERT_EQUALS("b{[{ stdunique_ptr::0nullptrnullptr:?{", testAst("auto b{[] { std::unique_ptr<void *>{0 ? nullptr : nullptr}; }};"));
+
     }
 
     void astcase() {
@@ -8237,6 +8240,14 @@ private:
                                              "};\n"
                                              "void e(\n"
                                              "    int, a<void()> f = [] {});\n"))
+
+        // #9537
+        ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
+                                             "  template <typename b> a(b) {}\n"
+                                             "};\n"
+                                             "a c{[] {\n"
+                                             "  if (0) {}\n"
+                                             "}};\n"))
     }
     void checkIfCppCast() {
         ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
