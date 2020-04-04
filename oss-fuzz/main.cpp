@@ -20,20 +20,20 @@ public:
     }
 
     void reportOut(const std::string &outmsg) OVERRIDE {
-		(void)outmsg;
+        (void)outmsg;
     }
     void reportErr(const ErrorLogger::ErrorMessage &msg) OVERRIDE {
-		(void)msg;
+        (void)msg;
     }
     void reportProgress(const std::string& filename,
                         const char stage[],
                         const std::size_t value) OVERRIDE {
-		(void)filename;
-		(void)stage;
-		(void)value;
+        (void)filename;
+        (void)stage;
+        (void)value;
     }
-	void bughuntingReport(const std::string &str) OVERRIDE {
-		(void)str;
+    void bughuntingReport(const std::string &str) OVERRIDE {
+        (void)str;
     }
 };
 

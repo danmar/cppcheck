@@ -4728,7 +4728,7 @@ static void valueFlowInjectParameter(TokenList* tokenlist, ErrorLogger* errorLog
             Args new_args;
             for (auto arg:args) {
                 if (value.path != 0) {
-                    for(const auto& q:arg) {
+                    for (const auto& q:arg) {
                         if (q.second.path == 0)
                             continue;
                         if (q.second.path != value.path)
