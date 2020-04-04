@@ -846,6 +846,59 @@ void CheckStl::invalidContainer()
     }
 }
 
+const Token* getLoopContainer(const Token* tok)
+{
+    if (!Token::simpleMatch(tok, "for ("))
+        return nullptr;
+    const Token * sepTok = tok->next()->astOperand2();
+    if (!Token::simpleMatch(sepTok, ":"))
+        return nullptr;
+    return sepTok->astOperand2();
+}
+
+void CheckStl::invalidContainerLoop()
+{
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    const Library& library = mSettings->library;
+    for (const Scope * scope : symbolDatabase->functionScopes) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+            const Token* contTok = getLoopContainer(tok);
+            if (!contTok)
+                continue;
+            const Token * blockStart = tok->next()->link()->next();
+            const Token * blockEnd = blockStart->link();
+            if (!Token::Match(contTok, "%var%"))
+                continue;
+            if (contTok->varId() == 0)
+                continue;
+            if (!astIsContainer(contTok))
+                continue;
+            nonneg int varid = contTok->varId();
+            for (const Token* tok2 = blockStart; tok2 != blockEnd; tok2 = tok2->next()) {
+                if (tok2->varId() != varid)
+                    continue;
+                if (!Token::Match(tok2->next(), ". %name% ("))
+                    continue;
+                if (!isInvalidMethod(tok2))
+                    continue;
+                invalidContainerLoopError(tok2, tok);
+                break;
+            }
+        }
+    }
+}
+
+void CheckStl::invalidContainerLoopError(const Token *tok, const Token * loopTok)
+{
+    ErrorPath errorPath;
+    const std::string method = tok ? tok->strAt(2) : "erase";
+    errorPath.emplace_back(loopTok, "Iterating container here.");
+
+    const std::string msg = "Calling '" + method + "' while iterating the container is invalid.";
+    errorPath.emplace_back(tok, "");
+    reportError(errorPath, Severity::error, "invalidContainerLoop", msg, CWE664, false);
+}
+
 void CheckStl::invalidContainerError(const Token *tok, const Token * contTok, const ValueFlow::Value *val, ErrorPath errorPath)
 {
     const bool inconclusive = val ? val->isInconclusive() : false;
