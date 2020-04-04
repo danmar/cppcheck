@@ -67,6 +67,7 @@ namespace {
         std::string name;
         std::string scriptFile;
         std::string args;
+        std::string python;
 
         static std::string getFullPath(const std::string &fileName, const std::string &exename) {
             if (Path::fileExists(fileName))
@@ -131,17 +132,36 @@ namespace {
                     args += " " + v.get<std::string>();
             }
 
+            if(obj.count("python")) {
+                // Python was defined in the config file
+                if (obj["python"].is<picojson::array>()){
+                    return "Loading" + fileName +"failed. python must not be an array.";
+                }
+                python = obj["python"].get<std::string>();
+            }
+            else{
+                python = "";
+            }
+
             return getAddonInfo(obj["script"].get<std::string>(), exename);
         }
     };
 }
 
 static std::string executeAddon(const AddonInfo &addonInfo,
-                                const std::string &pythonExe,
+                                const std::string &defaultPythonExe,
                                 const std::string &dumpFile) {
+
+    std::string pythonExe = (addonInfo.python != "") ? addonInfo.python : defaultPythonExe;
+
+    if(pythonExe.find(" ") != std::string::npos){
+        // popen strips the first quote. Needs 2 sets to fully quote.
+        pythonExe = "\"\"" + pythonExe + "\"\"";
+    }
+
     // Can python be executed?
     {
-        const std::string cmd = "\"" + pythonExe + "\" --version 2>&1";
+        const std::string cmd = pythonExe + " --version 2>&1";
 
 #ifdef _WIN32
         std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
@@ -158,7 +178,7 @@ static std::string executeAddon(const AddonInfo &addonInfo,
             throw InternalError(nullptr, "Failed to execute '" + cmd + "' (" + result + ")");
     }
 
-    const std::string cmd = "\"" + pythonExe +"\" \"" + addonInfo.scriptFile + "\" --cli" + addonInfo.args + " \"" + dumpFile + "\" 2>&1";
+    const std::string cmd = pythonExe + " \"" + addonInfo.scriptFile + "\" --cli" + addonInfo.args + " \"" + dumpFile + "\" 2>&1";
 
 #ifdef _WIN32
     std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
