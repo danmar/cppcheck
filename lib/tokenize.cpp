@@ -570,7 +570,7 @@ void Tokenizer::simplifyTypedef()
         }
 
         if (tok->str() != "typedef") {
-            if (tok->str() == "(" && tok->strAt(1) == "typedef") {
+            if (Token::simpleMatch(tok, "( typedef")) {
                 // Skip typedefs inside parentheses (#2453 and #4002)
                 tok = tok->next();
             } else if (Token::Match(tok, "class|struct|namespace %any%") &&
