@@ -418,6 +418,7 @@ private:
         TEST_CASE(auto10); // #8020
         TEST_CASE(auto11); // #8964 - const auto startX = x;
         TEST_CASE(auto12); // #8993 - const std::string &x; auto y = x; if (y.empty()) ..
+        TEST_CASE(auto13);
 
         TEST_CASE(unionWithConstructor);
 
@@ -7464,22 +7465,19 @@ private:
         // auto = int, v11 = int
         autotok = Token::findsimplematch(autotok, "auto v11");
         ASSERT(autotok);
-        TODO_ASSERT(autotok->valueType());
-        if (autotok->valueType()) {
-            ASSERT_EQUALS(0, autotok->valueType()->constness);
-            ASSERT_EQUALS(0, autotok->valueType()->pointer);
-            ASSERT_EQUALS(ValueType::SIGNED, autotok->valueType()->sign);
-            ASSERT_EQUALS(ValueType::INT, autotok->valueType()->type);
-        }
+        ASSERT(autotok->valueType());
+        ASSERT_EQUALS(0, autotok->valueType()->constness);
+        ASSERT_EQUALS(0, autotok->valueType()->pointer);
+        ASSERT_EQUALS(ValueType::SIGNED, autotok->valueType()->sign);
+        ASSERT_EQUALS(ValueType::INT, autotok->valueType()->type);
+
         vartok = autotok->next();
         ASSERT(autotok);
-        TODO_ASSERT(autotok->valueType());
-        if (vartok->valueType()) {
-            ASSERT_EQUALS(0, vartok->valueType()->constness);
-            ASSERT_EQUALS(0, vartok->valueType()->pointer);
-            ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
-            ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
-        }
+        ASSERT(autotok->valueType());
+        ASSERT_EQUALS(0, vartok->valueType()->constness);
+        ASSERT_EQUALS(0, vartok->valueType()->pointer);
+        ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
+        ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
     }
 
     void auto8() {
@@ -7570,6 +7568,25 @@ private:
 
         tok = Token::findsimplematch(tokenizer.tokens(), "y .");
         ASSERT(tok && tok->valueType() && tok->valueType()->container);
+    }
+
+    void auto13() {
+        GET_SYMBOL_DB("uint8_t *get();\n"
+                      "\n"
+                      "uint8_t *test()\n"
+                      "{\n"
+                      "    auto *next = get();\n"
+                      "    return next;\n"
+                      "}");
+
+        const Token *tok;
+
+        tok = Token::findsimplematch(tokenizer.tokens(), "return")->next();
+        ASSERT(tok);
+        ASSERT(tok->valueType());
+        ASSERT(tok->valueType()->pointer);
+        ASSERT(tok->variable()->valueType());
+        ASSERT(tok->variable()->valueType()->pointer);
     }
 
     void unionWithConstructor() {

@@ -5685,8 +5685,13 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
                 valuetype->sign = vt->sign;
             valuetype->constness = vt->constness;
             valuetype->originalTypeName = vt->originalTypeName;
-            while (Token::Match(type, "%name%|*|&|::") && !type->variable())
+            while (Token::Match(type, "%name%|*|&|::") && !type->variable()) {
+                if (type->str() == "*")
+                    valuetype->pointer++;
+                if (type->str() == "const")
+                    valuetype->constness |= (1 << valuetype->pointer);
                 type = type->next();
+            }
             break;
         } else if (!valuetype->typeScope && (type->str() == "struct" || type->str() == "enum"))
             valuetype->type = type->str() == "struct" ? ValueType::Type::RECORD : ValueType::Type::NONSTD;
