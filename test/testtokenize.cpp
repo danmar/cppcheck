@@ -8002,6 +8002,9 @@ private:
                              "  EVALUATE(123, int x=a; int y=b+c;);\n"
                              "}";
         ASSERT_THROW(tokenizeAndStringify(code5), InternalError);
+
+        const char code6[] = "void foo() { dostuff(a, .x=0); }";
+        ASSERT_THROW(tokenizeAndStringify(code6), InternalError);
     }
 
     void findGarbageCode() { // Test Tokenizer::findGarbageCode()
