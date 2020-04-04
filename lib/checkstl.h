@@ -111,7 +111,7 @@ public:
     void iterators();
 
     void invalidContainer();
-    
+
     void invalidContainerLoop();
 
     bool checkIteratorPair(const Token* tok1, const Token* tok2);
