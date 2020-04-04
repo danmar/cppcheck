@@ -12,7 +12,7 @@ if (USE_CLANG)
     set (CMAKE_C_FLAGS_DEBUG            "-g")
     set (CMAKE_C_FLAGS_RELEASE          "-O2")
 
-    set (CMAKE_CXX_FLAGS                "")
+    set (CMAKE_CXX_FLAGS                "-pedantic -Wall -Wextra")
     set (CMAKE_CXX_FLAGS_DEBUG          "-g")
     set (CMAKE_CXX_FLAGS_RELEASE        "-O2")
 endif()
@@ -27,7 +27,7 @@ if (USE_ANALYZE)
     set (CMAKE_C_FLAGS_DEBUG            "-g")
     set (CMAKE_C_FLAGS_RELEASE          "-O2")
 
-    set (CMAKE_CXX_FLAGS                "-Wall")
+    set (CMAKE_CXX_FLAGS                "-pedantic -Wall -Wextra")
     set (CMAKE_CXX_FLAGS_DEBUG          "-g")
     set (CMAKE_CXX_FLAGS_RELEASE        "-O2")
 endif()
@@ -43,28 +43,20 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     endif ()
 
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wcast-qual")                # Cast for removing type qualifiers
-    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-conversion")            # Implicit conversions that may alter a value
+    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-deprecated-declarations")
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wfloat-equal")              # Floating values used in equality comparisons
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wmissing-declarations")     # If a global function is defined without a previous declaration
-    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wmissing-format-attribute") # 
+    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wmissing-format-attribute") #
+    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-long-long")
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Woverloaded-virtual")       # when a function declaration hides virtual functions from a base class
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wpacked")                   # 
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wredundant-decls")          # if anything is declared more than once in the same scope
+    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wundef")
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-shadow")                # whenever a local variable or type declaration shadows another one
-    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-sign-promo")            #
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-missing-field-initializers")
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-missing-braces")
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-sign-compare")
-
-    if(WARNINGS_ANSI_ISO)
-#        set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Werror=return-type")        # 
-#        set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wstrict-aliasing=3")
-    else()
-        set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-narrowing")
-        set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-delete-non-virtual-dtor")
-        set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-unnamed-type-template-args")
-    endif()
-
+    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-multichar")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 
    if(NOT EXISTS ${CMAKE_CXX_COMPILER})
@@ -98,20 +90,11 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
     "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
     "${CMAKE_CXX_COMPILER_ID}" STREQUAL "c++-analyzer" )
 
-   if(WARNINGS_ANSI_ISO)
-           set(EXTRA_C_FLAGS "-Wextra -pedantic ${EXTRA_C_FLAGS}")
-#           set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wlogical-op")
-           set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-long-long") # Don't warn about long long usage.
-   endif()
-
    if(WARNINGS_ARE_ERRORS)
       set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Werror")
    endif()
 
-   set(EXTRA_C_FLAGS "-Wall ${EXTRA_C_FLAGS}")
-   
    set(EXTRA_C_FLAGS_DEBUG "${EXTRA_C_FLAGS_DEBUG} -O0")
-
 endif()
 
 if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux" AND
