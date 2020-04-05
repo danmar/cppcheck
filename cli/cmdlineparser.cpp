@@ -133,6 +133,9 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--addon=", 8) == 0)
                 mSettings->addons.emplace_back(argv[i]+8);
 
+            else if (std::strncmp(argv[i],"--addon-python=", 15) == 0)
+                mSettings->addonPython.assign(argv[i]+15);
+
             else if (std::strcmp(argv[i], "--clang") == 0)
                 mSettings->clang = true;
 
@@ -973,6 +976,9 @@ void CmdLineParser::printHelp()
               "Options:\n"
               "    --addon=<addon>\n"
               "                         Execute addon. i.e. cert.\n"
+              "    --addon-python=<python interpreter>\n"
+              "                         Use this python interpreter to run addons\n"
+              "                         If not present, defaults to \"python\"\n"
               "    --cppcheck-build-dir=<dir>\n"
               "                         Analysis output directory. Useful for various data.\n"
               "                         Some possible usages are; whole program analysis,\n"
