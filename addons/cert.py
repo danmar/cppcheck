@@ -317,8 +317,8 @@ def str05(data):
 # STR07-C
 # Use the bounds-checking interfaces for string manipulation
 def str07(data):
-    if(data.standards.c=='c98' or data.standards.c=='c99'):
-        return False
+    if(data.standards.c=='c89' or data.standards.c=='c99'):
+        return
     for token in data.tokenlist:
         if not isFunctionCall(token, ('strcpy', 'strcat')):
             continue
