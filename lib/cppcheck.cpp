@@ -132,14 +132,13 @@ namespace {
                     args += " " + v.get<std::string>();
             }
 
-            if(obj.count("python")) {
+            if (obj.count("python")) {
                 // Python was defined in the config file
-                if (obj["python"].is<picojson::array>()){
+                if (obj["python"].is<picojson::array>()) {
                     return "Loading " + fileName +" failed. python must not be an array.";
                 }
                 python = obj["python"].get<std::string>();
-            }
-            else{
+            } else {
                 python = "";
             }
 
@@ -150,11 +149,12 @@ namespace {
 
 static std::string executeAddon(const AddonInfo &addonInfo,
                                 const std::string &defaultPythonExe,
-                                const std::string &dumpFile) {
+                                const std::string &dumpFile)
+{
 
     std::string pythonExe = (addonInfo.python != "") ? addonInfo.python : defaultPythonExe;
 
-    if(pythonExe.find(" ") != std::string::npos){
+    if (pythonExe.find(" ") != std::string::npos) {
         // popen strips the first quote. Needs 2 sets to fully quote.
         pythonExe = "\"\"" + pythonExe + "\"\"";
     }
