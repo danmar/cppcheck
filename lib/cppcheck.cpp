@@ -135,7 +135,7 @@ namespace {
             if(obj.count("python")) {
                 // Python was defined in the config file
                 if (obj["python"].is<picojson::array>()){
-                    return "Loading" + fileName +"failed. python must not be an array.";
+                    return "Loading " + fileName +" failed. python must not be an array.";
                 }
                 python = obj["python"].get<std::string>();
             }
