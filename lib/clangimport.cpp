@@ -214,6 +214,10 @@ namespace clangimport {
             return ret;
         }
 
+        bool hasDecl(const std::string &addr) const {
+            return mDeclMap.find(addr) != mDeclMap.end();
+        }
+
         // "}" tokens that are not end-of-scope
         std::set<Token *> mNotScope;
     private:
@@ -678,6 +682,10 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         return nullptr;
     }
     if (nodeType == CXXMethodDecl) {
+        for (int i = 0; i+1 < mExtTokens.size(); ++i) {
+            if (mExtTokens[i] == "prev" && !mData->hasDecl(mExtTokens[i+1]))
+                return nullptr;
+        }
         createTokensFunctionDecl(tokenList);
         return nullptr;
     }
@@ -1053,19 +1061,38 @@ Token * clangimport::AstNode::createTokensCall(TokenList *tokenList)
 
 void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
 {
+    const bool prev = (std::find(mExtTokens.begin(), mExtTokens.end(), "prev") != mExtTokens.end());
+    const bool hasBody = mFile == 0 && !children.empty() && children.back()->nodeType == CompoundStmt;
+
     SymbolDatabase *symbolDatabase = mData->mSymbolDatabase;
     addTypeTokens(tokenList, '\'' + getType() + '\'');
     Token *nameToken = addtoken(tokenList, getSpelling() + getTemplateParameters());
     Scope *nestedIn = const_cast<Scope *>(nameToken->scope());
-    symbolDatabase->scopeList.push_back(Scope(nullptr, nullptr, nestedIn));
-    Scope &scope = symbolDatabase->scopeList.back();
-    nestedIn->functionList.push_back(Function(nameToken));
-    scope.function = &nestedIn->functionList.back();
-    scope.type = Scope::ScopeType::eFunction;
-    scope.className = nameToken->str();
-    mData->funcDecl(mExtTokens.front(), nameToken, scope.function);
+
+    if (!prev) {
+        nestedIn->functionList.push_back(Function(nameToken));
+        mData->funcDecl(mExtTokens.front(), nameToken, &nestedIn->functionList.back());
+    } else {
+        const std::string addr = *(std::find(mExtTokens.begin(), mExtTokens.end(), "prev") + 1);
+        mData->ref(addr, nameToken);
+    }
+
+    Function * const function = const_cast<Function*>(nameToken->function());
+
+    Scope *scope = nullptr;
+    if (hasBody) {
+        symbolDatabase->scopeList.push_back(Scope(nullptr, nullptr, nestedIn));
+        scope = &symbolDatabase->scopeList.back();
+        scope->function = function;
+        scope->type = Scope::ScopeType::eFunction;
+        scope->className = nameToken->str();
+        nestedIn->nestedList.push_back(scope);
+        function->hasBody(true);
+    }
+
     Token *par1 = addtoken(tokenList, "(");
     // Function arguments
+    function->argumentList.clear();
     for (int i = 0; i < children.size(); ++i) {
         AstNodePtr child = children[i];
         if (child->nodeType != ParmVarDecl)
@@ -1077,24 +1104,25 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
         Token *vartok = nullptr;
         if (!spelling.empty())
             vartok = child->addtoken(tokenList, spelling);
-        scope.function->argumentList.push_back(Variable(vartok, child->getType(), nullptr, i, AccessControl::Argument, nullptr, &scope));
+        function->argumentList.push_back(Variable(vartok, child->getType(), nullptr, i, AccessControl::Argument, nullptr, scope));
         if (vartok) {
             const std::string addr = child->mExtTokens[0];
-            mData->varDecl(addr, vartok, &scope.function->argumentList.back());
+            mData->varDecl(addr, vartok, &function->argumentList.back());
         }
     }
     Token *par2 = addtoken(tokenList, ")");
     par1->link(par2);
     par2->link(par1);
+
     // Function body
-    if (mFile == 0 && !children.empty() && children.back()->nodeType == CompoundStmt) {
-        symbolDatabase->functionScopes.push_back(&scope);
+    if (hasBody) {
+        symbolDatabase->functionScopes.push_back(scope);
         Token *bodyStart = addtoken(tokenList, "{");
-        bodyStart->scope(&scope);
+        bodyStart->scope(scope);
         children.back()->createTokens(tokenList);
         Token *bodyEnd = addtoken(tokenList, "}");
-        scope.bodyStart = bodyStart;
-        scope.bodyEnd = bodyEnd;
+        scope->bodyStart = bodyStart;
+        scope->bodyEnd = bodyEnd;
         bodyStart->link(bodyEnd);
         bodyEnd->link(bodyStart);
     } else {

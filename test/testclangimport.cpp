@@ -50,7 +50,9 @@ private:
         TEST_CASE(cxxForRangeStmt1);
         TEST_CASE(cxxForRangeStmt2);
         TEST_CASE(cxxMemberCall);
-        TEST_CASE(cxxMethodDecl);
+        TEST_CASE(cxxMethodDecl1);
+        TEST_CASE(cxxMethodDecl2);
+        TEST_CASE(cxxMethodDecl3);
         TEST_CASE(cxxNewExpr);
         TEST_CASE(cxxNullPtrLiteralExpr);
         TEST_CASE(cxxOperatorCallExpr);
@@ -435,7 +437,7 @@ private:
         ASSERT_EQUALS("void bar ( ) { C<int> c@1 ( C<int> ( ) ) ; c@1 . foo ( ) ; }", parse(clang));
     }
 
-    void cxxMethodDecl() {
+    void cxxMethodDecl1() {
         const char clang[] = "|-CXXMethodDecl 0x55c786f5ad60 <line:56:5, col:179> col:10 analyzeFile '_Bool (const std::string &, const std::string &, const std::string &, unsigned long long, std::list<ErrorLogger::ErrorMessage> *)'\n"
                              "| |-ParmVarDecl 0x55c786f5a4c8 <col:22, col:41> col:41 buildDir 'const std::string &'\n"
                              "| |-ParmVarDecl 0x55c786f5a580 <col:51, col:70> col:70 sourcefile 'const std::string &'\n"
@@ -444,6 +446,34 @@ private:
                              "| |-ParmVarDecl 0x55c786f5ac00 <col:135, col:173> col:173 errors 'std::list<ErrorLogger::ErrorMessage> *'\n"
                              "  `-CompoundStmt 0x0 <>";
         ASSERT_EQUALS("_Bool analyzeFile ( const std::string & buildDir@1 , const std::string & sourcefile@2 , const std::string & cfg@3 , unsigned long long checksum@4 , std::list<ErrorLogger::ErrorMessage> * errors@5 ) { }", parse(clang));
+    }
+
+    void cxxMethodDecl2() { // "unexpanded" template method
+        const char clang[] = "`-CXXMethodDecl 0x220ecb0 parent 0x21e4c28 prev 0x21e5338 <line:11:1, line:18:1> line:14:1 find 'const typename char_traits<_CharT>::char_type *(const char_traits::char_type *, int, const char_traits::char_type &)'\n"
+                             "  `-CompoundStmt 0x220ede0 <line:15:1, line:18:1>\n"
+                             "    `-ReturnStmt 0x220edd0 <line:17:5, col:12>\n"
+                             "      `-IntegerLiteral 0x220edb0 <col:12> 'int' 0";
+        ASSERT_EQUALS("", parse(clang));
+    }
+
+    void cxxMethodDecl3() {
+        const char clang[] = "|-CXXRecordDecl 0x21cca40 <2.cpp:2:1, line:4:1> line:2:7 class Fred definition\n"
+                             "| |-DefinitionData pass_in_registers empty aggregate standard_layout trivially_copyable pod trivial literal has_constexpr_non_copy_move_ctor can_const_default_init\n"
+                             "| | |-DefaultConstructor exists trivial constexpr needs_implicit defaulted_is_constexpr\n"
+                             "| | |-CopyConstructor simple trivial has_const_param needs_implicit implicit_has_const_param\n"
+                             "| | |-MoveConstructor exists simple trivial needs_implicit\n"
+                             "| | |-CopyAssignment trivial has_const_param needs_implicit implicit_has_const_param\n"
+                             "| | |-MoveAssignment exists simple trivial needs_implicit\n"
+                             "| | `-Destructor simple irrelevant trivial needs_implicit\n"
+                             "| |-CXXRecordDecl 0x21ccb58 <col:1, col:7> col:7 implicit class Fred\n"
+                             "| `-CXXMethodDecl 0x21ccc68 <line:3:1, col:10> col:6 foo 'void ()'\n"
+                             "`-CXXMethodDecl 0x21ccd60 parent 0x21cca40 prev 0x21ccc68 <line:6:1, col:19> col:12 foo 'void ()'\n"
+                             "  `-CompoundStmt 0x21cce50 <col:18, col:19>";
+        ASSERT_EQUALS("class Fred\n"
+                      "{ void foo ( ) ; }\n"
+                      "\n"
+                      "\n"
+                      "void foo ( ) { }", parse(clang));
     }
 
     void cxxNewExpr() {
