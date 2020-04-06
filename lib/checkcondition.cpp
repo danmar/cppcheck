@@ -1054,6 +1054,8 @@ void CheckCondition::checkIncorrectLogicOperator()
 
             // 'A && (!A || B)' is equivalent to 'A && B'
             // 'A || (!A && B)' is equivalent to 'A || B'
+            // 'A && (A || B)' is equivalent to 'A'
+            // 'A || (A && B)' is equivalent to 'A'
             if (printStyle &&
                 ((tok->str() == "||" && tok->astOperand2()->str() == "&&") ||
                  (tok->str() == "&&" && tok->astOperand2()->str() == "||"))) {
@@ -1084,6 +1086,31 @@ void CheckCondition::checkIncorrectLogicOperator()
 
                     const std::string cond1VerboseMsg = expr1VerboseMsg + " " + tok->str() + " " + expr2VerboseMsg + " " + tok->astOperand2()->str() + " " + expr3VerboseMsg;
                     const std::string cond2VerboseMsg = expr1VerboseMsg + " " + tok->str() + " " + expr3VerboseMsg;
+                    // for the --verbose message, transform the actual condition and print it
+                    const std::string msg = tok2->expressionString() + ". '" + cond1 + "' is equivalent to '" + cond2 + "'\n"
+                                            "The condition '" + cond1VerboseMsg + "' is equivalent to '" + cond2VerboseMsg + "'.";
+                    redundantConditionError(tok, msg, false);
+                    continue;
+                } else if (isSameExpression(mTokenizer->isCPP(), false, tok->astOperand1(), tok2, mSettings->library, true, true)) {
+                    std::string expr1(tok->astOperand1()->expressionString());
+                    std::string expr2(tok->astOperand2()->astOperand1()->expressionString());
+                    std::string expr3(tok->astOperand2()->astOperand2()->expressionString());
+                    // make copy for later because the original string might get overwritten
+                    const std::string expr1VerboseMsg = expr1;
+                    const std::string expr2VerboseMsg = expr2;
+                    const std::string expr3VerboseMsg = expr3;
+
+                    if (expr1.length() + expr2.length() + expr3.length() > 50U) {
+                        expr1 = "A";
+                        expr2 = "A";
+                        expr3 = "B";
+                    }
+
+                    const std::string cond1 = expr1 + " " + tok->str() + " (" + expr2 + " " + tok->astOperand2()->str() + " " + expr3 + ")";
+                    const std::string cond2 = expr1;
+
+                    const std::string cond1VerboseMsg = expr1VerboseMsg + " " + tok->str() + " " + expr2VerboseMsg + " " + tok->astOperand2()->str() + " " + expr3VerboseMsg;
+                    const std::string cond2VerboseMsg = expr1VerboseMsg;
                     // for the --verbose message, transform the actual condition and print it
                     const std::string msg = tok2->expressionString() + ". '" + cond1 + "' is equivalent to '" + cond2 + "'\n"
                                             "The condition '" + cond1VerboseMsg + "' is equivalent to '" + cond2VerboseMsg + "'.";
