@@ -79,6 +79,7 @@ public:
         checkStl.invalidContainer();
         checkStl.invalidContainerLoop();
         checkStl.mismatchingContainers();
+        checkStl.mismatchingContainerIterator();
 
         checkStl.stlBoundaries();
         checkStl.checkDereferenceInvalidIterator();
@@ -121,6 +122,8 @@ public:
      * std::find(foo.begin(), bar.end(), x)
      */
     void mismatchingContainers();
+    
+    void mismatchingContainerIterator();
 
     /**
      * Dangerous usage of erase. The iterator is invalidated by erase so
@@ -200,6 +203,7 @@ private:
     void iteratorsError(const Token* tok, const std::string& containerName1, const std::string& containerName2);
     void iteratorsError(const Token* tok, const Token* containerTok, const std::string& containerName1, const std::string& containerName2);
     void iteratorsError(const Token* tok, const Token* containerTok, const std::string& containerName);
+    void mismatchingContainerIteratorError(const Token* tok, const Token* iterTok);
     void mismatchingContainersError(const Token* tok1, const Token* tok2);
     void mismatchingContainerExpressionError(const Token *tok1, const Token *tok2);
     void sameIteratorExpressionError(const Token *tok);
@@ -234,6 +238,7 @@ private:
         c.iteratorsError(nullptr, nullptr, "container");
         c.invalidContainerLoopError(nullptr, nullptr);
         c.invalidContainerError(nullptr, nullptr, nullptr, errorPath);
+        c.mismatchingContainerIteratorError(nullptr, nullptr);
         c.mismatchingContainersError(nullptr, nullptr);
         c.mismatchingContainerExpressionError(nullptr, nullptr);
         c.sameIteratorExpressionError(nullptr);
