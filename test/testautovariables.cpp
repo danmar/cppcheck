@@ -2301,6 +2301,16 @@ private:
               "  return fred.s.c_str();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9534
+        check("struct A {\n"
+              "    int* x;\n"
+              "};\n"
+              "int* f(int i, std::vector<A>& v) {\n"
+              "    A& y = v[i];\n"
+              "    return &y.x[i];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeFunction() {
