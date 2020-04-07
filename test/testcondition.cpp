@@ -2689,6 +2689,16 @@ private:
               "  if (!x || (x && (2>(y-1)))) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: x. '!x || (x && 2>(y-1))' is equivalent to '!x || 2>(y-1)'\n", errout.str());
+
+        check("void f(bool a, bool b) {\n"
+              "    if (a || (a && b)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: a. 'a || (a && b)' is equivalent to 'a'\n", errout.str());
+
+        check("void f(bool a, bool b) {\n"
+              "    if (a && (a || b)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: a. 'a && (a || b)' is equivalent to 'a'\n", errout.str());
     }
 
     // clarify conditions with bitwise operator and comparison
