@@ -14,7 +14,7 @@ jobs:
 
       - name: Install missing software on ubuntu
         run: |
-          sudo apt update
+          sudo apt-get update
           sudo apt-get install libxml2-utils
           sudo apt-get install z3 libz3-dev
           sudo apt-get install lcov
