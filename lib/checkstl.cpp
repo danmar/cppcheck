@@ -846,7 +846,7 @@ void CheckStl::invalidContainer()
     }
 }
 
-const Token* getLoopContainer(const Token* tok)
+static const Token* getLoopContainer(const Token* tok)
 {
     if (!Token::simpleMatch(tok, "for ("))
         return nullptr;

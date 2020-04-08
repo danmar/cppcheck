@@ -1,5 +1,5 @@
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    add_executable(fuzz-client
+    add_executable(fuzz-client EXCLUDE_FROM_ALL
             main.cpp
             type2.cpp)
     target_include_directories(fuzz-client PRIVATE ${CMAKE_SOURCE_DIR}/lib ${CMAKE_SOURCE_DIR}/externals/simplecpp ${CMAKE_SOURCE_DIR}/externals/tinyxml ${CMAKE_SOURCE_DIR}/externals)
@@ -9,7 +9,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     #target_link_options(fuzz-client PRIVATE -fsanitize=address -fsanitize=fuzzer)
     target_link_libraries(fuzz-client PRIVATE -fsanitize=address -fsanitize=fuzzer)
 
-    add_executable(translate
+    add_executable(translate EXCLUDE_FROM_ALL
             translate.cpp
             type2.cpp)
 endif()
