@@ -24,8 +24,6 @@
 #include <QMetaType>
 #include "errorlogger.h"
 
-class ErrorLine;
-
 /// @addtogroup GUI
 /// @{
 

@@ -20,6 +20,7 @@
 //---------------------------------------------------------------------------
 #include "ctu.h"
 #include "astutils.h"
+#include "settings.h"
 #include "symboldatabase.h"
 #include <tinyxml2.h>
 #include <iterator>  // back_inserter

@@ -21,8 +21,10 @@
 #include "checkinternal.h"
 
 #include "astutils.h"
+#include "errorlogger.h"
 #include "symboldatabase.h"
-#include "utils.h"
+#include "token.h"
+#include "tokenize.h"
 
 #include <set>
 #include <cstring>

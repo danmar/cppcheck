@@ -24,13 +24,17 @@
 
 #include "check.h"
 #include "config.h"
-#include "valueflow.h"
+#include "errorlogger.h"
+#include "utils.h"
 
 #include <cstddef>
 #include <string>
 #include <vector>
 
-class ErrorLogger;
+namespace ValueFlow {
+    class Value;
+}
+
 class Settings;
 class Token;
 class Tokenizer;

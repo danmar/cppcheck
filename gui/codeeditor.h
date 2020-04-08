@@ -5,15 +5,12 @@
 #include <QPlainTextEdit>
 #include <QObject>
 #include <QRegularExpression>
-#include "codeeditorstyle.h"
 
+class CodeEditorStyle;
 class QPaintEvent;
 class QResizeEvent;
 class QSize;
 class QWidget;
-
-class LineNumberArea;
-
 
 class Highlighter : public QSyntaxHighlighter {
     Q_OBJECT

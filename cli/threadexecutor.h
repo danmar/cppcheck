@@ -19,8 +19,8 @@
 #ifndef THREADEXECUTOR_H
 #define THREADEXECUTOR_H
 
+#include "config.h"
 #include "errorlogger.h"
-#include "importproject.h"
 
 #include <cstddef>
 #include <list>

@@ -16,13 +16,14 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "config.h"
 #include "cppcheckexecutor.h"
 #include "errorlogger.h"
-#include "cppcheck.h"
 #include "filelister.h"
 #include "path.h"
 #include "pathmatch.h"
 #include "redirect.h"
+#include "settings.h"
 #include "testsuite.h"
 
 #include <algorithm>

@@ -26,10 +26,9 @@
 #include <functional>
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
-#include <stdint.h>
+#include <cstdint>
 
 class ErrorLogger;
 class Tokenizer;

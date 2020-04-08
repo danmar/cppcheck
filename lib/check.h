@@ -22,11 +22,8 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
-#include "errorlogger.h"
-#include "settings.h"
 #include "token.h"
 #include "tokenize.h"
-#include "valueflow.h"
 
 #include <list>
 #include <string>
@@ -38,6 +35,13 @@ namespace tinyxml2 {
 namespace CTU {
     class FileInfo;
 }
+
+namespace ValueFlow {
+    class Value;
+}
+
+class Settings;
+class Token;
 
 /** Use WRONG_DATA in checkers to mark conditions that check that data is correct */
 #define WRONG_DATA(COND, TOK)  (wrongData((TOK), (COND), #COND))

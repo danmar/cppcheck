@@ -36,7 +36,6 @@
 #include <list>
 #include <map>
 #include <ostream>
-#include <set>
 #include <utility>
 //---------------------------------------------------------------------------
 

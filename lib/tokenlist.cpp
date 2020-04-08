@@ -20,9 +20,10 @@
 #include "tokenlist.h"
 
 #include "errorlogger.h"
-#include "mathlib.h"
+#include "library.h"
 #include "path.h"
 #include "settings.h"
+#include "standards.h"
 #include "token.h"
 
 #include <simplecpp.h>

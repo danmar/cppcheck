@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "errorlogger.h"
+#include "config.h"
 #include "platform.h"
 #include "testsuite.h"
 

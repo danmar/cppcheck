@@ -23,6 +23,7 @@
 //---------------------------------------------------------------------------
 
 #include <functional>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -31,7 +32,6 @@
 
 class Library;
 class Settings;
-class Scope;
 class Token;
 class Variable;
 

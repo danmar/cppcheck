@@ -25,10 +25,9 @@
 #include "check.h"
 #include "config.h"
 #include "ctu.h"
-#include "errorlogger.h"
 #include "mathlib.h"
-#include "tokenize.h"
 #include "symboldatabase.h"
+#include "valueflow.h"
 
 #include <cstddef>
 #include <list>
@@ -36,6 +35,14 @@
 #include <string>
 #include <vector>
 
+namespace tinyxml2 {
+	class XMLElement;
+}
+
+class ErrorLogger;
+class Settings;
+class Token;
+class Tokenizer;
 
 /// @addtogroup Checks
 /// @{

@@ -22,7 +22,6 @@
 #include "suppressions.h"
 #include "testsuite.h"
 #include "threadexecutor.h"
-#include "path.h"
 
 #include <cstddef>
 #include <list>

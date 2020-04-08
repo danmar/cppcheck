@@ -29,7 +29,6 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
-#include "tokenlist.h"
 #include "utils.h"
 #include "valueflow.h"
 
@@ -38,8 +37,6 @@
 #include <cstdlib>
 #include <numeric> // std::accumulate
 #include <sstream>
-#include <stack>
-#include <utility>
 
 //---------------------------------------------------------------------------
 

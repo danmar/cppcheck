@@ -29,7 +29,6 @@
 #include "pathmatch.h"
 #include "preprocessor.h"
 #include "settings.h"
-#include "standards.h"
 #include "suppressions.h"
 #include "threadexecutor.h"
 #include "utils.h"

@@ -25,13 +25,15 @@
 #include "check.h"
 #include "config.h"
 #include "ctu.h"
+#include "errorlogger.h"
+#include "mathlib.h"
+#include "settings.h"
+#include "utils.h"
 
 #include <set>
 #include <string>
 
-class ErrorLogger;
 class Scope;
-class Settings;
 class Token;
 class Tokenizer;
 class Variable;

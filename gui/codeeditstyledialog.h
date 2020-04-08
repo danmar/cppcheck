@@ -21,9 +21,11 @@
 
 #include <QDialog>
 #include <QPushButton>
-#include "codeeditstylecontrols.h"
-#include "codeeditor.h"
 #include "codeeditorstyle.h"
+
+class CodeEditor;
+class SelectColorButton;
+class SelectFontWeightCombo;
 
 class StyleEditDialog : public QDialog {
     Q_OBJECT

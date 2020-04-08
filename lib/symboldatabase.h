@@ -24,8 +24,8 @@
 #include "config.h"
 #include "library.h"
 #include "mathlib.h"
-#include "platform.h"
 #include "token.h"
+#include "utils.h"
 
 #include <cstddef>
 #include <list>
@@ -34,6 +34,10 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+namespace cppcheck {
+    class Platform;
+}
 
 class ErrorLogger;
 class Function;

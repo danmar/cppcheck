@@ -28,7 +28,6 @@
 #include <vector>
 
 class Settings;
-class Token;
 
 namespace simplecpp {
     class TokenList;
