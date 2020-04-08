@@ -513,14 +513,14 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) struct member 'AB::a' is never used.\n", errout.str());
 
         checkStructMemberUsage("struct A\n"
-            "{\n"
-            "    static const int a = 0;\n"
-            "};\n"
-            "\n"
-            "int foo()\n"
-            "{\n"
-            "    return A::a;\n"
-            "}");
+                               "{\n"
+                               "    static const int a = 0;\n"
+                               "};\n"
+                               "\n"
+                               "int foo()\n"
+                               "{\n"
+                               "    return A::a;\n"
+                               "}");
         ASSERT_EQUALS("", errout.str());
     }
 
