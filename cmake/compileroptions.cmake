@@ -1,40 +1,20 @@
-set(EXTRA_C_FLAGS "")
-set(EXTRA_C_FLAGS_RELEASE "-DNDEBUG")
-set(EXTRA_C_FLAGS_DEBUG "-DDEBUG")
-
-if (USE_CLANG)
-    set (CMAKE_C_COMPILER_ID            "Clang")
-    set (CMAKE_CXX_COMPILER_ID          "Clang")
-    set (CMAKE_C_COMPILER               "/usr/bin/clang")
-    set (CMAKE_CXX_COMPILER             "/usr/bin/clang++")
-
-    set (CMAKE_C_FLAGS                  "-std=c99")
-    set (CMAKE_C_FLAGS_DEBUG            "-g")
-    set (CMAKE_C_FLAGS_RELEASE          "-O2")
-
-    set (CMAKE_CXX_FLAGS                "-pedantic -Wall -Wextra")
-    set (CMAKE_CXX_FLAGS_DEBUG          "-g")
-    set (CMAKE_CXX_FLAGS_RELEASE        "-O2")
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    add_definitions(-DDEBUG)
+elseif("${CMAKE_BUILD_TYPE}" STREQUAL "Release" OR "${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
+    add_definitions(-DNDEBUG)
 endif()
 
-if (USE_ANALYZE)
-    set (CMAKE_C_COMPILER_ID            "ccc-analyzer")
-    set (CMAKE_CXX_COMPILER_ID          "c++-analyzer")
-    set (CMAKE_C_COMPILER               "/usr/share/clang/scan-build/ccc-analyzer")
-    set (CMAKE_CXX_COMPILER             "/usr/share/clang/scan-build/c++-analyzer")
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+        add_definitions(-g -O0)
+    elseif("${CMAKE_BUILD_TYPE}" STREQUAL "Release" OR "${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
+        add_definitions(-O2)
+    endif()
 
-    set (CMAKE_C_FLAGS                  "-Wall -std=c99")
-    set (CMAKE_C_FLAGS_DEBUG            "-g")
-    set (CMAKE_C_FLAGS_RELEASE          "-O2")
-
-    set (CMAKE_CXX_FLAGS                "-pedantic -Wall -Wextra")
-    set (CMAKE_CXX_FLAGS_DEBUG          "-g")
-    set (CMAKE_CXX_FLAGS_RELEASE        "-O2")
+    if (WARNINGS_ARE_ERRORS)
+        add_compile_options(-Werror)
+    endif()
 endif()
-
-set(CMAKE_CXX_FLAGS_ASAN "-g -fsanitize=address,undefined -fno-sanitize-recover=all"
-    CACHE STRING "Compiler flags in asan build"
-    FORCE)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
@@ -42,67 +22,46 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         message(FATAL_ERROR "${PROJECT_NAME} c++11 support requires g++ 4.6 or greater, but it is ${GCC_VERSION}")
     endif ()
 
-    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wcast-qual")                # Cast for removing type qualifiers
-    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-deprecated-declarations")
-    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wfloat-equal")              # Floating values used in equality comparisons
-    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wmissing-declarations")     # If a global function is defined without a previous declaration
-    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wmissing-format-attribute") #
-    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-long-long")
-    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Woverloaded-virtual")       # when a function declaration hides virtual functions from a base class
-    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wpacked")                   # 
-    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wredundant-decls")          # if anything is declared more than once in the same scope
-    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wundef")
-    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-shadow")                # whenever a local variable or type declaration shadows another one
-    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-missing-field-initializers")
-    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-missing-braces")
-    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-sign-compare")
-    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-multichar")
+    add_compile_options(-Wcast-qual)                # Cast for removing type qualifiers
+    add_compile_options(-Wno-deprecated-declarations)
+    add_compile_options(-Wfloat-equal)              # Floating values used in equality comparisons
+    add_compile_options(-Wmissing-declarations)     # If a global function is defined without a previous declaration
+    add_compile_options(-Wmissing-format-attribute) #
+    add_compile_options(-Wno-long-long)
+    add_compile_options(-Woverloaded-virtual)       # when a function declaration hides virtual functions from a base class
+    add_compile_options(-Wpacked)                   #
+    add_compile_options(-Wredundant-decls)          # if anything is declared more than once in the same scope
+    add_compile_options(-Wundef)
+    add_compile_options(-Wno-shadow)                # whenever a local variable or type declaration shadows another one
+    add_compile_options(-Wno-missing-field-initializers)
+    add_compile_options(-Wno-missing-braces)
+    add_compile_options(-Wno-sign-compare)
+    add_compile_options(-Wno-multichar)
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 
    if(NOT EXISTS ${CMAKE_CXX_COMPILER})
-      MESSAGE( FATAL_ERROR "Clang++ not found. " )
+      message( FATAL_ERROR "Clang++ not found. " )
    endif()
 
-   set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-four-char-constants")
-   set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-missing-braces")
-   set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-missing-field-initializers")
-   set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-multichar")
-   set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-sign-compare")
-   set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-unused-function")
+   add_compile_options(-Wno-four-char-constants)
+   add_compile_options(-Wno-missing-braces)
+   add_compile_options(-Wno-missing-field-initializers)
+   add_compile_options(-Wno-multichar)
+   add_compile_options(-Wno-sign-compare)
+   add_compile_options(-Wno-unused-function)
    # TODO: enable this warning - was added in Clang 8
-   #set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wextra-semi-stmt")
+   #add_compile_options(-Wextra-semi-stmt)
 
    if(ENABLE_COVERAGE OR ENABLE_COVERAGE_XML)
-      MESSAGE(FATAL_ERROR "Not use clang for generate code coverage. Use gcc. ")
+      message(FATAL_ERROR "Not use clang for generate code coverage. Use gcc.")
    endif()
-
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "c++-analyzer")
-
-   if(NOT EXISTS ${CMAKE_CXX_COMPILER})
-      MESSAGE( FATAL_ERROR "c++-analyzer not found. " )
-   endif()
-
-   if(ENABLE_COVERAGE)
-      MESSAGE(FATAL_ERROR "Not use c++-analyzer for generate code coverage. Use gcc. ")
-   endif()
-
-endif()
-
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
-    "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
-    "${CMAKE_CXX_COMPILER_ID}" STREQUAL "c++-analyzer" )
-
-   if(WARNINGS_ARE_ERRORS)
-      set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Werror")
-   endif()
-
-   set(EXTRA_C_FLAGS_DEBUG "${EXTRA_C_FLAGS_DEBUG} -O0")
 endif()
 
 if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux" AND
     "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 
-    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -U_GLIBCXX_DEBUG")
+    # TODO: should not be in a non-debug build
+    add_compile_options(-U_GLIBCXX_DEBUG)
 endif()
 
 if (MSVC)
@@ -110,22 +69,8 @@ if (MSVC)
 endif()
 
 if (CYGWIN)
-    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wl,--stack,8388608")
+    # TODO: this is a linker flag - not a compiler flag
+    add_compile_options(-Wl,--stack,8388608)
 endif()
 
-include(cmake/dynamic_analyzer_options.cmake    REQUIRED)
-
-# Add user supplied extra options (optimization, etc...)
-# ==========================================================
-set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS}" CACHE INTERNAL "Extra compiler options")
-set(EXTRA_C_FLAGS_RELEASE "${EXTRA_C_FLAGS_RELEASE}" CACHE INTERNAL "Extra compiler options for Release build")
-set(EXTRA_C_FLAGS_DEBUG "${EXTRA_C_FLAGS_DEBUG}" CACHE INTERNAL "Extra compiler options for Debug build")
-
-#combine all "extra" options
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_C_FLAGS}")
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${EXTRA_C_FLAGS_DEBUG}")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} ${EXTRA_C_FLAGS_RELEASE}")
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EXTRA_C_FLAGS}")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}  ${EXTRA_C_FLAGS_RELEASE}")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${EXTRA_C_FLAGS_DEBUG}")
+include(cmake/dynamic_analyzer_options.cmake)

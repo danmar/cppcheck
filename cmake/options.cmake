@@ -13,8 +13,6 @@ endif()
 # ----------------------------------------------------------------------------
 #   PROJECT CONFIGURATION
 # ----------------------------------------------------------------------------
-option(USE_CLANG            "Use Clang compiler"                                            OFF)
-option(USE_ANALYZE          "Use Clang compiler with analyze mode"                          OFF)
 option(ANALYZE_MEMORY       "Clang dynamic analyzer: detector of uninitialized reads."      OFF)
 option(ANALYZE_ADDRESS      "Clang dynamic analyzer: fast memory error detector. "          OFF)
 option(ANALYZE_THREAD       "Clang dynamic analyzer: tool that detects data races. "        OFF)

@@ -1,31 +1,21 @@
-IF (USE_CLANG)
-   SET(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -fdiagnostics-show-category=name")
-ENDIF()
+if(ANALYZE_MEMORY)
+    add_compile_options(-fsanitize=memory)
+    add_compile_options(-fsanitize-memory-track-origins=2)
+    add_compile_options(-fno-omit-frame-pointer)
+    # NOTE: tail call elimination -fno-optimize-sibling-calls
+elseif(ANALYZE_ADDRESS)
+    add_compile_options(-fsanitize=address)
+    add_compile_options(-fno-omit-frame-pointer)
+elseif(ANALYZE_THREAD)
+    add_compile_options(-fsanitize=thread)
+endif()
 
-IF(ANALYZE_MEMORY)
+if(ANALYZE_UNDEFINED)
+    add_compile_options(-fsanitize=undefined-trap)
+    add_compile_options(-fsanitize-undefined-trap-on-error)
+    add_compile_options(-fno-sanitize-recover)
+endif()
 
-   SET(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -fsanitize=memory")
-   SET(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -fsanitize-memory-track-origins=2")
-   SET(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -fno-omit-frame-pointer")
-   # NOTE: tail call elimination -fno-optimize-sibling-calls
-
-ELSEIF(ANALYZE_ADDRESS)
-
-   SET(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -fsanitize=address")
-   SET(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -fno-omit-frame-pointer")
-
-ELSEIF(ANALYZE_THREAD)
-
-   SET(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -fsanitize=thread")
-
-ENDIF()
-
-IF(ANALYZE_UNDEFINED)
-   SET(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -fsanitize=undefined-trap")
-   SET(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -fsanitize-undefined-trap-on-error")
-   SET(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -fno-sanitize-recover")
-ENDIF()
-
-IF(ANALYZE_DATAFLOW)
-   SET(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -fsanitize=dataflow")
-ENDIF()
+if(ANALYZE_DATAFLOW)
+    add_compile_options(-fsanitize=dataflow)
+endif()
