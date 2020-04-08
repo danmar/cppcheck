@@ -166,6 +166,7 @@ private:
         TEST_CASE(simplifyTypedef128); // ticket #9053
         TEST_CASE(simplifyTypedef129);
         TEST_CASE(simplifyTypedef130); // ticket #9446
+        TEST_CASE(simplifyTypedef131); // ticket #9446
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -2612,6 +2613,22 @@ private:
         const char exp [] = "template < class , class > void a ( ) { "
                             "a < int ( * ) [ 10 ] , int ( * ) [ 10 ] > ( ) ; "
                             "}";
+
+        ASSERT_EQUALS(exp, tok(code, false));
+    }
+
+    void simplifyTypedef131() {
+        const char code[] = "typedef unsigned char a4[4];\n"
+                            "a4 a4obj;\n"
+                            "a4 &&  a4_rref = std::move(a4obj);\n"
+                            "a4* a4p = &(a4obj);\n"
+                            "a4*&& a4p_rref = std::move(a4p);";
+
+        const char exp [] = "unsigned char a4obj [ 4 ] ; "
+                            "unsigned char ( && a4_rref ) [ 4 ] = std :: move ( a4obj ) ; "
+                            "unsigned char ( * a4p ) [ 4 ] ; "
+                            "a4p = & ( a4obj ) ; "
+                            "unsigned char ( * && a4p_rref ) [ 4 ] = std :: move ( a4p ) ;";
 
         ASSERT_EQUALS(exp, tok(code, false));
     }

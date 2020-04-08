@@ -1534,13 +1534,15 @@ void Tokenizer::simplifyTypedef()
                                 tok2 = tok2->next();
 
                             // reference or pointer to array?
-                            if (tok2->str() == "&" || tok2->str() == "*") {
+                            if (Token::Match(tok2, "&|*|&&")) {
                                 tok2 = tok2->previous();
                                 tok2->insertToken("(");
                                 Token *tok3 = tok2->next();
 
                                 // handle missing variable name
-                                if (tok2->strAt(3) == ")" || tok2->strAt(3) == "," || tok2->strAt(3) == "(")
+                                if (Token::Match(tok3, "( *|&|&& *|&|&& %name%"))
+                                    tok2 = tok3->tokAt(3);
+                                else if (Token::Match(tok2->tokAt(3), "[(),]"))
                                     tok2 = tok2->tokAt(2);
                                 else
                                     tok2 = tok2->tokAt(3);
