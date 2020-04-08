@@ -1400,6 +1400,8 @@ void CheckUnusedVar::checkStructMemberUsage()
             // Check if the struct member variable is used anywhere in the file
             if (Token::findsimplematch(mTokenizer->tokens(), (". " + var.name()).c_str()))
                 continue;
+            if (Token::findsimplematch(mTokenizer->tokens(), (":: " + var.name()).c_str()))
+                continue;
 
             unusedStructMemberError(var.nameToken(), scope.className, var.name(), scope.type == Scope::eUnion);
         }
