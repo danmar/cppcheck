@@ -75,7 +75,7 @@ struct ForwardTraversal {
 
     template<class T, class F, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
     Progress traverseConditional(T* tok, F f, bool traverseUnknown) {
-        if (Token::Match(tok, "?|&&|%oror%")) {
+        if (Token::Match(tok, "?|&&|%oror%") && tok->astOperand1() && tok->astOperand2()) {
             T* condTok = tok->astOperand1();
             T* childTok = tok->astOperand2();
             bool checkThen, checkElse;
