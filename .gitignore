@@ -80,7 +80,6 @@ htmlreport/.tox/
 htmlreport/MANIFEST
 
 # Backup files and stuff from patches
-*.orig
 *.rej
 *~
 
@@ -108,3 +107,4 @@ man/manual.tex
 # CLion
 .idea
 /.metadata/
+cmake-*
