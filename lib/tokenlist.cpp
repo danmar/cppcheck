@@ -1482,6 +1482,8 @@ static Token * createAstAtToken(Token *tok, bool cpp)
                 decl = true;
             typetok = typetok->next();
         }
+        if (!typetok)
+            return nullptr;
         if (decl && Token::Match(typetok->previous(), "[*&] %var% ="))
             tok = typetok;
     }
