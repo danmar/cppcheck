@@ -58,15 +58,17 @@ struct ForwardTraversal {
     }
 
     template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
-    Progress traverseRecursive(T* tok, std::function<Progress(T*)> f, bool traverseUnknown) {
+    Progress traverseRecursive(T* tok, std::function<Progress(T*)> f, bool traverseUnknown, unsigned int recursion=0) {
         if (!tok)
             return Progress::Continue;
-        if (tok->astOperand1() && traverseRecursive(tok->astOperand1(), f, traverseUnknown) == Progress::Break)
+        if (recursion > 10000)
+            return Progress::Skip;
+        if (tok->astOperand1() && traverseRecursive(tok->astOperand1(), f, traverseUnknown, recursion+1) == Progress::Break)
             return Progress::Break;
         Progress p = traverseTok(tok, f, traverseUnknown);
         if (p == Progress::Break)
             return Progress::Break;
-        if (p == Progress::Continue && traverseRecursive(tok->astOperand2(), f, traverseUnknown) == Progress::Break)
+        if (p == Progress::Continue && traverseRecursive(tok->astOperand2(), f, traverseUnknown, recursion+1) == Progress::Break)
             return Progress::Break;
         return Progress::Continue;
     }
