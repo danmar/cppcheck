@@ -797,14 +797,14 @@ private:
     // #3503 - don't "simplify" SetFunction member function to a variable
     void tokenize31() {
         ASSERT_EQUALS("struct TTestClass { TTestClass ( ) { }\n"
-                      "void SetFunction ( Other * m_f ) { }\n"
+                      "void SetFunction ( Other ( * m_f ) ( ) ) { }\n"
                       "} ;",
                       tokenizeAndStringify("struct TTestClass { TTestClass() { }\n"
                                            "    void SetFunction(Other(*m_f)()) { }\n"
                                            "};"));
 
         ASSERT_EQUALS("struct TTestClass { TTestClass ( ) { }\n"
-                      "void SetFunction ( Other * m_f ) ;\n"
+                      "void SetFunction ( Other ( * m_f ) ( ) ) ;\n"
                       "} ;",
                       tokenizeAndStringify("struct TTestClass { TTestClass() { }\n"
                                            "    void SetFunction(Other(*m_f)());\n"
@@ -5010,10 +5010,10 @@ private:
     }
 
     void functionpointer1() {
-        ASSERT_EQUALS("void * f ;", tokenizeAndStringify("void (*f)();"));
-        ASSERT_EQUALS("void * * f ;", tokenizeAndStringify("void *(*f)();"));
-        ASSERT_EQUALS("unsigned int * f ;", tokenizeAndStringify("unsigned int (*f)();"));
-        ASSERT_EQUALS("unsigned int * * f ;", tokenizeAndStringify("unsigned int * (*f)();"));
+        ASSERT_EQUALS("void ( * f ) ( ) ;", tokenizeAndStringify("void (*f)();"));
+        ASSERT_EQUALS("void * ( * f ) ( ) ;", tokenizeAndStringify("void *(*f)();"));
+        ASSERT_EQUALS("unsigned int ( * f ) ( ) ;", tokenizeAndStringify("unsigned int (*f)();"));
+        ASSERT_EQUALS("unsigned int * ( * f ) ( ) ;", tokenizeAndStringify("unsigned int * (*f)();"));
     }
 
     void functionpointer2() {
@@ -5022,8 +5022,8 @@ private:
                             "PF pf = &f1;"
                             "PF pfs[] = { &f1, &f1 };";
         const char expected[] = "void f1 ( ) { } "
-                                "void * pf ; pf = & f1 ; "
-                                "void * pfs [ 2 ] = { & f1 , & f1 } ;";
+                                "void ( * pf ) ( ) ; pf = & f1 ; "
+                                "void ( * pfs ) ( ) [ ] = { & f1 , & f1 } ;"; // TODO : Is [] placed correctly?
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
     }
 
@@ -5043,48 +5043,40 @@ private:
                             "{\n"
                             "    typedef void (*FP)();\n"
                             "    virtual FP getFP();\n"
-                            "    virtual void execute();\n"
-                            "};\n"
-                            "void f() {\n"
-                            "  int a[9];\n"
-                            "}\n";
+                            "};";
         const char expected[] = "1: struct S\n"
                                 "2: {\n"
                                 "3:\n"
                                 "4: virtual void * getFP ( ) ;\n"
-                                "5: virtual void execute ( ) ;\n"
-                                "6: } ;\n"
-                                "7: void f ( ) {\n"
-                                "8: int a@1 [ 9 ] ;\n"
-                                "9: }\n";
+                                "5: } ;\n";
         ASSERT_EQUALS(expected, tokenizeDebugListing(code, false));
     }
 
     void functionpointer5() {
         const char code[] = ";void (*fp[])(int a) = {0,0,0};";
-        const char expected[] = "1: ; void * fp@1 [ 3 ] = { 0 , 0 , 0 } ;\n";
+        const char expected[] = "1: ; void ( * fp@1 [ ] ) ( ) = { 0 , 0 , 0 } ;\n"; // TODO: Array dimension
         ASSERT_EQUALS(expected, tokenizeDebugListing(code, false));
     }
 
     void functionpointer6() {
-        const char code1[] = ";void (*fp(f))(int);";
-        const char expected1[] = "1: ; void * fp ( f ) ;\n"; // No varId - it could be a function
+        const char code1[] = "void (*fp(void))(int) {}";
+        const char expected1[] = "1: void * fp ( ) { }\n";
         ASSERT_EQUALS(expected1, tokenizeDebugListing(code1, false));
 
-        const char code2[] = ";std::string (*fp(f))(int);";
-        const char expected2[] = "1: ; std :: string * fp ( f ) ;\n";
+        const char code2[] = "std::string (*fp(void))(int);";
+        const char expected2[] = "1: std :: string * fp ( ) ;\n";
         ASSERT_EQUALS(expected2, tokenizeDebugListing(code2, false));
     }
 
     void functionpointer7() {
         const char code1[] = "void (X::*y)();";
-        const char expected1[] = "1: void * y@1 ;\n";
+        const char expected1[] = "1: void ( * y@1 ) ( ) ;\n";
         ASSERT_EQUALS(expected1, tokenizeDebugListing(code1, false));
     }
 
     void functionpointer8() {
         const char code1[] = "int (*f)() throw(int);";
-        const char expected1[] = "1: int * f@1 ;\n";
+        const char expected1[] = "1: int ( * f@1 ) ( ) ;\n";
         ASSERT_EQUALS(expected1, tokenizeDebugListing(code1, false));
     }
 
@@ -6014,7 +6006,7 @@ private:
 
     void borland() {
         // __closure
-        ASSERT_EQUALS("int * a ;",
+        ASSERT_EQUALS("int ( * a ) ( ) ;",  // TODO VarId
                       tokenizeAndStringify("int (__closure *a)();", false, true, Settings::Win32A));
 
         // __property

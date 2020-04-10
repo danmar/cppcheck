@@ -725,8 +725,8 @@ private:
                             "void    addCallback1(Callback callback, int j) { }";
 
         const char expected[] =
-            "void addCallback ( bool * callback ) { } "
-            "void addCallback1 ( bool * callback , int j ) { }";
+            "void addCallback ( bool ( * callback ) ( ) ) { } "
+            "void addCallback1 ( bool ( * callback ) ( ) , int j ) { }";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
@@ -740,9 +740,9 @@ private:
                                 "}";
 
             const char expected[] =
-                "void g ( int * f ) "
+                "void g ( int ( * f ) ( ) ) "
                 "{ "
-                "int * f2 ; f2 = ( int * ) f ; "
+                "int ( * f2 ) ( ) ; f2 = ( int * ) f ; "
                 "}";
 
             ASSERT_EQUALS(expected, tok(code, false));
@@ -756,9 +756,9 @@ private:
                                 "}";
 
             const char expected[] =
-                "void g ( int * f ) "
+                "void g ( int ( * f ) ( ) ) "
                 "{ "
-                "int * f2 ; f2 = static_cast < int * > ( f ) ; "
+                "int ( * f2 ) ( ) ; f2 = static_cast < int * > ( f ) ; "
                 "}";
 
             ASSERT_EQUALS(expected, tok(code, false));
@@ -1078,7 +1078,7 @@ private:
             "class X { } ; "
             "int main ( ) "
             "{ "
-            "X * * Foo ; Foo = new X ( * ) ( const X & ) [ 2 ] ; "
+            "X ( * * Foo ) ( ) ; Foo = new X ( * ) ( const X & ) [ 2 ] ; "
             "}";
 
         ASSERT_EQUALS(expected, tok(code, false));
@@ -1354,7 +1354,7 @@ private:
                                 "F f;";
 
             // The expected result..
-            const char expected[] = "void * f ;";
+            const char expected[] = "void ( * f ) ( ) ;";
             ASSERT_EQUALS(expected, tok(code));
         }
     }
@@ -1489,7 +1489,7 @@ private:
         // The expected result..
         const char expected[] = "struct C { "
                                 ""
-                                "const void * pr ; " // this gets simplified to a regular pointer
+                                "const void ( * pr ) ( ) ; "
                                 "operatorconstvoid(*)()& ( ) { return pr ; } "
                                 "} ;";
         ASSERT_EQUALS(expected, tok(code));
@@ -1552,7 +1552,7 @@ private:
                             "    localEntitiyAddFunc_t f;\n"
                             "}";
         // The expected result..
-        const char expected[] = "enum qboolean { qfalse , qtrue } ; void f ( ) { qboolean b ; qboolean * f ; }";
+        const char expected[] = "enum qboolean { qfalse , qtrue } ; void f ( ) { qboolean b ; qboolean ( * f ) ( ) ; }";
         ASSERT_EQUALS(expected, tok(code, false));
         ASSERT_EQUALS("", errout.str());
     }
@@ -1669,7 +1669,7 @@ private:
         const char code[] = "typedef FMAC1 void (* a) ();\n"
                             "void *(*b) ();";
         const std::string actual(tok(code));
-        ASSERT_EQUALS("void * * b ;", actual);
+        ASSERT_EQUALS("void * ( * b ) ( ) ;", actual);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2120,7 +2120,7 @@ private:
                             "};";
         const char expected[] = "class symbol_table { "
                                 "public: "
-                                "expression_error :: error_code * f ; "
+                                "expression_error :: error_code ( * f ) ( ) ; "
                                 "} ;";
         ASSERT_EQUALS(expected, tok(code, true, Settings::Native, false));
         ASSERT_EQUALS("", errout.str());
@@ -2867,12 +2867,12 @@ private:
 
             // The expected result..
             const char expected[] = "C f1 ( ) ; "
-                                    "C * f2 ; " // this gets simplified to a regular pointer
+                                    "C ( * f2 ) ( ) ; "
                                     "C ( & f3 ) ( ) ; "
-                                    "C * f4 ; " // this gets simplified to a regular pointer
-                                    "C * f5 ; " // this gets simplified to a regular pointer
-                                    "C * f6 ; " // this gets simplified to a regular pointer
-                                    "C * f7 ;"; // this gets simplified to a regular pointer
+                                    "C ( * f4 ) ( ) ; "
+                                    "C ( * f5 ) ( ) ; "
+                                    "C ( * f6 ) ( ) ; "
+                                    "C ( * f7 ) ( ) ;";
             ASSERT_EQUALS(expected, tok(code, true, Settings::Native, false));
             ASSERT_EQUALS("", errout.str());
         }
@@ -2896,12 +2896,12 @@ private:
             // The expected result..
             // C const -> const C
             const char expected[] = "const C f1 ( ) ; "
-                                    "const C * f2 ; " // this gets simplified to a regular pointer
+                                    "const C ( * f2 ) ( ) ; "
                                     "const C ( & f3 ) ( ) ; "
-                                    "const C * f4 ; " // this gets simplified to a regular pointer
-                                    "const C * f5 ; " // this gets simplified to a regular pointer
-                                    "const C * f6 ; " // this gets simplified to a regular pointer
-                                    "const C * f7 ;"; // this gets simplified to a regular pointer
+                                    "const C ( * f4 ) ( ) ; "
+                                    "const C ( * f5 ) ( ) ; "
+                                    "const C ( * f6 ) ( ) ; "
+                                    "const C ( * f7 ) ( ) ;";
             ASSERT_EQUALS(expected, tok(code, true, Settings::Native, false));
             ASSERT_EQUALS("", errout.str());
         }
@@ -2924,12 +2924,12 @@ private:
 
             // The expected result..
             const char expected[] = "const C f1 ( ) ; "
-                                    "const C * f2 ; " // this gets simplified to a regular pointer
+                                    "const C ( * f2 ) ( ) ; "
                                     "const C ( & f3 ) ( ) ; "
-                                    "const C * f4 ; " // this gets simplified to a regular pointer
-                                    "const C * f5 ; " // this gets simplified to a regular pointer
-                                    "const C * f6 ; " // this gets simplified to a regular pointer
-                                    "const C * f7 ;"; // this gets simplified to a regular pointer
+                                    "const C ( * f4 ) ( ) ; "
+                                    "const C ( * f5 ) ( ) ; "
+                                    "const C ( * f6 ) ( ) ; "
+                                    "const C ( * f7 ) ( ) ;";
             ASSERT_EQUALS(expected, tok(code, true, Settings::Native, false));
             ASSERT_EQUALS("", errout.str());
         }
@@ -2952,12 +2952,12 @@ private:
 
             // The expected result..
             const char expected[] = "C * f1 ( ) ; "
-                                    "C * * f2 ; " // this gets simplified to a regular pointer
+                                    "C * ( * f2 ) ( ) ; "
                                     "C * ( & f3 ) ( ) ; "
-                                    "C * * f4 ; " // this gets simplified to a regular pointer
-                                    "C * * f5 ; " // this gets simplified to a regular pointer
-                                    "C * * f6 ; " // this gets simplified to a regular pointer
-                                    "C * * f7 ;"; // this gets simplified to a regular pointer
+                                    "C * ( * f4 ) ( ) ; "
+                                    "C * ( * f5 ) ( ) ; "
+                                    "C * ( * f6 ) ( ) ; "
+                                    "C * ( * f7 ) ( ) ;";
             ASSERT_EQUALS(expected, tok(code, true, Settings::Native, false));
             ASSERT_EQUALS("", errout.str());
         }
@@ -2980,12 +2980,12 @@ private:
 
             // The expected result..
             const char expected[] = "const C * f1 ( ) ; "
-                                    "const C * * f2 ; " // this gets simplified to a regular pointer
+                                    "const C * ( * f2 ) ( ) ; "
                                     "const C * ( & f3 ) ( ) ; "
-                                    "const C * * f4 ; " // this gets simplified to a regular pointer
-                                    "const C * * f5 ; " // this gets simplified to a regular pointer
-                                    "const C * * f6 ; " // this gets simplified to a regular pointer
-                                    "const C * * f7 ;"; // this gets simplified to a regular pointer
+                                    "const C * ( * f4 ) ( ) ; "
+                                    "const C * ( * f5 ) ( ) ; "
+                                    "const C * ( * f6 ) ( ) ; "
+                                    "const C * ( * f7 ) ( ) ;";
             ASSERT_EQUALS(expected, tok(code, true, Settings::Native, false));
             ASSERT_EQUALS("", errout.str());
         }
@@ -3009,12 +3009,12 @@ private:
             // The expected result..
             // C const -> const C
             const char expected[] = "const C * f1 ( ) ; "
-                                    "const C * * f2 ; " // this gets simplified to a regular pointer
+                                    "const C * ( * f2 ) ( ) ; "
                                     "const C * ( & f3 ) ( ) ; "
-                                    "const C * * f4 ; " // this gets simplified to a regular pointer
-                                    "const C * * f5 ; " // this gets simplified to a regular pointer
-                                    "const C * * f6 ; " // this gets simplified to a regular pointer
-                                    "const C * * f7 ;"; // this gets simplified to a regular pointer
+                                    "const C * ( * f4 ) ( ) ; "
+                                    "const C * ( * f5 ) ( ) ; "
+                                    "const C * ( * f6 ) ( ) ; "
+                                    "const C * ( * f7 ) ( ) ;";
             ASSERT_EQUALS(expected, tok(code, true, Settings::Native, false));
             ASSERT_EQUALS("", errout.str());
         }
@@ -3063,14 +3063,14 @@ private:
                             "type12 t12;";
 
         // The expected result..
-        const char expected[] = "int * t1 ; " // simplified to regular pointer
-                                "int * const t2 ; "
-                                "int * volatile t3 ; "
-                                "int * const volatile t4 ; "
-                                "int * t5 ; "
-                                "int * const t6 ; "
-                                "int * volatile t7 ; "
-                                "int * const volatile t8 ; "
+        const char expected[] = "int ( * t1 ) ( ) ; "
+                                "int ( * const t2 ) ( ) ; "
+                                "int ( * volatile t3 ) ( ) ; "
+                                "int ( * const volatile t4 ) ( ) ; "
+                                "int ( * t5 ) ( ) ; "
+                                "int ( * const t6 ) ( ) ; "
+                                "int ( * volatile t7 ) ( ) ; "
+                                "int ( * const volatile t8 ) ( ) ; "
                                 "int ( :: C :: * t9 ) ( float ) ; "
                                 "int ( :: C :: * const t10 ) ( float ) ; "
                                 "int ( :: C :: * volatile t11 ) ( float ) ; "
@@ -3156,10 +3156,10 @@ private:
                                 "func4 f4;";
 
             // The expected result..
-            const char expected[] = "B :: C * f1 ; "
-                                    "B :: C * f2 ; "
-                                    "B :: C * f3 ; "
-                                    "B :: C * f4 ;";
+            const char expected[] = "B :: C ( * f1 ) ( ) ; "
+                                    "B :: C ( * f2 ) ( ) ; "
+                                    "B :: C ( * f3 ) ( ) ; "
+                                    "B :: C ( * f4 ) ( ) ;";
             ASSERT_EQUALS(expected, tok(code, true, Settings::Native, false));
             ASSERT_EQUALS("", errout.str());
         }
@@ -3194,10 +3194,10 @@ private:
                                 "func4 f4;";
 
             // The expected result..
-            const char expected[] = "A :: B :: C * f1 ; "
-                                    "A :: B :: C * f2 ; "
-                                    "A :: B :: C * f3 ; "
-                                    "A :: B :: C * f4 ;";
+            const char expected[] = "A :: B :: C ( * f1 ) ( ) ; "
+                                    "A :: B :: C ( * f2 ) ( ) ; "
+                                    "A :: B :: C ( * f3 ) ( ) ; "
+                                    "A :: B :: C ( * f4 ) ( ) ;";
             ASSERT_EQUALS(expected, tok(code, true, Settings::Native, false));
             ASSERT_EQUALS("", errout.str());
         }
@@ -3216,8 +3216,8 @@ private:
                       "namespace MySpace { "
                       "enum Format_E2 { FORMAT21 , FORMAT22 } ; enum Format_E2 Format_T2 ; "
                       "} "
-                      "Format_E1 * * t1 ; "
-                      "MySpace :: Format_E2 * * t2 ;",
+                      "Format_E1 ( * * t1 ) ( ) ; "
+                      "MySpace :: Format_E2 ( * * t2 ) ( ) ;",
                       tok(code,false));
     }
 

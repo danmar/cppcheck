@@ -4692,7 +4692,7 @@ private:
 
     // #ticket #5339 (simplify function pointer after comma)
     void simplifyFunctionPointer() {
-        ASSERT_EQUALS("f ( double x , double * y ) ;", tok("f (double x, double (*y) ());", true));
+        ASSERT_EQUALS("f ( double x , double ( * y ) ( ) ) ;", tok("f (double x, double (*y) ());", true));
     }
 
     void redundant_semicolon() {

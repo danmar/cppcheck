@@ -2933,7 +2933,7 @@ private:
         const char expected[] = "1: struct A ;\n"
                                 "2:\n"
                                 "3: struct A {\n"
-                                "4: bool * pFun@1 ;\n"
+                                "4: bool ( * pFun@1 ) ( ) ;\n"
                                 "5: void setPFun ( int mode@2 ) ;\n"
                                 "6: bool funcNorm ( ) ;\n"
                                 "7: } ;\n"
