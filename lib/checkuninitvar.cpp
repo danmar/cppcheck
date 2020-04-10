@@ -923,6 +923,8 @@ void CheckUninitVar::checkRhs(const Token *tok, const Variable &var, Alloc alloc
                 uninitStructMemberError(tok, tok->str() + "." + membervar);
             else if (Token::Match(tok, "%var% ="))
                 break;
+            else if (Token::Match(tok->previous(), "[(,&]"))
+                break;
         } else if (tok->str() == ";" || (indent==0 && tok->str() == ","))
             break;
         else if (tok->str() == "(")
