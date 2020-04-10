@@ -859,7 +859,6 @@ static const Token* getLoopContainer(const Token* tok)
 void CheckStl::invalidContainerLoop()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    const Library& library = mSettings->library;
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             const Token* contTok = getLoopContainer(tok);
