@@ -8027,6 +8027,9 @@ private:
                                              "  struct { int d; } port[1]; "
                                              "}; "
                                              "struct poc p = { .port[0] = {.d = 3} };"));
+
+        // op op
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { dostuff (x==>y); }"), InternalError, "syntax error: == >");
     }
 
 

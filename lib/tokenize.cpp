@@ -9629,6 +9629,8 @@ void Tokenizer::findGarbageCode() const
         }
         if (Token::Match(tok, "[!|+-/%^~] )|]"))
             syntaxError(tok);
+        if (Token::Match(tok, "==|!=|<=|>= %comp%"))
+            syntaxError(tok, tok->str() + " " + tok->strAt(1));
     }
 
     // ternary operator without :
