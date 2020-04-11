@@ -9484,6 +9484,26 @@ void Tokenizer::findGarbageCode() const
         }
     }
 
+    // Keywords in global scope
+    std::set<std::string> nonGlobalKeywords{"break",
+                                            "continue",
+                                            "for",
+                                            "goto",
+                                            "if",
+                                            "return",
+                                            "switch",
+                                            "while"};
+    if (isCPP()) {
+        nonGlobalKeywords.insert("try");
+        nonGlobalKeywords.insert("catch");
+    }
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        if (tok->str() == "{")
+            tok = tok->link();
+        else if (tok->isName() && nonGlobalKeywords.count(tok->str()) && !Token::Match(tok->tokAt(-2), "operator %str%"))
+            syntaxError(tok, "keyword '" + tok->str() + "' is not allowed in global scope");
+    }
+
     // keyword keyword
     const std::set<std::string> nonConsecutiveKeywords{"break",
         "continue",

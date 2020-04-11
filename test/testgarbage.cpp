@@ -483,7 +483,7 @@ private:
     }
 
     void garbageCode10() { // #6127
-        checkCode("for( rl=reslist; rl!=NULL; rl=rl->next )");
+        ASSERT_THROW(checkCode("for( rl=reslist; rl!=NULL; rl=rl->next )"), InternalError);
     }
 
     void garbageCode12() { // do not crash

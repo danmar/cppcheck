@@ -1018,8 +1018,8 @@ private:
 
     void simplifyCasts4() {
         // ticket #970
-        const char code[] = "if (a >= (unsigned)(b)) {}";
-        const char expected[] = "if ( a >= ( unsigned int ) ( b ) ) { }";
+        const char code[] = "{if (a >= (unsigned)(b)) {}}";
+        const char expected[] = "{ if ( a >= ( unsigned int ) ( b ) ) { } }";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
 
@@ -1091,8 +1091,8 @@ private:
     }
 
     void simplifyCasts17() { // #6110 - don't remove any parentheses in 'a(b)(c)'
-        ASSERT_EQUALS("if ( a ( b ) ( c ) >= 3 )",
-                      tokenizeAndStringify("if (a(b)(c) >= 3)", true));
+        ASSERT_EQUALS("{ if ( a ( b ) ( c ) >= 3 ) { } }",
+                      tokenizeAndStringify("{ if (a(b)(c) >= 3) { } }", true));
     }
 
     void simplifyAt() {
@@ -1151,8 +1151,8 @@ private:
 
         ASSERT_THROW(ASSERT_EQUALS("; return f ( a [ b = c ] , asm ( \"^{}\" ) ) ;",
                                    tokenizeAndStringify("; return f(a[b=c],^{});")), InternalError); // #7185
-        ASSERT_EQUALS("; return f ( asm ( \"^(void){somecode}\" ) ) ;",
-                      tokenizeAndStringify("; return f(^(void){somecode});"));
+        ASSERT_EQUALS("{ return f ( asm ( \"^(void){somecode}\" ) ) ; }",
+                      tokenizeAndStringify("{ return f(^(void){somecode}); }"));
         ASSERT_THROW(ASSERT_EQUALS("; asm ( \"a?(b?(c,asm(\"^{}\")):0):^{}\" ) ;",
                                    tokenizeAndStringify(";a?(b?(c,^{}):0):^{};")), InternalError);
         ASSERT_EQUALS("template < typename T > "
@@ -1387,28 +1387,28 @@ private:
     }
 
     void whileAddBraces() {
-        const char code[] = ";while(a);";
-        ASSERT_EQUALS("; while ( a ) { ; }", tokenizeAndStringify(code, true));
+        const char code[] = "{while(a);}";
+        ASSERT_EQUALS("{ while ( a ) { ; } }", tokenizeAndStringify(code, true));
     }
 
     void doWhileAddBraces() {
         {
-            const char code[] = "do ; while (0);";
-            const char result[] = "do { ; } while ( 0 ) ;";
+            const char code[] = "{do ; while (0);}";
+            const char result[] = "{ do { ; } while ( 0 ) ; }";
 
             ASSERT_EQUALS(result, tokenizeAndStringify(code, false));
         }
 
         {
-            const char code[] = "UNKNOWN_MACRO ( do ) ; while ( a -- ) ;";
-            const char result[] = "UNKNOWN_MACRO ( do ) ; while ( a -- ) { ; }";
+            const char code[] = "{ UNKNOWN_MACRO ( do ) ; while ( a -- ) ; }";
+            const char result[] = "{ UNKNOWN_MACRO ( do ) ; while ( a -- ) { ; } }";
 
             ASSERT_EQUALS(result, tokenizeAndStringify(code, true));
         }
 
         {
-            const char code[] = "UNKNOWN_MACRO ( do , foo ) ; while ( a -- ) ;";
-            const char result[] = "UNKNOWN_MACRO ( do , foo ) ; while ( a -- ) { ; }";
+            const char code[] = "{ UNKNOWN_MACRO ( do , foo ) ; while ( a -- ) ; }";
+            const char result[] = "{ UNKNOWN_MACRO ( do , foo ) ; while ( a -- ) { ; } }";
 
             ASSERT_EQUALS(result, tokenizeAndStringify(code, true));
         }
@@ -3345,7 +3345,7 @@ private:
     }
 
     void removeParentheses14() {
-        ASSERT_EQUALS("; if ( ( i & 1 ) == 0 ) { ; } ;", tokenizeAndStringify("; if ( (i & 1) == 0 ); ;", false));
+        ASSERT_EQUALS("{ if ( ( i & 1 ) == 0 ) { ; } }", tokenizeAndStringify("{ if ( (i & 1) == 0 ); }", false));
     }
 
     void removeParentheses15() {
@@ -4592,7 +4592,7 @@ private:
 
         {
             // if (a < b || c > d) { }
-            const char code[] = "if (a < b || c > d);";
+            const char code[] = "{ if (a < b || c > d); }";
             errout.str("");
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
@@ -4628,7 +4628,7 @@ private:
 
         {
             // if (a < ... > d) { }
-            const char code[] = "if (a < b || c == 3 || d > e);";
+            const char code[] = "{ if (a < b || c == 3 || d > e); }";
             errout.str("");
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
@@ -5512,8 +5512,8 @@ private:
         }
 
         {
-            const char code[] = "return doSomething(X), 0;";
-            ASSERT_EQUALS("return doSomething ( X ) , 0 ;", tokenizeAndStringify(code, false));
+            const char code[] = "{ return doSomething(X), 0; }";
+            ASSERT_EQUALS("{ return doSomething ( X ) , 0 ; }", tokenizeAndStringify(code, false));
             ASSERT_EQUALS("", errout.str());
         }
 
@@ -5896,10 +5896,14 @@ private:
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, false));
 
         code = "using namespace std;\n"
-               "try { }\n"
-               "catch(std::exception &exception) { }";
-        expected = "try { }\n"
-                   "catch ( std :: exception & exception ) { }";
+               "void f() {\n"
+               "  try { }\n"
+               "  catch(std::exception &exception) { }\n"
+               "}";
+        expected = "void f ( ) {\n"
+                   "try { }\n"
+                   "catch ( std :: exception & exception ) { }\n"
+                   "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, false));
 
         // #5773 (Don't prepend 'std ::' to function definitions)
@@ -6361,8 +6365,8 @@ private:
         const char code1[] = "using a::operator=;";
         ASSERT_EQUALS("using a :: operator= ;", tokenizeAndStringify(code1));
 
-        const char code2[] = "return &Fred::operator!=;";
-        ASSERT_EQUALS("return & Fred :: operator!= ;", tokenizeAndStringify(code2));
+        const char code2[] = "{ return &Fred::operator!=; }";
+        ASSERT_EQUALS("{ return & Fred :: operator!= ; }", tokenizeAndStringify(code2));
     }
 
     void simplifyOperatorName11() { // #8889
@@ -8000,6 +8004,9 @@ private:
     }
 
     void findGarbageCode() { // Test Tokenizer::findGarbageCode()
+        // C++ try/catch in global scope
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() try { }"), InternalError, "syntax error: keyword 'try' is not allowed in global scope");
+
         // before if|for|while|switch
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { do switch (a) {} while (1); }"))
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { label: switch (a) {} }"));

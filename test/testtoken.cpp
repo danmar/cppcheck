@@ -1108,14 +1108,14 @@ private:
         const Token *const tok2 = Token::findsimplematch(var2.tokens(), "*");
         ASSERT_EQUALS("*((unsigned long long*)x)", tok2->expressionString());
 
-        givenACodeSampleToTokenize data3("return (t){1,2};");
-        ASSERT_EQUALS("return(t){1,2}", data3.tokens()->expressionString());
+        givenACodeSampleToTokenize data3("void f() { return (t){1,2}; }");
+        ASSERT_EQUALS("return(t){1,2}", data3.tokens()->tokAt(5)->expressionString());
 
-        givenACodeSampleToTokenize data4("return L\"a\";");
-        ASSERT_EQUALS("returnL\"a\"", data4.tokens()->expressionString());
+        givenACodeSampleToTokenize data4("void f() { return L\"a\"; }");
+        ASSERT_EQUALS("returnL\"a\"", data4.tokens()->tokAt(5)->expressionString());
 
-        givenACodeSampleToTokenize data5("return U\"a\";");
-        ASSERT_EQUALS("returnU\"a\"", data5.tokens()->expressionString());
+        givenACodeSampleToTokenize data5("void f() { return U\"a\"; }");
+        ASSERT_EQUALS("returnU\"a\"", data5.tokens()->tokAt(5)->expressionString());
     }
 
     void hasKnownIntValue() {

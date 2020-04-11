@@ -2648,7 +2648,7 @@ private:
 
     void symboldatabase17() {
         // ticket #2657 - segmentation fault
-        check("return f(){}");
+        check("{return f(){}}");
 
         ASSERT_EQUALS("", errout.str());
     }
@@ -6826,7 +6826,7 @@ private:
             string.arrayLike_indexOp = string.stdStringLike = true;
             set.library.containers["test::string"] = string;
             ASSERT_EQUALS("signed int", typeOf("Vector<int> v; v[0]=3;", "[", "test.cpp", &set));
-            ASSERT_EQUALS("container(test :: string)", typeOf("return test::string();", "(", "test.cpp", &set));
+            ASSERT_EQUALS("container(test :: string)", typeOf("{return test::string();}", "(", "test.cpp", &set));
             ASSERT_EQUALS("container(test :: string)", typeOf("void foo(Vector<test::string> v) { for (auto s: v) { x=s+s; } }", "s", "test.cpp", &set));
             ASSERT_EQUALS("container(test :: string)", typeOf("void foo(Vector<test::string> v) { for (auto s: v) { x=s+s; } }", "+", "test.cpp", &set));
         }

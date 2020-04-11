@@ -4086,7 +4086,7 @@ private:
 
         // ok code (ticket #1985)
         tok("void f()\n"
-            "try { ;x<y; }");
+            "{ try { ;x<y; } }");
         ASSERT_EQUALS("", errout.str());
 
         // ok code (ticket #3183)

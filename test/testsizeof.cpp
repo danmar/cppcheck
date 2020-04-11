@@ -390,36 +390,54 @@ private:
     }
 
     void suspiciousSizeofCalculation() {
-        check("int* p;\n"
-              "return sizeof(p)/5;");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Division of result of sizeof() on pointer type.\n", errout.str());
+        check("void f() {\n"
+              "  int* p;\n"
+              "  return sizeof(p)/5;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Division of result of sizeof() on pointer type.\n", errout.str());
 
-        check("unknown p;\n"
-              "return sizeof(p)/5;");
+        check("void f() {\n"
+              "  unknown p;\n"
+              "  return sizeof(p)/5;\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("return sizeof(unknown)/5;");
+        check("void f() {\n"
+              "  return sizeof(unknown)/5;\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("int p;\n"
-              "return sizeof(p)/5;");
+        check("void f() {\n"
+              "  int p;\n"
+              "  return sizeof(p)/5;\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("int* p[5];\n"
-              "return sizeof(p)/5;");
+        check("void f() {\n"
+              "  int* p[5];\n"
+              "  return sizeof(p)/5;\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
 
 
-        check("return sizeof(foo)*sizeof(bar);");
-        ASSERT_EQUALS("[test.cpp:1]: (warning, inconclusive) Multiplying sizeof() with sizeof() indicates a logic error.\n", errout.str());
+        check("void f() {\n"
+              "  return sizeof(foo)*sizeof(bar);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Multiplying sizeof() with sizeof() indicates a logic error.\n", errout.str());
 
-        check("return (foo)*sizeof(bar);");
+        check("void f() {\n"
+              "  return (foo)*sizeof(bar);\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("return sizeof(foo)*bar;");
+        check("void f() {\n"
+              "  return sizeof(foo)*bar;\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("return (end - source) / sizeof(encode_block_type) * sizeof(encode_block_type);");
+        check("void f() {\n"
+              "  return (end - source) / sizeof(encode_block_type) * sizeof(encode_block_type);\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
