@@ -4488,6 +4488,16 @@ private:
                "  };\n"
                "}\n";
         valueOfTok(code, "x");
+
+        code = "void *foo(void *x);\n"
+               "void *foo(void *x)\n"
+               "{\n"
+               "    if (!x)\n"
+               "yes:\n"
+               "        return &&yes;\n"
+               "    return x;\n"
+               "}\n";
+        valueOfTok(code, "x");
     }
 
     void valueFlowHang() {
