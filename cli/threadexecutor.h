@@ -32,6 +32,8 @@
 #elif defined(_WIN32)
 #define THREADING_MODEL_WIN
 #include <windows.h>
+
+#include "importproject.h"
 #endif
 
 class Settings;
