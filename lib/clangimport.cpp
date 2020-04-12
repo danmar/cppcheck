@@ -1098,7 +1098,6 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
         function->arg = par1;
     function->token = nameToken;
     // Function arguments
-    function->argumentList.clear();
     for (int i = 0; i < children.size(); ++i) {
         AstNodePtr child = children[i];
         if (child->nodeType != ParmVarDecl)
@@ -1110,10 +1109,15 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
         Token *vartok = nullptr;
         if (!spelling.empty())
             vartok = child->addtoken(tokenList, spelling);
-        function->argumentList.push_back(Variable(vartok, child->getType(), nullptr, i, AccessControl::Argument, nullptr, scope));
-        if (vartok) {
+        if (!prev) {
+            function->argumentList.push_back(Variable(vartok, child->getType(), nullptr, i, AccessControl::Argument, nullptr, scope));
+            if (vartok) {
+                const std::string addr = child->mExtTokens[0];
+                mData->varDecl(addr, vartok, &function->argumentList.back());
+            }
+        } else if (vartok) {
             const std::string addr = child->mExtTokens[0];
-            mData->varDecl(addr, vartok, &function->argumentList.back());
+            mData->ref(addr, vartok);
         }
     }
     Token *par2 = addtoken(tokenList, ")");
