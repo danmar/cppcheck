@@ -1067,16 +1067,17 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
     Token *nameToken = addtoken(tokenList, getSpelling() + getTemplateParameters());
     Scope *nestedIn = const_cast<Scope *>(nameToken->scope());
 
-    if (!prev) {
+    if (prev) {
+        const std::string addr = *(std::find(mExtTokens.begin(), mExtTokens.end(), "prev") + 1);
+        mData->ref(addr, nameToken);
+    }
+    if (!nameToken->function()) {
         nestedIn->functionList.push_back(Function(nameToken));
         mData->funcDecl(mExtTokens.front(), nameToken, &nestedIn->functionList.back());
         if (nodeType == CXXConstructorDecl)
             nestedIn->functionList.back().type = Function::Type::eConstructor;
         else if (nodeType == CXXDestructorDecl)
             nestedIn->functionList.back().type = Function::Type::eDestructor;
-    } else {
-        const std::string addr = *(std::find(mExtTokens.begin(), mExtTokens.end(), "prev") + 1);
-        mData->ref(addr, nameToken);
     }
 
     Function * const function = const_cast<Function*>(nameToken->function());
