@@ -148,6 +148,7 @@ private:
         TEST_CASE(localvarconst1);
         TEST_CASE(localvarconst2);
         TEST_CASE(localvarreturn); // ticket #9167
+        TEST_CASE(localvarmaybeunused);
 
         TEST_CASE(localvarthrow); // ticket #3687
 
@@ -4156,6 +4157,87 @@ private:
                               "        bar() {}\n"
                               "    };\n"
                               "    return MyInt;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarmaybeunused() {
+        functionVariableUsage("int main() {\n"
+                              "    [[maybe_unused]] int x;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("[[nodiscard]] int getX() { return 4; }\n"
+                              "int main() {\n"
+                              "    [[maybe_unused]] int x = getX();\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("[[nodiscard]] int getX() { return 4; }\n"
+                              "int main() {\n"
+                              "    [[maybe_unused]] int x = getX();\n"
+                              "    x = getX();\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("[[nodiscard]] int getX() { return 4; }\n"
+                              "int main() {\n"
+                              "    [[maybe_unused]] int x = getX();\n"
+                              "    x = getX();\n"
+                              "    std::cout << x;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int main() {\n"
+                              "    [[maybe_unused]] const int x = getX();\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int main() {\n"
+                              "    [[maybe_unused]] const int& x = getX();\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int main() {\n"
+                              "    [[maybe_unused]] const int* x = getX();\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int main() {\n"
+                              "    [[maybe_unused]] int& x = getX();\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int main() {\n"
+                              "    [[maybe_unused]] int* x = getX();\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int main() {\n"
+                              "    [[maybe_unused]] auto x = getX();\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int main() {\n"
+                              "    [[maybe_unused]] auto&& x = getX();\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int main() {\n"
+                              "    [[maybe_unused]] int x[] = getX();\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int main() {\n"
+                              "    [[maybe_unused]] constexpr volatile static int x = 1;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("[[maybe_unused]] inline int x = 1;");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int main() {\n"
+                              "    [[maybe_unused]] [[anotherattribute]] const int* = 1;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }

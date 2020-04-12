@@ -10246,6 +10246,11 @@ void Tokenizer::simplifyCPPAttribute()
                 else
                     head->previous()->isAttributeNodiscard(true);
             }
+        } else if (Token::simpleMatch(tok->tokAt(2), "maybe_unused")) {
+            Token* head = tok->tokAt(5);
+            while (isCPPAttribute(head))
+                head = head->tokAt(5);
+            head->isMaybeUnused(true);
         } else if (Token::Match(tok->previous(), ") [ [ expects|ensures|assert default|audit|axiom| : %name% <|<=|>|>= %num% ] ]")) {
             const Token *vartok = tok->tokAt(4);
             if (vartok->str() == ":")

@@ -1246,7 +1246,8 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 }
 
                 // warn
-                unreadVariableError(tok, expr->expressionString(), false);
+                if(!expr->variable() || !expr->variable()->isMaybeUnused())
+                    unreadVariableError(tok, expr->expressionString(), false);
             }
         }
 
@@ -1281,9 +1282,11 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 allocatedButUnusedVariableError(usage._lastAccess, varname);
 
             // variable has not been written, read, or modified
-            else if (usage.unused() && !usage._modified)
-                unusedVariableError(usage._var->nameToken(), varname);
-
+            else if (usage.unused() && !usage._modified) {
+                if (!usage._var->isMaybeUnused()) {
+                    unusedVariableError(usage._var->nameToken(), varname);
+                }
+            }
             // variable has not been written but has been modified
             else if (usage._modified && !usage._write && !usage._allocateMemory && var && !var->isStlType())
                 unassignedVariableError(usage._var->nameToken(), varname);

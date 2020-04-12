@@ -193,7 +193,8 @@ class CPPCHECKLIB Variable {
         fIsStlString  = (1 << 11),  /** @brief std::string|wstring|basic_string&lt;T&gt;|u16string|u32string */
         fIsFloatType  = (1 << 12),  /** @brief Floating point type */
         fIsVolatile   = (1 << 13),  /** @brief volatile */
-        fIsSmartPointer = (1 << 14)   /** @brief std::shared_ptr|unique_ptr */
+        fIsSmartPointer = (1 << 14),/** @brief std::shared_ptr|unique_ptr */
+        fIsMaybeUnused = (1 << 15), /** @brief marked [[maybe_unused]] */
     };
 
     /**
@@ -616,6 +617,10 @@ public:
     */
     bool isEnumType() const {
         return type() && type()->isEnumType();
+    }
+
+    bool isMaybeUnused() const {
+        return getFlag(fIsMaybeUnused);
     }
 
     const ValueType *valueType() const {
