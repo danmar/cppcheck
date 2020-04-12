@@ -1278,7 +1278,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
 
             // variable has not been written, read, or modified
             else if (usage.unused() && !usage._modified) {
-                if (!var->isMaybeUnused()) {
+                if (!usage._var->isMaybeUnused()) {
                     unusedVariableError(usage._var->nameToken(), varname);
                 }
             }
