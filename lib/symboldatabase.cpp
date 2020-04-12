@@ -1855,10 +1855,7 @@ void Variable::evaluate(const Settings* settings)
     const Library * const lib = &settings->library;
 
     if (mNameToken)
-    {
         setFlag(fIsArray, arrayDimensions(settings));
-        setFlag(fIsMaybeUnused, mNameToken->isMaybeUnused());
-    }
 
     if (mTypeStartToken)
         setValueType(ValueType::parseDecl(mTypeStartToken,settings));
@@ -1890,6 +1887,10 @@ void Variable::evaluate(const Settings* settings)
         } else if (tok->str() == "&&") { // Before simplification, && isn't split up
             setFlag(fIsRValueRef, true);
             setFlag(fIsReference, true); // Set also fIsReference
+        }
+
+        if (tok->isMaybeUnused()) {
+            setFlag(fIsMaybeUnused, true);
         }
 
         if (tok->str() == "<" && tok->link())

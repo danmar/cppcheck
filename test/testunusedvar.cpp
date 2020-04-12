@@ -4151,11 +4151,93 @@ private:
     }
 
     void localvarmaybeunused() {
-        functionVariableUsage(
-            "int main() {"
-            "[[maybe_unused]] int x;"
-            "}");
-        ASSERT_EQUALS("", errout.str());
+        std::string passCases[] =
+        {
+R"(
+int main() {
+    [[maybe_unused]] int x;
+}
+)",
+R"(
+[[nodiscard]] int getX() { return 4; }
+int main() {
+    [[maybe_unused]] int x = getX();
+}
+)",
+R"(
+[[nodiscard]] int getX() { return 4; }
+int main() {
+    [[maybe_unused]] int x = getX();
+    x = getX();
+}
+)",
+R"(
+[[nodiscard]] int getX() { return 4; }
+int main() {
+    [[maybe_unused]] int x = getX();
+    x = getX();
+    std::cout << x;
+}
+)",
+R"(
+int main() {
+    [[maybe_unused]] const int x = getX();
+}
+)",
+R"(
+int main() {
+    [[maybe_unused]] const int& x = getX();
+}
+)",
+R"(
+int main() {
+    [[maybe_unused]] const int* x = getX();
+}
+)",
+R"(
+int main() {
+   [[maybe_unused]] int& x = getX();             
+}
+)",
+R"(
+int main() {
+    [[maybe_unused]] int* x = getX();
+}
+)",
+R"(
+int main() {
+    [[maybe_unused]] auto x = getX();
+}
+)",
+R"(
+int main() {
+    [[maybe_unused]] auto&& x = getX();
+}
+)",
+R"(
+int main() {
+    [[maybe_unused]] int x[] = getX();
+}
+)",
+R"(
+int main() {
+    [[maybe_unused]] constexpr volatile static int x = 1;
+}
+)",
+R"(
+[[maybe_unused]] inline int x = 1;
+)",
+R"(
+int main() {
+    [[maybe_unused]] [[anotherattribute]] const int* = 1;
+}
+)",
+        };
+        for (auto pass : passCases)
+        {
+            functionVariableUsage(pass.data());
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void localvarthrow() { // ticket #3687
