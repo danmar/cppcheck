@@ -47,6 +47,7 @@ private:
         TEST_CASE(cxxConstructExpr2);
         TEST_CASE(cxxConstructExpr3);
         TEST_CASE(cxxDeleteExpr);
+        TEST_CASE(cxxDestructorDecl);
         TEST_CASE(cxxForRangeStmt1);
         TEST_CASE(cxxForRangeStmt2);
         TEST_CASE(cxxMemberCall);
@@ -249,7 +250,7 @@ private:
                              "|   | `-ParmVarDecl 0x247c790 <col:25> col:25 'const C<int> &'\n"
                              "|   `-CXXConstructorDecl 0x247c828 <col:25> col:25 implicit constexpr C 'void (C<int> &&)' inline default trivial noexcept-unevaluated 0x247c828\n"
                              "|     `-ParmVarDecl 0x247c960 <col:25> col:25 'C<int> &&'\n";
-        ASSERT_EQUALS("class C { int foo ( ) { return 0 ; } }", parse(clang));
+        ASSERT_EQUALS("class C { int foo ( ) { return 0 ; } default ( ) { } noexcept-unevaluated ( const C<int> & ) ; noexcept-unevaluated ( C<int> && ) ; }", parse(clang));
     }
 
     void conditionalExpr() {
@@ -304,7 +305,7 @@ private:
                              "|     | `-CXXThisExpr 0x428e9c0 <col:17> 'C *' this\n"
                              "|     `-IntegerLiteral 0x428ea10 <col:21> 'int' 0\n"
                              "`-FieldDecl 0x428e958 <col:26, col:30> col:30 referenced x 'int'";
-        ASSERT_EQUALS("void C ( ) { this . x@1 = 0 ; } int x@1", parse(clang));
+        ASSERT_EQUALS("C ( ) { this . x@1 = 0 ; } int x@1", parse(clang));
     }
 
     void cxxConstructExpr1() {
@@ -350,6 +351,13 @@ private:
                              "|     `-ImplicitCastExpr 0x2e0e850 <col:25> 'int *' <LValueToRValue>\n"
                              "|       `-DeclRefExpr 0x2e0e828 <col:25> 'int *' lvalue ParmVar 0x2e0e680 'p' 'int *'";
         ASSERT_EQUALS("void f ( int * p@1 ) { delete p@1 ; }", parse(clang));
+    }
+
+    void cxxDestructorDecl() {
+        const char clang[] = "`-CXXRecordDecl 0x8ecd60 <1.cpp:1:1, line:4:1> line:1:8 struct S definition\n"
+                             "  `-CXXDestructorDecl 0x8ed088 <line:3:3, col:9> col:3 ~S 'void () noexcept'\n"
+                             "    `-CompoundStmt 0x8ed1a8 <col:8, col:9>";
+        ASSERT_EQUALS("class S\n\n{ ~S ( ) { } }", parse(clang));
     }
 
     void cxxForRangeStmt1() {

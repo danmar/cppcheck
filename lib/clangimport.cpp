@@ -46,6 +46,7 @@ static const std::string CXXConstructorDecl = "CXXConstructorDecl";
 static const std::string CXXConstructExpr = "CXXConstructExpr";
 static const std::string CXXDefaultArgExpr = "CXXDefaultArgExpr";
 static const std::string CXXDeleteExpr = "CXXDeleteExpr";
+static const std::string CXXDestructorDecl = "CXXDestructorDecl";
 static const std::string CXXForRangeStmt = "CXXForRangeStmt";
 static const std::string CXXMemberCallExpr = "CXXMemberCallExpr";
 static const std::string CXXMethodDecl = "CXXMethodDecl";
@@ -640,6 +641,10 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         children[0]->createTokens(tokenList);
         return nullptr;
     }
+    if (nodeType == CXXDestructorDecl) {
+        createTokensFunctionDecl(tokenList);
+        return nullptr;
+    }
     if (nodeType == CXXForRangeStmt) {
         Token *forToken = addtoken(tokenList, "for");
         Token *par1 = addtoken(tokenList, "(");
@@ -1057,7 +1062,7 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
     const bool hasBody = mFile == 0 && !children.empty() && children.back()->nodeType == CompoundStmt;
 
     SymbolDatabase *symbolDatabase = mData->mSymbolDatabase;
-    if (nodeType != CXXConstructorDecl)
+    if (nodeType != CXXConstructorDecl && nodeType != CXXDestructorDecl)
         addTypeTokens(tokenList, '\'' + getType() + '\'');
     Token *nameToken = addtoken(tokenList, getSpelling() + getTemplateParameters());
     Scope *nestedIn = const_cast<Scope *>(nameToken->scope());
@@ -1067,6 +1072,8 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
         mData->funcDecl(mExtTokens.front(), nameToken, &nestedIn->functionList.back());
         if (nodeType == CXXConstructorDecl)
             nestedIn->functionList.back().type = Function::Type::eConstructor;
+        else if (nodeType == CXXDestructorDecl)
+            nestedIn->functionList.back().type = Function::Type::eDestructor;
     } else {
         const std::string addr = *(std::find(mExtTokens.begin(), mExtTokens.end(), "prev") + 1);
         mData->ref(addr, nameToken);
@@ -1136,6 +1143,7 @@ void clangimport::AstNode::createTokensForCXXRecord(TokenList *tokenList)
     std::vector<AstNodePtr> children2;
     for (AstNodePtr child: children) {
         if (child->nodeType == CXXConstructorDecl ||
+            child->nodeType == CXXDestructorDecl ||
             child->nodeType == CXXMethodDecl ||
             child->nodeType == FieldDecl)
             children2.push_back(child);
