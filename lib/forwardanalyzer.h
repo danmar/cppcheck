@@ -19,11 +19,11 @@
 #ifndef forwardanalyzerH
 #define forwardanalyzerH
 
-#include "token.h"
 #include "valueptr.h"
 #include <vector>
 
 class Settings;
+class Token;
 
 struct ForwardAnalyzer {
     struct Action {

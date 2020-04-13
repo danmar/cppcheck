@@ -17,11 +17,13 @@
  */
 
 
+#include "check.h"
 #include "checkbufferoverrun.h"
+#include "config.h"
+#include "ctu.h"
 #include "library.h"
 #include "settings.h"
 #include "testsuite.h"
-#include "token.h"
 #include "tokenize.h"
 
 #include <tinyxml2.h>

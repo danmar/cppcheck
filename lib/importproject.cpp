@@ -20,10 +20,10 @@
 
 #include "path.h"
 #include "settings.h"
+#include "suppressions.h"
 #include "tinyxml2.h"
 #include "token.h"
 #include "tokenize.h"
-#include "tokenlist.h"
 #include "utils.h"
 #define PICOJSON_USE_INT64
 #include <picojson.h>

@@ -28,7 +28,6 @@
 #include "preprocessor.h" // Preprocessor
 #include "suppressions.h"
 #include "timer.h"
-#include "token.h"
 #include "tokenize.h" // Tokenizer
 #include "tokenlist.h"
 #include "version.h"

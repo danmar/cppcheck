@@ -18,8 +18,9 @@
 
 #include "checkstl.h"
 
-#include "checknullpointer.h"
 #include "errorlogger.h"
+#include "library.h"
+#include "mathlib.h"
 #include "settings.h"
 #include "standards.h"
 #include "symboldatabase.h"

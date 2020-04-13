@@ -31,14 +31,18 @@
 #include "tokenize.h"
 #include "valueflow.h"
 
-#include <tinyxml2.h>
-
 #include <cassert>
 #include <cstddef>
 #include <list>
 #include <map>
 #include <stack>
 #include <utility>
+
+
+namespace tinyxml2 {
+    class XMLElement;
+}
+
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)

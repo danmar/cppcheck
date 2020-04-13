@@ -1,6 +1,7 @@
 #include <QtWidgets>
 #include <QShortcut>
 #include "codeeditor.h"
+#include "codeeditorstyle.h"
 
 
 Highlighter::Highlighter(QTextDocument *parent,

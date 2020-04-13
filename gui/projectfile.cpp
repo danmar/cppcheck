@@ -26,7 +26,6 @@
 #include "common.h"
 #include "importproject.h"
 
-#include "path.h"
 #include "settings.h"
 
 ProjectFile::ProjectFile(QObject *parent) :

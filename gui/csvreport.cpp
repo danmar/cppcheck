@@ -20,6 +20,7 @@
 #include <QString>
 #include <QDir>
 #include <QTextStream>
+#include "erroritem.h"
 #include "report.h"
 #include "csvreport.h"
 

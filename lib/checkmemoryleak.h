@@ -43,7 +43,6 @@
 class Function;
 class Scope;
 class Settings;
-class SymbolDatabase;
 class Token;
 class Variable;
 

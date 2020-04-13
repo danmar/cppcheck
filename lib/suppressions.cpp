@@ -30,8 +30,6 @@
 #include <sstream>
 #include <utility>
 
-class ErrorLogger;
-
 static bool isAcceptedErrorIdChar(char c)
 {
     switch (c) {

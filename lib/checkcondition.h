@@ -24,11 +24,11 @@
 
 #include "check.h"
 #include "config.h"
+#include "errorlogger.h"
 #include "mathlib.h"
 
 #include <string>
 
-class ErrorLogger;
 class Settings;
 class Token;
 class Tokenizer;

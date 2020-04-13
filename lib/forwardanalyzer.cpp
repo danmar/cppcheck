@@ -3,6 +3,7 @@
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
+#include "valueptr.h"
 
 #include <functional>
 

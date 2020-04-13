@@ -22,7 +22,6 @@
 #include "check.h"
 #include "library.h"
 #include "mathlib.h"
-#include "path.h"
 #include "platform.h"
 #include "settings.h"
 #include "standards.h"

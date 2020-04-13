@@ -31,7 +31,6 @@
 
 #include <algorithm>
 #include <cstdlib>
-#include <stack>
 #include <utility>
 //---------------------------------------------------------------------------
 

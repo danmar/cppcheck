@@ -17,12 +17,12 @@
  */
 
 
+#include "config.h"
 #include "platform.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "token.h"
 #include "tokenize.h"
-#include "tokenlist.h"
 
 struct InternalError;
 
