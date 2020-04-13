@@ -1246,7 +1246,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 }
 
                 // warn
-                if(!expr->variable() || !expr->variable()->isMaybeUnused())
+                if (!expr->variable() || !expr->variable()->isMaybeUnused())
                     unreadVariableError(tok, expr->expressionString(), false);
             }
         }
