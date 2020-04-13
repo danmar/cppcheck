@@ -1094,7 +1094,7 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
     }
 
     Token *par1 = addtoken(tokenList, "(");
-    if (!prev)
+    if (!function->arg)
         function->arg = par1;
     function->token = nameToken;
     // Function arguments
