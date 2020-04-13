@@ -36,7 +36,7 @@
 #include <vector>
 
 namespace tinyxml2 {
-	class XMLElement;
+    class XMLElement;
 }
 
 class ErrorLogger;
