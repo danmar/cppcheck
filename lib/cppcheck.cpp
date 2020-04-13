@@ -319,37 +319,39 @@ unsigned int CppCheck::check(const std::string &path)
         {
             std::ifstream fin(clangStderr);
             while (std::getline(fin, line)) {
-                if (line.find(": fatal error:") != std::string::npos) {
+                std::string::size_type pos3 = line.find(": error: ");
+                if (pos3 == std::string::npos)
+                    pos3 = line.find(": fatal error:");
+                if (pos3 == std::string::npos)
+                    continue;
 
-                    // file:line:column: error: ....
-                    const std::string::size_type pos3 = line.find(": fatal error:");
-                    const std::string::size_type pos2 = line.rfind(":", pos3 - 1);
-                    const std::string::size_type pos1 = line.rfind(":", pos2 - 1);
+                // file:line:column: error: ....
+                const std::string::size_type pos2 = line.rfind(":", pos3 - 1);
+                const std::string::size_type pos1 = line.rfind(":", pos2 - 1);
 
-                    if (pos1 >= pos2 || pos2 >= pos3)
-                        continue;
+                if (pos1 >= pos2 || pos2 >= pos3)
+                    continue;
 
-                    const std::string filename = line.substr(0, pos1);
-                    const std::string linenr = line.substr(pos1+1, pos2-pos1-1);
-                    const std::string colnr = line.substr(pos2+1, pos3-pos2-1);
-                    const std::string msg = line.substr(pos3 + 15);
+                const std::string filename = line.substr(0, pos1);
+                const std::string linenr = line.substr(pos1+1, pos2-pos1-1);
+                const std::string colnr = line.substr(pos2+1, pos3-pos2-1);
+                const std::string msg = line.substr(line.find(":", pos3+1) + 2);
 
-                    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-                    ErrorLogger::ErrorMessage::FileLocation loc;
-                    loc.setfile(Path::toNativeSeparators(filename));
-                    loc.line = std::atoi(linenr.c_str());
-                    loc.column = std::atoi(colnr.c_str());
-                    locationList.push_back(loc);
-                    ErrorLogger::ErrorMessage errmsg(locationList,
-                                                     loc.getfile(),
-                                                     Severity::error,
-                                                     msg,
-                                                     "syntaxError",
-                                                     false);
-                    reportErr(errmsg);
+                std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+                ErrorLogger::ErrorMessage::FileLocation loc;
+                loc.setfile(Path::toNativeSeparators(filename));
+                loc.line = std::atoi(linenr.c_str());
+                loc.column = std::atoi(colnr.c_str());
+                locationList.push_back(loc);
+                ErrorLogger::ErrorMessage errmsg(locationList,
+                                                 loc.getfile(),
+                                                 Severity::error,
+                                                 msg,
+                                                 "syntaxError",
+                                                 false);
+                reportErr(errmsg);
 
-                    return 0;
-                }
+                return 0;
             }
         }
 
