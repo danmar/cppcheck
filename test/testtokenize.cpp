@@ -5023,7 +5023,7 @@ private:
                             "PF pfs[] = { &f1, &f1 };";
         const char expected[] = "void f1 ( ) { } "
                                 "void ( * pf ) ( ) ; pf = & f1 ; "
-                                "void ( * pfs ) ( ) [ ] = { & f1 , & f1 } ;"; // TODO : Is [] placed correctly?
+                                "void ( * pfs [ ] ) ( ) = { & f1 , & f1 } ;";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
     }
 

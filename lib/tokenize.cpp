@@ -1313,7 +1313,7 @@ void Tokenizer::simplifyTypedef()
                     if (funcStart && funcEnd) {
                         tok2->insertToken("(");
                         tok2 = tok2->next();
-                        Token *tok3 = tok2;
+                        Token *paren = tok2;
                         tok2 = TokenList::copyTokens(tok2, funcStart, funcEnd);
 
                         if (!inCast)
@@ -1322,9 +1322,12 @@ void Tokenizer::simplifyTypedef()
                         if (!tok2)
                             break;
 
+                        while (Token::Match(tok2, "%name%|] ["))
+                            tok2 = tok2->linkAt(1);
+
                         tok2->insertToken(")");
                         tok2 = tok2->next();
-                        Token::createMutualLinks(tok2, tok3);
+                        Token::createMutualLinks(tok2, paren);
 
                         tok2 = TokenList::copyTokens(tok2, argStart, argEnd);
 
