@@ -1175,6 +1175,11 @@ Token * clangimport::AstNode::createTokensVarDecl(TokenList *tokenList)
     const std::string type = mExtTokens[typeIndex];
     const std::string name = mExtTokens[typeIndex - 1];
     addTypeTokens(tokenList, type);
+    if (!startToken && tokenList->back()) {
+        startToken = tokenList->back();
+        while (Token::Match(startToken->previous(), "%type%|*|&|&&"))
+            startToken = startToken->previous();
+    }
     Token *vartok1 = addtoken(tokenList, name);
     Scope *scope = const_cast<Scope *>(tokenList->back()->scope());
     const AccessControl accessControl = (scope->type == Scope::ScopeType::eGlobal) ? (AccessControl::Global) : (AccessControl::Local);

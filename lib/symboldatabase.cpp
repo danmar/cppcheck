@@ -1787,8 +1787,8 @@ Variable::Variable(const Token *name_, const std::string &clangType, const Token
                    nonneg int index_, AccessControl access_, const Type *type_,
                    const Scope *scope_)
     : mNameToken(name_),
-      mTypeStartToken(nullptr),
-      mTypeEndToken(nullptr),
+      mTypeStartToken(start),
+      mTypeEndToken(name_ ? name_->previous() : nullptr),
       mIndex(index_),
       mAccess(access_),
       mFlags(0),
