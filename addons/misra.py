@@ -106,7 +106,7 @@ C90_STDLIB_IDENTIFIERS = {
     ],
     # D.6 Mathematics
     'math.h': [
-        'HUGE_VAL' 'acos', 'asin' , 'atan2', 'cos', 'sin', 'tan', 'cosh',
+        'HUGE_VAL', 'acos', 'asin' , 'atan2', 'cos', 'sin', 'tan', 'cosh',
         'sinh', 'tanh', 'exp', 'frexp', 'ldexp', 'log', 'loglO', 'modf',
         'pow', 'sqrt', 'ceil', 'fabs', 'floor', 'fmod',
     ],
