@@ -23,7 +23,7 @@ jobs:
        run: msbuild -m cppcheck.sln /p:Configuration=Debug
      
      - name: Build release configuration using MSBuild
-       run: msbuild -m cppcheck.sln /p:Configuration=Debug
+       run: msbuild -m cppcheck.sln /p:Configuration=Release
      
      - uses: actions/upload-artifact@v2-preview
        with:
