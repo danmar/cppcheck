@@ -20,8 +20,8 @@ jobs:
        uses: microsoft/setup-msbuild@v1.0.0
        
      - name: Build using MSBuild
-       run: msbuild cppcheck.sln
+       run: msbuild -m cppcheck.sln
      - uses: actions/upload-artifact@v2-preview
        with:
-         name: Debug binaries
+         name: Debug_binaries
          path: bin\debug\*.exe
