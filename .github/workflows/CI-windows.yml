@@ -5,10 +5,15 @@ on: [push,pull_request]
 jobs:
 
   build:
-  
-     runs-on: windows-latest
+    strategy:
+      matrix:
+        # windows 2016 should default to VS 2017
+        os: [windows-2016, windows-2019]
+      fail-fast: true
 
-     steps:
+    runs-on: ${{ matrix.os }}
+  
+    steps:
      - uses: actions/checkout@v2
       
      - name: Setup msbuild.exe
