@@ -4301,20 +4301,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
         }
     }
 
-    // Some special bailouts in DACA. To avoid too much hangs/crashes.
-    // FIXME: This is hopefully temporary. Somehow it should not be used in releases.
-    if (mSettings->daca) {
-        int numcase = 0;
-        for (const Token *tok = list.front(); tok; tok = tok->next()) {
-            if (Token::Match(tok, "%name% [ %num% ] = {") && MathLib::toLongNumber(tok->strAt(2)) > 10000)
-                return false;
-            if (tok->str() == "case") {
-                if (++numcase > 10000)
-                    return false;
-            }
-        }
-    }
-
     // Is there C++ code in C file?
     validateC();
 
