@@ -25,6 +25,12 @@ jobs:
      - name: Build x64 release configuration using MSBuild
        run: msbuild -m cppcheck.sln /p:Configuration=Release
      
+     - name: Run Debug test
+       run: .\bin\debug\testrunner.exe
+     
+     - name: Run Release test
+       run: .\bin\testrunner.exe
+     
      - uses: actions/upload-artifact@v2-preview
        with:
          name: Debug_binaries
