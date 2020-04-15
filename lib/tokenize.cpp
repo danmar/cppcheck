@@ -3803,7 +3803,7 @@ void Tokenizer::setVarIdPass2()
                     if (tok2->strAt(-1) == ")" || tok2->strAt(-2) == ")")
                         setVarIdClassFunction(scopeName2 + classname, tok2, tok2->link(), thisClassVars, structMembers, &mVarId);
                     tok2 = tok2->link();
-                } else if (tok2->str() == "(" && tok2->link()->strAt(1) != "(") {
+                } else if (Token::Match(tok2, "( %name%|)") && !Token::Match(tok2->link(), "(|[")) {
                     tok2 = tok2->link();
 
                     // Skip initialization list

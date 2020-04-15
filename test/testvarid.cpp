@@ -187,6 +187,7 @@ private:
         TEST_CASE(varidclass17);  // #6073
         TEST_CASE(varidclass18);
         TEST_CASE(varidclass19);  // initializer list
+        TEST_CASE(varidclass20);   // #7578: int (*p)[2]
         TEST_CASE(varid_classnameshaddowsvariablename); // #3990
 
         TEST_CASE(varidnamespace1);
@@ -2986,6 +2987,20 @@ private:
                                 "3: A ( ) ;\n"
                                 "4: } ;\n"
                                 "5: A :: A ( ) : :: B ( ) , a@1 ( 0 ) { }\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varidclass20() { // #7578: int (*p)[2]
+        const char code[] = "struct S {\n"
+                            "  int (*p)[2];\n"
+                            "  S();\n"
+                            "};\n"
+                            "S::S() { p[0] = 0; }";
+        const char expected[] = "1: struct S {\n"
+                                "2: int ( * p@1 ) [ 2 ] ;\n"
+                                "3: S ( ) ;\n"
+                                "4: } ;\n"
+                                "5: S :: S ( ) { p@1 [ 0 ] = 0 ; }\n";
         ASSERT_EQUALS(expected, tokenize(code));
     }
 
