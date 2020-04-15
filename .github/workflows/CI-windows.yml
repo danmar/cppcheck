@@ -19,9 +19,26 @@ jobs:
      - name: Setup msbuild.exe
        uses: microsoft/setup-msbuild@v1.0.0
        
-     - name: Build using MSBuild
-       run: msbuild -m cppcheck.sln
+     - name: Build debug configuration using MSBuild
+       run: msbuild -m cppcheck.sln /p:Configuration=Debug
+     
+     - name: Build release configuration using MSBuild
+       run: msbuild -m cppcheck.sln /p:Configuration=Debug
+     
      - uses: actions/upload-artifact@v2-preview
        with:
          name: Debug_binaries
          path: bin\debug\*.exe
+     - uses: actions/upload-artifact@v2-preview
+       with:
+         name: Debug_binaries
+         path: bin\debug\*.dll
+
+     - uses: actions/upload-artifact@v2-preview
+       with:
+         name: Release_binaries
+         path: bin\release\*.exe
+     - uses: actions/upload-artifact@v2-preview
+       with:
+         name: Release_binaries
+         path: bin\release\*.dll
