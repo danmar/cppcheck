@@ -7,8 +7,8 @@ jobs:
   build:
     strategy:
       matrix:
-        # windows 2016 should default to VS 2017
-        os: [windows-2016, windows-2019]
+        # windows 2016 should default to VS 2017. Not supported by setup-msbuild
+        os: [windows-2019]
       fail-fast: true
 
     runs-on: ${{ matrix.os }}
@@ -21,3 +21,7 @@ jobs:
        
      - name: Build using MSBuild
        run: msbuild cppcheck.sln
+     - uses: actions/upload-artifact@v2-preview
+       with:
+         name: Debug binaries
+         path: bin\debug\*.exe
