@@ -23,20 +23,11 @@ jobs:
       - name: Setup msbuild.exe
         uses: microsoft/setup-msbuild@v1.0.0
 
-      - name: Install 3rd party dependencies
+      - name: Install Z3 library
         run: |
           curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-4.8.7/z3-4.8.7-x64-win.zip -o z3-4.8.7-win.zip
           7z x z3-4.8.7-win.zip -oexternals -r -y
           move externals\z3-4.8.7-x64-win externals\z3
-
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v2
-
-      - name: Build x64 release GUI
-        run: |
-          cd gui
-          qmake
-          nmake
 
       - name: Build x64 debug configuration using MSBuild
         run: msbuild -m cppcheck.sln /p:Configuration=Debug
