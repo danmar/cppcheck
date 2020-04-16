@@ -31,40 +31,22 @@ jobs:
        
      - name: Build x64 debug configuration using MSBuild
        run: msbuild -m cppcheck.sln /p:Configuration=Debug
-     
+
+     - name: Run Debug test
+       run: .\bin\debug\testrunner.exe
+
      - name: Build x64 release configuration using MSBuild
        run: msbuild -m cppcheck.sln /p:Configuration=Release
+
+     - name: Run Release test
+       run: .\bin\testrunner.exe
 
      - name: Create dist archive
        run: |
          mkdir dist
-         7z a dist\cppcheck_dist.zip cfg bin\cppcheck.exe bin\cppcheck-core.dll
+         7z a dist\cppcheck_dist.zip addons cfg lib platforms bin\cppcheck.exe bin\cppcheck-core.dll
 
-     - name: Run Debug test
-       run: .\bin\debug\testrunner.exe
-     
-     - name: Run Release test
-       run: .\bin\testrunner.exe
-
-     - uses: actions/upload-artifact@v2-preview
-       with:
-         name: Debug_binaries
-         path: bin\debug\*.exe
-     - uses: actions/upload-artifact@v2-preview
-       with:
-         name: Debug_binaries
-         path: bin\debug\*.dll
-
-     - uses: actions/upload-artifact@v2-preview
-       with:
-         name: Release_binaries
-         path: bin\*.exe
-     - uses: actions/upload-artifact@v2-preview
-       with:
-         name: Release_binaries
-         path: bin\*.dll
-         
      - uses: actions/upload-artifact@v2-preview
        with:
          name: Dist
-         path: dist
+         path: dist\cppcheck_dist.zip
