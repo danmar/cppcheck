@@ -1,3 +1,7 @@
+# Some convenient links:
+# - https://github.com/actions/virtual-environments/blob/master/images/win/Windows2019-Readme.md
+#
+  
 name: CI-windows
 
 on: [push,pull_request]
@@ -31,6 +35,11 @@ jobs:
      - name: Run Release test
        run: .\bin\testrunner.exe
      
+     - name: Create dist archive
+       run: |
+         mkdir dist
+         7za a -m=ZIP cppcheck_dist cfg bin\cppcheck.exe bin\cppcheck-core.dll
+     
      - uses: actions/upload-artifact@v2-preview
        with:
          name: Debug_binaries
@@ -48,3 +57,8 @@ jobs:
        with:
          name: Release_binaries
          path: bin\*.dll
+         
+     - uses: actions/upload-artifact@v2-preview
+       with:
+         name: Dist
+         path: dist
