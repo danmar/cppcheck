@@ -6,6 +6,10 @@ name: CI-windows
 
 on: [push,pull_request]
 
+defaults:
+  run:
+    shell: cmd
+    
 jobs:
 
   build:
@@ -22,13 +26,31 @@ jobs:
 
       - name: Setup msbuild.exe
         uses: microsoft/setup-msbuild@v1.0.0
-
+      
       - name: Install Z3 library
         run: |
           curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-4.8.7/z3-4.8.7-x64-win.zip -o z3-4.8.7-win.zip
           7z x z3-4.8.7-win.zip -oexternals -r -y
           move externals\z3-4.8.7-x64-win externals\z3
+          
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
 
+      - name: Build x64 release GUI
+        run: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat" 
+          cd gui
+          qmake
+          nmake
+      
+      - name: Deploy app
+        run: |
+          dir Build
+          dir Build\gui
+          windeployqt Build\gui
+          dir Build\gui
+          del Build\gui\cppcheck-gui.ilk
+          del Build\gui\cppcheck-gui.pdb
       - name: Build x64 debug configuration using MSBuild
         run: msbuild -m cppcheck.sln /p:Configuration=Debug
 
@@ -40,3 +62,38 @@ jobs:
 
       - name: Run Release test
         run: .\bin\testrunner.exe
+ 
+      - uses: actions/upload-artifact@v2-preview
+        with:
+          name: cppcheck_gui
+          path: Build\gui
+          
+      - uses: actions/upload-artifact@v2-preview
+        with:
+          name: cppcheck_gui
+          path: externals\z3\bin\*.dll
+        
+      - uses: actions/upload-artifact@v2-preview
+        with:
+          name: cppcheck_cli
+          path: ./bin/cppcheck.exe
+        
+      - uses: actions/upload-artifact@v2-preview
+        with:
+          name: cppcheck_cli
+          path: ./bin/cppcheck-core.dll
+          
+      - uses: actions/upload-artifact@v2-preview
+        with:
+          name: cppcheck_cli
+          path: externals\z3\bin\*.dll
+          
+      - uses: actions/upload-artifact@v2-preview
+        with:
+          name: cppcheck_cli
+          path: ./**/cfg/*.cfg
+        
+      - uses: actions/upload-artifact@v2-preview
+        with:
+          name: cppcheck_cli
+          path: ./**/platforms/*.xml
