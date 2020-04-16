@@ -1,7 +1,7 @@
 # Some convenient links:
 # - https://github.com/actions/virtual-environments/blob/master/images/win/Windows2019-Readme.md
 #
-  
+
 name: CI-windows
 
 on: [push,pull_request]
@@ -16,37 +16,52 @@ jobs:
       fail-fast: true
 
     runs-on: ${{ matrix.os }}
-  
+
     steps:
-     - uses: actions/checkout@v2
-      
-     - name: Setup msbuild.exe
-       uses: microsoft/setup-msbuild@v1.0.0
-     
-     - name: Install 3rd party dependencies
-       run: |
-        curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-4.8.7/z3-4.8.7-x64-win.zip -o z3-4.8.7-win.zip
-        7z x z3-4.8.7-win.zip -oexternals -r -y
-        move externals\z3-4.8.7-x64-win externals\z3
-       
-     - name: Build x64 debug configuration using MSBuild
-       run: msbuild -m cppcheck.sln /p:Configuration=Debug
+      - uses: actions/checkout@v2
 
-     - name: Run Debug test
-       run: .\bin\debug\testrunner.exe
+      - name: Setup msbuild.exe
+        uses: microsoft/setup-msbuild@v1.0.0
 
-     - name: Build x64 release configuration using MSBuild
-       run: msbuild -m cppcheck.sln /p:Configuration=Release
+      - name: Install 3rd party dependencies
+        run: |
+          curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-4.8.7/z3-4.8.7-x64-win.zip -o z3-4.8.7-win.zip
+          7z x z3-4.8.7-win.zip -oexternals -r -y
+          move externals\z3-4.8.7-x64-win externals\z3
 
-     - name: Run Release test
-       run: .\bin\testrunner.exe
+      - name: Build x64 debug configuration using MSBuild
+        run: msbuild -m cppcheck.sln /p:Configuration=Debug
 
-     - name: Create dist archive
-       run: |
-         mkdir dist
-         7z a dist\cppcheck_dist.zip addons cfg lib platforms bin\cppcheck.exe bin\cppcheck-core.dll
+      - name: Run Debug test
+        run: .\bin\debug\testrunner.exe
 
-     - uses: actions/upload-artifact@v2-preview
-       with:
-         name: Dist
-         path: dist\cppcheck_dist.zip
+      - name: Build x64 release configuration using MSBuild
+        run: msbuild -m cppcheck.sln /p:Configuration=Release
+
+      - name: Run Release test
+        run: .\bin\testrunner.exe
+
+      - uses: actions/upload-artifact@v2-preview
+        with:
+          name: cppcheck_x64
+          path: addons
+      - uses: actions/upload-artifact@v2-preview
+        with:
+          name: cppcheck_x64
+          path: bin\cppcheck.exe
+      - uses: actions/upload-artifact@v2-preview
+        with:
+          name: cppcheck_x64
+          path: bin\cppcheck-core.dll
+      - uses: actions/upload-artifact@v2-preview
+        with:
+          name: cppcheck_x64
+          path: cfg
+      - uses: actions/upload-artifact@v2-preview
+        with:
+          name: cppcheck_x64
+          path: lin
+      - uses: actions/upload-artifact@v2-preview
+        with:
+          name: cppcheck_x64
+          path: platforms
