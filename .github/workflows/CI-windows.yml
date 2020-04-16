@@ -40,28 +40,3 @@ jobs:
 
       - name: Run Release test
         run: .\bin\testrunner.exe
-
-      - uses: actions/upload-artifact@v2-preview
-        with:
-          name: cppcheck_x64
-          path: .\* \addons\
-      - uses: actions/upload-artifact@v2-preview
-        with:
-          name: cppcheck_x64
-          path: bin\cppcheck.exe
-      - uses: actions/upload-artifact@v2-preview
-        with:
-          name: cppcheck_x64
-          path: bin\cppcheck-core.dll
-      - uses: actions/upload-artifact@v2-preview
-        with:
-          name: cppcheck_x64
-          path: cfg\*
-      - uses: actions/upload-artifact@v2-preview
-        with:
-          name: cppcheck_x64
-          path: lib\*
-      - uses: actions/upload-artifact@v2-preview
-        with:
-          name: cppcheck_x64
-          path: platforms\*
