@@ -22,6 +22,12 @@ jobs:
       
      - name: Setup msbuild.exe
        uses: microsoft/setup-msbuild@v1.0.0
+     
+     - name: Install 3rd party dependencies
+       run: |
+        curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-4.8.7/z3-4.8.7-%p%-win.zip -o z3-4.8.7-win.zip
+        7z x z3-4.8.7-win.zip -oexternals -r -y
+        move externals\z3-4.8.7-%p%-win externals\z3
        
      - name: Build x64 debug configuration using MSBuild
        run: msbuild -m cppcheck.sln /p:Configuration=Debug
@@ -38,7 +44,7 @@ jobs:
      - name: Create dist archive
        run: |
          mkdir dist
-         7za a -m=ZIP dist\cppcheck_dist.zip cfg bin\cppcheck.exe bin\cppcheck-core.dll
+         7za a dist\cppcheck_dist.zip cfg bin\cppcheck.exe bin\cppcheck-core.dll
      
      - uses: actions/upload-artifact@v2-preview
        with:
