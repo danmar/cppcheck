@@ -30,7 +30,7 @@ jobs:
           move externals\z3-4.8.7-x64-win externals\z3
 
       - name: Install Qt
-          uses: jurplel/install-qt-action@v2
+        uses: jurplel/install-qt-action@v2
 
       - name: Build x64 release GUI
         run: |
