@@ -38,7 +38,7 @@ jobs:
      - name: Create dist archive
        run: |
          mkdir dist
-         7za a -m=ZIP cppcheck_dist cfg bin\cppcheck.exe bin\cppcheck-core.dll
+         7za a -m=ZIP dist\cppcheck_dist.zip cfg bin\cppcheck.exe bin\cppcheck-core.dll
      
      - uses: actions/upload-artifact@v2-preview
        with:
