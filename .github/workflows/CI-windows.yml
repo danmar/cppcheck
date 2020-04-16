@@ -29,6 +29,15 @@ jobs:
           7z x z3-4.8.7-win.zip -oexternals -r -y
           move externals\z3-4.8.7-x64-win externals\z3
 
+      - name: Install Qt
+          uses: jurplel/install-qt-action@v2
+
+      - name: Build x64 release GUI
+        run: |
+          cd gui
+          qmake
+          nmake
+
       - name: Build x64 debug configuration using MSBuild
         run: msbuild -m cppcheck.sln /p:Configuration=Debug
 
@@ -44,7 +53,7 @@ jobs:
       - uses: actions/upload-artifact@v2-preview
         with:
           name: cppcheck_x64
-          path: addons
+          path: .\* \addons\
       - uses: actions/upload-artifact@v2-preview
         with:
           name: cppcheck_x64
@@ -56,12 +65,12 @@ jobs:
       - uses: actions/upload-artifact@v2-preview
         with:
           name: cppcheck_x64
-          path: cfg
+          path: cfg\*
       - uses: actions/upload-artifact@v2-preview
         with:
           name: cppcheck_x64
-          path: lin
+          path: lib\*
       - uses: actions/upload-artifact@v2-preview
         with:
           name: cppcheck_x64
-          path: platforms
+          path: platforms\*
