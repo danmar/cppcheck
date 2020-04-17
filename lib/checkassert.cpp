@@ -123,12 +123,7 @@ void CheckAssert::checkVariableAssignment(const Token* assignTok, const Scope *a
     if (!assignTok->isAssignmentOp() && assignTok->tokType() != Token::eIncDecOp)
         return;
 
-    const Variable* prevVar = assignTok->previous()->variable();
-    const Variable* nextVar = assignTok->next()->variable();
-
-    // preinc/dec have variables after, postinc/dec and assignments before
-    const Variable* var = prevVar ? prevVar : nextVar;
-
+    const Variable* var = assignTok->astOperand1()->variable();
     if (!var)
         return;
 
