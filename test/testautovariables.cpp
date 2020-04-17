@@ -1647,6 +1647,15 @@ private:
               "    g(&x);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct Data {\n"
+              "    std::string path;\n"
+              "};\n"
+              "const char* foo() {\n"
+              "    const Data& data = getData();\n"
+              "    return data.path.c_str();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingReference() {
