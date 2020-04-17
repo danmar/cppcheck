@@ -7306,6 +7306,22 @@ private:
                               "\n"
                               "C* C::instanceSingleton;");
         ASSERT_EQUALS("", errout.str());
+
+        // Avoid false positive when pointer is deleted in lambda
+        checkThisUseAfterFree("class C {\n"
+                              "public:\n"
+                              "    void foo();\n"
+                              "    void set() { p = this; }\n"
+                              "    void dostuff() {}\n"
+                              "    C* p;\n"
+                              "};\n"
+                              "\n"
+                              "void C::foo() {\n"
+                              "    auto done = [this] () { delete p; };\n"
+                              "    dostuff();\n"
+                              "    done();\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

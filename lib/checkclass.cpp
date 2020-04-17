@@ -2699,9 +2699,12 @@ bool CheckClass::checkThisUseAfterFreeRecursive(const Scope *classScope, const F
         } else if (isDestroyed && Token::Match(tok->previous(), "!!. %name%") && tok->variable() && tok->variable()->scope() == classScope && !tok->variable()->isStatic() && !tok->variable()->isArgument()) {
             thisUseAfterFree(selfPointer->nameToken(), *freeToken, tok);
             return true;
-        } else if (*freeToken && Token::Match(tok, "return|throw"))
+        } else if (*freeToken && Token::Match(tok, "return|throw")) {
             // TODO
             return tok->str() == "throw";
+        } else if (tok->str() == "{" && tok->scope()->type == Scope::ScopeType::eLambda) {
+            tok = tok->link();
+        }
     }
     return false;
 }
