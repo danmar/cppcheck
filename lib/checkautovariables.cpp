@@ -467,7 +467,7 @@ static bool isDeadTemporary(bool cpp, const Token* tok, const Token* expr, const
 
 static bool isEscapedReference(const Variable* var)
 {
-    if(!var)
+    if (!var)
         return false;
     if (!var->isReference())
         return false;
@@ -475,7 +475,7 @@ static bool isEscapedReference(const Variable* var)
         return false;
     if (!Token::simpleMatch(var->declEndToken(), "="))
         return false;
-    const Token *vartok = var->declEndToken()->astOperand2();
+    const Token* vartok = var->declEndToken()->astOperand2();
     return !isTemporary(true, vartok, nullptr, false);
 }
 
@@ -526,7 +526,8 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                         continue;
                     if (!isLifetimeBorrowed(tok, mSettings))
                         continue;
-                    if ((tokvalue->variable() && !isEscapedReference(tokvalue->variable()) && isInScope(tokvalue->variable()->nameToken(), scope)) ||
+                    if ((tokvalue->variable() && !isEscapedReference(tokvalue->variable()) &&
+                         isInScope(tokvalue->variable()->nameToken(), scope)) ||
                         isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok, &mSettings->library)) {
                         errorReturnDanglingLifetime(tok, &val);
                         break;
