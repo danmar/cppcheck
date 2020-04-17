@@ -183,7 +183,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f(int a, int b) {\n"
-              "    assert(a == 2 && b = 1);\n"
+              "    assert(a == 2 && (b = 1));\n"
               "    return a;\n"
               "}\n"
              );
