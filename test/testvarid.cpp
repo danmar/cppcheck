@@ -94,6 +94,8 @@ private:
         TEST_CASE(varid61); // #4988 inline function
         TEST_CASE(varid62);
         TEST_CASE(varid63);
+        TEST_CASE(varid_for_1);
+        TEST_CASE(varid_for_2);
         TEST_CASE(varid_cpp_keywords_in_c_code);
         TEST_CASE(varid_cpp_keywords_in_c_code2); // #5373: varid=0 for argument called "delete"
         TEST_CASE(varidFunctionCall1);
@@ -1122,6 +1124,26 @@ private:
     void varid63() {
         const char code[] = "void f(boost::optional<int> const& x) {}";
         const char expected[] = "1: void f ( boost :: optional < int > const & x@1 ) { }\n";
+        ASSERT_EQUALS(expected, tokenize(code, false));
+    }
+
+    void varid_for_1() {
+        const char code[] = "void foo(int a, int b) {\n"
+                            "  for (int a=1,b=2;;) {}\n"
+                            "}";
+        const char expected[] = "1: void foo ( int a@1 , int b@2 ) {\n"
+                                "2: for ( int a@3 = 1 , b@4 = 2 ; ; ) { }\n"
+                                "3: }\n";
+        ASSERT_EQUALS(expected, tokenize(code, false));
+    }
+
+    void varid_for_2() {
+        const char code[] = "void foo(int a, int b) {\n"
+                            "  for (int a=f(x,y,z),b=2;;) {}\n"
+                            "}";
+        const char expected[] = "1: void foo ( int a@1 , int b@2 ) {\n"
+                                "2: for ( int a@3 = f ( x , y , z ) , b@4 = 2 ; ; ) { }\n"
+                                "3: }\n";
         ASSERT_EQUALS(expected, tokenize(code, false));
     }
 

@@ -3503,6 +3503,15 @@ void Tokenizer::setVarIdPass1()
                 if (decl) {
                     variableMap.addVariable(prev2->str());
 
+                    if (Token::simpleMatch(tok->previous(), "for (") && Token::Match(prev2, "%name% [=,]")) {
+                        for (const Token *tok3 = prev2->next(); tok3 && tok3->str() != ";"; tok3 = tok3->next()) {
+                            if (Token::Match(tok3, "[([]"))
+                                tok3 = tok3->link();
+                            if (Token::Match(tok3, ", %name% [,=;]"))
+                                variableMap.addVariable(tok3->next()->str());
+                        }
+                    }
+
                     // set varid for template parameters..
                     tok = tok->next();
                     while (Token::Match(tok, "%name%|::"))
