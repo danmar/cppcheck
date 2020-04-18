@@ -703,6 +703,13 @@ private:
                        "  return (*sink)[0];\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #9296
+        checkUninitVar("void foo() {\n"
+                       "  int x;\n"
+                       "  z = (x) & 1;"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
     }
 
     void uninitvar_warn_once() {

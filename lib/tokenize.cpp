@@ -4612,9 +4612,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // operator = => operator=
     simplifyOperatorName();
 
-    // Remove redundant parentheses
-    simplifyRedundantParentheses();
-
     if (isCPP())
         simplifyTypeIntrinsics();
 
@@ -4658,6 +4655,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     } else {
         setVarId();
     }
+
+    // Remove redundant parentheses
+    simplifyRedundantParentheses();
 
     // Link < with >
     createLinks2();
@@ -8043,7 +8043,7 @@ bool Tokenizer::simplifyRedundantParentheses()
             Token::simpleMatch(tok->link(), ") ;")) {
             tok->link()->deleteThis();
             tok->deleteThis();
-            continue;
+            ret = true;
         }
 
         while (Token::simpleMatch(tok, "( (") &&
@@ -8102,7 +8102,7 @@ bool Tokenizer::simplifyRedundantParentheses()
             ret = true;
         }
 
-        if (Token::Match(tok->previous(), "[(!*;{}] ( %name% )") &&
+        if (Token::Match(tok->previous(), "[(!*;{}=] ( %name% )") &&
             (tok->next()->varId() != 0 || Token::Match(tok->tokAt(3), "[+-/=]")) && !tok->next()->isStandardType()) {
             // We have "( var )", remove the parentheses
             tok->deleteThis();
