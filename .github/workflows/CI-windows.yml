@@ -86,6 +86,16 @@ jobs:
       - uses: actions/upload-artifact@v2-preview
         with:
           name: cppcheck_gui
+          path: ./**/cfg/*.cfg
+        
+      - uses: actions/upload-artifact@v2-preview
+        with:
+          name: cppcheck_gui
+          path: ./**/platforms/*.xml  
+          
+      - uses: actions/upload-artifact@v2-preview
+        with:
+          name: cppcheck_gui
           path: externals\z3\bin\*.dll
         
       - uses: actions/upload-artifact@v2-preview
