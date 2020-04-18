@@ -39,7 +39,7 @@ jobs:
           dir x64
           dir x64\Release
           copy pcre.h ..\externals
-          copy Release\pcre.lib ..\externals
+          copy Release\pcre.lib ..\externals\pcre64.lib
 
       - name: Install Z3 library
         run: |
