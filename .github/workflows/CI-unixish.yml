@@ -31,15 +31,15 @@ jobs:
 
       - name: Build cppcheck
         run: |
-          make -j2 USE_Z3=yes
+          make -j2 USE_Z3=yes HAVE_RULES=yes
 
       - name: Build test
         run: |
-          make -j2 testrunner USE_Z3=yes
+          make -j2 testrunner USE_Z3=yes HAVE_RULES=yes
 
       - name: Test
         run: |
-          make -j2 check USE_Z3=yes
+          make -j2 check USE_Z3=yes HAVE_RULES=yes
 
       - name: Validate
         run: |
