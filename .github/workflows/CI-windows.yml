@@ -67,13 +67,13 @@ jobs:
           del Build\gui\cppcheck-gui.pdb
           
       - name: Build x64 debug configuration using MSBuild
-        run: msbuild -m cppcheck.sln /p:Configuration=Debug /p:Platform=x64
+        run: msbuild -m cppcheck.sln /p:Configuration=Debug-PCRE /p:Platform=x64
 
       - name: Run Debug test
         run: .\bin\debug\testrunner.exe
 
       - name: Build x64 release configuration using MSBuild
-        run: msbuild -m cppcheck.sln /p:Configuration=Release /p:Platform=x64
+        run: msbuild -m cppcheck.sln /p:Configuration=Release-PCRE /p:Platform=x64
 
       - name: Run Release test
         run: .\bin\testrunner.exe
