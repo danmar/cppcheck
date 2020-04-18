@@ -183,7 +183,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f(int a, int b) {\n"
-              "    assert(a == 2 && b = 1);\n"
+              "    assert(a == 2 && (b = 1));\n"
               "    return a;\n"
               "}\n"
              );
@@ -216,6 +216,13 @@ private:
         check("void f() {\n"
               "    int a = 0;\n"
               "    assert(a--);\n"
+              "    return a;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'.\n", errout.str());
+
+	check("void f() {\n"
+              "    int a = 0;\n"
+              "    assert(--a);\n"
               "    return a;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'.\n", errout.str());
