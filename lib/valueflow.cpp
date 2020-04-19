@@ -3928,6 +3928,8 @@ struct ValueFlowConditionHandler {
                 Condition cond = parse(tok);
                 if (!cond.vartok)
                     continue;
+                if (cond.vartok->variable() && cond.vartok->variable()->isVolatile())
+                    continue;
                 if (cond.true_values.empty() || cond.false_values.empty())
                     continue;
 

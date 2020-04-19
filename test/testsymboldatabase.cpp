@@ -150,6 +150,7 @@ private:
         TEST_CASE(isVariablePointerToVolatilePointer);
         TEST_CASE(isVariablePointerToConstVolatilePointer);
         TEST_CASE(isVariableMultiplePointersAndQualifiers);
+        TEST_CASE(variableVolatile);
 
         TEST_CASE(VariableValueType1);
         TEST_CASE(VariableValueType2);
@@ -1132,6 +1133,21 @@ private:
         ASSERT(false == v.isArray());
         ASSERT(true == v.isPointer());
         ASSERT(false == v.isReference());
+    }
+
+    void variableVolatile() {
+        GET_SYMBOL_DB("std::atomic<int> x;\n"
+                      "volatile int y;\n");
+
+        const Token *x = Token::findsimplematch(tokenizer.tokens(), "x");
+        ASSERT(x);
+        ASSERT(x->variable());
+        ASSERT(x->variable()->isVolatile());
+
+        const Token *y = Token::findsimplematch(tokenizer.tokens(), "y");
+        ASSERT(y);
+        ASSERT(y->variable());
+        ASSERT(y->variable()->isVolatile());
     }
 
     void arrayMemberVar1() {

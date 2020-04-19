@@ -1871,7 +1871,7 @@ void Variable::evaluate(const Settings* settings)
             setFlag(fIsStatic, true);
         else if (tok->str() == "extern")
             setFlag(fIsExtern, true);
-        else if (tok->str() == "volatile")
+        else if (tok->str() == "volatile" || Token::simpleMatch(tok, "std :: atomic <"))
             setFlag(fIsVolatile, true);
         else if (tok->str() == "mutable")
             setFlag(fIsMutable, true);
