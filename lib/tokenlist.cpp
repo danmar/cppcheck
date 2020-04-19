@@ -484,7 +484,7 @@ static Token * skipDecl(Token *tok)
                 vartok = vartok->link();
             else
                 return tok;
-        } else if (Token::Match(vartok, "%name% [:=]")) {
+        } else if (Token::Match(vartok, "%var% [:=(]")) {
             return vartok;
         }
         vartok = vartok->next();

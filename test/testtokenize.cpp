@@ -7484,10 +7484,11 @@ private:
         ASSERT_EQUALS("fora0=a8<a++;;(", testAst("for(a=0;a<8;a++)"));
         ASSERT_EQUALS("fori1=current0=,iNUM<=i++;;(", testAst("for(i = (1), current = 0; i <= (NUM); ++i)"));
         ASSERT_EQUALS("foreachxy,((", testAst("for(each(x,y)){}"));  // it's not well-defined what this ast should be
+        ASSERT_EQUALS("forvar1(;;(", testAst("for(int var(1);;)"));
         ASSERT_EQUALS("forab:(", testAst("for (int a : b);"));
-        ASSERT_EQUALS("forab:(", testAst("for (int *a : b);"));
-        ASSERT_EQUALS("forcd:(", testAst("for (a<b> c : d);"));
-        ASSERT_EQUALS("forde:(", testAst("for (a::b<c> d : e);"));
+        ASSERT_EQUALS("forvarb:(", testAst("for (int *var : b);"));
+        ASSERT_EQUALS("forvard:(", testAst("for (a<b> var : d);"));
+        ASSERT_EQUALS("forvare:(", testAst("for (a::b<c> var : e);"));
         ASSERT_EQUALS("forx*0=yz;;(", testAst("for(*x=0;y;z)"));
         ASSERT_EQUALS("forx0=y(8<z;;(", testAst("for (x=0;(int)y<8;z);"));
         ASSERT_EQUALS("forab,c:(", testAst("for (auto [a,b]: c);"));
