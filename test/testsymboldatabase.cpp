@@ -156,6 +156,7 @@ private:
         TEST_CASE(VariableValueType2);
         TEST_CASE(VariableValueType3);
         TEST_CASE(VariableValueType4); // smart pointer type
+        TEST_CASE(VariableValueType5); // smart pointer type
 
         TEST_CASE(findVariableType1);
         TEST_CASE(findVariableType2);
@@ -948,6 +949,16 @@ private:
         const Variable* const x = db->getVariableFromVarId(1);
         ASSERT(x->valueType());
         ASSERT(x->valueType()->smartPointerType);
+    }
+
+    void VariableValueType5() {
+        GET_SYMBOL_DB("class C {};\n"
+                      "void foo(std::shared_ptr<C>* p) {}\n");
+
+        const Variable* const p = db->getVariableFromVarId(1);
+        ASSERT(p->valueType());
+        ASSERT(p->valueType()->smartPointerTypeToken);
+        ASSERT(p->valueType()->pointer == 1);
     }
 
     void findVariableType1() {
