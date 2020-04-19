@@ -179,6 +179,11 @@ Running Cppcheck on a Visual Studio project:
 
     cppcheck --project=foobar.vcxproj
 
+Both options will analyze all available configurations in the project(s).
+Limiting on a single configuration:
+
+    cppcheck --project=foobar.sln "--project-configuration=Release|Win32"
+
 In the `Cppcheck GUI` you have the choice to only analyze a single debug configuration. If you want to use this choice on the command line then create a `Cppcheck GUI` project with this activated and then import the GUI project file on the command line.
 
 To ignore certain folders in the project you can use `-i`. This will skip analysis of source files in the `foo` folder.

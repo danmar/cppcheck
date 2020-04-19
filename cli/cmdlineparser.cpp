@@ -569,6 +569,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->checkAllConfigurations = false; // Can be overridden with --max-configs or --force
                 const std::string projectFile = argv[i]+10;
                 ImportProject::Type projType = mSettings->project.import(projectFile, mSettings);
+                mSettings->project.projectType = projType;
                 if (projType == ImportProject::Type::CPPCHECK_GUI) {
                     mPathNames = mSettings->project.guiProject.pathNames;
                     for (const std::string &lib : mSettings->project.guiProject.libraries)
@@ -621,6 +622,13 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     printMessage("cppcheck: Failed to load project '" + projectFile + "'. The format is unknown.");
                     return false;
                 }
+            }
+
+            // --project-configuration
+            else if (std::strncmp(argv[i], "--project-configuration=", 24) == 0) {
+                mVSConfig = argv[i] + 24;
+                if (!mVSConfig.empty() && (mSettings->project.projectType == ImportProject::Type::VS_SLN || mSettings->project.projectType == ImportProject::Type::VS_VCXPROJ))
+                    mSettings->project.ignoreOtherConfigs(mVSConfig);
             }
 
             // Report progress
@@ -1106,6 +1114,11 @@ void CmdLineParser::printHelp()
               "                         or Borland C++ Builder 6 (*.bpr). The files to analyse,\n"
               "                         include paths, defines, platform and undefines in\n"
               "                         the specified file will be used.\n"
+              "    --project-configuration=<config>\n"
+              "                         If used together with a Visual Studio Solution (*.sln)\n"
+              "                         or Visual Studio Project (*.vcxproj) you can limit\n"
+              "                         the configuration cppcheck should check.\n"
+              "                         For example: ""--project-configuration=Release|Win32"""
               "    --max-configs=<limit>\n"
               "                         Maximum number of configurations to check in a file\n"
               "                         before skipping it. Default is '12'. If used together\n"
