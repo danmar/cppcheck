@@ -3714,7 +3714,11 @@ static void valueFlowForwardAssign(Token * const               tok,
                                    ErrorLogger * const         errorLogger,
                                    const Settings * const      settings)
 {
-    const Token * const endOfVarScope = var->scope()->bodyEnd;
+    const Token * endOfVarScope = nullptr;
+    if (var->isLocal())
+        endOfVarScope = var->scope()->bodyEnd;
+    if (!endOfVarScope)
+        endOfVarScope = tok->scope()->bodyEnd;
     if (std::any_of(values.begin(), values.end(), std::mem_fn(&ValueFlow::Value::isLifetimeValue))) {
         valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
         values.remove_if(std::mem_fn(&ValueFlow::Value::isLifetimeValue));
