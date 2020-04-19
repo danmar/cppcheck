@@ -783,7 +783,7 @@ static void compileTerm(Token *&tok, AST_state& state)
             tok = tok->next();
             if (tok->str() == "<")
                 tok = tok->link()->next();
-            if (Token::Match(tok, "{ . %name% =")) {
+            if (Token::Match(tok, "{ . %name% =|{")) {
                 const int inArrayAssignment = state.inArrayAssignment;
                 state.inArrayAssignment = 1;
                 compileBinOp(tok, state, compileExpression);

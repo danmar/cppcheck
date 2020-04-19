@@ -3115,7 +3115,7 @@ void Tokenizer::setVarIdStructMembers(Token **tok1,
 {
     Token *tok = *tok1;
 
-    if (Token::Match(tok, "%name% = { . %name% =")) {
+    if (Token::Match(tok, "%name% = { . %name% =|{")) {
         const int struct_varid = tok->varId();
         if (struct_varid == 0)
             return;
@@ -3126,7 +3126,7 @@ void Tokenizer::setVarIdStructMembers(Token **tok1,
         while (tok->str() != "}") {
             if (Token::Match(tok, "{|[|("))
                 tok = tok->link();
-            if (Token::Match(tok->previous(), "[,{] . %name% =")) {
+            if (Token::Match(tok->previous(), "[,{] . %name% =|{")) {
                 tok = tok->next();
                 const std::map<std::string, int>::iterator it = members.find(tok->str());
                 if (it == members.end()) {
@@ -9365,7 +9365,7 @@ void Tokenizer::reportUnknownMacros()
         for (const Token *inner = tok->tokAt(2); inner != endTok; inner = inner->next()) {
             if (Token::Match(inner, "[[({]"))
                 inner = inner->link();
-            else if (Token::Match(inner->previous(), "[,(] . %name% ="))
+            else if (Token::Match(inner->previous(), "[,(] . %name% =|{"))
                 unknownMacroError(tok);
         }
     }
@@ -9637,7 +9637,7 @@ void Tokenizer::findGarbageCode() const
         if (Token::simpleMatch(tok, ".") &&
             !Token::simpleMatch(tok->previous(), ".") &&
             !Token::simpleMatch(tok->next(), ".") &&
-            !Token::Match(tok->previous(), "{|, . %name% =|.|[") &&
+            !Token::Match(tok->previous(), "{|, . %name% =|.|[|{") &&
             !Token::Match(tok->previous(), ", . %name%")) {
             if (!Token::Match(tok->previous(), "%name%|)|]|>|}"))
                 syntaxError(tok, tok->strAt(-1) + " " + tok->str() + " " + tok->strAt(1));
