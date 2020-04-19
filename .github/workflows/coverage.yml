@@ -22,7 +22,7 @@ jobs:
 
       - name: Compile instrumented
         run: |
-          make test CXXFLAGS="-g -fprofile-arcs -ftest-coverage" USE_Z3=yes -j2
+          make test CXXFLAGS="-g -fprofile-arcs -ftest-coverage" USE_Z3=yes HAVE_RULES=yes -j$(nproc)
           
       - name: Generate coverage report
         run: |
