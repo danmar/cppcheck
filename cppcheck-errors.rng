@@ -3,11 +3,15 @@
   <start>
     <element name="results">
       <attribute name="version">
-        <data type="integer"/>
+        <choice>
+          <value type="string">2</value>
+        </choice>
       </attribute>
       <element name="cppcheck">
         <attribute name="version">
-          <data type="string"/>
+          <data type="string">
+            <param name="pattern">[1-9]\.[0-9]+</param>
+          </data>
         </attribute>
       </element>
       <element name="errors">
