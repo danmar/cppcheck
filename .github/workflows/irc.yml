@@ -3,6 +3,7 @@ on: [push, pull_request, create]
 
 jobs:
   test:
+    if: github.repository == 'danmar/cppcheck'
     runs-on: ubuntu-latest
     steps:
       - name: irc push
