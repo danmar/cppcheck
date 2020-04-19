@@ -32,7 +32,14 @@
               <data type="string"/>
             </attribute>
             <attribute name="severity">
-              <data type="NCName"/>
+              <choice>
+                <value type="string">error</value>
+                <value type="string">information</value>
+                <value type="string">performance</value>
+                <value type="string">portability</value>
+                <value type="string">style</value>
+                <value type="string">warning</value>
+              </choice>
             </attribute>
             <attribute name="verbose">
               <data type="string"/>
