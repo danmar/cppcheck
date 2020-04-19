@@ -2034,6 +2034,19 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 6U, 3));
         TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 6U, 2));
+
+        code = "struct Fred {\n"
+               "    static void Create(std::unique_ptr<Wilma> wilma);\n"
+               "    Fred(std::unique_ptr<Wilma> wilma);\n"
+               "    std::unique_ptr<Wilma> mWilma;\n"
+               "};\n"
+               "void Fred::Create(std::unique_ptr<Wilma> wilma) {\n"
+               "    auto fred = std::make_shared<Fred>(std::move(wilma));\n"
+               "    fred->mWilma.reset();\n"
+               "}\n"
+               "Fred::Fred(std::unique_ptr<Wilma> wilma)\n"
+               "    : mWilma(std::move(wilma)) {}\n";
+        ASSERT_EQUALS(0, tokenValues(code, "mWilma (").size());
     }
 
     void valueFlowAfterCondition() {
