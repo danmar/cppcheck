@@ -521,7 +521,7 @@ std::string ExprEngine::ConditionalValue::getSymbolicExpression() const
     std::ostringstream ostr;
     ostr << "{";
     bool first = true;
-    for (auto condvalue : values) {
+    for (const auto& condvalue : values) {
         ValuePtr cond = condvalue.first;
         ValuePtr value = condvalue.second;
 
@@ -1230,7 +1230,7 @@ static ExprEngine::ValuePtr executeArrayIndex(const Token *tok, Data &data)
     if (arrayValue) {
         auto indexValue = executeExpression(tok->astOperand2(), data);
         auto conditionalValues = arrayValue->read(indexValue);
-        for (auto value: conditionalValues)
+        for (const auto& value: conditionalValues)
             call(data.callbacks, tok, value.second, &data);
         if (conditionalValues.size() == 1 && !conditionalValues[0].first)
             return conditionalValues[0].second;
@@ -1297,7 +1297,7 @@ static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
                 call(data.callbacks, tok->astOperand1(), pointerValue, &data);
                 auto indexValue = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
                 ExprEngine::ValuePtr ret;
-                for (auto val: pointerValue->read(indexValue)) {
+                for (const auto& val: pointerValue->read(indexValue)) {
                     structValue = std::dynamic_pointer_cast<ExprEngine::StructValue>(val.second);
                     if (structValue) {
                         auto memberValue = structValue->getValueOfMember(tok->astOperand2()->str());
@@ -1371,7 +1371,7 @@ static ExprEngine::ValuePtr executeDeref(const Token *tok, Data &data)
     if (pointer) {
         auto indexValue = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
         auto conditionalValues = pointer->read(indexValue);
-        for (auto value: conditionalValues)
+        for (const auto& value: conditionalValues)
             call(data.callbacks, tok, value.second, &data);
         if (conditionalValues.size() == 1 && !conditionalValues[0].first)
             return conditionalValues[0].second;

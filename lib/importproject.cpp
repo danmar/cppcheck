@@ -665,7 +665,7 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
 
             if (!guiProject.checkVsConfigs.empty()) {
                 bool doChecking = false;
-                for (std::string config : guiProject.checkVsConfigs)
+                for (const std::string& config : guiProject.checkVsConfigs)
                     if (config == p.configuration) {
                         doChecking = true;
                         break;
