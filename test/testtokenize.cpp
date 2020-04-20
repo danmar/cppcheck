@@ -994,6 +994,12 @@ private:
                                            "  std::tuple<a...> c{std::move(d)};\n"
                                            "  return std::get<0>(c);\n"
                                            "}", s));
+        ASSERT_EQUALS("int g ( int ) ;",
+                      tokenizeAndStringify("int g(int);\n"
+                                           "template <class F, class... Ts> auto h(F f, Ts... xs) {\n"
+                                           "    auto e = f(g(xs)...);\n"
+                                           "    return e;\n"
+                                           "}", s));
     }
 
 

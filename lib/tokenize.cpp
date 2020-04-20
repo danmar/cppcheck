@@ -5072,8 +5072,8 @@ void Tokenizer::simplifyHeaders()
             if (removeUnusedTemplates || (isIncluded && removeUnusedIncludedTemplates)) {
                 if (Token::Match(tok->next(), "template < %name%")) {
                     const Token *tok2 = tok->tokAt(3);
-                    while (Token::Match(tok2, "%name% %name% [,=>]") || Token::Match(tok2, "typename ... %name% [,>]")) {
-                        if (Token::simpleMatch(tok2, "typename ..."))
+                    while (Token::Match(tok2, "%name% %name% [,=>]") || Token::Match(tok2, "typename|class ... %name% [,>]")) {
+                        if (Token::Match(tok2, "typename|class ..."))
                             tok2 = tok2->tokAt(3);
                         else
                             tok2 = tok2->tokAt(2);
