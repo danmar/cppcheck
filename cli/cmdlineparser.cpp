@@ -1255,5 +1255,6 @@ void CmdLineParser::printHelp()
               " * tinyxml2 -- loading project/library/ctu files.\n"
               " * picojson -- loading compile database.\n"
               " * pcre -- rules.\n"
-              " * qt -- used in GUI\n";
+              " * qt -- used in GUI\n"
+              " * z3 -- theorem prover from Microsoft Research used in bug hunting.\n";
 }
