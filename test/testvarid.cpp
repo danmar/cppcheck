@@ -2497,6 +2497,13 @@ private:
                       tokenize("void foo() {\n"
                                "  struct ABC abc = {.a=abc.a,.b=abc.b};\n"
                                "}"));
+
+        ASSERT_EQUALS("1: void foo ( ) {\n"
+                      "2: struct ABC abc@1 ; abc@1 = { . a@2 { abc@1 . a@2 } , . b@3 = { abc@1 . b@3 } } ;\n"
+                      "3: }\n",
+                      tokenize("void foo() {\n"
+                               "  struct ABC abc = {.a { abc.a },.b= { abc.b } };\n"
+                               "}"));
     }
 
     void varid_arrayinit() { // #7579 - no variable declaration in rhs
