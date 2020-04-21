@@ -22,8 +22,8 @@ option(WARNINGS_ARE_ERRORS  "Treat warnings as errors"                          
 
 set(USE_MATCHCOMPILER "Auto" CACHE STRING "Usage of match compiler")
 set_property(CACHE USE_MATCHCOMPILER PROPERTY STRINGS Auto Off On Verify) 
-if (USE_MATCHCOMPILER STREQUAL "Auto")
-    if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+if (USE_MATCHCOMPILER MATCHES "Auto")
+    if (NOT CMAKE_BUILD_TYPE MATCHES "Debug")
         set(USE_MATCHCOMPILER_OPT "On")
     else()
         set(USE_MATCHCOMPILER_OPT "Off")

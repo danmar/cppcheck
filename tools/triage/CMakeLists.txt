@@ -1,6 +1,6 @@
 if (BUILD_GUI AND BUILD_TESTS)
     set(CMAKE_AUTOMOC ON)
-    if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
+    if (CMAKE_BUILD_TYPE MATCHES "Release")
         add_definitions(-DQT_NO_DEBUG)
         add_definitions(-DQT_NO_DEBUG_OUTPUT)
         add_definitions(-DQT_NO_WARNING_OUTPUT)

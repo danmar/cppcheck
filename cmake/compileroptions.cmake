@@ -1,13 +1,13 @@
-if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+if (CMAKE_BUILD_TYPE MATCHES "Debug")
     add_definitions(-DDEBUG)
-elseif("${CMAKE_BUILD_TYPE}" STREQUAL "Release" OR "${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
+elseif(CMAKE_BUILD_TYPE MATCHES "Release" OR CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
     add_definitions(-DNDEBUG)
 endif()
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    if (CMAKE_BUILD_TYPE MATCHES "Debug")
         add_definitions(-g -O0)
-    elseif("${CMAKE_BUILD_TYPE}" STREQUAL "Release" OR "${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
+    elseif(CMAKE_BUILD_TYPE MATCHES "Release" OR CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
         add_definitions(-O2)
     endif()
 
@@ -16,8 +16,8 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STRE
     endif()
 endif()
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    if ("${CMAKE_CXX_COMPILER_VERSION}" VERSION_LESS 4.6)
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.6)
         message(FATAL_ERROR "${PROJECT_NAME} c++11 support requires g++ 4.6 or greater, but it is ${CMAKE_CXX_COMPILER_VERSION}")
     endif ()
 
@@ -36,7 +36,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     add_compile_options(-Wno-missing-braces)
     add_compile_options(-Wno-sign-compare)
     add_compile_options(-Wno-multichar)
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
    add_compile_options(-Wno-deprecated-declarations)
    add_compile_options(-Wno-four-char-constants)
@@ -54,8 +54,8 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
    endif()
 endif()
 
-if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux" AND
-    "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+if (CMAKE_SYSTEM_NAME MATCHES "Linux" AND
+    CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
     # TODO: should not be in a non-debug build
     add_compile_options(-U_GLIBCXX_DEBUG)
