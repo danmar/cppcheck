@@ -1090,7 +1090,7 @@ private:
         const char wanted[] = "1: class DLLSYM B@1 ;\n"
                               "2: struct B {\n"
                               "3: ~ B ( ) { }\n"
-                              "4: } ;\n";;
+                              "4: } ;\n";
         TODO_ASSERT_EQUALS(wanted, expected, tokenize(code, false, "test.cpp"));
     }
 

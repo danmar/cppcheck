@@ -69,6 +69,8 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-multichar")
    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-sign-compare")
    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-unused-function")
+   # TODO: enable this warning - was added in Clang 8
+   #set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wextra-semi-stmt")
 
    if(ENABLE_COVERAGE OR ENABLE_COVERAGE_XML)
       MESSAGE(FATAL_ERROR "Not use clang for generate code coverage. Use gcc. ")

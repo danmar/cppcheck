@@ -287,7 +287,7 @@ static bool isOperatorFunction(const std::string & funcName)
     };
 
 
-    return std::find(additionalOperators.begin(), additionalOperators.end(), funcName.substr(operatorPrefix.length())) != additionalOperators.end();;
+    return std::find(additionalOperators.begin(), additionalOperators.end(), funcName.substr(operatorPrefix.length())) != additionalOperators.end();
 }
 
 

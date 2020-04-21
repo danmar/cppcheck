@@ -22,6 +22,11 @@ if (BUILD_GUI AND BUILD_TESTS)
         ${PROJECT_SOURCE_DIR}/gui/codeeditor.cpp)
     target_include_directories(triage PUBLIC ${PROJECT_SOURCE_DIR}/gui/)
     target_link_libraries(triage Qt5::Core Qt5::Gui Qt5::Widgets)
+    if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        # TODO: enable this - was added in Clang 8
+        # Q_UNUSED() in generated code
+        #target_compile_options(triage PRIVATE -Wno-extra-semi-stmt)
+    endif()
 
     set(CMAKE_AUTOMOC OFF)
 endif()

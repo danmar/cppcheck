@@ -2275,7 +2275,7 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok, bool isTemplate
             case '^':
                 tok->str((v1 ^ v2).str());
                 break;
-            };
+            }
         }
 
         // Logical operations

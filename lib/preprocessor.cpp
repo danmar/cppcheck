@@ -616,7 +616,7 @@ static bool hasErrors(const simplecpp::OutputList &outputList)
         case simplecpp::Output::MISSING_HEADER:
         case simplecpp::Output::PORTABILITY_BACKSLASH:
             break;
-        };
+        }
     }
     return false;
 }
@@ -638,7 +638,7 @@ void Preprocessor::handleErrors(const simplecpp::OutputList& outputList, bool th
             case simplecpp::Output::MISSING_HEADER:
             case simplecpp::Output::PORTABILITY_BACKSLASH:
                 break;
-            };
+            }
         }
     }
 }
@@ -780,7 +780,7 @@ void Preprocessor::reportOutput(const simplecpp::OutputList &outputList, bool sh
         case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
             error(emptyString, 0, out.msg);
             break;
-        };
+        }
     }
 }
 

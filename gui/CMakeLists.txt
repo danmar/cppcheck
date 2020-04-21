@@ -29,6 +29,11 @@ if (BUILD_GUI)
         target_compile_definitions (cppcheck-gui PRIVATE HAVE_QCHART )
         target_link_libraries(cppcheck-gui Qt5::Charts)
     endif()
+    if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        # TODO: enable this - was added in Clang 8
+        # Q_UNUSED() in generated code
+        #target_compile_options(cppcheck-gui PRIVATE -Wno-extra-semi-stmt)
+    endif()
 
     install(TARGETS cppcheck-gui RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR} COMPONENT applications)
     install(FILES ${qms} DESTINATION ${CMAKE_INSTALL_FULL_BINDIR} COMPONENT applications)
