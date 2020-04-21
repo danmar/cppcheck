@@ -994,6 +994,12 @@ private:
                                            "  std::tuple<a...> c{std::move(d)};\n"
                                            "  return std::get<0>(c);\n"
                                            "}", s));
+        ASSERT_EQUALS("int g ( int ) ;",
+                      tokenizeAndStringify("int g(int);\n"
+                                           "template <class F, class... Ts> auto h(F f, Ts... xs) {\n"
+                                           "    auto e = f(g(xs)...);\n"
+                                           "    return e;\n"
+                                           "}", s));
     }
 
 
@@ -7484,10 +7490,11 @@ private:
         ASSERT_EQUALS("fora0=a8<a++;;(", testAst("for(a=0;a<8;a++)"));
         ASSERT_EQUALS("fori1=current0=,iNUM<=i++;;(", testAst("for(i = (1), current = 0; i <= (NUM); ++i)"));
         ASSERT_EQUALS("foreachxy,((", testAst("for(each(x,y)){}"));  // it's not well-defined what this ast should be
+        ASSERT_EQUALS("forvar1(;;(", testAst("for(int var(1);;)"));
         ASSERT_EQUALS("forab:(", testAst("for (int a : b);"));
-        ASSERT_EQUALS("forab:(", testAst("for (int *a : b);"));
-        ASSERT_EQUALS("forcd:(", testAst("for (a<b> c : d);"));
-        ASSERT_EQUALS("forde:(", testAst("for (a::b<c> d : e);"));
+        ASSERT_EQUALS("forvarb:(", testAst("for (int *var : b);"));
+        ASSERT_EQUALS("forvard:(", testAst("for (a<b> var : d);"));
+        ASSERT_EQUALS("forvare:(", testAst("for (a::b<c> var : e);"));
         ASSERT_EQUALS("forx*0=yz;;(", testAst("for(*x=0;y;z)"));
         ASSERT_EQUALS("forx0=y(8<z;;(", testAst("for (x=0;(int)y<8;z);"));
         ASSERT_EQUALS("forab,c:(", testAst("for (auto [a,b]: c);"));
@@ -7704,6 +7711,7 @@ private:
         ASSERT_EQUALS("xB[1y.z.1={(&=,{={=", testAst("x = { [B] = {1, .y = &(struct s) { .z=1 } } };"));
         ASSERT_EQUALS("xab,c,{=", testAst("x={a,b,(c)};"));
         ASSERT_EQUALS("x0fSa.1=b.2=,c.\"\"=,{(||=", testAst("x = 0 || f(S{.a = 1, .b = 2, .c = \"\" });"));
+        ASSERT_EQUALS("x0fSa.1{=b.2{,c.\"\"=,{(||=", testAst("x = 0 || f(S{.a = { 1 }, .b { 2 }, .c = \"\" });"));
 
         // struct initialization hang
         ASSERT_EQUALS("sbar.1{,{(={= fcmd( forfieldfield++;;(",
@@ -8037,6 +8045,9 @@ private:
 
         // op op
         ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { dostuff (x==>y); }"), InternalError, "syntax error: == >");
+
+        // Ticket #9664
+        ASSERT_NO_THROW(tokenizeAndStringify("S s = { .x { 2 }, .y[0] { 3 } };"));
     }
 
 

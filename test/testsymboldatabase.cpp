@@ -150,11 +150,13 @@ private:
         TEST_CASE(isVariablePointerToVolatilePointer);
         TEST_CASE(isVariablePointerToConstVolatilePointer);
         TEST_CASE(isVariableMultiplePointersAndQualifiers);
+        TEST_CASE(variableVolatile);
 
         TEST_CASE(VariableValueType1);
         TEST_CASE(VariableValueType2);
         TEST_CASE(VariableValueType3);
         TEST_CASE(VariableValueType4); // smart pointer type
+        TEST_CASE(VariableValueType5); // smart pointer type
 
         TEST_CASE(findVariableType1);
         TEST_CASE(findVariableType2);
@@ -949,6 +951,16 @@ private:
         ASSERT(x->valueType()->smartPointerType);
     }
 
+    void VariableValueType5() {
+        GET_SYMBOL_DB("class C {};\n"
+                      "void foo(std::shared_ptr<C>* p) {}\n");
+
+        const Variable* const p = db->getVariableFromVarId(1);
+        ASSERT(p->valueType());
+        ASSERT(p->valueType()->smartPointerTypeToken);
+        ASSERT(p->valueType()->pointer == 1);
+    }
+
     void findVariableType1() {
         GET_SYMBOL_DB("class A {\n"
                       "public:\n"
@@ -1132,6 +1144,21 @@ private:
         ASSERT(false == v.isArray());
         ASSERT(true == v.isPointer());
         ASSERT(false == v.isReference());
+    }
+
+    void variableVolatile() {
+        GET_SYMBOL_DB("std::atomic<int> x;\n"
+                      "volatile int y;\n");
+
+        const Token *x = Token::findsimplematch(tokenizer.tokens(), "x");
+        ASSERT(x);
+        ASSERT(x->variable());
+        ASSERT(x->variable()->isVolatile());
+
+        const Token *y = Token::findsimplematch(tokenizer.tokens(), "y");
+        ASSERT(y);
+        ASSERT(y->variable());
+        ASSERT(y->variable()->isVolatile());
     }
 
     void arrayMemberVar1() {

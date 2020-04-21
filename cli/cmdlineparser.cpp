@@ -569,6 +569,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->checkAllConfigurations = false; // Can be overridden with --max-configs or --force
                 const std::string projectFile = argv[i]+10;
                 ImportProject::Type projType = mSettings->project.import(projectFile, mSettings);
+                mSettings->project.projectType = projType;
                 if (projType == ImportProject::Type::CPPCHECK_GUI) {
                     mPathNames = mSettings->project.guiProject.pathNames;
                     for (const std::string &lib : mSettings->project.guiProject.libraries)
@@ -623,6 +624,13 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
             }
 
+            // --project-configuration
+            else if (std::strncmp(argv[i], "--project-configuration=", 24) == 0) {
+                mVSConfig = argv[i] + 24;
+                if (!mVSConfig.empty() && (mSettings->project.projectType == ImportProject::Type::VS_SLN || mSettings->project.projectType == ImportProject::Type::VS_VCXPROJ))
+                    mSettings->project.ignoreOtherConfigs(mVSConfig);
+            }
+
             // Report progress
             else if (std::strcmp(argv[i], "--report-progress") == 0) {
                 mSettings->reportProgress = true;
@@ -630,7 +638,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // --std
             else if (std::strcmp(argv[i], "--std=posix") == 0) {
-                printMessage("cppcheck: Option --std=posix is deprecated and will be removed in 1.95.");
+                printMessage("cppcheck: Option --std=posix is deprecated and will be removed in 2.05.");
             } else if (std::strcmp(argv[i], "--std=c89") == 0) {
                 mSettings->standards.c = Standards::C89;
             } else if (std::strcmp(argv[i], "--std=c99") == 0) {
@@ -1106,6 +1114,11 @@ void CmdLineParser::printHelp()
               "                         or Borland C++ Builder 6 (*.bpr). The files to analyse,\n"
               "                         include paths, defines, platform and undefines in\n"
               "                         the specified file will be used.\n"
+              "    --project-configuration=<config>\n"
+              "                         If used together with a Visual Studio Solution (*.sln)\n"
+              "                         or Visual Studio Project (*.vcxproj) you can limit\n"
+              "                         the configuration cppcheck should check.\n"
+              "                         For example: ""--project-configuration=Release|Win32"""
               "    --max-configs=<limit>\n"
               "                         Maximum number of configurations to check in a file\n"
               "                         before skipping it. Default is '12'. If used together\n"
@@ -1242,5 +1255,6 @@ void CmdLineParser::printHelp()
               " * tinyxml2 -- loading project/library/ctu files.\n"
               " * picojson -- loading compile database.\n"
               " * pcre -- rules.\n"
-              " * qt -- used in GUI\n";
+              " * qt -- used in GUI\n"
+              " * z3 -- theorem prover from Microsoft Research used in bug hunting.\n";
 }

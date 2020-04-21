@@ -8,7 +8,7 @@ documentclass: report
 
 # Introduction
 
-Cppcheck is an analysis tool for C/C++ code. It provides unique code analysis to detect bugs and focuses on detecting undefined behaviour and dangerous coding constructs. The goal is to detect only real errors in the code (i.e. have very few false positives).
+Cppcheck is an analysis tool for C/C++ code. It provides unique code analysis to detect bugs and focuses on detecting undefined behaviour and dangerous coding constructs. The goal is to detect only real errors in the code (i.e. have very few false positives). Cppcheck is designed to be able to analyze your C/C++ code even if it has non-standard syntax (common in embedded projects).
 
 Supported code and platforms:
 
@@ -178,6 +178,11 @@ Running Cppcheck on an entire Visual Studio solution:
 Running Cppcheck on a Visual Studio project:
 
     cppcheck --project=foobar.vcxproj
+
+Both options will analyze all available configurations in the project(s).
+Limiting on a single configuration:
+
+    cppcheck --project=foobar.sln "--project-configuration=Release|Win32"
 
 In the `Cppcheck GUI` you have the choice to only analyze a single debug configuration. If you want to use this choice on the command line then create a `Cppcheck GUI` project with this activated and then import the GUI project file on the command line.
 
@@ -783,17 +788,80 @@ An example usage:
     ./cppcheck gui/test.cpp --xml 2> err.xml
     htmlreport/cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.
 
-# Verification
+# Bug hunting
 
-Cppcheck will tell you if it can't determine that your code is safe.
+In normal analysis Cppcheck is well suited for continuous integration etc. There are very few false positives. However in normal analysis, Cppcheck is no "silver bullet" it can't find every bug.
 
-All bugs you find with dynamic analysis and fuzzing will be revealed. And then more bugs.
-
-This analysis is noisy. Because of the noise, it will probably not be practical to use this for instance in continuous integration. Some possible use cases where more noise could be tolerated;
+Cppcheck also has a more noisy analysis that diagnoses every possible bug in a function. Some possible use cases where more noise could be tolerated;
  * you are writing new code and want to ensure it is safe.
  * you are reviewing code and want to get hints about possible UB.
  * you need extra help troubleshooting a weird bug.
  * you tagged a release candidate and want to check if the code is safe.
+
+Example code:
+
+    void foo(int x)
+    {
+        return 100 / x;
+    }
+
+In this function there could be a division by zero.
+
+With normal analysis Cppcheck does not diagnose this division by zero:
+
+    $ cppcheck test1.c
+
+Most (all?) other static analysis tools will also be silent unless they can prove there is division by zero.
+
+But in "bug hunting" analysis Cppcheck will diagnose it:
+
+    $ cppcheck --bug-hunting test1.c
+    test1.c:3:20: error: There is division, cannot determine that there can't be a division by zero. [bughuntingDivByZero]
+        return 100 / x;
+                   ^
+
+Even if `foo` is never actually called with argument `0`, Cppcheck will write this warning. It is by intention.
+
+If this analysis has lots of noise then you need to have some ways to handle the noise. You can:
+ * Put annotations or contracts in the code
+ * Use suppressions
+ * In the future: Add configuration
+
+## Annotations or contracts
+
+You can use Cppcheck/SAL annotations. And you can use C++ contracts.
+
+No warning is diagnosed when you write this Cppcheck annotation:
+
+    void foo(int __cppcheck_low__(1) x)
+    {
+        return 100 / x;
+    }
+
+No warning is diagnosed when you write this C++ contract:
+
+    void foo(int x) [[ expects: x >= 1 ]]
+    {
+        return 100 / x;
+    }
+
+With a contract/annotation, function calls of `foo` will be checked:
+
+    void foo(int x) [[ expects: x >= 1 ]]
+    {
+        return 100 / x;
+    }
+
+    void bar(int x)
+    {
+        foo(x);
+    }
+
+Cppcheck output:
+
+    test1.cpp:8:13: error: There is function call, cannot determine that 1st argument value meets the attribute __cppcheck_low__(1) [bughuntingInvalidArgValue]
+            foo(x);
+                ^
 
 ## Philosopphy
 

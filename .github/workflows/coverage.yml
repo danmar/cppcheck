@@ -22,7 +22,7 @@ jobs:
 
       - name: Compile instrumented
         run: |
-          make test CXXFLAGS="-g -fprofile-arcs -ftest-coverage" USE_Z3=yes -j2
+          make test CXXFLAGS="-g -fprofile-arcs -ftest-coverage" USE_Z3=yes HAVE_RULES=yes -j$(nproc)
           
       - name: Generate coverage report
         run: |
@@ -41,7 +41,7 @@ jobs:
          
       - uses: codecov/codecov-action@v1
         with:
-          token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+          # token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
           # file: ./coverage.xml # optional
           flags: unittests # optional
           name: ${{ github.repository }} # optional

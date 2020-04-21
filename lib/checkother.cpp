@@ -2944,7 +2944,7 @@ static const Token *findShadowed(const Scope *scope, const std::string &varname,
             return var.nameToken();
     }
     for (const Function &f : scope->functionList) {
-        if (f.name() == varname)
+        if (f.type == Function::Type::eFunction && f.name() == varname)
             return f.tokenDef;
     }
     if (scope->type == Scope::eLambda)

@@ -26,13 +26,27 @@ jobs:
 
       - name: Setup msbuild.exe
         uses: microsoft/setup-msbuild@v1.0.0
-      
+                  
+      - name: Install PCRE
+        run: |
+          curl -fsSL https://ftp.pcre.org/pub/pcre/pcre-8.44.zip -o pcre-8.44.zip
+          7z x pcre-8.44.zip
+          cd pcre-8.44
+          cmake . -G "Visual Studio 16 2019" -A x64
+          msbuild -m PCRE.sln /p:Configuration=Release /p:Platform=x64
+          dir
+          dir Release
+          dir x64
+          dir x64\Release
+          copy pcre.h ..\externals
+          copy Release\pcre.lib ..\externals\pcre64.lib
+
       - name: Install Z3 library
         run: |
           curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-4.8.7/z3-4.8.7-x64-win.zip -o z3-4.8.7-win.zip
           7z x z3-4.8.7-win.zip -oexternals -r -y
           move externals\z3-4.8.7-x64-win externals\z3
-          
+
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
 
@@ -51,14 +65,15 @@ jobs:
           dir Build\gui
           del Build\gui\cppcheck-gui.ilk
           del Build\gui\cppcheck-gui.pdb
+          
       - name: Build x64 debug configuration using MSBuild
-        run: msbuild -m cppcheck.sln /p:Configuration=Debug
+        run: msbuild -m cppcheck.sln /p:Configuration=Debug-PCRE /p:Platform=x64
 
       - name: Run Debug test
         run: .\bin\debug\testrunner.exe
 
       - name: Build x64 release configuration using MSBuild
-        run: msbuild -m cppcheck.sln /p:Configuration=Release
+        run: msbuild -m cppcheck.sln /p:Configuration=Release-PCRE /p:Platform=x64
 
       - name: Run Release test
         run: .\bin\testrunner.exe
@@ -67,6 +82,16 @@ jobs:
         with:
           name: cppcheck_gui
           path: Build\gui
+          
+      - uses: actions/upload-artifact@v2-preview
+        with:
+          name: cppcheck_gui
+          path: ./**/cfg/*.cfg
+        
+      - uses: actions/upload-artifact@v2-preview
+        with:
+          name: cppcheck_gui
+          path: ./**/platforms/*.xml  
           
       - uses: actions/upload-artifact@v2-preview
         with:
