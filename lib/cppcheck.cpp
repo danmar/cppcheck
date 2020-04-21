@@ -274,12 +274,13 @@ unsigned int CppCheck::check(const std::string &path)
         if (!mSettings.quiet)
             mErrorLogger.reportOut(std::string("Checking ") + path + "...");
 
-        const std::string clang = Path::isCPP(path) ? "clang++" : "clang";
-        const std::string temp = mSettings.buildDir + (Path::isCPP(path) ? "/__temp__.cpp" : "/__temp__.c");
-        const std::string clangcmd = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "") + ".clang-cmd";
-        const std::string clangStderr = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "") + ".clang-stderr";
+        const std::string tempFile = ".";
+        const std::string lang = Path::isCPP(path) ? "-x c++" : "-x c";
+        const std::string analyzerInfo = mSettings.buildDir.empty() ? std::string() : AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "");
+        const std::string clangcmd = analyzerInfo + ".clang-cmd";
+        const std::string clangStderr = analyzerInfo + ".clang-stderr";
 
-        const std::string cmd1 = clang + " -v -fsyntax-only " + temp + " 2>&1";
+        const std::string cmd1 = "clang -v -fsyntax-only " + lang + " " + tempFile + " 2>&1";
         const std::pair<bool, std::string> &result1 = executeCommand(cmd1);
         if (!result1.first || result1.second.find(" -cc1 ") == std::string::npos) {
             mErrorLogger.reportOut("Failed to execute '" + cmd1 + "':" + result1.second);
@@ -287,7 +288,7 @@ unsigned int CppCheck::check(const std::string &path)
         }
         std::istringstream details(result1.second);
         std::string line;
-        std::string flags;
+        std::string flags(lang + " ");
         while (std::getline(details, line)) {
             if (line.find(" -internal-isystem ") == std::string::npos)
                 continue;
@@ -303,10 +304,11 @@ unsigned int CppCheck::check(const std::string &path)
         for (const std::string &i: mSettings.includePaths)
             flags += "-I" + i + " ";
 
-        const std::string cmd = clang + " -cc1 -ast-dump " + flags + path + " 2> " + clangStderr;
-        std::ofstream fout(clangcmd);
-        fout << cmd << std::endl;
-        fout.close();
+        const std::string cmd = "clang -cc1 -ast-dump " + flags + path + (analyzerInfo.empty() ? std::string(" 2>&1") : (" 2> " + clangStderr));
+        if (!mSettings.buildDir.empty()) {
+            std::ofstream fout(clangcmd);
+            fout << cmd << std::endl;
+        }
 
         const std::pair<bool, std::string> &result2 = executeCommand(cmd);
         if (!result2.first || result2.second.find("TranslationUnitDecl") == std::string::npos) {
@@ -315,7 +317,7 @@ unsigned int CppCheck::check(const std::string &path)
         }
 
         // Ensure there are not syntax errors...
-        {
+        if (!mSettings.buildDir.empty()) {
             std::ifstream fin(clangStderr);
             while (std::getline(fin, line)) {
                 std::string::size_type pos3 = line.find(": error: ");
