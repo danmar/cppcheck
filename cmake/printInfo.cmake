@@ -2,6 +2,7 @@ message( STATUS "------------------ General configuration for ${PROJECT_NAME} ${
 message( STATUS )
 message( STATUS "CMake Generator =       ${CMAKE_GENERATOR}")
 message( STATUS "Compiler =              ${CMAKE_CXX_COMPILER_ID}")
+message( STATUS "Compiler Version =      ${CMAKE_CXX_COMPILER_VERSION}")
 message( STATUS "Build type =            ${CMAKE_BUILD_TYPE}")
 message( STATUS "CMAKE_INSTALL_PREFIX =  ${CMAKE_INSTALL_PREFIX}" )
 message( STATUS "C++ flags (General) =   ${CMAKE_CXX_FLAGS}")
