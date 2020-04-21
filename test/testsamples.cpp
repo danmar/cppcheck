@@ -51,7 +51,7 @@ private:
     }
 
     void runSamples() const {
-        REDIRECT
+        REDIRECT;
 
         std::map<std::string, std::size_t> files;
         const std::vector<std::string> masks;
@@ -104,7 +104,7 @@ private:
     };
 
     void runConsoleCodePageTranslationOnWindows() const {
-        REDIRECT
+        REDIRECT;
 
         std::vector<std::string> msgs = {
             "ASCII",     // first entry should be using only ASCII

@@ -303,7 +303,7 @@ void TestFixture::run(const std::string &str)
     testToRun = str;
     if (quiet_tests) {
         std::cout << '\n' << classname << ':';
-        REDIRECT
+        REDIRECT;
         run();
     } else
         run();
