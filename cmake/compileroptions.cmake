@@ -42,6 +42,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
       message( FATAL_ERROR "Clang++ not found. " )
    endif()
 
+   add_compile_options(-Wno-deprecated-declarations)
    add_compile_options(-Wno-four-char-constants)
    add_compile_options(-Wno-missing-braces)
    add_compile_options(-Wno-missing-field-initializers)
