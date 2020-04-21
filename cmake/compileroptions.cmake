@@ -48,8 +48,9 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
    add_compile_options(-Wno-multichar)
    add_compile_options(-Wno-sign-compare)
    add_compile_options(-Wno-unused-function)
-   # TODO: enable this warning - was added in Clang 8
-   #add_compile_options(-Wextra-semi-stmt)
+   if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
+      add_compile_options(-Wextra-semi-stmt)
+   endif()
 
    if(ENABLE_COVERAGE OR ENABLE_COVERAGE_XML)
       message(FATAL_ERROR "Not use clang for generate code coverage. Use gcc.")
