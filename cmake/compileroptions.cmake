@@ -38,10 +38,6 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     add_compile_options(-Wno-multichar)
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 
-   if(NOT EXISTS ${CMAKE_CXX_COMPILER})
-      message( FATAL_ERROR "Clang++ not found. " )
-   endif()
-
    add_compile_options(-Wno-deprecated-declarations)
    add_compile_options(-Wno-four-char-constants)
    add_compile_options(-Wno-missing-braces)
