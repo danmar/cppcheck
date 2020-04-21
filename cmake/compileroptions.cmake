@@ -54,10 +54,10 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    endif()
 endif()
 
+# TODO: check if this can be enabled again - also done in Makefile
 if (CMAKE_SYSTEM_NAME MATCHES "Linux" AND
     CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
-    # TODO: should not be in a non-debug build
     add_compile_options(-U_GLIBCXX_DEBUG)
 endif()
 
