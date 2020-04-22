@@ -1,6 +1,6 @@
 if (BUILD_GUI AND BUILD_TESTS)
     set(CMAKE_AUTOMOC ON)
-    if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
+    if (CMAKE_BUILD_TYPE MATCHES "Release")
         add_definitions(-DQT_NO_DEBUG)
         add_definitions(-DQT_NO_DEBUG_OUTPUT)
         add_definitions(-DQT_NO_WARNING_OUTPUT)
@@ -23,9 +23,10 @@ if (BUILD_GUI AND BUILD_TESTS)
     target_include_directories(triage PUBLIC ${PROJECT_SOURCE_DIR}/gui/)
     target_link_libraries(triage Qt5::Core Qt5::Gui Qt5::Widgets)
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        # TODO: enable this - was added in Clang 8
-        # Q_UNUSED() in generated code
-        #target_compile_options(triage PRIVATE -Wno-extra-semi-stmt)
+        if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
+            # Q_UNUSED() in generated code
+            target_compile_options(triage PRIVATE -Wno-extra-semi-stmt)
+        endif()
     endif()
 
     set(CMAKE_AUTOMOC OFF)
