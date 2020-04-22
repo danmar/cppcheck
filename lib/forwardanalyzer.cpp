@@ -287,6 +287,9 @@ struct ForwardTraversal {
                 analyzer->assume(condTok, !inElse, tok);
                 if (Token::simpleMatch(tok, "} else {"))
                     tok = tok->linkAt(2);
+            } else if (Token::simpleMatch(tok, "}") && Token::simpleMatch(tok->link()->previous(), "try {")) {
+                if (!analyzer->lowerToPossible())
+                    return Progress::Break;
             } else if (Token::Match(tok, "if|while|for (") && Token::simpleMatch(tok->next()->link(), ") {")) {
                 Token* endCond = tok->next()->link();
                 Token* endBlock = endCond->next()->link();
@@ -371,6 +374,14 @@ struct ForwardTraversal {
                 }
             } else if (Token::simpleMatch(tok, "} else {")) {
                 tok = tok->linkAt(2);
+            } else if (Token::simpleMatch(tok, "try {")) {
+                Token* endBlock = tok->next()->link();
+                ForwardAnalyzer::Action a = analyzeScope(endBlock);
+                if (updateRange(tok->next(), endBlock) == Progress::Break)
+                    return Progress::Break;
+                if (a.isModified())
+                    analyzer->lowerToPossible();
+                tok = endBlock;
             } else if (Token::simpleMatch(tok, "do {")) {
                 Token* endBlock = tok->next()->link();
                 if (updateLoop(endBlock, nullptr) == Progress::Break)
