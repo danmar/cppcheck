@@ -91,6 +91,7 @@ private:
         TEST_CASE(valueFlowForwardFunction);
         TEST_CASE(valueFlowForwardTernary);
         TEST_CASE(valueFlowForwardLambda);
+        TEST_CASE(valueFlowForwardTryCatch);
 
         TEST_CASE(valueFlowFwdAnalysis);
 
@@ -2621,6 +2622,40 @@ private:
                "  f();\n"
                "}";
         TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 3U, 3));
+    }
+
+    void valueFlowForwardTryCatch() {
+        const char *code;
+
+        code = "void g1();\n"
+               "void g2();\n"
+               "void f()\n {"
+               "    bool x = false;\n"
+               "    try {\n"
+               "        g1();\n"
+               "        x = true;\n"
+               "        g2();\n"
+               "    }\n"
+               "    catch (...) {\n"
+               "        if (x) {}\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 11U, 1));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 11U, 1));
+
+        code = "void g1();\n"
+               "void g2();\n"
+               "void f()\n {"
+               "    bool x = true;\n"
+               "    try {\n"
+               "        g1();\n"
+               "        g2();\n"
+               "    }\n"
+               "    catch (...) {\n"
+               "        if (x) {}\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 10U, 1));
     }
 
     void valueFlowBitAnd() {
