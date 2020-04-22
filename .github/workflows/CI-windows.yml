@@ -50,14 +50,14 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
 
-      - name: Build x64 release GUI
+      - name: Build GUI x64 release
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat" 
           cd gui
           qmake
-          nmake
+          nmake release
       
-      - name: Deploy app
+      - name: Deploy GUI
         run: |
           dir Build
           dir Build\gui
@@ -66,7 +66,7 @@ jobs:
           del Build\gui\cppcheck-gui.ilk
           del Build\gui\cppcheck-gui.pdb
           
-      - name: Build x64 debug configuration using MSBuild
+      - name: Build CLI x64 debug configuration using MSBuild
         run: msbuild -m cppcheck.sln /p:Configuration=Debug-PCRE /p:Platform=x64
 
       - name: Run Debug test
