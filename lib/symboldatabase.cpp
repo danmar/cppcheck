@@ -1511,7 +1511,7 @@ void SymbolDatabase::setArrayDimensionsUsingValueFlow()
                     break;
                 default:
                     break;
-                };
+                }
 
                 if (bits > 0 && bits <= 62) {
                     if (dimension.tok->valueType()->sign == ValueType::Sign::UNSIGNED)
@@ -6213,7 +6213,7 @@ std::string ValueType::dump() const
     case LONGDOUBLE:
         ret << "valueType-type=\"long double\"";
         break;
-    };
+    }
 
     switch (sign) {
     case Sign::UNKNOWN_SIGN:
@@ -6224,7 +6224,7 @@ std::string ValueType::dump() const
     case Sign::UNSIGNED:
         ret << " valueType-sign=\"unsigned\"";
         break;
-    };
+    }
 
     if (bits > 0)
         ret << " valueType-bits=\"" << bits << '\"';
@@ -6275,7 +6275,7 @@ MathLib::bigint ValueType::typeSize(const cppcheck::Platform &platform, bool p) 
         return platform.sizeof_long_double;
     default:
         break;
-    };
+    }
 
     // Unknown invalid size
     return 0;

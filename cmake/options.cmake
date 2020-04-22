@@ -13,8 +13,6 @@ endif()
 # ----------------------------------------------------------------------------
 #   PROJECT CONFIGURATION
 # ----------------------------------------------------------------------------
-option(USE_CLANG            "Use Clang compiler"                                            OFF)
-option(USE_ANALYZE          "Use Clang compiler with analyze mode"                          OFF)
 option(ANALYZE_MEMORY       "Clang dynamic analyzer: detector of uninitialized reads."      OFF)
 option(ANALYZE_ADDRESS      "Clang dynamic analyzer: fast memory error detector. "          OFF)
 option(ANALYZE_THREAD       "Clang dynamic analyzer: tool that detects data races. "        OFF)
@@ -24,8 +22,8 @@ option(WARNINGS_ARE_ERRORS  "Treat warnings as errors"                          
 
 set(USE_MATCHCOMPILER "Auto" CACHE STRING "Usage of match compiler")
 set_property(CACHE USE_MATCHCOMPILER PROPERTY STRINGS Auto Off On Verify) 
-if (USE_MATCHCOMPILER STREQUAL "Auto")
-    if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+if (USE_MATCHCOMPILER MATCHES "Auto")
+    if (NOT CMAKE_BUILD_TYPE MATCHES "Debug")
         set(USE_MATCHCOMPILER_OPT "On")
     else()
         set(USE_MATCHCOMPILER_OPT "Off")

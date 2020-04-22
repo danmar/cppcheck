@@ -179,13 +179,13 @@ private:
         TEST_CASE(strcat1);
         TEST_CASE(strcat2);
 
-        TEST_CASE(simplifyAtol)
+        TEST_CASE(simplifyAtol);
 
         TEST_CASE(simplifyOperator1);
         TEST_CASE(simplifyOperator2);
 
-        TEST_CASE(simplifyArrayAccessSyntax)
-        TEST_CASE(simplify_numeric_condition)
+        TEST_CASE(simplifyArrayAccessSyntax);
+        TEST_CASE(simplify_numeric_condition);
         TEST_CASE(simplify_condition);
 
         TEST_CASE(pointeralias1);

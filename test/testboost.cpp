@@ -35,7 +35,7 @@ private:
         settings.addEnabled("style");
         settings.addEnabled("performance");
 
-        TEST_CASE(BoostForeachContainerModification)
+        TEST_CASE(BoostForeachContainerModification);
     }
 
     void check(const char code[]) {
