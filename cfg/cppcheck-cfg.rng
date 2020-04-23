@@ -35,7 +35,7 @@
               <optional>
                 <attribute name="buffer-size"><ref name="DATA-BUFFER-SIZE"/></attribute>
               </optional>
-              <ref name="DATA-NAME"/>
+              <ref name="DATA-EXTNAME-SINGLE"/>
             </element>
             <element name="realloc">
               <optional>
@@ -567,6 +567,12 @@
   <define name="DATA-NAME">
     <data type="string">
       <param name="pattern">[a-zA-Z_][a-zA-Z_0-9]*</param>
+    </data>
+  </define>
+
+  <define name="DATA-EXTNAME-SINGLE">
+    <data type="string">
+      <param name="pattern">[a-zA-Z_][a-zA-Z_0-9:]*</param>
     </data>
   </define>
 
