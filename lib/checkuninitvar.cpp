@@ -1105,17 +1105,19 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
         return false;
     }
 
-    if (alloc == NO_ALLOC && vartok->next() && vartok->next()->isOp() && !vartok->next()->isAssignmentOp())
-        return true;
-
     if (alloc == NO_ALLOC && vartok->next() && vartok->next()->isAssignmentOp() && vartok->next()->str() != "=")
         return true;
 
     if (vartok->strAt(1) == "]")
         return true;
 
-    if (!pointer && alloc == NO_ALLOC && vartok->astParent() && vartok->astParent()->isConstOp())
-        return true;
+    {
+        const Token *parent = vartok->astParent();
+        while (parent && parent->str() == ".")
+            parent = parent->astParent();
+        if (!pointer && alloc == NO_ALLOC && parent && parent->isOp() && !parent->isAssignmentOp())
+            return true;
+    }
 
     return false;
 }

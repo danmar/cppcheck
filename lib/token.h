@@ -404,6 +404,9 @@ public:
                 mTokType == eIncDecOp);
     }
     bool isConstOp() const {
+        // Do not return true for 'address-of'
+        if (isUnaryOp("&"))
+            return false;
         return (isArithmeticalOp() ||
                 mTokType == eLogicalOp ||
                 mTokType == eComparisonOp ||
