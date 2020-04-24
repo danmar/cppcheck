@@ -1531,7 +1531,12 @@ static void execute(const Token *start, const Token *end, Data &data)
 
             const Token *thenStart = tok->linkAt(1)->next();
             const Token *thenEnd = thenStart->link();
-            execute(thenStart->next(), end, ifData);
+
+            if (Token::Match(thenStart, "{ return|throw|break|continue"))
+                execute(thenStart->next(), thenEnd, ifData);
+            else
+                execute(thenStart->next(), end, ifData);
+
             if (Token::simpleMatch(thenEnd, "} else {")) {
                 const Token *elseStart = thenEnd->tokAt(2);
                 execute(elseStart->next(), end, elseData);
