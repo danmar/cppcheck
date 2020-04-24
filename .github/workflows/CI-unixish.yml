@@ -40,6 +40,12 @@ jobs:
       - name: Test
         run: |
           make -j2 check USE_Z3=yes HAVE_RULES=yes
+          
+      - name: Build GUI
+        run: |
+          pushd gui
+          nmake HAVE_QCHART=yes
+          make release
 
       - name: Validate
         run: |
