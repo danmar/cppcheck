@@ -318,6 +318,10 @@ namespace {
     };
 }
 
+#ifdef __clang__
+// work around "undefined reference to `__muloti4'" linker error - see https://bugs.llvm.org/show_bug.cgi?id=16404
+__attribute__((no_sanitize("undefined")))
+#endif
 static ExprEngine::ValuePtr simplifyValue(ExprEngine::ValuePtr origValue)
 {
     auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(origValue);
