@@ -44,8 +44,8 @@ jobs:
       - name: Build GUI
         run: |
           pushd gui
-          nmake HAVE_QCHART=yes
-          make release
+          qmake
+          make -j2 release
 
       - name: Validate
         run: |
