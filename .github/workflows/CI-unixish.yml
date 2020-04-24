@@ -32,6 +32,8 @@ jobs:
       - name: Install Qt
         if: matrix.os == 'ubuntu-latest'
         uses: jurplel/install-qt-action@v2
+        with:
+          modules: 'qtcharts'
 
       - name: Build cppcheck
         run: |
@@ -54,6 +56,6 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           pushd gui
-          qmake
+          qmake HAVE_QCHART=yes
           make -j2
 
