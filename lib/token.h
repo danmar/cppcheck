@@ -399,6 +399,9 @@ public:
         return mTokType == eEnumerator;
     }
     bool isOp() const {
+        // Return true for 'address-of'
+        if (isUnaryOp("&"))
+            return true;
         return (isConstOp() ||
                 isAssignmentOp() ||
                 mTokType == eIncDecOp);
@@ -424,6 +427,9 @@ public:
     }
     bool isAssignmentOp() const {
         return mTokType == eAssignmentOp;
+    }
+    bool isIncDecOp() const {
+        return mTokType == eIncDecOp;
     }
     bool isBoolean() const {
         return mTokType == eBoolean;

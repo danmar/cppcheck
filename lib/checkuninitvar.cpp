@@ -1115,7 +1115,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
         const Token *parent = vartok->astParent();
         while (parent && parent->str() == ".")
             parent = parent->astParent();
-        if (alloc == NO_ALLOC && parent && parent->isOp() && !parent->isAssignmentOp())
+        if (alloc == NO_ALLOC && parent && (parent->isConstOp() || parent->isIncDecOp()))
             return true;
     }
 
