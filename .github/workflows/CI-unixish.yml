@@ -30,6 +30,7 @@ jobs:
           brew install z3
           
       - name: Install Qt
+        if: matrix.os == 'ubuntu-latest'
         uses: jurplel/install-qt-action@v2
 
       - name: Build cppcheck
@@ -40,17 +41,19 @@ jobs:
         run: |
           make -j2 testrunner USE_Z3=yes HAVE_RULES=yes
 
-      - name: Test
+      - name: Run test
         run: |
           make -j2 check USE_Z3=yes HAVE_RULES=yes
-          
-      - name: Build GUI
-        run: |
-          pushd gui
-          qmake
-          make -j2
 
       - name: Validate
         run: |
           make validateCFG
           make validatePlatforms
+          
+      - name: Build GUI on ubuntu
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          pushd gui
+          qmake
+          make -j2
+
