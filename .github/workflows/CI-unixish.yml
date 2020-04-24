@@ -48,7 +48,7 @@ jobs:
         run: |
           pushd gui
           qmake
-          make -j2 release
+          make -j2
 
       - name: Validate
         run: |
