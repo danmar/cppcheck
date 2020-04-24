@@ -49,12 +49,14 @@ jobs:
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
+        with:
+          modules: 'qtcharts'
 
       - name: Build GUI x64 release
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat" 
           cd gui
-          qmake
+          qmake HAVE_QCHART=yes
           nmake release
       
       - name: Deploy GUI
