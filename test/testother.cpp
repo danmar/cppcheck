@@ -8316,6 +8316,9 @@ private:
 
         check("void f(int x) { int x; }");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Local variable 'x' shadows outer argument\n", errout.str());
+
+        check("class C { C(); void foo() { static int C = 0; } }"); // #9195 - shadow constructor
+        ASSERT_EQUALS("", errout.str());
     }
 
     void constArgument() {

@@ -3010,7 +3010,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
                 typeCount = 0;
                 singleNameCount = 0;
             } else if (tok2->str() == "const") {
-                ;  // just skip "const"
+                // just skip "const"
             } else if (!hasstruct && variableId.find(tok2->str()) != variableId.end() && tok2->previous()->str() != "::") {
                 ++typeCount;
                 tok2 = tok2->next();
@@ -3115,7 +3115,7 @@ void Tokenizer::setVarIdStructMembers(Token **tok1,
 {
     Token *tok = *tok1;
 
-    if (Token::Match(tok, "%name% = { . %name% =")) {
+    if (Token::Match(tok, "%name% = { . %name% =|{")) {
         const int struct_varid = tok->varId();
         if (struct_varid == 0)
             return;
@@ -3126,7 +3126,7 @@ void Tokenizer::setVarIdStructMembers(Token **tok1,
         while (tok->str() != "}") {
             if (Token::Match(tok, "{|[|("))
                 tok = tok->link();
-            if (Token::Match(tok->previous(), "[,{] . %name% =")) {
+            if (Token::Match(tok->previous(), "[,{] . %name% =|{")) {
                 tok = tok->next();
                 const std::map<std::string, int>::iterator it = members.find(tok->str());
                 if (it == members.end()) {
@@ -5072,8 +5072,8 @@ void Tokenizer::simplifyHeaders()
             if (removeUnusedTemplates || (isIncluded && removeUnusedIncludedTemplates)) {
                 if (Token::Match(tok->next(), "template < %name%")) {
                     const Token *tok2 = tok->tokAt(3);
-                    while (Token::Match(tok2, "%name% %name% [,=>]") || Token::Match(tok2, "typename ... %name% [,>]")) {
-                        if (Token::simpleMatch(tok2, "typename ..."))
+                    while (Token::Match(tok2, "%name% %name% [,=>]") || Token::Match(tok2, "typename|class ... %name% [,>]")) {
+                        if (Token::Match(tok2, "typename|class ..."))
                             tok2 = tok2->tokAt(3);
                         else
                             tok2 = tok2->tokAt(2);
@@ -9365,7 +9365,7 @@ void Tokenizer::reportUnknownMacros()
         for (const Token *inner = tok->tokAt(2); inner != endTok; inner = inner->next()) {
             if (Token::Match(inner, "[[({]"))
                 inner = inner->link();
-            else if (Token::Match(inner->previous(), "[,(] . %name% ="))
+            else if (Token::Match(inner->previous(), "[,(] . %name% =|{"))
                 unknownMacroError(tok);
         }
     }
@@ -9637,7 +9637,7 @@ void Tokenizer::findGarbageCode() const
         if (Token::simpleMatch(tok, ".") &&
             !Token::simpleMatch(tok->previous(), ".") &&
             !Token::simpleMatch(tok->next(), ".") &&
-            !Token::Match(tok->previous(), "{|, . %name% =|.|[") &&
+            !Token::Match(tok->previous(), "{|, . %name% =|.|[|{") &&
             !Token::Match(tok->previous(), ", . %name%")) {
             if (!Token::Match(tok->previous(), "%name%|)|]|>|}"))
                 syntaxError(tok, tok->strAt(-1) + " " + tok->str() + " " + tok->strAt(1));

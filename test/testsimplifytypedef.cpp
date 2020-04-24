@@ -42,12 +42,12 @@ private:
         settings0.addEnabled("style");
         settings2.addEnabled("style");
 
-        TEST_CASE(simplifyTypedef1)
-        TEST_CASE(simplifyTypedef2)
-        TEST_CASE(simplifyTypedef3)
-        TEST_CASE(simplifyTypedef4)
-        TEST_CASE(simplifyTypedef5)
-        TEST_CASE(simplifyTypedef6)
+        TEST_CASE(simplifyTypedef1);
+        TEST_CASE(simplifyTypedef2);
+        TEST_CASE(simplifyTypedef3);
+        TEST_CASE(simplifyTypedef4);
+        TEST_CASE(simplifyTypedef5);
+        TEST_CASE(simplifyTypedef6);
         TEST_CASE(simplifyTypedef7);
         TEST_CASE(simplifyTypedef8);
         TEST_CASE(simplifyTypedef9);

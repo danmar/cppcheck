@@ -114,6 +114,7 @@ private:
     bool mShowVersion;
     bool mShowErrorMessages;
     bool mExitAfterPrint;
+    std::string mVSConfig;
 };
 
 /// @}

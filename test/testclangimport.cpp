@@ -899,7 +899,8 @@ private:
     std::istringstream istr(clang); \
     clangimport::parseClangAstDump(&tokenizer, istr); \
     const SymbolDatabase *db = tokenizer.getSymbolDatabase(); \
-    ASSERT(db);
+    ASSERT(db); \
+    do {} while(false)
 
     void symbolDatabaseEnum1() {
         const char clang[] = "|-NamespaceDecl 0x29ad5f8 <1.cpp:1:1, line:3:1> line:1:11 ns\n"

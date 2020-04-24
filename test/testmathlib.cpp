@@ -42,12 +42,12 @@ private:
         TEST_CASE(ispositive);
         TEST_CASE(isFloat);
         TEST_CASE(isDecimalFloat);
-        TEST_CASE(isGreater)
-        TEST_CASE(isGreaterEqual)
-        TEST_CASE(isEqual)
-        TEST_CASE(isNotEqual)
-        TEST_CASE(isLess)
-        TEST_CASE(isLessEqual)
+        TEST_CASE(isGreater);
+        TEST_CASE(isGreaterEqual);
+        TEST_CASE(isEqual);
+        TEST_CASE(isNotEqual);
+        TEST_CASE(isLess);
+        TEST_CASE(isLessEqual);
         TEST_CASE(calculate);
         TEST_CASE(calculate1);
         TEST_CASE(typesuffix);

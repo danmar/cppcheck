@@ -1090,7 +1090,7 @@ private:
         const char wanted[] = "1: class DLLSYM B@1 ;\n"
                               "2: struct B {\n"
                               "3: ~ B ( ) { }\n"
-                              "4: } ;\n";;
+                              "4: } ;\n";
         TODO_ASSERT_EQUALS(wanted, expected, tokenize(code, false, "test.cpp"));
     }
 
@@ -2496,6 +2496,13 @@ private:
                       "3: }\n",
                       tokenize("void foo() {\n"
                                "  struct ABC abc = {.a=abc.a,.b=abc.b};\n"
+                               "}"));
+
+        ASSERT_EQUALS("1: void foo ( ) {\n"
+                      "2: struct ABC abc@1 ; abc@1 = { . a@2 { abc@1 . a@2 } , . b@3 = { abc@1 . b@3 } } ;\n"
+                      "3: }\n",
+                      tokenize("void foo() {\n"
+                               "  struct ABC abc = {.a { abc.a },.b= { abc.b } };\n"
                                "}"));
     }
 

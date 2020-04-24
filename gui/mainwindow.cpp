@@ -1363,11 +1363,18 @@ void MainWindow::toggleFilterToolBar()
 
 void MainWindow::formatAndSetTitle(const QString &text)
 {
+    QString nameWithVersion = QString("Cppcheck %1").arg(CppCheck::version());
+
+    QString extraVersion = CppCheck::extraVersion();
+    if (!extraVersion.isEmpty()) {
+        nameWithVersion += " (" + extraVersion + ")";
+    }
+
     QString title;
     if (text.isEmpty())
-        title = tr("Cppcheck");
+        title = nameWithVersion;
     else
-        title = QString(tr("Cppcheck - %1")).arg(text);
+        title = QString("%1 - %2").arg(nameWithVersion, text);
     setWindowTitle(title);
 }
 

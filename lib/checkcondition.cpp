@@ -945,7 +945,7 @@ static inline T getvalue(const int test, const T value1, const T value2)
         return value2;
     case 5:
         return std::numeric_limits<T>::max();
-    };
+    }
     return 0;
 }
 

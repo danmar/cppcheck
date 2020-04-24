@@ -91,6 +91,7 @@ private:
         TEST_CASE(valueFlowForwardFunction);
         TEST_CASE(valueFlowForwardTernary);
         TEST_CASE(valueFlowForwardLambda);
+        TEST_CASE(valueFlowForwardTryCatch);
 
         TEST_CASE(valueFlowFwdAnalysis);
 
@@ -810,12 +811,14 @@ private:
         ASSERT_EQUALS(1, values.back().intvalue);
 
 #define CHECK(A, B)                              \
+        do {                                     \
         code = "void f() {\n"                    \
                "    x = sizeof(" A ");\n"        \
                "}";                              \
         values = tokenValues(code,"( " A " )");  \
         ASSERT_EQUALS(1U, values.size());        \
-        ASSERT_EQUALS(B, values.back().intvalue);
+        ASSERT_EQUALS(B, values.back().intvalue);\
+        } while(false)
 
         // standard types
         CHECK("void *", settings.sizeof_pointer);
@@ -849,13 +852,15 @@ private:
         ASSERT_EQUALS(10, values.back().intvalue);
 
 #define CHECK(A, B, C, D)                         \
+        do {                                      \
         code = "enum " A " E " B " { E0, E1 };\n" \
                "void f() {\n"                     \
                "    x = sizeof(" C ");\n"         \
                "}";                               \
         values = tokenValues(code,"( " C " )");   \
         ASSERT_EQUALS(1U, values.size());         \
-        ASSERT_EQUALS(D, values.back().intvalue);
+        ASSERT_EQUALS(D, values.back().intvalue); \
+        } while(false)
 
         // enums
         CHECK("", "", "E", settings.sizeof_int);
@@ -922,6 +927,7 @@ private:
 #undef CHECK
 
 #define CHECK(A, B)                                   \
+        do {                                          \
         code = "enum E " A " { E0, E1 };\n"           \
                "void f() {\n"                         \
                "    E arrE[] = { E0, E1 };\n"         \
@@ -929,7 +935,8 @@ private:
                "}";                                   \
         values = tokenValues(code,"( arrE )");        \
         ASSERT_EQUALS(1U, values.size());             \
-        ASSERT_EQUALS(B * 2U, values.back().intvalue);
+        ASSERT_EQUALS(B * 2U, values.back().intvalue);\
+        } while(false)
 
         // enum array
         CHECK("", settings.sizeof_int);
@@ -955,6 +962,7 @@ private:
 #undef CHECK
 
 #define CHECK(A, B)                                   \
+        do {                                          \
         code = "enum class E " A " { E0, E1 };\n"     \
                "void f() {\n"                         \
                "    E arrE[] = { E::E0, E::E1 };\n"   \
@@ -962,7 +970,8 @@ private:
                "}";                                   \
         values = tokenValues(code,"( arrE )");        \
         ASSERT_EQUALS(1U, values.size());             \
-        ASSERT_EQUALS(B * 2U, values.back().intvalue);
+        ASSERT_EQUALS(B * 2U, values.back().intvalue);\
+        } while(false)
 
         // enum array
         CHECK("", settings.sizeof_int);
@@ -2370,6 +2379,21 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, 0));
         ASSERT_EQUALS(true, testValueOfX(code, 6U, 0));
+
+        // volatile variable
+        code = "void foo(const volatile int &x) {\n"
+               "    if (x==1) {\n"
+               "        return x;\n"
+               "    }"
+               "}";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 3U, 1));
+
+        code = "void foo(const std::atomic<int> &x) {\n"
+               "    if (x==2) {\n"
+               "        return x;\n"
+               "    }"
+               "}";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 3U, 2));
     }
 
     void valueFlowAfterConditionExpr() {
@@ -2598,6 +2622,40 @@ private:
                "  f();\n"
                "}";
         TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 3U, 3));
+    }
+
+    void valueFlowForwardTryCatch() {
+        const char *code;
+
+        code = "void g1();\n"
+               "void g2();\n"
+               "void f()\n {"
+               "    bool x = false;\n"
+               "    try {\n"
+               "        g1();\n"
+               "        x = true;\n"
+               "        g2();\n"
+               "    }\n"
+               "    catch (...) {\n"
+               "        if (x) {}\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 11U, 1));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 11U, 1));
+
+        code = "void g1();\n"
+               "void g2();\n"
+               "void f()\n {"
+               "    bool x = true;\n"
+               "    try {\n"
+               "        g1();\n"
+               "        g2();\n"
+               "    }\n"
+               "    catch (...) {\n"
+               "        if (x) {}\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 10U, 1));
     }
 
     void valueFlowBitAnd() {

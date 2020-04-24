@@ -484,7 +484,7 @@ static Token * skipDecl(Token *tok)
                 vartok = vartok->link();
             else
                 return tok;
-        } else if (Token::Match(vartok, "%name% [:=]")) {
+        } else if (Token::Match(vartok, "%var% [:=(]")) {
             return vartok;
         }
         vartok = vartok->next();
@@ -783,7 +783,7 @@ static void compileTerm(Token *&tok, AST_state& state)
             tok = tok->next();
             if (tok->str() == "<")
                 tok = tok->link()->next();
-            if (Token::Match(tok, "{ . %name% =")) {
+            if (Token::Match(tok, "{ . %name% =|{")) {
                 const int inArrayAssignment = state.inArrayAssignment;
                 state.inArrayAssignment = 1;
                 compileBinOp(tok, state, compileExpression);

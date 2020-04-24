@@ -1160,7 +1160,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                     case ValueType::Type::LONGDOUBLE:
                         check = true;
                         break;
-                    };
+                    }
                     if (!check)
                         continue;
                 }
@@ -1220,7 +1220,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                         break;
                     case Library::TypeCheck::suppress:
                         continue;
-                    };
+                    }
                 }
             }
 

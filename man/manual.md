@@ -8,7 +8,7 @@ documentclass: report
 
 # Introduction
 
-Cppcheck is an analysis tool for C/C++ code. It provides unique code analysis to detect bugs and focuses on detecting undefined behaviour and dangerous coding constructs. The goal is to detect only real errors in the code (i.e. have very few false positives).
+Cppcheck is an analysis tool for C/C++ code. It provides unique code analysis to detect bugs and focuses on detecting undefined behaviour and dangerous coding constructs. The goal is to detect only real errors in the code (i.e. have very few false positives). Cppcheck is designed to be able to analyze your C/C++ code even if it has non-standard syntax (common in embedded projects).
 
 Supported code and platforms:
 
@@ -178,6 +178,11 @@ Running Cppcheck on an entire Visual Studio solution:
 Running Cppcheck on a Visual Studio project:
 
     cppcheck --project=foobar.vcxproj
+
+Both options will analyze all available configurations in the project(s).
+Limiting on a single configuration:
+
+    cppcheck --project=foobar.sln "--project-configuration=Release|Win32"
 
 In the `Cppcheck GUI` you have the choice to only analyze a single debug configuration. If you want to use this choice on the command line then create a `Cppcheck GUI` project with this activated and then import the GUI project file on the command line.
 
@@ -783,97 +788,79 @@ An example usage:
     ./cppcheck gui/test.cpp --xml 2> err.xml
     htmlreport/cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.
 
-# Verification
+# Bug hunting
 
-Cppcheck will tell you if it can't determine that your code is safe.
+In normal analysis Cppcheck is well suited for continuous integration etc. There are very few false positives. However in normal analysis, Cppcheck is no "silver bullet" it can't find every bug.
 
-All bugs you find with dynamic analysis and fuzzing will be revealed. And then more bugs.
-
-This analysis is noisy. Because of the noise, it will probably not be practical to use this for instance in continuous integration. Some possible use cases where more noise could be tolerated;
+Cppcheck also has a more noisy analysis that diagnoses every possible bug in a function. Some possible use cases where more noise could be tolerated;
  * you are writing new code and want to ensure it is safe.
  * you are reviewing code and want to get hints about possible UB.
  * you need extra help troubleshooting a weird bug.
  * you tagged a release candidate and want to check if the code is safe.
 
-## Philosopphy
-
-It is very important that we do warn about all unsafe code. We want that users can feel fully confident about the code we say is "safe".
-
-However, a sloppy analysis that will report too much noise will not be useful. We need to have strong heuristics to avoid false positives.
-
-At the moment there is no whole program analysis but that will be added later to avoid definite false positives.
-
-The focus will be to detect "hidden" bugs. Good candidates are undefined behavior that does not cause a crash immediately but will just cause strange behavior.
- * Buffer overflows
- * Uninitialized variables
- * Usage of dead pointers
-
-## Compiling
-
-make USE_Z3=yes
-
-## Verification for work-in-progress
-
-It is possible to instantly verify your code changes directly in your editor.
-
-You can for instance configure a save action like this:
-
-    cd repo ; git diff > temp.diff ; cppcheck --verify-diff=temp.diff
-
-Ensure that the warnings are sent to your editor and displayed.
-
-From now on, only use 'git commit' when you think all the verification warnings you get looks safe.
-
-With this method, Cppcheck will verify all functions that you are modifying.
-
-## Verification during review
-
-... well I am hoping it will be possible to integrate cppcheck verification in github, gerrit, etc.
-
-## Annotations
-
-To silence Cppcheck verification warnings it is possible to use annotations.
-
 Example code:
 
-    void foo(int x) {
-        return 10000 / x;
+    void foo(int x)
+    {
+        return 100 / x;
     }
 
-Cppcheck verification will say that there is division and it can't determine that it's not division by zero.
+In this function there could be a division by zero.
 
-Example code with SAL annotation:
+With normal analysis Cppcheck does not diagnose this division by zero:
 
-    void foo(int _In_range_(1,1000) x) {
-        return 10000 / x;
+    $ cppcheck test1.c
+
+Most (all?) other static analysis tools will also be silent unless they can prove there is division by zero.
+
+But in "bug hunting" analysis Cppcheck will diagnose it:
+
+    $ cppcheck --bug-hunting test1.c
+    test1.c:3:20: error: There is division, cannot determine that there can't be a division by zero. [bughuntingDivByZero]
+        return 100 / x;
+                   ^
+
+Even if `foo` is never actually called with argument `0`, Cppcheck will write this warning. It is by intention.
+
+If this analysis has lots of noise then you need to have some ways to handle the noise. You can:
+ * Put annotations or contracts in the code
+ * Use suppressions
+ * In the future: Add configuration
+
+## Annotations or contracts
+
+You can use Cppcheck/SAL annotations. And you can use C++ contracts.
+
+No warning is diagnosed when you write this Cppcheck annotation:
+
+    void foo(int __cppcheck_low__(1) x)
+    {
+        return 100 / x;
     }
 
-Example code with Cppcheck annotation:
+No warning is diagnosed when you write this C++ contract:
 
-    void foo(int __cppcheck_low__(1) x) {
-        return 10000 / x;
+    void foo(int x) [[ expects: x >= 1 ]]
+    {
+        return 100 / x;
     }
 
-## Function calls
+With a contract/annotation, function calls of `foo` will be checked:
 
-For a reliable verification it will be very important that `--check-library` is used, you need to ensure that critical library functions are configured.
+    void foo(int x) [[ expects: x >= 1 ]]
+    {
+        return 100 / x;
+    }
 
-### Uninitialized variables
+    void bar(int x)
+    {
+        foo(x);
+    }
 
-When `const` is used for pointer arguments that will be seen as a annotation.
+Cppcheck output:
 
-This function:
-
-    void foo(char *p);
-
-Cppcheck will assume that `p` points at uninitialized memory. When `foo` is checked it will be ensured that it initializes the memory.
-
-This function:
-
-    void foo(const char *p);
-
-Cppcheck will assume that `p` points at initialized memory. If you call `foo` and pass a pointer to uninitialized memory we will warn.
-
-TODO: Further annotations to specify how a function initializes memory will be required.
+    test1.cpp:8:13: error: There is function call, cannot determine that 1st argument value meets the attribute __cppcheck_low__(1) [bughuntingInvalidArgValue]
+            foo(x);
+                ^
 
 

@@ -1025,7 +1025,7 @@ static int getIntBitsFromValueType(const ValueType *vt, const cppcheck::Platform
         return platform.long_long_bit;
     default:
         return 0;
-    };
+    }
 }
 
 static ExprEngine::ValuePtr getValueRangeFromValueType(const std::string &name, const ValueType *vt, const cppcheck::Platform &platform)
@@ -2041,7 +2041,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
                 err |= value.isEqual(dataBase, MathLib::toLongNumber(invalidArgValue.op2));
                 bad = "range " + invalidArgValue.op1 + "-" + invalidArgValue.op2;
                 break;
-            };
+            }
 
             if (err) {
                 dataBase->addError(tok->linenr());

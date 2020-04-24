@@ -565,7 +565,7 @@ static bool checkBufferSize(const Token *ftok, const Library::ArgumentChecks::Mi
         return minsize.value <= bufferSize;
     case Library::ArgumentChecks::MinSize::Type::NONE:
         break;
-    };
+    }
     return true;
 }
 

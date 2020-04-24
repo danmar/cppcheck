@@ -96,7 +96,7 @@ public:
      * be turned off to save CPU */
     bool checkHeaders;
 
-    /** Check unused templates */
+    /** Check unused/uninstantiated templates */
     bool checkUnusedTemplates;
 
     /** Use Clang */

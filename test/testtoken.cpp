@@ -92,13 +92,13 @@ private:
         TEST_CASE(literals);
         TEST_CASE(operators);
 
-        TEST_CASE(updateProperties)
-        TEST_CASE(isNameGuarantees1)
-        TEST_CASE(isNameGuarantees2)
-        TEST_CASE(isNameGuarantees3)
-        TEST_CASE(isNameGuarantees4)
-        TEST_CASE(isNameGuarantees5)
-        TEST_CASE(isNameGuarantees6)
+        TEST_CASE(updateProperties);
+        TEST_CASE(isNameGuarantees1);
+        TEST_CASE(isNameGuarantees2);
+        TEST_CASE(isNameGuarantees3);
+        TEST_CASE(isNameGuarantees4);
+        TEST_CASE(isNameGuarantees5);
+        TEST_CASE(isNameGuarantees6);
 
         TEST_CASE(canFindMatchingBracketsNeedsOpen);
         TEST_CASE(canFindMatchingBracketsInnerPair);
