@@ -167,8 +167,8 @@ private:
         TEST_CASE(varid_trailing_return1); // #8889
         TEST_CASE(varid_trailing_return2); // #9066
         TEST_CASE(varid_parameter_pack); // #9383
-
         TEST_CASE(varid_for_auto_cpp17);
+        TEST_CASE(varid_not); // #9689 'not x'
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -2596,6 +2596,16 @@ private:
                             "5: x + y + z ;\n"
                             "6: }\n";
         ASSERT_EQUALS(exp1, tokenize(code));
+    }
+
+    void varid_not() { // #9689 'not x'
+        const char code1[] = "void foo(int x) const {\n"
+                             "  if (not x) {}\n"
+                             "}";
+        const char exp1[] = "1: void foo ( int x@1 ) const {\n"
+                            "2: if ( not x@1 ) { }\n"
+                            "3: }\n";
+        ASSERT_EQUALS(exp1, tokenize(code1));
     }
 
     void varidclass1() {
