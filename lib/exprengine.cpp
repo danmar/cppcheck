@@ -1491,6 +1491,8 @@ static void execute(const Token *start, const Token *end, Data &data)
             while (scope->type == Scope::eIf || scope->type == Scope::eElse)
                 scope = scope->nestedIn;
             tok = scope->bodyEnd;
+            if (!precedes(tok,end))
+                return;
         }
 
         if (Token::simpleMatch(tok, "try"))
