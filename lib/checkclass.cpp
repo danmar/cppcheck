@@ -1644,7 +1644,7 @@ void CheckClass::virtualDestructor()
     // * derived class has non-empty destructor (only c++03, in c++11 it's UB see paragraph 3 in [expr.delete])
     // * base class is deleted
     // unless inconclusive in which case:
-    // * A class with any virtual functions should have a destructor that is either public and virtual or else protected and non-virtual
+    // * A class with any virtual functions should have a destructor that is either public and virtual or protected
     const bool printInconclusive = mSettings->inconclusive;
 
     std::list<const Function *> inconclusiveErrors;
@@ -1657,7 +1657,7 @@ void CheckClass::virtualDestructor()
                 const Function *destructor = scope->getDestructor();
                 if (destructor) {
                     if(!((destructor->hasVirtualSpecifier() && destructor->access == AccessControl::Public) ||
-                        (!destructor->hasVirtualSpecifier() && destructor->access == AccessControl::Protected))) {
+                        (destructor->access == AccessControl::Protected))) {
                         for (const Function &func : scope->functionList) {
                             if (func.hasVirtualSpecifier()) {
                                 inconclusiveErrors.push_back(destructor);
