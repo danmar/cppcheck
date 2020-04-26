@@ -94,16 +94,16 @@ public:
     /** Is the 'configuration checking' wanted? */
     bool checkConfiguration;
 
+    /**
+     * Check code in the headers, this is on by default but can
+     * be turned off to save CPU */
+    bool checkHeaders;
+
     /** Check for incomplete info in library files? */
     bool checkLibrary;
 
     /** @brief List of selected Visual Studio configurations that should be checks */
     std::list<std::string> checkVsConfigs;
-
-    /**
-     * Check code in the headers, this is on by default but can
-     * be turned off to save CPU */
-    bool checkHeaders;
 
     /** @brief check unknown function return values */
     std::set<std::string> checkUnknownFunctionReturn;
