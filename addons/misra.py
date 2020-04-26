@@ -2314,7 +2314,7 @@ class MisraChecker:
 
                     while pos1 >= 0 and exp[pos1] == ' ':
                         pos1 -= 1
-                    if exp[pos1] not in '([#,':
+                    if exp[pos1] not in '([#,.':
                         self.reportError(directive, 20, 7)
                         break
                     while pos2 < len(exp) and exp[pos2] == ' ':
