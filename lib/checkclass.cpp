@@ -1655,8 +1655,8 @@ void CheckClass::virtualDestructor()
             if (printInconclusive) {
                 const Function *destructor = scope->getDestructor();
                 if (destructor) {
-                    if(!((destructor->hasVirtualSpecifier() && destructor->access == AccessControl::Public) ||
-                        (destructor->access == AccessControl::Protected))) {
+                    if (!((destructor->hasVirtualSpecifier() && destructor->access == AccessControl::Public) ||
+                          (destructor->access == AccessControl::Protected))) {
                         for (const Function &func : scope->functionList) {
                             if (func.hasVirtualSpecifier()) {
                                 inconclusiveErrors.push_back(destructor);

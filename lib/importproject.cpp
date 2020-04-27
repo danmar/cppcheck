@@ -1044,8 +1044,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
                         temp.functionContracts[function] = expects;
                 }
             }
-        }
-        else if (strcmp(node->Name(), CppcheckXml::IgnoreElementName) == 0)
+        } else if (strcmp(node->Name(), CppcheckXml::IgnoreElementName) == 0)
             guiProject.excludedPaths = readXmlStringList(node, "", CppcheckXml::IgnorePathName, CppcheckXml::IgnorePathNameAttrib);
         else if (strcmp(node->Name(), CppcheckXml::LibrariesElementName) == 0)
             guiProject.libraries = readXmlStringList(node, "", CppcheckXml::LibraryElementName, nullptr);

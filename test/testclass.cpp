@@ -2699,7 +2699,7 @@ private:
                                "    delete base;\n"
                                "}\n", true);
         ASSERT_EQUALS("[test.cpp:3]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
-        
+
         // class Base destructor is not virtual but protected -> no error
         checkVirtualDestructor("class Base {\n"
                                "public:\n"

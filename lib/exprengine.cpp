@@ -172,7 +172,7 @@ namespace {
         const std::vector<ExprEngine::Callback> &callbacks;
         std::vector<ExprEngine::ValuePtr> constraints;
 
-        void contractConstraints(const Function *function, ExprEngine::ValuePtr (*executeExpression)(const Token*, Data&)) {
+        void contractConstraints(const Function *function, ExprEngine::ValuePtr(*executeExpression)(const Token*, Data&)) {
             const auto it = settings->functionContracts.find(currentFunction);
             if (it == settings->functionContracts.end())
                 return;
