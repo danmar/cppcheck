@@ -52,6 +52,11 @@
 static const unsigned int COLUMN_SINCE_DATE = 6;
 static const unsigned int COLUMN_TAGS       = 7;
 
+static QString getFunction(QStandardItem *item)
+{
+    return item->data().toMap().value("function").toString();
+}
+
 ResultsTree::ResultsTree(QWidget * parent) :
     QTreeView(parent),
     mSettings(nullptr),
@@ -613,7 +618,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
 
             const bool bughunting = !multipleSelection && mContextItem->data().toMap().value("id").toString().startsWith("bughunting");
 
-            if (bughunting) {
+            if (bughunting && !getFunction(mContextItem).isEmpty()) {
                 QAction *editContract = new QAction(tr("Edit contract.."), &menu);
                 connect(editContract, &QAction::triggered, this, &ResultsTree::editContract);
                 menu.addAction(editContract);
@@ -1035,8 +1040,7 @@ void ResultsTree::openContainingFolder()
 
 void ResultsTree::editContract()
 {
-    QString function = mContextItem->data().toMap().value("function").toString();
-    emit editFunctionContract(function);
+    emit editFunctionContract(getFunction(mContextItem));
 }
 
 void ResultsTree::tagSelectedItems(const QString &tag)
