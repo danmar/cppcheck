@@ -228,8 +228,8 @@ signals:
     /** Suppress Ids */
     void suppressIds(QStringList ids);
 
-    /** Add contract for function */
-    void addFunctionContract(QString function);
+    /** Edit contract for function */
+    void editFunctionContract(QString function);
 
     /**
     * @brief Show/hide certain type of errors

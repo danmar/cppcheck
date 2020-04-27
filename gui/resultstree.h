@@ -208,8 +208,8 @@ signals:
     /** Suppress Ids */
     void suppressIds(QStringList ids);
 
-    /** Add contract for function */
-    void addFunctionContract(QString function);
+    /** Edit contract for function */
+    void editFunctionContract(QString function);
 public slots:
 
     /**
@@ -285,9 +285,9 @@ protected slots:
     void openContainingFolder();
 
     /**
-     * @brief Allow user to add contract to fix bughunting warning
+     * @brief Allow user to edit contract to fix bughunting warning
      */
-    void addContract();
+    void editContract();
 
     /**
     * @brief Slot for selection change in the results tree.

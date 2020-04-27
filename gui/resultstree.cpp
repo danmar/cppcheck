@@ -614,9 +614,9 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             const bool bughunting = !multipleSelection && mContextItem->data().toMap().value("id").toString().startsWith("bughunting");
 
             if (bughunting) {
-                QAction *addContract = new QAction(tr("Add contract.."), &menu);
-                connect(addContract, SIGNAL(triggered()), this, SLOT(addContract()));
-                menu.addAction(addContract);
+                QAction *editContract = new QAction(tr("Edit contract.."), &menu);
+                connect(editContract, &QAction::triggered, this, &ResultsTree::editContract);
+                menu.addAction(editContract);
                 menu.addSeparator();
             }
 
@@ -1033,10 +1033,10 @@ void ResultsTree::openContainingFolder()
     }
 }
 
-void ResultsTree::addContract()
+void ResultsTree::editContract()
 {
     QString function = mContextItem->data().toMap().value("function").toString();
-    emit addFunctionContract(function);
+    emit editFunctionContract(function);
 }
 
 void ResultsTree::tagSelectedItems(const QString &tag)

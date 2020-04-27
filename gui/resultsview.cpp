@@ -55,7 +55,7 @@ ResultsView::ResultsView(QWidget * parent) :
     connect(mUI.mTree, &ResultsTree::treeSelectionChanged, this, &ResultsView::updateDetails);
     connect(mUI.mTree, &ResultsTree::tagged, this, &ResultsView::tagged);
     connect(mUI.mTree, &ResultsTree::suppressIds, this, &ResultsView::suppressIds);
-    connect(mUI.mTree, &ResultsTree::addFunctionContract, this, &ResultsView::addFunctionContract);
+    connect(mUI.mTree, &ResultsTree::editFunctionContract, this, &ResultsView::editFunctionContract);
     connect(this, &ResultsView::showResults, mUI.mTree, &ResultsTree::showResults);
     connect(this, &ResultsView::showCppcheckResults, mUI.mTree, &ResultsTree::showCppcheckResults);
     connect(this, &ResultsView::showClangResults, mUI.mTree, &ResultsTree::showClangResults);

@@ -36,6 +36,7 @@
 #include "common.h"
 #include "threadhandler.h"
 #include "fileviewdialog.h"
+#include "functioncontractdialog.h"
 #include "projectfile.h"
 #include "projectfiledialog.h"
 #include "report.h"
@@ -142,7 +143,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI.mResults, &ResultsView::checkSelected, this, &MainWindow::performSelectedFilesCheck);
     connect(mUI.mResults, &ResultsView::tagged, this, &MainWindow::tagged);
     connect(mUI.mResults, &ResultsView::suppressIds, this, &MainWindow::suppressIds);
-    connect(mUI.mResults, &ResultsView::addFunctionContract, this, &MainWindow::addFunctionContract);
+    connect(mUI.mResults, &ResultsView::editFunctionContract, this, &MainWindow::editFunctionContract);
     connect(mUI.mMenuView, &QMenu::aboutToShow, this, &MainWindow::aboutToShowViewMenu);
 
     // File menu
@@ -1794,19 +1795,22 @@ void MainWindow::suppressIds(QStringList ids)
     mProjectFile->write();
 }
 
-void MainWindow::addFunctionContract(QString function)
+void MainWindow::editFunctionContract(QString function)
 {
     if (!mProjectFile)
         return;
-    bool ok;
-    const QString expects = QInputDialog::getText(this,
-                            tr("Add contract"),
-                            "Function:" + function + "\nExpects:",
-                            QLineEdit::Normal,
-                            QString(),
-                            &ok);
-    if (ok) {
-        mProjectFile->setFunctionContract(function, expects);
+
+    QString expects;
+    const auto it = mProjectFile->getFunctionContracts().find(function.toStdString());
+    if (it != mProjectFile->getFunctionContracts().end())
+        expects = QString::fromStdString(it->second);
+
+    FunctionContractDialog dlg(nullptr,
+                               function,
+                               expects);
+
+    if (dlg.exec() == QDialog::Accepted) {
+        mProjectFile->setFunctionContract(function, dlg.getExpects());
         mProjectFile->write();
     }
 }

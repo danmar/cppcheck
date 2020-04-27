@@ -225,8 +225,8 @@ protected slots:
     /** Suppress error ids */
     void suppressIds(QStringList ids);
 
-    /** Add contract for function */
-    void addFunctionContract(QString function);
+    /** Edit contract for function */
+    void editFunctionContract(QString function);
 private:
 
     /** Get filename for last results */
