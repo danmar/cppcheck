@@ -173,6 +173,8 @@ public:
     /** @brief Force checking the files with "too many" configurations (--force). */
     bool force;
 
+    std::map<std::string, std::string> functionContracts;
+
     /** @brief List of include paths, e.g. "my/includes/" which should be used
         for finding include files inside source files. (-I) */
     std::list<std::string> includePaths;

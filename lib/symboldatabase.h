@@ -743,6 +743,8 @@ public:
         return tokenDef->str();
     }
 
+    std::string fullName() const;
+
     nonneg int argCount() const {
         return argumentList.size();
     }
@@ -1310,7 +1312,7 @@ public:
     void validateVariables() const;
 
     /** Set valuetype in provided tokenlist */
-    void setValueTypeInTokenList(bool reportDebugWarnings);
+    void setValueTypeInTokenList(bool reportDebugWarnings, Token *tokens=nullptr);
 
     /**
      * Calculates sizeof value for given type.

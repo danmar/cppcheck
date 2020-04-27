@@ -2157,6 +2157,18 @@ Function::Function(const Token *tokenDef)
 {
 }
 
+std::string Function::fullName() const
+{
+    std::string ret = name();
+    for (const Scope *s = nestedIn; s; s = s->nestedIn) {
+        if (!s->className.empty())
+            ret = s->className + "::" + ret;
+    }
+    ret += "(";
+    for (const Variable &arg : argumentList)
+        ret += (arg.index() == 0 ? "" : ",") + arg.name();
+    return ret + ")";
+}
 
 static std::string qualifiedName(const Scope *scope)
 {
@@ -5763,9 +5775,10 @@ static const Function *getOperatorFunction(const Token * const tok)
     return nullptr;
 }
 
-void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings)
+void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *tokens)
 {
-    Token * tokens = const_cast<Tokenizer *>(mTokenizer)->list.front();
+    if (!tokens)
+        tokens = const_cast<Tokenizer *>(mTokenizer)->list.front();
 
     for (Token *tok = tokens; tok; tok = tok->next())
         tok->setValueType(nullptr);

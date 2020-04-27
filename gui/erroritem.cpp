@@ -40,7 +40,9 @@ ErrorItem::ErrorItem()
 }
 
 ErrorItem::ErrorItem(const ErrorLogger::ErrorMessage &errmsg)
-    : errorId(QString::fromStdString(errmsg.id))
+    : file0(QString::fromStdString(errmsg.file0))
+    , function(QString::fromStdString(errmsg.function))
+    , errorId(QString::fromStdString(errmsg.id))
     , severity(errmsg.severity)
     , inconclusive(errmsg.inconclusive)
     , summary(QString::fromStdString(errmsg.shortMessage()))

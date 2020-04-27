@@ -71,8 +71,12 @@ namespace ExprEngine {
 
     class DataBase {
     public:
-        explicit DataBase(const Settings *settings) : settings(settings) {}
+        explicit DataBase(const std::string &currentFunction, const Settings *settings)
+            : currentFunction(currentFunction)
+            , settings(settings) {
+        }
         virtual std::string getNewSymbolName() = 0;
+        const std::string currentFunction;
         const Settings * const settings;
         virtual void addError(int linenr) {
             (void)linenr;

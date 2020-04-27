@@ -208,6 +208,8 @@ signals:
     /** Suppress Ids */
     void suppressIds(QStringList ids);
 
+    /** Add contract for function */
+    void addFunctionContract(QString function);
 public slots:
 
     /**
@@ -281,6 +283,11 @@ protected slots:
     * @brief Slot for context menu item to open the folder containing the current file.
     */
     void openContainingFolder();
+
+    /**
+     * @brief Allow user to add contract to fix bughunting warning
+     */
+    void addContract();
 
     /**
     * @brief Slot for selection change in the results tree.

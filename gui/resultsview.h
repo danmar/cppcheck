@@ -228,6 +228,9 @@ signals:
     /** Suppress Ids */
     void suppressIds(QStringList ids);
 
+    /** Add contract for function */
+    void addFunctionContract(QString function);
+
     /**
     * @brief Show/hide certain type of errors
     * Refreshes the tree.

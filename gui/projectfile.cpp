@@ -55,6 +55,7 @@ void ProjectFile::clear()
     mUndefines.clear();
     mPaths.clear();
     mExcludedPaths.clear();
+    mFunctionContracts.clear();
     mLibraries.clear();
     mPlatform.clear();
     mSuppressions.clear();
@@ -144,6 +145,10 @@ bool ProjectFile::read(const QString &filename)
             // These are read for compatibility
             if (xmlReader.name() == CppcheckXml::IgnoreElementName)
                 readExcludes(xmlReader);
+
+            // Function contracts
+            if (xmlReader.name() == CppcheckXml::FunctionContracts)
+                readFunctionContracts(xmlReader);
 
             // Find libraries list from inside project element
             if (xmlReader.name() == CppcheckXml::LibrariesElementName)
@@ -477,6 +482,43 @@ void ProjectFile::readExcludes(QXmlStreamReader &reader)
     } while (!allRead);
 }
 
+void ProjectFile::readFunctionContracts(QXmlStreamReader &reader)
+{
+    QXmlStreamReader::TokenType type;
+    bool allRead = false;
+    do {
+        type = reader.readNext();
+        switch (type) {
+        case QXmlStreamReader::StartElement:
+            if (reader.name().toString() == CppcheckXml::FunctionContract) {
+                QXmlStreamAttributes attribs = reader.attributes();
+                QString function = attribs.value(QString(), CppcheckXml::ContractFunction).toString();
+                QString expects = attribs.value(QString(), CppcheckXml::ContractExpects).toString();
+                if (!function.isEmpty() && !expects.isEmpty())
+                    mFunctionContracts[function.toStdString()] = expects.toStdString();
+            }
+            break;
+
+        case QXmlStreamReader::EndElement:
+            if (reader.name().toString() == CppcheckXml::FunctionContracts)
+                allRead = true;
+            break;
+
+        // Not handled
+        case QXmlStreamReader::NoToken:
+        case QXmlStreamReader::Invalid:
+        case QXmlStreamReader::StartDocument:
+        case QXmlStreamReader::EndDocument:
+        case QXmlStreamReader::Characters:
+        case QXmlStreamReader::Comment:
+        case QXmlStreamReader::DTD:
+        case QXmlStreamReader::EntityReference:
+        case QXmlStreamReader::ProcessingInstruction:
+            break;
+        }
+    } while (!allRead);
+}
+
 void ProjectFile::readVsConfigurations(QXmlStreamReader &reader)
 {
     QXmlStreamReader::TokenType type;
@@ -653,6 +695,11 @@ void ProjectFile::setLibraries(const QStringList &libraries)
     mLibraries = libraries;
 }
 
+void ProjectFile::setFunctionContract(QString function, QString expects)
+{
+    mFunctionContracts[function.toStdString()] = expects.toStdString();
+}
+
 void ProjectFile::setPlatform(const QString &platform)
 {
     mPlatform = platform;
@@ -795,6 +842,17 @@ bool ProjectFile::write(const QString &filename)
                     mLibraries,
                     CppcheckXml::LibrariesElementName,
                     CppcheckXml::LibraryElementName);
+
+    if (!mFunctionContracts.empty()) {
+        xmlWriter.writeStartElement(CppcheckXml::FunctionContracts);
+        for (const auto contract: mFunctionContracts) {
+            xmlWriter.writeStartElement(CppcheckXml::FunctionContract);
+            xmlWriter.writeAttribute(CppcheckXml::ContractFunction, QString::fromStdString(contract.first));
+            xmlWriter.writeAttribute(CppcheckXml::ContractExpects, QString::fromStdString(contract.second));
+            xmlWriter.writeEndElement();
+        }
+        xmlWriter.writeEndElement();
+    }
 
     if (!mSuppressions.isEmpty()) {
         xmlWriter.writeStartElement(CppcheckXml::SuppressionsElementName);

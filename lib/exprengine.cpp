@@ -158,8 +158,8 @@ namespace {
 
     class Data : public ExprEngine::DataBase {
     public:
-        Data(int *symbolValueIndex, const Tokenizer *tokenizer, const Settings *settings, const std::vector<ExprEngine::Callback> &callbacks, TrackExecution *trackExecution)
-            : DataBase(settings)
+        Data(int *symbolValueIndex, const Tokenizer *tokenizer, const Settings *settings, const std::string &currentFunction, const std::vector<ExprEngine::Callback> &callbacks, TrackExecution *trackExecution)
+            : DataBase(currentFunction, settings)
             , symbolValueIndex(symbolValueIndex)
             , tokenizer(tokenizer)
             , callbacks(callbacks)
@@ -171,6 +171,28 @@ namespace {
         const Tokenizer * const tokenizer;
         const std::vector<ExprEngine::Callback> &callbacks;
         std::vector<ExprEngine::ValuePtr> constraints;
+
+        void contractConstraints(const Function *function, ExprEngine::ValuePtr (*executeExpression)(const Token*, Data&)) {
+            const auto it = settings->functionContracts.find(currentFunction);
+            if (it == settings->functionContracts.end())
+                return;
+            const std::string &expects = it->second;
+            TokenList tokenList(settings);
+            std::istringstream istr(expects);
+            tokenList.createTokens(istr);
+            tokenList.createAst();
+            SymbolDatabase *symbolDatabase = const_cast<SymbolDatabase*>(tokenizer->getSymbolDatabase());
+            for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
+                for (const Variable &arg: function->argumentList) {
+                    if (arg.name() == tok->str()) {
+                        tok->variable(&arg);
+                        tok->varId(arg.declarationId());
+                    }
+                }
+            }
+            symbolDatabase->setValueTypeInTokenList(false, tokenList.front());
+            constraints.push_back(executeExpression(tokenList.front()->astTop(), *this));
+        }
 
         void addError(int linenr) OVERRIDE {
             mTrackExecution->addError(linenr);
@@ -1756,12 +1778,16 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
         // TODO.. what about functions in headers?
         return;
 
+    const std::string currentFunction = function->fullName();
+
     int symbolValueIndex = 0;
     TrackExecution trackExecution;
-    Data data(&symbolValueIndex, tokenizer, settings, callbacks, &trackExecution);
+    Data data(&symbolValueIndex, tokenizer, settings, currentFunction, callbacks, &trackExecution);
 
     for (const Variable &arg : function->argumentList)
         data.assignValue(functionScope->bodyStart, arg.declarationId(), createVariableValue(arg, data));
+
+    data.contractConstraints(function, executeExpression1);
 
     try {
         execute(functionScope->bodyStart, functionScope->bodyEnd, data);
@@ -1829,6 +1855,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             std::list<const Token*> callstack{settings->clang ? tok : tok->astParent()};
             const char * const id = (tok->valueType() && tok->valueType()->isFloat()) ? "bughuntingDivByZeroFloat" : "bughuntingDivByZero";
             ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, id, "There is division, cannot determine that there can't be a division by zero.", CWE(369), false);
+            errmsg.function = dataBase->currentFunction;
             errorLogger->reportErr(errmsg);
         }
     };

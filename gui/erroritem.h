@@ -80,6 +80,7 @@ public:
     QString tool() const;
 
     QString file0;
+    QString function;
     QString errorId;
     Severity::SeverityType severity;
     bool inconclusive;

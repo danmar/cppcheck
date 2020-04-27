@@ -19,6 +19,7 @@
 #ifndef PROJECT_FILE_H
 #define PROJECT_FILE_H
 
+#include <map>
 #include <QObject>
 #include <QString>
 #include <QStringList>
@@ -200,6 +201,10 @@ public:
         mMaxCtuDepth = maxCtuDepth;
     }
 
+    const std::map<std::string,std::string> getFunctionContracts() const {
+        return mFunctionContracts;
+    }
+
     /**
     * @brief Get filename for the project file.
     * @return file name.
@@ -263,6 +268,9 @@ public:
      * @param libraries List of libraries.
      */
     void setLibraries(const QStringList &libraries);
+
+    /** Set contract for a function */
+    void setFunctionContract(QString function, QString expects);
 
     /**
      * @brief Set platform.
@@ -378,6 +386,12 @@ protected:
     void readExcludes(QXmlStreamReader &reader);
 
     /**
+     * @brief Read function contracts.
+     * @param reader XML stream reader.
+     */
+    void readFunctionContracts(QXmlStreamReader &reader);
+
+    /**
      * @brief Read lists of Visual Studio configurations
      * @param reader XML stream reader.
      */
@@ -485,6 +499,8 @@ private:
      * @brief List of libraries.
      */
     QStringList mLibraries;
+
+    std::map<std::string, std::string> mFunctionContracts;
 
     /**
      * @brief Platform

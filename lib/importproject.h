@@ -146,6 +146,10 @@ namespace CppcheckXml {
     const char ExcludeElementName[] = "exclude";
     const char ExcludePathName[] = "path";
     const char ExcludePathNameAttrib[] = "name";
+    const char FunctionContracts[] = "function-contracts";
+    const char FunctionContract[] = "contract";
+    const char ContractFunction[] = "function";
+    const char ContractExpects[] = "expects";
     const char LibrariesElementName[] = "libraries";
     const char LibraryElementName[] = "library";
     const char PlatformElementName[] = "platform";

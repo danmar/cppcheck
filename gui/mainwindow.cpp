@@ -142,6 +142,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI.mResults, &ResultsView::checkSelected, this, &MainWindow::performSelectedFilesCheck);
     connect(mUI.mResults, &ResultsView::tagged, this, &MainWindow::tagged);
     connect(mUI.mResults, &ResultsView::suppressIds, this, &MainWindow::suppressIds);
+    connect(mUI.mResults, &ResultsView::addFunctionContract, this, &MainWindow::addFunctionContract);
     connect(mUI.mMenuView, &QMenu::aboutToShow, this, &MainWindow::aboutToShowViewMenu);
 
     // File menu
@@ -843,6 +844,8 @@ Settings MainWindow::getCppcheckSettings()
         result.clang = mProjectFile->clangParser;
         result.bugHunting = mProjectFile->bugHunting;
         result.bugHuntingReport = " ";
+
+        result.functionContracts = mProjectFile->getFunctionContracts();
 
         const QStringList undefines = mProjectFile->getUndefines();
         foreach (QString undefine, undefines)
@@ -1789,4 +1792,21 @@ void MainWindow::suppressIds(QStringList ids)
 
     mProjectFile->setSuppressions(suppressions);
     mProjectFile->write();
+}
+
+void MainWindow::addFunctionContract(QString function)
+{
+    if (!mProjectFile)
+        return;
+    bool ok;
+    const QString expects = QInputDialog::getText(this,
+                            tr("Add contract"),
+                            "Function:" + function + "\nExpects:",
+                            QLineEdit::Normal,
+                            QString(),
+                            &ok);
+    if (ok) {
+        mProjectFile->setFunctionContract(function, expects);
+        mProjectFile->write();
+    }
 }
