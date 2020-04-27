@@ -10,22 +10,22 @@ static QString formatFunctionName(QString f)
     return f;
 }
 
-FunctionContractDialog::FunctionContractDialog(QWidget *parent, QString name, QString expects) :
+FunctionContractDialog::FunctionContractDialog(QWidget *parent, const QString &name, const QString &expects) :
     QDialog(parent),
-    ui(new Ui::FunctionContractDialog)
+    mUi(new Ui::FunctionContractDialog)
 {
-    ui->setupUi(this);
-    ui->functionName->setText(formatFunctionName(name));
-    ui->expects->setPlainText(expects);
+    mUi->setupUi(this);
+    mUi->functionName->setText(formatFunctionName(name));
+    mUi->expects->setPlainText(expects);
 }
 
 FunctionContractDialog::~FunctionContractDialog()
 {
-    delete ui;
+    delete mUi;
 }
 
 QString FunctionContractDialog::getExpects() const
 {
-    return ui->expects->toPlainText();
+    return mUi->expects->toPlainText();
 }
 

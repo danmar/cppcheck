@@ -201,7 +201,7 @@ public:
         mMaxCtuDepth = maxCtuDepth;
     }
 
-    const std::map<std::string,std::string> getFunctionContracts() const {
+    const std::map<std::string,std::string>& getFunctionContracts() const {
         return mFunctionContracts;
     }
 
