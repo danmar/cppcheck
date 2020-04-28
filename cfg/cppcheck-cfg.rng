@@ -50,7 +50,7 @@
               <optional>
                 <attribute name="realloc-arg"><ref name="ARGNO"/></attribute>
               </optional>
-              <ref name="DATA-NAME"/>
+              <ref name="DATA-EXTNAME-SINGLE"/>
             </element>
             <element name="use"><ref name="DATA-EXTNAME"/></element>
           </choice>
@@ -75,7 +75,7 @@
               <optional>
                 <attribute name="arg"><ref name="ARGNO"/></attribute>
               </optional>
-              <ref name="DATA-NAME"/>
+              <ref name="DATA-EXTNAME-SINGLE"/>
             </element>
             <element name="realloc">
               <optional>
@@ -87,7 +87,7 @@
               <optional>
                 <attribute name="realloc-arg"><ref name="ARGNO"/></attribute>
               </optional>
-              <ref name="DATA-NAME"/>
+              <ref name="DATA-EXTNAME-SINGLE"/>
             </element>
             <element name="use"><ref name="DATA-EXTNAME"/></element>
           </choice>
