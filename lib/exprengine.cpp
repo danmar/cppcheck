@@ -70,13 +70,15 @@ namespace {
     class TrackExecution {
     public:
         TrackExecution() : mDataIndex(0), mAbortLine(-1) {}
-        std::map<const Token *, std::vector<std::string>> map;
+
         int getNewDataIndex() {
             return mDataIndex++;
         }
 
         void symbolRange(const Token *tok, ExprEngine::ValuePtr value) {
             if (!tok || !value)
+                return;
+            if (tok->index() == 0)
                 return;
             const std::string &symbolicExpression = value->getSymbolicExpression();
             if (symbolicExpression[0] != '$')
@@ -150,6 +152,8 @@ namespace {
             return "ok";
         }
 
+        std::map<const Token *, std::vector<std::string>> map;
+
         int mDataIndex;
         int mAbortLine;
         std::set<std::string> mSymbols;
@@ -158,9 +162,10 @@ namespace {
 
     class Data : public ExprEngine::DataBase {
     public:
-        Data(int *symbolValueIndex, const Tokenizer *tokenizer, const Settings *settings, const std::string &currentFunction, const std::vector<ExprEngine::Callback> &callbacks, TrackExecution *trackExecution)
+        Data(int *symbolValueIndex, ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings, const std::string &currentFunction, const std::vector<ExprEngine::Callback> &callbacks, TrackExecution *trackExecution)
             : DataBase(currentFunction, settings)
             , symbolValueIndex(symbolValueIndex)
+            , errorLogger(errorLogger)
             , tokenizer(tokenizer)
             , callbacks(callbacks)
             , mTrackExecution(trackExecution)
@@ -168,14 +173,15 @@ namespace {
         typedef std::map<nonneg int, ExprEngine::ValuePtr> Memory;
         Memory memory;
         int * const symbolValueIndex;
+        ErrorLogger *errorLogger;
         const Tokenizer * const tokenizer;
         const std::vector<ExprEngine::Callback> &callbacks;
         std::vector<ExprEngine::ValuePtr> constraints;
 
-        void contractConstraints(const Function *function, ExprEngine::ValuePtr(*executeExpression)(const Token*, Data&)) {
-            const auto it = settings->functionContracts.find(currentFunction);
+        ExprEngine::ValuePtr executeContract(const Function *function, ExprEngine::ValuePtr(*executeExpression)(const Token*, Data&)) {
+            const auto it = settings->functionContracts.find(function->fullName());
             if (it == settings->functionContracts.end())
-                return;
+                return ExprEngine::ValuePtr();
             const std::string &expects = it->second;
             TokenList tokenList(settings);
             std::istringstream istr(expects);
@@ -191,7 +197,13 @@ namespace {
                 }
             }
             symbolDatabase->setValueTypeInTokenList(false, tokenList.front());
-            constraints.push_back(executeExpression(tokenList.front()->astTop(), *this));
+            return executeExpression(tokenList.front()->astTop(), *this);
+        }
+
+        void contractConstraints(const Function *function, ExprEngine::ValuePtr(*executeExpression)(const Token*, Data&)) {
+            auto value = executeContract(function, executeExpression);
+            if (value)
+                constraints.push_back(value);
         }
 
         void addError(int linenr) OVERRIDE {
@@ -261,6 +273,20 @@ namespace {
                 assignValue(tok, varId, value);
             }
             return value;
+        }
+
+        void trackCheckContract(const Token *tok, const std::string &solverOutput) {
+            std::ostringstream os;
+            os << "checkContract:{\n";
+
+            std::string line;
+            std::istringstream istr(solverOutput);
+            while (std::getline(istr, line))
+                os << "        " << line << "\n";
+
+            os << "}";
+
+            mTrackExecution->state(tok, os.str());
         }
 
         void trackProgramState(const Token *tok) {
@@ -1090,6 +1116,7 @@ static void call(const std::vector<ExprEngine::Callback> &callbacks, const Token
 }
 
 static ExprEngine::ValuePtr executeExpression(const Token *tok, Data &data);
+static ExprEngine::ValuePtr executeExpression1(const Token *tok, Data &data);
 
 static ExprEngine::ValuePtr executeReturn(const Token *tok, Data &data)
 {
@@ -1208,6 +1235,73 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
     return assignValue;
 }
 
+static void checkContract(Data &data, const Token *tok, const Function *function, const std::vector<ExprEngine::ValuePtr> &argValues)
+{
+    (void)data;
+    (void)tok;
+    (void)function;
+    (void)argValues;
+
+#ifdef USE_Z3
+    ExprData exprData;
+    z3::solver solver(exprData.context);
+    try {
+        // Invert contract, we want to know if the contract might not be met
+        solver.add(z3::ite(exprData.getConstraintExpr(data.executeContract(function, executeExpression1)), exprData.context.bool_val(false), exprData.context.bool_val(true)));
+
+        bool bailoutValue = false;
+        for (nonneg int i = 0; i < argValues.size(); ++i) {
+            const Variable *argvar = function->getArgumentVar(i);
+            if (!argvar || !argvar->nameToken())
+                continue;
+
+            ExprEngine::ValuePtr argValue = argValues[i];
+            if (!argValue || argValue->type == ExprEngine::ValueType::BailoutValue) {
+                bailoutValue = true;
+                break;
+            }
+
+            if (argValue && argValue->type == ExprEngine::ValueType::IntRange) {
+                solver.add(exprData.getExpr(data.getValue(argvar->declarationId(), nullptr, nullptr)) == exprData.getExpr(argValue));
+            }
+        }
+
+        if (!bailoutValue) {
+            for (auto constraint : data.constraints)
+                solver.add(exprData.getConstraintExpr(constraint));
+
+            exprData.addAssertions(solver);
+
+            // Log solver expressions for debugging/testing purposes
+            std::ostringstream os;
+            os << solver;
+            data.trackCheckContract(tok, os.str());
+        }
+
+        if (bailoutValue || solver.check() == z3::sat) {
+            data.addError(tok->linenr());
+            std::list<const Token*> callstack{tok};
+            const char * const id = "bughuntingFunctionCall";
+            const auto contractIt = data.settings->functionContracts.find(function->fullName());
+            const std::string functionName = contractIt->first;
+            const std::string functionExpects = contractIt->second;
+            ErrorLogger::ErrorMessage errmsg(callstack,
+                                             &data.tokenizer->list,
+                                             Severity::SeverityType::error,
+                                             id,
+                                             "Function '" + functionName + "' is called, can not determine that its contract '" + functionExpects + "' is always met.",
+                                             CWE(0),
+                                             bailoutValue);
+            if (!bailoutValue)
+                errmsg.function = data.currentFunction;
+            data.errorLogger->reportErr(errmsg);
+        }
+    } catch (const z3::exception &exception) {
+        std::cerr << "z3: " << exception << std::endl;
+    }
+#endif
+}
+
 static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
 {
     if (Token::simpleMatch(tok->previous(), "sizeof (")) {
@@ -1243,6 +1337,12 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
 
     if (!tok->valueType() && tok->astParent())
         throw VerifyException(tok, "Expression '" + tok->expressionString() + "' has unknown type!");
+
+    if (tok->astOperand1()->function()) {
+        const auto contractIt = data.settings->functionContracts.find(tok->astOperand1()->function()->fullName());
+        if (contractIt != data.settings->functionContracts.end())
+            checkContract(data, tok, tok->astOperand1()->function(), argValues);
+    }
 
     auto val = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
     call(data.callbacks, tok, val, &data);
@@ -1659,12 +1759,12 @@ static void execute(const Token *start, const Token *end, Data &data)
     }
 }
 
-void ExprEngine::executeAllFunctions(const Tokenizer *tokenizer, const Settings *settings, const std::vector<ExprEngine::Callback> &callbacks, std::ostream &report)
+void ExprEngine::executeAllFunctions(ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings, const std::vector<ExprEngine::Callback> &callbacks, std::ostream &report)
 {
     const SymbolDatabase *symbolDatabase = tokenizer->getSymbolDatabase();
     for (const Scope *functionScope : symbolDatabase->functionScopes) {
         try {
-            executeFunction(functionScope, tokenizer, settings, callbacks, report);
+            executeFunction(functionScope, errorLogger, tokenizer, settings, callbacks, report);
         } catch (const VerifyException &e) {
             // FIXME.. there should not be exceptions
             std::string functionName = functionScope->function->name();
@@ -1767,7 +1867,7 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
     return ExprEngine::ValuePtr();
 }
 
-void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *tokenizer, const Settings *settings, const std::vector<ExprEngine::Callback> &callbacks, std::ostream &report)
+void ExprEngine::executeFunction(const Scope *functionScope, ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings, const std::vector<ExprEngine::Callback> &callbacks, std::ostream &report)
 {
     if (!functionScope->bodyStart)
         return;
@@ -1782,7 +1882,7 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
 
     int symbolValueIndex = 0;
     TrackExecution trackExecution;
-    Data data(&symbolValueIndex, tokenizer, settings, currentFunction, callbacks, &trackExecution);
+    Data data(&symbolValueIndex, errorLogger, tokenizer, settings, currentFunction, callbacks, &trackExecution);
 
     for (const Variable &arg : function->argumentList)
         data.assignValue(functionScope->bodyStart, arg.declarationId(), createVariableValue(arg, data));
@@ -2136,7 +2236,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
 #endif
 
     std::ostringstream report;
-    ExprEngine::executeAllFunctions(tokenizer, settings, callbacks, report);
+    ExprEngine::executeAllFunctions(errorLogger, tokenizer, settings, callbacks, report);
     if (settings->bugHuntingReport.empty())
         std::cout << report.str();
     else if (errorLogger)
