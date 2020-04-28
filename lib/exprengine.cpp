@@ -143,6 +143,14 @@ namespace {
         bool isAllOk() const {
             return mErrors.empty();
         }
+
+        void addMissingContract(const std::string &f) {
+            mMissingContracts.insert(f);
+        }
+
+        const std::set<std::string> getMissingContracts() const {
+            return mMissingContracts;
+        }
     private:
         const char *getStatus(int linenr) const {
             if (mErrors.find(linenr) != mErrors.end())
@@ -158,6 +166,7 @@ namespace {
         int mAbortLine;
         std::set<std::string> mSymbols;
         std::set<int> mErrors;
+        std::set<std::string> mMissingContracts;
     };
 
     class Data : public ExprEngine::DataBase {
@@ -310,6 +319,14 @@ namespace {
             }
             s << "}";
             mTrackExecution->state(tok, s.str());
+        }
+
+        void addMissingContract(const std::string &f) {
+            mTrackExecution->addMissingContract(f);
+        }
+
+        const std::set<std::string> getMissingContracts() const {
+            return mTrackExecution->getMissingContracts();
         }
 
         ExprEngine::ValuePtr notValue(ExprEngine::ValuePtr v) {
@@ -1289,15 +1306,28 @@ static void checkContract(Data &data, const Token *tok, const Function *function
                                              &data.tokenizer->list,
                                              Severity::SeverityType::error,
                                              id,
-                                             "Function '" + functionName + "' is called, can not determine that its contract '" + functionExpects + "' is always met.",
+                                             "Function '" + function->name() + "' is called, can not determine that its contract '" + functionExpects + "' is always met.",
                                              CWE(0),
                                              bailoutValue);
-            if (!bailoutValue)
-                errmsg.function = data.currentFunction;
+
+            errmsg.function = functionName;
             data.errorLogger->reportErr(errmsg);
         }
     } catch (const z3::exception &exception) {
         std::cerr << "z3: " << exception << std::endl;
+    } catch (const VerifyException &e) {
+        std::list<const Token*> callstack{tok};
+        const char * const id = "internalErrorInExprEngine";
+        const auto contractIt = data.settings->functionContracts.find(function->fullName());
+        const std::string functionExpects = contractIt->second;
+        ErrorLogger::ErrorMessage errmsg(callstack,
+                                         &data.tokenizer->list,
+                                         Severity::SeverityType::information,
+                                         id,
+                                         "ExprEngine failed to execute contract for function '" + function->name() + "'.",
+                                         CWE(0),
+                                         false);
+        data.errorLogger->reportErr(errmsg);
     }
 #endif
 }
@@ -1339,9 +1369,17 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
         throw VerifyException(tok, "Expression '" + tok->expressionString() + "' has unknown type!");
 
     if (tok->astOperand1()->function()) {
-        const auto contractIt = data.settings->functionContracts.find(tok->astOperand1()->function()->fullName());
-        if (contractIt != data.settings->functionContracts.end())
+        const std::string &functionName = tok->astOperand1()->function()->fullName();
+        const auto contractIt = data.settings->functionContracts.find(functionName);
+        if (contractIt != data.settings->functionContracts.end()) {
             checkContract(data, tok, tok->astOperand1()->function(), argValues);
+        } else if (!argValues.empty()) {
+            bool bailout = false;
+            for (const auto v: argValues)
+                bailout |= (v && v->type == ExprEngine::ValueType::BailoutValue);
+            if (!bailout)
+                data.addMissingContract(functionName);
+        }
     }
 
     auto val = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
@@ -1918,12 +1956,8 @@ void ExprEngine::executeFunction(const Scope *functionScope, ErrorLogger *errorL
 
     // Write a report
     if (bugHuntingReport) {
-        report << "[function-report] "
-               << Path::stripDirectoryPart(tokenizer->list.getFiles().at(functionScope->bodyStart->fileIndex())) << ":"
-               << functionScope->bodyStart->linenr() << ":"
-               << function->name()
-               << (trackExecution.isAllOk() ? " is safe" : " is not safe")
-               << std::endl;
+        for (const std::string &f: trackExecution.getMissingContracts())
+            report << "[missing contract] " << f << std::endl;
     }
 }
 

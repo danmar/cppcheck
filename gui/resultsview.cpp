@@ -64,6 +64,9 @@ ResultsView::ResultsView(QWidget * parent) :
     connect(this, &ResultsView::showHiddenResults, mUI.mTree, &ResultsTree::showHiddenResults);
 
     mUI.mListLog->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    mUI.mListAddedContracts->setSortingEnabled(true);
+    mUI.mListMissingContracts->setSortingEnabled(true);
 }
 
 void ResultsView::initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler)
@@ -84,6 +87,12 @@ void ResultsView::initialize(QSettings *settings, ApplicationList *list, ThreadH
 ResultsView::~ResultsView()
 {
     //dtor
+}
+
+void ResultsView::setAddedContracts(const QStringList &addedContracts)
+{
+    mUI.mListAddedContracts->clear();
+    mUI.mListAddedContracts->addItems(addedContracts);
 }
 
 void ResultsView::clear(bool results)
@@ -439,8 +448,13 @@ void ResultsView::bughuntingReportLine(const QString& line)
     for (const QString& s: line.split("\n")) {
         if (s.isEmpty())
             continue;
-        if (s.startsWith("[function-report] "))
-            mUI.mListSafeFunctions->addItem(s.mid(s.lastIndexOf(":") + 1));
+        if (s.startsWith("[missing contract] ")) {
+            const QString functionName = s.mid(19);
+            if (!mContracts.contains(functionName)) {
+                mContracts.insert(functionName);
+                mUI.mListMissingContracts->addItem(functionName);
+            }
+        }
     }
 }
 

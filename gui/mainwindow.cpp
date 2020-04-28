@@ -346,6 +346,8 @@ void MainWindow::loadSettings()
             QDir::setCurrent(inf.absolutePath());
         }
     }
+
+    updateContractsTab();
 }
 
 void MainWindow::saveSettings() const
@@ -603,6 +605,17 @@ QStringList MainWindow::selectFilesToAnalyze(QFileDialog::FileMode mode)
     setPath(SETTINGS_LAST_CHECK_PATH, mCurrentDirectory);
 
     return selected;
+}
+
+void MainWindow::updateContractsTab()
+{
+    QStringList addedContracts;
+    if (mProjectFile) {
+        for (const auto it: mProjectFile->getFunctionContracts()) {
+            addedContracts << QString::fromStdString(it.first);
+        }
+    }
+    mUI.mResults->setAddedContracts(addedContracts);
 }
 
 void MainWindow::analyzeFiles()
@@ -1462,6 +1475,7 @@ void MainWindow::loadProjectFile(const QString &filePath)
     mUI.mActionEditProjectFile->setEnabled(true);
     delete mProjectFile;
     mProjectFile = new ProjectFile(filePath, this);
+    updateContractsTab();
     if (!loadLastResults())
         analyzeProject(mProjectFile);
 }
@@ -1813,4 +1827,6 @@ void MainWindow::editFunctionContract(QString function)
         mProjectFile->setFunctionContract(function, dlg.getExpects());
         mProjectFile->write();
     }
+
+    updateContractsTab();
 }

@@ -73,6 +73,9 @@ public:
 
 public slots:
 
+    /** Update "Contracts" tab */
+    void updateContractsTab();
+
     /** @brief Slot for analyze files menu item */
     void analyzeFiles();
 
