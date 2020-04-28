@@ -1252,6 +1252,7 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
     return assignValue;
 }
 
+// cppcheck-suppress constParameter ; false positive
 static void checkContract(Data &data, const Token *tok, const Function *function, const std::vector<ExprEngine::ValuePtr> &argValues)
 {
     (void)data;
