@@ -86,23 +86,23 @@ namespace {
             if (mSymbols.find(symbolicExpression) != mSymbols.end())
                 return;
             mSymbols.insert(symbolicExpression);
-            map[tok].push_back(symbolicExpression + "=" + value->getRange());
+            mMap[tok].push_back(symbolicExpression + "=" + value->getRange());
 
         }
 
         void state(const Token *tok, const std::string &s) {
-            map[tok].push_back(s);
+            mMap[tok].push_back(s);
         }
 
         void print(std::ostream &out) {
             std::set<std::pair<int,int>> locations;
-            for (auto it : map) {
+            for (auto it : mMap) {
                 locations.insert(std::pair<int,int>(it.first->linenr(), it.first->column()));
             }
             for (const std::pair<int,int> &loc : locations) {
                 int lineNumber = loc.first;
                 int column = loc.second;
-                for (auto &it : map) {
+                for (auto &it : mMap) {
                     const Token *tok = it.first;
                     if (lineNumber != tok->linenr())
                         continue;
@@ -160,7 +160,7 @@ namespace {
             return "ok";
         }
 
-        std::map<const Token *, std::vector<std::string>> map;
+        std::map<const Token *, std::vector<std::string>> mMap;
 
         int mDataIndex;
         int mAbortLine;
