@@ -1252,15 +1252,10 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
     return assignValue;
 }
 
-// cppcheck-suppress constParameter ; false positive
-static void checkContract(Data &data, const Token *tok, const Function *function, const std::vector<ExprEngine::ValuePtr> &argValues)
-{
-    (void)data;
-    (void)tok;
-    (void)function;
-    (void)argValues;
 
 #ifdef USE_Z3
+static void checkContract(Data &data, const Token *tok, const Function *function, const std::vector<ExprEngine::ValuePtr> &argValues)
+{
     ExprData exprData;
     z3::solver solver(exprData.context);
     try {
@@ -1330,8 +1325,8 @@ static void checkContract(Data &data, const Token *tok, const Function *function
                                          false);
         data.errorLogger->reportErr(errmsg);
     }
-#endif
 }
+#endif
 
 static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
 {
@@ -1373,7 +1368,9 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
         const std::string &functionName = tok->astOperand1()->function()->fullName();
         const auto contractIt = data.settings->functionContracts.find(functionName);
         if (contractIt != data.settings->functionContracts.end()) {
+#ifdef USE_Z3
             checkContract(data, tok, tok->astOperand1()->function(), argValues);
+#endif
         } else if (!argValues.empty()) {
             bool bailout = false;
             for (const auto v: argValues)
