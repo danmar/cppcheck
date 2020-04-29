@@ -1127,6 +1127,12 @@ void MainWindow::reAnalyze(bool all)
 
 void MainWindow::clearResults()
 {
+    if (mProjectFile && !mProjectFile->getBuildDir().isEmpty()) {
+        QDir dir(QFileInfo(mProjectFile->getFilename()).absolutePath() + '/' + mProjectFile->getBuildDir());
+        for (const QString& f: dir.entryList(QDir::Files)) {
+            dir.remove(f);
+        }
+    }
     mUI.mResults->clear(true);
     Q_ASSERT(false == mUI.mResults->hasResults());
     enableResultsButtons();
