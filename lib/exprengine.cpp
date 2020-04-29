@@ -1986,8 +1986,9 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             dataBase->addError(tok->linenr());
             std::list<const Token*> callstack{settings->clang ? tok : tok->astParent()};
             const char * const id = (tok->valueType() && tok->valueType()->isFloat()) ? "bughuntingDivByZeroFloat" : "bughuntingDivByZero";
-            ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, id, "There is division, cannot determine that there can't be a division by zero.", CWE(369), false);
-            if (value.type != ExprEngine::ValueType::BailoutValue)
+            const bool bailout = (value.type == ExprEngine::ValueType::BailoutValue);
+            ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, id, "There is division, cannot determine that there can't be a division by zero.", CWE(369), bailout);
+            if (!bailout)
                 errmsg.function = dataBase->currentFunction;
             errorLogger->reportErr(errmsg);
         }
