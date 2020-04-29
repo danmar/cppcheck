@@ -348,6 +348,9 @@ public slots:
      */
     void logCopyComplete();
 
+    /** \brief Contract was double clicked => edit it */
+    void contractDoubleClicked(QListWidgetItem* item);
+
 protected:
     /**
     * @brief Should we show a "No errors found dialog" every time no errors were found?

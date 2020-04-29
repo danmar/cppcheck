@@ -62,6 +62,8 @@ ResultsView::ResultsView(QWidget * parent) :
     connect(this, &ResultsView::collapseAllResults, mUI.mTree, &ResultsTree::collapseAll);
     connect(this, &ResultsView::expandAllResults, mUI.mTree, &ResultsTree::expandAll);
     connect(this, &ResultsView::showHiddenResults, mUI.mTree, &ResultsTree::showHiddenResults);
+    connect(mUI.mListAddedContracts, &QListWidget::itemDoubleClicked, this, &ResultsView::contractDoubleClicked);
+    connect(mUI.mListMissingContracts, &QListWidget::itemDoubleClicked, this, &ResultsView::contractDoubleClicked);
 
     mUI.mListLog->setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -93,6 +95,11 @@ void ResultsView::setAddedContracts(const QStringList &addedContracts)
 {
     mUI.mListAddedContracts->clear();
     mUI.mListAddedContracts->addItems(addedContracts);
+    for (const QString f: addedContracts) {
+        auto res = mUI.mListMissingContracts->findItems(f, Qt::MatchExactly);
+        if (!res.empty())
+            delete res.front();
+    }
 }
 
 void ResultsView::clear(bool results)
@@ -483,6 +490,11 @@ void ResultsView::logCopyComplete()
     }
     QClipboard *clipboard = QApplication::clipboard();
     clipboard->setText(logText);
+}
+
+void ResultsView::contractDoubleClicked(QListWidgetItem* item)
+{
+    emit editFunctionContract(item->text());
 }
 
 void ResultsView::on_mListLog_customContextMenuRequested(const QPoint &pos)

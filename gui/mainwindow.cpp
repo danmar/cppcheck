@@ -1607,6 +1607,8 @@ void MainWindow::newProjectFile()
     } else {
         closeProjectFile();
     }
+
+    updateContractsTab();
 }
 
 void MainWindow::closeProjectFile()
