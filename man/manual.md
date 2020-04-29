@@ -790,77 +790,72 @@ An example usage:
 
 # Bug hunting
 
-In normal analysis Cppcheck is well suited for continuous integration etc. There are very few false positives. However in normal analysis, Cppcheck is no "silver bullet" it can't find every bug.
+If you want to detect more bugs and can accept lots of false alarms then Cppcheck has analysis for that.
 
-Cppcheck also has a more noisy analysis that diagnoses every possible bug in a function. Some possible use cases where more noise could be tolerated;
+Some possible use cases;
  * you are writing new code and want to ensure it is safe.
  * you are reviewing code and want to get hints about possible UB.
  * you need extra help troubleshooting a weird bug.
- * you tagged a release candidate and want to check if the code is safe.
+ * you want to check if a release candidate is safe.
+
+The intention is that this will be used primarily in the GUI.
+
+## Activate this analysis
+
+In the GUI goto the project dialog.
+
+In the `Analysis` tab there is a check box for `Bug hunting`.
+
+Possibly it's a good idea to have separate project files for bug hunting and normal analysis.
+
+## Cppcheck contracts
+
+To handle false alarms and improve the analysis you are encouraged to use contracts.
+
+You can use Cppcheck contracts both for C and C++ code.
 
 Example code:
 
-    void foo(int x)
+    int foo(int x)
     {
         return 100 / x;
     }
 
-In this function there could be a division by zero.
+A division by zero would not be impossible so Cppcheck will diagnose it:
 
-With normal analysis Cppcheck does not diagnose this division by zero:
+    [test1.cpp:3] (error) There is division, cannot determine that there can't be a division by zero. [bughuntingDivByZero]
 
-    $ cppcheck test1.c
+This Cppcheck contract will silence that warning:
 
-Most (all?) other static analysis tools will also be silent unless they can prove there is division by zero.
+    function: foo(x)
+    expects: x > 0
 
-But in "bug hunting" analysis Cppcheck will diagnose it:
-
-    $ cppcheck --bug-hunting test1.c
-    test1.c:3:20: error: There is division, cannot determine that there can't be a division by zero. [bughuntingDivByZero]
-        return 100 / x;
-                   ^
-
-Even if `foo` is never actually called with argument `0`, Cppcheck will write this warning. It is by intention.
-
-If this analysis has lots of noise then you need to have some ways to handle the noise. You can:
- * Put annotations or contracts in the code
- * Use suppressions
- * In the future: Add configuration
-
-## Annotations or contracts
-
-You can use Cppcheck/SAL annotations. And you can use C++ contracts.
-
-No warning is diagnosed when you write this Cppcheck annotation:
-
-    void foo(int __cppcheck_low__(1) x)
-    {
-        return 100 / x;
-    }
-
-No warning is diagnosed when you write this C++ contract:
-
-    void foo(int x) [[ expects: x >= 1 ]]
-    {
-        return 100 / x;
-    }
-
-With a contract/annotation, function calls of `foo` will be checked:
-
-    void foo(int x) [[ expects: x >= 1 ]]
-    {
-        return 100 / x;
-    }
+That contract will improve the intra procedural analysis. Every time `foo` is called it will be checked that the contract is satisfied:
 
     void bar(int x)
     {
         foo(x);
     }
 
-Cppcheck output:
+Cppcheck will warn:
 
-    test1.cpp:8:13: error: There is function call, cannot determine that 1st argument value meets the attribute __cppcheck_low__(1) [bughuntingInvalidArgValue]
-            foo(x);
-                ^
+    [test1.cpp:10] (error) Function 'foo' is called, can not determine that its contract 'x>0' is always met. [bughuntingFunctionCall]
+
+
+## Adding a contract in the GUI
+
+There are two ways:
+ * Open the "Contracts" tab at the bottom of the screen. Find the function in the listbox and double click on it.
+ * Right click on a warning and click on "Edit contract.." in the popup menu. This popup menu item is only available if the warning is not inconclusive.
+
+## Incomplete analysis
+
+The data flow analysis can analyze simple functions completely but complex functions are not analyzed completely (yet). The data flow analysis will be continously improved in the future but it will never be perfect.
+
+It is likely that you will get false alarms caused by incomplete data flow analysis. Unfortunately it is unlikely that such false alarms can be fixed by contracts.
+
+A bug hunting warning that is "inconclusive" was diagnosed when analysis was incomplete.
+
+
 
 
