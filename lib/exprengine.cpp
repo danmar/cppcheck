@@ -1318,11 +1318,11 @@ static void checkContract(Data &data, const Token *tok, const Function *function
         const std::string functionExpects = contractIt->second;
         ErrorLogger::ErrorMessage errmsg(callstack,
                                          &data.tokenizer->list,
-                                         Severity::SeverityType::information,
+                                         Severity::SeverityType::error,
                                          id,
-                                         "ExprEngine failed to execute contract for function '" + function->name() + "'.",
+                                         "Function '" + function->name() + "' is called, can not determine that its contract is always met.",
                                          CWE(0),
-                                         false);
+                                         true);
         data.errorLogger->reportErr(errmsg);
     }
 }
