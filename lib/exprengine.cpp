@@ -1295,17 +1295,17 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
     ExprEngine::ValuePtr rhsValue = executeExpression(tok->astOperand2(), data);
 
     if (!rhsValue) {
-        const ValueType *vt = tok->astOperand1() ? tok->astOperand1()->valueType() : nullptr;
-        if (vt && vt->pointer == 0 && vt->isIntegral())
-            rhsValue = getValueRangeFromValueType(data.getNewSymbolName(), vt, *data.settings);
-        else {
-            vt = tok->astOperand2() ? tok->astOperand2()->valueType() : nullptr;
-            if (vt && vt->container && vt->container->stdStringLike) {
-                auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 0, ~0ULL);
-                auto value = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), -128, 127);
-                rhsValue = std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), size, value, false, false, false);
-                call(data.callbacks, tok->astOperand2(), rhsValue, &data);
-            }
+        const ValueType * const vt1 = tok->astOperand1() ? tok->astOperand1()->valueType() : nullptr;
+        const ValueType * const vt2 = tok->astOperand2() ? tok->astOperand2()->valueType() : nullptr;
+
+        if (vt1 && vt1->pointer == 0 && vt1->isIntegral())
+            rhsValue = getValueRangeFromValueType(data.getNewSymbolName(), vt1, *data.settings);
+
+        else if (vt2 && vt2->container && vt2->container->stdStringLike) {
+            auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 0, ~0ULL);
+            auto value = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), -128, 127);
+            rhsValue = std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), size, value, false, false, false);
+            call(data.callbacks, tok->astOperand2(), rhsValue, &data);
         }
     }
 
