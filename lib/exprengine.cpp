@@ -1482,9 +1482,6 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
         }
     }
 
-    if (!tok->valueType() && tok->astParent())
-        throw VerifyException(tok, "Expression '" + tok->expressionString() + "' has unknown type!");
-
     if (tok->astOperand1()->function()) {
         const std::string &functionName = tok->astOperand1()->function()->fullName();
         const auto contractIt = data.settings->functionContracts.find(functionName);
