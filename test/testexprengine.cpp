@@ -60,6 +60,7 @@ private:
         TEST_CASE(while1);
         TEST_CASE(while2);
         TEST_CASE(while3);
+        TEST_CASE(while4);
 
         TEST_CASE(array1);
         TEST_CASE(array2);
@@ -92,6 +93,7 @@ private:
 
         TEST_CASE(structMember1);
         TEST_CASE(structMember2);
+        TEST_CASE(structMember3);
 #endif
     }
 
@@ -395,6 +397,16 @@ private:
                       expr(code, "=="));
     }
 
+    void while4() {
+        const char code[] = "void f(const char *host, int *len) {\n"
+                            "  while (*host)\n"
+                            "    *len = 0;\n"
+                            "  *len == 0;\n"
+                            "}";
+        // Currently the *len gets a BailoutValue in the loop
+        ASSERT_EQUALS("", expr(code, "=="));
+    }
+
     void array1() {
         ASSERT_EQUALS("(assert (= 5 0))\nz3::unsat",
                       expr("int f() { int arr[10]; arr[4] = 5; return arr[4]==0; }", "=="));
@@ -576,6 +588,21 @@ private:
         const char expected[] = "(declare-fun $3 () Int)\n"
                                 "(assert (and (>= $3 (- 2147483648)) (<= $3 2147483647)))\n"
                                 "(assert (= $3 123))\n"
+                                "z3::sat";
+
+        ASSERT_EQUALS(expected, expr(code, "=="));
+    }
+
+    void structMember3() {
+        const char code[] = "struct S { int x; };\n"
+                            "void foo(struct S *s) {\n"
+                            "  s->x = iter->second.data;\n" // assign some unknown value
+                            "  return s->x == 1;\n"
+                            "}";
+
+        const char expected[] = "(declare-fun $3 () Int)\n"
+                                "(assert (and (>= $3 (- 2147483648)) (<= $3 2147483647)))\n"
+                                "(assert (= $3 1))\n"
                                 "z3::sat";
 
         ASSERT_EQUALS(expected, expr(code, "=="));

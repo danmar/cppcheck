@@ -1294,11 +1294,19 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
 {
     ExprEngine::ValuePtr rhsValue = executeExpression(tok->astOperand2(), data);
 
-    if (!rhsValue && tok->astOperand2()->valueType() && tok->astOperand2()->valueType()->container && tok->astOperand2()->valueType()->container->stdStringLike) {
-        auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 0, ~0ULL);
-        auto value = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), -128, 127);
-        rhsValue = std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), size, value, false, false, false);
-        call(data.callbacks, tok->astOperand2(), rhsValue, &data);
+    if (!rhsValue) {
+        const ValueType *vt = tok->astOperand1() ? tok->astOperand1()->valueType() : nullptr;
+        if (vt && vt->pointer == 0 && vt->isIntegral())
+            rhsValue = getValueRangeFromValueType(data.getNewSymbolName(), vt, *data.settings);
+        else {
+            vt = tok->astOperand2() ? tok->astOperand2()->valueType() : nullptr;
+            if (vt && vt->container && vt->container->stdStringLike) {
+                auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 0, ~0ULL);
+                auto value = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), -128, 127);
+                rhsValue = std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), size, value, false, false, false);
+                call(data.callbacks, tok->astOperand2(), rhsValue, &data);
+            }
+        }
     }
 
     if (!rhsValue)
@@ -1880,6 +1888,17 @@ static void execute(const Token *start, const Token *end, Data &data)
 
                         data.assignStructMember(tok2, &*structVal, memberName, memberValue);
                         continue;
+                    }
+                    if (tok2->astOperand1()->isUnaryOp("*") && tok2->astOperand1()->astOperand1()->varId()) {
+                        const Token *varToken = tok2->astOperand1()->astOperand1();
+                        ExprEngine::ValuePtr val = data.getValue(varToken->varId(), varToken->valueType(), varToken);
+                        if (val->type == ExprEngine::ValueType::ArrayValue) {
+                            // Try to assign "any" value
+                            auto arrayValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(val);
+                            //ExprEngine::ValuePtr anyValue = getValueRangeFromValueType(data.getNewSymbolName(), tok2->astOperand1()->valueType(), *data.settings);
+                            arrayValue->assign(std::make_shared<ExprEngine::IntRange>("0", 0, 0), std::make_shared<ExprEngine::BailoutValue>());
+                            continue;
+                        }
                     }
                     if (!Token::Match(tok2->astOperand1(), "%var%"))
                         throw VerifyException(tok2, "Unhandled assignment in loop");
