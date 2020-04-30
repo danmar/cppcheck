@@ -16,6 +16,119 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @brief This is the ExprEngine component in Cppcheck. Its job is to
+ * convert the C/C++ code into expressions that the Z3 prover understands.
+ * We can then ask Z3 prover for instance if variable "x" can be 123 and
+ * the Z3 prover can tell us that.
+ *
+ * Overview
+ * ========
+ *
+ * The ExprEngine performs a "abstract execution" of each function.
+ *  - ExprEngine performs "forward" analysis only. It starts at the top
+ *    of the functions.
+ *  - There is a abstract program state `Data::memory`.
+ *  - The constraints are stored in the vector `Data::constraints`.
+ *
+ * Abstract program state
+ * ======================
+ *
+ * The map `Data::memory` contains the abstract values of all variables
+ * that are used in the current function scope.
+ *
+ * Use `--debug-bug-hunting --verbose` to dump out `Data::memory`.
+ * Example output:
+ * 2:5: { x=$1 y=$2}
+ * Explanation:
+ * At line 2, column 5: The memory has two variables. Variable x has the
+ * value $1. Variable y has the value $2.
+ *
+ * Different value names:
+ *  - Typical abstract value has name that starts with "$". The number is
+ *    just a incremented value.
+ *  - If a variable has a known value then the concrete value is written.
+ *    Example: `{ x=1 }`.
+ *  - For an uninitialized value the output says "?". For example: `{ a=? }`
+ *  - For buffers the output is something like `{ buf=($3,size=10,[:]=?,[$1]=$2) }`
+ *    The first item "$3" is the name of the buffer value.
+ *    The second item says that the size of this buffer is 10.
+ *    After that comes `[index]=value` items that show what values buffer items have:
+ *    `[:]=?` means that all items are uninitialized.
+ *    `[$1]=$2` means that the buffer item at index "$1" has value "$2".
+ *
+ * Abstract execution
+ * ==================
+ *
+ * The function:
+ * static void execute(const Token *start, const Token *end, Data &data)
+ *
+ * Perform abstract execution of the code from `start` to `end`. The
+ * `data` is modified during the abstract execution.
+ *
+ * Each astTop token is executed. From that, operands are executed
+ * recursively in the "execute.." functions. The result of an operand is
+ * a abstract value.
+ *
+ * Branches
+ * --------
+ *
+ * Imagine:
+ *     code1
+ *     if (x > 0)
+ *         code2
+ *     else
+ *         code3
+ *     code4
+ *
+ * When "if" is reached.. the current `data` is branched into `thenData`
+ * and `elseData`.
+ * For "thenData" a constraint is added: x>0
+ * For "elseData" a constraint is added: !(x>0)
+ *
+ * Then analysis of `thenData` and `elseData` will continue separately,
+ * by recursive execution. The "code4" block will be analysed both with
+ * `thenData` and `elseData`.
+ *
+ * Z3
+ * ==
+ *
+ * The ExprEngine will not execute Z3 unless a check wants it to.
+ *
+ * The abstract values and all their constraints is added to a Z3 solver
+ * object and after that Z3 can tell us if some condition can be true.
+ *
+ * Z3 is a SMT solver:
+ * https://en.wikipedia.org/wiki/Satisfiability_modulo_theories
+ *
+ * In SMT:
+ *  - all variables are "constant". A variable can not be changed or assigned.
+ *  - There is no "execution". The solver considers all equations simultaneously.
+ *
+ * Simple example (TestExpr::expr6):
+ *
+ *     void f(unsigned char x)
+ *     {
+ *          unsigned char y = 8 - x;\n"
+ *          y > 1000;
+ *     }
+ *
+ * If a check wants to know if "y > 1000" can be true, ExprEngine will
+ * generate this Z3 input:
+ *
+ *     (declare-fun $1 () Int)
+ *     (assert (and (>= $1 0) (<= $1 255)))
+ *     (assert (> (- 8 $1) 1000))
+ *
+ * A symbol "$1" is created.
+ * assert that "$1" is a value 0-255.
+ * assert that "8-$1" is greater than 1000.
+ *
+ * Z3 can now determine if these assertions are possible or not. In this
+ * case these assertions are not possible, there is no value for $1 between
+ * 0-255 that means that "8-$1" is greater than 1000.
+ */
+
 #include "exprengine.h"
 #include "astutils.h"
 #include "path.h"
@@ -1688,18 +1801,18 @@ static void execute(const Token *start, const Token *end, Data &data)
         else if (Token::simpleMatch(tok, "if (")) {
             const Token *cond = tok->next()->astOperand2(); // TODO: C++17 condition
             const ExprEngine::ValuePtr condValue = executeExpression(cond, data);
-            Data ifData(data);
+            Data thenData(data);
             Data elseData(data);
-            ifData.addConstraint(condValue, true);
+            thenData.addConstraint(condValue, true);
             elseData.addConstraint(condValue, false);
 
             const Token *thenStart = tok->linkAt(1)->next();
             const Token *thenEnd = thenStart->link();
 
             if (Token::Match(thenStart, "{ return|throw|break|continue"))
-                execute(thenStart->next(), thenEnd, ifData);
+                execute(thenStart->next(), thenEnd, thenData);
             else
-                execute(thenStart->next(), end, ifData);
+                execute(thenStart->next(), end, thenData);
 
             if (Token::simpleMatch(thenEnd, "} else {")) {
                 const Token *elseStart = thenEnd->tokAt(2);
