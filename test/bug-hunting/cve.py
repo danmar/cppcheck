@@ -18,7 +18,7 @@ RUN_CLANG = ('--clang' in sys.argv)
 
 def check():
     cmd = [CPPCHECK_PATH,
-           '-D_GNUC',
+           '-D__GNUC__',
            '--bug-hunting',
            '--inconclusive',
            '--platform=unix64',
