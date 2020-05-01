@@ -52,9 +52,9 @@ def check(filename):
     if RUN_CLANG:
         shutil.rmtree('itc-build-dir')
 
-    w = r'.*zero_division.c:([0-9]+):[0-9]+: error: There is division.*'
+    w = r'.*zero_division.c:([0-9]+):[0-9]+: error:(inconclusive:)? There is division.*'
     if TESTFILE.find('uninit_') > 0:
-        w = r'.*c:([0-9]+):[0-9]+: error: .*verificationUninit.*'
+        w = r'.*c:([0-9]+):[0-9]+: error: .*bughuntingUninit.*'
 
     ret = []
     for line in stderr.split('\n'):
