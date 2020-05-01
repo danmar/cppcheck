@@ -9,6 +9,7 @@
 
 #include <wx/wx.h>
 #include <wx/app.h>
+#include <wx/dc.h>
 #include <wx/log.h>
 #include <wx/filefn.h>
 #include <wx/spinctrl.h>
@@ -26,6 +27,22 @@
 #include <wx/string.h>
 #include <wx/textctrl.h>
 #include <wx/propgrid/property.h>
+
+void ignoredReturnValue_wxDC_GetSize(const wxDC &dc, wxCoord *width, wxCoord *height)
+{
+    // No warning is expected for
+    dc.GetSize(width, height);
+    // Now warning is expected for
+    (void)dc.GetSize();
+}
+
+void ignoredReturnValue_wxDC_GetSizeMM(const wxDC &dc, wxCoord *width, wxCoord *height)
+{
+    // No warning is expected for
+    dc.GetSizeMM(width, height);
+    // Now warning is expected for
+    (void)dc.GetSizeMM();
+}
 
 wxSizerItem* invalidFunctionArgBool_wxSizer_Add(wxSizer *sizer, wxWindow * window, const wxSizerFlags &flags)
 {
