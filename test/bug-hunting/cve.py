@@ -18,9 +18,11 @@ RUN_CLANG = ('--clang' in sys.argv)
 
 def check():
     cmd = [CPPCHECK_PATH,
+           '-D_GNUC',
            '--bug-hunting',
            '--platform=unix64',
            '--inline-suppr',
+           '--enable=information',
            TEST_SUITE]
     if RUN_CLANG:
         cmd.append('--clang')
@@ -34,6 +36,7 @@ def check():
     # Ensure there are no unmatched suppressions
     if '[unmatchedSuppression]' in stderr:
         print('FAILED: There are unmatched suppressions')
+        sys.exit(1)
     else:
         print('SUCCESS')
 
