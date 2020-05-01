@@ -20,6 +20,7 @@ def check():
     cmd = [CPPCHECK_PATH,
            '-D_GNUC',
            '--bug-hunting',
+           '--inconclusive',
            '--platform=unix64',
            '--inline-suppr',
            '--enable=information',
