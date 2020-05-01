@@ -1887,10 +1887,10 @@ static void execute(const Token *start, const Token *end, Data &data)
                         data.assignStructMember(tok2, &*structVal, memberName, memberValue);
                         continue;
                     }
-                    if (tok2->astOperand1()->isUnaryOp("*") && tok2->astOperand1()->astOperand1()->varId()) {
+                    if (tok2->astOperand1() && tok2->astOperand1()->isUnaryOp("*") && tok2->astOperand1()->astOperand1()->varId()) {
                         const Token *varToken = tok2->astOperand1()->astOperand1();
                         ExprEngine::ValuePtr val = data.getValue(varToken->varId(), varToken->valueType(), varToken);
-                        if (val->type == ExprEngine::ValueType::ArrayValue) {
+                        if (val && val->type == ExprEngine::ValueType::ArrayValue) {
                             // Try to assign "any" value
                             auto arrayValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(val);
                             //ExprEngine::ValuePtr anyValue = getValueRangeFromValueType(data.getNewSymbolName(), tok2->astOperand1()->valueType(), *data.settings);
