@@ -1837,8 +1837,9 @@ static void execute(const Token *start, const Token *end, Data &data)
             for (const Token *tok2 = bodyStart->next(); tok2 != bodyEnd; tok2 = tok2->next()) {
                 if (tok2->str() == "{")
                     tok2 = tok2->link();
-                else if (Token::Match(tok2, "case %num% :")) {
-                    auto caseValue = std::make_shared<ExprEngine::IntRange>(tok2->strAt(1), MathLib::toLongNumber(tok2->strAt(1)), MathLib::toLongNumber(tok2->strAt(1)));
+                else if (Token::Match(tok2, "case %char%|%num% :")) {
+                    const MathLib::bigint caseValue1 = tok2->next()->getKnownIntValue();
+                    auto caseValue = std::make_shared<ExprEngine::IntRange>(MathLib::toString(caseValue1), caseValue1, caseValue1);
                     Data caseData(data);
                     caseData.addConstraint(condValue, caseValue, true);
                     defaultData.addConstraint(condValue, caseValue, false);

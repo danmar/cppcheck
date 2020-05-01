@@ -56,6 +56,7 @@ private:
         TEST_CASE(ifelse1);
 
         TEST_CASE(switch1);
+        TEST_CASE(switch2);
 
         TEST_CASE(while1);
         TEST_CASE(while2);
@@ -353,6 +354,34 @@ private:
                       "(assert (and (>= $1 (- 2147483648)) (<= $1 2147483647)))\n"
                       "(assert (= $1 3))\n"
                       "z3::unsat",
+                      expr(code, "=="));
+    }
+
+    void switch2() {
+        const char code[] = "void foo(char type, int mcc) {\n"
+                            "    switch (type) {\n"
+                            "        case '1':\n"
+                            "        case '3':\n"
+                            "            break;\n"
+                            "        default:\n"
+                            "            return false;\n"
+                            "    }\n"
+                            "    p[0] = mcc == 0;\n"
+                            "}";
+        ASSERT_EQUALS("(declare-fun $1 () Int)\n" // case '1'
+                      "(declare-fun $2 () Int)\n"
+                      "(assert (= $1 49))\n"
+                      "(assert (and (>= $2 (- 2147483648)) (<= $2 2147483647)))\n"
+                      "(assert (and (>= $1 (- 128)) (<= $1 127)))\n"
+                      "(assert (= $2 0))\n"
+                      "z3::sat\n"
+                      "(declare-fun $1 () Int)\n" // case '3'
+                      "(declare-fun $2 () Int)\n"
+                      "(assert (= $1 51))\n"
+                      "(assert (and (>= $2 (- 2147483648)) (<= $2 2147483647)))\n"
+                      "(assert (and (>= $1 (- 128)) (<= $1 127)))\n"
+                      "(assert (= $2 0))\n"
+                      "z3::sat",
                       expr(code, "=="));
     }
 
