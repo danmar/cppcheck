@@ -166,6 +166,10 @@ matrix:
         - find . -name '*.json' -not -path '*/\.*' | xargs jsonlint -s
 # build fuzz client
         - make -j2 CXXFLAGS="-fsanitize=address" -C oss-fuzz fuzz-client
+# bug hunting
+        - make clean
+        - make -s USE_Z3=yes all -j2 && ./testrunner TestExprEngine
+        - python3 test/bug-hunting/cve.py
 
 # check if dmake needs to be rerun (this job may fail)
     - name: "rerun dmake?"
