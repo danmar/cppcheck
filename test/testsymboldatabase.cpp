@@ -228,6 +228,7 @@ private:
         TEST_CASE(functionArgs14); // #9055
         TEST_CASE(functionArgs15); // #7159
         TEST_CASE(functionArgs16); // #9591
+        TEST_CASE(functionArgs17);
 
         TEST_CASE(functionImplicitlyVirtual);
 
@@ -2384,6 +2385,15 @@ private:
         ASSERT_EQUALS("p", arg2->name());
         ASSERT(arg2->isPointer());
         ASSERT(arg2->isReference());
+    }
+
+    void functionArgs17() {
+        const char code[] = "void f(int (*fp)(), int x, int y) {}";
+        GET_SYMBOL_DB(code);
+        ASSERT(db != nullptr);
+        const Scope *scope = db->functionScopes.front();
+        const Function *func = scope->function;
+        ASSERT_EQUALS(3, func->argCount());
     }
 
     void functionImplicitlyVirtual() {
