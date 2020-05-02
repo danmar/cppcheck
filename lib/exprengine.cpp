@@ -1593,6 +1593,8 @@ static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
         }
         if (!structValue) {
             auto v = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
+            if (!v)
+                v = std::make_shared<ExprEngine::BailoutValue>();
             call(data.callbacks, tok, v, &data);
             return v;
         }
