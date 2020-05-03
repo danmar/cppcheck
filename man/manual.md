@@ -792,6 +792,8 @@ An example usage:
 
 If you want to detect more bugs and can accept lots of false alarms then Cppcheck has analysis for that.
 
+This analysis will be "soundy". The majority of the bugs should be detected however there is not a guarantee that Cppcheck will detect all bugs.
+
 Some possible use cases;
  * you are writing new code and want to ensure it is safe.
  * you are reviewing code and want to get hints about possible UB.
@@ -802,11 +804,9 @@ The intention is that this will be used primarily in the GUI.
 
 ## Activate this analysis
 
-In the GUI goto the project dialog.
+On the command line you can use `--bug-hunting` however then you can't configure contracts (see below).
 
-In the `Analysis` tab there is a check box for `Bug hunting`.
-
-Possibly it's a good idea to have separate project files for bug hunting and normal analysis.
+In the GUI goto the project dialog. In the `Analysis` tab there is a check box for `Bug hunting`.
 
 ## Cppcheck contracts
 
@@ -854,7 +854,6 @@ The data flow analysis can analyze simple functions completely but complex funct
 
 It is likely that you will get false alarms caused by incomplete data flow analysis. Unfortunately it is unlikely that such false alarms can be fixed by contracts.
 
-A bug hunting warning that is "inconclusive" was diagnosed when analysis was incomplete.
 
 
 
