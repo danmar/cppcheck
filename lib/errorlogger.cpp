@@ -59,7 +59,7 @@ InternalError::InternalError(const Token *tok, const std::string &errorMsg, Type
 }
 
 ErrorLogger::ErrorMessage::ErrorMessage()
-    : severity(Severity::none), incomplete(false), cwe(0U), inconclusive(false)
+    : incomplete(false), severity(Severity::none), cwe(0U), inconclusive(false)
 {
 }
 
@@ -67,8 +67,8 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack
     callStack(callStack), // locations for this error message
     id(id),               // set the message id
     file0(file1),
-    severity(severity),   // severity for this error message
     incomplete(false),
+    severity(severity),   // severity for this error message
     cwe(0U),
     inconclusive(inconclusive)
 {
@@ -82,8 +82,8 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack
     callStack(callStack), // locations for this error message
     id(id),               // set the message id
     file0(file1),
-    severity(severity),   // severity for this error message
     incomplete(false),
+    severity(severity),   // severity for this error message
     cwe(cwe.id),
     inconclusive(inconclusive)
 {
@@ -92,7 +92,7 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack
 }
 
 ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive)
-    : id(id), severity(severity), incomplete(false), cwe(0U), inconclusive(inconclusive)
+    : id(id), incomplete(false), severity(severity), cwe(0U), inconclusive(inconclusive)
 {
     // Format callstack
     for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it) {
@@ -111,7 +111,7 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack
 
 
 ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, const CWE &cwe, bool inconclusive)
-    : id(id), severity(severity), incomplete(false), cwe(cwe.id), inconclusive(inconclusive)
+    : id(id), incomplete(false), severity(severity), cwe(cwe.id), inconclusive(inconclusive)
 {
     // Format callstack
     for (const Token *tok: callstack) {
@@ -129,7 +129,7 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack
 }
 
 ErrorLogger::ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenList, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, bool inconclusive)
-    : id(id), severity(severity), incomplete(false), cwe(cwe.id), inconclusive(inconclusive)
+    : id(id), incomplete(false), severity(severity), cwe(cwe.id), inconclusive(inconclusive)
 {
     // Format callstack
     for (ErrorPath::const_iterator it = errorPath.begin(); it != errorPath.end(); ++it) {
@@ -148,8 +148,8 @@ ErrorLogger::ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenL
 }
 
 ErrorLogger::ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
-    : severity(Severity::none),
-      incomplete(false),
+    : incomplete(false),
+      severity(Severity::none),
       cwe(0U),
       inconclusive(false)
 {
