@@ -286,6 +286,10 @@ void ResultsView::checkingFinished()
     mUI.mProgress->setVisible(false);
     mUI.mProgress->setFormat("%p%");
 
+    // TODO: Items can be mysteriously hidden when checking is finished, this function
+    // call should be redundant but it "unhides" the wrongly hidden items.
+    mUI.mTree->refreshTree();
+
     //Should we inform user of non visible/not found errors?
     if (mShowNoErrorsMessage) {
         //Tell user that we found no errors
@@ -415,8 +419,12 @@ void ResultsView::updateDetails(const QModelIndex &index)
     if (!file0.isEmpty() && Path::isHeader(data["file"].toString().toStdString()))
         formattedMsg += QString("\n\n%1: %2").arg(tr("First included by")).arg(QDir::toNativeSeparators(file0));
 
+    if (data["cwe"].toInt() > 0)
+        formattedMsg.prepend("CWE: " + QString::number(data["cwe"].toInt()) + "\n");
     if (mUI.mTree->showIdColumn())
         formattedMsg.prepend(tr("Id") + ": " + data["id"].toString() + "\n");
+    if (data["incomplete"].toBool())
+        formattedMsg += "\n" + tr("Bug hunting analysis is incomplete");
     mUI.mDetails->setText(formattedMsg);
 
     const int lineNumber = data["line"].toInt();

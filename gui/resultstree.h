@@ -93,6 +93,12 @@ public:
     void showHiddenResults();
 
     /**
+    * @brief Refresh tree by checking which of the items should be shown
+    * and which should be hidden
+    */
+    void refreshTree();
+
+    /**
     * @brief Save results to a text stream
     *
     */
@@ -383,14 +389,6 @@ protected:
                                      const bool hide,
                                      const QString &icon,
                                      bool childOfMessage);
-
-
-    /**
-    * @brief Refresh tree by checking which of the items should be shown
-    * and which should be hidden
-    *
-    */
-    void refreshTree();
 
     /**
     * @brief Convert Severity to translated string for GUI.

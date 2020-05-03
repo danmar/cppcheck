@@ -1425,8 +1425,8 @@ static void checkContract(Data &data, const Token *tok, const Function *function
                                              id,
                                              "Function '" + function->name() + "' is called, can not determine that its contract '" + functionExpects + "' is always met.",
                                              CWE(0),
-                                             bailoutValue);
-
+                                             false);
+            errmsg.incomplete = bailoutValue;
             errmsg.function = functionName;
             data.errorLogger->reportErr(errmsg);
         }
@@ -1443,7 +1443,8 @@ static void checkContract(Data &data, const Token *tok, const Function *function
                                          id,
                                          "Function '" + function->name() + "' is called, can not determine that its contract is always met.",
                                          CWE(0),
-                                         true);
+                                         false);
+        errmsg.incomplete = true;
         data.errorLogger->reportErr(errmsg);
     }
 }
@@ -2121,9 +2122,11 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             std::list<const Token*> callstack{settings->clang ? tok : tok->astParent()};
             const char * const id = (tok->valueType() && tok->valueType()->isFloat()) ? "bughuntingDivByZeroFloat" : "bughuntingDivByZero";
             const bool bailout = (value.type == ExprEngine::ValueType::BailoutValue);
-            ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, id, "There is division, cannot determine that there can't be a division by zero.", CWE(369), bailout);
+            ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, id, "There is division, cannot determine that there can't be a division by zero.", CWE(369), false);
             if (!bailout)
                 errmsg.function = dataBase->currentFunction;
+            else
+                errmsg.incomplete = bailout;
             errorLogger->reportErr(errmsg);
         }
     };

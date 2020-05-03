@@ -83,6 +83,7 @@ public:
     QString function;
     QString errorId;
     Severity::SeverityType severity;
+    bool incomplete;
     bool inconclusive;
     QString summary;
     QString message;
@@ -111,6 +112,8 @@ public:
     unsigned int line;
     QString file0;
     QString errorId;
+    bool incomplete;
+    int cwe;
     bool inconclusive;
     Severity::SeverityType severity;
     QString summary;
