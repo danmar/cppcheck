@@ -11080,6 +11080,11 @@ void Tokenizer::simplifyOperatorName()
         if (tok->str() != "operator")
             continue;
         // operator op
+        if (Token::Match(tok, "operator %op% (")) {
+            tok->str(tok->str() + tok->next()->str());
+            tok->deleteNext();
+            continue;
+        }
         std::string op;
         Token *par = tok->next();
         bool done = false;
