@@ -11080,7 +11080,7 @@ void Tokenizer::simplifyOperatorName()
         if (tok->str() != "operator")
             continue;
         // operator op
-        if (Token::Match(tok, "operator %op% (")) {
+        if (Token::Match(tok, "operator %op% (") && !operatorEnd(tok->linkAt(2))) {
             tok->str(tok->str() + tok->next()->str());
             tok->deleteNext();
             continue;
