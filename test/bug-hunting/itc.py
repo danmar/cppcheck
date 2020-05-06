@@ -17,11 +17,11 @@ else:
 
 if len(sys.argv) >= 2 and sys.argv[-1] != '--clang':
     TESTFILE = sys.argv[-1]
-    if not os.path.isfile(TESTFILE):
-        print(f'ERROR: {TESTFILE} is not a file')
-        sys.exit(1)
 else:
     TESTFILE = os.path.expanduser('~/itc/01.w_Defects/zero_division.c')
+if not os.path.isfile(TESTFILE):
+    print('ERROR: %s is not a file' % TESTFILE)
+    sys.exit(1)
 
 RUN_CLANG = ('--clang' in sys.argv)
 
@@ -75,6 +75,7 @@ for w in wanted:
     if w not in actual:
         missing.append(w);
 print('missing:' + str(missing))
-
+if len(missing) > 0:
+    sys.exit(1)
 
 
