@@ -170,9 +170,7 @@ matrix:
         - make clean
         - make -s USE_Z3=yes -j2
         - python3 test/bug-hunting/cve.py
-        - wget https://github.com/Toyota-ITC-SSD/Software-Analysis-Benchmark/archive/v1.1.tar.gz
-        - tar xzvf v1.1.tar.gz
-        - mv Software-Analysis-Benchmark-1.1 ~/itc
+        - git clone https://github.com/regehr/itc-benchmarks.git ~/itc
         - python3 test/bug-hunting/itc.py
 
 # check if dmake needs to be rerun (this job may fail)
