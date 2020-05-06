@@ -167,7 +167,7 @@ matrix:
 # build fuzz client
         - make -j2 CXXFLAGS="-fsanitize=address" -C oss-fuzz fuzz-client
 # bug hunting
-        - touch lib/exprengine.cpp
+        - make clean
         - make -s USE_Z3=yes -j2
         - python3 test/bug-hunting/cve.py
         - wget -q https://github.com/Toyota-ITC-SSD/Software-Analysis-Benchmark/archive/v1.1.tar.gz
