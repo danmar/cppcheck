@@ -167,13 +167,13 @@ matrix:
 # build fuzz client
         - make -j2 CXXFLAGS="-fsanitize=address" -C oss-fuzz fuzz-client
 # bug hunting
-        - make clean
-        - make -s USE_Z3=yes all -j2
+        - touch lib/exprengine.cpp
+        - make -s USE_Z3=yes -j2
         - python3 test/bug-hunting/cve.py
-        - wget https://github.com/Toyota-ITC-SSD/Software-Analysis-Benchmark/archive/v1.1.tar.gz
+        - wget -q https://github.com/Toyota-ITC-SSD/Software-Analysis-Benchmark/archive/v1.1.tar.gz
         - tar xzvf v1.1.tar.gz
-        - mv Software-Analysis-Benchmark-1.1 itc
-        - python3 test/bug-hunting/itc.py itc/01.w_Defects/zero_division.c
+        - mv Software-Analysis-Benchmark-1.1 ~/itc
+        - python3 test/bug-hunting/itc.py
 
 # check if dmake needs to be rerun (this job may fail)
     - name: "rerun dmake?"
