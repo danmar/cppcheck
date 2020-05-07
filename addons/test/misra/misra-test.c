@@ -739,6 +739,14 @@ void misra_15_6() {
   (void)0;
 #endif
 
+#if A > 0x42
+  if (true) {
+    (void)0;
+  }
+  if (true)
+#endif
+  { (void)0; } // no-warning
+
   do {} while (x<0); // no-warning
 }
 
