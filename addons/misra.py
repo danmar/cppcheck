@@ -1950,7 +1950,7 @@ class MisraChecker:
                 if token.str.startswith('//') or token.str.startswith('/*'):
                     continue
                 state = 0
-                if token.str != '{' and '#' not in token.str:
+                if token.str not in ('{', '#'):
                     self.reportError(tok1, 15, 6)
 
     def misra_15_7(self, data):
