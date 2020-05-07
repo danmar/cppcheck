@@ -435,20 +435,18 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 const Token *condition = tok->next()->astOperand2();
                 const Token *lhs = condition->astOperand1();
                 const Token *rhs = condition->astOperand2();
-                const Token *vartok = rhs && rhs->isNumber() ? lhs : rhs;
-                const Token *numtok = rhs && rhs->isNumber() ? rhs : lhs;
+                const Token *vartok = (lhs && lhs->hasKnownIntValue()) ? rhs : lhs;
+                const Token *numtok = (lhs == vartok) ? rhs : lhs;
                 while (Token::simpleMatch(vartok, "."))
                     vartok = vartok->astOperand2();
-                if (vartok && vartok->varId() && numtok) {
+                if (vartok && vartok->varId() && numtok && numtok->hasKnownIntValue()) {
                     const std::map<int,VariableValue>::const_iterator it = variableValue.find(vartok->varId());
-                    if (it != variableValue.end() && it->second != MathLib::toLongNumber(numtok->str()))
+                    if (it != variableValue.end() && it->second != numtok->getKnownIntValue())
                         return true;   // this scope is not fully analysed => return true
-                    else {
-                        condVarId = vartok->varId();
-                        condVarValue = VariableValue(MathLib::toLongNumber(numtok->str()));
-                        if (condition->str() == "!=")
-                            condVarValue = !condVarValue;
-                    }
+                    condVarId = vartok->varId();
+                    condVarValue = VariableValue(numtok->getKnownIntValue());
+                    if (condition->str() == "!=")
+                        condVarValue = !condVarValue;
                 }
             }
 

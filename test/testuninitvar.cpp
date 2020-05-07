@@ -2523,6 +2523,19 @@ private:
                        "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("enum t_err { ERR_NONE, ERR_BAD_ARGS };\n" // #9649
+                       "struct box_t { int value; };\n"
+                       "int init_box(box_t *p, int v);\n"
+                       "\n"
+                       "void foo(int ret) {\n"
+                       "    box_t box2;\n"
+                       "    if (ret == ERR_NONE)\n"
+                       "        ret = init_box(&box2, 20);\n"
+                       "    if (ret == ERR_NONE)\n"
+                       "        z = x + box2.value;\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar("void f(int x) {\n"
                        "  int value;\n"
                        "  if (x == 32)\n"
