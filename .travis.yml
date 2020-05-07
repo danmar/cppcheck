@@ -57,6 +57,23 @@ matrix:
       compiler: gcc
       script:
          - CXXFLAGS="-fsanitize=address -Og -g3" make cppcheck check checkcfg -j 2 -s
+
+# bug hunting
+    - name: "bug hunting"
+      compiler: gcc
+      script:
+        - make clean
+        - make USE_Z3=yes -j2
+        - python3 test/bug-hunting/cve.py
+        - git clone https://github.com/regehr/itc-benchmarks.git ~/itc
+        - python3 test/bug-hunting/itc.py
+        - mkdir ~/juliet
+        - curl https://samate.nist.gov/SARD/testsuites/juliet/Juliet_Test_Suite_v1.3_for_C_Cpp.zip -o ~/juliet/juliet.zip
+        - cd ~/juliet
+        - unzip -qq ~/juliet/juliet.zip
+        - cd -
+        - python3 test/bug-hunting/juliet.py
+
 # check a lot of stuff that only needs to be checked in a single configuration
     - name: "misc"
       compiler: clang
@@ -156,22 +173,16 @@ matrix:
         - mkdir cmake.output
         - cd cmake.output
         - cmake -G "Unix Makefiles" -DBUILD_TESTS=On ..
-        - make -j2 check
+        - make -s -j2 check
         - cd ..
 # -funsigned-char
         - make clean
-        - make -j2 CXXFLAGS=-funsigned-char testrunner
+        - make -s -j2 CXXFLAGS=-funsigned-char testrunner
         - ./testrunner TestSymbolDatabase
 # check .json files
         - find . -name '*.json' -not -path '*/\.*' | xargs jsonlint -s
 # build fuzz client
-        - make -j2 CXXFLAGS="-fsanitize=address" -C oss-fuzz fuzz-client
-# bug hunting
-        - make clean
-        - make -s USE_Z3=yes -j2
-        - python3 test/bug-hunting/cve.py
-        - git clone https://github.com/regehr/itc-benchmarks.git ~/itc
-        - python3 test/bug-hunting/itc.py
+        - make -s -j2 CXXFLAGS="-fsanitize=address" -C oss-fuzz fuzz-client
 
 # check if dmake needs to be rerun (this job may fail)
     - name: "rerun dmake?"
