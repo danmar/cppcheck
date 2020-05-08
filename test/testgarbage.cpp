@@ -17,7 +17,6 @@
  */
 
 #include "check.h"
-#include "errorlogger.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "token.h"

@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 
-#include "errorlogger.h"
+#include "errortypes.h"
 #include "utils.h"
 
 class Library;

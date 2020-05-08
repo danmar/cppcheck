@@ -22,8 +22,8 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
-#include "errorlogger.h"
 #include "mathlib.h"
+#include "errortypes.h"
 #include "standards.h"
 
 #include <cstddef>

@@ -2,7 +2,7 @@
 #define GUARD_PROGRAMMEMORY_H
 
 #include "utils.h"
-#include "valueflow.h"
+#include "valueflow.h" // needed for alias
 #include "mathlib.h"
 #include <map>
 #include <unordered_map>

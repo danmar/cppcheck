@@ -22,8 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
-#include "errorlogger.h" // for Severity::SeverityType
-#include "tokenize.h"
+#include "errortypes.h"
 
 #include <list>
 #include <string>
@@ -43,6 +42,8 @@ namespace ValueFlow {
 class Settings;
 class Token;
 class ErrorLogger;
+class ErrorMessage;
+class Tokenizer;
 
 /** Use WRONG_DATA in checkers to mark conditions that check that data is correct */
 #define WRONG_DATA(COND, TOK)  (wrongData((TOK), (COND), #COND))

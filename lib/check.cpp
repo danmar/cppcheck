@@ -19,7 +19,10 @@
 //---------------------------------------------------------------------------
 
 #include "check.h"
+
+#include "errorlogger.h"
 #include "settings.h"
+#include "tokenize.h"
 
 #include <iostream>
 

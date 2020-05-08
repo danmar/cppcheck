@@ -22,12 +22,13 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
-#include "errorlogger.h"
 #include "importproject.h"
 
 #include <fstream>
 #include <list>
 #include <string>
+
+class ErrorMessage;
 
 /// @addtogroup Core
 /// @{

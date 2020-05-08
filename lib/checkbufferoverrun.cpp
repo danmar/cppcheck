@@ -23,6 +23,7 @@
 #include "checkbufferoverrun.h"
 
 #include "astutils.h"
+#include "errorlogger.h"
 #include "library.h"
 #include "mathlib.h"
 #include "settings.h"

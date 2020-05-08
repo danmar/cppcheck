@@ -23,7 +23,12 @@
 //---------------------------------------------------------------------------
 
 #include "check.h"
+#include "errorlogger.h"
 #include "valueflow.h"
+
+#include <map>
+
+class Function;
 
 /// @addtogroup Core
 /// @{

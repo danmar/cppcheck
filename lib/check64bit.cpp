@@ -22,7 +22,6 @@
 
 #include "check64bit.h"
 
-#include "errorlogger.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"

@@ -24,7 +24,7 @@
 
 #include "check.h"
 #include "config.h"
-#include "errorlogger.h"
+#include "errortypes.h"
 #include "tokenize.h"
 #include "utils.h"
 #include "valueflow.h"
@@ -35,6 +35,7 @@ class Scope;
 class Settings;
 class Token;
 class Variable;
+class ErrorLogger;
 
 
 /// @addtogroup Checks

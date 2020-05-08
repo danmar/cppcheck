@@ -18,7 +18,6 @@
 
 #include "checkstl.h"
 
-#include "errorlogger.h"
 #include "library.h"
 #include "mathlib.h"
 #include "settings.h"

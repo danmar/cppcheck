@@ -20,6 +20,7 @@
 #include "tokenize.h"
 
 #include "check.h"
+#include "errorlogger.h"
 #include "library.h"
 #include "mathlib.h"
 #include "platform.h"
