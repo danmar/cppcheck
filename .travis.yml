@@ -63,7 +63,8 @@ matrix:
       compiler: gcc
       script:
         - make clean
-        - make USE_Z3=yes -j2
+        - make USE_Z3=yes -j2 all
+        - ./testrunner TestExprEngine
         - python3 test/bug-hunting/cve.py
         - git clone https://github.com/regehr/itc-benchmarks.git ~/itc
         - python3 test/bug-hunting/itc.py

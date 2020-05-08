@@ -1164,19 +1164,19 @@ std::string ExprEngine::BinOpResult::getExpr(ExprEngine::DataBase *dataBase) con
         os << solver;
         switch (solver.check()) {
         case z3::sat:
-            os << "z3::sat";
+            os << "\nz3::sat\n";
             break;
         case z3::unsat:
-            os << "z3::unsat";
+            os << "\nz3::unsat\n";
             break;
         case z3::unknown:
-            os << "z3::unknown";
+            os << "\nz3::unknown\n";
             break;
         }
         return os.str();
     } catch (const z3::exception &exception) {
         std::ostringstream os;
-        os << "z3:" << exception;
+        os << "\nz3:" << exception << "\n";
         return os.str();
     }
 #else
