@@ -1558,7 +1558,27 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
             out << "Line " << tok->linenr() << std::endl;
         line = tok->linenr();
         if (!xml) {
-            out << "  " << tok->str() << (tok->mImpl->mValues->front().isKnown() ? " always " : " possible ");
+            ValueFlow::Value::ValueKind valueKind = tok->mImpl->mValues->front().valueKind;
+            bool same = true;
+            for (const ValueFlow::Value &value : *tok->mImpl->mValues) {
+                if (value.valueKind != valueKind) {
+                    same = false;
+                    break;
+                }
+            }
+            out << "  " << tok->str() << " ";
+            if (same) {
+                switch (valueKind) {
+                case ValueFlow::Value::ValueKind::Impossible:
+                case ValueFlow::Value::ValueKind::Known:
+                    out << "always ";
+                    break;
+                case ValueFlow::Value::ValueKind::Inconclusive:
+                case ValueFlow::Value::ValueKind::Possible:
+                    out << "possible ";
+                    break;
+                };
+            }
             if (tok->mImpl->mValues->size() > 1U)
                 out << '{';
         }
