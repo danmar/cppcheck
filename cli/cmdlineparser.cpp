@@ -973,6 +973,7 @@ void CmdLineParser::printHelp()
               "                         analysis is disabled by this flag.\n"
               "    --check-library      Show information messages when library files have\n"
               "                         incomplete info.\n"
+              "    --clang              Import Clang AST\n"
               "    --config-exclude=<dir>\n"
               "                         Path (prefix) to be excluded from configuration\n"
               "                         checking. Preprocessor configurations defined in\n"

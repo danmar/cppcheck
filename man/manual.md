@@ -108,6 +108,14 @@ This option is only valid when supplying an input directory. To ignore multiple 
 
     cppcheck -isrc/b -isrc/c
 
+### Clang parser
+
+By default Cppcheck uses an internal C/C++ parser. However it is possible to use the Clang parser instead.
+
+Install `clang`. Then use Cppcheck option `--clang`.
+
+Technically, Cppcheck will execute `clang` with its `-ast-dump` option. The Clang output is then imported and converted into our normal Cppcheck format. And then normal Cppcheck analysis is performed on that.
+
 ## Severities
 
 The possible severities for messages are:
