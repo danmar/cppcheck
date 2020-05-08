@@ -25,13 +25,13 @@
 #include <QDateTime>
 #include <set>
 #include "threadresult.h"
-#include "importproject.h"
 #include "suppressions.h"
 
 class ResultsView;
 class CheckThread;
 class QSettings;
 class Settings;
+class ImportProject;
 
 /// @addtogroup GUI
 /// @{

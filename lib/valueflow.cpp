@@ -91,6 +91,7 @@
 #include "token.h"
 #include "tokenlist.h"
 #include "utils.h"
+#include "valueptr.h"
 
 #include <algorithm>
 #include <cassert>

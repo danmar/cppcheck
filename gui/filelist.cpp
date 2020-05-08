@@ -20,7 +20,6 @@
 #include <QDir>
 #include <QFileInfo>
 #include "filelist.h"
-#include "path.h"
 #include "pathmatch.h"
 
 QStringList FileList::getDefaultFilters()
