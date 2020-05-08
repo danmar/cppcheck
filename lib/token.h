@@ -1032,6 +1032,19 @@ public:
         return mImpl->mValues->front().intvalue;
     }
 
+    bool isImpossibleIntValue(const MathLib::bigint val) const {
+        if (!mImpl->mValues)
+            return false;
+        for (const auto &v: *mImpl->mValues) {
+            if (v.isIntValue() && v.isImpossible() && v.intvalue == val)
+                return true;
+            if (v.isIntValue() && v.bound == ValueFlow::Value::Bound::Lower && v.intvalue > val)
+                return true;
+            if (v.isIntValue() && v.bound == ValueFlow::Value::Bound::Upper && v.intvalue < val)
+                return true;
+        }
+    }
+
     const ValueFlow::Value * getValue(const MathLib::bigint val) const {
         if (!mImpl->mValues)
             return nullptr;

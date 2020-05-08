@@ -2108,6 +2108,8 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             return;
         if (tok->hasKnownIntValue() && tok->getKnownIntValue() != 0)
             return;
+        if (tok->isImpossibleIntValue(0))
+            return;
         if (value.isUninit())
             return;
         float f = getKnownFloatValue(tok, 0.0f);
