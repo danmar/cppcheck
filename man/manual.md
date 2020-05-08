@@ -798,9 +798,11 @@ An example usage:
 
 # Bug hunting
 
-If you want to detect more bugs and can accept false alarms then Cppcheck has analysis for that.
+If you want to detect most bugs and can accept false alarms then Cppcheck has analysis for that.
 
-This analysis will be "soundy". The majority of the bugs should be detected however there is not a guarantee that Cppcheck will detect all bugs.
+This analysis is "soundy"; it should diagnose most bugs reported in CVEs and from dynamic analysis.
+
+You have to expect false alarms. However Cppcheck tries to limit false alarms. The purpose of the data flow analysis is to limit false alarms.
 
 Some possible use cases;
  * you are writing new code and want to ensure it is safe.
@@ -861,7 +863,6 @@ There are two ways:
 The data flow analysis can analyze simple functions completely but complex functions are not analyzed completely (yet). The data flow analysis will be continously improved in the future but it will never be perfect.
 
 It is likely that you will get false alarms caused by incomplete data flow analysis. Unfortunately it is unlikely that such false alarms can be fixed by contracts.
-
 
 
 
