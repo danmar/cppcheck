@@ -790,7 +790,7 @@ An example usage:
 
 # Bug hunting
 
-If you want to detect more bugs and can accept lots of false alarms then Cppcheck has analysis for that.
+If you want to detect more bugs and can accept false alarms then Cppcheck has analysis for that.
 
 This analysis will be "soundy". The majority of the bugs should be detected however there is not a guarantee that Cppcheck will detect all bugs.
 
