@@ -46,20 +46,22 @@ void Check::reportError(const ErrorMessage &errmsg)
 }
 
 
-void Check::reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe, bool inconclusive) {
-	const ErrorMessage errmsg(callstack, mTokenizer ? &mTokenizer->list : nullptr, severity, id, msg, cwe, inconclusive);
-	if (mErrorLogger)
-		mErrorLogger->reportErr(errmsg);
-	else
-		reportError(errmsg);
+void Check::reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe, bool inconclusive)
+{
+    const ErrorMessage errmsg(callstack, mTokenizer ? &mTokenizer->list : nullptr, severity, id, msg, cwe, inconclusive);
+    if (mErrorLogger)
+        mErrorLogger->reportErr(errmsg);
+    else
+        reportError(errmsg);
 }
 
-void Check::reportError(const ErrorPath &errorPath, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, bool inconclusive) {
-	const ErrorMessage errmsg(errorPath, mTokenizer ? &mTokenizer->list : nullptr, severity, id, msg, cwe, inconclusive);
-	if (mErrorLogger)
-		mErrorLogger->reportErr(errmsg);
-	else
-		reportError(errmsg);
+void Check::reportError(const ErrorPath &errorPath, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, bool inconclusive)
+{
+    const ErrorMessage errmsg(errorPath, mTokenizer ? &mTokenizer->list : nullptr, severity, id, msg, cwe, inconclusive);
+    if (mErrorLogger)
+        mErrorLogger->reportErr(errmsg);
+    else
+        reportError(errmsg);
 }
 
 bool Check::wrongData(const Token *tok, bool condition, const char *str)

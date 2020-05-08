@@ -663,11 +663,11 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::
                     continue;
 
                 const ErrorMessage errmsg(locationList,
-                                                       emptyString,
-                                                       warning ? Severity::warning : Severity::error,
-                                                       "Null pointer dereference: " + unsafeUsage.myArgumentName,
-                                                       "ctunullpointer",
-                                                       CWE_NULL_POINTER_DEREFERENCE, false);
+                                          emptyString,
+                                          warning ? Severity::warning : Severity::error,
+                                          "Null pointer dereference: " + unsafeUsage.myArgumentName,
+                                          "ctunullpointer",
+                                          CWE_NULL_POINTER_DEREFERENCE, false);
                 errorLogger.reportErr(errmsg);
 
                 foundErrors = true;

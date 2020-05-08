@@ -982,16 +982,16 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         if (settings.isEnabled(Settings::MISSING_INCLUDE) && (Preprocessor::missingIncludeFlag || Preprocessor::missingSystemIncludeFlag)) {
             const std::list<ErrorMessage::FileLocation> callStack;
             ErrorMessage msg(callStack,
-                                          emptyString,
-                                          Severity::information,
-                                          "Cppcheck cannot find all the include files (use --check-config for details)\n"
-                                          "Cppcheck cannot find all the include files. Cppcheck can check the code without the "
-                                          "include files found. But the results will probably be more accurate if all the include "
-                                          "files are found. Please check your project's include directories and add all of them "
-                                          "as include directories for Cppcheck. To see what files Cppcheck cannot find use "
-                                          "--check-config.",
-                                          Preprocessor::missingIncludeFlag ? "missingInclude" : "missingIncludeSystem",
-                                          false);
+                             emptyString,
+                             Severity::information,
+                             "Cppcheck cannot find all the include files (use --check-config for details)\n"
+                             "Cppcheck cannot find all the include files. Cppcheck can check the code without the "
+                             "include files found. But the results will probably be more accurate if all the include "
+                             "files are found. Please check your project's include directories and add all of them "
+                             "as include directories for Cppcheck. To see what files Cppcheck cannot find use "
+                             "--check-config.",
+                             Preprocessor::missingIncludeFlag ? "missingInclude" : "missingIncludeSystem",
+                             false);
             reportInfo(msg);
         }
     }

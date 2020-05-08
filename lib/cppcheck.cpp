@@ -300,11 +300,11 @@ static bool reportClangErrors(std::istream &is, std::function<void(const ErrorMe
         loc.column = std::atoi(colnr.c_str());
         locationList.push_back(loc);
         ErrorMessage errmsg(locationList,
-                                         loc.getfile(),
-                                         Severity::error,
-                                         msg,
-                                         "syntaxError",
-                                         false);
+                            loc.getfile(),
+                            Severity::error,
+                            msg,
+                            "syntaxError",
+                            false);
         reportErr(errmsg);
 
         return true;
@@ -490,11 +490,11 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 std::list<ErrorMessage::FileLocation> callstack(1, loc1);
 
                 ErrorMessage errmsg(callstack,
-                                                 "",
-                                                 Severity::error,
-                                                 output.msg,
-                                                 "syntaxError",
-                                                 false);
+                                    "",
+                                    Severity::error,
+                                    output.msg,
+                                    "syntaxError",
+                                    false);
                 reportErr(errmsg);
                 return mExitCode;
             }
@@ -777,11 +777,11 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     locationList.push_back(loc);
                 }
                 ErrorMessage errmsg(locationList,
-                                                 mTokenizer.list.getSourceFilePath(),
-                                                 Severity::error,
-                                                 e.errorMessage,
-                                                 e.id,
-                                                 false);
+                                    mTokenizer.list.getSourceFilePath(),
+                                    Severity::error,
+                                    e.errorMessage,
+                                    e.id,
+                                    false);
 
                 if (errmsg.severity == Severity::error || mSettings.isEnabled(errmsg.severity))
                     reportErr(errmsg);
@@ -800,11 +800,11 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             loc.setfile(Path::toNativeSeparators(filename));
             locationList.push_back(loc);
             ErrorMessage errmsg(locationList,
-                                             loc.getfile(),
-                                             Severity::information,
-                                             msg,
-                                             "noValidConfiguration",
-                                             false);
+                                loc.getfile(),
+                                Severity::information,
+                                msg,
+                                "noValidConfiguration",
+                                false);
             reportErr(errmsg);
         }
 
@@ -896,11 +896,11 @@ void CppCheck::internalError(const std::string &filename, const std::string &msg
         std::list<ErrorMessage::FileLocation> callstack(1, loc1);
 
         ErrorMessage errmsg(callstack,
-                                         emptyString,
-                                         Severity::information,
-                                         fullmsg,
-                                         "internalError",
-                                         false);
+                            emptyString,
+                            Severity::information,
+                            fullmsg,
+                            "internalError",
+                            false);
 
         mErrorLogger.reportErr(errmsg);
     } else {
@@ -1277,11 +1277,11 @@ void CppCheck::tooManyConfigsError(const std::string &file, const std::size_t nu
 
 
     ErrorMessage errmsg(loclist,
-                                     emptyString,
-                                     Severity::information,
-                                     msg.str(),
-                                     "toomanyconfigs", CWE398,
-                                     false);
+                        emptyString,
+                        Severity::information,
+                        msg.str(),
+                        "toomanyconfigs", CWE398,
+                        false);
 
     reportErr(errmsg);
 }
@@ -1301,11 +1301,11 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
     }
 
     ErrorMessage errmsg(loclist,
-                                     emptyString,
-                                     Severity::information,
-                                     "The configuration '" + configuration + "' was not checked because its code equals another one.",
-                                     "purgedConfiguration",
-                                     false);
+                        emptyString,
+                        Severity::information,
+                        "The configuration '" + configuration + "' was not checked because its code equals another one.",
+                        "purgedConfiguration",
+                        false);
 
     reportErr(errmsg);
 }

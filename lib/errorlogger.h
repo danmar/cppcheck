@@ -59,183 +59,183 @@ namespace tinyxml2 {
      */
 class CPPCHECKLIB ErrorMessage {
 public:
-	/**
-	 * File name and line number.
-	 * Internally paths are stored with / separator. When getting the filename
-	 * it is by default converted to native separators.
-	 */
-	class CPPCHECKLIB FileLocation {
-	public:
-		FileLocation()
-				: fileIndex(0), line(0), column(0) {
-		}
+    /**
+     * File name and line number.
+     * Internally paths are stored with / separator. When getting the filename
+     * it is by default converted to native separators.
+     */
+    class CPPCHECKLIB FileLocation {
+    public:
+        FileLocation()
+            : fileIndex(0), line(0), column(0) {
+        }
 
-		FileLocation(const std::string &file, int line, int column)
-				: fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file) {
-		}
+        FileLocation(const std::string &file, int line, int column)
+            : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file) {
+        }
 
-		FileLocation(const std::string &file, const std::string &info, int line, int column)
-				: fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file), mInfo(info) {
-		}
+        FileLocation(const std::string &file, const std::string &info, int line, int column)
+            : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file), mInfo(info) {
+        }
 
-		FileLocation(const Token* tok, const TokenList* tokenList);
-		FileLocation(const Token* tok, const std::string &info, const TokenList* tokenList);
+        FileLocation(const Token* tok, const TokenList* tokenList);
+        FileLocation(const Token* tok, const std::string &info, const TokenList* tokenList);
 
-		/**
-		 * Return the filename.
-		 * @param convert If true convert path to native separators.
-		 * @return filename.
-		 */
-		std::string getfile(bool convert = true) const;
+        /**
+         * Return the filename.
+         * @param convert If true convert path to native separators.
+         * @return filename.
+         */
+        std::string getfile(bool convert = true) const;
 
-		/**
-		 * Filename with the whole path (no --rp)
-		 * @param convert If true convert path to native separators.
-		 * @return filename.
-		 */
-		std::string getOrigFile(bool convert = true) const;
+        /**
+         * Filename with the whole path (no --rp)
+         * @param convert If true convert path to native separators.
+         * @return filename.
+         */
+        std::string getOrigFile(bool convert = true) const;
 
-		/**
-		 * Set the filename.
-		 * @param file Filename to set.
-		 */
-		void setfile(const std::string &file);
+        /**
+         * Set the filename.
+         * @param file Filename to set.
+         */
+        void setfile(const std::string &file);
 
-		/**
-		 * @return the location as a string. Format: [file:line]
-		 */
-		std::string stringify() const;
+        /**
+         * @return the location as a string. Format: [file:line]
+         */
+        std::string stringify() const;
 
-		unsigned int fileIndex;
-		int line; // negative value means "no line"
-		unsigned int column;
+        unsigned int fileIndex;
+        int line; // negative value means "no line"
+        unsigned int column;
 
-		std::string getinfo() const {
-			return mInfo;
-		}
-		void setinfo(const std::string &i) {
-			mInfo = i;
-		}
+        std::string getinfo() const {
+            return mInfo;
+        }
+        void setinfo(const std::string &i) {
+            mInfo = i;
+        }
 
-	private:
-		std::string mOrigFileName;
-		std::string mFileName;
-		std::string mInfo;
-	};
+    private:
+        std::string mOrigFileName;
+        std::string mFileName;
+        std::string mInfo;
+    };
 
-	ErrorMessage(const std::list<FileLocation> &callStack,
-				 const std::string& file1,
-				 Severity::SeverityType severity,
-				 const std::string &msg,
-				 const std::string &id, bool inconclusive);
-	ErrorMessage(const std::list<FileLocation> &callStack,
-				 const std::string& file1,
-				 Severity::SeverityType severity,
-				 const std::string &msg,
-				 const std::string &id,
-				 const CWE &cwe,
-				 bool inconclusive);
-	ErrorMessage(const std::list<const Token*>& callstack,
-				 const TokenList* list,
-				 Severity::SeverityType severity,
-				 const std::string& id,
-				 const std::string& msg,
-				 bool inconclusive);
-	ErrorMessage(const std::list<const Token*>& callstack,
-				 const TokenList* list,
-				 Severity::SeverityType severity,
-				 const std::string& id,
-				 const std::string& msg,
-				 const CWE &cwe,
-				 bool inconclusive);
-	ErrorMessage(const ErrorPath &errorPath,
-				 const TokenList *tokenList,
-				 Severity::SeverityType severity,
-				 const char id[],
-				 const std::string &msg,
-				 const CWE &cwe,
-				 bool inconclusive);
-	ErrorMessage();
-	explicit ErrorMessage(const tinyxml2::XMLElement * const errmsg);
+    ErrorMessage(const std::list<FileLocation> &callStack,
+                 const std::string& file1,
+                 Severity::SeverityType severity,
+                 const std::string &msg,
+                 const std::string &id, bool inconclusive);
+    ErrorMessage(const std::list<FileLocation> &callStack,
+                 const std::string& file1,
+                 Severity::SeverityType severity,
+                 const std::string &msg,
+                 const std::string &id,
+                 const CWE &cwe,
+                 bool inconclusive);
+    ErrorMessage(const std::list<const Token*>& callstack,
+                 const TokenList* list,
+                 Severity::SeverityType severity,
+                 const std::string& id,
+                 const std::string& msg,
+                 bool inconclusive);
+    ErrorMessage(const std::list<const Token*>& callstack,
+                 const TokenList* list,
+                 Severity::SeverityType severity,
+                 const std::string& id,
+                 const std::string& msg,
+                 const CWE &cwe,
+                 bool inconclusive);
+    ErrorMessage(const ErrorPath &errorPath,
+                 const TokenList *tokenList,
+                 Severity::SeverityType severity,
+                 const char id[],
+                 const std::string &msg,
+                 const CWE &cwe,
+                 bool inconclusive);
+    ErrorMessage();
+    explicit ErrorMessage(const tinyxml2::XMLElement * const errmsg);
 
-	/**
-	 * Format the error message in XML format
-	 */
-	std::string toXML() const;
+    /**
+     * Format the error message in XML format
+     */
+    std::string toXML() const;
 
-	static std::string getXMLHeader();
-	static std::string getXMLFooter();
+    static std::string getXMLHeader();
+    static std::string getXMLFooter();
 
-	/**
-	 * Format the error message into a string.
-	 * @param verbose use verbose message
-	 * @param templateFormat Empty string to use default output format
-	 * or template to be used. E.g. "{file}:{line},{severity},{id},{message}"
-	 * @param templateLocation Format Empty string to use default output format
-	 * or template to be used. E.g. "{file}:{line},{info}"
-	* @return formatted string
-	 */
-	std::string toString(bool verbose,
-						 const std::string &templateFormat = emptyString,
-						 const std::string &templateLocation = emptyString) const;
+    /**
+     * Format the error message into a string.
+     * @param verbose use verbose message
+     * @param templateFormat Empty string to use default output format
+     * or template to be used. E.g. "{file}:{line},{severity},{id},{message}"
+     * @param templateLocation Format Empty string to use default output format
+     * or template to be used. E.g. "{file}:{line},{info}"
+    * @return formatted string
+     */
+    std::string toString(bool verbose,
+                         const std::string &templateFormat = emptyString,
+                         const std::string &templateLocation = emptyString) const;
 
-	std::string serialize() const;
-	bool deserialize(const std::string &data);
+    std::string serialize() const;
+    bool deserialize(const std::string &data);
 
-	std::list<FileLocation> callStack;
-	std::string id;
+    std::list<FileLocation> callStack;
+    std::string id;
 
-	/** For GUI rechecking; source file (not header) */
-	std::string file0;
-	/** For GUI bug hunting; function name */
-	std::string function;
-	/** For GUI bug hunting; incomplete analysis */
-	bool incomplete;
+    /** For GUI rechecking; source file (not header) */
+    std::string file0;
+    /** For GUI bug hunting; function name */
+    std::string function;
+    /** For GUI bug hunting; incomplete analysis */
+    bool incomplete;
 
-	Severity::SeverityType severity;
-	CWE cwe;
-	bool inconclusive;
+    Severity::SeverityType severity;
+    CWE cwe;
+    bool inconclusive;
 
-	/** set short and verbose messages */
-	void setmsg(const std::string &msg);
+    /** set short and verbose messages */
+    void setmsg(const std::string &msg);
 
-	/** Short message (single line short message) */
-	const std::string &shortMessage() const {
-		return mShortMessage;
-	}
+    /** Short message (single line short message) */
+    const std::string &shortMessage() const {
+        return mShortMessage;
+    }
 
-	/** Verbose message (may be the same as the short message) */
-	const std::string &verboseMessage() const {
-		return mVerboseMessage;
-	}
+    /** Verbose message (may be the same as the short message) */
+    const std::string &verboseMessage() const {
+        return mVerboseMessage;
+    }
 
-	/** Symbol names */
-	const std::string &symbolNames() const {
-		return mSymbolNames;
-	}
+    /** Symbol names */
+    const std::string &symbolNames() const {
+        return mSymbolNames;
+    }
 
-	Suppressions::ErrorMessage toSuppressionsErrorMessage() const;
+    Suppressions::ErrorMessage toSuppressionsErrorMessage() const;
 
 private:
-	/**
-	 * Replace all occurrences of searchFor with replaceWith in the
-	 * given source.
-	 * @param source The string to modify
-	 * @param searchFor What should be searched for
-	 * @param replaceWith What will replace the found item
-	 */
-	static void findAndReplace(std::string &source, const std::string &searchFor, const std::string &replaceWith);
+    /**
+     * Replace all occurrences of searchFor with replaceWith in the
+     * given source.
+     * @param source The string to modify
+     * @param searchFor What should be searched for
+     * @param replaceWith What will replace the found item
+     */
+    static void findAndReplace(std::string &source, const std::string &searchFor, const std::string &replaceWith);
 
-	static std::string fixInvalidChars(const std::string& raw);
+    static std::string fixInvalidChars(const std::string& raw);
 
-	/** Short message */
-	std::string mShortMessage;
+    /** Short message */
+    std::string mShortMessage;
 
-	/** Verbose message */
-	std::string mVerboseMessage;
+    /** Verbose message */
+    std::string mVerboseMessage;
 
-	/** symbol names */
-	std::string mSymbolNames;
+    /** symbol names */
+    std::string mSymbolNames;
 };
 
 /**

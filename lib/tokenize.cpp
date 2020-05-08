@@ -2210,7 +2210,7 @@ bool Tokenizer::simplifyUsing()
                     str += " ;";
                     std::list<const Token *> callstack(1, usingStart);
                     mErrorLogger->reportErr(ErrorMessage(callstack, &list, Severity::debug, "debug",
-                                            "Failed to parse \'" + str + "\'. The checking continues anyway.", false));
+                                                         "Failed to parse \'" + str + "\'. The checking continues anyway.", false));
                 }
             }
             tok1 = after;
@@ -9504,15 +9504,15 @@ void Tokenizer::findGarbageCode() const
 
     // keyword keyword
     const std::set<std::string> nonConsecutiveKeywords{"break",
-        "continue",
-        "for",
-        "goto",
-        "if",
-        "return",
-        "switch",
-        "throw",
-        "typedef",
-        "while"};
+            "continue",
+            "for",
+            "goto",
+            "if",
+            "return",
+            "switch",
+            "throw",
+            "typedef",
+            "while"};
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (!tok->isName() || nonConsecutiveKeywords.count(tok->str()) == 0)
             continue;

@@ -49,8 +49,8 @@ inline static bool isPrefixStringCharLiteral(const std::string &str, char q, con
 inline static bool isStringCharLiteral(const std::string &str, char q)
 {
     for (const std::string & p: {
-    "", "u8", "u", "U", "L"
-}) {
+             "", "u8", "u", "U", "L"
+         }) {
         if (isPrefixStringCharLiteral(str, q, p))
             return true;
     }

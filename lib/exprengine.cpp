@@ -2290,10 +2290,10 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
                     dataBase->addError(tok->linenr());
                     std::list<const Token*> callstack{tok};
                     ErrorMessage errmsg(callstack,
-                                                     &tokenizer->list,
-                                                     Severity::SeverityType::error,
-                                                     "bughuntingInvalidArgValue",
-                                                     "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument value meets the attribute " + bad, CWE(0), false);
+                                        &tokenizer->list,
+                                        Severity::SeverityType::error,
+                                        "bughuntingInvalidArgValue",
+                                        "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument value meets the attribute " + bad, CWE(0), false);
                     errorLogger->reportErr(errmsg);
                     return;
                 }

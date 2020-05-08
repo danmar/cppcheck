@@ -302,11 +302,11 @@ unsigned int ThreadExecutor::check()
                     std::list<ErrorMessage::FileLocation> locations;
                     locations.emplace_back(childname, 0, 0);
                     const ErrorMessage errmsg(locations,
-                                                           emptyString,
-                                                           Severity::error,
-                                                           oss.str(),
-                                                           "cppcheckError",
-                                                           false);
+                                              emptyString,
+                                              Severity::error,
+                                              oss.str(),
+                                              "cppcheckError",
+                                              false);
 
                     if (!mSettings.nomsg.isSuppressed(errmsg.toSuppressionsErrorMessage()))
                         mErrorLogger.reportErr(errmsg);
