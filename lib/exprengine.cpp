@@ -2123,7 +2123,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             std::list<const Token*> callstack{settings->clang ? tok : tok->astParent()};
             const char * const id = (tok->valueType() && tok->valueType()->isFloat()) ? "bughuntingDivByZeroFloat" : "bughuntingDivByZero";
             const bool bailout = (value.type == ExprEngine::ValueType::BailoutValue);
-            ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, id, "There is division, cannot determine that there can't be a division by zero.", CWE(369), false);
+            ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, id, "There is division, cannot determine that there can't be a division by zero.", CWE(369), false);
             if (!bailout)
                 errmsg.function = dataBase->currentFunction;
             else
@@ -2287,7 +2287,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
                 if (!bad.empty()) {
                     dataBase->addError(tok->linenr());
                     std::list<const Token*> callstack{tok};
-                    ErrorLogger::ErrorMessage errmsg(callstack,
+                    ErrorMessage errmsg(callstack,
                                                      &tokenizer->list,
                                                      Severity::SeverityType::error,
                                                      "bughuntingInvalidArgValue",
@@ -2339,7 +2339,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             if (err) {
                 dataBase->addError(tok->linenr());
                 std::list<const Token*> callstack{tok};
-                ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingInvalidArgValue", "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument value is valid. Bad value: " + bad, CWE(0), false);
+                ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingInvalidArgValue", "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument value is valid. Bad value: " + bad, CWE(0), false);
                 errorLogger->reportErr(errmsg);
                 break;
             }
@@ -2379,7 +2379,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             if (value.isLessThan(dataBase, low)) {
                 dataBase->addError(tok->linenr());
                 std::list<const Token*> callstack{tok};
-                ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingAssign", "There is assignment, cannot determine that value is greater or equal with " + std::to_string(low), CWE_INCORRECT_CALCULATION, false);
+                ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingAssign", "There is assignment, cannot determine that value is greater or equal with " + std::to_string(low), CWE_INCORRECT_CALCULATION, false);
                 errorLogger->reportErr(errmsg);
             }
         }
@@ -2389,7 +2389,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             if (value.isGreaterThan(dataBase, high)) {
                 dataBase->addError(tok->linenr());
                 std::list<const Token*> callstack{tok};
-                ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingAssign", "There is assignment, cannot determine that value is lower or equal with " + std::to_string(high), CWE_INCORRECT_CALCULATION, false);
+                ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingAssign", "There is assignment, cannot determine that value is lower or equal with " + std::to_string(high), CWE_INCORRECT_CALCULATION, false);
                 errorLogger->reportErr(errmsg);
             }
         }

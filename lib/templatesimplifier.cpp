@@ -2993,7 +2993,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
             (!typeParametersInDeclaration.empty() && typeParametersInDeclaration.size() != mTypesUsedInTemplateInstantiation.size())) {
             if (printDebug && mErrorLogger) {
                 std::list<const Token *> callstack(1, tok2);
-                mErrorLogger->reportErr(ErrorLogger::ErrorMessage(callstack, &mTokenList, Severity::debug, "debug",
+                mErrorLogger->reportErr(ErrorMessage(callstack, &mTokenList, Severity::debug, "debug",
                                         "Failed to instantiate template \"" + instantiation.name() + "\". The checking continues anyway.", false));
             }
             if (typeForNewName.empty())
@@ -3061,7 +3061,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         if (typeForNewName.empty()) {
             if (printDebug && mErrorLogger) {
                 std::list<const Token *> callstack(1, tok2);
-                mErrorLogger->reportErr(ErrorLogger::ErrorMessage(callstack, &mTokenList, Severity::debug, "debug",
+                mErrorLogger->reportErr(ErrorMessage(callstack, &mTokenList, Severity::debug, "debug",
                                         "Failed to instantiate template \"" + templateDeclaration.name() + "\". The checking continues anyway.", false));
             }
             return false;
@@ -3678,7 +3678,7 @@ void TemplateSimplifier::simplifyTemplates(
     if (passCount == passCountMax) {
         if (mSettings->debugwarnings) {
             const std::list<const Token*> locationList(1, mTokenList.front());
-            const ErrorLogger::ErrorMessage errmsg(locationList, &mTokenizer->list,
+            const ErrorMessage errmsg(locationList, &mTokenizer->list,
                                                    Severity::debug,
                                                    "debug",
                                                    "TemplateSimplifier: pass count limit hit before simplifications were finished.",

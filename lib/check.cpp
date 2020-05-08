@@ -37,7 +37,7 @@ Check::Check(const std::string &aname)
     instances().push_back(this);
 }
 
-void Check::reportError(const ErrorLogger::ErrorMessage &errmsg)
+void Check::reportError(const ErrorMessage &errmsg)
 {
     std::cout << errmsg.toXML() << std::endl;
 }

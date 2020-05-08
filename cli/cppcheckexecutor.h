@@ -72,14 +72,14 @@ public:
     void reportOut(const std::string &outmsg) OVERRIDE;
 
     /** xml output of errors */
-    void reportErr(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
+    void reportErr(const ErrorMessage &msg) OVERRIDE;
 
     void reportProgress(const std::string &filename, const char stage[], const std::size_t value) OVERRIDE;
 
     /**
      * Output information messages.
      */
-    void reportInfo(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
+    void reportInfo(const ErrorMessage &msg) OVERRIDE;
 
     void bughuntingReport(const std::string &str) OVERRIDE;
 

@@ -91,7 +91,7 @@ public:
      * This is for for printout out the error list with --errorlist
      * @param errmsg Error message to write
      */
-    static void reportError(const ErrorLogger::ErrorMessage &errmsg);
+    static void reportError(const ErrorMessage &errmsg);
 
     /** Base class used for whole-program analysis */
     class CPPCHECKLIB FileInfo {
@@ -148,7 +148,7 @@ protected:
 
     /** report an error */
     void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe, bool inconclusive) {
-        const ErrorLogger::ErrorMessage errmsg(callstack, mTokenizer ? &mTokenizer->list : nullptr, severity, id, msg, cwe, inconclusive);
+        const ErrorMessage errmsg(callstack, mTokenizer ? &mTokenizer->list : nullptr, severity, id, msg, cwe, inconclusive);
         if (mErrorLogger)
             mErrorLogger->reportErr(errmsg);
         else
@@ -156,7 +156,7 @@ protected:
     }
 
     void reportError(const ErrorPath &errorPath, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, bool inconclusive) {
-        const ErrorLogger::ErrorMessage errmsg(errorPath, mTokenizer ? &mTokenizer->list : nullptr, severity, id, msg, cwe, inconclusive);
+        const ErrorMessage errmsg(errorPath, mTokenizer ? &mTokenizer->list : nullptr, severity, id, msg, cwe, inconclusive);
         if (mErrorLogger)
             mErrorLogger->reportErr(errmsg);
         else

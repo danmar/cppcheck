@@ -328,15 +328,15 @@ void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger,
         const std::string &filename, unsigned int lineNumber,
         const std::string &funcname)
 {
-    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+    std::list<ErrorMessage::FileLocation> locationList;
     if (!filename.empty()) {
-        ErrorLogger::ErrorMessage::FileLocation fileLoc;
+        ErrorMessage::FileLocation fileLoc;
         fileLoc.setfile(filename);
         fileLoc.line = lineNumber;
         locationList.push_back(fileLoc);
     }
 
-    const ErrorLogger::ErrorMessage errmsg(locationList, emptyString, Severity::style, "$symbol:" + funcname + "\nThe function '$symbol' is never used.", "unusedFunction", CWE561, false);
+    const ErrorMessage errmsg(locationList, emptyString, Severity::style, "$symbol:" + funcname + "\nThe function '$symbol' is never used.", "unusedFunction", CWE561, false);
     if (errorLogger)
         errorLogger->reportErr(errmsg);
     else

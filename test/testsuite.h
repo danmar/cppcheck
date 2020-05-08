@@ -84,7 +84,7 @@ protected:
 public:
     void bughuntingReport(const std::string &/*str*/) OVERRIDE {}
     void reportOut(const std::string &outmsg) OVERRIDE;
-    void reportErr(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
+    void reportErr(const ErrorMessage &msg) OVERRIDE;
     void run(const std::string &str);
     static void printHelp();
     const std::string classname;

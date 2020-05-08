@@ -652,7 +652,7 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::
                 if (warning == 1 && !settings.isEnabled(Settings::WARNING))
                     break;
 
-                const std::list<ErrorLogger::ErrorMessage::FileLocation> &locationList =
+                const std::list<ErrorMessage::FileLocation> &locationList =
                     ctu->getErrorPath(CTU::FileInfo::InvalidValueType::null,
                                       unsafeUsage,
                                       callsMap,
@@ -662,7 +662,7 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::
                 if (locationList.empty())
                     continue;
 
-                const ErrorLogger::ErrorMessage errmsg(locationList,
+                const ErrorMessage errmsg(locationList,
                                                        emptyString,
                                                        warning ? Severity::warning : Severity::error,
                                                        "Null pointer dereference: " + unsafeUsage.myArgumentName,

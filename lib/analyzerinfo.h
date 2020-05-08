@@ -53,8 +53,8 @@ public:
 
     /** Close current TU.analyzerinfo file */
     void close();
-    bool analyzeFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg, unsigned long long checksum, std::list<ErrorLogger::ErrorMessage> *errors);
-    void reportErr(const ErrorLogger::ErrorMessage &msg, bool verbose);
+    bool analyzeFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg, unsigned long long checksum, std::list<ErrorMessage> *errors);
+    void reportErr(const ErrorMessage &msg, bool verbose);
     void setFileInfo(const std::string &check, const std::string &fileInfo);
     static std::string getAnalyzerInfoFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg);
 private:

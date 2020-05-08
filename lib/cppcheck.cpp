@@ -268,7 +268,7 @@ const char * CppCheck::extraVersion()
     return ExtraVersion;
 }
 
-static bool reportClangErrors(std::istream &is, std::function<void(const ErrorLogger::ErrorMessage&)> reportErr)
+static bool reportClangErrors(std::istream &is, std::function<void(const ErrorMessage&)> reportErr)
 {
     std::string line;
     while (std::getline(is, line)) {
@@ -293,13 +293,13 @@ static bool reportClangErrors(std::istream &is, std::function<void(const ErrorLo
         const std::string colnr = line.substr(pos2+1, pos3-pos2-1);
         const std::string msg = line.substr(line.find(":", pos3+1) + 2);
 
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-        ErrorLogger::ErrorMessage::FileLocation loc;
+        std::list<ErrorMessage::FileLocation> locationList;
+        ErrorMessage::FileLocation loc;
         loc.setfile(Path::toNativeSeparators(filename));
         loc.line = std::atoi(linenr.c_str());
         loc.column = std::atoi(colnr.c_str());
         locationList.push_back(loc);
-        ErrorLogger::ErrorMessage errmsg(locationList,
+        ErrorMessage errmsg(locationList,
                                          loc.getfile(),
                                          Severity::error,
                                          msg,
@@ -363,14 +363,14 @@ unsigned int CppCheck::check(const std::string &path)
         // Ensure there are not syntax errors...
         if (!mSettings.buildDir.empty()) {
             std::ifstream fin(clangStderr);
-            auto reportError = [this](const ErrorLogger::ErrorMessage& errorMessage) {
+            auto reportError = [this](const ErrorMessage& errorMessage) {
                 reportErr(errorMessage);
             };
             if (reportClangErrors(fin, reportError))
                 return 0;
         } else {
             std::istringstream istr(result2.second);
-            auto reportError = [this](const ErrorLogger::ErrorMessage& errorMessage) {
+            auto reportError = [this](const ErrorMessage& errorMessage) {
                 reportErr(errorMessage);
             };
             if (reportClangErrors(istr, reportError))
@@ -486,10 +486,10 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             }
 
             if (err) {
-                const ErrorLogger::ErrorMessage::FileLocation loc1(output.location.file(), output.location.line, output.location.col);
-                std::list<ErrorLogger::ErrorMessage::FileLocation> callstack(1, loc1);
+                const ErrorMessage::FileLocation loc1(output.location.file(), output.location.line, output.location.col);
+                std::list<ErrorMessage::FileLocation> callstack(1, loc1);
 
-                ErrorLogger::ErrorMessage errmsg(callstack,
+                ErrorMessage errmsg(callstack,
                                                  "",
                                                  Severity::error,
                                                  output.msg,
@@ -575,7 +575,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
             // Calculate checksum so it can be compared with old checksum / future checksums
             const unsigned int checksum = preprocessor.calculateChecksum(tokens1, toolinfo.str());
-            std::list<ErrorLogger::ErrorMessage> errors;
+            std::list<ErrorMessage> errors;
             if (!mAnalyzerInformation.analyzeFile(mSettings.buildDir, filename, cfgname, checksum, &errors)) {
                 while (!errors.empty()) {
                     reportErr(errors.front());
@@ -766,17 +766,17 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 continue;
 
             } catch (const InternalError &e) {
-                std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+                std::list<ErrorMessage::FileLocation> locationList;
                 if (e.token) {
-                    ErrorLogger::ErrorMessage::FileLocation loc(e.token, &mTokenizer.list);
+                    ErrorMessage::FileLocation loc(e.token, &mTokenizer.list);
                     locationList.push_back(loc);
                 } else {
-                    ErrorLogger::ErrorMessage::FileLocation loc(mTokenizer.list.getSourceFilePath(), 0, 0);
-                    ErrorLogger::ErrorMessage::FileLocation loc2(filename, 0, 0);
+                    ErrorMessage::FileLocation loc(mTokenizer.list.getSourceFilePath(), 0, 0);
+                    ErrorMessage::FileLocation loc2(filename, 0, 0);
                     locationList.push_back(loc2);
                     locationList.push_back(loc);
                 }
-                ErrorLogger::ErrorMessage errmsg(locationList,
+                ErrorMessage errmsg(locationList,
                                                  mTokenizer.list.getSourceFilePath(),
                                                  Severity::error,
                                                  e.errorMessage,
@@ -795,11 +795,11 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             for (const std::string &s : configurationError)
                 msg += '\n' + s;
 
-            std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-            ErrorLogger::ErrorMessage::FileLocation loc;
+            std::list<ErrorMessage::FileLocation> locationList;
+            ErrorMessage::FileLocation loc;
             loc.setfile(Path::toNativeSeparators(filename));
             locationList.push_back(loc);
-            ErrorLogger::ErrorMessage errmsg(locationList,
+            ErrorMessage errmsg(locationList,
                                              loc.getfile(),
                                              Severity::information,
                                              msg,
@@ -844,9 +844,9 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     const int64_t lineNumber = obj["linenr"].get<int64_t>();
                     const int64_t column = obj["column"].get<int64_t>();
 
-                    ErrorLogger::ErrorMessage errmsg;
+                    ErrorMessage errmsg;
 
-                    errmsg.callStack.emplace_back(ErrorLogger::ErrorMessage::FileLocation(fileName, lineNumber, column));
+                    errmsg.callStack.emplace_back(ErrorMessage::FileLocation(fileName, lineNumber, column));
 
                     errmsg.id = obj["addon"].get<std::string>() + "-" + obj["errorId"].get<std::string>();
                     const std::string text = obj["message"].get<std::string>();
@@ -892,10 +892,10 @@ void CppCheck::internalError(const std::string &filename, const std::string &msg
     const std::string fullmsg("Bailing out from checking " + fixedpath + " since there was an internal error: " + msg);
 
     if (mSettings.isEnabled(Settings::INFORMATION)) {
-        const ErrorLogger::ErrorMessage::FileLocation loc1(filename, 0, 0);
-        std::list<ErrorLogger::ErrorMessage::FileLocation> callstack(1, loc1);
+        const ErrorMessage::FileLocation loc1(filename, 0, 0);
+        std::list<ErrorMessage::FileLocation> callstack(1, loc1);
 
-        ErrorLogger::ErrorMessage errmsg(callstack,
+        ErrorMessage errmsg(callstack,
                                          emptyString,
                                          Severity::information,
                                          fullmsg,
@@ -1255,9 +1255,9 @@ void CppCheck::tooManyConfigsError(const std::string &file, const std::size_t nu
     if (mSettings.isEnabled(Settings::INFORMATION) && file.empty())
         return;
 
-    std::list<ErrorLogger::ErrorMessage::FileLocation> loclist;
+    std::list<ErrorMessage::FileLocation> loclist;
     if (!file.empty()) {
-        ErrorLogger::ErrorMessage::FileLocation location;
+        ErrorMessage::FileLocation location;
         location.setfile(file);
         loclist.push_back(location);
     }
@@ -1276,7 +1276,7 @@ void CppCheck::tooManyConfigsError(const std::string &file, const std::size_t nu
         msg << " For more details, use --enable=information.";
 
 
-    ErrorLogger::ErrorMessage errmsg(loclist,
+    ErrorMessage errmsg(loclist,
                                      emptyString,
                                      Severity::information,
                                      msg.str(),
@@ -1293,14 +1293,14 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
     if (mSettings.isEnabled(Settings::INFORMATION) && file.empty())
         return;
 
-    std::list<ErrorLogger::ErrorMessage::FileLocation> loclist;
+    std::list<ErrorMessage::FileLocation> loclist;
     if (!file.empty()) {
-        ErrorLogger::ErrorMessage::FileLocation location;
+        ErrorMessage::FileLocation location;
         location.setfile(file);
         loclist.push_back(location);
     }
 
-    ErrorLogger::ErrorMessage errmsg(loclist,
+    ErrorMessage errmsg(loclist,
                                      emptyString,
                                      Severity::information,
                                      "The configuration '" + configuration + "' was not checked because its code equals another one.",
@@ -1312,7 +1312,7 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
 
 //---------------------------------------------------------------------------
 
-void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
+void CppCheck::reportErr(const ErrorMessage &msg)
 {
     mSuppressInternalErrorFound = false;
 
@@ -1364,7 +1364,7 @@ void CppCheck::reportProgress(const std::string &filename, const char stage[], c
     mErrorLogger.reportProgress(filename, stage, value);
 }
 
-void CppCheck::reportInfo(const ErrorLogger::ErrorMessage &msg)
+void CppCheck::reportInfo(const ErrorMessage &msg)
 {
     const Suppressions::ErrorMessage &errorMessage = msg.toSuppressionsErrorMessage();
     if (!mSettings.nomsg.isSuppressed(errorMessage))
@@ -1460,8 +1460,8 @@ void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings)
         const int64_t column = std::atol(columnNumString.c_str());
         fixedpath = Path::toNativeSeparators(fixedpath);
 
-        ErrorLogger::ErrorMessage errmsg;
-        errmsg.callStack.emplace_back(ErrorLogger::ErrorMessage::FileLocation(fixedpath, lineNumber, column));
+        ErrorMessage errmsg;
+        errmsg.callStack.emplace_back(ErrorMessage::FileLocation(fixedpath, lineNumber, column));
 
         errmsg.id = "clang-tidy-" + errorString.substr(1, errorString.length() - 2);
         if (errmsg.id.find("performance") != std::string::npos)

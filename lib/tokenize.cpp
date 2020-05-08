@@ -2208,7 +2208,7 @@ bool Tokenizer::simplifyUsing()
                     }
                     str += " ;";
                     std::list<const Token *> callstack(1, usingStart);
-                    mErrorLogger->reportErr(ErrorLogger::ErrorMessage(callstack, &list, Severity::debug, "debug",
+                    mErrorLogger->reportErr(ErrorMessage(callstack, &list, Severity::debug, "debug",
                                             "Failed to parse \'" + str + "\'. The checking continues anyway.", false));
                 }
             }
@@ -11505,7 +11505,7 @@ void Tokenizer::reportError(const Token* tok, const Severity::SeverityType sever
 
 void Tokenizer::reportError(const std::list<const Token*>& callstack, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive) const
 {
-    const ErrorLogger::ErrorMessage errmsg(callstack, &list, severity, id, msg, inconclusive);
+    const ErrorMessage errmsg(callstack, &list, severity, id, msg, inconclusive);
     if (mErrorLogger)
         mErrorLogger->reportErr(errmsg);
     else

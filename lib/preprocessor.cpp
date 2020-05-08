@@ -786,12 +786,12 @@ void Preprocessor::reportOutput(const simplecpp::OutputList &outputList, bool sh
 
 void Preprocessor::error(const std::string &filename, unsigned int linenr, const std::string &msg)
 {
-    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+    std::list<ErrorMessage::FileLocation> locationList;
     if (!filename.empty()) {
-        const ErrorLogger::ErrorMessage::FileLocation loc(filename, linenr, 0);
+        const ErrorMessage::FileLocation loc(filename, linenr, 0);
         locationList.push_back(loc);
     }
-    mErrorLogger->reportErr(ErrorLogger::ErrorMessage(locationList,
+    mErrorLogger->reportErr(ErrorMessage(locationList,
                             mFile0,
                             Severity::error,
                             msg,
@@ -819,14 +819,14 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
         missingIncludeFlag = true;
     if (mErrorLogger && mSettings.checkConfiguration) {
 
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+        std::list<ErrorMessage::FileLocation> locationList;
         if (!filename.empty()) {
-            ErrorLogger::ErrorMessage::FileLocation loc;
+            ErrorMessage::FileLocation loc;
             loc.line = linenr;
             loc.setfile(Path::toNativeSeparators(filename));
             locationList.push_back(loc);
         }
-        ErrorLogger::ErrorMessage errmsg(locationList, mFile0, Severity::information,
+        ErrorMessage errmsg(locationList, mFile0, Severity::information,
                                          (headerType==SystemHeader) ?
                                          "Include file: <" + header + "> not found. Please note: Cppcheck does not need standard library headers to get proper results." :
                                          "Include file: \"" + header + "\" not found.",
@@ -869,10 +869,10 @@ bool Preprocessor::validateCfg(const std::string &cfg, const std::list<simplecpp
 void Preprocessor::validateCfgError(const std::string &file, const unsigned int line, const std::string &cfg, const std::string &macro)
 {
     const std::string id = "ConfigurationNotChecked";
-    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-    const ErrorLogger::ErrorMessage::FileLocation loc(file, line, 0);
+    std::list<ErrorMessage::FileLocation> locationList;
+    const ErrorMessage::FileLocation loc(file, line, 0);
     locationList.push_back(loc);
-    const ErrorLogger::ErrorMessage errmsg(locationList, mFile0, Severity::information, "Skipping configuration '" + cfg + "' since the value of '" + macro + "' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly.", id, false);
+    const ErrorMessage errmsg(locationList, mFile0, Severity::information, "Skipping configuration '" + cfg + "' since the value of '" + macro + "' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly.", id, false);
     mErrorLogger->reportInfo(errmsg);
 }
 

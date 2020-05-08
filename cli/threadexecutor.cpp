@@ -117,7 +117,7 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
     if (type == REPORT_OUT) {
         mErrorLogger.reportOut(buf);
     } else if (type == REPORT_ERROR || type == REPORT_INFO) {
-        ErrorLogger::ErrorMessage msg;
+        ErrorMessage msg;
         msg.deserialize(buf);
 
         if (!mSettings.nomsg.isSuppressed(msg.toSuppressionsErrorMessage())) {
@@ -299,9 +299,9 @@ unsigned int ThreadExecutor::check()
                     std::ostringstream oss;
                     oss << "Internal error: Child process crashed with signal " << WTERMSIG(stat);
 
-                    std::list<ErrorLogger::ErrorMessage::FileLocation> locations;
+                    std::list<ErrorMessage::FileLocation> locations;
                     locations.emplace_back(childname, 0, 0);
-                    const ErrorLogger::ErrorMessage errmsg(locations,
+                    const ErrorMessage errmsg(locations,
                                                            emptyString,
                                                            Severity::error,
                                                            oss.str(),
@@ -344,12 +344,12 @@ void ThreadExecutor::reportOut(const std::string &outmsg)
     writeToPipe(REPORT_OUT, outmsg);
 }
 
-void ThreadExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
+void ThreadExecutor::reportErr(const ErrorMessage &msg)
 {
     writeToPipe(REPORT_ERROR, msg.serialize());
 }
 
-void ThreadExecutor::reportInfo(const ErrorLogger::ErrorMessage &msg)
+void ThreadExecutor::reportInfo(const ErrorMessage &msg)
 {
     writeToPipe(REPORT_INFO, msg.serialize());
 }

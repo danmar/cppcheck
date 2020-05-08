@@ -131,7 +131,7 @@ private:
 
             exec.reportOut(*i);
 
-            ErrorLogger::ErrorMessage errMessage;
+            ErrorMessage errMessage;
             errMessage.setmsg(*i);
 
             // no xml option

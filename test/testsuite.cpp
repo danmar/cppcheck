@@ -360,7 +360,7 @@ void TestFixture::reportOut(const std::string & outmsg)
     output << outmsg << std::endl;
 }
 
-void TestFixture::reportErr(const ErrorLogger::ErrorMessage &msg)
+void TestFixture::reportErr(const ErrorMessage &msg)
 {
     const std::string errormessage(msg.toString(mVerbose, mTemplateFormat, mTemplateLocation));
     if (errout.str().find(errormessage) == std::string::npos)

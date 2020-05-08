@@ -57,7 +57,7 @@ void ThreadResult::fileChecked(const QString &file)
     }
 }
 
-void ThreadResult::reportErr(const ErrorLogger::ErrorMessage &msg)
+void ThreadResult::reportErr(const ErrorMessage &msg)
 {
     QMutexLocker locker(&mutex);
     const ErrorItem item(msg);

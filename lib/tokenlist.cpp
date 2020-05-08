@@ -1615,7 +1615,7 @@ const std::string& TokenList::file(const Token *tok) const
 
 std::string TokenList::fileLine(const Token *tok) const
 {
-    return ErrorLogger::ErrorMessage::FileLocation(tok, this).stringify();
+    return ErrorMessage::FileLocation(tok, this).stringify();
 }
 
 bool TokenList::validateToken(const Token* tok) const
