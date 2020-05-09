@@ -215,15 +215,23 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     mSettings = &settings;
 
     if (!parseFromArgs(&cppCheck, argc, argv)) {
+        mSettings = nullptr;
         return EXIT_FAILURE;
     }
     if (Settings::terminated()) {
+        mSettings = nullptr;
         return EXIT_SUCCESS;
     }
-    if (cppCheck.settings().exceptionHandling) {
-        return check_wrapper(cppCheck, argc, argv);
-    }
-    return check_internal(cppCheck, argc, argv);
+
+    int ret;
+
+    if (cppCheck.settings().exceptionHandling)
+        ret = check_wrapper(cppCheck, argc, argv);
+    else
+        ret = check_internal(cppCheck, argc, argv);
+
+    mSettings = nullptr;
+    return ret;
 }
 
 void CppCheckExecutor::setSettings(const Settings &settings)
