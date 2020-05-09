@@ -129,7 +129,7 @@ private:
 
     CRITICAL_SECTION mReportSync;
 
-    void report(const ErrorLogger::ErrorMessage &msg, MessageType msgType);
+    void report(const ErrorMessage &msg, MessageType msgType);
 
     static unsigned __stdcall threadProc(void*);
 

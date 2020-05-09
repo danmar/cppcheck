@@ -1139,7 +1139,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
         if (!re) {
             if (pcreCompileErrorStr) {
                 const std::string msg = "pcre_compile failed: " + std::string(pcreCompileErrorStr);
-                const ErrorLogger::ErrorMessage errmsg(std::list<ErrorLogger::ErrorMessage::FileLocation>(),
+                const ErrorMessage errmsg(std::list<ErrorMessage::FileLocation>(),
                                                        emptyString,
                                                        Severity::error,
                                                        msg,
@@ -1160,7 +1160,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
         // It is NULL if everything works, and points to an error string otherwise.
         if (pcreStudyErrorStr) {
             const std::string msg = "pcre_study failed: " + std::string(pcreStudyErrorStr);
-            const ErrorLogger::ErrorMessage errmsg(std::list<ErrorLogger::ErrorMessage::FileLocation>(),
+            const ErrorMessage errmsg(std::list<ErrorMessage::FileLocation>(),
                                                    emptyString,
                                                    Severity::error,
                                                    msg,
@@ -1183,7 +1183,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
             if (pcreExecRet < 0) {
                 const std::string errorMessage = pcreErrorCodeToString(pcreExecRet);
                 if (!errorMessage.empty()) {
-                    const ErrorLogger::ErrorMessage errmsg(std::list<ErrorLogger::ErrorMessage::FileLocation>(),
+                    const ErrorMessage errmsg(std::list<ErrorMessage::FileLocation>(),
                                                            emptyString,
                                                            Severity::error,
                                                            std::string("pcre_exec failed: ") + errorMessage,
@@ -1201,7 +1201,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
             pos = (int)pos2;
 
             // determine location..
-            ErrorLogger::ErrorMessage::FileLocation loc;
+            ErrorMessage::FileLocation loc;
             loc.setfile(tokenizer.list.getSourceFilePath());
             loc.line = 0;
 
@@ -1215,7 +1215,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
                 }
             }
 
-            const std::list<ErrorLogger::ErrorMessage::FileLocation> callStack(1, loc);
+            const std::list<ErrorMessage::FileLocation> callStack(1, loc);
 
             // Create error message
             std::string summary;
@@ -1223,7 +1223,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
                 summary = "found '" + str.substr(pos1, pos2 - pos1) + "'";
             else
                 summary = rule.summary;
-            const ErrorLogger::ErrorMessage errmsg(callStack, tokenizer.list.getSourceFilePath(), rule.severity, summary, rule.id, false);
+            const ErrorMessage errmsg(callStack, tokenizer.list.getSourceFilePath(), rule.severity, summary, rule.id, false);
 
             // Report error
             reportErr(errmsg);

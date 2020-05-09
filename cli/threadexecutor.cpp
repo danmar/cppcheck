@@ -496,12 +496,12 @@ void ThreadExecutor::reportOut(const std::string &outmsg)
 
     LeaveCriticalSection(&mReportSync);
 }
-void ThreadExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
+void ThreadExecutor::reportErr(const ErrorMessage &msg)
 {
     report(msg, MessageType::REPORT_ERROR);
 }
 
-void ThreadExecutor::reportInfo(const ErrorLogger::ErrorMessage &msg)
+void ThreadExecutor::reportInfo(const ErrorMessage &msg)
 {
 
 }
@@ -511,7 +511,7 @@ void ThreadExecutor::bughuntingReport(const std::string  &/*str*/)
     // TODO
 }
 
-void ThreadExecutor::report(const ErrorLogger::ErrorMessage &msg, MessageType msgType)
+void ThreadExecutor::report(const ErrorMessage &msg, MessageType msgType)
 {
     if (mSettings.nomsg.isSuppressed(msg.toSuppressionsErrorMessage()))
         return;
@@ -559,12 +559,12 @@ void ThreadExecutor::reportOut(const std::string &/*outmsg*/)
 {
 
 }
-void ThreadExecutor::reportErr(const ErrorLogger::ErrorMessage &/*msg*/)
+void ThreadExecutor::reportErr(const ErrorMessage &/*msg*/)
 {
 
 }
 
-void ThreadExecutor::reportInfo(const ErrorLogger::ErrorMessage &/*msg*/)
+void ThreadExecutor::reportInfo(const ErrorMessage &/*msg*/)
 {
 
 }

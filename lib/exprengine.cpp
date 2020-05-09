@@ -1420,7 +1420,7 @@ static void checkContract(Data &data, const Token *tok, const Function *function
             const auto contractIt = data.settings->functionContracts.find(function->fullName());
             const std::string functionName = contractIt->first;
             const std::string functionExpects = contractIt->second;
-            ErrorLogger::ErrorMessage errmsg(callstack,
+            ErrorMessage errmsg(callstack,
                                              &data.tokenizer->list,
                                              Severity::SeverityType::error,
                                              id,
@@ -1438,7 +1438,7 @@ static void checkContract(Data &data, const Token *tok, const Function *function
         const char * const id = "internalErrorInExprEngine";
         const auto contractIt = data.settings->functionContracts.find(function->fullName());
         const std::string functionExpects = contractIt->second;
-        ErrorLogger::ErrorMessage errmsg(callstack,
+        ErrorMessage errmsg(callstack,
                                          &data.tokenizer->list,
                                          Severity::SeverityType::error,
                                          id,
@@ -2178,7 +2178,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             errorMessage += " Note that unsigned integer overflow is defined and will wrap around.";
 
         std::list<const Token*> callstack{tok};
-        ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingIntegerOverflow", errorMessage, false);
+        ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingIntegerOverflow", errorMessage, false);
         errorLogger->reportErr(errmsg);
     };
 #endif
@@ -2244,7 +2244,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
 
         dataBase->addError(tok->linenr());
         std::list<const Token*> callstack{tok};
-        ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingUninit", "Cannot determine that '" + tok->expressionString() + "' is initialized", CWE_USE_OF_UNINITIALIZED_VARIABLE, false);
+        ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingUninit", "Cannot determine that '" + tok->expressionString() + "' is initialized", CWE_USE_OF_UNINITIALIZED_VARIABLE, false);
         errorLogger->reportErr(errmsg);
     };
 #endif
@@ -2356,7 +2356,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
                 if (v.second->isUninit()) {
                     dataBase->addError(tok->linenr());
                     std::list<const Token*> callstack{tok};
-                    ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingUninitArg", "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument is initialized.", CWE_USE_OF_UNINITIALIZED_VARIABLE, false);
+                    ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingUninitArg", "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument is initialized.", CWE_USE_OF_UNINITIALIZED_VARIABLE, false);
                     errorLogger->reportErr(errmsg);
                     break;
                 }
