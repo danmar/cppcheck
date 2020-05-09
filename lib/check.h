@@ -116,11 +116,11 @@ public:
     }
 
     // Return true if an error is reported.
-    virtual bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<FileInfo*> &fileInfo, const Settings& /*settings*/, ErrorLogger &errorLogger) {
+    virtual bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<FileInfo*> &fileInfo, const Settings& /*settings*/, ErrorLogger &/*errorLogger*/) {
         (void)ctu;
         (void)fileInfo;
         //(void)settings;
-        (void)errorLogger;
+        //(void)errorLogger;
         return false;
     }
 
