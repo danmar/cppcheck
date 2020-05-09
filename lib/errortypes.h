@@ -17,8 +17,8 @@
  */
 
 //---------------------------------------------------------------------------
-#ifndef severityH
-#define severityH
+#ifndef errortypesH
+#define errortypesH
 //---------------------------------------------------------------------------
 
 #include "config.h"
@@ -152,4 +152,4 @@ typedef std::list<ErrorPathItem> ErrorPath;
 
 /// @}
 //---------------------------------------------------------------------------
-#endif // severityH
+#endif // errortypesH
