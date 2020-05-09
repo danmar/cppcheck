@@ -1038,11 +1038,12 @@ public:
         for (const auto &v: *mImpl->mValues) {
             if (v.isIntValue() && v.isImpossible() && v.intvalue == val)
                 return true;
-            if (v.isIntValue() && v.bound == ValueFlow::Value::Bound::Lower && v.intvalue > val)
+            if (v.isIntValue() && v.bound == ValueFlow::Value::Bound::Lower && val > v.intvalue)
                 return true;
-            if (v.isIntValue() && v.bound == ValueFlow::Value::Bound::Upper && v.intvalue < val)
+            if (v.isIntValue() && v.bound == ValueFlow::Value::Bound::Upper && val < v.intvalue)
                 return true;
         }
+        return false;
     }
 
     const ValueFlow::Value * getValue(const MathLib::bigint val) const {
