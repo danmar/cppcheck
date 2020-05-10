@@ -1,3 +1,9 @@
+if (MSVC)
+    # Visual Studio only sets _DEBUG
+    if (CMAKE_BUILD_TYPE MATCHES "Debug")
+        add_definitions(-DDEBUG)
+    endif()
+endif()
 if (UNIX)
     if (CMAKE_BUILD_TYPE MATCHES "Debug")
         add_definitions(-D_GLIBCXX_DEBUG)

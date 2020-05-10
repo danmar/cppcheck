@@ -1,16 +1,8 @@
-if (CMAKE_BUILD_TYPE MATCHES "Debug")
-    add_definitions(-DDEBUG)
-elseif(CMAKE_BUILD_TYPE MATCHES "Release" OR CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
-    add_definitions(-DNDEBUG)
-endif()
-
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    if (CMAKE_BUILD_TYPE MATCHES "Debug")
-        add_definitions(-g -O0)
-    elseif(CMAKE_BUILD_TYPE MATCHES "Release" OR CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
-        add_definitions(-O2)
+    if(CMAKE_BUILD_TYPE MATCHES "Release")
+        # "Release" uses -O3 by default
+        add_compile_options(-O2)
     endif()
-
     if (WARNINGS_ARE_ERRORS)
         add_compile_options(-Werror)
     endif()
