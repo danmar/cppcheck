@@ -160,14 +160,21 @@ private:
     }
 
     bool isSameExpression(const char code[], const char tokStr1[], const char tokStr2[]) {
+        return isSameExpression(code,
+            [&](const Token* startTok) { return Token::findsimplematch(startTok, tokStr1); },
+            [&](const Token* startTok, const Token* firstTok) { return Token::findsimplematch(firstTok->next(), tokStr2); });
+    }
+
+    bool isSameExpression(const char code[], std::function<const Token * (const Token*)> getTok1, std::function<const Token * (const Token*, const Token*)> getTok2)
+    {
         Settings settings;
         Library library;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokens1("");
-        const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), tokStr1);
-        const Token * const tok2 = Token::findsimplematch(tok1->next(), tokStr2);
+        const Token * const tok1 = getTok1(tokenizer.tokens());
+        const Token * const tok2 = getTok2(tokenizer.tokens(), tok1);
         return ::isSameExpression(false, false, tok1, tok2, library, false, true, nullptr);
     }
 
@@ -188,6 +195,16 @@ private:
         ASSERT_EQUALS(true,  isSameExpression("void f() {double y = 1e1; (x + y) < (x + 10.0); } ", "+", "+"));
         ASSERT_EQUALS(true,  isSameExpression("void f() {double y = 1e1; (x + 10.0) < (y + x); } ", "+", "+"));
         ASSERT_EQUALS(true,  isSameExpression("void f() {double y = 1e1; double z = 10.0; (x + y) < (x + z); } ", "+", "+"));
+
+        ASSERT_EQUALS(true, isSameExpression("A + A;",
+            [](const Token* startTok) { return Token::findsimplematch(startTok, "+")->astOperand1(); },
+            [](const Token* startTok, const Token*) { return Token::findsimplematch(startTok, "+")->astOperand2(); }));
+        ASSERT_EQUALS(false, isSameExpression("A::B + A::C;",
+            [](const Token* startTok) { return Token::findsimplematch(startTok, "+")->astOperand1(); },
+            [](const Token* startTok, const Token*) { return Token::findsimplematch(startTok, "+")->astOperand2(); }));
+
+        //Currently fails. See https://trac.cppcheck.net/ticket/9700
+        //ASSERT_EQUALS(false, isSameExpression("if(x) return new A::B(true); else return new A::C(true);", "new", "new"));
     }
 
     bool isVariableChanged(const char code[], const char startPattern[], const char endPattern[]) {
