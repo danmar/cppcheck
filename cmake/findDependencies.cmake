@@ -13,6 +13,13 @@ if (HAVE_RULES)
     endif()
 endif()
 
+if (USE_Z3)
+    find_library(Z3_LIBRARY z3)
+    if (NOT Z3_LIBRARY)
+        message(FATAL_ERROR "z3 dependency has not been found")
+    endif()
+endif()
+
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC OFF)
 

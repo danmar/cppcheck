@@ -23,6 +23,9 @@ if (BUILD_TESTS)
     if (HAVE_RULES)
         target_link_libraries(testrunner ${PCRE_LIBRARY})
     endif()
+    if (USE_Z3)
+        target_link_libraries(testrunner ${Z3_LIBRARY})
+    endif()
 
     add_custom_target(copy_cfg ALL
         COMMENT "Copying cfg files")
