@@ -77,6 +77,8 @@ cd ~/cppcheck
 
 mkdir upload
 
+make clean
+
 # Create archives..
 git archive --format=tar --prefix=$releasename/ $tag | gzip > upload/$releasename.tar.gz
 git archive --format=tar --prefix=$releasename/ $tag | bzip2 > upload/$releasename.tar.bz2
