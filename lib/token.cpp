@@ -566,7 +566,7 @@ bool Token::simpleMatch(const Token *tok, const char pattern[], size_t pattern_l
         return false; // shortcut
     const char *current = pattern;
     const char *end = pattern + pattern_len;
-    const char *next = std::strchr(pattern, ' ');
+    const char *next = (const char*)std::memchr(pattern, ' ', pattern_len);
     if (!next)
         next = end;
 
