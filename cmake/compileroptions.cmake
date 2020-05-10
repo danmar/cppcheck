@@ -46,13 +46,6 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    endif()
 endif()
 
-# TODO: check if this can be enabled again - also done in Makefile
-if (CMAKE_SYSTEM_NAME MATCHES "Linux" AND
-    CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-
-    add_compile_options(-U_GLIBCXX_DEBUG)
-endif()
-
 if (MSVC)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /STACK:8000000")
 endif()
