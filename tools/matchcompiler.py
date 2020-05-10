@@ -186,7 +186,7 @@ class MatchCompiler:
             elif tok[0:2] == "!!":
                 ret += '    if (tok && tok->str() == MatchCompiler::makeConstString("' + tok[2:] + '"))\n'
                 ret += '        ' + returnStatement
-                gotoNextToken = '    tok = tok ? tok->next() : NULL;\n'
+                gotoNextToken = '    tok = tok ? tok->next() : nullptr;\n'
 
             else:
                 negatedTok = "!" + self._compileCmd(tok)
@@ -224,7 +224,7 @@ class MatchCompiler:
 
         ret += self._compilePattern(pattern, -1, varId, True, 'T')
         ret += '    }\n'
-        ret += '    return NULL;\n}\n'
+        ret += '    return nullptr;\n}\n'
 
         return ret
 
