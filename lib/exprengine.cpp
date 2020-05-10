@@ -131,7 +131,6 @@
 
 #include "exprengine.h"
 #include "astutils.h"
-#include "path.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "tokenize.h"

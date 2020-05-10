@@ -24,7 +24,6 @@
 #include "report.h"
 
 class ErrorItem;
-class QObject;
 
 /// @addtogroup GUI
 /// @{

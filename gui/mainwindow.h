@@ -34,7 +34,6 @@ class ThreadHandler;
 class TranslationHandler;
 class ScratchPad;
 class ProjectFile;
-class ErrorItem;
 class QAction;
 
 /// @addtogroup GUI

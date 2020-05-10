@@ -1577,7 +1577,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                 case ValueFlow::Value::ValueKind::Possible:
                     out << "possible ";
                     break;
-                };
+                }
             }
             if (tok->mImpl->mValues->size() > 1U)
                 out << '{';

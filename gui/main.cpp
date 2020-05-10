@@ -24,6 +24,7 @@
 #include <QSettings>
 #ifdef _WIN32
 #include <QMessageBox>
+#include "aboutdialog.h"
 #else
 #include <iostream>
 #endif
@@ -31,7 +32,6 @@
 #include "common.h"
 #include "mainwindow.h"
 #include "erroritem.h"
-#include "aboutdialog.h"
 #include "translationhandler.h"
 
 

@@ -9,8 +9,6 @@
 class CodeEditorStyle;
 class QPaintEvent;
 class QResizeEvent;
-class QSize;
-class QWidget;
 
 class Highlighter : public QSyntaxHighlighter {
     Q_OBJECT
