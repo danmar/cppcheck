@@ -6061,6 +6061,20 @@ std::string ValueFlow::Value::infoString() const
     throw InternalError(nullptr, "Invalid ValueFlow Value type");
 }
 
+const char* ValueFlow::Value::toString(MoveKind moveKind)
+{
+    switch (moveKind) {
+    case MoveKind::NonMovedVariable:
+        return "NonMovedVariable";
+    case MoveKind::MovedVariable:
+        return "MovedVariable";
+    case MoveKind::ForwardedVariable:
+        return "ForwardedVariable";
+    }
+    return "";
+}
+
+
 const ValueFlow::Value *ValueFlow::valueFlowConstantFoldAST(Token *expr, const Settings *settings)
 {
     if (expr && expr->values().empty()) {

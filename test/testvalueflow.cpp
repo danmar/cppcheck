@@ -25,6 +25,7 @@
 #include "valueflow.h"
 
 #include <simplecpp.h>
+#include <algorithm>
 #include <cmath>
 #include <list>
 #include <map>

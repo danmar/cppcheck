@@ -170,6 +170,12 @@
     <ClCompile Include="clangimport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="forwardanalyzer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="checkbufferoverrun.h">

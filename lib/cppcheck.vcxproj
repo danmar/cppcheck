@@ -96,6 +96,7 @@
     <ClCompile Include="token.cpp" />
     <ClCompile Include="tokenize.cpp" />
     <ClCompile Include="tokenlist.cpp" />
+    <ClCompile Include="utils.cpp" />
     <ClCompile Include="valueflow.cpp" />
     <ClCompile Include="forwardanalyzer.cpp" />
   </ItemGroup>

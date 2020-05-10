@@ -25,6 +25,7 @@
 #include "symboldatabase.h"
 #include "utils.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cctype>
 #include <cstring>
@@ -2125,6 +2126,83 @@ void Token::scopeInfo(std::shared_ptr<ScopeInfo2> newScopeInfo)
 std::shared_ptr<ScopeInfo2> Token::scopeInfo() const
 {
     return mImpl->mScopeInfo;
+}
+
+bool Token::hasKnownIntValue() const
+{
+    if (!mImpl->mValues)
+        return false;
+    return std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value& value) {
+        return value.isKnown() && value.isIntValue();
+    });
+}
+
+bool Token::hasKnownValue() const
+{
+    return mImpl->mValues && std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), std::mem_fn(&ValueFlow::Value::isKnown));
+}
+
+bool Token::isImpossibleIntValue(const MathLib::bigint val) const
+{
+    if (!mImpl->mValues)
+        return false;
+    for (const auto& v : *mImpl->mValues) {
+        if (v.isIntValue() && v.isImpossible() && v.intvalue == val)
+            return true;
+        if (v.isIntValue() && v.bound == ValueFlow::Value::Bound::Lower && val > v.intvalue)
+            return true;
+        if (v.isIntValue() && v.bound == ValueFlow::Value::Bound::Upper && val < v.intvalue)
+            return true;
+    }
+    return false;
+}
+
+const ValueFlow::Value* Token::getValue(const MathLib::bigint val) const
+{
+    if (!mImpl->mValues)
+        return nullptr;
+    const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value& value) {
+        return value.isIntValue() && !value.isImpossible() && value.intvalue == val;
+    });
+    return it == mImpl->mValues->end() ? nullptr : &*it;
+}
+
+const ValueFlow::Value* Token::getMaxValue(bool condition) const
+{
+    if (!mImpl->mValues)
+        return nullptr;
+    const ValueFlow::Value* ret = nullptr;
+    for (const ValueFlow::Value& value : *mImpl->mValues) {
+        if (!value.isIntValue())
+            continue;
+        if (value.isImpossible())
+            continue;
+        if ((!ret || value.intvalue > ret->intvalue) &&
+            ((value.condition != nullptr) == condition))
+            ret = &value;
+    }
+    return ret;
+}
+
+const ValueFlow::Value* Token::getMovedValue() const
+{
+    if (!mImpl->mValues)
+        return nullptr;
+    const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value& value) {
+        return value.isMovedValue() && !value.isImpossible() &&
+               value.moveKind != ValueFlow::Value::MoveKind::NonMovedVariable;
+    });
+    return it == mImpl->mValues->end() ? nullptr : &*it;
+}
+
+const ValueFlow::Value* Token::getContainerSizeValue(const MathLib::bigint val) const
+{
+    if (!mImpl->mValues)
+        return nullptr;
+    const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value& value) {
+        return value.isContainerSizeValue() && !value.isImpossible() && value.intvalue == val;
+    });
+    return it == mImpl->mValues->end() ? nullptr : &*it;
 }
 
 TokenImpl::~TokenImpl()

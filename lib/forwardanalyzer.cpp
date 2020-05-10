@@ -5,6 +5,7 @@
 #include "token.h"
 #include "valueptr.h"
 
+#include <algorithm>
 #include <functional>
 
 struct ForwardTraversal {

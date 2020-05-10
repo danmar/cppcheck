@@ -27,7 +27,6 @@
 #include "templatesimplifier.h"
 #include "utils.h"
 
-#include <algorithm>
 #include <cstddef>
 #include <functional>
 #include <list>
@@ -1016,84 +1015,27 @@ public:
             *mImpl->mOriginalName = name;
     }
 
-    bool hasKnownIntValue() const {
-        if (!mImpl->mValues)
-            return false;
-        return std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value &value) {
-            return value.isKnown() && value.isIntValue();
-        });
-    }
-
-    bool hasKnownValue() const {
-        return mImpl->mValues && std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), std::mem_fn(&ValueFlow::Value::isKnown));
-    }
+    bool hasKnownIntValue() const;
+    bool hasKnownValue() const;
 
     MathLib::bigint getKnownIntValue() const {
         return mImpl->mValues->front().intvalue;
     }
 
-    bool isImpossibleIntValue(const MathLib::bigint val) const {
-        if (!mImpl->mValues)
-            return false;
-        for (const auto &v: *mImpl->mValues) {
-            if (v.isIntValue() && v.isImpossible() && v.intvalue == val)
-                return true;
-            if (v.isIntValue() && v.bound == ValueFlow::Value::Bound::Lower && val > v.intvalue)
-                return true;
-            if (v.isIntValue() && v.bound == ValueFlow::Value::Bound::Upper && val < v.intvalue)
-                return true;
-        }
-        return false;
-    }
+    bool isImpossibleIntValue(const MathLib::bigint val) const;
 
-    const ValueFlow::Value * getValue(const MathLib::bigint val) const {
-        if (!mImpl->mValues)
-            return nullptr;
-        const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value& value) {
-            return value.isIntValue() && !value.isImpossible() && value.intvalue == val;
-        });
-        return it == mImpl->mValues->end() ? nullptr : &*it;
-    }
+    const ValueFlow::Value* getValue(const MathLib::bigint val) const;
 
-    const ValueFlow::Value * getMaxValue(bool condition) const {
-        if (!mImpl->mValues)
-            return nullptr;
-        const ValueFlow::Value *ret = nullptr;
-        for (const ValueFlow::Value &value : *mImpl->mValues) {
-            if (!value.isIntValue())
-                continue;
-            if (value.isImpossible())
-                continue;
-            if ((!ret || value.intvalue > ret->intvalue) &&
-                ((value.condition != nullptr) == condition))
-                ret = &value;
-        }
-        return ret;
-    }
+    const ValueFlow::Value* getMaxValue(bool condition) const;
 
-    const ValueFlow::Value * getMovedValue() const {
-        if (!mImpl->mValues)
-            return nullptr;
-        const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value& value) {
-            return value.isMovedValue() && !value.isImpossible() &&
-                   value.moveKind != ValueFlow::Value::MoveKind::NonMovedVariable;
-        });
-        return it == mImpl->mValues->end() ? nullptr : &*it;
-    }
+    const ValueFlow::Value* getMovedValue() const;
 
     const ValueFlow::Value * getValueLE(const MathLib::bigint val, const Settings *settings) const;
     const ValueFlow::Value * getValueGE(const MathLib::bigint val, const Settings *settings) const;
 
     const ValueFlow::Value * getInvalidValue(const Token *ftok, nonneg int argnr, const Settings *settings) const;
 
-    const ValueFlow::Value * getContainerSizeValue(const MathLib::bigint val) const {
-        if (!mImpl->mValues)
-            return nullptr;
-        const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value& value) {
-            return value.isContainerSizeValue() && !value.isImpossible() && value.intvalue == val;
-        });
-        return it == mImpl->mValues->end() ? nullptr : &*it;
-    }
+    const ValueFlow::Value* getContainerSizeValue(const MathLib::bigint val) const;
 
     const Token *getValueTokenMaxStrLength() const;
     const Token *getValueTokenMinStrSize(const Settings *settings) const;
