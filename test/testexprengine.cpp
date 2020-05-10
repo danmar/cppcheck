@@ -53,6 +53,7 @@ private:
         TEST_CASE(if2);
         TEST_CASE(if3);
         TEST_CASE(if4);
+        TEST_CASE(if5);
         TEST_CASE(ifelse1);
 
         TEST_CASE(switch1);
@@ -344,6 +345,15 @@ private:
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
+    void if5() {
+        ASSERT_EQUALS("(> |$2:0| 12)\n"
+                      "(and (>= |$2:0| (- 2147483648)) (<= |$2:0| 2147483647))\n"
+                      "(= |$2:0| 5)\n"
+                      "z3::unsat\n",
+                      expr("void foo(const int *x) { if (f1() && *x > 12) dostuff(*x == 5); }", "=="));
+    }
+
+
     void ifelse1() {
         ASSERT_EQUALS("(<= $1 5)\n"
                       "(and (>= $1 (- 32768)) (<= $1 32767))\n"
@@ -522,7 +532,6 @@ private:
     void functionCall4() {
         ASSERT_EQUALS("1:2147483647", getRange("void f() { sizeof(data); }", "sizeof(data)"));
     }
-
 
     void functionCallContract1() {
         const char code[] = "void foo(int x);\n"

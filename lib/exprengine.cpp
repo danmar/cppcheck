@@ -1621,6 +1621,11 @@ static ExprEngine::ValuePtr executeBinaryOp(const Token *tok, Data &data)
         call(data.callbacks, tok, result, &data);
         return result;
     }
+    if (tok->str() == "&&" && (v1 || v2)) {
+        auto result = v1 ? v1 : v2;
+        call(data.callbacks, tok, result, &data);
+        return result;
+    }
     return ExprEngine::ValuePtr();
 }
 
