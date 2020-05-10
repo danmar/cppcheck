@@ -604,7 +604,7 @@ class MatchCompiler:
         srclines = fin.readlines()
         fin.close()
 
-        code = ''
+        code = u''
 
         modified = False
 
@@ -629,7 +629,7 @@ class MatchCompiler:
             code += line
 
         # Compute matchFunctions
-        strFunctions = ''
+        strFunctions = u''
         for function in self._rawMatchFunctions:
             strFunctions += function
 
