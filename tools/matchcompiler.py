@@ -633,7 +633,7 @@ class MatchCompiler:
         for function in self._rawMatchFunctions:
             strFunctions += function
 
-        lineno = ''
+        lineno = u''
         if line_directive:
             lineno = u'#line 1 "' + srcname + '"\n'
 
