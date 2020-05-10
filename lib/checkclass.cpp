@@ -1428,7 +1428,7 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
             continue;
 
         std::string cast("( " + scope->className + " & )");
-        if (Token::simpleMatch(tok->next(), cast.c_str()))
+        if (Token::simpleMatch(tok->next(), cast.c_str(), cast.size()))
             tok = tok->tokAt(4);
 
         // check if a function is called
@@ -1471,7 +1471,8 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
         return;
     }
     if (startTok->next() == last) {
-        if (Token::simpleMatch(func->argDef, std::string("( const " + scope->className + " &").c_str())) {
+    	const std::string tmp("( const " + scope->className + " &");
+        if (Token::simpleMatch(func->argDef, tmp.c_str(), tmp.size())) {
             // Typical wrong way to suppress default assignment operator by declaring it and leaving empty
             operatorEqMissingReturnStatementError(func->token, func->access == AccessControl::Public);
         } else {
@@ -1719,7 +1720,8 @@ void CheckClass::virtualDestructor()
                         if (Token::Match(tok, "[;{}] %var% =") &&
                             baseClassPointers.find(tok->next()->varId()) != baseClassPointers.end()) {
                             // new derived class..
-                            if (Token::simpleMatch(tok->tokAt(3), ("new " + derivedClass->str()).c_str())) {
+                            const std::string tmp("new " + derivedClass->str());
+                            if (Token::simpleMatch(tok->tokAt(3), tmp.c_str(), tmp.size())) {
                                 dontDelete.insert(tok->next()->varId());
                             }
                         }

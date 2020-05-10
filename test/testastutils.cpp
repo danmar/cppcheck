@@ -24,6 +24,7 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 
+#include <cstring>
 
 class TestAstUtils : public TestFixture {
 public:
@@ -166,8 +167,8 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokens1("");
-        const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), tokStr1);
-        const Token * const tok2 = Token::findsimplematch(tok1->next(), tokStr2);
+        const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), tokStr1, strlen(tokStr1));
+        const Token * const tok2 = Token::findsimplematch(tok1->next(), tokStr2, strlen(tokStr2));
         return ::isSameExpression(false, false, tok1, tok2, library, false, true, nullptr);
     }
 
@@ -203,8 +204,8 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), startPattern);
-        const Token * const tok2 = Token::findsimplematch(tokenizer.tokens(), endPattern);
+        const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), startPattern, strlen(startPattern));
+        const Token * const tok2 = Token::findsimplematch(tokenizer.tokens(), endPattern, strlen(endPattern));
         return ::isVariableChanged(tok1,tok2,1,false,&settings,true);
     }
 
@@ -247,8 +248,8 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        const Token * tok = Token::findsimplematch(tokenizer.tokens(), parentPattern);
-        return Token::simpleMatch(::nextAfterAstRightmostLeaf(tok), rightPattern);
+        const Token * tok = Token::findsimplematch(tokenizer.tokens(), parentPattern, strlen(parentPattern));
+        return Token::simpleMatch(::nextAfterAstRightmostLeaf(tok), rightPattern, strlen(rightPattern));
     }
 
     void nextAfterAstRightmostLeaf() {

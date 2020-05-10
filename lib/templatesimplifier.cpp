@@ -1535,7 +1535,7 @@ bool TemplateSimplifier::alreadyHasNamespace(const TokenAndName &templateDeclara
         pos += 2;
     }
 
-    return Token::simpleMatch(tok->tokAt(offset), scope.c_str()) ;
+    return Token::simpleMatch(tok->tokAt(offset), scope.c_str(), scope.size());
 }
 
 void TemplateSimplifier::expandTemplate(
@@ -1714,7 +1714,7 @@ void TemplateSimplifier::expandTemplate(
                             }
                             // check if type is instantiated
                             for (const auto & inst : mTemplateInstantiations) {
-                                if (Token::simpleMatch(inst.token(), name.c_str())) {
+                                if (Token::simpleMatch(inst.token(), name.c_str(), name.size())) {
                                     // use the instantiated name
                                     dst->insertToken(name, "", true);
                                     start = closing;

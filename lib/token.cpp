@@ -560,14 +560,15 @@ int Token::multiCompare(const Token *tok, const char *haystack, nonneg int varid
     return -1;
 }
 
-bool Token::simpleMatch(const Token *tok, const char pattern[])
+bool Token::simpleMatch(const Token *tok, const char pattern[], size_t pattern_len)
 {
     if (!tok)
         return false; // shortcut
-    const char *current  = pattern;
+    const char *current = pattern;
+    const char *end = pattern + pattern_len;
     const char *next = std::strchr(pattern, ' ');
     if (!next)
-        next = pattern + std::strlen(pattern);
+        next = end;
 
     while (*current) {
         const std::size_t length = next - current;
@@ -579,7 +580,7 @@ bool Token::simpleMatch(const Token *tok, const char pattern[])
         if (*next) {
             next = std::strchr(++current, ' ');
             if (!next)
-                next = current + std::strlen(current);
+                next = end;
         }
         tok = tok->next();
     }
@@ -938,19 +939,19 @@ Token * Token::findOpeningBracket()
 
 //---------------------------------------------------------------------------
 
-const Token *Token::findsimplematch(const Token * const startTok, const char pattern[])
+const Token *Token::findsimplematch(const Token * const startTok, const char pattern[], size_t pattern_len)
 {
     for (const Token* tok = startTok; tok; tok = tok->next()) {
-        if (Token::simpleMatch(tok, pattern))
+        if (Token::simpleMatch(tok, pattern, pattern_len))
             return tok;
     }
     return nullptr;
 }
 
-const Token *Token::findsimplematch(const Token * const startTok, const char pattern[], const Token * const end)
+const Token *Token::findsimplematch(const Token * const startTok, const char pattern[], size_t pattern_len, const Token * const end)
 {
     for (const Token* tok = startTok; tok && tok != end; tok = tok->next()) {
-        if (Token::simpleMatch(tok, pattern))
+        if (Token::simpleMatch(tok, pattern, pattern_len))
             return tok;
     }
     return nullptr;
