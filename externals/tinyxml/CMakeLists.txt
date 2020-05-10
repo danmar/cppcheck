@@ -14,7 +14,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 # TODO: conflicts with ANALYZE_* options
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+if (ENABLE_OSS_FUZZ AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_library(tinyxml_objs_sanitized OBJECT EXCLUDE_FROM_ALL ${srcs} ${hdrs})
     target_compile_options(tinyxml_objs_sanitized PRIVATE -fsanitize=address)
     if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
