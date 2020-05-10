@@ -635,14 +635,14 @@ class MatchCompiler:
 
         lineno = ''
         if line_directive:
-            lineno = '#line 1 "' + srcname + '"\n'
+            lineno = u'#line 1 "' + srcname + '"\n'
 
-        header = '#include "matchcompiler.h"\n'
-        header += '#include <string>\n'
-        header += '#include <cstring>\n'
+        header = u'#include "matchcompiler.h"\n'
+        header += u'#include <string>\n'
+        header += u'#include <cstring>\n'
         if len(self._rawMatchFunctions):
-            header += '#include "errorlogger.h"\n'
-            header += '#include "token.h"\n'
+            header += u'#include "errorlogger.h"\n'
+            header += u'#include "token.h"\n'
 
         fout = io.open(destname, 'wt', encoding="utf-8")
         if modified or len(self._rawMatchFunctions):
