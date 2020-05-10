@@ -1201,9 +1201,9 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
                     }
                 } else if (tok->valueType() && tok->valueType()->type == ValueType::CONTAINER) {
                     if (Token::Match(var->typeStartToken(), "std :: %type% < %type% *| *| >")) {
-                        const Type * type = var->typeStartToken()->tokAt(4)->type();
-                        if (type && type->classScope && type->classScope->definedType) {
-                            const Variable *membervar = type->classScope->getVariable(membertok->str());
+                        const Type * type2 = var->typeStartToken()->tokAt(4)->type();
+                        if (type2 && type2->classScope && type2->classScope->definedType) {
+                            const Variable *membervar = type2->classScope->getVariable(membertok->str());
                             if (membervar) {
                                 membertok->variable(membervar);
                                 if (membertok->varId() == 0 || mVariableList[membertok->varId()] == nullptr)
@@ -2165,8 +2165,8 @@ std::string Function::fullName() const
             ret = s->className + "::" + ret;
     }
     ret += "(";
-    for (const Variable &arg : argumentList)
-        ret += (arg.index() == 0 ? "" : ",") + arg.name();
+    for (const Variable &a : argumentList)
+        ret += (a.index() == 0 ? "" : ",") + a.name();
     return ret + ")";
 }
 

@@ -475,11 +475,11 @@ void clangimport::AstNode::setValueType(Token *tok)
 
 Scope *clangimport::AstNode::createScope(TokenList *tokenList, Scope::ScopeType scopeType, AstNodePtr astNode, const Token *def)
 {
-    std::vector<AstNodePtr> children{astNode};
-    return createScope(tokenList, scopeType, children, def);
+    std::vector<AstNodePtr> children2{astNode};
+    return createScope(tokenList, scopeType, children2, def);
 }
 
-Scope *clangimport::AstNode::createScope(TokenList *tokenList, Scope::ScopeType scopeType, const std::vector<AstNodePtr> &children, const Token *def)
+Scope *clangimport::AstNode::createScope(TokenList *tokenList, Scope::ScopeType scopeType, const std::vector<AstNodePtr> & children2, const Token *def)
 {
     SymbolDatabase *symbolDatabase = mData->mSymbolDatabase;
 
@@ -488,22 +488,22 @@ Scope *clangimport::AstNode::createScope(TokenList *tokenList, Scope::ScopeType 
     symbolDatabase->scopeList.push_back(Scope(nullptr, nullptr, nestedIn));
     Scope *scope = &symbolDatabase->scopeList.back();
     if (scopeType == Scope::ScopeType::eEnum)
-        scope->enumeratorList.reserve(children.size());
+        scope->enumeratorList.reserve(children2.size());
     nestedIn->nestedList.push_back(scope);
     scope->type = scopeType;
     scope->classDef = def;
     scope->check = nestedIn->check;
-    if (!children.empty()) {
-        Token *bodyStart = children[0]->addtoken(tokenList, "{");
+    if (!children2.empty()) {
+        Token *bodyStart = children2[0]->addtoken(tokenList, "{");
         tokenList->back()->scope(scope);
-        for (AstNodePtr astNode: children) {
+        for (AstNodePtr astNode: children2) {
             astNode->createTokens(tokenList);
             if (scopeType == Scope::ScopeType::eEnum)
                 astNode->addtoken(tokenList, ",");
             else if (!Token::Match(tokenList->back(), "[;{}]"))
                 astNode->addtoken(tokenList, ";");
         }
-        Token *bodyEnd = children.back()->addtoken(tokenList, "}");
+        Token *bodyEnd = children2.back()->addtoken(tokenList, "}");
         bodyStart->link(bodyEnd);
         bodyEnd->link(bodyStart);
         scope->bodyStart = bodyStart;
