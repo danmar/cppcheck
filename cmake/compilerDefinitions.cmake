@@ -6,7 +6,7 @@ if (MSVC)
 endif()
 if (UNIX)
     # TODO: check if this can be enabled again for Clang - also done in Makefile
-    if (CMAKE_BUILD_TYPE MATCHES "Debug" AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    if (CMAKE_BUILD_TYPE MATCHES "Debug" AND NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
         add_definitions(-D_GLIBCXX_DEBUG)
     endif()
     if (HAVE_RULES)
