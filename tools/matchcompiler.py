@@ -604,16 +604,15 @@ class MatchCompiler:
         srclines = fin.readlines()
         fin.close()
 
-        header = '#include "token.h"\n'
-        header += '#include "errorlogger.h"\n'
-        header += '#include "matchcompiler.h"\n'
-        header += '#include <string>\n'
-        header += '#include <cstring>\n'
-        # header += '#include <iostream>\n'
         code = ''
+
+        modified = False
 
         linenr = 0
         for line in srclines:
+            if not modified:
+                line_orig = line
+
             linenr += 1
             # Compile Token::Match and Token::simpleMatch
             line = self._replaceTokenMatch(line, linenr, srcname)
@@ -623,6 +622,9 @@ class MatchCompiler:
 
             # Cache plain C-strings in C++ strings
             line = self._replaceCStrings(line)
+
+            if not modified and not line_orig == line:
+                modified = True
 
             code += line
 
@@ -635,8 +637,19 @@ class MatchCompiler:
         if line_directive:
             lineno = '#line 1 "' + srcname + '"\n'
 
+        header = '#include "matchcompiler.h"\n'
+        header += '#include <string>\n'
+        header += '#include <cstring>\n'
+        if len(self._rawMatchFunctions):
+            header += '#include "errorlogger.h"\n'
+            header += '#include "token.h"\n'
+
         fout = io.open(destname, 'wt', encoding="utf-8")
-        fout.write(header + strFunctions + lineno + code)
+        if modified or len(self._rawMatchFunctions):
+            fout.write(header)
+            fout.write(strFunctions)
+        fout.write(lineno)
+        fout.write(code)
         fout.close()
 
 
