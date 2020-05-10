@@ -63,7 +63,7 @@
 #
 # run daca with new release
 # 1. edit tools/donate-cpu-server.py. Update OLD_VERSION and VERSION
-# 2. scp tools/donate-cpu-server.py danielmarjamaki@cppcheck1.osuosl.org:daca@home/
+# 2. scp tools/donate-cpu-server.py danielmarjamaki@cppcheck1.osuosl.org:/var/daca@home/
 
 # Tag to use
 tag=$1
