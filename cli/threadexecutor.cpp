@@ -124,7 +124,7 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
             // Alert only about unique errors
             std::string errmsg = msg.toString(mSettings.verbose);
             if (std::find(mErrorList.begin(), mErrorList.end(), errmsg) == mErrorList.end()) {
-                mErrorList.push_back(errmsg);
+                mErrorList.emplace_back(errmsg);
                 if (type == REPORT_ERROR)
                     mErrorLogger.reportErr(msg);
                 else
@@ -522,7 +522,7 @@ void ThreadExecutor::report(const ErrorLogger::ErrorMessage &msg, MessageType ms
 
     EnterCriticalSection(&mErrorSync);
     if (std::find(mErrorList.begin(), mErrorList.end(), errmsg) == mErrorList.end()) {
-        mErrorList.push_back(errmsg);
+        mErrorList.emplace_back(errmsg);
         reportError = true;
     }
     LeaveCriticalSection(&mErrorSync);

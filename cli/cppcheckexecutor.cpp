@@ -164,7 +164,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
         for (const ImportProject::FileSettings &fsetting : settings.project.fileSettings) {
             if (matchglob(mSettings->fileFilter, fsetting.filename)) {
-                newList.push_back(fsetting);
+                newList.emplace_back(fsetting);
             }
         }
         if (!newList.empty())
@@ -897,7 +897,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     if (!settings.buildDir.empty()) {
         std::list<std::string> fileNames;
         for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i)
-            fileNames.push_back(i->first);
+            fileNames.emplace_back(i->first);
         AnalyzerInformation::writeFilesTxt(settings.buildDir, fileNames, settings.project.fileSettings);
     }
 
