@@ -807,7 +807,7 @@ struct ExprData {
         if (b->binop == "/")
             return op1 / op2;
         if (b->binop == "%")
-#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
+#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,5)
             return op1 % op2;
 #else
             return op1 - (op1 / op2) * op2;
@@ -840,7 +840,7 @@ struct ExprData {
             throw VerifyException(nullptr, "Can not solve expressions, operand value is null");
         if (auto intRange = std::dynamic_pointer_cast<ExprEngine::IntRange>(v)) {
             if (intRange->name[0] != '$')
-#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
+#if Z3_VERSION_INT >= GET_VERSION_INT(4,7,1)
                 return context.int_val(int64_t(intRange->minValue));
 #else
                 return context.int_val((long long)(intRange->minValue));
