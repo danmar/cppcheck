@@ -142,6 +142,9 @@
 #include <iostream>
 #ifdef USE_Z3
 #include <z3++.h>
+#include <z3_version.h>
+#define GET_VERSION_INT(A,B,C)     ((A) * 10000 + (B) * 100 + (C))
+#define Z3_VERSION_INT             GET_VERSION_INT(Z3_MAJOR_VERSION, Z3_MINOR_VERSION, Z3_BUILD_NUMBER)
 #endif
 
 namespace {
@@ -782,7 +785,7 @@ struct ExprData {
     }
 
     z3::expr addFloat(const std::string &name) {
-#ifdef NEW_Z3
+#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
         z3::expr e = context.fpa_const(name.c_str(), 11, 53);
 #else
         z3::expr e = context.real_const(name.c_str());
@@ -804,7 +807,7 @@ struct ExprData {
         if (b->binop == "/")
             return op1 / op2;
         if (b->binop == "%")
-#ifdef NEW_Z3
+#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
             return op1 % op2;
 #else
             return op1 - (op1 / op2) * op2;
@@ -837,7 +840,7 @@ struct ExprData {
             throw VerifyException(nullptr, "Can not solve expressions, operand value is null");
         if (auto intRange = std::dynamic_pointer_cast<ExprEngine::IntRange>(v)) {
             if (intRange->name[0] != '$')
-#ifdef NEW_Z3
+#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
                 return context.int_val(int64_t(intRange->minValue));
 #else
                 return context.int_val((long long)(intRange->minValue));
