@@ -121,8 +121,8 @@ private:
                 line.erase(0,8);
                 line.erase(line.size()-1);
             }
-            replace(line, "(fp.gt ", "(>");
-            replace(line, "(fp.lt ", "(<");
+            replace(line, "(fp.gt ", "(> ");
+            replace(line, "(fp.lt ", "(< ");
             int par = 0;
             for (int pos = 0; pos < line.size(); ++pos) {
                 if (line[pos] == '(')
