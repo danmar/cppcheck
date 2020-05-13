@@ -99,6 +99,12 @@ private:
 #endif
     }
 
+    static void replace(std::string& str, const std::string& from, const std::string& to) {
+        size_t pos = 0;
+        while ((pos = str.find(from, pos)) != std::string::npos)
+            str.replace(pos, from.length(), to);
+    }
+
     static std::string cleanupExpr(std::string rawexpr) {
         std::string ret;
         std::istringstream istr(rawexpr);
@@ -115,6 +121,8 @@ private:
                 line.erase(0,8);
                 line.erase(line.size()-1);
             }
+            replace(line, "(fp.gt ", "(>");
+            replace(line, "(fp.lt ", "(<");
             int par = 0;
             for (int pos = 0; pos < line.size(); ++pos) {
                 if (line[pos] == '(')
