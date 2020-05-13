@@ -62,6 +62,9 @@ For rules support (requires pcre) use the flag
 For release builds it is recommended that you use:
 -DUSE_MATCHCOMPILER=ON
 
+Z3 can be enabled using:
+-DUSE_Z3=ON
+
 ### qmake
 
 You can use the gui/gui.pro file to build the GUI.
