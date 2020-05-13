@@ -747,33 +747,17 @@ void Tokenizer::simplifyTypedef()
         if (!tokOffset)
             syntaxError(tok);
 
-        if (Token::Match(tokOffset, "%type%")) {
+        if (tokOffset->isName() && !tokOffset->isKeyword()) {
             // found the type name
             typeName = tokOffset;
             tokOffset = tokOffset->next();
 
             // check for array
-            if (tokOffset && tokOffset->str() == "[") {
-                arrayStart = tokOffset;
-
-                bool atEnd = false;
-                while (!atEnd) {
-                    while (tokOffset->next() && !Token::Match(tokOffset->next(), ";|,")) {
-                        tokOffset = tokOffset->next();
-                    }
-
-                    if (!tokOffset->next())
-                        return; // invalid input
-                    else if (tokOffset->next()->str() == ";")
-                        atEnd = true;
-                    else if (tokOffset->str() == "]")
-                        atEnd = true;
-                    else
-                        tokOffset = tokOffset->next();
-                }
-
-                arrayEnd = tokOffset;
-                tokOffset = tokOffset->next();
+            while (tokOffset && tokOffset->str() == "[") {
+                if (!arrayStart)
+                    arrayStart = tokOffset;
+                arrayEnd = tokOffset->link();
+                tokOffset = arrayEnd->next();
             }
 
             // check for end or another
@@ -1134,8 +1118,9 @@ void Tokenizer::simplifyTypedef()
                 }
 
                 // check for typedef that can be substituted
-                else if (Token::simpleMatch(tok2, pattern.c_str()) ||
-                         (inMemberFunc && tok2->str() == typeName->str())) {
+                else if (tok2->isNameOnly() &&
+                         (Token::simpleMatch(tok2, pattern.c_str()) ||
+                          (inMemberFunc && tok2->str() == typeName->str()))) {
                     // member function class variables don't need qualification
                     if (!(inMemberFunc && tok2->str() == typeName->str()) && pattern.find("::") != std::string::npos) { // has a "something ::"
                         Token *start = tok2;
