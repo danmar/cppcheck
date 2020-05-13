@@ -37,6 +37,7 @@ before_install:
  - travis_retry python3 -m pip install --user pygments
  - travis_retry sudo python3 -m pip install demjson # installs jsonlint => sudo required
  - travis_retry python3 -m pip install --user natsort
+ - cp externals/z3_version_old.h externals/z3_version.h # because travis z3 version is old
 
 matrix:
 # do notify immediately about it when a job of a build fails.
@@ -63,7 +64,6 @@ matrix:
       compiler: gcc
       script:
         - make clean
-        - cp externals/z3_version_old.h externals/z3_version.h
         - make USE_Z3=yes -j2 all
         - ./testrunner TestExprEngine
         - python3 test/bug-hunting/cve.py
