@@ -22,6 +22,7 @@ jobs:
 
       - name: Compile instrumented
         run: |
+          cp externals/z3_version_old.h externals/z3_version.h
           make test CXXFLAGS="-g -fprofile-arcs -ftest-coverage" USE_Z3=yes HAVE_RULES=yes -j$(nproc)
           
       - name: Generate coverage report
