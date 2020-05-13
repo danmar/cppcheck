@@ -1126,38 +1126,38 @@ bool CppCheckExecutor::tryLoadLibrary(Library& destination, const char* basepath
     if (err.errorcode == Library::UNKNOWN_ELEMENT)
         std::cout << "cppcheck: Found unknown elements in configuration file '" << filename << "': " << err.reason << std::endl;
     else if (err.errorcode != Library::OK) {
-        std::string errmsg;
+        std::cout << "cppcheck: Failed to load library configuration file '" << filename << "'. ";
         switch (err.errorcode) {
         case Library::OK:
             break;
         case Library::FILE_NOT_FOUND:
-            errmsg = "File not found";
+            std::cout << "File not found";
             break;
         case Library::BAD_XML:
-            errmsg = "Bad XML";
+            std::cout << "Bad XML";
             break;
         case Library::UNKNOWN_ELEMENT:
-            errmsg = "Unexpected element";
+            std::cout << "Unexpected element";
             break;
         case Library::MISSING_ATTRIBUTE:
-            errmsg = "Missing attribute";
+            std::cout << "Missing attribute";
             break;
         case Library::BAD_ATTRIBUTE_VALUE:
-            errmsg = "Bad attribute value";
+            std::cout << "Bad attribute value";
             break;
         case Library::UNSUPPORTED_FORMAT:
-            errmsg = "File is of unsupported format version";
+            std::cout << "File is of unsupported format version";
             break;
         case Library::DUPLICATE_PLATFORM_TYPE:
-            errmsg = "Duplicate platform type";
+            std::cout << "Duplicate platform type";
             break;
         case Library::PLATFORM_TYPE_REDEFINED:
-            errmsg = "Platform type redefined";
+            std::cout << "Platform type redefined";
             break;
         }
         if (!err.reason.empty())
-            errmsg += " '" + err.reason + "'";
-        std::cout << "cppcheck: Failed to load library configuration file '" << filename << "'. " << errmsg << std::endl;
+            std::cout << " '" + err.reason + "'";
+        std::cout << std::endl;
         return false;
     }
     return true;
