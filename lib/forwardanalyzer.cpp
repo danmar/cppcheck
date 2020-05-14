@@ -402,8 +402,12 @@ struct ForwardTraversal {
             } else {
                 if (updateTok(tok, &next) == Progress::Break)
                     return Progress::Break;
-                if (next)
-                    tok = next;
+                if (next) {
+                    if (precedes(next, end))
+                        tok = next;
+                    else
+                        return Progress::Break;
+                }
             }
             // Prevent infinite recursion
             if (tok->next() == start)

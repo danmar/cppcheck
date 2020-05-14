@@ -195,7 +195,13 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
 
     // read/write member variable
     if (firstOperand && parent->originalName() == "->" && (!parent->astParent() || parent->astParent()->str() != "&")) {
-        if (!parent->astParent() || parent->astParent()->str() != "(" || parent->astParent() == tok->previous())
+        if (!parent->astParent())
+            return true;
+        if (!Token::Match(parent->astParent()->previous(), "if|while|for|switch ("))
+            return true;
+        if (!Token::Match(parent->astParent()->previous(), "%name% ("))
+            return true;
+        if (parent->astParent() == tok->previous())
             return true;
         unknown = true;
         return false;

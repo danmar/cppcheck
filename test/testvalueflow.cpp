@@ -4341,7 +4341,7 @@ private:
                "    abort() << 123;\n"
                "  ints[0] = 0;\n"
                "}";
-        ASSERT(tokenValues(code, "ints [").empty());
+        ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "ints ["), 0));
 
         code = "struct A {\n"  // forward, nested function call, #9424
                "    double getMessage( std::vector<unsigned char> *message );\n"
