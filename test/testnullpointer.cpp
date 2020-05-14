@@ -95,7 +95,6 @@ private:
         TEST_CASE(nullpointer52);
         TEST_CASE(nullpointer53); // #8005
         TEST_CASE(nullpointer54); // #9573
-        TEST_CASE(nullpointer54); // #9573
         TEST_CASE(nullpointer55); // #8144
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
