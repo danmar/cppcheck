@@ -26,6 +26,7 @@
 #include <cstddef>
 #include <string>
 #include <stack>
+#include <vector>
 
 inline bool endsWith(const std::string &str, char c)
 {
@@ -48,9 +49,8 @@ inline static bool isPrefixStringCharLiteral(const std::string &str, char q, con
 
 inline static bool isStringCharLiteral(const std::string &str, char q)
 {
-    for (const std::string & p: {
-    "", "u8", "u", "U", "L"
-}) {
+	static const std::vector<std::string> suffixes{"", "u8", "u", "U", "L"};
+    for (const std::string & p: suffixes) {
         if (isPrefixStringCharLiteral(str, q, p))
             return true;
     }
