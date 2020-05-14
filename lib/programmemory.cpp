@@ -199,6 +199,10 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
                 else
                     pm.setUnknown(vartok->varId());
             }
+        } else if (!setvar && Token::Match(tok2, "%var% !!=") && isVariableChanged(tok2, 0, nullptr, true)) {
+            const Token *vartok = tok2;
+            if (!pm.hasValue(vartok->varId()))
+                pm.setUnknown(vartok->varId());
         }
 
         if (tok2->str() == "{") {

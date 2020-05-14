@@ -3366,6 +3366,18 @@ private:
               "    if (!x) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9709
+        check("void f(int a) {\n"
+              "    bool ok = false;\n"
+              "    const char * r = nullptr;\n"
+              "    do_something(&r);\n"
+              "    if (r != nullptr)\n"
+              "        ok = a != 0;\n"
+              "    if (ok) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void alwaysTrueInfer() {
