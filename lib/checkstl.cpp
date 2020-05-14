@@ -539,7 +539,7 @@ void CheckStl::iterators()
 void CheckStl::mismatchingContainerIteratorError(const Token* tok, const Token* iterTok)
 {
     const std::string container(tok ? tok->expressionString() : std::string("v1"));
-    const std::string iter(iterTok ? iterTok->expressionString() : std::string("v2"));
+    const std::string iter(iterTok ? iterTok->expressionString() : std::string("it"));
     reportError(tok,
                 Severity::error,
                 "mismatchingContainerIterator",
