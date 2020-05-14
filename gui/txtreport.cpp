@@ -17,6 +17,7 @@
  */
 
 #include <QDir>
+#include "erroritem.h"
 #include "txtreport.h"
 
 TxtReport::TxtReport(const QString &filename) :

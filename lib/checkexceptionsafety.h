@@ -26,7 +26,6 @@
 #include "errorlogger.h"
 #include "token.h"
 #include "tokenize.h"
-#include "utils.h"
 
 #include <list>
 #include <string>

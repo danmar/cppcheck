@@ -24,8 +24,8 @@
 #include "config.h"
 #include "library.h"
 #include "mathlib.h"
-#include "platform.h"
 #include "token.h"
+#include "utils.h"
 
 #include <cstddef>
 #include <list>
@@ -34,6 +34,10 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+namespace cppcheck {
+    class Platform;
+}
 
 class ErrorLogger;
 class Function;
@@ -193,7 +197,8 @@ class CPPCHECKLIB Variable {
         fIsStlString  = (1 << 11),  /** @brief std::string|wstring|basic_string&lt;T&gt;|u16string|u32string */
         fIsFloatType  = (1 << 12),  /** @brief Floating point type */
         fIsVolatile   = (1 << 13),  /** @brief volatile */
-        fIsSmartPointer = (1 << 14)   /** @brief std::shared_ptr|unique_ptr */
+        fIsSmartPointer = (1 << 14),/** @brief std::shared_ptr|unique_ptr */
+        fIsMaybeUnused = (1 << 15), /** @brief marked [[maybe_unused]] */
     };
 
     /**
@@ -618,6 +623,10 @@ public:
         return type() && type()->isEnumType();
     }
 
+    bool isMaybeUnused() const {
+        return getFlag(fIsMaybeUnused);
+    }
+
     const ValueType *valueType() const {
         return mValueType;
     }
@@ -733,6 +742,8 @@ public:
     const std::string &name() const {
         return tokenDef->str();
     }
+
+    std::string fullName() const;
 
     nonneg int argCount() const {
         return argumentList.size();
@@ -1301,7 +1312,7 @@ public:
     void validateVariables() const;
 
     /** Set valuetype in provided tokenlist */
-    void setValueTypeInTokenList(bool reportDebugWarnings);
+    void setValueTypeInTokenList(bool reportDebugWarnings, Token *tokens=nullptr);
 
     /**
      * Calculates sizeof value for given type.

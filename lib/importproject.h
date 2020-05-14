@@ -81,6 +81,9 @@ public:
         void setIncludePaths(const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables);
     };
     std::list<FileSettings> fileSettings;
+    Type projectType;
+
+    ImportProject();
 
     void selectOneVsConfig(cppcheck::Platform::PlatformType platform);
 
@@ -143,6 +146,10 @@ namespace CppcheckXml {
     const char ExcludeElementName[] = "exclude";
     const char ExcludePathName[] = "path";
     const char ExcludePathNameAttrib[] = "name";
+    const char FunctionContracts[] = "function-contracts";
+    const char FunctionContract[] = "contract";
+    const char ContractFunction[] = "function";
+    const char ContractExpects[] = "expects";
     const char LibrariesElementName[] = "libraries";
     const char LibraryElementName[] = "library";
     const char PlatformElementName[] = "platform";

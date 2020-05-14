@@ -55,6 +55,7 @@ ResultsView::ResultsView(QWidget * parent) :
     connect(mUI.mTree, &ResultsTree::treeSelectionChanged, this, &ResultsView::updateDetails);
     connect(mUI.mTree, &ResultsTree::tagged, this, &ResultsView::tagged);
     connect(mUI.mTree, &ResultsTree::suppressIds, this, &ResultsView::suppressIds);
+    connect(mUI.mTree, &ResultsTree::editFunctionContract, this, &ResultsView::editFunctionContract);
     connect(this, &ResultsView::showResults, mUI.mTree, &ResultsTree::showResults);
     connect(this, &ResultsView::showCppcheckResults, mUI.mTree, &ResultsTree::showCppcheckResults);
     connect(this, &ResultsView::showClangResults, mUI.mTree, &ResultsTree::showClangResults);
@@ -63,6 +64,9 @@ ResultsView::ResultsView(QWidget * parent) :
     connect(this, &ResultsView::showHiddenResults, mUI.mTree, &ResultsTree::showHiddenResults);
 
     mUI.mListLog->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    mUI.mListAddedContracts->setSortingEnabled(true);
+    mUI.mListMissingContracts->setSortingEnabled(true);
 }
 
 void ResultsView::initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler)
@@ -83,6 +87,12 @@ void ResultsView::initialize(QSettings *settings, ApplicationList *list, ThreadH
 ResultsView::~ResultsView()
 {
     //dtor
+}
+
+void ResultsView::setAddedContracts(const QStringList &addedContracts)
+{
+    mUI.mListAddedContracts->clear();
+    mUI.mListAddedContracts->addItems(addedContracts);
 }
 
 void ResultsView::clear(bool results)
@@ -438,8 +448,13 @@ void ResultsView::bughuntingReportLine(const QString& line)
     for (const QString& s: line.split("\n")) {
         if (s.isEmpty())
             continue;
-        if (s.startsWith("[function-report] "))
-            mUI.mListSafeFunctions->addItem(s.mid(s.lastIndexOf(":") + 1));
+        if (s.startsWith("[missing contract] ")) {
+            const QString functionName = s.mid(19);
+            if (!mContracts.contains(functionName)) {
+                mContracts.insert(functionName);
+                mUI.mListMissingContracts->addItem(functionName);
+            }
+        }
     }
 }
 

@@ -106,7 +106,7 @@ C90_STDLIB_IDENTIFIERS = {
     ],
     # D.6 Mathematics
     'math.h': [
-        'HUGE_VAL' 'acos', 'asin' , 'atan2', 'cos', 'sin', 'tan', 'cosh',
+        'HUGE_VAL', 'acos', 'asin' , 'atan2', 'cos', 'sin', 'tan', 'cosh',
         'sinh', 'tanh', 'exp', 'frexp', 'ldexp', 'log', 'loglO', 'modf',
         'pow', 'sqrt', 'ceil', 'fabs', 'floor', 'fmod',
     ],
@@ -1158,14 +1158,15 @@ class MisraChecker:
 
     def misra_5_1(self, data):
         long_vars = {}
+        num_sign_chars = self.get_num_significant_naming_chars(data)
         for var in data.variables:
             if var.nameToken is None:
                 continue
-            if len(var.nameToken.str) <= 31:
+            if len(var.nameToken.str) <= num_sign_chars:
                 continue
             if not hasExternalLinkage(var):
                 continue
-            long_vars.setdefault(var.nameToken.str[:31], []).append(var.nameToken)
+            long_vars.setdefault(var.nameToken.str[:num_sign_chars], []).append(var.nameToken)
         for name_prefix in long_vars:
             tokens = long_vars[name_prefix]
             if len(tokens) < 2:
@@ -1175,10 +1176,11 @@ class MisraChecker:
 
     def misra_5_2(self, data):
         scopeVars = {}
+        num_sign_chars = self.get_num_significant_naming_chars(data)
         for var in data.variables:
             if var.nameToken is None:
                 continue
-            if len(var.nameToken.str) <= 31:
+            if len(var.nameToken.str) <= num_sign_chars:
                 continue
             if var.nameToken.scope not in scopeVars:
                 scopeVars.setdefault(var.nameToken.scope, {})["varlist"] = []
@@ -1199,14 +1201,14 @@ class MisraChecker:
                         continue
                     if hasExternalLinkage(variable1) or hasExternalLinkage(variable2):
                         continue
-                    if (variable1.nameToken.str[:31] == variable2.nameToken.str[:31] and
+                    if (variable1.nameToken.str[:num_sign_chars] == variable2.nameToken.str[:num_sign_chars] and
                             variable1.Id != variable2.Id):
                         if int(variable1.nameToken.linenr) > int(variable2.nameToken.linenr):
                             self.reportError(variable1.nameToken, 5, 2)
                         else:
                             self.reportError(variable2.nameToken, 5, 2)
                 for innerscope in scopeVars[scope]["scopelist"]:
-                    if variable1.nameToken.str[:31] == innerscope.className[:31]:
+                    if variable1.nameToken.str[:num_sign_chars] == innerscope.className[:num_sign_chars]:
                         if int(variable1.nameToken.linenr) > int(innerscope.bodyStart.linenr):
                             self.reportError(variable1.nameToken, 5, 2)
                         else:
@@ -1215,7 +1217,7 @@ class MisraChecker:
                 continue
             for i, scopename1 in enumerate(scopeVars[scope]["scopelist"]):
                 for scopename2 in scopeVars[scope]["scopelist"][i + 1:]:
-                    if scopename1.className[:31] == scopename2.className[:31]:
+                    if scopename1.className[:num_sign_chars] == scopename2.className[:num_sign_chars]:
                         if int(scopename1.bodyStart.linenr) > int(scopename2.bodyStart.linenr):
                             self.reportError(scopename1.bodyStart, 5, 2)
                         else:
@@ -2314,7 +2316,7 @@ class MisraChecker:
 
                     while pos1 >= 0 and exp[pos1] == ' ':
                         pos1 -= 1
-                    if exp[pos1] not in '([#,':
+                    if exp[pos1] not in '([#,.':
                         self.reportError(directive, 20, 7)
                         break
                     while pos2 < len(exp) and exp[pos2] == ' ':

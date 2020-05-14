@@ -20,6 +20,7 @@
 //---------------------------------------------------------------------------
 #include "ctu.h"
 #include "astutils.h"
+#include "settings.h"
 #include "symboldatabase.h"
 #include <tinyxml2.h>
 #include <iterator>  // back_inserter
@@ -503,7 +504,7 @@ static bool findPath(const std::string &callId,
                 if (unsafeValue < 0 || unsafeValue >= functionCall->callArgValue)
                     break;
                 continue;
-            };
+            }
             path[index] = functionCall;
             return true;
         }

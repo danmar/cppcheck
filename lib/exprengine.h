@@ -26,10 +26,9 @@
 #include <functional>
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
-#include <stdint.h>
+#include <cstdint>
 
 class ErrorLogger;
 class Tokenizer;
@@ -72,8 +71,12 @@ namespace ExprEngine {
 
     class DataBase {
     public:
-        explicit DataBase(const Settings *settings) : settings(settings) {}
+        explicit DataBase(const std::string &currentFunction, const Settings *settings)
+            : currentFunction(currentFunction)
+            , settings(settings) {
+        }
         virtual std::string getNewSymbolName() = 0;
+        const std::string currentFunction;
         const Settings * const settings;
         virtual void addError(int linenr) {
             (void)linenr;
@@ -303,8 +306,8 @@ namespace ExprEngine {
     typedef std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> Callback;
 
     /** Execute all functions */
-    void CPPCHECKLIB executeAllFunctions(const Tokenizer *tokenizer, const Settings *settings, const std::vector<Callback> &callbacks, std::ostream &report);
-    void executeFunction(const Scope *functionScope, const Tokenizer *tokenizer, const Settings *settings, const std::vector<Callback> &callbacks, std::ostream &report);
+    void CPPCHECKLIB executeAllFunctions(ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings, const std::vector<Callback> &callbacks, std::ostream &report);
+    void executeFunction(const Scope *functionScope, ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings, const std::vector<Callback> &callbacks, std::ostream &report);
 
     void runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings);
 }

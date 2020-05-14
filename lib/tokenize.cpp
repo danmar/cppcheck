@@ -22,7 +22,6 @@
 #include "check.h"
 #include "library.h"
 #include "mathlib.h"
-#include "path.h"
 #include "platform.h"
 #include "settings.h"
 #include "standards.h"
@@ -1314,7 +1313,7 @@ void Tokenizer::simplifyTypedef()
                     if (funcStart && funcEnd) {
                         tok2->insertToken("(");
                         tok2 = tok2->next();
-                        Token *tok3 = tok2;
+                        Token *paren = tok2;
                         tok2 = TokenList::copyTokens(tok2, funcStart, funcEnd);
 
                         if (!inCast)
@@ -1323,9 +1322,12 @@ void Tokenizer::simplifyTypedef()
                         if (!tok2)
                             break;
 
+                        while (Token::Match(tok2, "%name%|] ["))
+                            tok2 = tok2->linkAt(1);
+
                         tok2->insertToken(")");
                         tok2 = tok2->next();
-                        Token::createMutualLinks(tok2, tok3);
+                        Token::createMutualLinks(tok2, paren);
 
                         tok2 = TokenList::copyTokens(tok2, argStart, argEnd);
 
@@ -1534,13 +1536,15 @@ void Tokenizer::simplifyTypedef()
                                 tok2 = tok2->next();
 
                             // reference or pointer to array?
-                            if (tok2->str() == "&" || tok2->str() == "*") {
+                            if (Token::Match(tok2, "&|*|&&")) {
                                 tok2 = tok2->previous();
                                 tok2->insertToken("(");
                                 Token *tok3 = tok2->next();
 
                                 // handle missing variable name
-                                if (tok2->strAt(3) == ")" || tok2->strAt(3) == "," || tok2->strAt(3) == "(")
+                                if (Token::Match(tok3, "( *|&|&& *|&|&& %name%"))
+                                    tok2 = tok3->tokAt(3);
+                                else if (Token::Match(tok2->tokAt(3), "[(),]"))
                                     tok2 = tok2->tokAt(2);
                                 else
                                     tok2 = tok2->tokAt(3);
@@ -3006,7 +3010,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
                 typeCount = 0;
                 singleNameCount = 0;
             } else if (tok2->str() == "const") {
-                ;  // just skip "const"
+                // just skip "const"
             } else if (!hasstruct && variableId.find(tok2->str()) != variableId.end() && tok2->previous()->str() != "::") {
                 ++typeCount;
                 tok2 = tok2->next();
@@ -3040,7 +3044,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
             }
         } else if (Token::Match(tok2, "&|&&")) {
             ref = !bracket;
-        } else if (singleNameCount == 1 && Token::Match(tok2, "( [*&]") && Token::Match(tok2->link()->next(), "(|[")) {
+        } else if (singleNameCount >= 1 && Token::Match(tok2, "( [*&]") && Token::Match(tok2->link()->next(), "(|[")) {
             bracket = true; // Skip: Seems to be valid pointer to array or function pointer
         } else if (tok2->str() == "::") {
             singleNameCount = 0;
@@ -3111,7 +3115,7 @@ void Tokenizer::setVarIdStructMembers(Token **tok1,
 {
     Token *tok = *tok1;
 
-    if (Token::Match(tok, "%name% = { . %name% =")) {
+    if (Token::Match(tok, "%name% = { . %name% =|{")) {
         const int struct_varid = tok->varId();
         if (struct_varid == 0)
             return;
@@ -3122,7 +3126,7 @@ void Tokenizer::setVarIdStructMembers(Token **tok1,
         while (tok->str() != "}") {
             if (Token::Match(tok, "{|[|("))
                 tok = tok->link();
-            if (Token::Match(tok->previous(), "[,{] . %name% =")) {
+            if (Token::Match(tok->previous(), "[,{] . %name% =|{")) {
                 tok = tok->next();
                 const std::map<std::string, int>::iterator it = members.find(tok->str());
                 if (it == members.end()) {
@@ -3293,7 +3297,7 @@ void Tokenizer::setVarId()
 
 
 // Variable declarations can't start with "return" etc.
-#define NOTSTART_C "case", "default", "goto", "NOT", "return", "sizeof", "typedef"
+#define NOTSTART_C "NOT", "case", "default", "goto", "not", "return", "sizeof", "typedef"
 static const std::set<std::string> notstart_c = { NOTSTART_C };
 static const std::set<std::string> notstart_cpp = { NOTSTART_C,
                                                     "delete", "friend", "new", "throw", "using", "virtual", "explicit", "const_cast", "dynamic_cast", "reinterpret_cast", "static_cast", "template"
@@ -3498,6 +3502,15 @@ void Tokenizer::setVarIdPass1()
 
                 if (decl) {
                     variableMap.addVariable(prev2->str());
+
+                    if (Token::simpleMatch(tok->previous(), "for (") && Token::Match(prev2, "%name% [=,]")) {
+                        for (const Token *tok3 = prev2->next(); tok3 && tok3->str() != ";"; tok3 = tok3->next()) {
+                            if (Token::Match(tok3, "[([]"))
+                                tok3 = tok3->link();
+                            if (Token::Match(tok3, ", %name% [,=;]"))
+                                variableMap.addVariable(tok3->next()->str());
+                        }
+                    }
 
                     // set varid for template parameters..
                     tok = tok->next();
@@ -3799,7 +3812,7 @@ void Tokenizer::setVarIdPass2()
                     if (tok2->strAt(-1) == ")" || tok2->strAt(-2) == ")")
                         setVarIdClassFunction(scopeName2 + classname, tok2, tok2->link(), thisClassVars, structMembers, &mVarId);
                     tok2 = tok2->link();
-                } else if (tok2->str() == "(" && tok2->link()->strAt(1) != "(") {
+                } else if (Token::Match(tok2, "( %name%|)") && !Token::Match(tok2->link(), "(|[")) {
                     tok2 = tok2->link();
 
                     // Skip initialization list
@@ -4293,20 +4306,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
                 tok->isConstexpr(true);
             } else {
                 syntaxError(tok);
-            }
-        }
-    }
-
-    // Some special bailouts in DACA. To avoid too much hangs/crashes.
-    // FIXME: This is hopefully temporary. Somehow it should not be used in releases.
-    if (mSettings->daca) {
-        int numcase = 0;
-        for (const Token *tok = list.front(); tok; tok = tok->next()) {
-            if (Token::Match(tok, "%name% [ %num% ] = {") && MathLib::toLongNumber(tok->strAt(2)) > 10000)
-                return false;
-            if (tok->str() == "case") {
-                if (++numcase > 10000)
-                    return false;
             }
         }
     }
@@ -5073,8 +5072,8 @@ void Tokenizer::simplifyHeaders()
             if (removeUnusedTemplates || (isIncluded && removeUnusedIncludedTemplates)) {
                 if (Token::Match(tok->next(), "template < %name%")) {
                     const Token *tok2 = tok->tokAt(3);
-                    while (Token::Match(tok2, "%name% %name% [,=>]") || Token::Match(tok2, "typename ... %name% [,>]")) {
-                        if (Token::simpleMatch(tok2, "typename ..."))
+                    while (Token::Match(tok2, "%name% %name% [,=>]") || Token::Match(tok2, "typename|class ... %name% [,>]")) {
+                        if (Token::Match(tok2, "typename|class ..."))
                             tok2 = tok2->tokAt(3);
                         else
                             tok2 = tok2->tokAt(2);
@@ -6500,10 +6499,22 @@ void Tokenizer::simplifyFunctionPointers()
 
         // ok simplify this function pointer to an ordinary pointer
         Token::eraseTokens(tok->link(), endTok->next());
-        tok->link()->deleteThis();
-        while (Token::Match(tok, "( %type% ::"))
-            tok->deleteNext(2);
-        tok->deleteThis();
+        if (Token::simpleMatch(tok->link()->previous(), ") )")) {
+            // Function returning function pointer
+            // void (*dostuff(void))(void) {}
+            tok->link()->deleteThis();
+            tok->deleteThis();
+        } else {
+            // Function pointer variable
+            // void (*p)(void) {}
+            tok->link()->insertToken("(");
+            Token *par1 = tok->link()->next();
+            par1->insertToken(")");
+            par1->link(par1->next());
+            par1->next()->link(par1);
+            while (Token::Match(tok, "( %type% ::"))
+                tok->deleteNext(2);
+        }
     }
 }
 
@@ -6730,8 +6741,17 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
                 }
                 varName = varName->next();
             }
+            // Function pointer
+            if (Token::simpleMatch(varName, "( *") && Token::Match(varName->link()->previous(), "%name% ) ( ) =")) {
+                Token *endDecl = varName->link()->tokAt(2);
+                varName = varName->link()->previous();
+                endDecl->insertToken(";");
+                endDecl = endDecl->next();
+                endDecl->insertToken(varName->str());
+                continue;
+            }
             //non-VLA case
-            if (Token::Match(varName, "%name% ,|=")) {
+            else if (Token::Match(varName, "%name% ,|=")) {
                 if (varName->str() != "operator") {
                     tok2 = varName->next(); // The ',' or '=' token
 
@@ -9345,7 +9365,7 @@ void Tokenizer::reportUnknownMacros()
         for (const Token *inner = tok->tokAt(2); inner != endTok; inner = inner->next()) {
             if (Token::Match(inner, "[[({]"))
                 inner = inner->link();
-            else if (Token::Match(inner->previous(), "[,(] . %name% ="))
+            else if (Token::Match(inner->previous(), "[,(] . %name% =|{"))
                 unknownMacroError(tok);
         }
     }
@@ -9459,6 +9479,26 @@ void Tokenizer::findGarbageCode() const
                     syntaxError(tok);
             }
         }
+    }
+
+    // Keywords in global scope
+    std::set<std::string> nonGlobalKeywords{"break",
+                                            "continue",
+                                            "for",
+                                            "goto",
+                                            "if",
+                                            "return",
+                                            "switch",
+                                            "while"};
+    if (isCPP()) {
+        nonGlobalKeywords.insert("try");
+        nonGlobalKeywords.insert("catch");
+    }
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        if (tok->str() == "{")
+            tok = tok->link();
+        else if (tok->isName() && nonGlobalKeywords.count(tok->str()) && !Token::Match(tok->tokAt(-2), "operator %str%"))
+            syntaxError(tok, "keyword '" + tok->str() + "' is not allowed in global scope");
     }
 
     // keyword keyword
@@ -9597,7 +9637,7 @@ void Tokenizer::findGarbageCode() const
         if (Token::simpleMatch(tok, ".") &&
             !Token::simpleMatch(tok->previous(), ".") &&
             !Token::simpleMatch(tok->next(), ".") &&
-            !Token::Match(tok->previous(), "{|, . %name% =|.|[") &&
+            !Token::Match(tok->previous(), "{|, . %name% =|.|[|{") &&
             !Token::Match(tok->previous(), ", . %name%")) {
             if (!Token::Match(tok->previous(), "%name%|)|]|>|}"))
                 syntaxError(tok, tok->strAt(-1) + " " + tok->str() + " " + tok->strAt(1));
@@ -9606,6 +9646,8 @@ void Tokenizer::findGarbageCode() const
         }
         if (Token::Match(tok, "[!|+-/%^~] )|]"))
             syntaxError(tok);
+        if (Token::Match(tok, "==|!=|<=|>= %comp%"))
+            syntaxError(tok, tok->str() + " " + tok->strAt(1));
     }
 
     // ternary operator without :
@@ -10201,6 +10243,11 @@ void Tokenizer::simplifyCPPAttribute()
                 else
                     head->previous()->isAttributeNodiscard(true);
             }
+        } else if (Token::simpleMatch(tok->tokAt(2), "maybe_unused")) {
+            Token* head = tok->tokAt(5);
+            while (isCPPAttribute(head))
+                head = head->tokAt(5);
+            head->isMaybeUnused(true);
         } else if (Token::Match(tok->previous(), ") [ [ expects|ensures|assert default|audit|axiom| : %name% <|<=|>|>= %num% ] ]")) {
             const Token *vartok = tok->tokAt(4);
             if (vartok->str() == ":")

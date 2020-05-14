@@ -16,9 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "config.h"
 #include "exprengine.h"
+#include "library.h"
+#include "platform.h"
 #include "settings.h"
-#include "symboldatabase.h"
+#include "token.h"
 #include "tokenize.h"
 #include "testsuite.h"
 
@@ -75,6 +78,8 @@ private:
         TEST_CASE(functionCall3);
         TEST_CASE(functionCall4);
 
+        TEST_CASE(functionCallContract1);
+
         TEST_CASE(int1);
 
         TEST_CASE(pointer1);
@@ -110,8 +115,28 @@ private:
         std::vector<ExprEngine::Callback> callbacks;
         callbacks.push_back(f);
         std::ostringstream trace;
-        ExprEngine::executeAllFunctions(&tokenizer, &settings, callbacks, trace);
+        ExprEngine::executeAllFunctions(this, &tokenizer, &settings, callbacks, trace);
         return ret;
+    }
+
+    std::string functionCallContractExpr(const char code[], const Settings &s) {
+        Settings settings;
+        settings.bugHunting = true;
+        settings.debugBugHunting = true;
+        settings.functionContracts = s.functionContracts;
+        settings.platform(cppcheck::Platform::Unix64);
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        std::vector<ExprEngine::Callback> callbacks;
+        std::ostringstream trace;
+        ExprEngine::executeAllFunctions(this, &tokenizer, &settings, callbacks, trace);
+        std::string ret = trace.str();
+        std::string::size_type pos1 = ret.find("checkContract:{");
+        std::string::size_type pos2 = ret.find("}", pos1);
+        if (pos2 == std::string::npos)
+            return "Error:" + ret;
+        return ret.substr(pos1, pos2+1-pos1);
     }
 
     std::string getRange(const char code[], const std::string &str, int linenr = 0) {
@@ -133,7 +158,7 @@ private:
         std::vector<ExprEngine::Callback> callbacks;
         callbacks.push_back(f);
         std::ostringstream trace;
-        ExprEngine::executeAllFunctions(&tokenizer, &settings, callbacks, trace);
+        ExprEngine::executeAllFunctions(this, &tokenizer, &settings, callbacks, trace);
         return ret;
     }
 
@@ -148,7 +173,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
         std::vector<ExprEngine::Callback> callbacks;
         std::ostringstream ret;
-        ExprEngine::executeAllFunctions(&tokenizer, &settings, callbacks, ret);
+        ExprEngine::executeAllFunctions(this, &tokenizer, &settings, callbacks, ret);
         return ret.str();
     }
 
@@ -454,6 +479,25 @@ private:
 
     void functionCall4() {
         ASSERT_EQUALS("1:2147483647", getRange("void f() { sizeof(data); }", "sizeof(data)"));
+    }
+
+
+    void functionCallContract1() {
+        const char code[] = "void foo(int x);\n"
+                            "void bar(unsigned short x) { foo(x); }";
+
+        Settings s;
+        s.functionContracts["foo(x)"] = "x < 1000";
+
+        ASSERT_EQUALS("checkContract:{\n"
+                      "        (declare-fun $2 () Int)\n"
+                      "        (declare-fun $1 () Int)\n"
+                      "        (assert (ite (< $2 1000) false true))\n"
+                      "        (assert (= $2 $1))\n"
+                      "        (assert (and (>= $2 (- 2147483648)) (<= $2 2147483647)))\n"
+                      "        (assert (and (>= $1 0) (<= $1 65535)))\n"
+                      "}",
+                      functionCallContractExpr(code, s));
     }
 
 

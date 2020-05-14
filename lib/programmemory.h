@@ -1,12 +1,13 @@
 #ifndef GUARD_PROGRAMMEMORY_H
 #define GUARD_PROGRAMMEMORY_H
 
-#include "config.h"
 #include "utils.h"
 #include "valueflow.h"
 #include "mathlib.h"
 #include <map>
 #include <unordered_map>
+
+class Token;
 
 struct ProgramMemory {
     using Map = std::unordered_map<nonneg int, ValueFlow::Value>;

@@ -34,13 +34,13 @@ private:
     void run() OVERRIDE {
         settings.addEnabled("internal");
 
-        TEST_CASE(simplePatternInTokenMatch)
-        TEST_CASE(complexPatternInTokenSimpleMatch)
-        TEST_CASE(simplePatternSquareBrackets)
-        TEST_CASE(simplePatternAlternatives)
-        TEST_CASE(missingPercentCharacter)
-        TEST_CASE(unknownPattern)
-        TEST_CASE(redundantNextPrevious)
+        TEST_CASE(simplePatternInTokenMatch);
+        TEST_CASE(complexPatternInTokenSimpleMatch);
+        TEST_CASE(simplePatternSquareBrackets);
+        TEST_CASE(simplePatternAlternatives);
+        TEST_CASE(missingPercentCharacter);
+        TEST_CASE(unknownPattern);
+        TEST_CASE(redundantNextPrevious);
         TEST_CASE(internalError);
         TEST_CASE(orInComplexPattern);
         TEST_CASE(extraWhitespace);

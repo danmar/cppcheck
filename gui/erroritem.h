@@ -24,8 +24,6 @@
 #include <QMetaType>
 #include "errorlogger.h"
 
-class ErrorLine;
-
 /// @addtogroup GUI
 /// @{
 
@@ -82,6 +80,7 @@ public:
     QString tool() const;
 
     QString file0;
+    QString function;
     QString errorId;
     Severity::SeverityType severity;
     bool inconclusive;

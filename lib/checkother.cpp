@@ -36,7 +36,6 @@
 #include <list>
 #include <map>
 #include <ostream>
-#include <set>
 #include <utility>
 //---------------------------------------------------------------------------
 
@@ -2945,7 +2944,7 @@ static const Token *findShadowed(const Scope *scope, const std::string &varname,
             return var.nameToken();
     }
     for (const Function &f : scope->functionList) {
-        if (f.name() == varname)
+        if (f.type == Function::Type::eFunction && f.name() == varname)
             return f.tokenDef;
     }
     if (scope->type == Scope::eLambda)
@@ -3016,7 +3015,7 @@ static bool isVariableExpression(const Token* tok)
     return false;
 }
 
-void CheckOther::checkConstArgument()
+void CheckOther::checkKnownArgument()
 {
     if (!mSettings->isEnabled(Settings::STYLE))
         return;
@@ -3042,12 +3041,12 @@ void CheckOther::checkConstArgument()
                 tok2 = tok2->astOperand2();
             if (isVariableExpression(tok2))
                 continue;
-            constArgumentError(tok, tok->astParent()->previous(), &tok->values().front());
+            knownArgumentError(tok, tok->astParent()->previous(), &tok->values().front());
         }
     }
 }
 
-void CheckOther::constArgumentError(const Token *tok, const Token *ftok, const ValueFlow::Value *value)
+void CheckOther::knownArgumentError(const Token *tok, const Token *ftok, const ValueFlow::Value *value)
 {
     MathLib::bigint intvalue = value ? value->intvalue : 0;
     const std::string expr = tok ? tok->expressionString() : std::string("x");
@@ -3055,7 +3054,7 @@ void CheckOther::constArgumentError(const Token *tok, const Token *ftok, const V
 
     const std::string errmsg = "Argument '" + expr + "' to function " + fun + " is always " + std::to_string(intvalue);
     const ErrorPath errorPath = getErrorPath(tok, value, errmsg);
-    reportError(errorPath, Severity::style, "constArgument", errmsg, CWE570, false);
+    reportError(errorPath, Severity::style, "knownArgument", errmsg, CWE570, false);
 }
 
 void CheckOther::checkComparePointers()

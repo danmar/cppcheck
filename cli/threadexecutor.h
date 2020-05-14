@@ -19,8 +19,8 @@
 #ifndef THREADEXECUTOR_H
 #define THREADEXECUTOR_H
 
+#include "config.h"
 #include "errorlogger.h"
-#include "importproject.h"
 
 #include <cstddef>
 #include <list>
@@ -32,6 +32,8 @@
 #elif defined(_WIN32)
 #define THREADING_MODEL_WIN
 #include <windows.h>
+
+#include "importproject.h"
 #endif
 
 class Settings;

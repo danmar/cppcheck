@@ -28,7 +28,6 @@
 #include "preprocessor.h" // Preprocessor
 #include "suppressions.h"
 #include "timer.h"
-#include "token.h"
 #include "tokenize.h" // Tokenizer
 #include "tokenlist.h"
 #include "version.h"
@@ -67,6 +66,7 @@ namespace {
         std::string name;
         std::string scriptFile;
         std::string args;
+        std::string python;
 
         static std::string getFullPath(const std::string &fileName, const std::string &exename) {
             if (Path::fileExists(fileName))
@@ -131,16 +131,36 @@ namespace {
                     args += " " + v.get<std::string>();
             }
 
+            if (obj.count("python")) {
+                // Python was defined in the config file
+                if (obj["python"].is<picojson::array>()) {
+                    return "Loading " + fileName +" failed. python must not be an array.";
+                }
+                python = obj["python"].get<std::string>();
+            } else {
+                python = "";
+            }
+
             return getAddonInfo(obj["script"].get<std::string>(), exename);
         }
     };
 }
 
-static std::string executeAddon(const AddonInfo &addonInfo, const std::string &dumpFile)
+static std::string executeAddon(const AddonInfo &addonInfo,
+                                const std::string &defaultPythonExe,
+                                const std::string &dumpFile)
 {
+
+    std::string pythonExe = (addonInfo.python != "") ? addonInfo.python : defaultPythonExe;
+
+    if (pythonExe.find(" ") != std::string::npos) {
+        // popen strips the first quote. Needs 2 sets to fully quote.
+        pythonExe = "\"\"" + pythonExe + "\"\"";
+    }
+
     // Can python be executed?
     {
-        const std::string cmd = "python --version 2>&1";
+        const std::string cmd = pythonExe + " --version 2>&1";
 
 #ifdef _WIN32
         std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
@@ -157,7 +177,7 @@ static std::string executeAddon(const AddonInfo &addonInfo, const std::string &d
             throw InternalError(nullptr, "Failed to execute '" + cmd + "' (" + result + ")");
     }
 
-    const std::string cmd = "python \"" + addonInfo.scriptFile + "\" --cli" + addonInfo.args + " \"" + dumpFile + "\" 2>&1";
+    const std::string cmd = pythonExe + " \"" + addonInfo.scriptFile + "\" --cli" + addonInfo.args + " \"" + dumpFile + "\" 2>&1";
 
 #ifdef _WIN32
     std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
@@ -248,18 +268,63 @@ const char * CppCheck::extraVersion()
     return ExtraVersion;
 }
 
+static bool reportClangErrors(std::istream &is, std::function<void(const ErrorLogger::ErrorMessage&)> reportErr)
+{
+    std::string line;
+    while (std::getline(is, line)) {
+        if (line.empty() || line[0] == ' ' || line[0] == '`' || line[0] == '-')
+            continue;
+
+        std::string::size_type pos3 = line.find(": error: ");
+        if (pos3 == std::string::npos)
+            pos3 = line.find(": fatal error:");
+        if (pos3 == std::string::npos)
+            continue;
+
+        // file:line:column: error: ....
+        const std::string::size_type pos2 = line.rfind(":", pos3 - 1);
+        const std::string::size_type pos1 = line.rfind(":", pos2 - 1);
+
+        if (pos1 >= pos2 || pos2 >= pos3)
+            continue;
+
+        const std::string filename = line.substr(0, pos1);
+        const std::string linenr = line.substr(pos1+1, pos2-pos1-1);
+        const std::string colnr = line.substr(pos2+1, pos3-pos2-1);
+        const std::string msg = line.substr(line.find(":", pos3+1) + 2);
+
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+        ErrorLogger::ErrorMessage::FileLocation loc;
+        loc.setfile(Path::toNativeSeparators(filename));
+        loc.line = std::atoi(linenr.c_str());
+        loc.column = std::atoi(colnr.c_str());
+        locationList.push_back(loc);
+        ErrorLogger::ErrorMessage errmsg(locationList,
+                                         loc.getfile(),
+                                         Severity::error,
+                                         msg,
+                                         "syntaxError",
+                                         false);
+        reportErr(errmsg);
+
+        return true;
+    }
+    return false;
+}
+
 unsigned int CppCheck::check(const std::string &path)
 {
     if (mSettings.clang) {
         if (!mSettings.quiet)
             mErrorLogger.reportOut(std::string("Checking ") + path + "...");
 
-        const std::string clang = Path::isCPP(path) ? "clang++" : "clang";
-        const std::string temp = mSettings.buildDir + (Path::isCPP(path) ? "/__temp__.cpp" : "/__temp__.c");
-        const std::string clangcmd = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "") + ".clang-cmd";
-        const std::string clangStderr = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "") + ".clang-stderr";
+        const std::string tempFile = ".";
+        const std::string lang = Path::isCPP(path) ? "-x c++" : "-x c";
+        const std::string analyzerInfo = mSettings.buildDir.empty() ? std::string() : AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "");
+        const std::string clangcmd = analyzerInfo + ".clang-cmd";
+        const std::string clangStderr = analyzerInfo + ".clang-stderr";
 
-        const std::string cmd1 = clang + " -v -fsyntax-only " + temp + " 2>&1";
+        const std::string cmd1 = "clang -v -fsyntax-only " + lang + " " + tempFile + " 2>&1";
         const std::pair<bool, std::string> &result1 = executeCommand(cmd1);
         if (!result1.first || result1.second.find(" -cc1 ") == std::string::npos) {
             mErrorLogger.reportOut("Failed to execute '" + cmd1 + "':" + result1.second);
@@ -267,7 +332,7 @@ unsigned int CppCheck::check(const std::string &path)
         }
         std::istringstream details(result1.second);
         std::string line;
-        std::string flags;
+        std::string flags(lang + " ");
         while (std::getline(details, line)) {
             if (line.find(" -internal-isystem ") == std::string::npos)
                 continue;
@@ -283,10 +348,11 @@ unsigned int CppCheck::check(const std::string &path)
         for (const std::string &i: mSettings.includePaths)
             flags += "-I" + i + " ";
 
-        const std::string cmd = clang + " -cc1 -ast-dump " + flags + path + " 2> " + clangStderr;
-        std::ofstream fout(clangcmd);
-        fout << cmd << std::endl;
-        fout.close();
+        const std::string cmd = "clang -cc1 -ast-dump " + flags + path + (analyzerInfo.empty() ? std::string(" 2>&1") : (" 2> " + clangStderr));
+        if (!mSettings.buildDir.empty()) {
+            std::ofstream fout(clangcmd);
+            fout << cmd << std::endl;
+        }
 
         const std::pair<bool, std::string> &result2 = executeCommand(cmd);
         if (!result2.first || result2.second.find("TranslationUnitDecl") == std::string::npos) {
@@ -295,41 +361,20 @@ unsigned int CppCheck::check(const std::string &path)
         }
 
         // Ensure there are not syntax errors...
-        {
+        if (!mSettings.buildDir.empty()) {
             std::ifstream fin(clangStderr);
-            while (std::getline(fin, line)) {
-                if (line.find(": fatal error:") != std::string::npos) {
-
-                    // file:line:column: error: ....
-                    const std::string::size_type pos3 = line.find(": fatal error:");
-                    const std::string::size_type pos2 = line.rfind(":", pos3 - 1);
-                    const std::string::size_type pos1 = line.rfind(":", pos2 - 1);
-
-                    if (pos1 >= pos2 || pos2 >= pos3)
-                        continue;
-
-                    const std::string filename = line.substr(0, pos1);
-                    const std::string linenr = line.substr(pos1+1, pos2-pos1-1);
-                    const std::string colnr = line.substr(pos2+1, pos3-pos2-1);
-                    const std::string msg = line.substr(pos3 + 15);
-
-                    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-                    ErrorLogger::ErrorMessage::FileLocation loc;
-                    loc.setfile(Path::toNativeSeparators(filename));
-                    loc.line = std::atoi(linenr.c_str());
-                    loc.column = std::atoi(colnr.c_str());
-                    locationList.push_back(loc);
-                    ErrorLogger::ErrorMessage errmsg(locationList,
-                                                     loc.getfile(),
-                                                     Severity::error,
-                                                     msg,
-                                                     "syntaxError",
-                                                     false);
-                    reportErr(errmsg);
-
-                    return 0;
-                }
-            }
+            auto reportError = [this](const ErrorLogger::ErrorMessage& errorMessage) {
+                reportErr(errorMessage);
+            };
+            if (reportClangErrors(fin, reportError))
+                return 0;
+        } else {
+            std::istringstream istr(result2.second);
+            auto reportError = [this](const ErrorLogger::ErrorMessage& errorMessage) {
+                reportErr(errorMessage);
+            };
+            if (reportClangErrors(istr, reportError))
+                return 0;
         }
 
         //std::cout << "Checking Clang ast dump:\n" << result2.second << std::endl;
@@ -778,7 +823,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     mExitCode = 1;
                     continue;
                 }
-                const std::string results = executeAddon(addonInfo, dumpFile);
+                const std::string results =
+                    executeAddon(addonInfo, mSettings.addonPython, dumpFile);
                 std::istringstream istr(results);
                 std::string line;
 

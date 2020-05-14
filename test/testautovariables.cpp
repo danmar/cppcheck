@@ -1647,6 +1647,15 @@ private:
               "    g(&x);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct Data {\n"
+              "    std::string path;\n"
+              "};\n"
+              "const char* foo() {\n"
+              "    const Data& data = getData();\n"
+              "    return data.path.c_str();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingReference() {
@@ -2299,6 +2308,16 @@ private:
               "const char * f() {\n"
               "  const Fred &fred = getFred();\n"
               "  return fred.s.c_str();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #9534
+        check("struct A {\n"
+              "    int* x;\n"
+              "};\n"
+              "int* f(int i, std::vector<A>& v) {\n"
+              "    A& y = v[i];\n"
+              "    return &y.x[i];\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

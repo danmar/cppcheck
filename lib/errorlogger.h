@@ -314,8 +314,10 @@ public:
         std::list<FileLocation> callStack;
         std::string id;
 
-        /** source file (not header) */
+        /** For GUI rechecking; source file (not header) */
         std::string file0;
+        /** For GUI bug hunting; function name */
+        std::string function;
 
         Severity::SeverityType severity;
         CWE cwe;

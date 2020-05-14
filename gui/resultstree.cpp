@@ -52,6 +52,11 @@
 static const unsigned int COLUMN_SINCE_DATE = 6;
 static const unsigned int COLUMN_TAGS       = 7;
 
+static QString getFunction(QStandardItem *item)
+{
+    return item->data().toMap().value("function").toString();
+}
+
 ResultsTree::ResultsTree(QWidget * parent) :
     QTreeView(parent),
     mSettings(nullptr),
@@ -191,6 +196,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
     data["id"]  = item.errorId;
     data["inconclusive"] = item.inconclusive;
     data["file0"] = stripPath(item.file0, true);
+    data["function"] = item.function;
     data["sinceDate"] = item.sinceDate;
     data["tags"] = item.tags;
     data["hide"] = hide;
@@ -212,7 +218,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
             if (!child_item)
                 continue;
 
-            //Add user data to that item
+            // Add user data to that item
             QMap<QString, QVariant> child_data;
             child_data["severity"]  = ShowTypes::SeverityToShowType(line.severity);
             child_data["summary"] = line.summary;
@@ -561,6 +567,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
     QModelIndex index = indexAt(e->pos());
     if (index.isValid()) {
         bool multipleSelection = false;
+
         mSelectionModel = selectionModel();
         if (mSelectionModel->selectedRows().count() > 1)
             multipleSelection = true;
@@ -609,12 +616,20 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                 menu.addSeparator();
             }
 
+            const bool bughunting = !multipleSelection && mContextItem->data().toMap().value("id").toString().startsWith("bughunting");
+
+            if (bughunting && !getFunction(mContextItem).isEmpty()) {
+                QAction *editContract = new QAction(tr("Edit contract.."), &menu);
+                connect(editContract, &QAction::triggered, this, &ResultsTree::editContract);
+                menu.addAction(editContract);
+                menu.addSeparator();
+            }
+
             //Create an action for the application
             QAction *recheckSelectedFiles   = new QAction(tr("Recheck"), &menu);
             QAction *copy                   = new QAction(tr("Copy"), &menu);
             QAction *hide                   = new QAction(tr("Hide"), &menu);
             QAction *hideallid              = new QAction(tr("Hide all with id"), &menu);
-            QAction *suppress               = new QAction(tr("Suppress selected id(s)"), &menu);
             QAction *opencontainingfolder   = new QAction(tr("Open containing folder"), &menu);
 
             if (multipleSelection) {
@@ -632,7 +647,11 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             menu.addSeparator();
             menu.addAction(hide);
             menu.addAction(hideallid);
-            menu.addAction(suppress);
+            if (!bughunting) {
+                QAction *suppress = new QAction(tr("Suppress selected id(s)"), &menu);
+                menu.addAction(suppress);
+                connect(suppress, SIGNAL(triggered()), this, SLOT(suppressSelectedIds()));
+            }
             menu.addSeparator();
             menu.addAction(opencontainingfolder);
 
@@ -640,7 +659,6 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             connect(copy, SIGNAL(triggered()), this, SLOT(copy()));
             connect(hide, SIGNAL(triggered()), this, SLOT(hideResult()));
             connect(hideallid, SIGNAL(triggered()), this, SLOT(hideAllIdResult()));
-            connect(suppress, SIGNAL(triggered()), this, SLOT(suppressSelectedIds()));
             connect(opencontainingfolder, SIGNAL(triggered()), this, SLOT(openContainingFolder()));
 
             if (!mTags.isEmpty()) {
@@ -1018,6 +1036,11 @@ void ResultsTree::openContainingFolder()
         filePath = QFileInfo(filePath).absolutePath();
         QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
     }
+}
+
+void ResultsTree::editContract()
+{
+    emit editFunctionContract(getFunction(mContextItem));
 }
 
 void ResultsTree::tagSelectedItems(const QString &tag)

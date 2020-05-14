@@ -1511,7 +1511,7 @@ void SymbolDatabase::setArrayDimensionsUsingValueFlow()
                     break;
                 default:
                     break;
-                };
+                }
 
                 if (bits > 0 && bits <= 62) {
                     if (dimension.tok->valueType()->sign == ValueType::Sign::UNSIGNED)
@@ -1787,8 +1787,8 @@ Variable::Variable(const Token *name_, const std::string &clangType, const Token
                    nonneg int index_, AccessControl access_, const Type *type_,
                    const Scope *scope_)
     : mNameToken(name_),
-      mTypeStartToken(nullptr),
-      mTypeEndToken(nullptr),
+      mTypeStartToken(start),
+      mTypeEndToken(name_ ? name_->previous() : nullptr),
       mIndex(index_),
       mAccess(access_),
       mFlags(0),
@@ -1871,7 +1871,7 @@ void Variable::evaluate(const Settings* settings)
             setFlag(fIsStatic, true);
         else if (tok->str() == "extern")
             setFlag(fIsExtern, true);
-        else if (tok->str() == "volatile")
+        else if (tok->str() == "volatile" || Token::simpleMatch(tok, "std :: atomic <"))
             setFlag(fIsVolatile, true);
         else if (tok->str() == "mutable")
             setFlag(fIsMutable, true);
@@ -1887,6 +1887,10 @@ void Variable::evaluate(const Settings* settings)
         } else if (tok->str() == "&&") { // Before simplification, && isn't split up
             setFlag(fIsRValueRef, true);
             setFlag(fIsReference, true); // Set also fIsReference
+        }
+
+        if (tok->isMaybeUnused()) {
+            setFlag(fIsMaybeUnused, true);
         }
 
         if (tok->str() == "<" && tok->link())
@@ -2153,6 +2157,18 @@ Function::Function(const Token *tokenDef)
 {
 }
 
+std::string Function::fullName() const
+{
+    std::string ret = name();
+    for (const Scope *s = nestedIn; s; s = s->nestedIn) {
+        if (!s->className.empty())
+            ret = s->className + "::" + ret;
+    }
+    ret += "(";
+    for (const Variable &arg : argumentList)
+        ret += (arg.index() == 0 ? "" : ",") + arg.name();
+    return ret + ")";
+}
 
 static std::string qualifiedName(const Scope *scope)
 {
@@ -5603,8 +5619,14 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             valuetype->type = ValueType::Type::INT;
     } else
         valuetype->type = ValueType::Type::RECORD;
-    while (Token::Match(type, "%name%|*|&|::") && !Token::Match(type, "typename|template") &&
+    bool par = false;
+    while (Token::Match(type, "%name%|*|&|::|(") && !Token::Match(type, "typename|template") &&
            !type->variable() && !type->function()) {
+        if (type->str() == "(") {
+            if (par)
+                break;
+            par = true;
+        }
         if (type->isSigned())
             valuetype->sign = ValueType::Sign::SIGNED;
         else if (type->isUnsigned())
@@ -5662,6 +5684,8 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             valuetype->smartPointerType = argTok->next()->type();
             valuetype->type = ValueType::Type::NONSTD;
             type = argTok->link();
+            if (type)
+                type = type->next();
             continue;
         } else if (Token::Match(type, "%name% :: %name%")) {
             std::string typestr;
@@ -5751,9 +5775,10 @@ static const Function *getOperatorFunction(const Token * const tok)
     return nullptr;
 }
 
-void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings)
+void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *tokens)
 {
-    Token * tokens = const_cast<Tokenizer *>(mTokenizer)->list.front();
+    if (!tokens)
+        tokens = const_cast<Tokenizer *>(mTokenizer)->list.front();
 
     for (Token *tok = tokens; tok; tok = tok->next())
         tok->setValueType(nullptr);
@@ -6201,7 +6226,7 @@ std::string ValueType::dump() const
     case LONGDOUBLE:
         ret << "valueType-type=\"long double\"";
         break;
-    };
+    }
 
     switch (sign) {
     case Sign::UNKNOWN_SIGN:
@@ -6212,7 +6237,7 @@ std::string ValueType::dump() const
     case Sign::UNSIGNED:
         ret << " valueType-sign=\"unsigned\"";
         break;
-    };
+    }
 
     if (bits > 0)
         ret << " valueType-bits=\"" << bits << '\"';
@@ -6263,7 +6288,7 @@ MathLib::bigint ValueType::typeSize(const cppcheck::Platform &platform, bool p) 
         return platform.sizeof_long_double;
     default:
         break;
-    };
+    }
 
     // Unknown invalid size
     return 0;

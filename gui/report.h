@@ -22,7 +22,8 @@
 #include <QObject>
 #include <QString>
 #include <QFile>
-#include "erroritem.h"
+
+class ErrorItem;
 
 /// @addtogroup GUI
 /// @{

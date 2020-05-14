@@ -29,7 +29,6 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
-#include "tokenlist.h"
 #include "utils.h"
 #include "valueflow.h"
 
@@ -38,8 +37,6 @@
 #include <cstdlib>
 #include <numeric> // std::accumulate
 #include <sstream>
-#include <stack>
-#include <utility>
 
 //---------------------------------------------------------------------------
 
@@ -568,7 +565,7 @@ static bool checkBufferSize(const Token *ftok, const Library::ArgumentChecks::Mi
         return minsize.value <= bufferSize;
     case Library::ArgumentChecks::MinSize::Type::NONE:
         break;
-    };
+    }
     return true;
 }
 

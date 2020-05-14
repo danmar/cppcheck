@@ -20,10 +20,10 @@
 
 #include "path.h"
 #include "settings.h"
+#include "suppressions.h"
 #include "tinyxml2.h"
 #include "token.h"
 #include "tokenize.h"
-#include "tokenlist.h"
 #include "utils.h"
 #define PICOJSON_USE_INT64
 #include <picojson.h>
@@ -33,6 +33,11 @@
 #include <utility>
 #include <sstream>
 
+
+ImportProject::ImportProject()
+{
+    projectType = Type::UNKNOWN;
+}
 
 void ImportProject::ignorePaths(const std::vector<std::string> &ipaths)
 {
@@ -1013,7 +1018,9 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
         if (strcmp(node->Name(), CppcheckXml::RootPathName) == 0 && node->Attribute(CppcheckXml::RootPathNameAttrib)) {
             temp.basePaths.push_back(joinRelativePath(path, node->Attribute(CppcheckXml::RootPathNameAttrib)));
             temp.relativePaths = true;
-        } else if (strcmp(node->Name(), CppcheckXml::BuildDirElementName) == 0)
+        } else if (strcmp(node->Name(), CppcheckXml::BugHunting) == 0)
+            temp.bugHunting = true;
+        else if (strcmp(node->Name(), CppcheckXml::BuildDirElementName) == 0)
             temp.buildDir = joinRelativePath(path, node->GetText() ? node->GetText() : "");
         else if (strcmp(node->Name(), CppcheckXml::IncludeDirElementName) == 0)
             temp.includePaths = readXmlStringList(node, path, CppcheckXml::DirElementName, CppcheckXml::DirNameAttrib);
@@ -1028,7 +1035,16 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
             paths = readXmlStringList(node, path, CppcheckXml::PathName, CppcheckXml::PathNameAttrib);
         else if (strcmp(node->Name(), CppcheckXml::ExcludeElementName) == 0)
             guiProject.excludedPaths = readXmlStringList(node, "", CppcheckXml::ExcludePathName, CppcheckXml::ExcludePathNameAttrib);
-        else if (strcmp(node->Name(), CppcheckXml::IgnoreElementName) == 0)
+        else if (strcmp(node->Name(), CppcheckXml::FunctionContracts) == 0) {
+            for (const tinyxml2::XMLElement *child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
+                if (strcmp(child->Name(), CppcheckXml::FunctionContract) == 0) {
+                    const char *function = child->Attribute(CppcheckXml::ContractFunction);
+                    const char *expects = child->Attribute(CppcheckXml::ContractExpects);
+                    if (function && expects)
+                        temp.functionContracts[function] = expects;
+                }
+            }
+        } else if (strcmp(node->Name(), CppcheckXml::IgnoreElementName) == 0)
             guiProject.excludedPaths = readXmlStringList(node, "", CppcheckXml::IgnorePathName, CppcheckXml::IgnorePathNameAttrib);
         else if (strcmp(node->Name(), CppcheckXml::LibrariesElementName) == 0)
             guiProject.libraries = readXmlStringList(node, "", CppcheckXml::LibraryElementName, nullptr);
@@ -1094,6 +1110,8 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     settings->checkUnusedTemplates = temp.checkUnusedTemplates;
     settings->maxCtuDepth = temp.maxCtuDepth;
     settings->safeChecks = temp.safeChecks;
+    settings->bugHunting = temp.bugHunting;
+    settings->functionContracts = temp.functionContracts;
     return true;
 }
 

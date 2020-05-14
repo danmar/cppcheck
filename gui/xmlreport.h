@@ -22,8 +22,8 @@
 #include <QString>
 #include <QList>
 #include "report.h"
-#include "erroritem.h"
 
+class ErrorItem;
 class QObject;
 
 /// @addtogroup GUI

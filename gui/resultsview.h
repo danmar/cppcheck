@@ -54,6 +54,8 @@ public:
         mUI.mTree->setTags(tags);
     }
 
+    void setAddedContracts(const QStringList &addedContracts);
+
     /**
      * @brief Clear results and statistics and reset progressinfo.
      * @param results Remove all the results from view?
@@ -228,6 +230,9 @@ signals:
     /** Suppress Ids */
     void suppressIds(QStringList ids);
 
+    /** Edit contract for function */
+    void editFunctionContract(QString function);
+
     /**
     * @brief Show/hide certain type of errors
     * Refreshes the tree.
@@ -358,6 +363,8 @@ private slots:
      * @param pos Mouse click position
      */
     void on_mListLog_customContextMenuRequested(const QPoint &pos);
+private:
+    QSet<QString> mContracts;
 };
 /// @}
 #endif // RESULTSVIEW_H

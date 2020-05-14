@@ -22,7 +22,6 @@
 #include "suppressions.h"
 #include "testsuite.h"
 #include "threadexecutor.h"
-#include "path.h"
 
 #include <cstddef>
 #include <list>
@@ -64,7 +63,7 @@ private:
         TEST_CASE(suppressionWithRelativePaths); // #4733
         TEST_CASE(suppressingSyntaxErrors); // #7076
         TEST_CASE(suppressingSyntaxErrorsInline); // #5917
-        TEST_CASE(suppressingSyntaxErrorsWhileFileRead) // PR #1333
+        TEST_CASE(suppressingSyntaxErrorsWhileFileRead); // PR #1333
         TEST_CASE(symbol);
 
         TEST_CASE(unusedFunction);

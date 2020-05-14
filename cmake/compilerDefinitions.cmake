@@ -1,5 +1,5 @@
 if (UNIX)
-    if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    if (CMAKE_BUILD_TYPE MATCHES "Debug")
         add_definitions(-D_GLIBCXX_DEBUG)
     endif()
     if (HAVE_RULES)

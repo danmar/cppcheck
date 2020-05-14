@@ -22,10 +22,10 @@
 
 #include <QThread>
 #include "cppcheck.h"
-#include "threadresult.h"
 #include "suppressions.h"
 
 class Settings;
+class ThreadResult;
 
 /// @addtogroup GUI
 /// @{

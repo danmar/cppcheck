@@ -24,13 +24,13 @@
 
 #include "check.h"
 #include "config.h"
-#include "library.h"
+#include "errorlogger.h"
 #include "tokenize.h"
+#include "utils.h"
+#include "valueflow.h"
 
-#include <map>
 #include <string>
 
-class ErrorLogger;
 class Scope;
 class Settings;
 class Token;

@@ -31,14 +31,18 @@
 #include "tokenize.h"
 #include "valueflow.h"
 
-#include <tinyxml2.h>
-
 #include <cassert>
 #include <cstddef>
 #include <list>
 #include <map>
 #include <stack>
 #include <utility>
+
+
+namespace tinyxml2 {
+    class XMLElement;
+}
+
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
@@ -922,6 +926,8 @@ void CheckUninitVar::checkRhs(const Token *tok, const Variable &var, Alloc alloc
             else if (!membervar.empty() && isMemberVariableUsage(tok, var.isPointer(), alloc, membervar))
                 uninitStructMemberError(tok, tok->str() + "." + membervar);
             else if (Token::Match(tok, "%var% ="))
+                break;
+            else if (Token::Match(tok->previous(), "[(,&]"))
                 break;
         } else if (tok->str() == ";" || (indent==0 && tok->str() == ","))
             break;

@@ -60,6 +60,7 @@ RESOURCES = gui.qrc
 FORMS = about.ui \
         application.ui \
         file.ui \
+        functioncontractdialog.ui \
         mainwindow.ui \
         projectfiledialog.ui \
         resultsview.ui \
@@ -108,6 +109,7 @@ HEADERS += aboutdialog.h \
            erroritem.h \
            filelist.h \
            fileviewdialog.h \
+           functioncontractdialog.h \
            mainwindow.h \
            platforms.h \
            printablereport.h \
@@ -147,6 +149,7 @@ SOURCES += aboutdialog.cpp \
            erroritem.cpp \
            filelist.cpp \
            fileviewdialog.cpp \
+           functioncontractdialog.cpp \
            main.cpp \
            mainwindow.cpp\
            platforms.cpp \

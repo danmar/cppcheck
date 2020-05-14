@@ -541,6 +541,12 @@ public:
     void isAttributeNodiscard(const bool value) {
         setFlag(fIsAttributeNodiscard, value);
     }
+    bool isMaybeUnused() const {
+        return getFlag(fIsMaybeUnused);
+    }
+    void isMaybeUnused(const bool value) {
+        setFlag(fIsMaybeUnused, value);
+    }
     void setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint value) {
         mImpl->setCppcheckAttribute(type, value);
     }
@@ -1032,7 +1038,7 @@ public:
         const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value& value) {
             return value.isIntValue() && !value.isImpossible() && value.intvalue == val;
         });
-        return it == mImpl->mValues->end() ? nullptr : &*it;;
+        return it == mImpl->mValues->end() ? nullptr : &*it;
     }
 
     const ValueFlow::Value * getMaxValue(bool condition) const {
@@ -1058,7 +1064,7 @@ public:
             return value.isMovedValue() && !value.isImpossible() &&
                    value.moveKind != ValueFlow::Value::MoveKind::NonMovedVariable;
         });
-        return it == mImpl->mValues->end() ? nullptr : &*it;;
+        return it == mImpl->mValues->end() ? nullptr : &*it;
     }
 
     const ValueFlow::Value * getValueLE(const MathLib::bigint val, const Settings *settings) const;
@@ -1155,6 +1161,7 @@ private:
         fIncompleteVar          = (1 << 25),
         fConstexpr              = (1 << 26),
         fExternC                = (1 << 27),
+        fIsMaybeUnused          = (1 << 28), // [[maybe_unsed]]
     };
 
     Token::Type mTokType;

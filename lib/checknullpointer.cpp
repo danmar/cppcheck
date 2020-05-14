@@ -23,11 +23,11 @@
 #include "astutils.h"
 #include "errorlogger.h"
 #include "library.h"
+#include "mathlib.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
-#include "utils.h"
 
 #include <algorithm>
 #include <cctype>

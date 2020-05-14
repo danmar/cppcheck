@@ -24,13 +24,17 @@
 
 #include "check.h"
 #include "config.h"
-#include "valueflow.h"
+#include "errorlogger.h"
+#include "utils.h"
 
 #include <cstddef>
 #include <string>
 #include <vector>
 
-class ErrorLogger;
+namespace ValueFlow {
+    class Value;
+}
+
 class Settings;
 class Token;
 class Tokenizer;
@@ -82,7 +86,7 @@ public:
         checkOther.checkEvaluationOrder();
         checkOther.checkFuncArgNamesDifferent();
         checkOther.checkShadowVariables();
-        checkOther.checkConstArgument();
+        checkOther.checkKnownArgument();
         checkOther.checkComparePointers();
         checkOther.checkIncompleteStatement();
         checkOther.checkPipeParameterSize();
@@ -207,7 +211,7 @@ public:
     /** @brief %Check for shadow variables. Less noisy than gcc/clang -Wshadow. */
     void checkShadowVariables();
 
-    void checkConstArgument();
+    void checkKnownArgument();
 
     void checkComparePointers();
 
@@ -265,7 +269,7 @@ private:
     void funcArgNamesDifferent(const std::string & functionName, nonneg int index, const Token* declaration, const Token* definition);
     void funcArgOrderDifferent(const std::string & functionName, const Token * declaration, const Token * definition, const std::vector<const Token*> & declarations, const std::vector<const Token*> & definitions);
     void shadowError(const Token *var, const Token *shadowed, std::string type);
-    void constArgumentError(const Token *tok, const Token *ftok, const ValueFlow::Value *value);
+    void knownArgumentError(const Token *tok, const Token *ftok, const ValueFlow::Value *value);
     void comparePointersError(const Token *tok, const ValueFlow::Value *v1, const ValueFlow::Value *v2);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
@@ -331,7 +335,7 @@ private:
         c.shadowError(nullptr, nullptr, "variable");
         c.shadowError(nullptr, nullptr, "function");
         c.shadowError(nullptr, nullptr, "argument");
-        c.constArgumentError(nullptr, nullptr, nullptr);
+        c.knownArgumentError(nullptr, nullptr, nullptr);
         c.comparePointersError(nullptr, nullptr, nullptr);
         c.redundantAssignmentError(nullptr, nullptr, "var", false);
         c.redundantInitializationError(nullptr, nullptr, "var", false);

@@ -571,7 +571,9 @@ static const Token * followVariableExpression(const Token * tok, bool cpp, const
             Token::Match(tok2, "%name% .|[|++|--|%assign%")) {
             return tok;
         }
-
+        if (Token::Match(tok2, "%name% ("))
+            // Bailout when function call is seen
+            return tok;
         if (const Variable * var2 = tok2->variable()) {
             if (!var2->scope())
                 return tok;

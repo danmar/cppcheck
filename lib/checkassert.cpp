@@ -120,13 +120,16 @@ void CheckAssert::assignmentInAssertError(const Token *tok, const std::string& v
 // checks if side effects happen on the variable prior to tmp
 void CheckAssert::checkVariableAssignment(const Token* assignTok, const Scope *assertionScope)
 {
-    const Variable* prevVar = assignTok->previous()->variable();
-    if (!prevVar)
+    if (!assignTok->isAssignmentOp() && assignTok->tokType() != Token::eIncDecOp)
+        return;
+
+    const Variable* var = assignTok->astOperand1()->variable();
+    if (!var)
         return;
 
     // Variable declared in inner scope in assert => don't warn
-    if (assertionScope != prevVar->scope()) {
-        const Scope *s = prevVar->scope();
+    if (assertionScope != var->scope()) {
+        const Scope *s = var->scope();
         while (s && s != assertionScope)
             s = s->nestedIn;
         if (s == assertionScope)
@@ -135,12 +138,12 @@ void CheckAssert::checkVariableAssignment(const Token* assignTok, const Scope *a
 
     // assignment
     if (assignTok->isAssignmentOp() || assignTok->tokType() == Token::eIncDecOp) {
-        if (prevVar->isConst())
+        if (var->isConst()) {
             return;
-
-        assignmentInAssertError(assignTok, prevVar->name());
+        }
+        assignmentInAssertError(assignTok, var->name());
     }
-    // TODO: function calls on prevVar
+    // TODO: function calls on var
 }
 
 bool CheckAssert::inSameScope(const Token* returnTok, const Token* assignTok)

@@ -31,7 +31,6 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
-#include "valueflow.h"
 
 #include <cstddef>
 #include <iostream>
@@ -105,7 +104,7 @@ void VarInfo::print()
         default:
             status = "?";
             break;
-        };
+        }
 
         std::cout << "status=" << status << " "
                   << "alloctype='" << it->second.type << "' "

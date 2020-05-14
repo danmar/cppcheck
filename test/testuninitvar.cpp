@@ -70,6 +70,7 @@ private:
         TEST_CASE(uninitvar8); // ticket #6230
         TEST_CASE(uninitvar9); // ticket #6424
         TEST_CASE(uninitvar10); // ticket #9467
+        TEST_CASE(uninitvar11); // ticket #9123
         TEST_CASE(uninitvar_unconditionalTry);
         TEST_CASE(uninitvar_funcptr); // #6404
         TEST_CASE(uninitvar_operator); // #6680
@@ -2720,6 +2721,16 @@ private:
                             "int global() {\n"
                             "    int bar = 1;\n"
                             "    return bar;\n"
+                            "}";
+        checkUninitVar(code, "test.cpp");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitvar11() { // 9123
+        const char code[] = "bool get(int &var);\n"
+                            "void foo () {\n"
+                            "    int x;\n"
+                            "    x = get(x) && x;\n"
                             "}";
         checkUninitVar(code, "test.cpp");
         ASSERT_EQUALS("", errout.str());
