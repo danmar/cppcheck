@@ -30,7 +30,7 @@ const char Settings::SafeChecks::XmlExternalVariables[] = "external-variables";
 
 Settings::Settings()
     : mEnabled(0),
-      addonPython("python"),
+      addonPython("python3"),
       bugHunting(false),
       checkAllConfigurations(true),
       checkConfiguration(false),
