@@ -31,6 +31,67 @@
 #include <sstream>
 #include <string>
 
+struct SimpleAst
+{
+    SimpleAst(std::string token)
+        : token(token)
+    {
+    }
+
+    SimpleAst(std::string token, SimpleAst left)
+        : token(token)
+        , left(std::make_unique<SimpleAst>(std::move(left)))
+    {
+    }
+
+    SimpleAst(std::string token, SimpleAst left, SimpleAst right)
+        : token(token)
+        , left(std::make_unique<SimpleAst>(std::move(left)))
+        , right(std::make_unique<SimpleAst>(std::move(right)))
+    {
+    }
+
+    std::string token;
+    std::unique_ptr<SimpleAst> left;
+    std::unique_ptr<SimpleAst> right;
+
+    bool matches(const Tokenizer& tokenizer)
+    {
+        const Token* top = nullptr;
+        for (const Token* t = tokenizer.tokens(); t != nullptr; t = t->next()) {
+            if (t->astParent() != nullptr) {
+                const Token* myTop = getTop(t);
+                if (top == nullptr)
+                    top = myTop;
+                else if (top != myTop)
+                    return false; //Can't possibly match this SimpleAst because it's not even a tree.
+            }
+        }
+        return matches(top);
+    }
+
+    bool matches(const Token* t)
+    {
+        if (t->str() != token)
+            return false;
+        if ((t->astOperand1() == nullptr) != (left == nullptr))
+            return false;
+        if (left != nullptr && !left->matches(t->astOperand1()))
+            return false;
+        if ((t->astOperand2() == nullptr) != (right == nullptr))
+            return false;
+        if (right != nullptr && !right->matches(t->astOperand2()))
+            return false;
+        return true;
+    }
+private:
+    const Token* getTop(const Token* t) {
+        return t->astParent() != nullptr ? getTop(t->astParent()) : t;
+    }
+};
+
+
+
 struct InternalError;
 
 class TestTokenizer : public TestFixture {
@@ -460,6 +521,7 @@ private:
         TEST_CASE(astcase);
         TEST_CASE(astrefqualifier);
         TEST_CASE(astvardecl);
+        TEST_CASE(astnewscoped);
 
         TEST_CASE(startOfExecutableScope);
 
@@ -7902,6 +7964,25 @@ private:
         ASSERT_EQUALS("b(", testAst("class a { void b() &; };"));
         ASSERT_EQUALS("b(", testAst("class a { void b() && {} };"));
         ASSERT_EQUALS("b(", testAst("class a { void b() & {} };"));
+    }
+
+    void astnewscoped() {
+        auto generateAst = [&](std::string code) {
+            Settings settings;
+            Library library;
+            auto tokenizer = std::make_unique<Tokenizer>(&settings, this);
+            std::istringstream istr(code);
+            tokenizer->tokenize(istr, "test.cpp");
+            return tokenizer;
+        };
+
+        //tokenizer.
+        bool match1 = SimpleAst{"return", {"new", {"A"}}}.matches(*generateAst("return new A;"));
+        bool match2 = SimpleAst{"return", {"new", {"(", {"A"}}}}.matches(*generateAst("return new A();"));
+        bool match3 = SimpleAst{"return", {"new", {"(", {"A"}, {"true"}}} }.matches(*generateAst("return new A(true);"));
+        bool match4 = SimpleAst{"return", {"new", {"::", {"A"}, {"B"}}}}.matches(*generateAst("return new A::B;"));
+        bool match5 = SimpleAst{"return", {"new", {"(", {"::", {"A"}, {"B"}}}}}.matches(*generateAst("return new A::B();"));
+        bool match6 = SimpleAst{"return", {"new", {"(", {"::", {"A"}, {"B"}}, {"true"}}}}.matches(*generateAst("return new A::B(true);"));
     }
 
     void compileLimits() {
