@@ -97,6 +97,8 @@ private:
         TEST_CASE(structMember1);
         TEST_CASE(structMember2);
         TEST_CASE(structMember3);
+
+        TEST_CASE(ternaryOperator1);
 #endif
     }
 
@@ -653,6 +655,20 @@ private:
         const char expected[] = "(and (>= $3 (- 2147483648)) (<= $3 2147483647))\n"
                                 "(= $3 1)\n"
                                 "z3::sat\n";
+
+        ASSERT_EQUALS(expected, expr(code, "=="));
+    }
+
+
+    void ternaryOperator1() {
+        const char code[] = "void foo(signed char x) {\n"
+                            "  x = (x > 0) ? (0==x) : 0;\n"
+                            "}";
+
+        const char expected[] = "(> $1 0)\n"
+                                "(and (>= $1 (- 128)) (<= $1 127))\n"
+                                "(= 0 $1)\n"
+                                "z3::unsat\n";
 
         ASSERT_EQUALS(expected, expr(code, "=="));
     }

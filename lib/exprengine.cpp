@@ -1613,13 +1613,28 @@ static ExprEngine::ValuePtr executeBinaryOp(const Token *tok, Data &data)
     ExprEngine::ValuePtr v1 = executeExpression(tok->astOperand1(), data);
     ExprEngine::ValuePtr v2;
 
-    if (tok->str() == "?" && tok->astOperand1()->hasKnownIntValue()) {
-        if (tok->astOperand1()->getKnownIntValue())
-            v2 = executeExpression(tok->astOperand2()->astOperand1(), data);
-        else
-            v2 = executeExpression(tok->astOperand2()->astOperand2(), data);
-        call(data.callbacks, tok, v2, &data);
-        return v2;
+    if (tok->str() == "?") {
+        if (tok->astOperand1()->hasKnownIntValue()) {
+            if (tok->astOperand1()->getKnownIntValue())
+                v2 = executeExpression(tok->astOperand2()->astOperand1(), data);
+            else
+                v2 = executeExpression(tok->astOperand2()->astOperand2(), data);
+            call(data.callbacks, tok, v2, &data);
+            return v2;
+        }
+
+        Data trueData(data);
+        trueData.addConstraint(v1, true);
+        auto trueValue = simplifyValue(executeExpression(tok->astOperand2()->astOperand1(), trueData));
+
+        Data falseData(data);
+        falseData.addConstraint(v1, false);
+        auto falseValue = simplifyValue(executeExpression(tok->astOperand2()->astOperand2(), falseData));
+
+        auto result = simplifyValue(std::make_shared<ExprEngine::BinOpResult>("?", v1, std::make_shared<ExprEngine::BinOpResult>(":", trueValue, falseValue)));
+        call(data.callbacks, tok, result, &data);
+        return result;
+
     } else if (tok->str() == "&&" || tok->str() == "||") {
         Data data2(data);
         data2.addConstraint(v1, tok->str() == "&&");
