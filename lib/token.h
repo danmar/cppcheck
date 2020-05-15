@@ -99,11 +99,8 @@ struct TokenImpl {
     std::list<ValueFlow::Value>* mValues;
     static const std::list<ValueFlow::Value> mEmptyValueList;
 
-    /** Bitfield bit count. */
-    unsigned char mBits;
-
     // Pointer to a template in the template simplifier
-    std::set<TemplateSimplifier::TokenAndName*> mTemplateSimplifierPointers;
+    std::set<TemplateSimplifier::TokenAndName*>* mTemplateSimplifierPointers;
 
     // Pointer to the object representing this token's scope
     std::shared_ptr<ScopeInfo2> mScopeInfo;
@@ -118,6 +115,9 @@ struct TokenImpl {
 
     // For memoization, to speed up parsing of huge arrays #8897
     enum class Cpp11init {UNKNOWN, CPP11INIT, NOINIT} mCpp11init;
+
+    /** Bitfield bit count. */
+    unsigned char mBits;
 
     void setCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint value);
     bool getCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint *value) const;
@@ -137,11 +137,11 @@ struct TokenImpl {
         , mOriginalName(nullptr)
         , mValueType(nullptr)
         , mValues(nullptr)
-        , mBits(0)
-        , mTemplateSimplifierPointers()
+        , mTemplateSimplifierPointers(nullptr)
         , mScopeInfo(nullptr)
         , mCppcheckAttributes(nullptr)
         , mCpp11init(Cpp11init::UNKNOWN)
+        , mBits(0)
     {}
 
     ~TokenImpl();
@@ -607,11 +607,13 @@ public:
     unsigned char bits() const {
         return mImpl->mBits;
     }
-    std::set<TemplateSimplifier::TokenAndName*> &templateSimplifierPointers() const {
+    std::set<TemplateSimplifier::TokenAndName*>* templateSimplifierPointers() const {
         return mImpl->mTemplateSimplifierPointers;
     }
     void templateSimplifierPointer(TemplateSimplifier::TokenAndName* tokenAndName) {
-        mImpl->mTemplateSimplifierPointers.insert(tokenAndName);
+        if (!mImpl->mTemplateSimplifierPointers)
+            mImpl->mTemplateSimplifierPointers = new std::set<TemplateSimplifier::TokenAndName*>;
+        mImpl->mTemplateSimplifierPointers->insert(tokenAndName);
     }
     void setBits(const unsigned char b) {
         mImpl->mBits = b;
