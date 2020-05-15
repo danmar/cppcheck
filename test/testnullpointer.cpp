@@ -1779,6 +1779,17 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (warning) Either the condition 'if(tok3&&tok3->str()==\"(\")' is redundant or there is possible null pointer dereference: tok3.\n"
                       "[test.cpp:3]: (warning) Possible null pointer dereference: tok3\n", errout.str());
+
+        check("void f(int* t1, int* t2) {\n"
+              "    while (t1 && t2 &&\n"
+              "       *t1 == *t2) {\n"
+              "        t1 = nullptr;\n"
+              "        t2 = nullptr;\n"
+              "    }\n"
+              "    if (!t1 || !t2)\n"
+              "        return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer_addressOf() { // address of

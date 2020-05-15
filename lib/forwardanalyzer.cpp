@@ -404,7 +404,7 @@ struct ForwardTraversal {
                     return Progress::Break;
                 if (next) {
                     if (precedes(next, end))
-                        tok = next;
+                        tok = next->previous();
                     else
                         return Progress::Break;
                 }
