@@ -63,6 +63,7 @@ private:
         TEST_CASE(while2);
         TEST_CASE(while3);
         TEST_CASE(while4);
+        TEST_CASE(while5);
 
         TEST_CASE(array1);
         TEST_CASE(array2);
@@ -458,6 +459,16 @@ private:
         // Currently the *len gets a BailoutValue in the loop
         ASSERT_EQUALS("", expr(code, "=="));
     }
+
+    void while5() {
+        const char code[] = "void f() {\n"
+                            "  int x;\n"
+                            "  while (cond)\n"
+                            "    x += 4;\n"
+                            "}";
+        ASSERT(getRange(code, "x", 4).find("?") != std::string::npos);
+    }
+
 
     void array1() {
         ASSERT_EQUALS("(= 5 0)\nz3::unsat\n",

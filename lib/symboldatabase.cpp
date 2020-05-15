@@ -5724,7 +5724,12 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
         } else if (!valuetype->typeScope && (type->str() == "struct" || type->str() == "enum"))
             valuetype->type = type->str() == "struct" ? ValueType::Type::RECORD : ValueType::Type::NONSTD;
         else if (!valuetype->typeScope && type->type() && type->type()->classScope) {
-            valuetype->type = ValueType::Type::RECORD;
+            if (type->type()->classScope->type == Scope::ScopeType::eEnum) {
+                valuetype->type = ValueType::Type::INT;
+                valuetype->sign = ValueType::Sign::SIGNED;
+            } else {
+                valuetype->type = ValueType::Type::RECORD;
+            }
             valuetype->typeScope = type->type()->classScope;
         } else if (type->isName() && valuetype->sign != ValueType::Sign::UNKNOWN_SIGN && valuetype->pointer == 0U)
             return nullptr;

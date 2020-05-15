@@ -1612,13 +1612,22 @@ static ExprEngine::ValuePtr executeBinaryOp(const Token *tok, Data &data)
 {
     ExprEngine::ValuePtr v1 = executeExpression(tok->astOperand1(), data);
     ExprEngine::ValuePtr v2;
-    if (tok->str() == "&&" || tok->str() == "||") {
+
+    if (tok->str() == "?" && tok->astOperand1()->hasKnownIntValue()) {
+        if (tok->astOperand1()->getKnownIntValue())
+            v2 = executeExpression(tok->astOperand2()->astOperand1(), data);
+        else
+            v2 = executeExpression(tok->astOperand2()->astOperand2(), data);
+        call(data.callbacks, tok, v2, &data);
+        return v2;
+    } else if (tok->str() == "&&" || tok->str() == "||") {
         Data data2(data);
         data2.addConstraint(v1, tok->str() == "&&");
         v2 = executeExpression(tok->astOperand2(), data2);
     } else {
         v2 = executeExpression(tok->astOperand2(), data);
     }
+
     if (v1 && v2) {
         auto result = simplifyValue(std::make_shared<ExprEngine::BinOpResult>(tok->str(), v1, v2));
         call(data.callbacks, tok, result, &data);
@@ -1917,6 +1926,9 @@ static void execute(const Token *start, const Token *end, Data &data)
                     if (changedVariables.find(varid) != changedVariables.end())
                         continue;
                     changedVariables.insert(varid);
+                    auto oldValue = data.getValue(varid, nullptr, nullptr);
+                    if (oldValue && oldValue->isUninit())
+                        call(data.callbacks, tok2->astOperand1(), oldValue, &data);
                     data.assignValue(tok2, varid, getValueRangeFromValueType(data.getNewSymbolName(), tok2->astOperand1()->valueType(), *data.settings));
                 } else if (Token::Match(tok2, "++|--") && tok2->astOperand1() && tok2->astOperand1()->variable()) {
                     // give variable "any" value
@@ -1925,6 +1937,9 @@ static void execute(const Token *start, const Token *end, Data &data)
                     if (changedVariables.find(varid) != changedVariables.end())
                         continue;
                     changedVariables.insert(varid);
+                    auto oldValue = data.getValue(varid, nullptr, nullptr);
+                    if (oldValue && oldValue->type == ExprEngine::ValueType::UninitValue)
+                        call(data.callbacks, tok2, oldValue, &data);
                     data.assignValue(tok2, varid, getValueRangeFromValueType(data.getNewSymbolName(), vartok->valueType(), *data.settings));
                 }
             }
@@ -2068,6 +2083,8 @@ void ExprEngine::executeFunction(const Scope *functionScope, ErrorLogger *errorL
     try {
         execute(functionScope->bodyStart, functionScope->bodyEnd, data);
     } catch (VerifyException &e) {
+        if (settings->debugBugHunting)
+            report << "VerifyException tok.line:" << e.tok->linenr() << " what:" << e.what << "\n";
         trackExecution.setAbortLine(e.tok->linenr());
         auto bailoutValue = std::make_shared<BailoutValue>();
         for (const Token *tok = e.tok; tok != functionScope->bodyEnd; tok = tok->next()) {
