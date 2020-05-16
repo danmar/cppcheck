@@ -2302,11 +2302,11 @@ bool Tokenizer::createTokens(std::istream &code,
     return list.createTokens(code, FileName);
 }
 
-void Tokenizer::createTokens(const simplecpp::TokenList *tokenList)
+void Tokenizer::createTokens(simplecpp::TokenList&& tokenList)
 {
     // make sure settings specified
     assert(mSettings);
-    list.createTokens(tokenList);
+    list.createTokens(std::move(tokenList));
 }
 
 bool Tokenizer::simplifyTokens1(const std::string &configuration)

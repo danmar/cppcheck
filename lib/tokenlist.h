@@ -98,7 +98,7 @@ public:
      */
     bool createTokens(std::istream &code, const std::string& file0 = emptyString);
 
-    void createTokens(const simplecpp::TokenList *tokenList);
+    void createTokens(simplecpp::TokenList&& tokenList);
 
     /** Deallocate list */
     void deallocateTokens();

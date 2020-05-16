@@ -377,17 +377,17 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
     simplecpp::OutputList outputList;
     simplecpp::TokenList tokens(code, mFiles, file0, &outputList);
 
-    createTokens(&tokens);
+    createTokens(std::move(tokens));
 
     return outputList.empty();
 }
 
 //---------------------------------------------------------------------------
 
-void TokenList::createTokens(const simplecpp::TokenList *tokenList)
+void TokenList::createTokens(simplecpp::TokenList&& tokenList)
 {
-    if (tokenList->cfront())
-        mOrigFiles = mFiles = tokenList->cfront()->location.files;
+    if (tokenList.cfront())
+        mOrigFiles = mFiles = tokenList.cfront()->location.files;
     else
         mFiles.clear();
 
@@ -401,7 +401,7 @@ void TokenList::createTokens(const simplecpp::TokenList *tokenList)
         mIsCpp = (mSettings->enforcedLang == Settings::CPP);
     }
 
-    for (const simplecpp::Token *tok = tokenList->cfront(); tok; tok = tok->next) {
+    for (const simplecpp::Token *tok = tokenList.cfront(); tok;) {
 
         std::string str = tok->str();
 
@@ -423,6 +423,10 @@ void TokenList::createTokens(const simplecpp::TokenList *tokenList)
         mTokensFrontBack.back->linenr(tok->location.line);
         mTokensFrontBack.back->column(tok->location.col);
         mTokensFrontBack.back->isExpandedMacro(!tok->macro.empty());
+
+        tok = tok->next;
+        if (tok)
+            tokenList.deleteToken(tok->previous);
     }
 
     if (mSettings && mSettings->relativePaths) {

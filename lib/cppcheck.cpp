@@ -713,7 +713,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 {
                     Timer timer("Tokenizer::createTokens", mSettings.showtime, &s_timerResults);
                     simplecpp::TokenList tokensP = preprocessor.preprocess(tokens1, mCurrentConfig, files, true);
-                    mTokenizer.createTokens(&tokensP);
+                    mTokenizer.createTokens(std::move(tokensP));
                 }
                 hasValidConfig = true;
 
