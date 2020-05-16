@@ -9403,46 +9403,45 @@ void Tokenizer::findGarbageCode() const
 {
     const bool isCPP11  = isCPP() && mSettings->standards.cpp >= Standards::CPP11;
 
-    // initialization: = {
+    const std::set<std::string> nonConsecutiveKeywords{ "break",
+        "continue",
+        "for",
+        "goto",
+        "if",
+        "return",
+        "switch",
+        "throw",
+        "typedef",
+        "while" };
+
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
-        if (!Token::simpleMatch(tok, "= {"))
-            continue;
-        if (Token::simpleMatch(tok->linkAt(1), "} ("))
+        // initialization: = {
+        if (Token::simpleMatch(tok, "= {") && Token::simpleMatch(tok->linkAt(1), "} ("))
             syntaxError(tok->linkAt(1));
-    }
 
-    // Inside [] there can't be ; or various keywords
-    for (const Token *tok = tokens(); tok; tok = tok->next()) {
-        if (tok->str() != "[")
-            continue;
-        for (const Token *inner = tok->next(); inner != tok->link(); inner = inner->next()) {
-            if (Token::Match(inner, "(|["))
-                inner = inner->link();
-            else if (Token::Match(inner, ";|goto|return|typedef"))
-                syntaxError(inner);
+        // Inside [] there can't be ; or various keywords
+        else if (tok->str() == "[") {
+            for (const Token* inner = tok->next(); inner != tok->link(); inner = inner->next()) {
+                if (Token::Match(inner, "(|["))
+                    inner = inner->link();
+                else if (Token::Match(inner, ";|goto|return|typedef"))
+                    syntaxError(inner);
+            }
         }
-    }
 
-    // UNKNOWN_MACRO(return)
-    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        // UNKNOWN_MACRO(return)
         if (Token::Match(tok, "throw|return )") && Token::Match(tok->linkAt(1)->previous(), "%name% ("))
             unknownMacroError(tok->linkAt(1)->previous());
-    }
 
-    // UNKNOWN_MACRO(return)
-    for (const Token *tok = tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "%name% throw|return") && std::isupper(tok->str()[0]))
+        // UNKNOWN_MACRO(return)
+        else if (Token::Match(tok, "%name% throw|return") && std::isupper(tok->str()[0]))
             unknownMacroError(tok);
-    }
 
-    // Assign/increment/decrement literal
-    for (const Token *tok = tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "!!) %num%|%str%|%char% %assign%|++|--"))
+        // Assign/increment/decrement literal
+        else if (Token::Match(tok, "!!) %num%|%str%|%char% %assign%|++|--"))
             syntaxError(tok, tok->next()->str() + " " + tok->strAt(2));
-    }
 
-    for (const Token *tok = tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "if|while|for|switch")) { // if|while|for|switch (EXPR) { ... }
+        if (tok->isControlFlowKeyword() && Token::Match(tok, "if|while|for|switch")) { // if|while|for|switch (EXPR) { ... }
             if (tok->previous() && !Token::Match(tok->previous(), "%name%|:|;|{|}|)")) {
                 if (Token::Match(tok->previous(), "[,(]")) {
                     const Token *prev = tok->previous();
@@ -9462,6 +9461,20 @@ void Tokenizer::findGarbageCode() const
             if (tok->str() != "for") {
                 if (isGarbageExpr(tok->next(), tok->linkAt(1), mSettings->standards.cpp>=Standards::cppstd_t::CPP17))
                     syntaxError(tok);
+            }
+        }
+
+        // keyword keyword
+        if (tok->isName() && nonConsecutiveKeywords.count(tok->str()) != 0) {
+            if (Token::Match(tok, "%name% %name%") && nonConsecutiveKeywords.count(tok->next()->str()) == 1)
+                syntaxError(tok);
+            const Token* prev = tok;
+            while (prev && prev->isName())
+                prev = prev->previous();
+            if (Token::Match(prev, "%op%|%num%|%str%|%char%")) {
+                if (!Token::simpleMatch(tok->tokAt(-2), "operator \"\" if") &&
+                    !Token::simpleMatch(tok->tokAt(-2), "extern \"C\""))
+                    syntaxError(tok, prev == tok->previous() ? (prev->str() + " " + tok->str()) : (prev->str() + " .. " + tok->str()));
             }
         }
     }
@@ -9484,32 +9497,6 @@ void Tokenizer::findGarbageCode() const
             tok = tok->link();
         else if (tok->isName() && nonGlobalKeywords.count(tok->str()) && !Token::Match(tok->tokAt(-2), "operator %str%"))
             syntaxError(tok, "keyword '" + tok->str() + "' is not allowed in global scope");
-    }
-
-    // keyword keyword
-    const std::set<std::string> nonConsecutiveKeywords{"break",
-        "continue",
-        "for",
-        "goto",
-        "if",
-        "return",
-        "switch",
-        "throw",
-        "typedef",
-        "while"};
-    for (const Token *tok = tokens(); tok; tok = tok->next()) {
-        if (!tok->isName() || nonConsecutiveKeywords.count(tok->str()) == 0)
-            continue;
-        if (Token::Match(tok, "%name% %name%") && nonConsecutiveKeywords.count(tok->next()->str()) == 1)
-            syntaxError(tok);
-        const Token *prev = tok;
-        while (prev && prev->isName())
-            prev = prev->previous();
-        if (Token::Match(prev, "%op%|%num%|%str%|%char%")) {
-            if (!Token::simpleMatch(tok->tokAt(-2), "operator \"\" if") &&
-                !Token::simpleMatch(tok->tokAt(-2), "extern \"C\""))
-                syntaxError(tok, prev == tok->previous() ? (prev->str() + " " + tok->str()) : (prev->str() + " .. " + tok->str()));
-        }
     }
 
     // case keyword must be inside switch
