@@ -709,13 +709,12 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 mTokenizer.setTimerResults(&s_timerResults);
 
             try {
-                bool result;
-
                 // Create tokens, skip rest of iteration if failed
-                Timer timer("Tokenizer::createTokens", mSettings.showtime, &s_timerResults);
-                const simplecpp::TokenList &tokensP = preprocessor.preprocess(tokens1, mCurrentConfig, files, true);
-                mTokenizer.createTokens(&tokensP);
-                timer.stop();
+                {
+                    Timer timer("Tokenizer::createTokens", mSettings.showtime, &s_timerResults);
+                    simplecpp::TokenList tokensP = preprocessor.preprocess(tokens1, mCurrentConfig, files, true);
+                    mTokenizer.createTokens(&tokensP);
+                }
                 hasValidConfig = true;
 
                 // If only errors are printed, print filename after the check
@@ -725,7 +724,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     mErrorLogger.reportOut("Checking " + fixedpath + ": " + mCurrentConfig + "...");
                 }
 
-                if (tokensP.empty())
+                if (!mTokenizer.tokens())
                     continue;
 
                 // skip rest of iteration if just checking configuration
@@ -737,7 +736,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
                 // Simplify tokens into normal form, skip rest of iteration if failed
                 Timer timer2("Tokenizer::simplifyTokens1", mSettings.showtime, &s_timerResults);
-                result = mTokenizer.simplifyTokens1(mCurrentConfig);
+                bool result = mTokenizer.simplifyTokens1(mCurrentConfig);
                 timer2.stop();
                 if (!result)
                     continue;
