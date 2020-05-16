@@ -113,7 +113,8 @@ matrix:
 # check if showtime=top5 works
         - ./tools/test_showtimetop5.sh
 # check matchcompiler
-        - ./tools/test_matchcompiler.py
+        - python2 tools/test_matchcompiler.py
+        - python3 tools/test_matchcompiler.py
 # check --dump
         - ${CPPCHECK} test/testpreprocessor.cpp --dump
         - xmllint --noout test/testpreprocessor.cpp.dump
