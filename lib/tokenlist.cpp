@@ -1026,7 +1026,7 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
                 Token* scopeToken = tok->next(); //The ::
                 scopeToken->astOperand1(leftToken);
                 scopeToken->astOperand2(scopeToken->next());
-                Token* leftToken = scopeToken;
+                leftToken = scopeToken;
                 tok = scopeToken->next();
             }
 

@@ -1194,6 +1194,8 @@ private:
     /** Internal helper function to avoid excessive string allocations */
     void astStringVerboseRecursive(std::string& ret, const nonneg int indent1 = 0, const nonneg int indent2 = 0) const;
 
+    void astStringZ3Recursive(std::string& ret) const;
+
 public:
     void astOperand1(Token *tok);
     void astOperand2(Token *tok);
@@ -1260,6 +1262,8 @@ public:
     }
 
     std::string astStringVerbose() const;
+
+    std::string astStringZ3() const;
 
     std::string expressionString() const;
 

@@ -162,7 +162,7 @@ private:
     bool isSameExpression(const char code[], const char tokStr1[], const char tokStr2[]) {
         return isSameExpression(code,
             [&](const Token* startTok) { return Token::findsimplematch(startTok, tokStr1); },
-            [&](const Token* startTok, const Token* firstTok) { return Token::findsimplematch(firstTok->next(), tokStr2); });
+            [&](const Token*, const Token* firstTok) { return Token::findsimplematch(firstTok->next(), tokStr2); });
     }
 
     bool isSameExpression(const char code[], std::function<const Token * (const Token*)> getTok1, std::function<const Token * (const Token*, const Token*)> getTok2)
@@ -204,7 +204,7 @@ private:
             [](const Token* startTok, const Token*) { return Token::findsimplematch(startTok, "+")->astOperand2(); }));
 
         //Currently fails. See https://trac.cppcheck.net/ticket/9700
-        //ASSERT_EQUALS(false, isSameExpression("if(x) return new A::B(true); else return new A::C(true);", "new", "new"));
+        ASSERT_EQUALS(false, isSameExpression("if(x) return new A::B(true); else return new A::C(true);", "new", "new"));
     }
 
     bool isVariableChanged(const char code[], const char startPattern[], const char endPattern[]) {

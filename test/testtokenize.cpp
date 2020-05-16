@@ -31,67 +31,6 @@
 #include <sstream>
 #include <string>
 
-struct SimpleAst
-{
-    SimpleAst(std::string token)
-        : token(token)
-    {
-    }
-
-    SimpleAst(std::string token, SimpleAst left)
-        : token(token)
-        , left(new SimpleAst(std::move(left)))
-    {
-    }
-
-    SimpleAst(std::string token, SimpleAst left, SimpleAst right)
-        : token(token)
-        , left(new SimpleAst(std::move(left)))
-        , right(new SimpleAst(std::move(right)))
-    {
-    }
-
-    std::string token;
-    std::unique_ptr<SimpleAst> left;
-    std::unique_ptr<SimpleAst> right;
-
-    bool matches(const Tokenizer& tokenizer)
-    {
-        const Token* top = nullptr;
-        for (const Token* t = tokenizer.tokens(); t != nullptr; t = t->next()) {
-            if (t->astParent() != nullptr) {
-                const Token* myTop = getTop(t);
-                if (top == nullptr)
-                    top = myTop;
-                else if (top != myTop)
-                    return false; //Can't possibly match this SimpleAst because it's not even a tree.
-            }
-        }
-        return matches(top);
-    }
-
-    bool matches(const Token* t)
-    {
-        if (t->str() != token)
-            return false;
-        if ((t->astOperand1() == nullptr) != (left == nullptr))
-            return false;
-        if (left != nullptr && !left->matches(t->astOperand1()))
-            return false;
-        if ((t->astOperand2() == nullptr) != (right == nullptr))
-            return false;
-        if (right != nullptr && !right->matches(t->astOperand2()))
-            return false;
-        return true;
-    }
-private:
-    const Token* getTop(const Token* t) {
-        return t->astParent() != nullptr ? getTop(t->astParent()) : t;
-    }
-};
-
-
-
 struct InternalError;
 
 class TestTokenizer : public TestFixture {
@@ -7427,7 +7366,7 @@ private:
         ASSERT_EQUALS("a ? ( b < c ) : d > e", tokenizeAndStringify("a ? b < c : d > e"));
     }
 
-    std::string testAst(const char code[],bool verbose=false) {
+    std::string testAst(const char code[], bool verbose = false, bool z3 = false) {
         // tokenize given code..
         Tokenizer tokenList(&settings0, nullptr);
         std::istringstream istr(code);
@@ -7459,6 +7398,8 @@ private:
         }
 
         // Return stringified AST
+        if (z3)
+            return tokenList.list.front()->astTop()->astStringZ3();
         if (verbose)
             return tokenList.list.front()->astTop()->astStringVerbose();
 
@@ -7966,23 +7907,21 @@ private:
         ASSERT_EQUALS("b(", testAst("class a { void b() & {} };"));
     }
 
+    //Verify that returning a newly constructed object generates the correct AST even when the class name is scoped
+    //Addresses https://trac.cppcheck.net/ticket/9700
     void astnewscoped() {
-        auto generateAst = [&](std::string code) {
-            Settings settings;
-            Library library;
-            auto tokenizer = std::make_unique<Tokenizer>(&settings, this);
-            std::istringstream istr(code);
-            tokenizer->tokenize(istr, "test.cpp");
-            return tokenizer;
-        };
-
-        //tokenizer.
-        bool match1 = SimpleAst{"return", {"new", {"A"}}}.matches(*generateAst("return new A;"));
-        bool match2 = SimpleAst{"return", {"new", {"(", {"A"}}}}.matches(*generateAst("return new A();"));
-        bool match3 = SimpleAst{"return", {"new", {"(", {"A"}, {"true"}}} }.matches(*generateAst("return new A(true);"));
-        bool match4 = SimpleAst{"return", {"new", {"::", {"A"}, {"B"}}}}.matches(*generateAst("return new A::B;"));
-        bool match5 = SimpleAst{"return", {"new", {"(", {"::", {"A"}, {"B"}}}}}.matches(*generateAst("return new A::B();"));
-        bool match6 = SimpleAst{"return", {"new", {"(", {"::", {"A"}, {"B"}}, {"true"}}}}.matches(*generateAst("return new A::B(true);"));
+        ASSERT_EQUALS("(return (new A))", testAst("return new A;", false, true));
+        ASSERT_EQUALS("(return (new (( A)))", testAst("return new A();", false, true));
+        ASSERT_EQUALS("(return (new (( A true)))", testAst("return new A(true);", false, true));
+        ASSERT_EQUALS("(return (new (:: A B)))", testAst("return new A::B;", false, true));
+        ASSERT_EQUALS("(return (new (( (:: A B))))", testAst("return new A::B();", false, true));
+        ASSERT_EQUALS("(return (new (( (:: A B) true)))", testAst("return new A::B(true);", false, true));
+        ASSERT_EQUALS("(return (new (:: (:: A B) C)))", testAst("return new A::B::C;", false, true));
+        ASSERT_EQUALS("(return (new (( (:: (:: A B) C))))", testAst("return new A::B::C();", false, true));
+        ASSERT_EQUALS("(return (new (( (:: (:: A B) C) true)))", testAst("return new A::B::C(true);", false, true));
+        ASSERT_EQUALS("(return (new (:: (:: (:: A B) C) D)))", testAst("return new A::B::C::D;", false, true));
+        ASSERT_EQUALS("(return (new (( (:: (:: (:: A B) C) D))))", testAst("return new A::B::C::D();", false, true));
+        ASSERT_EQUALS("(return (new (( (:: (:: (:: A B) C) D) true)))", testAst("return new A::B::C::D(true);", false, true));
     }
 
     void compileLimits() {
