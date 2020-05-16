@@ -40,14 +40,14 @@ struct SimpleAst
 
     SimpleAst(std::string token, SimpleAst left)
         : token(token)
-        , left(std::make_unique<SimpleAst>(std::move(left)))
+        , left(new SimpleAst(std::move(left)))
     {
     }
 
     SimpleAst(std::string token, SimpleAst left, SimpleAst right)
         : token(token)
-        , left(std::make_unique<SimpleAst>(std::move(left)))
-        , right(std::make_unique<SimpleAst>(std::move(right)))
+        , left(new SimpleAst(std::move(left)))
+        , right(new SimpleAst(std::move(right)))
     {
     }
 
