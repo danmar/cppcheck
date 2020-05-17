@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 2.8.12)
-project(Cppcheck)
+cmake_minimum_required(VERSION 3.0)
+project(Cppcheck VERSION 2.0.99)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
