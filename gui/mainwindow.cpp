@@ -924,6 +924,8 @@ Settings MainWindow::getCppcheckSettings()
             if (addonFilePath.isEmpty())
                 continue;
 
+            addonFilePath.replace(QChar('\\'), QChar('/'));
+
             QString json;
             json += "{ \"script\":\"" + addonFilePath + "\"";
             if (!pythonCmd.isEmpty())

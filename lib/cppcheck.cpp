@@ -156,16 +156,24 @@ namespace {
     };
 }
 
+static std::string cmdFileName(std::string f)
+{
+    f = Path::toNativeSeparators(f);
+    if (f.find(" ") != std::string::npos)
+        return "\"" + f + "\"";
+    return f;
+}
+
 static std::string executeAddon(const AddonInfo &addonInfo,
                                 const std::string &defaultPythonExe,
                                 const std::string &dumpFile)
 {
 
-    std::string pythonExe = (addonInfo.python != "") ? addonInfo.python : defaultPythonExe;
+    std::string pythonExe = cmdFileName((addonInfo.python != "") ? addonInfo.python : defaultPythonExe);
 
     if (pythonExe.find(" ") != std::string::npos) {
         // popen strips the first quote. Needs 2 sets to fully quote.
-        pythonExe = "\"\"" + pythonExe + "\"\"";
+        pythonExe = "\"" + pythonExe + "\"";
     }
 
     // Can python be executed?
@@ -187,7 +195,7 @@ static std::string executeAddon(const AddonInfo &addonInfo,
             throw InternalError(nullptr, "Failed to execute '" + cmd + "' (" + result + ")");
     }
 
-    const std::string cmd = pythonExe + " \"" + addonInfo.scriptFile + "\" --cli" + addonInfo.args + " \"" + dumpFile + "\" 2>&1";
+    const std::string cmd = pythonExe + " " + cmdFileName(addonInfo.scriptFile) + " --cli" + addonInfo.args + " " + cmdFileName(dumpFile) + " 2>&1";
 
 #ifdef _WIN32
     std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
