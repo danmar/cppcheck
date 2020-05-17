@@ -9401,7 +9401,7 @@ void Tokenizer::reportUnknownMacros()
 
 void Tokenizer::findGarbageCode() const
 {
-    const bool isCPP11  = isCPP() && mSettings->standards.cpp >= Standards::CPP11;
+    const bool isCPP11 = isCPP() && mSettings->standards.cpp >= Standards::CPP11;
 
     const std::set<std::string> nonConsecutiveKeywords{ "break",
         "continue",
@@ -9430,7 +9430,7 @@ void Tokenizer::findGarbageCode() const
         }
 
         // UNKNOWN_MACRO(return)
-        if (Token::Match(tok, "throw|return )") && Token::Match(tok->linkAt(1)->previous(), "%name% ("))
+        if (tok->isKeyword() && Token::Match(tok, "throw|return )") && Token::Match(tok->linkAt(1)->previous(), "%name% ("))
             unknownMacroError(tok->linkAt(1)->previous());
 
         // UNKNOWN_MACRO(return)
@@ -9465,7 +9465,7 @@ void Tokenizer::findGarbageCode() const
         }
 
         // keyword keyword
-        if (tok->isName() && nonConsecutiveKeywords.count(tok->str()) != 0) {
+        if (tok->isKeyword() && nonConsecutiveKeywords.count(tok->str()) != 0) {
             if (Token::Match(tok, "%name% %name%") && nonConsecutiveKeywords.count(tok->next()->str()) == 1)
                 syntaxError(tok);
             const Token* prev = tok;
@@ -9487,15 +9487,13 @@ void Tokenizer::findGarbageCode() const
                                             "if",
                                             "return",
                                             "switch",
-                                            "while"};
-    if (isCPP()) {
-        nonGlobalKeywords.insert("try");
-        nonGlobalKeywords.insert("catch");
-    }
+                                            "while",
+                                            "try",
+                                            "catch"};
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (tok->str() == "{")
             tok = tok->link();
-        else if (tok->isName() && nonGlobalKeywords.count(tok->str()) && !Token::Match(tok->tokAt(-2), "operator %str%"))
+        else if (tok->isKeyword() && nonGlobalKeywords.count(tok->str()) && !Token::Match(tok->tokAt(-2), "operator %str%"))
             syntaxError(tok, "keyword '" + tok->str() + "' is not allowed in global scope");
     }
 
