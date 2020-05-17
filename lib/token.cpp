@@ -1539,29 +1539,15 @@ std::string Token::astStringVerbose() const
     return ret;
 }
 
-void Token::astStringZ3Recursive(std::string& ret) const
-{
-    if (astOperand1())
-        ret += "(";
-    ret += str();
-    if (astOperand1())
-    {
-        ret += " ";
-        astOperand1()->astStringZ3Recursive(ret);
+std::string Token::astStringZ3() const {
+    if (astOperand1()) {
         if (astOperand2())
-        {
-            ret += " ";
-            astOperand2()->astStringZ3Recursive(ret);
-        }
-        ret += ")";
+            return "(" + str() + " " + astOperand1()->astStringZ3() + " " + astOperand2()->astStringZ3() + ")";
+        else
+            return "(" + str() + " " + astOperand1()->astStringZ3() + ")";
     }
-}
-
-std::string Token::astStringZ3() const
-{
-    std::string ret;
-    astStringZ3Recursive(ret);
-    return ret;
+    else
+        return str();
 }
 
 void Token::printValueFlow(bool xml, std::ostream &out) const
