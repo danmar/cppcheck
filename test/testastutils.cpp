@@ -193,8 +193,8 @@ private:
         //https://trac.cppcheck.net/ticket/9700
         ASSERT_EQUALS(true, isSameExpression("A::B + A::B;", "::", "::"));
         ASSERT_EQUALS(false, isSameExpression("A::B + A::C;", "::", "::"));
-        ASSERT_EQUALS(true, isSameExpression("if(x) return new A::B(true); else return new A::B(true);", "new", "new"));
-        ASSERT_EQUALS(false, isSameExpression("if(x) return new A::B(true); else return new A::C(true);", "new", "new"));
+        ASSERT_EQUALS(true, isSameExpression("A::B* get() { if(x) return new A::B(true); else return new A::B(true); }", "new", "new"));
+        ASSERT_EQUALS(false, isSameExpression("A::B* get() { if(x) return new A::B(true); else return new A::C(true); }", "new", "new"));
         ASSERT_EQUALS(true, true);
     }
 
