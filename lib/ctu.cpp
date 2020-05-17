@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 //---------------------------------------------------------------------------
 #include "ctu.h"
 #include "astutils.h"
+#include "settings.h"
 #include "symboldatabase.h"
 #include <tinyxml2.h>
 #include <iterator>  // back_inserter
@@ -503,7 +504,7 @@ static bool findPath(const std::string &callId,
                 if (unsafeValue < 0 || unsafeValue >= functionCall->callArgValue)
                     break;
                 continue;
-            };
+            }
             path[index] = functionCall;
             return true;
         }

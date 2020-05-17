@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,6 @@
 
 #include <algorithm>
 #include <cstdlib>
-#include <stack>
 #include <utility>
 //---------------------------------------------------------------------------
 
@@ -1644,7 +1643,7 @@ void CheckClass::virtualDestructor()
     // * derived class has non-empty destructor (only c++03, in c++11 it's UB see paragraph 3 in [expr.delete])
     // * base class is deleted
     // unless inconclusive in which case:
-    // * base class has virtual members but doesn't have virtual destructor
+    // * A class with any virtual functions should have a destructor that is either public and virtual or protected
     const bool printInconclusive = mSettings->inconclusive;
 
     std::list<const Function *> inconclusiveErrors;
@@ -1655,11 +1654,14 @@ void CheckClass::virtualDestructor()
         if (scope->definedType->derivedFrom.empty()) {
             if (printInconclusive) {
                 const Function *destructor = scope->getDestructor();
-                if (destructor && !destructor->hasVirtualSpecifier()) {
-                    for (const Function &func : scope->functionList) {
-                        if (func.hasVirtualSpecifier()) {
-                            inconclusiveErrors.push_back(destructor);
-                            break;
+                if (destructor) {
+                    if (!((destructor->hasVirtualSpecifier() && destructor->access == AccessControl::Public) ||
+                          (destructor->access == AccessControl::Protected))) {
+                        for (const Function &func : scope->functionList) {
+                            if (func.hasVirtualSpecifier()) {
+                                inconclusiveErrors.push_back(destructor);
+                                break;
+                            }
                         }
                     }
                 }
@@ -2021,10 +2023,9 @@ bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok) const
     return false;
 }
 
-namespace {
-    // The container contains the STL types whose operator[] is not a const.
-    const std::set<std::string> stl_containers_not_const = { "map", "unordered_map" };
-}
+
+// The container contains the STL types whose operator[] is not a const.
+static const std::set<std::string> stl_containers_not_const = { "map", "unordered_map" };
 
 bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& memberAccessed) const
 {
@@ -2048,7 +2049,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                     if (lhs->previous()->variable()->typeStartToken()->strAt(-1) != "const" && lhs->previous()->variable()->isPointer())
                         return false;
                 }
-            } else if (lhs->str() == ":" && lhs->astParent() && lhs->astParent()->str() == "(" && tok1->strAt(1) == ")") { // range-based for-loop (C++11)
+            } else if (lhs->str() == ":" && lhs->astParent() && lhs->astParent()->str() == "(") { // range-based for-loop (C++11)
                 // TODO: We could additionally check what is done with the elements to avoid false negatives. Here we just rely on "const" keyword being used.
                 if (lhs->astParent()->strAt(1) != "const")
                     return false;
@@ -2701,9 +2702,12 @@ bool CheckClass::checkThisUseAfterFreeRecursive(const Scope *classScope, const F
         } else if (isDestroyed && Token::Match(tok->previous(), "!!. %name%") && tok->variable() && tok->variable()->scope() == classScope && !tok->variable()->isStatic() && !tok->variable()->isArgument()) {
             thisUseAfterFree(selfPointer->nameToken(), *freeToken, tok);
             return true;
-        } else if (*freeToken && Token::Match(tok, "return|throw"))
+        } else if (*freeToken && Token::Match(tok, "return|throw")) {
             // TODO
             return tok->str() == "throw";
+        } else if (tok->str() == "{" && tok->scope()->type == Scope::ScopeType::eLambda) {
+            tok = tok->link();
+        }
     }
     return false;
 }

@@ -4,10 +4,8 @@
 #include <functional>
 
 #include "errorlogger.h"
-#include "utils.h"
 
 class Library;
-class Settings;
 class Scope;
 class Token;
 

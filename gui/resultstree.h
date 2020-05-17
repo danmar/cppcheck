@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -91,6 +91,12 @@ public:
     * @brief Function to show results that were previous hidden with HideResult()
     */
     void showHiddenResults();
+
+    /**
+    * @brief Refresh tree by checking which of the items should be shown
+    * and which should be hidden
+    */
+    void refreshTree();
 
     /**
     * @brief Save results to a text stream
@@ -208,6 +214,8 @@ signals:
     /** Suppress Ids */
     void suppressIds(QStringList ids);
 
+    /** Edit contract for function */
+    void editFunctionContract(QString function);
 public slots:
 
     /**
@@ -281,6 +289,11 @@ protected slots:
     * @brief Slot for context menu item to open the folder containing the current file.
     */
     void openContainingFolder();
+
+    /**
+     * @brief Allow user to edit contract to fix bughunting warning
+     */
+    void editContract();
 
     /**
     * @brief Slot for selection change in the results tree.
@@ -376,14 +389,6 @@ protected:
                                      const bool hide,
                                      const QString &icon,
                                      bool childOfMessage);
-
-
-    /**
-    * @brief Refresh tree by checking which of the items should be shown
-    * and which should be hidden
-    *
-    */
-    void refreshTree();
 
     /**
     * @brief Convert Severity to translated string for GUI.

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -197,7 +197,9 @@ public:
             stdStringLike(false),
             stdAssociativeLike(false),
             opLessAllowed(true),
-            hasInitializerListConstructor(false) {
+            hasInitializerListConstructor(false),
+            unstableErase(false),
+            unstableInsert(false) {
         }
 
         enum class Action {
@@ -221,6 +223,8 @@ public:
         bool stdAssociativeLike;
         bool opLessAllowed;
         bool hasInitializerListConstructor;
+        bool unstableErase;
+        bool unstableInsert;
 
         Action getAction(const std::string& function) const {
             const std::map<std::string, Function>::const_iterator i = functions.find(function);

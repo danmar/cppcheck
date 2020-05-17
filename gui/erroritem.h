@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +23,6 @@
 #include <QStringList>
 #include <QMetaType>
 #include "errorlogger.h"
-
-class ErrorLine;
 
 /// @addtogroup GUI
 /// @{
@@ -82,8 +80,10 @@ public:
     QString tool() const;
 
     QString file0;
+    QString function;
     QString errorId;
     Severity::SeverityType severity;
+    bool incomplete;
     bool inconclusive;
     QString summary;
     QString message;
@@ -112,6 +112,8 @@ public:
     unsigned int line;
     QString file0;
     QString errorId;
+    bool incomplete;
+    int cwe;
     bool inconclusive;
     Severity::SeverityType severity;
     QString summary;

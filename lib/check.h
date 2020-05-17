@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,11 +22,8 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
-#include "errorlogger.h"
-#include "settings.h"
-#include "token.h"
+#include "errorlogger.h" // for Severity::SeverityType
 #include "tokenize.h"
-#include "valueflow.h"
 
 #include <list>
 #include <string>
@@ -38,6 +35,14 @@ namespace tinyxml2 {
 namespace CTU {
     class FileInfo;
 }
+
+namespace ValueFlow {
+    class Value;
+}
+
+class Settings;
+class Token;
+class ErrorLogger;
 
 /** Use WRONG_DATA in checkers to mark conditions that check that data is correct */
 #define WRONG_DATA(COND, TOK)  (wrongData((TOK), (COND), #COND))
@@ -110,10 +115,10 @@ public:
     }
 
     // Return true if an error is reported.
-    virtual bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) {
+    virtual bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<FileInfo*> &fileInfo, const Settings& /*settings*/, ErrorLogger &errorLogger) {
         (void)ctu;
         (void)fileInfo;
-        (void)settings;
+        //(void)settings;
         (void)errorLogger;
         return false;
     }

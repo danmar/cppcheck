@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,7 +34,6 @@ class ThreadHandler;
 class TranslationHandler;
 class ScratchPad;
 class ProjectFile;
-class ErrorItem;
 class QAction;
 
 /// @addtogroup GUI
@@ -72,6 +71,9 @@ public:
     void analyzeCode(const QString& code, const QString& filename);
 
 public slots:
+
+    /** Update "Contracts" tab */
+    void updateContractsTab();
 
     /** @brief Slot for analyze files menu item */
     void analyzeFiles();
@@ -225,6 +227,8 @@ protected slots:
     /** Suppress error ids */
     void suppressIds(QStringList ids);
 
+    /** Edit contract for function */
+    void editFunctionContract(QString function);
 private:
 
     /** Get filename for last results */

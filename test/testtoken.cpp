@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -92,13 +92,13 @@ private:
         TEST_CASE(literals);
         TEST_CASE(operators);
 
-        TEST_CASE(updateProperties)
-        TEST_CASE(isNameGuarantees1)
-        TEST_CASE(isNameGuarantees2)
-        TEST_CASE(isNameGuarantees3)
-        TEST_CASE(isNameGuarantees4)
-        TEST_CASE(isNameGuarantees5)
-        TEST_CASE(isNameGuarantees6)
+        TEST_CASE(updateProperties);
+        TEST_CASE(isNameGuarantees1);
+        TEST_CASE(isNameGuarantees2);
+        TEST_CASE(isNameGuarantees3);
+        TEST_CASE(isNameGuarantees4);
+        TEST_CASE(isNameGuarantees5);
+        TEST_CASE(isNameGuarantees6);
 
         TEST_CASE(canFindMatchingBracketsNeedsOpen);
         TEST_CASE(canFindMatchingBracketsInnerPair);
@@ -121,14 +121,12 @@ private:
         ASSERT_EQUALS(token->str(), "1");
         ASSERT_EQUALS(token->next()->str(), "2");
         ASSERT_EQUALS(token->tokAt(2)->str(), "3");
-        if (last->next())
-            ASSERT_EQUALS("Null was expected", "");
+        ASSERT_EQUALS_MSG(true, last->next() == nullptr, "Null was expected");
 
         ASSERT_EQUALS(last->str(), "3");
         ASSERT_EQUALS(last->previous()->str(), "2");
         ASSERT_EQUALS(last->tokAt(-2)->str(), "1");
-        if (token->previous())
-            ASSERT_EQUALS("Null was expected", "");
+        ASSERT_EQUALS_MSG(true, token->previous() == nullptr, "Null was expected");
 
         TokenList::deleteTokens(token);
     }
@@ -1110,14 +1108,14 @@ private:
         const Token *const tok2 = Token::findsimplematch(var2.tokens(), "*");
         ASSERT_EQUALS("*((unsigned long long*)x)", tok2->expressionString());
 
-        givenACodeSampleToTokenize data3("return (t){1,2};");
-        ASSERT_EQUALS("return(t){1,2}", data3.tokens()->expressionString());
+        givenACodeSampleToTokenize data3("void f() { return (t){1,2}; }");
+        ASSERT_EQUALS("return(t){1,2}", data3.tokens()->tokAt(5)->expressionString());
 
-        givenACodeSampleToTokenize data4("return L\"a\";");
-        ASSERT_EQUALS("returnL\"a\"", data4.tokens()->expressionString());
+        givenACodeSampleToTokenize data4("void f() { return L\"a\"; }");
+        ASSERT_EQUALS("returnL\"a\"", data4.tokens()->tokAt(5)->expressionString());
 
-        givenACodeSampleToTokenize data5("return U\"a\";");
-        ASSERT_EQUALS("returnU\"a\"", data5.tokens()->expressionString());
+        givenACodeSampleToTokenize data5("void f() { return U\"a\"; }");
+        ASSERT_EQUALS("returnU\"a\"", data5.tokens()->tokAt(5)->expressionString());
     }
 
     void hasKnownIntValue() {

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -161,6 +161,7 @@ private:
         TEST_CASE(loopAlgoMinMax);
 
         TEST_CASE(invalidContainer);
+        TEST_CASE(invalidContainerLoop);
         TEST_CASE(findInsert);
     }
 
@@ -4122,6 +4123,19 @@ private:
               "        *it;\n"
               "}\n",true);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void invalidContainerLoop() {
+        // #9435
+        check("void f(std::vector<int> v) {\n"
+              "    for (auto i : v) {\n"
+              "        if (i < 5)\n"
+              "            v.push_back(i * 2);\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (error) Calling 'push_back' while iterating the container is invalid.\n", errout.str());
+
     }
 
     void findInsert() {

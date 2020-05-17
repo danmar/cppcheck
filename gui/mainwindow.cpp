@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,6 +36,7 @@
 #include "common.h"
 #include "threadhandler.h"
 #include "fileviewdialog.h"
+#include "functioncontractdialog.h"
 #include "projectfile.h"
 #include "projectfiledialog.h"
 #include "report.h"
@@ -142,6 +143,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI.mResults, &ResultsView::checkSelected, this, &MainWindow::performSelectedFilesCheck);
     connect(mUI.mResults, &ResultsView::tagged, this, &MainWindow::tagged);
     connect(mUI.mResults, &ResultsView::suppressIds, this, &MainWindow::suppressIds);
+    connect(mUI.mResults, &ResultsView::editFunctionContract, this, &MainWindow::editFunctionContract);
     connect(mUI.mMenuView, &QMenu::aboutToShow, this, &MainWindow::aboutToShowViewMenu);
 
     // File menu
@@ -344,6 +346,8 @@ void MainWindow::loadSettings()
             QDir::setCurrent(inf.absolutePath());
         }
     }
+
+    updateContractsTab();
 }
 
 void MainWindow::saveSettings() const
@@ -603,6 +607,17 @@ QStringList MainWindow::selectFilesToAnalyze(QFileDialog::FileMode mode)
     return selected;
 }
 
+void MainWindow::updateContractsTab()
+{
+    QStringList addedContracts;
+    if (mProjectFile) {
+        for (const auto it: mProjectFile->getFunctionContracts()) {
+            addedContracts << QString::fromStdString(it.first);
+        }
+    }
+    mUI.mResults->setAddedContracts(addedContracts);
+}
+
 void MainWindow::analyzeFiles()
 {
     Settings::terminate(false);
@@ -843,6 +858,8 @@ Settings MainWindow::getCppcheckSettings()
         result.clang = mProjectFile->clangParser;
         result.bugHunting = mProjectFile->bugHunting;
         result.bugHuntingReport = " ";
+
+        result.functionContracts = mProjectFile->getFunctionContracts();
 
         const QStringList undefines = mProjectFile->getUndefines();
         foreach (QString undefine, undefines)
@@ -1110,6 +1127,12 @@ void MainWindow::reAnalyze(bool all)
 
 void MainWindow::clearResults()
 {
+    if (mProjectFile && !mProjectFile->getBuildDir().isEmpty()) {
+        QDir dir(QFileInfo(mProjectFile->getFilename()).absolutePath() + '/' + mProjectFile->getBuildDir());
+        for (const QString& f: dir.entryList(QDir::Files)) {
+            dir.remove(f);
+        }
+    }
     mUI.mResults->clear(true);
     Q_ASSERT(false == mUI.mResults->hasResults());
     enableResultsButtons();
@@ -1363,11 +1386,18 @@ void MainWindow::toggleFilterToolBar()
 
 void MainWindow::formatAndSetTitle(const QString &text)
 {
+    QString nameWithVersion = QString("Cppcheck %1").arg(CppCheck::version());
+
+    QString extraVersion = CppCheck::extraVersion();
+    if (!extraVersion.isEmpty()) {
+        nameWithVersion += " (" + extraVersion + ")";
+    }
+
     QString title;
     if (text.isEmpty())
-        title = tr("Cppcheck");
+        title = nameWithVersion;
     else
-        title = QString(tr("Cppcheck - %1")).arg(text);
+        title = QString("%1 - %2").arg(nameWithVersion, text);
     setWindowTitle(title);
 }
 
@@ -1451,6 +1481,7 @@ void MainWindow::loadProjectFile(const QString &filePath)
     mUI.mActionEditProjectFile->setEnabled(true);
     delete mProjectFile;
     mProjectFile = new ProjectFile(filePath, this);
+    updateContractsTab();
     if (!loadLastResults())
         analyzeProject(mProjectFile);
 }
@@ -1582,6 +1613,8 @@ void MainWindow::newProjectFile()
     } else {
         closeProjectFile();
     }
+
+    updateContractsTab();
 }
 
 void MainWindow::closeProjectFile()
@@ -1782,4 +1815,26 @@ void MainWindow::suppressIds(QStringList ids)
 
     mProjectFile->setSuppressions(suppressions);
     mProjectFile->write();
+}
+
+void MainWindow::editFunctionContract(QString function)
+{
+    if (!mProjectFile)
+        return;
+
+    QString expects;
+    const auto it = mProjectFile->getFunctionContracts().find(function.toStdString());
+    if (it != mProjectFile->getFunctionContracts().end())
+        expects = QString::fromStdString(it->second);
+
+    FunctionContractDialog dlg(nullptr,
+                               function,
+                               expects);
+
+    if (dlg.exec() == QDialog::Accepted) {
+        mProjectFile->setFunctionContract(function, dlg.getExpects());
+        mProjectFile->write();
+    }
+
+    updateContractsTab();
 }

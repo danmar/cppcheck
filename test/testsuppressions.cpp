@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@
 #include "suppressions.h"
 #include "testsuite.h"
 #include "threadexecutor.h"
-#include "path.h"
 
 #include <cstddef>
 #include <list>
@@ -64,7 +63,7 @@ private:
         TEST_CASE(suppressionWithRelativePaths); // #4733
         TEST_CASE(suppressingSyntaxErrors); // #7076
         TEST_CASE(suppressingSyntaxErrorsInline); // #5917
-        TEST_CASE(suppressingSyntaxErrorsWhileFileRead) // PR #1333
+        TEST_CASE(suppressingSyntaxErrorsWhileFileRead); // PR #1333
         TEST_CASE(symbol);
 
         TEST_CASE(unusedFunction);

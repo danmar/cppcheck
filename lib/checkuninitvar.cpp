@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,14 +31,18 @@
 #include "tokenize.h"
 #include "valueflow.h"
 
-#include <tinyxml2.h>
-
 #include <cassert>
 #include <cstddef>
 #include <list>
 #include <map>
 #include <stack>
 #include <utility>
+
+
+namespace tinyxml2 {
+    class XMLElement;
+}
+
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
@@ -431,20 +435,18 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 const Token *condition = tok->next()->astOperand2();
                 const Token *lhs = condition->astOperand1();
                 const Token *rhs = condition->astOperand2();
-                const Token *vartok = rhs && rhs->isNumber() ? lhs : rhs;
-                const Token *numtok = rhs && rhs->isNumber() ? rhs : lhs;
+                const Token *vartok = (lhs && lhs->hasKnownIntValue()) ? rhs : lhs;
+                const Token *numtok = (lhs == vartok) ? rhs : lhs;
                 while (Token::simpleMatch(vartok, "."))
                     vartok = vartok->astOperand2();
-                if (vartok && vartok->varId() && numtok) {
+                if (vartok && vartok->varId() && numtok && numtok->hasKnownIntValue()) {
                     const std::map<int,VariableValue>::const_iterator it = variableValue.find(vartok->varId());
-                    if (it != variableValue.end() && it->second != MathLib::toLongNumber(numtok->str()))
+                    if (it != variableValue.end() && it->second != numtok->getKnownIntValue())
                         return true;   // this scope is not fully analysed => return true
-                    else {
-                        condVarId = vartok->varId();
-                        condVarValue = VariableValue(MathLib::toLongNumber(numtok->str()));
-                        if (condition->str() == "!=")
-                            condVarValue = !condVarValue;
-                    }
+                    condVarId = vartok->varId();
+                    condVarValue = VariableValue(numtok->getKnownIntValue());
+                    if (condition->str() == "!=")
+                        condVarValue = !condVarValue;
                 }
             }
 
@@ -922,6 +924,8 @@ void CheckUninitVar::checkRhs(const Token *tok, const Variable &var, Alloc alloc
             else if (!membervar.empty() && isMemberVariableUsage(tok, var.isPointer(), alloc, membervar))
                 uninitStructMemberError(tok, tok->str() + "." + membervar);
             else if (Token::Match(tok, "%var% ="))
+                break;
+            else if (Token::Match(tok->previous(), "[(,&]"))
                 break;
         } else if (tok->str() == ";" || (indent==0 && tok->str() == ","))
             break;

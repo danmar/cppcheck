@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -114,6 +114,7 @@ private:
         TEST_CASE(returnReference17); // #9461
         TEST_CASE(returnReference18); // #9482
         TEST_CASE(returnReference19); // #9597
+        TEST_CASE(returnReference20); // #9536
         TEST_CASE(returnReferenceFunction);
         TEST_CASE(returnReferenceContainer);
         TEST_CASE(returnReferenceLiteral);
@@ -1316,6 +1317,34 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    // #9536
+    void returnReference20() {
+        check("struct a {\n"
+              "    int& operator()() const;\n"
+              "};\n"
+              "int& b() {\n"
+              "    return a()();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("auto a() {\n"
+              "    return []() -> int& {\n"
+              "        static int b;\n"
+              "        return b;\n"
+              "    };\n"
+              "}\n"
+              "const int& c() {\n"
+              "    return a()();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::function<int&()> a();\n"
+              "int& b() {\n"
+              "    return a()();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void returnReferenceFunction() {
         check("int& f(int& a) {\n"
               "    return a;\n"
@@ -1616,6 +1645,15 @@ private:
               "void f() {\n"
               "    const int& x = h();\n"
               "    g(&x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Data {\n"
+              "    std::string path;\n"
+              "};\n"
+              "const char* foo() {\n"
+              "    const Data& data = getData();\n"
+              "    return data.path.c_str();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -2261,6 +2299,27 @@ private:
               "    ptr = &arr[2];\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9639
+        check("struct Fred {\n"
+              "    std::string s;\n"
+              "};\n"
+              "const Fred &getFred();\n"
+              "const char * f() {\n"
+              "  const Fred &fred = getFred();\n"
+              "  return fred.s.c_str();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #9534
+        check("struct A {\n"
+              "    int* x;\n"
+              "};\n"
+              "int* f(int i, std::vector<A>& v) {\n"
+              "    A& y = v[i];\n"
+              "    return &y.x[i];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeFunction() {
@@ -2434,6 +2493,14 @@ private:
 
         check("std::vector<int*> f(int& x) {\n"
               "    return {&x, &x};\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::vector<std::string> f() {\n"
+              "    std::set<std::string> x;\n"
+              "    x.insert(\"1\");\n"
+              "    x.insert(\"2\");\n"
+              "    return { x.begin(), x.end() };\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

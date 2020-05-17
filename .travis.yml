@@ -7,7 +7,7 @@ compiler:
 
 env:
   global:
-    - ORIGINAL_CXXFLAGS="-pedantic -Wall -Wextra -Wabi -Wcast-qual -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wno-shadow -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare -Wno-multichar -D_GLIBCXX_DEBUG -g "
+    - ORIGINAL_CXXFLAGS="-pedantic -Wall -Wextra -Wcast-qual -Wno-deprecated-declarations -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wundef -Wno-shadow -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare -Wno-multichar -D_GLIBCXX_DEBUG -g "
 #   unfortunately we need this to stay within 50min timelimit given by travis.
     - CXXFLAGS="${ORIGINAL_CXXFLAGS} -O2 -march=native -Wstrict-aliasing=2 -Werror=strict-aliasing"
     - CPPCHECK=${TRAVIS_BUILD_DIR}/cppcheck
@@ -37,6 +37,7 @@ before_install:
  - travis_retry python3 -m pip install --user pygments
  - travis_retry sudo python3 -m pip install demjson # installs jsonlint => sudo required
  - travis_retry python3 -m pip install --user natsort
+ - cp externals/z3_version_old.h externals/z3_version.h # because travis z3 version is old
 
 matrix:
 # do notify immediately about it when a job of a build fails.
@@ -57,6 +58,24 @@ matrix:
       compiler: gcc
       script:
          - CXXFLAGS="-fsanitize=address -Og -g3" make cppcheck check checkcfg -j 2 -s
+
+# bug hunting
+    - name: "bug hunting"
+      compiler: gcc
+      script:
+        - make clean
+        - make USE_Z3=yes -j2 all
+        - ./testrunner TestExprEngine
+        - python3 test/bug-hunting/cve.py
+        - git clone https://github.com/regehr/itc-benchmarks.git ~/itc
+        - python3 test/bug-hunting/itc.py
+        - mkdir ~/juliet
+        - curl https://samate.nist.gov/SARD/testsuites/juliet/Juliet_Test_Suite_v1.3_for_C_Cpp.zip -o ~/juliet/juliet.zip
+        - cd ~/juliet
+        - unzip -qq ~/juliet/juliet.zip
+        - cd -
+        - python3 test/bug-hunting/juliet.py
+
 # check a lot of stuff that only needs to be checked in a single configuration
     - name: "misc"
       compiler: clang
@@ -94,7 +113,8 @@ matrix:
 # check if showtime=top5 works
         - ./tools/test_showtimetop5.sh
 # check matchcompiler
-        - ./tools/test_matchcompiler.py
+        - python2 tools/test_matchcompiler.py
+        - python3 tools/test_matchcompiler.py
 # check --dump
         - ${CPPCHECK} test/testpreprocessor.cpp --dump
         - xmllint --noout test/testpreprocessor.cpp.dump
@@ -156,14 +176,16 @@ matrix:
         - mkdir cmake.output
         - cd cmake.output
         - cmake -G "Unix Makefiles" -DBUILD_TESTS=On ..
-        - make -j2 check
+        - make -s -j2 check
         - cd ..
 # -funsigned-char
         - make clean
-        - make -j2 CXXFLAGS=-funsigned-char testrunner
+        - make -s -j2 CXXFLAGS=-funsigned-char testrunner
         - ./testrunner TestSymbolDatabase
 # check .json files
         - find . -name '*.json' -not -path '*/\.*' | xargs jsonlint -s
+# build fuzz client
+        - make -s -j2 CXXFLAGS="-fsanitize=address" -C oss-fuzz fuzz-client
 
 # check if dmake needs to be rerun (this job may fail)
     - name: "rerun dmake?"

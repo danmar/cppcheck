@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -254,6 +254,11 @@ bool isTemporary(bool cpp, const Token* tok, const Library* library, bool unknow
             return unknown;
         }
     }
+    if (tok->isCast())
+        return false;
+    // Currying a function is unknown in cppcheck
+    if (Token::simpleMatch(tok, "(") && Token::simpleMatch(tok->astOperand1(), "("))
+        return unknown;
     return true;
 }
 
@@ -566,7 +571,9 @@ static const Token * followVariableExpression(const Token * tok, bool cpp, const
             Token::Match(tok2, "%name% .|[|++|--|%assign%")) {
             return tok;
         }
-
+        if (Token::Match(tok2, "%name% ("))
+            // Bailout when function call is seen
+            return tok;
         if (const Variable * var2 = tok2->variable()) {
             if (!var2->scope())
                 return tok;

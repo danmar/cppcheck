@@ -186,7 +186,7 @@ class MatchCompiler:
             elif tok[0:2] == "!!":
                 ret += '    if (tok && tok->str() == MatchCompiler::makeConstString("' + tok[2:] + '"))\n'
                 ret += '        ' + returnStatement
-                gotoNextToken = '    tok = tok ? tok->next() : NULL;\n'
+                gotoNextToken = '    tok = tok ? tok->next() : nullptr;\n'
 
             else:
                 negatedTok = "!" + self._compileCmd(tok)
@@ -224,7 +224,7 @@ class MatchCompiler:
 
         ret += self._compilePattern(pattern, -1, varId, True, 'T')
         ret += '    }\n'
-        ret += '    return NULL;\n}\n'
+        ret += '    return nullptr;\n}\n'
 
         return ret
 
@@ -604,16 +604,15 @@ class MatchCompiler:
         srclines = fin.readlines()
         fin.close()
 
-        header = '#include "token.h"\n'
-        header += '#include "errorlogger.h"\n'
-        header += '#include "matchcompiler.h"\n'
-        header += '#include <string>\n'
-        header += '#include <cstring>\n'
-        # header += '#include <iostream>\n'
-        code = ''
+        code = u''
+
+        modified = False
 
         linenr = 0
         for line in srclines:
+            if not modified:
+                line_orig = line
+
             linenr += 1
             # Compile Token::Match and Token::simpleMatch
             line = self._replaceTokenMatch(line, linenr, srcname)
@@ -624,19 +623,33 @@ class MatchCompiler:
             # Cache plain C-strings in C++ strings
             line = self._replaceCStrings(line)
 
+            if not modified and not line_orig == line:
+                modified = True
+
             code += line
 
         # Compute matchFunctions
-        strFunctions = ''
+        strFunctions = u''
         for function in self._rawMatchFunctions:
             strFunctions += function
 
-        lineno = ''
+        lineno = u''
         if line_directive:
-            lineno = '#line 1 "' + srcname + '"\n'
+            lineno = u'#line 1 "' + srcname + '"\n'
+
+        header = u'#include "matchcompiler.h"\n'
+        header += u'#include <string>\n'
+        header += u'#include <cstring>\n'
+        if len(self._rawMatchFunctions):
+            header += u'#include "errorlogger.h"\n'
+            header += u'#include "token.h"\n'
 
         fout = io.open(destname, 'wt', encoding="utf-8")
-        fout.write(header + strFunctions + lineno + code)
+        if modified or len(self._rawMatchFunctions):
+            fout.write(header)
+            fout.write(strFunctions)
+        fout.write(lineno)
+        fout.write(code)
         fout.close()
 
 

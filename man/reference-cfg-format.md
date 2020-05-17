@@ -1,6 +1,6 @@
 ---
 title: Cppcheck .cfg format
-subtitle: Version 1.90 dev
+subtitle: Version 2.0
 author: Cppcheck team
 lang: en
 documentclass: report
@@ -156,24 +156,39 @@ If you provide a configuration file then Cppcheck detects the bug:
     Checking uninit.c...
     [uninit.c:5]: (error) Uninitialized variable: buffer2
 
-Note that this implies for pointers that the memory they point at has to be initialized, too.
+Below windows.cfg is shown:
 
-Here is the minimal windows.cfg:
+Version 1:
 
     <?xml version="1.0"?>
     <def>
       <function name="CopyMemory">
         <arg nr="1"/>
         <arg nr="2">
+          <not-null/>
           <not-uninit/>
         </arg>
         <arg nr="3"/>
       </function>
     </def>
 
-The `indirect` attribute can be set to control the indirection of uninitialized memory allowed. Setting `indirect` to `0` means no uninitialized memory is allowed. Setting it to `1` allows a pointer to uninitialized memory. Setting it to `2` allows a pointer to pointer to uninitialized memory.
+Version 2:
 
-By default, cppcheck will use an indirect value of `0` unless `not-null` is used. When `not-null` is used, then `indirect` will default to `1`. 
+    <?xml version="1.0"?>
+    <def>
+      <function name="CopyMemory">
+        <arg nr="1"/>
+        <arg nr="2">
+          <not-uninit indirect="2"/>
+        </arg>
+        <arg nr="3"/>
+      </function>
+    </def>
+
+
+Version 1: If `indirect` attribute is not used then the level of indirection is determined automatically. The `<not-null/>` tells Cppcheck that the pointer must be initialized. The `<not-uninit/>` tells Cppcheck to check 1 extra level. This configuration means that both the pointer and the data must be initialized.
+
+Version 2: The `indirect` attribute can be set to explicitly control the level of indirection used in checking. Setting `indirect` to `0` means no uninitialized memory is allowed. Setting it to `1` allows a pointer to uninitialized memory. Setting it to `2` allows a pointer to pointer to uninitialized memory.
 
 ### Null pointers
 

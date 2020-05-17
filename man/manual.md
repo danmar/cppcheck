@@ -1,6 +1,6 @@
 ---
 title: Cppcheck manual
-subtitle: Version 1.90 dev
+subtitle: Version 2.0
 author: Cppcheck team
 lang: en
 documentclass: report
@@ -8,7 +8,7 @@ documentclass: report
 
 # Introduction
 
-Cppcheck is an analysis tool for C/C++ code. It provides unique code analysis to detect bugs and focuses on detecting undefined behaviour and dangerous coding constructs. The goal is to detect only real errors in the code (i.e. have very few false positives).
+Cppcheck is an analysis tool for C/C++ code. It provides unique code analysis to detect bugs and focuses on detecting undefined behaviour and dangerous coding constructs. The goal is to detect only real errors in the code (i.e. have very few false positives). Cppcheck is designed to be able to analyze your C/C++ code even if it has non-standard syntax (common in embedded projects).
 
 Supported code and platforms:
 
@@ -108,6 +108,14 @@ This option is only valid when supplying an input directory. To ignore multiple 
 
     cppcheck -isrc/b -isrc/c
 
+### Clang parser
+
+By default Cppcheck uses an internal C/C++ parser. However it is possible to use the Clang parser instead.
+
+Install `clang`. Then use Cppcheck option `--clang`.
+
+Technically, Cppcheck will execute `clang` with its `-ast-dump` option. The Clang output is then imported and converted into our normal Cppcheck format. And then normal Cppcheck analysis is performed on that.
+
 ## Severities
 
 The possible severities for messages are:
@@ -178,6 +186,11 @@ Running Cppcheck on an entire Visual Studio solution:
 Running Cppcheck on a Visual Studio project:
 
     cppcheck --project=foobar.vcxproj
+
+Both options will analyze all available configurations in the project(s).
+Limiting on a single configuration:
+
+    cppcheck --project=foobar.sln "--project-configuration=Release|Win32"
 
 In the `Cppcheck GUI` you have the choice to only analyze a single debug configuration. If you want to use this choice on the command line then create a `Cppcheck GUI` project with this activated and then import the GUI project file on the command line.
 
@@ -783,97 +796,74 @@ An example usage:
     ./cppcheck gui/test.cpp --xml 2> err.xml
     htmlreport/cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.
 
-# Verification
+# Bug hunting
 
-Cppcheck will tell you if it can't determine that your code is safe.
+If you want to detect most bugs and can accept false alarms then Cppcheck has analysis for that.
 
-All bugs you find with dynamic analysis and fuzzing will be revealed. And then more bugs.
+This analysis is "soundy"; it should diagnose most bugs reported in CVEs and from dynamic analysis.
 
-This analysis is noisy. Because of the noise, it will probably not be practical to use this for instance in continuous integration. Some possible use cases where more noise could be tolerated;
+You have to expect false alarms. However Cppcheck tries to limit false alarms. The purpose of the data flow analysis is to limit false alarms.
+
+Some possible use cases;
  * you are writing new code and want to ensure it is safe.
  * you are reviewing code and want to get hints about possible UB.
  * you need extra help troubleshooting a weird bug.
- * you tagged a release candidate and want to check if the code is safe.
+ * you want to check if a release candidate is safe.
 
-## Philosopphy
+The intention is that this will be used primarily in the GUI.
 
-It is very important that we do warn about all unsafe code. We want that users can feel fully confident about the code we say is "safe".
+## Activate this analysis
 
-However, a sloppy analysis that will report too much noise will not be useful. We need to have strong heuristics to avoid false positives.
+On the command line you can use `--bug-hunting` however then you can't configure contracts (see below).
 
-At the moment there is no whole program analysis but that will be added later to avoid definite false positives.
+In the GUI goto the project dialog. In the `Analysis` tab there is a check box for `Bug hunting`.
 
-The focus will be to detect "hidden" bugs. Good candidates are undefined behavior that does not cause a crash immediately but will just cause strange behavior.
- * Buffer overflows
- * Uninitialized variables
- * Usage of dead pointers
+## Cppcheck contracts
 
-## Compiling
+To handle false alarms and improve the analysis you are encouraged to use contracts.
 
-make USE_Z3=yes
-
-## Verification for work-in-progress
-
-It is possible to instantly verify your code changes directly in your editor.
-
-You can for instance configure a save action like this:
-
-    cd repo ; git diff > temp.diff ; cppcheck --verify-diff=temp.diff
-
-Ensure that the warnings are sent to your editor and displayed.
-
-From now on, only use 'git commit' when you think all the verification warnings you get looks safe.
-
-With this method, Cppcheck will verify all functions that you are modifying.
-
-## Verification during review
-
-... well I am hoping it will be possible to integrate cppcheck verification in github, gerrit, etc.
-
-## Annotations
-
-To silence Cppcheck verification warnings it is possible to use annotations.
+You can use Cppcheck contracts both for C and C++ code.
 
 Example code:
 
-    void foo(int x) {
-        return 10000 / x;
+    int foo(int x)
+    {
+        return 100 / x;
     }
 
-Cppcheck verification will say that there is division and it can't determine that it's not division by zero.
+A division by zero would not be impossible so Cppcheck will diagnose it:
 
-Example code with SAL annotation:
+    [test1.cpp:3] (error) There is division, cannot determine that there can't be a division by zero. [bughuntingDivByZero]
 
-    void foo(int _In_range_(1,1000) x) {
-        return 10000 / x;
+This Cppcheck contract will silence that warning:
+
+    function: foo(x)
+    expects: x > 0
+
+That contract will improve the intra procedural analysis. Every time `foo` is called it will be checked that the contract is satisfied:
+
+    void bar(int x)
+    {
+        foo(x);
     }
 
-Example code with Cppcheck annotation:
+Cppcheck will warn:
 
-    void foo(int __cppcheck_low__(1) x) {
-        return 10000 / x;
-    }
+    [test1.cpp:10] (error) Function 'foo' is called, can not determine that its contract 'x>0' is always met. [bughuntingFunctionCall]
 
-## Function calls
 
-For a reliable verification it will be very important that `--check-library` is used, you need to ensure that critical library functions are configured.
+## Adding a contract in the GUI
 
-### Uninitialized variables
+There are two ways:
+ * Open the "Contracts" tab at the bottom of the screen. Find the function in the listbox and double click on it.
+ * Right click on a warning and click on "Edit contract.." in the popup menu. This popup menu item is only available if the warning is not inconclusive.
 
-When `const` is used for pointer arguments that will be seen as a annotation.
+## Incomplete analysis
 
-This function:
+The data flow analysis can analyze simple functions completely but complex functions are not analyzed completely (yet). The data flow analysis will be continously improved in the future but it will never be perfect.
 
-    void foo(char *p);
+It is likely that you will get false alarms caused by incomplete data flow analysis. Unfortunately it is unlikely that such false alarms can be fixed by contracts.
 
-Cppcheck will assume that `p` points at uninitialized memory. When `foo` is checked it will be ensured that it initializes the memory.
 
-This function:
-
-    void foo(const char *p);
-
-Cppcheck will assume that `p` points at initialized memory. If you call `foo` and pass a pointer to uninitialized memory we will warn.
-
-TODO: Further annotations to specify how a function initializes memory will be required.
 
 

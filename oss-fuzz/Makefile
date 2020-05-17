@@ -12,13 +12,13 @@ SRC_FILES=main.cpp type2.cpp ${CPPCHECK_DIR}/externals/simplecpp/simplecpp.cpp $
 all:	oss-fuzz-client	translate
 
 oss-fuzz-client:	main.cpp	type2.cpp	type2.h
-	${CXX} -std=c++11 -g ${CXXFLAGS} -o oss-fuzz-client ${INCLUDE_DIR} ${SRC_FILES} -lFuzzingEngine
+	${CXX} -std=c++11 -g ${CXXFLAGS} -o oss-fuzz-client ${INCLUDE_DIR} ${SRC_FILES} ${LIB_FUZZING_ENGINE}
 
 fuzz-client:	main.cpp	type2.cpp	type2.h
-	${CXX} -std=c++11 -g -O1 ${CXXFLAGS} -fsanitize=fuzzer -o fuzz-client ${INCLUDE_DIR} ${SRC_FILES}
+	${CXX} -std=c++11 -g ${CXXFLAGS} -o fuzz-client ${INCLUDE_DIR} ${SRC_FILES} -fsanitize=fuzzer
 
 translate:	translate.cpp	type2.cpp	type2.h
-	g++ -o translate type2.cpp translate.cpp
+	${CXX} -std=c++11 -g ${CXXFLAGS} -o translate type2.cpp translate.cpp
 
 clean:
 	rm -f oss-fuzz-client fuzz-client translate

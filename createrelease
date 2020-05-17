@@ -9,7 +9,7 @@
 #   lupdate gui.pro
 #
 # Update copyright year
-# git diff 1.90 | grep '^diff --git a/' | sed 's|.* b/||' | xargs sed -i 's/Copyright (C) 2007-201./Copyright (C) 2007-2020/'
+# git diff 1.90 -- */*.cpp */*.h | grep '^diff --git a/' | sed 's|.* b/||' | xargs sed -i 's/Copyright (C) 2007-201./Copyright (C) 2007-2020/'
 # git diff | grep '^diff --git a/'
 #
 # Make sure "cppcheck --errorlist" works. For example with:
@@ -63,7 +63,7 @@
 #
 # run daca with new release
 # 1. edit tools/donate-cpu-server.py. Update OLD_VERSION and VERSION
-# 2. scp tools/donate-cpu-server.py danielmarjamaki@cppcheck1.osuosl.org:daca@home/
+# 2. scp tools/donate-cpu-server.py danielmarjamaki@cppcheck1.osuosl.org:/var/daca@home/
 
 # Tag to use
 tag=$1
@@ -76,6 +76,8 @@ set -e
 cd ~/cppcheck
 
 mkdir upload
+
+make clean
 
 # Create archives..
 git archive --format=tar --prefix=$releasename/ $tag | gzip > upload/$releasename.tar.gz

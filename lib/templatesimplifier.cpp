@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1636,9 +1636,13 @@ void TemplateSimplifier::expandTemplate(
                 (!isVariable || !Token::Match(typeParametersInDeclaration[itype]->previous(), "<|, %type% >|,"))) {
                 typeindentlevel = 0;
                 std::stack<Token *> brackets1; // holds "(" and "{" tokens
+                bool pointerType = false;
+                Token * const dst1 = dst->previous();
                 for (const Token *typetok = mTypesUsedInTemplateInstantiation[itype].token();
                      typetok && (typeindentlevel > 0 || !Token::Match(typetok, ",|>"));
                      typetok = typetok->next()) {
+                    if (typeindentlevel == 0 && typetok->str() == "*")
+                        pointerType = true;
                     if (Token::simpleMatch(typetok, "..."))
                         continue;
                     if (Token::Match(typetok, "%name% <") && (typetok->strAt(2) == ">" || templateParameters(typetok->next())))
@@ -1673,6 +1677,10 @@ void TemplateSimplifier::expandTemplate(
                         Token::createMutualLinks(brackets1.top(), previous);
                         brackets1.pop();
                     }
+                }
+                if (pointerType && Token::simpleMatch(dst1, "const")) {
+                    dst->insertToken("const", dst1->originalName(), true);
+                    dst1->deleteThis();
                 }
             } else {
                 if (isSpecialization && !copy && !scope.empty() && Token::Match(start, (scope + templateDeclarationNameToken->str()).c_str())) {
@@ -1962,9 +1970,13 @@ void TemplateSimplifier::expandTemplate(
                 if (itype < typeParametersInDeclaration.size()) {
                     unsigned int typeindentlevel = 0;
                     std::stack<Token *> brackets1; // holds "(" and "{" tokens
+                    Token * const beforeTypeToken = mTokenList.back();
+                    bool pointerType = false;
                     for (const Token *typetok = mTypesUsedInTemplateInstantiation[itype].token();
                          typetok && (typeindentlevel > 0 || !Token::Match(typetok, ",|>"));
                          typetok = typetok->next()) {
+                        if (typeindentlevel == 0 && typetok->str() == "*")
+                            pointerType = true;
                         if (Token::simpleMatch(typetok, "..."))
                             continue;
                         if (Token::Match(typetok, "%name% <") &&
@@ -2007,6 +2019,10 @@ void TemplateSimplifier::expandTemplate(
                         }
                         if (copy)
                             back->isTemplateArg(true);
+                    }
+                    if (pointerType && Token::simpleMatch(beforeTypeToken, "const")) {
+                        mTokenList.addtoken(beforeTypeToken);
+                        beforeTypeToken->deleteThis();
                     }
                     continue;
                 }
@@ -2259,7 +2275,7 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok, bool isTemplate
             case '^':
                 tok->str((v1 ^ v2).str());
                 break;
-            };
+            }
         }
 
         // Logical operations

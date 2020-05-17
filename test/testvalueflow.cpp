@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -91,6 +91,7 @@ private:
         TEST_CASE(valueFlowForwardFunction);
         TEST_CASE(valueFlowForwardTernary);
         TEST_CASE(valueFlowForwardLambda);
+        TEST_CASE(valueFlowForwardTryCatch);
 
         TEST_CASE(valueFlowFwdAnalysis);
 
@@ -132,6 +133,7 @@ private:
         TEST_CASE(valueFlowCrashIncompleteCode);
 
         TEST_CASE(valueFlowCrash);
+        TEST_CASE(valueFlowHang);
         TEST_CASE(valueFlowCrashConstructorInitialization);
     }
 
@@ -809,12 +811,14 @@ private:
         ASSERT_EQUALS(1, values.back().intvalue);
 
 #define CHECK(A, B)                              \
+        do {                                     \
         code = "void f() {\n"                    \
                "    x = sizeof(" A ");\n"        \
                "}";                              \
         values = tokenValues(code,"( " A " )");  \
         ASSERT_EQUALS(1U, values.size());        \
-        ASSERT_EQUALS(B, values.back().intvalue);
+        ASSERT_EQUALS(B, values.back().intvalue);\
+        } while(false)
 
         // standard types
         CHECK("void *", settings.sizeof_pointer);
@@ -848,13 +852,15 @@ private:
         ASSERT_EQUALS(10, values.back().intvalue);
 
 #define CHECK(A, B, C, D)                         \
+        do {                                      \
         code = "enum " A " E " B " { E0, E1 };\n" \
                "void f() {\n"                     \
                "    x = sizeof(" C ");\n"         \
                "}";                               \
         values = tokenValues(code,"( " C " )");   \
         ASSERT_EQUALS(1U, values.size());         \
-        ASSERT_EQUALS(D, values.back().intvalue);
+        ASSERT_EQUALS(D, values.back().intvalue); \
+        } while(false)
 
         // enums
         CHECK("", "", "E", settings.sizeof_int);
@@ -921,6 +927,7 @@ private:
 #undef CHECK
 
 #define CHECK(A, B)                                   \
+        do {                                          \
         code = "enum E " A " { E0, E1 };\n"           \
                "void f() {\n"                         \
                "    E arrE[] = { E0, E1 };\n"         \
@@ -928,7 +935,8 @@ private:
                "}";                                   \
         values = tokenValues(code,"( arrE )");        \
         ASSERT_EQUALS(1U, values.size());             \
-        ASSERT_EQUALS(B * 2U, values.back().intvalue);
+        ASSERT_EQUALS(B * 2U, values.back().intvalue);\
+        } while(false)
 
         // enum array
         CHECK("", settings.sizeof_int);
@@ -954,6 +962,7 @@ private:
 #undef CHECK
 
 #define CHECK(A, B)                                   \
+        do {                                          \
         code = "enum class E " A " { E0, E1 };\n"     \
                "void f() {\n"                         \
                "    E arrE[] = { E::E0, E::E1 };\n"   \
@@ -961,7 +970,8 @@ private:
                "}";                                   \
         values = tokenValues(code,"( arrE )");        \
         ASSERT_EQUALS(1U, values.size());             \
-        ASSERT_EQUALS(B * 2U, values.back().intvalue);
+        ASSERT_EQUALS(B * 2U, values.back().intvalue);\
+        } while(false)
 
         // enum array
         CHECK("", settings.sizeof_int);
@@ -2033,6 +2043,19 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 6U, 3));
         TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 6U, 2));
+
+        code = "struct Fred {\n"
+               "    static void Create(std::unique_ptr<Wilma> wilma);\n"
+               "    Fred(std::unique_ptr<Wilma> wilma);\n"
+               "    std::unique_ptr<Wilma> mWilma;\n"
+               "};\n"
+               "void Fred::Create(std::unique_ptr<Wilma> wilma) {\n"
+               "    auto fred = std::make_shared<Fred>(std::move(wilma));\n"
+               "    fred->mWilma.reset();\n"
+               "}\n"
+               "Fred::Fred(std::unique_ptr<Wilma> wilma)\n"
+               "    : mWilma(std::move(wilma)) {}\n";
+        ASSERT_EQUALS(0, tokenValues(code, "mWilma (").size());
     }
 
     void valueFlowAfterCondition() {
@@ -2356,6 +2379,21 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, 0));
         ASSERT_EQUALS(true, testValueOfX(code, 6U, 0));
+
+        // volatile variable
+        code = "void foo(const volatile int &x) {\n"
+               "    if (x==1) {\n"
+               "        return x;\n"
+               "    }"
+               "}";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 3U, 1));
+
+        code = "void foo(const std::atomic<int> &x) {\n"
+               "    if (x==2) {\n"
+               "        return x;\n"
+               "    }"
+               "}";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 3U, 2));
     }
 
     void valueFlowAfterConditionExpr() {
@@ -2584,6 +2622,40 @@ private:
                "  f();\n"
                "}";
         TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 3U, 3));
+    }
+
+    void valueFlowForwardTryCatch() {
+        const char *code;
+
+        code = "void g1();\n"
+               "void g2();\n"
+               "void f()\n {"
+               "    bool x = false;\n"
+               "    try {\n"
+               "        g1();\n"
+               "        x = true;\n"
+               "        g2();\n"
+               "    }\n"
+               "    catch (...) {\n"
+               "        if (x) {}\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 11U, 1));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 11U, 1));
+
+        code = "void g1();\n"
+               "void g2();\n"
+               "void f()\n {"
+               "    bool x = true;\n"
+               "    try {\n"
+               "        g1();\n"
+               "        g2();\n"
+               "    }\n"
+               "    catch (...) {\n"
+               "        if (x) {}\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 10U, 1));
     }
 
     void valueFlowBitAnd() {
@@ -3110,6 +3182,33 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 7U, 0));
         ASSERT_EQUALS(true, testValueOfX(code, 7U, 17));
         ASSERT_EQUALS(true, testValueOfX(code, 7U, 42));
+
+        code = "void g(int, int) {}\n"
+               "void f(int x, int y) {\n"
+               "    g(x, y);\n"
+               "}\n"
+               "void h() {\n"
+               "    f(0, 0);\n"
+               "    f(1, 1);\n"
+               "    f(2, 2);\n"
+               "    f(3, 3);\n"
+               "    f(4, 4);\n"
+               "    f(5, 5);\n"
+               "    f(6, 6);\n"
+               "    f(7, 7);\n"
+               "    f(8, 8);\n"
+               "    f(9, 9);\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 1));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 2));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 3));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 4));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 5));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 6));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 7));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 8));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 9));
     }
     void valueFlowFunctionReturn() {
         const char *code;
@@ -4444,6 +4543,75 @@ private:
                "    return r;\n"
                "}\n";
         valueOfTok(code, "0");
+
+        code = "void fa(int &colors) {\n"
+               "  for (int i = 0; i != 6; ++i) {}\n"
+               "}\n"
+               "void fb(not_null<int*> parent, int &&colors2) {\n"
+               "  dostuff(1);\n"
+               "}\n";
+        valueOfTok(code, "x");
+
+        code = "void a() {\n"
+               "  static int x = 0;\n"
+               "  struct c {\n"
+               "    c(c &&) { ++x; }\n"
+               "  };\n"
+               "}\n";
+        valueOfTok(code, "x");
+
+        code = "void *foo(void *x);\n"
+               "void *foo(void *x)\n"
+               "{\n"
+               "    if (!x)\n"
+               "yes:\n"
+               "        return &&yes;\n"
+               "    return x;\n"
+               "}\n";
+        valueOfTok(code, "x");
+    }
+
+    void valueFlowHang() {
+        const char* code;
+        // #9659
+        code = "float arr1[4][4] = {0.0};\n"
+               "float arr2[4][4] = {0.0};\n"
+               "void f() {\n"
+               "    if(arr1[0][0] == 0.0 &&\n"
+               "       arr1[0][1] == 0.0 &&\n"
+               "       arr1[0][2] == 0.0 &&\n"
+               "       arr1[0][3] == 0.0 &&\n"
+               "       arr1[1][0] == 0.0 &&\n"
+               "       arr1[1][1] == 0.0 &&\n"
+               "       arr1[1][2] == 0.0 &&\n"
+               "       arr1[1][3] == 0.0 &&\n"
+               "       arr1[2][0] == 0.0 &&\n"
+               "       arr1[2][1] == 0.0 &&\n"
+               "       arr1[2][2] == 0.0 &&\n"
+               "       arr1[2][3] == 0.0 &&\n"
+               "       arr1[3][0] == 0.0 &&\n"
+               "       arr1[3][1] == 0.0 &&\n"
+               "       arr1[3][2] == 0.0 &&\n"
+               "       arr1[3][3] == 0.0 &&\n"
+               "       arr2[0][0] == 0.0 &&\n"
+               "       arr2[0][1] == 0.0 &&\n"
+               "       arr2[0][2] == 0.0 &&\n"
+               "       arr2[0][3] == 0.0 &&\n"
+               "       arr2[1][0] == 0.0 &&\n"
+               "       arr2[1][1] == 0.0 &&\n"
+               "       arr2[1][2] == 0.0 &&\n"
+               "       arr2[1][3] == 0.0 &&\n"
+               "       arr2[2][0] == 0.0 &&\n"
+               "       arr2[2][1] == 0.0 &&\n"
+               "       arr2[2][2] == 0.0 &&\n"
+               "       arr2[2][3] == 0.0 &&\n"
+               "       arr2[3][0] == 0.0 &&\n"
+               "       arr2[3][1] == 0.0 &&\n"
+               "       arr2[3][2] == 0.0 &&\n"
+               "       arr2[3][3] == 0.0\n"
+               "       ) {}\n"
+               "}\n";
+        valueOfTok(code, "x");
     }
 
     void valueFlowCrashConstructorInitialization() { // #9577

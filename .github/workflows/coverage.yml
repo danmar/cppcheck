@@ -14,7 +14,7 @@ jobs:
 
       - name: Install missing software on ubuntu
         run: |
-          sudo apt update
+          sudo apt-get update
           sudo apt-get install libxml2-utils
           sudo apt-get install z3 libz3-dev
           sudo apt-get install lcov
@@ -22,7 +22,8 @@ jobs:
 
       - name: Compile instrumented
         run: |
-          make test CXXFLAGS="-g -fprofile-arcs -ftest-coverage" USE_Z3=yes -j2
+          cp externals/z3_version_old.h externals/z3_version.h
+          make test CXXFLAGS="-g -fprofile-arcs -ftest-coverage" USE_Z3=yes HAVE_RULES=yes -j$(nproc)
           
       - name: Generate coverage report
         run: |
@@ -41,7 +42,7 @@ jobs:
          
       - uses: codecov/codecov-action@v1
         with:
-          token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+          # token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
           # file: ./coverage.xml # optional
           flags: unittests # optional
           name: ${{ github.repository }} # optional

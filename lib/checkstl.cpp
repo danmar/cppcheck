@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,9 @@
 
 #include "checkstl.h"
 
-#include "checknullpointer.h"
 #include "errorlogger.h"
+#include "library.h"
+#include "mathlib.h"
 #include "settings.h"
 #include "standards.h"
 #include "symboldatabase.h"
@@ -710,12 +711,35 @@ void CheckStl::mismatchingContainers()
 
 static bool isInvalidMethod(const Token * tok)
 {
-    if (Token::Match(tok->next(), ". assign|clear"))
+    if (Token::Match(tok->next(), ". assign|clear|swap"))
         return true;
     if (Token::Match(tok->next(), "%assign%"))
         return true;
-    if (isVector(tok) && Token::Match(tok->next(), ". insert|emplace|emplace_back|push_back|erase|pop_back|reserve ("))
-        return true;
+    if (const Library::Container * c = tok->valueType()->container) {
+        Library::Container::Action action = c->getAction(tok->strAt(2));
+        if (c->unstableErase) {
+            if (action == Library::Container::Action::ERASE)
+                return true;
+        }
+        if (c->unstableInsert) {
+            if (action == Library::Container::Action::RESIZE)
+                return true;
+            if (action == Library::Container::Action::CLEAR)
+                return true;
+            if (action == Library::Container::Action::PUSH)
+                return true;
+            if (action == Library::Container::Action::POP)
+                return true;
+            if (action == Library::Container::Action::INSERT)
+                return true;
+            if (action == Library::Container::Action::CHANGE)
+                return true;
+            if (action == Library::Container::Action::CHANGE_INTERNAL)
+                return true;
+            if (Token::Match(tok->next(), ". insert|emplace"))
+                return true;
+        }
+    }
     return false;
 }
 
@@ -821,6 +845,58 @@ void CheckStl::invalidContainer()
             }
         }
     }
+}
+
+static const Token* getLoopContainer(const Token* tok)
+{
+    if (!Token::simpleMatch(tok, "for ("))
+        return nullptr;
+    const Token * sepTok = tok->next()->astOperand2();
+    if (!Token::simpleMatch(sepTok, ":"))
+        return nullptr;
+    return sepTok->astOperand2();
+}
+
+void CheckStl::invalidContainerLoop()
+{
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope * scope : symbolDatabase->functionScopes) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+            const Token* contTok = getLoopContainer(tok);
+            if (!contTok)
+                continue;
+            const Token * blockStart = tok->next()->link()->next();
+            const Token * blockEnd = blockStart->link();
+            if (!Token::Match(contTok, "%var%"))
+                continue;
+            if (contTok->varId() == 0)
+                continue;
+            if (!astIsContainer(contTok))
+                continue;
+            nonneg int varid = contTok->varId();
+            for (const Token* tok2 = blockStart; tok2 != blockEnd; tok2 = tok2->next()) {
+                if (tok2->varId() != varid)
+                    continue;
+                if (!Token::Match(tok2->next(), ". %name% ("))
+                    continue;
+                if (!isInvalidMethod(tok2))
+                    continue;
+                invalidContainerLoopError(tok2, tok);
+                break;
+            }
+        }
+    }
+}
+
+void CheckStl::invalidContainerLoopError(const Token *tok, const Token * loopTok)
+{
+    ErrorPath errorPath;
+    const std::string method = tok ? tok->strAt(2) : "erase";
+    errorPath.emplace_back(loopTok, "Iterating container here.");
+
+    const std::string msg = "Calling '" + method + "' while iterating the container is invalid.";
+    errorPath.emplace_back(tok, "");
+    reportError(errorPath, Severity::error, "invalidContainerLoop", msg, CWE664, false);
 }
 
 void CheckStl::invalidContainerError(const Token *tok, const Token * contTok, const ValueFlow::Value *val, ErrorPath errorPath)

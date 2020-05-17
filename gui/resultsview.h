@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,6 +53,8 @@ public:
     void setTags(const QStringList &tags) {
         mUI.mTree->setTags(tags);
     }
+
+    void setAddedContracts(const QStringList &addedContracts);
 
     /**
      * @brief Clear results and statistics and reset progressinfo.
@@ -228,6 +230,9 @@ signals:
     /** Suppress Ids */
     void suppressIds(QStringList ids);
 
+    /** Edit contract for function */
+    void editFunctionContract(QString function);
+
     /**
     * @brief Show/hide certain type of errors
     * Refreshes the tree.
@@ -343,6 +348,9 @@ public slots:
      */
     void logCopyComplete();
 
+    /** \brief Contract was double clicked => edit it */
+    void contractDoubleClicked(QListWidgetItem* item);
+
 protected:
     /**
     * @brief Should we show a "No errors found dialog" every time no errors were found?
@@ -358,6 +366,8 @@ private slots:
      * @param pos Mouse click position
      */
     void on_mListLog_customContextMenuRequested(const QPoint &pos);
+private:
+    QSet<QString> mContracts;
 };
 /// @}
 #endif // RESULTSVIEW_H

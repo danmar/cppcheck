@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -94,6 +94,8 @@ private:
         TEST_CASE(varid61); // #4988 inline function
         TEST_CASE(varid62);
         TEST_CASE(varid63);
+        TEST_CASE(varid_for_1);
+        TEST_CASE(varid_for_2);
         TEST_CASE(varid_cpp_keywords_in_c_code);
         TEST_CASE(varid_cpp_keywords_in_c_code2); // #5373: varid=0 for argument called "delete"
         TEST_CASE(varidFunctionCall1);
@@ -165,8 +167,8 @@ private:
         TEST_CASE(varid_trailing_return1); // #8889
         TEST_CASE(varid_trailing_return2); // #9066
         TEST_CASE(varid_parameter_pack); // #9383
-
         TEST_CASE(varid_for_auto_cpp17);
+        TEST_CASE(varid_not); // #9689 'not x'
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -187,6 +189,7 @@ private:
         TEST_CASE(varidclass17);  // #6073
         TEST_CASE(varidclass18);
         TEST_CASE(varidclass19);  // initializer list
+        TEST_CASE(varidclass20);   // #7578: int (*p)[2]
         TEST_CASE(varid_classnameshaddowsvariablename); // #3990
 
         TEST_CASE(varidnamespace1);
@@ -1087,7 +1090,7 @@ private:
         const char wanted[] = "1: class DLLSYM B@1 ;\n"
                               "2: struct B {\n"
                               "3: ~ B ( ) { }\n"
-                              "4: } ;\n";;
+                              "4: } ;\n";
         TODO_ASSERT_EQUALS(wanted, expected, tokenize(code, false, "test.cpp"));
     }
 
@@ -1121,6 +1124,26 @@ private:
     void varid63() {
         const char code[] = "void f(boost::optional<int> const& x) {}";
         const char expected[] = "1: void f ( boost :: optional < int > const & x@1 ) { }\n";
+        ASSERT_EQUALS(expected, tokenize(code, false));
+    }
+
+    void varid_for_1() {
+        const char code[] = "void foo(int a, int b) {\n"
+                            "  for (int a=1,b=2;;) {}\n"
+                            "}";
+        const char expected[] = "1: void foo ( int a@1 , int b@2 ) {\n"
+                                "2: for ( int a@3 = 1 , b@4 = 2 ; ; ) { }\n"
+                                "3: }\n";
+        ASSERT_EQUALS(expected, tokenize(code, false));
+    }
+
+    void varid_for_2() {
+        const char code[] = "void foo(int a, int b) {\n"
+                            "  for (int a=f(x,y,z),b=2;;) {}\n"
+                            "}";
+        const char expected[] = "1: void foo ( int a@1 , int b@2 ) {\n"
+                                "2: for ( int a@3 = f ( x , y , z ) , b@4 = 2 ; ; ) { }\n"
+                                "3: }\n";
         ASSERT_EQUALS(expected, tokenize(code, false));
     }
 
@@ -2474,6 +2497,13 @@ private:
                       tokenize("void foo() {\n"
                                "  struct ABC abc = {.a=abc.a,.b=abc.b};\n"
                                "}"));
+
+        ASSERT_EQUALS("1: void foo ( ) {\n"
+                      "2: struct ABC abc@1 ; abc@1 = { . a@2 { abc@1 . a@2 } , . b@3 = { abc@1 . b@3 } } ;\n"
+                      "3: }\n",
+                      tokenize("void foo() {\n"
+                               "  struct ABC abc = {.a { abc.a },.b= { abc.b } };\n"
+                               "}"));
     }
 
     void varid_arrayinit() { // #7579 - no variable declaration in rhs
@@ -2566,6 +2596,16 @@ private:
                             "5: x + y + z ;\n"
                             "6: }\n";
         ASSERT_EQUALS(exp1, tokenize(code));
+    }
+
+    void varid_not() { // #9689 'not x'
+        const char code1[] = "void foo(int x) const {\n"
+                             "  if (not x) {}\n"
+                             "}";
+        const char exp1[] = "1: void foo ( int x@1 ) const {\n"
+                            "2: if ( not x@1 ) { }\n"
+                            "3: }\n";
+        ASSERT_EQUALS(exp1, tokenize(code1));
     }
 
     void varidclass1() {
@@ -2933,7 +2973,7 @@ private:
         const char expected[] = "1: struct A ;\n"
                                 "2:\n"
                                 "3: struct A {\n"
-                                "4: bool * pFun@1 ;\n"
+                                "4: bool ( * pFun@1 ) ( ) ;\n"
                                 "5: void setPFun ( int mode@2 ) ;\n"
                                 "6: bool funcNorm ( ) ;\n"
                                 "7: } ;\n"
@@ -2986,6 +3026,20 @@ private:
                                 "3: A ( ) ;\n"
                                 "4: } ;\n"
                                 "5: A :: A ( ) : :: B ( ) , a@1 ( 0 ) { }\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varidclass20() { // #7578: int (*p)[2]
+        const char code[] = "struct S {\n"
+                            "  int (*p)[2];\n"
+                            "  S();\n"
+                            "};\n"
+                            "S::S() { p[0] = 0; }";
+        const char expected[] = "1: struct S {\n"
+                                "2: int ( * p@1 ) [ 2 ] ;\n"
+                                "3: S ( ) ;\n"
+                                "4: } ;\n"
+                                "5: S :: S ( ) { p@1 [ 0 ] = 0 ; }\n";
         ASSERT_EQUALS(expected, tokenize(code));
     }
 

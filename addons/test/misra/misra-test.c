@@ -739,6 +739,14 @@ void misra_15_6() {
   (void)0;
 #endif
 
+#if A > 0x42
+  if (true) {
+    (void)0;
+  }
+  if (true)
+#endif
+  { (void)0; } // no-warning
+
   do {} while (x<0); // no-warning
 }
 
@@ -1017,6 +1025,12 @@ union misra_19_2 { }; // 19.2
 #define M_20_7_3(A)  ((A)+A) // 20.7
 #define M_20_7_4(A)  x##A // 20.10 this test was written to see there are not FPs
 #define M_20_7_5(A,B)  f(A, B) // no warning
+
+// Compliant: M is a structure member name, not an expression
+struct { int a; } struct_20_7_s;
+#define M_20_7_6(M) struct_20_7.M
+#define M_20_7_7(M) (struct_20_7).M
+
 #define MUL(a  ,b ) ( a * b ) // 20.7
 
 #define M_20_10(a) (#a) // 20.10

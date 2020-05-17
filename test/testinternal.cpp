@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,13 +34,13 @@ private:
     void run() OVERRIDE {
         settings.addEnabled("internal");
 
-        TEST_CASE(simplePatternInTokenMatch)
-        TEST_CASE(complexPatternInTokenSimpleMatch)
-        TEST_CASE(simplePatternSquareBrackets)
-        TEST_CASE(simplePatternAlternatives)
-        TEST_CASE(missingPercentCharacter)
-        TEST_CASE(unknownPattern)
-        TEST_CASE(redundantNextPrevious)
+        TEST_CASE(simplePatternInTokenMatch);
+        TEST_CASE(complexPatternInTokenSimpleMatch);
+        TEST_CASE(simplePatternSquareBrackets);
+        TEST_CASE(simplePatternAlternatives);
+        TEST_CASE(missingPercentCharacter);
+        TEST_CASE(unknownPattern);
+        TEST_CASE(redundantNextPrevious);
         TEST_CASE(internalError);
         TEST_CASE(orInComplexPattern);
         TEST_CASE(extraWhitespace);

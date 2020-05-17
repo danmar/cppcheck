@@ -2,6 +2,8 @@
 #include "astutils.h"
 #include "settings.h"
 #include "symboldatabase.h"
+#include "token.h"
+#include "valueptr.h"
 
 #include <functional>
 
@@ -33,7 +35,7 @@ struct ForwardTraversal {
             if (out)
                 *out = tok->link();
             return Progress::Skip;
-        } else if (Token::Match(tok, "?|&&|%oror%")) {
+        } else if (Token::Match(tok, "?|&&|%oror%") && tok->astOperand1() && tok->astOperand2()) {
             if (traverseConditional(tok, f, traverseUnknown) == Progress::Break)
                 return Progress::Break;
             if (out)
@@ -45,6 +47,10 @@ struct ForwardTraversal {
                 return Progress::Break;
             if (out)
                 *out = lambdaEndToken;
+            // Skip class scope
+        } else if (Token::simpleMatch(tok, "{") && tok->scope() && tok->scope()->isClassOrStruct()) {
+            if (out)
+                *out = tok->link();
         } else {
             if (f(tok) == Progress::Break)
                 return Progress::Break;
@@ -53,25 +59,25 @@ struct ForwardTraversal {
     }
 
     template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
-    Progress traverseRecursive(T* tok, std::function<Progress(T*)> f, bool traverseUnknown) {
+    Progress traverseRecursive(T* tok, std::function<Progress(T*)> f, bool traverseUnknown, unsigned int recursion=0) {
         if (!tok)
             return Progress::Continue;
-        if (tok->astOperand1() && traverseRecursive(tok->astOperand1(), f, traverseUnknown) == Progress::Break)
+        if (recursion > 10000)
+            return Progress::Skip;
+        if (tok->astOperand1() && traverseRecursive(tok->astOperand1(), f, traverseUnknown, recursion+1) == Progress::Break)
             return Progress::Break;
         Progress p = traverseTok(tok, f, traverseUnknown);
         if (p == Progress::Break)
             return Progress::Break;
-        if (p == Progress::Continue && traverseRecursive(tok->astOperand2(), f, traverseUnknown) == Progress::Break)
+        if (p == Progress::Continue && traverseRecursive(tok->astOperand2(), f, traverseUnknown, recursion+1) == Progress::Break)
             return Progress::Break;
         return Progress::Continue;
     }
 
     template<class T, class F, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
     Progress traverseConditional(T* tok, F f, bool traverseUnknown) {
-        if (Token::Match(tok, "?|&&|%oror%")) {
+        if (Token::Match(tok, "?|&&|%oror%") && tok->astOperand1() && tok->astOperand2()) {
             T* condTok = tok->astOperand1();
-            if (traverseRecursive(condTok, f, traverseUnknown) == Progress::Break)
-                return Progress::Break;
             T* childTok = tok->astOperand2();
             bool checkThen, checkElse;
             std::tie(checkThen, checkElse) = evalCond(condTok);
@@ -281,6 +287,9 @@ struct ForwardTraversal {
                 analyzer->assume(condTok, !inElse, tok);
                 if (Token::simpleMatch(tok, "} else {"))
                     tok = tok->linkAt(2);
+            } else if (Token::simpleMatch(tok, "}") && Token::simpleMatch(tok->link()->previous(), "try {")) {
+                if (!analyzer->lowerToPossible())
+                    return Progress::Break;
             } else if (Token::Match(tok, "if|while|for (") && Token::simpleMatch(tok->next()->link(), ") {")) {
                 Token* endCond = tok->next()->link();
                 Token* endBlock = endCond->next()->link();
@@ -365,6 +374,14 @@ struct ForwardTraversal {
                 }
             } else if (Token::simpleMatch(tok, "} else {")) {
                 tok = tok->linkAt(2);
+            } else if (Token::simpleMatch(tok, "try {")) {
+                Token* endBlock = tok->next()->link();
+                ForwardAnalyzer::Action a = analyzeScope(endBlock);
+                if (updateRange(tok->next(), endBlock) == Progress::Break)
+                    return Progress::Break;
+                if (a.isModified())
+                    analyzer->lowerToPossible();
+                tok = endBlock;
             } else if (Token::simpleMatch(tok, "do {")) {
                 Token* endBlock = tok->next()->link();
                 if (updateLoop(endBlock, nullptr) == Progress::Break)

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -250,11 +250,11 @@ void Token::swapWithNext()
         std::swap(mTokType, mNext->mTokType);
         std::swap(mFlags, mNext->mFlags);
         std::swap(mImpl, mNext->mImpl);
-        for (auto templateSimplifierPointer : mImpl->mTemplateSimplifierPointers) {
+        for (auto *templateSimplifierPointer : mImpl->mTemplateSimplifierPointers) {
             templateSimplifierPointer->token(this);
         }
 
-        for (auto templateSimplifierPointer : mNext->mImpl->mTemplateSimplifierPointers) {
+        for (auto *templateSimplifierPointer : mNext->mImpl->mTemplateSimplifierPointers) {
             templateSimplifierPointer->token(mNext);
         }
         if (mNext->mLink)
@@ -273,7 +273,7 @@ void Token::takeData(Token *fromToken)
     delete mImpl;
     mImpl = fromToken->mImpl;
     fromToken->mImpl = nullptr;
-    for (auto templateSimplifierPointer : mImpl->mTemplateSimplifierPointers) {
+    for (auto *templateSimplifierPointer : mImpl->mTemplateSimplifierPointers) {
         templateSimplifierPointer->token(this);
     }
     mLink = fromToken->mLink;
@@ -1565,7 +1565,27 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
             out << "Line " << tok->linenr() << std::endl;
         line = tok->linenr();
         if (!xml) {
-            out << "  " << tok->str() << (tok->mImpl->mValues->front().isKnown() ? " always " : " possible ");
+            ValueFlow::Value::ValueKind valueKind = tok->mImpl->mValues->front().valueKind;
+            bool same = true;
+            for (const ValueFlow::Value &value : *tok->mImpl->mValues) {
+                if (value.valueKind != valueKind) {
+                    same = false;
+                    break;
+                }
+            }
+            out << "  " << tok->str() << " ";
+            if (same) {
+                switch (valueKind) {
+                case ValueFlow::Value::ValueKind::Impossible:
+                case ValueFlow::Value::ValueKind::Known:
+                    out << "always ";
+                    break;
+                case ValueFlow::Value::ValueKind::Inconclusive:
+                case ValueFlow::Value::ValueKind::Possible:
+                    out << "possible ";
+                    break;
+                }
+            }
             if (tok->mImpl->mValues->size() > 1U)
                 out << '{';
         }
@@ -2112,7 +2132,7 @@ TokenImpl::~TokenImpl()
     delete mValueType;
     delete mValues;
 
-    for (auto templateSimplifierPointer : mTemplateSimplifierPointers) {
+    for (auto *templateSimplifierPointer : mTemplateSimplifierPointers) {
         templateSimplifierPointer->token(nullptr);
     }
 

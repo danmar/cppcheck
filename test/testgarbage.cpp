@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -245,6 +245,7 @@ private:
         TEST_CASE(garbageCode211); // #8764
         TEST_CASE(garbageCode212); // #8765
         TEST_CASE(garbageCode213); // #8758
+        TEST_CASE(garbageCode214);
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -482,7 +483,7 @@ private:
     }
 
     void garbageCode10() { // #6127
-        checkCode("for( rl=reslist; rl!=NULL; rl=rl->next )");
+        ASSERT_THROW(checkCode("for( rl=reslist; rl!=NULL; rl=rl->next )"), InternalError);
     }
 
     void garbageCode12() { // do not crash
@@ -1664,6 +1665,10 @@ private:
 
     void garbageCode213() { // #8758
         ASSERT_THROW(checkCode("{\"\"[(1||)];}"), InternalError);
+    }
+
+    void garbageCode214() {
+        checkCode("THIS FILE CONTAINS VARIOUS TEXT");
     }
 
     void syntaxErrorFirstToken() {

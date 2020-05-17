@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -216,6 +216,7 @@ private:
         TEST_CASE(template_namespace_9);
         TEST_CASE(template_namespace_10);
         TEST_CASE(template_namespace_11); // #7145
+        TEST_CASE(template_pointer_type);
 
         // Test TemplateSimplifier::templateParameters
         TEST_CASE(templateParameters);
@@ -4085,7 +4086,7 @@ private:
 
         // ok code (ticket #1985)
         tok("void f()\n"
-            "try { ;x<y; }");
+            "{ try { ;x<y; } }");
         ASSERT_EQUALS("", errout.str());
 
         // ok code (ticket #3183)
@@ -4391,6 +4392,14 @@ private:
                       "int TemplatedMethod<int> ( int ) ; "
                       "} ; "
                       "} int MyNamespace :: TestClass :: TemplatedMethod<int> ( int t ) { return t ; }", tok(code));
+    }
+
+    void template_pointer_type() {
+        const char code[] = "template<class T> void foo(const T x) {}\n"
+                            "void bar() { foo<int*>(0); }";
+        ASSERT_EQUALS("void foo<int*> ( int * const x ) ; "
+                      "void bar ( ) { foo<int*> ( 0 ) ; } "
+                      "void foo<int*> ( int * const x ) { }", tok(code));
     }
 
     unsigned int templateParameters(const char code[]) {

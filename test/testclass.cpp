@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2699,6 +2699,15 @@ private:
                                "    delete base;\n"
                                "}\n", true);
         ASSERT_EQUALS("[test.cpp:3]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
+
+        // class Base destructor is not virtual but protected -> no error
+        checkVirtualDestructor("class Base {\n"
+                               "public:\n"
+                               "    virtual void foo(){}\n"
+                               "protected:\n"
+                               "    ~Base(){}\n"
+                               "};\n", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkNoMemset(const char code[]) {
@@ -7305,6 +7314,22 @@ private:
                               "};\n"
                               "\n"
                               "C* C::instanceSingleton;");
+        ASSERT_EQUALS("", errout.str());
+
+        // Avoid false positive when pointer is deleted in lambda
+        checkThisUseAfterFree("class C {\n"
+                              "public:\n"
+                              "    void foo();\n"
+                              "    void set() { p = this; }\n"
+                              "    void dostuff() {}\n"
+                              "    C* p;\n"
+                              "};\n"
+                              "\n"
+                              "void C::foo() {\n"
+                              "    auto done = [this] () { delete p; };\n"
+                              "    dostuff();\n"
+                              "    done();\n"
+                              "}");
         ASSERT_EQUALS("", errout.str());
     }
 };

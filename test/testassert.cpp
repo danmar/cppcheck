@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -183,7 +183,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f(int a, int b) {\n"
-              "    assert(a == 2 && b = 1);\n"
+              "    assert(a == 2 && (b = 1));\n"
               "    return a;\n"
               "}\n"
              );
@@ -216,6 +216,13 @@ private:
         check("void f() {\n"
               "    int a = 0;\n"
               "    assert(a--);\n"
+              "    return a;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'.\n", errout.str());
+
+        check("void f() {\n"
+              "    int a = 0;\n"
+              "    assert(--a);\n"
               "    return a;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'.\n", errout.str());

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,9 +20,10 @@
 #include "tokenlist.h"
 
 #include "errorlogger.h"
-#include "mathlib.h"
+#include "library.h"
 #include "path.h"
 #include "settings.h"
+#include "standards.h"
 #include "token.h"
 
 #include <simplecpp.h>
@@ -483,7 +484,7 @@ static Token * skipDecl(Token *tok)
                 vartok = vartok->link();
             else
                 return tok;
-        } else if (Token::Match(vartok, "%name% [:=]")) {
+        } else if (Token::Match(vartok, "%var% [:=(]")) {
             return vartok;
         }
         vartok = vartok->next();
@@ -782,7 +783,7 @@ static void compileTerm(Token *&tok, AST_state& state)
             tok = tok->next();
             if (tok->str() == "<")
                 tok = tok->link()->next();
-            if (Token::Match(tok, "{ . %name% =")) {
+            if (Token::Match(tok, "{ . %name% =|{")) {
                 const int inArrayAssignment = state.inArrayAssignment;
                 state.inArrayAssignment = 1;
                 compileBinOp(tok, state, compileExpression);
@@ -1320,21 +1321,6 @@ static void createAstAtTokenInner(Token * const tok1, const Token *endToken, boo
                 const Token * const endToken2 = tok->link();
                 for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
                     tok = createAstAtToken(tok, cpp);
-            } else if (const Token * lambdaEnd = findLambdaEndScope(tok)) {
-                Token *bodyStart = lambdaEnd->link();
-                if (Token::Match(bodyStart, ". %name%") && bodyStart->originalName() == "->") {
-                    bodyStart = bodyStart->next();
-                    while (Token::Match(bodyStart, "%name%|::"))
-                        bodyStart = bodyStart->next();
-                    if (Token::simpleMatch(bodyStart, "<") && Token::simpleMatch(bodyStart->link(), "> {"))
-                        bodyStart = bodyStart->link()->next();
-                }
-                if (Token::simpleMatch(bodyStart, "{")) {
-                    tok = bodyStart;
-                    const Token * const endToken2 = tok->link();
-                    for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
-                        tok = createAstAtToken(tok, cpp);
-                }
             }
         }
     }
@@ -1508,6 +1494,8 @@ static Token * createAstAtToken(Token *tok, bool cpp)
                 decl = true;
             typetok = typetok->next();
         }
+        if (!typetok)
+            return nullptr;
         if (decl && Token::Match(typetok->previous(), "[*&] %var% ="))
             tok = typetok;
     }
@@ -1531,9 +1519,15 @@ static Token * createAstAtToken(Token *tok, bool cpp)
     }
 
     if (cpp && tok->str() == "{" && iscpp11init(tok)) {
+        Token * const tok1 = tok;
         AST_state state(cpp);
         compileExpression(tok, state);
-        return tok;
+        const Token * const endToken = tok;
+        if (endToken == tok1 || !endToken)
+            return tok1;
+
+        createAstAtTokenInner(tok1->next(), endToken, cpp);
+        return endToken->previous();
     }
 
     return tok;

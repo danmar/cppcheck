@@ -1,7 +1,7 @@
 if (BUILD_GUI)
 
     set(CMAKE_AUTOMOC ON)
-    if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
+    if (CMAKE_BUILD_TYPE MATCHES "Release")
         add_definitions(-DQT_NO_DEBUG)
         add_definitions(-DQT_NO_DEBUG_OUTPUT)
         add_definitions(-DQT_NO_WARNING_OUTPUT)
@@ -28,6 +28,12 @@ if (BUILD_GUI)
     if(WITH_QCHART)
         target_compile_definitions (cppcheck-gui PRIVATE HAVE_QCHART )
         target_link_libraries(cppcheck-gui Qt5::Charts)
+    endif()
+    if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
+            # Q_UNUSED() in generated code
+            target_compile_options(cppcheck-gui PRIVATE -Wno-extra-semi-stmt)
+        endif()
     endif()
 
     install(TARGETS cppcheck-gui RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR} COMPONENT applications)

@@ -392,8 +392,9 @@ class Function:
     isVirtual = None
     isImplicitlyVirtual = None
     isStatic = None
+    nestedIn = None
 
-    def __init__(self, element):
+    def __init__(self, element, nestedIn):
         self.Id = element.get('id')
         self.tokenDefId = element.get('tokenDef')
         self.name = element.get('name')
@@ -404,6 +405,7 @@ class Function:
         self.isImplicitlyVirtual = (isImplicitlyVirtual and isImplicitlyVirtual == 'true')
         isStatic = element.get('isStatic')
         self.isStatic = (isStatic and isStatic == 'true')
+        self.nestedIn = nestedIn
 
         self.argument = {}
         self.argumentId = {}
@@ -940,7 +942,7 @@ class CppcheckData:
                 continue
             elif node.tag == 'function':
                 if event == 'start':
-                    cfg_function = Function(node)
+                    cfg_function = Function(node, cfg.scopes[-1])
                     continue
                 elif event == 'end':
                     cfg.functions.append(cfg_function)

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,9 +16,121 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @brief This is the ExprEngine component in Cppcheck. Its job is to
+ * convert the C/C++ code into expressions that the Z3 prover understands.
+ * We can then ask Z3 prover for instance if variable "x" can be 123 and
+ * the Z3 prover can tell us that.
+ *
+ * Overview
+ * ========
+ *
+ * The ExprEngine performs a "abstract execution" of each function.
+ *  - ExprEngine performs "forward" analysis only. It starts at the top
+ *    of the functions.
+ *  - There is a abstract program state `Data::memory`.
+ *  - The constraints are stored in the vector `Data::constraints`.
+ *
+ * Abstract program state
+ * ======================
+ *
+ * The map `Data::memory` contains the abstract values of all variables
+ * that are used in the current function scope.
+ *
+ * Use `--debug-bug-hunting --verbose` to dump out `Data::memory`.
+ * Example output:
+ * 2:5: { x=$1 y=$2}
+ * Explanation:
+ * At line 2, column 5: The memory has two variables. Variable x has the
+ * value $1. Variable y has the value $2.
+ *
+ * Different value names:
+ *  - Typical abstract value has name that starts with "$". The number is
+ *    just a incremented value.
+ *  - If a variable has a known value then the concrete value is written.
+ *    Example: `{ x=1 }`.
+ *  - For an uninitialized value the output says "?". For example: `{ a=? }`
+ *  - For buffers the output is something like `{ buf=($3,size=10,[:]=?,[$1]=$2) }`
+ *    The first item "$3" is the name of the buffer value.
+ *    The second item says that the size of this buffer is 10.
+ *    After that comes `[index]=value` items that show what values buffer items have:
+ *    `[:]=?` means that all items are uninitialized.
+ *    `[$1]=$2` means that the buffer item at index "$1" has value "$2".
+ *
+ * Abstract execution
+ * ==================
+ *
+ * The function:
+ * static void execute(const Token *start, const Token *end, Data &data)
+ *
+ * Perform abstract execution of the code from `start` to `end`. The
+ * `data` is modified during the abstract execution.
+ *
+ * Each astTop token is executed. From that, operands are executed
+ * recursively in the "execute.." functions. The result of an operand is
+ * a abstract value.
+ *
+ * Branches
+ * --------
+ *
+ * Imagine:
+ *     code1
+ *     if (x > 0)
+ *         code2
+ *     else
+ *         code3
+ *     code4
+ *
+ * When "if" is reached.. the current `data` is branched into `thenData`
+ * and `elseData`.
+ * For "thenData" a constraint is added: x>0
+ * For "elseData" a constraint is added: !(x>0)
+ *
+ * Then analysis of `thenData` and `elseData` will continue separately,
+ * by recursive execution. The "code4" block will be analysed both with
+ * `thenData` and `elseData`.
+ *
+ * Z3
+ * ==
+ *
+ * The ExprEngine will not execute Z3 unless a check wants it to.
+ *
+ * The abstract values and all their constraints is added to a Z3 solver
+ * object and after that Z3 can tell us if some condition can be true.
+ *
+ * Z3 is a SMT solver:
+ * https://en.wikipedia.org/wiki/Satisfiability_modulo_theories
+ *
+ * In SMT:
+ *  - all variables are "constant". A variable can not be changed or assigned.
+ *  - There is no "execution". The solver considers all equations simultaneously.
+ *
+ * Simple example (TestExpr::expr6):
+ *
+ *     void f(unsigned char x)
+ *     {
+ *          unsigned char y = 8 - x;\n"
+ *          y > 1000;
+ *     }
+ *
+ * If a check wants to know if "y > 1000" can be true, ExprEngine will
+ * generate this Z3 input:
+ *
+ *     (declare-fun $1 () Int)
+ *     (assert (and (>= $1 0) (<= $1 255)))
+ *     (assert (> (- 8 $1) 1000))
+ *
+ * A symbol "$1" is created.
+ * assert that "$1" is a value 0-255.
+ * assert that "8-$1" is greater than 1000.
+ *
+ * Z3 can now determine if these assertions are possible or not. In this
+ * case these assertions are not possible, there is no value for $1 between
+ * 0-255 that means that "8-$1" is greater than 1000.
+ */
+
 #include "exprengine.h"
 #include "astutils.h"
-#include "path.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "tokenize.h"
@@ -30,6 +142,9 @@
 #include <iostream>
 #ifdef USE_Z3
 #include <z3++.h>
+#include <z3_version.h>
+#define GET_VERSION_INT(A,B,C)     ((A) * 10000 + (B) * 100 + (C))
+#define Z3_VERSION_INT             GET_VERSION_INT(Z3_MAJOR_VERSION, Z3_MINOR_VERSION, Z3_BUILD_NUMBER)
 #endif
 
 namespace {
@@ -70,7 +185,7 @@ namespace {
     class TrackExecution {
     public:
         TrackExecution() : mDataIndex(0), mAbortLine(-1) {}
-        std::map<const Token *, std::vector<std::string>> map;
+
         int getNewDataIndex() {
             return mDataIndex++;
         }
@@ -78,29 +193,31 @@ namespace {
         void symbolRange(const Token *tok, ExprEngine::ValuePtr value) {
             if (!tok || !value)
                 return;
+            if (tok->index() == 0)
+                return;
             const std::string &symbolicExpression = value->getSymbolicExpression();
             if (symbolicExpression[0] != '$')
                 return;
             if (mSymbols.find(symbolicExpression) != mSymbols.end())
                 return;
             mSymbols.insert(symbolicExpression);
-            map[tok].push_back(symbolicExpression + "=" + value->getRange());
+            mMap[tok].push_back(symbolicExpression + "=" + value->getRange());
 
         }
 
         void state(const Token *tok, const std::string &s) {
-            map[tok].push_back(s);
+            mMap[tok].push_back(s);
         }
 
         void print(std::ostream &out) {
             std::set<std::pair<int,int>> locations;
-            for (auto it : map) {
+            for (auto it : mMap) {
                 locations.insert(std::pair<int,int>(it.first->linenr(), it.first->column()));
             }
             for (const std::pair<int,int> &loc : locations) {
                 int lineNumber = loc.first;
                 int column = loc.second;
-                for (auto &it : map) {
+                for (auto &it : mMap) {
                     const Token *tok = it.first;
                     if (lineNumber != tok->linenr())
                         continue;
@@ -141,6 +258,14 @@ namespace {
         bool isAllOk() const {
             return mErrors.empty();
         }
+
+        void addMissingContract(const std::string &f) {
+            mMissingContracts.insert(f);
+        }
+
+        const std::set<std::string> getMissingContracts() const {
+            return mMissingContracts;
+        }
     private:
         const char *getStatus(int linenr) const {
             if (mErrors.find(linenr) != mErrors.end())
@@ -150,17 +275,21 @@ namespace {
             return "ok";
         }
 
+        std::map<const Token *, std::vector<std::string>> mMap;
+
         int mDataIndex;
         int mAbortLine;
         std::set<std::string> mSymbols;
         std::set<int> mErrors;
+        std::set<std::string> mMissingContracts;
     };
 
     class Data : public ExprEngine::DataBase {
     public:
-        Data(int *symbolValueIndex, const Tokenizer *tokenizer, const Settings *settings, const std::vector<ExprEngine::Callback> &callbacks, TrackExecution *trackExecution)
-            : DataBase(settings)
+        Data(int *symbolValueIndex, ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings, const std::string &currentFunction, const std::vector<ExprEngine::Callback> &callbacks, TrackExecution *trackExecution)
+            : DataBase(currentFunction, settings)
             , symbolValueIndex(symbolValueIndex)
+            , errorLogger(errorLogger)
             , tokenizer(tokenizer)
             , callbacks(callbacks)
             , mTrackExecution(trackExecution)
@@ -168,9 +297,38 @@ namespace {
         typedef std::map<nonneg int, ExprEngine::ValuePtr> Memory;
         Memory memory;
         int * const symbolValueIndex;
+        ErrorLogger *errorLogger;
         const Tokenizer * const tokenizer;
         const std::vector<ExprEngine::Callback> &callbacks;
         std::vector<ExprEngine::ValuePtr> constraints;
+
+        ExprEngine::ValuePtr executeContract(const Function *function, ExprEngine::ValuePtr(*executeExpression)(const Token*, Data&)) {
+            const auto it = settings->functionContracts.find(function->fullName());
+            if (it == settings->functionContracts.end())
+                return ExprEngine::ValuePtr();
+            const std::string &expects = it->second;
+            TokenList tokenList(settings);
+            std::istringstream istr(expects);
+            tokenList.createTokens(istr);
+            tokenList.createAst();
+            SymbolDatabase *symbolDatabase = const_cast<SymbolDatabase*>(tokenizer->getSymbolDatabase());
+            for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
+                for (const Variable &arg: function->argumentList) {
+                    if (arg.name() == tok->str()) {
+                        tok->variable(&arg);
+                        tok->varId(arg.declarationId());
+                    }
+                }
+            }
+            symbolDatabase->setValueTypeInTokenList(false, tokenList.front());
+            return executeExpression(tokenList.front()->astTop(), *this);
+        }
+
+        void contractConstraints(const Function *function, ExprEngine::ValuePtr(*executeExpression)(const Token*, Data&)) {
+            auto value = executeContract(function, executeExpression);
+            if (value)
+                constraints.push_back(value);
+        }
 
         void addError(int linenr) OVERRIDE {
             mTrackExecution->addError(linenr);
@@ -241,6 +399,20 @@ namespace {
             return value;
         }
 
+        void trackCheckContract(const Token *tok, const std::string &solverOutput) {
+            std::ostringstream os;
+            os << "checkContract:{\n";
+
+            std::string line;
+            std::istringstream istr(solverOutput);
+            while (std::getline(istr, line))
+                os << "        " << line << "\n";
+
+            os << "}";
+
+            mTrackExecution->state(tok, os.str());
+        }
+
         void trackProgramState(const Token *tok) {
             if (memory.empty())
                 return;
@@ -262,6 +434,14 @@ namespace {
             }
             s << "}";
             mTrackExecution->state(tok, s.str());
+        }
+
+        void addMissingContract(const std::string &f) {
+            mTrackExecution->addMissingContract(f);
+        }
+
+        const std::set<std::string> getMissingContracts() const {
+            return mTrackExecution->getMissingContracts();
         }
 
         ExprEngine::ValuePtr notValue(ExprEngine::ValuePtr v) {
@@ -318,6 +498,10 @@ namespace {
     };
 }
 
+#ifdef __clang__
+// work around "undefined reference to `__muloti4'" linker error - see https://bugs.llvm.org/show_bug.cgi?id=16404
+__attribute__((no_sanitize("undefined")))
+#endif
 static ExprEngine::ValuePtr simplifyValue(ExprEngine::ValuePtr origValue)
 {
     auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(origValue);
@@ -462,7 +646,7 @@ ExprEngine::ConditionalValue::Vector ExprEngine::ArrayValue::read(ExprEngine::Va
     ExprEngine::ConditionalValue::Vector ret;
     if (!index)
         return ret;
-    for (const auto indexAndValue : data) {
+    for (const auto &indexAndValue : data) {
         if (::isEqual(index, indexAndValue.index))
             ret.clear();
         if (isNonOverlapping(index, indexAndValue.index))
@@ -542,7 +726,7 @@ std::string ExprEngine::ArrayValue::getSymbolicExpression() const
 {
     std::ostringstream ostr;
     ostr << "size=" << (size ? size->name : std::string("(null)"));
-    for (const auto indexAndValue : data) {
+    for (const auto &indexAndValue : data) {
         ostr << ",["
              << (!indexAndValue.index ? std::string(":") : indexAndValue.index->name)
              << "]="
@@ -601,7 +785,7 @@ struct ExprData {
     }
 
     z3::expr addFloat(const std::string &name) {
-#ifdef NEW_Z3
+#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
         z3::expr e = context.fpa_const(name.c_str(), 11, 53);
 #else
         z3::expr e = context.real_const(name.c_str());
@@ -623,7 +807,7 @@ struct ExprData {
         if (b->binop == "/")
             return op1 / op2;
         if (b->binop == "%")
-#ifdef NEW_Z3
+#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,5)
             return op1 % op2;
 #else
             return op1 - (op1 / op2) * op2;
@@ -656,7 +840,7 @@ struct ExprData {
             throw VerifyException(nullptr, "Can not solve expressions, operand value is null");
         if (auto intRange = std::dynamic_pointer_cast<ExprEngine::IntRange>(v)) {
             if (intRange->name[0] != '$')
-#ifdef NEW_Z3
+#if Z3_VERSION_INT >= GET_VERSION_INT(4,7,1)
                 return context.int_val(int64_t(intRange->minValue));
 #else
                 return context.int_val((long long)(intRange->minValue));
@@ -982,19 +1166,19 @@ std::string ExprEngine::BinOpResult::getExpr(ExprEngine::DataBase *dataBase) con
         os << solver;
         switch (solver.check()) {
         case z3::sat:
-            os << "z3::sat";
+            os << "\nz3::sat\n";
             break;
         case z3::unsat:
-            os << "z3::unsat";
+            os << "\nz3::unsat\n";
             break;
         case z3::unknown:
-            os << "z3::unknown";
+            os << "\nz3::unknown\n";
             break;
         }
         return os.str();
     } catch (const z3::exception &exception) {
         std::ostringstream os;
-        os << "z3:" << exception;
+        os << "\nz3:" << exception << "\n";
         return os.str();
     }
 #else
@@ -1025,7 +1209,7 @@ static int getIntBitsFromValueType(const ValueType *vt, const cppcheck::Platform
         return platform.long_long_bit;
     default:
         return 0;
-    };
+    }
 }
 
 static ExprEngine::ValuePtr getValueRangeFromValueType(const std::string &name, const ValueType *vt, const cppcheck::Platform &platform)
@@ -1064,6 +1248,7 @@ static void call(const std::vector<ExprEngine::Callback> &callbacks, const Token
 }
 
 static ExprEngine::ValuePtr executeExpression(const Token *tok, Data &data);
+static ExprEngine::ValuePtr executeExpression1(const Token *tok, Data &data);
 
 static ExprEngine::ValuePtr executeReturn(const Token *tok, Data &data)
 {
@@ -1111,11 +1296,19 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
 {
     ExprEngine::ValuePtr rhsValue = executeExpression(tok->astOperand2(), data);
 
-    if (!rhsValue && tok->astOperand2()->valueType() && tok->astOperand2()->valueType()->container && tok->astOperand2()->valueType()->container->stdStringLike) {
-        auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 0, ~0ULL);
-        auto value = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), -128, 127);
-        rhsValue = std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), size, value, false, false, false);
-        call(data.callbacks, tok->astOperand2(), rhsValue, &data);
+    if (!rhsValue) {
+        const ValueType * const vt1 = tok->astOperand1() ? tok->astOperand1()->valueType() : nullptr;
+        const ValueType * const vt2 = tok->astOperand2() ? tok->astOperand2()->valueType() : nullptr;
+
+        if (vt1 && vt1->pointer == 0 && vt1->isIntegral())
+            rhsValue = getValueRangeFromValueType(data.getNewSymbolName(), vt1, *data.settings);
+
+        else if (vt2 && vt2->container && vt2->container->stdStringLike) {
+            auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 0, ~0ULL);
+            auto value = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), -128, 127);
+            rhsValue = std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), size, value, false, false, false);
+            call(data.callbacks, tok->astOperand2(), rhsValue, &data);
+        }
     }
 
     if (!rhsValue)
@@ -1182,6 +1375,83 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
     return assignValue;
 }
 
+
+#ifdef USE_Z3
+static void checkContract(Data &data, const Token *tok, const Function *function, const std::vector<ExprEngine::ValuePtr> &argValues)
+{
+    ExprData exprData;
+    z3::solver solver(exprData.context);
+    try {
+        // Invert contract, we want to know if the contract might not be met
+        solver.add(z3::ite(exprData.getConstraintExpr(data.executeContract(function, executeExpression1)), exprData.context.bool_val(false), exprData.context.bool_val(true)));
+
+        bool bailoutValue = false;
+        for (nonneg int i = 0; i < argValues.size(); ++i) {
+            const Variable *argvar = function->getArgumentVar(i);
+            if (!argvar || !argvar->nameToken())
+                continue;
+
+            ExprEngine::ValuePtr argValue = argValues[i];
+            if (!argValue || argValue->type == ExprEngine::ValueType::BailoutValue) {
+                bailoutValue = true;
+                break;
+            }
+
+            if (argValue && argValue->type == ExprEngine::ValueType::IntRange) {
+                solver.add(exprData.getExpr(data.getValue(argvar->declarationId(), nullptr, nullptr)) == exprData.getExpr(argValue));
+            }
+        }
+
+        if (!bailoutValue) {
+            for (auto constraint : data.constraints)
+                solver.add(exprData.getConstraintExpr(constraint));
+
+            exprData.addAssertions(solver);
+
+            // Log solver expressions for debugging/testing purposes
+            std::ostringstream os;
+            os << solver;
+            data.trackCheckContract(tok, os.str());
+        }
+
+        if (bailoutValue || solver.check() == z3::sat) {
+            data.addError(tok->linenr());
+            std::list<const Token*> callstack{tok};
+            const char * const id = "bughuntingFunctionCall";
+            const auto contractIt = data.settings->functionContracts.find(function->fullName());
+            const std::string functionName = contractIt->first;
+            const std::string functionExpects = contractIt->second;
+            ErrorLogger::ErrorMessage errmsg(callstack,
+                                             &data.tokenizer->list,
+                                             Severity::SeverityType::error,
+                                             id,
+                                             "Function '" + function->name() + "' is called, can not determine that its contract '" + functionExpects + "' is always met.",
+                                             CWE(0),
+                                             false);
+            errmsg.incomplete = bailoutValue;
+            errmsg.function = functionName;
+            data.errorLogger->reportErr(errmsg);
+        }
+    } catch (const z3::exception &exception) {
+        std::cerr << "z3: " << exception << std::endl;
+    } catch (const VerifyException &e) {
+        std::list<const Token*> callstack{tok};
+        const char * const id = "internalErrorInExprEngine";
+        const auto contractIt = data.settings->functionContracts.find(function->fullName());
+        const std::string functionExpects = contractIt->second;
+        ErrorLogger::ErrorMessage errmsg(callstack,
+                                         &data.tokenizer->list,
+                                         Severity::SeverityType::error,
+                                         id,
+                                         "Function '" + function->name() + "' is called, can not determine that its contract is always met.",
+                                         CWE(0),
+                                         false);
+        errmsg.incomplete = true;
+        data.errorLogger->reportErr(errmsg);
+    }
+}
+#endif
+
 static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
 {
     if (Token::simpleMatch(tok->previous(), "sizeof (")) {
@@ -1215,8 +1485,21 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
         }
     }
 
-    if (!tok->valueType() && tok->astParent())
-        throw VerifyException(tok, "Expression '" + tok->expressionString() + "' has unknown type!");
+    if (tok->astOperand1()->function()) {
+        const std::string &functionName = tok->astOperand1()->function()->fullName();
+        const auto contractIt = data.settings->functionContracts.find(functionName);
+        if (contractIt != data.settings->functionContracts.end()) {
+#ifdef USE_Z3
+            checkContract(data, tok, tok->astOperand1()->function(), argValues);
+#endif
+        } else if (!argValues.empty()) {
+            bool bailout = false;
+            for (const auto v: argValues)
+                bailout |= (v && v->type == ExprEngine::ValueType::BailoutValue);
+            if (!bailout)
+                data.addMissingContract(functionName);
+        }
+    }
 
     auto val = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
     call(data.callbacks, tok, val, &data);
@@ -1313,6 +1596,8 @@ static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
         }
         if (!structValue) {
             auto v = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
+            if (!v)
+                v = std::make_shared<ExprEngine::BailoutValue>();
             call(data.callbacks, tok, v, &data);
             return v;
         }
@@ -1327,15 +1612,44 @@ static ExprEngine::ValuePtr executeBinaryOp(const Token *tok, Data &data)
 {
     ExprEngine::ValuePtr v1 = executeExpression(tok->astOperand1(), data);
     ExprEngine::ValuePtr v2;
-    if (tok->str() == "&&" || tok->str() == "||") {
+
+    if (tok->str() == "?") {
+        if (tok->astOperand1()->hasKnownIntValue()) {
+            if (tok->astOperand1()->getKnownIntValue())
+                v2 = executeExpression(tok->astOperand2()->astOperand1(), data);
+            else
+                v2 = executeExpression(tok->astOperand2()->astOperand2(), data);
+            call(data.callbacks, tok, v2, &data);
+            return v2;
+        }
+
+        Data trueData(data);
+        trueData.addConstraint(v1, true);
+        auto trueValue = simplifyValue(executeExpression(tok->astOperand2()->astOperand1(), trueData));
+
+        Data falseData(data);
+        falseData.addConstraint(v1, false);
+        auto falseValue = simplifyValue(executeExpression(tok->astOperand2()->astOperand2(), falseData));
+
+        auto result = simplifyValue(std::make_shared<ExprEngine::BinOpResult>("?", v1, std::make_shared<ExprEngine::BinOpResult>(":", trueValue, falseValue)));
+        call(data.callbacks, tok, result, &data);
+        return result;
+
+    } else if (tok->str() == "&&" || tok->str() == "||") {
         Data data2(data);
         data2.addConstraint(v1, tok->str() == "&&");
         v2 = executeExpression(tok->astOperand2(), data2);
     } else {
         v2 = executeExpression(tok->astOperand2(), data);
     }
+
     if (v1 && v2) {
         auto result = simplifyValue(std::make_shared<ExprEngine::BinOpResult>(tok->str(), v1, v2));
+        call(data.callbacks, tok, result, &data);
+        return result;
+    }
+    if (tok->str() == "&&" && (v1 || v2)) {
+        auto result = v1 ? v1 : v2;
         call(data.callbacks, tok, result, &data);
         return result;
     }
@@ -1487,6 +1801,8 @@ static void execute(const Token *start, const Token *end, Data &data)
             while (scope->type == Scope::eIf || scope->type == Scope::eElse)
                 scope = scope->nestedIn;
             tok = scope->bodyEnd;
+            if (!precedes(tok,end))
+                return;
         }
 
         if (Token::simpleMatch(tok, "try"))
@@ -1524,14 +1840,19 @@ static void execute(const Token *start, const Token *end, Data &data)
         else if (Token::simpleMatch(tok, "if (")) {
             const Token *cond = tok->next()->astOperand2(); // TODO: C++17 condition
             const ExprEngine::ValuePtr condValue = executeExpression(cond, data);
-            Data ifData(data);
+            Data thenData(data);
             Data elseData(data);
-            ifData.addConstraint(condValue, true);
+            thenData.addConstraint(condValue, true);
             elseData.addConstraint(condValue, false);
 
             const Token *thenStart = tok->linkAt(1)->next();
             const Token *thenEnd = thenStart->link();
-            execute(thenStart->next(), end, ifData);
+
+            if (Token::Match(thenStart, "{ return|throw|break|continue"))
+                execute(thenStart->next(), thenEnd, thenData);
+            else
+                execute(thenStart->next(), end, thenData);
+
             if (Token::simpleMatch(thenEnd, "} else {")) {
                 const Token *elseStart = thenEnd->tokAt(2);
                 execute(elseStart->next(), end, elseData);
@@ -1550,8 +1871,9 @@ static void execute(const Token *start, const Token *end, Data &data)
             for (const Token *tok2 = bodyStart->next(); tok2 != bodyEnd; tok2 = tok2->next()) {
                 if (tok2->str() == "{")
                     tok2 = tok2->link();
-                else if (Token::Match(tok2, "case %num% :")) {
-                    auto caseValue = std::make_shared<ExprEngine::IntRange>(tok2->strAt(1), MathLib::toLongNumber(tok2->strAt(1)), MathLib::toLongNumber(tok2->strAt(1)));
+                else if (Token::Match(tok2, "case %char%|%num% :")) {
+                    const MathLib::bigint caseValue1 = tok2->next()->getKnownIntValue();
+                    auto caseValue = std::make_shared<ExprEngine::IntRange>(MathLib::toString(caseValue1), caseValue1, caseValue1);
                     Data caseData(data);
                     caseData.addConstraint(condValue, caseValue, true);
                     defaultData.addConstraint(condValue, caseValue, false);
@@ -1599,6 +1921,17 @@ static void execute(const Token *start, const Token *end, Data &data)
                         data.assignStructMember(tok2, &*structVal, memberName, memberValue);
                         continue;
                     }
+                    if (tok2->astOperand1() && tok2->astOperand1()->isUnaryOp("*") && tok2->astOperand1()->astOperand1()->varId()) {
+                        const Token *varToken = tok2->astOperand1()->astOperand1();
+                        ExprEngine::ValuePtr val = data.getValue(varToken->varId(), varToken->valueType(), varToken);
+                        if (val && val->type == ExprEngine::ValueType::ArrayValue) {
+                            // Try to assign "any" value
+                            auto arrayValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(val);
+                            //ExprEngine::ValuePtr anyValue = getValueRangeFromValueType(data.getNewSymbolName(), tok2->astOperand1()->valueType(), *data.settings);
+                            arrayValue->assign(std::make_shared<ExprEngine::IntRange>("0", 0, 0), std::make_shared<ExprEngine::BailoutValue>());
+                            continue;
+                        }
+                    }
                     if (!Token::Match(tok2->astOperand1(), "%var%"))
                         throw VerifyException(tok2, "Unhandled assignment in loop");
                     if (!tok2->astOperand1()->variable())
@@ -1608,6 +1941,9 @@ static void execute(const Token *start, const Token *end, Data &data)
                     if (changedVariables.find(varid) != changedVariables.end())
                         continue;
                     changedVariables.insert(varid);
+                    auto oldValue = data.getValue(varid, nullptr, nullptr);
+                    if (oldValue && oldValue->isUninit())
+                        call(data.callbacks, tok2->astOperand1(), oldValue, &data);
                     data.assignValue(tok2, varid, getValueRangeFromValueType(data.getNewSymbolName(), tok2->astOperand1()->valueType(), *data.settings));
                 } else if (Token::Match(tok2, "++|--") && tok2->astOperand1() && tok2->astOperand1()->variable()) {
                     // give variable "any" value
@@ -1616,6 +1952,9 @@ static void execute(const Token *start, const Token *end, Data &data)
                     if (changedVariables.find(varid) != changedVariables.end())
                         continue;
                     changedVariables.insert(varid);
+                    auto oldValue = data.getValue(varid, nullptr, nullptr);
+                    if (oldValue && oldValue->type == ExprEngine::ValueType::UninitValue)
+                        call(data.callbacks, tok2, oldValue, &data);
                     data.assignValue(tok2, varid, getValueRangeFromValueType(data.getNewSymbolName(), vartok->valueType(), *data.settings));
                 }
             }
@@ -1626,12 +1965,12 @@ static void execute(const Token *start, const Token *end, Data &data)
     }
 }
 
-void ExprEngine::executeAllFunctions(const Tokenizer *tokenizer, const Settings *settings, const std::vector<ExprEngine::Callback> &callbacks, std::ostream &report)
+void ExprEngine::executeAllFunctions(ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings, const std::vector<ExprEngine::Callback> &callbacks, std::ostream &report)
 {
     const SymbolDatabase *symbolDatabase = tokenizer->getSymbolDatabase();
     for (const Scope *functionScope : symbolDatabase->functionScopes) {
         try {
-            executeFunction(functionScope, tokenizer, settings, callbacks, report);
+            executeFunction(functionScope, errorLogger, tokenizer, settings, callbacks, report);
         } catch (const VerifyException &e) {
             // FIXME.. there should not be exceptions
             std::string functionName = functionScope->function->name();
@@ -1734,7 +2073,7 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
     return ExprEngine::ValuePtr();
 }
 
-void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *tokenizer, const Settings *settings, const std::vector<ExprEngine::Callback> &callbacks, std::ostream &report)
+void ExprEngine::executeFunction(const Scope *functionScope, ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings, const std::vector<ExprEngine::Callback> &callbacks, std::ostream &report)
 {
     if (!functionScope->bodyStart)
         return;
@@ -1745,33 +2084,22 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
         // TODO.. what about functions in headers?
         return;
 
-    if (!settings->checkDiff.empty()) {
-        const std::string filename = tokenizer->list.getFiles().at(functionScope->bodyStart->fileIndex());
-        bool check = false;
-        for (const auto &diff: settings->checkDiff) {
-            if (diff.filename != filename)
-                continue;
-            if (diff.fromLine > functionScope->bodyEnd->linenr())
-                continue;
-            if (diff.toLine < functionScope->bodyStart->linenr())
-                continue;
-            check = true;
-            break;
-        }
-        if (!check)
-            return;
-    }
+    const std::string currentFunction = function->fullName();
 
     int symbolValueIndex = 0;
     TrackExecution trackExecution;
-    Data data(&symbolValueIndex, tokenizer, settings, callbacks, &trackExecution);
+    Data data(&symbolValueIndex, errorLogger, tokenizer, settings, currentFunction, callbacks, &trackExecution);
 
     for (const Variable &arg : function->argumentList)
         data.assignValue(functionScope->bodyStart, arg.declarationId(), createVariableValue(arg, data));
 
+    data.contractConstraints(function, executeExpression1);
+
     try {
         execute(functionScope->bodyStart, functionScope->bodyEnd, data);
     } catch (VerifyException &e) {
+        if (settings->debugBugHunting)
+            report << "VerifyException tok.line:" << e.tok->linenr() << " what:" << e.what << "\n";
         trackExecution.setAbortLine(e.tok->linenr());
         auto bailoutValue = std::make_shared<BailoutValue>();
         for (const Token *tok = e.tok; tok != functionScope->bodyEnd; tok = tok->next()) {
@@ -1798,12 +2126,8 @@ void ExprEngine::executeFunction(const Scope *functionScope, const Tokenizer *to
 
     // Write a report
     if (bugHuntingReport) {
-        report << "[function-report] "
-               << Path::stripDirectoryPart(tokenizer->list.getFiles().at(functionScope->bodyStart->fileIndex())) << ":"
-               << functionScope->bodyStart->linenr() << ":"
-               << function->name()
-               << (trackExecution.isAllOk() ? " is safe" : " is not safe")
-               << std::endl;
+        for (const std::string &f: trackExecution.getMissingContracts())
+            report << "[missing contract] " << f << std::endl;
     }
 }
 
@@ -1823,6 +2147,10 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             return;
         if (tok->hasKnownIntValue() && tok->getKnownIntValue() != 0)
             return;
+        if (tok->isImpossibleIntValue(0))
+            return;
+        if (value.isUninit())
+            return;
         float f = getKnownFloatValue(tok, 0.0f);
         if (f > 0.0f || f < 0.0f)
             return;
@@ -1834,7 +2162,12 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             dataBase->addError(tok->linenr());
             std::list<const Token*> callstack{settings->clang ? tok : tok->astParent()};
             const char * const id = (tok->valueType() && tok->valueType()->isFloat()) ? "bughuntingDivByZeroFloat" : "bughuntingDivByZero";
+            const bool bailout = (value.type == ExprEngine::ValueType::BailoutValue);
             ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, id, "There is division, cannot determine that there can't be a division by zero.", CWE(369), false);
+            if (!bailout)
+                errmsg.function = dataBase->currentFunction;
+            else
+                errmsg.incomplete = bailout;
             errorLogger->reportErr(errmsg);
         }
     };
@@ -1888,7 +2221,6 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
     };
 #endif
 
-#ifdef BUG_HUNTING_UNINIT
     std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> uninit = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
         if (!tok->astParent())
             return;
@@ -1952,7 +2284,6 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
         ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingUninit", "Cannot determine that '" + tok->expressionString() + "' is initialized", CWE_USE_OF_UNINITIALIZED_VARIABLE, false);
         errorLogger->reportErr(errmsg);
     };
-#endif
 
     std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> checkFunctionCall = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
         if (!Token::Match(tok->astParent(), "[(,]"))
@@ -2041,7 +2372,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
                 err |= value.isEqual(dataBase, MathLib::toLongNumber(invalidArgValue.op2));
                 bad = "range " + invalidArgValue.op1 + "-" + invalidArgValue.op2;
                 break;
-            };
+            }
 
             if (err) {
                 dataBase->addError(tok->linenr());
@@ -2052,7 +2383,6 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             }
         }
 
-#ifdef BUG_HUNTING_UNINIT
         // Uninitialized function argument..
         if (settings->library.isuninitargbad(parent->astOperand1(), num) && settings->library.isnullargbad(parent->astOperand1(), num) && value.type == ExprEngine::ValueType::ArrayValue) {
             const ExprEngine::ArrayValue &arrayValue = static_cast<const ExprEngine::ArrayValue &>(value);
@@ -2067,7 +2397,6 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
                 }
             }
         }
-#endif
     };
 
     std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> checkAssignment = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
@@ -2109,12 +2438,10 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
 #ifdef BUG_HUNTING_INTEGEROVERFLOW
     callbacks.push_back(integerOverflow);
 #endif
-#ifdef BUG_HUNTING_UNINIT
     callbacks.push_back(uninit);
-#endif
 
     std::ostringstream report;
-    ExprEngine::executeAllFunctions(tokenizer, settings, callbacks, report);
+    ExprEngine::executeAllFunctions(errorLogger, tokenizer, settings, callbacks, report);
     if (settings->bugHuntingReport.empty())
         std::cout << report.str();
     else if (errorLogger)

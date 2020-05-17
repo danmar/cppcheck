@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <list>
+#include <string>
 
 static std::vector<std::string> getnames(const char *names)
 {
@@ -500,6 +501,14 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                     const char* const associative = containerNode->Attribute("associative");
                     if (associative)
                         container.stdAssociativeLike = std::string(associative) == "std-like";
+                    const char* const unstable = containerNode->Attribute("unstable");
+                    if (unstable) {
+                        std::string unstableType = unstable;
+                        if (unstableType.find("erase") != std::string::npos)
+                            container.unstableErase = true;
+                        if (unstableType.find("insert") != std::string::npos)
+                            container.unstableInsert = true;
+                    }
                 } else
                     unknown_elements.insert(containerNodeName);
             }

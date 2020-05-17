@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,12 +42,12 @@ private:
         TEST_CASE(ispositive);
         TEST_CASE(isFloat);
         TEST_CASE(isDecimalFloat);
-        TEST_CASE(isGreater)
-        TEST_CASE(isGreaterEqual)
-        TEST_CASE(isEqual)
-        TEST_CASE(isNotEqual)
-        TEST_CASE(isLess)
-        TEST_CASE(isLessEqual)
+        TEST_CASE(isGreater);
+        TEST_CASE(isGreaterEqual);
+        TEST_CASE(isEqual);
+        TEST_CASE(isNotEqual);
+        TEST_CASE(isLess);
+        TEST_CASE(isLessEqual);
         TEST_CASE(calculate);
         TEST_CASE(calculate1);
         TEST_CASE(typesuffix);

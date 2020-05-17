@@ -35,7 +35,7 @@ static std::string generateExpression2_lvalue(const uint8_t *data, size_t dataSi
     return "var" + std::to_string(1 + getValue(data, dataSize, 5));
 }
 
-static std::string generateExpression2_Op(const uint8_t *data, size_t dataSize, int numberOfGlobalConstants)
+static std::string generateExpression2_Op(const uint8_t *data, size_t dataSize, uint8_t numberOfGlobalConstants)
 {
     std::ostringstream code;
     switch (getValue(data, dataSize, 3)) {
@@ -48,14 +48,14 @@ static std::string generateExpression2_Op(const uint8_t *data, size_t dataSize, 
     case 2:
         code << (getValue(data, dataSize, 0x80) * 0x80 + getValue(data, dataSize, 0x80));
         break;
-    };
+    }
     return code.str();
 }
 
-static std::string generateExpression2_Expr(const uint8_t *data, size_t dataSize, int numberOfGlobalConstants, int depth=0)
+static std::string generateExpression2_Expr(const uint8_t *data, size_t dataSize, uint8_t numberOfGlobalConstants, int depth=0)
 {
     ++depth;
-    const unsigned int type = (depth > 3) ? 0 : getValue(data, dataSize, 3);
+    const int type = (depth > 3) ? 0 : getValue(data, dataSize, 3);
     const char binop[] = "=<>+-*/%&|^";
     const char *unop[] = {"++","--","()","~"};
 
@@ -85,13 +85,13 @@ static std::string generateExpression2_Expr(const uint8_t *data, size_t dataSize
     }
     default:
         break;
-    };
+    }
 
     return "0";
 }
 
 
-static std::string generateExpression2_Cond(const uint8_t *data, size_t dataSize, int numberOfGlobalConstants)
+static std::string generateExpression2_Cond(const uint8_t *data, size_t dataSize, uint8_t numberOfGlobalConstants)
 {
     const char *comp[] = {"==", "!=", "<", "<=", ">", ">="};
     const int i = getValue(data, dataSize, 6);
@@ -111,7 +111,7 @@ static std::string functionStart()
 static std::string generateExpression2_conditionalCode(const std::string &indent,
         const uint8_t *data,
         size_t dataSize,
-        int numberOfGlobalConstants)
+        uint8_t numberOfGlobalConstants)
 {
     std::ostringstream code;
 
@@ -166,7 +166,7 @@ std::string generateCode2(const uint8_t *data, size_t dataSize)
     std::ostringstream code;
 
     // create global constants
-    constexpr int numberOfGlobalConstants = 0;
+    constexpr uint8_t numberOfGlobalConstants = 0;
     /*
       const int numberOfGlobalConstants = getValue(data, dataSize, 5);
       for (int nr = 1; nr <= numberOfGlobalConstants; nr++) {

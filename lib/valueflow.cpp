@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -91,6 +91,7 @@
 #include "token.h"
 #include "tokenlist.h"
 #include "utils.h"
+#include "valueptr.h"
 
 #include <algorithm>
 #include <cassert>
@@ -2381,12 +2382,13 @@ struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
     virtual bool isAlias(const Token* tok) const OVERRIDE {
         if (value.isLifetimeValue())
             return false;
+        const std::list<ValueFlow::Value> vals{value};
         for (const auto& p:getVars()) {
             nonneg int varid = p.first;
             const Variable* var = p.second;
             if (tok->varId() == varid)
                 return true;
-            if (isAliasOf(var, tok, varid, {value}))
+            if (isAliasOf(var, tok, varid, vals))
                 return true;
         }
         return false;
@@ -3384,9 +3386,17 @@ static void valueFlowLifetimeConstructor(Token* tok, TokenList* tokenlist, Error
         valueFlowLifetimeConstructor(tok, Token::typeOf(parent->previous()), tokenlist, errorLogger, settings);
     } else if (Token::simpleMatch(tok, "{") && hasInitList(parent)) {
         std::vector<const Token *> args = getArguments(tok);
-        for (const Token *argtok : args) {
-            LifetimeStore ls{argtok, "Passed to initializer list.", ValueFlow::Value::LifetimeKind::Object};
-            ls.byVal(tok, tokenlist, errorLogger, settings);
+        // Assume range constructor if passed a pair of iterators
+        if (astIsContainer(parent) && args.size() == 2 && astIsIterator(args[0]) && astIsIterator(args[1])) {
+            for (const Token *argtok : args) {
+                LifetimeStore ls{argtok, "Passed to initializer list.", ValueFlow::Value::LifetimeKind::Object};
+                ls.byDerefCopy(tok, tokenlist, errorLogger, settings);
+            }
+        } else {
+            for (const Token *argtok : args) {
+                LifetimeStore ls{argtok, "Passed to initializer list.", ValueFlow::Value::LifetimeKind::Object};
+                ls.byVal(tok, tokenlist, errorLogger, settings);
+            }
         }
     } else if (const Type* t = Token::typeOf(tok->previous())) {
         valueFlowLifetimeConstructor(tok, t, tokenlist, errorLogger, settings);
@@ -3705,7 +3715,11 @@ static void valueFlowForwardAssign(Token * const               tok,
                                    ErrorLogger * const         errorLogger,
                                    const Settings * const      settings)
 {
-    const Token * const endOfVarScope = var->scope()->bodyEnd;
+    const Token * endOfVarScope = nullptr;
+    if (var->isLocal())
+        endOfVarScope = var->scope()->bodyEnd;
+    if (!endOfVarScope)
+        endOfVarScope = tok->scope()->bodyEnd;
     if (std::any_of(values.begin(), values.end(), std::mem_fn(&ValueFlow::Value::isLifetimeValue))) {
         valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
         values.remove_if(std::mem_fn(&ValueFlow::Value::isLifetimeValue));
@@ -3914,6 +3928,8 @@ struct ValueFlowConditionHandler {
 
                 Condition cond = parse(tok);
                 if (!cond.vartok)
+                    continue;
+                if (cond.vartok->variable() && cond.vartok->variable()->isVolatile())
                     continue;
                 if (cond.true_values.empty() || cond.false_values.empty())
                     continue;
@@ -4496,12 +4512,15 @@ static void valueFlowForLoopSimplifyAfter(Token *fortok, nonneg int varid, const
     else
         endToken = fortok->scope()->bodyEnd;
 
+    Token* blockTok = fortok->linkAt(1)->linkAt(1);
     std::list<ValueFlow::Value> values;
     values.emplace_back(num);
     values.back().errorPath.emplace_back(fortok,"After for loop, " + var->name() + " has value " + values.back().infoString());
 
-    valueFlowForwardVariable(
-        fortok->linkAt(1)->linkAt(1)->next(), endToken, var, varid, values, false, false, tokenlist, errorLogger, settings);
+    if (blockTok != endToken) {
+        valueFlowForwardVariable(
+            blockTok->next(), endToken, var, varid, values, false, false, tokenlist, errorLogger, settings);
+    }
 }
 
 static void valueFlowForLoop(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
@@ -4601,13 +4620,14 @@ struct MultiValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
     }
 
     virtual bool isAlias(const Token* tok) const OVERRIDE {
+        std::list<ValueFlow::Value> vals;
+        std::transform(values.begin(), values.end(), std::back_inserter(vals), SelectMapValues{});
+
         for (const auto& p:getVars()) {
             nonneg int varid = p.first;
             const Variable* var = p.second;
             if (tok->varId() == varid)
                 return true;
-            std::list<ValueFlow::Value> vals;
-            std::transform(values.begin(), values.end(), std::back_inserter(vals), SelectMapValues{});
             if (isAliasOf(var, tok, varid, vals))
                 return true;
         }
@@ -4702,9 +4722,26 @@ static void valueFlowInjectParameter(TokenList* tokenlist, ErrorLogger* errorLog
         args.back()[p.first] = p.second.front();
     }
     for (const auto& p:vars) {
+        if (args.size() > 256) {
+            std::string fname = "<unknown>";
+            Function* f = functionScope->function;
+            if (f)
+                fname = f->name();
+            if (settings->debugwarnings)
+                bailout(tokenlist, errorLogger, functionScope->bodyStart, "Too many argument passed to " + fname);
+            break;
+        }
         std::for_each(std::next(p.second.begin()), p.second.end(), [&](const ValueFlow::Value& value) {
             Args new_args;
             for (auto arg:args) {
+                if (value.path != 0) {
+                    for (const auto& q:arg) {
+                        if (q.second.path == 0)
+                            continue;
+                        if (q.second.path != value.path)
+                            return;
+                    }
+                }
                 arg[p.first] = value;
                 new_args.push_back(arg);
             }
@@ -5458,7 +5495,7 @@ static bool isContainerSizeChanged(nonneg int varId, const Token *start, const T
             case Library::Container::Action::FIND:
             case Library::Container::Action::CHANGE_CONTENT:
                 break;
-            };
+            }
         }
         if (isContainerSizeChangedByFunction(tok, depth))
             return true;
@@ -5755,7 +5792,7 @@ static void valueFlowDynamicBufferSize(TokenList *tokenlist, SymbolDatabase *sym
                         sizeValue = Token::getStrLength(value.tokvalue) + 1; // Add one for the null terminator
                 }
                 break;
-            };
+            }
             if (sizeValue < 0)
                 continue;
 
@@ -5805,7 +5842,7 @@ static bool getMinMaxValues(const ValueType *vt, const cppcheck::Platform &platf
         break;
     default:
         return false;
-    };
+    }
 
     if (bits == 1) {
         *minValue = 0;
@@ -6020,7 +6057,7 @@ std::string ValueFlow::Value::infoString() const
         return "size=" + MathLib::toString(intvalue);
     case LIFETIME:
         return "lifetime=" + tokvalue->str();
-    };
+    }
     throw InternalError(nullptr, "Invalid ValueFlow Value type");
 }
 

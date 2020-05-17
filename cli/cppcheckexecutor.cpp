@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,6 @@
 #include "pathmatch.h"
 #include "preprocessor.h"
 #include "settings.h"
-#include "standards.h"
 #include "suppressions.h"
 #include "threadexecutor.h"
 #include "utils.h"
@@ -216,15 +215,23 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     mSettings = &settings;
 
     if (!parseFromArgs(&cppCheck, argc, argv)) {
+        mSettings = nullptr;
         return EXIT_FAILURE;
     }
     if (Settings::terminated()) {
+        mSettings = nullptr;
         return EXIT_SUCCESS;
     }
-    if (cppCheck.settings().exceptionHandling) {
-        return check_wrapper(cppCheck, argc, argv);
-    }
-    return check_internal(cppCheck, argc, argv);
+
+    int ret;
+
+    if (cppCheck.settings().exceptionHandling)
+        ret = check_wrapper(cppCheck, argc, argv);
+    else
+        ret = check_internal(cppCheck, argc, argv);
+
+    mSettings = nullptr;
+    return ret;
 }
 
 void CppCheckExecutor::setSettings(const Settings &settings)

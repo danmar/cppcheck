@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -541,6 +541,12 @@ public:
     void isAttributeNodiscard(const bool value) {
         setFlag(fIsAttributeNodiscard, value);
     }
+    bool isMaybeUnused() const {
+        return getFlag(fIsMaybeUnused);
+    }
+    void isMaybeUnused(const bool value) {
+        setFlag(fIsMaybeUnused, value);
+    }
     void setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint value) {
         mImpl->setCppcheckAttribute(type, value);
     }
@@ -1026,13 +1032,27 @@ public:
         return mImpl->mValues->front().intvalue;
     }
 
+    bool isImpossibleIntValue(const MathLib::bigint val) const {
+        if (!mImpl->mValues)
+            return false;
+        for (const auto &v: *mImpl->mValues) {
+            if (v.isIntValue() && v.isImpossible() && v.intvalue == val)
+                return true;
+            if (v.isIntValue() && v.bound == ValueFlow::Value::Bound::Lower && val > v.intvalue)
+                return true;
+            if (v.isIntValue() && v.bound == ValueFlow::Value::Bound::Upper && val < v.intvalue)
+                return true;
+        }
+        return false;
+    }
+
     const ValueFlow::Value * getValue(const MathLib::bigint val) const {
         if (!mImpl->mValues)
             return nullptr;
         const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value& value) {
             return value.isIntValue() && !value.isImpossible() && value.intvalue == val;
         });
-        return it == mImpl->mValues->end() ? nullptr : &*it;;
+        return it == mImpl->mValues->end() ? nullptr : &*it;
     }
 
     const ValueFlow::Value * getMaxValue(bool condition) const {
@@ -1058,7 +1078,7 @@ public:
             return value.isMovedValue() && !value.isImpossible() &&
                    value.moveKind != ValueFlow::Value::MoveKind::NonMovedVariable;
         });
-        return it == mImpl->mValues->end() ? nullptr : &*it;;
+        return it == mImpl->mValues->end() ? nullptr : &*it;
     }
 
     const ValueFlow::Value * getValueLE(const MathLib::bigint val, const Settings *settings) const;
@@ -1155,6 +1175,7 @@ private:
         fIncompleteVar          = (1 << 25),
         fConstexpr              = (1 << 26),
         fExternC                = (1 << 27),
+        fIsMaybeUnused          = (1 << 28), // [[maybe_unsed]]
     };
 
     Token::Type mTokType;

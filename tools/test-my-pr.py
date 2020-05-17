@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Run this script from your branch with proposed Cppcheck patch to verify your
-# patch against current master. It will compare output of testing bunch of
+# patch against current master. It will compare output of testing a bunch of
 # opensource packages
 
 import donate_cpu_lib as lib
@@ -10,6 +10,13 @@ import os
 import sys
 import random
 import subprocess
+
+
+def format_float(a, b=1):
+    if a > 0 and b > 0:
+        return '{:.2f}'.format(a / b)
+    return 'N/A'
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Run this script from your branch with proposed Cppcheck patch to verify your patch against current master. It will compare output of testing bunch of opensource packages')
@@ -28,10 +35,14 @@ if __name__ == "__main__":
 
     jobs = '-j' + str(args.j)
     result_file = os.path.join(work_path, args.o)
+    (f, ext) = os.path.splitext(result_file)
+    timing_file = f + '_timing' + ext
     your_repo_dir = os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0])))
 
     if os.path.exists(result_file):
         os.remove(result_file)
+    if os.path.exists(timing_file):
+        os.remove(timing_file)
 
     if not lib.get_cppcheck(master_dir, work_path):
         print('Failed to clone master of Cppcheck, retry later')
@@ -42,6 +53,11 @@ if __name__ == "__main__":
         commit_id = (subprocess.check_output(['git', 'merge-base', 'origin/master', 'HEAD'])).strip().decode('ascii')
         with open(result_file, 'a') as myfile:
             myfile.write('Common ancestor: ' + commit_id + '\n\n')
+        package_width = '140'
+        timing_width = '>7'
+        with open(timing_file, 'a') as myfile:
+            myfile.write('{:{package_width}} {:{timing_width}} {:{timing_width}} {:{timing_width}}\n'.format(
+                'Package', 'master', 'your', 'Factor', package_width=package_width, timing_width=timing_width))
 
         os.chdir(master_dir)
         subprocess.check_call(['git', 'checkout', '-f', commit_id])
@@ -91,7 +107,7 @@ if __name__ == "__main__":
         your_timeout = False
 
         libraries = lib.get_libraries()
-        c, errout, info, time, cppcheck_options, timing_info = lib.scan_package(work_path, master_dir, jobs, libraries)
+        c, errout, info, time_master, cppcheck_options, timing_info = lib.scan_package(work_path, master_dir, jobs, libraries)
         if c < 0:
             if c == -101 and 'error: could not find or open any of the paths given.' in errout:
                 # No sourcefile found (for example only headers present)
@@ -104,7 +120,7 @@ if __name__ == "__main__":
                 master_crashed = True
         results_to_diff.append(errout)
 
-        c, errout, info, time, cppcheck_options, timing_info = lib.scan_package(work_path, your_repo_dir, jobs, libraries)
+        c, errout, info, time_your, cppcheck_options, timing_info = lib.scan_package(work_path, your_repo_dir, jobs, libraries)
         if c < 0:
             if c == -101 and 'error: could not find or open any of the paths given.' in errout:
                 # No sourcefile found (for example only headers present)
@@ -143,6 +159,12 @@ if __name__ == "__main__":
             if diff != '':
                 myfile.write('diff:\n' + diff + '\n')
 
+        with open(timing_file, 'a') as myfile:
+            myfile.write('{:{package_width}} {:{timing_width}} {:{timing_width}} {:{timing_width}}\n'.format(
+                package, format_float(time_master),
+                format_float(time_your), format_float(time_your, time_master),
+                package_width=package_width, timing_width=timing_width))
+
         packages_processed += 1
         print(str(packages_processed) + ' of ' + str(args.p) + ' packages processed\n')
 
@@ -152,6 +174,6 @@ if __name__ == "__main__":
 
     with open(result_file, 'a') as myfile:
         myfile.write('\n\ntimeouts\n')
-        myfile.write('\n'.join(timeouts))
+        myfile.write('\n'.join(timeouts) + '\n')
 
     print('Result saved to: ' + result_file)

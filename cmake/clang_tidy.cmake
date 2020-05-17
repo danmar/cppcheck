@@ -1,0 +1,13 @@
+find_program(CLANG_TIDY NAMES clang-tidy clang-tidy-10 clang-tidy-9 clang-tidy-8)
+message(STATUS "CLANG_TIDY=${CLANG_TIDY}")
+if (CLANG_TIDY)
+    set(CLANG_TIDY_SRCS ${CMAKE_SOURCE_DIR}/cli/*.cpp ${CMAKE_SOURCE_DIR}/lib/*.cpp)
+    if (BUILD_GUI)
+        list(APPEND CLANG_TIDY_SRCS ${CMAKE_SOURCE_DIR}/gui/*.cpp)
+    endif()
+    if (BUILD_TESTS)
+        list(APPEND CLANG_TIDY_SRCS ${CMAKE_SOURCE_DIR}/test/*.cpp)
+    endif()
+
+    add_custom_target(run-clang-tidy ${CLANG_TIDY} -p=${CMAKE_BINARY_DIR} ${CLANG_TIDY_SRCS})
+endif()

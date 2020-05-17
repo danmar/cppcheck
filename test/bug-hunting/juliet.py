@@ -60,19 +60,18 @@ def check(tc:str, warning_id:str):
         if warning_id in stderr:
             num_ok += 1
         else:
-            print(f'fail: ' + ' '.join(cmd))
+            print('fail: ' + ' '.join(cmd))
             num_failed += 1
 
     cwepos = tc.find('CWE')
     cwe = tc[cwepos:cwepos+6]
 
-    return f'{cwe} ok:{num_ok}, fail:{num_failed}\n'
+    print('%s ok:%i, fail:%i' % (cwe, num_ok, num_failed))
+    if num_failed != 0:
+        sys.exit(1)
 
 
-final_report = ''
-final_report += check('C/testcases/CWE369_Divide_by_Zero/s*/*.c', 'bughuntingDivByZero')
-#final_report += check('C/testcases/CWE457_Use_of_Uninitialized_Variable/s*/*.c', 'verificationUninit')
-
-print(final_report)
+check('C/testcases/CWE369_Divide_by_Zero/s*/*.c', 'bughuntingDivByZero')
+#check('C/testcases/CWE457_Use_of_Uninitialized_Variable/s*/*.c', 'verificationUninit')
 
 
