@@ -167,7 +167,12 @@ public:
         return mAddons;
     }
 
-    static QString getAddonFilePath(QString filesDir, QString addon);
+    /**
+    * @brief Get path to addon python script
+    * @param filesDir Data files folder set by --data-dir
+    * @param addon addon i.e. "misra" to lookup
+    */
+    static QString getAddonFilePath(QString filesDir, const QString &addon);
 
     /**
     * @brief Get list of addons and tools.
