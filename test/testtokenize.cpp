@@ -6633,11 +6633,11 @@ private:
         ASSERT_EQUALS("; CONST struct ABC abc ;",
                       tokenizeAndStringify("; CONST struct ABC abc ;"));
 
-        ASSERT_THROW(tokenizeAndStringify("class A {\n"
-                                          "  UNKNOWN_MACRO(A)\n"
-                                          "private:\n"
-                                          "  int x;\n"
-                                          "};"), InternalError);
+        ASSERT_NO_THROW(tokenizeAndStringify("class A {\n"
+                                             "  UNKNOWN_MACRO(A)\n" // <- this macro is ignored
+                                             "private:\n"
+                                             "  int x;\n"
+                                             "};"));
 
         ASSERT_THROW(tokenizeAndStringify("MACRO(test) void test() { }"), InternalError); // #7931
 
