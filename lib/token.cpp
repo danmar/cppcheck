@@ -1540,14 +1540,11 @@ std::string Token::astStringVerbose() const
 }
 
 std::string Token::astStringZ3() const {
-    if (astOperand1()) {
-        if (astOperand2())
-            return "(" + str() + " " + astOperand1()->astStringZ3() + " " + astOperand2()->astStringZ3() + ")";
-        else
-            return "(" + str() + " " + astOperand1()->astStringZ3() + ")";
-    }
-    else
+    if (!astOperand1())
         return str();
+    if (!astOperand2())
+        return "(" + str() + " " + astOperand1()->astStringZ3() + ")";
+    return "(" + str() + " " + astOperand1()->astStringZ3() + " " + astOperand2()->astStringZ3() + ")";
 }
 
 void Token::printValueFlow(bool xml, std::ostream &out) const
