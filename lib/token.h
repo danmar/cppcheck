@@ -42,6 +42,7 @@ class Settings;
 class Type;
 class ValueType;
 class Variable;
+class TokenList;
 
 /**
  * @brief This struct stores pointers to the front and back tokens of the list this token is in.
@@ -49,6 +50,7 @@ class Variable;
 struct TokensFrontBack {
     Token *front;
     Token *back;
+    const TokenList* list;
 };
 
 struct ScopeInfo2 {

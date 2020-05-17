@@ -81,6 +81,8 @@ void Token::update_property_info()
         else if (std::isalpha((unsigned char)mStr[0]) || mStr[0] == '_' || mStr[0] == '$') { // Name
             if (mImpl->mVarId)
                 tokType(eVariable);
+            else if (mTokensFrontBack && mTokensFrontBack->list && mTokensFrontBack->list->isKeyword(mStr))
+                tokType(eKeyword);
             else if (mTokType != eVariable && mTokType != eFunction && mTokType != eType && mTokType != eKeyword)
                 tokType(eName);
         } else if (std::isdigit((unsigned char)mStr[0]) || (mStr.length() > 1 && mStr[0] == '-' && std::isdigit((unsigned char)mStr[1])))
@@ -401,7 +403,7 @@ static int multiComparePercent(const Token *tok, const char*& haystack, nonneg i
         // Type (%type%)
     {
         haystack += 5;
-        if (tok->isName() && tok->varId() == 0 && !tok->isKeyword())
+        if (tok->isName() && tok->varId() == 0 && (tok->str() != "delete" || !tok->isKeyword())) // HACK: this is legacy behaviour, it should return false for all keywords, ecxcept types
             return 1;
     }
     break;
@@ -1022,7 +1024,7 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
 
         if (mImpl->mScopeInfo) {
             // If the brace is immediately closed there is no point opening a new scope for it
-            if (tokenStr == "{") {
+            if (newToken->str() == "{") {
                 std::string nextScopeNameAddition;
                 // This might be the opening of a member function
                 Token *tok1 = newToken;
@@ -1079,7 +1081,7 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
                 nextScopeNameAddition = "";
 
                 newToken->scopeInfo(newScopeInfo);
-            } else if (tokenStr == "}") {
+            } else if (newToken->str() == "}") {
                 Token* matchingTok = newToken->previous();
                 int depth = 0;
                 while (matchingTok && (depth != 0 || !Token::simpleMatch(matchingTok, "{"))) {
@@ -1096,7 +1098,7 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
                 } else {
                     newToken->mImpl->mScopeInfo = mImpl->mScopeInfo;
                 }
-                if (tokenStr == ";") {
+                if (newToken->str() == ";") {
                     const Token* statementStart;
                     for (statementStart = newToken; statementStart->previous() && !Token::Match(statementStart->previous(), ";|{"); statementStart = statementStart->previous());
                     if (Token::Match(statementStart, "using namespace %name% ::|;")) {

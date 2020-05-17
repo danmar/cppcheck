@@ -197,6 +197,8 @@ private:
     /** Disable assignment operator, no implementation */
     TokenList &operator=(const TokenList &);
 
+    void determineCppC();
+
     /** Token list */
     TokensFrontBack mTokensFrontBack;
 

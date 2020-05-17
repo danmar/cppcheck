@@ -35,6 +35,7 @@ private:
         TEST_CASE(testaddtoken1);
         TEST_CASE(testaddtoken2);
         TEST_CASE(inc);
+        TEST_CASE(isKeyword);
     }
 
     // inspired by #5895
@@ -64,6 +65,48 @@ private:
         tokenlist.createTokens(istr, "a.cpp");
 
         ASSERT(Token::simpleMatch(tokenlist.front(), "a + + 1 ; 1 + + b ;"));
+    }
+
+    void isKeyword() {
+
+        const char code[] = "for a int delete true";
+
+        {
+            TokenList tokenlist(&settings);
+            std::istringstream istr(code);
+            tokenlist.createTokens(istr, "a.c");
+
+            ASSERT_EQUALS(true, tokenlist.front()->isKeyword());
+            ASSERT_EQUALS(true, tokenlist.front()->isControlFlowKeyword());
+            ASSERT_EQUALS(false, tokenlist.front()->next()->isKeyword());
+            ASSERT_EQUALS(false, tokenlist.front()->next()->isControlFlowKeyword());
+            ASSERT_EQUALS(false, tokenlist.front()->tokAt(2)->isKeyword());
+            ASSERT_EQUALS(true, tokenlist.front()->tokAt(2)->tokType() == Token::eType);
+            ASSERT_EQUALS(false, tokenlist.front()->tokAt(2)->isControlFlowKeyword());
+            ASSERT_EQUALS(false, tokenlist.front()->tokAt(3)->isKeyword());
+            ASSERT_EQUALS(false, tokenlist.front()->tokAt(3)->isControlFlowKeyword());
+            ASSERT_EQUALS(false, tokenlist.front()->tokAt(4)->isKeyword());
+            ASSERT_EQUALS(true, tokenlist.front()->tokAt(4)->isLiteral());
+            ASSERT_EQUALS(false, tokenlist.front()->tokAt(4)->isControlFlowKeyword());
+        }
+        {
+            TokenList tokenlist(&settings);
+            std::istringstream istr(code);
+            tokenlist.createTokens(istr, "a.cpp");
+
+            ASSERT_EQUALS(true, tokenlist.front()->isKeyword());
+            ASSERT_EQUALS(true, tokenlist.front()->isControlFlowKeyword());
+            ASSERT_EQUALS(false, tokenlist.front()->next()->isKeyword());
+            ASSERT_EQUALS(false, tokenlist.front()->next()->isControlFlowKeyword());
+            ASSERT_EQUALS(false, tokenlist.front()->tokAt(2)->isKeyword());
+            ASSERT_EQUALS(true, tokenlist.front()->tokAt(2)->tokType() == Token::eType);
+            ASSERT_EQUALS(false, tokenlist.front()->tokAt(2)->isControlFlowKeyword());
+            ASSERT_EQUALS(true, tokenlist.front()->tokAt(3)->isKeyword());
+            ASSERT_EQUALS(false, tokenlist.front()->tokAt(3)->isControlFlowKeyword());
+            ASSERT_EQUALS(false, tokenlist.front()->tokAt(4)->isKeyword());
+            ASSERT_EQUALS(true, tokenlist.front()->tokAt(4)->isLiteral());
+            ASSERT_EQUALS(false, tokenlist.front()->tokAt(4)->isControlFlowKeyword());
+        }
     }
 };
 

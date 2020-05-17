@@ -9319,7 +9319,7 @@ void Tokenizer::reportUnknownMacros()
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "%name% %num%")) {
             // A keyword is not an unknown macro
-            if (list.isKeyword(tok->str()))
+            if (tok->isKeyword())
                 continue;
 
             if (Token::Match(tok->previous(), "%op%|("))
@@ -9372,7 +9372,7 @@ void Tokenizer::reportUnknownMacros()
 
         if (Token::Match(tok, "%name% (") && tok->isUpperCaseName() && Token::simpleMatch(tok->linkAt(1), ") (") && Token::simpleMatch(tok->linkAt(1)->linkAt(1), ") {")) {
             // A keyword is not an unknown macro
-            if (list.isKeyword(tok->str()))
+            if (tok->isKeyword())
                 continue;
 
             const Token *bodyStart = tok->linkAt(1)->linkAt(1)->tokAt(2);
@@ -9392,7 +9392,7 @@ void Tokenizer::reportUnknownMacros()
     // String concatenation with unknown macros
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "%str% %name% (") && Token::Match(tok->linkAt(2), ") %str%")) {
-            if (list.isKeyword(tok->next()->str()))
+            if (tok->next()->isKeyword())
                 continue;
             unknownMacroError(tok->next());
         }
@@ -9585,8 +9585,6 @@ void Tokenizer::findGarbageCode() const
             if (tok->str() != ">" && !Token::simpleMatch(tok->previous(), "operator"))
                 syntaxError(tok, tok->str() + " " + tok->next()->str());
         }
-        if (Token::Match(tok, "( %any% )") && tok->next()->isKeyword() && !Token::simpleMatch(tok->next(), "void"))
-            syntaxError(tok);
         if (Token::Match(tok, "%num%|%bool%|%char%|%str% %num%|%bool%|%char%|%str%") && !Token::Match(tok, "%str% %str%"))
             syntaxError(tok);
         if (Token::Match(tok, "%assign% typename|class %assign%"))
