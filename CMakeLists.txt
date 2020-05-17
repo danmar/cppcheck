@@ -35,3 +35,5 @@ add_subdirectory(tools)
 
 include(cmake/printInfo.cmake)
 include(cmake/clang_tidy.cmake)
+
+include(CPack)
