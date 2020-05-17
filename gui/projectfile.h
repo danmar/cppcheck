@@ -167,6 +167,8 @@ public:
         return mAddons;
     }
 
+    static QString getAddonFilePath(QString filesDir, QString addon);
+
     /**
     * @brief Get list of addons and tools.
     * @return list of addons and tools.

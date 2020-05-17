@@ -995,3 +995,21 @@ void ProjectFile::SafeChecks::saveToXml(QXmlStreamWriter &xmlWriter) const
     }
     xmlWriter.writeEndElement();
 }
+
+QString ProjectFile::getAddonFilePath(QString filesDir, QString addon)
+{
+    if (!filesDir.endsWith("/"))
+        filesDir += "/";
+
+    QStringList searchPaths;
+    searchPaths << filesDir << (filesDir + "addons/") << (filesDir + "../addons/");
+
+    foreach (QString path, searchPaths) {
+        QString f = path + addon + ".py";
+        if (QFile(f).exists())
+            return f;
+    }
+
+    return QString();
+}
+

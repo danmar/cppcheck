@@ -451,7 +451,7 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
 
     //mThread->SetanalyzeProject(true);
     if (mProjectFile) {
-        mThread->setAddonsAndTools(mProjectFile->getAddonsAndTools(), mSettings->value(SETTINGS_MISRA_FILE).toString());
+        mThread->setAddonsAndTools(mProjectFile->getAddonsAndTools());
         QString clangHeaders = mSettings->value(SETTINGS_VS_INCLUDE_PATHS).toString();
         mThread->setClangIncludePaths(clangHeaders.split(";"));
         mThread->setSuppressions(mProjectFile->getSuppressions());
@@ -494,7 +494,7 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
 
     mThread->setFiles(fileNames);
     if (mProjectFile && !checkConfiguration)
-        mThread->setAddonsAndTools(mProjectFile->getAddonsAndTools(), mSettings->value(SETTINGS_MISRA_FILE).toString());
+        mThread->setAddonsAndTools(mProjectFile->getAddonsAndTools());
     mThread->setSuppressions(mProjectFile ? mProjectFile->getSuppressions() : QList<Suppressions::Suppression>());
     QDir inf(mCurrentDirectory);
     const QString checkPath = inf.canonicalPath();
@@ -916,6 +916,30 @@ Settings MainWindow::getCppcheckSettings()
         result.safeChecks.externalVariables = mProjectFile->safeChecks.externalVariables;
         foreach (QString s, mProjectFile->getCheckUnknownFunctionReturn())
             result.checkUnknownFunctionReturn.insert(s.toStdString());
+
+        QString filesDir(getDataDir(mSettings));
+        const QString pythonCmd = mSettings->value(SETTINGS_PYTHON_PATH).toString();
+        foreach (QString addon, mProjectFile->getAddons()) {
+            QString addonFilePath = ProjectFile::getAddonFilePath(filesDir, addon);
+            if (addonFilePath.isEmpty())
+                continue;
+
+            QString json;
+            json += "{ \"script\":\"" + addonFilePath + "\"";
+            if (!pythonCmd.isEmpty())
+                json += ", \"python\":\"" + pythonCmd + "\"";
+            QString misraFile = mSettings->value(SETTINGS_MISRA_FILE).toString();
+            if (addon == "misra" && !misraFile.isEmpty()) {
+                QString arg;
+                if (misraFile.endsWith(".pdf", Qt::CaseInsensitive))
+                    arg = "--misra-pdf=" + misraFile;
+                else
+                    arg = "--rule-texts=" + misraFile;
+                json += ", \"args\":[\"" + arg + "\"]";
+            }
+            json += " }";
+            result.addons.push_back(json.toStdString());
+        }
     }
 
     // Include directories (and files) are searched in listed order.
@@ -1518,7 +1542,7 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool check
 
     QDir::setCurrent(inf.absolutePath());
 
-    mThread->setAddonsAndTools(projectFile->getAddonsAndTools(), mSettings->value(SETTINGS_MISRA_FILE).toString());
+    mThread->setAddonsAndTools(projectFile->getAddonsAndTools());
     mUI.mResults->setTags(projectFile->getTags());
 
     // If the root path is not given or is not "current dir", use project

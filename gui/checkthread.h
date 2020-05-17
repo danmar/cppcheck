@@ -57,10 +57,6 @@ public:
         mAddonsAndTools = addonsAndTools;
     }
 
-    void setMisraFile(const QString &misraFile) {
-        mMisraFile = misraFile;
-    }
-
     void setDataDir(const QString &dataDir) {
         mDataDir = dataDir;
     }
@@ -92,18 +88,6 @@ public:
      * \return Command to run clang-tidy, empty if it is not found
      */
     static QString clangTidyCmd();
-
-    /**
-     * Determine command to run python
-     * \return Command to run python, empty if it is not found
-     */
-    static QString pythonCmd();
-
-    /**
-     * Look for addon and return path
-     * \return path to addon if found, empty if it is not found
-     */
-    static QString getAddonFilePath(const QString &dataDir, const QString &addonFile);
 
 signals:
 
@@ -144,7 +128,6 @@ protected:
 private:
     void runAddonsAndTools(const ImportProject::FileSettings *fileSettings, const QString &fileName);
 
-    void parseAddonErrors(QString err, const QString &tool);
     void parseClangErrors(const QString &tool, const QString &file0, QString err);
 
     bool isSuppressed(const Suppressions::ErrorMessage &errorMessage) const;
@@ -155,7 +138,6 @@ private:
     QString mDataDir;
     QStringList mClangIncludePaths;
     QList<Suppressions::Suppression> mSuppressions;
-    QString mMisraFile;
 };
 /// @}
 #endif // CHECKTHREAD_H

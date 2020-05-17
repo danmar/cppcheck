@@ -87,7 +87,41 @@ namespace {
             return "";
         }
 
+        std::string parseAddonInfo(const picojson::value &json, const std::string &fileName, const std::string &exename) {
+            std::string json_error = picojson::get_last_error();
+            if (!json_error.empty()) {
+                return "Loading " + fileName + " failed. " + json_error;
+            }
+            if (!json.is<picojson::object>())
+                return "Loading " + fileName + " failed. Bad json.";
+            picojson::object obj = json.get<picojson::object>();
+            if (obj.count("args")) {
+                if (!obj["args"].is<picojson::array>())
+                    return "Loading " + fileName + " failed. args must be array.";
+                for (const picojson::value &v : obj["args"].get<picojson::array>())
+                    args += " " + v.get<std::string>();
+            }
+
+            if (obj.count("python")) {
+                // Python was defined in the config file
+                if (obj["python"].is<picojson::array>()) {
+                    return "Loading " + fileName +" failed. python must not be an array.";
+                }
+                python = obj["python"].get<std::string>();
+            } else {
+                python = "";
+            }
+
+            return getAddonInfo(obj["script"].get<std::string>(), exename);
+        }
+
         std::string getAddonInfo(const std::string &fileName, const std::string &exename) {
+            if (fileName[0] == '{') {
+                std::istringstream in(fileName);
+                picojson::value json;
+                in >> json;
+                return parseAddonInfo(json, fileName, exename);
+            }
             if (fileName.find(".") == std::string::npos)
                 return getAddonInfo(fileName + ".py", exename);
 
@@ -117,31 +151,7 @@ namespace {
                 return "Failed to open " + fileName;
             picojson::value json;
             fin >> json;
-            std::string json_error = picojson::get_last_error();
-            if (!json_error.empty()) {
-                return "Loading " + fileName + " failed. " + json_error;
-            }
-            if (!json.is<picojson::object>())
-                return "Loading " + fileName + " failed. Bad json.";
-            picojson::object obj = json.get<picojson::object>();
-            if (obj.count("args")) {
-                if (!obj["args"].is<picojson::array>())
-                    return "Loading " + fileName + " failed. args must be array.";
-                for (const picojson::value &v : obj["args"].get<picojson::array>())
-                    args += " " + v.get<std::string>();
-            }
-
-            if (obj.count("python")) {
-                // Python was defined in the config file
-                if (obj["python"].is<picojson::array>()) {
-                    return "Loading " + fileName +" failed. python must not be an array.";
-                }
-                python = obj["python"].get<std::string>();
-            } else {
-                python = "";
-            }
-
-            return getAddonInfo(obj["script"].get<std::string>(), exename);
+            return parseAddonInfo(json, fileName, exename);
         }
     };
 }
