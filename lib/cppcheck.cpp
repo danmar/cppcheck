@@ -158,7 +158,7 @@ namespace {
 
 static std::string cmdFileName(std::string f)
 {
-    f = Path::toNativeSeparators(f);
+    //f = Path::toNativeSeparators(f);
     if (f.find(" ") != std::string::npos)
         return "\"" + f + "\"";
     return f;
