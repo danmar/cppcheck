@@ -1845,20 +1845,22 @@ static void valueFlowReverse(TokenList *tokenlist,
                 const Token* startTok = nullptr;
                 const Token* endTok = nullptr;
                 std::tie(startTok, endTok) = condTok->findExpressionStartEndTokens();
-                std::list<ValueFlow::Value> values = {val};
-                if (val2.condition) {
-                    values.push_back(val2);
+                if (!isVariableChanged(startTok, endTok, varid, false, settings, true)) {
+                    std::list<ValueFlow::Value> values = {val};
+                    if (val2.condition) {
+                        values.push_back(val2);
+                    }
+                    const Token *expr = Token::findmatch(tok2, "%varid%", varid);
+                    valueFlowForward(const_cast<Token*>(startTok),
+                                         endTok,
+                                         expr,
+                                         values,
+                                         false,
+                                         false,
+                                         tokenlist,
+                                         errorLogger,
+                                         settings);
                 }
-                const Token *expr = Token::findmatch(tok2, "%varid%", varid);
-                valueFlowForward(const_cast<Token*>(startTok),
-                                     endTok,
-                                     expr,
-                                     values,
-                                     false,
-                                     false,
-                                     tokenlist,
-                                     errorLogger,
-                                     settings);
             }
             const Token *vartok = Token::findmatch(tok2->link(), "%varid%", tok2, varid);
             while (Token::Match(vartok, "%name% = %num% ;") && !vartok->tokAt(2)->getValue(num))
