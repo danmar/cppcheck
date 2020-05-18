@@ -1539,7 +1539,8 @@ std::string Token::astStringVerbose() const
     return ret;
 }
 
-std::string Token::astStringZ3() const {
+std::string Token::astStringZ3() const
+{
     if (!astOperand1())
         return str();
     if (!astOperand2())
