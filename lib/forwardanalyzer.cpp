@@ -36,7 +36,7 @@ struct ForwardTraversal {
             if (out)
                 *out = tok->link();
             return Progress::Skip;
-        } else if (Token::Match(tok, "?|&&|%oror%") && tok->astOperand1() && tok->astOperand2()) {
+        } else if (tok->astOperand1() && tok->astOperand2() && Token::Match(tok, "?|&&|%oror%")) {
             if (traverseConditional(tok, f, traverseUnknown) == Progress::Break)
                 return Progress::Break;
             if (out)
@@ -49,7 +49,7 @@ struct ForwardTraversal {
             if (out)
                 *out = lambdaEndToken;
             // Skip class scope
-        } else if (Token::simpleMatch(tok, "{") && tok->scope() && tok->scope()->isClassOrStruct()) {
+        } else if (tok->str() == "{" && tok->scope() && tok->scope()->isClassOrStruct()) {
             if (out)
                 *out = tok->link();
         } else {
@@ -239,15 +239,17 @@ struct ForwardTraversal {
         for (Token* tok = start; tok && tok != end; tok = tok->next()) {
             Token* next = nullptr;
 
-            // Skip casts..
-            if (tok->str() == "(" && !tok->astOperand2() && tok->isCast()) {
-                tok = tok->link();
-                continue;
-            }
-            // Skip template arguments..
-            if (tok->str() == "<" && tok->link()) {
-                tok = tok->link();
-                continue;
+            if (tok->link()) {
+                // Skip casts..
+                if (tok->str() == "(" && !tok->astOperand2() && tok->isCast()) {
+                    tok = tok->link();
+                    continue;
+                }
+                // Skip template arguments..
+                if (tok->str() == "<") {
+                    tok = tok->link();
+                    continue;
+                }
             }
 
             // Evaluate RHS of assignment before LHS
@@ -261,7 +263,7 @@ struct ForwardTraversal {
                 tok = nextAfterAstRightmostLeaf(assignTok);
                 if (!tok)
                     return Progress::Break;
-            } else if (Token::simpleMatch(tok, "break")) {
+            } else if (tok->str() ==  "break") {
                 const Scope* scope = findBreakScope(tok->scope());
                 if (!scope)
                     return Progress::Break;
@@ -271,27 +273,31 @@ struct ForwardTraversal {
                 // TODO: Don't break, instead move to the outer scope
                 if (!tok)
                     return Progress::Break;
-            } else if (Token::Match(tok, "%name% :") || Token::simpleMatch(tok, "case")) {
+            } else if (Token::Match(tok, "%name% :") || tok->str() == "case") {
                 if (!analyzer->lowerToPossible())
                     return Progress::Break;
-            } else if (Token::simpleMatch(tok, "}") && Token::Match(tok->link()->previous(), ")|else {")) {
-                const bool inElse = Token::simpleMatch(tok->link()->previous(), "else {");
-                const Token* condTok = getCondTokFromEnd(tok);
-                if (!condTok)
-                    return Progress::Break;
-                if (!condTok->hasKnownIntValue()) {
+            } else if (tok->link() && tok->str() == "}") {
+                if (Token::Match(tok->link()->previous(), ")|else {")) {
+                    const bool inElse = Token::simpleMatch(tok->link()->previous(), "else {");
+                    const Token* condTok = getCondTokFromEnd(tok);
+                    if (!condTok)
+                        return Progress::Break;
+                    if (!condTok->hasKnownIntValue()) {
+                        if (!analyzer->lowerToPossible())
+                            return Progress::Break;
+                    } else if (condTok->values().front().intvalue == !inElse) {
+                        return Progress::Break;
+                    }
+                    analyzer->assume(condTok, !inElse, tok);
+                    if (Token::simpleMatch(tok, "} else {"))
+                        tok = tok->linkAt(2);
+                } else if (Token::simpleMatch(tok->link()->previous(), "try {")) {
                     if (!analyzer->lowerToPossible())
                         return Progress::Break;
-                } else if (condTok->values().front().intvalue == !inElse) {
-                    return Progress::Break;
-                }
-                analyzer->assume(condTok, !inElse, tok);
-                if (Token::simpleMatch(tok, "} else {"))
+                } else if (Token::simpleMatch(tok->next(), "else {")) {
                     tok = tok->linkAt(2);
-            } else if (Token::simpleMatch(tok, "}") && Token::simpleMatch(tok->link()->previous(), "try {")) {
-                if (!analyzer->lowerToPossible())
-                    return Progress::Break;
-            } else if (Token::Match(tok, "if|while|for (") && Token::simpleMatch(tok->next()->link(), ") {")) {
+                }
+            } else if (tok->isControlFlowKeyword() && Token::Match(tok, "if|while|for (") && Token::simpleMatch(tok->next()->link(), ") {")) {
                 Token* endCond = tok->next()->link();
                 Token* endBlock = endCond->next()->link();
                 Token* condTok = getCondTok(tok);
@@ -373,8 +379,6 @@ struct ForwardTraversal {
                         analyzer->assume(condTok, elseAction.isModified());
                     }
                 }
-            } else if (Token::simpleMatch(tok, "} else {")) {
-                tok = tok->linkAt(2);
             } else if (Token::simpleMatch(tok, "try {")) {
                 Token* endBlock = tok->next()->link();
                 ForwardAnalyzer::Action a = analyzeScope(endBlock);
