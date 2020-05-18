@@ -188,14 +188,6 @@ private:
         ASSERT_EQUALS(true,  isSameExpression("void f() {double y = 1e1; (x + y) < (x + 10.0); } ", "+", "+"));
         ASSERT_EQUALS(true,  isSameExpression("void f() {double y = 1e1; (x + 10.0) < (y + x); } ", "+", "+"));
         ASSERT_EQUALS(true,  isSameExpression("void f() {double y = 1e1; double z = 10.0; (x + y) < (x + z); } ", "+", "+"));
-        ASSERT_EQUALS(true,  isSameExpression("A + A", "A", "A"));
-
-        //https://trac.cppcheck.net/ticket/9700
-        ASSERT_EQUALS(true, isSameExpression("A::B + A::B;", "::", "::"));
-        ASSERT_EQUALS(false, isSameExpression("A::B + A::C;", "::", "::"));
-        ASSERT_EQUALS(true, isSameExpression("A::B* get() { if(x) return new A::B(true); else return new A::B(true); }", "new", "new"));
-        ASSERT_EQUALS(false, isSameExpression("A::B* get() { if(x) return new A::B(true); else return new A::C(true); }", "new", "new"));
-        ASSERT_EQUALS(true, true);
     }
 
     bool isVariableChanged(const char code[], const char startPattern[], const char endPattern[]) {

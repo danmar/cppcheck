@@ -94,7 +94,6 @@ private:
         TEST_CASE(nullpointer51);
         TEST_CASE(nullpointer52);
         TEST_CASE(nullpointer53); // #8005
-        TEST_CASE(nullpointer54); // #9573
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1761,22 +1760,6 @@ private:
               "  f(0, 0);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Possible null pointer dereference: params\n", errout.str());
-    }
-
-    void nullpointer54() {
-        check("int foo (int **array, size_t n_array) {\n"
-              "    size_t i;\n"
-              "    for (i = 0; i < n_array; ++i) {\n"
-              "        if (*array[i] == 1)\n"
-              "            return 1;\n"
-              "    }\n"
-              "    return 0;\n"
-              "} \n"
-              "int bar() {\n"
-              "    int **array = NULL; \n"
-              "    foo (array, 0);\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer_addressOf() { // address of
