@@ -177,7 +177,7 @@ static std::string executeAddon(const AddonInfo &addonInfo,
         if (test == 1 || test == lastTest)
             pythonExe = cmdFileName((addonInfo.python != "") ? addonInfo.python : defaultPythonExe);
         else
-            pythonExe = "python";
+            pythonExe = "python3";
 
         const std::string cmd = pythonExe + " --version 2>&1";
 
