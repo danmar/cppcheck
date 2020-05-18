@@ -461,6 +461,7 @@ private:
         TEST_CASE(astcase);
         TEST_CASE(astrefqualifier);
         TEST_CASE(astvardecl);
+        TEST_CASE(astnewscoped);
 
         TEST_CASE(startOfExecutableScope);
 
@@ -7376,7 +7377,7 @@ private:
         ASSERT_EQUALS("a ? ( b < c ) : d > e", tokenizeAndStringify("a ? b < c : d > e"));
     }
 
-    std::string testAst(const char code[],bool verbose=false) {
+    std::string testAst(const char code[], bool verbose = false, bool z3 = false) {
         // tokenize given code..
         Tokenizer tokenList(&settings0, nullptr);
         std::istringstream istr(code);
@@ -7408,6 +7409,8 @@ private:
         }
 
         // Return stringified AST
+        if (z3)
+            return tokenList.list.front()->astTop()->astStringZ3();
         if (verbose)
             return tokenList.list.front()->astTop()->astStringVerbose();
 
@@ -7918,6 +7921,23 @@ private:
         ASSERT_EQUALS("b(", testAst("class a { void b() &; };"));
         ASSERT_EQUALS("b(", testAst("class a { void b() && {} };"));
         ASSERT_EQUALS("b(", testAst("class a { void b() & {} };"));
+    }
+
+    //Verify that returning a newly constructed object generates the correct AST even when the class name is scoped
+    //Addresses https://trac.cppcheck.net/ticket/9700
+    void astnewscoped() {
+        ASSERT_EQUALS("(return (new A))", testAst("return new A;", false, true));
+        ASSERT_EQUALS("(return (new (( A)))", testAst("return new A();", false, true));
+        ASSERT_EQUALS("(return (new (( A true)))", testAst("return new A(true);", false, true));
+        ASSERT_EQUALS("(return (new (:: A B)))", testAst("return new A::B;", false, true));
+        ASSERT_EQUALS("(return (new (( (:: A B))))", testAst("return new A::B();", false, true));
+        ASSERT_EQUALS("(return (new (( (:: A B) true)))", testAst("return new A::B(true);", false, true));
+        ASSERT_EQUALS("(return (new (:: (:: A B) C)))", testAst("return new A::B::C;", false, true));
+        ASSERT_EQUALS("(return (new (( (:: (:: A B) C))))", testAst("return new A::B::C();", false, true));
+        ASSERT_EQUALS("(return (new (( (:: (:: A B) C) true)))", testAst("return new A::B::C(true);", false, true));
+        ASSERT_EQUALS("(return (new (:: (:: (:: A B) C) D)))", testAst("return new A::B::C::D;", false, true));
+        ASSERT_EQUALS("(return (new (( (:: (:: (:: A B) C) D))))", testAst("return new A::B::C::D();", false, true));
+        ASSERT_EQUALS("(return (new (( (:: (:: (:: A B) C) D) true)))", testAst("return new A::B::C::D(true);", false, true));
     }
 
     void compileLimits() {

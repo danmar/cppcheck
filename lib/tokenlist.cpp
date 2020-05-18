@@ -1020,6 +1020,17 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
                     continue;
                 }
             }
+
+            Token* leftToken = tok;
+            while (Token::Match(tok->next(), ":: %name%"))
+            {
+                Token* scopeToken = tok->next(); //The ::
+                scopeToken->astOperand1(leftToken);
+                scopeToken->astOperand2(scopeToken->next());
+                leftToken = scopeToken;
+                tok = scopeToken->next();
+            }
+
             state.op.push(tok);
             while (Token::Match(tok, "%name%|*|&|<|::")) {
                 if (tok->link())

@@ -1282,6 +1282,8 @@ public:
 
     std::string astStringVerbose() const;
 
+    std::string astStringZ3() const;
+
     std::string expressionString() const;
 
     void printAst(bool verbose, bool xml, std::ostream &out) const;
