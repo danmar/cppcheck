@@ -44,8 +44,11 @@ static bool executeCommand(std::string exe, std::vector<std::string> args, std::
     process.start(QString::fromStdString(exe), args2);
     process.waitForFinished();
 
-    if (redirect == "2>&1")
-        *output = process.readAll().toStdString();
+    if (redirect == "2>&1") {
+        QString s1 = process.readAllStandardOutput();
+        QString s2 = process.readAllStandardError();
+        *output = (s1 + "\n" + s2).toStdString();
+    }
     else
         *output = process.readAllStandardOutput().toStdString();
 
@@ -53,7 +56,7 @@ static bool executeCommand(std::string exe, std::vector<std::string> args, std::
         std::ofstream fout(redirect.substr(3));
         fout << process.readAllStandardError().toStdString();
     }
-    return true;
+    return process.exitCode() == 0;
 }
 
 

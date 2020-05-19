@@ -327,7 +327,8 @@ unsigned int CppCheck::check(const std::string &path)
 #endif
         const std::string args1 = "-v -fsyntax-only " + lang + " " + tempFile;
         std::string output1;
-        if (!mExecuteCommand(exe, split(args1), "2>&1", &output1) || output1.find(" -cc1 ") == std::string::npos) {
+        mExecuteCommand(exe, split(args1), "2>&1", &output1);
+        if (output1.find(" -cc1 ") == std::string::npos) {
             mErrorLogger.reportOut("Failed to execute '" + exe + "':" + output1);
             return 0;
         }
