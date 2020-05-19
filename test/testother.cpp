@@ -130,6 +130,7 @@ private:
         TEST_CASE(duplicateBranch1); // tests extracted by http://www.viva64.com/en/b/0149/ ( Comparison between PVS-Studio and cppcheck ): Errors detected in Quake 3: Arena by PVS-Studio: Fragment 2
         TEST_CASE(duplicateBranch2); // empty macro
         TEST_CASE(duplicateBranch3);
+        TEST_CASE(duplicateBranch4);
         TEST_CASE(duplicateExpression1);
         TEST_CASE(duplicateExpression2); // ticket #2730
         TEST_CASE(duplicateExpression3); // ticket #3317
@@ -4096,6 +4097,17 @@ private:
               "        x = i;\n"
               "    } else {\n"
               "        x = j;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateBranch4() {
+        check("void* f(bool b) {\n"
+              "    if (b) {\n"
+              "        return new A::Y(true);\n"
+              "    } else {\n"
+              "        return new A::Z(true);\n"
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
