@@ -207,7 +207,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     undef = 2 + argv[i];
                 }
 
-                mSettings->userUndefs.emplace(undef);
+                mSettings->userUndefs.insert(undef);
             }
 
             else if (std::strncmp(argv[i], "--addon=", 8) == 0)
@@ -231,7 +231,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->clang = true;
 
             else if (std::strncmp(argv[i], "--config-exclude=",17) ==0) {
-                mSettings->configExcludePaths.emplace(Path::fromNativeSeparators(argv[i] + 17));
+                mSettings->configExcludePaths.insert(Path::fromNativeSeparators(argv[i] + 17));
             }
 
             else if (std::strncmp(argv[i], "--config-excludes-file=", 23) == 0) {

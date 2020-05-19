@@ -2470,9 +2470,9 @@ struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
             if (isConditional())
                 return false;
             const Token* condTok = getCondTokFromEnd(endBlock);
-            std::set<nonneg int> varids;
-            std::transform(getVars().begin(), getVars().end(), std::inserter(varids, varids.begin()), SelectMapKeys{});
-            return bifurcate(condTok, varids, getSettings());
+            std::set<nonneg int> varids2;
+            std::transform(getVars().begin(), getVars().end(), std::inserter(varids2, varids2.begin()), SelectMapKeys{});
+            return bifurcate(condTok, varids2, getSettings());
         }
 
         return false;
