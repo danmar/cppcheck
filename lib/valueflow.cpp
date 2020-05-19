@@ -219,7 +219,7 @@ const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, Val
 {
     if (!tok->astOperand1() || !tok->astOperand2())
         return nullptr;
-    if (Token::Match(tok, "%comp%")) {
+    if (tok->isComparisonOp()) {
         if (tok->astOperand1()->hasKnownIntValue()) {
             MathLib::bigint value = tok->astOperand1()->values().front().intvalue;
             if (isSaturated(value))
@@ -2083,6 +2083,35 @@ static bool evalAssignment(ValueFlow::Value &lhsValue, const std::string &assign
 }
 
 // Check if its an alias of the variable or is being aliased to this variable
+static bool isAliasOf(const Variable* var, const Token* tok, nonneg int varid, const ValueFlow::Value& val)
+{
+    if (tok->varId() == varid)
+        return false;
+    if (tok->varId() == 0)
+        return false;
+    if (isAliasOf(tok, varid))
+        return true;
+    if (var && !var->isPointer())
+        return false;
+    // Search through non value aliases
+
+    if (!val.isNonValue())
+        return false;
+    if (val.isInconclusive())
+        return false;
+    if (val.isLifetimeValue() && !val.isLocalLifetimeValue())
+        return false;
+    if (val.isLifetimeValue() && val.lifetimeKind != ValueFlow::Value::LifetimeKind::Address)
+        return false;
+    if (!Token::Match(val.tokvalue, ".|&|*|%var%"))
+        return false;
+    if (astHasVar(val.tokvalue, tok->varId()))
+        return true;
+
+    return false;
+}
+
+// Check if its an alias of the variable or is being aliased to this variable
 static bool isAliasOf(const Variable * var, const Token *tok, nonneg int varid, const std::list<ValueFlow::Value>& values)
 {
     if (tok->varId() == varid)
@@ -2258,7 +2287,7 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
                 return Action::Read;
 
             Action read = Action::Read;
-            if (isWritableValue(tok) && Token::Match(parent, "%assign%") && astIsLHS(tok) &&
+            if (parent && isWritableValue(tok) && parent->isAssignmentOp() && astIsLHS(tok) &&
                 parent->astOperand2()->hasKnownValue()) {
                 const Token* rhs = parent->astOperand2();
                 const ValueFlow::Value* rhsValue = getKnownValue(rhs, ValueFlow::Value::ValueType::INT);
@@ -2267,7 +2296,7 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
                     a = Action::Invalid;
                 else
                     a = Action::Write;
-                if (!Token::simpleMatch(parent, "="))
+                if (parent->str() != "=")
                     a |= Action::Read;
                 return a;
             }
@@ -2308,9 +2337,8 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
         pms.assume(tok, state);
 
         const bool isAssert = Token::Match(at, "assert|ASSERT");
-        const bool isEndScope = Token::simpleMatch(at, "}");
 
-        if (!isAssert && !isEndScope) {
+        if (!isAssert && !Token::simpleMatch(at, "}")) {
             std::string s = state ? "true" : "false";
             addErrorPath(tok, "Assuming condition is " + s);
         }
@@ -2326,22 +2354,23 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
             setTokenValue(tok, *value, getSettings());
         if (a.isInconclusive())
             lowerToInconclusive();
-        if (a.isWrite()) {
-            if (Token::Match(tok->astParent(), "%assign%")) {
+        if (a.isWrite() && tok->astParent()) {
+            if (tok->astParent()->isAssignmentOp()) {
                 // TODO: Check result
                 if (evalAssignment(*value,
                                    tok->astParent()->str(),
                                    *getKnownValue(tok->astParent()->astOperand2(), ValueFlow::Value::ValueType::INT))) {
                     const std::string info("Compound assignment '" + tok->astParent()->str() + "', assigned value is " +
                                            value->infoString());
+                    if (tok->astParent()->str() == "=")
+                        value->errorPath.clear();
                     value->errorPath.emplace_back(tok, info);
                 } else {
                     // TODO: Don't set to zero
                     value->intvalue = 0;
                 }
-            }
-            if (Token::Match(tok->astParent(), "++|--")) {
-                const bool inc = Token::simpleMatch(tok->astParent(), "++");
+            } else if (tok->astParent()->tokType() == Token::eIncDecOp) {
+                const bool inc = tok->astParent()->str() == "++";
                 value->intvalue += (inc ? 1 : -1);
                 const std::string info(tok->str() + " is " + std::string(inc ? "incremented" : "decremented") +
                                        "', new value is " + value->infoString());
@@ -2352,6 +2381,7 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
 };
 
 struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
+    std::unordered_map<nonneg int, const Variable*> varids;
     ValueFlow::Value value;
 
     SingleValueFlowForwardAnalyzer()
@@ -2362,7 +2392,9 @@ struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
         : ValueFlowForwardAnalyzer(t), value(v)
     {}
 
-    virtual const std::unordered_map<nonneg int, const Variable*>& getVars() const = 0;
+    const std::unordered_map<nonneg int, const Variable*>& getVars() const {
+        return varids;
+    }
 
     virtual const ValueFlow::Value* getValue(const Token*) const OVERRIDE {
         return &value;
@@ -2382,13 +2414,12 @@ struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
     virtual bool isAlias(const Token* tok) const OVERRIDE {
         if (value.isLifetimeValue())
             return false;
-        const std::list<ValueFlow::Value> vals{value};
         for (const auto& p:getVars()) {
             nonneg int varid = p.first;
             const Variable* var = p.second;
             if (tok->varId() == varid)
                 return true;
-            if (isAliasOf(var, tok, varid, vals))
+            if (isAliasOf(var, tok, varid, value))
                 return true;
         }
         return false;
@@ -2450,19 +2481,14 @@ struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
 
 struct VariableForwardAnalyzer : SingleValueFlowForwardAnalyzer {
     const Variable* var;
-    std::unordered_map<nonneg int, const Variable*> varids;
 
     VariableForwardAnalyzer()
-        : SingleValueFlowForwardAnalyzer(), var(nullptr), varids()
+        : SingleValueFlowForwardAnalyzer(), var(nullptr)
     {}
 
     VariableForwardAnalyzer(const Variable* v, const ValueFlow::Value& val, const TokenList* t)
-        : SingleValueFlowForwardAnalyzer(val, t), var(v), varids() {
+        : SingleValueFlowForwardAnalyzer(val, t), var(v) {
         varids[var->declarationId()] = var;
-    }
-
-    virtual const std::unordered_map<nonneg int, const Variable*>& getVars() const OVERRIDE {
-        return varids;
     }
 
     virtual bool match(const Token* tok) const OVERRIDE {
@@ -2496,16 +2522,15 @@ static bool valueFlowForwardVariable(Token* const startToken,
 
 struct ExpressionForwardAnalyzer : SingleValueFlowForwardAnalyzer {
     const Token* expr;
-    std::unordered_map<nonneg int, const Variable*> varids;
     bool local;
     bool unknown;
 
     ExpressionForwardAnalyzer()
-        : SingleValueFlowForwardAnalyzer(), expr(nullptr), varids(), local(true), unknown(false)
+        : SingleValueFlowForwardAnalyzer(), expr(nullptr), local(true), unknown(false)
     {}
 
     ExpressionForwardAnalyzer(const Token* e, const ValueFlow::Value& val, const TokenList* t)
-        : SingleValueFlowForwardAnalyzer(val, t), expr(e), varids(), local(true), unknown(false) {
+        : SingleValueFlowForwardAnalyzer(val, t), expr(e), local(true), unknown(false) {
 
         setupExprVarIds();
     }
@@ -2544,10 +2569,6 @@ struct ExpressionForwardAnalyzer : SingleValueFlowForwardAnalyzer {
         if (tok->hasKnownIntValue())
             return {static_cast<int>(tok->values().front().intvalue)};
         return std::vector<int> {};
-    }
-
-    virtual const std::unordered_map<nonneg int, const Variable*>& getVars() const OVERRIDE {
-        return varids;
     }
 
     virtual bool match(const Token* tok) const OVERRIDE {
@@ -2648,7 +2669,7 @@ static void valueFlowForward(Token* startToken,
                              const Settings* settings)
 {
     const Token* expr = solveExprValues(exprTok, values);
-    if (Token::Match(expr, "%var%") && expr->variable()) {
+    if (expr->variable()) {
         valueFlowForwardVariable(startToken,
                                  endToken,
                                  expr->variable(),
@@ -2941,7 +2962,7 @@ bool isLifetimeBorrowed(const Token *tok, const Settings *settings)
 {
     if (!tok)
         return true;
-    if (Token::simpleMatch(tok, ","))
+    if (tok->str() == ",")
         return true;
     if (!tok->astParent())
         return true;
@@ -3438,7 +3459,7 @@ static bool isDecayedPointer(const Token *tok)
         return false;
     if (astIsPointer(tok->astParent()) && !Token::simpleMatch(tok->astParent(), "return"))
         return true;
-    if (Token::Match(tok->astParent(), "%cop%"))
+    if (tok->astParent()->isConstOp())
         return true;
     if (!Token::simpleMatch(tok->astParent(), "return"))
         return false;
@@ -3808,7 +3829,7 @@ static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> va
 
 static bool isLiteralNumber(const Token *tok, bool cpp)
 {
-    return tok->isNumber() || tok->str() == "NULL" || (cpp && Token::Match(tok, "false|true|nullptr"));
+    return tok->isNumber() || tok->isEnumerator() || tok->str() == "NULL" || (cpp && Token::Match(tok, "false|true|nullptr"));
 }
 
 static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
@@ -4260,8 +4281,8 @@ static void valueFlowInferCondition(TokenList* tokenlist,
             continue;
         if (tok->hasKnownValue())
             continue;
-        if (Token::Match(tok, "%var%") && (Token::Match(tok->astParent(), "?|&&|!|%oror%") ||
-                                           Token::Match(tok->astParent()->previous(), "if|while ("))) {
+        if (tok->variable() && (Token::Match(tok->astParent(), "?|&&|!|%oror%") ||
+                                Token::Match(tok->astParent()->previous(), "if|while ("))) {
             const ValueFlow::Value* result = proveNotEqual(tok->values(), 0);
             if (!result)
                 continue;
@@ -4270,7 +4291,7 @@ static void valueFlowInferCondition(TokenList* tokenlist,
             value.bound = ValueFlow::Value::Bound::Point;
             value.setKnown();
             setTokenValue(tok, value, settings);
-        } else if (Token::Match(tok, "%comp%")) {
+        } else if (tok->isComparisonOp()) {
             MathLib::bigint val = 0;
             const Token* varTok = nullptr;
             if (tok->astOperand1()->hasKnownIntValue()) {
@@ -5991,9 +6012,7 @@ static void valueFlowUnknownFunctionReturn(TokenList *tokenlist, const Settings 
     if (settings->checkUnknownFunctionReturn.empty())
         return;
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
-        if (!tok->astParent() || tok->str() != "(")
-            continue;
-        if (!Token::Match(tok->previous(), "%name%"))
+        if (!tok->astParent() || tok->str() != "(" || !tok->previous()->isName())
             continue;
         if (settings->checkUnknownFunctionReturn.find(tok->previous()->str()) == settings->checkUnknownFunctionReturn.end())
             continue;

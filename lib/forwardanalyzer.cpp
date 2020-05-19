@@ -89,15 +89,15 @@ struct ForwardTraversal {
                 checkThen = true;
                 checkElse = true;
             }
-            if (Token::simpleMatch(childTok, ":")) {
+            if (childTok->str() == ":") {
                 if (checkThen && traverseRecursive(childTok->astOperand1(), f, traverseUnknown) == Progress::Break)
                     return Progress::Break;
                 if (checkElse && traverseRecursive(childTok->astOperand2(), f, traverseUnknown) == Progress::Break)
                     return Progress::Break;
             } else {
-                if (!checkThen && Token::simpleMatch(tok, "&&"))
+                if (!checkThen && tok->str() == "&&")
                     return Progress::Continue;
-                if (!checkElse && Token::simpleMatch(tok, "||"))
+                if (!checkElse && tok->str() == "||")
                     return Progress::Continue;
                 if (traverseRecursive(childTok, f, traverseUnknown) == Progress::Break)
                     return Progress::Break;
@@ -425,7 +425,7 @@ struct ForwardTraversal {
 
     static Token* assignExpr(Token* tok) {
         while (tok->astParent() && astIsLHS(tok)) {
-            if (Token::Match(tok->astParent(), "%assign%"))
+            if (tok->astParent()->isAssignmentOp())
                 return tok->astParent();
             tok = tok->astParent();
         }
@@ -461,7 +461,7 @@ struct ForwardTraversal {
             return nullptr;
         if (Token::Match(tok, "%name% ("))
             return getInitTok(tok->next());
-        if (!Token::simpleMatch(tok, "("))
+        if (tok->str() !=  "(")
             return nullptr;
         if (!Token::simpleMatch(tok->astOperand2(), ";"))
             return nullptr;
@@ -475,7 +475,7 @@ struct ForwardTraversal {
             return nullptr;
         if (Token::Match(tok, "%name% ("))
             return getStepTok(tok->next());
-        if (!Token::simpleMatch(tok, "("))
+        if (tok->str() != "(")
             return nullptr;
         if (!Token::simpleMatch(tok->astOperand2(), ";"))
             return nullptr;
