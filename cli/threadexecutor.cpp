@@ -213,7 +213,7 @@ unsigned int ThreadExecutor::check()
                 close(pipes[0]);
                 mWpipe = pipes[1];
 
-                CppCheck fileChecker(*this, false);
+                CppCheck fileChecker(*this, false, CppCheckExecutor::executeCommand);
                 fileChecker.settings() = mSettings;
                 unsigned int resultOfCheck = 0;
 

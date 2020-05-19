@@ -108,6 +108,11 @@ public:
     */
     static bool tryLoadLibrary(Library& destination, const char* basepath, const char* filename);
 
+    /**
+     * Execute a shell command and read the output from it. Returns true if command terminated successfully.
+     */
+    static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string *output);
+
 protected:
 
     /**

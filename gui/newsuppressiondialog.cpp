@@ -21,7 +21,7 @@ NewSuppressionDialog::NewSuppressionDialog(QWidget *parent) :
     };
 
     QErrorLogger errorLogger;
-    CppCheck cppcheck(errorLogger,false);
+    CppCheck cppcheck(errorLogger, false, nullptr);
     cppcheck.getErrorMessages();
     errorLogger.errorIds.sort();
 

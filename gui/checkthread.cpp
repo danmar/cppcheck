@@ -32,10 +32,35 @@
 #include "cppcheck.h"
 #include "common.h"
 
+static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string *output)
+{
+    output->clear();
+
+    QStringList args2;
+    for (std::string arg: args)
+        args2 << QString::fromStdString(arg);
+
+    QProcess process;
+    process.start(QString::fromStdString(exe), args2);
+    process.waitForFinished();
+
+    if (redirect == "2>&1")
+        *output = process.readAll().toStdString();
+    else
+        *output = process.readAllStandardOutput().toStdString();
+
+    if (redirect.compare(0,3,"2> ") == 0) {
+        std::ofstream fout(redirect.substr(3));
+        fout << process.readAllStandardError().toStdString();
+    }
+    return true;
+}
+
+
 CheckThread::CheckThread(ThreadResult &result) :
     mState(Ready),
     mResult(result),
-    mCppcheck(result, true),
+    mCppcheck(result, true, executeCommand),
     mAnalyseWholeProgram(false)
 {
     //ctor

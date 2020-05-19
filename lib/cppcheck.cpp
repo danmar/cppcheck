@@ -164,73 +164,7 @@ static std::string cmdFileName(std::string f)
     return f;
 }
 
-static bool executeShellCommand(std::string exe, const std::string &args, std::string *output)
-{
-    output->clear();
-
-#ifdef _WIN32
-    // Extra quoutes are needed in windows if filename has space
-    if (exe.find(" ") != std::string::npos)
-        exe = "\"" + exe + "\"";
-    const std::string cmd = exe + " " + args + " 2>&1";
-    std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
-#else
-    const std::string cmd = exe + " " + args + " 2>&1";
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
-#endif
-    if (!pipe)
-        return false;
-    char buffer[1024];
-    while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr)
-        *output += buffer;
-    return true;
-}
-
-static std::string executeAddon(const AddonInfo &addonInfo,
-                                const std::string &defaultPythonExe,
-                                const std::string &dumpFile)
-{
-    std::string pythonExe;
-
-    if (!addonInfo.python.empty())
-        pythonExe = cmdFileName(addonInfo.python);
-    else if (!defaultPythonExe.empty())
-        pythonExe = cmdFileName(defaultPythonExe);
-    else {
-#ifdef _WIN32
-        const char *p[] = { "python3.exe", "python.exe" };
-#else
-        const char *p[] = { "python3", "python" };
-#endif
-        for (int i = 0; i < 2; ++i) {
-            std::string out;
-            if (executeShellCommand(p[i], "--version", &out) && out.compare(0, 7, "Python ") == 0 && std::isdigit(out[7])) {
-                pythonExe = p[i];
-                break;
-            }
-        }
-        if (pythonExe.empty())
-            throw InternalError(nullptr, "Failed to auto detect python");
-    }
-
-    const std::string args = cmdFileName(addonInfo.scriptFile) + " --cli" + addonInfo.args + " " + cmdFileName(dumpFile);
-    std::string result;
-    if (!executeShellCommand(pythonExe, args, &result))
-        throw InternalError(nullptr, "Failed to execute addon (command: '" + pythonExe + " " + args + "')");
-
-    // Validate output..
-    std::istringstream istr(result);
-    std::string line;
-    while (std::getline(istr, line)) {
-        if (line.compare(0,9,"Checking ", 0, 9) != 0 && !line.empty() && line[0] != '{')
-            throw InternalError(nullptr, "Failed to execute '" + pythonExe + " " + args + "'. " + result);
-    }
-
-    // Valid results
-    return result;
-}
-
-static std::vector<std::string> split(const std::string &str, const std::string &sep)
+static std::vector<std::string> split(const std::string &str, const std::string &sep=" ")
 {
     std::vector<std::string> ret;
     for (std::string::size_type startPos = 0U; startPos < str.size();) {
@@ -252,26 +186,63 @@ static std::vector<std::string> split(const std::string &str, const std::string 
     return ret;
 }
 
-static std::pair<bool,std::string> executeCommand(const std::string &cmd)
+static std::string executeAddon(const AddonInfo &addonInfo,
+                                const std::string &defaultPythonExe,
+                                const std::string &dumpFile,
+                                std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> executeCommand)
 {
+    const std::string redirect = "2>&1";
+
+    std::string pythonExe;
+
+    if (!addonInfo.python.empty())
+        pythonExe = cmdFileName(addonInfo.python);
+    else if (!defaultPythonExe.empty())
+        pythonExe = cmdFileName(defaultPythonExe);
+    else {
 #ifdef _WIN32
-    std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
+        const char *p[] = { "python3.exe", "python.exe" };
 #else
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+        const char *p[] = { "python3", "python" };
 #endif
+        for (int i = 0; i < 2; ++i) {
+            std::string out;
+            if (executeCommand(p[i], split("--version"), redirect, &out) && out.compare(0, 7, "Python ") == 0 && std::isdigit(out[7])) {
+                pythonExe = p[i];
+                break;
+            }
+        }
+        if (pythonExe.empty())
+            throw InternalError(nullptr, "Failed to auto detect python");
+    }
 
-    if (!pipe)
-        return std::pair<bool, std::string>(false, "");
-
-    char buffer[1024];
+    const std::string args = cmdFileName(addonInfo.scriptFile) + " --cli" + addonInfo.args + " " + cmdFileName(dumpFile);
     std::string result;
-    while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr)
-        result += buffer;
-    return std::pair<bool, std::string>(true, result);
+    if (!executeCommand(pythonExe, split(args), redirect, &result))
+        throw InternalError(nullptr, "Failed to execute addon (command: '" + pythonExe + " " + args + "')");
+
+    // Validate output..
+    std::istringstream istr(result);
+    std::string line;
+    while (std::getline(istr, line)) {
+        if (line.compare(0,9,"Checking ", 0, 9) != 0 && !line.empty() && line[0] != '{')
+            throw InternalError(nullptr, "Failed to execute '" + pythonExe + " " + args + "'. " + result);
+    }
+
+    // Valid results
+    return result;
 }
 
-CppCheck::CppCheck(ErrorLogger &errorLogger, bool useGlobalSuppressions)
-    : mErrorLogger(errorLogger), mExitCode(0), mSuppressInternalErrorFound(false), mUseGlobalSuppressions(useGlobalSuppressions), mTooManyConfigs(false), mSimplify(true)
+CppCheck::CppCheck(ErrorLogger &errorLogger,
+                   bool useGlobalSuppressions,
+                   std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> executeCommand)
+    : mErrorLogger(errorLogger)
+    , mExitCode(0)
+    , mSuppressInternalErrorFound(false)
+    , mUseGlobalSuppressions(useGlobalSuppressions)
+    , mTooManyConfigs(false)
+    , mSimplify(true)
+    , mExecuteCommand(executeCommand)
 {
 }
 
@@ -349,14 +320,18 @@ unsigned int CppCheck::check(const std::string &path)
         const std::string analyzerInfo = mSettings.buildDir.empty() ? std::string() : AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "");
         const std::string clangcmd = analyzerInfo + ".clang-cmd";
         const std::string clangStderr = analyzerInfo + ".clang-stderr";
-
-        const std::string cmd1 = "clang -v -fsyntax-only " + lang + " " + tempFile + " 2>&1";
-        const std::pair<bool, std::string> &result1 = executeCommand(cmd1);
-        if (!result1.first || result1.second.find(" -cc1 ") == std::string::npos) {
-            mErrorLogger.reportOut("Failed to execute '" + cmd1 + "':" + result1.second);
+#ifdef _WIN32
+        const std::string exe = "clang.exe";
+#else
+        const std::string exe = "clang";
+#endif
+        const std::string args1 = "-v -fsyntax-only " + lang + " " + tempFile;
+        std::string output1;
+        if (!mExecuteCommand(exe, split(args1), "2>&1", &output1) || output1.find(" -cc1 ") == std::string::npos) {
+            mErrorLogger.reportOut("Failed to execute '" + exe + "':" + output1);
             return 0;
         }
-        std::istringstream details(result1.second);
+        std::istringstream details(output1);
         std::string line;
         std::string flags(lang + " ");
         while (std::getline(details, line)) {
@@ -374,15 +349,16 @@ unsigned int CppCheck::check(const std::string &path)
         for (const std::string &i: mSettings.includePaths)
             flags += "-I" + i + " ";
 
-        const std::string cmd = "clang -cc1 -ast-dump " + flags + path + (analyzerInfo.empty() ? std::string(" 2>&1") : (" 2> " + clangStderr));
+        const std::string args2 = "-cc1 -ast-dump " + flags + path;
+        const std::string redirect2 = analyzerInfo.empty() ? std::string("2>&1") : ("2> " + clangStderr);
         if (!mSettings.buildDir.empty()) {
             std::ofstream fout(clangcmd);
-            fout << cmd << std::endl;
+            fout << exe << " " << args2 << " " << redirect2 << std::endl;
         }
 
-        const std::pair<bool, std::string> &result2 = executeCommand(cmd);
-        if (!result2.first || result2.second.find("TranslationUnitDecl") == std::string::npos) {
-            std::cerr << "Failed to execute '" + cmd + "'" << std::endl;
+        std::string output2;
+        if (!mExecuteCommand(exe,split(args2),redirect2,&output2) || output2.find("TranslationUnitDecl") == std::string::npos) {
+            std::cerr << "Failed to execute '" << exe << " " << args2 << " " << redirect2 << "'" << std::endl;
             return 0;
         }
 
@@ -395,7 +371,7 @@ unsigned int CppCheck::check(const std::string &path)
             if (reportClangErrors(fin, reportError))
                 return 0;
         } else {
-            std::istringstream istr(result2.second);
+            std::istringstream istr(output2);
             auto reportError = [this](const ErrorLogger::ErrorMessage& errorMessage) {
                 reportErr(errorMessage);
             };
@@ -404,7 +380,7 @@ unsigned int CppCheck::check(const std::string &path)
         }
 
         //std::cout << "Checking Clang ast dump:\n" << result2.second << std::endl;
-        std::istringstream ast(result2.second);
+        std::istringstream ast(output2);
         Tokenizer tokenizer(&mSettings, this);
         tokenizer.list.appendFileIfNew(path);
         clangimport::parseClangAstDump(&tokenizer, ast);
@@ -427,7 +403,7 @@ unsigned int CppCheck::check(const std::string &path, const std::string &content
 
 unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
 {
-    CppCheck temp(mErrorLogger, mUseGlobalSuppressions);
+    CppCheck temp(mErrorLogger, mUseGlobalSuppressions, mExecuteCommand);
     temp.mSettings = mSettings;
     if (!temp.mSettings.userDefines.empty())
         temp.mSettings.userDefines += ';';
@@ -849,7 +825,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     continue;
                 }
                 const std::string results =
-                    executeAddon(addonInfo, mSettings.addonPython, dumpFile);
+                    executeAddon(addonInfo, mSettings.addonPython, dumpFile, mExecuteCommand);
                 std::istringstream istr(results);
                 std::string line;
 
@@ -1441,15 +1417,21 @@ void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings)
         pos += 3;
     }
 
-    const std::string cmd = "clang-tidy -quiet -checks=*,-clang-analyzer-*,-llvm* \"" + fileSettings.filename + "\" -- " + allIncludes + allDefines;
-    std::pair<bool, std::string> result = executeCommand(cmd);
-    if (!result.first) {
-        std::cerr << "Failed to execute '" + cmd + "'" << std::endl;
+#ifdef _WIN32
+    const char exe[] = "clang-tidy.exe";
+#else
+    const char exe[] = "clang-tidy";
+#endif
+
+    const std::string args = "-quiet -checks=*,-clang-analyzer-*,-llvm* \"" + fileSettings.filename + "\" -- " + allIncludes + allDefines;
+    std::string output;
+    if (!mExecuteCommand(exe, split(args), "", &output)) {
+        std::cerr << "Failed to execute '" << exe << "'" << std::endl;
         return;
     }
 
     // parse output and create error messages
-    std::istringstream istr(result.second);
+    std::istringstream istr(output);
     std::string line;
 
     if (!mSettings.buildDir.empty()) {

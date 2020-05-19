@@ -536,7 +536,7 @@ void MainWindow::analyzeCode(const QString& code, const QString& filename)
             mUI.mResults, SLOT(debugError(const ErrorItem &)));
 
     // Create CppCheck instance
-    CppCheck cppcheck(result, true);
+    CppCheck cppcheck(result, true, nullptr);
     cppcheck.settings() = getCppcheckSettings();
 
     // Check
