@@ -7377,10 +7377,8 @@ private:
         ASSERT_EQUALS("a ? ( b < c ) : d > e", tokenizeAndStringify("a ? b < c : d > e"));
     }
 
-    enum class AstStyle
-    {
+    enum class AstStyle {
         Simple,
-        Verbose,
         Z3
     };
 
@@ -7418,8 +7416,6 @@ private:
         // Return stringified AST
         if (style == AstStyle::Z3)
             return tokenList.list.front()->astTop()->astStringZ3();
-        if (style == AstStyle::Verbose)
-            return tokenList.list.front()->astTop()->astStringVerbose();
 
         std::string ret;
         std::set<const Token *> astTop;
@@ -7666,15 +7662,8 @@ private:
         ASSERT_EQUALS("ab.i[j1+[", testAst("a.b[i][j+1]"));
 
         // problems with: x=expr
-        ASSERT_EQUALS("=\n"
-                      "|-x\n"
-                      "`-(\n"
-                      "  `-.\n"
-                      "    |-[\n"
-                      "    | |-a\n"
-                      "    | `-i\n"
-                      "    `-f\n",
-                      testAst("x = ((a[i]).f)();", AstStyle::Verbose));
+        ASSERT_EQUALS("(= x (( (. ([ a i) f)))",
+                      testAst("x = ((a[i]).f)();", AstStyle::Z3));
         ASSERT_EQUALS("abc.de.++[=", testAst("a = b.c[++(d.e)];"));
         ASSERT_EQUALS("abc(1+=", testAst("a = b(c**)+1;"));
         ASSERT_EQUALS("abc.=", testAst("a = (b).c;"));
