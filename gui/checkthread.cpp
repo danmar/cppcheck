@@ -48,8 +48,7 @@ static bool executeCommand(std::string exe, std::vector<std::string> args, std::
         QString s1 = process.readAllStandardOutput();
         QString s2 = process.readAllStandardError();
         *output = (s1 + "\n" + s2).toStdString();
-    }
-    else
+    } else
         *output = process.readAllStandardOutput().toStdString();
 
     if (redirect.compare(0,3,"2> ") == 0) {
