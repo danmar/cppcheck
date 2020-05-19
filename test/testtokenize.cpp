@@ -7377,7 +7377,14 @@ private:
         ASSERT_EQUALS("a ? ( b < c ) : d > e", tokenizeAndStringify("a ? b < c : d > e"));
     }
 
-    std::string testAst(const char code[], bool verbose = false, bool z3 = false) {
+    enum class AstStyle
+    {
+        Simple,
+        Verbose,
+        Z3
+    };
+
+    std::string testAst(const char code[], AstStyle style = AstStyle::Simple) {
         // tokenize given code..
         Tokenizer tokenList(&settings0, nullptr);
         std::istringstream istr(code);
@@ -7409,9 +7416,9 @@ private:
         }
 
         // Return stringified AST
-        if (z3)
+        if (style == AstStyle::Z3)
             return tokenList.list.front()->astTop()->astStringZ3();
-        if (verbose)
+        if (style == AstStyle::Verbose)
             return tokenList.list.front()->astTop()->astStringVerbose();
 
         std::string ret;
@@ -7667,7 +7674,7 @@ private:
                       "    | |-a\n"
                       "    | `-i\n"
                       "    `-f\n",
-                      testAst("x = ((a[i]).f)();", true));
+                      testAst("x = ((a[i]).f)();", AstStyle::Verbose));
         ASSERT_EQUALS("abc.de.++[=", testAst("a = b.c[++(d.e)];"));
         ASSERT_EQUALS("abc(1+=", testAst("a = b(c**)+1;"));
         ASSERT_EQUALS("abc.=", testAst("a = (b).c;"));
@@ -7926,18 +7933,18 @@ private:
     //Verify that returning a newly constructed object generates the correct AST even when the class name is scoped
     //Addresses https://trac.cppcheck.net/ticket/9700
     void astnewscoped() {
-        ASSERT_EQUALS("(return (new A))", testAst("return new A;", false, true));
-        ASSERT_EQUALS("(return (new (( A)))", testAst("return new A();", false, true));
-        ASSERT_EQUALS("(return (new (( A true)))", testAst("return new A(true);", false, true));
-        ASSERT_EQUALS("(return (new (:: A B)))", testAst("return new A::B;", false, true));
-        ASSERT_EQUALS("(return (new (( (:: A B))))", testAst("return new A::B();", false, true));
-        ASSERT_EQUALS("(return (new (( (:: A B) true)))", testAst("return new A::B(true);", false, true));
-        ASSERT_EQUALS("(return (new (:: (:: A B) C)))", testAst("return new A::B::C;", false, true));
-        ASSERT_EQUALS("(return (new (( (:: (:: A B) C))))", testAst("return new A::B::C();", false, true));
-        ASSERT_EQUALS("(return (new (( (:: (:: A B) C) true)))", testAst("return new A::B::C(true);", false, true));
-        ASSERT_EQUALS("(return (new (:: (:: (:: A B) C) D)))", testAst("return new A::B::C::D;", false, true));
-        ASSERT_EQUALS("(return (new (( (:: (:: (:: A B) C) D))))", testAst("return new A::B::C::D();", false, true));
-        ASSERT_EQUALS("(return (new (( (:: (:: (:: A B) C) D) true)))", testAst("return new A::B::C::D(true);", false, true));
+        ASSERT_EQUALS("(return (new A))", testAst("return new A;", AstStyle::Z3));
+        ASSERT_EQUALS("(return (new (( A)))", testAst("return new A();", AstStyle::Z3));
+        ASSERT_EQUALS("(return (new (( A true)))", testAst("return new A(true);", AstStyle::Z3));
+        ASSERT_EQUALS("(return (new (:: A B)))", testAst("return new A::B;", AstStyle::Z3));
+        ASSERT_EQUALS("(return (new (( (:: A B))))", testAst("return new A::B();", AstStyle::Z3));
+        ASSERT_EQUALS("(return (new (( (:: A B) true)))", testAst("return new A::B(true);", AstStyle::Z3));
+        ASSERT_EQUALS("(return (new (:: (:: A B) C)))", testAst("return new A::B::C;", AstStyle::Z3));
+        ASSERT_EQUALS("(return (new (( (:: (:: A B) C))))", testAst("return new A::B::C();", AstStyle::Z3));
+        ASSERT_EQUALS("(return (new (( (:: (:: A B) C) true)))", testAst("return new A::B::C(true);", AstStyle::Z3));
+        ASSERT_EQUALS("(return (new (:: (:: (:: A B) C) D)))", testAst("return new A::B::C::D;", AstStyle::Z3));
+        ASSERT_EQUALS("(return (new (( (:: (:: (:: A B) C) D))))", testAst("return new A::B::C::D();", AstStyle::Z3));
+        ASSERT_EQUALS("(return (new (( (:: (:: (:: A B) C) D) true)))", testAst("return new A::B::C::D(true);", AstStyle::Z3));
     }
 
     void compileLimits() {
