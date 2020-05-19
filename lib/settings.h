@@ -30,6 +30,7 @@
 #include "suppressions.h"
 #include "timer.h"
 
+#include <algorithm>
 #include <atomic>
 #include <list>
 #include <set>
