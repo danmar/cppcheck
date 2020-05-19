@@ -21,6 +21,8 @@
 #define utilsH
 //---------------------------------------------------------------------------
 
+#include "config.h"
+
 #include <cctype>
 #include <cstddef>
 #include <string>

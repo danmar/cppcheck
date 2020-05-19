@@ -3,6 +3,7 @@
 #include "token.h"
 #include "astutils.h"
 #include "symboldatabase.h"
+#include <algorithm>
 #include <cassert>
 
 void ProgramMemory::setValue(nonneg int varid, const ValueFlow::Value &value)

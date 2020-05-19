@@ -1,6 +1,7 @@
 #ifndef GUARD_PROGRAMMEMORY_H
 #define GUARD_PROGRAMMEMORY_H
 
+#include "config.h"
 #include "utils.h"
 #include "valueflow.h"
 #include "mathlib.h"
