@@ -158,76 +158,72 @@ namespace {
 
 static std::string cmdFileName(std::string f)
 {
-    //f = Path::toNativeSeparators(f);
+    f = Path::toNativeSeparators(f);
     if (f.find(" ") != std::string::npos)
         return "\"" + f + "\"";
     return f;
+}
+
+static bool executeShellCommand(std::string exe, const std::string &args, std::string *output)
+{
+    output->clear();
+
+#ifdef _WIN32
+    // Extra quoutes are needed in windows if filename has space
+    if (exe.find(" ") != std::string::npos)
+        exe = "\"" + exe + "\"";
+    const std::string cmd = exe + " " + args + " 2>&1";
+    std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
+#else
+    const std::string cmd = exe + " " + args + " 2>&1";
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+#endif
+    if (!pipe)
+        return false;
+    char buffer[1024];
+    while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr)
+        *output += buffer;
+    return true;
 }
 
 static std::string executeAddon(const AddonInfo &addonInfo,
                                 const std::string &defaultPythonExe,
                                 const std::string &dumpFile)
 {
-
     std::string pythonExe;
 
-    // Can python be executed?
-    const int lastTest = 3;
-    for (int test = 1; test <= lastTest; ++test) {
-        if (test == 1 || test == lastTest)
-            pythonExe = cmdFileName((addonInfo.python != "") ? addonInfo.python : defaultPythonExe);
-        else
-            pythonExe = "python3";
-
-        const std::string cmd = pythonExe + " --version 2>&1";
-
+    if (!addonInfo.python.empty())
+        pythonExe = cmdFileName(addonInfo.python);
+    else if (!defaultPythonExe.empty())
+        pythonExe = cmdFileName(defaultPythonExe);
+    else {
 #ifdef _WIN32
-        if (pythonExe.find(" ") != std::string::npos) {
-            // popen strips the first quote. Needs 2 sets to fully quote.
-            pythonExe = "\"" + pythonExe + "\"";
-        }
-
-        std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
+        const char *p[] = { "python3.exe", "python.exe" };
 #else
-        std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+        const char *p[] = { "python3", "python" };
 #endif
-        if (!pipe) {
-            if (test < lastTest)
-                continue;
-            throw InternalError(nullptr, "popen failed (command: '" + cmd + "')");
+        for (int i = 0; i < 2; ++i) {
+            std::string out;
+            if (executeShellCommand(p[i], "--version", &out) && out.compare(0, 7, "Python ") == 0 && std::isdigit(out[7])) {
+                pythonExe = p[i];
+                break;
+            }
         }
-        char buffer[1024];
-        std::string result;
-        while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr)
-            result += buffer;
-        if (result.compare(0, 7, "Python ", 0, 7) != 0 || result.size() > 50) {
-            if (test < lastTest)
-                continue;
-            throw InternalError(nullptr, "Failed to execute '" + cmd + "' (" + result + ")");
-        }
+        if (pythonExe.empty())
+            throw InternalError(nullptr, "Failed to auto detect python");
     }
 
-    const std::string cmd = pythonExe + " " + cmdFileName(addonInfo.scriptFile) + " --cli" + addonInfo.args + " " + cmdFileName(dumpFile) + " 2>&1";
-
-#ifdef _WIN32
-    std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
-#else
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
-#endif
-    if (!pipe)
-        throw InternalError(nullptr, "popen failed (command: '" + cmd + "')");
-    char buffer[1024];
+    const std::string args = cmdFileName(addonInfo.scriptFile) + " --cli" + addonInfo.args + " " + cmdFileName(dumpFile);
     std::string result;
-    while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr) {
-        result += buffer;
-    }
+    if (!executeShellCommand(pythonExe, args, &result))
+        throw InternalError(nullptr, "Failed to execute addon (command: '" + pythonExe + " " + args + "')");
 
     // Validate output..
     std::istringstream istr(result);
     std::string line;
     while (std::getline(istr, line)) {
         if (line.compare(0,9,"Checking ", 0, 9) != 0 && !line.empty() && line[0] != '{')
-            throw InternalError(nullptr, "Failed to execute '" + cmd + "'. " + result);
+            throw InternalError(nullptr, "Failed to execute '" + pythonExe + " " + args + "'. " + result);
     }
 
     // Valid results
