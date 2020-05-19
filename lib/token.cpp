@@ -23,6 +23,7 @@
 #include "library.h"
 #include "settings.h"
 #include "symboldatabase.h"
+#include "tokenlist.h"
 #include "utils.h"
 
 #include <algorithm>
