@@ -239,6 +239,8 @@ private:
         TEST_CASE(checkComparePointers);
 
         TEST_CASE(unusedVariableValueTemplate); // #8994
+
+        TEST_CASE(moduloOfOne);
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, bool verbose=false, Settings* settings = nullptr) {
@@ -8563,6 +8565,13 @@ private:
               "    };\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void moduloOfOne() {
+        check("void f(unsigned int x) {\n"
+              "  int y = x % 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Modulo of one is always equal to zero\n", errout.str());
     }
 
 };

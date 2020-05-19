@@ -100,6 +100,7 @@ public:
         checkOther.checkCastIntToCharAndBack();
         checkOther.checkMisusedScopedObject();
         checkOther.checkAccessOfMovedVariable();
+        checkOther.checkModuloOfOne();
     }
 
     /** @brief Clarify calculation for ".. a * b ? .." */
@@ -214,6 +215,8 @@ public:
     void checkKnownArgument();
 
     void checkComparePointers();
+
+    void checkModuloOfOne();
 
 private:
     // Error messages..
