@@ -235,16 +235,10 @@ static std::string executeAddon(const AddonInfo &addonInfo,
 
 static std::string getDefinesFlags(const std::string &semicolonSeparatedString)
 {
-    std::string allDefines;
-    if (!semicolonSeparatedString.empty()) {
-        allDefines = "-D"+semicolonSeparatedString + " ";
-        std::string::size_type pos = 0u;
-        while ((pos = allDefines.find(";", pos)) != std::string::npos) {
-            allDefines.replace(pos, 1, " -D");
-            pos += 3;
-        }
-    }
-    return allDefines;
+    std::string flags;
+    for (const std::string &d: split(semicolonSeparatedString, ";"))
+        flags += "-D" + d + " ";
+    return flags;
 }
 
 CppCheck::CppCheck(ErrorLogger &errorLogger,
