@@ -1707,7 +1707,7 @@ namespace {
                 Token *tok1 = tok;
                 while (Token::Match(tok1->previous(), "const|volatile|final|override|&|&&|noexcept"))
                     tok1 = tok1->previous();
-                if (tok1 && tok1->previous() && tok1->strAt(-1) == ")") {
+                if (tok1->previous() && tok1->strAt(-1) == ")") {
                     tok1 = tok1->linkAt(-1);
                     if (Token::Match(tok1->previous(), "throw|noexcept")) {
                         tok1 = tok1->previous();
@@ -2906,7 +2906,7 @@ void Tokenizer::calculateScopes()
                 Token *tok1 = tok;
                 while (Token::Match(tok1->previous(), "const|volatile|final|override|&|&&|noexcept"))
                     tok1 = tok1->previous();
-                if (tok1 && tok1->previous() && tok1->strAt(-1) == ")") {
+                if (tok1->previous() && tok1->strAt(-1) == ")") {
                     bool member = true;
                     tok1 = tok1->linkAt(-1);
                     if (Token::Match(tok1->previous(), "throw|noexcept")) {
@@ -7224,12 +7224,7 @@ bool Tokenizer::simplifyKnownVariables()
         std::unordered_map<int, std::string> constantValues;
         std::map<int, Token*> constantVars;
         std::unordered_map<int, std::list<Token*>> constantValueUsages;
-        bool goback = false;
         for (Token *tok = list.front(); tok; tok = tok->next()) {
-            if (goback) {
-                tok = tok->previous();
-                goback = false;
-            }
             // Reference to variable
             if (Token::Match(tok, "%type%|* & %name% = %name% ;")) {
                 Token *start = tok->previous();
