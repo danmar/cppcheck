@@ -3119,6 +3119,11 @@ void CheckOther::checkModuloOfOne()
         // Value flow..
         const ValueFlow::Value *value = tok->astOperand2()->getValue(1LL);
         if (value && value->isKnown())
-            reportError(tok, Severity::style, "moduloofone", "Modulo of one is always equal to zero");
+            checkModuloOfOneError(tok);
     }
+}
+
+void CheckOther::checkModuloOfOneError(const Token *tok)
+{
+    reportError(tok, Severity::style, "moduloofone", "Modulo of one is always equal to zero");
 }

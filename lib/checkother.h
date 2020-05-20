@@ -274,6 +274,7 @@ private:
     void shadowError(const Token *var, const Token *shadowed, std::string type);
     void knownArgumentError(const Token *tok, const Token *ftok, const ValueFlow::Value *value);
     void comparePointersError(const Token *tok, const ValueFlow::Value *v1, const ValueFlow::Value *v2);
+    void checkModuloOfOneError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckOther c(nullptr, settings, errorLogger);
@@ -345,7 +346,7 @@ private:
 
         const std::vector<const Token *> nullvec;
         c.funcArgOrderDifferent("function", nullptr, nullptr, nullvec, nullvec);
-        c.checkModuloOfOne();
+        c.checkModuloOfOneError(nullptr);
     }
 
     static std::string myName() {
