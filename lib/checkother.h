@@ -345,6 +345,7 @@ private:
 
         const std::vector<const Token *> nullvec;
         c.funcArgOrderDifferent("function", nullptr, nullptr, nullvec, nullvec);
+        c.checkModuloOfOne();
     }
 
     static std::string myName() {
@@ -405,7 +406,8 @@ private:
                "- function declaration and definition argument names different.\n"
                "- function declaration and definition argument order different.\n"
                "- shadow variable.\n"
-               "- variable can be declared const.\n";
+               "- variable can be declared const.\n"
+               "- calculating modulo of one.\n";
     }
 };
 /// @}
