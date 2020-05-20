@@ -49,9 +49,9 @@ private:
         settings.library.smartPointers.insert("std::unique_ptr");
 
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-        "<def>\n"
-        "  <podtype name=\"uint8_t\" sign=\"u\" size=\"1\"/>\n"
-        "</def>";
+                               "<def>\n"
+                               "  <podtype name=\"uint8_t\" sign=\"u\" size=\"1\"/>\n"
+                               "</def>";
         tinyxml2::XMLDocument doc;
         doc.Parse(xmldata, sizeof(xmldata));
         settings.library.load(doc);

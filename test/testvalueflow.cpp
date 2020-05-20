@@ -46,10 +46,10 @@ private:
     void run() OVERRIDE {
         // strcpy, abort cfg
         const char cfg[] = "<?xml version=\"1.0\"?>\n"
-        "<def>\n"
-        "  <function name=\"strcpy\"> <arg nr=\"1\"><not-null/></arg> </function>\n"
-        "  <function name=\"abort\"> <noreturn>true</noreturn> </function>\n" // abort is a noreturn function
-        "</def>";
+                           "<def>\n"
+                           "  <function name=\"strcpy\"> <arg nr=\"1\"><not-null/></arg> </function>\n"
+                           "  <function name=\"abort\"> <noreturn>true</noreturn> </function>\n" // abort is a noreturn function
+                           "</def>";
         settings.library.loadxmldata(cfg, sizeof(cfg));
         LOAD_LIB_2(settings.library, "std.cfg");
 

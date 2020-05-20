@@ -843,7 +843,7 @@ private:
                                 "4: } ;\n"
                                 "5: Container :: Container ( ) : mElements@1 ( nullptr ) { }\n"
                                 "6: Container intContainer@2 ;\n";
-            ASSERT_EQUALS(exp, tokenizeDebugListing(code, /*simplify=*/true));
+            ASSERT_EQUALS(exp, tokenizeDebugListing(code));
         }
         {
             const char code[] = "template<class T> struct Container {\n"
@@ -861,7 +861,7 @@ private:
                                 "3: int * mElements@2 ;\n"
                                 "4: } ;\n"
                                 "5: Container<int> :: Container<int> ( ) : mElements@2 ( nullptr ) { }\n";
-            ASSERT_EQUALS(exp, tokenizeDebugListing(code, /*simplify=*/true));
+            ASSERT_EQUALS(exp, tokenizeDebugListing(code));
         }
     }
 
