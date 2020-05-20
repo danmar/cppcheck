@@ -233,6 +233,20 @@ static std::string executeAddon(const AddonInfo &addonInfo,
     return result;
 }
 
+static std::string getDefinesFlags(const std::string &semicolonSeparatedString)
+{
+    std::string allDefines;
+    if (!semicolonSeparatedString.empty()) {
+        allDefines = "-D"+semicolonSeparatedString + " ";
+        std::string::size_type pos = 0u;
+        while ((pos = allDefines.find(";", pos)) != std::string::npos) {
+            allDefines.replace(pos, 1, " -D");
+            pos += 3;
+        }
+    }
+    return allDefines;
+}
+
 CppCheck::CppCheck(ErrorLogger &errorLogger,
                    bool useGlobalSuppressions,
                    std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> executeCommand)
@@ -349,6 +363,9 @@ unsigned int CppCheck::check(const std::string &path)
 
         for (const std::string &i: mSettings.includePaths)
             flags += "-I" + i + " ";
+
+        flags += getDefinesFlags(mSettings.userDefines);
+
 
         const std::string args2 = "-cc1 -ast-dump " + flags + path;
         const std::string redirect2 = analyzerInfo.empty() ? std::string("2>&1") : ("2> " + clangStderr);
@@ -1407,16 +1424,11 @@ void CppCheck::getErrorMessages()
 void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings)
 {
     std::string allIncludes = "";
-    std::string allDefines = "-D"+fileSettings.defines;
     for (const std::string &inc : fileSettings.includePaths) {
         allIncludes = allIncludes + "-I\"" + inc + "\" ";
     }
 
-    std::string::size_type pos = 0u;
-    while ((pos = allDefines.find(";", pos)) != std::string::npos) {
-        allDefines.replace(pos, 1, " -D");
-        pos += 3;
-    }
+    const std::string allDefines = getDefinesFlags(fileSettings.defines);
 
 #ifdef _WIN32
     const char exe[] = "clang-tidy.exe";
