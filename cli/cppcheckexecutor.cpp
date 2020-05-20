@@ -40,6 +40,7 @@
 #include <cstring>
 #include <iostream>
 #include <list>
+#include <memory>
 #include <utility>
 #include <vector>
 

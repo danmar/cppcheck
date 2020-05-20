@@ -29,6 +29,7 @@
 #include "settings.h"
 
 #include <cstddef>
+#include <functional>
 #include <istream>
 #include <list>
 #include <map>
