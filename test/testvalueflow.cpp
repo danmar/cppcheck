@@ -1456,7 +1456,8 @@ private:
                 "}\n");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
             "[test.cpp:2]: (debug) valueflow.cpp:1035:valueFlowReverse bailout: assignment of abc\n"
-            "[test.cpp:8]: (debug) valueflow.cpp:1131:valueFlowReverse bailout: variable abc stopping on goto label\n",
+            "[test.cpp:8]: (debug) valueflow.cpp:1131:valueFlowReverse bailout: variable abc stopping on goto label\n"
+            "[test.cpp:2]: (debug) Unknown type 'ABC'.\n",
             errout.str());
     }
 

@@ -130,9 +130,6 @@ public:
     /** @brief Is --debug-normal given? */
     bool debugnormal;
 
-    /** @brief Is --debug-simplified given? */
-    bool debugSimplified;
-
     /** @brief Is --debug-template given? */
     bool debugtemplate;
 

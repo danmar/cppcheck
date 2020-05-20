@@ -249,7 +249,6 @@ CppCheck::CppCheck(ErrorLogger &errorLogger,
     , mSuppressInternalErrorFound(false)
     , mUseGlobalSuppressions(useGlobalSuppressions)
     , mTooManyConfigs(false)
-    , mSimplify(true)
     , mExecuteCommand(executeCommand)
 {
 }
@@ -385,7 +384,7 @@ unsigned int CppCheck::check(const std::string &path)
         clangimport::parseClangAstDump(&tokenizer, ast);
         ValueFlow::setValues(&tokenizer.list, const_cast<SymbolDatabase *>(tokenizer.getSymbolDatabase()), this, &mSettings);
         if (mSettings.debugnormal)
-            tokenizer.printDebugOutput(1);
+            tokenizer.printDebugOutput();
         checkNormalTokens(tokenizer);
         return mExitCode;
     }
@@ -756,18 +755,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     checkUnusedFunctions.parseTokens(mTokenizer, filename.c_str(), &mSettings);
 
                 // simplify more if required, skip rest of iteration if failed
-                if (mSimplify && hasRule("simple")) {
-                    std::cout << "Handling of \"simple\" rules is deprecated and will be removed in Cppcheck 2.5." << std::endl;
-
-                    // if further simplification fails then skip rest of iteration
-                    Timer timer3("Tokenizer::simplifyTokenList2", mSettings.showtime, &s_timerResults);
-                    result = mTokenizer.simplifyTokenList2();
-                    timer3.stop();
-                    if (!result)
-                        continue;
-
-                    if (!Settings::terminated())
-                        executeRules("simple", mTokenizer);
+                if (hasRule("simple")) {
+                    std::cout << "Handling of \"simple\" rules was removed in Cppcheck 2.1. Rule is executed on normal token list instead." << std::endl;
                 }
 
             } catch (const simplecpp::Output &o) {
@@ -971,6 +960,7 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
         }
 
         executeRules("normal", tokenizer);
+        executeRules("simple", tokenizer);
     }
 }
 

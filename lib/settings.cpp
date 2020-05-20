@@ -41,7 +41,6 @@ Settings::Settings()
       daca(false),
       debugBugHunting(false),
       debugnormal(false),
-      debugSimplified(false),
       debugtemplate(false),
       debugwarnings(false),
       dump(false),
