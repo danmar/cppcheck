@@ -37,6 +37,7 @@ before_install:
  - travis_retry python3 -m pip install --user pygments
  - travis_retry sudo python3 -m pip install demjson # installs jsonlint => sudo required
  - travis_retry python3 -m pip install --user natsort
+ - cp externals/z3_version_old.h externals/z3_version.h # because travis z3 version is old
 
 matrix:
 # do notify immediately about it when a job of a build fails.
@@ -112,7 +113,8 @@ matrix:
 # check if showtime=top5 works
         - ./tools/test_showtimetop5.sh
 # check matchcompiler
-        - ./tools/test_matchcompiler.py
+        - python2 tools/test_matchcompiler.py
+        - python3 tools/test_matchcompiler.py
 # check --dump
         - ${CPPCHECK} test/testpreprocessor.cpp --dump
         - xmllint --noout test/testpreprocessor.cpp.dump

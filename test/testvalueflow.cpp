@@ -25,6 +25,7 @@
 #include "valueflow.h"
 
 #include <simplecpp.h>
+#include <algorithm>
 #include <cmath>
 #include <list>
 #include <map>
@@ -306,7 +307,7 @@ private:
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
-        tokenizer.createTokens(&tokens2);
+        tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
 
         settings.debugwarnings = false;

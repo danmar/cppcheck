@@ -195,8 +195,8 @@ TemplateSimplifier::TokenAndName::TokenAndName(const TokenAndName& other) :
 
 TemplateSimplifier::TokenAndName::~TokenAndName()
 {
-    if (mToken)
-        mToken->templateSimplifierPointers().erase(this);
+    if (mToken && mToken->templateSimplifierPointers())
+        mToken->templateSimplifierPointers()->erase(this);
 }
 
 const Token * TemplateSimplifier::TokenAndName::aliasStartToken() const
@@ -3107,12 +3107,12 @@ void TemplateSimplifier::replaceTemplateUsage(
             Token::Match(nameTok, "template|const_cast|dynamic_cast|reinterpret_cast|static_cast"))
             continue;
 
-        std::set<TemplateSimplifier::TokenAndName*> & pointers = nameTok->templateSimplifierPointers();
+        std::set<TemplateSimplifier::TokenAndName*>* pointers = nameTok->templateSimplifierPointers();
 
         // check if instantiation matches token instantiation from pointer
-        if (pointers.size()) {
+        if (pointers && pointers->size()) {
             // check full name
-            if (instantiation.fullName() != (*pointers.begin())->fullName()) {
+            if (instantiation.fullName() != (*pointers->begin())->fullName()) {
                 // FIXME:  fallback to just matching name
                 if (nameTok->str() != instantiation.name())
                     continue;
@@ -3173,7 +3173,7 @@ void TemplateSimplifier::replaceTemplateUsage(
             nameTok->str(newName);
 
             for (Token *tok = nameTok1->next(); tok != tok2; tok = tok->next()) {
-                if (tok->isName() && !tok->templateSimplifierPointers().empty()) {
+                if (tok->isName() && tok->templateSimplifierPointers() && !tok->templateSimplifierPointers()->empty()) {
                     std::list<TokenAndName>::iterator ti;
                     for (ti = mTemplateInstantiations.begin(); ti != mTemplateInstantiations.end();) {
                         if (ti->token() == tok) {

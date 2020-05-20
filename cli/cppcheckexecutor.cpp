@@ -164,7 +164,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
         for (const ImportProject::FileSettings &fsetting : settings.project.fileSettings) {
             if (matchglob(mSettings->fileFilter, fsetting.filename)) {
-                newList.push_back(fsetting);
+                newList.emplace_back(fsetting);
             }
         }
         if (!newList.empty())
@@ -209,7 +209,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
 
     CheckUnusedFunctions::clear();
 
-    CppCheck cppCheck(*this, true);
+    CppCheck cppCheck(*this, true, executeCommand);
 
     const Settings& settings = cppCheck.settings();
     mSettings = &settings;
@@ -897,7 +897,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     if (!settings.buildDir.empty()) {
         std::list<std::string> fileNames;
         for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i)
-            fileNames.push_back(i->first);
+            fileNames.emplace_back(i->first);
         AnalyzerInformation::writeFilesTxt(settings.buildDir, fileNames, settings.project.fileSettings);
     }
 
@@ -1126,39 +1126,73 @@ bool CppCheckExecutor::tryLoadLibrary(Library& destination, const char* basepath
     if (err.errorcode == Library::UNKNOWN_ELEMENT)
         std::cout << "cppcheck: Found unknown elements in configuration file '" << filename << "': " << err.reason << std::endl;
     else if (err.errorcode != Library::OK) {
-        std::string errmsg;
+        std::cout << "cppcheck: Failed to load library configuration file '" << filename << "'. ";
         switch (err.errorcode) {
         case Library::OK:
             break;
         case Library::FILE_NOT_FOUND:
-            errmsg = "File not found";
+            std::cout << "File not found";
             break;
         case Library::BAD_XML:
-            errmsg = "Bad XML";
+            std::cout << "Bad XML";
             break;
         case Library::UNKNOWN_ELEMENT:
-            errmsg = "Unexpected element";
+            std::cout << "Unexpected element";
             break;
         case Library::MISSING_ATTRIBUTE:
-            errmsg = "Missing attribute";
+            std::cout << "Missing attribute";
             break;
         case Library::BAD_ATTRIBUTE_VALUE:
-            errmsg = "Bad attribute value";
+            std::cout << "Bad attribute value";
             break;
         case Library::UNSUPPORTED_FORMAT:
-            errmsg = "File is of unsupported format version";
+            std::cout << "File is of unsupported format version";
             break;
         case Library::DUPLICATE_PLATFORM_TYPE:
-            errmsg = "Duplicate platform type";
+            std::cout << "Duplicate platform type";
             break;
         case Library::PLATFORM_TYPE_REDEFINED:
-            errmsg = "Platform type redefined";
+            std::cout << "Platform type redefined";
             break;
         }
         if (!err.reason.empty())
-            errmsg += " '" + err.reason + "'";
-        std::cout << "cppcheck: Failed to load library configuration file '" << filename << "'. " << errmsg << std::endl;
+            std::cout << " '" + err.reason + "'";
+        std::cout << std::endl;
         return false;
     }
     return true;
 }
+
+/**
+ * Execute a shell command and read the output from it. Returns true if command terminated successfully.
+ */
+// cppcheck-suppress passedByValue
+bool CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string *output)
+{
+    output->clear();
+
+    std::string joinedArgs;
+    for (const std::string arg: args) {
+        if (!joinedArgs.empty())
+            joinedArgs += " ";
+        joinedArgs += arg;
+    }
+
+#ifdef _WIN32
+    // Extra quoutes are needed in windows if filename has space
+    if (exe.find(" ") != std::string::npos)
+        exe = "\"" + exe + "\"";
+    const std::string cmd = exe + " " + joinedArgs + " " + redirect;
+    std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
+#else
+    const std::string cmd = exe + " " + joinedArgs + " " + redirect;
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+#endif
+    if (!pipe)
+        return false;
+    char buffer[1024];
+    while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr)
+        *output += buffer;
+    return true;
+}
+

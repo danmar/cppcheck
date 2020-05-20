@@ -234,7 +234,7 @@ static void updateAddonCheckBox(QCheckBox *cb, const ProjectFile *projectFile, c
 {
     if (projectFile)
         cb->setChecked(projectFile->getAddons().contains(addon));
-    if (CheckThread::getAddonFilePath(dataDir, addon + ".py").isEmpty()) {
+    if (ProjectFile::getAddonFilePath(dataDir, addon).isEmpty()) {
         cb->setEnabled(false);
         cb->setText(cb->text() + QObject::tr(" (Not found)"));
     }

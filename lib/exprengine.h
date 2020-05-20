@@ -227,8 +227,8 @@ namespace ExprEngine {
 
         std::string getSymbolicExpression() const OVERRIDE;
 
-        ValuePtr getValueOfMember(const std::string &name) const {
-            auto it = member.find(name);
+        ValuePtr getValueOfMember(const std::string &n) const {
+            auto it = member.find(n);
             return (it == member.end()) ? ValuePtr() : it->second;
         }
         std::map<std::string, ValuePtr> member;

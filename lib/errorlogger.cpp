@@ -237,8 +237,8 @@ std::string ErrorMessage::serialize() const
     oss << Severity::toString(severity).length() << " " << Severity::toString(severity);
     oss << MathLib::toString(cwe.id).length() << " " << MathLib::toString(cwe.id);
     if (inconclusive) {
-        const std::string inconclusive("inconclusive");
-        oss << inconclusive.length() << " " << inconclusive;
+        const std::string text("inconclusive");
+        oss << text.length() << " " << text;
     }
 
     const std::string saneShortMessage = fixInvalidChars(mShortMessage);

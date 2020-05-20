@@ -124,7 +124,7 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
             // Alert only about unique errors
             std::string errmsg = msg.toString(mSettings.verbose);
             if (std::find(mErrorList.begin(), mErrorList.end(), errmsg) == mErrorList.end()) {
-                mErrorList.push_back(errmsg);
+                mErrorList.emplace_back(errmsg);
                 if (type == REPORT_ERROR)
                     mErrorLogger.reportErr(msg);
                 else
@@ -213,7 +213,7 @@ unsigned int ThreadExecutor::check()
                 close(pipes[0]);
                 mWpipe = pipes[1];
 
-                CppCheck fileChecker(*this, false);
+                CppCheck fileChecker(*this, false, CppCheckExecutor::executeCommand);
                 fileChecker.settings() = mSettings;
                 unsigned int resultOfCheck = 0;
 
@@ -441,7 +441,7 @@ unsigned int __stdcall ThreadExecutor::threadProc(void *args)
     // guard static members of CppCheck against concurrent access
     EnterCriticalSection(&threadExecutor->mFileSync);
 
-    CppCheck fileChecker(*threadExecutor, false);
+    CppCheck fileChecker(*threadExecutor, false, CppCheckExecutor::executeCommand);
     fileChecker.settings() = threadExecutor->mSettings;
 
     for (;;) {
@@ -522,7 +522,7 @@ void ThreadExecutor::report(const ErrorMessage &msg, MessageType msgType)
 
     EnterCriticalSection(&mErrorSync);
     if (std::find(mErrorList.begin(), mErrorList.end(), errmsg) == mErrorList.end()) {
-        mErrorList.push_back(errmsg);
+        mErrorList.emplace_back(errmsg);
         reportError = true;
     }
     LeaveCriticalSection(&mErrorSync);

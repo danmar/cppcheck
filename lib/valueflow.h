@@ -256,17 +256,7 @@ namespace ValueFlow {
 
         enum class LifetimeScope { Local, Argument } lifetimeScope;
 
-        static const char * toString(MoveKind moveKind) {
-            switch (moveKind) {
-            case MoveKind::NonMovedVariable:
-                return "NonMovedVariable";
-            case MoveKind::MovedVariable:
-                return "MovedVariable";
-            case MoveKind::ForwardedVariable:
-                return "ForwardedVariable";
-            }
-            return "";
-        }
+        static const char* toString(MoveKind moveKind);
 
         /** How known is this value */
         enum class ValueKind {

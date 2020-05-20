@@ -22,8 +22,10 @@
 #include "library.h"
 #include "settings.h"
 #include "symboldatabase.h"
+#include "tokenlist.h"
 #include "utils.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cctype>
 #include <cstring>
@@ -79,6 +81,8 @@ void Token::update_property_info()
         else if (std::isalpha((unsigned char)mStr[0]) || mStr[0] == '_' || mStr[0] == '$') { // Name
             if (mImpl->mVarId)
                 tokType(eVariable);
+            else if (mTokensFrontBack && mTokensFrontBack->list && mTokensFrontBack->list->isKeyword(mStr))
+                tokType(eKeyword);
             else if (mTokType != eVariable && mTokType != eFunction && mTokType != eType && mTokType != eKeyword)
                 tokType(eName);
         } else if (std::isdigit((unsigned char)mStr[0]) || (mStr.length() > 1 && mStr[0] == '-' && std::isdigit((unsigned char)mStr[1])))
@@ -249,13 +253,15 @@ void Token::swapWithNext()
         std::swap(mTokType, mNext->mTokType);
         std::swap(mFlags, mNext->mFlags);
         std::swap(mImpl, mNext->mImpl);
-        for (auto *templateSimplifierPointer : mImpl->mTemplateSimplifierPointers) {
-            templateSimplifierPointer->token(this);
-        }
+        if (mImpl->mTemplateSimplifierPointers)
+            for (auto *templateSimplifierPointer : *mImpl->mTemplateSimplifierPointers) {
+                templateSimplifierPointer->token(this);
+            }
 
-        for (auto *templateSimplifierPointer : mNext->mImpl->mTemplateSimplifierPointers) {
-            templateSimplifierPointer->token(mNext);
-        }
+        if (mNext->mImpl->mTemplateSimplifierPointers)
+            for (auto *templateSimplifierPointer : *mNext->mImpl->mTemplateSimplifierPointers) {
+                templateSimplifierPointer->token(mNext);
+            }
         if (mNext->mLink)
             mNext->mLink->mLink = this;
         if (this->mLink)
@@ -272,9 +278,10 @@ void Token::takeData(Token *fromToken)
     delete mImpl;
     mImpl = fromToken->mImpl;
     fromToken->mImpl = nullptr;
-    for (auto *templateSimplifierPointer : mImpl->mTemplateSimplifierPointers) {
-        templateSimplifierPointer->token(this);
-    }
+    if (mImpl->mTemplateSimplifierPointers)
+        for (auto *templateSimplifierPointer : *mImpl->mTemplateSimplifierPointers) {
+            templateSimplifierPointer->token(this);
+        }
     mLink = fromToken->mLink;
     if (mLink)
         mLink->link(this);
@@ -396,7 +403,7 @@ static int multiComparePercent(const Token *tok, const char*& haystack, nonneg i
         // Type (%type%)
     {
         haystack += 5;
-        if (tok->isName() && tok->varId() == 0 && !tok->isKeyword())
+        if (tok->isName() && tok->varId() == 0 && (tok->str() != "delete" || !tok->isKeyword())) // HACK: this is legacy behaviour, it should return false for all keywords, ecxcept types
             return 1;
     }
     break;
@@ -1017,7 +1024,7 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
 
         if (mImpl->mScopeInfo) {
             // If the brace is immediately closed there is no point opening a new scope for it
-            if (tokenStr == "{") {
+            if (newToken->str() == "{") {
                 std::string nextScopeNameAddition;
                 // This might be the opening of a member function
                 Token *tok1 = newToken;
@@ -1074,7 +1081,7 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
                 nextScopeNameAddition = "";
 
                 newToken->scopeInfo(newScopeInfo);
-            } else if (tokenStr == "}") {
+            } else if (newToken->str() == "}") {
                 Token* matchingTok = newToken->previous();
                 int depth = 0;
                 while (matchingTok && (depth != 0 || !Token::simpleMatch(matchingTok, "{"))) {
@@ -1091,7 +1098,7 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
                 } else {
                     newToken->mImpl->mScopeInfo = mImpl->mScopeInfo;
                 }
-                if (tokenStr == ";") {
+                if (newToken->str() == ";") {
                     const Token* statementStart;
                     for (statementStart = newToken; statementStart->previous() && !Token::Match(statementStart->previous(), ";|{"); statementStart = statementStart->previous());
                     if (Token::Match(statementStart, "using namespace %name% ::|;")) {
@@ -1538,6 +1545,14 @@ std::string Token::astStringVerbose() const
     return ret;
 }
 
+std::string Token::astStringZ3() const
+{
+    if (!astOperand1())
+        return str();
+    if (!astOperand2())
+        return "(" + str() + " " + astOperand1()->astStringZ3() + ")";
+    return "(" + str() + " " + astOperand1()->astStringZ3() + " " + astOperand2()->astStringZ3() + ")";
+}
 
 void Token::printValueFlow(bool xml, std::ostream &out) const
 {
@@ -2118,15 +2133,94 @@ std::shared_ptr<ScopeInfo2> Token::scopeInfo() const
     return mImpl->mScopeInfo;
 }
 
+bool Token::hasKnownIntValue() const
+{
+    if (!mImpl->mValues)
+        return false;
+    return std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value& value) {
+        return value.isKnown() && value.isIntValue();
+    });
+}
+
+bool Token::hasKnownValue() const
+{
+    return mImpl->mValues && std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), std::mem_fn(&ValueFlow::Value::isKnown));
+}
+
+bool Token::isImpossibleIntValue(const MathLib::bigint val) const
+{
+    if (!mImpl->mValues)
+        return false;
+    for (const auto& v : *mImpl->mValues) {
+        if (v.isIntValue() && v.isImpossible() && v.intvalue == val)
+            return true;
+        if (v.isIntValue() && v.bound == ValueFlow::Value::Bound::Lower && val > v.intvalue)
+            return true;
+        if (v.isIntValue() && v.bound == ValueFlow::Value::Bound::Upper && val < v.intvalue)
+            return true;
+    }
+    return false;
+}
+
+const ValueFlow::Value* Token::getValue(const MathLib::bigint val) const
+{
+    if (!mImpl->mValues)
+        return nullptr;
+    const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value& value) {
+        return value.isIntValue() && !value.isImpossible() && value.intvalue == val;
+    });
+    return it == mImpl->mValues->end() ? nullptr : &*it;
+}
+
+const ValueFlow::Value* Token::getMaxValue(bool condition) const
+{
+    if (!mImpl->mValues)
+        return nullptr;
+    const ValueFlow::Value* ret = nullptr;
+    for (const ValueFlow::Value& value : *mImpl->mValues) {
+        if (!value.isIntValue())
+            continue;
+        if (value.isImpossible())
+            continue;
+        if ((!ret || value.intvalue > ret->intvalue) &&
+            ((value.condition != nullptr) == condition))
+            ret = &value;
+    }
+    return ret;
+}
+
+const ValueFlow::Value* Token::getMovedValue() const
+{
+    if (!mImpl->mValues)
+        return nullptr;
+    const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value& value) {
+        return value.isMovedValue() && !value.isImpossible() &&
+               value.moveKind != ValueFlow::Value::MoveKind::NonMovedVariable;
+    });
+    return it == mImpl->mValues->end() ? nullptr : &*it;
+}
+
+const ValueFlow::Value* Token::getContainerSizeValue(const MathLib::bigint val) const
+{
+    if (!mImpl->mValues)
+        return nullptr;
+    const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value& value) {
+        return value.isContainerSizeValue() && !value.isImpossible() && value.intvalue == val;
+    });
+    return it == mImpl->mValues->end() ? nullptr : &*it;
+}
+
 TokenImpl::~TokenImpl()
 {
     delete mOriginalName;
     delete mValueType;
     delete mValues;
 
-    for (auto *templateSimplifierPointer : mTemplateSimplifierPointers) {
-        templateSimplifierPointer->token(nullptr);
-    }
+    if (mTemplateSimplifierPointers)
+        for (auto *templateSimplifierPointer : *mTemplateSimplifierPointers) {
+            templateSimplifierPointer->token(nullptr);
+        }
+    delete mTemplateSimplifierPointers;
 
     while (mCppcheckAttributes) {
         struct CppcheckAttributes *c = mCppcheckAttributes;

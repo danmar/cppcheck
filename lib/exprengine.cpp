@@ -144,6 +144,9 @@
 #include <iostream>
 #ifdef USE_Z3
 #include <z3++.h>
+#include <z3_version.h>
+#define GET_VERSION_INT(A,B,C)     ((A) * 10000 + (B) * 100 + (C))
+#define Z3_VERSION_INT             GET_VERSION_INT(Z3_MAJOR_VERSION, Z3_MINOR_VERSION, Z3_BUILD_NUMBER)
 #endif
 
 namespace {
@@ -784,7 +787,7 @@ struct ExprData {
     }
 
     z3::expr addFloat(const std::string &name) {
-#ifdef NEW_Z3
+#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
         z3::expr e = context.fpa_const(name.c_str(), 11, 53);
 #else
         z3::expr e = context.real_const(name.c_str());
@@ -806,7 +809,7 @@ struct ExprData {
         if (b->binop == "/")
             return op1 / op2;
         if (b->binop == "%")
-#ifdef NEW_Z3
+#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,5)
             return op1 % op2;
 #else
             return op1 - (op1 / op2) * op2;
@@ -839,7 +842,7 @@ struct ExprData {
             throw VerifyException(nullptr, "Can not solve expressions, operand value is null");
         if (auto intRange = std::dynamic_pointer_cast<ExprEngine::IntRange>(v)) {
             if (intRange->name[0] != '$')
-#ifdef NEW_Z3
+#if Z3_VERSION_INT >= GET_VERSION_INT(4,7,1)
                 return context.int_val(int64_t(intRange->minValue));
 #else
                 return context.int_val((long long)(intRange->minValue));
@@ -1611,15 +1614,44 @@ static ExprEngine::ValuePtr executeBinaryOp(const Token *tok, Data &data)
 {
     ExprEngine::ValuePtr v1 = executeExpression(tok->astOperand1(), data);
     ExprEngine::ValuePtr v2;
-    if (tok->str() == "&&" || tok->str() == "||") {
+
+    if (tok->str() == "?") {
+        if (tok->astOperand1()->hasKnownIntValue()) {
+            if (tok->astOperand1()->getKnownIntValue())
+                v2 = executeExpression(tok->astOperand2()->astOperand1(), data);
+            else
+                v2 = executeExpression(tok->astOperand2()->astOperand2(), data);
+            call(data.callbacks, tok, v2, &data);
+            return v2;
+        }
+
+        Data trueData(data);
+        trueData.addConstraint(v1, true);
+        auto trueValue = simplifyValue(executeExpression(tok->astOperand2()->astOperand1(), trueData));
+
+        Data falseData(data);
+        falseData.addConstraint(v1, false);
+        auto falseValue = simplifyValue(executeExpression(tok->astOperand2()->astOperand2(), falseData));
+
+        auto result = simplifyValue(std::make_shared<ExprEngine::BinOpResult>("?", v1, std::make_shared<ExprEngine::BinOpResult>(":", trueValue, falseValue)));
+        call(data.callbacks, tok, result, &data);
+        return result;
+
+    } else if (tok->str() == "&&" || tok->str() == "||") {
         Data data2(data);
         data2.addConstraint(v1, tok->str() == "&&");
         v2 = executeExpression(tok->astOperand2(), data2);
     } else {
         v2 = executeExpression(tok->astOperand2(), data);
     }
+
     if (v1 && v2) {
         auto result = simplifyValue(std::make_shared<ExprEngine::BinOpResult>(tok->str(), v1, v2));
+        call(data.callbacks, tok, result, &data);
+        return result;
+    }
+    if (tok->str() == "&&" && (v1 || v2)) {
+        auto result = v1 ? v1 : v2;
         call(data.callbacks, tok, result, &data);
         return result;
     }
@@ -1911,6 +1943,9 @@ static void execute(const Token *start, const Token *end, Data &data)
                     if (changedVariables.find(varid) != changedVariables.end())
                         continue;
                     changedVariables.insert(varid);
+                    auto oldValue = data.getValue(varid, nullptr, nullptr);
+                    if (oldValue && oldValue->isUninit())
+                        call(data.callbacks, tok2->astOperand1(), oldValue, &data);
                     data.assignValue(tok2, varid, getValueRangeFromValueType(data.getNewSymbolName(), tok2->astOperand1()->valueType(), *data.settings));
                 } else if (Token::Match(tok2, "++|--") && tok2->astOperand1() && tok2->astOperand1()->variable()) {
                     // give variable "any" value
@@ -1919,6 +1954,9 @@ static void execute(const Token *start, const Token *end, Data &data)
                     if (changedVariables.find(varid) != changedVariables.end())
                         continue;
                     changedVariables.insert(varid);
+                    auto oldValue = data.getValue(varid, nullptr, nullptr);
+                    if (oldValue && oldValue->type == ExprEngine::ValueType::UninitValue)
+                        call(data.callbacks, tok2, oldValue, &data);
                     data.assignValue(tok2, varid, getValueRangeFromValueType(data.getNewSymbolName(), vartok->valueType(), *data.settings));
                 }
             }
@@ -2062,6 +2100,8 @@ void ExprEngine::executeFunction(const Scope *functionScope, ErrorLogger *errorL
     try {
         execute(functionScope->bodyStart, functionScope->bodyEnd, data);
     } catch (VerifyException &e) {
+        if (settings->debugBugHunting)
+            report << "VerifyException tok.line:" << e.tok->linenr() << " what:" << e.what << "\n";
         trackExecution.setAbortLine(e.tok->linenr());
         auto bailoutValue = std::make_shared<BailoutValue>();
         for (const Token *tok = e.tok; tok != functionScope->bodyEnd; tok = tok->next()) {
@@ -2183,7 +2223,6 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
     };
 #endif
 
-#ifdef BUG_HUNTING_UNINIT
     std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> uninit = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
         if (!tok->astParent())
             return;
@@ -2247,7 +2286,6 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
         ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingUninit", "Cannot determine that '" + tok->expressionString() + "' is initialized", CWE_USE_OF_UNINITIALIZED_VARIABLE, false);
         errorLogger->reportErr(errmsg);
     };
-#endif
 
     std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> checkFunctionCall = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
         if (!Token::Match(tok->astParent(), "[(,]"))
@@ -2347,7 +2385,6 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             }
         }
 
-#ifdef BUG_HUNTING_UNINIT
         // Uninitialized function argument..
         if (settings->library.isuninitargbad(parent->astOperand1(), num) && settings->library.isnullargbad(parent->astOperand1(), num) && value.type == ExprEngine::ValueType::ArrayValue) {
             const ExprEngine::ArrayValue &arrayValue = static_cast<const ExprEngine::ArrayValue &>(value);
@@ -2362,7 +2399,6 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
                 }
             }
         }
-#endif
     };
 
     std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> checkAssignment = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
@@ -2404,9 +2440,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
 #ifdef BUG_HUNTING_INTEGEROVERFLOW
     callbacks.push_back(integerOverflow);
 #endif
-#ifdef BUG_HUNTING_UNINIT
     callbacks.push_back(uninit);
-#endif
 
     std::ostringstream report;
     ExprEngine::executeAllFunctions(errorLogger, tokenizer, settings, callbacks, report);

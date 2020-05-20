@@ -5,6 +5,7 @@
 #include "token.h"
 #include "valueptr.h"
 
+#include <algorithm>
 #include <functional>
 
 struct ForwardTraversal {
@@ -35,7 +36,7 @@ struct ForwardTraversal {
             if (out)
                 *out = tok->link();
             return Progress::Skip;
-        } else if (Token::Match(tok, "?|&&|%oror%") && tok->astOperand1() && tok->astOperand2()) {
+        } else if (tok->astOperand1() && tok->astOperand2() && Token::Match(tok, "?|&&|%oror%")) {
             if (traverseConditional(tok, f, traverseUnknown) == Progress::Break)
                 return Progress::Break;
             if (out)
@@ -48,7 +49,7 @@ struct ForwardTraversal {
             if (out)
                 *out = lambdaEndToken;
             // Skip class scope
-        } else if (Token::simpleMatch(tok, "{") && tok->scope() && tok->scope()->isClassOrStruct()) {
+        } else if (tok->str() == "{" && tok->scope() && tok->scope()->isClassOrStruct()) {
             if (out)
                 *out = tok->link();
         } else {
@@ -88,15 +89,15 @@ struct ForwardTraversal {
                 checkThen = true;
                 checkElse = true;
             }
-            if (Token::simpleMatch(childTok, ":")) {
+            if (childTok->str() == ":") {
                 if (checkThen && traverseRecursive(childTok->astOperand1(), f, traverseUnknown) == Progress::Break)
                     return Progress::Break;
                 if (checkElse && traverseRecursive(childTok->astOperand2(), f, traverseUnknown) == Progress::Break)
                     return Progress::Break;
             } else {
-                if (!checkThen && Token::simpleMatch(tok, "&&"))
+                if (!checkThen && tok->str() == "&&")
                     return Progress::Continue;
-                if (!checkElse && Token::simpleMatch(tok, "||"))
+                if (!checkElse && tok->str() == "||")
                     return Progress::Continue;
                 if (traverseRecursive(childTok, f, traverseUnknown) == Progress::Break)
                     return Progress::Break;
@@ -238,15 +239,17 @@ struct ForwardTraversal {
         for (Token* tok = start; tok && tok != end; tok = tok->next()) {
             Token* next = nullptr;
 
-            // Skip casts..
-            if (tok->str() == "(" && !tok->astOperand2() && tok->isCast()) {
-                tok = tok->link();
-                continue;
-            }
-            // Skip template arguments..
-            if (tok->str() == "<" && tok->link()) {
-                tok = tok->link();
-                continue;
+            if (tok->link()) {
+                // Skip casts..
+                if (tok->str() == "(" && !tok->astOperand2() && tok->isCast()) {
+                    tok = tok->link();
+                    continue;
+                }
+                // Skip template arguments..
+                if (tok->str() == "<") {
+                    tok = tok->link();
+                    continue;
+                }
             }
 
             // Evaluate RHS of assignment before LHS
@@ -260,7 +263,7 @@ struct ForwardTraversal {
                 tok = nextAfterAstRightmostLeaf(assignTok);
                 if (!tok)
                     return Progress::Break;
-            } else if (Token::simpleMatch(tok, "break")) {
+            } else if (tok->str() ==  "break") {
                 const Scope* scope = findBreakScope(tok->scope());
                 if (!scope)
                     return Progress::Break;
@@ -270,27 +273,31 @@ struct ForwardTraversal {
                 // TODO: Don't break, instead move to the outer scope
                 if (!tok)
                     return Progress::Break;
-            } else if (Token::Match(tok, "%name% :") || Token::simpleMatch(tok, "case")) {
+            } else if (Token::Match(tok, "%name% :") || tok->str() == "case") {
                 if (!analyzer->lowerToPossible())
                     return Progress::Break;
-            } else if (Token::simpleMatch(tok, "}") && Token::Match(tok->link()->previous(), ")|else {")) {
-                const bool inElse = Token::simpleMatch(tok->link()->previous(), "else {");
-                const Token* condTok = getCondTokFromEnd(tok);
-                if (!condTok)
-                    return Progress::Break;
-                if (!condTok->hasKnownIntValue()) {
+            } else if (tok->link() && tok->str() == "}") {
+                if (Token::Match(tok->link()->previous(), ")|else {")) {
+                    const bool inElse = Token::simpleMatch(tok->link()->previous(), "else {");
+                    const Token* condTok = getCondTokFromEnd(tok);
+                    if (!condTok)
+                        return Progress::Break;
+                    if (!condTok->hasKnownIntValue()) {
+                        if (!analyzer->lowerToPossible())
+                            return Progress::Break;
+                    } else if (condTok->values().front().intvalue == !inElse) {
+                        return Progress::Break;
+                    }
+                    analyzer->assume(condTok, !inElse, tok);
+                    if (Token::simpleMatch(tok, "} else {"))
+                        tok = tok->linkAt(2);
+                } else if (Token::simpleMatch(tok->link()->previous(), "try {")) {
                     if (!analyzer->lowerToPossible())
                         return Progress::Break;
-                } else if (condTok->values().front().intvalue == !inElse) {
-                    return Progress::Break;
-                }
-                analyzer->assume(condTok, !inElse, tok);
-                if (Token::simpleMatch(tok, "} else {"))
+                } else if (Token::simpleMatch(tok->next(), "else {")) {
                     tok = tok->linkAt(2);
-            } else if (Token::simpleMatch(tok, "}") && Token::simpleMatch(tok->link()->previous(), "try {")) {
-                if (!analyzer->lowerToPossible())
-                    return Progress::Break;
-            } else if (Token::Match(tok, "if|while|for (") && Token::simpleMatch(tok->next()->link(), ") {")) {
+                }
+            } else if (tok->isControlFlowKeyword() && Token::Match(tok, "if|while|for (") && Token::simpleMatch(tok->next()->link(), ") {")) {
                 Token* endCond = tok->next()->link();
                 Token* endBlock = endCond->next()->link();
                 Token* condTok = getCondTok(tok);
@@ -372,8 +379,6 @@ struct ForwardTraversal {
                         analyzer->assume(condTok, elseAction.isModified());
                     }
                 }
-            } else if (Token::simpleMatch(tok, "} else {")) {
-                tok = tok->linkAt(2);
             } else if (Token::simpleMatch(tok, "try {")) {
                 Token* endBlock = tok->next()->link();
                 ForwardAnalyzer::Action a = analyzeScope(endBlock);
@@ -420,7 +425,7 @@ struct ForwardTraversal {
 
     static Token* assignExpr(Token* tok) {
         while (tok->astParent() && astIsLHS(tok)) {
-            if (Token::Match(tok->astParent(), "%assign%"))
+            if (tok->astParent()->isAssignmentOp())
                 return tok->astParent();
             tok = tok->astParent();
         }
@@ -456,7 +461,7 @@ struct ForwardTraversal {
             return nullptr;
         if (Token::Match(tok, "%name% ("))
             return getInitTok(tok->next());
-        if (!Token::simpleMatch(tok, "("))
+        if (tok->str() !=  "(")
             return nullptr;
         if (!Token::simpleMatch(tok->astOperand2(), ";"))
             return nullptr;
@@ -470,7 +475,7 @@ struct ForwardTraversal {
             return nullptr;
         if (Token::Match(tok, "%name% ("))
             return getStepTok(tok->next());
-        if (!Token::simpleMatch(tok, "("))
+        if (tok->str() != "(")
             return nullptr;
         if (!Token::simpleMatch(tok->astOperand2(), ";"))
             return nullptr;

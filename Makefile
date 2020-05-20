@@ -207,6 +207,7 @@ LIBOBJ =      $(libcppdir)/analyzerinfo.o \
               $(libcppdir)/token.o \
               $(libcppdir)/tokenize.o \
               $(libcppdir)/tokenlist.o \
+              $(libcppdir)/utils.o \
               $(libcppdir)/valueflow.o
 
 EXTOBJ =      externals/simplecpp/simplecpp.o \
@@ -304,7 +305,7 @@ check:	all
 checkcfg:	cppcheck validateCFG
 	./test/cfg/runtests.sh
 
-dmake:	tools/dmake.o cli/filelister.o $(libcppdir)/pathmatch.o $(libcppdir)/path.o externals/simplecpp/simplecpp.o
+dmake:	tools/dmake.o cli/filelister.o $(libcppdir)/pathmatch.o $(libcppdir)/path.o $(libcppdir)/utils.o externals/simplecpp/simplecpp.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 run-dmake: dmake
@@ -383,7 +384,7 @@ validatePlatforms: ${PlatformFilesCHECKED}
 /tmp/errorlist.xml: cppcheck
 	./cppcheck --errorlist >$@
 /tmp/example.xml: cppcheck
-	./cppcheck --xml --enable=all --inconclusive --suppress=operatorEqVarError:*check.h --max-configs=1 -j 4 cli externals gui lib test 2>/tmp/example.xml
+	./cppcheck --xml --enable=all --inconclusive --max-configs=1 samples 2>/tmp/example.xml
 createXMLExamples:/tmp/errorlist.xml /tmp/example.xml
 .PHONY: validateXML
 validateXML: createXMLExamples
@@ -543,7 +544,7 @@ $(libcppdir)/templatesimplifier.o: lib/templatesimplifier.cpp lib/config.h lib/e
 $(libcppdir)/timer.o: lib/timer.cpp lib/config.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(libcppdir)/timer.o $(libcppdir)/timer.cpp
 
-$(libcppdir)/token.o: lib/token.cpp lib/astutils.h lib/config.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/utils.h lib/valueflow.h
+$(libcppdir)/token.o: lib/token.cpp lib/astutils.h lib/config.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenlist.h lib/utils.h lib/valueflow.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(libcppdir)/token.o $(libcppdir)/token.cpp
 
 $(libcppdir)/tokenize.o: lib/tokenize.cpp lib/check.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h

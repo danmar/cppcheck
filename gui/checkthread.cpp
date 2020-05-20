@@ -32,10 +32,37 @@
 #include "cppcheck.h"
 #include "common.h"
 
+static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string *output)
+{
+    output->clear();
+
+    QStringList args2;
+    for (std::string arg: args)
+        args2 << QString::fromStdString(arg);
+
+    QProcess process;
+    process.start(QString::fromStdString(exe), args2);
+    process.waitForFinished();
+
+    if (redirect == "2>&1") {
+        QString s1 = process.readAllStandardOutput();
+        QString s2 = process.readAllStandardError();
+        *output = (s1 + "\n" + s2).toStdString();
+    } else
+        *output = process.readAllStandardOutput().toStdString();
+
+    if (redirect.compare(0,3,"2> ") == 0) {
+        std::ofstream fout(redirect.substr(3));
+        fout << process.readAllStandardError().toStdString();
+    }
+    return process.exitCode() == 0;
+}
+
+
 CheckThread::CheckThread(ThreadResult &result) :
     mState(Ready),
     mResult(result),
-    mCppcheck(result, true),
+    mCppcheck(result, true, executeCommand),
     mAnalyseWholeProgram(false)
 {
     //ctor
@@ -269,75 +296,6 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
             }
 
             parseClangErrors(addon, fileName, errout);
-        } else {
-            const QString python = CheckThread::pythonCmd();
-            if (python.isEmpty())
-                continue;
-
-            const QString addonFilePath = CheckThread::getAddonFilePath(mDataDir, addon + ".py");
-            if (addonFilePath.isEmpty())
-                continue;
-
-            if (dumpFile.isEmpty()) {
-                const std::string buildDir = mCppcheck.settings().buildDir;
-                mCppcheck.settings().buildDir.clear();
-                mCppcheck.settings().dump = true;
-                if (!buildDir.empty()) {
-                    mCppcheck.settings().dumpFile = AnalyzerInformation::getAnalyzerInfoFile(buildDir, fileName.toStdString(), fileSettings ? fileSettings->cfg : std::string()) + ".dump";
-                    dumpFile = QString::fromStdString(mCppcheck.settings().dumpFile);
-                } else {
-                    dumpFile = fileName + ".dump";
-                }
-                if (fileSettings)
-                    mCppcheck.check(*fileSettings);
-                else
-                    mCppcheck.check(fileName.toStdString());
-                mCppcheck.settings().dump = false;
-                mCppcheck.settings().dumpFile.clear();
-                mCppcheck.settings().buildDir = buildDir;
-            }
-
-            QStringList args;
-            args << addonFilePath << "--cli" << dumpFile;
-            if (addon == "misra" && !mMisraFile.isEmpty() && QFileInfo(mMisraFile).exists()) {
-                if (mMisraFile.endsWith(".pdf", Qt::CaseInsensitive))
-                    args << "--misra-pdf=" + mMisraFile;
-                else
-                    args << "--rule-texts=" + mMisraFile;
-            }
-            qDebug() << python << args;
-
-            QProcess process;
-            QProcessEnvironment env = process.processEnvironment();
-            if (!env.contains("PYTHONHOME") && !python.startsWith("python")) {
-                env.insert("PYTHONHOME", QFileInfo(python).canonicalPath());
-                process.setProcessEnvironment(env);
-            }
-            process.start(python, args);
-            if (!process.waitForFinished()) {
-                const QString errMsg("ERROR: Process '" + python + " " + args.join(" ") +
-                                     "' did not finish successfully: " + process.errorString());
-                qWarning() << errMsg;
-                mResult.reportOut(errMsg.toStdString());
-            }
-            const QByteArray errout = process.readAllStandardError();
-            if (process.exitCode() != 0 && !errout.isEmpty()) {
-                const QString errMsg("ERROR: Process '" + python + " " + args.join(" ") +
-                                     "' failed with error code " +
-                                     QString::number(process.exitCode()) + ": '" +
-                                     process.errorString() +
-                                     "'\nError output: " + errout);
-                qWarning() << errMsg;
-                mResult.reportOut(errMsg.toStdString());
-            }
-            const QString output(process.readAllStandardOutput());
-            QFile f(dumpFile + '-' + addon + "-results");
-            if (f.open(QIODevice::WriteOnly | QIODevice::Text)) {
-                QTextStream out(&f);
-                out << output;
-                f.close();
-            }
-            parseAddonErrors(output, addon);
         }
     }
 
@@ -350,47 +308,6 @@ void CheckThread::stop()
 {
     mState = Stopping;
     mCppcheck.terminate();
-}
-
-void CheckThread::parseAddonErrors(QString err, const QString &tool)
-{
-    Q_UNUSED(tool)
-    QTextStream in(&err, QIODevice::ReadOnly);
-    while (!in.atEnd()) {
-        QString line = in.readLine();
-        if (!line.startsWith("{"))
-            continue;
-
-        const QJsonDocument doc = QJsonDocument::fromJson(line.toLocal8Bit());
-        const QJsonObject obj = doc.object();
-
-        /*
-        msg = { 'file': location.file,
-                'linenr': location.linenr,
-                'column': location.column,
-                'severity': severity,
-                'message': message,
-                'addon': addon,
-                'errorId': errorId,
-                'extra': extra}
-        */
-
-        const std::string &filename = obj["file"].toString().toStdString();
-        const int lineNumber = obj["linenr"].toInt();
-        const int column = obj["column"].toInt();
-        const std::string severity = obj["severity"].toString().toStdString();
-        const std::string message = obj["message"].toString().toStdString();
-        const std::string id = (obj["addon"].toString() + "-" + obj["errorId"].toString()).toStdString();
-
-        std::list<ErrorMessage::FileLocation> callstack;
-        callstack.push_back(ErrorMessage::FileLocation(filename, lineNumber, column));
-        ErrorMessage errmsg(callstack, filename, Severity::fromString(severity), message, id, false);
-
-        if (isSuppressed(errmsg.toSuppressionsErrorMessage()))
-            continue;
-
-        mResult.reportErr(errmsg);
-    }
 }
 
 void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QString err)
@@ -545,48 +462,6 @@ QString CheckThread::clangTidyCmd()
     if (QFileInfo("C:/Program Files/LLVM/bin/clang-tidy.exe").exists())
         return "C:/Program Files/LLVM/bin/clang-tidy.exe";
 #endif
-
-    return QString();
-}
-
-QString CheckThread::pythonCmd()
-{
-    QString path = QSettings().value(SETTINGS_PYTHON_PATH).toString();
-    if (!path.isEmpty())
-        return path;
-
-    path = "python";
-#ifdef Q_OS_WIN
-    path += ".exe";
-#endif
-
-    QProcess process;
-    process.start(path, QStringList() << "--version");
-    process.waitForFinished();
-    if (process.exitCode() == 0)
-        return path;
-
-    return QString();
-}
-
-QString CheckThread::getAddonFilePath(const QString &dataDir, const QString &addonFile)
-{
-    const QStringList paths = QStringList() << "/" << "/addons/" << "/../addons/";
-
-    if (!dataDir.isEmpty()) {
-        foreach (const QString p, paths) {
-            const QString filePath(dataDir + p + addonFile);
-            if (QFileInfo(filePath).exists())
-                return filePath;
-        }
-    }
-
-    const QString appPath = QApplication::applicationDirPath();
-    foreach (const QString p, paths) {
-        const QString filePath(appPath + p + addonFile);
-        if (QFileInfo(filePath).exists())
-            return filePath;
-    }
 
     return QString();
 }

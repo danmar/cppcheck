@@ -3,6 +3,7 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "valueflow.h"
+#include <algorithm>
 
 const Scope* PathAnalysis::findOuterScope(const Scope * scope)
 {

@@ -59,7 +59,7 @@ static void addFilesToList(const std::string& fileList, std::vector<std::string>
         std::string fileName;
         while (std::getline(*files, fileName)) { // next line
             if (!fileName.empty()) {
-                pathNames.push_back(fileName);
+                pathNames.emplace_back(fileName);
             }
         }
     }
@@ -79,7 +79,7 @@ static bool addIncludePathsToList(const std::string& fileList, std::list<std::st
                 if (!endsWith(pathName, '/'))
                     pathName += '/';
 
-                pathNames->push_back(pathName);
+                pathNames->emplace_back(pathName);
             }
         }
         return true;
@@ -185,7 +185,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 if (!endsWith(path,'/'))
                     path += '/';
 
-                mSettings->includePaths.push_back(path);
+                mSettings->includePaths.emplace_back(path);
             }
 
             // User undef
@@ -231,9 +231,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->clang = true;
 
             else if (std::strncmp(argv[i], "--config-exclude=",17) ==0) {
-                std::string path = argv[i] + 17;
-                path = Path::fromNativeSeparators(path);
-                mSettings->configExcludePaths.insert(path);
+                mSettings->configExcludePaths.insert(Path::fromNativeSeparators(argv[i] + 17));
             }
 
             else if (std::strncmp(argv[i], "--config-excludes-file=", 23) == 0) {
@@ -354,7 +352,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // use a file filter
             else if (std::strncmp(argv[i], "--file-filter=", 14) == 0)
-                mSettings->fileFilter = std::string(argv[i] + 14);
+                mSettings->fileFilter = argv[i] + 14;
 
             // file list specified
             else if (std::strncmp(argv[i], "--file-list=", 12) == 0)
@@ -402,14 +400,12 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         if (!endsWith(path, '/'))
                             path += '/';
                     }
-                    mIgnoredPaths.push_back(path);
+                    mIgnoredPaths.emplace_back(path);
                 }
             }
 
             else if (std::strncmp(argv[i], "--include=", 10) == 0) {
-                std::string path = argv[i] + 10;
-                path = Path::fromNativeSeparators(path);
-                mSettings->userIncludes.push_back(path);
+                mSettings->userIncludes.emplace_back(Path::fromNativeSeparators(argv[i] + 10));
             }
 
             else if (std::strncmp(argv[i], "--includes-file=", 16) == 0) {
@@ -513,8 +509,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // --library
             else if (std::strncmp(argv[i], "--library=", 10) == 0) {
-                std::string lib(argv[i] + 10);
-                mSettings->libraries.push_back(lib);
+                mSettings->libraries.emplace_back(argv[i] + 10);
             }
 
             // Set maximum number of #ifdef configurations to check
@@ -588,7 +583,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 if (projType == ImportProject::Type::CPPCHECK_GUI) {
                     mPathNames = mSettings->project.guiProject.pathNames;
                     for (const std::string &lib : mSettings->project.guiProject.libraries)
-                        mSettings->libraries.push_back(lib);
+                        mSettings->libraries.emplace_back(lib);
 
                     for (const std::string &ignorePath : mSettings->project.guiProject.excludedPaths)
                         mIgnoredPaths.emplace_back(ignorePath);
@@ -660,10 +655,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     for (;;) {
                         const std::string::size_type pos = paths.find(';');
                         if (pos == std::string::npos) {
-                            mSettings->basePaths.push_back(Path::fromNativeSeparators(paths));
+                            mSettings->basePaths.emplace_back(Path::fromNativeSeparators(paths));
                             break;
                         }
-                        mSettings->basePaths.push_back(Path::fromNativeSeparators(paths.substr(0, pos)));
+                        mSettings->basePaths.emplace_back(Path::fromNativeSeparators(paths.substr(0, pos)));
                         paths.erase(0, pos + 1);
                     }
                 } else {
@@ -682,7 +677,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--rule=", 7) == 0) {
                 Settings::Rule rule;
                 rule.pattern = 7 + argv[i];
-                mSettings->rules.push_back(rule);
+                mSettings->rules.emplace_back(rule);
             }
 
             // Rule file
@@ -718,7 +713,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         }
 
                         if (!rule.pattern.empty())
-                            mSettings->rules.push_back(rule);
+                            mSettings->rules.emplace_back(rule);
                     }
                 } else {
                     printMessage("cppcheck: error: unable to load rule-file: " + std::string(12+argv[i]));
@@ -739,10 +734,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 else if (showtimeMode.empty())
                     mSettings->showtime = SHOWTIME_MODES::SHOWTIME_NONE;
                 else {
-                    std::string message("cppcheck: error: unrecognized showtime mode: \"");
-                    message += showtimeMode;
-                    message += "\". Supported modes: file, summary, top5.";
-                    printMessage(message);
+                    printMessage("cppcheck: error: unrecognized showtime mode: \"" + showtimeMode + "\". Supported modes: file, summary, top5.");
                     return false;
                 }
             }
@@ -899,9 +891,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
         }
 
         else {
-            std::string path = Path::removeQuotationMarks(argv[i]);
-            path = Path::fromNativeSeparators(path);
-            mPathNames.push_back(path);
+            mPathNames.emplace_back(Path::fromNativeSeparators(Path::removeQuotationMarks(argv[i])));
         }
     }
 

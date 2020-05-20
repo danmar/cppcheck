@@ -50,7 +50,9 @@ public:
     /**
      * @brief Constructor.
      */
-    CppCheck(ErrorLogger &errorLogger, bool useGlobalSuppressions);
+    CppCheck(ErrorLogger &errorLogger,
+             bool useGlobalSuppressions,
+             std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> executeCommand);
 
     /**
      * @brief Destructor.
@@ -231,6 +233,9 @@ private:
     std::list<Check::FileInfo*> mFileInfo;
 
     AnalyzerInformation mAnalyzerInformation;
+
+    /** Callback for executing a shell command (exe, args, output) */
+    std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> mExecuteCommand;
 };
 
 /// @}
