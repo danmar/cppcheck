@@ -44,9 +44,9 @@ private:
         settings0.addEnabled("warning");
 
         const char cfg[] = "<?xml version=\"1.0\"?>\n"
-                           "<def>\n"
-                           "  <function name=\"bar\"> <pure/> </function>\n"
-                           "</def>";
+        "<def>\n"
+        "  <function name=\"bar\"> <pure/> </function>\n"
+        "</def>";
         tinyxml2::XMLDocument xmldoc;
         xmldoc.Parse(cfg, sizeof(cfg));
         settings1.addEnabled("style");
