@@ -56,8 +56,8 @@ static std::string objfiles(const std::vector<std::string> &files)
 
 static void getDeps(const std::string &filename, std::vector<std::string> &depfiles)
 {
-	if (filename == "externals/z3_version.h")
-		return;
+    if (filename == "externals/z3_version.h")
+        return;
 
     static const std::vector<std::string> externalfolders = {"externals",
                                                              "externals/simplecpp",
