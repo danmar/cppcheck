@@ -205,7 +205,7 @@ private:
               "            tok = tok->next();\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (warning) Either the condition 'while' is redundant or there is possible null pointer dereference: tok.\n", errout.str());
+        TODO_ASSERT_EQUALS("", "[test.cpp:5] -> [test.cpp:3]: (warning) Either the condition 'while' is redundant or there is possible null pointer dereference: tok.\n", errout.str());
 
         check("void foo(Token &tok)\n"
               "{\n"
@@ -273,6 +273,18 @@ private:
               "    while (tok){;}\n"
               "    char a[2] = {0,0};\n"
               "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct b {\n"
+              "    b * c;\n"
+              "    int i;\n"
+              "}\n"
+              "void a(b * e) {\n"
+              "  for (b *d = e;d; d = d->c)\n"
+              "    while (d && d->i == 0)\n"
+              "      d = d->c;\n"
+              "  if (!d) throw;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
