@@ -195,7 +195,13 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
 
     // read/write member variable
     if (firstOperand && parent->originalName() == "->" && (!parent->astParent() || parent->astParent()->str() != "&")) {
-        if (!parent->astParent() || parent->astParent()->str() != "(" || parent->astParent() == tok->previous())
+        if (!parent->astParent())
+            return true;
+        if (!Token::Match(parent->astParent()->previous(), "if|while|for|switch ("))
+            return true;
+        if (!Token::Match(parent->astParent()->previous(), "%name% ("))
+            return true;
+        if (parent->astParent() == tok->previous())
             return true;
         unknown = true;
         return false;
@@ -250,73 +256,6 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
     return false;
 }
 
-
-void CheckNullPointer::nullPointerLinkedList()
-{
-
-    if (!mSettings->isEnabled(Settings::WARNING))
-        return;
-
-    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
-
-    // looping through items in a linked list in a inner loop.
-    // Here is an example:
-    //    for (const Token *tok = tokens; tok; tok = tok->next) {
-    //        if (tok->str() == "hello")
-    //            tok = tok->next;   // <- tok might become a null pointer!
-    //    }
-    for (const Scope &forScope : symbolDatabase->scopeList) {
-        const Token* const tok1 = forScope.classDef;
-        // search for a "for" scope..
-        if (forScope.type != Scope::eFor || !tok1)
-            continue;
-
-        // is there any dereferencing occurring in the for statement
-        const Token* end2 = tok1->linkAt(1);
-        for (const Token *tok2 = tok1->tokAt(2); tok2 != end2; tok2 = tok2->next()) {
-            // Dereferencing a variable inside the "for" parentheses..
-            if (Token::Match(tok2, "%var% . %name%")) {
-                // Is this variable a pointer?
-                const Variable *var = tok2->variable();
-                if (!var || !var->isPointer())
-                    continue;
-
-                // Variable id for dereferenced variable
-                const unsigned int varid(tok2->varId());
-
-                if (Token::Match(tok2->tokAt(-2), "%varid% ?", varid))
-                    continue;
-
-                // Check usage of dereferenced variable in the loop..
-                // TODO: Move this to ValueFlow
-                for (const Scope *innerScope : forScope.nestedList) {
-                    if (innerScope->type != Scope::eWhile)
-                        continue;
-
-                    // TODO: are there false negatives for "while ( %varid% ||"
-                    if (Token::Match(innerScope->classDef->next(), "( %varid% &&|)", varid)) {
-                        // Make sure there is a "break" or "return" inside the loop.
-                        // Without the "break" a null pointer could be dereferenced in the
-                        // for statement.
-                        for (const Token *tok4 = innerScope->bodyStart; tok4; tok4 = tok4->next()) {
-                            if (tok4 == forScope.bodyEnd) {
-                                const ValueFlow::Value v(innerScope->classDef, 0LL);
-                                nullPointerError(tok1, var->name(), &v, false);
-                                break;
-                            }
-
-                            // There is a "break" or "return" inside the loop.
-                            // TODO: there can be false negatives. There could still be
-                            //       execution paths that are not properly terminated
-                            else if (tok4->str() == "break" || tok4->str() == "return")
-                                break;
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 
 static bool isNullablePointer(const Token* tok, const Settings* settings)
 {
@@ -374,7 +313,6 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
 
 void CheckNullPointer::nullPointer()
 {
-    nullPointerLinkedList();
     nullPointerByDeRefAndChec();
 }
 

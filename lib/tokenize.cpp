@@ -1686,6 +1686,8 @@ namespace {
 
     void setScopeInfo(Token *tok, std::list<ScopeInfo3> *scopeInfo, bool all = false)
     {
+        if (!tok)
+            return;
         while (tok->str() == "}" && !scopeInfo->empty() && tok == scopeInfo->back().bodyEnd)
             scopeInfo->pop_back();
         if (!Token::Match(tok, "namespace|class|struct|union %name% {|:|::")) {
@@ -5902,7 +5904,7 @@ bool Tokenizer::simplifyConditions()
                  Token::simpleMatch(tok, "|| true ||")) {
             //goto '('
             Token *tok2 = tok;
-            while (tok2->previous()) {
+            while (tok2 && tok2->previous()) {
                 if (tok2->previous()->str() == ")")
                     tok2 = tok2->previous()->link();
                 else {
@@ -6466,7 +6468,7 @@ void Tokenizer::simplifyFunctionPointers()
             !(Token::Match(tok2, "%name% (") && Token::simpleMatch(tok2->linkAt(1), ") ) (")))
             continue;
 
-        while (tok->str() != "(")
+        while (tok && tok->str() != "(")
             tok = tok->next();
 
         // check that the declaration ends
