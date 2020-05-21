@@ -205,7 +205,7 @@ private:
               "            tok = tok->next();\n"
               "    }\n"
               "}");
-        TODO_ASSERT_EQUALS("", "[test.cpp:5] -> [test.cpp:3]: (warning) Either the condition 'while' is redundant or there is possible null pointer dereference: tok.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (warning) Either the condition 'while' is redundant or there is possible null pointer dereference: tok.\n", "", errout.str());
 
         check("void foo(Token &tok)\n"
               "{\n"
