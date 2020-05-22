@@ -4136,6 +4136,19 @@ private:
               true);
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (error) Calling 'push_back' while iterating the container is invalid.\n", errout.str());
 
+        // #9713
+        check("void f() {\n"
+              "  std::vector<int> v{1, 2, 3};\n"
+              "  for (int i : v) {\n"
+              "    if (i == 2) {\n"
+              "      v.clear();\n"
+              "      return;\n"
+              "    }\n"
+              "  }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::any_of algorithm instead of a raw loop.\n", errout.str());
+
     }
 
     void findInsert() {

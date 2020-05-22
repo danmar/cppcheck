@@ -881,6 +881,11 @@ void CheckStl::invalidContainerLoop()
                     continue;
                 if (!isInvalidMethod(tok2))
                     continue;
+                const Scope* s = tok2->scope();
+                if (!s)
+                    continue;
+                if (isReturnScope(s->bodyEnd, &mSettings->library))
+                    continue;
                 invalidContainerLoopError(tok2, tok);
                 break;
             }
