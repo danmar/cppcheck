@@ -7852,9 +7852,14 @@ private:
         // [
         // `-(
         //   `-{
-        ASSERT_EQUALS("x{([( ai=", testAst("x([&a](int i){a=i;});"));
 
+        ASSERT_EQUALS("x{([( ai=", testAst("x([&a](int i){a=i;});"));
         ASSERT_EQUALS("{([(return 0return", testAst("return [](){ return 0; }();"));
+
+        // noexcept
+        ASSERT_EQUALS("x{([( ai=", testAst("x([](int i)noexcept{a=i;});"));
+
+        // ->
         ASSERT_EQUALS("{([(return 0return", testAst("return []() -> int { return 0; }();"));
         ASSERT_EQUALS("{([(return 0return", testAst("return [something]() -> int { return 0; }();"));
         ASSERT_EQUALS("{([cd,(return 0return", testAst("return [](int a, int b) -> int { return 0; }(c, d);"));

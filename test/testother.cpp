@@ -8423,6 +8423,13 @@ private:
               "    g(y.x);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // allow known argument value in assert call
+        check("void g(int);\n"
+              "void f(int x) {\n"
+              "   ASSERT((int)((x & 0x01) >> 7));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkComparePointers() {
