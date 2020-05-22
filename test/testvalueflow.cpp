@@ -93,6 +93,7 @@ private:
         TEST_CASE(valueFlowForwardTernary);
         TEST_CASE(valueFlowForwardLambda);
         TEST_CASE(valueFlowForwardTryCatch);
+        TEST_CASE(valueFlowForwardInconclusiveImpossible);
 
         TEST_CASE(valueFlowFwdAnalysis);
 
@@ -2682,6 +2683,19 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code,3U,0));
         ASSERT_EQUALS(false, testValueOfX(code,3U,16));
+    }
+
+    void valueFlowForwardInconclusiveImpossible() {
+        const char *code;
+
+        code = "void foo() {\n"
+               "    bool valid = f1();\n"
+               "    if (!valid) return;\n"
+               "    std::tie(endVal, valid) = f2();\n"
+               "    bool x = !valid;"
+               "    bool b = x;" // <- not always true
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, 1));
     }
 
     void valueFlowRightShift() {
