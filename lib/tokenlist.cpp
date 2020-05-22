@@ -1483,7 +1483,12 @@ static Token * createAstAtToken(Token *tok, bool cpp)
             tok = typetok;
     }
 
-    if (Token::Match(tok, "return|case") || (cpp && tok->str() == "throw") || !tok->previous() || Token::Match(tok, "%name% %op%|(|[|.|::|<|?|;") || Token::Match(tok->previous(), "[;{}] %cop%|++|--|( !!{") || Token::Match(tok->previous(), "[;{}] %num%")) {
+    if (Token::Match(tok, "return|case") ||
+        (cpp && tok->str() == "throw") ||
+        !tok->previous() ||
+        Token::Match(tok, "%name% %op%|(|[|.|::|<|?|;") ||
+        Token::Match(tok->previous(), "[;{}] %cop%|++|--|( !!{") ||
+        Token::Match(tok->previous(), "[;{}] %num%|%str%|%char%")) {
         if (cpp && (Token::Match(tok->tokAt(-2), "[;{}] new|delete %name%") || Token::Match(tok->tokAt(-3), "[;{}] :: new|delete %name%")))
             tok = tok->previous();
 
