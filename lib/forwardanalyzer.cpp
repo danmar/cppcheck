@@ -109,6 +109,8 @@ struct ForwardTraversal {
         ForwardAnalyzer::Action action = analyzer->analyze(tok);
         if (!action.isNone())
             analyzer->update(tok, action);
+        if (action.isInconclusive() && !analyzer->lowerToInconclusive())
+            return Progress::Break;
         if (action.isInvalid())
             return Progress::Break;
         return Progress::Continue;
