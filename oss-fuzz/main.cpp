@@ -10,7 +10,7 @@ private:
 public:
     CppcheckExecutor()
         : ErrorLogger()
-        , cppcheck(*this, false) {
+        , cppcheck(*this, false, nullptr) {
         cppcheck.settings().addEnabled("all");
         cppcheck.settings().inconclusive = true;
     }

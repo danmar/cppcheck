@@ -147,10 +147,10 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *token, const std::string &
         if ((isFunction() || isClass()) && mNameToken->strAt(-1) == "::") {
             const Token * start = mNameToken;
 
-            while (Token::Match(start->tokAt(-2), "%name% ::") ||
-                   (Token::simpleMatch(start->tokAt(-2), "> ::") &&
-                    start->tokAt(-2)->findOpeningBracket() &&
-                    Token::Match(start->tokAt(-2)->findOpeningBracket()->previous(), "%name% <"))) {
+            while (start && (Token::Match(start->tokAt(-2), "%name% ::") ||
+                             (Token::simpleMatch(start->tokAt(-2), "> ::") &&
+                              start->tokAt(-2)->findOpeningBracket() &&
+                              Token::Match(start->tokAt(-2)->findOpeningBracket()->previous(), "%name% <")))) {
                 if (start->strAt(-2) == ">")
                     start = start->tokAt(-2)->findOpeningBracket()->previous();
                 else

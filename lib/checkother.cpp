@@ -3105,3 +3105,25 @@ void CheckOther::comparePointersError(const Token *tok, const ValueFlow::Value *
     reportError(
         errorPath, Severity::error, "comparePointers", verb + " pointers that point to different objects", CWE570, false);
 }
+
+void CheckOther::checkModuloOfOne()
+{
+    for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+        if (!tok->astOperand2() || !tok->astOperand1())
+            continue;
+        if (tok->str() != "%")
+            continue;
+        if (!tok->valueType() || !tok->valueType()->isIntegral())
+            continue;
+
+        // Value flow..
+        const ValueFlow::Value *value = tok->astOperand2()->getValue(1LL);
+        if (value && value->isKnown())
+            checkModuloOfOneError(tok);
+    }
+}
+
+void CheckOther::checkModuloOfOneError(const Token *tok)
+{
+    reportError(tok, Severity::style, "moduloofone", "Modulo of one is always equal to zero");
+}

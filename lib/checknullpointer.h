@@ -139,12 +139,6 @@ private:
 
     /**
      * @brief Does one part of the check for nullPointer().
-     * looping through items in a linked list in a inner loop..
-     */
-    void nullPointerLinkedList();
-
-    /**
-     * @brief Does one part of the check for nullPointer().
      * Dereferencing a pointer and then checking if it's NULL..
      */
     void nullPointerByDeRefAndChec();

@@ -102,6 +102,7 @@
 #include <map>
 #include <set>
 #include <stack>
+#include <tuple>
 #include <vector>
 
 static void bailoutInternal(TokenList *tokenlist, ErrorLogger *errorLogger, const Token *tok, const std::string &what, const std::string &file, int line, const std::string &function)
@@ -1838,6 +1839,29 @@ static void valueFlowReverse(TokenList *tokenlist,
         }
 
         if (tok2->str() == "}") {
+            const Token* condTok = getCondTokFromEnd(tok2);
+            // Evaluate condition of for and while loops first
+            if (condTok && condTok->astTop() && Token::Match(condTok->astTop()->previous(), "for|while (")) {
+                const Token* startTok = nullptr;
+                const Token* endTok = nullptr;
+                std::tie(startTok, endTok) = condTok->findExpressionStartEndTokens();
+                if (!isVariableChanged(startTok, endTok, varid, false, settings, true)) {
+                    std::list<ValueFlow::Value> values = {val};
+                    if (val2.condition) {
+                        values.push_back(val2);
+                    }
+                    const Token *expr = Token::findmatch(tok2, "%varid%", varid);
+                    valueFlowForward(const_cast<Token*>(startTok),
+                                     endTok,
+                                     expr,
+                                     values,
+                                     false,
+                                     false,
+                                     tokenlist,
+                                     errorLogger,
+                                     settings);
+                }
+            }
             const Token *vartok = Token::findmatch(tok2->link(), "%varid%", tok2, varid);
             while (Token::Match(vartok, "%name% = %num% ;") && !vartok->tokAt(2)->getValue(num))
                 vartok = Token::findmatch(vartok->next(), "%varid%", tok2, varid);
@@ -3457,6 +3481,8 @@ static bool isDecayedPointer(const Token *tok)
 {
     if (!tok)
         return false;
+    if (!tok->astParent())
+        return false;
     if (astIsPointer(tok->astParent()) && !Token::simpleMatch(tok->astParent(), "return"))
         return true;
     if (tok->astParent()->isConstOp())
@@ -4087,26 +4113,27 @@ struct ValueFlowConditionHandler {
                     // After conditional code..
                     if (Token::simpleMatch(top->link(), ") {")) {
                         Token *after = top->link()->linkAt(1);
-                        std::string unknownFunction;
-                        if (settings->library.isScopeNoReturn(after, &unknownFunction)) {
-                            if (settings->debugwarnings && !unknownFunction.empty())
-                                bailout(tokenlist, errorLogger, after, "possible noreturn scope");
-                            continue;
-                        }
-
-                        bool dead_if = isReturnScope(after, &settings->library) ||
+                        const Token* unknownFunction = nullptr;
+                        bool dead_if = isReturnScope(after, &settings->library, &unknownFunction) ||
                                        (tok->astParent() && Token::simpleMatch(tok->astParent()->previous(), "while (") &&
                                         !isBreakScope(after));
                         bool dead_else = false;
 
+                        if (!dead_if && unknownFunction) {
+                            if (settings->debugwarnings)
+                                bailout(tokenlist, errorLogger, unknownFunction, "possible noreturn scope");
+                            continue;
+                        }
+
                         if (Token::simpleMatch(after, "} else {")) {
                             after = after->linkAt(2);
-                            if (Token::simpleMatch(after->tokAt(-2), ") ; }")) {
+                            unknownFunction = nullptr;
+                            dead_else = isReturnScope(after, &settings->library, &unknownFunction);
+                            if (!dead_else && unknownFunction) {
                                 if (settings->debugwarnings)
-                                    bailout(tokenlist, errorLogger, after, "possible noreturn scope");
+                                    bailout(tokenlist, errorLogger, unknownFunction, "possible noreturn scope");
                                 continue;
                             }
-                            dead_else = isReturnScope(after, &settings->library);
                         }
 
                         if (dead_if && dead_else)

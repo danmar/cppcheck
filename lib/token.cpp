@@ -1030,7 +1030,7 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
                 Token *tok1 = newToken;
                 while (Token::Match(tok1->previous(), "const|volatile|final|override|&|&&|noexcept"))
                     tok1 = tok1->previous();
-                if (tok1 && tok1->previous() && tok1->strAt(-1) == ")") {
+                if (tok1->previous() && tok1->strAt(-1) == ")") {
                     tok1 = tok1->linkAt(-1);
                     if (Token::Match(tok1->previous(), "throw|noexcept")) {
                         tok1 = tok1->previous();

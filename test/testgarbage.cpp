@@ -289,8 +289,6 @@ private:
             (*it)->runChecks(&tokenizer, &settings, this);
         }
 
-        tokenizer.simplifyTokenList2();
-
         return tokenizer.tokens()->stringifyList(false, false, false, true, false, nullptr, nullptr);
     }
 
@@ -316,7 +314,6 @@ private:
             Tokenizer tokenizer(&settings, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            tokenizer.simplifyTokenList2();
             ASSERT_EQUALS("", errout.str());
         }
     }
@@ -399,7 +396,6 @@ private:
             Tokenizer tokenizer(&settings, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.c");
-            tokenizer.simplifyTokenList2();
             ASSERT_EQUALS("", errout.str());
         }
         {
@@ -407,7 +403,6 @@ private:
             Tokenizer tokenizer(&settings, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            tokenizer.simplifyTokenList2();
             ASSERT_EQUALS("[test.cpp:1]: (information) The code 'class x y {' is not handled. You can use -I or --include to add handling of this code.\n", errout.str());
         }
     }
@@ -966,11 +961,11 @@ private:
     }
 
     void garbageCode123() {
-        ASSERT_THROW(checkCode("namespace pr16989 {\n"
-                               "    class C {\n"
-                               "        C tpl_mem(T *) { return }\n"
-                               "    };\n"
-                               "}"), InternalError);
+        checkCode("namespace pr16989 {\n"
+                  "    class C {\n"
+                  "        C tpl_mem(T *) { return }\n"
+                  "    };\n"
+                  "}");
     }
 
     void garbageCode125() {

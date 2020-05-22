@@ -130,7 +130,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
 
 static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSettings, std::list<BadInlineSuppression> *bad)
 {
-    for (const simplecpp::Token *tok = tokens.cfront(); tok; tok = tok ? tok->next : nullptr) {
+    for (const simplecpp::Token *tok = tokens.cfront(); tok; tok = tok->next) {
         if (!tok->comment)
             continue;
 

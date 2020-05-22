@@ -1735,6 +1735,8 @@ class MisraChecker:
             if (not isConstantExpression(token)) or (not isUnsignedInt(token)):
                 continue
             for value in token.values:
+                if value.intvalue is None:
+                    continue
                 if value.intvalue < 0 or value.intvalue > max_uint:
                     self.reportError(token, 12, 4)
                     break
