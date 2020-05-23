@@ -54,6 +54,20 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    endif()
 endif()
 
+if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    add_compile_options(/W4)
+    add_compile_options(/wd4018) # warning C4018: '>': signed/unsigned mismatch
+    add_compile_options(/wd4127) # warning C4127: conditional expression is constant
+    add_compile_options(/wd4244) # warning C4244: 'initializing': conversion from 'int' to 'char', possible loss of data
+    add_compile_options(/wd4251)
+    add_compile_options(/wd4389) # warning C4389: '==': signed/unsigned mismatch
+    add_compile_options(/wd4482)
+    add_compile_options(/wd4512)
+    add_compile_options(/wd4701) # warning C4701: potentially uninitialized local variable 'err' used
+    add_compile_options(/wd4706) # warning C4706: assignment within conditional expression
+    add_compile_options(/wd4800) # warning C4800: 'const SymbolDatabase *' : forcing value to bool 'true' or 'false' (performance warning)
+endif()
+
 # TODO: check if this can be enabled again - also done in Makefile
 if (CMAKE_SYSTEM_NAME MATCHES "Linux" AND
     CMAKE_CXX_COMPILER_ID MATCHES "Clang")
