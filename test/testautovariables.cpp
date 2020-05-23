@@ -2320,6 +2320,13 @@ private:
               "    return &y.x[i];\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9712
+        check("std::string f(const char *str) {\n"
+              "    char value[256];\n"
+              "    return value;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeFunction() {

@@ -2977,9 +2977,45 @@ static bool isLifetimeBorrowed(const ValueType *vt, const ValueType *vtParent)
             return true;
         if (vtParent->pointer < vt->pointer && vtParent->isIntegral())
             return true;
+        if (vtParent->str() == vt->str())
+            return true;
     }
 
     return false;
+}
+
+static const Token* skipCVRefs(const Token* tok, const Token* endTok)
+{
+    while(tok != endTok && Token::Match(tok, "const|volatile|auto|&|&&"))
+        tok = tok->next();
+    return tok;
+}
+
+static bool isNotEqual(std::pair<const Token*, const Token*> x, std::pair<const Token*, const Token*> y)
+{
+    const Token* start1 = x.first;
+    const Token* start2 = y.first;
+    if (start1 == nullptr || start2 == nullptr)
+        return false;
+    while(start1 != x.second && start2 != y.second) {
+        const Token* tok1 = skipCVRefs(start1, x.second);
+        if (tok1 != start1) {
+            start1 = tok1;
+            continue;
+        }
+        const Token* tok2 = skipCVRefs(start2, y.second);
+        if (tok2 != start2) {
+            start2 = tok2;
+            continue;
+        }
+        if (start1->str() != start2->str())
+            return true;
+        start1 = start1->next();
+        start2 = start2->next();
+    }
+    start1 = skipCVRefs(start1, x.second);
+    start2 = skipCVRefs(start2, y.second);
+    return !(start1 == x.second && start2 == y.second);
 }
 
 bool isLifetimeBorrowed(const Token *tok, const Settings *settings)
@@ -2999,10 +3035,18 @@ bool isLifetimeBorrowed(const Token *tok, const Settings *settings)
             if (isLifetimeOwned(vt, vtParent))
                 return false;
         }
-        const Type *t = Token::typeOf(tok);
-        const Type *parentT = Token::typeOf(tok->astParent());
-        if (t && parentT && t->classDef && parentT->classDef && t->classDef != parentT->classDef) {
-            return false;
+        if (Token::Match(tok->astParent(), "return|(|{|%assign%")) {
+            const Type *t = Token::typeOf(tok);
+            const Type *parentT = Token::typeOf(tok->astParent());
+            if (t && parentT) {
+                if (t->classDef && parentT->classDef && t->classDef != parentT->classDef)
+                    return false;
+            } else {
+                std::pair<const Token*, const Token*> decl = Token::typeDecl(tok);
+                std::pair<const Token*, const Token*> parentdecl = Token::typeDecl(tok->astParent());
+                if (isNotEqual(decl, parentdecl))
+                    return false;
+            }
         }
     } else if (Token::Match(tok->astParent()->tokAt(-3), "%var% . push_back|push_front|insert|push (") &&
                astIsContainer(tok->astParent()->tokAt(-3))) {
