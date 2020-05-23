@@ -60,6 +60,8 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     add_compile_options(/wd4127) # warning C4127: conditional expression is constant
     add_compile_options(/wd4244) # warning C4244: 'initializing': conversion from 'int' to 'char', possible loss of data
     add_compile_options(/wd4251)
+    # Clang: -Wshorten-64-to-32 -Wimplicit-int-conversion
+    add_compile_options(/wd4267) # warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
     add_compile_options(/wd4389) # warning C4389: '==': signed/unsigned mismatch
     add_compile_options(/wd4482)
     add_compile_options(/wd4512)
