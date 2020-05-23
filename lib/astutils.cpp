@@ -1085,7 +1085,7 @@ bool isEscapeFunction(const Token* ftok, const Library* library)
     return false;
 }
 
-static bool hasReturnFunction(const Token* tok, const Library* library, const Token** unknownFunc)
+static bool hasNoreturnFunction(const Token* tok, const Library* library, const Token** unknownFunc)
 {
     if (!tok)
         return false;
@@ -1108,7 +1108,7 @@ static bool hasReturnFunction(const Token* tok, const Library* library, const To
             *unknownFunc = ftok;
         return false;
     } else if (tok->isConstOp()) {
-        return hasReturnFunction(tok->astOperand1(), library, unknownFunc) || hasReturnFunction(tok->astOperand2(), library, unknownFunc);
+        return hasNoreturnFunction(tok->astOperand1(), library, unknownFunc) || hasNoreturnFunction(tok->astOperand2(), library, unknownFunc);
     }
 
     return false;
@@ -1139,7 +1139,7 @@ bool isReturnScope(const Token* const endToken, const Library* library, const To
         if (Token::Match(prev->link()->previous(), "[;{}] {"))
             return isReturnScope(prev, library, unknownFunc, functionScope);
     } else if (Token::simpleMatch(prev, ";")) {
-        if (prev->tokAt(-2) && hasReturnFunction(prev->tokAt(-2)->astTop(), library, unknownFunc))
+        if (prev->tokAt(-2) && hasNoreturnFunction(prev->tokAt(-2)->astTop(), library, unknownFunc))
             return true;
         // Unknown symbol
         if (Token::Match(prev->tokAt(-2), ";|}|{ %name% ;") && prev->previous()->isIncompleteVar()) {
