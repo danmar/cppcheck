@@ -25,9 +25,9 @@
 #include "check.h"
 #include "config.h"
 #include "ctu.h"
-#include "errorlogger.h"
 #include "mathlib.h"
 #include "settings.h"
+#include "errortypes.h"
 #include "utils.h"
 
 #include <set>
@@ -37,6 +37,7 @@ class Scope;
 class Token;
 class Tokenizer;
 class Variable;
+class ErrorLogger;
 
 
 struct VariableValue {

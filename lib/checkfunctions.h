@@ -24,9 +24,9 @@
 
 #include "check.h"
 #include "config.h"
-#include "errorlogger.h"
 #include "library.h"
 #include "settings.h"
+#include "errortypes.h"
 
 #include <map>
 #include <string>
@@ -34,6 +34,8 @@
 
 class Token;
 class Tokenizer;
+class ErrorLogger;
+
 namespace ValueFlow {
     class Value;
 }  // namespace ValueFlow

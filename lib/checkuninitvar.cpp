@@ -1440,7 +1440,7 @@ bool CheckUninitVar::analyseWholeProgram(const CTU::FileInfo *ctu, const std::li
         for (const CTU::FileInfo::UnsafeUsage &unsafeUsage : fi->unsafeUsage) {
             const CTU::FileInfo::FunctionCall *functionCall = nullptr;
 
-            const std::list<ErrorLogger::ErrorMessage::FileLocation> &locationList =
+            const std::list<ErrorMessage::FileLocation> &locationList =
                 ctu->getErrorPath(CTU::FileInfo::InvalidValueType::uninit,
                                   unsafeUsage,
                                   callsMap,
@@ -1450,13 +1450,13 @@ bool CheckUninitVar::analyseWholeProgram(const CTU::FileInfo *ctu, const std::li
             if (locationList.empty())
                 continue;
 
-            const ErrorLogger::ErrorMessage errmsg(locationList,
-                                                   emptyString,
-                                                   Severity::error,
-                                                   "Using argument " + unsafeUsage.myArgumentName + " that points at uninitialized variable " + functionCall->callArgumentExpression,
-                                                   "ctuuninitvar",
-                                                   CWE_USE_OF_UNINITIALIZED_VARIABLE,
-                                                   false);
+            const ErrorMessage errmsg(locationList,
+                                      emptyString,
+                                      Severity::error,
+                                      "Using argument " + unsafeUsage.myArgumentName + " that points at uninitialized variable " + functionCall->callArgumentExpression,
+                                      "ctuuninitvar",
+                                      CWE_USE_OF_UNINITIALIZED_VARIABLE,
+                                      false);
             errorLogger.reportErr(errmsg);
 
             foundErrors = true;

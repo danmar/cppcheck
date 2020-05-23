@@ -131,7 +131,7 @@ private:
 
             exec.reportOut(*i);
 
-            ErrorLogger::ErrorMessage errMessage;
+            ErrorMessage errMessage;
             errMessage.setmsg(*i);
 
             // no xml option
@@ -154,9 +154,9 @@ private:
 
             CLEAR_REDIRECT_ERROUT;
             // possible change of msg for xml option
-            // with ErrorLogger::ErrorMessage::fixInvalidChars(), plus additional XML formatting
+            // with ErrorMessage::fixInvalidChars(), plus additional XML formatting
             execXML.reportInfo(errMessage);
-            // undo the effects of "ErrorLogger::ErrorMessage::fixInvalidChars()"
+            // undo the effects of "ErrorMessage::fixInvalidChars()"
             // replacing octal constants with characters
             std::string myErr;
             std::string myErrOrg = GET_REDIRECT_ERROUT;

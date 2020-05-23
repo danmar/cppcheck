@@ -25,7 +25,7 @@
 #include <QStandardItem>
 #include <QSettings>
 #include <QContextMenuEvent>
-#include "errorlogger.h" // Severity
+#include "errortypes.h"
 #include "showtypes.h"
 
 class ApplicationList;

@@ -40,7 +40,7 @@ private:
         void reportOut(const std::string & /*outmsg*/) OVERRIDE {}
         void bughuntingReport(const std::string & /*str*/) OVERRIDE {}
 
-        void reportErr(const ErrorLogger::ErrorMessage &msg) OVERRIDE {
+        void reportErr(const ErrorMessage &msg) OVERRIDE {
             id.push_back(msg.id);
         }
     };

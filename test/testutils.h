@@ -53,7 +53,7 @@ public:
     void reportOut(const std::string &outmsg) OVERRIDE {
         next->reportOut(outmsg);
     }
-    void reportErr(const ErrorLogger::ErrorMessage &msg) OVERRIDE {
+    void reportErr(const ErrorMessage &msg) OVERRIDE {
         if (!msg.callStack.empty() && !settings.nomsg.isSuppressed(msg.toSuppressionsErrorMessage()))
             next->reportErr(msg);
     }

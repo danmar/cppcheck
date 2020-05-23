@@ -22,8 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
-#include "errorlogger.h" // for Severity::SeverityType
-#include "tokenize.h"
+#include "errortypes.h"
 
 #include <list>
 #include <string>
@@ -43,6 +42,8 @@ namespace ValueFlow {
 class Settings;
 class Token;
 class ErrorLogger;
+class ErrorMessage;
+class Tokenizer;
 
 /** Use WRONG_DATA in checkers to mark conditions that check that data is correct */
 #define WRONG_DATA(COND, TOK)  (wrongData((TOK), (COND), #COND))
@@ -91,7 +92,7 @@ public:
      * This is for for printout out the error list with --errorlist
      * @param errmsg Error message to write
      */
-    static void reportError(const ErrorLogger::ErrorMessage &errmsg);
+    static void reportError(const ErrorMessage &errmsg);
 
     /** Base class used for whole-program analysis */
     class CPPCHECKLIB FileInfo {
@@ -115,11 +116,11 @@ public:
     }
 
     // Return true if an error is reported.
-    virtual bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<FileInfo*> &fileInfo, const Settings& /*settings*/, ErrorLogger &errorLogger) {
+    virtual bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<FileInfo*> &fileInfo, const Settings& /*settings*/, ErrorLogger &/*errorLogger*/) {
         (void)ctu;
         (void)fileInfo;
         //(void)settings;
-        (void)errorLogger;
+        //(void)errorLogger;
         return false;
     }
 
@@ -147,21 +148,9 @@ protected:
     }
 
     /** report an error */
-    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe, bool inconclusive) {
-        const ErrorLogger::ErrorMessage errmsg(callstack, mTokenizer ? &mTokenizer->list : nullptr, severity, id, msg, cwe, inconclusive);
-        if (mErrorLogger)
-            mErrorLogger->reportErr(errmsg);
-        else
-            reportError(errmsg);
-    }
+    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe, bool inconclusive);
 
-    void reportError(const ErrorPath &errorPath, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, bool inconclusive) {
-        const ErrorLogger::ErrorMessage errmsg(errorPath, mTokenizer ? &mTokenizer->list : nullptr, severity, id, msg, cwe, inconclusive);
-        if (mErrorLogger)
-            mErrorLogger->reportErr(errmsg);
-        else
-            reportError(errmsg);
-    }
+    void reportError(const ErrorPath &errorPath, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, bool inconclusive);
 
     ErrorPath getErrorPath(const Token* errtok, const ValueFlow::Value* value, const std::string& bug) const;
 

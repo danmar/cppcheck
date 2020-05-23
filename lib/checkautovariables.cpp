@@ -23,7 +23,6 @@
 #include "checkautovariables.h"
 
 #include "astutils.h"
-#include "errorlogger.h"
 #include "library.h"
 #include "settings.h"
 #include "symboldatabase.h"

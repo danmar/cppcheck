@@ -40,6 +40,7 @@
 #include <cstring>
 #include <iostream>
 #include <list>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -106,9 +107,9 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
         if (parser.getShowErrorMessages()) {
             mShowAllErrors = true;
-            std::cout << ErrorLogger::ErrorMessage::getXMLHeader();
+            std::cout << ErrorMessage::getXMLHeader();
             cppcheck->getErrorMessages();
-            std::cout << ErrorLogger::ErrorMessage::getXMLFooter() << std::endl;
+            std::cout << ErrorMessage::getXMLFooter() << std::endl;
         }
 
         if (parser.exitAfterPrinting()) {
@@ -851,8 +852,8 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     for (const std::string &lib : settings.libraries) {
         if (!tryLoadLibrary(settings.library, argv[0], lib.c_str())) {
             const std::string msg("Failed to load the library " + lib);
-            const std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
-            ErrorLogger::ErrorMessage errmsg(callstack, emptyString, Severity::information, msg, "failedToLoadCfg", false);
+            const std::list<ErrorMessage::FileLocation> callstack;
+            ErrorMessage errmsg(callstack, emptyString, Severity::information, msg, "failedToLoadCfg", false);
             reportErr(errmsg);
             return EXIT_FAILURE;
         }
@@ -866,7 +867,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         windows = tryLoadLibrary(settings.library, argv[0], "windows.cfg");
 
     if (!std || !posix || !windows) {
-        const std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
+        const std::list<ErrorMessage::FileLocation> callstack;
         const std::string msg("Failed to load " + std::string(!std ? "std.cfg" : !posix ? "posix.cfg" : "windows.cfg") + ". Your Cppcheck installation is broken, please re-install.");
 #ifdef FILESDIR
         const std::string details("The Cppcheck binary was compiled with FILESDIR set to \""
@@ -878,7 +879,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
                                   "std.cfg should be available in " + cfgfolder + " or the FILESDIR "
                                   "should be configured.");
 #endif
-        ErrorLogger::ErrorMessage errmsg(callstack, emptyString, Severity::information, msg+" "+details, "failedToLoadCfg", false);
+        ErrorMessage errmsg(callstack, emptyString, Severity::information, msg+" "+details, "failedToLoadCfg", false);
         reportErr(errmsg);
         return EXIT_FAILURE;
     }
@@ -891,7 +892,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     }
 
     if (settings.xml) {
-        reportErr(ErrorLogger::ErrorMessage::getXMLHeader());
+        reportErr(ErrorMessage::getXMLHeader());
     }
 
     if (!settings.buildDir.empty()) {
@@ -980,24 +981,24 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         cppcheck.tooManyConfigsError("",0U);
 
         if (settings.isEnabled(Settings::MISSING_INCLUDE) && (Preprocessor::missingIncludeFlag || Preprocessor::missingSystemIncludeFlag)) {
-            const std::list<ErrorLogger::ErrorMessage::FileLocation> callStack;
-            ErrorLogger::ErrorMessage msg(callStack,
-                                          emptyString,
-                                          Severity::information,
-                                          "Cppcheck cannot find all the include files (use --check-config for details)\n"
-                                          "Cppcheck cannot find all the include files. Cppcheck can check the code without the "
-                                          "include files found. But the results will probably be more accurate if all the include "
-                                          "files are found. Please check your project's include directories and add all of them "
-                                          "as include directories for Cppcheck. To see what files Cppcheck cannot find use "
-                                          "--check-config.",
-                                          Preprocessor::missingIncludeFlag ? "missingInclude" : "missingIncludeSystem",
-                                          false);
+            const std::list<ErrorMessage::FileLocation> callStack;
+            ErrorMessage msg(callStack,
+                             emptyString,
+                             Severity::information,
+                             "Cppcheck cannot find all the include files (use --check-config for details)\n"
+                             "Cppcheck cannot find all the include files. Cppcheck can check the code without the "
+                             "include files found. But the results will probably be more accurate if all the include "
+                             "files are found. Please check your project's include directories and add all of them "
+                             "as include directories for Cppcheck. To see what files Cppcheck cannot find use "
+                             "--check-config.",
+                             Preprocessor::missingIncludeFlag ? "missingInclude" : "missingIncludeSystem",
+                             false);
             reportInfo(msg);
         }
     }
 
     if (settings.xml) {
-        reportErr(ErrorLogger::ErrorMessage::getXMLFooter());
+        reportErr(ErrorMessage::getXMLFooter());
     }
 
     mSettings = nullptr;
@@ -1072,7 +1073,7 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
     }
 }
 
-void CppCheckExecutor::reportInfo(const ErrorLogger::ErrorMessage &msg)
+void CppCheckExecutor::reportInfo(const ErrorMessage &msg)
 {
     reportErr(msg);
 }
@@ -1089,7 +1090,7 @@ void CppCheckExecutor::reportStatus(std::size_t fileindex, std::size_t filecount
     }
 }
 
-void CppCheckExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
+void CppCheckExecutor::reportErr(const ErrorMessage &msg)
 {
     if (mShowAllErrors) {
         reportOut(msg.toXML());

@@ -19,10 +19,10 @@
 
 //---------------------------------------------------------------------------
 #include "checkother.h"
+
 #include "checkuninitvar.h" // CheckUninitVar::isVariableUsage
 
 #include "astutils.h"
-#include "errorlogger.h"
 #include "library.h"
 #include "mathlib.h"
 #include "settings.h"

@@ -20,7 +20,6 @@
 //---------------------------------------------------------------------------
 #include "checktype.h"
 
-#include "errorlogger.h"
 #include "mathlib.h"
 #include "platform.h"
 #include "settings.h"

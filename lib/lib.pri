@@ -35,6 +35,7 @@ HEADERS += $${PWD}/analyzerinfo.h \
            $${PWD}/cppcheck.h \
            $${PWD}/ctu.h \
            $${PWD}/errorlogger.h \
+           $${PWD}/errortypes.h \
            $${PWD}/exprengine.h \
            $${PWD}/forwardanalyzer.h \
            $${PWD}/importproject.h \
@@ -89,6 +90,7 @@ SOURCES += $${PWD}/analyzerinfo.cpp \
            $${PWD}/cppcheck.cpp \
            $${PWD}/ctu.cpp \
            $${PWD}/errorlogger.cpp \
+           $${PWD}/errortypes.cpp \
            $${PWD}/exprengine.cpp \
            $${PWD}/forwardanalyzer.cpp \
            $${PWD}/importproject.cpp \

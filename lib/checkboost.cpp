@@ -18,7 +18,6 @@
 
 #include "checkboost.h"
 
-#include "errorlogger.h"
 #include "symboldatabase.h"
 #include "token.h"
 

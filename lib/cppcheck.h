@@ -29,6 +29,7 @@
 #include "settings.h"
 
 #include <cstddef>
+#include <functional>
 #include <istream>
 #include <list>
 #include <map>
@@ -191,7 +192,7 @@ private:
      * "[filepath:line number] Message", e.g.
      * "[main.cpp:4] Uninitialized member variable"
      */
-    void reportErr(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
+    void reportErr(const ErrorMessage &msg) OVERRIDE;
 
     /**
      * @brief Information about progress is directed here.
@@ -210,7 +211,7 @@ private:
     /**
      * Output information messages.
      */
-    void reportInfo(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
+    void reportInfo(const ErrorMessage &msg) OVERRIDE;
 
     ErrorLogger &mErrorLogger;
 

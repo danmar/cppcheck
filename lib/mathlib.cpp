@@ -18,7 +18,7 @@
 
 
 #include "mathlib.h"
-#include "errorlogger.h"
+#include "errortypes.h"
 #include "utils.h"
 
 #include <cctype>

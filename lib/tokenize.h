@@ -22,7 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
-#include "errorlogger.h"
+#include "errortypes.h"
 #include "tokenlist.h"
 
 #include <ctime>
@@ -36,6 +36,7 @@ class SymbolDatabase;
 class TimerResults;
 class Token;
 class TemplateSimplifier;
+class ErrorLogger;
 
 namespace simplecpp {
     class TokenList;

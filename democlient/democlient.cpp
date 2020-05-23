@@ -45,7 +45,7 @@ public:
     }
 
     void reportOut(const std::string &outmsg) override { }
-    void reportErr(const ErrorLogger::ErrorMessage &msg) override {
+    void reportErr(const ErrorMessage &msg) override {
         const std::string s = msg.toString(true);
 
         std::cout << s << std::endl;

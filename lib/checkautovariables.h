@@ -24,13 +24,15 @@
 
 #include "check.h"
 #include "config.h"
-#include "errorlogger.h"
+#include "errortypes.h"
 
 #include <string>
 
 class Settings;
 class Token;
 class Tokenizer;
+class ErrorLogger;
+class Variable;
 
 /// @addtogroup Checks
 /** @brief Various small checks for automatic variables */

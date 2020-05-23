@@ -24,7 +24,7 @@
 
 #include "check.h"
 #include "config.h"
-#include "errorlogger.h"
+#include "errortypes.h"
 #include "utils.h"
 
 #include <cstddef>
@@ -39,6 +39,7 @@ class Settings;
 class Token;
 class Tokenizer;
 class Variable;
+class ErrorLogger;
 
 /// @addtogroup Checks
 /// @{
