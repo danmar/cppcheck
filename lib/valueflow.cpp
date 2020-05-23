@@ -4321,9 +4321,19 @@ static void valueFlowInferCondition(TokenList* tokenlist,
         } else if (tok->isComparisonOp()) {
             MathLib::bigint val = 0;
             const Token* varTok = nullptr;
+            std::string op = tok->str();
             if (tok->astOperand1()->hasKnownIntValue()) {
                 val = tok->astOperand1()->values().front().intvalue;
                 varTok = tok->astOperand2();
+                // Flip the operator
+                if (op == ">")
+                    op = "<";
+                else if (op == "<")
+                    op = ">";
+                else if (op == ">=")
+                    op = "<=";
+                else if (op == "<=")
+                    op = ">=";
             } else if (tok->astOperand2()->hasKnownIntValue()) {
                 val = tok->astOperand2()->values().front().intvalue;
                 varTok = tok->astOperand1();
@@ -4336,22 +4346,22 @@ static void valueFlowInferCondition(TokenList* tokenlist,
                 continue;
             const ValueFlow::Value* result = nullptr;
             bool known = false;
-            if (Token::Match(tok, "==|!=")) {
+            if (op == "==" || op == "!=") {
                 result = proveNotEqual(varTok->values(), val);
-                known = tok->str() == "!=";
-            } else if (Token::Match(tok, "<|>=")) {
+                known = op == "!=";
+            } else if (op == "<" || op == ">=") {
                 result = proveLessThan(varTok->values(), val);
-                known = tok->str() == "<";
+                known = op == "<";
                 if (!result && !isSaturated(val)) {
                     result = proveGreaterThan(varTok->values(), val - 1);
-                    known = tok->str() == ">=";
+                    known = op == ">=";
                 }
-            } else if (Token::Match(tok, ">|<=")) {
+            } else if (op == ">" || op == "<=") {
                 result = proveGreaterThan(varTok->values(), val);
-                known = tok->str() == ">";
+                known = op == ">";
                 if (!result && !isSaturated(val)) {
                     result = proveLessThan(varTok->values(), val + 1);
-                    known = tok->str() == "<=";
+                    known = op == "<=";
                 }
             }
             if (!result)
