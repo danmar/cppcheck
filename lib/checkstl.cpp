@@ -827,7 +827,7 @@ void CheckStl::invalidContainer()
                         continue;
                     ErrorPath ep;
                     // Check the iterator is created before the change
-                    if (reaches(val.tokvalue, tok, library, &ep)) {
+                    if (val.tokvalue != tok && reaches(val.tokvalue, tok, library, &ep)) {
                         v = &val;
                         errorPath = ep;
                         return true;

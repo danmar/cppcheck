@@ -4123,6 +4123,15 @@ private:
               "        *it;\n"
               "}\n",true);
         ASSERT_EQUALS("", errout.str());
+
+        // #9714
+        check("void f() {\n"
+              "  auto v = std::vector<std::string>();\n"
+              "  std::string x;\n"
+              "  v.push_back(x.insert(0, \"x\"));\n"
+              "  v.push_back(\"y\");\n"
+              "}\n",true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void invalidContainerLoop() {
