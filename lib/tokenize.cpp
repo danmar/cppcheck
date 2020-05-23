@@ -20,6 +20,7 @@
 #include "tokenize.h"
 
 #include "check.h"
+#include "errorlogger.h"
 #include "library.h"
 #include "mathlib.h"
 #include "platform.h"
@@ -1686,6 +1687,8 @@ namespace {
 
     void setScopeInfo(Token *tok, std::list<ScopeInfo3> *scopeInfo, bool all = false)
     {
+        if (!tok)
+            return;
         while (tok->str() == "}" && !scopeInfo->empty() && tok == scopeInfo->back().bodyEnd)
             scopeInfo->pop_back();
         if (!Token::Match(tok, "namespace|class|struct|union %name% {|:|::")) {
@@ -1707,7 +1710,7 @@ namespace {
                 Token *tok1 = tok;
                 while (Token::Match(tok1->previous(), "const|volatile|final|override|&|&&|noexcept"))
                     tok1 = tok1->previous();
-                if (tok1 && tok1->previous() && tok1->strAt(-1) == ")") {
+                if (tok1->previous() && tok1->strAt(-1) == ")") {
                     tok1 = tok1->linkAt(-1);
                     if (Token::Match(tok1->previous(), "throw|noexcept")) {
                         tok1 = tok1->previous();
@@ -2193,8 +2196,8 @@ bool Tokenizer::simplifyUsing()
                     }
                     str += " ;";
                     std::list<const Token *> callstack(1, usingStart);
-                    mErrorLogger->reportErr(ErrorLogger::ErrorMessage(callstack, &list, Severity::debug, "debug",
-                                            "Failed to parse \'" + str + "\'. The checking continues anyway.", false));
+                    mErrorLogger->reportErr(ErrorMessage(callstack, &list, Severity::debug, "debug",
+                                                         "Failed to parse \'" + str + "\'. The checking continues anyway.", false));
                 }
             }
             tok1 = after;
@@ -2906,7 +2909,7 @@ void Tokenizer::calculateScopes()
                 Token *tok1 = tok;
                 while (Token::Match(tok1->previous(), "const|volatile|final|override|&|&&|noexcept"))
                     tok1 = tok1->previous();
-                if (tok1 && tok1->previous() && tok1->strAt(-1) == ")") {
+                if (tok1->previous() && tok1->strAt(-1) == ")") {
                     bool member = true;
                     tok1 = tok1->linkAt(-1);
                     if (Token::Match(tok1->previous(), "throw|noexcept")) {
@@ -5902,7 +5905,7 @@ bool Tokenizer::simplifyConditions()
                  Token::simpleMatch(tok, "|| true ||")) {
             //goto '('
             Token *tok2 = tok;
-            while (tok2->previous()) {
+            while (tok2 && tok2->previous()) {
                 if (tok2->previous()->str() == ")")
                     tok2 = tok2->previous()->link();
                 else {
@@ -6466,7 +6469,7 @@ void Tokenizer::simplifyFunctionPointers()
             !(Token::Match(tok2, "%name% (") && Token::simpleMatch(tok2->linkAt(1), ") ) (")))
             continue;
 
-        while (tok->str() != "(")
+        while (tok && tok->str() != "(")
             tok = tok->next();
 
         // check that the declaration ends
@@ -7224,12 +7227,7 @@ bool Tokenizer::simplifyKnownVariables()
         std::unordered_map<int, std::string> constantValues;
         std::map<int, Token*> constantVars;
         std::unordered_map<int, std::list<Token*>> constantValueUsages;
-        bool goback = false;
         for (Token *tok = list.front(); tok; tok = tok->next()) {
-            if (goback) {
-                tok = tok->previous();
-                goback = false;
-            }
             // Reference to variable
             if (Token::Match(tok, "%type%|* & %name% = %name% ;")) {
                 Token *start = tok->previous();
@@ -11473,7 +11471,7 @@ void Tokenizer::reportError(const Token* tok, const Severity::SeverityType sever
 
 void Tokenizer::reportError(const std::list<const Token*>& callstack, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive) const
 {
-    const ErrorLogger::ErrorMessage errmsg(callstack, &list, severity, id, msg, inconclusive);
+    const ErrorMessage errmsg(callstack, &list, severity, id, msg, inconclusive);
     if (mErrorLogger)
         mErrorLogger->reportErr(errmsg);
     else

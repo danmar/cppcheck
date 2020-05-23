@@ -95,6 +95,7 @@ private:
         TEST_CASE(nullpointer52);
         TEST_CASE(nullpointer53); // #8005
         TEST_CASE(nullpointer54); // #9573
+        TEST_CASE(nullpointer55); // #8144
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -179,7 +180,7 @@ private:
               "    while (tok);\n"
               "    tok = tok->next();\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning, inconclusive) Either the condition 'tok' is redundant or there is possible null pointer dereference: tok.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Either the condition 'tok' is redundant or there is possible null pointer dereference: tok.\n", errout.str());
 
         // #2681
         {
@@ -192,11 +193,8 @@ private:
                                 "        ;\n"
                                 "}\n";
 
-            check(code, false);   // inconclusive=false => no error
-            ASSERT_EQUALS("", errout.str());
-
-            check(code, true);    // inconclusive=true => error
-            ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (warning, inconclusive) Either the condition 'tok' is redundant or there is possible null pointer dereference: tok.\n", errout.str());
+            check(code);
+            ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (warning) Either the condition 'tok' is redundant or there is possible null pointer dereference: tok.\n", errout.str());
         }
 
         check("void foo()\n"
@@ -207,7 +205,7 @@ private:
               "            tok = tok->next();\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (warning) Either the condition 'while' is redundant or there is possible null pointer dereference: tok.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (warning) Either the condition 'while' is redundant or there is possible null pointer dereference: tok.\n", "", errout.str());
 
         check("void foo(Token &tok)\n"
               "{\n"
@@ -275,6 +273,18 @@ private:
               "    while (tok){;}\n"
               "    char a[2] = {0,0};\n"
               "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct b {\n"
+              "    b * c;\n"
+              "    int i;\n"
+              "}\n"
+              "void a(b * e) {\n"
+              "  for (b *d = e;d; d = d->c)\n"
+              "    while (d && d->i == 0)\n"
+              "      d = d->c;\n"
+              "  if (!d) throw;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -553,9 +563,7 @@ private:
                                 "    if (fred) { }\n"
                                 "}";
             check(code);
-            ASSERT_EQUALS("", errout.str());
-            check(code, true);
-            ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning, inconclusive) Either the condition 'if(fred)' is redundant or there is possible null pointer dereference: fred.\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'if(fred)' is redundant or there is possible null pointer dereference: fred.\n", errout.str());
         }
 
         // #3425 - false positives when there are macros
@@ -949,13 +957,8 @@ private:
                                 "    abc->a();\n"
                                 "}\n";
 
-            // inconclusive=false => no error
-            check(code,false);
-            ASSERT_EQUALS("", errout.str());
-
-            // inconclusive=true => error
-            check(code, true);
-            ASSERT_EQUALS("[test.cpp:3]: (error, inconclusive) Null pointer dereference: abc\n", errout.str());
+            check(code);
+            ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference: abc\n", errout.str());
         }
 
         check("static void foo() {\n"
@@ -1082,12 +1085,12 @@ private:
               "}", true);
         ASSERT_EQUALS("", errout.str());
 
-        // ticket #3220: calling member function
+        // ticket #3220: dereferencing a null pointer is UB
         check("void f() {\n"
               "    Fred *fred = NULL;\n"
               "    fred->do_something();\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference: fred\n", errout.str());
 
         // ticket #3570 - parsing of conditions
         {
@@ -1392,7 +1395,7 @@ private:
               "    }\n"
               "  }\n"
               "}\n", true);
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (warning, inconclusive) Either the condition 'if(values)' is redundant or there is possible null pointer dereference: values.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (warning) Either the condition 'if(values)' is redundant or there is possible null pointer dereference: values.\n", errout.str());
     }
 
     void nullpointer31() { // #8482
@@ -1779,6 +1782,35 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void nullpointer55() {
+        check("void f(const Token* tok) {\n"
+              "    const Token* tok3 = tok;\n"
+              "    while (tok3->astParent() && tok3->str() == \",\")\n"
+              "        tok3 = tok3->astParent();\n"
+              "    if (tok3 && tok3->str() == \"(\") {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (warning) Either the condition 'if(tok3&&tok3->str()==\"(\")' is redundant or there is possible null pointer dereference: tok3.\n", errout.str());
+
+        check("void f(int* t1, int* t2) {\n"
+              "    while (t1 && t2 &&\n"
+              "       *t1 == *t2) {\n"
+              "        t1 = nullptr;\n"
+              "        t2 = nullptr;\n"
+              "    }\n"
+              "    if (!t1 || !t2)\n"
+              "        return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f(int* i);\n"
+              "void g(int* i) {\n"
+              "    while(f(i) && *i == 0)\n"
+              "        i++;\n"
+              "    if (!i) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void nullpointer_addressOf() { // address of
         check("void f() {\n"
               "  struct X *x = 0;\n"
@@ -2157,11 +2189,8 @@ private:
                                 "    fred->x();\n"
                                 "}";
 
-            check(code, false);    // non-inconclusive
-            ASSERT_EQUALS("", errout.str());
-
-            check(code, true);     // inconclusive
-            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning, inconclusive) Either the condition 'fred==NULL' is redundant or there is possible null pointer dereference: fred.\n", errout.str());
+            check(code);     // inconclusive
+            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition 'fred==NULL' is redundant or there is possible null pointer dereference: fred.\n", errout.str());
         }
 
         check("void f(char *s) {\n"   // #3358

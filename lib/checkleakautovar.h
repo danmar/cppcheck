@@ -25,6 +25,7 @@
 #include "check.h"
 #include "config.h"
 #include "library.h"
+#include "utils.h"
 
 #include <map>
 #include <set>

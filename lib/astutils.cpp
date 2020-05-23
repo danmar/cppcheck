@@ -1085,6 +1085,35 @@ bool isEscapeFunction(const Token* ftok, const Library* library)
     return false;
 }
 
+static bool hasNoreturnFunction(const Token* tok, const Library* library, const Token** unknownFunc)
+{
+    if (!tok)
+        return false;
+    const Token* ftok = tok->str() == "(" ? tok->previous() : nullptr;
+    while (Token::simpleMatch(ftok, "("))
+        ftok = ftok->astOperand1();
+    if (ftok) {
+        const Function * function = ftok->function();
+        if (function) {
+            if (function->isEscapeFunction())
+                return true;
+            if (function->isAttributeNoreturn())
+                return true;
+        } else if (library && library->isnoreturn(ftok)) {
+            return true;
+        } else if (Token::Match(ftok, "exit|abort")) {
+            return true;
+        }
+        if (unknownFunc && !function && library && library->functions.count(library->getFunctionName(ftok)) == 0)
+            *unknownFunc = ftok;
+        return false;
+    } else if (tok->isConstOp()) {
+        return hasNoreturnFunction(tok->astOperand1(), library, unknownFunc) || hasNoreturnFunction(tok->astOperand2(), library, unknownFunc);
+    }
+
+    return false;
+}
+
 bool isReturnScope(const Token* const endToken, const Library* library, const Token** unknownFunc, bool functionScope)
 {
     if (!endToken || endToken->str() != "}")
@@ -1110,21 +1139,12 @@ bool isReturnScope(const Token* const endToken, const Library* library, const To
         if (Token::Match(prev->link()->previous(), "[;{}] {"))
             return isReturnScope(prev, library, unknownFunc, functionScope);
     } else if (Token::simpleMatch(prev, ";")) {
-        if (Token::simpleMatch(prev->previous(), ") ;") && Token::Match(prev->linkAt(-1)->tokAt(-2), "[;{}] %name% (")) {
-            const Token * ftok = prev->linkAt(-1)->previous();
-            const Function * function = ftok->function();
-            if (function) {
-                if (function->isEscapeFunction())
-                    return true;
-                if (function->isAttributeNoreturn())
-                    return true;
-            } else if (library && library->isnoreturn(ftok)) {
-                return true;
-            } else if (Token::Match(ftok, "exit|abort")) {
-                return true;
-            }
-            if (unknownFunc && !function && library && library->functions.count(library->getFunctionName(ftok)) == 0)
-                *unknownFunc = ftok;
+        if (prev->tokAt(-2) && hasNoreturnFunction(prev->tokAt(-2)->astTop(), library, unknownFunc))
+            return true;
+        // Unknown symbol
+        if (Token::Match(prev->tokAt(-2), ";|}|{ %name% ;") && prev->previous()->isIncompleteVar()) {
+            if (unknownFunc)
+                *unknownFunc = prev->previous();
             return false;
         }
         if (Token::simpleMatch(prev->previous(), ") ;") && prev->previous()->link() &&

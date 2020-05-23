@@ -18,7 +18,6 @@
 
 #include "checkstl.h"
 
-#include "errorlogger.h"
 #include "library.h"
 #include "mathlib.h"
 #include "settings.h"
@@ -827,7 +826,7 @@ void CheckStl::invalidContainer()
                         continue;
                     ErrorPath ep;
                     // Check the iterator is created before the change
-                    if (reaches(val.tokvalue, tok, library, &ep)) {
+                    if (val.tokvalue != tok && reaches(val.tokvalue, tok, library, &ep)) {
                         v = &val;
                         errorPath = ep;
                         return true;
@@ -880,6 +879,11 @@ void CheckStl::invalidContainerLoop()
                 if (!Token::Match(tok2->next(), ". %name% ("))
                     continue;
                 if (!isInvalidMethod(tok2))
+                    continue;
+                const Scope* s = tok2->scope();
+                if (!s)
+                    continue;
+                if (isReturnScope(s->bodyEnd, &mSettings->library))
                     continue;
                 invalidContainerLoopError(tok2, tok);
                 break;

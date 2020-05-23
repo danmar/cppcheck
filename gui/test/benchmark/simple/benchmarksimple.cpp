@@ -25,7 +25,6 @@
 #include "tokenize.h"
 #include "token.h"
 #include "settings.h"
-#include "errorlogger.h"
 
 void BenchmarkSimple::tokenize()
 {

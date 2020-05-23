@@ -23,7 +23,12 @@
 //---------------------------------------------------------------------------
 
 #include "check.h"
+#include "errorlogger.h"
 #include "valueflow.h"
+
+#include <map>
+
+class Function;
 
 /// @addtogroup Core
 /// @{
@@ -79,7 +84,7 @@ namespace CTU {
             std::string callArgumentExpression;
             MathLib::bigint callArgValue;
             ValueFlow::Value::ValueType callValueType;
-            std::vector<ErrorLogger::ErrorMessage::FileLocation> callValuePath;
+            std::vector<ErrorMessage::FileLocation> callValuePath;
             bool warning;
 
             std::string toXmlString() const;
@@ -111,7 +116,7 @@ namespace CTU {
         void loadFromXml(const tinyxml2::XMLElement *xmlElement);
         std::map<std::string, std::list<const CallBase *>> getCallsMap() const;
 
-        std::list<ErrorLogger::ErrorMessage::FileLocation> getErrorPath(InvalidValueType invalidValue,
+        std::list<ErrorMessage::FileLocation> getErrorPath(InvalidValueType invalidValue,
                 const UnsafeUsage &unsafeUsage,
                 const std::map<std::string, std::list<const CallBase *>> &callsMap,
                 const char info[],

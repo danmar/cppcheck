@@ -73,7 +73,7 @@ public:
     * ErrorLogger methods
     */
     void reportOut(const std::string &outmsg) override;
-    void reportErr(const ErrorLogger::ErrorMessage &msg) override;
+    void reportErr(const ErrorMessage &msg) override;
     void bughuntingReport(const std::string &str) override;
 
 public slots:

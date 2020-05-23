@@ -784,6 +784,11 @@ public:
     void printOut(const char *title, const std::vector<std::string> &fileNames) const;
 
     /**
+     * print out tokens
+     */
+    void printLines(int lines=5) const;
+
+    /**
      * Replace token replaceThis with tokens between start and end,
      * including start and end. The replaceThis token is deleted.
      * @param replaceThis This token will be deleted.

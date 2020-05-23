@@ -19,8 +19,9 @@
 #ifndef SHOWTYPES_H
 #define SHOWTYPES_H
 
+#include "errortypes.h"
+
 #include <QVariant>
-#include "errorlogger.h"
 
 /// @addtogroup GUI
 /// @{

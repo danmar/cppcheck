@@ -19,10 +19,10 @@
 
 //---------------------------------------------------------------------------
 #include "checkother.h"
+
 #include "checkuninitvar.h" // CheckUninitVar::isVariableUsage
 
 #include "astutils.h"
-#include "errorlogger.h"
 #include "library.h"
 #include "mathlib.h"
 #include "settings.h"
@@ -3041,6 +3041,13 @@ void CheckOther::checkKnownArgument()
                 tok2 = tok2->astOperand2();
             if (isVariableExpression(tok2))
                 continue;
+            // ensure that function name does not contain "assert"
+            std::string funcname = tok->astParent()->previous()->str();
+            std::transform(funcname.begin(), funcname.end(), funcname.begin(), [](int c) {
+                return std::tolower(c);
+            });
+            if (funcname.find("assert") != std::string::npos)
+                continue;
             knownArgumentError(tok, tok->astParent()->previous(), &tok->values().front());
         }
     }
@@ -3104,4 +3111,26 @@ void CheckOther::comparePointersError(const Token *tok, const ValueFlow::Value *
     errorPath.emplace_back(tok, "");
     reportError(
         errorPath, Severity::error, "comparePointers", verb + " pointers that point to different objects", CWE570, false);
+}
+
+void CheckOther::checkModuloOfOne()
+{
+    for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+        if (!tok->astOperand2() || !tok->astOperand1())
+            continue;
+        if (tok->str() != "%")
+            continue;
+        if (!tok->valueType() || !tok->valueType()->isIntegral())
+            continue;
+
+        // Value flow..
+        const ValueFlow::Value *value = tok->astOperand2()->getValue(1LL);
+        if (value && value->isKnown())
+            checkModuloOfOneError(tok);
+    }
+}
+
+void CheckOther::checkModuloOfOneError(const Token *tok)
+{
+    reportError(tok, Severity::style, "moduloofone", "Modulo of one is always equal to zero");
 }

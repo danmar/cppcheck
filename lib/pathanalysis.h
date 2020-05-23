@@ -1,9 +1,9 @@
 #ifndef GUARD_PATHANALYSIS_H
 #define GUARD_PATHANALYSIS_H
 
-#include <functional>
+#include "errortypes.h"
 
-#include "errorlogger.h"
+#include <functional>
 
 class Library;
 class Scope;

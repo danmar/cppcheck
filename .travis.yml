@@ -149,7 +149,7 @@ matrix:
         - cd addons/test
         # We'll force C89 standard to enable an additional verification for
         # rules 5.4 and 5.5 which have standard-dependent options.
-        - ${CPPCHECK} --dump misra/misra-test.c --std=c89
+        - ${CPPCHECK} --dump --suppress=uninitvar --suppress=uninitStructMember --std=c89 misra/misra-test.c
         - python3 ../misra.py -verify misra/misra-test.c.dump
         - ${CPPCHECK} --dump misra/misra-test.cpp
         - python3 ../misra.py -verify misra/misra-test.cpp.dump

@@ -130,7 +130,9 @@
  */
 
 #include "exprengine.h"
+
 #include "astutils.h"
+#include "errorlogger.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "tokenize.h"
@@ -1421,13 +1423,13 @@ static void checkContract(Data &data, const Token *tok, const Function *function
             const auto contractIt = data.settings->functionContracts.find(function->fullName());
             const std::string functionName = contractIt->first;
             const std::string functionExpects = contractIt->second;
-            ErrorLogger::ErrorMessage errmsg(callstack,
-                                             &data.tokenizer->list,
-                                             Severity::SeverityType::error,
-                                             id,
-                                             "Function '" + function->name() + "' is called, can not determine that its contract '" + functionExpects + "' is always met.",
-                                             CWE(0),
-                                             false);
+            ErrorMessage errmsg(callstack,
+                                &data.tokenizer->list,
+                                Severity::SeverityType::error,
+                                id,
+                                "Function '" + function->name() + "' is called, can not determine that its contract '" + functionExpects + "' is always met.",
+                                CWE(0),
+                                false);
             errmsg.incomplete = bailoutValue;
             errmsg.function = functionName;
             data.errorLogger->reportErr(errmsg);
@@ -1439,13 +1441,13 @@ static void checkContract(Data &data, const Token *tok, const Function *function
         const char * const id = "internalErrorInExprEngine";
         const auto contractIt = data.settings->functionContracts.find(function->fullName());
         const std::string functionExpects = contractIt->second;
-        ErrorLogger::ErrorMessage errmsg(callstack,
-                                         &data.tokenizer->list,
-                                         Severity::SeverityType::error,
-                                         id,
-                                         "Function '" + function->name() + "' is called, can not determine that its contract is always met.",
-                                         CWE(0),
-                                         false);
+        ErrorMessage errmsg(callstack,
+                            &data.tokenizer->list,
+                            Severity::SeverityType::error,
+                            id,
+                            "Function '" + function->name() + "' is called, can not determine that its contract is always met.",
+                            CWE(0),
+                            false);
         errmsg.incomplete = true;
         data.errorLogger->reportErr(errmsg);
     }
@@ -1785,13 +1787,17 @@ static ExprEngine::ValuePtr executeExpression(const Token *tok, Data &data)
 
 static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data);
 
-static void execute(const Token *start, const Token *end, Data &data)
+static void execute(const Token *start, const Token *end, Data &data, int recursion=0)
 {
+    if (++recursion > 20)
+        // FIXME
+        throw VerifyException(start, "ExprEngine: Max recursion limit exceeded");
+
     for (const Token *tok = start; tok != end; tok = tok->next()) {
         if (Token::Match(tok, "[;{}]"))
             data.trackProgramState(tok);
 
-        if (Token::simpleMatch(tok, "while ( 0 ) ;")) {
+        if (Token::simpleMatch(tok, "while (") && (tok->linkAt(1), ") ;") && tok->next()->astOperand1()->hasKnownIntValue() && tok->next()->astOperand1()->getKnownIntValue() == 0) {
             tok = tok->tokAt(4);
             continue;
         }
@@ -1848,16 +1854,13 @@ static void execute(const Token *start, const Token *end, Data &data)
             const Token *thenStart = tok->linkAt(1)->next();
             const Token *thenEnd = thenStart->link();
 
-            if (Token::Match(thenStart, "{ return|throw|break|continue"))
-                execute(thenStart->next(), thenEnd, thenData);
-            else
-                execute(thenStart->next(), end, thenData);
+            execute(thenStart->next(), end, thenData, recursion);
 
             if (Token::simpleMatch(thenEnd, "} else {")) {
                 const Token *elseStart = thenEnd->tokAt(2);
-                execute(elseStart->next(), end, elseData);
+                execute(elseStart->next(), end, elseData, recursion);
             } else {
-                execute(thenEnd, end, elseData);
+                execute(thenEnd, end, elseData, recursion);
             }
             return;
         }
@@ -2163,7 +2166,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             std::list<const Token*> callstack{settings->clang ? tok : tok->astParent()};
             const char * const id = (tok->valueType() && tok->valueType()->isFloat()) ? "bughuntingDivByZeroFloat" : "bughuntingDivByZero";
             const bool bailout = (value.type == ExprEngine::ValueType::BailoutValue);
-            ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, id, "There is division, cannot determine that there can't be a division by zero.", CWE(369), false);
+            ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, id, "There is division, cannot determine that there can't be a division by zero.", CWE(369), false);
             if (!bailout)
                 errmsg.function = dataBase->currentFunction;
             else
@@ -2216,7 +2219,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             errorMessage += " Note that unsigned integer overflow is defined and will wrap around.";
 
         std::list<const Token*> callstack{tok};
-        ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingIntegerOverflow", errorMessage, false);
+        ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingIntegerOverflow", errorMessage, false);
         errorLogger->reportErr(errmsg);
     };
 #endif
@@ -2281,7 +2284,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
 
         dataBase->addError(tok->linenr());
         std::list<const Token*> callstack{tok};
-        ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingUninit", "Cannot determine that '" + tok->expressionString() + "' is initialized", CWE_USE_OF_UNINITIALIZED_VARIABLE, false);
+        ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingUninit", "Cannot determine that '" + tok->expressionString() + "' is initialized", CWE_USE_OF_UNINITIALIZED_VARIABLE, false);
         errorLogger->reportErr(errmsg);
     };
 
@@ -2325,11 +2328,11 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
                 if (!bad.empty()) {
                     dataBase->addError(tok->linenr());
                     std::list<const Token*> callstack{tok};
-                    ErrorLogger::ErrorMessage errmsg(callstack,
-                                                     &tokenizer->list,
-                                                     Severity::SeverityType::error,
-                                                     "bughuntingInvalidArgValue",
-                                                     "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument value meets the attribute " + bad, CWE(0), false);
+                    ErrorMessage errmsg(callstack,
+                                        &tokenizer->list,
+                                        Severity::SeverityType::error,
+                                        "bughuntingInvalidArgValue",
+                                        "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument value meets the attribute " + bad, CWE(0), false);
                     errorLogger->reportErr(errmsg);
                     return;
                 }
@@ -2377,7 +2380,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             if (err) {
                 dataBase->addError(tok->linenr());
                 std::list<const Token*> callstack{tok};
-                ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingInvalidArgValue", "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument value is valid. Bad value: " + bad, CWE(0), false);
+                ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingInvalidArgValue", "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument value is valid. Bad value: " + bad, CWE(0), false);
                 errorLogger->reportErr(errmsg);
                 break;
             }
@@ -2391,7 +2394,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
                 if (v.second->isUninit()) {
                     dataBase->addError(tok->linenr());
                     std::list<const Token*> callstack{tok};
-                    ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingUninitArg", "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument is initialized.", CWE_USE_OF_UNINITIALIZED_VARIABLE, false);
+                    ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingUninitArg", "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument is initialized.", CWE_USE_OF_UNINITIALIZED_VARIABLE, false);
                     errorLogger->reportErr(errmsg);
                     break;
                 }
@@ -2415,7 +2418,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             if (value.isLessThan(dataBase, low)) {
                 dataBase->addError(tok->linenr());
                 std::list<const Token*> callstack{tok};
-                ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingAssign", "There is assignment, cannot determine that value is greater or equal with " + std::to_string(low), CWE_INCORRECT_CALCULATION, false);
+                ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingAssign", "There is assignment, cannot determine that value is greater or equal with " + std::to_string(low), CWE_INCORRECT_CALCULATION, false);
                 errorLogger->reportErr(errmsg);
             }
         }
@@ -2425,7 +2428,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
             if (value.isGreaterThan(dataBase, high)) {
                 dataBase->addError(tok->linenr());
                 std::list<const Token*> callstack{tok};
-                ErrorLogger::ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingAssign", "There is assignment, cannot determine that value is lower or equal with " + std::to_string(high), CWE_INCORRECT_CALCULATION, false);
+                ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingAssign", "There is assignment, cannot determine that value is lower or equal with " + std::to_string(high), CWE_INCORRECT_CALCULATION, false);
                 errorLogger->reportErr(errmsg);
             }
         }
