@@ -1424,12 +1424,12 @@ static void checkContract(Data &data, const Token *tok, const Function *function
             const std::string functionName = contractIt->first;
             const std::string functionExpects = contractIt->second;
             ErrorMessage errmsg(callstack,
-                                             &data.tokenizer->list,
-                                             Severity::SeverityType::error,
-                                             id,
-                                             "Function '" + function->name() + "' is called, can not determine that its contract '" + functionExpects + "' is always met.",
-                                             CWE(0),
-                                             false);
+                                &data.tokenizer->list,
+                                Severity::SeverityType::error,
+                                id,
+                                "Function '" + function->name() + "' is called, can not determine that its contract '" + functionExpects + "' is always met.",
+                                CWE(0),
+                                false);
             errmsg.incomplete = bailoutValue;
             errmsg.function = functionName;
             data.errorLogger->reportErr(errmsg);
@@ -1442,12 +1442,12 @@ static void checkContract(Data &data, const Token *tok, const Function *function
         const auto contractIt = data.settings->functionContracts.find(function->fullName());
         const std::string functionExpects = contractIt->second;
         ErrorMessage errmsg(callstack,
-                                         &data.tokenizer->list,
-                                         Severity::SeverityType::error,
-                                         id,
-                                         "Function '" + function->name() + "' is called, can not determine that its contract is always met.",
-                                         CWE(0),
-                                         false);
+                            &data.tokenizer->list,
+                            Severity::SeverityType::error,
+                            id,
+                            "Function '" + function->name() + "' is called, can not determine that its contract is always met.",
+                            CWE(0),
+                            false);
         errmsg.incomplete = true;
         data.errorLogger->reportErr(errmsg);
     }

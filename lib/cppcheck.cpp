@@ -1153,11 +1153,11 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
             if (pcreCompileErrorStr) {
                 const std::string msg = "pcre_compile failed: " + std::string(pcreCompileErrorStr);
                 const ErrorMessage errmsg(std::list<ErrorMessage::FileLocation>(),
-                                                       emptyString,
-                                                       Severity::error,
-                                                       msg,
-                                                       "pcre_compile",
-                                                       false);
+                                          emptyString,
+                                          Severity::error,
+                                          msg,
+                                          "pcre_compile",
+                                          false);
 
                 reportErr(errmsg);
             }
@@ -1174,11 +1174,11 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
         if (pcreStudyErrorStr) {
             const std::string msg = "pcre_study failed: " + std::string(pcreStudyErrorStr);
             const ErrorMessage errmsg(std::list<ErrorMessage::FileLocation>(),
-                                                   emptyString,
-                                                   Severity::error,
-                                                   msg,
-                                                   "pcre_study",
-                                                   false);
+                                      emptyString,
+                                      Severity::error,
+                                      msg,
+                                      "pcre_study",
+                                      false);
 
             reportErr(errmsg);
             // pcre_compile() worked, but pcre_study() returned an error. Free the resources allocated by pcre_compile().
@@ -1197,11 +1197,11 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
                 const std::string errorMessage = pcreErrorCodeToString(pcreExecRet);
                 if (!errorMessage.empty()) {
                     const ErrorMessage errmsg(std::list<ErrorMessage::FileLocation>(),
-                                                           emptyString,
-                                                           Severity::error,
-                                                           std::string("pcre_exec failed: ") + errorMessage,
-                                                           "pcre_exec",
-                                                           false);
+                                              emptyString,
+                                              Severity::error,
+                                              std::string("pcre_exec failed: ") + errorMessage,
+                                              "pcre_exec",
+                                              false);
 
                     reportErr(errmsg);
                 }
