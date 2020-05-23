@@ -1787,13 +1787,17 @@ static ExprEngine::ValuePtr executeExpression(const Token *tok, Data &data)
 
 static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data);
 
-static void execute(const Token *start, const Token *end, Data &data)
+static void execute(const Token *start, const Token *end, Data &data, int recursion=0)
 {
+    if (++recursion > 20)
+        // FIXME
+        throw VerifyException(start, "ExprEngine: Max recursion limit exceeded");
+
     for (const Token *tok = start; tok != end; tok = tok->next()) {
         if (Token::Match(tok, "[;{}]"))
             data.trackProgramState(tok);
 
-        if (Token::simpleMatch(tok, "while ( 0 ) ;")) {
+        if (Token::simpleMatch(tok, "while (") && (tok->linkAt(1), ") ;") && tok->next()->astOperand1()->hasKnownIntValue() && tok->next()->astOperand1()->getKnownIntValue() == 0) {
             tok = tok->tokAt(4);
             continue;
         }
@@ -1850,16 +1854,13 @@ static void execute(const Token *start, const Token *end, Data &data)
             const Token *thenStart = tok->linkAt(1)->next();
             const Token *thenEnd = thenStart->link();
 
-            if (Token::Match(thenStart, "{ return|throw|break|continue"))
-                execute(thenStart->next(), thenEnd, thenData);
-            else
-                execute(thenStart->next(), end, thenData);
+            execute(thenStart->next(), end, thenData, recursion);
 
             if (Token::simpleMatch(thenEnd, "} else {")) {
                 const Token *elseStart = thenEnd->tokAt(2);
-                execute(elseStart->next(), end, elseData);
+                execute(elseStart->next(), end, elseData, recursion);
             } else {
-                execute(thenEnd, end, elseData);
+                execute(thenEnd, end, elseData, recursion);
             }
             return;
         }
