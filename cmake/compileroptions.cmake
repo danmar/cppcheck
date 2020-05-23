@@ -54,7 +54,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    endif()
 endif()
 
-if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+if (MSVC)
     add_compile_options(/W4)
     add_compile_options(/wd4018) # warning C4018: '>': signed/unsigned mismatch
     add_compile_options(/wd4127) # warning C4127: conditional expression is constant
@@ -68,6 +68,10 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     add_compile_options(/wd4701) # warning C4701: potentially uninitialized local variable 'err' used
     add_compile_options(/wd4706) # warning C4706: assignment within conditional expression
     add_compile_options(/wd4800) # warning C4800: 'const SymbolDatabase *' : forcing value to bool 'true' or 'false' (performance warning)
+
+    if (WARNINGS_ARE_ERRORS)
+        add_compile_options(/WX)
+    endif()
 endif()
 
 # TODO: check if this can be enabled again - also done in Makefile
