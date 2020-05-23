@@ -8228,6 +8228,8 @@ private:
                             "    d e = {(p1)...};\n"
                             "  }\n"
                             "};\n"));
+
+        ASSERT_NO_THROW(tokenizeAndStringify("a<b?0:1>()==3;"));
     }
 
     void checkNamespaces() {

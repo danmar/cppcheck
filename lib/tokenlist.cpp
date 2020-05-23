@@ -1564,13 +1564,16 @@ void TokenList::validateAst() const
             safeAstTokens.insert(tok);
         }
 
+        // Don't check templates
+        if (tok->str() == "<" && tok->link()) {
+            tok = tok->link();
+            continue;
+        }
+
         // Check binary operators
         if (Token::Match(tok, "%or%|%oror%|%assign%|%comp%")) {
             // Skip lambda captures
             if (Token::Match(tok, "= ,|]"))
-                continue;
-            // Don't check templates
-            if (tok->link())
                 continue;
             // Skip pure virtual functions
             if (Token::simpleMatch(tok->previous(), ") = 0"))
