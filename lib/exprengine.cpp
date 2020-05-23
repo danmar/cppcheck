@@ -1791,7 +1791,7 @@ static void execute(const Token *start, const Token *end, Data &data, int recurs
 {
     if (++recursion > 20)
         // FIXME
-        throw VerifyException(start, "ExprEngine: Max recursion limit exceeded");
+        return;
 
     for (const Token *tok = start; tok != end; tok = tok->next()) {
         if (Token::Match(tok, "[;{}]"))
