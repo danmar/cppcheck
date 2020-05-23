@@ -1308,6 +1308,17 @@ std::vector<MathLib::bigint> Library::unknownReturnValues(const Token *ftok) con
     return (it == mUnknownReturnValues.end()) ? std::vector<MathLib::bigint>() : it->second;
 }
 
+const Library::Function *Library::getFunction(const Token *ftok) const
+{
+    if (isNotLibraryFunction(ftok))
+        return nullptr;
+    const std::map<std::string, Function>::const_iterator it1 = functions.find(getFunctionName(ftok));
+    if (it1 == functions.cend())
+        return nullptr;
+    return &it1->second;
+}
+
+
 bool Library::hasminsize(const Token *ftok) const
 {
     if (isNotLibraryFunction(ftok))

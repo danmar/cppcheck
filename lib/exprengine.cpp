@@ -1854,14 +1854,30 @@ static void execute(const Token *start, const Token *end, Data &data, int recurs
             const Token *thenStart = tok->linkAt(1)->next();
             const Token *thenEnd = thenStart->link();
 
-            execute(thenStart->next(), end, thenData, recursion);
+            const Token *exceptionToken = nullptr;
+            std::string exceptionMessage;
+            auto exec = [&](const Token *tok1, const Token *tok2, Data& data) {
+                try {
+                    execute(tok1, tok2, data, recursion);
+                } catch (VerifyException &e) {
+                    if (!exceptionToken || (e.tok && precedes(e.tok, exceptionToken))) {
+                        exceptionToken = e.tok;
+                        exceptionMessage = e.what;
+                    }
+                }
+            };
+
+            exec(thenStart->next(), end, thenData);
 
             if (Token::simpleMatch(thenEnd, "} else {")) {
                 const Token *elseStart = thenEnd->tokAt(2);
-                execute(elseStart->next(), end, elseData, recursion);
+                exec(elseStart->next(), end, elseData);
             } else {
-                execute(thenEnd, end, elseData, recursion);
+                exec(thenEnd, end, elseData);
             }
+
+            if (exceptionToken)
+                throw VerifyException(exceptionToken, exceptionMessage);
             return;
         }
 
@@ -1871,6 +1887,18 @@ static void execute(const Token *start, const Token *end, Data &data, int recurs
             const Token *bodyEnd = bodyStart->link();
             const Token *defaultStart = nullptr;
             Data defaultData(data);
+            const Token *exceptionToken = nullptr;
+            std::string exceptionMessage;
+            auto exec = [&](const Token *tok1, const Token *tok2, Data& data) {
+                try {
+                    execute(tok1, tok2, data, recursion);
+                } catch (VerifyException &e) {
+                    if (!exceptionToken || (e.tok && precedes(e.tok, exceptionToken))) {
+                        exceptionToken = e.tok;
+                        exceptionMessage = e.what;
+                    }
+                }
+            };
             for (const Token *tok2 = bodyStart->next(); tok2 != bodyEnd; tok2 = tok2->next()) {
                 if (tok2->str() == "{")
                     tok2 = tok2->link();
@@ -1880,11 +1908,16 @@ static void execute(const Token *start, const Token *end, Data &data, int recurs
                     Data caseData(data);
                     caseData.addConstraint(condValue, caseValue, true);
                     defaultData.addConstraint(condValue, caseValue, false);
-                    execute(tok2->tokAt(2), end, caseData);
+                    exec(tok2->tokAt(2), end, caseData);
+                } else if (Token::Match(tok2, "case %name% :") && !Token::Match(tok2->tokAt(3), ";| case")) {
+                    Data caseData(data);
+                    exec(tok2->tokAt(2), end, caseData);
                 } else if (Token::simpleMatch(tok2, "default :"))
                     defaultStart = tok2;
             }
-            execute(defaultStart ? defaultStart : bodyEnd, end, defaultData);
+            exec(defaultStart ? defaultStart : bodyEnd, end, defaultData);
+            if (exceptionToken)
+                throw VerifyException(exceptionToken, exceptionMessage);
             return;
         }
 
@@ -2145,6 +2178,49 @@ static float getKnownFloatValue(const Token *tok, float def)
 
 void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings)
 {
+    std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> bufferOverflow = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
+        if (!Token::simpleMatch(tok->astParent(), ","))
+            return;
+
+        if (!tok->valueType() || tok->valueType()->pointer != 1 || tok->valueType()->type != ::ValueType::Type::CHAR)
+            return;
+
+        int argnr = (tok == tok->astParent()->astOperand1()) ? 0 : 1;
+        const Token *ftok = tok->astParent();
+        while (Token::simpleMatch(ftok, ",")) {
+            ++argnr;
+            ftok = ftok->astParent();
+        }
+        ftok = ftok ? ftok->previous() : nullptr;
+        if (!Token::Match(ftok, "%name% ("))
+            return;
+
+        int overflowArgument = 0;
+
+        if (const Library::Function *func = settings->library.getFunction(ftok)) {
+            for (auto argNrChecks: func->argumentChecks) {
+                int nr = argNrChecks.first;
+                const Library::ArgumentChecks &checks = argNrChecks.second;
+                for (const Library::ArgumentChecks::MinSize &minsize: checks.minsizes) {
+                    if (minsize.type == Library::ArgumentChecks::MinSize::STRLEN && minsize.arg == argnr)
+                        overflowArgument = nr;
+                }
+            }
+        }
+
+        if (!overflowArgument)
+            return;
+
+        dataBase->addError(tok->linenr());
+        std::list<const Token*> callstack{tok};
+        ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingBufferOverflow", "Buffer read/write, when calling '" + ftok->str() +  "' it cannot be determined that " + std::to_string(overflowArgument) + getOrdinalText(overflowArgument) + " argument is not overflowed", CWE(120), false);
+        if (value.type == ExprEngine::ValueType::BailoutValue)
+            errmsg.incomplete = true;
+        else
+            errmsg.function = dataBase->currentFunction;
+        errorLogger->reportErr(errmsg);
+    };
+
     std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> divByZero = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
         if (!tok->astParent() || !std::strchr("/%", tok->astParent()->str()[0]))
             return;
@@ -2435,6 +2511,7 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
     };
 
     std::vector<ExprEngine::Callback> callbacks;
+    callbacks.push_back(bufferOverflow);
     callbacks.push_back(divByZero);
     callbacks.push_back(checkFunctionCall);
     callbacks.push_back(checkAssignment);
