@@ -2986,7 +2986,7 @@ static bool isLifetimeBorrowed(const ValueType *vt, const ValueType *vtParent)
 
 static const Token* skipCVRefs(const Token* tok, const Token* endTok)
 {
-    while(tok != endTok && Token::Match(tok, "const|volatile|auto|&|&&"))
+    while (tok != endTok && Token::Match(tok, "const|volatile|auto|&|&&"))
         tok = tok->next();
     return tok;
 }
@@ -2997,7 +2997,7 @@ static bool isNotEqual(std::pair<const Token*, const Token*> x, std::pair<const 
     const Token* start2 = y.first;
     if (start1 == nullptr || start2 == nullptr)
         return false;
-    while(start1 != x.second && start2 != y.second) {
+    while (start1 != x.second && start2 != y.second) {
         const Token* tok1 = skipCVRefs(start1, x.second);
         if (tok1 != start1) {
             start1 = tok1;
