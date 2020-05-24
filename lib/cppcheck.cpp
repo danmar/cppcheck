@@ -323,7 +323,6 @@ unsigned int CppCheck::check(const std::string &path)
         if (!mSettings.quiet)
             mErrorLogger.reportOut(std::string("Checking ") + path + "...");
 
-        const std::string tempFile = ".";
         const std::string lang = Path::isCPP(path) ? "-x c++" : "-x c";
         const std::string analyzerInfo = mSettings.buildDir.empty() ? std::string() : AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "");
         const std::string clangcmd = analyzerInfo + ".clang-cmd";
@@ -333,35 +332,15 @@ unsigned int CppCheck::check(const std::string &path)
 #else
         const std::string exe = "clang";
 #endif
-        const std::string args1 = "-v -fsyntax-only " + lang + " " + tempFile;
-        std::string output1;
-        mExecuteCommand(exe, split(args1), "2>&1", &output1);
-        if (output1.find(" -cc1 ") == std::string::npos) {
-            mErrorLogger.reportOut("Failed to execute '" + exe + "':" + output1);
-            return 0;
-        }
-        std::istringstream details(output1);
-        std::string line;
+
         std::string flags(lang + " ");
-        while (std::getline(details, line)) {
-            if (line.find(" -internal-isystem ") == std::string::npos)
-                continue;
-            const std::vector<std::string> options = split(line, " ");
-            for (int i = 0; i+1 < options.size(); i++) {
-                if (endsWith(options[i], "-isystem", 8))
-                    flags += options[i] + " " + options[i+1] + " ";
-                if (options[i] == "-fcxx-exceptions")
-                    flags += "-fcxx-exceptions ";
-            }
-        }
 
         for (const std::string &i: mSettings.includePaths)
             flags += "-I" + i + " ";
 
         flags += getDefinesFlags(mSettings.userDefines);
 
-
-        const std::string args2 = "-cc1 -ast-dump " + flags + path;
+        const std::string args2 = "-fsyntax-only -Xclang -ast-dump -fno-color-diagnostics " + flags + path;
         const std::string redirect2 = analyzerInfo.empty() ? std::string("2>&1") : ("2> " + clangStderr);
         if (!mSettings.buildDir.empty()) {
             std::ofstream fout(clangcmd);
