@@ -196,15 +196,17 @@ ImportProject::Type ImportProject::import(const std::string &filename, Settings 
     if (!mPath.empty() && !endsWith(mPath,'/'))
         mPath += '/';
 
+    const std::string fileFilter = settings ? settings->fileFilter : std::string();
+
     if (endsWith(filename, ".json", 5)) {
         importCompileCommands(fin);
         return ImportProject::Type::COMPILE_DB;
     } else if (endsWith(filename, ".sln", 4)) {
-        importSln(fin, mPath, settings->fileFilter);
+        importSln(fin, mPath, fileFilter);
         return ImportProject::Type::VS_SLN;
     } else if (endsWith(filename, ".vcxproj", 8)) {
         std::map<std::string, std::string, cppcheck::stricmp> variables;
-        importVcxproj(filename, variables, emptyString, settings->fileFilter);
+        importVcxproj(filename, variables, emptyString, fileFilter);
         return ImportProject::Type::VS_VCXPROJ;
     } else if (endsWith(filename, ".bpr", 4)) {
         importBcb6Prj(filename);
