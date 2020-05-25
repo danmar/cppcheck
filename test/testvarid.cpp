@@ -2615,7 +2615,7 @@ private:
                              "  if (not x) {}\n"
                              "}";
         const char exp1[] = "1: void foo ( int x@1 ) const {\n"
-                            "2: if ( not x@1 ) { }\n"
+                            "2: if ( ! x@1 ) { }\n"
                             "3: }\n";
         ASSERT_EQUALS(exp1, tokenize(code1));
     }
