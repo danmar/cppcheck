@@ -7093,8 +7093,16 @@ bool Tokenizer::simplifyCAlternativeTokens()
 
     bool ret = false;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (tok->str() == ")") {
+            if (const Token *end = isFunctionHead(tok, "{")) {
+                ++executableScopeLevel;
+                tok = const_cast<Token *>(end);
+                continue;
+            }
+        }
+
         if (tok->str() == "{") {
-            if (executableScopeLevel > 0 || Token::simpleMatch(tok->previous(), ") {"))
+            if (executableScopeLevel > 0)
                 ++executableScopeLevel;
             continue;
         }
