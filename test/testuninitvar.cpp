@@ -98,21 +98,11 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        // Raw tokens..
-        std::vector<std::string> files(1, fname);
-        std::istringstream istr(code);
-        const simplecpp::TokenList tokens1(istr, files, files[0]);
-
-        // Preprocess..
-        simplecpp::TokenList tokens2(files);
-        std::map<std::string, simplecpp::TokenList*> filedata;
-        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
-
         // Tokenize..
         settings.debugwarnings = debugwarnings;
         Tokenizer tokenizer(&settings, this);
-        tokenizer.createTokens(std::move(tokens2));
-        tokenizer.simplifyTokens1("");
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, fname);
 
         // Check for redundant code..
         CheckUninitVar checkuninitvar(&tokenizer, &settings, this);
@@ -717,24 +707,28 @@ private:
 
         // Ticket #9296
         checkUninitVar("int __round_mask(int, int);\n"
-                       "#define round_down(x, y) ((x) & ~__round_mask(y, y))\n"
                        "void f(void)\n"
                        "{\n"
-                       "int x;\n"
-                       "int a = x * 2;\n"
-                       "int z = round_down(x, 42);\n"
+                       "    int x;\n"
+                       "    int z = (x) & ~__round_mask(1, 1);\n"
                        "}");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: x\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: x\n", errout.str());
 
         checkUninitVar("int __round_mask(int, int);\n"
-                       "#define round_down(x, y) ((x) | ~__round_mask(y, y))\n"
                        "void f(void)\n"
                        "{\n"
-                       "int x;\n"
-                       "int a = x * 2;\n"
-                       "int z = round_down(x, 42);\n"
+                       "    int x;\n"
+                       "    int z = (x) | ~__round_mask(1, 1);\n"
                        "}");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: x\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: x\n", errout.str());
+
+        checkUninitVar("int __round_mask(int, int);\n"
+                       "void f(void)\n"
+                       "{\n"
+                       "    int x;\n"
+                       "    int* z = &x;\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_warn_once() {
