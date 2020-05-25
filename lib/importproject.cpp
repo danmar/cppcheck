@@ -469,6 +469,11 @@ namespace {
                             if (!additionalIncludePaths.empty())
                                 additionalIncludePaths += ';';
                             additionalIncludePaths += e->GetText();
+                        } else if (std::strcmp(e->Name(), "LanguageStandard") == 0) {
+                            if (std::strcmp(e->GetText(), "stdcpp14") == 0)
+                                cppstd = Standards::CPP14;
+                            else if (std::strcmp(e->GetText(), "stdcpp17") == 0)
+                                cppstd = Standards::CPP17;
                         }
                     }
                 }
@@ -508,6 +513,7 @@ namespace {
         std::string condition;
         std::string preprocessorDefinitions;
         std::string additionalIncludePaths;
+        Standards::cppstd_t cppstd = Standards::CPPLatest;
     };
 }
 
@@ -696,6 +702,14 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
             for (const ItemDefinitionGroup &i : itemDefinitionGroupList) {
                 if (!i.conditionIsTrue(p))
                     continue;
+                if (i.cppstd == Standards::CPP11)
+                    fs.standard = "c++11";
+                else if (i.cppstd == Standards::CPP14)
+                    fs.standard = "c++14";
+                else if (i.cppstd == Standards::CPP17)
+                    fs.standard = "c++14";
+                else if (i.cppstd == Standards::CPP20)
+                    fs.standard = "c++20";
                 fs.defines += ';' + i.preprocessorDefinitions;
                 additionalIncludePaths += ';' + i.additionalIncludePaths;
             }

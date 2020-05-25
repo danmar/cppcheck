@@ -334,6 +334,12 @@ unsigned int CppCheck::check(const std::string &path)
 #endif
 
         std::string flags(lang + " ");
+        if (mSettings.standards.cpp == Standards::CPP14)
+            flags += "-std=c++14 ";
+        else if (mSettings.standards.cpp == Standards::CPP17)
+            flags += "-std=c++17 ";
+        else if (mSettings.standards.cpp == Standards::CPP20)
+            flags += "-std=c++20 ";
 
         for (const std::string &i: mSettings.includePaths)
             flags += "-I" + i + " ";
@@ -401,6 +407,12 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
     temp.mSettings.userDefines += fs.cppcheckDefines();
     temp.mSettings.includePaths = fs.includePaths;
     temp.mSettings.userUndefs = fs.undefs;
+    if (fs.standard == "c++14")
+        temp.mSettings.standards.cpp = Standards::CPP14;
+    else if (fs.standard == "c++17")
+        temp.mSettings.standards.cpp = Standards::CPP17;
+    else if (fs.standard == "c++20")
+        temp.mSettings.standards.cpp = Standards::CPP20;
     if (fs.platformType != Settings::Unspecified)
         temp.mSettings.platform(fs.platformType);
     if (mSettings.clang) {
