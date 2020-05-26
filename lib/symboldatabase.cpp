@@ -5645,7 +5645,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             parsedecl(type->type()->typeStart, valuetype, defaultSignedness, settings);
         else if (type->str() == "const")
             valuetype->constness |= (1 << (valuetype->pointer - pointer0));
-        else if (settings->clang && type->str().find("::") != std::string::npos && type->str().size() > 2) {
+        else if (settings->clang && type->str().size() > 2 && type->str().find("::") < type->str().find("<")) {
             TokenList typeTokens(settings);
             std::string::size_type pos1 = 0;
             do {
