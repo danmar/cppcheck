@@ -9410,15 +9410,15 @@ void Tokenizer::findGarbageCode() const
     const bool isCPP11 = isCPP() && mSettings->standards.cpp >= Standards::CPP11;
 
     const std::set<std::string> nonConsecutiveKeywords{ "break",
-            "continue",
-            "for",
-            "goto",
-            "if",
-            "return",
-            "switch",
-            "throw",
-            "typedef",
-            "while" };
+        "continue",
+        "for",
+        "goto",
+        "if",
+        "return",
+        "switch",
+        "throw",
+        "typedef",
+        "while" };
 
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         // initialization: = {
