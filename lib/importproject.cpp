@@ -474,6 +474,10 @@ namespace {
                                 cppstd = Standards::CPP14;
                             else if (std::strcmp(e->GetText(), "stdcpp17") == 0)
                                 cppstd = Standards::CPP17;
+                            else if (std::strcmp(e->GetText(), "stdcpp20") == 0)
+                                cppstd = Standards::CPP20;
+                            else if (std::strcmp(e->GetText(), "stdcpplatest") == 0)
+                                cppstd = Standards::CPPLatest;
                         }
                     }
                 }
