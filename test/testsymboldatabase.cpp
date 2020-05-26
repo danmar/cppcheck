@@ -30,6 +30,7 @@
 #include <climits>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <list>
 #include <map>
 #include <set>
@@ -6548,7 +6549,7 @@ private:
         tokenizer.tokenize(istr, filename);
         const Token* tok;
         for (tok = tokenizer.list.back(); tok; tok = tok->previous())
-            if (Token::simpleMatch(tok, pattern))
+            if (Token::simpleMatch(tok, pattern, strlen(pattern)))
                 break;
         return tok->valueType() ? tok->valueType()->str() : std::string();
     }

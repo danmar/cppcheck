@@ -1120,7 +1120,7 @@ void Tokenizer::simplifyTypedef()
 
                 // check for typedef that can be substituted
                 else if (tok2->isNameOnly() &&
-                         (Token::simpleMatch(tok2, pattern.c_str()) ||
+                         (Token::simpleMatch(tok2, pattern.c_str(), pattern.size()) ||
                           (inMemberFunc && tok2->str() == typeName->str()))) {
                     // member function class variables don't need qualification
                     if (!(inMemberFunc && tok2->str() == typeName->str()) && pattern.find("::") != std::string::npos) { // has a "something ::"
@@ -9410,15 +9410,15 @@ void Tokenizer::findGarbageCode() const
     const bool isCPP11 = isCPP() && mSettings->standards.cpp >= Standards::CPP11;
 
     const std::set<std::string> nonConsecutiveKeywords{ "break",
-        "continue",
-        "for",
-        "goto",
-        "if",
-        "return",
-        "switch",
-        "throw",
-        "typedef",
-        "while" };
+            "continue",
+            "for",
+            "goto",
+            "if",
+            "return",
+            "switch",
+            "throw",
+            "typedef",
+            "while" };
 
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         // initialization: = {

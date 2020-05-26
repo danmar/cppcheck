@@ -25,6 +25,8 @@
 #include "token.h"
 #include "tokenize.h"
 
+#include <cstring>
+
 struct InternalError;
 
 
@@ -4545,7 +4547,7 @@ private:
 
         const Token *tok1 = TemplateSimplifier::findTemplateDeclarationEnd(_tok);
 
-        return (tok1 == Token::findsimplematch(tokenizer.list.front(), pattern));
+        return (tok1 == Token::findsimplematch(tokenizer.list.front(), pattern, strlen(pattern)));
     }
 
     void findTemplateDeclarationEnd() {

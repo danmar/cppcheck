@@ -34,6 +34,7 @@
 #include <utility>
 #include <vector>
 #include <cstdint>
+#include <cstring>
 
 class TestValueFlow : public TestFixture {
 public:
@@ -231,7 +232,7 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 for (const ValueFlow::Value &v : tok->values()) {
-                    if (v.valueType == type && Token::simpleMatch(v.tokvalue, value))
+                    if (v.valueType == type && Token::simpleMatch(v.tokvalue, value, strlen(value)))
                         return true;
                 }
             }

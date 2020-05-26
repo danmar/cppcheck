@@ -2356,7 +2356,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
         else if (arg_path_length && Token::Match(first->next(), "%name%") && first->strAt(1) != "const") {
             std::string param = path;
 
-            if (Token::simpleMatch(second->next(), param.c_str())) {
+            if (Token::simpleMatch(second->next(), param.c_str(), param.size())) {
                 second = second->tokAt(int(arg_path_length));
                 arg_path_length = 0;
             }
@@ -2400,7 +2400,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
                 }
 
                 param = short_path;
-                if (Token::simpleMatch(second->next(), param.c_str())) {
+                if (Token::simpleMatch(second->next(), param.c_str(), param.size())) {
                     second = second->tokAt(int(short_path_length));
                     arg_path_length = 0;
                 }

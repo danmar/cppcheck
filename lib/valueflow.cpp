@@ -96,6 +96,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <cstring>
 #include <functional>
 #include <iterator>
 #include <limits>
@@ -187,9 +188,9 @@ static void setConditionalValues(const Token *tok,
         const char* lessThan = "<=";
         if (invert)
             std::swap(greaterThan, lessThan);
-        if (Token::simpleMatch(tok, greaterThan)) {
+        if (Token::simpleMatch(tok, greaterThan, strlen(greaterThan))) {
             false_value = ValueFlow::Value{tok, value - 1};
-        } else if (Token::simpleMatch(tok, lessThan)) {
+        } else if (Token::simpleMatch(tok, lessThan, strlen(lessThan))) {
             false_value = ValueFlow::Value{tok, value + 1};
         } else {
             false_value = ValueFlow::Value{tok, value};
@@ -199,10 +200,10 @@ static void setConditionalValues(const Token *tok,
         const char* lessThan = "<";
         if (invert)
             std::swap(greaterThan, lessThan);
-        if (Token::simpleMatch(tok, greaterThan)) {
+        if (Token::simpleMatch(tok, greaterThan, strlen(greaterThan))) {
             true_value = ValueFlow::Value{tok, value + 1};
             false_value = ValueFlow::Value{tok, value};
-        } else if (Token::simpleMatch(tok, lessThan)) {
+        } else if (Token::simpleMatch(tok, lessThan, strlen(lessThan))) {
             true_value = ValueFlow::Value{tok, value - 1};
             false_value = ValueFlow::Value{tok, value};
         }
