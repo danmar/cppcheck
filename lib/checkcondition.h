@@ -24,14 +24,17 @@
 
 #include "check.h"
 #include "config.h"
-#include "errorlogger.h"
 #include "mathlib.h"
+#include "errortypes.h"
+#include "utils.h"
 
+#include <set>
 #include <string>
 
 class Settings;
 class Token;
 class Tokenizer;
+class ErrorLogger;
 
 /// @addtogroup Checks
 /// @{

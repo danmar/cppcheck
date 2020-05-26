@@ -27,7 +27,6 @@
 #include "templatesimplifier.h"
 #include "utils.h"
 
-#include <algorithm>
 #include <cstddef>
 #include <functional>
 #include <list>
@@ -43,6 +42,7 @@ class Settings;
 class Type;
 class ValueType;
 class Variable;
+class TokenList;
 
 /**
  * @brief This struct stores pointers to the front and back tokens of the list this token is in.
@@ -50,6 +50,7 @@ class Variable;
 struct TokensFrontBack {
     Token *front;
     Token *back;
+    const TokenList* list;
 };
 
 struct ScopeInfo2 {
@@ -100,11 +101,8 @@ struct TokenImpl {
     std::list<ValueFlow::Value>* mValues;
     static const std::list<ValueFlow::Value> mEmptyValueList;
 
-    /** Bitfield bit count. */
-    unsigned char mBits;
-
     // Pointer to a template in the template simplifier
-    std::set<TemplateSimplifier::TokenAndName*> mTemplateSimplifierPointers;
+    std::set<TemplateSimplifier::TokenAndName*>* mTemplateSimplifierPointers;
 
     // Pointer to the object representing this token's scope
     std::shared_ptr<ScopeInfo2> mScopeInfo;
@@ -119,6 +117,9 @@ struct TokenImpl {
 
     // For memoization, to speed up parsing of huge arrays #8897
     enum class Cpp11init {UNKNOWN, CPP11INIT, NOINIT} mCpp11init;
+
+    /** Bitfield bit count. */
+    unsigned char mBits;
 
     void setCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint value);
     bool getCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint *value) const;
@@ -138,11 +139,11 @@ struct TokenImpl {
         , mOriginalName(nullptr)
         , mValueType(nullptr)
         , mValues(nullptr)
-        , mBits(0)
-        , mTemplateSimplifierPointers()
+        , mTemplateSimplifierPointers(nullptr)
         , mScopeInfo(nullptr)
         , mCppcheckAttributes(nullptr)
         , mCpp11init(Cpp11init::UNKNOWN)
+        , mBits(0)
     {}
 
     ~TokenImpl();
@@ -261,7 +262,12 @@ public:
      * @return true if given token matches with given pattern
      *         false if given token does not match with given pattern
      */
-    static bool simpleMatch(const Token *tok, const char pattern[]);
+    template<size_t count>
+    static bool simpleMatch(const Token *tok, const char (&pattern)[count]) {
+        return simpleMatch(tok, pattern, count-1);
+    }
+
+    static bool simpleMatch(const Token *tok, const char pattern[], size_t pattern_len);
 
     /**
      * Match given token (or list of tokens) to a pattern list.
@@ -608,11 +614,13 @@ public:
     unsigned char bits() const {
         return mImpl->mBits;
     }
-    std::set<TemplateSimplifier::TokenAndName*> &templateSimplifierPointers() const {
+    std::set<TemplateSimplifier::TokenAndName*>* templateSimplifierPointers() const {
         return mImpl->mTemplateSimplifierPointers;
     }
     void templateSimplifierPointer(TemplateSimplifier::TokenAndName* tokenAndName) {
-        mImpl->mTemplateSimplifierPointers.insert(tokenAndName);
+        if (!mImpl->mTemplateSimplifierPointers)
+            mImpl->mTemplateSimplifierPointers = new std::set<TemplateSimplifier::TokenAndName*>;
+        mImpl->mTemplateSimplifierPointers->insert(tokenAndName);
     }
     void setBits(const unsigned char b) {
         mImpl->mBits = b;
@@ -666,16 +674,36 @@ public:
         setFlag(fIsTemplateArg, value);
     }
 
-    static const Token *findsimplematch(const Token * const startTok, const char pattern[]);
-    static const Token *findsimplematch(const Token * const startTok, const char pattern[], const Token * const end);
+    template<size_t count>
+    static const Token *findsimplematch(const Token * const startTok, const char (&pattern)[count]) {
+        return findsimplematch(startTok, pattern, count-1);
+    }
+    static const Token *findsimplematch(const Token * const startTok, const char pattern[], size_t pattern_len);
+
+    template<size_t count>
+    static const Token *findsimplematch(const Token * const startTok, const char (&pattern)[count], const Token * const end) {
+        return findsimplematch(startTok, pattern, count-1, end);
+    }
+    static const Token *findsimplematch(const Token * const startTok, const char pattern[], size_t pattern_len, const Token * const end);
+
     static const Token *findmatch(const Token * const startTok, const char pattern[], const nonneg int varId = 0);
     static const Token *findmatch(const Token * const startTok, const char pattern[], const Token * const end, const nonneg int varId = 0);
-    static Token *findsimplematch(Token * const startTok, const char pattern[]) {
-        return const_cast<Token *>(findsimplematch(const_cast<const Token *>(startTok), pattern));
+
+    template<size_t count>
+    static Token *findsimplematch(Token * const startTok, const char (&pattern)[count]) {
+        return findsimplematch(startTok, pattern, count-1);
     }
-    static Token *findsimplematch(Token * const startTok, const char pattern[], const Token * const end) {
-        return const_cast<Token *>(findsimplematch(const_cast<const Token *>(startTok), pattern, end));
+    static Token *findsimplematch(Token * const startTok, const char pattern[], size_t pattern_len) {
+        return const_cast<Token *>(findsimplematch(const_cast<const Token *>(startTok), pattern, pattern_len));
     }
+    template<size_t count>
+    static Token *findsimplematch(Token * const startTok, const char (&pattern)[count], const Token * const end) {
+        return findsimplematch(startTok, pattern, count-1, end);
+    }
+    static Token *findsimplematch(Token * const startTok, const char pattern[], size_t pattern_len, const Token * const end) {
+        return const_cast<Token *>(findsimplematch(const_cast<const Token *>(startTok), pattern, pattern_len, end));
+    }
+
     static Token *findmatch(Token * const startTok, const char pattern[], const nonneg int varId = 0) {
         return const_cast<Token *>(findmatch(const_cast<const Token *>(startTok), pattern, varId));
     }
@@ -779,6 +807,11 @@ public:
      * File index should match the index of the string in this vector.
      */
     void printOut(const char *title, const std::vector<std::string> &fileNames) const;
+
+    /**
+     * print out tokens
+     */
+    void printLines(int lines=5) const;
 
     /**
      * Replace token replaceThis with tokens between start and end,
@@ -1016,84 +1049,27 @@ public:
             *mImpl->mOriginalName = name;
     }
 
-    bool hasKnownIntValue() const {
-        if (!mImpl->mValues)
-            return false;
-        return std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value &value) {
-            return value.isKnown() && value.isIntValue();
-        });
-    }
-
-    bool hasKnownValue() const {
-        return mImpl->mValues && std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), std::mem_fn(&ValueFlow::Value::isKnown));
-    }
+    bool hasKnownIntValue() const;
+    bool hasKnownValue() const;
 
     MathLib::bigint getKnownIntValue() const {
         return mImpl->mValues->front().intvalue;
     }
 
-    bool isImpossibleIntValue(const MathLib::bigint val) const {
-        if (!mImpl->mValues)
-            return false;
-        for (const auto &v: *mImpl->mValues) {
-            if (v.isIntValue() && v.isImpossible() && v.intvalue == val)
-                return true;
-            if (v.isIntValue() && v.bound == ValueFlow::Value::Bound::Lower && val > v.intvalue)
-                return true;
-            if (v.isIntValue() && v.bound == ValueFlow::Value::Bound::Upper && val < v.intvalue)
-                return true;
-        }
-        return false;
-    }
+    bool isImpossibleIntValue(const MathLib::bigint val) const;
 
-    const ValueFlow::Value * getValue(const MathLib::bigint val) const {
-        if (!mImpl->mValues)
-            return nullptr;
-        const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value& value) {
-            return value.isIntValue() && !value.isImpossible() && value.intvalue == val;
-        });
-        return it == mImpl->mValues->end() ? nullptr : &*it;
-    }
+    const ValueFlow::Value* getValue(const MathLib::bigint val) const;
 
-    const ValueFlow::Value * getMaxValue(bool condition) const {
-        if (!mImpl->mValues)
-            return nullptr;
-        const ValueFlow::Value *ret = nullptr;
-        for (const ValueFlow::Value &value : *mImpl->mValues) {
-            if (!value.isIntValue())
-                continue;
-            if (value.isImpossible())
-                continue;
-            if ((!ret || value.intvalue > ret->intvalue) &&
-                ((value.condition != nullptr) == condition))
-                ret = &value;
-        }
-        return ret;
-    }
+    const ValueFlow::Value* getMaxValue(bool condition) const;
 
-    const ValueFlow::Value * getMovedValue() const {
-        if (!mImpl->mValues)
-            return nullptr;
-        const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value& value) {
-            return value.isMovedValue() && !value.isImpossible() &&
-                   value.moveKind != ValueFlow::Value::MoveKind::NonMovedVariable;
-        });
-        return it == mImpl->mValues->end() ? nullptr : &*it;
-    }
+    const ValueFlow::Value* getMovedValue() const;
 
     const ValueFlow::Value * getValueLE(const MathLib::bigint val, const Settings *settings) const;
     const ValueFlow::Value * getValueGE(const MathLib::bigint val, const Settings *settings) const;
 
     const ValueFlow::Value * getInvalidValue(const Token *ftok, nonneg int argnr, const Settings *settings) const;
 
-    const ValueFlow::Value * getContainerSizeValue(const MathLib::bigint val) const {
-        if (!mImpl->mValues)
-            return nullptr;
-        const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value& value) {
-            return value.isContainerSizeValue() && !value.isImpossible() && value.intvalue == val;
-        });
-        return it == mImpl->mValues->end() ? nullptr : &*it;
-    }
+    const ValueFlow::Value* getContainerSizeValue(const MathLib::bigint val) const;
 
     const Token *getValueTokenMaxStrLength() const;
     const Token *getValueTokenMinStrSize(const Settings *settings) const;
@@ -1281,6 +1257,8 @@ public:
     }
 
     std::string astStringVerbose() const;
+
+    std::string astStringZ3() const;
 
     std::string expressionString() const;
 

@@ -82,9 +82,6 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        if (simplify)
-            tokenizer.simplifyTokenList2();
-
         return tokenizer.tokens()->stringifyList(nullptr, !simplify);
     }
 

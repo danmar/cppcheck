@@ -50,7 +50,7 @@ public:
 class QErrorPathItem {
 public:
     QErrorPathItem() : line(0), column(-1) {}
-    explicit QErrorPathItem(const ErrorLogger::ErrorMessage::FileLocation &loc);
+    explicit QErrorPathItem(const ErrorMessage::FileLocation &loc);
     QString file;
     int line;
     int column;
@@ -70,7 +70,7 @@ bool operator==(const QErrorPathItem &i1, const QErrorPathItem &i2);
 class ErrorItem {
 public:
     ErrorItem();
-    explicit ErrorItem(const ErrorLogger::ErrorMessage &errmsg);
+    explicit ErrorItem(const ErrorMessage &errmsg);
 
     /**
     * @brief Convert error item to string.

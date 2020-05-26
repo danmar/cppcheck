@@ -51,7 +51,7 @@ private:
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
-        tokenizer.createTokens(&tokens2);
+        tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
 
         // Check for incomplete statements..

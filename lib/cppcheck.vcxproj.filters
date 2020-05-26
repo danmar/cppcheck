@@ -59,6 +59,9 @@
     <ClCompile Include="errorlogger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="errortypes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="mathlib.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -168,6 +171,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="clangimport.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="forwardanalyzer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -329,6 +338,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="clangimport.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="programmemory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

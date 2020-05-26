@@ -19,7 +19,6 @@
 #include <QSettings>
 #include "common.h"
 #include "showtypes.h"
-#include "errorlogger.h"
 
 ShowTypes::ShowTypes()
 {

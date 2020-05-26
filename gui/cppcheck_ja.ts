@@ -148,17 +148,17 @@ Parameters: -l(line) (file)</translation>
     <message>
         <location filename="functioncontractdialog.ui" line="14"/>
         <source>Function contract</source>
-        <translation type="unfinished"></translation>
+        <translation>関数の構成</translation>
     </message>
     <message>
         <location filename="functioncontractdialog.ui" line="20"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>名前</translation>
     </message>
     <message>
         <location filename="functioncontractdialog.ui" line="27"/>
         <source>Requirements for parameters</source>
-        <translation type="unfinished"></translation>
+        <translation>パラメータの要求事項</translation>
     </message>
 </context>
 <context>
@@ -1597,7 +1597,7 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="113"/>
         <source>Selected VS Configurations</source>
-        <translation type="unfinished"></translation>
+        <translation>選択したVS設定</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="157"/>
@@ -1644,7 +1644,7 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="372"/>
         <source>Types and Functions</source>
-        <translation type="unfinished"></translation>
+        <translation>型と関数</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="413"/>
@@ -1654,37 +1654,37 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="438"/>
         <source>Parser</source>
-        <translation type="unfinished"></translation>
+        <translation>パーサー</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="444"/>
         <source>Cppcheck (built in)</source>
-        <translation type="unfinished"></translation>
+        <translation>Cppcheckビルトイン</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="454"/>
         <source>Clang</source>
-        <translation type="unfinished">Clang</translation>
+        <translation>Clang</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="464"/>
         <source>Check that code is safe</source>
-        <translation type="unfinished"></translation>
+        <translation>コードの安全性確認</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="470"/>
         <source>Bug hunting -- Detect all bugs. Generates mostly noise.</source>
-        <translation type="unfinished"></translation>
+        <translation>バグハント -- 全てのバグを検出。ノイズになりがち。</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="477"/>
         <source>Check that each class has a safe public interface</source>
-        <translation type="unfinished"></translation>
+        <translation>クラスが安全で公開されたインターフェースをもっているか確認</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="493"/>
         <source>Limit analysis</source>
-        <translation type="unfinished"></translation>
+        <translation>解析の制限</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="499"/>
@@ -1798,7 +1798,7 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="709"/>
         <source>Note: Addons require &lt;a href=&quot;https://www.python.org/&quot;&gt;Python&lt;/a&gt; being installed.</source>
-        <translation type="unfinished"></translation>
+        <translation>注意: アドオンには&lt;a href=&quot;https://www.python.org/&quot;&gt;Python&lt;/a&gt;が必要です。</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="719"/>
@@ -2244,7 +2244,7 @@ Options:
     <message>
         <location filename="resultstree.cpp" line="627"/>
         <source>Edit contract..</source>
-        <translation type="unfinished"></translation>
+        <translation>関数の構成を編集。</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="671"/>
@@ -2375,17 +2375,17 @@ Please select the directory where file is located.</source>
     <message>
         <location filename="resultsview.ui" line="158"/>
         <source>Contracts</source>
-        <translation type="unfinished"></translation>
+        <translation>構成</translation>
     </message>
     <message>
         <location filename="resultsview.ui" line="171"/>
         <source>Configured contracts:</source>
-        <translation type="unfinished"></translation>
+        <translation>設定した構成:</translation>
     </message>
     <message>
         <location filename="resultsview.ui" line="189"/>
         <source>Missing contracts:</source>
-        <translation type="unfinished"></translation>
+        <translation>構成なし:</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="176"/>
@@ -2462,7 +2462,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="resultsview.cpp" line="427"/>
         <source>Bug hunting analysis is incomplete</source>
-        <translation type="unfinished"></translation>
+        <translation>バグハントの解析は不完全です</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="516"/>

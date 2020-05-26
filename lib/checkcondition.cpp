@@ -23,7 +23,6 @@
 #include "checkcondition.h"
 
 #include "astutils.h"
-#include "errorlogger.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"

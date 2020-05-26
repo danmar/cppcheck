@@ -28,11 +28,29 @@
 #include <wx/textctrl.h>
 #include <wx/propgrid/property.h>
 
+wxString containerOutOfBounds_wxArrayString(void)
+{
+    wxArrayString a;
+    a.Add("42");
+    a.Clear();
+    // cppcheck-suppress containerOutOfBounds
+    return a[0];
+}
+
+int containerOutOfBounds_wxArrayInt(void)
+{
+    wxArrayInt a;
+    a.Add(42);
+    a.Clear();
+    // cppcheck-suppress containerOutOfBounds
+    return a[0];
+}
+
 void ignoredReturnValue_wxDC_GetSize(const wxDC &dc, wxCoord *width, wxCoord *height)
 {
     // No warning is expected for
     dc.GetSize(width, height);
-    // Now warning is expected for
+    // No warning is expected for
     (void)dc.GetSize();
 }
 

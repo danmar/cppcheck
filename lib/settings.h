@@ -22,7 +22,6 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
-#include "errorlogger.h"
 #include "importproject.h"
 #include "library.h"
 #include "platform.h"
@@ -30,6 +29,7 @@
 #include "suppressions.h"
 #include "timer.h"
 
+#include <algorithm>
 #include <atomic>
 #include <list>
 #include <set>
@@ -71,6 +71,7 @@ private:
 public:
     Settings();
 
+    /** @brief addons, either filename of python/json file or json data */
     std::list<std::string> addons;
 
     /** @brief Path to the python interpreter to be used to run addons. */

@@ -24,7 +24,7 @@
 
 #include "check.h"
 #include "config.h"
-#include "errorlogger.h"
+#include "errortypes.h"
 #include "utils.h"
 
 #include <cstddef>
@@ -39,6 +39,7 @@ class Settings;
 class Token;
 class Tokenizer;
 class Variable;
+class ErrorLogger;
 
 /// @addtogroup Checks
 /// @{
@@ -100,6 +101,7 @@ public:
         checkOther.checkCastIntToCharAndBack();
         checkOther.checkMisusedScopedObject();
         checkOther.checkAccessOfMovedVariable();
+        checkOther.checkModuloOfOne();
     }
 
     /** @brief Clarify calculation for ".. a * b ? .." */
@@ -215,6 +217,8 @@ public:
 
     void checkComparePointers();
 
+    void checkModuloOfOne();
+
 private:
     // Error messages..
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &functionName, const std::string &varName, const bool result);
@@ -271,6 +275,7 @@ private:
     void shadowError(const Token *var, const Token *shadowed, std::string type);
     void knownArgumentError(const Token *tok, const Token *ftok, const ValueFlow::Value *value);
     void comparePointersError(const Token *tok, const ValueFlow::Value *v1, const ValueFlow::Value *v2);
+    void checkModuloOfOneError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckOther c(nullptr, settings, errorLogger);
@@ -342,6 +347,7 @@ private:
 
         const std::vector<const Token *> nullvec;
         c.funcArgOrderDifferent("function", nullptr, nullptr, nullvec, nullvec);
+        c.checkModuloOfOneError(nullptr);
     }
 
     static std::string myName() {
@@ -402,7 +408,8 @@ private:
                "- function declaration and definition argument names different.\n"
                "- function declaration and definition argument order different.\n"
                "- shadow variable.\n"
-               "- variable can be declared const.\n";
+               "- variable can be declared const.\n"
+               "- calculating modulo of one.\n";
     }
 };
 /// @}

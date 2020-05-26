@@ -22,8 +22,8 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
-#include "errorlogger.h"
 #include "mathlib.h"
+#include "errortypes.h"
 #include "standards.h"
 
 #include <cstddef>
@@ -311,6 +311,7 @@ public:
         Function() : use(false), leakignore(false), isconst(false), ispure(false), useretval(false), ignore(false), formatstr(false), formatstr_scan(false), formatstr_secure(false) {}
     };
 
+    const Function *getFunction(const Token *ftok) const;
     std::map<std::string, Function> functions;
     bool isUse(const std::string& functionName) const;
     bool isLeakIgnore(const std::string& functionName) const;

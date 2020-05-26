@@ -63,6 +63,7 @@ private:
         TEST_CASE(while2);
         TEST_CASE(while3);
         TEST_CASE(while4);
+        TEST_CASE(while5);
 
         TEST_CASE(array1);
         TEST_CASE(array2);
@@ -96,6 +97,8 @@ private:
         TEST_CASE(structMember1);
         TEST_CASE(structMember2);
         TEST_CASE(structMember3);
+
+        TEST_CASE(ternaryOperator1);
 #endif
     }
 
@@ -459,6 +462,16 @@ private:
         ASSERT_EQUALS("", expr(code, "=="));
     }
 
+    void while5() {
+        const char code[] = "void f() {\n"
+                            "  int x;\n"
+                            "  while (cond)\n"
+                            "    x += 4;\n"
+                            "}";
+        ASSERT(getRange(code, "x", 4).find("?") != std::string::npos);
+    }
+
+
     void array1() {
         ASSERT_EQUALS("(= 5 0)\nz3::unsat\n",
                       expr("int f() { int arr[10]; arr[4] = 5; return arr[4]==0; }", "=="));
@@ -642,6 +655,20 @@ private:
         const char expected[] = "(and (>= $3 (- 2147483648)) (<= $3 2147483647))\n"
                                 "(= $3 1)\n"
                                 "z3::sat\n";
+
+        ASSERT_EQUALS(expected, expr(code, "=="));
+    }
+
+
+    void ternaryOperator1() {
+        const char code[] = "void foo(signed char x) {\n"
+                            "  x = (x > 0) ? (0==x) : 0;\n"
+                            "}";
+
+        const char expected[] = "(> $1 0)\n"
+                                "(and (>= $1 (- 128)) (<= $1 127))\n"
+                                "(= 0 $1)\n"
+                                "z3::unsat\n";
 
         ASSERT_EQUALS(expected, expr(code, "=="));
     }

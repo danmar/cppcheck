@@ -56,6 +56,9 @@ static std::string objfiles(const std::vector<std::string> &files)
 
 static void getDeps(const std::string &filename, std::vector<std::string> &depfiles)
 {
+    if (filename == "externals/z3_version.h")
+        return;
+
     static const std::vector<std::string> externalfolders = {"externals",
                                                              "externals/simplecpp",
                                                              "externals/tinyxml"
@@ -412,7 +415,7 @@ int main(int argc, char **argv)
     fout << "\t./testrunner -q\n\n";
     fout << "checkcfg:\tcppcheck validateCFG\n";
     fout << "\t./test/cfg/runtests.sh\n\n";
-    fout << "dmake:\ttools/dmake.o cli/filelister.o $(libcppdir)/pathmatch.o $(libcppdir)/path.o externals/simplecpp/simplecpp.o\n";
+    fout << "dmake:\ttools/dmake.o cli/filelister.o $(libcppdir)/pathmatch.o $(libcppdir)/path.o $(libcppdir)/utils.o externals/simplecpp/simplecpp.o\n";
     fout << "\t$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)\n\n";
     fout << "run-dmake: dmake\n";
     fout << "\t./dmake\n\n";
@@ -481,7 +484,7 @@ int main(int argc, char **argv)
     fout << "/tmp/errorlist.xml: cppcheck\n";
     fout << "\t./cppcheck --errorlist >$@\n";
     fout << "/tmp/example.xml: cppcheck\n";
-    fout << "\t./cppcheck --xml --enable=all --inconclusive --suppress=operatorEqVarError:*check.h --max-configs=1 -j 4 cli externals gui lib test 2>/tmp/example.xml\n";
+    fout << "\t./cppcheck --xml --enable=all --inconclusive --max-configs=1 samples 2>/tmp/example.xml\n";
     fout << "createXMLExamples:/tmp/errorlist.xml /tmp/example.xml\n";
     fout << ".PHONY: validateXML\n";
     fout << "validateXML: createXMLExamples\n";

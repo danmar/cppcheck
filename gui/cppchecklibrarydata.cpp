@@ -18,6 +18,8 @@
 
 #include "cppchecklibrarydata.h"
 
+#include <stdexcept>
+
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 

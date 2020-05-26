@@ -147,10 +147,10 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *token, const std::string &
         if ((isFunction() || isClass()) && mNameToken->strAt(-1) == "::") {
             const Token * start = mNameToken;
 
-            while (Token::Match(start->tokAt(-2), "%name% ::") ||
-                   (Token::simpleMatch(start->tokAt(-2), "> ::") &&
-                    start->tokAt(-2)->findOpeningBracket() &&
-                    Token::Match(start->tokAt(-2)->findOpeningBracket()->previous(), "%name% <"))) {
+            while (start && (Token::Match(start->tokAt(-2), "%name% ::") ||
+                             (Token::simpleMatch(start->tokAt(-2), "> ::") &&
+                              start->tokAt(-2)->findOpeningBracket() &&
+                              Token::Match(start->tokAt(-2)->findOpeningBracket()->previous(), "%name% <")))) {
                 if (start->strAt(-2) == ">")
                     start = start->tokAt(-2)->findOpeningBracket()->previous();
                 else
@@ -195,8 +195,8 @@ TemplateSimplifier::TokenAndName::TokenAndName(const TokenAndName& other) :
 
 TemplateSimplifier::TokenAndName::~TokenAndName()
 {
-    if (mToken)
-        mToken->templateSimplifierPointers().erase(this);
+    if (mToken && mToken->templateSimplifierPointers())
+        mToken->templateSimplifierPointers()->erase(this);
 }
 
 const Token * TemplateSimplifier::TokenAndName::aliasStartToken() const
@@ -1535,7 +1535,7 @@ bool TemplateSimplifier::alreadyHasNamespace(const TokenAndName &templateDeclara
         pos += 2;
     }
 
-    return Token::simpleMatch(tok->tokAt(offset), scope.c_str()) ;
+    return Token::simpleMatch(tok->tokAt(offset), scope.c_str(), scope.size());
 }
 
 void TemplateSimplifier::expandTemplate(
@@ -1714,7 +1714,7 @@ void TemplateSimplifier::expandTemplate(
                             }
                             // check if type is instantiated
                             for (const auto & inst : mTemplateInstantiations) {
-                                if (Token::simpleMatch(inst.token(), name.c_str())) {
+                                if (Token::simpleMatch(inst.token(), name.c_str(), name.size())) {
                                     // use the instantiated name
                                     dst->insertToken(name, "", true);
                                     start = closing;
@@ -2993,8 +2993,8 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
             (!typeParametersInDeclaration.empty() && typeParametersInDeclaration.size() != mTypesUsedInTemplateInstantiation.size())) {
             if (printDebug && mErrorLogger) {
                 std::list<const Token *> callstack(1, tok2);
-                mErrorLogger->reportErr(ErrorLogger::ErrorMessage(callstack, &mTokenList, Severity::debug, "debug",
-                                        "Failed to instantiate template \"" + instantiation.name() + "\". The checking continues anyway.", false));
+                mErrorLogger->reportErr(ErrorMessage(callstack, &mTokenList, Severity::debug, "debug",
+                                                     "Failed to instantiate template \"" + instantiation.name() + "\". The checking continues anyway.", false));
             }
             if (typeForNewName.empty())
                 continue;
@@ -3061,8 +3061,8 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         if (typeForNewName.empty()) {
             if (printDebug && mErrorLogger) {
                 std::list<const Token *> callstack(1, tok2);
-                mErrorLogger->reportErr(ErrorLogger::ErrorMessage(callstack, &mTokenList, Severity::debug, "debug",
-                                        "Failed to instantiate template \"" + templateDeclaration.name() + "\". The checking continues anyway.", false));
+                mErrorLogger->reportErr(ErrorMessage(callstack, &mTokenList, Severity::debug, "debug",
+                                                     "Failed to instantiate template \"" + templateDeclaration.name() + "\". The checking continues anyway.", false));
             }
             return false;
         }
@@ -3107,12 +3107,12 @@ void TemplateSimplifier::replaceTemplateUsage(
             Token::Match(nameTok, "template|const_cast|dynamic_cast|reinterpret_cast|static_cast"))
             continue;
 
-        std::set<TemplateSimplifier::TokenAndName*> & pointers = nameTok->templateSimplifierPointers();
+        std::set<TemplateSimplifier::TokenAndName*>* pointers = nameTok->templateSimplifierPointers();
 
         // check if instantiation matches token instantiation from pointer
-        if (pointers.size()) {
+        if (pointers && pointers->size()) {
             // check full name
-            if (instantiation.fullName() != (*pointers.begin())->fullName()) {
+            if (instantiation.fullName() != (*pointers->begin())->fullName()) {
                 // FIXME:  fallback to just matching name
                 if (nameTok->str() != instantiation.name())
                     continue;
@@ -3173,7 +3173,7 @@ void TemplateSimplifier::replaceTemplateUsage(
             nameTok->str(newName);
 
             for (Token *tok = nameTok1->next(); tok != tok2; tok = tok->next()) {
-                if (tok->isName() && !tok->templateSimplifierPointers().empty()) {
+                if (tok->isName() && tok->templateSimplifierPointers() && !tok->templateSimplifierPointers()->empty()) {
                     std::list<TokenAndName>::iterator ti;
                     for (ti = mTemplateInstantiations.begin(); ti != mTemplateInstantiations.end();) {
                         if (ti->token() == tok) {
@@ -3678,11 +3678,11 @@ void TemplateSimplifier::simplifyTemplates(
     if (passCount == passCountMax) {
         if (mSettings->debugwarnings) {
             const std::list<const Token*> locationList(1, mTokenList.front());
-            const ErrorLogger::ErrorMessage errmsg(locationList, &mTokenizer->list,
-                                                   Severity::debug,
-                                                   "debug",
-                                                   "TemplateSimplifier: pass count limit hit before simplifications were finished.",
-                                                   false);
+            const ErrorMessage errmsg(locationList, &mTokenizer->list,
+                                      Severity::debug,
+                                      "debug",
+                                      "TemplateSimplifier: pass count limit hit before simplifications were finished.",
+                                      false);
             if (mErrorLogger)
                 mErrorLogger->reportErr(errmsg);
         }

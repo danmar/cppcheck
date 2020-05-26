@@ -13,7 +13,7 @@ def find_cppcheck_binary():
         if os.path.exists(location):
             break
     else:
-        raise RuntimeError("Could not fine cppcheck binary")
+        raise RuntimeError("Could not find cppcheck binary")
 
     return location
 

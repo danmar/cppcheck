@@ -108,7 +108,7 @@ class MatchCompiler:
         elif tok == '%str%':
             return '(tok->tokType()==Token::eString)'
         elif tok == '%type%':
-            return '(tok->isName() && tok->varId()==0U && !tok->isKeyword())'
+            return '(tok->isName() && tok->varId()==0U && (tok->str() != "delete" || !tok->isKeyword()))'
         elif tok == '%name%':
             return 'tok->isName()'
         elif tok == '%var%':

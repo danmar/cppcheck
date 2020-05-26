@@ -130,6 +130,7 @@ private:
         TEST_CASE(duplicateBranch1); // tests extracted by http://www.viva64.com/en/b/0149/ ( Comparison between PVS-Studio and cppcheck ): Errors detected in Quake 3: Arena by PVS-Studio: Fragment 2
         TEST_CASE(duplicateBranch2); // empty macro
         TEST_CASE(duplicateBranch3);
+        TEST_CASE(duplicateBranch4);
         TEST_CASE(duplicateExpression1);
         TEST_CASE(duplicateExpression2); // ticket #2730
         TEST_CASE(duplicateExpression3); // ticket #3317
@@ -238,6 +239,8 @@ private:
         TEST_CASE(checkComparePointers);
 
         TEST_CASE(unusedVariableValueTemplate); // #8994
+
+        TEST_CASE(moduloOfOne);
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, bool verbose=false, Settings* settings = nullptr) {
@@ -299,7 +302,7 @@ private:
 
         // Tokenizer..
         Tokenizer tokenizer(settings, this);
-        tokenizer.createTokens(&tokens2);
+        tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
 
         // Check..
@@ -4096,6 +4099,17 @@ private:
               "        x = i;\n"
               "    } else {\n"
               "        x = j;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateBranch4() {
+        check("void* f(bool b) {\n"
+              "    if (b) {\n"
+              "        return new A::Y(true);\n"
+              "    } else {\n"
+              "        return new A::Z(true);\n"
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
@@ -8409,6 +8423,13 @@ private:
               "    g(y.x);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // allow known argument value in assert call
+        check("void g(int);\n"
+              "void f(int x) {\n"
+              "   ASSERT((int)((x & 0x01) >> 7));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkComparePointers() {
@@ -8549,6 +8570,20 @@ private:
               "            return A::Hash{}(a);\n"
               "        }\n"
               "    };\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void moduloOfOne() {
+        check("void f(unsigned int x) {\n"
+              "  int y = x % 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Modulo of one is always equal to zero\n", errout.str());
+
+        check("void f() {\n"
+              "  for (int x = 1; x < 10; x++) {\n"
+              "    int y = 100 % x;\n"
+              "  }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

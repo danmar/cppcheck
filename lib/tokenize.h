@@ -22,7 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
-#include "errorlogger.h"
+#include "errortypes.h"
 #include "tokenlist.h"
 
 #include <ctime>
@@ -36,6 +36,7 @@ class SymbolDatabase;
 class TimerResults;
 class Token;
 class TemplateSimplifier;
+class ErrorLogger;
 
 namespace simplecpp {
     class TokenList;
@@ -110,7 +111,7 @@ public:
     bool isScopeNoReturn(const Token *endScopeToken, bool *unknown = nullptr) const;
 
     bool createTokens(std::istream &code, const std::string& FileName);
-    void createTokens(const simplecpp::TokenList *tokenList);
+    void createTokens(simplecpp::TokenList&& tokenList);
 
     bool simplifyTokens1(const std::string &configuration);
     /**

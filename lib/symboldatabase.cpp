@@ -127,11 +127,12 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                                          "SymbolDatabase",
                                          tok->progressValue());
         // Locate next class
-        if ((mTokenizer->isCPP() && ((Token::Match(tok, "class|struct|union|namespace ::| %name% {|:|::|<") &&
-                                      !Token::Match(tok->previous(), "new|friend|const|enum|typedef|mutable|volatile|using|)|(|<")) ||
-                                     (Token::Match(tok, "enum class| %name% {") ||
-                                      Token::Match(tok, "enum class| %name% : %name% {"))))
-            || (mTokenizer->isC() && Token::Match(tok, "struct|union|enum %name% {"))) {
+        if ((mTokenizer->isCPP() && tok->isKeyword() &&
+             ((Token::Match(tok, "class|struct|union|namespace ::| %name% {|:|::|<") &&
+               !Token::Match(tok->previous(), "new|friend|const|enum|typedef|mutable|volatile|using|)|(|<")) ||
+              (Token::Match(tok, "enum class| %name% {") ||
+               Token::Match(tok, "enum class| %name% : %name% {"))))
+            || (mTokenizer->isC() && tok->isKeyword() && Token::Match(tok, "struct|union|enum %name% {"))) {
             const Token *tok2 = tok->tokAt(2);
 
             if (tok->strAt(1) == "::")
@@ -297,7 +298,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
         }
 
         // Namespace and unknown macro (#3854)
-        else if (mTokenizer->isCPP() &&
+        else if (mTokenizer->isCPP() && tok->isKeyword() &&
                  Token::Match(tok, "namespace %name% %type% (") &&
                  tok->tokAt(2)->isUpperCaseName() &&
                  Token::simpleMatch(tok->linkAt(3), ") {")) {
@@ -325,7 +326,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
         }
 
         // forward declaration
-        else if (Token::Match(tok, "class|struct|union %name% ;") &&
+        else if (tok->isKeyword() && Token::Match(tok, "class|struct|union %name% ;") &&
                  tok->strAt(-1) != "friend") {
             if (!findType(tok->next(), scope)) {
                 // fill typeList..
@@ -337,7 +338,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
         }
 
         // using namespace
-        else if (mTokenizer->isCPP() && Token::Match(tok, "using namespace ::| %type% ;|::")) {
+        else if (mTokenizer->isCPP() && tok->isKeyword() && Token::Match(tok, "using namespace ::| %type% ;|::")) {
             Scope::UsingInfo using_info;
 
             using_info.start = tok; // save location
@@ -357,7 +358,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
         }
 
         // using type alias
-        else if (mTokenizer->isCPP() && Token::Match(tok, "using %name% =")) {
+        else if (mTokenizer->isCPP() && tok->isKeyword() && Token::Match(tok, "using %name% =")) {
             if (tok->strAt(-1) != ">" && !findType(tok->next(), scope)) {
                 // fill typeList..
                 typeList.emplace_back(tok, nullptr, scope);
@@ -372,7 +373,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
         }
 
         // unnamed struct and union
-        else if (Token::Match(tok, "struct|union {") &&
+        else if (tok->isKeyword() && Token::Match(tok, "struct|union {") &&
                  Token::Match(tok->next()->link(), "} *|&| %name% ;|[|=")) {
             scopeList.emplace_back(this, tok, scope);
 
@@ -414,9 +415,9 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
         }
 
         // anonymous struct, union and namespace
-        else if ((Token::Match(tok, "struct|union {") &&
-                  Token::simpleMatch(tok->next()->link(), "} ;")) ||
-                 Token::simpleMatch(tok, "namespace {")) {
+        else if (tok->isKeyword() && ((Token::Match(tok, "struct|union {") &&
+                                       Token::simpleMatch(tok->next()->link(), "} ;")) ||
+                                      Token::simpleMatch(tok, "namespace {"))) {
             scopeList.emplace_back(this, tok, scope);
 
             Scope *new_scope = &scopeList.back();
@@ -448,7 +449,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
         }
 
         // forward declared enum
-        else if (Token::Match(tok, "enum class| %name% ;") || Token::Match(tok, "enum class| %name% : %name% ;")) {
+        else if (tok->isKeyword() && (Token::Match(tok, "enum class| %name% ;") || Token::Match(tok, "enum class| %name% : %name% ;"))) {
             typeList.emplace_back(tok, nullptr, scope);
             Type* new_type = &typeList.back();
             scope->definedTypesMap[new_type->name()] = new_type;
@@ -561,7 +562,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             }
 
             // friend class declaration?
-            else if (mTokenizer->isCPP() && Token::Match(tok, "friend class| ::| %any% ;|::")) {
+            else if (mTokenizer->isCPP() && tok->isKeyword() && Token::Match(tok, "friend class| ::| %any% ;|::")) {
                 Type::FriendInfo friendInfo;
 
                 // save the name start
@@ -643,7 +644,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 }
             }
         } else if (scope->isExecutable()) {
-            if (Token::Match(tok, "else|try|do {")) {
+            if (tok->isKeyword() && Token::Match(tok, "else|try|do {")) {
                 const Token* tok1 = tok->next();
                 if (tok->str() == "else")
                     scopeList.emplace_back(this, tok, scope, Scope::eElse, tok1);
@@ -655,7 +656,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 tok = tok1;
                 scope->nestedList.push_back(&scopeList.back());
                 scope = &scopeList.back();
-            } else if (Token::Match(tok, "if|for|while|catch|switch (") && Token::simpleMatch(tok->next()->link(), ") {")) {
+            } else if (tok->isKeyword() && Token::Match(tok, "if|for|while|catch|switch (") && Token::simpleMatch(tok->next()->link(), ") {")) {
                 const Token *scopeStartTok = tok->next()->link()->next();
                 if (tok->str() == "if")
                     scopeList.emplace_back(this, tok, scope, Scope::eIf, scopeStartTok);
@@ -1055,7 +1056,7 @@ void SymbolDatabase::createSymbolDatabaseSetFunctionPointers(bool firstPass)
 
     // Set function call pointers
     for (const Token* tok = mTokenizer->list.front(); tok != mTokenizer->list.back(); tok = tok->next()) {
-        if (!tok->function() && tok->varId() == 0 && Token::Match(tok, "%name% (") && !isReservedName(tok->str())) {
+        if (!tok->function() && tok->varId() == 0 && tok->linkAt(1) && Token::Match(tok, "%name% (") && !isReservedName(tok->str())) {
             const Function *function = findFunction(tok);
             if (function)
                 const_cast<Token *>(tok)->function(function);
@@ -1201,9 +1202,9 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
                     }
                 } else if (tok->valueType() && tok->valueType()->type == ValueType::CONTAINER) {
                     if (Token::Match(var->typeStartToken(), "std :: %type% < %type% *| *| >")) {
-                        const Type * type = var->typeStartToken()->tokAt(4)->type();
-                        if (type && type->classScope && type->classScope->definedType) {
-                            const Variable *membervar = type->classScope->getVariable(membertok->str());
+                        const Type * type2 = var->typeStartToken()->tokAt(4)->type();
+                        if (type2 && type2->classScope && type2->classScope->definedType) {
+                            const Variable *membervar = type2->classScope->getVariable(membertok->str());
                             if (membervar) {
                                 membertok->variable(membervar);
                                 if (membertok->varId() == 0 || mVariableList[membertok->varId()] == nullptr)
@@ -1575,6 +1576,9 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
         }
     }
 
+    else if (!tok->isName() || !tok->next() || !tok->next()->link())
+        return false;
+
     // regular function?
     else if (Token::Match(tok, "%name% (") && !isReservedName(tok->str()) && tok->previous() &&
              (Token::Match(tok->previous(), "%name%|>|&|*|::|~") || // Either a return type or scope qualifier in front of tok
@@ -1727,10 +1731,10 @@ void SymbolDatabase::validateExecutableScopes() const
         if (scope->isExecutable() && !function) {
             const std::list<const Token*> callstack(1, scope->classDef);
             const std::string msg = std::string("Executable scope '") + scope->classDef->str() + "' with unknown function.";
-            const ErrorLogger::ErrorMessage errmsg(callstack, &mTokenizer->list, Severity::debug,
-                                                   "symbolDatabaseWarning",
-                                                   msg,
-                                                   false);
+            const ErrorMessage errmsg(callstack, &mTokenizer->list, Severity::debug,
+                                      "symbolDatabaseWarning",
+                                      msg,
+                                      false);
             mErrorLogger->reportErr(errmsg);
         }
     }
@@ -2165,8 +2169,8 @@ std::string Function::fullName() const
             ret = s->className + "::" + ret;
     }
     ret += "(";
-    for (const Variable &arg : argumentList)
-        ret += (arg.index() == 0 ? "" : ",") + arg.name();
+    for (const Variable &a : argumentList)
+        ret += (a.index() == 0 ? "" : ",") + a.name();
     return ret + ")";
 }
 
@@ -2352,7 +2356,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
         else if (arg_path_length && Token::Match(first->next(), "%name%") && first->strAt(1) != "const") {
             std::string param = path;
 
-            if (Token::simpleMatch(second->next(), param.c_str())) {
+            if (Token::simpleMatch(second->next(), param.c_str(), param.size())) {
                 second = second->tokAt(int(arg_path_length));
                 arg_path_length = 0;
             }
@@ -2396,7 +2400,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
                 }
 
                 param = short_path;
-                if (Token::simpleMatch(second->next(), param.c_str())) {
+                if (Token::simpleMatch(second->next(), param.c_str(), param.size())) {
                     second = second->tokAt(int(short_path_length));
                     arg_path_length = 0;
                 }
@@ -2814,11 +2818,11 @@ void SymbolDatabase::debugMessage(const Token *tok, const std::string &msg) cons
 {
     if (tok && mSettings->debugwarnings) {
         const std::list<const Token*> locationList(1, tok);
-        const ErrorLogger::ErrorMessage errmsg(locationList, &mTokenizer->list,
-                                               Severity::debug,
-                                               "debug",
-                                               msg,
-                                               false);
+        const ErrorMessage errmsg(locationList, &mTokenizer->list,
+                                  Severity::debug,
+                                  "debug",
+                                  msg,
+                                  false);
         if (mErrorLogger)
             mErrorLogger->reportErr(errmsg);
     }
@@ -3840,7 +3844,7 @@ void Scope::getVariableList(const Settings* settings)
         }
 
         // Is it a nested class or structure?
-        else if (Token::Match(tok, "class|struct|union|namespace %type% :|{")) {
+        else if (tok->isKeyword() && Token::Match(tok, "class|struct|union|namespace %type% :|{")) {
             tok = tok->tokAt(2);
             while (tok && tok->str() != "{")
                 tok = tok->next();
@@ -3850,7 +3854,7 @@ void Scope::getVariableList(const Settings* settings)
                 continue;
             } else
                 break;
-        } else if (Token::Match(tok, "struct|union {")) {
+        } else if (tok->isKeyword() && Token::Match(tok, "struct|union {")) {
             if (Token::Match(tok->next()->link(), "} %name% ;|[")) {
                 tok = tok->next()->link()->tokAt(2);
                 continue;
@@ -3888,7 +3892,7 @@ void Scope::getVariableList(const Settings* settings)
         }
 
         // Is it a forward declaration?
-        else if (Token::Match(tok, "class|struct|union %name% ;")) {
+        else if (tok->isKeyword() && Token::Match(tok, "class|struct|union %name% ;")) {
             tok = tok->tokAt(2);
             continue;
         }
@@ -3898,7 +3902,7 @@ void Scope::getVariableList(const Settings* settings)
             continue;
 
         // skip return, goto and delete
-        else if (Token::Match(tok, "return|delete|goto")) {
+        else if (tok->isKeyword() && Token::Match(tok, "return|delete|goto")) {
             while (tok->next() &&
                    tok->next()->str() != ";" &&
                    tok->next()->str() != "}" /* ticket #4994 */) {
@@ -3908,7 +3912,7 @@ void Scope::getVariableList(const Settings* settings)
         }
 
         // skip case/default
-        if (Token::Match(tok, "case|default")) {
+        if (tok->isKeyword() && Token::Match(tok, "case|default")) {
             while (tok->next() && !Token::Match(tok->next(), "[:;{}]"))
                 tok = tok->next();
             continue;
@@ -3930,18 +3934,18 @@ void Scope::getVariableList(const Settings* settings)
 const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, const Settings* settings)
 {
     // Is it a throw..?
-    if (Token::Match(tok, "throw %any% (") &&
+    if (tok->isKeyword() && Token::Match(tok, "throw %any% (") &&
         Token::simpleMatch(tok->linkAt(2), ") ;")) {
         return tok->linkAt(2);
     }
 
-    if ((Token::Match(tok, "throw %any% :: %any% (") &&
-         Token::simpleMatch(tok->linkAt(4), ") ;"))) {
+    if (tok->isKeyword() && Token::Match(tok, "throw %any% :: %any% (") &&
+        Token::simpleMatch(tok->linkAt(4), ") ;")) {
         return tok->linkAt(4);
     }
 
     // friend?
-    if (Token::Match(tok, "friend %type%") && tok->next()->varId() == 0) {
+    if (tok->isKeyword() && Token::Match(tok, "friend %type%") && tok->next()->varId() == 0) {
         const Token *next = Token::findmatch(tok->tokAt(2), ";|{");
         if (next && next->str() == "{")
             next = next->link();
@@ -3949,14 +3953,14 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
     }
 
     // skip const|volatile|static|mutable|extern
-    while (Token::Match(tok, "const|volatile|static|mutable|extern")) {
+    while (tok->isKeyword() && Token::Match(tok, "const|volatile|static|mutable|extern")) {
         tok = tok->next();
     }
 
     // the start of the type tokens does not include the above modifiers
     const Token *typestart = tok;
 
-    if (Token::Match(tok, "class|struct|union|enum")) {
+    if (tok->isKeyword() && Token::Match(tok, "class|struct|union|enum")) {
         tok = tok->next();
     }
 
@@ -5641,7 +5645,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             parsedecl(type->type()->typeStart, valuetype, defaultSignedness, settings);
         else if (type->str() == "const")
             valuetype->constness |= (1 << (valuetype->pointer - pointer0));
-        else if (settings->clang && type->str().find("::") != std::string::npos && type->str().size() > 2) {
+        else if (settings->clang && type->str().size() > 2 && type->str().find("::") < type->str().find("<")) {
             TokenList typeTokens(settings);
             std::string::size_type pos1 = 0;
             do {
@@ -5724,7 +5728,12 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
         } else if (!valuetype->typeScope && (type->str() == "struct" || type->str() == "enum"))
             valuetype->type = type->str() == "struct" ? ValueType::Type::RECORD : ValueType::Type::NONSTD;
         else if (!valuetype->typeScope && type->type() && type->type()->classScope) {
-            valuetype->type = ValueType::Type::RECORD;
+            if (type->type()->classScope->type == Scope::ScopeType::eEnum) {
+                valuetype->type = ValueType::Type::INT;
+                valuetype->sign = ValueType::Sign::SIGNED;
+            } else {
+                valuetype->type = ValueType::Type::RECORD;
+            }
             valuetype->typeScope = type->type()->classScope;
         } else if (type->isName() && valuetype->sign != ValueType::Sign::UNKNOWN_SIGN && valuetype->pointer == 0U)
             return nullptr;
@@ -5870,7 +5879,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                 valuetype.sign = ValueType::Sign::SIGNED;
             }
             setValueType(tok, valuetype);
-        } else if (tok->str() == "(") {
+        } else if (tok->link() && tok->str() == "(") {
             // cast
             if (tok->isCast() && !tok->astOperand2() && Token::Match(tok, "( %name%")) {
                 ValueType valuetype;
@@ -6009,7 +6018,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
             setValueType(tok, *tok->variable());
         } else if (tok->enumerator()) {
             setValueType(tok, *tok->enumerator());
-        } else if (mIsCpp && tok->str() == "new") {
+        } else if (tok->isKeyword() && tok->str() == "new") {
             const Token *typeTok = tok->next();
             if (Token::Match(typeTok, "( std| ::| nothrow )"))
                 typeTok = typeTok->link()->next();
@@ -6048,7 +6057,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                     vt.sign = (vt.type == ValueType::Type::CHAR) ? mDefaultSignedness : ValueType::Sign::SIGNED;
             }
             setValueType(tok, vt);
-        } else if (tok->str() == "return" && tok->scope()) {
+        } else if (tok->isKeyword() && tok->str() == "return" && tok->scope()) {
             const Scope* fscope = tok->scope();
             while (fscope && !fscope->function)
                 fscope = fscope->nestedIn;

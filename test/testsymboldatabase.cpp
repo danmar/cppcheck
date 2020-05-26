@@ -30,6 +30,7 @@
 #include <climits>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <list>
 #include <map>
 #include <set>
@@ -2896,7 +2897,7 @@ private:
               "struct S {\n"
               "  _Atomic union { int n; };\n"
               "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (debug) Failed to parse 'typedef _Atomic ( int ) & atomic_int_ref ;'. The checking continues anyway.\n", errout.str());
     }
 
     void symboldatabase35() { // ticket #4806 and #4841
@@ -6548,7 +6549,7 @@ private:
         tokenizer.tokenize(istr, filename);
         const Token* tok;
         for (tok = tokenizer.list.back(); tok; tok = tok->previous())
-            if (Token::simpleMatch(tok, pattern))
+            if (Token::simpleMatch(tok, pattern, strlen(pattern)))
                 break;
         return tok->valueType() ? tok->valueType()->str() : std::string();
     }

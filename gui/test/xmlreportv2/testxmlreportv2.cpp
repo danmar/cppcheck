@@ -20,7 +20,6 @@
 #include "testxmlreportv2.h"
 #include "xmlreportv2.h"
 #include "erroritem.h"
-#include "errorlogger.h"
 
 void TestXmlReportV2::readXml()
 {

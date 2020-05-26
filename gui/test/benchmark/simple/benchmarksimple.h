@@ -33,6 +33,6 @@ private:
     // We don't care about the output in the benchmark tests.
     void reportOut(const std::string & outmsg) override {
     }
-    void reportErr(const ErrorLogger::ErrorMessage &msg) override {
+    void reportErr(const ErrorMessage &msg) override {
     }
 };

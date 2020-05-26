@@ -461,6 +461,7 @@ private:
         TEST_CASE(astcase);
         TEST_CASE(astrefqualifier);
         TEST_CASE(astvardecl);
+        TEST_CASE(astnewscoped);
 
         TEST_CASE(startOfExecutableScope);
 
@@ -842,7 +843,7 @@ private:
                                 "4: } ;\n"
                                 "5: Container :: Container ( ) : mElements@1 ( nullptr ) { }\n"
                                 "6: Container intContainer@2 ;\n";
-            ASSERT_EQUALS(exp, tokenizeDebugListing(code, /*simplify=*/true));
+            ASSERT_EQUALS(exp, tokenizeDebugListing(code));
         }
         {
             const char code[] = "template<class T> struct Container {\n"
@@ -860,7 +861,7 @@ private:
                                 "3: int * mElements@2 ;\n"
                                 "4: } ;\n"
                                 "5: Container<int> :: Container<int> ( ) : mElements@2 ( nullptr ) { }\n";
-            ASSERT_EQUALS(exp, tokenizeDebugListing(code, /*simplify=*/true));
+            ASSERT_EQUALS(exp, tokenizeDebugListing(code));
         }
     }
 
@@ -6182,6 +6183,7 @@ private:
         ASSERT_EQUALS("void f ( ) { if ( ~ b ) { ; } }", tokenizeAndStringify("void f() { if (compl b); }", false, true, Settings::Native, "test.cpp"));
         ASSERT_EQUALS("void f ( ) { if ( ! b ) { ; } }", tokenizeAndStringify("void f() { if (not b); }", false, true, Settings::Native, "test.c"));
         ASSERT_EQUALS("void f ( ) { if ( ! b ) { ; } }", tokenizeAndStringify("void f() { if (not b); }", false, true, Settings::Native, "test.cpp"));
+        ASSERT_EQUALS("void f ( ) const { if ( ! b ) { ; } }", tokenizeAndStringify("void f() const { if (not b); }", false, true, Settings::Native, "test.cpp"));
         ASSERT_EQUALS("void f ( ) { if ( a != b ) { ; } }", tokenizeAndStringify("void f() { if (a not_eq b); }", false, true, Settings::Native, "test.c"));
         ASSERT_EQUALS("void f ( ) { if ( a != b ) { ; } }", tokenizeAndStringify("void f() { if (a not_eq b); }", false, true, Settings::Native, "test.cpp"));
         // #6201
@@ -6633,11 +6635,11 @@ private:
         ASSERT_EQUALS("; CONST struct ABC abc ;",
                       tokenizeAndStringify("; CONST struct ABC abc ;"));
 
-        ASSERT_THROW(tokenizeAndStringify("class A {\n"
-                                          "  UNKNOWN_MACRO(A)\n"
-                                          "private:\n"
-                                          "  int x;\n"
-                                          "};"), InternalError);
+        ASSERT_NO_THROW(tokenizeAndStringify("class A {\n"
+                                             "  UNKNOWN_MACRO(A)\n" // <- this macro is ignored
+                                             "private:\n"
+                                             "  int x;\n"
+                                             "};"));
 
         ASSERT_THROW(tokenizeAndStringify("MACRO(test) void test() { }"), InternalError); // #7931
 
@@ -7376,7 +7378,12 @@ private:
         ASSERT_EQUALS("a ? ( b < c ) : d > e", tokenizeAndStringify("a ? b < c : d > e"));
     }
 
-    std::string testAst(const char code[],bool verbose=false) {
+    enum class AstStyle {
+        Simple,
+        Z3
+    };
+
+    std::string testAst(const char code[], AstStyle style = AstStyle::Simple) {
         // tokenize given code..
         Tokenizer tokenList(&settings0, nullptr);
         std::istringstream istr(code);
@@ -7408,8 +7415,8 @@ private:
         }
 
         // Return stringified AST
-        if (verbose)
-            return tokenList.list.front()->astTop()->astStringVerbose();
+        if (style == AstStyle::Z3)
+            return tokenList.list.front()->astTop()->astStringZ3();
 
         std::string ret;
         std::set<const Token *> astTop;
@@ -7656,15 +7663,8 @@ private:
         ASSERT_EQUALS("ab.i[j1+[", testAst("a.b[i][j+1]"));
 
         // problems with: x=expr
-        ASSERT_EQUALS("=\n"
-                      "|-x\n"
-                      "`-(\n"
-                      "  `-.\n"
-                      "    |-[\n"
-                      "    | |-a\n"
-                      "    | `-i\n"
-                      "    `-f\n",
-                      testAst("x = ((a[i]).f)();", true));
+        ASSERT_EQUALS("(= x (( (. ([ a i) f)))",
+                      testAst("x = ((a[i]).f)();", AstStyle::Z3));
         ASSERT_EQUALS("abc.de.++[=", testAst("a = b.c[++(d.e)];"));
         ASSERT_EQUALS("abc(1+=", testAst("a = b(c**)+1;"));
         ASSERT_EQUALS("abc.=", testAst("a = (b).c;"));
@@ -7721,6 +7721,8 @@ private:
         ASSERT_EQUALS("xab,c,{=", testAst("x={a,b,(c)};"));
         ASSERT_EQUALS("x0fSa.1=b.2=,c.\"\"=,{(||=", testAst("x = 0 || f(S{.a = 1, .b = 2, .c = \"\" });"));
         ASSERT_EQUALS("x0fSa.1{=b.2{,c.\"\"=,{(||=", testAst("x = 0 || f(S{.a = { 1 }, .b { 2 }, .c = \"\" });"));
+        ASSERT_EQUALS("a0{,( \"\"abc12:?,", testAst("a(0, {{\"\", (abc) ? 1 : 2}});"));
+        ASSERT_EQUALS("a0{,( \'\'abc12:?,", testAst("a(0, {{\'\', (abc) ? 1 : 2}});"));
 
         // struct initialization hang
         ASSERT_EQUALS("sbar.1{,{(={= fcmd( forfieldfield++;;(",
@@ -7851,9 +7853,14 @@ private:
         // [
         // `-(
         //   `-{
-        ASSERT_EQUALS("x{([( ai=", testAst("x([&a](int i){a=i;});"));
 
+        ASSERT_EQUALS("x{([( ai=", testAst("x([&a](int i){a=i;});"));
         ASSERT_EQUALS("{([(return 0return", testAst("return [](){ return 0; }();"));
+
+        // noexcept
+        ASSERT_EQUALS("x{([( ai=", testAst("x([](int i)noexcept{a=i;});"));
+
+        // ->
         ASSERT_EQUALS("{([(return 0return", testAst("return []() -> int { return 0; }();"));
         ASSERT_EQUALS("{([(return 0return", testAst("return [something]() -> int { return 0; }();"));
         ASSERT_EQUALS("{([cd,(return 0return", testAst("return [](int a, int b) -> int { return 0; }(c, d);"));
@@ -7918,6 +7925,23 @@ private:
         ASSERT_EQUALS("b(", testAst("class a { void b() &; };"));
         ASSERT_EQUALS("b(", testAst("class a { void b() && {} };"));
         ASSERT_EQUALS("b(", testAst("class a { void b() & {} };"));
+    }
+
+    //Verify that returning a newly constructed object generates the correct AST even when the class name is scoped
+    //Addresses https://trac.cppcheck.net/ticket/9700
+    void astnewscoped() {
+        ASSERT_EQUALS("(return (new A))", testAst("return new A;", AstStyle::Z3));
+        ASSERT_EQUALS("(return (new (( A)))", testAst("return new A();", AstStyle::Z3));
+        ASSERT_EQUALS("(return (new (( A true)))", testAst("return new A(true);", AstStyle::Z3));
+        ASSERT_EQUALS("(return (new (:: A B)))", testAst("return new A::B;", AstStyle::Z3));
+        ASSERT_EQUALS("(return (new (( (:: A B))))", testAst("return new A::B();", AstStyle::Z3));
+        ASSERT_EQUALS("(return (new (( (:: A B) true)))", testAst("return new A::B(true);", AstStyle::Z3));
+        ASSERT_EQUALS("(return (new (:: (:: A B) C)))", testAst("return new A::B::C;", AstStyle::Z3));
+        ASSERT_EQUALS("(return (new (( (:: (:: A B) C))))", testAst("return new A::B::C();", AstStyle::Z3));
+        ASSERT_EQUALS("(return (new (( (:: (:: A B) C) true)))", testAst("return new A::B::C(true);", AstStyle::Z3));
+        ASSERT_EQUALS("(return (new (:: (:: (:: A B) C) D)))", testAst("return new A::B::C::D;", AstStyle::Z3));
+        ASSERT_EQUALS("(return (new (( (:: (:: (:: A B) C) D))))", testAst("return new A::B::C::D();", AstStyle::Z3));
+        ASSERT_EQUALS("(return (new (( (:: (:: (:: A B) C) D) true)))", testAst("return new A::B::C::D(true);", AstStyle::Z3));
     }
 
     void compileLimits() {
@@ -8205,6 +8229,8 @@ private:
                             "    d e = {(p1)...};\n"
                             "  }\n"
                             "};\n"));
+
+        ASSERT_NO_THROW(tokenizeAndStringify("a<b?0:1>()==3;"));
     }
 
     void checkNamespaces() {

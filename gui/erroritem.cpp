@@ -19,7 +19,7 @@
 #include "erroritem.h"
 #include "common.h"
 
-QErrorPathItem::QErrorPathItem(const ErrorLogger::ErrorMessage::FileLocation &loc)
+QErrorPathItem::QErrorPathItem(const ErrorMessage::FileLocation &loc)
     : file(QString::fromStdString(loc.getfile(false)))
     , line(loc.line)
     , column(loc.column)
@@ -40,7 +40,7 @@ ErrorItem::ErrorItem()
 {
 }
 
-ErrorItem::ErrorItem(const ErrorLogger::ErrorMessage &errmsg)
+ErrorItem::ErrorItem(const ErrorMessage &errmsg)
     : file0(QString::fromStdString(errmsg.file0))
     , function(QString::fromStdString(errmsg.function))
     , errorId(QString::fromStdString(errmsg.id))
@@ -52,7 +52,7 @@ ErrorItem::ErrorItem(const ErrorLogger::ErrorMessage &errmsg)
     , cwe(errmsg.cwe.id)
     , symbolNames(QString::fromStdString(errmsg.symbolNames()))
 {
-    for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator loc = errmsg.callStack.begin();
+    for (std::list<ErrorMessage::FileLocation>::const_iterator loc = errmsg.callStack.begin();
          loc != errmsg.callStack.end();
          ++loc) {
         errorPath << QErrorPathItem(*loc);

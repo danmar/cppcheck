@@ -35,6 +35,7 @@ HEADERS += $${PWD}/analyzerinfo.h \
            $${PWD}/cppcheck.h \
            $${PWD}/ctu.h \
            $${PWD}/errorlogger.h \
+           $${PWD}/errortypes.h \
            $${PWD}/exprengine.h \
            $${PWD}/forwardanalyzer.h \
            $${PWD}/importproject.h \
@@ -54,6 +55,7 @@ HEADERS += $${PWD}/analyzerinfo.h \
            $${PWD}/token.h \
            $${PWD}/tokenize.h \
            $${PWD}/tokenlist.h \
+           $${PWD}/utils.h \
            $${PWD}/valueflow.h
 
 SOURCES += $${PWD}/analyzerinfo.cpp \
@@ -88,6 +90,7 @@ SOURCES += $${PWD}/analyzerinfo.cpp \
            $${PWD}/cppcheck.cpp \
            $${PWD}/ctu.cpp \
            $${PWD}/errorlogger.cpp \
+           $${PWD}/errortypes.cpp \
            $${PWD}/exprengine.cpp \
            $${PWD}/forwardanalyzer.cpp \
            $${PWD}/importproject.cpp \
@@ -107,4 +110,5 @@ SOURCES += $${PWD}/analyzerinfo.cpp \
            $${PWD}/token.cpp \
            $${PWD}/tokenize.cpp \
            $${PWD}/tokenlist.cpp \
+           $${PWD}/utils.cpp \
            $${PWD}/valueflow.cpp

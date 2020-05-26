@@ -20,6 +20,7 @@
 #include "tokenize.h"
 
 #include "check.h"
+#include "errorlogger.h"
 #include "library.h"
 #include "mathlib.h"
 #include "platform.h"
@@ -747,33 +748,17 @@ void Tokenizer::simplifyTypedef()
         if (!tokOffset)
             syntaxError(tok);
 
-        if (Token::Match(tokOffset, "%type%")) {
+        if (tokOffset->isName() && !tokOffset->isKeyword()) {
             // found the type name
             typeName = tokOffset;
             tokOffset = tokOffset->next();
 
             // check for array
-            if (tokOffset && tokOffset->str() == "[") {
-                arrayStart = tokOffset;
-
-                bool atEnd = false;
-                while (!atEnd) {
-                    while (tokOffset->next() && !Token::Match(tokOffset->next(), ";|,")) {
-                        tokOffset = tokOffset->next();
-                    }
-
-                    if (!tokOffset->next())
-                        return; // invalid input
-                    else if (tokOffset->next()->str() == ";")
-                        atEnd = true;
-                    else if (tokOffset->str() == "]")
-                        atEnd = true;
-                    else
-                        tokOffset = tokOffset->next();
-                }
-
-                arrayEnd = tokOffset;
-                tokOffset = tokOffset->next();
+            while (tokOffset && tokOffset->str() == "[") {
+                if (!arrayStart)
+                    arrayStart = tokOffset;
+                arrayEnd = tokOffset->link();
+                tokOffset = arrayEnd->next();
             }
 
             // check for end or another
@@ -1134,8 +1119,9 @@ void Tokenizer::simplifyTypedef()
                 }
 
                 // check for typedef that can be substituted
-                else if (Token::simpleMatch(tok2, pattern.c_str()) ||
-                         (inMemberFunc && tok2->str() == typeName->str())) {
+                else if (tok2->isNameOnly() &&
+                         (Token::simpleMatch(tok2, pattern.c_str(), pattern.size()) ||
+                          (inMemberFunc && tok2->str() == typeName->str()))) {
                     // member function class variables don't need qualification
                     if (!(inMemberFunc && tok2->str() == typeName->str()) && pattern.find("::") != std::string::npos) { // has a "something ::"
                         Token *start = tok2;
@@ -1701,6 +1687,8 @@ namespace {
 
     void setScopeInfo(Token *tok, std::list<ScopeInfo3> *scopeInfo, bool all = false)
     {
+        if (!tok)
+            return;
         while (tok->str() == "}" && !scopeInfo->empty() && tok == scopeInfo->back().bodyEnd)
             scopeInfo->pop_back();
         if (!Token::Match(tok, "namespace|class|struct|union %name% {|:|::")) {
@@ -1722,7 +1710,7 @@ namespace {
                 Token *tok1 = tok;
                 while (Token::Match(tok1->previous(), "const|volatile|final|override|&|&&|noexcept"))
                     tok1 = tok1->previous();
-                if (tok1 && tok1->previous() && tok1->strAt(-1) == ")") {
+                if (tok1->previous() && tok1->strAt(-1) == ")") {
                     tok1 = tok1->linkAt(-1);
                     if (Token::Match(tok1->previous(), "throw|noexcept")) {
                         tok1 = tok1->previous();
@@ -2208,8 +2196,8 @@ bool Tokenizer::simplifyUsing()
                     }
                     str += " ;";
                     std::list<const Token *> callstack(1, usingStart);
-                    mErrorLogger->reportErr(ErrorLogger::ErrorMessage(callstack, &list, Severity::debug, "debug",
-                                            "Failed to parse \'" + str + "\'. The checking continues anyway.", false));
+                    mErrorLogger->reportErr(ErrorMessage(callstack, &list, Severity::debug, "debug",
+                                                         "Failed to parse \'" + str + "\'. The checking continues anyway.", false));
                 }
             }
             tok1 = after;
@@ -2317,11 +2305,11 @@ bool Tokenizer::createTokens(std::istream &code,
     return list.createTokens(code, FileName);
 }
 
-void Tokenizer::createTokens(const simplecpp::TokenList *tokenList)
+void Tokenizer::createTokens(simplecpp::TokenList&& tokenList)
 {
     // make sure settings specified
     assert(mSettings);
-    list.createTokens(tokenList);
+    list.createTokens(std::move(tokenList));
 }
 
 bool Tokenizer::simplifyTokens1(const std::string &configuration)
@@ -2921,7 +2909,7 @@ void Tokenizer::calculateScopes()
                 Token *tok1 = tok;
                 while (Token::Match(tok1->previous(), "const|volatile|final|override|&|&&|noexcept"))
                     tok1 = tok1->previous();
-                if (tok1 && tok1->previous() && tok1->strAt(-1) == ")") {
+                if (tok1->previous() && tok1->strAt(-1) == ")") {
                     bool member = true;
                     tok1 = tok1->linkAt(-1);
                     if (Token::Match(tok1->previous(), "throw|noexcept")) {
@@ -5123,7 +5111,7 @@ void Tokenizer::removeMacrosInGlobalScope()
             while (Token::Match(tok2, "%type% (") && tok2->isUpperCaseName())
                 tok2 = tok2->linkAt(1)->next();
 
-            if (Token::Match(tok, "%name% (") && Token::Match(tok2, "%name% *|&|::|<| %name%") && !Token::Match(tok2, "namespace|class|struct|union"))
+            if (Token::Match(tok, "%name% (") && Token::Match(tok2, "%name% *|&|::|<| %name%") && !Token::Match(tok2, "namespace|class|struct|union|private:|protected:|public:"))
                 unknownMacroError(tok);
 
             if (Token::Match(tok, "%type% (") && Token::Match(tok2, "%type% (") && !Token::Match(tok2, "noexcept|throw") && isFunctionHead(tok2->next(), ":;{"))
@@ -5917,7 +5905,7 @@ bool Tokenizer::simplifyConditions()
                  Token::simpleMatch(tok, "|| true ||")) {
             //goto '('
             Token *tok2 = tok;
-            while (tok2->previous()) {
+            while (tok2 && tok2->previous()) {
                 if (tok2->previous()->str() == ")")
                     tok2 = tok2->previous()->link();
                 else {
@@ -6481,7 +6469,7 @@ void Tokenizer::simplifyFunctionPointers()
             !(Token::Match(tok2, "%name% (") && Token::simpleMatch(tok2->linkAt(1), ") ) (")))
             continue;
 
-        while (tok->str() != "(")
+        while (tok && tok->str() != "(")
             tok = tok->next();
 
         // check that the declaration ends
@@ -7105,8 +7093,16 @@ bool Tokenizer::simplifyCAlternativeTokens()
 
     bool ret = false;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (tok->str() == ")") {
+            if (const Token *end = isFunctionHead(tok, "{")) {
+                ++executableScopeLevel;
+                tok = const_cast<Token *>(end);
+                continue;
+            }
+        }
+
         if (tok->str() == "{") {
-            if (executableScopeLevel > 0 || Token::simpleMatch(tok->previous(), ") {"))
+            if (executableScopeLevel > 0)
                 ++executableScopeLevel;
             continue;
         }
@@ -7239,12 +7235,7 @@ bool Tokenizer::simplifyKnownVariables()
         std::unordered_map<int, std::string> constantValues;
         std::map<int, Token*> constantVars;
         std::unordered_map<int, std::list<Token*>> constantValueUsages;
-        bool goback = false;
         for (Token *tok = list.front(); tok; tok = tok->next()) {
-            if (goback) {
-                tok = tok->previous();
-                goback = false;
-            }
             // Reference to variable
             if (Token::Match(tok, "%type%|* & %name% = %name% ;")) {
                 Token *start = tok->previous();
@@ -9334,7 +9325,7 @@ void Tokenizer::reportUnknownMacros()
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "%name% %num%")) {
             // A keyword is not an unknown macro
-            if (list.isKeyword(tok->str()))
+            if (tok->isKeyword())
                 continue;
 
             if (Token::Match(tok->previous(), "%op%|("))
@@ -9387,7 +9378,7 @@ void Tokenizer::reportUnknownMacros()
 
         if (Token::Match(tok, "%name% (") && tok->isUpperCaseName() && Token::simpleMatch(tok->linkAt(1), ") (") && Token::simpleMatch(tok->linkAt(1)->linkAt(1), ") {")) {
             // A keyword is not an unknown macro
-            if (list.isKeyword(tok->str()))
+            if (tok->isKeyword())
                 continue;
 
             const Token *bodyStart = tok->linkAt(1)->linkAt(1)->tokAt(2);
@@ -9407,7 +9398,7 @@ void Tokenizer::reportUnknownMacros()
     // String concatenation with unknown macros
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "%str% %name% (") && Token::Match(tok->linkAt(2), ") %str%")) {
-            if (list.isKeyword(tok->next()->str()))
+            if (tok->next()->isKeyword())
                 continue;
             unknownMacroError(tok->next());
         }
@@ -9416,48 +9407,47 @@ void Tokenizer::reportUnknownMacros()
 
 void Tokenizer::findGarbageCode() const
 {
-    const bool isCPP11  = isCPP() && mSettings->standards.cpp >= Standards::CPP11;
+    const bool isCPP11 = isCPP() && mSettings->standards.cpp >= Standards::CPP11;
 
-    // initialization: = {
+    const std::set<std::string> nonConsecutiveKeywords{ "break",
+        "continue",
+        "for",
+        "goto",
+        "if",
+        "return",
+        "switch",
+        "throw",
+        "typedef",
+        "while" };
+
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
-        if (!Token::simpleMatch(tok, "= {"))
-            continue;
-        if (Token::simpleMatch(tok->linkAt(1), "} ("))
+        // initialization: = {
+        if (Token::simpleMatch(tok, "= {") && Token::simpleMatch(tok->linkAt(1), "} ("))
             syntaxError(tok->linkAt(1));
-    }
 
-    // Inside [] there can't be ; or various keywords
-    for (const Token *tok = tokens(); tok; tok = tok->next()) {
-        if (tok->str() != "[")
-            continue;
-        for (const Token *inner = tok->next(); inner != tok->link(); inner = inner->next()) {
-            if (Token::Match(inner, "(|["))
-                inner = inner->link();
-            else if (Token::Match(inner, ";|goto|return|typedef"))
-                syntaxError(inner);
+        // Inside [] there can't be ; or various keywords
+        else if (tok->str() == "[") {
+            for (const Token* inner = tok->next(); inner != tok->link(); inner = inner->next()) {
+                if (Token::Match(inner, "(|["))
+                    inner = inner->link();
+                else if (Token::Match(inner, ";|goto|return|typedef"))
+                    syntaxError(inner);
+            }
         }
-    }
 
-    // UNKNOWN_MACRO(return)
-    for (const Token *tok = tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "throw|return )") && Token::Match(tok->linkAt(1)->previous(), "%name% ("))
+        // UNKNOWN_MACRO(return)
+        if (tok->isKeyword() && Token::Match(tok, "throw|return )") && Token::Match(tok->linkAt(1)->previous(), "%name% ("))
             unknownMacroError(tok->linkAt(1)->previous());
-    }
 
-    // UNKNOWN_MACRO(return)
-    for (const Token *tok = tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "%name% throw|return") && std::isupper(tok->str()[0]))
+        // UNKNOWN_MACRO(return)
+        else if (Token::Match(tok, "%name% throw|return") && std::isupper(tok->str()[0]))
             unknownMacroError(tok);
-    }
 
-    // Assign/increment/decrement literal
-    for (const Token *tok = tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "!!) %num%|%str%|%char% %assign%|++|--"))
+        // Assign/increment/decrement literal
+        else if (Token::Match(tok, "!!) %num%|%str%|%char% %assign%|++|--"))
             syntaxError(tok, tok->next()->str() + " " + tok->strAt(2));
-    }
 
-    for (const Token *tok = tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "if|while|for|switch")) { // if|while|for|switch (EXPR) { ... }
+        if (tok->isControlFlowKeyword() && Token::Match(tok, "if|while|for|switch")) { // if|while|for|switch (EXPR) { ... }
             if (tok->previous() && !Token::Match(tok->previous(), "%name%|:|;|{|}|)")) {
                 if (Token::Match(tok->previous(), "[,(]")) {
                     const Token *prev = tok->previous();
@@ -9479,6 +9469,20 @@ void Tokenizer::findGarbageCode() const
                     syntaxError(tok);
             }
         }
+
+        // keyword keyword
+        if (tok->isKeyword() && nonConsecutiveKeywords.count(tok->str()) != 0) {
+            if (Token::Match(tok, "%name% %name%") && nonConsecutiveKeywords.count(tok->next()->str()) == 1)
+                syntaxError(tok);
+            const Token* prev = tok;
+            while (prev && prev->isName())
+                prev = prev->previous();
+            if (Token::Match(prev, "%op%|%num%|%str%|%char%")) {
+                if (!Token::simpleMatch(tok->tokAt(-2), "operator \"\" if") &&
+                    !Token::simpleMatch(tok->tokAt(-2), "extern \"C\""))
+                    syntaxError(tok, prev == tok->previous() ? (prev->str() + " " + tok->str()) : (prev->str() + " .. " + tok->str()));
+            }
+        }
     }
 
     // Keywords in global scope
@@ -9489,42 +9493,14 @@ void Tokenizer::findGarbageCode() const
                                             "if",
                                             "return",
                                             "switch",
-                                            "while"};
-    if (isCPP()) {
-        nonGlobalKeywords.insert("try");
-        nonGlobalKeywords.insert("catch");
-    }
+                                            "while",
+                                            "try",
+                                            "catch"};
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (tok->str() == "{")
             tok = tok->link();
-        else if (tok->isName() && nonGlobalKeywords.count(tok->str()) && !Token::Match(tok->tokAt(-2), "operator %str%"))
+        else if (tok->isKeyword() && nonGlobalKeywords.count(tok->str()) && !Token::Match(tok->tokAt(-2), "operator %str%"))
             syntaxError(tok, "keyword '" + tok->str() + "' is not allowed in global scope");
-    }
-
-    // keyword keyword
-    const std::set<std::string> nonConsecutiveKeywords{"break",
-        "continue",
-        "for",
-        "goto",
-        "if",
-        "return",
-        "switch",
-        "throw",
-        "typedef",
-        "while"};
-    for (const Token *tok = tokens(); tok; tok = tok->next()) {
-        if (!tok->isName() || nonConsecutiveKeywords.count(tok->str()) == 0)
-            continue;
-        if (Token::Match(tok, "%name% %name%") && nonConsecutiveKeywords.count(tok->next()->str()) == 1)
-            syntaxError(tok);
-        const Token *prev = tok;
-        while (prev && prev->isName())
-            prev = prev->previous();
-        if (Token::Match(prev, "%op%|%num%|%str%|%char%")) {
-            if (!Token::simpleMatch(tok->tokAt(-2), "operator \"\" if") &&
-                !Token::simpleMatch(tok->tokAt(-2), "extern \"C\""))
-                syntaxError(tok, prev == tok->previous() ? (prev->str() + " " + tok->str()) : (prev->str() + " .. " + tok->str()));
-        }
     }
 
     // case keyword must be inside switch
@@ -9613,8 +9589,6 @@ void Tokenizer::findGarbageCode() const
             if (tok->str() != ">" && !Token::simpleMatch(tok->previous(), "operator"))
                 syntaxError(tok, tok->str() + " " + tok->next()->str());
         }
-        if (Token::Match(tok, "( %any% )") && tok->next()->isKeyword() && !Token::simpleMatch(tok->next(), "void"))
-            syntaxError(tok);
         if (Token::Match(tok, "%num%|%bool%|%char%|%str% %num%|%bool%|%char%|%str%") && !Token::Match(tok, "%str% %str%"))
             syntaxError(tok);
         if (Token::Match(tok, "%assign% typename|class %assign%"))
@@ -11505,7 +11479,7 @@ void Tokenizer::reportError(const Token* tok, const Severity::SeverityType sever
 
 void Tokenizer::reportError(const std::list<const Token*>& callstack, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive) const
 {
-    const ErrorLogger::ErrorMessage errmsg(callstack, &list, severity, id, msg, inconclusive);
+    const ErrorMessage errmsg(callstack, &list, severity, id, msg, inconclusive);
     if (mErrorLogger)
         mErrorLogger->reportErr(errmsg);
     else

@@ -25,6 +25,7 @@
 #include "valueflow.h"
 
 #include <simplecpp.h>
+#include <algorithm>
 #include <cmath>
 #include <list>
 #include <map>
@@ -33,6 +34,7 @@
 #include <utility>
 #include <vector>
 #include <cstdint>
+#include <cstring>
 
 class TestValueFlow : public TestFixture {
 public:
@@ -92,6 +94,7 @@ private:
         TEST_CASE(valueFlowForwardTernary);
         TEST_CASE(valueFlowForwardLambda);
         TEST_CASE(valueFlowForwardTryCatch);
+        TEST_CASE(valueFlowForwardInconclusiveImpossible);
 
         TEST_CASE(valueFlowFwdAnalysis);
 
@@ -229,7 +232,7 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 for (const ValueFlow::Value &v : tok->values()) {
-                    if (v.valueType == type && Token::simpleMatch(v.tokvalue, value))
+                    if (v.valueType == type && Token::simpleMatch(v.tokvalue, value, strlen(value)))
                         return true;
                 }
             }
@@ -306,7 +309,7 @@ private:
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
-        tokenizer.createTokens(&tokens2);
+        tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
 
         settings.debugwarnings = false;
@@ -2683,6 +2686,19 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code,3U,16));
     }
 
+    void valueFlowForwardInconclusiveImpossible() {
+        const char *code;
+
+        code = "void foo() {\n"
+               "    bool valid = f1();\n"
+               "    if (!valid) return;\n"
+               "    std::tie(endVal, valid) = f2();\n"
+               "    bool x = !valid;"
+               "    bool b = x;" // <- not always true
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, 1));
+    }
+
     void valueFlowRightShift() {
         const char *code;
         /* Set some temporary fixed values to simplify testing */
@@ -4341,7 +4357,7 @@ private:
                "    abort() << 123;\n"
                "  ints[0] = 0;\n"
                "}";
-        ASSERT(tokenValues(code, "ints [").empty());
+        ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "ints ["), 0));
 
         code = "struct A {\n"  // forward, nested function call, #9424
                "    double getMessage( std::vector<unsigned char> *message );\n"

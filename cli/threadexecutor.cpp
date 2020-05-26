@@ -117,14 +117,14 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
     if (type == REPORT_OUT) {
         mErrorLogger.reportOut(buf);
     } else if (type == REPORT_ERROR || type == REPORT_INFO) {
-        ErrorLogger::ErrorMessage msg;
+        ErrorMessage msg;
         msg.deserialize(buf);
 
         if (!mSettings.nomsg.isSuppressed(msg.toSuppressionsErrorMessage())) {
             // Alert only about unique errors
             std::string errmsg = msg.toString(mSettings.verbose);
             if (std::find(mErrorList.begin(), mErrorList.end(), errmsg) == mErrorList.end()) {
-                mErrorList.push_back(errmsg);
+                mErrorList.emplace_back(errmsg);
                 if (type == REPORT_ERROR)
                     mErrorLogger.reportErr(msg);
                 else
@@ -213,7 +213,7 @@ unsigned int ThreadExecutor::check()
                 close(pipes[0]);
                 mWpipe = pipes[1];
 
-                CppCheck fileChecker(*this, false);
+                CppCheck fileChecker(*this, false, CppCheckExecutor::executeCommand);
                 fileChecker.settings() = mSettings;
                 unsigned int resultOfCheck = 0;
 
@@ -299,14 +299,14 @@ unsigned int ThreadExecutor::check()
                     std::ostringstream oss;
                     oss << "Internal error: Child process crashed with signal " << WTERMSIG(stat);
 
-                    std::list<ErrorLogger::ErrorMessage::FileLocation> locations;
+                    std::list<ErrorMessage::FileLocation> locations;
                     locations.emplace_back(childname, 0, 0);
-                    const ErrorLogger::ErrorMessage errmsg(locations,
-                                                           emptyString,
-                                                           Severity::error,
-                                                           oss.str(),
-                                                           "cppcheckError",
-                                                           false);
+                    const ErrorMessage errmsg(locations,
+                                              emptyString,
+                                              Severity::error,
+                                              oss.str(),
+                                              "cppcheckError",
+                                              false);
 
                     if (!mSettings.nomsg.isSuppressed(errmsg.toSuppressionsErrorMessage()))
                         mErrorLogger.reportErr(errmsg);
@@ -344,12 +344,12 @@ void ThreadExecutor::reportOut(const std::string &outmsg)
     writeToPipe(REPORT_OUT, outmsg);
 }
 
-void ThreadExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
+void ThreadExecutor::reportErr(const ErrorMessage &msg)
 {
     writeToPipe(REPORT_ERROR, msg.serialize());
 }
 
-void ThreadExecutor::reportInfo(const ErrorLogger::ErrorMessage &msg)
+void ThreadExecutor::reportInfo(const ErrorMessage &msg)
 {
     writeToPipe(REPORT_INFO, msg.serialize());
 }
@@ -441,7 +441,7 @@ unsigned int __stdcall ThreadExecutor::threadProc(void *args)
     // guard static members of CppCheck against concurrent access
     EnterCriticalSection(&threadExecutor->mFileSync);
 
-    CppCheck fileChecker(*threadExecutor, false);
+    CppCheck fileChecker(*threadExecutor, false, CppCheckExecutor::executeCommand);
     fileChecker.settings() = threadExecutor->mSettings;
 
     for (;;) {
@@ -496,12 +496,12 @@ void ThreadExecutor::reportOut(const std::string &outmsg)
 
     LeaveCriticalSection(&mReportSync);
 }
-void ThreadExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
+void ThreadExecutor::reportErr(const ErrorMessage &msg)
 {
     report(msg, MessageType::REPORT_ERROR);
 }
 
-void ThreadExecutor::reportInfo(const ErrorLogger::ErrorMessage &msg)
+void ThreadExecutor::reportInfo(const ErrorMessage &msg)
 {
 
 }
@@ -511,7 +511,7 @@ void ThreadExecutor::bughuntingReport(const std::string  &/*str*/)
     // TODO
 }
 
-void ThreadExecutor::report(const ErrorLogger::ErrorMessage &msg, MessageType msgType)
+void ThreadExecutor::report(const ErrorMessage &msg, MessageType msgType)
 {
     if (mSettings.nomsg.isSuppressed(msg.toSuppressionsErrorMessage()))
         return;
@@ -522,7 +522,7 @@ void ThreadExecutor::report(const ErrorLogger::ErrorMessage &msg, MessageType ms
 
     EnterCriticalSection(&mErrorSync);
     if (std::find(mErrorList.begin(), mErrorList.end(), errmsg) == mErrorList.end()) {
-        mErrorList.push_back(errmsg);
+        mErrorList.emplace_back(errmsg);
         reportError = true;
     }
     LeaveCriticalSection(&mErrorSync);
@@ -559,12 +559,12 @@ void ThreadExecutor::reportOut(const std::string &/*outmsg*/)
 {
 
 }
-void ThreadExecutor::reportErr(const ErrorLogger::ErrorMessage &/*msg*/)
+void ThreadExecutor::reportErr(const ErrorMessage &/*msg*/)
 {
 
 }
 
-void ThreadExecutor::reportInfo(const ErrorLogger::ErrorMessage &/*msg*/)
+void ThreadExecutor::reportInfo(const ErrorMessage &/*msg*/)
 {
 
 }

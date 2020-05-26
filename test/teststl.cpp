@@ -4123,6 +4123,15 @@ private:
               "        *it;\n"
               "}\n",true);
         ASSERT_EQUALS("", errout.str());
+
+        // #9714
+        check("void f() {\n"
+              "  auto v = std::vector<std::string>();\n"
+              "  std::string x;\n"
+              "  v.push_back(x.insert(0, \"x\"));\n"
+              "  v.push_back(\"y\");\n"
+              "}\n",true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void invalidContainerLoop() {
@@ -4135,6 +4144,19 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (error) Calling 'push_back' while iterating the container is invalid.\n", errout.str());
+
+        // #9713
+        check("void f() {\n"
+              "  std::vector<int> v{1, 2, 3};\n"
+              "  for (int i : v) {\n"
+              "    if (i == 2) {\n"
+              "      v.clear();\n"
+              "      return;\n"
+              "    }\n"
+              "  }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::any_of algorithm instead of a raw loop.\n", errout.str());
 
     }
 

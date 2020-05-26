@@ -193,9 +193,6 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        if (simplify)
-            tokenizer.simplifyTokenList2();
-
         return tokenizer.tokens()->stringifyList(nullptr, !simplify);
     }
 
@@ -1527,7 +1524,7 @@ private:
                                 "vec2_t coords[4][5][6+1] = {1,2,3,4,5,6,7,8};";
 
             // The expected result..
-            const char expected[] = "int coords [ 4 ] [ 5 ] [ 7 ] [ 2 ] = { 1 , 2 , 3 , 4 , 5 , 6 , 7 , 8 } ;";
+            const char expected[] = "int coords [ 4 ] [ 5 ] [ 6 + 1 ] [ 2 ] = { 1 , 2 , 3 , 4 , 5 , 6 , 7 , 8 } ;";
             ASSERT_EQUALS(expected, tok(code));
             ASSERT_EQUALS("", errout.str());
         }
@@ -1810,7 +1807,7 @@ private:
 
     void simplifyTypedef77() { // ticket #2554
         const char code[] = "typedef char Str[10]; int x = sizeof(Str);";
-        const char expected[] = "int x ; x = 10 ;";
+        const char expected[] = "int x ; x = sizeof ( char [ 10 ] ) ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 

@@ -78,6 +78,7 @@
     <ClCompile Include="cppcheck.cpp" />
     <ClCompile Include="ctu.cpp" />
     <ClCompile Include="errorlogger.cpp" />
+    <ClCompile Include="errortypes.cpp" />
     <ClCompile Include="exprengine.cpp" />
     <ClCompile Include="library.cpp" />
     <ClCompile Include="mathlib.cpp" />
@@ -96,6 +97,7 @@
     <ClCompile Include="token.cpp" />
     <ClCompile Include="tokenize.cpp" />
     <ClCompile Include="tokenlist.cpp" />
+    <ClCompile Include="utils.cpp" />
     <ClCompile Include="valueflow.cpp" />
     <ClCompile Include="forwardanalyzer.cpp" />
   </ItemGroup>
@@ -142,6 +144,7 @@
     <ClInclude Include="platform.h" />
     <ClInclude Include="preprocessor.h" />
     <ClInclude Include="importproject.h" />
+    <ClInclude Include="programmemory.h" />
     <ClInclude Include="settings.h" />
     <ClInclude Include="suppressions.h" />
     <ClInclude Include="symboldatabase.h" />
@@ -242,10 +245,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\bin\debug\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|Win32'">..\bin\debug\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\bin\debug\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|x64'">..\bin\debug\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)bin\debug\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|Win32'">$(SolutionDir)bin\debug\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)bin\debug\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|x64'">$(SolutionDir)bin\debug\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">temp\$(Configuration)_$(PlatformName)\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|Win32'">temp\$(Configuration)_$(PlatformName)\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">temp\$(Configuration)_$(PlatformName)\</IntDir>
@@ -258,10 +261,10 @@
     <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|Win32'">false</IgnoreImportLibrary>
     <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</IgnoreImportLibrary>
     <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|x64'">false</IgnoreImportLibrary>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\bin\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|Win32'">..\bin\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\bin\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|x64'">..\bin\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)bin\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|Win32'">$(SolutionDir)bin\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)bin\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|x64'">$(SolutionDir)bin\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">temp\$(Configuration)_$(PlatformName)\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|Win32'">temp\$(Configuration)_$(PlatformName)\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">temp\$(Configuration)_$(PlatformName)\</IntDir>
@@ -287,13 +290,14 @@
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
       <AdditionalIncludeDirectories>..\externals;..\externals\simplecpp;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4018;4244;4251;4389;4482;4512;4701</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalOptions>/Zc:throwingNew /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>../externals;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -317,13 +321,14 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;TIXML_USE_STL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
       <AdditionalIncludeDirectories>..\externals;..\externals\simplecpp;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4018;4244;4251;4389;4482;4512;4701</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalOptions>/Zc:throwingNew /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>pcre.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -347,13 +352,14 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
       <AdditionalIncludeDirectories>..\externals;..\externals\simplecpp;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4018;4244;4251;4389;4482;4512;4701</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalOptions>/Zc:throwingNew /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>../externals;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -375,13 +381,14 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
       <AdditionalIncludeDirectories>..\externals;..\externals\simplecpp;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4018;4244;4251;4389;4482;4512;4701</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalOptions>/Zc:throwingNew /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>pcre64.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -407,7 +414,7 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <AdditionalIncludeDirectories>..\externals;..\externals\simplecpp;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4018;4244;4251;4389;4482;4512;4701</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800</DisableSpecificWarnings>
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;NDEBUG;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DebugInformationFormat>
@@ -417,7 +424,7 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
-      <AdditionalOptions>/Zc:inline /Zc:throwingNew %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Zc:throwingNew /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
@@ -447,7 +454,7 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <AdditionalIncludeDirectories>..\externals;..\externals\simplecpp;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4018;4244;4251;4389;4482;4512;4701</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800</DisableSpecificWarnings>
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;NDEBUG;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;TIXML_USE_STL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DebugInformationFormat>
@@ -457,7 +464,7 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
-      <AdditionalOptions>/Zc:inline /Zc:throwingNew %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Zc:throwingNew /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
@@ -488,7 +495,7 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <AdditionalIncludeDirectories>..\externals;..\externals\simplecpp;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4018;4244;4251;4389;4482;4512;4701</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800</DisableSpecificWarnings>
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;NDEBUG;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DebugInformationFormat>
@@ -498,7 +505,7 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
-      <AdditionalOptions>/Zc:inline /Zc:throwingNew %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Zc:throwingNew /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
@@ -527,7 +534,7 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <AdditionalIncludeDirectories>..\externals;..\externals\simplecpp;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4018;4244;4251;4389;4482;4512;4701</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800</DisableSpecificWarnings>
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;NDEBUG;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DebugInformationFormat>
@@ -537,7 +544,7 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
-      <AdditionalOptions>/Zc:inline /Zc:throwingNew %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Zc:throwingNew /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>

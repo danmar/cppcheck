@@ -153,16 +153,16 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\bin\debug\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\bin\debug\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)bin\debug\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)bin\debug\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">temp\$(Configuration)_$(PlatformName)\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">temp\$(Configuration)_$(PlatformName)\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">testrunner</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">testrunner</TargetName>
     <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</IgnoreImportLibrary>
     <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</IgnoreImportLibrary>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\bin\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\bin\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)bin\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)bin\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">temp\$(Configuration)_$(PlatformName)\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">temp\$(Configuration)_$(PlatformName)\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">testrunner</TargetName>
@@ -180,15 +180,15 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>CPPCHECKLIB_IMPORT;SIMPLECPP_IMPORT;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level4</WarningLevel>
-      <DisableSpecificWarnings>4251;4482;4512</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>testsuite.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>testsuite.h</ForcedIncludeFiles>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalOptions>/Zc:throwingNew /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -209,15 +209,15 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>CPPCHECKLIB_IMPORT;SIMPLECPP_IMPORT;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level4</WarningLevel>
-      <DisableSpecificWarnings>4251;4482;4512</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>testsuite.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>testsuite.h</ForcedIncludeFiles>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalOptions>/Zc:throwingNew /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -236,7 +236,6 @@
       <Optimization>MaxSpeed</Optimization>
       <PreprocessorDefinitions>CPPCHECKLIB_IMPORT;SIMPLECPP_IMPORT;NDEBUG;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level4</WarningLevel>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -244,14 +243,14 @@
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <DisableSpecificWarnings>4251;4482;4512</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800</DisableSpecificWarnings>
       <DebugInformationFormat>
       </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>testsuite.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>testsuite.h</ForcedIncludeFiles>
-      <AdditionalOptions>/Zc:inline /Zc:throwingNew %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Zc:throwingNew /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
@@ -276,7 +275,6 @@
       <Optimization>MaxSpeed</Optimization>
       <PreprocessorDefinitions>CPPCHECKLIB_IMPORT;SIMPLECPP_IMPORT;NDEBUG;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level4</WarningLevel>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -284,14 +282,14 @@
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <DisableSpecificWarnings>4251;4482;4512</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800</DisableSpecificWarnings>
       <DebugInformationFormat>
       </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>testsuite.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>testsuite.h</ForcedIncludeFiles>
-      <AdditionalOptions>/Zc:inline /Zc:throwingNew %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Zc:throwingNew /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>

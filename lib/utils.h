@@ -21,11 +21,12 @@
 #define utilsH
 //---------------------------------------------------------------------------
 
-#include <algorithm>
+#include "config.h"
+
 #include <cctype>
 #include <cstddef>
 #include <string>
-#include <stack>
+#include <vector>
 
 inline bool endsWith(const std::string &str, char c)
 {
@@ -48,9 +49,8 @@ inline static bool isPrefixStringCharLiteral(const std::string &str, char q, con
 
 inline static bool isStringCharLiteral(const std::string &str, char q)
 {
-    for (const std::string & p: {
-    "", "u8", "u", "U", "L"
-}) {
+    static const std::vector<std::string> suffixes{"", "u8", "u", "U", "L"};
+    for (const std::string & p: suffixes) {
         if (isPrefixStringCharLiteral(str, q, p))
             return true;
     }
@@ -98,95 +98,11 @@ inline static const char *getOrdinalText(int i)
     return "th";
 }
 
-inline static int caseInsensitiveStringCompare(const std::string &lhs, const std::string &rhs)
-{
-    if (lhs.size() != rhs.size())
-        return (lhs.size() < rhs.size()) ? -1 : 1;
-    for (unsigned int i = 0; i < lhs.size(); ++i) {
-        const int c1 = std::toupper(lhs[i]);
-        const int c2 = std::toupper(rhs[i]);
-        if (c1 != c2)
-            return (c1 < c2) ? -1 : 1;
-    }
-    return 0;
-}
+CPPCHECKLIB int caseInsensitiveStringCompare(const std::string& lhs, const std::string& rhs);
 
-inline static bool isValidGlobPattern(const std::string& pattern)
-{
-    for (std::string::const_iterator i = pattern.begin(); i != pattern.end(); ++i) {
-        if (*i == '*' || *i == '?') {
-            std::string::const_iterator j = i + 1;
-            if (j != pattern.end() && (*j == '*' || *j == '?')) {
-                return false;
-            }
-        }
-    }
-    return true;
-}
+CPPCHECKLIB bool isValidGlobPattern(const std::string& pattern);
 
-inline static bool matchglob(const std::string& pattern, const std::string& name)
-{
-    const char* p = pattern.c_str();
-    const char* n = name.c_str();
-    std::stack<std::pair<const char*, const char*> > backtrack;
-
-    for (;;) {
-        bool matching = true;
-        while (*p != '\0' && matching) {
-            switch (*p) {
-            case '*':
-                // Step forward until we match the next character after *
-                while (*n != '\0' && *n != p[1]) {
-                    n++;
-                }
-                if (*n != '\0') {
-                    // If this isn't the last possibility, save it for later
-                    backtrack.push(std::make_pair(p, n));
-                }
-                break;
-            case '?':
-                // Any character matches unless we're at the end of the name
-                if (*n != '\0') {
-                    n++;
-                } else {
-                    matching = false;
-                }
-                break;
-            default:
-                // Non-wildcard characters match literally
-                if (*n == *p) {
-                    n++;
-                } else if (*n == '\\' && *p == '/') {
-                    n++;
-                } else if (*n == '/' && *p == '\\') {
-                    n++;
-                } else {
-                    matching = false;
-                }
-                break;
-            }
-            p++;
-        }
-
-        // If we haven't failed matching and we've reached the end of the name, then success
-        if (matching && *n == '\0') {
-            return true;
-        }
-
-        // If there are no other paths to try, then fail
-        if (backtrack.empty()) {
-            return false;
-        }
-
-        // Restore pointers from backtrack stack
-        p = backtrack.top().first;
-        n = backtrack.top().second;
-        backtrack.pop();
-
-        // Advance name pointer by one because the current position didn't work
-        n++;
-    }
-}
+CPPCHECKLIB bool matchglob(const std::string& pattern, const std::string& name);
 
 #define UNUSED(x) (void)(x)
 

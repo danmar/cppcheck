@@ -179,7 +179,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        CppCheck cppCheck(*this, true);
+        CppCheck cppCheck(*this, true, nullptr);
         Settings& settings = cppCheck.settings();
         settings.exitCode = 1;
         settings.inlineSuppressions = true;
@@ -630,7 +630,7 @@ private:
     void globalSuppressions() { // Testing that Cppcheck::useGlobalSuppressions works (#8515)
         errout.str("");
 
-        CppCheck cppCheck(*this, false); // <- do not "use global suppressions". pretend this is a thread that just checks a file.
+        CppCheck cppCheck(*this, false, nullptr); // <- do not "use global suppressions". pretend this is a thread that just checks a file.
         Settings& settings = cppCheck.settings();
         settings.nomsg.addSuppressionLine("uninitvar");
         settings.exitCode = 1;
@@ -662,7 +662,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        CppCheck cppCheck(*this, true);
+        CppCheck cppCheck(*this, true, nullptr);
         Settings& settings = cppCheck.settings();
         settings.addEnabled("style");
         settings.inlineSuppressions = true;

@@ -10,7 +10,7 @@ private:
 public:
     CppcheckExecutor()
         : ErrorLogger()
-        , cppcheck(*this, false) {
+        , cppcheck(*this, false, nullptr) {
         cppcheck.settings().addEnabled("all");
         cppcheck.settings().inconclusive = true;
     }
@@ -22,7 +22,7 @@ public:
     void reportOut(const std::string &outmsg) OVERRIDE {
         (void)outmsg;
     }
-    void reportErr(const ErrorLogger::ErrorMessage &msg) OVERRIDE {
+    void reportErr(const ErrorMessage &msg) OVERRIDE {
         (void)msg;
     }
     void reportProgress(const std::string& filename,

@@ -21,7 +21,6 @@
 #include "checkinternal.h"
 
 #include "astutils.h"
-#include "errorlogger.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"

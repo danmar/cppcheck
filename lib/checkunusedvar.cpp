@@ -21,7 +21,6 @@
 #include "checkunusedvar.h"
 
 #include "astutils.h"
-#include "errorlogger.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
@@ -1406,9 +1405,11 @@ void CheckUnusedVar::checkStructMemberUsage()
                 continue;
 
             // Check if the struct member variable is used anywhere in the file
-            if (Token::findsimplematch(mTokenizer->tokens(), (". " + var.name()).c_str()))
+            std::string tmp(". " + var.name());
+            if (Token::findsimplematch(mTokenizer->tokens(), tmp.c_str(), tmp.size()))
                 continue;
-            if (Token::findsimplematch(mTokenizer->tokens(), (":: " + var.name()).c_str()))
+            tmp = (":: " + var.name());
+            if (Token::findsimplematch(mTokenizer->tokens(), tmp.c_str(), tmp.size()))
                 continue;
 
             unusedStructMemberError(var.nameToken(), scope.className, var.name(), scope.type == Scope::eUnion);

@@ -13,7 +13,7 @@ NewSuppressionDialog::NewSuppressionDialog(QWidget *parent) :
     class QErrorLogger : public ErrorLogger {
     public:
         void reportOut(const std::string &/*outmsg*/) override {}
-        void reportErr(const ErrorLogger::ErrorMessage &msg) override {
+        void reportErr(const ErrorMessage &msg) override {
             errorIds << QString::fromStdString(msg.id);
         }
         void bughuntingReport(const std::string &/*str*/) override {}
@@ -21,7 +21,7 @@ NewSuppressionDialog::NewSuppressionDialog(QWidget *parent) :
     };
 
     QErrorLogger errorLogger;
-    CppCheck cppcheck(errorLogger,false);
+    CppCheck cppcheck(errorLogger, false, nullptr);
     cppcheck.getErrorMessages();
     errorLogger.errorIds.sort();
 

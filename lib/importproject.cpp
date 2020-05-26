@@ -196,15 +196,17 @@ ImportProject::Type ImportProject::import(const std::string &filename, Settings 
     if (!mPath.empty() && !endsWith(mPath,'/'))
         mPath += '/';
 
+    const std::string fileFilter = settings ? settings->fileFilter : std::string();
+
     if (endsWith(filename, ".json", 5)) {
         importCompileCommands(fin);
         return ImportProject::Type::COMPILE_DB;
     } else if (endsWith(filename, ".sln", 4)) {
-        importSln(fin,mPath);
+        importSln(fin, mPath, fileFilter);
         return ImportProject::Type::VS_SLN;
     } else if (endsWith(filename, ".vcxproj", 8)) {
         std::map<std::string, std::string, cppcheck::stricmp> variables;
-        importVcxproj(filename, variables, emptyString);
+        importVcxproj(filename, variables, emptyString, fileFilter);
         return ImportProject::Type::VS_VCXPROJ;
     } else if (endsWith(filename, ".bpr", 4)) {
         importBcb6Prj(filename);
@@ -401,7 +403,7 @@ void ImportProject::importCompileCommands(std::istream &istr)
     }
 }
 
-void ImportProject::importSln(std::istream &istr, const std::string &path)
+void ImportProject::importSln(std::istream &istr, const std::string &path, const std::string &fileFilter)
 {
     std::map<std::string,std::string,cppcheck::stricmp> variables;
     variables["SolutionDir"] = path;
@@ -419,7 +421,7 @@ void ImportProject::importSln(std::istream &istr, const std::string &path)
         std::string vcxproj(line.substr(pos1+1, pos-pos1+7));
         if (!Path::isAbsolute(vcxproj))
             vcxproj = path + vcxproj;
-        importVcxproj(Path::fromNativeSeparators(vcxproj), variables, emptyString);
+        importVcxproj(Path::fromNativeSeparators(vcxproj), variables, emptyString, fileFilter);
     }
 }
 
@@ -467,6 +469,15 @@ namespace {
                             if (!additionalIncludePaths.empty())
                                 additionalIncludePaths += ';';
                             additionalIncludePaths += e->GetText();
+                        } else if (std::strcmp(e->Name(), "LanguageStandard") == 0) {
+                            if (std::strcmp(e->GetText(), "stdcpp14") == 0)
+                                cppstd = Standards::CPP14;
+                            else if (std::strcmp(e->GetText(), "stdcpp17") == 0)
+                                cppstd = Standards::CPP17;
+                            else if (std::strcmp(e->GetText(), "stdcpp20") == 0)
+                                cppstd = Standards::CPP20;
+                            else if (std::strcmp(e->GetText(), "stdcpplatest") == 0)
+                                cppstd = Standards::CPPLatest;
                         }
                     }
                 }
@@ -506,6 +517,7 @@ namespace {
         std::string condition;
         std::string preprocessorDefinitions;
         std::string additionalIncludePaths;
+        Standards::cppstd_t cppstd = Standards::CPPLatest;
     };
 }
 
@@ -602,7 +614,7 @@ static void loadVisualStudioProperties(const std::string &props, std::map<std::s
     }
 }
 
-void ImportProject::importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories)
+void ImportProject::importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::string &fileFilter)
 {
     variables["ProjectDir"] = Path::simplifyPath(Path::getPathFromFilename(filename));
 
@@ -661,6 +673,10 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
     }
 
     for (const std::string &c : compileList) {
+        const std::string cfilename = Path::simplifyPath(Path::isAbsolute(c) ? c : Path::getPathFromFilename(filename) + c);
+        if (!fileFilter.empty() && !matchglob(fileFilter, cfilename))
+            continue;
+
         for (const ProjectConfiguration &p : projectConfigurationList) {
 
             if (!guiProject.checkVsConfigs.empty()) {
@@ -675,7 +691,7 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
             }
 
             FileSettings fs;
-            fs.filename = Path::simplifyPath(Path::isAbsolute(c) ? c : Path::getPathFromFilename(filename) + c);
+            fs.filename = cfilename;
             fs.cfg = p.name;
             fs.msc = true;
             fs.useMfc = useOfMfc;
@@ -690,6 +706,14 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
             for (const ItemDefinitionGroup &i : itemDefinitionGroupList) {
                 if (!i.conditionIsTrue(p))
                     continue;
+                if (i.cppstd == Standards::CPP11)
+                    fs.standard = "c++11";
+                else if (i.cppstd == Standards::CPP14)
+                    fs.standard = "c++14";
+                else if (i.cppstd == Standards::CPP17)
+                    fs.standard = "c++14";
+                else if (i.cppstd == Standards::CPP20)
+                    fs.standard = "c++20";
                 fs.defines += ';' + i.preprocessorDefinitions;
                 additionalIncludePaths += ';' + i.additionalIncludePaths;
             }

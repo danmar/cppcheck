@@ -72,14 +72,14 @@ public:
     void reportOut(const std::string &outmsg) OVERRIDE;
 
     /** xml output of errors */
-    void reportErr(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
+    void reportErr(const ErrorMessage &msg) OVERRIDE;
 
     void reportProgress(const std::string &filename, const char stage[], const std::size_t value) OVERRIDE;
 
     /**
      * Output information messages.
      */
-    void reportInfo(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
+    void reportInfo(const ErrorMessage &msg) OVERRIDE;
 
     void bughuntingReport(const std::string &str) OVERRIDE;
 
@@ -107,6 +107,11 @@ public:
     * @return false, if an error occurred (except unknown XML elements)
     */
     static bool tryLoadLibrary(Library& destination, const char* basepath, const char* filename);
+
+    /**
+     * Execute a shell command and read the output from it. Returns true if command terminated successfully.
+     */
+    static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string *output);
 
 protected:
 

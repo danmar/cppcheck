@@ -138,7 +138,7 @@ private:
 
         // Tokenizer..
         Tokenizer tokenizer(&settings0, this);
-        tokenizer.createTokens(&tokens2);
+        tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
 
         // Run checks..
@@ -3366,6 +3366,18 @@ private:
               "    if (!x) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9709
+        check("void f(int a) {\n"
+              "    bool ok = false;\n"
+              "    const char * r = nullptr;\n"
+              "    do_something(&r);\n"
+              "    if (r != nullptr)\n"
+              "        ok = a != 0;\n"
+              "    if (ok) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void alwaysTrueInfer() {
@@ -3495,6 +3507,15 @@ private:
               "    return pos;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5]: (style) Condition 'pos>0' is always true\n", errout.str());
+
+        // #9721
+        check("void f(int x) {\n"
+              "    if (x > 127) {\n"
+              "        if ( (x>255) || (-128>x) )\n"
+              "            return;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Condition '-128>x' is always false\n", errout.str());
     }
 
     void alwaysTrueContainer() {

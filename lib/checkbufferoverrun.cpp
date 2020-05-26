@@ -23,6 +23,7 @@
 #include "checkbufferoverrun.h"
 
 #include "astutils.h"
+#include "errorlogger.h"
 #include "library.h"
 #include "mathlib.h"
 #include "settings.h"
@@ -847,7 +848,7 @@ bool CheckBufferOverrun::analyseWholeProgram1(const CTU::FileInfo *ctu, const st
 {
     const CTU::FileInfo::FunctionCall *functionCall = nullptr;
 
-    const std::list<ErrorLogger::ErrorMessage::FileLocation> &locationList =
+    const std::list<ErrorMessage::FileLocation> &locationList =
         ctu->getErrorPath(CTU::FileInfo::InvalidValueType::bufferOverflow,
                           unsafeUsage,
                           callsMap,
@@ -874,12 +875,12 @@ bool CheckBufferOverrun::analyseWholeProgram1(const CTU::FileInfo *ctu, const st
         cwe = CWE_POINTER_ARITHMETIC_OVERFLOW;
     }
 
-    const ErrorLogger::ErrorMessage errorMessage(locationList,
-            emptyString,
-            Severity::error,
-            errmsg,
-            errorId,
-            cwe, false);
+    const ErrorMessage errorMessage(locationList,
+                                    emptyString,
+                                    Severity::error,
+                                    errmsg,
+                                    errorId,
+                                    cwe, false);
     errorLogger.reportErr(errorMessage);
 
     return true;

@@ -34,7 +34,7 @@
 
 #include "check.h"
 #include "config.h"
-#include "errorlogger.h"
+#include "errortypes.h"
 #include "tokenize.h"
 
 #include <list>
@@ -45,6 +45,7 @@ class Scope;
 class Settings;
 class Token;
 class Variable;
+class ErrorLogger;
 
 /// @addtogroup Core
 /// @{

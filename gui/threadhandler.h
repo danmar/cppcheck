@@ -72,9 +72,8 @@ public:
     */
     void saveSettings(QSettings &settings) const;
 
-    void setAddonsAndTools(const QStringList &addonsAndTools, const QString &misraFile) {
+    void setAddonsAndTools(const QStringList &addonsAndTools) {
         mAddonsAndTools = addonsAndTools;
-        mMisraFile = misraFile;
     }
 
     void setSuppressions(const QList<Suppressions::Suppression> &s) {
@@ -262,7 +261,6 @@ protected:
     QStringList mClangIncludePaths;
 
     QString mDataDir;
-    QString mMisraFile;
 private:
 
     /**
