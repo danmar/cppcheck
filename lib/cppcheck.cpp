@@ -404,7 +404,10 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
     temp.mSettings = mSettings;
     if (!temp.mSettings.userDefines.empty())
         temp.mSettings.userDefines += ';';
-    temp.mSettings.userDefines += fs.cppcheckDefines();
+    if (mSettings.clang)
+        temp.mSettings.userDefines += fs.defines;
+    else
+        temp.mSettings.userDefines += fs.cppcheckDefines();
     temp.mSettings.includePaths = fs.includePaths;
     temp.mSettings.userUndefs = fs.undefs;
     if (fs.standard == "c++14")
