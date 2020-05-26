@@ -24,7 +24,7 @@ if (BUILD_TESTS)
         target_link_libraries(testrunner ${PCRE_LIBRARY})
     endif()
     if (USE_Z3)
-        target_link_libraries(testrunner ${Z3_LIBRARY})
+        target_link_libraries(testrunner ${Z3_LIBRARIES})
     endif()
 
     add_custom_target(copy_cfg ALL
