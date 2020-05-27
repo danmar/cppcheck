@@ -34,10 +34,12 @@ endif()
 
 option(BUILD_TESTS          "Build tests"                                                   OFF)
 option(ENABLE_CHECK_INTERNAL "Enable internal checks"                                       OFF)
+option(ENABLE_OSS_FUZZ      "Enable the OSS-Fuzz related targets"                           ON)
 option(BUILD_GUI            "Build the qt application"                                      OFF)
 option(WITH_QCHART          "When building GUI(need BUILD_GUI=ON), use Qt5 Charts"          OFF)
 
 option(HAVE_RULES           "Usage of rules (needs PCRE library and headers)"               OFF)
+option(USE_Z3               "Usage of z3 library"                                           OFF)
 
 set(CMAKE_INCLUDE_DIRS_CONFIGCMAKE ${CMAKE_INSTALL_PREFIX}/include      CACHE PATH "Output directory for headers")
 set(CMAKE_LIB_DIRS_CONFIGCMAKE     ${CMAKE_INSTALL_PREFIX}/lib          CACHE PATH "Output directory for libraries")

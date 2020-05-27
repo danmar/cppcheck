@@ -1,4 +1,4 @@
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+if (ENABLE_OSS_FUZZ AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_executable(fuzz-client EXCLUDE_FROM_ALL
             main.cpp
             type2.cpp

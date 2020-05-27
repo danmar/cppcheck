@@ -21,7 +21,10 @@ if (BUILD_TESTS)
 
     add_executable(testrunner ${hdrs} ${srcs} $<TARGET_OBJECTS:lib_objs> $<TARGET_OBJECTS:cli_objs> $<TARGET_OBJECTS:tinyxml_objs> $<TARGET_OBJECTS:simplecpp_objs>)
     if (HAVE_RULES)
-        target_link_libraries(testrunner pcre)
+        target_link_libraries(testrunner ${PCRE_LIBRARY})
+    endif()
+    if (USE_Z3)
+        target_link_libraries(testrunner ${Z3_LIBRARIES})
     endif()
 
     add_custom_target(copy_cfg ALL
