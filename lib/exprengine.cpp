@@ -2530,8 +2530,10 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
 
 static void dumpRecursive(ExprEngine::ValuePtr val)
 {
-    if (!val)
+    if (!val) {
         std::cout << "NULL";
+        return;
+    }
     switch (val->type) {
     case ExprEngine::ValueType::AddressOfValue:
         std::cout << "AddressOfValue(" << std::dynamic_pointer_cast<ExprEngine::AddressOfValue>(val)->varId << ")";
