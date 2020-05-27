@@ -334,12 +334,14 @@ unsigned int CppCheck::check(const std::string &path)
 #endif
 
         std::string flags(lang + " ");
-        if (mSettings.standards.cpp == Standards::CPP14)
-            flags += "-std=c++14 ";
-        else if (mSettings.standards.cpp == Standards::CPP17)
-            flags += "-std=c++17 ";
-        else if (mSettings.standards.cpp == Standards::CPP20)
-            flags += "-std=c++20 ";
+        if (Path::isCPP(path)) {
+            if (mSettings.standards.cpp == Standards::CPP14)
+                flags += "-std=c++14 ";
+            else if (mSettings.standards.cpp == Standards::CPP17)
+                flags += "-std=c++17 ";
+            else if (mSettings.standards.cpp == Standards::CPP20)
+                flags += "-std=c++20 ";
+        }
 
         for (const std::string &i: mSettings.includePaths)
             flags += "-I" + i + " ";
