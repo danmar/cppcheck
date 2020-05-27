@@ -890,7 +890,7 @@ struct ExprData {
     z3::expr getConstraintExpr(ExprEngine::ValuePtr v) {
         if (v->type == ExprEngine::ValueType::IntRange)
             return (getExpr(v) != 0);
-        return getExpr(v);
+        return bool_expr(getExpr(v));
     }
 
 private:
@@ -2527,3 +2527,60 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
     else if (errorLogger)
         errorLogger->bughuntingReport(report.str());
 }
+
+static void dumpRecursive(ExprEngine::ValuePtr val)
+{
+    if (!val)
+        std::cout << "NULL";
+    switch (val->type) {
+    case ExprEngine::ValueType::AddressOfValue:
+        std::cout << "AddressOfValue(" << std::dynamic_pointer_cast<ExprEngine::AddressOfValue>(val)->varId << ")";
+        break;
+    case ExprEngine::ValueType::ArrayValue:
+        std::cout << "ArrayValue";
+        break;
+    case ExprEngine::ValueType::BailoutValue:
+        std::cout << "BailoutValue";
+        break;
+    case ExprEngine::ValueType::BinOpResult: {
+        auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(val);
+        std::cout << "(";
+        dumpRecursive(b->op1);
+        std::cout << " " << b->binop << " ";
+        dumpRecursive(b->op2);
+        std::cout << ")";
+    }
+    break;
+    case ExprEngine::ValueType::ConditionalValue:
+        std::cout << "ConditionalValue";
+        break;
+    case ExprEngine::ValueType::FloatRange:
+        std::cout << "FloatRange";
+        break;
+    case ExprEngine::ValueType::IntRange:
+        std::cout << "IntRange";
+        break;
+    case ExprEngine::ValueType::IntegerTruncation:
+        std::cout << "IntegerTruncation(";
+        dumpRecursive(std::dynamic_pointer_cast<ExprEngine::IntegerTruncation>(val)->inputValue);
+        std::cout << ")";
+        break;
+    case ExprEngine::ValueType::StringLiteralValue:
+        std::cout << "StringLiteralValue";
+        break;
+    case ExprEngine::ValueType::StructValue:
+        std::cout << "StructValue";
+        break;
+    case ExprEngine::ValueType::UninitValue:
+        std::cout << "UninitValue";
+        break;
+    }
+}
+
+void ExprEngine::dump(ExprEngine::ValuePtr val)
+{
+    dumpRecursive(val);
+    std::cout << "\n";
+}
+
+

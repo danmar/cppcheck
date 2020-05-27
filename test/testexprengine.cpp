@@ -46,6 +46,7 @@ private:
         TEST_CASE(expr5);
         TEST_CASE(expr6);
         TEST_CASE(expr7);
+        TEST_CASE(expr8);
         TEST_CASE(exprAssign1);
         TEST_CASE(exprAssign2); // Truncation
 
@@ -300,6 +301,15 @@ private:
                       "(> $3 1000)\n"
                       "z3::sat\n",
                       expr(code, ">"));
+    }
+
+    void expr8() {
+        const char code[] = "void foo(int x, int y) {\n"
+                            "    if (x % 32) {}\n"
+                            "    y==3;\n"
+                            "}";
+        // Do not crash
+        expr(code, "==");
     }
 
     void exprAssign1() {
