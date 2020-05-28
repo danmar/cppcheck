@@ -703,6 +703,29 @@ private:
                        "  return (*sink)[0];\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        // Ticket #9296
+        checkUninitVar("void f(void)\n"
+                       "{\n"
+                       "    int x;\n"
+                       "    int z = (x) & ~__round_mask(1, 1);\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: x\n", errout.str());
+
+        checkUninitVar("void f(void)\n"
+                       "{\n"
+                       "    int x;\n"
+                       "    int z = (x) | ~__round_mask(1, 1);\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: x\n", errout.str());
+
+        checkUninitVar("int __round_mask(int, int);\n"
+                       "void f(void)\n"
+                       "{\n"
+                       "    int x;\n"
+                       "    int* z = &x;\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_warn_once() {
