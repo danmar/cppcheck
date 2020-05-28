@@ -62,6 +62,8 @@ For rules support (requires pcre) use the flag
 For release builds it is recommended that you use:
 -DUSE_MATCHCOMPILER=ON
 
+Using cmake you can generate project files for Visual Studio, XCode, etc.
+
 ### qmake
 
 You can use the gui/gui.pro file to build the GUI.
