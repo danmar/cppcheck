@@ -1112,8 +1112,8 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
     if (vartok->strAt(1) == "]")
         return true;
 
-    auto ast_parent = vartok->astParent();
-    if (ast_parent && (ast_parent->tokType() == Token::Type::eBitOp) && (ast_parent->isBinaryOp()))
+    const Token *astParent = vartok->astParent();
+    if (astParent && (astParent->tokType() == Token::Type::eBitOp) && (astParent->isBinaryOp()))
         return true;
 
     return false;

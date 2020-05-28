@@ -21,7 +21,6 @@
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
-#include "simplecpp.h"
 
 #include <sstream>
 #include <string>
@@ -706,21 +705,19 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // Ticket #9296
-        checkUninitVar("int __round_mask(int, int);\n"
-                       "void f(void)\n"
+        checkUninitVar("void f(void)\n"
                        "{\n"
                        "    int x;\n"
                        "    int z = (x) & ~__round_mask(1, 1);\n"
                        "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: x\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: x\n", errout.str());
 
-        checkUninitVar("int __round_mask(int, int);\n"
-                       "void f(void)\n"
+        checkUninitVar("void f(void)\n"
                        "{\n"
                        "    int x;\n"
                        "    int z = (x) | ~__round_mask(1, 1);\n"
                        "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: x\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: x\n", errout.str());
 
         checkUninitVar("int __round_mask(int, int);\n"
                        "void f(void)\n"
