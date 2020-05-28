@@ -2484,14 +2484,19 @@ void Tokenizer::combineOperators()
 void Tokenizer::combineStringAndCharLiterals()
 {
     // Combine strings
-    for (Token *tok = list.front();
-         tok;
-         tok = tok->next()) {
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (!isStringLiteral(tok->str()))
             continue;
 
         tok->str(simplifyString(tok->str()));
-        while (tok->next() && tok->next()->tokType() == Token::eString) {
+
+        while (Token::Match(tok->next(), "%str%") || Token::Match(tok->next(), "_T|_TEXT|TEXT ( %str% )")) {
+            if (tok->next()->isName()) {
+                if (!mSettings->isWindowsPlatform())
+                    break;
+                tok->deleteNext(2);
+                tok->next()->deleteNext();
+            }
             // Two strings after each other, combine them
             tok->concatStr(simplifyString(tok->next()->str()));
             tok->deleteNext();

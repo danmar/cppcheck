@@ -1800,6 +1800,12 @@ private:
                               "};\n"
                               "}\n";
         ASSERT_EQUALS(tok(code2), tok(code1));
+
+        const char code3[] = "x = L\"1\" TEXT(\"2\") L\"3\";";
+        ASSERT_EQUALS("x = L\"123\" ;", tok(code3, false, Settings::Win64));
+
+        const char code4[] = "x = TEXT(\"1\") L\"2\";";
+        ASSERT_EQUALS("x = L\"1\" L\"2\" ;", tok(code4, false, Settings::Win64));
     }
 
     void combine_wstrings() {
