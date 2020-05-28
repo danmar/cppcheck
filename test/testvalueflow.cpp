@@ -813,6 +813,12 @@ private:
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(1, values.back().intvalue);
 
+        code = "enum testEnum : uint32_t { a };\n"
+               "sizeof(testEnum);";
+        values = tokenValues(code,"( testEnum");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(4, values.back().intvalue);
+
 #define CHECK(A, B)                              \
         do {                                     \
         code = "void f() {\n"                    \

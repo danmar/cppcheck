@@ -846,40 +846,44 @@ static void setTokenValueCast(Token *parent, const ValueType &valueType, const V
 
 static nonneg int getSizeOfType(const Token *typeTok, const Settings *settings)
 {
-    const std::string &typeStr = typeTok->str();
-    if (typeStr == "char")
+    const ValueType &valueType = ValueType::parseDecl(typeTok, settings);
+    if (valueType.pointer > 0)
+        return settings->sizeof_pointer;
+    if (valueType.type == ValueType::Type::BOOL || valueType.type == ValueType::Type::CHAR)
         return 1;
-    else if (typeStr == "short")
+    if (valueType.type == ValueType::Type::SHORT)
         return settings->sizeof_short;
-    else if (typeStr == "int")
+    if (valueType.type == ValueType::Type::INT)
         return settings->sizeof_int;
-    else if (typeStr == "long")
-        return typeTok->isLong() ? settings->sizeof_long_long : settings->sizeof_long;
-    else if (typeStr == "wchar_t")
+    if (valueType.type == ValueType::Type::LONG)
+        return settings->sizeof_long;
+    if (valueType.type == ValueType::Type::LONGLONG)
+        return settings->sizeof_long_long;
+    if (valueType.type == ValueType::Type::WCHAR_T)
         return settings->sizeof_wchar_t;
-    else
-        return 0;
+
+    return 0;
 }
 
 size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings *settings)
 {
     if (vt.pointer)
         return settings->sizeof_pointer;
-    else if (vt.type == ValueType::Type::CHAR)
+    if (vt.type == ValueType::Type::CHAR)
         return 1;
-    else if (vt.type == ValueType::Type::SHORT)
+    if (vt.type == ValueType::Type::SHORT)
         return settings->sizeof_short;
-    else if (vt.type == ValueType::Type::WCHAR_T)
+    if (vt.type == ValueType::Type::WCHAR_T)
         return settings->sizeof_wchar_t;
-    else if (vt.type == ValueType::Type::INT)
+    if (vt.type == ValueType::Type::INT)
         return settings->sizeof_int;
-    else if (vt.type == ValueType::Type::LONG)
+    if (vt.type == ValueType::Type::LONG)
         return settings->sizeof_long;
-    else if (vt.type == ValueType::Type::LONGLONG)
+    if (vt.type == ValueType::Type::LONGLONG)
         return settings->sizeof_long_long;
-    else if (vt.type == ValueType::Type::FLOAT)
+    if (vt.type == ValueType::Type::FLOAT)
         return settings->sizeof_float;
-    else if (vt.type == ValueType::Type::DOUBLE)
+    if (vt.type == ValueType::Type::DOUBLE)
         return settings->sizeof_double;
 
     return 0;
@@ -933,6 +937,8 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
             const Token * type = tok2->enumerator()->scope->enumType;
             if (type) {
                 size = getSizeOfType(type, settings);
+                if (size == 0)
+                    tok->linkAt(1);
             }
             ValueFlow::Value value(size);
             if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
