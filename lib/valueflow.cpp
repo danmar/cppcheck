@@ -1876,6 +1876,8 @@ static void valueFlowReverse(TokenList *tokenlist,
                 break;
             } else {
                 tok2 = tok2->link();
+                if (Token::simpleMatch(tok2->previous(), ") {") && Token::Match(tok2->previous()->link()->previous(), "for|while ("))
+                    tok2 = tok2->previous()->link();
             }
         } else if (tok2->str() == "{") {
             // if variable is assigned in loop don't look before the loop
