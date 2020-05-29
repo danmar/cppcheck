@@ -246,5 +246,8 @@
     <ClInclude Include="..\lib\config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="precompiled.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

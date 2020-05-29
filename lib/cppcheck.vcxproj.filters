@@ -343,6 +343,9 @@
     <ClInclude Include="programmemory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="precompiled.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="version.rc" />
