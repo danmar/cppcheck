@@ -1959,6 +1959,24 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("int* f(std::list<int>& x, unsigned int y) {\n"
+              "    for (int& m : x) {\n"
+              "        if (m == y)\n"
+              "            return &m;\n"
+              "    }\n"
+              "    return nullptr;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int& f(std::list<int>& x, int& y) {\n"
+              "    for (int& m : x) {\n"
+              "        if (m == y)\n"
+              "            return m;\n"
+              "    }\n"
+              "    return y;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void e();\n"
               "void g(void);\n"
               "void h(void);\n"

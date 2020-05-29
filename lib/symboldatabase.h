@@ -896,6 +896,8 @@ public:
 
     static bool returnsReference(const Function* function, bool unknown = false);
 
+    static std::vector<const Token*> findReturns(const Function* f);
+
     const Token* returnDefEnd() const {
         if (this->hasTrailingReturnType()) {
             return Token::findmatch(retDef, "{|;");

@@ -2718,30 +2718,6 @@ static void valueFlowForward(Token* startToken,
     }
 }
 
-static std::vector<const Token*> findReturns(const Function* f)
-{
-    std::vector<const Token*> result;
-    const Scope* scope = f->functionScope;
-    if (!scope)
-        return result;
-    for (const Token* tok = scope->bodyStart->next(); tok && tok != scope->bodyEnd; tok = tok->next()) {
-        if (tok->str() == "{" && tok->scope() &&
-            (tok->scope()->type == Scope::eLambda || tok->scope()->type == Scope::eClass)) {
-            tok = tok->link();
-            continue;
-        }
-        if (Token::simpleMatch(tok->astParent(), "return")) {
-            result.push_back(tok);
-        }
-        // Skip lambda functions since the scope may not be set correctly
-        const Token* lambdaEndToken = findLambdaEndToken(tok);
-        if (lambdaEndToken) {
-            tok = lambdaEndToken;
-        }
-    }
-    return result;
-}
-
 static int getArgumentPos(const Variable *var, const Function *f)
 {
     auto arg_it = std::find_if(f->argumentList.begin(), f->argumentList.end(), [&](const Variable &v) {
@@ -2850,6 +2826,14 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, ValueFlow::Value:
                     return {{tok, true, std::move(errorPath)}};
                 if (vartok)
                     return getLifetimeTokens(vartok, std::move(errorPath), depth - 1);
+            } else if (Token::simpleMatch(var->nameToken()->astParent(), ":") && var->nameToken()->astParent()->astParent() && Token::simpleMatch(var->nameToken()->astParent()->astParent()->previous(), "for (")) {
+                errorPath.emplace_back(var->nameToken(), "Assigned to reference.");
+                const Token *vartok = var->nameToken();
+                if (vartok == tok)
+                    return {{tok, true, std::move(errorPath)}};
+                const Token *contok = var->nameToken()->astParent()->astOperand2();
+                if (contok)
+                    return getLifetimeTokens(contok, std::move(errorPath), depth - 1);
             } else {
                 return std::vector<LifetimeToken> {};
             }
@@ -2860,7 +2844,7 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, ValueFlow::Value:
             if (!Function::returnsReference(f))
                 return {{tok, std::move(errorPath)}};
             std::vector<LifetimeToken> result;
-            std::vector<const Token*> returns = findReturns(f);
+            std::vector<const Token*> returns = Function::findReturns(f);
             for (const Token* returnTok : returns) {
                 if (returnTok == tok)
                     continue;
@@ -2945,6 +2929,11 @@ const Variable* getLifetimeVariable(const Token* tok, ValueFlow::Value::ErrorPat
     if (tok2 && tok2->variable())
         return tok2->variable();
     return nullptr;
+}
+
+const Variable* getLifetimeVariable(const Token* tok) {
+    ValueFlow::Value::ErrorPath errorPath;
+    return getLifetimeVariable(tok, errorPath, nullptr);
 }
 
 static bool isNotLifetimeValue(const ValueFlow::Value& val)
@@ -3394,7 +3383,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
         const Function *f = tok->function();
         if (Function::returnsReference(f))
             return;
-        std::vector<const Token*> returns = findReturns(f);
+        std::vector<const Token*> returns = Function::findReturns(f);
         const bool inconclusive = returns.size() > 1;
         for (const Token* returnTok : returns) {
             if (returnTok == tok)

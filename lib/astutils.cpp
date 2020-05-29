@@ -448,8 +448,6 @@ bool isAliasOf(const Token *tok, nonneg int varid)
 {
     if (tok->varId() == varid)
         return false;
-    if (tok->varId() == 0)
-        return false;
     for (const ValueFlow::Value &val : tok->values()) {
         if (!val.isLocalLifetimeValue())
             continue;
