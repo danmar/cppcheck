@@ -2491,7 +2491,7 @@ private:
                             "Dummy<intvec> y;";
         const char exp [] = "Dummy < int [ 1 ] > y ;";
         ASSERT_EQUALS(exp, tok(code, false));
-        ASSERT_EQUALS("[test.cpp:2]: (debug) Unknown type 'Dummy<int[1]>'.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyTypedef124() { // ticket #7792

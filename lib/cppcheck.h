@@ -128,6 +128,10 @@ public:
     void tooManyConfigsError(const std::string &file, const std::size_t numberOfConfigurations);
     void purgedConfigurationMessage(const std::string &file, const std::string& configuration);
 
+    void dontSimplify() {
+        mSimplify = false;
+    }
+
     /** Analyse whole program, run this after all TUs has been scanned.
      * This is deprecated and the plan is to remove this when
      * .analyzeinfo is good enough.
@@ -222,6 +226,9 @@ private:
 
     /** Are there too many configs? */
     bool mTooManyConfigs;
+
+    /** Simplify code? true by default */
+    bool mSimplify;
 
     /** File info used for whole program analysis */
     std::list<Check::FileInfo*> mFileInfo;

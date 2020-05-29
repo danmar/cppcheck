@@ -258,6 +258,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--debug-bug-hunting") == 0)
                 mSettings->debugBugHunting = true;
 
+            // Flag used for various purposes during debugging
+            else if (std::strcmp(argv[i], "--debug-simplified") == 0)
+                mSettings->debugSimplified = true;
+
             // Show template information
             else if (std::strcmp(argv[i], "--debug-template") == 0)
                 mSettings->debugtemplate = true;
