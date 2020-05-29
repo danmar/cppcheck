@@ -757,6 +757,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
                 // simplify more if required, skip rest of iteration if failed
                 if (mSimplify && hasRule("simple")) {
+                    std::cout << "Handling of \"simple\" rules is deprecated and will be removed in Cppcheck 2.5." << std::endl;
+
                     // if further simplification fails then skip rest of iteration
                     Timer timer3("Tokenizer::simplifyTokenList2", mSettings.showtime, &s_timerResults);
                     result = mTokenizer.simplifyTokenList2();
