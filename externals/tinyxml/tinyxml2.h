@@ -2324,6 +2324,11 @@ namespace tinyxml2 {
         DynArray< const char*, 10 > _stack;
 
     private:
+        /**
+          Prepares to write a new node. This includes sealing an element that was
+          just opened, and writing any whitespace necessary if not in compact mode.
+        */
+        void PrepareForNewNode(bool compactMode);
         void PrintString(const char*, bool restrictedEntitySet);     // prints out, after detecting entities.
 
         bool _firstElement;

@@ -2623,21 +2623,32 @@ namespace tinyxml2 {
     }
 
 
-    void XMLPrinter::OpenElement(const char* name, bool compactMode)
+    void XMLPrinter::PrepareForNewNode(bool compactMode)
     {
         SealElementIfJustOpened();
-        _stack.Push(name);
-
-        if (_textDepth < 0 && !_firstElement && !compactMode) {
+        if (compactMode) {
+            return;
+        }
+        if (_firstElement) {
+            PrintSpace(_depth);
+        } else if (_textDepth < 0) {
             Putc('\n');
             PrintSpace(_depth);
         }
+
+        _firstElement = false;
+    }
+
+
+    void XMLPrinter::OpenElement(const char* name, bool compactMode)
+    {
+        PrepareForNewNode(compactMode);
+        _stack.Push(name);
 
         Write("<");
         Write(name);
 
         _elementJustOpened = true;
-        _firstElement = false;
         ++_depth;
     }
 
@@ -2811,13 +2822,7 @@ namespace tinyxml2 {
 
     void XMLPrinter::PushComment(const char* comment)
     {
-        SealElementIfJustOpened();
-        if (_textDepth < 0 && !_firstElement && !_compactMode) {
-            Putc('\n');
-            PrintSpace(_depth);
-        }
-        _firstElement = false;
-
+        PrepareForNewNode(_compactMode);
         Write("<!--");
         Write(comment);
         Write("-->");
@@ -2826,13 +2831,7 @@ namespace tinyxml2 {
 
     void XMLPrinter::PushDeclaration(const char* value)
     {
-        SealElementIfJustOpened();
-        if (_textDepth < 0 && !_firstElement && !_compactMode) {
-            Putc('\n');
-            PrintSpace(_depth);
-        }
-        _firstElement = false;
-
+        PrepareForNewNode(_compactMode);
         Write("<?");
         Write(value);
         Write("?>");
@@ -2841,13 +2840,7 @@ namespace tinyxml2 {
 
     void XMLPrinter::PushUnknown(const char* value)
     {
-        SealElementIfJustOpened();
-        if (_textDepth < 0 && !_firstElement && !_compactMode) {
-            Putc('\n');
-            PrintSpace(_depth);
-        }
-        _firstElement = false;
-
+        PrepareForNewNode(_compactMode);
         Write("<!");
         Write(value);
         Putc('>');
