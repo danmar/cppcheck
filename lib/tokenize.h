@@ -367,6 +367,9 @@ public:
      */
     Token * simplifyAddBracesPair(Token *tok, bool commandWithCondition);
 
+    // Convert "using ...;" to corresponding typedef
+    void simplifyUsingToTypedef();
+
     /**
      * typedef A mytype;
      * mytype c;

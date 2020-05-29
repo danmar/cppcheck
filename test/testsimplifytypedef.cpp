@@ -167,6 +167,7 @@ private:
         TEST_CASE(simplifyTypedef129);
         TEST_CASE(simplifyTypedef130); // ticket #9446
         TEST_CASE(simplifyTypedef131); // ticket #9446
+        TEST_CASE(simplifyTypedef132); // ticket #9739 - using
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -2626,6 +2627,27 @@ private:
                             "unsigned char ( * a4p ) [ 4 ] ; "
                             "a4p = & ( a4obj ) ; "
                             "unsigned char ( * && a4p_rref ) [ 4 ] = std :: move ( a4p ) ;";
+
+        ASSERT_EQUALS(exp, tok(code, false));
+    }
+
+    void simplifyTypedef132() {
+        const char code[] = "namespace NamespaceA {\n"
+                            "    typedef int MySpecialType;\n"
+                            "}\n"
+                            "\n"
+                            "class A {\n"
+                            "    void DoSomething( NamespaceA::MySpecialType special );\n"
+                            "};\n"
+                            "\n"
+                            "using NamespaceA::MySpecialType;\n"
+                            "\n"
+                            "void A::DoSomething( MySpecialType wrongName ) {}";
+
+        const char exp [] = "class A { "
+                            "void DoSomething ( int special ) ; "
+                            "} ; "
+                            "void A :: DoSomething ( int wrongName ) { }";
 
         ASSERT_EQUALS(exp, tok(code, false));
     }

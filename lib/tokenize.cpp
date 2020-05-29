@@ -546,6 +546,23 @@ Token *Tokenizer::processFunc(Token *tok2, bool inOperator) const
     return tok2;
 }
 
+void Tokenizer::simplifyUsingToTypedef()
+{
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        // using a::b;  =>   typedef  a::b  b;
+        if (Token::Match(tok, "[;{}] using %name% :: %name% ::|;") && !tok->tokAt(2)->isKeyword()) {
+            Token *endtok = tok->tokAt(5);
+            while (Token::Match(endtok, ":: %name%"))
+                endtok = endtok->tokAt(2);
+            if (endtok && endtok->str() == ";") {
+                tok->next()->str("typedef");
+                endtok = endtok->previous();
+                endtok->insertToken(endtok->str());
+            }
+        }
+    }
+}
+
 void Tokenizer::simplifyTypedef()
 {
     std::vector<Space> spaceInfo;
@@ -553,6 +570,10 @@ void Tokenizer::simplifyTypedef()
     std::string className;
     bool hasClass = false;
     bool goback = false;
+
+    // Convert "using a::b;" to corresponding typedef statements
+    simplifyUsingToTypedef();
+
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (mErrorLogger && !list.getFiles().empty())
             mErrorLogger->reportProgress(list.getFiles()[0], "Tokenize (typedef)", tok->progressValue());
