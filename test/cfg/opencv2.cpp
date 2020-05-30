@@ -26,10 +26,20 @@ void validCode(char* argStr)
     cv::String cvStr("Hello");
     cvStr += " World";
     std::cout << cvStr;
+
+    char * pBuf = (char *)cv::fastMalloc(20);
+    cv::fastFree(pBuf);
 }
 
 void ignoredReturnValue()
 {
     // cppcheck-suppress ignoredReturnValue
     cv::imread("42.png");
+}
+
+void memleak()
+{
+    char * pBuf = (char *)cv::fastMalloc(1000);
+    std::cout << pBuf;
+    // cppcheck-suppress memleak
 }
