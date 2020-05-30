@@ -52,6 +52,7 @@ private:
         TEST_CASE(optionwithoutfile);
         TEST_CASE(verboseshort);
         TEST_CASE(verboselong);
+        TEST_CASE(debugSimplified);
         TEST_CASE(debugwarnings);
         TEST_CASE(forceshort);
         TEST_CASE(forcelong);
@@ -221,6 +222,14 @@ private:
         settings.verbose = false;
         ASSERT(defParser.parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings.verbose);
+    }
+
+    void debugSimplified() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--debug-simplified", "file.cpp"};
+        settings.debugSimplified = false;
+        ASSERT(defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings.debugSimplified);
     }
 
     void debugwarnings() {
