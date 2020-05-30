@@ -20,6 +20,9 @@
           <Component Id='cppcheckcore.dll' Guid='$(var.cppcheckcoreGUID)'>
             <File Id='cppcheckcore.dll' Name='cppcheck-core.dll' DiskId='1' Source='$(var.CliBuildDir)\cppcheck-core.dll' KeyPath='yes' />
           </Component>
+          <Component Id='libz3.dll' Guid='$(var.libz3GUID)'>
+            <File Id='libz3.dll' Name='libz3.dll' DiskId='1' Source='$(var.Z3DllDir)\libz3.dll' KeyPath='yes' />
+          </Component>
           <Component Id='cppcheck.exe' Guid='$(var.cppcheckGUID)'>
             <File Id='cppcheck.exe' Name='cppcheck.exe' DiskId='1' Source='$(var.CliBuildDir)\cppcheck.exe' KeyPath='yes' />
           </Component>
@@ -142,6 +145,7 @@
       Display='expand' Level='1' AllowAdvertise='no' ConfigurableDirectory='INSTALLDIR' >
       <Feature Id='CppcheckCore' Display='hidden' AllowAdvertise='no' Title='Cppcheck-Core' Description='Cppcheck core components' Level='1'>
         <ComponentRef Id='cppcheckcore.dll' />
+        <ComponentRef Id='libz3.dll' />
         <ComponentRef Id='RegistryEntries' />
         <ComponentRef Id='BaseDocs' />
         <ComponentRef Id='MandatoryCfgs' />

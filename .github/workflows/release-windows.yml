@@ -60,7 +60,7 @@ jobs:
 
       - name: Build x64 release GUI
         run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat" 
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           cd gui
           qmake HAVE_QCHART=yes
           nmake release
@@ -78,10 +78,11 @@ jobs:
 
       - name: Build Installer
         run: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           mkdir bin
           xcopy /S Build\gui bin
           cd win_installer
-          msbuild -m cppcheck.wixproj /p:Platform=x64,ProductVersion=0.123
+          msbuild -m cppcheck.wixproj /p:Platform=x64,ProductVersion=2.0.${{ github.run_number }}
 
       - uses: actions/upload-artifact@v2
         with:

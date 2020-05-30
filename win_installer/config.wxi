@@ -7,12 +7,13 @@
   <?define PtfsDir = "..\platforms" ?>
   <?define AddonsDir = "..\addons" ?>
   <?define QtDllDir = "..\bin" ?>
+  <?define Z3DllDir = "..\externals\z3\bin" ?>
 
   <?if $(var.Platform) = x64 ?>
-    <?define CrtMergeModule = "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Redist\MSVC\14.25.28508\MergeModules\Microsoft_VC142_CRT_x64.msm" ?>
+    <?define CrtMergeModule = "$(env.VCToolsRedistDir)\MergeModules\Microsoft_VC142_CRT_x64.msm" ?>
     <?define PlatformProgramFilesFolder = "ProgramFiles64Folder" ?>
   <?else?>
-    <?define CrtMergeModule = "$(env.CommonProgramFiles)\Merge Modules\Microsoft_VC142_CRT_x86.msm" ?>
+    <?define CrtMergeModule = "$(env.VCToolsRedistDir)\MergeModules\Microsoft_VC142_CRT_x86.msm" ?>
     <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
   <?endif?>
 </Include>

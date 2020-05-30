@@ -10,6 +10,7 @@
   <?define ProductUpgradeCode = "7E94124C-1CD1-433F-9423-4614E52300DD" ?>
   <?define cppcheckGUID = "1c31dd76-07fa-4420-b9b5-5463742d6a48" ?>
   <?define cppcheckcoreGUID = "1c31dd76-07fa-4420-b9b5-5463742d6a49" ?>
+  <?define libz3GUID = "5d603179-e59a-4c47-b0aa-531ab1f6456b" ?>
   <?define addonsGUID = "25DACF7E-4D29-890D-433F-6922A391C312" ?>
   <?define guiGUID = "D7D3FF8E-1D82-4215-B59B-4715A748C540" ?>
   <?define qtplatformsGUID = "E2C326DF-11F1-4C05-A955-2E2D2A3B0515" ?>
