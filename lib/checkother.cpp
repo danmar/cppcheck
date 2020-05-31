@@ -1369,7 +1369,9 @@ void CheckOther::checkConstVariable()
             if (std::any_of(returns.begin(), returns.end(), [&](const Token* retTok) {
                 if (retTok->varId() == var->declarationId())
                     return true;
-                const Variable* retVar = getLifetimeVariable(retTok);
+                while (Token::simpleMatch(retTok, "."))
+                    retTok = retTok->astOperand2();
+                const Variable* retVar = getLifetimeVariable(getParentLifetime(retTok));
                 if (!retVar)
                     return false;
                 return retVar->declarationId() == var->declarationId();

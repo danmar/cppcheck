@@ -97,6 +97,8 @@ const Token* astParentSkipParens(const Token* tok);
 
 const Token* getParentMember(const Token * tok);
 
+const Token * getParentLifetime(const Token *tok);
+
 bool astIsLHS(const Token* tok);
 bool astIsRHS(const Token* tok);
 

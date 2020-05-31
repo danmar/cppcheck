@@ -432,22 +432,6 @@ static bool isDeadScope(const Token * tok, const Scope * scope)
     return false;
 }
 
-static const Token * getParentLifetime(const Token *tok)
-{
-    if (!tok)
-        return tok;
-    const Variable * var = tok->variable();
-    // TODO: Call getLifetimeVariable for deeper analysis
-    if (!var)
-        return tok;
-    if (var->isLocal())
-        return tok;
-    const Token * parent = getParentMember(tok);
-    if (parent != tok)
-        return getParentLifetime(parent);
-    return tok;
-}
-
 static int getPointerDepth(const Token *tok)
 {
     if (!tok)
