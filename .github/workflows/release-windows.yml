@@ -58,6 +58,9 @@ jobs:
           lupdate gui.pro
           lrelease gui.pro -removeidentical
 
+      - name: Matchcompiler
+        run: python tools\matchcompiler.py --write-dir lib
+
       - name: Build x64 release GUI
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
@@ -67,14 +70,12 @@ jobs:
 
       - name: Deploy app
         run: |
-          dir Build\gui
           windeployqt Build\gui
-          dir Build\gui
           del Build\gui\cppcheck-gui.ilk
           del Build\gui\cppcheck-gui.pdb
 
       - name: Build CLI x64 release configuration using MSBuild
-        run: msbuild -m cppcheck.sln /p:Configuration=Release-PCRE /p:Platform=x64
+        run: msbuild -m cppcheck.sln /t:cli /p:Configuration=Release-PCRE /p:Platform=x64
 
       - name: Build Installer
         run: |
