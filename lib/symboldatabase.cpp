@@ -2439,6 +2439,32 @@ bool Function::returnsReference(const Function* function, bool unknown)
     return false;
 }
 
+std::vector<const Token*> Function::findReturns(const Function* f)
+{
+    std::vector<const Token*> result;
+    if (!f)
+        return result;
+    const Scope* scope = f->functionScope;
+    if (!scope)
+        return result;
+    for (const Token* tok = scope->bodyStart->next(); tok && tok != scope->bodyEnd; tok = tok->next()) {
+        if (tok->str() == "{" && tok->scope() &&
+            (tok->scope()->type == Scope::eLambda || tok->scope()->type == Scope::eClass)) {
+            tok = tok->link();
+            continue;
+        }
+        if (Token::simpleMatch(tok->astParent(), "return")) {
+            result.push_back(tok);
+        }
+        // Skip lambda functions since the scope may not be set correctly
+        const Token* lambdaEndToken = findLambdaEndToken(tok);
+        if (lambdaEndToken) {
+            tok = lambdaEndToken;
+        }
+    }
+    return result;
+}
+
 const Token * Function::constructorMemberInitialization() const
 {
     if (!isConstructor() || !functionScope || !functionScope->bodyStart)

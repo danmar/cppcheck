@@ -359,6 +359,8 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, ValueFlow::Value:
 
 const Variable* getLifetimeVariable(const Token* tok, ValueFlow::Value::ErrorPath& errorPath, bool* addressOf = nullptr);
 
+const Variable* getLifetimeVariable(const Token* tok);
+
 bool isLifetimeBorrowed(const Token *tok, const Settings *settings);
 
 std::string lifetimeType(const Token *tok, const ValueFlow::Value *val);

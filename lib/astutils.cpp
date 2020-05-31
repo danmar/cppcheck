@@ -344,6 +344,22 @@ const Token* getParentMember(const Token * tok)
     return tok;
 }
 
+const Token* getParentLifetime(const Token* tok)
+{
+    if (!tok)
+        return tok;
+    const Variable* var = tok->variable();
+    // TODO: Call getLifetimeVariable for deeper analysis
+    if (!var)
+        return tok;
+    if (var->isLocal() || var->isArgument())
+        return tok;
+    const Token* parent = getParentMember(tok);
+    if (parent != tok)
+        return getParentLifetime(parent);
+    return tok;
+}
+
 bool astIsLHS(const Token* tok)
 {
     if (!tok)
@@ -447,8 +463,6 @@ bool precedes(const Token * tok1, const Token * tok2)
 bool isAliasOf(const Token *tok, nonneg int varid)
 {
     if (tok->varId() == varid)
-        return false;
-    if (tok->varId() == 0)
         return false;
     for (const ValueFlow::Value &val : tok->values()) {
         if (!val.isLocalLifetimeValue())
