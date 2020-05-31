@@ -1367,15 +1367,15 @@ void CheckOther::checkConstVariable()
         if (Function::returnsReference(function)) {
             std::vector<const Token*> returns = Function::findReturns(function);
             if (std::any_of(returns.begin(), returns.end(), [&](const Token* retTok) {
-                if (retTok->varId() == var->declarationId())
-                    return true;
-                while (Token::simpleMatch(retTok, "."))
-                    retTok = retTok->astOperand2();
-                const Variable* retVar = getLifetimeVariable(getParentLifetime(retTok));
-                if (!retVar)
-                    return false;
-                return retVar->declarationId() == var->declarationId();
-            }))
+                    if (retTok->varId() == var->declarationId())
+                        return true;
+                    while (Token::simpleMatch(retTok, "."))
+                        retTok = retTok->astOperand2();
+                    const Variable* retVar = getLifetimeVariable(getParentLifetime(retTok));
+                    if (!retVar)
+                        return false;
+                    return retVar->declarationId() == var->declarationId();
+                }))
                 continue;
         }
         // Skip if address is taken

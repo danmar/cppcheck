@@ -2826,12 +2826,14 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, ValueFlow::Value:
                     return {{tok, true, std::move(errorPath)}};
                 if (vartok)
                     return getLifetimeTokens(vartok, std::move(errorPath), depth - 1);
-            } else if (Token::simpleMatch(var->nameToken()->astParent(), ":") && var->nameToken()->astParent()->astParent() && Token::simpleMatch(var->nameToken()->astParent()->astParent()->previous(), "for (")) {
+            } else if (Token::simpleMatch(var->nameToken()->astParent(), ":") &&
+                       var->nameToken()->astParent()->astParent() &&
+                       Token::simpleMatch(var->nameToken()->astParent()->astParent()->previous(), "for (")) {
                 errorPath.emplace_back(var->nameToken(), "Assigned to reference.");
-                const Token *vartok = var->nameToken();
+                const Token* vartok = var->nameToken();
                 if (vartok == tok)
                     return {{tok, true, std::move(errorPath)}};
-                const Token *contok = var->nameToken()->astParent()->astOperand2();
+                const Token* contok = var->nameToken()->astParent()->astOperand2();
                 if (contok)
                     return getLifetimeTokens(contok, std::move(errorPath), depth - 1);
             } else {
@@ -2931,7 +2933,8 @@ const Variable* getLifetimeVariable(const Token* tok, ValueFlow::Value::ErrorPat
     return nullptr;
 }
 
-const Variable* getLifetimeVariable(const Token* tok) {
+const Variable* getLifetimeVariable(const Token* tok)
+{
     ValueFlow::Value::ErrorPath errorPath;
     return getLifetimeVariable(tok, errorPath, nullptr);
 }

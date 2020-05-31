@@ -344,17 +344,17 @@ const Token* getParentMember(const Token * tok)
     return tok;
 }
 
-const Token * getParentLifetime(const Token *tok)
+const Token* getParentLifetime(const Token* tok)
 {
     if (!tok)
         return tok;
-    const Variable * var = tok->variable();
+    const Variable* var = tok->variable();
     // TODO: Call getLifetimeVariable for deeper analysis
     if (!var)
         return tok;
     if (var->isLocal() || var->isArgument())
         return tok;
-    const Token * parent = getParentMember(tok);
+    const Token* parent = getParentMember(tok);
     if (parent != tok)
         return getParentLifetime(parent);
     return tok;
