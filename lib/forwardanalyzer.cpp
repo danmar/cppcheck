@@ -220,8 +220,18 @@ struct ForwardTraversal {
                 return Progress::Break;
         }
         // Traverse condition after lowering
-        if (condTok && updateRecursive(condTok) == Progress::Break)
-            return Progress::Break;
+        if (condTok) {
+            if (updateRecursive(condTok) == Progress::Break)
+                return Progress::Break;
+
+            bool checkThen, checkElse;
+            std::tie(checkThen, checkElse) = evalCond(condTok);
+            if (checkElse) {
+                // condition is false, we don't enter the loop
+                return Progress::Break;
+            }
+        }
+
         forkScope(endBlock, allAnalysis.isModified());
         if (bodyAnalysis.isModified()) {
             Token* writeTok = findRange(endBlock->link(), endBlock, std::mem_fn(&ForwardAnalyzer::Action::isModified));
