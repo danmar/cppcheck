@@ -67,6 +67,7 @@ private:
         TEST_CASE(iterator22);
         TEST_CASE(iterator23);
         TEST_CASE(iterator24);
+        TEST_CASE(iterator25); // #9742
         TEST_CASE(iteratorExpression);
         TEST_CASE(iteratorSameExpression);
 
@@ -1101,6 +1102,19 @@ private:
         check("void f(int a) {\n"
               "  if (std::for_each(&a, &a + 1, [](auto) {})) {}\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void iterator25() {
+        // #9742
+        check("struct S {\n"
+              "  std::vector<int>& v;\n"
+              "};\n"
+              "struct T {\n"
+              "    bool operator()(const S& lhs, const S& rhs) const {\n"
+              "        return &lhs.v != &rhs.v;\n"
+              "    }\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 

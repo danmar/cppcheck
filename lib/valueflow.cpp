@@ -3596,7 +3596,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
                 value.lifetimeScope = ValueFlow::Value::LifetimeScope::Local;
                 value.tokvalue = lt.token;
                 value.errorPath = std::move(errorPath);
-                if (astIsPointer(lt.token) || !Token::Match(lt.token->astParent(), ".|["))
+                if (lt.addressOf || astIsPointer(lt.token) || !Token::Match(lt.token->astParent(), ".|["))
                     value.lifetimeKind = ValueFlow::Value::LifetimeKind::Address;
                 value.setInconclusive(lt.inconclusive);
                 setTokenValue(tok, value, tokenlist->getSettings());
