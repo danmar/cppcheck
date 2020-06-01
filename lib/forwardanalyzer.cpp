@@ -226,10 +226,9 @@ struct ForwardTraversal {
 
             bool checkThen, checkElse;
             std::tie(checkThen, checkElse) = evalCond(condTok);
-            if (checkElse) {
+            if (checkElse)
                 // condition is false, we don't enter the loop
                 return Progress::Break;
-            }
         }
 
         forkScope(endBlock, allAnalysis.isModified());
