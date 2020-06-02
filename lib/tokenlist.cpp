@@ -460,20 +460,20 @@ void TokenList::createTokens(simplecpp::TokenList&& tokenList)
 
 //---------------------------------------------------------------------------
 
-unsigned long long TokenList::calculateChecksum() const
+uint64_t TokenList::calculateChecksum() const
 {
-    unsigned long long checksum = 0;
+    uint64_t checksum = 0;
     for (const Token* tok = front(); tok; tok = tok->next()) {
-        const unsigned int subchecksum1 = tok->flags() + tok->varId() + tok->tokType();
-        unsigned int subchecksum2 = 0;
+        const uint32_t subchecksum1 = tok->flags() + tok->varId() + tok->tokType();
+        uint32_t subchecksum2 = 0;
         for (char i : tok->str())
-            subchecksum2 += (unsigned int)i;
+            subchecksum2 += (uint32_t)i;
         if (!tok->originalName().empty()) {
             for (char i : tok->originalName())
-                subchecksum2 += (unsigned int) i;
+                subchecksum2 += (uint32_t)i;
         }
 
-        checksum ^= ((static_cast<unsigned long long>(subchecksum1) << 32) | subchecksum2);
+        checksum ^= ((static_cast<uint64_t>(subchecksum1) << 32) | subchecksum2);
 
         const bool bit1 = (checksum & 1) != 0;
         checksum >>= 1;
