@@ -156,6 +156,7 @@ private:
         TEST_CASE(array_index_function_parameter);
         TEST_CASE(array_index_enum_array); // #8439
         TEST_CASE(array_index_container); // #9386
+        TEST_CASE(array_index_two_for_loops);
 
         TEST_CASE(buffer_overrun_2_struct);
         TEST_CASE(buffer_overrun_3);
@@ -2208,6 +2209,46 @@ private:
               "void foo(std::array<uint8_t, blockLen * 2>& a) {\n"
               "    a[2] = 2;\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_two_for_loops() {
+        check("bool b();\n"
+              "void f()\n"
+              "{\n"
+              "    int val[50];\n"
+              "    int i, sum=0;\n"
+              "    for (i = 1; b() && i < 50; i++)\n"
+              "        sum += val[i];\n"
+              "    if (i < 50)\n"
+              "        sum -= val[i];\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool b();\n"
+              "void f()\n"
+              "{\n"
+              "    int val[50];\n"
+              "    int i, sum=0;\n"
+              "    for (i = 1; b() && i < 50; i++)\n"
+              "        sum += val[i];\n"
+              "    for (; i < 50;) {\n"
+              "        sum -= val[i];\n"
+              "        break;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool b();\n"
+              "void f()\n"
+              "{\n"
+              "    int val[50];\n"
+              "    int i, sum=0;\n"
+              "    for (i = 1; b() && i < 50; i++)\n"
+              "        sum += val[i];\n"
+              "    for (; i < 50; i++)\n"
+              "        sum -= val[i];\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
