@@ -1712,7 +1712,7 @@ namespace {
             return;
         while (tok->str() == "}" && !scopeInfo->empty() && tok == scopeInfo->back().bodyEnd)
             scopeInfo->pop_back();
-        if (!Token::Match(tok, "namespace|class|struct|union %name% {|:|::")) {
+        if (!Token::Match(tok, "namespace|class|struct|union %name% {|:|::|<")) {
             // check for using namespace
             if (Token::Match(tok, "using namespace %name% ;|::")) {
                 const Token * tok1 = tok->tokAt(2);
@@ -1776,6 +1776,12 @@ namespace {
         tok = tok->next();
         if (tok && tok->str() == ":") {
             while (tok && !Token::Match(tok, ";|{"))
+                tok = tok->next();
+        }
+        // skip template parameters
+        if (tok && tok->str() == "<") {
+            tok = tok->findClosingBracket();
+            if (tok)
                 tok = tok->next();
         }
         if (tok && tok->str() == "{") {
