@@ -4242,13 +4242,25 @@ private:
                             "}");
             ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a\n", errout.str());
 
-            valueFlowUninit("struct S { int x; };\n" // #9417
-                            "void f() {\n"
-                            "    S s;\n"
-                            "    return s(1);\n"
+            // #9750
+            valueFlowUninit("struct S {\n"
+                            "    int one;\n"
+                            "    int two;\n"
+                            "};\n"
+                            "\n"
+                            "void test(std::istringstream& in) {\n"
+                            "    S p;\n"
+                            "    in >> p.one >> p.two;\n"
                             "}");
             ASSERT_EQUALS("", errout.str());
         }
+
+        valueFlowUninit("struct S { int x; };\n" // #9417
+                        "void f() {\n"
+                        "    S s;\n"
+                        "    return s(1);\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
 
         valueFlowUninit("void a() {\n"   // asm
                         "    int x;\n"

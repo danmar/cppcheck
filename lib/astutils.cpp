@@ -1353,7 +1353,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
         }
     }
 
-    if (isLikelyStreamRead(cpp, tok->previous()))
+    if (cpp && Token::simpleMatch(tok2->astParent(), ">>") && tok2->astParent()->astOperand2() == tok2 && isLikelyStreamRead(cpp, tok2->astParent()))
         return true;
 
     if (isLikelyStream(cpp, tok2))
