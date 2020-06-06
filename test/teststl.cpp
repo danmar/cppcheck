@@ -70,6 +70,7 @@ private:
         TEST_CASE(iterator25); // #9742
         TEST_CASE(iteratorExpression);
         TEST_CASE(iteratorSameExpression);
+        TEST_CASE(mismatchingContainerIterator);
 
         TEST_CASE(dereference);
         TEST_CASE(dereference_break);  // #3644 - handle "break"
@@ -1275,6 +1276,21 @@ private:
               "    std::for_each(it, it, [](int){});\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Same iterators expression are used for algorithm.\n", errout.str());
+    }
+
+    void mismatchingContainerIterator() {
+        check("std::vector<int> to_vector(int value) {\n"
+              "    std::vector<int> a, b;\n"
+              "    a.insert(b.end(), value);\n"
+              "    return a;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Iterator 'b.end()' from different container 'a' are used together.\n", errout.str());
+
+        check("std::vector<int> f(std::vector<int> a, std::vector<int> b) {\n"
+              "    a.erase(b.begin());\n"
+              "    return a;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Iterator 'b.begin()' from different container 'a' are used together.\n", errout.str());
     }
 
     // Dereferencing invalid pointer

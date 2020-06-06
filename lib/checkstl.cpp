@@ -27,6 +27,7 @@
 #include "utils.h"
 #include "astutils.h"
 #include "pathanalysis.h"
+#include "valueflow.h"
 
 #include <cstddef>
 #include <list>
@@ -534,6 +535,18 @@ void CheckStl::iterators()
     }
 }
 
+void CheckStl::mismatchingContainerIteratorError(const Token* tok, const Token* iterTok)
+{
+    const std::string container(tok ? tok->expressionString() : std::string("v1"));
+    const std::string iter(iterTok ? iterTok->expressionString() : std::string("it"));
+    reportError(tok,
+                Severity::error,
+                "mismatchingContainerIterator",
+                "Iterator '" + iter + "' from different container '" + container + "' are used together.",
+                CWE664,
+                false);
+}
+
 // Error message for bad iterator usage..
 void CheckStl::mismatchingContainersError(const Token* tok1, const Token* tok2)
 {
@@ -704,6 +717,49 @@ void CheckStl::mismatchingContainers()
             if (var->nameToken()->strAt(2) != var->nameToken()->strAt(8)) {
                 mismatchingContainersError(var->nameToken(), var->nameToken()->tokAt(2));
             }
+        }
+    }
+}
+
+void CheckStl::mismatchingContainerIterator()
+{
+    // Check if different containers are used in various calls of standard functions
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope * scope : symbolDatabase->functionScopes) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+            if (!astIsContainer(tok))
+                continue;
+            if (!Token::Match(tok, "%var% . %name% ( !!)"))
+                continue;
+            const Token * const ftok = tok->tokAt(2);
+            const std::vector<const Token *> args = getArguments(ftok);
+
+            const Library::Container * c = tok->valueType()->container;
+            Library::Container::Action action = c->getAction(tok->strAt(2));
+            const Token* iterTok = nullptr;
+            if (action == Library::Container::Action::INSERT && args.size() == 2) {
+                // Skip if iterator pair
+                if (astIsIterator(args.back()))
+                    continue;
+                if (!astIsIterator(args.front()))
+                    continue;
+                iterTok = args.front();
+            } else if (action == Library::Container::Action::ERASE) {
+                if (!astIsIterator(args.front()))
+                    continue;
+                iterTok = args.front();
+            } else {
+                continue;
+            }
+
+            ValueFlow::Value val = getLifetimeObjValue(iterTok);
+            if (!val.tokvalue)
+                continue;
+            if (val.lifetimeKind != ValueFlow::Value::LifetimeKind::Iterator)
+                continue;
+            if (isSameExpression(true, false, tok, val.tokvalue, mSettings->library, false, false))
+                continue;
+            mismatchingContainerIteratorError(tok, iterTok);
         }
     }
 }
