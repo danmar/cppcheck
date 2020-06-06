@@ -9454,7 +9454,7 @@ void Tokenizer::findGarbageCode() const
         // Inside [] there can't be ; or various keywords
         else if (tok->str() == "[") {
             for (const Token* inner = tok->next(); inner != tok->link(); inner = inner->next()) {
-                if (Token::Match(inner, "(|["))
+                if (Token::Match(inner, "(|[|{"))
                     inner = inner->link();
                 else if (Token::Match(inner, ";|goto|return|typedef"))
                     syntaxError(inner);

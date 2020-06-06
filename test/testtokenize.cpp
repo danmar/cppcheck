@@ -8306,6 +8306,10 @@ private:
                                              "a c{[] {\n"
                                              "  if (0) {}\n"
                                              "}};\n"));
+        // #9185
+        ASSERT_NO_THROW(tokenizeAndStringify("void a() {\n"
+                                             "  [b = [] { ; }] {};\n"
+                                             "}\n"));
     }
     void checkIfCppCast() {
         ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
