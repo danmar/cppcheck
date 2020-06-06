@@ -181,6 +181,9 @@ void CheckString::checkSuspiciousStringCompare()
             else if (!Token::Match(litTok, "%char%|%num%|%str%"))
                 continue;
 
+            if (mTokenizer->isCPP() && (!varTok->valueType() || !varTok->valueType()->isIntegral()))
+                continue;
+
             // Pointer addition?
             if (varTok->str() == "+" && mTokenizer->isC()) {
                 const Token * const tokens[2] = { varTok->astOperand1(), varTok->astOperand2() };
