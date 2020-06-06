@@ -69,6 +69,7 @@ private:
         TEST_CASE(simplifyUsing9385);
         TEST_CASE(simplifyUsing9388);
         TEST_CASE(simplifyUsing9518);
+        TEST_CASE(simplifyUsing9757);
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
@@ -627,6 +628,21 @@ private:
         ASSERT_EQUALS(exp, tok(code, false));
     }
 
+    void simplifyUsing9757() {
+        const char code[] = "enum class Type_t { Nil = 0 };\n"
+                            "template<Type_t type> class MappedType { };\n"
+                            "template<> class MappedType<Type_t::Nil> { using type = void; };\n"
+                            "std::string to_string (Example::Type_t type) {\n"
+                            "   switch (type) {}\n"
+                            "}";
+        const char exp[] = "enum class Type_t { Nil = 0 } ; "
+                           "class MappedType<Type_t::Nil> ; "
+                           "template < Type_t type > class MappedType { } ; "
+                           "class MappedType<Type_t::Nil> { } ; "
+                           "std :: string to_string ( Example :: Type_t type ) { "
+                           "switch ( type ) { } }";
+        ASSERT_EQUALS(exp, tok(code, false));
+    }
 };
 
 REGISTER_TEST(TestSimplifyUsing)
