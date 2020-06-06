@@ -511,9 +511,7 @@ private:
                             "  _LONG A;\n"
                             "}";
 
-        const char exp[] = "namespace NS1 { "
-                           "} "
-                           "void f1 ( ) { "
+        const char exp[] = "void f1 ( ) { "
                            "using namespace NS1 ; "
                            "signed long long A ; "
                            "} "
