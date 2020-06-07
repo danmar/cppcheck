@@ -443,6 +443,8 @@ private:
 
         TEST_CASE(simplifyCaseRange);
 
+        TEST_CASE(simplifyEmptyNamespaces);
+
         TEST_CASE(compileLimits); // #5592 crash: gcc: testsuit: gcc.c-torture/compile/limits-declparen.c
 
         TEST_CASE(prepareTernaryOpForAST);
@@ -6621,7 +6623,7 @@ private:
         // remove some unhandled macros in the global scope.
         ASSERT_EQUALS("void f ( ) { }", tokenizeAndStringify("void f() NOTHROW { }"));
         ASSERT_EQUALS("struct Foo { } ;", tokenizeAndStringify("struct __declspec(dllexport) Foo {};"));
-        ASSERT_EQUALS("namespace { }", tokenizeAndStringify("ABA() namespace { }"));
+        ASSERT_EQUALS("namespace { int a ; }", tokenizeAndStringify("ABA() namespace { int a ; }"));
 
         // #3750
         ASSERT_THROW(tokenizeAndStringify("; AB(foo*) foo::foo() { }"), InternalError);
@@ -7363,6 +7365,14 @@ private:
         ASSERT_EQUALS("void f ( ) { switch ( x ) { case 'c' ... 'a' : ; } }", tokenizeAndStringify("void f() { switch(x) { case 'c' ... 'a': } }"));
 
         ASSERT_EQUALS("void f ( ) { switch ( x ) { case '[' : case '\\\\' : case ']' : ; } }", tokenizeAndStringify("void f() { switch(x) { case '[' ... ']': } }"));
+    }
+
+    void simplifyEmptyNamespaces() {
+        ASSERT_EQUALS("", tokenizeAndStringify("namespace { }"));
+        ASSERT_EQUALS("", tokenizeAndStringify("namespace foo { }"));
+        ASSERT_EQUALS("", tokenizeAndStringify("namespace foo { namespace { } }"));
+        ASSERT_EQUALS("", tokenizeAndStringify("namespace { namespace { } }")); // Ticket #9512
+        ASSERT_EQUALS("", tokenizeAndStringify("namespace foo { namespace bar { } }"));
     }
 
     void prepareTernaryOpForAST() {

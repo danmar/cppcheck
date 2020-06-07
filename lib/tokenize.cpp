@@ -5375,10 +5375,11 @@ void Tokenizer::simplifyEmptyNamespaces()
             tok = tok->link();
             continue;
         }
-        if (!Token::Match(tok, "namespace %name% {"))
+        if (!Token::Match(tok, "namespace %name%| {"))
             continue;
-        if (tok->strAt(3) == "}") {
-            tok->deleteNext(3);             // remove '%name% { }'
+        bool isAnonymousNS = tok->strAt(1) == "{";
+        if (tok->strAt(3 - isAnonymousNS) == "}") {
+            tok->deleteNext(3 - isAnonymousNS); // remove '%name%| { }'
             if (!tok->previous()) {
                 // remove 'namespace' or replace it with ';' if isolated
                 tok->deleteThis();
@@ -5386,9 +5387,14 @@ void Tokenizer::simplifyEmptyNamespaces()
             } else {                    // '%any% namespace %any%'
                 tok = tok->previous();  // goto previous token
                 tok->deleteNext();      // remove next token: 'namespace'
+                if (tok->str() == "{") {
+                    // Go back in case we were within a namespace that's empty now
+                    tok = tok->tokAt(-2) ? tok->tokAt(-2) : tok->previous();
+                    goback = true;
+                }
             }
         } else {
-            tok = tok->tokAt(2);
+            tok = tok->tokAt(2 - isAnonymousNS);
         }
     }
 }
