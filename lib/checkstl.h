@@ -123,7 +123,7 @@ public:
      * std::find(foo.begin(), bar.end(), x)
      */
     void mismatchingContainers();
-    
+
     void mismatchingContainerIterator();
 
     /**
