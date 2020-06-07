@@ -324,7 +324,7 @@ public:
     }
 
     bool isnullargbad(const Token *ftok, int argnr) const;
-    bool isuninitargbad(const Token *ftok, int argnr, int indirect = 0) const;
+    bool isuninitargbad(const Token *ftok, int argnr, int indirect = 0, bool *hasIndirect=nullptr) const;
 
     bool isargformatstr(const Token *ftok, int argnr) const {
         const ArgumentChecks *arg = getarg(ftok, argnr);

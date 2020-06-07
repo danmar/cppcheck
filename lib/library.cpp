@@ -692,7 +692,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
             for (const tinyxml2::XMLElement *argnode = functionnode->FirstChildElement(); argnode; argnode = argnode->NextSiblingElement()) {
                 const std::string argnodename = argnode->Name();
                 int indirect = 0;
-                const char * const indirectStr = node->Attribute("indirect");
+                const char * const indirectStr = argnode->Attribute("indirect");
                 if (indirectStr)
                     indirect = atoi(indirectStr);
                 if (argnodename == "not-bool")
@@ -1035,7 +1035,7 @@ bool Library::isnullargbad(const Token *ftok, int argnr) const
     return arg && arg->notnull;
 }
 
-bool Library::isuninitargbad(const Token *ftok, int argnr, int indirect) const
+bool Library::isuninitargbad(const Token *ftok, int argnr, int indirect, bool *hasIndirect) const
 {
     const ArgumentChecks *arg = getarg(ftok, argnr);
     if (!arg) {
@@ -1045,6 +1045,8 @@ bool Library::isuninitargbad(const Token *ftok, int argnr, int indirect) const
         if (it != functions.cend() && it->second.formatstr && !it->second.formatstr_scan)
             return true;
     }
+    if (hasIndirect && arg && arg->notuninit >= 1)
+        *hasIndirect = true;
     return arg && arg->notuninit >= indirect;
 }
 

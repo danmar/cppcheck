@@ -1183,9 +1183,10 @@ int CheckUninitVar::isFunctionParUsage(const Token *vartok, bool pointer, Alloc 
             const bool isnullbad = mSettings->library.isnullargbad(start->previous(), argumentNumber + 1);
             if (indirect == 0 && pointer && !address && isnullbad && alloc == NO_ALLOC)
                 return 1;
-            const bool isuninitbad = mSettings->library.isuninitargbad(start->previous(), argumentNumber + 1, indirect);
+            bool hasIndirect = false;
+            const bool isuninitbad = mSettings->library.isuninitargbad(start->previous(), argumentNumber + 1, indirect, &hasIndirect);
             if (alloc != NO_ALLOC)
-                return isnullbad && isuninitbad;
+                return (isnullbad || hasIndirect) && isuninitbad;
             return isuninitbad && (!address || isnullbad);
         }
     }
