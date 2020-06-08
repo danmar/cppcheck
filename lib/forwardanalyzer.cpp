@@ -114,6 +114,9 @@ struct ForwardTraversal {
             return Progress::Break;
         if (action.isInvalid())
             return Progress::Break;
+        if (action.isWrite() && !action.isRead())
+            // Analysis of this write will continue separately
+            return Progress::Break;
         return Progress::Continue;
     }
 
