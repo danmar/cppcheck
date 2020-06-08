@@ -96,6 +96,15 @@ def test_rules_cppcheck_severity(checker, capsys):
     assert("(warning)" not in captured)
     assert("(style)" in captured)
 
+def test_rules_cppcheck_severity_custom(checker, capsys):
+    checker.loadRuleTexts("./addons/test/misra/misra_rules_dummy.txt")
+    checker.setSeverity("custom-severity")
+    checker.parseDump("./addons/test/misra/misra-test.c.dump")
+    captured = capsys.readouterr().err
+    assert("(error)" not in captured)
+    assert("(warning)" not in captured)
+    assert("(style)" not in captured)
+    assert("(custom-severity)" in captured)
 
 def test_rules_suppression(checker, capsys):
     test_sources = ["addons/test/misra/misra-suppressions1-test.c",
@@ -122,7 +131,8 @@ def test_arguments_regression():
                "--cli",
                "--no-summary",
                "--show-suppressed-rules",
-               "-P=src/", "--file-prefix=src/"]
+               "-P=src/", "--file-prefix=src/",
+               "--severity=misra-warning"]
     # Arguments with expected SystemExit
     args_exit = ["--non-exists", "--non-exists-param=42", "-h", "--help"]
 
