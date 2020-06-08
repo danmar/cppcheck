@@ -1057,10 +1057,12 @@ class MisraChecker:
 
         self.stdversion = stdversion
 
+        self.severity = None
+
     def __repr__(self):
         attrs = ["settings", "verify_expected", "verify_actual", "violations",
                  "ruleTexts", "suppressedRules", "dumpfileSuppressions",
-                 "filePrefix", "suppressionStats", "stdversion"]
+                 "filePrefix", "suppressionStats", "stdversion", "severity"]
         return "{}({})".format(
             "MisraChecker",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
@@ -2675,6 +2677,12 @@ class MisraChecker:
         """
         self.filePrefix = prefix
 
+    def setSeverity(self, severity):
+        """
+        Set the severity for all errors.
+        """
+        self.severity = severity
+
     def setSuppressionList(self, suppressionlist):
         num1 = 0
         num2 = 0
@@ -2714,6 +2722,10 @@ class MisraChecker:
                 errmsg = 'misra violation (use --rule-texts=<file> to get proper output)'
             else:
                 return
+
+            if self.severity:
+                cppcheck_severity = self.severity
+
             cppcheckdata.reportError(location, cppcheck_severity, errmsg, 'misra', errorId, misra_severity)
 
             if misra_severity not in self.violations:
@@ -3017,6 +3029,7 @@ def get_args():
     parser.add_argument("-P", "--file-prefix", type=str, help="Prefix to strip when matching suppression file rules")
     parser.add_argument("-generate-table", help=argparse.SUPPRESS, action="store_true")
     parser.add_argument("-verify", help=argparse.SUPPRESS, action="store_true")
+    parser.add_argument("--severity", type=str, help="Set a custom severity string, for example 'error' or 'warning'. ")
     return parser.parse_args()
 
 
@@ -3054,6 +3067,9 @@ def main():
         if not args.quiet:
             print("No input files.")
         sys.exit(0)
+
+    if args.severity:
+        checker.setSeverity(args.severity)
 
     exitCode = 0
     for item in args.dumpfile:
