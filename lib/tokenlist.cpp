@@ -1372,20 +1372,26 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         Token *tok2 = skipDecl(tok->tokAt(2));
         Token *init1 = nullptr;
         Token * const endPar = tok->next()->link();
-        while (tok2 && tok2 != endPar && tok2->str() != ";") {
-            if (tok2->str() == "<" && tok2->link()) {
-                tok2 = tok2->link();
-            } else if (Token::Match(tok2, "%name% %op%|(|[|.|:|::") || Token::Match(tok2->previous(), "[(;{}] %cop%|(")) {
-                init1 = tok2;
-                AST_state state1(cpp);
-                compileExpression(tok2, state1);
-                if (Token::Match(tok2, ";|)"))
-                    break;
-                init1 = nullptr;
+        if (tok2 == tok->tokAt(2) && Token::Match(tok2, "%op%|(")) {
+            init1 = tok2;
+            AST_state state1(cpp);
+            compileExpression(tok2, state1);
+        } else {
+            while (tok2 && tok2 != endPar && tok2->str() != ";") {
+                if (tok2->str() == "<" && tok2->link()) {
+                    tok2 = tok2->link();
+                } else if (Token::Match(tok2, "%name% %op%|(|[|.|:|::") || Token::Match(tok2->previous(), "[(;{}] %cop%|(")) {
+                    init1 = tok2;
+                    AST_state state1(cpp);
+                    compileExpression(tok2, state1);
+                    if (Token::Match(tok2, ";|)"))
+                        break;
+                    init1 = nullptr;
+                }
+                if (!tok2) // #7109 invalid code
+                    return nullptr;
+                tok2 = tok2->next();
             }
-            if (!tok2) // #7109 invalid code
-                return nullptr;
-            tok2 = tok2->next();
         }
         if (!tok2 || tok2->str() != ";") {
             if (tok2 == endPar && init1) {
