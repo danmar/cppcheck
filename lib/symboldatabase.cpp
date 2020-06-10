@@ -5657,6 +5657,8 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
     while (Token::Match(type, "%name%|*|&|::|(") && !Token::Match(type, "typename|template") &&
            !type->variable() && !type->function()) {
         if (type->str() == "(") {
+            if (Token::Match(type->link(), ") const| {"))
+                break;
             if (par)
                 break;
             par = true;
@@ -6040,6 +6042,12 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                     }
                 }
             }
+        } else if (tok->str() == "return") {
+            const Scope *functionScope = tok->scope();
+            while (functionScope && functionScope->isExecutable() && functionScope->type != Scope::eLambda && functionScope->type != Scope::eFunction)
+                functionScope = functionScope->nestedIn;
+            if (functionScope && functionScope->type == Scope::eFunction && functionScope->function && functionScope->function->retDef)
+                setValueType(tok, ValueType::parseDecl(functionScope->function->retDef, mSettings));
         } else if (tok->variable()) {
             setValueType(tok, *tok->variable());
         } else if (tok->enumerator()) {

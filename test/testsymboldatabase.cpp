@@ -6899,6 +6899,17 @@ private:
 
         // std::make_shared
         ASSERT_EQUALS("smart-pointer<C>", typeOf("class C {}; x = std::make_shared<C>();", "("));
+
+        // return
+        {
+            // Container
+            Settings sC;
+            Library::Container c;
+            c.startPattern = "C";
+            c.startPattern2 = "C !!::";
+            sC.library.containers["C"] = c;
+            ASSERT_EQUALS("container(C)", typeOf("C f(char *p) { char data[10]; return data; }", "return", "test.cpp", &sC));
+        }
     }
 
     void variadic1() { // #7453
