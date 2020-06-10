@@ -84,6 +84,50 @@ void bufferAccessOutOfBounds(void)
     free(pAlloc1);
 }
 
+void memleak_aligned_alloc(void)
+{
+    // cppcheck-suppress unreadVariable
+    char * alignedBuf = aligned_alloc(8, 16);
+    // cppcheck-suppress memleak
+}
+
+void pointerLessThanZero_aligned_alloc(void)
+{
+    char * alignedBuf = aligned_alloc(8, 16);
+    // cppcheck-suppress pointerLessThanZero
+    if (alignedBuf < 0) return;
+    free(alignedBuf);
+
+    // no warning is expected for
+    alignedBuf = aligned_alloc(8, 16);
+    if (alignedBuf == 0) return;
+    free(alignedBuf);
+
+    // no warning is expected for
+    alignedBuf = aligned_alloc(8, 16);
+    if (alignedBuf) free(alignedBuf);
+}
+
+void unusedRetVal_aligned_alloc(void)
+{
+    // cppcheck-suppress ignoredReturnValue
+    // cppcheck-suppress leakReturnValNotUsed
+    aligned_alloc(8, 16);
+}
+
+void uninitvar_aligned_alloc(size_t alignment, size_t size)
+{
+    size_t uninitVar;
+    // cppcheck-suppress uninitvar
+    free(aligned_alloc(uninitVar, size));
+    // cppcheck-suppress uninitvar
+    free(aligned_alloc(alignment, uninitVar));
+    // cppcheck-suppress uninitvar
+    free(aligned_alloc(uninitVar, uninitVar));
+    // no warning is expected
+    free(aligned_alloc(alignment, size));
+}
+
 void bufferAccessOutOfBounds_libraryDirectionConfiguration(void)
 {
     // This tests whether the argument to isdigit() is configured with direction "in". This allows
