@@ -47,7 +47,7 @@ struct ForwardTraversal {
             if (checkScope(lambdaEndToken).isModified())
                 return Progress::Break;
             if (out)
-                *out = lambdaEndToken;
+                *out = lambdaEndToken->next();
             // Skip class scope
         } else if (tok->str() == "{" && tok->scope() && tok->scope()->isClassOrStruct()) {
             if (out)
@@ -291,6 +291,9 @@ struct ForwardTraversal {
                 if (!analyzer->lowerToPossible())
                     return Progress::Break;
             } else if (tok->link() && tok->str() == "}") {
+                const Scope* scope = tok->scope();
+                if(!scope)
+                    return Progress::Break;
                 if (Token::Match(tok->link()->previous(), ")|else {")) {
                     const bool inElse = Token::simpleMatch(tok->link()->previous(), "else {");
                     const Token* condTok = getCondTokFromEnd(tok);
@@ -305,9 +308,11 @@ struct ForwardTraversal {
                     analyzer->assume(condTok, !inElse, tok);
                     if (Token::simpleMatch(tok, "} else {"))
                         tok = tok->linkAt(2);
-                } else if (Token::simpleMatch(tok->link()->previous(), "try {")) {
+                } else if (scope->type == Scope::eTry) {
                     if (!analyzer->lowerToPossible())
                         return Progress::Break;
+                } else if (scope->type == Scope::eLambda) {
+                    return Progress::Break;
                 } else if (Token::simpleMatch(tok->next(), "else {")) {
                     tok = tok->linkAt(2);
                 }
