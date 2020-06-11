@@ -638,6 +638,27 @@ void uninitvar_acosh(void)
     (void)acoshl(ld);
 }
 
+void invalidFunctionArg_acosh(void)
+{
+    float f = .999f;
+    // cppcheck-suppress invalidFunctionArg
+    (void)acoshf(f);
+    f = 1.0f;
+    (void)acoshf(f);
+
+    double d = .999;
+    // cppcheck-suppress invalidFunctionArg
+    (void)acosh(d);
+    d = 1.0;
+    (void)acosh(d);
+
+    long double ld = .999L;
+    // cppcheck-suppress invalidFunctionArg
+    (void)acoshl(ld);
+    ld = 1.0;
+    (void)acoshl(ld);
+}
+
 void uninitvar_asctime(void)
 {
     const struct tm *tm;
