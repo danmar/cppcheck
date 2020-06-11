@@ -659,6 +659,42 @@ void invalidFunctionArg_acosh(void)
     (void)acoshl(ld);
 }
 
+void invalidFunctionArg_atanh(void)
+{
+    float f = 1.00001f;
+    // cppcheck-suppress invalidFunctionArg
+    (void)atanhf(f);
+    f = 1.0f;
+    (void)atanhf(f);
+    f = -1.0f;
+    (void)atanhf(f);
+    f = -1.00001f;
+    // cppcheck-suppress invalidFunctionArg
+    (void)atanhf(f);
+
+    double d = 1.00001;
+    // cppcheck-suppress invalidFunctionArg
+    (void)atanh(d);
+    d = 1.0;
+    (void)atanh(d);
+    d = -1.0;
+    (void)atanh(d);
+    d = -1.00001;
+    // cppcheck-suppress invalidFunctionArg
+    (void)atanh(d);
+
+    long double ld = 1.00001L;
+    // cppcheck-suppress invalidFunctionArg
+    (void)atanhl(ld);
+    ld = 1.0L;
+    (void)atanhl(ld);
+    ld = -1.0L;
+    (void)atanhl(ld);
+    ld = -1.00001L;
+    // cppcheck-suppress invalidFunctionArg
+    (void)atanhl(ld);
+}
+
 void uninitvar_asctime(void)
 {
     const struct tm *tm;
