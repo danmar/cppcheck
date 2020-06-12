@@ -711,6 +711,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                     bool error = false;
                     bool range = false;
                     bool has_dot = false;
+                    bool has_E = false;
 
                     if (!p)
                         return Error(BAD_ATTRIBUTE_VALUE, "\"\"");
@@ -723,15 +724,20 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                             error |= range | (*(p+1) == '.');
                             range = true;
                             has_dot = false;
+                            has_E = false;
                         } else if (*p == '-')
                             error |= (!std::isdigit(*(p+1)));
                         else if (*p == ',') {
                             range = false;
                             error |= *(p+1) == '.';
                             has_dot = false;
+                            has_E = false;
                         } else if (*p == '.') {
                             error |= has_dot | (!std::isdigit(*(p+1)));
                             has_dot = true;
+                        } else if (*p == 'E' || *p == 'e') {
+                            error |= has_E;
+                            has_E = true;
                         } else
                             error = true;
                     }

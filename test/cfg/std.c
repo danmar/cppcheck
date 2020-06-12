@@ -23,6 +23,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <inttypes.h>
+#include <float.h>
 
 void bufferAccessOutOfBounds(void)
 {
@@ -3132,6 +3133,78 @@ void invalidFunctionArg_strchr(char *cs, int c)
 
     // cppcheck-suppress invalidFunctionArg
     (void)strchr(cs, 256);
+}
+
+void invalidFunctionArg_log10(float f, double d, const long double ld)
+{
+    // cppcheck-suppress invalidFunctionArg
+    // cppcheck-suppress wrongmathcall
+    (void)log10f(0.0f);
+    (void)log10f(1.4013e-45f); // note: calculated by nextafterf(0.0f, 1.0f);
+    (void)log10f(f);
+    (void)log10f(FLT_MAX);
+
+    // cppcheck-suppress invalidFunctionArg
+    // cppcheck-suppress wrongmathcall
+    (void)log10(0.0);
+    (void)log10(4.94066e-324); // note: calculated by nextafterf(0.0, 1.0);
+    (void)log10(d);
+    (void)log10(DBL_MAX);
+
+    // cppcheck-suppress invalidFunctionArg
+    // cppcheck-suppress wrongmathcall
+    (void)log10l(0.0L);
+    (void)log10l(4.94066e-324L); // note: calculated by nextafterf(0.0L, 1.0L);
+    (void)log10l(ld);
+    (void)log10l(LDBL_MAX);
+}
+
+void invalidFunctionArg_log(float f, double d, const long double ld)
+{
+    // cppcheck-suppress invalidFunctionArg
+    // cppcheck-suppress wrongmathcall
+    (void)logf(0.0f);
+    (void)logf(1.4013e-45f); // note: calculated by nextafterf(0.0f, 1.0f);
+    (void)logf(f);
+    (void)logf(FLT_MAX);
+
+    // cppcheck-suppress invalidFunctionArg
+    // cppcheck-suppress wrongmathcall
+    (void)log(0.0);
+    (void)log(4.94066e-324); // note: calculated by nextafterf(0.0, 1.0);
+    (void)log(d);
+    (void)log(DBL_MAX);
+
+    // cppcheck-suppress invalidFunctionArg
+    // cppcheck-suppress wrongmathcall
+    (void)logl(0.0L);
+    (void)logl(4.94066e-324L); // note: calculated by nextafterf(0.0L, 1.0L);
+    (void)logl(ld);
+    (void)logl(LDBL_MAX);
+}
+
+void invalidFunctionArg_log2(float f, double d, const long double ld)
+{
+    // cppcheck-suppress invalidFunctionArg
+    // cppcheck-suppress wrongmathcall
+    (void)log2f(0.0f);
+    (void)log2f(1.4013e-45f); // note: calculated by nextafterf(0.0f, 1.0f);
+    (void)log2f(f);
+    (void)log2f(FLT_MAX);
+
+    // cppcheck-suppress invalidFunctionArg
+    // cppcheck-suppress wrongmathcall
+    (void)log2(0.0);
+    (void)log2(4.94066e-324); // note: calculated by nextafterf(0.0, 1.0);
+    (void)log2(d);
+    (void)log2(DBL_MAX);
+
+    // cppcheck-suppress invalidFunctionArg
+    // cppcheck-suppress wrongmathcall
+    (void)log2l(0.0L);
+    (void)log2l(4.94066e-324L); // note: calculated by nextafterf(0.0L, 1.0L);
+    (void)log2l(ld);
+    (void)log2l(LDBL_MAX);
 }
 
 void uninitvar_wcschr(void)
