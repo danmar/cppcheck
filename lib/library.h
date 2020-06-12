@@ -142,6 +142,8 @@ public:
         mNoReturn[funcname] = noreturn;
     }
 
+    static bool isCompliantValidationExpression(const char* p);
+
     /** is allocation type memory? */
     static bool ismemory(const int id) {
         return ((id > 0) && ((id & 1) == 0));

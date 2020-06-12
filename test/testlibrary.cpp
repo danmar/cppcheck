@@ -40,6 +40,7 @@ private:
     Settings settings;
 
     void run() OVERRIDE {
+        TEST_CASE(isCompliantValidationExpression);
         TEST_CASE(empty);
         TEST_CASE(function);
         TEST_CASE(function_match_scope);
@@ -70,6 +71,26 @@ private:
         tinyxml2::XMLDocument doc;
         doc.Parse(xmldata);
         return library.load(doc);
+    }
+
+    void isCompliantValidationExpression()
+    {
+        ASSERT_EQUALS(true, Library::isCompliantValidationExpression("-1"));
+        ASSERT_EQUALS(true, Library::isCompliantValidationExpression("1"));
+        ASSERT_EQUALS(true, Library::isCompliantValidationExpression("1:"));
+        ASSERT_EQUALS(true, Library::isCompliantValidationExpression(":1"));
+        ASSERT_EQUALS(true, Library::isCompliantValidationExpression("-1,42"));
+        ASSERT_EQUALS(true, Library::isCompliantValidationExpression("-1,-42"));
+        ASSERT_EQUALS(true, Library::isCompliantValidationExpression("-1.0:42.0"));
+        ASSERT_EQUALS(true, Library::isCompliantValidationExpression("1.175494e-38:3.402823e+38"));
+        ASSERT_EQUALS(true, Library::isCompliantValidationExpression("1.175494e-38,3.402823e+38"));
+        ASSERT_EQUALS(true, Library::isCompliantValidationExpression("1.175494e-38:"));
+        ASSERT_EQUALS(true, Library::isCompliantValidationExpression(":1.175494e-38"));
+        ASSERT_EQUALS(true, Library::isCompliantValidationExpression(":42.0"));
+
+        // Robustness tests
+        ASSERT_EQUALS(false, Library::isCompliantValidationExpression(nullptr));
+        ASSERT_EQUALS(false, Library::isCompliantValidationExpression("x"));
     }
 
     void empty() const {

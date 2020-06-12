@@ -708,46 +708,11 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                 else if (argnodename == "valid") {
                     // Validate the validation expression
                     const char *p = argnode->GetText();
-                    bool error = false;
-                    bool range = false;
-                    bool has_dot = false;
-                    bool has_E = false;
-
-                    if (!p)
-                        return Error(BAD_ATTRIBUTE_VALUE, "\"\"");
-
-                    error = *p == '.';
-                    for (; *p; p++) {
-                        if (std::isdigit(*p))
-                            error |= (*(p+1) == '-');
-                        else if (*p == ':') {
-                            error |= range | (*(p+1) == '.');
-                            range = true;
-                            has_dot = false;
-                            has_E = false;
-                        } else if (*p == '-')
-                            error |= (!std::isdigit(*(p+1)));
-                        else if (*p == ',') {
-                            range = false;
-                            error |= *(p+1) == '.';
-                            has_dot = false;
-                            has_E = false;
-                        } else if (*p == '.') {
-                            error |= has_dot | (!std::isdigit(*(p+1)));
-                            has_dot = true;
-                        } else if (*p == 'E' || *p == 'e') {
-                            error |= has_E;
-                            has_E = true;
-                        } else
-                            error = true;
-                    }
-                    if (error)
-                        return Error(BAD_ATTRIBUTE_VALUE, argnode->GetText());
-
+                    if (!isCompliantValidationExpression(p))
+                        return Error(BAD_ATTRIBUTE_VALUE, (!p ? "\"\"" : argnode->GetText()));
                     // Set validation expression
                     ac.valid = argnode->GetText();
                 }
-
                 else if (argnodename == "minsize") {
                     const char *typeattr = argnode->Attribute("type");
                     if (!typeattr)
@@ -1240,6 +1205,48 @@ const Library::WarnInfo* Library::getWarnInfo(const Token* ftok) const
     if (i == functionwarn.cend())
         return nullptr;
     return &i->second;
+}
+
+bool Library::isCompliantValidationExpression(const char* p)
+{
+    if (!p)
+        return false;
+
+    bool error = false;
+    bool range = false;
+    bool has_dot = false;
+    bool has_E = false;
+
+    error = *p == '.';
+    for (; *p; p++) {
+        if (std::isdigit(*p))
+            error |= (*(p + 1) == '-');
+        else if (*p == ':') {
+            error |= range | (*(p + 1) == '.');
+            range = true;
+            has_dot = false;
+            has_E = false;
+        }
+        else if ((*p == '-')|| (*p == '+'))
+            error |= (!std::isdigit(*(p + 1)));
+        else if (*p == ',') {
+            range = false;
+            error |= *(p + 1) == '.';
+            has_dot = false;
+            has_E = false;
+        }
+        else if (*p == '.') {
+            error |= has_dot | (!std::isdigit(*(p + 1)));
+            has_dot = true;
+        }
+        else if (*p == 'E' || *p == 'e') {
+            error |= has_E;
+            has_E = true;
+        }
+        else
+            return false;
+    }
+    return !error;
 }
 
 bool Library::formatstr_function(const Token* ftok) const
