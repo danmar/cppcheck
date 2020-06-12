@@ -712,8 +712,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                         return Error(BAD_ATTRIBUTE_VALUE, (!p ? "\"\"" : argnode->GetText()));
                     // Set validation expression
                     ac.valid = argnode->GetText();
-                }
-                else if (argnodename == "minsize") {
+                } else if (argnodename == "minsize") {
                     const char *typeattr = argnode->Attribute("type");
                     if (!typeattr)
                         return Error(MISSING_ATTRIBUTE, "type");
@@ -1226,24 +1225,20 @@ bool Library::isCompliantValidationExpression(const char* p)
             range = true;
             has_dot = false;
             has_E = false;
-        }
-        else if ((*p == '-')|| (*p == '+'))
+        } else if ((*p == '-')|| (*p == '+'))
             error |= (!std::isdigit(*(p + 1)));
         else if (*p == ',') {
             range = false;
             error |= *(p + 1) == '.';
             has_dot = false;
             has_E = false;
-        }
-        else if (*p == '.') {
+        } else if (*p == '.') {
             error |= has_dot | (!std::isdigit(*(p + 1)));
             has_dot = true;
-        }
-        else if (*p == 'E' || *p == 'e') {
+        } else if (*p == 'E' || *p == 'e') {
             error |= has_E;
             has_E = true;
-        }
-        else
+        } else
             return false;
     }
     return !error;
