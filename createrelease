@@ -2,6 +2,8 @@
 #
 # A script for creating release packages. The release packages are create in the home directory.
 #
+# Ensure latest windows installer build was successful
+#
 # self check:
 # ./cppcheck -D__CPPCHECK__ --library=cppcheck-lib --enable=style --inconclusive --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h cli gui/*.cpp lib
 #
@@ -75,7 +77,7 @@ set -e
 
 cd ~/cppcheck
 
-mkdir upload
+mkdir -p upload
 
 make clean
 
@@ -84,8 +86,6 @@ git archive --format=tar --prefix=$releasename/ $tag | gzip > upload/$releasenam
 git archive --format=tar --prefix=$releasename/ $tag | bzip2 > upload/$releasename.tar.bz2
 git archive --format=zip -9 --prefix=$releasename/ $tag > upload/$releasename.zip
 cd upload
-wget https://www.pkeus.de/~philipp/Temp/$releasename-x64-Setup.msi
-#wget https://www.pkeus.de/~philipp/Temp/$releasename-x86-Setup.msi
 scp $releasename.* danielmarjamaki,cppcheck@frs.sourceforge.net:/home/frs/project/c/cp/cppcheck/cppcheck/$tag/
 rm $releasename.*
 cd ..
