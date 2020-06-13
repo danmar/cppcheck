@@ -436,12 +436,12 @@ Parameter: -l(line) (file)
         <location filename="mainwindow.cpp" line="558"/>
         <location filename="mainwindow.cpp" line="674"/>
         <location filename="mainwindow.cpp" line="696"/>
-        <location filename="mainwindow.cpp" line="1145"/>
-        <location filename="mainwindow.cpp" line="1270"/>
-        <location filename="mainwindow.cpp" line="1539"/>
-        <location filename="mainwindow.cpp" line="1562"/>
-        <location filename="mainwindow.cpp" line="1635"/>
-        <location filename="mainwindow.cpp" line="1709"/>
+        <location filename="mainwindow.cpp" line="1171"/>
+        <location filename="mainwindow.cpp" line="1296"/>
+        <location filename="mainwindow.cpp" line="1565"/>
+        <location filename="mainwindow.cpp" line="1588"/>
+        <location filename="mainwindow.cpp" line="1661"/>
+        <location filename="mainwindow.cpp" line="1735"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -995,23 +995,23 @@ Möchten Sie stattdessen diese öffnen?</translation>
 %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1312"/>
+        <location filename="mainwindow.cpp" line="1338"/>
         <source>License</source>
         <translation>Lizenz</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1319"/>
+        <location filename="mainwindow.cpp" line="1345"/>
         <source>Authors</source>
         <translation>Autoren</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1334"/>
+        <location filename="mainwindow.cpp" line="1360"/>
         <source>Save the report file</source>
         <translation>Speichert die Berichtdatei</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1161"/>
-        <location filename="mainwindow.cpp" line="1341"/>
+        <location filename="mainwindow.cpp" line="1187"/>
+        <location filename="mainwindow.cpp" line="1367"/>
         <source>XML files (*.xml)</source>
         <translation>XML-Dateien (*.xml)</translation>
     </message>
@@ -1070,17 +1070,17 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
           Das Einlesen einer XML-Datei löscht die aktuellen Ergebnisse. Fortfahren?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1163"/>
+        <location filename="mainwindow.cpp" line="1189"/>
         <source>Open the report file</source>
         <translation>Berichtdatei öffnen</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1345"/>
+        <location filename="mainwindow.cpp" line="1371"/>
         <source>Text files (*.txt)</source>
         <translation>Textdateien (*.txt)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1349"/>
+        <location filename="mainwindow.cpp" line="1375"/>
         <source>CSV files (*.csv)</source>
         <translation>CSV-Dateien (*.csv)</translation>
     </message>
@@ -1089,19 +1089,19 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
         <translation type="vanished">Cppcheck - %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1446"/>
+        <location filename="mainwindow.cpp" line="1472"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation>Projektdateien (*.cppcheck);;Alle Dateien(*.*)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1448"/>
+        <location filename="mainwindow.cpp" line="1474"/>
         <source>Select Project File</source>
         <translation>Projektdatei auswählen</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="162"/>
-        <location filename="mainwindow.cpp" line="1476"/>
-        <location filename="mainwindow.cpp" line="1602"/>
+        <location filename="mainwindow.cpp" line="1502"/>
+        <location filename="mainwindow.cpp" line="1628"/>
         <source>Project:</source>
         <translation>Projekt:</translation>
     </message>
@@ -1155,7 +1155,7 @@ Do you want to proceed analysis without using any of these project files?</sourc
 Wollen sie fortfahren, ohne diese Projektdateien zu nutzen?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1146"/>
+        <location filename="mainwindow.cpp" line="1172"/>
         <source>Current results will be cleared.
 
 Opening a new XML file will clear current results.
@@ -1166,7 +1166,7 @@ Eine neue XML-Datei zu öffnen wird die aktuellen Ergebnisse löschen
 Möchten sie fortfahren?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1266"/>
+        <location filename="mainwindow.cpp" line="1292"/>
         <source>Analyzer is running.
 
 Do you want to stop the analysis and exit Cppcheck?</source>
@@ -1175,37 +1175,37 @@ Do you want to stop the analysis and exit Cppcheck?</source>
 Wollen sie die Analyse abbrechen und Cppcheck beenden?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1332"/>
+        <location filename="mainwindow.cpp" line="1358"/>
         <source>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
         <translation>XML-Dateien (*.xml);;Textdateien (*.txt);;CSV-Dateien (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1540"/>
+        <location filename="mainwindow.cpp" line="1566"/>
         <source>Build dir &apos;%1&apos; does not exist, create it?</source>
         <translation>Erstellungsverzeichnis &apos;%1&apos; existiert nicht. Erstellen?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1563"/>
+        <location filename="mainwindow.cpp" line="1589"/>
         <source>Failed to import &apos;%1&apos;, analysis is stopped</source>
         <translation>Import von &apos;%1&apos; fehlgeschlagen; Analyse wurde abgebrochen.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1587"/>
+        <location filename="mainwindow.cpp" line="1613"/>
         <source>Project files (*.cppcheck)</source>
         <translation>Projektdateien (*.cppcheck)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1589"/>
+        <location filename="mainwindow.cpp" line="1615"/>
         <source>Select Project Filename</source>
         <translation>Projektnamen auswählen</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1636"/>
+        <location filename="mainwindow.cpp" line="1662"/>
         <source>No project file loaded</source>
         <translation>Keine Projektdatei geladen</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1704"/>
+        <location filename="mainwindow.cpp" line="1730"/>
         <source>The project file
 
 %1
@@ -1722,7 +1722,7 @@ Options:
         <translation>Die Übersetzungen der Sprache %1 konnten nicht aus der Datei %2 geladen werden</translation>
     </message>
     <message>
-        <location filename="cppchecklibrarydata.cpp" line="33"/>
+        <location filename="cppchecklibrarydata.cpp" line="35"/>
         <source>line %1: Unhandled element %2</source>
         <translation>Zeile %1: Nicht behandeltes Element %2</translation>
     </message>

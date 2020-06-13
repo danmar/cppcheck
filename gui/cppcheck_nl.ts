@@ -451,12 +451,12 @@ Parameters: -l(lijn) (bestand)</translation>
         <location filename="mainwindow.cpp" line="558"/>
         <location filename="mainwindow.cpp" line="674"/>
         <location filename="mainwindow.cpp" line="696"/>
-        <location filename="mainwindow.cpp" line="1145"/>
-        <location filename="mainwindow.cpp" line="1270"/>
-        <location filename="mainwindow.cpp" line="1539"/>
-        <location filename="mainwindow.cpp" line="1562"/>
-        <location filename="mainwindow.cpp" line="1635"/>
-        <location filename="mainwindow.cpp" line="1709"/>
+        <location filename="mainwindow.cpp" line="1171"/>
+        <location filename="mainwindow.cpp" line="1296"/>
+        <location filename="mainwindow.cpp" line="1565"/>
+        <location filename="mainwindow.cpp" line="1588"/>
+        <location filename="mainwindow.cpp" line="1661"/>
+        <location filename="mainwindow.cpp" line="1735"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -1050,12 +1050,12 @@ Wil je verder wilt gaan zonder controle van deze project bestanden?</translation
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1312"/>
+        <location filename="mainwindow.cpp" line="1338"/>
         <source>License</source>
         <translation>Licentie</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1319"/>
+        <location filename="mainwindow.cpp" line="1345"/>
         <source>Authors</source>
         <translation>Auteurs</translation>
     </message>
@@ -1065,13 +1065,13 @@ Wil je verder wilt gaan zonder controle van deze project bestanden?</translation
         <translation type="obsolete">XML bestanden (*.xml);;Tekst bestanden (*.txt);;CSV bestanden (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1334"/>
+        <location filename="mainwindow.cpp" line="1360"/>
         <source>Save the report file</source>
         <translation>Rapport opslaan </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1161"/>
-        <location filename="mainwindow.cpp" line="1341"/>
+        <location filename="mainwindow.cpp" line="1187"/>
+        <location filename="mainwindow.cpp" line="1367"/>
         <source>XML files (*.xml)</source>
         <translation>XML bestanden (*.xml)</translation>
     </message>
@@ -1143,7 +1143,7 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
 Een nieuw XML-bestand openen zal de huidige resultaten wissen Wilt u verder gaan?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1163"/>
+        <location filename="mainwindow.cpp" line="1189"/>
         <source>Open the report file</source>
         <translation>Open het rapport bestand</translation>
     </message>
@@ -1164,12 +1164,12 @@ Wil je het controleren stoppen en Cppcheck sluiten?</translation>
         <translation type="obsolete">XML files version 2 (*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1345"/>
+        <location filename="mainwindow.cpp" line="1371"/>
         <source>Text files (*.txt)</source>
         <translation>Tekst bestanden (*.txt)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1349"/>
+        <location filename="mainwindow.cpp" line="1375"/>
         <source>CSV files (*.csv)</source>
         <translation>CSV bestanden (*.csv)</translation>
     </message>
@@ -1178,19 +1178,19 @@ Wil je het controleren stoppen en Cppcheck sluiten?</translation>
         <translation type="vanished">Cppcheck - %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1446"/>
+        <location filename="mainwindow.cpp" line="1472"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation>Project bestanden (*.cppcheck);;Alle bestanden(*.*)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1448"/>
+        <location filename="mainwindow.cpp" line="1474"/>
         <source>Select Project File</source>
         <translation>Selecteer project bestand</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="162"/>
-        <location filename="mainwindow.cpp" line="1476"/>
-        <location filename="mainwindow.cpp" line="1602"/>
+        <location filename="mainwindow.cpp" line="1502"/>
+        <location filename="mainwindow.cpp" line="1628"/>
         <source>Project:</source>
         <translation>Project:</translation>
     </message>
@@ -1242,7 +1242,7 @@ Do you want to proceed analysis without using any of these project files?</sourc
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1146"/>
+        <location filename="mainwindow.cpp" line="1172"/>
         <source>Current results will be cleared.
 
 Opening a new XML file will clear current results.
@@ -1250,44 +1250,44 @@ Do you want to proceed?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1266"/>
+        <location filename="mainwindow.cpp" line="1292"/>
         <source>Analyzer is running.
 
 Do you want to stop the analysis and exit Cppcheck?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1332"/>
+        <location filename="mainwindow.cpp" line="1358"/>
         <source>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1540"/>
+        <location filename="mainwindow.cpp" line="1566"/>
         <source>Build dir &apos;%1&apos; does not exist, create it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1563"/>
+        <location filename="mainwindow.cpp" line="1589"/>
         <source>Failed to import &apos;%1&apos;, analysis is stopped</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1587"/>
+        <location filename="mainwindow.cpp" line="1613"/>
         <source>Project files (*.cppcheck)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1589"/>
+        <location filename="mainwindow.cpp" line="1615"/>
         <source>Select Project Filename</source>
         <translation>Selecteer project bestandsnaam</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1636"/>
+        <location filename="mainwindow.cpp" line="1662"/>
         <source>No project file loaded</source>
         <translation>Geen project bestand geladen</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1704"/>
+        <location filename="mainwindow.cpp" line="1730"/>
         <source>The project file
 
 %1
@@ -1857,7 +1857,7 @@ Options:
         <translation>Kon de vertaling voor taal %1 in bestand %2 niet laden</translation>
     </message>
     <message>
-        <location filename="cppchecklibrarydata.cpp" line="33"/>
+        <location filename="cppchecklibrarydata.cpp" line="35"/>
         <source>line %1: Unhandled element %2</source>
         <translation type="unfinished"></translation>
     </message>

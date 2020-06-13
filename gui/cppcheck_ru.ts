@@ -457,12 +457,12 @@ Parameters: -l(line) (file)</source>
         <location filename="mainwindow.cpp" line="558"/>
         <location filename="mainwindow.cpp" line="674"/>
         <location filename="mainwindow.cpp" line="696"/>
-        <location filename="mainwindow.cpp" line="1145"/>
-        <location filename="mainwindow.cpp" line="1270"/>
-        <location filename="mainwindow.cpp" line="1539"/>
-        <location filename="mainwindow.cpp" line="1562"/>
-        <location filename="mainwindow.cpp" line="1635"/>
-        <location filename="mainwindow.cpp" line="1709"/>
+        <location filename="mainwindow.cpp" line="1171"/>
+        <location filename="mainwindow.cpp" line="1296"/>
+        <location filename="mainwindow.cpp" line="1565"/>
+        <location filename="mainwindow.cpp" line="1588"/>
+        <location filename="mainwindow.cpp" line="1661"/>
+        <location filename="mainwindow.cpp" line="1735"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -1116,12 +1116,12 @@ Do you want to proceed checking without using any of these project files?</sourc
         <translation type="obsolete">Не удалось загрузить %1. Установленный Cppcheck поврежден. Вы можете использовать ключ --data-dir=&lt;directory&gt; в командной строке, чтобы указать, где расположен этот файл.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1312"/>
+        <location filename="mainwindow.cpp" line="1338"/>
         <source>License</source>
         <translation>Лицензия</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1319"/>
+        <location filename="mainwindow.cpp" line="1345"/>
         <source>Authors</source>
         <translation>Авторы</translation>
     </message>
@@ -1131,13 +1131,13 @@ Do you want to proceed checking without using any of these project files?</sourc
         <translation type="obsolete">XML файлы версии 2 (*.xml);;XML файлы версии 1 (*.xml);;Текстовые файлы  (*.txt);;CSV файлы (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1334"/>
+        <location filename="mainwindow.cpp" line="1360"/>
         <source>Save the report file</source>
         <translation>Сохранить файл с отчетом</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1161"/>
-        <location filename="mainwindow.cpp" line="1341"/>
+        <location filename="mainwindow.cpp" line="1187"/>
+        <location filename="mainwindow.cpp" line="1367"/>
         <source>XML files (*.xml)</source>
         <translation>XML-файлы (*.xml)</translation>
     </message>
@@ -1205,7 +1205,7 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
 Открытые нового XML файла приведет к очистке текущих результатов. Продолжить?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1163"/>
+        <location filename="mainwindow.cpp" line="1189"/>
         <source>Open the report file</source>
         <translation>Открыть файл с отчетом</translation>
     </message>
@@ -1226,12 +1226,12 @@ Do you want to stop the checking and exit Cppcheck?</source>
         <translation type="obsolete">XML файлы версии 2 (*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1345"/>
+        <location filename="mainwindow.cpp" line="1371"/>
         <source>Text files (*.txt)</source>
         <translation>Текстовые файлы (*.txt)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1349"/>
+        <location filename="mainwindow.cpp" line="1375"/>
         <source>CSV files (*.csv)</source>
         <translation>CSV файлы(*.csv)</translation>
     </message>
@@ -1252,19 +1252,19 @@ The user interface language has been reset to English. Open the Preferences-dial
 The user interface language has been reset to English. Open the Preferences-dialog to select any of the available languages.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1446"/>
+        <location filename="mainwindow.cpp" line="1472"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation>Файлы проекта (*.cppcheck);;Все файлы(*.*)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1448"/>
+        <location filename="mainwindow.cpp" line="1474"/>
         <source>Select Project File</source>
         <translation>Выберите файл проекта</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="162"/>
-        <location filename="mainwindow.cpp" line="1476"/>
-        <location filename="mainwindow.cpp" line="1602"/>
+        <location filename="mainwindow.cpp" line="1502"/>
+        <location filename="mainwindow.cpp" line="1628"/>
         <source>Project:</source>
         <translation>Проект:</translation>
     </message>
@@ -1318,7 +1318,7 @@ Do you want to proceed analysis without using any of these project files?</sourc
 Вы хотите продолжить анализ без использования этих файлов проекта?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1146"/>
+        <location filename="mainwindow.cpp" line="1172"/>
         <source>Current results will be cleared.
 
 Opening a new XML file will clear current results.
@@ -1329,7 +1329,7 @@ Do you want to proceed?</source>
 Вы хотите продолжить?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1266"/>
+        <location filename="mainwindow.cpp" line="1292"/>
         <source>Analyzer is running.
 
 Do you want to stop the analysis and exit Cppcheck?</source>
@@ -1338,37 +1338,37 @@ Do you want to stop the analysis and exit Cppcheck?</source>
 Вы хотите остановить анализ и выйти из Cppcheck?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1332"/>
+        <location filename="mainwindow.cpp" line="1358"/>
         <source>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
         <translation>XML файлы (*.xml);;Текстовые файлы (*.txt);;CSV файлы (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1540"/>
+        <location filename="mainwindow.cpp" line="1566"/>
         <source>Build dir &apos;%1&apos; does not exist, create it?</source>
         <translation>Директория для сборки &apos;%1&apos; не существует, создать?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1563"/>
+        <location filename="mainwindow.cpp" line="1589"/>
         <source>Failed to import &apos;%1&apos;, analysis is stopped</source>
         <translation>Невозможно импортировать &apos;%1&apos;, анализ остановлен</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1587"/>
+        <location filename="mainwindow.cpp" line="1613"/>
         <source>Project files (*.cppcheck)</source>
         <translation>Файлы проекта (*.cppcheck)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1589"/>
+        <location filename="mainwindow.cpp" line="1615"/>
         <source>Select Project Filename</source>
         <translation>Выберите имя файла для проекта</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1636"/>
+        <location filename="mainwindow.cpp" line="1662"/>
         <source>No project file loaded</source>
         <translation>Файл с проектом не загружен</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1704"/>
+        <location filename="mainwindow.cpp" line="1730"/>
         <source>The project file
 
 %1
@@ -1964,7 +1964,7 @@ Options:
         <translation>Ошибка загрузки переводов для языка %1 из файла %2</translation>
     </message>
     <message>
-        <location filename="cppchecklibrarydata.cpp" line="33"/>
+        <location filename="cppchecklibrarydata.cpp" line="35"/>
         <source>line %1: Unhandled element %2</source>
         <translation type="unfinished"></translation>
     </message>
