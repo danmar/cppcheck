@@ -1578,7 +1578,7 @@ bool isLikelyStreamRead(bool cpp, const Token *op)
     const Token *parent = op;
     while (parent->astParent() && parent->astParent()->str() == op->str())
         parent = parent->astParent();
-    if (parent->astParent() && !Token::Match(parent->astParent(), "%oror%|&&|(|,|!"))
+    if (parent->astParent() && !Token::Match(parent->astParent(), "%oror%|&&|(|,|.|!"))
         return false;
     if (op->str() == "&" && parent->astParent())
         return false;

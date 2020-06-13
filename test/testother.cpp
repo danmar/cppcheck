@@ -1977,6 +1977,12 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("bool from_string(int& t, const std::string& s) {\n"
+              "    std::istringstream iss(s);\n"
+              "    return !(iss >> t).fail();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void e();\n"
               "void g(void);\n"
               "void h(void);\n"
