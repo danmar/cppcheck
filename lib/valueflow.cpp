@@ -2980,6 +2980,9 @@ static bool isLifetimeBorrowed(const ValueType *vt, const ValueType *vtParent)
             return true;
         if (vtParent->str() == vt->str())
             return true;
+        if (vtParent->pointer == vt->pointer && vtParent->type == vt->type && vtParent->isIntegral())
+            // sign conversion
+            return true;
     }
 
     return false;
