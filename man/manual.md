@@ -1,6 +1,6 @@
 ---
 title: Cppcheck manual
-subtitle: Version 2.0
+subtitle: Version 2.1
 author: Cppcheck team
 lang: en
 documentclass: report
