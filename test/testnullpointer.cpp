@@ -97,6 +97,7 @@ private:
         TEST_CASE(nullpointer54); // #9573
         TEST_CASE(nullpointer55); // #8144
         TEST_CASE(nullpointer56); // #9701
+        TEST_CASE(nullpointer57); // #9751
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1820,6 +1821,21 @@ private:
               "    ListEntry *prev = NULL;\n"
               "    for (ListEntry *cursor = listHead; cursor != NULL; prev = cursor, cursor = cursor->next) {}\n"
               "    if (prev) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer57() {
+        check("void f() {\n"
+              "    FILE* fptr = fopen(\"test\", \"r\");\n"
+              "    if (fptr != nullptr) {\n"
+              "        std::function<void()> fn([&] {\n"
+              "            fclose(fptr);\n"
+              "            fptr = NULL;\n"
+              "        });\n"
+              "        fgetc(fptr);\n"
+              "        fn();\n"
+              "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
