@@ -762,8 +762,10 @@ static void compileTerm(Token *&tok, AST_state& state)
         if (Token::Match(tok, "return|case") || (state.cpp && tok->str() == "throw")) {
             if (tok->str() == "case")
                 state.inCase = true;
+            const bool tokIsReturn = tok->str() == "return";
             compileUnaryOp(tok, state, compileExpression);
-            state.op.pop();
+            if (tokIsReturn)
+                state.op.pop();
             if (state.inCase && Token::simpleMatch(tok, ": ;")) {
                 state.inCase = false;
                 tok = tok->next();

@@ -7484,6 +7484,8 @@ private:
         ASSERT_EQUALS("fabc,de,:?=", testAst("f = (a ? b, c : (d, e));"));
         ASSERT_EQUALS("ab35,4:?foo(:?return", testAst("return (a ? b ? (3,5) : 4 : foo());"));
         ASSERT_EQUALS("check(result_type00,{invalid:?return", testAst("return check() ? result_type {0, 0} : invalid;"));
+        ASSERT_EQUALS("x01:?return", testAst("return x ? 0 : 1;"));
+        ASSERT_EQUALS("x00throw:?return", testAst("return x ? 0 : throw 0;")); // #9768
 
         ASSERT_EQUALS("a\"\"=", testAst("a=\"\""));
         ASSERT_EQUALS("a\'\'=", testAst("a=\'\'"));
@@ -7927,6 +7929,7 @@ private:
         ASSERT_EQUALS("0case", testAst("case 0:"));
         ASSERT_EQUALS("12+case", testAst("case 1+2:"));
         ASSERT_EQUALS("xyz:?case", testAst("case (x?y:z):"));
+        ASSERT_EQUALS("switchx( 1case y++ 2case", testAst("switch(x){case 1:{++y;break;case 2:break;}}"));
     }
 
     void astrefqualifier() {
