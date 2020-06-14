@@ -1506,6 +1506,12 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
 
         code = "void f() {\n"
+               "    const int x(321);\n"
+               "    a = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 321));
+
+        code = "void f() {\n"
                "    int x = 9;\n"
                "    --x;\n"
                "    return x;\n"

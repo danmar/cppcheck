@@ -3906,6 +3906,17 @@ static bool isLiteralNumber(const Token *tok, bool cpp)
     return tok->isNumber() || tok->isEnumerator() || tok->str() == "NULL" || (cpp && Token::Match(tok, "false|true|nullptr"));
 }
 
+static bool isVariableInit(const Token *tok)
+{
+    return tok->str() == "(" &&
+           tok->isBinaryOp() &&
+           tok->astOperand1()->variable() &&
+           tok->astOperand1()->variable()->nameToken() == tok->astOperand1() &&
+           tok->astOperand1()->variable()->valueType() &&
+           tok->astOperand1()->variable()->valueType()->type >= ValueType::Type::VOID &&
+           !Token::simpleMatch(tok->astOperand2(), ",");
+}
+
 static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (const Scope * scope : symboldatabase->functionScopes) {
@@ -3918,7 +3929,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             }
 
             // Assignment
-            if ((tok->str() != "=") || (tok->astParent()))
+            if ((tok->str() != "=" && !isVariableInit(tok)) || (tok->astParent()))
                 continue;
 
             // Lhs should be a variable
