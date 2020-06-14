@@ -292,7 +292,7 @@ struct ForwardTraversal {
                     return Progress::Break;
             } else if (tok->link() && tok->str() == "}") {
                 const Scope* scope = tok->scope();
-                if(!scope)
+                if (!scope)
                     return Progress::Break;
                 if (Token::Match(tok->link()->previous(), ")|else {")) {
                     const bool inElse = Token::simpleMatch(tok->link()->previous(), "else {");
