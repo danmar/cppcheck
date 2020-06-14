@@ -35,7 +35,7 @@ public:
     CppcheckExecutor()
         : ErrorLogger()
         , stoptime(std::time(nullptr)+2U)
-        , cppcheck(*this, false) {
+        , cppcheck(*this, false, nullptr) {
         cppcheck.settings().addEnabled("all");
         cppcheck.settings().inconclusive = true;
     }
@@ -43,6 +43,8 @@ public:
     void run(const char code[]) {
         cppcheck.check("test.cpp", code);
     }
+
+    void bughuntingReport(const std::string&) override {}
 
     void reportOut(const std::string &outmsg) override { }
     void reportErr(const ErrorMessage &msg) override {
