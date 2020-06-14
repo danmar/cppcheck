@@ -465,8 +465,9 @@ struct AST_state {
     bool cpp;
     int assign;
     bool inCase; // true from case to :
+    bool stopAtColon; // help to properly parse ternary operators
     const Token *functionCallEndPar;
-    explicit AST_state(bool cpp) : depth(0), inArrayAssignment(0), cpp(cpp), assign(0), inCase(false), functionCallEndPar(nullptr) {}
+    explicit AST_state(bool cpp) : depth(0), inArrayAssignment(0), cpp(cpp), assign(0), inCase(false),stopAtColon(false), functionCallEndPar(nullptr) {}
 };
 
 static Token * skipDecl(Token *tok)
@@ -763,7 +764,10 @@ static void compileTerm(Token *&tok, AST_state& state)
             if (tok->str() == "case")
                 state.inCase = true;
             const bool tokIsReturn = tok->str() == "return";
+            const bool stopAtColon = state.stopAtColon;
+            state.stopAtColon=true;
             compileUnaryOp(tok, state, compileExpression);
+            state.stopAtColon=stopAtColon;
             if (tokIsReturn)
                 state.op.pop();
             if (state.inCase && Token::simpleMatch(tok, ": ;")) {
@@ -1211,6 +1215,8 @@ static void compileAssignTernary(Token *&tok, AST_state& state)
             // http://en.cppreference.com/w/cpp/language/operator_precedence says about ternary operator:
             //       "The expression in the middle of the conditional operator (between ? and :) is parsed as if parenthesized: its precedence relative to ?: is ignored."
             // Hence, we rely on Tokenizer::prepareTernaryOpForAST() to add such parentheses where necessary.
+            const bool stopAtColon = state.stopAtColon;
+            state.stopAtColon = false;
             if (tok->strAt(1) == ":") {
                 state.op.push(nullptr);
             }
@@ -1218,12 +1224,15 @@ static void compileAssignTernary(Token *&tok, AST_state& state)
             state.assign = 0;
             compileBinOp(tok, state, compileAssignTernary);
             state.assign = assign;
+            state.stopAtColon = stopAtColon;
         } else if (tok->str() == ":") {
             if (state.depth == 1U && state.inCase) {
                 state.inCase = false;
                 tok = tok->next();
                 break;
             }
+            if (state.stopAtColon)
+                break;
             if (state.assign > 0)
                 break;
             compileBinOp(tok, state, compileAssignTernary);
