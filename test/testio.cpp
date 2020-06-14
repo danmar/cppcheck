@@ -928,7 +928,7 @@ private:
               "    const int scanrc=sscanf(line, \"Project(\\\"{%36s}\\\")\", projectId);\n"
               "    sscanf(input, \"%5s\", output);\n"
               "}", true);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (warning, inconclusive) Width 36 given in format string (no. 1) is smaller than destination buffer 'projectId[2048]'.\n", errout.str());
 
         check("void foo(unsigned int i) {\n"
               "  scanf(\"%h\", &i);\n"
