@@ -78,7 +78,7 @@
        <item>
         <widget class="QLabel" name="mCopyright">
          <property name="text">
-          <string>Copyright © 2007-2019 Cppcheck team.</string>
+          <string>Copyright © 2007-%1 Cppcheck team.</string>
          </property>
          <property name="wordWrap">
           <bool>true</bool>
@@ -114,10 +114,11 @@ of the GNU General Public License version 3</string>
          <property name="text">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;
 &lt;p&gt;Many thanks to these libraries that we use:&lt;/p&gt;&lt;ul&gt;
-&lt;li&gt;tinyxml2&lt;/li&gt;
-&lt;li&gt;picojson&lt;/li&gt;
 &lt;li&gt;pcre&lt;/li&gt;
-&lt;li&gt;qt&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;li&gt;picojson&lt;/li&gt;
+&lt;li&gt;qt&lt;/li&gt;
+&lt;li&gt;tinyxml2&lt;/li&gt;
+&lt;li&gt;z3&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
         </widget>
        </item>
