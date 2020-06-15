@@ -71,7 +71,7 @@ public:
         checkFunctions.invalidFunctionUsage();
         checkFunctions.checkMathFunctions();
         checkFunctions.memsetZeroBytes();
-        checkFunctions.memsetInvalid2ndParam();
+        checkFunctions.memsetInvalid2nd3rdParam();
         checkFunctions.returnLocalStdMove();
     }
 
@@ -97,8 +97,8 @@ public:
     /** @brief %Check for filling zero bytes with memset() */
     void memsetZeroBytes();
 
-    /** @brief %Check for invalid 2nd parameter of memset() */
-    void memsetInvalid2ndParam();
+    /** @brief %Check for invalid 2nd or 3rd parameter of memset() */
+    void memsetInvalid2nd3rdParam();
 
     /** @brief %Check for copy elision by RVO|NRVO */
     void returnLocalStdMove();
@@ -120,6 +120,8 @@ private:
     void memsetZeroBytesError(const Token *tok);
     void memsetFloatError(const Token *tok, const std::string &var_value);
     void memsetValueOutOfRangeError(const Token *tok, const std::string &value);
+    void memsetSizeArgumentAsCharLiteralError(const Token* tok);
+    void memsetSizeArgumentAsCharError(const Token* tok);
     void missingReturnError(const Token *tok);
     void copyElisionError(const Token *tok);
 
@@ -139,6 +141,8 @@ private:
         c.memsetZeroBytesError(nullptr);
         c.memsetFloatError(nullptr,  "varname");
         c.memsetValueOutOfRangeError(nullptr,  "varname");
+        c.memsetSizeArgumentAsCharLiteralError(nullptr);
+        c.memsetSizeArgumentAsCharError(nullptr);
         c.missingReturnError(nullptr);
         c.copyElisionError(nullptr);
     }
@@ -156,6 +160,7 @@ private:
                "- memset() third argument is zero\n"
                "- memset() with a value out of range as the 2nd parameter\n"
                "- memset() with a float as the 2nd parameter\n"
+               "- memset() with a char as the 3nd parameter\n"
                "- copy elision optimization for returning value affected by std::move\n";
     }
 };

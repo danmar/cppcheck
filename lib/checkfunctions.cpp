@@ -47,6 +47,7 @@ static const CWE CWE252(252U);  // Unchecked Return Value
 static const CWE CWE477(477U);  // Use of Obsolete Functions
 static const CWE CWE758(758U);  // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
 static const CWE CWE628(628U);  // Function Call with Incorrectly Specified Arguments
+static const CWE CWE682(682U);  // Incorrect Calculation
 static const CWE CWE686(686U);  // Function Call With Incorrect Argument Type
 static const CWE CWE687(687U);  // Function Call With Incorrectly Specified Argument Value
 static const CWE CWE688(688U);  // Function Call With Incorrect Variable or Reference as Argument
@@ -517,7 +518,7 @@ void CheckFunctions::memsetZeroBytesError(const Token *tok)
     reportError(tok, Severity::warning, "memsetZeroBytes", summary + "\n" + verbose, CWE687, Certainty::normal);
 }
 
-void CheckFunctions::memsetInvalid2ndParam()
+void CheckFunctions::memsetInvalid2nd3rdParam()
 {
 // FIXME:
 //  Replace this with library configuration.
@@ -532,6 +533,8 @@ void CheckFunctions::memsetInvalid2ndParam()
     if (!printWarning && !printPortability)
         return;
 
+    const bool inconclusive = mSettings->certainty.isEnabled(Certainty::inconclusive);
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok && (tok != scope->bodyEnd); tok = tok->next()) {
@@ -543,21 +546,26 @@ void CheckFunctions::memsetInvalid2ndParam()
                 continue;
 
             // Second parameter is zero literal, i.e. 0.0f
-            const Token * const secondParamTok = args[1];
-            if (Token::Match(secondParamTok, "%num% ,") && MathLib::isNullValue(secondParamTok->str()))
-                continue;
+            bool zerovalue = (Token::Match(args[1], "%num% ,") && MathLib::isNullValue(args[1]->str()));
 
             // Check if second parameter is a float variable or a float literal != 0.0f
-            if (printPortability && astIsFloat(secondParamTok,false)) {
-                memsetFloatError(secondParamTok, secondParamTok->expressionString());
+            if (printPortability && !zerovalue && astIsFloat(args[1],false)) {
+                memsetFloatError(args[1], args[1]->expressionString());
             }
 
-            if (printWarning && secondParamTok->isNumber()) { // Check if the second parameter is a literal and is out of range
-                const long long int value = MathLib::toLongNumber(secondParamTok->str());
-                const long long sCharMin = mSettings->signedCharMin();
-                const long long uCharMax = mSettings->unsignedCharMax();
-                if (value < sCharMin || value > uCharMax)
-                    memsetValueOutOfRangeError(secondParamTok, secondParamTok->str());
+            if (printWarning) {
+                if (!zerovalue && args[1]->isNumber()) { // Check if the second parameter is a literal and is out of range
+                    const long long int value = MathLib::toLongNumber(args[1]->str());
+                    const long long sCharMin = mSettings->signedCharMin();
+                    const long long uCharMax = mSettings->unsignedCharMax();
+                    if (value < sCharMin || value > uCharMax)
+                        memsetValueOutOfRangeError(args[1], args[1]->str());
+                } else if (args[2]->tokType() == Token::eChar) { // Check if the third parameter is a char literal
+                    memsetSizeArgumentAsCharLiteralError(args[2]);
+                } else if (inconclusive && args[2]->valueType() && args[2]->valueType()->type == ValueType::CHAR) { // Check if the third parameter is a char
+                    if (!args[1]->isLiteral() && args[1]->valueType() && !(args[1]->valueType()->type == ValueType::BOOL || args[1]->valueType()->type == ValueType::CHAR) && args[1]->valueType()->isIntegral()) // But only warn if the second parameter is not a char as well
+                        memsetSizeArgumentAsCharError(args[2]);
+                }
             }
         }
     }
@@ -578,6 +586,17 @@ void CheckFunctions::memsetValueOutOfRangeError(const Token *tok, const std::str
     const std::string verbose(message + " The 2nd parameter is passed as an 'int', but the function fills the block of memory using the 'unsigned char' conversion of this value.");
     reportError(tok, Severity::warning, "memsetValueOutOfRange", message + "\n" + verbose, CWE686, Certainty::normal);
 }
+
+void CheckFunctions::memsetSizeArgumentAsCharLiteralError(const Token* tok)
+{
+    reportError(tok, Severity::warning, "sizeArgumentAsCharLiteral", "The size argument of memset() is given as a char constant.", CWE682, Certainty::safe);
+}
+
+void CheckFunctions::memsetSizeArgumentAsCharError(const Token* tok)
+{
+    reportError(tok, Severity::warning, "sizeArgumentAsChar", "The size argument of memset() is given as a char while the value argument is of a larger type.", CWE682, Certainty::inconclusive);
+}
+
 
 //---------------------------------------------------------------------------
 // --check-library => warn for unconfigured functions

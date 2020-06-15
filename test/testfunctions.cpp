@@ -86,6 +86,7 @@ private:
         // memset..
         TEST_CASE(memsetZeroBytes);
         TEST_CASE(memsetInvalid2ndParam);
+        TEST_CASE(memsetInvalid3rdParam);
 
         // missing "return"
         TEST_CASE(checkMissingReturn);
@@ -1509,6 +1510,41 @@ private:
               "    memset(is, 1.0f + i, 40);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (portability) The 2nd memset() argument '1.0f+i' is a float, its representation is implementation defined.\n", errout.str());
+    }
+
+    void memsetInvalid3rdParam() {
+        check("void foo() {\n"
+              "    char s[10];\n"
+              "    memset(s, 0, '*');\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) The size argument of memset() is given as a char constant.\n", errout.str());
+
+        check("void foo(char c) {\n"
+              "    char s[10];\n"
+              "    memset(s, 0, c);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(char val, char c) {\n"
+              "    char s[10];\n"
+              "    memset(s, val, c);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int val, char c) {\n"
+              "    char s[10];\n"
+              "    memset(s, val, c);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) The size argument of memset() is given as a char while the value argument is of a larger type.\n", errout.str());
+    }
+
+    void negativeMemoryAllocationSizeError() { // #389
+        check("void f() {\n"
+              "   int *a;\n"
+              "   a = malloc( -10 );\n"
+              "   free(a);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid malloc() argument nr 1. The value is -10 but the valid values are '0:'.\n", errout.str());
     }
 
     void checkMissingReturn() {

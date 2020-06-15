@@ -3910,8 +3910,7 @@ private:
               "    char s[10];\n"
               "    mymemset(s, 0, '*');\n"
               "}", settings);
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (warning) The size argument is given as a char constant.\n"
-                           "[test.cpp:3]: (error) Buffer is accessed out of bounds: s\n", "[test.cpp:3]: (error) Buffer is accessed out of bounds: s\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: s\n", errout.str());
 
         // ticket #836
         check("void f(void) {\n"
