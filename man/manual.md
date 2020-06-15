@@ -872,7 +872,7 @@ There are two ways:
 
 ## Incomplete analysis
 
-The data flow analysis can analyze simple functions completely but complex functions are not analyzed completely (yet). The data flow analysis will be continuously improved in the future but it will never be perfect.
+The data flow analysis can analyze simple functions completely but complex functions are not analyzed completely (yet). The data flow analysis will be continously improved in the future but it will never be perfect.
 
 It is likely that you will get false alarms caused by incomplete data flow analysis. Unfortunately it is unlikely that such false alarms can be fixed by contracts.
 
