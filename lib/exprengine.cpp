@@ -1929,8 +1929,13 @@ static void execute(const Token *start, const Token *end, Data &data, int recurs
             std::set<int> changedVariables;
             for (const Token *tok2 = tok; tok2 != bodyEnd; tok2 = tok2->next()) {
                 if (Token::Match(tok2, "%assign%")) {
-                    if (Token::Match(tok2->astOperand1(), ". %name% =") && tok2->astOperand1()->astOperand1() && tok2->astOperand1()->astOperand1()->valueType()) {
-                        const Token *structToken = tok2->astOperand1()->astOperand1();
+                    const Token *lhs = tok2->astOperand1();
+                    while (Token::simpleMatch(lhs, "["))
+                        lhs = lhs->astOperand1();
+                    if (!lhs)
+                        throw BugHuntingException(tok2, "Unhandled assignment in loop");
+                    if (Token::Match(lhs, ". %name% =|[") && lhs->astOperand1() && lhs->astOperand1()->valueType()) {
+                        const Token *structToken = lhs->astOperand1();
                         if (!structToken->valueType() || !structToken->varId())
                             throw BugHuntingException(tok2, "Unhandled assignment in loop");
                         const Scope *structScope = structToken->valueType()->typeScope;
@@ -1957,30 +1962,34 @@ static void execute(const Token *start, const Token *end, Data &data, int recurs
                         data.assignStructMember(tok2, &*structVal, memberName, memberValue);
                         continue;
                     }
-                    if (tok2->astOperand1() && tok2->astOperand1()->isUnaryOp("*") && tok2->astOperand1()->astOperand1()->varId()) {
+                    if (lhs->isUnaryOp("*") && lhs->astOperand1()->varId()) {
                         const Token *varToken = tok2->astOperand1()->astOperand1();
                         ExprEngine::ValuePtr val = data.getValue(varToken->varId(), varToken->valueType(), varToken);
                         if (val && val->type == ExprEngine::ValueType::ArrayValue) {
                             // Try to assign "any" value
                             auto arrayValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(val);
-                            //ExprEngine::ValuePtr anyValue = getValueRangeFromValueType(data.getNewSymbolName(), tok2->astOperand1()->valueType(), *data.settings);
                             arrayValue->assign(std::make_shared<ExprEngine::IntRange>("0", 0, 0), std::make_shared<ExprEngine::BailoutValue>());
                             continue;
                         }
                     }
-                    if (!Token::Match(tok2->astOperand1(), "%var%"))
-                        throw BugHuntingException(tok2, "Unhandled assignment in loop");
-                    if (!tok2->astOperand1()->variable())
+                    if (!lhs->variable())
                         throw BugHuntingException(tok2, "Unhandled assignment in loop");
                     // give variable "any" value
-                    int varid = tok2->astOperand1()->varId();
+                    int varid = lhs->varId();
                     if (changedVariables.find(varid) != changedVariables.end())
                         continue;
                     changedVariables.insert(varid);
                     auto oldValue = data.getValue(varid, nullptr, nullptr);
                     if (oldValue && oldValue->isUninit())
-                        call(data.callbacks, tok2->astOperand1(), oldValue, &data);
-                    data.assignValue(tok2, varid, getValueRangeFromValueType(data.getNewSymbolName(), tok2->astOperand1()->valueType(), *data.settings));
+                        call(data.callbacks, lhs, oldValue, &data);
+                    if (oldValue && oldValue->type == ExprEngine::ValueType::ArrayValue) {
+                        // Try to assign "any" value
+                        auto arrayValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(oldValue);
+                        arrayValue->assign(std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 0, ~0ULL), std::make_shared<ExprEngine::BailoutValue>());
+                        continue;
+                    }
+                    data.assignValue(tok2, varid, getValueRangeFromValueType(data.getNewSymbolName(), lhs->valueType(), *data.settings));
+                    continue;
                 } else if (Token::Match(tok2, "++|--") && tok2->astOperand1() && tok2->astOperand1()->variable()) {
                     // give variable "any" value
                     const Token *vartok = tok2->astOperand1();

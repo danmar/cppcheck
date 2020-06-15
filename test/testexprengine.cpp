@@ -73,6 +73,7 @@ private:
         TEST_CASE(arrayInit1);
         TEST_CASE(arrayInit2);
         TEST_CASE(arrayUninit);
+        TEST_CASE(arrayInLoop);
 
         TEST_CASE(floatValue1);
         TEST_CASE(floatValue2);
@@ -522,6 +523,15 @@ private:
 
     void arrayUninit() {
         ASSERT_EQUALS("?", getRange("int f() { int arr[10]; return arr[4]; }", "arr[4]"));
+    }
+
+    void arrayInLoop() {
+        const char code[] = "void f() {\n"
+                            "  int arr[3][3];\n"
+                            "  for (int i = 0; i < 3; i++) arr[i][0] = arr[1][2];\n"
+                            "  return arr[0][0];"
+                            "}";
+        ASSERT_EQUALS("?", getRange(code, "arr[1]"));
     }
 
 
