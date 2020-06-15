@@ -85,7 +85,7 @@ Script to donate CPU time to Cppcheck project by checking current Debian package
 
 ### * tools/test-my-pr.py
 
-Script to compare result of working Cppcheck from your branch with master branch.
+Script to compare result of working Cppcheck from your branch with main branch.
 
 ### * tools/triage
 

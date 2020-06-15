@@ -18,6 +18,6 @@ do
     make clean
     make -j4 > /dev/null
     /usr/bin/time -a -o times-tags.txt ./cppcheck sources -q 2> /dev/null
-    git checkout master
+    git checkout main
     git branch -D "$i"
 done

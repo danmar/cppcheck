@@ -20,7 +20,7 @@ const int MAX_ERRORS = 100;
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    mVersionRe("^(master|your|head|1.[0-9][0-9]) (.*)"),
+    mVersionRe("^(master|main|your|head|1.[0-9][0-9]) (.*)"),
     hFiles{"*.hpp", "*.h", "*.hxx", "*.hh", "*.tpp", "*.txx"},
     srcFiles{"*.cpp", "*.cxx", "*.cc", "*.c++", "*.C", "*.c", "*.cl"}
 {
