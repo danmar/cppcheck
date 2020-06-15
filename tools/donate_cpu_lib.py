@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.2.4"
+CLIENT_VERSION = "1.3.1"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 60 * 60
@@ -41,7 +41,12 @@ def get_cppcheck(cppcheck_path, work_path):
         if os.path.exists(cppcheck_path):
             try:
                 os.chdir(cppcheck_path)
-                subprocess.check_call(['git', 'checkout', '-f', 'master'])
+                try:
+                    subprocess.check_call(['git', 'checkout', '-f', 'main'])
+                except CalledProcessError:
+                    subprocess.check_call(['git', 'checkout', '-f', 'master'])
+                    subprocess.check_call(['git', 'pull'])
+                    subprocess.check_call(['git', 'checkout', 'origin/main', '-b', 'main'])
                 subprocess.check_call(['git', 'pull'])
             except:
                 print('Failed to update Cppcheck sources! Retrying..')
@@ -88,7 +93,7 @@ def compile_version(work_path, jobs, version):
         destPath = work_path + '/' + version + '/'
         subprocess.call(['cp', '-R', work_path + '/cppcheck/cfg', destPath])
         subprocess.call(['cp', 'cppcheck', destPath])
-    subprocess.call(['git', 'checkout', 'master'])
+    subprocess.call(['git', 'checkout', 'main'])
     try:
         subprocess.call([work_path + '/' + version + '/cppcheck', '--version'])
     except OSError:
