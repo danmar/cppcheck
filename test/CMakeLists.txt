@@ -27,6 +27,10 @@ if (BUILD_TESTS)
         target_link_libraries(testrunner ${Z3_LIBRARIES})
     endif()
 
+    if (CMAKE_VERSION VERSION_EQUAL "3.16" OR CMAKE_VERSION VERSION_GREATER "3.16")
+        target_precompile_headers(testrunner PRIVATE precompiled.h)
+    endif()
+
     add_custom_target(copy_cfg ALL
         COMMENT "Copying cfg files")
     add_custom_command(
