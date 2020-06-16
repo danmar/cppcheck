@@ -204,7 +204,7 @@ namespace ExprEngine {
             ValuePtr value;
         };
         std::vector<IndexAndValue> data;
-        ValuePtr size;
+        std::vector<ValuePtr> size;
     };
 
     class StringLiteralValue: public Value {
