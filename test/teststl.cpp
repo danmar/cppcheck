@@ -165,6 +165,8 @@ private:
         TEST_CASE(invalidContainer);
         TEST_CASE(invalidContainerLoop);
         TEST_CASE(findInsert);
+        
+        TEST_CASE(checkMutexes);
     }
 
     void check(const char code[], const bool inconclusive=false, const Standards::cppstd_t cppstandard=Standards::CPPLatest) {
@@ -4410,6 +4412,79 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkMutexes() {
+        check("void f() {\n"
+              "    static std::mutex m;\n"
+              "    static std::lock_guard<std::mutex> g(m);\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) The lock guard won't unlock until the end of the program which could lead to a deadlock.\n", errout.str());
+
+        check("void f() {\n"
+              "    static std::mutex m;\n"
+              "    std::lock_guard<std::mutex> g(m);\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    std::mutex m;\n"
+              "    std::lock_guard<std::mutex> g(m);\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) The mutex is locked at the same scope as the mutex itself.\n", errout.str());
+
+        check("void g();\n"
+              "void f() {\n"
+              "    static std::mutex m;\n"
+              "    m.lock();\n"
+              "    g();\n"
+              "    m.unlock();\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g();\n"
+              "void f() {\n"
+              "    std::mutex m;\n"
+              "    m.lock();\n"
+              "    g();\n"
+              "    m.unlock();\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) The mutex is locked at the same scope as the mutex itself.\n", errout.str());
+
+        check("class A {\n"
+              "    std::mutex m;\n"
+              "    void f() {\n"
+              "        std::lock_guard<std::mutex> g(m);\n"
+              "    }\n"
+              "};\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("class A {\n"
+              "    std::mutex m;\n"
+              "    void g();\n"
+              "    void f() {\n"
+              "        m.lock();\n"
+              "        g();\n"
+              "        m.unlock();\n"
+              "    }\n"
+              "};\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("class A {\n"
+              "    std::mutex m;\n"
+              "    void f() {\n"
+              "        static std::lock_guard<std::mutex> g(m);\n"
+              "    }\n"
+              "};\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) The lock guard won't unlock until the end of the program which could lead to a deadlock.\n", errout.str());
     }
 };
 

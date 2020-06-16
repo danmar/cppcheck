@@ -84,6 +84,7 @@ public:
 
         checkStl.stlBoundaries();
         checkStl.checkDereferenceInvalidIterator();
+        checkStl.checkMutexes();
 
         // Style check
         checkStl.size();
@@ -185,6 +186,8 @@ public:
 
     /** @brief Look for loops that can replaced with std algorithms */
     void useStlAlgorithm();
+    
+    void checkMutexes();
 
 private:
     bool isContainerSize(const Token *containerToken, const Token *expr) const;
@@ -229,6 +232,9 @@ private:
 
     void useStlAlgorithmError(const Token *tok, const std::string &algoName);
 
+    void globalLockGuardError(const Token *tok);
+    void localMutexError(const Token *tok);
+
     void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE {
         ErrorPath errorPath;
         CheckStl c(nullptr, settings, errorLogger);
@@ -265,6 +271,8 @@ private:
         c.dereferenceInvalidIteratorError(nullptr, "i");
         c.readingEmptyStlContainerError(nullptr);
         c.useStlAlgorithmError(nullptr, "");
+        c.globalLockGuardError(nullptr);
+        c.localMutexError(nullptr);
     }
 
     static std::string myName() {

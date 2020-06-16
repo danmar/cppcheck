@@ -46,11 +46,13 @@ static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
 static const struct CWE CWE597(597U);   // Use of Wrong Operator in String Comparison
 static const struct CWE CWE628(628U);   // Function Call with Incorrectly Specified Arguments
 static const struct CWE CWE664(664U);   // Improper Control of a Resource Through its Lifetime
+static const struct CWE CWE667(667U);   // Improper Locking
 static const struct CWE CWE704(704U);   // Incorrect Type Conversion or Cast
 static const struct CWE CWE762(762U);   // Mismatched Memory Management Routines
 static const struct CWE CWE786(786U);   // Access of Memory Location Before Start of Buffer
 static const struct CWE CWE788(788U);   // Access of Memory Location After End of Buffer
 static const struct CWE CWE825(825U);   // Expired Pointer Dereference
+static const struct CWE CWE833(833U);   // Deadlock
 static const struct CWE CWE834(834U);   // Excessive Iteration
 
 void CheckStl::outOfBounds()
@@ -2391,3 +2393,55 @@ void CheckStl::useStlAlgorithm()
         }
     }
 }
+
+static bool isMutex(const Variable* var)
+{
+    const Token* tok = var->typeStartToken();
+    return Token::Match(tok, "std :: mutex|recursive_mutex|timed_mutex|recursive_timed_mutex|shared_mutex");
+}
+
+static bool isLockGuard(const Variable* var)
+{
+    const Token* tok = var->typeStartToken();
+    return Token::Match(tok, "std :: lock_guard|unique_lock|scoped_lock");
+}
+
+void CheckStl::globalLockGuardError(const Token* tok)
+{
+    reportError(tok, Severity::error,
+                "globalLockGuard",
+                "The lock guard won't unlock until the end of the program which could lead to a deadlock.", CWE833, false);
+}
+
+void CheckStl::localMutexError(const Token* tok)
+{
+    reportError(tok, Severity::error,
+                "localMutex",
+                "The mutex is locked at the same scope as the mutex itself.", CWE667, false);
+}
+
+void CheckStl::checkMutexes()
+{
+    for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
+        for (const Token *tok = function->bodyStart; tok != function->bodyEnd; tok = tok->next()) {
+            const Variable* var = tok->variable();
+            if (!var)
+                continue;
+            if (Token::Match(tok, "%var% . lock ( )")) {
+                if (!isMutex(var))
+                    continue;
+                if (!var->isStatic() && var->scope() == tok->scope())
+                    localMutexError(tok);
+            } else if (Token::Match(tok, "%var% (|{ %var% )|}")) {
+                if (!isLockGuard(var))
+                    continue;
+                const Variable* mvar = tok->tokAt(2)->variable();
+                if (var->isStatic() || var->isGlobal())
+                    globalLockGuardError(tok);
+                else if (mvar && !mvar->isStatic() && mvar->scope() == tok->scope())
+                    localMutexError(tok);
+            }
+        }
+    }
+}
+
