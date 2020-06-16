@@ -564,8 +564,8 @@ static int128_t truncateInt(int128_t value, int bits, char sign)
 ExprEngine::ArrayValue::ArrayValue(const std::string &name, ExprEngine::ValuePtr size, ExprEngine::ValuePtr value, bool pointer, bool nullPointer, bool uninitPointer)
     : Value(name, ExprEngine::ValueType::ArrayValue)
     , pointer(pointer), nullPointer(nullPointer), uninitPointer(uninitPointer)
-    , size{size}
 {
+    this->size.push_back(size);
     assign(ExprEngine::ValuePtr(), value);
 }
 
