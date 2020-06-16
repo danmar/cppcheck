@@ -2408,16 +2408,16 @@ static bool isLockGuard(const Variable* var)
 
 void CheckStl::globalLockGuardError(const Token* tok)
 {
-    reportError(tok, Severity::error,
+    reportError(tok, Severity::warning,
                 "globalLockGuard",
                 "The lock guard won't unlock until the end of the program which could lead to a deadlock.", CWE833, false);
 }
 
 void CheckStl::localMutexError(const Token* tok)
 {
-    reportError(tok, Severity::error,
+    reportError(tok, Severity::warning,
                 "localMutex",
-                "The mutex is locked at the same scope as the mutex itself.", CWE667, false);
+                "The lock is ineffective because the mutex is locked at the same scope as the mutex itself.", CWE667, false);
 }
 
 void CheckStl::checkMutexes()

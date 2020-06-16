@@ -4420,7 +4420,7 @@ private:
               "    static std::lock_guard<std::mutex> g(m);\n"
               "}\n",
               true);
-        ASSERT_EQUALS("[test.cpp:3]: (error) The lock guard won't unlock until the end of the program which could lead to a deadlock.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) The lock guard won't unlock until the end of the program which could lead to a deadlock.\n", errout.str());
 
         check("void f() {\n"
               "    static std::mutex m;\n"
@@ -4434,7 +4434,7 @@ private:
               "    std::lock_guard<std::mutex> g(m);\n"
               "}\n",
               true);
-        ASSERT_EQUALS("[test.cpp:3]: (error) The mutex is locked at the same scope as the mutex itself.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) The lock is ineffective because the mutex is locked at the same scope as the mutex itself.\n", errout.str());
 
         check("void g();\n"
               "void f() {\n"
@@ -4454,7 +4454,7 @@ private:
               "    m.unlock();\n"
               "}\n",
               true);
-        ASSERT_EQUALS("[test.cpp:4]: (error) The mutex is locked at the same scope as the mutex itself.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) The lock is ineffective because the mutex is locked at the same scope as the mutex itself.\n", errout.str());
 
         check("class A {\n"
               "    std::mutex m;\n"
@@ -4484,7 +4484,7 @@ private:
               "    }\n"
               "};\n",
               true);
-        ASSERT_EQUALS("[test.cpp:4]: (error) The lock guard won't unlock until the end of the program which could lead to a deadlock.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) The lock guard won't unlock until the end of the program which could lead to a deadlock.\n", errout.str());
     }
 };
 
