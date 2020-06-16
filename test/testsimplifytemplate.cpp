@@ -256,6 +256,8 @@ private:
         TEST_CASE(template_variable_4);
 
         TEST_CASE(simplifyDecltype);
+
+        TEST_CASE(castInExpansion);
     }
 
     std::string tok(const char code[], bool debugwarnings = false, Settings::PlatformType type = Settings::Native) {
@@ -5127,6 +5129,21 @@ private:
                                 "class type<double> { } ; "
                                 "class type<float> { } ; "
                                 "class type<longdouble> { } ;";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void castInExpansion() {
+        const char code[] = "template <int N> class C { };\n"
+                            "template <typename TC> class Base {};\n"
+                            "template <typename TC> class Derived : private Base<TC> {};\n"
+                            "typedef Derived<C<static_cast<int>(-1)> > C_;\n"
+                            "class C3 { C_ c; };";
+        const char expected[] = "template < int N > class C { } ; "
+                                "class Base<C<static_cast<int>-1>> ; "
+                                "class Derived<C<static_cast<int>-1>> ; "
+                                "class C3 { Derived<C<static_cast<int>-1>> c ; } ; "
+                                "class Derived<C<static_cast<int>-1>> : private Base<C<static_cast<int>-1>> { } ; "
+                                "class Base<C<static_cast<int>-1>> { } ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 };
