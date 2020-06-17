@@ -103,6 +103,9 @@ contains(LINKCORE, [yY][eE][sS]) {
     include($$PWD/../lib/lib.pri)
 }
 
+CONFIG += precompile_header
+PRECOMPILED_HEADER = precompiled_qmake.h
+
 HEADERS += aboutdialog.h \
            application.h \
            applicationdialog.h \
