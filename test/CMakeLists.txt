@@ -1,17 +1,4 @@
 if (BUILD_TESTS)
-
-    cmake_minimum_required(VERSION 3.4) # cmake_policy(SET CMP0064 NEW)
-    cmake_policy(SET CMP0064 NEW)
-    cmake_policy(SET CMP0057 NEW)
-
-    include(CTest)
-
-    find_package(Threads REQUIRED)
-    include(ProcessorCount)
-    ProcessorCount(N)
-    set(CTEST_PARALLEL_LEVEL ${N} CACHE STRING "CTest parallel level")
-    add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -j ${CTEST_PARALLEL_LEVEL} -C ${CMAKE_CFG_INTDIR} --timeout 90)
-
     include_directories(${PROJECT_SOURCE_DIR}/lib/ ${PROJECT_SOURCE_DIR}/cli/)
     include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/externals/tinyxml)
     include_directories(${PROJECT_SOURCE_DIR}/externals/simplecpp/)
@@ -26,6 +13,9 @@ if (BUILD_TESTS)
     if (USE_Z3)
         target_link_libraries(testrunner ${Z3_LIBRARIES})
     endif()
+    if (WIN32 AND NOT BORLAND)
+        target_link_libraries(testrunner Shlwapi.lib)
+    endif()
 
     if (NOT CMAKE_DISABLE_PRECOMPILE_HEADERS)
         target_precompile_headers(testrunner PRIVATE precompiled.h)
@@ -38,12 +28,20 @@ if (BUILD_TESTS)
         COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_SOURCE_DIR}/cfg"
             "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/cfg")
 
-    if (WIN32 AND NOT BORLAND)
-        target_link_libraries(testrunner Shlwapi.lib)
-    endif()
-
     add_dependencies(testrunner copy_cfg)
-    add_dependencies(check testrunner cppcheck)
+
+    cmake_minimum_required(VERSION 3.4) # cmake_policy(SET CMP0064 NEW)
+    cmake_policy(SET CMP0064 NEW)
+    cmake_policy(SET CMP0057 NEW)
+
+    include(CTest)
+
+    find_package(Threads REQUIRED)
+    include(ProcessorCount)
+    ProcessorCount(N)
+    set(CTEST_PARALLEL_LEVEL ${N} CACHE STRING "CTest parallel level")
+    add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -j ${CTEST_PARALLEL_LEVEL} -C ${CMAKE_CFG_INTDIR} --timeout 90
+            DEPENDS testrunner cppcheck)
 
     set(SKIP_TESTS "" CACHE STRING "A list of tests to skip")
 
