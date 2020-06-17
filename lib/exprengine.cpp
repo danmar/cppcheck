@@ -204,7 +204,6 @@ namespace {
                 return;
             mSymbols.insert(symbolicExpression);
             mMap[tok].push_back(symbolicExpression + "=" + value->getRange());
-
         }
 
         void state(const Token *tok, const std::string &s) {
@@ -342,7 +341,8 @@ namespace {
             mTrackExecution->symbolRange(tok, value);
             if (value) {
                 if (auto arr = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(value)) {
-                    mTrackExecution->symbolRange(tok, arr->size);
+                    for (const auto &dim: arr->size)
+                        mTrackExecution->symbolRange(tok, dim);
                     for (const auto &indexAndValue: arr->data)
                         mTrackExecution->symbolRange(tok, indexAndValue.value);
                 } else if (auto s = std::dynamic_pointer_cast<ExprEngine::StructValue>(value)) {
@@ -564,8 +564,8 @@ static int128_t truncateInt(int128_t value, int bits, char sign)
 ExprEngine::ArrayValue::ArrayValue(const std::string &name, ExprEngine::ValuePtr size, ExprEngine::ValuePtr value, bool pointer, bool nullPointer, bool uninitPointer)
     : Value(name, ExprEngine::ValueType::ArrayValue)
     , pointer(pointer), nullPointer(nullPointer), uninitPointer(uninitPointer)
-    , size(size)
 {
+    this->size.push_back(size);
     assign(ExprEngine::ValuePtr(), value);
 }
 
@@ -574,17 +574,16 @@ ExprEngine::ArrayValue::ArrayValue(DataBase *data, const Variable *var)
     , pointer(var->isPointer()), nullPointer(var->isPointer()), uninitPointer(var->isPointer())
 {
     if (var) {
-        int sz = 1;
         for (const auto &dim : var->dimensions()) {
-            if (!dim.known) {
-                sz = -1;
-                break;
-            }
-            sz *= dim.num;
+            if (dim.known)
+                size.push_back(std::make_shared<ExprEngine::IntRange>(std::to_string(dim.num), dim.num, dim.num));
+            else
+                size.push_back(std::make_shared<ExprEngine::IntRange>(data->getNewSymbolName(), 1, ExprEngine::ArrayValue::MAXSIZE));
         }
-        if (sz >= 1)
-            size = std::make_shared<ExprEngine::IntRange>(std::to_string(sz), sz, sz);
+    } else {
+        size.push_back(std::make_shared<ExprEngine::IntRange>(data->getNewSymbolName(), 1, ExprEngine::ArrayValue::MAXSIZE));
     }
+
     ValuePtr val;
     if (var && !var->isGlobal() && !var->isStatic())
         val = std::make_shared<ExprEngine::UninitValue>();
@@ -727,7 +726,12 @@ std::string ExprEngine::ConditionalValue::getSymbolicExpression() const
 std::string ExprEngine::ArrayValue::getSymbolicExpression() const
 {
     std::ostringstream ostr;
-    ostr << "size=" << (size ? size->name : std::string("(null)"));
+    if (size.empty())
+        ostr << "(null)";
+    else {
+        for (const auto &dim: size)
+            ostr << "[" << (dim ? dim->name : std::string("(null)")) << "]";
+    }
     for (const auto &indexAndValue : data) {
         ostr << ",["
              << (!indexAndValue.index ? std::string(":") : indexAndValue.index->name)
@@ -1252,6 +1256,47 @@ static void call(const std::vector<ExprEngine::Callback> &callbacks, const Token
 static ExprEngine::ValuePtr executeExpression(const Token *tok, Data &data);
 static ExprEngine::ValuePtr executeExpression1(const Token *tok, Data &data);
 
+static ExprEngine::ValuePtr calculateArrayIndex(const Token *tok, Data &data, const ExprEngine::ArrayValue &arrayValue)
+{
+    int nr = 1;
+    const Token *tok2 = tok;
+    while (Token::simpleMatch(tok2->astOperand1(), "[")) {
+        tok2 = tok2->astOperand1();
+        nr++;
+    }
+
+    ExprEngine::ValuePtr totalIndex;
+    ExprEngine::ValuePtr dim;
+    while (Token::simpleMatch(tok, "[")) {
+        auto rawIndex = executeExpression(tok->astOperand2(), data);
+
+        ExprEngine::ValuePtr index;
+        if (dim)
+            index = simplifyValue(std::make_shared<ExprEngine::BinOpResult>("*", dim, rawIndex));
+        else
+            index = rawIndex;
+
+        if (!totalIndex)
+            totalIndex = index;
+        else
+            totalIndex = simplifyValue(std::make_shared<ExprEngine::BinOpResult>("+", index, totalIndex));
+
+        if (arrayValue.size.size() >= nr) {
+            if (arrayValue.size[nr-1]) {
+                if (!dim)
+                    dim = arrayValue.size[nr-1];
+                else
+                    dim = simplifyValue(std::make_shared<ExprEngine::BinOpResult>("*", dim, arrayValue.size[nr-1]));
+            }
+        }
+
+        nr--;
+        tok = tok->astOperand1();
+    }
+
+    return totalIndex;
+}
+
 static ExprEngine::ValuePtr executeReturn(const Token *tok, Data &data)
 {
     ExprEngine::ValuePtr retval = executeExpression(tok->astOperand1(), data);
@@ -1334,15 +1379,18 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
     if (lhsToken->varId() > 0) {
         data.assignValue(lhsToken, lhsToken->varId(), assignValue);
     } else if (lhsToken->str() == "[") {
-        auto arrayValue = data.getArrayValue(lhsToken->astOperand1());
+        const Token *tok2 = lhsToken;
+        while (Token::simpleMatch(tok2->astOperand1(), "["))
+            tok2 = tok2->astOperand1();
+        auto arrayValue = data.getArrayValue(tok2->astOperand1());
         if (arrayValue) {
             // Is it array initialization?
-            const Token *arrayInit = lhsToken->astOperand1();
+            const Token *arrayInit = tok2->astOperand1();
             if (arrayInit && arrayInit->variable() && arrayInit->variable()->nameToken() == arrayInit) {
                 if (assignValue->type == ExprEngine::ValueType::StringLiteralValue)
                     arrayValue->assign(ExprEngine::ValuePtr(), assignValue);
             } else {
-                auto indexValue = executeExpression(lhsToken->astOperand2(), data);
+                auto indexValue = calculateArrayIndex(lhsToken, data, *arrayValue);
                 arrayValue->assign(indexValue, assignValue);
             }
         }
@@ -1511,9 +1559,12 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
 
 static ExprEngine::ValuePtr executeArrayIndex(const Token *tok, Data &data)
 {
-    auto arrayValue = data.getArrayValue(tok->astOperand1());
+    const Token *tok2 = tok;
+    while (Token::simpleMatch(tok2->astOperand1(), "["))
+        tok2 = tok2->astOperand1();
+    auto arrayValue = data.getArrayValue(tok2->astOperand1());
     if (arrayValue) {
-        auto indexValue = executeExpression(tok->astOperand2(), data);
+        auto indexValue = calculateArrayIndex(tok, data, *arrayValue);
         auto conditionalValues = arrayValue->read(indexValue);
         for (auto value: conditionalValues)
             call(data.callbacks, tok, value.second, &data);

@@ -43,7 +43,7 @@ def get_cppcheck(cppcheck_path, work_path):
                 os.chdir(cppcheck_path)
                 try:
                     subprocess.check_call(['git', 'checkout', '-f', 'main'])
-                except CalledProcessError:
+                except subprocess.CalledProcessError:
                     subprocess.check_call(['git', 'checkout', '-f', 'master'])
                     subprocess.check_call(['git', 'pull'])
                     subprocess.check_call(['git', 'checkout', 'origin/main', '-b', 'main'])

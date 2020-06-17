@@ -1986,6 +1986,9 @@ void TemplateSimplifier::expandTemplate(
                         } else if (typeindentlevel > 0 && typetok->str() == ">" && brackets1.top()->str() == "<") {
                             --typeindentlevel;
                             brackets1.pop();
+                        } else if (Token::Match(typetok, "const_cast|dynamic_cast|reinterpret_cast|static_cast <")) {
+                            brackets1.push(typetok->next());
+                            ++typeindentlevel;
                         } else if (typetok->str() == "(")
                             ++typeindentlevel;
                         else if (typetok->str() == ")")
