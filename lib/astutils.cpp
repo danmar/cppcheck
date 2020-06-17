@@ -1066,16 +1066,20 @@ bool isUniqueExpression(const Token* tok)
     return isUniqueExpression(tok->astOperand2());
 }
 
-static bool isEscaped(const Token* tok, bool functionsScope)
+static bool isEscaped(const Token* tok, bool functionsScope, const Library* library)
 {
+    if (library && library->isnoreturn(tok))
+        return true;
     if (functionsScope)
         return Token::simpleMatch(tok, "throw");
     else
         return Token::Match(tok, "return|throw");
 }
 
-static bool isEscapedOrJump(const Token* tok, bool functionsScope)
+static bool isEscapedOrJump(const Token* tok, bool functionsScope, const Library* library)
 {
+    if (library && library->isnoreturn(tok))
+        return true;
     if (functionsScope)
         return Token::simpleMatch(tok, "throw");
     else
@@ -1148,7 +1152,7 @@ bool isReturnScope(const Token* const endToken, const Library* library, const To
             !Token::findsimplematch(prev->link(), "break", prev)) {
             return true;
         }
-        if (isEscaped(prev->link()->astTop(), functionScope))
+        if (isEscaped(prev->link()->astTop(), functionScope, library))
             return true;
         if (Token::Match(prev->link()->previous(), "[;{}] {"))
             return isReturnScope(prev, library, unknownFunc, functionScope);
@@ -1162,13 +1166,13 @@ bool isReturnScope(const Token* const endToken, const Library* library, const To
             return false;
         }
         if (Token::simpleMatch(prev->previous(), ") ;") && prev->previous()->link() &&
-            isEscaped(prev->previous()->link()->astTop(), functionScope))
+            isEscaped(prev->previous()->link()->astTop(), functionScope, library))
             return true;
-        if (isEscaped(prev->previous()->astTop(), functionScope))
+        if (isEscaped(prev->previous()->astTop(), functionScope, library))
             return true;
         // return/goto statement
         prev = prev->previous();
-        while (prev && !Token::Match(prev, ";|{|}") && !isEscapedOrJump(prev, functionScope))
+        while (prev && !Token::Match(prev, ";|{|}") && !isEscapedOrJump(prev, functionScope, library))
             prev = prev->previous();
         return prev && prev->isName();
     }
