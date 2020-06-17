@@ -1329,58 +1329,6 @@ void CheckClass::memsetErrorFloat(const Token *tok, const std::string &type)
 
 
 //---------------------------------------------------------------------------
-// ClassCheck: "void operator=(" and "const type & operator=("
-//---------------------------------------------------------------------------
-
-void CheckClass::operatorEq()
-{
-    if (!mSettings->isEnabled(Settings::STYLE))
-        return;
-
-    for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
-        for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-            if (func->type == Function::eOperatorEqual && func->access == AccessControl::Public) {
-                // skip "deleted" functions - cannot be called anyway
-                if (func->isDelete())
-                    continue;
-                // use definition for check so we don't have to deal with qualification
-                bool returnSelfRef = false;
-                if (func->retDef->str() == scope->className) {
-                    if (Token::Match(func->retDef, "%type% &")) {
-                        returnSelfRef = true;
-                    } else {
-                        // We might have "Self<template_parameters>&""
-                        const Token * const tok = func->retDef->next();
-                        if (tok && tok->str() == "<" && tok->link() && tok->link()->next() && tok->link()->next()->str() == "&")
-                            returnSelfRef = true;
-                    }
-                }
-                if (!returnSelfRef) {
-                    // make sure we really have a copy assignment operator
-                    const Token *paramTok = func->tokenDef->tokAt(2);
-                    if (Token::Match(paramTok, "const| %name% &")) {
-                        if (paramTok->str() == "const" &&
-                            paramTok->strAt(1) == scope->className)
-                            operatorEqReturnError(func->retDef, scope->className);
-                        else if (paramTok->str() == scope->className)
-                            operatorEqReturnError(func->retDef, scope->className);
-                    }
-                }
-            }
-        }
-    }
-}
-
-void CheckClass::operatorEqReturnError(const Token *tok, const std::string &className)
-{
-    reportError(tok, Severity::style, "operatorEq",
-                "$symbol:" + className +"\n"
-                "'$symbol::operator=' should return '$symbol &'.\n"
-                "The $symbol::operator= does not conform to standard C/C++ behaviour. To conform to standard C/C++ behaviour, return a reference to self (such as: '$symbol &$symbol::operator=(..) { .. return *this; }'. For safety reasons it might be better to not fix this message. If you think that safety is always more important than conformance then please ignore/suppress this message. For more details about this topic, see the book \"Effective C++\" by Scott Meyers."
-                , CWE398, false);
-}
-
-//---------------------------------------------------------------------------
 // ClassCheck: "C& operator=(const C&) { ... return *this; }"
 // operator= should return a reference to *this
 //---------------------------------------------------------------------------
