@@ -4485,6 +4485,44 @@ private:
               "};\n",
               true);
         ASSERT_EQUALS("[test.cpp:4]: (warning) The lock guard won't unlock until the end of the program which could lead to a deadlock.\n", errout.str());
+
+        check("std::mutex& h();\n"
+              "void f() {\n"
+              "    auto& m = h();\n"
+              "    std::lock_guard<std::mutex> g(m);\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g();\n"
+              "std::mutex& h();\n"
+              "void f() {\n"
+              "    auto& m = h();\n"
+              "    m.lock();\n"
+              "    g();\n"
+              "    m.unlock();\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::mutex& h();\n"
+              "void f() {\n"
+              "    auto m = h();\n"
+              "    std::lock_guard<std::mutex> g(m);\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:4]: (warning) The lock is ineffective because the mutex is locked at the same scope as the mutex itself.\n", errout.str());
+
+        check("void g();\n"
+              "std::mutex& h();\n"
+              "void f() {\n"
+              "    auto m = h();\n"
+              "    m.lock();\n"
+              "    g();\n"
+              "    m.unlock();\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:5]: (warning) The lock is ineffective because the mutex is locked at the same scope as the mutex itself.\n", errout.str());
     }
 };
 

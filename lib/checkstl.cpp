@@ -2396,14 +2396,21 @@ void CheckStl::useStlAlgorithm()
 
 static bool isMutex(const Variable* var)
 {
-    const Token* tok = var->typeStartToken();
+    const Token* tok = Token::typeDecl(var->nameToken()).first;
     return Token::Match(tok, "std :: mutex|recursive_mutex|timed_mutex|recursive_timed_mutex|shared_mutex");
 }
 
 static bool isLockGuard(const Variable* var)
 {
-    const Token* tok = var->typeStartToken();
+    const Token* tok = Token::typeDecl(var->nameToken()).first;
     return Token::Match(tok, "std :: lock_guard|unique_lock|scoped_lock");
+}
+
+static bool isLocalMutex(const Variable* var, const Scope* scope)
+{
+    if (!var)
+        return false;
+    return !var->isReference() && !var->isRValueReference() && !var->isStatic() && var->scope() == scope;
 }
 
 void CheckStl::globalLockGuardError(const Token* tok)
@@ -2430,7 +2437,7 @@ void CheckStl::checkMutexes()
             if (Token::Match(tok, "%var% . lock ( )")) {
                 if (!isMutex(var))
                     continue;
-                if (!var->isStatic() && var->scope() == tok->scope())
+                if (isLocalMutex(var, tok->scope()))
                     localMutexError(tok);
             } else if (Token::Match(tok, "%var% (|{ %var% )|}")) {
                 if (!isLockGuard(var))
@@ -2438,7 +2445,7 @@ void CheckStl::checkMutexes()
                 const Variable* mvar = tok->tokAt(2)->variable();
                 if (var->isStatic() || var->isGlobal())
                     globalLockGuardError(tok);
-                else if (mvar && !mvar->isStatic() && mvar->scope() == tok->scope())
+                else if (isLocalMutex(mvar, tok->scope()))
                     localMutexError(tok);
             }
         }
