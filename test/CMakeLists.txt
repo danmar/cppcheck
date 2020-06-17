@@ -22,13 +22,18 @@ if (BUILD_TESTS)
     endif()
 
     add_custom_target(copy_cfg ALL
+        ${CMAKE_COMMAND} -E copy_directory "${PROJECT_SOURCE_DIR}/cfg"
+            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/cfg"
         COMMENT "Copying cfg files")
-    add_custom_command(
-        TARGET copy_cfg
-        COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_SOURCE_DIR}/cfg"
-            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/cfg")
-
     add_dependencies(testrunner copy_cfg)
+
+    if (LIBXML2_XMLLINT_EXECUTABLE)
+        # TODO: get rid of the copy
+        add_custom_target(checkcfg ${CMAKE_COMMAND} -E copy $<TARGET_FILE:cppcheck> ${CMAKE_SOURCE_DIR}
+                COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/cfg/runtests.sh
+                DEPENDS cppcheck validateCFG
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cfg)
+    endif()
 
     if (REGISTER_TESTS)
         cmake_minimum_required(VERSION 3.4) # cmake_policy(SET CMP0064 NEW)
@@ -41,7 +46,7 @@ if (BUILD_TESTS)
         include(ProcessorCount)
         ProcessorCount(N)
         set(CTEST_PARALLEL_LEVEL ${N} CACHE STRING "CTest parallel level")
-        add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -j ${CTEST_PARALLEL_LEVEL} -C ${CMAKE_CFG_INTDIR} --timeout 90
+        add_custom_target(check ${CMAKE_CTEST_COMMAND} --output-on-failure -j ${CTEST_PARALLEL_LEVEL} -C ${CMAKE_CFG_INTDIR} --timeout 90
                 DEPENDS testrunner cppcheck)
 
         set(SKIP_TESTS "" CACHE STRING "A list of tests to skip")
