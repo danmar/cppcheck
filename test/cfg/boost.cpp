@@ -67,3 +67,17 @@ void uninitvar()
     // cppcheck-suppress uninitvar
     (void)boost::math::round(intUninit2);
 }
+
+void throwexception(int * buf)
+{
+    if (!buf)
+        boost::throw_exception(std::bad_alloc());
+    *buf = 0;
+}
+
+void throwexception2(int * buf)
+{
+    if (!buf)
+        BOOST_THROW_EXCEPTION(std::bad_alloc());
+    *buf = 0;
+}
