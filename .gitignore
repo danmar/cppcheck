@@ -114,3 +114,6 @@ cmake-*
 # clang tooling temporary files
 .clangd/
 compile_commands.json
+
+# qmake
+/gui/.qmake.stash
