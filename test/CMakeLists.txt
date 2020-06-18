@@ -75,6 +75,7 @@ if (BUILD_TESTS)
             endif()
         endfunction()
 
+        # TODO: what is this?
         add_fixture(TestSamples WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
         foreach(SRC ${srcs})
             file(STRINGS ${SRC} FIXTURE_LINE REGEX "TestFixture\\(" LIMIT_COUNT 1)
@@ -82,6 +83,7 @@ if (BUILD_TESTS)
                 add_fixture(${CMAKE_MATCH_1})
             endif()
         endforeach()
+        # TODO: parse files for REGISTER_TEST macro
         add_fixture(TestLeakAutoVarStrcpy)
         add_fixture(TestLeakAutoVarWindows)
         add_fixture(TestMemleakInFunction)
@@ -115,6 +117,7 @@ if (BUILD_TESTS)
             endif()
             if (${TEST_NAME} IN_LIST SKIP_TESTS)
             else()
+                # TODO: add syntax check
                 add_test(NAME cfg-${TEST_NAME}
                         COMMAND $<TARGET_FILE:cppcheck>
                         --check-library
@@ -125,6 +128,7 @@ if (BUILD_TESTS)
                         --error-exitcode=1
                         --suppress=missingIncludeSystem
                         --inline-suppr
+                        --template="{file}:{line}:{severity}:{id}:{message}"
                         ${INCONCLUSIVE}
                         ${CMAKE_CURRENT_SOURCE_DIR}/cfg/${CFG_TEST}
                 )
