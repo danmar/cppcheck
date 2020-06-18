@@ -436,11 +436,14 @@ void CheckFunctions::checkLibraryMatchFunctions()
         if (tok->linkAt(1)->strAt(1) == "(")
             continue;
 
+        if (tok->function())
+            continue;
+
         if (!mSettings->library.isNotLibraryFunction(tok))
             continue;
 
         const std::string &functionName = mSettings->library.getFunctionName(tok);
-        if (functionName.empty() || mSettings->library.functions.find(functionName) == mSettings->library.functions.end())
+        if (functionName.empty() || mSettings->library.functions.find(functionName) != mSettings->library.functions.end())
             continue;
 
         reportError(tok,
