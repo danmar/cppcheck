@@ -231,6 +231,15 @@ namespace ExprEngine {
             auto it = member.find(n);
             return (it == member.end()) ? ValuePtr() : it->second;
         }
+
+        std::string getUninitStructMember() const {
+            for (auto memberNameValue: member) {
+                if (memberNameValue.second && memberNameValue.second->isUninit())
+                    return memberNameValue.first;
+            }
+            return std::string();
+        }
+
         std::map<std::string, ValuePtr> member;
     };
 

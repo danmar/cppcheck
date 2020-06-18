@@ -2363,7 +2363,19 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
     std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> uninit = [=](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
         if (!tok->astParent())
             return;
-        if (!value.isUninit())
+
+        std::string uninitStructMember;
+        if (const auto* structValue = dynamic_cast<const ExprEngine::StructValue*>(&value)) {
+            uninitStructMember = structValue->getUninitStructMember();
+
+            // uninitialized struct member => is there data copy of struct..
+            if (!uninitStructMember.empty()) {
+                if (!Token::Match(tok->astParent(), "[=,(]"))
+                    return;
+            }
+        }
+
+        if (!value.isUninit() && uninitStructMember.empty())
             return;
 
         // lhs in assignment
@@ -2420,6 +2432,11 @@ void ExprEngine::runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer,
 
         dataBase->addError(tok->linenr());
         std::list<const Token*> callstack{tok};
+        if (!uninitStructMember.empty()) {
+            ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingUninitStructMember", "Cannot determine that '" + tok->expressionString() + "." + uninitStructMember + "' is initialized", CWE_USE_OF_UNINITIALIZED_VARIABLE, false);
+            errorLogger->reportErr(errmsg);
+            return;
+        }
         ErrorMessage errmsg(callstack, &tokenizer->list, Severity::SeverityType::error, "bughuntingUninit", "Cannot determine that '" + tok->expressionString() + "' is initialized", CWE_USE_OF_UNINITIALIZED_VARIABLE, false);
         errorLogger->reportErr(errmsg);
     };
