@@ -440,7 +440,7 @@ void CheckFunctions::checkLibraryMatchFunctions()
             continue;
 
         const std::string &functionName = mSettings->library.getFunctionName(tok);
-        if (functionName.empty() || mSettings->library.functions.find(functionName) != mSettings->library.functions.end())
+        if (functionName.empty() || mSettings->library.functions.find(functionName) == mSettings->library.functions.end())
             continue;
 
         reportError(tok,
