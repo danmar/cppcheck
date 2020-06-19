@@ -22,6 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "errortypes.h"
 
 #include <functional>
 #include <map>
@@ -78,9 +79,15 @@ namespace ExprEngine {
         virtual std::string getNewSymbolName() = 0;
         const std::string currentFunction;
         const Settings * const settings;
-        virtual void addError(int linenr) {
-            (void)linenr;
-        }
+        virtual void reportError(const Token *tok,
+                                 Severity::SeverityType severity,
+                                 const char id[],
+                                 const std::string &text,
+                                 CWE cwe,
+                                 bool inconclusive,
+                                 bool incomplete=false,
+                                 const std::string functionName = std::string()) = 0;
+        ErrorPath errorPath;
     };
 
     class Value {
