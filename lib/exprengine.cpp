@@ -1575,7 +1575,12 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
             }
             data.contractConstraints(function, executeExpression1);
             data.errorPath.push_back(ErrorPathItem(tok, "Calling " + function->name()));
-            execute(functionScope->bodyStart, functionScope->bodyEnd, data);
+            try {
+                execute(functionScope->bodyStart, functionScope->bodyEnd, data);
+            } catch (BugHuntingException &e) {
+                e.tok = tok;
+                throw e;
+            }
             data.errorPath.pop_back();
         }
     }
