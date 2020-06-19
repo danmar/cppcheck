@@ -1926,6 +1926,7 @@ static void execute(const Token *start, const Token *end, Data &data)
                     tok = tok->tokAt(2);
                     continue;
                 }
+                data.assignValue(tok, tok->varId(), createVariableValue(*tok->variable(), data));
             } else if (tok->variable()->isArray()) {
                 data.assignValue(tok, tok->varId(), std::make_shared<ExprEngine::ArrayValue>(&data, tok->variable()));
                 if (Token::Match(tok, "%name% ["))

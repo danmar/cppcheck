@@ -46,7 +46,7 @@ private:
 
     void uninit() {
         check("void foo() { int x; x = x + 1; }");
-        TODO_ASSERT_EQUALS("[test.cpp:1]: (error) Cannot determine that 'x' is initialized\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Cannot determine that 'x' is initialized\n", errout.str());
 
         check("void foo() { int x; int y = x + 1; }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Cannot determine that 'x' is initialized\n", errout.str());
