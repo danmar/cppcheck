@@ -86,7 +86,7 @@ namespace ExprEngine {
                                  CWE cwe,
                                  bool inconclusive,
                                  bool incomplete=false,
-                                 const std::string functionName = std::string()) = 0;
+                                 const std::string &functionName = std::string()) = 0;
         ErrorPath errorPath;
     };
 
