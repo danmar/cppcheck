@@ -150,7 +150,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         std::string ret;
-        std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> f = [&](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
+        ExprEngine::Callback f = [&](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
             if (tok->str() != binop)
                 return;
             const auto *b = dynamic_cast<const ExprEngine::BinOpResult *>(&value);
@@ -193,7 +193,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         std::string ret;
-        std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> f = [&](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
+        ExprEngine::Callback f = [&](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
             (void)dataBase;
             if ((linenr == 0 || linenr == tok->linenr()) && tok->expressionString() == str) {
                 if (!ret.empty())

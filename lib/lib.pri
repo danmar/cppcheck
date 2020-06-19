@@ -5,6 +5,7 @@ include($$PWD/../externals/externals.pri)
 INCLUDEPATH += $$PWD
 HEADERS += $${PWD}/analyzerinfo.h \
            $${PWD}/astutils.h \
+           $${PWD}/bughuntingchecks.h \
            $${PWD}/check.h \
            $${PWD}/check64bit.h \
            $${PWD}/checkassert.h \
@@ -60,6 +61,7 @@ HEADERS += $${PWD}/analyzerinfo.h \
 
 SOURCES += $${PWD}/analyzerinfo.cpp \
            $${PWD}/astutils.cpp \
+           $${PWD}/bughuntingchecks.cpp \
            $${PWD}/check.cpp \
            $${PWD}/check64bit.cpp \
            $${PWD}/checkassert.cpp \
