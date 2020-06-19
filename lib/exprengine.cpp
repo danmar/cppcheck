@@ -1442,6 +1442,16 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
     return assignValue;
 }
 
+static ExprEngine::ValuePtr executeIncDec(const Token *tok, Data &data)
+{
+    ExprEngine::ValuePtr beforeValue = executeExpression(tok->astOperand1(), data);
+    ExprEngine::ValuePtr assignValue = simplifyValue(std::make_shared<ExprEngine::BinOpResult>(tok->str().substr(0,1), beforeValue, std::make_shared<ExprEngine::IntRange>("1", 1, 1)));
+    if (tok->astOperand1()->varId() > 0)
+        data.assignValue(tok->astOperand1(), tok->astOperand1()->varId(), assignValue);
+    else
+        throw BugHuntingException(tok, "Unhandled increment/decrement operand");
+    return (precedes(tok, tok->astOperand1())) ? assignValue : beforeValue;
+}
 
 #ifdef USE_Z3
 static void checkContract(Data &data, const Token *tok, const Function *function, const std::vector<ExprEngine::ValuePtr> &argValues)
@@ -1823,6 +1833,9 @@ static ExprEngine::ValuePtr executeExpression1(const Token *tok, Data &data)
     if (tok->isAssignmentOp())
         // TODO: Handle more operators
         return executeAssign(tok, data);
+
+    if (tok->tokType() == Token::Type::eIncDecOp)
+        return executeIncDec(tok, data);
 
     if (tok->astOperand1() && tok->astOperand2() && tok->str() == "[")
         return executeArrayIndex(tok, data);

@@ -52,7 +52,7 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (error) Cannot determine that 'x' is initialized\n", errout.str());
 
         check("void foo() { int x; x++; }");
-        TODO_ASSERT_EQUALS("[test.cpp:1]: (error) Cannot determine that 'x' is initialized\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Cannot determine that 'x' is initialized\n", errout.str());
     }
 };
 
