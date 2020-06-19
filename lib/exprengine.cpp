@@ -1538,10 +1538,14 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
         return retVal;
     }
 
+    const bool hasBody = tok->astOperand1()->function() && tok->astOperand1()->function()->hasBody();
+
     std::vector<ExprEngine::ValuePtr> argValues;
     for (const Token *argtok : getArguments(tok)) {
-        auto val = executeExpression1(argtok, data);
+        auto val = hasBody ? executeExpression1(argtok, data) : executeExpression(argtok, data);
         argValues.push_back(val);
+        if (hasBody)
+            continue;
         if (!argtok->valueType() || (argtok->valueType()->constness & 1) == 1)
             continue;
         if (auto arrayValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(val)) {

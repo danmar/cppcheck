@@ -42,8 +42,6 @@ def get_error_lines(filename):
                     linenr = 242 # warn about usage
                 elif linenr == 266:
                     continue # no warning should be written
-                elif linenr == 295:
-                    continue # FIXME: False negative
             ret.append(linenr)
     return ret
 
