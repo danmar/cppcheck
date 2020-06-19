@@ -1356,6 +1356,60 @@ static ExprEngine::ValuePtr truncateValue(ExprEngine::ValuePtr val, const ValueT
     return val;
 }
 
+static void assignExprValue(const Token *expr, ExprEngine::ValuePtr value, Data &data)
+{
+    if (!expr)
+        return;
+    if (expr->varId() > 0) {
+        data.assignValue(expr, expr->varId(), value);
+    } else if (expr->str() == "[") {
+        // Find array token
+        const Token *arrayToken = expr;
+        while (Token::simpleMatch(arrayToken, "["))
+            arrayToken = arrayToken->astOperand1();
+        if (!arrayToken)
+            return;
+        if (auto arrayValue = data.getArrayValue(arrayToken)) {
+            // Is it array initialization?
+            if (arrayToken->variable() && arrayToken->variable()->nameToken() == arrayToken) {
+                if (value->type == ExprEngine::ValueType::StringLiteralValue)
+                    arrayValue->assign(ExprEngine::ValuePtr(), value);
+            } else {
+                auto indexValue = calculateArrayIndex(expr, data, *arrayValue);
+                arrayValue->assign(indexValue, value);
+            }
+        }
+    } else if (expr->isUnaryOp("*")) {
+        auto pval = executeExpression(expr->astOperand1(), data);
+        if (pval && pval->type == ExprEngine::ValueType::AddressOfValue) {
+            auto val = std::dynamic_pointer_cast<ExprEngine::AddressOfValue>(pval);
+            if (val)
+                data.assignValue(expr, val->varId, value);
+        } else if (pval && pval->type == ExprEngine::ValueType::BinOpResult) {
+            auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(pval);
+            if (b && b->binop == "+") {
+                std::shared_ptr<ExprEngine::ArrayValue> arr;
+                ExprEngine::ValuePtr offset;
+                if (b->op1->type == ExprEngine::ValueType::ArrayValue) {
+                    arr = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(b->op1);
+                    offset = b->op2;
+                } else {
+                    arr = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(b->op2);
+                    offset = b->op1;
+                }
+                if (arr && offset) {
+                    arr->assign(offset, value);
+                }
+            }
+        }
+    } else if (Token::Match(expr, ". %name%")) {
+        auto structVal = executeExpression(expr->astOperand1(), data);
+        if (structVal && structVal->type == ExprEngine::ValueType::StructValue)
+            data.assignStructMember(expr, &*std::static_pointer_cast<ExprEngine::StructValue>(structVal), expr->next()->str(), value);
+    }
+}
+
+
 static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
 {
     ExprEngine::ValuePtr rhsValue = executeExpression(tok->astOperand2(), data);
@@ -1393,52 +1447,8 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
     assignValue = truncateValue(assignValue, lhsToken->valueType(), data);
     call(data.callbacks, tok, assignValue, &data);
 
-    if (lhsToken->varId() > 0) {
-        data.assignValue(lhsToken, lhsToken->varId(), assignValue);
-    } else if (lhsToken->str() == "[") {
-        const Token *tok2 = lhsToken;
-        while (Token::simpleMatch(tok2->astOperand1(), "["))
-            tok2 = tok2->astOperand1();
-        auto arrayValue = data.getArrayValue(tok2->astOperand1());
-        if (arrayValue) {
-            // Is it array initialization?
-            const Token *arrayInit = tok2->astOperand1();
-            if (arrayInit && arrayInit->variable() && arrayInit->variable()->nameToken() == arrayInit) {
-                if (assignValue->type == ExprEngine::ValueType::StringLiteralValue)
-                    arrayValue->assign(ExprEngine::ValuePtr(), assignValue);
-            } else {
-                auto indexValue = calculateArrayIndex(lhsToken, data, *arrayValue);
-                arrayValue->assign(indexValue, assignValue);
-            }
-        }
-    } else if (lhsToken->isUnaryOp("*")) {
-        auto pval = executeExpression(lhsToken->astOperand1(), data);
-        if (pval && pval->type == ExprEngine::ValueType::AddressOfValue) {
-            auto val = std::dynamic_pointer_cast<ExprEngine::AddressOfValue>(pval);
-            if (val)
-                data.assignValue(lhsToken, val->varId, assignValue);
-        } else if (pval && pval->type == ExprEngine::ValueType::BinOpResult) {
-            auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(pval);
-            if (b && b->binop == "+") {
-                std::shared_ptr<ExprEngine::ArrayValue> arr;
-                ExprEngine::ValuePtr offset;
-                if (b->op1->type == ExprEngine::ValueType::ArrayValue) {
-                    arr = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(b->op1);
-                    offset = b->op2;
-                } else {
-                    arr = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(b->op2);
-                    offset = b->op1;
-                }
-                if (arr && offset) {
-                    arr->assign(offset, assignValue);
-                }
-            }
-        }
-    } else if (Token::Match(lhsToken, ". %name%")) {
-        auto structVal = executeExpression(lhsToken->astOperand1(), data);
-        if (structVal && structVal->type == ExprEngine::ValueType::StructValue)
-            data.assignStructMember(tok, &*std::static_pointer_cast<ExprEngine::StructValue>(structVal), lhsToken->strAt(1), assignValue);
-    }
+    assignExprValue(lhsToken, assignValue, data);
+
     return assignValue;
 }
 
@@ -1446,11 +1456,10 @@ static ExprEngine::ValuePtr executeIncDec(const Token *tok, Data &data)
 {
     ExprEngine::ValuePtr beforeValue = executeExpression(tok->astOperand1(), data);
     ExprEngine::ValuePtr assignValue = simplifyValue(std::make_shared<ExprEngine::BinOpResult>(tok->str().substr(0,1), beforeValue, std::make_shared<ExprEngine::IntRange>("1", 1, 1)));
-    if (tok->astOperand1()->varId() > 0)
-        data.assignValue(tok->astOperand1(), tok->astOperand1()->varId(), assignValue);
-    else
-        throw BugHuntingException(tok, "Unhandled increment/decrement operand");
-    return (precedes(tok, tok->astOperand1())) ? assignValue : beforeValue;
+    assignExprValue(tok->astOperand1(), assignValue, data);
+    auto retVal = (precedes(tok, tok->astOperand1())) ? assignValue : beforeValue;
+    call(data.callbacks, tok, retVal, &data);
+    return retVal;
 }
 
 #ifdef USE_Z3

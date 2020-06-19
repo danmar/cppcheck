@@ -50,6 +50,9 @@ private:
         TEST_CASE(exprAssign1);
         TEST_CASE(exprAssign2); // Truncation
 
+        TEST_CASE(inc1);
+        TEST_CASE(inc2);
+
         TEST_CASE(if1);
         TEST_CASE(if2);
         TEST_CASE(if3);
@@ -320,6 +323,24 @@ private:
 
     void exprAssign2() {
         ASSERT_EQUALS("2", getRange("void f(unsigned char x) { x = 258; int a = x }", "a=x"));
+    }
+
+    void inc1() {
+        ASSERT_EQUALS("(and (>= $1 (- 2147483648)) (<= $1 2147483647))\n"
+                      "(= (+ $1 1) $1)\n"
+                      "z3::unsat\n",
+                      expr("void f(int x) { int y = x++; x == y; }", "=="));
+
+        ASSERT_EQUALS("(and (>= $1 (- 2147483648)) (<= $1 2147483647))\n"
+                      "(= (+ $1 1) (+ $1 1))\n"
+                      "z3::sat\n",
+                      expr("void f(int x) { int y = ++x; x == y; }", "=="));
+    }
+
+    void inc2() {
+        ASSERT_EQUALS("(= 2 2)\n"
+                      "z3::sat\n",
+                      expr("void f() { unsigned char a[2]; a[0] = 1; a[0]++; a[0] == a[0]; }", "=="));
     }
 
     void if1() {
