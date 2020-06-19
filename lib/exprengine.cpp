@@ -1578,8 +1578,11 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
             const Scope *functionScope = function->functionScope;
             int argnr = 0;
             for (const Variable &arg: function->argumentList) {
-                if (argnr < argValues.size())
+                if (argnr < argValues.size()) {
+                    if (!arg.isReference())
+                        argValues[argnr] = translateUninitValueToRange(argValues[argnr], arg.valueType(), data);
                     data.assignValue(function->functionScope->bodyStart, arg.declarationId(), argValues[argnr]);
+                }
                 // TODO default values!
                 argnr++;
             }
