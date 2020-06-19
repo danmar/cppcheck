@@ -498,8 +498,7 @@ namespace {
                          CWE cwe,
                          bool inconclusive,
                          bool incomplete,
-                         const std::string &functionName) OVERRIDE
-        {
+                         const std::string &functionName) OVERRIDE {
             if (errorPath.empty())
                 mTrackExecution->addError(tok->linenr());
 
