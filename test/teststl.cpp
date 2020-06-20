@@ -3749,6 +3749,12 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str(). The value returned by c_str() is invalid after this call.\n", errout.str());
 
+        check("namespace A { namespace B { std::ostringstream errmsg; } }\n"
+              "void f() {\n"
+              "    const char *c = A::B::errmsg.str().c_str();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str(). The value returned by c_str() is invalid after this call.\n", errout.str());
+
         check("std::string f();\n"
               "\n"
               "void foo() {\n"
@@ -4006,6 +4012,22 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void func(const std::string& b) {\n"
+              "    std::string a = b.c_str();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Assigning the result of c_str() to a variable of type std::string is slow and redundant.\n", errout.str());
+
+        check("void func(const std::string* b) {\n"
+              "    std::string a = b[2].c_str();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Assigning the result of c_str() to a variable of type std::string is slow and redundant.\n", errout.str());
+
+        check("std::string func2();\n"
+              "void func(const std::string& b) {\n"
+              "    std::string a = func2().c_str();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Assigning the result of c_str() to a variable of type std::string is slow and redundant.\n", errout.str());
     }
 
     void uselessCalls() {

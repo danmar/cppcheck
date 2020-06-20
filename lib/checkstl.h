@@ -192,6 +192,7 @@ private:
     void string_c_strThrowError(const Token* tok);
     void string_c_strError(const Token* tok);
     void string_c_strReturn(const Token* tok);
+    void string_c_strAssign(const Token* tok);
     void string_c_strParam(const Token* tok, nonneg int number);
 
     void outOfBoundsError(const Token *tok, const std::string &containerName, const ValueFlow::Value *containerSize, const std::string &index, const ValueFlow::Value *indexValue);
@@ -256,6 +257,7 @@ private:
         c.checkFindInsertError(nullptr);
         c.string_c_strError(nullptr);
         c.string_c_strReturn(nullptr);
+        c.string_c_strAssign(nullptr);
         c.string_c_strParam(nullptr, 0);
         c.string_c_strThrowError(nullptr);
         c.sizeError(nullptr);

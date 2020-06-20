@@ -1941,18 +1941,32 @@ void CheckStl::string_c_str()
             if (Token::Match(tok, "throw %var% . c_str|data ( ) ;") && isLocal(tok->next()) &&
                 tok->next()->variable() && tok->next()->variable()->isStlStringType()) {
                 string_c_strThrowError(tok);
-            } else if (tok->variable() && tok->strAt(1) == "=") {
-                if (Token::Match(tok->tokAt(2), "%var% . str ( ) . c_str|data ( ) ;")) {
-                    const Variable* var = tok->variable();
-                    const Variable* var2 = tok->tokAt(2)->variable();
-                    if (var->isPointer() && var2 && var2->isStlType(stl_string_stream))
+            } else if (tok->variable() && tok->next()->isAssignmentOp() && tok->next()->astOperand2()) {
+                const Token* op2 = tok->next()->astOperand2(); // a = a.str().c_str();
+                const Token* op21 = op2->astOperand1();
+                if (op2->str() != "(" || !op21 || op21->str() != ".")
+                    continue;
+
+                if (op21->strAt(1) != "c_str" && op21->strAt(1) != "data")
+                    continue;
+
+                const Token* op211 = op21->astOperand1();
+                if (Token::Match(op21->tokAt(-5), "%var% . str|data ( )")) { // a = a.str().c_str();
+                    const Variable* var2 = op21->tokAt(-5)->variable();
+                    if (var2 && var2->isStlType(stl_string_stream)) {
+                        if (tok->variable()->isPointer())
+                            string_c_strError(tok);
+                        else if (printPerformance && tok->variable()->isStlStringType())
+                            string_c_strAssign(tok);
+                    }
+                } else if (op211 && op211->previous()->function() && Token::Match(op211->previous()->function()->retDef, "std :: string|wstring %name%")) { // a = func().c_str();
+                    if (tok->variable()->isPointer())
                         string_c_strError(tok);
-                } else if (Token::Match(tok->tokAt(2), "%name% (") &&
-                           Token::Match(tok->linkAt(3), ") . c_str|data ( ) ;") &&
-                           tok->tokAt(2)->function() && Token::Match(tok->tokAt(2)->function()->retDef, "std :: string|wstring %name%")) {
-                    const Variable* var = tok->variable();
-                    if (var->isPointer())
-                        string_c_strError(tok);
+                    else if (printPerformance && tok->variable()->isStlStringType())
+                        string_c_strAssign(tok);
+                } else if (op211 && op211->valueType()) { // a = str.c_str()
+                    if (printPerformance && tok->variable()->isStlStringType() && op211->valueType()->container && op211->valueType()->container->stdStringLike)
+                        string_c_strAssign(tok);
                 }
             } else if (printPerformance && tok->function() && Token::Match(tok, "%name% ( !!)") && tok->str() != scope.className) {
                 const std::pair<std::multimap<const Function*, int>::const_iterator, std::multimap<const Function*, int>::const_iterator> range = c_strFuncParam.equal_range(tok->function());
@@ -1978,7 +1992,7 @@ void CheckStl::string_c_str()
                         const Variable* var = tok2->tokAt(-5)->variable();
                         if (var && var->isStlStringType()) {
                             string_c_strParam(tok, i->second);
-                        } else if (Token::Match(tok2->tokAt(-9), "%name% . str ( )")) { // Check ss.str().c_str() as parameter
+                        } else if (Token::Match(tok2->tokAt(-9), "%name% . str|data ( )")) { // Check ss.str().c_str() as parameter
                             const Variable* ssVar = tok2->tokAt(-9)->variable();
                             if (ssVar && ssVar->isStlType(stl_string_stream))
                                 string_c_strParam(tok, i->second);
@@ -2083,6 +2097,12 @@ void CheckStl::string_c_strReturn(const Token* tok)
 {
     reportError(tok, Severity::performance, "stlcstrReturn", "Returning the result of c_str() in a function that returns std::string is slow and redundant.\n"
                 "The conversion from const char* as returned by c_str() to std::string creates an unnecessary string copy. Solve that by directly returning the string.", CWE704, Certainty::normal);
+}
+
+void CheckStl::string_c_strAssign(const Token* tok)
+{
+    reportError(tok, Severity::performance, "stlcstrAssign", "Assigning the result of c_str() to a variable of type std::string is slow and redundant.\n"
+                "The conversion from const char* as returned by c_str() to std::string creates an unnecessary string copy. Solve that by directly returning the string.", CWE704, Certainty::safe);
 }
 
 void CheckStl::string_c_strParam(const Token* tok, nonneg int number)
