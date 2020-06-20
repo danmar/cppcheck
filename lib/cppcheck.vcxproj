@@ -39,6 +39,7 @@
     <ClCompile Include="..\externals\tinyxml\tinyxml2.cpp" />
     <ClCompile Include="analyzerinfo.cpp" />
     <ClCompile Include="astutils.cpp" />
+    <ClCompile Include="bughuntingchecks.cpp" />
     <ClCompile Include="check.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -106,6 +107,7 @@
     <ClInclude Include="..\externals\tinyxml\tinyxml2.h" />
     <ClInclude Include="analyzerinfo.h" />
     <ClInclude Include="astutils.h" />
+    <ClInclude Include="bughuntingchecks.h" />
     <ClInclude Include="check.h" />
     <ClInclude Include="check64bit.h" />
     <ClInclude Include="checkassert.h" />
