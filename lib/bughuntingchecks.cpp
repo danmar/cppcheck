@@ -227,7 +227,8 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
         int count = 0;
         if (Token::simpleMatch(parent, ",")) {
             if (tok == parent->astOperand2())
-                ++count;
+                count = 1;
+            parent = parent->astParent();
             while (Token::simpleMatch(parent, ",")) {
                 count++;
                 parent = parent->astParent();

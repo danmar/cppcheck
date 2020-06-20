@@ -31,6 +31,7 @@ private:
     void run() OVERRIDE {
 #ifdef USE_Z3
         TEST_CASE(uninit);
+        TEST_CASE(ctu);
 #endif
     }
 
@@ -53,6 +54,45 @@ private:
 
         check("void foo() { int x; x++; }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Cannot determine that 'x' is initialized\n", errout.str());
+    }
+
+    void ctu() {
+        check("void init(int &x) {\n"
+              "    x = 1;\n"
+              "}\n"
+              "\n"
+              "void foo() {\n"
+              "    int x;\n"
+              "    init(x);\n"
+              "    x++;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void init(int a, int &x) {\n"
+              "    if (a < 10)\n"
+              "        x = 1;\n"
+              "}\n"
+              "\n"
+              "void foo(int a) {\n"
+              "    int x;\n"
+              "    init(a, x);\n"
+              "    x++;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:9]: (error) Cannot determine that 'x' is initialized\n", errout.str());
+
+        check("void init(int a, int &x) {\n"
+              "    if (a < 10)\n"
+              "        x = 1;\n"
+              "    else\n"
+              "        x = 3;\n"
+              "}\n"
+              "\n"
+              "void foo(int a) {\n"
+              "    int x;\n"
+              "    init(a, x);\n"
+              "    x++;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
