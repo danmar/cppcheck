@@ -177,6 +177,29 @@ static std::string str(ExprEngine::ValuePtr val)
     return ret.str();
 }
 
+static size_t extfind(const std::string &str, const std::string &what, size_t pos)
+{
+    int indent = 0;
+    for (; pos < str.size(); ++pos) {
+        if (indent <= 0 && str[pos] == what[0])
+            return pos;
+        else if (str[pos] == '\"') {
+            ++pos;
+            while (pos < str.size()) {
+                if (str[pos] == '\"')
+                    break;
+                if (pos == '\\')
+                    ++pos;
+                ++pos;
+            }
+        } else if (str[pos] == '(')
+            ++indent;
+        else if (str[pos] == ')')
+            --indent;
+    }
+    return std::string::npos;
+}
+
 std::string ExprEngine::str(int128_t value)
 {
     std::ostringstream ostr;
@@ -535,6 +558,8 @@ namespace {
             std::ostringstream ret;
             std::map<std::string, ExprEngine::ValuePtr> vars;
             for (const auto mem: memory) {
+                if (!mem.second)
+                    continue;
                 const Variable *var = tokenizer->getSymbolDatabase()->getVariableFromVarId(mem.first);
                 if (var && var->isLocal())
                     continue;
@@ -586,7 +611,7 @@ namespace {
                 int varid = mem.first;
                 const std::string &name = mem.second;
                 auto it = memory.find(varid);
-                if (it != memory.end() && it->second->name == name)
+                if (it != memory.end() && it->second && it->second->name == name)
                     continue;
                 if (name.empty()) {
                     if (it != memory.end())
@@ -652,12 +677,12 @@ namespace {
                         const std::string::size_type eq = line.find("=", pos);
                         const std::string lhs = line.substr(pos, eq-pos);
                         pos = eq + 1;
-                        const std::string::size_type end = line.find(" ", pos);
+                        const std::string::size_type end = extfind(line, " ", pos);
                         const std::string rhs = line.substr(pos, end-pos);
                         pos = end;
                         d.sym[lhs] = rhs;
                     } else if (line[pos] == '(') {
-                        const std::string::size_type end = line.find(" ", pos);
+                        const std::string::size_type end = extfind(line, " ", pos);
                         const std::string c = line.substr(pos, end-pos);
                         pos = end;
                         d.constraints.push_back(c);
@@ -1760,7 +1785,7 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
 
         // Execute subfunction..
         if (function->hasBody()) {
-            const Scope *functionScope = function->functionScope;
+            const Scope * const functionScope = function->functionScope;
             int argnr = 0;
             std::map<const Token *, nonneg int> refs;
             for (const Variable &arg: function->argumentList) {
