@@ -1743,7 +1743,15 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
         return retVal;
     }
 
-    const bool hasBody = tok->astOperand1()->function() && tok->astOperand1()->function()->hasBody();
+    bool hasBody = tok->astOperand1()->function() && tok->astOperand1()->function()->hasBody();
+    if (hasBody) {
+        for (const auto &errorPathItem: data.errorPath) {
+            if (errorPathItem.first == tok) {
+                hasBody = false;
+                break;
+            }
+        }
+    }
 
     const std::vector<const Token *> &argTokens = getArguments(tok);
     std::vector<ExprEngine::ValuePtr> argValues;
@@ -1784,7 +1792,7 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
         }
 
         // Execute subfunction..
-        if (function->hasBody()) {
+        if (hasBody) {
             const Scope * const functionScope = function->functionScope;
             int argnr = 0;
             std::map<const Token *, nonneg int> refs;
@@ -1808,6 +1816,7 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
                     assignExprValue(ref.first, v, data);
                 }
             } catch (BugHuntingException &e) {
+                data.errorPath.pop_back();
                 e.tok = tok;
                 throw e; // cppcheck-suppress exceptRethrowCopy
             }
