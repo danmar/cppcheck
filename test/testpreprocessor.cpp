@@ -1942,8 +1942,8 @@ private:
                                "#include \"missing.h\"\n"
                                "int x;");
         std::string processedFile;
-        std::list<std::string> cfg;
-        std::list<std::string> paths;
+        std::vector<std::string> cfg;
+        std::vector<std::string> paths;
 
         // Don't report that the include is missing
         errout.str("");

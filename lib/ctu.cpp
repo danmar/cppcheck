@@ -244,9 +244,9 @@ void CTU::FileInfo::loadFromXml(const tinyxml2::XMLElement *xmlElement)
     }
 }
 
-std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> CTU::FileInfo::getCallsMap() const
+std::map<std::string, std::vector<const CTU::FileInfo::CallBase *>> CTU::FileInfo::getCallsMap() const
 {
-    std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> ret;
+    std::map<std::string, std::vector<const CTU::FileInfo::CallBase *>> ret;
     for (const CTU::FileInfo::NestedCall &nc : nestedCalls)
         ret[nc.callId].push_back(&nc);
     for (const CTU::FileInfo::FunctionCall &fc : functionCalls)
@@ -434,9 +434,9 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
     return fileInfo;
 }
 
-static std::list<std::pair<const Token *, MathLib::bigint>> getUnsafeFunction(const Tokenizer *tokenizer, const Settings *settings, const Scope *scope, int argnr, const Check *check, bool (*isUnsafeUsage)(const Check *check, const Token *argtok, MathLib::bigint *value))
+static std::vector<std::pair<const Token *, MathLib::bigint>> getUnsafeFunction(const Tokenizer *tokenizer, const Settings *settings, const Scope *scope, int argnr, const Check *check, bool (*isUnsafeUsage)(const Check *check, const Token *argtok, MathLib::bigint *value))
 {
-    std::list<std::pair<const Token *, MathLib::bigint>> ret;
+    std::vector<std::pair<const Token *, MathLib::bigint>> ret;
     const Variable * const argvar = scope->function->getArgumentVar(argnr);
     if (!argvar->isPointer() && !argvar->isReference())
         return ret;
@@ -495,7 +495,7 @@ static bool findPath(const std::string &callId,
                      nonneg int callArgNr,
                      MathLib::bigint unsafeValue,
                      CTU::FileInfo::InvalidValueType invalidValue,
-                     const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap,
+                     const std::map<std::string, std::vector<const CTU::FileInfo::CallBase *>> &callsMap,
                      const CTU::FileInfo::CallBase *path[10],
                      int index,
                      bool warning)
@@ -503,7 +503,7 @@ static bool findPath(const std::string &callId,
     if (index >= CTU::maxCtuDepth || index >= 10)
         return false;
 
-    const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>>::const_iterator it = callsMap.find(callId);
+    const std::map<std::string, std::vector<const CTU::FileInfo::CallBase *>>::const_iterator it = callsMap.find(callId);
     if (it == callsMap.end())
         return false;
 
@@ -550,7 +550,7 @@ static bool findPath(const std::string &callId,
 
 std::list<ErrorMessage::FileLocation> CTU::FileInfo::getErrorPath(InvalidValueType invalidValue,
                                                                   const CTU::FileInfo::UnsafeUsage &unsafeUsage,
-                                                                  const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap,
+                                                                  const std::map<std::string, std::vector<const CTU::FileInfo::CallBase *>> &callsMap,
                                                                   const char info[],
                                                                   const FunctionCall ** const functionCallPtr,
                                                                   bool warning)

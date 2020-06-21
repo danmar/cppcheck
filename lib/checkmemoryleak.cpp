@@ -72,7 +72,7 @@ static const std::unordered_set<std::string> call_func_white_list = {
 
 //---------------------------------------------------------------------------
 
-CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2, nonneg int varid, std::list<const Function*> *callstack) const
+CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2, nonneg int varid, std::vector<const Function*> *callstack) const
 {
     // What we may have...
     //     * var = (char *)malloc(10);
@@ -156,7 +156,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
     if (callstack && std::find(callstack->begin(), callstack->end(), func) != callstack->end())
         return No;
 
-    std::list<const Function*> cs;
+    std::vector<const Function*> cs;
     if (!callstack)
         callstack = &cs;
 
@@ -347,7 +347,7 @@ void CheckMemoryLeak::mismatchAllocDealloc(const std::list<const Token *> &calls
     reportErr(callstack, Severity::error, "mismatchAllocDealloc", "$symbol:" + varname + "\nMismatching allocation and deallocation: $symbol", CWE(762U));
 }
 
-CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Function* func, std::list<const Function*> *callstack) const
+CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Function* func, std::vector<const Function*> *callstack) const
 {
     if (!func || !func->hasBody() || !func->functionScope)
         return No;

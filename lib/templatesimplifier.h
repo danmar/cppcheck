@@ -431,7 +431,7 @@ private:
      * @param newName The new type name
      */
     void replaceTemplateUsage(const TokenAndName &instantiation,
-                              const std::list<std::string> &typeStringsUsedInTemplateInstantiation,
+                              const std::vector<std::string> &typeStringsUsedInTemplateInstantiation,
                               const std::string &newName);
 
     /**
@@ -480,7 +480,7 @@ private:
      */
     std::string getNewName(
         Token *tok2,
-        std::list<std::string> &typeStringsUsedInTemplateInstantiation);
+        std::vector<std::string> &typeStringsUsedInTemplateInstantiation);
 
     void printOut(
         const TokenAndName &tokenAndName,

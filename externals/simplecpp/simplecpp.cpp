@@ -2763,7 +2763,7 @@ static std::string getIncludePathFileName(const std::string &includePath, const 
 
 static std::string openHeaderIncludePath(std::ifstream &f, const simplecpp::DUI &dui, const std::string &header)
 {
-    for (std::list<std::string>::const_iterator it = dui.includePaths.begin(); it != dui.includePaths.end(); ++it) {
+    for (std::vector<std::string>::const_iterator it = dui.includePaths.begin(); it != dui.includePaths.end(); ++it) {
         std::string simplePath = openHeader(f, getIncludePathFileName(*it, header));
         if (!simplePath.empty())
             return simplePath;
@@ -2800,7 +2800,7 @@ static std::string getFileName(const std::map<std::string, simplecpp::TokenList 
     if (!systemheader && filedata.find(relativeFilename) != filedata.end())
         return relativeFilename;
 
-    for (std::list<std::string>::const_iterator it = dui.includePaths.begin(); it != dui.includePaths.end(); ++it) {
+    for (std::vector<std::string>::const_iterator it = dui.includePaths.begin(); it != dui.includePaths.end(); ++it) {
         std::string s = simplecpp::simplifyPath(getIncludePathFileName(*it, header));
         if (filedata.find(s) != filedata.end())
             return s;
@@ -2824,7 +2824,7 @@ std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::To
     std::list<const Token *> filelist;
 
     // -include files
-    for (std::list<std::string>::const_iterator it = dui.includes.begin(); it != dui.includes.end(); ++it) {
+    for (std::vector<std::string>::const_iterator it = dui.includes.begin(); it != dui.includes.end(); ++it) {
         const std::string &filename = realFilename(*it);
 
         if (ret.find(filename) != ret.end())
@@ -2965,7 +2965,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
 
     const bool hasInclude = (dui.std.size() == 5 && dui.std.compare(0,3,"c++") == 0 && dui.std >= "c++17");
     MacroMap macros;
-    for (std::list<std::string>::const_iterator it = dui.defines.begin(); it != dui.defines.end(); ++it) {
+    for (std::vector<std::string>::const_iterator it = dui.defines.begin(); it != dui.defines.end(); ++it) {
         const std::string &macrostr = *it;
         const std::string::size_type eq = macrostr.find('=');
         const std::string::size_type par = macrostr.find('(');
@@ -3009,7 +3009,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
     std::set<std::string> pragmaOnce;
 
     includetokenstack.push(rawtokens.cfront());
-    for (std::list<std::string>::const_iterator it = dui.includes.begin(); it != dui.includes.end(); ++it) {
+    for (std::vector<std::string>::const_iterator it = dui.includes.begin(); it != dui.includes.end(); ++it) {
         const std::map<std::string, TokenList*>::const_iterator f = filedata.find(*it);
         if (f != filedata.end())
             includetokenstack.push(f->second->cfront());

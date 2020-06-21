@@ -84,7 +84,7 @@ private:
 
     void setIncludePaths1() const {
         ImportProject::FileSettings fs;
-        std::list<std::string> in(1, "../include");
+        std::vector<std::string> in(1, "../include");
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         fs.setIncludePaths("abc/def/", in, variables);
         ASSERT_EQUALS(1U, fs.includePaths.size());
@@ -93,7 +93,7 @@ private:
 
     void setIncludePaths2() const {
         ImportProject::FileSettings fs;
-        std::list<std::string> in(1, "$(SolutionDir)other");
+        std::vector<std::string> in(1, "$(SolutionDir)other");
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         variables["SolutionDir"] = "c:/abc/";
         fs.setIncludePaths("/home/fred", in, variables);
@@ -103,7 +103,7 @@ private:
 
     void setIncludePaths3() const { // macro names are case insensitive
         ImportProject::FileSettings fs;
-        std::list<std::string> in(1, "$(SOLUTIONDIR)other");
+        std::vector<std::string> in(1, "$(SOLUTIONDIR)other");
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         variables["SolutionDir"] = "c:/abc/";
         fs.setIncludePaths("/home/fred", in, variables);

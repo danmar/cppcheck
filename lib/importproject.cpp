@@ -147,11 +147,11 @@ static bool simplifyPathWithVariables(std::string &s, std::map<std::string, std:
     return true;
 }
 
-void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables)
+void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, const std::vector<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables)
 {
     std::set<std::string> found;
     // NOLINTNEXTLINE(performance-unnecessary-copy-initialization)
-    const std::list<std::string> copyIn(in);
+    const std::vector<std::string> copyIn(in);
     includePaths.clear();
     for (const std::string &ipath : copyIn) {
         if (ipath.empty())
@@ -599,9 +599,9 @@ namespace {
     };
 }
 
-static std::list<std::string> toStringList(const std::string &s)
+static std::vector<std::string> toStringList(const std::string &s)
 {
-    std::list<std::string> ret;
+    std::vector<std::string> ret;
     std::string::size_type pos1 = 0;
     std::string::size_type pos2;
     while ((pos2 = s.find(';',pos1)) != std::string::npos) {
@@ -1084,9 +1084,9 @@ static std::string joinRelativePath(const std::string &path1, const std::string 
     return path2;
 }
 
-static std::list<std::string> readXmlStringList(const tinyxml2::XMLElement *node, const std::string &path, const char name[], const char attribute[])
+static std::vector<std::string> readXmlStringList(const tinyxml2::XMLElement *node, const std::string &path, const char name[], const char attribute[])
 {
-    std::list<std::string> ret;
+    std::vector<std::string> ret;
     for (const tinyxml2::XMLElement *child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
         if (strcmp(child->Name(), name) != 0)
             continue;
@@ -1097,7 +1097,7 @@ static std::list<std::string> readXmlStringList(const tinyxml2::XMLElement *node
     return ret;
 }
 
-static std::string join(const std::list<std::string> &strlist, const char *sep)
+static std::string join(const std::vector<std::string> &strlist, const char *sep)
 {
     std::string ret;
     for (const std::string &s : strlist) {
@@ -1130,7 +1130,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
 
     const std::string &path = mPath;
 
-    std::list<std::string> paths;
+    std::vector<std::string> paths;
     std::list<Suppressions::Suppression> suppressions;
     Settings temp;
 
@@ -1195,7 +1195,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
         else if (strcmp(node->Name(), CppcheckXml::TagsElementName) == 0)
             node->Attribute(CppcheckXml::TagElementName); // FIXME: Write some warning
         else if (strcmp(node->Name(), CppcheckXml::ToolsElementName) == 0) {
-            const std::list<std::string> toolList = readXmlStringList(node, "", CppcheckXml::ToolElementName, nullptr);
+            const std::vector<std::string> toolList = readXmlStringList(node, "", CppcheckXml::ToolElementName, nullptr);
             for (const std::string &toolName : toolList) {
                 if (toolName == std::string(CppcheckXml::ClangTidy))
                     temp.clangTidy = true;

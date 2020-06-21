@@ -447,9 +447,8 @@ private:
         const char * const argv[] = {"cppcheck", "-I", "include/", "-I", "framework/", "file.cpp"};
         settings.includePaths.clear();
         ASSERT(defParser.parseFromArgs(6, argv));
-        ASSERT_EQUALS("include/", settings.includePaths.front());
-        settings.includePaths.pop_front();
-        ASSERT_EQUALS("framework/", settings.includePaths.front());
+        ASSERT_EQUALS("include/", settings.includePaths[0]);
+        ASSERT_EQUALS("framework/", settings.includePaths[1]);
     }
 
     void includesFile() {

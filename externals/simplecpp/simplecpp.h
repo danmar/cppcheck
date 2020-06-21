@@ -316,10 +316,10 @@ namespace simplecpp {
      */
     struct SIMPLECPP_LIB DUI {
         DUI() {}
-        std::list<std::string> defines;
+        std::vector<std::string> defines;
         std::set<std::string> undefined;
-        std::list<std::string> includePaths;
-        std::list<std::string> includes;
+        std::vector<std::string> includePaths;
+        std::vector<std::string> includes;
         std::string std;
     };
 

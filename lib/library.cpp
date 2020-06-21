@@ -100,7 +100,7 @@ Library::Error Library::load(const char exename[], const char path[])
                 absolute_path = Path::getAbsoluteFilePath(fullfilename);
         }
 
-        std::list<std::string> cfgfolders;
+        std::vector<std::string> cfgfolders;
 #ifdef FILESDIR
         cfgfolders.emplace_back(FILESDIR "/cfg");
 #endif

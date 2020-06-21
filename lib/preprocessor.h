@@ -121,7 +121,7 @@ public:
      * Note that if path from given filename is also extracted and that is used as
      * a last include path if include file was not found from earlier paths.
      */
-    void preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename, const std::list<std::string> &includePaths = std::list<std::string>());
+    void preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename, const std::vector<std::string> &includePaths = std::vector<std::string>());
 
     /**
      * Extract the code for each configuration. Use this with getcode() to get the
@@ -140,7 +140,7 @@ public:
      * Note that if path from given filename is also extracted and that is used as
      * a last include path if include file was not found from earlier paths.
      */
-    void preprocess(std::istream &srcCodeStream, std::string &processedFile, std::list<std::string> &resultConfigurations, const std::string &filename, const std::list<std::string> &includePaths);
+    void preprocess(std::istream &srcCodeStream, std::string &processedFile, std::vector<std::string> &resultConfigurations, const std::string &filename, const std::vector<std::string> &includePaths);
 
     simplecpp::TokenList preprocess(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, bool throwError = false);
 

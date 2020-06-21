@@ -106,7 +106,7 @@ public:
     /**
      * @brief Get type of allocation at given position
      */
-    AllocType getAllocationType(const Token *tok2, nonneg int varid, std::list<const Function*> *callstack = nullptr) const;
+    AllocType getAllocationType(const Token *tok2, nonneg int varid, std::vector<const Function*> *callstack = nullptr) const;
 
     /**
      * @brief Get type of reallocation at given position
@@ -144,7 +144,7 @@ public:
     void memleakUponReallocFailureError(const Token *tok, const std::string &reallocfunction, const std::string &varname) const;
 
     /** What type of allocated memory does the given function return? */
-    AllocType functionReturnType(const Function* func, std::list<const Function*> *callstack = nullptr) const;
+    AllocType functionReturnType(const Function* func, std::vector<const Function*> *callstack = nullptr) const;
 };
 
 /// @}

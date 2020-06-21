@@ -71,8 +71,8 @@ public:
             return defines + (msc ? ";_MSC_VER=1900" : "") + (useMfc ? ";__AFXWIN_H__=1" : "");
         }
         std::set<std::string> undefs;
-        std::list<std::string> includePaths;
-        std::list<std::string> systemIncludePaths;
+        std::vector<std::string> includePaths;
+        std::vector<std::string> systemIncludePaths;
         std::string standard;
         cppcheck::Platform::PlatformType platformType;
         bool msc;
@@ -80,7 +80,7 @@ public:
 
         void parseCommand(std::string command);
         void setDefines(std::string defs);
-        void setIncludePaths(const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables);
+        void setIncludePaths(const std::string &basepath, const std::vector<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables);
     };
     std::list<FileSettings> fileSettings;
     Type projectType;
@@ -95,9 +95,9 @@ public:
     struct {
         std::string analyzeAllVsConfigs;
         std::vector<std::string> pathNames;
-        std::list<std::string> libraries;
-        std::list<std::string> excludedPaths;
-        std::list<std::string> checkVsConfigs;
+        std::vector<std::string> libraries;
+        std::vector<std::string> excludedPaths;
+        std::vector<std::string> checkVsConfigs;
         std::string projectFile;
         std::string platform;
     } guiProject;

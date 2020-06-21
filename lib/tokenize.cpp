@@ -2600,7 +2600,7 @@ bool Tokenizer::simplifyUsing()
             }
 
             // check for pointers and references
-            std::list<std::string> pointers;
+            std::vector<std::string> pointers;
             while (Token::Match(type, "*|&|&&|const")) {
                 pointers.push_back(type->str());
                 type = type->next();
@@ -4098,8 +4098,8 @@ void Tokenizer::setVarIdPass1()
 
 namespace {
     struct Member {
-        Member(const std::list<std::string> &s, const std::list<const Token *> &ns, Token *t) : usingnamespaces(ns), scope(s), tok(t) {}
-        std::list<const Token *> usingnamespaces;
+        Member(const std::list<std::string> &s, const std::vector<const Token *> &ns, Token *t) : usingnamespaces(ns), scope(s), tok(t) {}
+        std::vector<const Token *> usingnamespaces;
         std::list<std::string> scope;
         Token *tok;
     };
@@ -4201,7 +4201,7 @@ void Tokenizer::setVarIdPass2()
     if (!isC()) {
         std::map<const Token *, std::string> endOfScope;
         std::list<std::string> scope;
-        std::list<const Token *> usingnamespaces;
+        std::vector<const Token *> usingnamespaces;
         for (Token *tok = list.front(); tok; tok = tok->next()) {
             if (!tok->previous() || Token::Match(tok->previous(), "[;{}]")) {
                 if (Token::Match(tok, "using namespace %name% ::|;")) {
@@ -4268,7 +4268,7 @@ void Tokenizer::setVarIdPass2()
         const std::string &scopeName(getScopeName(scopeInfo));
         const std::string scopeName2(scopeName.empty() ? std::string() : (scopeName + " :: "));
 
-        std::list<const Token *> classnameTokens;
+        std::vector<const Token *> classnameTokens;
         classnameTokens.push_back(tok->next());
         const Token* tokStart = tok->tokAt(2);
         while (Token::Match(tokStart, ":: %name%") || tokStart->str() == "<") {

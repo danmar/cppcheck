@@ -126,11 +126,11 @@ namespace CTU {
         std::list<NestedCall> nestedCalls;
 
         void loadFromXml(const tinyxml2::XMLElement *xmlElement);
-        std::map<std::string, std::list<const CallBase *>> getCallsMap() const;
+        std::map<std::string, std::vector<const CallBase *>> getCallsMap() const;
 
         static std::list<ErrorMessage::FileLocation> getErrorPath(InvalidValueType invalidValue,
                                                                   const UnsafeUsage &unsafeUsage,
-                                                                  const std::map<std::string, std::list<const CallBase *>> &callsMap,
+                                                                  const std::map<std::string, std::vector<const CallBase *>> &callsMap,
                                                                   const char info[],
                                                                   const FunctionCall ** const functionCallPtr,
                                                                   bool warning);

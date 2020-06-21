@@ -83,7 +83,7 @@ namespace {
     };
 }
 
-static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std::list<Suppressions::Suppression> &inlineSuppressions, std::list<BadInlineSuppression> *bad)
+static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std::list<Suppressions::Suppression> &inlineSuppressions, std::vector<BadInlineSuppression> *bad)
 {
     const std::string cppchecksuppress("cppcheck-suppress");
 
@@ -132,7 +132,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
     return true;
 }
 
-static void addinlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSettings, std::list<BadInlineSuppression> *bad)
+static void addinlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSettings, std::vector<BadInlineSuppression> *bad)
 {
     for (const simplecpp::Token *tok = tokens.cfront(); tok; tok = tok->next) {
         if (!tok->comment)
@@ -191,7 +191,7 @@ void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens)
 {
     if (!mSettings.inlineSuppressions)
         return;
-    std::list<BadInlineSuppression> err;
+    std::vector<BadInlineSuppression> err;
     ::addinlineSuppressions(tokens, mSettings, &err);
     for (std::map<std::string,simplecpp::TokenList*>::const_iterator it = mTokenLists.begin(); it != mTokenLists.end(); ++it) {
         if (it->second)
@@ -547,7 +547,7 @@ std::set<std::string> Preprocessor::getConfigs(const simplecpp::TokenList &token
 }
 
 
-void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename, const std::list<std::string> &includePaths)
+void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename, const std::vector<std::string> &includePaths)
 {
     (void)includePaths;
 
@@ -564,7 +564,7 @@ void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::str
     }
 }
 
-void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processedFile, std::list<std::string> &resultConfigurations, const std::string &filename, const std::list<std::string> &includePaths)
+void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processedFile, std::vector<std::string> &resultConfigurations, const std::string &filename, const std::vector<std::string> &includePaths)
 {
     (void)includePaths;
 
@@ -576,12 +576,13 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
     const simplecpp::TokenList tokens1(srcCodeStream, files, filename, &outputList);
 
     const std::set<std::string> configs = getConfigs(tokens1);
+    resultConfigurations.reserve(configs.size());
     std::copy(configs.cbegin(), configs.cend(), std::back_inserter(resultConfigurations));
 
     processedFile = tokens1.stringify();
 }
 
-static void splitcfg(const std::string &cfg, std::list<std::string> &defines, const std::string &defaultValue)
+static void splitcfg(const std::string &cfg, std::vector<std::string> &defines, const std::string &defaultValue)
 {
     for (std::string::size_type defineStartPos = 0U; defineStartPos < cfg.size();) {
         const std::string::size_type defineEndPos = cfg.find(';', defineStartPos);
@@ -876,7 +877,7 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
 bool Preprocessor::validateCfg(const std::string &cfg, const std::list<simplecpp::MacroUsage> &macroUsageList)
 {
     bool ret = true;
-    std::list<std::string> defines;
+    std::vector<std::string> defines;
     splitcfg(cfg, defines, emptyString);
     for (const std::string &define : defines) {
         if (define.find('=') != std::string::npos)

@@ -71,7 +71,7 @@ static void addFilesToList(const std::string& fileList, std::vector<std::string>
     }
 }
 
-static bool addIncludePathsToList(const std::string& fileList, std::list<std::string>* pathNames)
+static bool addIncludePathsToList(const std::string& fileList, std::vector<std::string>* pathNames)
 {
     std::ifstream files(fileList);
     if (files) {
@@ -95,7 +95,7 @@ static bool addIncludePathsToList(const std::string& fileList, std::list<std::st
 
 static bool addPathsToSet(const std::string& fileName, std::set<std::string>* set)
 {
-    std::list<std::string> templist;
+    std::vector<std::string> templist;
     if (!addIncludePathsToList(fileName, &templist))
         return false;
     set->insert(templist.begin(), templist.end());
