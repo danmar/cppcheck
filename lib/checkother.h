@@ -87,7 +87,6 @@ public:
         checkOther.checkKnownArgument();
         checkOther.checkComparePointers();
         checkOther.checkIncompleteStatement();
-        checkOther.checkPipeParameterSize();
         checkOther.checkRedundantCopy();
         checkOther.clarifyCalculation();
         checkOther.checkPassByReference();
@@ -190,9 +189,6 @@ public:
     /** @brief %Check that variadic function calls don't use NULL. If NULL is \#defined as 0 and the function expects a pointer, the behaviour is undefined. */
     void checkVarFuncNullUB();
 
-    /** @brief %Check that calling the POSIX pipe() system call is called with an integer array of size two. */
-    void checkPipeParameterSize();
-
     /** @brief %Check to avoid casting a return value to unsigned char and then back to integer type.  */
     void checkCastIntToCharAndBack();
 
@@ -234,7 +230,6 @@ private:
     // Error messages..
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &functionName, const std::string &varName, const bool result);
     void checkCastIntToCharAndBackError(const Token *tok, const std::string &strFunctionName);
-    void checkPipeParameterSizeError(const Token *tok, const std::string &strVarName, const std::string &strDim);
     void clarifyCalculationError(const Token *tok, const std::string &op);
     void clarifyStatementError(const Token* tok);
     void cstyleCastError(const Token *tok);
@@ -299,7 +294,6 @@ private:
         c.invalidPointerCastError(nullptr,  "float *", "double *", false, false);
         c.negativeBitwiseShiftError(nullptr, 1);
         c.negativeBitwiseShiftError(nullptr, 2);
-        c.checkPipeParameterSizeError(nullptr,  "varname", "dimension");
         c.raceAfterInterlockedDecrementError(nullptr);
         c.invalidFreeError(nullptr, "malloc", false);
         c.overlappingWriteUnion(nullptr);
@@ -378,7 +372,6 @@ private:
                "- assignment in an assert statement\n"
                "- free() or delete of an invalid memory location\n"
                "- bitwise operation with negative right operand\n"
-               "- provide wrong dimensioned array to pipe() system command (--std=posix)\n"
                "- cast the return values of getc(),fgetc() and getchar() to character and compare it to EOF\n"
                "- race condition with non-interlocked access after InterlockedDecrement() call\n"
                "- expression 'x = x++;' depends on order of evaluation of side effects\n"
