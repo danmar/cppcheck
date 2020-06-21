@@ -1936,6 +1936,26 @@ static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
     return memberValue;
 }
 
+static void streamReadSetValue(const Token *tok, Data &data)
+{
+    if (!tok || !tok->valueType())
+        return;
+    auto rangeValue = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
+    if (rangeValue)
+        assignExprValue(tok, rangeValue, data);
+}
+
+static ExprEngine::ValuePtr executeStreamRead(const Token *tok, Data &data)
+{
+    tok = tok->astOperand2();
+    while (Token::simpleMatch(tok, ">>")) {
+        streamReadSetValue(tok->astOperand1(), data);
+        tok = tok->astOperand2();
+    }
+    streamReadSetValue(tok, data);
+    return ExprEngine::ValuePtr();
+}
+
 static ExprEngine::ValuePtr executeBinaryOp(const Token *tok, Data &data)
 {
     ExprEngine::ValuePtr v1 = executeExpression(tok->astOperand1(), data);
@@ -2084,6 +2104,9 @@ static ExprEngine::ValuePtr executeExpression1(const Token *tok, Data &data)
         auto v = tok->getKnownIntValue();
         return std::make_shared<ExprEngine::IntRange>(std::to_string(v), v, v);
     }
+
+    if (data.tokenizer->isCPP() && tok->str() == ">>" && !tok->astParent() && tok->isBinaryOp() && Token::Match(tok->astOperand1(), "%name%|::"))
+        return executeStreamRead(tok, data);
 
     if (tok->astOperand1() && tok->astOperand2())
         return executeBinaryOp(tok, data);

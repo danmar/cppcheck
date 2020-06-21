@@ -60,6 +60,8 @@ private:
         TEST_CASE(if5);
         TEST_CASE(ifelse1);
 
+        TEST_CASE(istream);
+
         TEST_CASE(switch1);
         TEST_CASE(switch2);
 
@@ -406,6 +408,20 @@ private:
                       expr("void f(short x) { if (x > 5) ; else if (x+2==40); }", "=="));
     }
 
+
+    void istream() {
+        const char code[] = "void foo(const std::string& in) {\n"
+                            "    std::istringstream istr(in);\n"
+                            "    unsigned short x=5;\n"
+                            "    istr >> x;\n"
+                            "    x==3;\n"
+                            "}";
+
+        ASSERT_EQUALS("(and (>= $2 0) (<= $2 65535))\n"
+                      "(= $2 3)\n"
+                      "z3::sat\n",
+                      expr(code, "=="));
+    }
 
     void switch1() {
         const char code[] = "void f(int x) {\n"
