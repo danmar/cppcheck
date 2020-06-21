@@ -47,6 +47,7 @@ private:
         TEST_CASE(expr6);
         TEST_CASE(expr7);
         TEST_CASE(expr8);
+        TEST_CASE(expr9);
         TEST_CASE(exprAssign1);
         TEST_CASE(exprAssign2); // Truncation
 
@@ -213,18 +214,20 @@ private:
         return ret;
     }
 
-    std::string trackExecution(const char code[]) {
-        Settings settings;
-        settings.bugHunting = true;
-        settings.debugBugHunting = true;
-        settings.platform(cppcheck::Platform::Unix64);
-        settings.library.smartPointers.insert("std::shared_ptr");
-        Tokenizer tokenizer(&settings, this);
+    std::string trackExecution(const char code[], Settings *settings = nullptr) {
+        Settings s;
+        if (!settings)
+            settings = &s;
+        settings->bugHunting = true;
+        settings->debugBugHunting = true;
+        settings->platform(cppcheck::Platform::Unix64);
+        settings->library.smartPointers.insert("std::shared_ptr");
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         std::vector<ExprEngine::Callback> callbacks;
         std::ostringstream ret;
-        ExprEngine::executeAllFunctions(this, &tokenizer, &settings, callbacks, ret);
+        ExprEngine::executeAllFunctions(this, &tokenizer, settings, callbacks, ret);
         return ret.str();
     }
 
@@ -317,6 +320,22 @@ private:
                             "}";
         // Do not crash
         expr(code, "==");
+    }
+
+    void expr9() {
+        Settings settings;
+        LOAD_LIB_2(settings.library, "std.cfg");
+
+        ASSERT_EQUALS("1:26: $3=0:ffffffff\n"
+                      "1:26: $2=-128:127\n"
+                      "1:27: { s=($4,[$3],[:]=$2)}\n",
+                      trackExecution("void foo() { std::string s; }", &settings));
+
+
+        ASSERT_EQUALS("1:52: $3=0:ffffffff\n"
+                      "1:52: $2=-128:127\n"
+                      "1:66: { s=($4,[$3],[:]=$2)}\n",
+                      trackExecution("std::string getName(int); void foo() { std::string s = getName(1); }", &settings));
     }
 
     void exprAssign1() {
@@ -417,8 +436,8 @@ private:
                             "    x==3;\n"
                             "}";
 
-        ASSERT_EQUALS("(and (>= $2 0) (<= $2 65535))\n"
-                      "(= $2 3)\n"
+        ASSERT_EQUALS("(and (>= $1 0) (<= $1 65535))\n"
+                      "(= $1 3)\n"
                       "z3::sat\n",
                       expr(code, "=="));
     }

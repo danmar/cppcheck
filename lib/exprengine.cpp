@@ -1454,6 +1454,25 @@ static ExprEngine::ValuePtr getValueRangeFromValueType(const std::string &name, 
     return ExprEngine::ValuePtr();
 }
 
+static ExprEngine::ValuePtr getValueRangeFromValueType(const ValueType *valueType, Data &data)
+{
+    if (!valueType || valueType->pointer)
+        return ExprEngine::ValuePtr();
+    if (valueType->container) {
+        ExprEngine::ValuePtr value;
+        if (valueType->container->stdStringLike)
+            value = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), -128, 127);
+        else if (valueType->containerTypeToken) {
+            ValueType vt = ValueType::parseDecl(valueType->containerTypeToken, data.settings);
+            value = getValueRangeFromValueType(&vt, data);
+        } else
+            return ExprEngine::ValuePtr();
+        auto bufferSize = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 0, ~0U);
+        return std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), bufferSize, value, false, false, false);
+    }
+    return getValueRangeFromValueType(data.getNewSymbolName(), valueType, *data.settings);
+}
+
 static void call(const std::vector<ExprEngine::Callback> &callbacks, const Token *tok, ExprEngine::ValuePtr value, Data *dataBase)
 {
     if (value) {
@@ -1616,14 +1635,11 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
         const ValueType * const vt1 = tok->astOperand1() ? tok->astOperand1()->valueType() : nullptr;
         const ValueType * const vt2 = tok->astOperand2() ? tok->astOperand2()->valueType() : nullptr;
 
-        if (vt1 && vt1->pointer == 0 && vt1->isIntegral())
-            rhsValue = getValueRangeFromValueType(data.getNewSymbolName(), vt1, *data.settings);
-
-        else if (vt2 && vt2->container && vt2->container->stdStringLike) {
-            auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 0, ~0ULL);
-            auto value = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), -128, 127);
-            rhsValue = std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), size, value, false, false, false);
-            call(data.callbacks, tok->astOperand2(), rhsValue, &data);
+        rhsValue = getValueRangeFromValueType(vt1, data);
+        if (!rhsValue && vt2 && vt2->pointer == 0) {
+            rhsValue = getValueRangeFromValueType(vt2, data);
+            if (rhsValue)
+                call(data.callbacks, tok->astOperand2(), rhsValue, &data);
         }
     }
 
@@ -1767,13 +1783,13 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
         if (auto arrayValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(val)) {
             ValueType vt(*argtok->valueType());
             vt.pointer = 0;
-            auto anyVal = getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings);
+            auto anyVal = getValueRangeFromValueType(&vt, data);
             arrayValue->assign(ExprEngine::ValuePtr(), anyVal);
         } else if (auto addressOf = std::dynamic_pointer_cast<ExprEngine::AddressOfValue>(val)) {
             ValueType vt(*argtok->valueType());
             vt.pointer = 0;
             if (vt.isIntegral() && argtok->valueType()->pointer == 1)
-                data.assignValue(argtok, addressOf->varId, getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings));
+                data.assignValue(argtok, addressOf->varId, getValueRangeFromValueType(&vt, data));
         }
     }
 
@@ -1826,7 +1842,7 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
         }
     }
 
-    auto val = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
+    auto val = getValueRangeFromValueType(tok->valueType(), data);
     call(data.callbacks, tok, val, &data);
     data.functionCall();
     return val;
@@ -1867,7 +1883,7 @@ static ExprEngine::ValuePtr executeCast(const Token *tok, Data &data)
 
         ::ValueType vt(*tok->valueType());
         vt.pointer = 0;
-        auto range = getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings);
+        auto range = getValueRangeFromValueType(&vt, data);
 
         if (tok->valueType()->pointer == 0)
             return range;
@@ -1888,7 +1904,7 @@ static ExprEngine::ValuePtr executeCast(const Token *tok, Data &data)
         return val;
     }
 
-    val = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
+    val = getValueRangeFromValueType(tok->valueType(), data);
     call(data.callbacks, tok, val, &data);
     return val;
 }
@@ -1896,7 +1912,7 @@ static ExprEngine::ValuePtr executeCast(const Token *tok, Data &data)
 static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
 {
     if (!tok->astOperand1() || !tok->astOperand1()->varId()) {
-        auto v = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
+        auto v = getValueRangeFromValueType(tok->valueType(), data);
         call(data.callbacks, tok, v, &data);
         return v;
     }
@@ -1923,7 +1939,7 @@ static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
             }
         }
         if (!structValue) {
-            auto v = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
+            auto v = getValueRangeFromValueType(tok->valueType(), data);
             if (!v)
                 v = std::make_shared<ExprEngine::BailoutValue>();
             call(data.callbacks, tok, v, &data);
@@ -1940,7 +1956,7 @@ static void streamReadSetValue(const Token *tok, Data &data)
 {
     if (!tok || !tok->valueType())
         return;
-    auto rangeValue = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
+    auto rangeValue = getValueRangeFromValueType(tok->valueType(), data);
     if (rangeValue)
         assignExprValue(tok, rangeValue, data);
 }
@@ -2015,7 +2031,7 @@ static ExprEngine::ValuePtr executeDeref(const Token *tok, Data &data)
 {
     ExprEngine::ValuePtr pval = executeExpression(tok->astOperand1(), data);
     if (!pval) {
-        auto v = getValueRangeFromValueType(data.getNewSymbolName(), tok->valueType(), *data.settings);
+        auto v = getValueRangeFromValueType(tok->valueType(), data);
         if (tok->astOperand1()->varId()) {
             pval = std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), ExprEngine::ValuePtr(), v, true, false, false);
             data.assignValue(tok->astOperand1(), tok->astOperand1()->varId(), pval);
@@ -2363,7 +2379,7 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                         arrayValue->assign(std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 0, ~0ULL), std::make_shared<ExprEngine::BailoutValue>());
                         continue;
                     }
-                    data.assignValue(tok2, varid, getValueRangeFromValueType(data.getNewSymbolName(), lhs->valueType(), *data.settings));
+                    data.assignValue(tok2, varid, getValueRangeFromValueType(lhs->valueType(), data));
                     continue;
                 } else if (Token::Match(tok2, "++|--") && tok2->astOperand1() && tok2->astOperand1()->variable()) {
                     // give variable "any" value
@@ -2375,7 +2391,7 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                     auto oldValue = data.getValue(varid, nullptr, nullptr);
                     if (oldValue && oldValue->type == ExprEngine::ValueType::UninitValue)
                         call(data.callbacks, tok2, oldValue, &data);
-                    data.assignValue(tok2, varid, getValueRangeFromValueType(data.getNewSymbolName(), vartok->valueType(), *data.settings));
+                    data.assignValue(tok2, varid, getValueRangeFromValueType(vartok->valueType(), data));
                 }
             }
         }
@@ -2456,7 +2472,7 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
             ValueType vt(*valueType);
             vt.pointer = 0;
             if (vt.constness & 1)
-                pointerValue = getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings);
+                pointerValue = getValueRangeFromValueType(&vt, data);
             else
                 pointerValue = std::make_shared<ExprEngine::UninitValue>();
         }
@@ -2469,7 +2485,7 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
         if (var.isLocal() && !var.isStatic())
             value = std::make_shared<ExprEngine::UninitValue>();
         else
-            value = getValueRangeFromValueType(data.getNewSymbolName(), valueType, *data.settings);
+            value = getValueRangeFromValueType(valueType, data);
         data.addConstraints(value, var.nameToken());
         return value;
     }
@@ -2480,19 +2496,7 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
         auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 1, ~0UL);
         return std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), size, structValue, true, true, false);
     }
-    if (valueType->container) {
-        ExprEngine::ValuePtr value;
-        if (valueType->container->stdStringLike)
-            value = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), -128, 127);
-        else if (valueType->containerTypeToken) {
-            ValueType vt = ValueType::parseDecl(valueType->containerTypeToken, data.settings);
-            value = getValueRangeFromValueType(data.getNewSymbolName(), &vt, *data.settings);
-        } else
-            return ExprEngine::ValuePtr();
-        auto bufferSize = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 0, ~0U);
-        return std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), bufferSize, value, false, false, false);
-    }
-    return ExprEngine::ValuePtr();
+    return getValueRangeFromValueType(valueType, data);
 }
 
 void ExprEngine::executeFunction(const Scope *functionScope, ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings, const std::vector<ExprEngine::Callback> &callbacks, std::ostream &report)
