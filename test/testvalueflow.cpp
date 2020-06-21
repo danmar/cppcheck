@@ -674,6 +674,13 @@ private:
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(123, values.empty() ? 0 : values.front().intvalue);
 
+        code  = "int f() {\n"
+                "    const int i = 1;\n"
+                "    int x = i < 0 ? 0 : 1;\n"
+                "    return x;\n"
+                "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 1));
+
         // ~
         code  = "x = ~0U;";
         settings.platform(cppcheck::Platform::Native); // ensure platform is native

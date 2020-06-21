@@ -524,6 +524,16 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
         }
     }
 
+    else if (parent->str() == "?" && value.isIntValue() && tok == parent->astOperand1() && value.isKnown() &&
+             parent->astOperand2() && parent->astOperand2()->astOperand1() && parent->astOperand2()->astOperand2()) {
+        const std::list<ValueFlow::Value> &values = (value.intvalue == 0
+                ? parent->astOperand2()->astOperand2()->values()
+                : parent->astOperand2()->astOperand1()->values());
+
+        for (const ValueFlow::Value &v : values)
+            setTokenValue(parent, v, settings);
+    }
+
     // Calculations..
     else if ((parent->isArithmeticalOp() || parent->isComparisonOp() || (parent->tokType() == Token::eBitOp) || (parent->tokType() == Token::eLogicalOp)) &&
              parent->astOperand1() &&
