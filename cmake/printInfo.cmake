@@ -52,6 +52,7 @@ if (USE_Z3)
     message( STATUS "Z3_LIBRARIES =          ${Z3_LIBRARIES}" )
     message( STATUS "Z3_CXX_INCLUDE_DIRS =   ${Z3_CXX_INCLUDE_DIRS}" )
 endif()
+message( STATUS "USE_BUNDLED_TINYXML2 =  ${USE_BUNDLED_TINYXML2}" )
 message( STATUS )
 
 if(${ANALYZE_ADDRESS})
