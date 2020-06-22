@@ -2,7 +2,9 @@
 #
 # A script for creating release packages. The release packages are create in the home directory.
 #
-# Ensure latest windows installer build was successful
+# Windows installer:
+# - ensure latest build was successful
+# - ensure cfg files etc are included (win_installer/cppcheck.wxs)
 #
 # self check:
 # ./cppcheck -D__CPPCHECK__ --library=cppcheck-lib --enable=style --inconclusive --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h cli gui/*.cpp lib
