@@ -289,6 +289,8 @@ You can also create your own custom platform configuration in a XML file. Here i
 
 # C/C++ Standard
 
+Use `--std` on the command line to specify a C/C++ standard.
+
 Cppcheck assumes that the code is compatible with the latest C/C++ standard but you can override this.
 
 The available options are:
