@@ -912,6 +912,8 @@ public:
      */
     const Token * constructorMemberInitialization() const;
 
+    bool isBodyEmpty() const;
+
 private:
     /** Recursively determine if this function overrides a virtual function in a base class */
     const Function * getOverriddenFunctionRecursive(const ::Type* baseType, bool *foundAllBaseClasses) const;
@@ -1004,6 +1006,7 @@ public:
     std::list<Scope *> nestedList;
     nonneg int numConstructors;
     nonneg int numCopyOrMoveConstructors;
+    std::vector<Function> constructors;
     std::list<UsingInfo> usingList;
     ScopeType type;
     Type* definedType;

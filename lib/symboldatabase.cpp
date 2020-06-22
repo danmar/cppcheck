@@ -499,7 +499,10 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
                     // count the number of constructors
                     if (function.isConstructor())
+                    {
                         scope->numConstructors++;
+                        scope->constructors.push_back(function);
+                    }
 
                     // assume implementation is inline (definition and implementation same)
                     function.token = function.tokenDef;
@@ -2472,6 +2475,20 @@ const Token * Function::constructorMemberInitialization() const
     if (Token::Match(token, "%name% (") && Token::simpleMatch(token->linkAt(1), ") :"))
         return token->linkAt(1)->next();
     return nullptr;
+}
+
+bool Function::isBodyEmpty() const
+{
+    if (!hasBody())
+    {
+        return true;
+    }
+    if (!functionScope || !functionScope->bodyStart || !functionScope->bodyStart->next())
+    {
+        return true;
+    }
+
+    return functionScope->bodyStart->next()->str() == "}";
 }
 
 bool Function::isSafe(const Settings *settings) const

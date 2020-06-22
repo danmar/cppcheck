@@ -669,6 +669,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                      (i->isStlType() &&
                       !Token::Match(i->typeStartToken()->tokAt(2), "lock_guard|unique_lock|shared_ptr|unique_ptr|auto_ptr|shared_lock")))
                 type = Variables::standard;
+
             if (type == Variables::none || isPartOfClassStructUnion(i->typeStartToken()))
                 continue;
             const Token* defValTok = i->nameToken()->next();
@@ -1426,27 +1427,57 @@ void CheckUnusedVar::unusedStructMemberError(const Token *tok, const std::string
 bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
 {
     // a type that has no side effects (no constructors and no members with constructors)
-    /** @todo false negative: check constructors for side effects */
-
     const std::pair<std::map<const Type *,bool>::iterator,bool> found=mIsRecordTypeWithoutSideEffectsMap.insert(
                 std::pair<const Type *,bool>(type,false)); //Initialize with side effects for possible recursions
     bool & withoutSideEffects=found.first->second;
     if (!found.second)
         return withoutSideEffects;
 
-    if (type && type->classScope && type->classScope->numConstructors == 0 &&
-        (type->classScope->varlist.empty() || type->needInitialization == Type::NeedInitialization::True)) {
-        for (std::vector<Type::BaseInfo>::const_iterator i = type->derivedFrom.begin(); i != type->derivedFrom.end(); ++i) {
-            if (!isRecordTypeWithoutSideEffects(i->type)) {
-                withoutSideEffects=false;
+    // unknown types are assumed to have side effects
+    if (!type || !type->classScope)
+    {
+        withoutSideEffects = false;
+        return withoutSideEffects;
+    }    
+
+    // non-empty constructors -> possible side effects
+    if (type->classScope->numConstructors != 0)
+    {
+        for (std::vector<Function>::const_iterator i = type->classScope->constructors.begin(); 
+            i != type->classScope->constructors.end(); i++)
+        {
+            if (!i->isBodyEmpty())
+            {
+                withoutSideEffects = false;
+                return withoutSideEffects;    
+            }
+        }
+    }
+
+    // check each variable type for side effects
+    if (!(type->classScope->varlist.empty() || type->needInitialization == Type::NeedInitialization::True))
+    {
+        for (std::list<Variable>::const_iterator i = type->classScope->varlist.begin(); 
+            i != type->classScope->varlist.end(); i++)
+        {
+            if (!isRecordTypeWithoutSideEffects(i->type()))
+            {
+                withoutSideEffects = false;
                 return withoutSideEffects;
             }
         }
-        withoutSideEffects=true;
-        return withoutSideEffects;
     }
 
-    withoutSideEffects=false;   // unknown types are assumed to have side effects
+    // check parent classes
+    for (std::vector<Type::BaseInfo>::const_iterator i = type->derivedFrom.begin(); i != type->derivedFrom.end(); ++i)
+    {
+        if (!isRecordTypeWithoutSideEffects(i->type)) {
+            withoutSideEffects = false;
+            return withoutSideEffects;
+        }
+    }
+        
+    withoutSideEffects = true;
     return withoutSideEffects;
 }
 

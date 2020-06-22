@@ -209,6 +209,7 @@ private:
         TEST_CASE(argumentClass);
         TEST_CASE(escapeAlias); // #9150
         TEST_CASE(volatileData); // #9280
+        TEST_CASE(classWithoutSideEffects); // #9017
     }
 
     void checkStructMemberUsage(const char code[]) {
@@ -4742,6 +4743,47 @@ private:
             "  (*(volatile struct Data*)0x4200).n = 1;\n"
             "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void classWithoutSideEffects()
+    {
+        functionVariableUsage(
+            "class A {};\n"
+            "int main(int argc, char argv[]) {\n"
+            "   A a;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: a\n", errout.str());
+
+        functionVariableUsage(
+            "class A {};\n"
+            "class B {\n"
+            "public:\n"
+            "   A a;\n"
+            "};\n"
+            "int main(int argc, char argv[]) {\n"
+            "   B b;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Unused variable: b\n", errout.str());
+
+        functionVariableUsage(
+            "class C {\n"
+            "public:\n"
+            "   C() = default;\n"
+            "};\n"
+            "int main(int argc, char argv[]) {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Unused variable: c\n", errout.str());
+
+        functionVariableUsage(
+            "class D {\n"
+            "public:\n"
+            "   D() {}\n"
+            "};\n"
+            "int main(int argc, char argv[]) {\n"
+            "   D d;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Unused variable: d\n", errout.str());
     }
 };
 
