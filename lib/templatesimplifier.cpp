@@ -3912,6 +3912,10 @@ void TemplateSimplifier::simplifyTemplates(
             tok->insertToken("__cppcheck_fold_" + strop + "__");
         }
     }
+
+    for (Token* tok = mTokenList.front(); tok; tok = tok->next()) {
+        tok->clearTemplatesimplifier();
+    }
 }
 
 void TemplateSimplifier::syntaxError(const Token *tok)

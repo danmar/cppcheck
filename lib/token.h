@@ -1414,6 +1414,11 @@ public:
         mImpl->mValues = nullptr;
     }
 
+    void clearTemplatesimplifier() {
+        delete mImpl->mTemplateSimplifierPointers;
+        mImpl->mTemplateSimplifierPointers = nullptr;
+    }
+
     std::string astString(const char *sep = "") const {
         std::string ret;
         if (mImpl->mAstOperand1)
