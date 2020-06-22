@@ -161,6 +161,12 @@ void CheckExceptionSafety::checkRethrowCopy()
                     tok = tok->next()->link()->next()->link();
                     if (!tok)
                         break;
+                } else if (Token::Match(tok, "%varid% .", varid)) {
+                    const Token *parent = tok->astParent();
+                    while (Token::simpleMatch(parent->astParent(), "."))
+                        parent = parent->astParent();
+                    if (Token::Match(parent->astParent(), "%assign%|++|--|(") && parent == parent->astParent()->astOperand1())
+                        break;
                 } else if (Token::Match(tok, "throw %varid% ;", varid))
                     rethrowCopyError(tok, tok->strAt(1));
             }

@@ -1836,7 +1836,7 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
             } catch (BugHuntingException &e) {
                 data.errorPath.pop_back();
                 e.tok = tok;
-                throw e; // cppcheck-suppress exceptRethrowCopy
+                throw e;
             }
             data.errorPath.pop_back();
         }
