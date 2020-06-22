@@ -1200,11 +1200,12 @@ static bool canBeConst(const Variable *var)
         else if (parent->isAssignmentOp()) {
             if (parent->astOperand1() == tok2)
                 return false;
-            else if (parent->astOperand1()->str() == "&") {
-                const Variable* assignedVar = parent->previous()->variable();
-                if (!assignedVar || !assignedVar->isConst())
-                    return false;
-            }
+            const Variable* assignedVar = parent->astOperand1() ? parent->astOperand1()->variable() : nullptr;
+            if (assignedVar &&
+                !assignedVar->isConst() &&
+                assignedVar->isReference() &&
+                assignedVar->nameToken() == parent->astOperand1())
+                return false;
         } else if (Token::Match(tok2, "%var% . %name% (")) {
             const Function* func = tok2->tokAt(2)->function();
             if (func && (func->isConst() || func->isStatic()))
