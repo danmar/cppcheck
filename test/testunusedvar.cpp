@@ -3364,7 +3364,7 @@ private:
                               "    A a;\n"
                               "    return 0;\n"
                               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: a\n", errout.str());
 
         functionVariableUsage("struct A { int i; };\n"
                               "int foo() {\n"
@@ -3385,7 +3385,7 @@ private:
                               "    A a;\n"
                               "    return 0;\n"
                               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: a\n", errout.str());
 
         functionVariableUsage("class A { unknown i; };\n"
                               "int foo() {\n"
@@ -3894,7 +3894,7 @@ private:
                               "    std::cout << \"test\" << std::endl;\n"
                               "    delete fred;\n"
                               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'fred' is allocated memory that is never used.\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
