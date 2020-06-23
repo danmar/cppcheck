@@ -4784,6 +4784,17 @@ private:
             "   D d;\n"
             "}");
         ASSERT_EQUALS("[test.cpp:6]: (style) Unused variable: d\n", errout.str());
+
+        functionVariableUsage(
+            "#include <cstdint>\n"
+            "class E {\n"
+            "public:\n"
+            "   uint32_t u{1};\n"
+            "};\n"
+            "int main(int argc, char argv[]) {\n"
+            "   E e;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Unused variable: e\n", errout.str());
     }
 };
 

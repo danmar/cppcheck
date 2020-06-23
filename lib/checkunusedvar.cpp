@@ -1460,10 +1460,23 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
         for (std::list<Variable>::const_iterator i = type->classScope->varlist.begin(); 
             i != type->classScope->varlist.end(); i++)
         {
-            if (!isRecordTypeWithoutSideEffects(i->type()))
+            const Type* type = i->type();
+            if (type)
             {
-                withoutSideEffects = false;
-                return withoutSideEffects;
+                if (!isRecordTypeWithoutSideEffects(type))
+                {
+                    withoutSideEffects = false;
+                    return withoutSideEffects;
+                }
+            }
+            else
+            {
+                ValueType::Type valueType = i->valueType()->type;
+                if ( (valueType == ValueType::Type::UNKNOWN_TYPE) || (valueType == ValueType::Type::NONSTD) )
+                {
+                    withoutSideEffects = false;
+                    return withoutSideEffects;
+                }
             }
         }
     }
