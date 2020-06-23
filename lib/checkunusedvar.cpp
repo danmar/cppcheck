@@ -1444,7 +1444,7 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
     if (type->classScope->numConstructors != 0)
     {
         for (std::vector<Function>::const_iterator i = type->classScope->constructors.begin(); 
-            i != type->classScope->constructors.end(); i++)
+            i != type->classScope->constructors.end(); ++i)
         {
             if (!i->isBodyEmpty())
             {
@@ -1458,12 +1458,12 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
     if (!(type->classScope->varlist.empty() || type->needInitialization == Type::NeedInitialization::True))
     {
         for (std::list<Variable>::const_iterator i = type->classScope->varlist.begin(); 
-            i != type->classScope->varlist.end(); i++)
+            i != type->classScope->varlist.end(); ++i)
         {
-            const Type* type = i->type();
-            if (type)
+            const Type* variableType = i->type();
+            if (variableType)
             {
-                if (!isRecordTypeWithoutSideEffects(type))
+                if (!isRecordTypeWithoutSideEffects(variableType))
                 {
                     withoutSideEffects = false;
                     return withoutSideEffects;
