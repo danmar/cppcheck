@@ -7714,6 +7714,16 @@ private:
             "[test.cpp:4]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memcpy()' with 'sizeof(*a)'?\n"
             "[test.cpp:5]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memmove()' with 'sizeof(*a)'?\n", errout.str());
 
+        check("int a[5];\n"
+              "namespace Z { struct B { int a[5]; } b; }\n"
+              "void f() {\n"
+              "    memset(::a, 123, 5);\n"
+              "    memset(Z::b.a, 123, 5);\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) Array '::a' is filled incompletely. Did you forget to multiply the size given to 'memset()' with 'sizeof(*::a)'?\n"
+                           "[test.cpp:5]: (warning, inconclusive) Array 'Z::b.a' is filled incompletely. Did you forget to multiply the size given to 'memset()' with 'sizeof(*Z::b.a)'?\n",
+                           "[test.cpp:4]: (warning, inconclusive) Array '::a' is filled incompletely. Did you forget to multiply the size given to 'memset()' with 'sizeof(*::a)'?\n", errout.str());
+
         check("void f() {\n"
               "    Foo* a[5];\n"
               "    memset(a, 'a', 5);\n"
