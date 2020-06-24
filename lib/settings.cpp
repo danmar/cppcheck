@@ -57,6 +57,7 @@ Settings::Settings()
       loadAverage(0),
       maxConfigs(12),
       maxCtuDepth(2),
+      maxTemplateRecursion(100),
       preprocessOnly(false),
       quiet(false),
       relativePaths(false),

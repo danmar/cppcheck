@@ -2929,7 +2929,19 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         if (numberOfTemplateInstantiations != mTemplateInstantiations.size()) {
             numberOfTemplateInstantiations = mTemplateInstantiations.size();
             ++recursiveCount;
-            if (recursiveCount > 100) {
+            if (recursiveCount > mSettings->maxTemplateRecursion) {
+                const std::list<const Token *> callstack(1, instantiation.token());
+                const ErrorMessage errmsg(callstack,
+                                          &mTokenizer->list,
+                                          Severity::information,
+                                          "templateRecursion",
+                                          "TemplateSimplifier: max template recursion ("
+                                          + MathLib::toString(mSettings->maxTemplateRecursion)
+                                          + ") reached for template '"+instantiation.fullName()+"'. You might want to limit Cppcheck recursion.",
+                                          false);
+                if (mErrorLogger && mSettings->isEnabled(Settings::INFORMATION))
+                    mErrorLogger->reportErr(errmsg);
+
                 // bail out..
                 break;
             }
