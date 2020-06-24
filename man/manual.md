@@ -144,6 +144,37 @@ portability warnings. 64-bit portability. code might work different on different
 
 Configuration problems. The recommendation is to only enable these during configuration.
 
+## Possible speedup analysis of template code
+
+Cppcheck instantiates the templates in your code.
+
+If your templates are recursive this can lead to slow analysis that uses a lot
+of memory. Cppcheck will write information messages when there are potential
+problems. For instance:
+
+    2.cpp:3:29: information: TemplateSimplifier: max template recursion (100) reached for template 'a'. You might want to tweak Cppcheck recursion. [templateRecursion]
+
+One way to limit the recursion is to provide a template specialisation in the
+Cppcheck analysis.
+
+Example code:
+
+    template <int i>
+    void a()
+    {
+        a<i+1>();
+    }
+
+    void foo()
+    {
+        a<0>();
+    }
+
+Template specialisation:
+
+    template<> void a<3>() {}
+
+
 # Importing project
 
 You can import some project files and build configurations into Cppcheck.
