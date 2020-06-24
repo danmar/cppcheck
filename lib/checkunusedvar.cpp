@@ -1443,9 +1443,13 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
     // non-empty constructors -> possible side effects
     if (type->classScope->numConstructors != 0)
     {
-        for (std::vector<Function>::const_iterator i = type->classScope->constructors.begin(); 
-            i != type->classScope->constructors.end(); ++i)
+        for (std::list<Function>::const_iterator i = type->classScope->functionList.begin();
+            i != type->classScope->functionList.end(); ++i)
         {
+            if (!i->isConstructor())
+            {
+                continue;
+            }
             if (!i->isBodyEmpty())
             {
                 withoutSideEffects = false;

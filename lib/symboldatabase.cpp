@@ -501,7 +501,6 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     if (function.isConstructor())
                     {
                         scope->numConstructors++;
-                        scope->constructors.push_back(function);
                     }
 
                     // assume implementation is inline (definition and implementation same)

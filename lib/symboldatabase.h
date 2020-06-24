@@ -1006,7 +1006,6 @@ public:
     std::list<Scope *> nestedList;
     nonneg int numConstructors;
     nonneg int numCopyOrMoveConstructors;
-    std::vector<Function> constructors;
     std::list<UsingInfo> usingList;
     ScopeType type;
     Type* definedType;

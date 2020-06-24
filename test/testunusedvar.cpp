@@ -4749,7 +4749,7 @@ private:
     {
         functionVariableUsage(
             "class A {};\n"
-            "int main(int argc, char argv[]) {\n"
+            "void f() {\n"
             "   A a;\n"
             "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: a\n", errout.str());
@@ -4760,7 +4760,7 @@ private:
             "public:\n"
             "   A a;\n"
             "};\n"
-            "int main(int argc, char argv[]) {\n"
+            "void f() {\n"
             "   B b;\n"
             "}");
         ASSERT_EQUALS("[test.cpp:7]: (style) Unused variable: b\n", errout.str());
@@ -4770,7 +4770,7 @@ private:
             "public:\n"
             "   C() = default;\n"
             "};\n"
-            "int main(int argc, char argv[]) {\n"
+            "void f() {\n"
             "   C c;\n"
             "}");
         ASSERT_EQUALS("[test.cpp:6]: (style) Unused variable: c\n", errout.str());
@@ -4780,7 +4780,7 @@ private:
             "public:\n"
             "   D() {}\n"
             "};\n"
-            "int main(int argc, char argv[]) {\n"
+            "void f() {\n"
             "   D d;\n"
             "}");
         ASSERT_EQUALS("[test.cpp:6]: (style) Unused variable: d\n", errout.str());
@@ -4791,10 +4791,54 @@ private:
             "public:\n"
             "   uint32_t u{1};\n"
             "};\n"
-            "int main(int argc, char argv[]) {\n"
+            "void f() {\n"
             "   E e;\n"
             "}");
         ASSERT_EQUALS("[test.cpp:7]: (style) Unused variable: e\n", errout.str());
+
+        // non-empty constructor
+        functionVariableUsage(
+            "class F {\n"
+            "public:\n"
+            "   F() {\n"
+            "       int i =0;\n"
+            "       (void) i;"
+            "   }\n"
+            "};\n"
+            "void f() {\n"
+            "   F f;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // side-effect variable
+        functionVariableUsage(
+            "class F {\n"
+            "public:\n"
+            "   F() {\n"
+            "       int i =0;\n"
+            "       (void) i;"
+            "   }\n"
+            "};\n"
+            "class G {\n"
+            "public:\n"
+            "   F f;\n"
+            "};\n"
+            "void f() {\n"
+            "   G g;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // unknown variable type
+        functionVariableUsage(
+            "#include <cstdint>\n"
+            "class H {\n"
+            "public:\n"
+            "   unknown_type u{1};\n"
+            "};\n"
+            "void f() {\n"
+            "   H h;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
