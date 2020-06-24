@@ -4420,7 +4420,7 @@ private:
               "    static std::lock_guard<std::mutex> g(m);\n"
               "}\n",
               true);
-        ASSERT_EQUALS("[test.cpp:3]: (warning) The lock guard won't unlock until the end of the program which could lead to a deadlock.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Lock guard is defined globally. Lock guards are intended to be local. A global lock guard could lead to a deadlock since it won't unlock until the end of the program.\n", errout.str());
 
         check("void f() {\n"
               "    static std::mutex m;\n"
@@ -4484,7 +4484,7 @@ private:
               "    }\n"
               "};\n",
               true);
-        ASSERT_EQUALS("[test.cpp:4]: (warning) The lock guard won't unlock until the end of the program which could lead to a deadlock.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Lock guard is defined globally. Lock guards are intended to be local. A global lock guard could lead to a deadlock since it won't unlock until the end of the program.\n", errout.str());
 
         check("std::mutex& h();\n"
               "void f() {\n"
