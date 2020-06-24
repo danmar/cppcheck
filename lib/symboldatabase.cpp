@@ -1319,6 +1319,8 @@ void SymbolDatabase::createSymbolDatabaseEnums()
             const_cast<Token *>(i.name)->enumerator(&i);
     }
 
+    std::set<std::string> tokensThatAreNotEnumeratorValues;
+
     for (Scope &scope : scopeList) {
         if (scope.type != Scope::eEnum)
             continue;
@@ -1330,7 +1332,7 @@ void SymbolDatabase::createSymbolDatabaseEnums()
                     mTokenizer->syntaxError(enumerator.start);
                 for (const Token * tok3 = enumerator.start; tok3 && tok3 != enumerator.end->next(); tok3 = tok3->next()) {
                     if (tok3->tokType() == Token::eName) {
-                        const Enumerator * e = findEnumerator(tok3);
+                        const Enumerator * e = findEnumerator(tok3, tokensThatAreNotEnumeratorValues);
                         if (e)
                             const_cast<Token *>(tok3)->enumerator(e);
                     }
@@ -1343,7 +1345,7 @@ void SymbolDatabase::createSymbolDatabaseEnums()
     for (const Token* tok = mTokenizer->list.front(); tok != mTokenizer->list.back(); tok = tok->next()) {
         if (tok->tokType() != Token::eName)
             continue;
-        const Enumerator * enumerator = findEnumerator(tok);
+        const Enumerator * enumerator = findEnumerator(tok, tokensThatAreNotEnumeratorValues);
         if (enumerator)
             const_cast<Token *>(tok)->enumerator(enumerator);
     }
@@ -3019,7 +3021,7 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
 
         // check in namespace if using found
         if (*scope == scope1 && !scope1->usingList.empty()) {
-            std::list<Scope::UsingInfo>::const_iterator it2;
+            std::vector<Scope::UsingInfo>::const_iterator it2;
             for (it2 = scope1->usingList.begin(); it2 != scope1->usingList.end(); ++it2) {
                 if (it2->scope) {
                     Function * func = findFunctionInScope(tok1, it2->scope, path, path_length);
@@ -3597,17 +3599,15 @@ void SymbolDatabase::printOut(const char *title) const
     if (title)
         std::cout << "\n### " << title << " ###\n";
 
-    for (std::list<Scope>::const_iterator scope = scopeList.begin(); scope != scopeList.end(); ++scope) {
+    for (std::list<Scope>::const_iterator scope = scopeList.cbegin(); scope != scopeList.cend(); ++scope) {
         std::cout << "Scope: " << &*scope << " " << scope->type << std::endl;
         std::cout << "    className: " << scope->className << std::endl;
         std::cout << "    classDef: " << tokenToString(scope->classDef, mTokenizer) << std::endl;
         std::cout << "    bodyStart: " << tokenToString(scope->bodyStart, mTokenizer) << std::endl;
         std::cout << "    bodyEnd: " << tokenToString(scope->bodyEnd, mTokenizer) << std::endl;
 
-        std::list<Function>::const_iterator func;
-
         // find the function body if not implemented inline
-        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+        for (auto func = scope->functionList.cbegin(); func != scope->functionList.cend(); ++func) {
             std::cout << "    Function: " << &*func << std::endl;
             std::cout << "        name: " << tokenToString(func->tokenDef, mTokenizer) << std::endl;
             std::cout << "        type: " << (func->type == Function::eConstructor? "Constructor" :
@@ -3686,17 +3686,13 @@ void SymbolDatabase::printOut(const char *title) const
             std::cout << "        nestedIn: " << scopeToString(func->nestedIn, mTokenizer) << std::endl;
             std::cout << "        functionScope: " << scopeToString(func->functionScope, mTokenizer) << std::endl;
 
-            std::list<Variable>::const_iterator var;
-
-            for (var = func->argumentList.begin(); var != func->argumentList.end(); ++var) {
+            for (auto var = func->argumentList.cbegin(); var != func->argumentList.cend(); ++var) {
                 std::cout << "        Variable: " << &*var << std::endl;
                 printVariable(&*var, "            ");
             }
         }
 
-        std::list<Variable>::const_iterator var;
-
-        for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
+        for (auto var = scope->varlist.cbegin(); var != scope->varlist.cend(); ++var) {
             std::cout << "    Variable: " << &*var << std::endl;
             printVariable(&*var, "        ");
         }
@@ -3741,10 +3737,8 @@ void SymbolDatabase::printOut(const char *title) const
 
         std::cout << "    nestedList[" << scope->nestedList.size() << "] = (";
 
-        std::list<Scope *>::const_iterator nsi;
-
         std::size_t count = scope->nestedList.size();
-        for (nsi = scope->nestedList.begin(); nsi != scope->nestedList.end(); ++nsi) {
+        for (std::vector<Scope*>::const_iterator nsi = scope->nestedList.cbegin(); nsi != scope->nestedList.cend(); ++nsi) {
             std::cout << " " << (*nsi) << " " << (*nsi)->type << " " << (*nsi)->className;
             if (count-- > 1)
                 std::cout << ",";
@@ -3752,9 +3746,7 @@ void SymbolDatabase::printOut(const char *title) const
 
         std::cout << " )" << std::endl;
 
-        std::list<Scope::UsingInfo>::const_iterator use;
-
-        for (use = scope->usingList.begin(); use != scope->usingList.end(); ++use) {
+        for (auto use = scope->usingList.cbegin(); use != scope->usingList.cend(); ++use) {
             std::cout << "    using: " << use->scope << " " << use->start->strAt(2);
             const Token *tok1 = use->start->tokAt(3);
             while (tok1 && tok1->str() == "::") {
@@ -4714,13 +4706,13 @@ const Token * Scope::addEnum(const Token * tok, bool isCpp)
     return tok2;
 }
 
-const Enumerator * SymbolDatabase::findEnumerator(const Token * tok) const
+const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<std::string>& tokensThatAreNotEnumeratorValues) const
 {
     const Scope * scope = tok->scope();
 
     const std::string &tokStr = tok->str();
 
-    if (mTokensThatAreNotEnumeratorValues.find(tokStr) != mTokensThatAreNotEnumeratorValues.end()) {
+    if (tokensThatAreNotEnumeratorValues.find(tokStr) != tokensThatAreNotEnumeratorValues.end()) {
         return nullptr;
     }
 
@@ -4761,7 +4753,7 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok) const
                     return enumerator;
                 // enum
                 else {
-                    for (std::list<Scope *>::const_iterator it = scope->nestedList.begin(), end = scope->nestedList.end(); it != end; ++it) {
+                    for (std::vector<Scope *>::const_iterator it = scope->nestedList.begin(), end = scope->nestedList.end(); it != end; ++it) {
                         enumerator = (*it)->findEnumerator(tokStr);
 
                         if (enumerator)
@@ -4776,7 +4768,7 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok) const
         if (enumerator)
             return enumerator;
 
-        for (std::list<Scope *>::const_iterator s = scope->nestedList.begin(); s != scope->nestedList.end(); ++s) {
+        for (std::vector<Scope *>::const_iterator s = scope->nestedList.begin(); s != scope->nestedList.end(); ++s) {
             enumerator = (*s)->findEnumerator(tokStr);
 
             if (enumerator)
@@ -4807,7 +4799,7 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok) const
             if (enumerator)
                 return enumerator;
 
-            for (std::list<Scope*>::const_iterator s = scope->nestedList.begin(); s != scope->nestedList.end(); ++s) {
+            for (std::vector<Scope*>::const_iterator s = scope->nestedList.begin(); s != scope->nestedList.end(); ++s) {
                 enumerator = (*s)->findEnumerator(tokStr);
 
                 if (enumerator)
@@ -4816,7 +4808,7 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok) const
         }
     }
 
-    mTokensThatAreNotEnumeratorValues.insert(tokStr);
+    tokensThatAreNotEnumeratorValues.insert(tokStr);
 
     return nullptr;
 }
@@ -5677,7 +5669,7 @@ const Type* SymbolDatabase::findType(const Token *startTok, const Scope *startSc
 
     // check using namespaces
     while (startScope) {
-        for (std::list<Scope::UsingInfo>::const_iterator it = startScope->usingList.begin();
+        for (std::vector<Scope::UsingInfo>::const_iterator it = startScope->usingList.begin();
              it != startScope->usingList.end(); ++it) {
             tok = startTok;
             scope = it->scope;
