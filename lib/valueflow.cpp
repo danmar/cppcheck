@@ -8380,7 +8380,6 @@ ValueFlow::Value::Value(const Token* c, long long val, Bound b)
     intvalue(val),
     tokvalue(nullptr),
     floatValue(0.0),
-    moveKind(MoveKind::NonMovedVariable),
     varvalue(val),
     condition(c),
     varId(0),
@@ -8393,6 +8392,7 @@ ValueFlow::Value::Value(const Token* c, long long val, Bound b)
     wideintvalue(0),
     subexpressions(),
     capturetok(nullptr),
+    moveKind(MoveKind::NonMovedVariable),
     lifetimeKind(LifetimeKind::Object),
     lifetimeScope(LifetimeScope::Local),
     valueKind(ValueKind::Possible)

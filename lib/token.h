@@ -117,14 +117,14 @@ struct TokenImpl {
 
     // __cppcheck_in_range__
     struct CppcheckAttributes {
-        enum Type {LOW,HIGH} type;
+        enum Type : uint8_t {LOW,HIGH} type;
         MathLib::bigint value;
         struct CppcheckAttributes *next;
     };
     struct CppcheckAttributes *mCppcheckAttributes;
 
     // For memoization, to speed up parsing of huge arrays #8897
-    enum class Cpp11init {UNKNOWN, CPP11INIT, NOINIT} mCpp11init;
+    enum class Cpp11init : uint8_t {UNKNOWN, CPP11INIT, NOINIT} mCpp11init;
 
     /** Bitfield bit count. */
     unsigned char mBits;

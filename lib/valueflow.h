@@ -85,7 +85,7 @@ namespace ValueFlow {
     public:
         typedef std::pair<const Token *, std::string> ErrorPathItem;
         typedef std::list<ErrorPathItem> ErrorPath;
-        enum class Bound { Upper, Lower, Point };
+        enum class Bound : uint8_t { Upper, Lower, Point };
 
         explicit Value(long long val = 0, Bound b = Bound::Point)
             : valueType(ValueType::INT),
@@ -93,7 +93,6 @@ namespace ValueFlow {
             intvalue(val),
             tokvalue(nullptr),
             floatValue(0.0),
-            moveKind(MoveKind::NonMovedVariable),
             varvalue(val),
             condition(nullptr),
             varId(0U),
@@ -106,6 +105,7 @@ namespace ValueFlow {
             wideintvalue(val),
             subexpressions(),
             capturetok(nullptr),
+            moveKind(MoveKind::NonMovedVariable),
             lifetimeKind(LifetimeKind::Object),
             lifetimeScope(LifetimeScope::Local),
             valueKind(ValueKind::Possible)
@@ -253,7 +253,7 @@ namespace ValueFlow {
 
         std::string toString() const;
 
-        enum class ValueType {
+        enum class ValueType : uint8_t {
             INT,
             TOK,
             FLOAT,
@@ -331,9 +331,6 @@ namespace ValueFlow {
         /** float value */
         double floatValue;
 
-        /** kind of moved  */
-        enum class MoveKind {NonMovedVariable, MovedVariable, ForwardedVariable} moveKind;
-
         /** For calculated values - variable value that calculated value depends on */
         long long varvalue;
 
@@ -370,7 +367,10 @@ namespace ValueFlow {
         // Set to where a lifetime is captured by value
         const Token* capturetok;
 
-        enum class LifetimeKind {
+        /** kind of moved  */
+        enum class MoveKind : uint8_t {NonMovedVariable, MovedVariable, ForwardedVariable} moveKind;
+
+        enum class LifetimeKind : uint8_t {
             // Pointer points to a member of lifetime
             Object,
             // A member of object points to the lifetime
@@ -383,7 +383,7 @@ namespace ValueFlow {
             Address
         } lifetimeKind;
 
-        enum class LifetimeScope { Local, Argument, SubFunction, ThisPointer, ThisValue } lifetimeScope;
+        enum class LifetimeScope : uint8_t { Local, Argument, SubFunction, ThisPointer, ThisValue } lifetimeScope;
 
         static const char* toString(MoveKind moveKind);
         static const char* toString(LifetimeKind lifetimeKind);
@@ -391,7 +391,7 @@ namespace ValueFlow {
         static const char* toString(Bound bound);
 
         /** How known is this value */
-        enum class ValueKind {
+        enum class ValueKind : uint8_t {
             /** This value is possible, other unlisted values may also be possible */
             Possible,
             /** Only listed values are possible */
@@ -470,18 +470,18 @@ bool isContainerSizeChanged(const Token* tok, const Settings* settings = nullptr
 
 struct LifetimeToken {
     const Token* token;
-    bool addressOf;
     ValueFlow::Value::ErrorPath errorPath;
+    bool addressOf;
     bool inconclusive;
 
-    LifetimeToken() : token(nullptr), addressOf(false), errorPath(), inconclusive(false) {}
+    LifetimeToken() : token(nullptr), errorPath(), addressOf(false), inconclusive(false) {}
 
     LifetimeToken(const Token* token, ValueFlow::Value::ErrorPath errorPath)
-        : token(token), addressOf(false), errorPath(std::move(errorPath)), inconclusive(false)
+        : token(token), errorPath(std::move(errorPath)), addressOf(false), inconclusive(false)
     {}
 
     LifetimeToken(const Token* token, bool addressOf, ValueFlow::Value::ErrorPath errorPath)
-        : token(token), addressOf(addressOf), errorPath(std::move(errorPath)), inconclusive(false)
+        : token(token), errorPath(std::move(errorPath)), addressOf(addressOf), inconclusive(false)
     {}
 
     static std::vector<LifetimeToken> setAddressOf(std::vector<LifetimeToken> v, bool b) {

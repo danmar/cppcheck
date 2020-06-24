@@ -4223,12 +4223,12 @@ Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *
     nestedIn(nestedIn_),
     numConstructors(0),
     numCopyOrMoveConstructors(0),
-    type(type_),
     definedType(nullptr),
     functionOf(nullptr),
     function(nullptr),
     enumType(nullptr),
-    enumClass(false)
+    enumClass(false),
+    type(type_)
 {
     setBodyStartEnd(start_);
 }
