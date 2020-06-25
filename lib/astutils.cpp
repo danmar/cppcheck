@@ -1227,7 +1227,7 @@ const Token * getTokenArgumentFunction(const Token * tok, int& argn)
     }
 
     const Token* argtok = tok;
-    while(!Token::Match(argtok->astParent(), ",|(|{") || (argtok->astParent() && argtok->astParent()->isCast())) {
+    while(argtok->astParent() && (!Token::Match(argtok->astParent(), ",|(|{") || argtok->astParent()->isCast())) {
         argtok = argtok->astParent();
     }
     if (!argtok)
