@@ -1369,11 +1369,11 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
         return false;
     }
 
-    if (addressOf || (indirect > 0 && arg && arg->isPointer())) {
-        if (!(arg && arg->isConst()))
+    if (addressOf || (indirect > 0 && arg->isPointer())) {
+        if (!arg->isConst())
             return true;
         // If const is applied to the pointer, then the value can still be modified
-        if (arg && Token::simpleMatch(arg->typeEndToken(), "* const"))
+        if (Token::simpleMatch(arg->typeEndToken(), "* const"))
             return true;
     }
 
