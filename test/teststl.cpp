@@ -165,6 +165,8 @@ private:
         TEST_CASE(invalidContainer);
         TEST_CASE(invalidContainerLoop);
         TEST_CASE(findInsert);
+        
+        TEST_CASE(checkMutexes);
     }
 
     void check(const char code[], const bool inconclusive=false, const Standards::cppstd_t cppstandard=Standards::CPPLatest) {
@@ -4410,6 +4412,117 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkMutexes() {
+        check("void f() {\n"
+              "    static std::mutex m;\n"
+              "    static std::lock_guard<std::mutex> g(m);\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Lock guard is defined globally. Lock guards are intended to be local. A global lock guard could lead to a deadlock since it won't unlock until the end of the program.\n", errout.str());
+
+        check("void f() {\n"
+              "    static std::mutex m;\n"
+              "    std::lock_guard<std::mutex> g(m);\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    std::mutex m;\n"
+              "    std::lock_guard<std::mutex> g(m);\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:3]: (warning) The lock is ineffective because the mutex is locked at the same scope as the mutex itself.\n", errout.str());
+
+        check("void g();\n"
+              "void f() {\n"
+              "    static std::mutex m;\n"
+              "    m.lock();\n"
+              "    g();\n"
+              "    m.unlock();\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g();\n"
+              "void f() {\n"
+              "    std::mutex m;\n"
+              "    m.lock();\n"
+              "    g();\n"
+              "    m.unlock();\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:4]: (warning) The lock is ineffective because the mutex is locked at the same scope as the mutex itself.\n", errout.str());
+
+        check("class A {\n"
+              "    std::mutex m;\n"
+              "    void f() {\n"
+              "        std::lock_guard<std::mutex> g(m);\n"
+              "    }\n"
+              "};\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("class A {\n"
+              "    std::mutex m;\n"
+              "    void g();\n"
+              "    void f() {\n"
+              "        m.lock();\n"
+              "        g();\n"
+              "        m.unlock();\n"
+              "    }\n"
+              "};\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("class A {\n"
+              "    std::mutex m;\n"
+              "    void f() {\n"
+              "        static std::lock_guard<std::mutex> g(m);\n"
+              "    }\n"
+              "};\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Lock guard is defined globally. Lock guards are intended to be local. A global lock guard could lead to a deadlock since it won't unlock until the end of the program.\n", errout.str());
+
+        check("std::mutex& h();\n"
+              "void f() {\n"
+              "    auto& m = h();\n"
+              "    std::lock_guard<std::mutex> g(m);\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g();\n"
+              "std::mutex& h();\n"
+              "void f() {\n"
+              "    auto& m = h();\n"
+              "    m.lock();\n"
+              "    g();\n"
+              "    m.unlock();\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::mutex& h();\n"
+              "void f() {\n"
+              "    auto m = h();\n"
+              "    std::lock_guard<std::mutex> g(m);\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:4]: (warning) The lock is ineffective because the mutex is locked at the same scope as the mutex itself.\n", errout.str());
+
+        check("void g();\n"
+              "std::mutex& h();\n"
+              "void f() {\n"
+              "    auto m = h();\n"
+              "    m.lock();\n"
+              "    g();\n"
+              "    m.unlock();\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:5]: (warning) The lock is ineffective because the mutex is locked at the same scope as the mutex itself.\n", errout.str());
     }
 };
 
