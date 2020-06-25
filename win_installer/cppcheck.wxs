@@ -66,8 +66,8 @@
               <File Id='cppcheck_ko.qm' Name='cppcheck_ko.qm' Source='$(var.TranslationsDir)\cppcheck_ko.qm' />
               <File Id='cppcheck_nl.qm' Name='cppcheck_nl.qm' Source='$(var.TranslationsDir)\cppcheck_nl.qm' />
               <File Id='cppcheck_ru.qm' Name='cppcheck_ru.qm' Source='$(var.TranslationsDir)\cppcheck_ru.qm' />
-              <File Id='cppcheck_sv.qm' Name='cppcheck_sv.qm' Source='$(var.TranslationsDir)\cppcheck_sv.qm' />
               <File Id='cppcheck_sr.qm' Name='cppcheck_sr.qm' Source='$(var.TranslationsDir)\cppcheck_sr.qm' />
+              <File Id='cppcheck_sv.qm' Name='cppcheck_sv.qm' Source='$(var.TranslationsDir)\cppcheck_sv.qm' />
               <File Id='cppcheck_zh_CN.qm' Name='cppcheck_zh_CN.qm' Source='$(var.TranslationsDir)\cppcheck_zh_CN.qm' />
             </Component>
           </Directory>
@@ -79,16 +79,26 @@
               <File Id='avr.cfg' Name='avr.cfg' Source='$(var.CfgsDir)\avr.cfg' />
               <File Id='boost.cfg' Name='boost.cfg' Source='$(var.CfgsDir)\boost.cfg' />
               <File Id='bsd.cfg' Name='bsd.cfg' Source='$(var.CfgsDir)\bsd.cfg' />
+              <File Id='cairo.cfg' Name='cairo.cfg' Source='$(var.CfgsDir)\cairo.cfg' />
               <File Id='cppunit.cfg' Name='cppunit.cfg' Source='$(var.CfgsDir)\cppunit.cfg' />
               <File Id='embedded_sql.cfg' Name='embedded_sql.cfg' Source='$(var.CfgsDir)\embedded_sql.cfg' />
               <File Id='gnu.cfg' Name='gnu.cfg' Source='$(var.CfgsDir)\gnu.cfg' />
               <File Id='googletest.cfg' Name='googletest.cfg' Source='$(var.CfgsDir)\googletest.cfg' />
               <File Id='gtk.cfg' Name='gtk.cfg' Source='$(var.CfgsDir)\gtk.cfg' />
+              <File Id='kde.cfg' Name='kde.cfg' Source='$(var.CfgsDir)\kde.cfg' />
               <File Id='libcerror.cfg' Name='libcerror.cfg' Source='$(var.CfgsDir)\libcerror.cfg' />
+              <File Id='libcurl.cfg' Name='libcurl.cfg' Source='$(var.CfgsDir)\libcurl.cfg' />
+              <File Id='libsigcpp.cfg' Name='libsigc++.cfg' Source='$(var.CfgsDir)\libsigc++.cfg' />
+              <File Id='lua.cfg' Name='lua.cfg' Source='$(var.CfgsDir)\lua.cfg' />
+              <File Id='mfc.cfg' Name='mfc.cfg' Source='$(var.CfgsDir)\mfc.cfg' />
+              <File Id='microsoft_atl.cfg' Name='microsoft_atl.cfg' Source='$(var.CfgsDir)\microsoft_atl.cfg' />
               <File Id='microsoft_sal.cfg' Name='microsoft_sal.cfg' Source='$(var.CfgsDir)\microsoft_sal.cfg' />
               <File Id='motif.cfg' Name='motif.cfg' Source='$(var.CfgsDir)\motif.cfg' />
               <File Id='nspr.cfg' Name='nspr.cfg' Source='$(var.CfgsDir)\nspr.cfg' />
+              <File Id='opencv2.cfg' Name='opencv2.cfg' Source='$(var.CfgsDir)\opencv2.cfg' />
               <File Id='opengl.cfg' Name='opengl.cfg' Source='$(var.CfgsDir)\opengl.cfg' />
+              <File Id='openmp.cfg' Name='openmp.cfg' Source='$(var.CfgsDir)\openmp.cfg' />
+              <File Id='openssl.cfg' Name='openssl.cfg' Source='$(var.CfgsDir)\openssl.cfg' />
               <File Id='posix.cfg' Name='posix.cfg' Source='$(var.CfgsDir)\posix.cfg' />
               <File Id='python.cfg' Name='python.cfg' Source='$(var.CfgsDir)\python.cfg' />
               <File Id='qt.cfg' Name='qt.cfg' Source='$(var.CfgsDir)\qt.cfg' />
@@ -96,6 +106,7 @@
               <File Id='sdl.cfg' Name='sdl.cfg' Source='$(var.CfgsDir)\sdl.cfg' />
               <File Id='sfml.cfg' Name='sfml.cfg' Source='$(var.CfgsDir)\sfml.cfg' />
               <File Id='sqlite3.cfg' Name='sqlite3.cfg' Source='$(var.CfgsDir)\sqlite3.cfg' />
+              <File Id='tinyxml2.cfg' Name='tinyxml2.cfg' Source='$(var.CfgsDir)\tinyxml2.cfg' />
               <File Id='windows.cfg' Name='windows.cfg' Source='$(var.CfgsDir)\windows.cfg' />
               <File Id='wxwidgets.cfg' Name='wxwidgets.cfg' Source='$(var.CfgsDir)\wxwidgets.cfg' />
               <File Id='zlib.cfg' Name='zlib.cfg' Source='$(var.CfgsDir)\zlib.cfg' />
@@ -103,7 +114,13 @@
           </Directory>
           <Directory Id='PtfsFolder' Name='platforms'>
             <Component Id='OptionalPtfs' Guid='$(var.optionalPtfsGUID)'>
+              <File Id='aix_ppc64.xml' Name='aix_ppc64.xml' Source='$(var.PtfsDir)\aix_ppc64.xml' />
+              <File Id='arm32wchar_t2.xml' Name='arm32-wchar_t2.xml' Source='$(var.PtfsDir)\arm32-wchar_t2.xml' />
+              <File Id='arm32wchar_t4.xml' Name='arm32-wchar_t4.xml' Source='$(var.PtfsDir)\arm32-wchar_t4.xml' />
+              <File Id='arm64wchar_t2.xml' Name='arm64-wchar_t2.xml' Source='$(var.PtfsDir)\arm64-wchar_t2.xml' />
+              <File Id='arm64wchar_t4.xml' Name='arm64-wchar_t4.xml' Source='$(var.PtfsDir)\arm64-wchar_t4.xml' />
               <File Id='avr8.xml' Name='avr8.xml' Source='$(var.PtfsDir)\avr8.xml' />
+              <File Id='cray_sv1.xml' Name='cray_sv1.xml' Source='$(var.PtfsDir)\cray_sv1.xml' />
               <File Id='msp430_eabi_large_datamodel.xml' Name='msp430_eabi_large_datamodel.xml' Source='$(var.PtfsDir)\msp430_eabi_large_datamodel.xml' />
               <File Id='unix32unsigned.xml' Name='unix32-unsigned.xml' Source='$(var.PtfsDir)\unix32-unsigned.xml' />
               <File Id='unix64unsigned.xml' Name='unix64-unsigned.xml' Source='$(var.PtfsDir)\unix64-unsigned.xml' />
@@ -111,12 +128,14 @@
           </Directory>
           <Directory Id='AddonsFolder' Name='addons'>
             <Component Id='Addons' Guid='$(var.addonsGUID)'>
-              <File Id='cppcheckdata.py' Name='cppcheckdata.py' Source='$(var.AddonsDir)\cppcheckdata.py' />
               <File Id='cert.py' Name='cert.py' Source='$(var.AddonsDir)\cert.py' />
+              <File Id='cppcheckdata.py' Name='cppcheckdata.py' Source='$(var.AddonsDir)\cppcheckdata.py' />
               <File Id='findcasts.py' Name='findcasts.py' Source='$(var.AddonsDir)\findcasts.py' />
               <File Id='misc.py' Name='misc.py' Source='$(var.AddonsDir)\misc.py' />
               <File Id='misra.py' Name='misra.py' Source='$(var.AddonsDir)\misra.py' />
               <File Id='naming.py' Name='naming.py' Source='$(var.AddonsDir)\naming.py' />
+              <File Id='namingng.py' Name='namingng.py' Source='$(var.AddonsDir)\namingng.py' />
+              <File Id='ROS_naming.json' Name='ROS_naming.json' Source='$(var.AddonsDir)\ROS_naming.json' />
               <File Id='threadsafety.py' Name='threadsafety.py' Source='$(var.AddonsDir)\threadsafety.py' />
               <File Id='y2038.py' Name='y2038.py' Source='$(var.AddonsDir)\y2038.py' />
             </Component>
