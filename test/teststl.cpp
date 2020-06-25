@@ -165,7 +165,7 @@ private:
         TEST_CASE(invalidContainer);
         TEST_CASE(invalidContainerLoop);
         TEST_CASE(findInsert);
-        
+
         TEST_CASE(checkMutexes);
     }
 

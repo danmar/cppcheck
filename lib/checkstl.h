@@ -186,7 +186,7 @@ public:
 
     /** @brief Look for loops that can replaced with std algorithms */
     void useStlAlgorithm();
-    
+
     void checkMutexes();
 
 private:

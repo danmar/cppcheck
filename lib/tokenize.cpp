@@ -11161,6 +11161,22 @@ void Tokenizer::simplifyOperatorName()
             tok->isOperatorKeyword(true);
     }
 
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "%op% %str% %name%")) {
+            std::string name = tok->strAt(2);
+            Token * const str = tok->next();
+            str->deleteNext();
+            tok->insertToken("operator\"\"" + name);
+            tok = tok->next();
+            tok->isOperatorKeyword(true);
+            tok->insertToken("(");
+            str->insertToken(")");
+            Token::createMutualLinks(tok->next(), str->next());
+            str->insertToken(MathLib::toString(Token::getStrLength(str)));
+            str->insertToken(",");
+        }
+    }
+
     if (mSettings->debugwarnings) {
         const Token *tok = list.front();
 
