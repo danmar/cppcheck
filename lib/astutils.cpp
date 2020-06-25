@@ -1226,32 +1226,76 @@ const Token * getTokenArgumentFunction(const Token * tok, int& argn)
             return nullptr;
     }
 
-    // goto start of function call and get argn
-    argn = 0;
-    while (tok && !Token::simpleMatch(tok, ";") && !isScopeBracket(tok)) {
-        if (tok->str() == ",")
-            ++argn;
-        else if (Token::Match(tok, ")|}"))
-            tok = tok->link();
-        else if (Token::Match(tok->previous(), "%name% (|{"))
-            break;
-        else if (Token::Match(tok->previous(), "> (|{") && tok->previous()->link())
-            break;
-        tok = tok->previous();
+    const Token* argtok = tok;
+    while(!Token::Match(argtok->astParent(), ",|(|{") || (argtok->astParent() && argtok->astParent()->isCast())) {
+        argtok = argtok->astParent();
     }
+    if (!argtok)
+        return nullptr;
+    if (Token::simpleMatch(argtok, ","))
+        argtok = argtok->astOperand1();
+    if (Token::simpleMatch(argtok, "(") && argtok->astOperand2())
+        argtok = argtok->astOperand2();
+    tok = argtok;
+    while(Token::Match(tok->astParent(), ",|(|{")) {
+        tok = tok->astParent();
+        if (Token::Match(tok, "(|{"))
+            break;
+    }
+    std::vector<const Token*> args = getArguments(tok);
+    auto it = std::find(args.begin(), args.end(), argtok);
+    if (it != args.end())
+        argn = std::distance(args.begin(), it);
+    if (argn == -1)
+        return nullptr;
     if (!Token::Match(tok, "{|("))
         return nullptr;
-    tok = tok->previous();
+    tok = tok->astOperand1();
+    while(Token::simpleMatch(tok, "."))
+        tok = tok->astOperand2();
+    while(Token::simpleMatch(tok, "::")) {
+        tok = tok->astOperand2();
+        if(Token::simpleMatch(tok, "<") && tok->link())
+            tok = tok->astOperand1();
+    }
     if (tok && tok->link() && tok->str() == ">")
         tok = tok->link()->previous();
-    if (!Token::Match(tok, "%name% [({<]"))
+    if (!Token::Match(tok, "%name%|(|{"))
         return nullptr;
     return tok;
+}
+
+const Variable* getArgumentVar(const Token* tok, int argnr)
+{
+    if (!tok)
+        return nullptr;
+    if (tok->function())
+        return tok->function()->getArgumentVar(argnr);
+    if (Token::Match(tok->previous(), "%type% (|{") || tok->variable()) {
+        const Type* type = Token::typeOf(tok);
+        if (!type)
+            return nullptr;
+        const Scope* typeScope = type->classScope;
+        const int argCount = numberOfArguments(tok);
+        for (const Function &function : typeScope->functionList) {
+            if (function.isConstructor())
+                continue;
+            if (function.argCount() < argCount)
+                continue;
+            if (!Token::simpleMatch(function.token, "operator()"))
+                continue;
+            return function.getArgumentVar(argnr);
+        }
+    }
+    return nullptr;
 }
 
 bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Settings *settings, bool *inconclusive)
 {
     if (!tok)
+        return false;
+
+    if(Token::simpleMatch(tok, ","))
         return false;
 
     const Token * const tok1 = tok;
@@ -1288,7 +1332,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
         return false;
     }
 
-    if (!tok->function()) {
+    if (!tok->function() && !tok->variable() && Token::Match(tok, "%name%")) {
         // Check if direction (in, out, inout) is specified in the library configuration and use that
         if (!addressOf && settings) {
             const Library::ArgumentChecks::Direction argDirection = settings->library.getArgDirection(tok, 1 + argnr);
@@ -1318,7 +1362,12 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
         return true;
     }
 
-    const Variable *arg = tok->function()->getArgumentVar(argnr);
+    const Variable *arg = getArgumentVar(tok, argnr);
+    if (!arg) {
+        if (inconclusive)
+            *inconclusive = true;
+        return false;
+    }
 
     if (addressOf || (indirect > 0 && arg && arg->isPointer())) {
         if (!(arg && arg->isConst()))

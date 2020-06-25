@@ -1983,6 +1983,63 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // #9710
+        check("class a {\n"
+              "    void operator()(int& i) const {\n"
+              "        i++;\n"
+              "    }\n"
+              "};\n"
+              "void f(int& i) {\n"
+              "    a()(i);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class a {\n"
+              "    void operator()(int& i) const {\n"
+              "        i++;\n"
+              "    }\n"
+              "};\n"
+              "void f(int& i) {\n"
+              "    a x;\n"
+              "    x(i);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class a {\n"
+              "    void operator()(const int& i) const;\n"
+              "};\n"
+              "void f(int& i) {\n"
+              "    a x;\n"
+              "    x(i);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Parameter 'i' can be declared with const\n", errout.str());
+
+        check("class a {\n"
+              "    void foo(const int& i) const;\n"
+              "    void operator()(int& i) const;\n"
+              "};\n"
+              "void f(int& i) {\n"
+              "    a()(i);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class a {\n"
+              "    void operator()(const int& i) const;\n"
+              "};\n"
+              "void f(int& i) {\n"
+              "    a()(i);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Parameter 'i' can be declared with const\n", errout.str());
+
+        // #9767
+        check("void fct1(MyClass& object) {\n"
+              "   fct2([&](void){}, object);\n"
+              "}\n"
+              "bool fct2(std::function<void()> lambdaExpression, MyClass& object) {\n"
+              "   object.modify();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void e();\n"
               "void g(void);\n"
               "void h(void);\n"
