@@ -1377,7 +1377,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
             return true;
     }
 
-    return arg && !arg->isConst() && arg->isReference();
+    return !arg->isConst() && arg->isReference();
 }
 
 bool isVariableChanged(const Token *tok, int indirect, const Settings *settings, bool cpp, int depth)
