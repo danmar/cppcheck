@@ -2040,6 +2040,14 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // #9778
+        check("struct A {};\n"
+              "struct B : A {};\n"
+              "B& f(A& x) {\n"
+              "    return static_cast<B&>(x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void e();\n"
               "void g(void);\n"
               "void h(void);\n"
