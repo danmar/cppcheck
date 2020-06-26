@@ -260,6 +260,7 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     mUI.mCheckHeaders->setChecked(projectFile->getCheckHeaders());
     mUI.mCheckUnusedTemplates->setChecked(projectFile->getCheckUnusedTemplates());
     mUI.mMaxCtuDepth->setValue(projectFile->getMaxCtuDepth());
+    mUI.mMaxTemplateRecursion->setValue(projectFile->getMaxTemplateRecursion());
     if (projectFile->clangParser)
         mUI.mBtnClangParser->setChecked(true);
     else
@@ -361,6 +362,7 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setCheckHeaders(mUI.mCheckHeaders->isChecked());
     projectFile->setCheckUnusedTemplates(mUI.mCheckUnusedTemplates->isChecked());
     projectFile->setMaxCtuDepth(mUI.mMaxCtuDepth->value());
+    projectFile->setMaxTemplateRecursion(mUI.mMaxTemplateRecursion->value());
     projectFile->setIncludes(getIncludePaths());
     projectFile->setDefines(getDefines());
     projectFile->setUndefines(getUndefines());

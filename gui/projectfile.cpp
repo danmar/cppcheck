@@ -44,6 +44,7 @@ ProjectFile::ProjectFile(const QString &filename, QObject *parent) :
 
 void ProjectFile::clear()
 {
+    const Settings settings;
     clangParser = false;
     bugHunting = false;
     mRootPath.clear();
@@ -64,7 +65,8 @@ void ProjectFile::clear()
     mAnalyzeAllVsConfigs = false;
     mCheckHeaders = true;
     mCheckUnusedTemplates = false;
-    mMaxCtuDepth = 10;
+    mMaxCtuDepth = settings.maxCtuDepth;
+    mMaxTemplateRecursion = settings.maxTemplateRecursion;
     mCheckUnknownFunctionReturn.clear();
     safeChecks.clear();
     mVsConfigurations.clear();
@@ -186,6 +188,9 @@ bool ProjectFile::read(const QString &filename)
 
             if (xmlReader.name() == CppcheckXml::MaxCtuDepthElementName)
                 mMaxCtuDepth = readInt(xmlReader, mMaxCtuDepth);
+
+            if (xmlReader.name() == CppcheckXml::MaxTemplateRecursionElementName)
+                mMaxTemplateRecursion = readInt(xmlReader, mMaxTemplateRecursion);
 
             // VSConfiguration
             if (xmlReader.name() == CppcheckXml::VSConfigurationElementName)
@@ -784,6 +789,10 @@ bool ProjectFile::write(const QString &filename)
 
     xmlWriter.writeStartElement(CppcheckXml::MaxCtuDepthElementName);
     xmlWriter.writeCharacters(QString::number(mMaxCtuDepth));
+    xmlWriter.writeEndElement();
+
+    xmlWriter.writeStartElement(CppcheckXml::MaxTemplateRecursionElementName);
+    xmlWriter.writeCharacters(QString::number(mMaxTemplateRecursion));
     xmlWriter.writeEndElement();
 
     if (!mIncludeDirs.isEmpty()) {

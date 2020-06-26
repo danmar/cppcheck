@@ -164,6 +164,7 @@ namespace CppcheckXml {
     const char CheckHeadersElementName[] = "check-headers";
     const char CheckUnusedTemplatesElementName[] = "check-unused-templates";
     const char MaxCtuDepthElementName[] = "max-ctu-depth";
+    const char MaxTemplateRecursionElementName[] = "max-template-recursion";
     const char CheckUnknownFunctionReturn[] = "check-unknown-function-return-values";
     const char ClangTidy[] = "clang-tidy";
     const char Name[] = "name";

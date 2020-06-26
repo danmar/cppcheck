@@ -208,6 +208,14 @@ public:
         mMaxCtuDepth = maxCtuDepth;
     }
 
+    int getMaxTemplateRecursion() const {
+        return mMaxTemplateRecursion;
+    }
+
+    void setMaxTemplateRecursion(int maxTemplateRecursion) {
+        mMaxTemplateRecursion = maxTemplateRecursion;
+    }
+
     const std::map<std::string,std::string>& getFunctionContracts() const {
         return mFunctionContracts;
     }
@@ -537,6 +545,9 @@ private:
 
     /** Max CTU depth */
     int mMaxCtuDepth;
+
+    /** Max template instantiation recursion */
+    int mMaxTemplateRecursion;
 
     QStringList mCheckUnknownFunctionReturn;
 
