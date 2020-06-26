@@ -1227,7 +1227,7 @@ const Token * getTokenArgumentFunction(const Token * tok, int& argn)
     }
 
     const Token* argtok = tok;
-    while(argtok && argtok->astParent() && (!Token::Match(argtok->astParent(), ",|(|{") || argtok->astParent()->isCast())) {
+    while (argtok && argtok->astParent() && (!Token::Match(argtok->astParent(), ",|(|{") || argtok->astParent()->isCast())) {
         argtok = argtok->astParent();
     }
     if (!argtok)
@@ -1237,7 +1237,7 @@ const Token * getTokenArgumentFunction(const Token * tok, int& argn)
     if (Token::simpleMatch(argtok, "(") && argtok->astOperand2())
         argtok = argtok->astOperand2();
     tok = argtok;
-    while(Token::Match(tok->astParent(), ",|(|{")) {
+    while (Token::Match(tok->astParent(), ",|(|{")) {
         tok = tok->astParent();
         if (Token::Match(tok, "(|{"))
             break;
@@ -1251,11 +1251,11 @@ const Token * getTokenArgumentFunction(const Token * tok, int& argn)
     if (!Token::Match(tok, "{|("))
         return nullptr;
     tok = tok->astOperand1();
-    while(Token::simpleMatch(tok, "."))
+    while (Token::simpleMatch(tok, "."))
         tok = tok->astOperand2();
-    while(Token::simpleMatch(tok, "::")) {
+    while (Token::simpleMatch(tok, "::")) {
         tok = tok->astOperand2();
-        if(Token::simpleMatch(tok, "<") && tok->link())
+        if (Token::simpleMatch(tok, "<") && tok->link())
             tok = tok->astOperand1();
     }
     if (tok && tok->link() && tok->str() == ">")
@@ -1295,7 +1295,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
     if (!tok)
         return false;
 
-    if(Token::simpleMatch(tok, ","))
+    if (Token::simpleMatch(tok, ","))
         return false;
 
     const Token * const tok1 = tok;
