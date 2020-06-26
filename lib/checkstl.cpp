@@ -2439,7 +2439,7 @@ void CheckStl::checkMutexes()
                     continue;
                 if (isLocalMutex(var, tok->scope()))
                     localMutexError(tok);
-            } else if (Token::Match(tok, "%var% (|{ %var% )|}")) {
+            } else if (Token::Match(tok, "%var% (|{ %var% )|}|,")) {
                 if (!isLockGuard(var))
                     continue;
                 const Variable* mvar = tok->tokAt(2)->variable();
