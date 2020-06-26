@@ -13,6 +13,15 @@
 #include <time.h>
 
 
+SYSTEM_INFO uninitvar_GetSystemInfo(char * envstr)
+{
+    // No warning is expected
+    SYSTEM_INFO SystemInfo;
+    GetSystemInfo(&SystemInfo);
+    return SystemInfo;
+}
+
+
 void uninitvar__putenv(char * envstr)
 {
     // No warning is expected
