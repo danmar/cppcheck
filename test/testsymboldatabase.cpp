@@ -6868,6 +6868,7 @@ private:
             vector.startPattern2 = "Vector !!::";
             vector.type_templateArgNo = 0;
             vector.arrayLike_indexOp = true;
+            vector.functions["front"] = Library::Container::Function{Library::Container::Action::NO_ACTION, Library::Container::Yield::ITEM};
             set.library.containers["Vector"] = vector;
             Library::Container string;
             string.startPattern = "test :: string";
@@ -6878,6 +6879,7 @@ private:
             ASSERT_EQUALS("container(test :: string)", typeOf("{return test::string();}", "(", "test.cpp", &set));
             ASSERT_EQUALS("container(test :: string)", typeOf("void foo(Vector<test::string> v) { for (auto s: v) { x=s+s; } }", "s", "test.cpp", &set));
             ASSERT_EQUALS("container(test :: string)", typeOf("void foo(Vector<test::string> v) { for (auto s: v) { x=s+s; } }", "+", "test.cpp", &set));
+            ASSERT_EQUALS("container(test :: string)", typeOf("Vector<test::string> v; x = v.front();", "(", "test.cpp", &set));
         }
 
         // new

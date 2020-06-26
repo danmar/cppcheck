@@ -5323,6 +5323,12 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         return;
     }
 
+    if (vt1 && vt1->container && vt1->containerTypeToken && Token::Match(parent, ". %name% (") && vt1->container->getYield(parent->next()->str()) == Library::Container::Yield::ITEM) {
+        ValueType item;
+        if (parsedecl(vt1->containerTypeToken, &item, mDefaultSignedness, mSettings))
+            setValueType(parent->tokAt(2), item);
+    }
+
     if (vt1 && vt1->smartPointerType && Token::Match(parent, ". %name% (") && parent->originalName() == "->" && !parent->next()->function()) {
         const Scope *scope = vt1->smartPointerType->classScope;
         const Function *f = scope ? scope->findFunction(parent->next(), false) : nullptr;
