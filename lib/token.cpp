@@ -2054,6 +2054,8 @@ void Token::type(const ::Type *t)
 
 const ::Type *Token::typeOf(const Token *tok)
 {
+    if (!tok)
+        return nullptr;
     if (Token::simpleMatch(tok, "return")) {
         const Scope *scope = tok->scope();
         if (!scope)
@@ -2074,6 +2076,8 @@ const ::Type *Token::typeOf(const Token *tok)
         if (!function)
             return nullptr;
         return function->retType;
+    } else if (Token::Match(tok->previous(), "%type% (|{")) {
+        return typeOf(tok->previous());
     } else if (Token::simpleMatch(tok, "=")) {
         return Token::typeOf(tok->astOperand1());
     } else if (Token::simpleMatch(tok, ".")) {
