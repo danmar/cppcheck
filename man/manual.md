@@ -167,9 +167,12 @@ Example code:
 
 Cppcheck output:
 
-    test.cpp:4:5: information: TemplateSimplifier: max template recursion (100) reached for template 'a'. You might want to limit Cppcheck recursion. [templateRecursion]
+    test.cpp:4:5: information: TemplateSimplifier: max template recursion (100) reached for template 'a<101>'. You might want to limit Cppcheck recursion. [templateRecursion]
         a<i+1>();
         ^
+
+As you can see Cppcheck has instantiated `a<i+1>` until `a<101>` was reached
+and then it bails out.
 
 One way to make Cppcheck analysis faster is to limit the recursion with a
 template specialisation. For instance:
