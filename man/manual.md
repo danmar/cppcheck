@@ -150,12 +150,7 @@ Cppcheck instantiates the templates in your code.
 
 If your templates are recursive this can lead to slow analysis that uses a lot
 of memory. Cppcheck will write information messages when there are potential
-problems. For instance:
-
-    2.cpp:3:29: information: TemplateSimplifier: max template recursion (100) reached for template 'a'. You might want to tweak Cppcheck recursion. [templateRecursion]
-
-One way to limit the recursion is to provide a template specialisation in the
-Cppcheck analysis.
+problems.
 
 Example code:
 
@@ -170,9 +165,31 @@ Example code:
         a<0>();
     }
 
-Template specialisation:
+Cppcheck output:
 
+    test.cpp:4:5: information: TemplateSimplifier: max template recursion (100) reached for template 'a'. You might want to limit Cppcheck recursion. [templateRecursion]
+        a<i+1>();
+        ^
+
+One way to make Cppcheck analysis faster is to limit the recursion with a
+template specialisation. For instance:
+
+    template <int i>
+    void a()
+    {
+        a<i+1>();
+    }
+
+    void foo()
+    {
+        a<0>();
+    }
+
+    #ifdef __cppcheck__
     template<> void a<3>() {}
+    #endif
+
+You can pass `-D__cppcheck__` when checking this code.
 
 
 # Importing project
