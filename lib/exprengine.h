@@ -79,6 +79,8 @@ namespace ExprEngine {
         virtual std::string getNewSymbolName() = 0;
         const std::string currentFunction;
         const Settings * const settings;
+        virtual bool isC() const = 0;
+        virtual bool isCPP() const = 0;
         virtual void reportError(const Token *tok,
                                  Severity::SeverityType severity,
                                  const char id[],

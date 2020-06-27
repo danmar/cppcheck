@@ -371,6 +371,9 @@ namespace {
         int recursion;
         std::time_t startTime;
 
+        bool isC() const OVERRIDE { return tokenizer->isC(); }
+        bool isCPP() const OVERRIDE { return tokenizer->isCPP(); }
+
         ExprEngine::ValuePtr executeContract(const Function *function, ExprEngine::ValuePtr(*executeExpression)(const Token*, Data&)) {
             const auto it = settings->functionContracts.find(function->fullName());
             if (it == settings->functionContracts.end())

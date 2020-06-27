@@ -250,6 +250,8 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
                     return;
                 if (uninitData && argvar && !argvar->isConst())
                     return;
+                if (!uninitStructMember.empty() && dataBase->isC() && argvar && !argvar->isConst())
+                    return;
             } else if (uninitData) {
                 if (dataBase->settings->library.getFunction(parent->astOperand1()))
                     return;

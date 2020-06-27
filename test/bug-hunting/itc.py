@@ -36,8 +36,6 @@ def get_error_lines(filename):
             if testfile.find('uninit_') >= 0:
                 if linenr == 177:
                     linenr = 176
-                elif linenr == 200:
-                    linenr = 225 # warn about function call
                 elif linenr == 241:
                     linenr = 242 # warn about usage
                 elif linenr == 266:
