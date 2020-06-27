@@ -173,8 +173,17 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
         }
     }
 
-    if (!value.isUninit() && uninitStructMember.empty())
-        return;
+    bool uninitData = false;
+    if (!value.isUninit() && uninitStructMember.empty()) {
+        if (Token::Match(tok->astParent(), "[(,]")) {
+            if (const auto* arrayValue = dynamic_cast<const ExprEngine::ArrayValue*>(&value)) {
+                uninitData = arrayValue->data.size() >= 1 && arrayValue->data[0].value->isUninit();
+            }
+        }
+
+        if (!uninitData)
+            return;
+    }
 
     // lhs in assignment
     if (tok->astParent()->str() == "=" && tok == tok->astParent()->astOperand1())
@@ -239,8 +248,11 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
                 const Variable *argvar = parent->astOperand1()->function()->getArgumentVar(count);
                 if (argvar && argvar->isReference() && !argvar->isConst())
                     return;
+                if (uninitData && argvar && !argvar->isConst())
+                    return;
             }
-        }
+        } else if (uninitData)
+            return;
     }
 
     // Avoid FP for array declaration
