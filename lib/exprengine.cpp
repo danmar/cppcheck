@@ -348,6 +348,7 @@ namespace {
             , errorLogger(old.errorLogger)
             , tokenizer(old.tokenizer)
             , callbacks(old.callbacks)
+            , constraints(old.constraints)
             , recursion(old.recursion)
             , startTime(old.startTime)
             , mTrackExecution(old.mTrackExecution)
