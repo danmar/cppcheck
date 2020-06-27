@@ -4430,8 +4430,39 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
+              "    static std::mutex m;\n"
+              "    static std::unique_lock<std::mutex> g(m, std::defer_lock);\n"
+              "    static std::lock(g);\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Lock guard is defined globally. Lock guards are intended to be local. A global lock guard could lead to a deadlock since it won't unlock until the end of the program.\n", errout.str());
+
+        check("void f() {\n"
+              "    static std::mutex m;\n"
+              "    std::unique_lock<std::mutex> g(m, std::defer_lock);\n"
+              "    std::lock(g);\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
               "    std::mutex m;\n"
               "    std::lock_guard<std::mutex> g(m);\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:3]: (warning) The lock is ineffective because the mutex is locked at the same scope as the mutex itself.\n", errout.str());
+
+        check("void f() {\n"
+              "    std::mutex m;\n"
+              "    std::unique_lock<std::mutex> g(m);\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:3]: (warning) The lock is ineffective because the mutex is locked at the same scope as the mutex itself.\n", errout.str());
+
+        check("void f() {\n"
+              "    std::mutex m;\n"
+              "    std::unique_lock<std::mutex> g(m, std::defer_lock);\n"
+              "    std::lock(g);\n"
               "}\n",
               true);
         ASSERT_EQUALS("[test.cpp:3]: (warning) The lock is ineffective because the mutex is locked at the same scope as the mutex itself.\n", errout.str());
