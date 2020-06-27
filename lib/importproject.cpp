@@ -1098,6 +1098,8 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
             temp.checkUnusedTemplates = (strcmp(node->GetText(), "true") == 0);
         else if (strcmp(node->Name(), CppcheckXml::MaxCtuDepthElementName) == 0)
             temp.maxCtuDepth = std::atoi(node->GetText());
+        else if (strcmp(node->Name(), CppcheckXml::MaxTemplateRecursionElementName) == 0)
+            temp.maxTemplateRecursion = std::atoi(node->GetText());
         else if (strcmp(node->Name(), CppcheckXml::CheckUnknownFunctionReturn) == 0)
             ; // TODO
         else if (strcmp(node->Name(), Settings::SafeChecks::XmlRootName) == 0) {

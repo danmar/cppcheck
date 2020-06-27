@@ -174,8 +174,11 @@ Cppcheck output:
 As you can see Cppcheck has instantiated `a<i+1>` until `a<101>` was reached
 and then it bails out.
 
-One way to make Cppcheck analysis faster is to limit the recursion with a
-template specialisation. For instance:
+To limit template recursion you can;
+ * add template specialisation
+ * configure cppcheck (in the GUI project file dialog)
+
+Example code with template specialisation:
 
     template <int i>
     void a()
