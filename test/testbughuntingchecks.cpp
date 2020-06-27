@@ -69,10 +69,13 @@ private:
 
         check("char foo(const char id[]);\n"
               "void bar() { char data[10]; foo(data); }");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Cannot determine that 'data' is initialized\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Cannot determine that 'data[0]' is initialized\n", errout.str());
 
         check("char foo(char id[]);\n"
               "void bar() { char data[10]; foo(data); }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int *p) { if (p) *p=0; }");
         ASSERT_EQUALS("", errout.str());
     }
 

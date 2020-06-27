@@ -253,6 +253,8 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
             } else if (uninitData) {
                 if (dataBase->settings->library.getFunction(parent->astOperand1()))
                     return;
+                if (parent->astOperand1()->isKeyword())
+                    return;
             }
         } else if (uninitData)
             return;
@@ -275,10 +277,15 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
                               value.type == ExprEngine::ValueType::BailoutValue);
         return;
     }
+
+    std::string uninitexpr = tok->expressionString();
+    if (uninitData)
+        uninitexpr += "[0]";
+
     dataBase->reportError(tok,
                           Severity::SeverityType::error,
                           "bughuntingUninit",
-                          "Cannot determine that '" + tok->expressionString() + "' is initialized",
+                          "Cannot determine that '" + uninitexpr + "' is initialized",
                           CWE_USE_OF_UNINITIALIZED_VARIABLE,
                           false,
                           value.type == ExprEngine::ValueType::BailoutValue);
