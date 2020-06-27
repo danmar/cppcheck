@@ -107,7 +107,7 @@ private:
     void assignBoolToPointerError(const Token *tok);
     void assignBoolToFloatError(const Token *tok);
     void bitwiseOnBooleanError(const Token *tok, const std::string &expression, const std::string &op);
-    void comparisonOfBoolExpressionWithIntError(const Token *tok, bool n0o1);
+    void comparisonOfBoolExpressionWithIntError(const Token *tok, bool not0or1);
     void pointerArithBoolError(const Token *tok);
     void returnValueBoolError(const Token *tok);
 

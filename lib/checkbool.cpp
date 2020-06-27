@@ -333,26 +333,29 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
             if (astIsBool(numTok))
                 continue;
 
-            if (numTok->isNumber()) {
-                const MathLib::bigint num = MathLib::toLongNumber(numTok->str());
-                if (num==0 &&
-                    (numInRhs ? Token::Match(tok, ">|==|!=")
-                     : Token::Match(tok, "<|==|!=")))
-                    continue;
-                if (num==1 &&
-                    (numInRhs ? Token::Match(tok, "<|==|!=")
-                     : Token::Match(tok, ">|==|!=")))
-                    continue;
-                comparisonOfBoolExpressionWithIntError(tok, true);
-            } else if (astIsIntegral(numTok, false) && mTokenizer->isCPP())
-                comparisonOfBoolExpressionWithIntError(tok, false);
+            const ValueFlow::Value *minval = numTok->getValueLE(0, mSettings);
+            if (minval && minval->intvalue == 0 &&
+                (numInRhs ? Token::Match(tok, ">|==|!=")
+                 : Token::Match(tok, "<|==|!=")))
+                minval = nullptr;
+
+            const ValueFlow::Value *maxval = numTok->getValueGE(1, mSettings);
+            if (maxval && maxval->intvalue == 1 &&
+                (numInRhs ? Token::Match(tok, "<|==|!=")
+                 : Token::Match(tok, ">|==|!=")))
+                maxval = nullptr;
+
+            if (minval || maxval) {
+                bool not0or1 = (minval && minval->intvalue < 0) || (maxval && maxval->intvalue > 1);
+                comparisonOfBoolExpressionWithIntError(tok, not0or1);
+            }
         }
     }
 }
 
-void CheckBool::comparisonOfBoolExpressionWithIntError(const Token *tok, bool n0o1)
+void CheckBool::comparisonOfBoolExpressionWithIntError(const Token *tok, bool not0or1)
 {
-    if (n0o1)
+    if (not0or1)
         reportError(tok, Severity::warning, "compareBoolExpressionWithInt",
                     "Comparison of a boolean expression with an integer other than 0 or 1.", CWE398, false);
     else
