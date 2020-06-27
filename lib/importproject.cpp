@@ -1135,6 +1135,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     settings->checkHeaders = temp.checkHeaders;
     settings->checkUnusedTemplates = temp.checkUnusedTemplates;
     settings->maxCtuDepth = temp.maxCtuDepth;
+    settings->maxTemplateRecursion = temp.maxTemplateRecursion;
     settings->safeChecks = temp.safeChecks;
     settings->bugHunting = temp.bugHunting;
     settings->functionContracts = temp.functionContracts;
