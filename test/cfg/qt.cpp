@@ -364,15 +364,11 @@ public:
 
 void MacroTest2_test()
 {
-    // TODO: remove suppression when #9002 is fixed
-    // cppcheck-suppress checkLibraryFunction
     QString str = MacroTest2::tr("hello");
     QByteArray ba = str.toLatin1();
     printf(ba.data());
 
 #ifndef QT_NO_DEPRECATED
-    // TODO: remove suppression when #9002 is fixed
-    // cppcheck-suppress checkLibraryFunction
     str = MacroTest2::trUtf8("test2");
     ba = str.toLatin1();
     printf(ba.data());
