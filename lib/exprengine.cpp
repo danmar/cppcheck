@@ -343,6 +343,7 @@ namespace {
 
         Data(const Data &old)
             : DataBase(old.currentFunction, old.settings)
+            , memory(old.memory)
             , symbolValueIndex(old.symbolValueIndex)
             , errorLogger(old.errorLogger)
             , tokenizer(old.tokenizer)
@@ -351,7 +352,6 @@ namespace {
             , startTime(old.startTime)
             , mTrackExecution(old.mTrackExecution)
             , mDataIndex(mTrackExecution->getNewDataIndex()) {
-            memory = old.memory;
             for (auto &it: memory) {
                 if (!it.second)
                     continue;
@@ -832,9 +832,8 @@ ExprEngine::ArrayValue::ArrayValue(DataBase *data, const Variable *var)
 ExprEngine::ArrayValue::ArrayValue(const std::string &name, const ExprEngine::ArrayValue &arrayValue)
     : Value(name, ExprEngine::ValueType::ArrayValue)
     , pointer(arrayValue.pointer), nullPointer(arrayValue.nullPointer), uninitPointer(arrayValue.uninitPointer)
+    , data(arrayValue.data), size(arrayValue.size)
 {
-    size = arrayValue.size;
-    data = arrayValue.data;
 }
 
 
