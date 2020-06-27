@@ -194,6 +194,7 @@ namespace ExprEngine {
 
         ArrayValue(const std::string &name, ValuePtr size, ValuePtr value, bool pointer, bool nullPointer, bool uninitPointer);
         ArrayValue(DataBase *data, const Variable *var);
+        ArrayValue(const std::string &name, const ArrayValue &arrayValue);
 
         std::string getRange() const OVERRIDE;
         std::string getSymbolicExpression() const OVERRIDE;

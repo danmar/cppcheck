@@ -340,6 +340,26 @@ namespace {
             , startTime(std::time(nullptr))
             , mTrackExecution(trackExecution)
             , mDataIndex(trackExecution->getNewDataIndex()) {}
+
+        Data(const Data &old)
+            : DataBase(old.currentFunction, old.settings)
+            , symbolValueIndex(old.symbolValueIndex)
+            , errorLogger(old.errorLogger)
+            , tokenizer(old.tokenizer)
+            , callbacks(old.callbacks)
+            , recursion(old.recursion)
+            , startTime(old.startTime)
+            , mTrackExecution(old.mTrackExecution)
+            , mDataIndex(mTrackExecution->getNewDataIndex()) {
+            memory = old.memory;
+            for (auto &it: memory) {
+                if (!it.second)
+                    continue;
+                if (auto oldValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(it.second))
+                    it.second = std::make_shared<ExprEngine::ArrayValue>(getNewSymbolName(), *oldValue);
+            }
+        }
+
         typedef std::map<nonneg int, ExprEngine::ValuePtr> Memory;
         Memory memory;
         int * const symbolValueIndex;
@@ -808,6 +828,15 @@ ExprEngine::ArrayValue::ArrayValue(DataBase *data, const Variable *var)
     }
     assign(ExprEngine::ValuePtr(), val);
 }
+
+ExprEngine::ArrayValue::ArrayValue(const std::string &name, const ExprEngine::ArrayValue &arrayValue)
+    : Value(name, ExprEngine::ValueType::ArrayValue)
+    , pointer(arrayValue.pointer), nullPointer(arrayValue.nullPointer), uninitPointer(arrayValue.uninitPointer)
+{
+    size = arrayValue.size;
+    data = arrayValue.data;
+}
+
 
 std::string ExprEngine::ArrayValue::getRange() const
 {

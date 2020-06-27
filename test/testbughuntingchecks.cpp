@@ -31,6 +31,7 @@ private:
     void run() OVERRIDE {
 #ifdef USE_Z3
         TEST_CASE(uninit);
+        TEST_CASE(uninit_array);
         TEST_CASE(uninit_function_par);
         TEST_CASE(ctu);
 #endif
@@ -55,6 +56,15 @@ private:
 
         check("void foo() { int x; x++; }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Cannot determine that 'x' is initialized\n", errout.str());
+    }
+
+    void uninit_array() {
+        check("void foo(int x) {\n"
+              "  int a[10];\n"
+              "  if (x > 0) a[0] = 32;\n"
+              "  return a[0];\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Cannot determine that 'a[0]' is initialized\n", errout.str());
     }
 
     void uninit_function_par() {
