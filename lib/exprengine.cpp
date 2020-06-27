@@ -799,7 +799,7 @@ ExprEngine::ArrayValue::ArrayValue(DataBase *data, const Variable *var)
     }
 
     ValuePtr val;
-    if (var && !var->isGlobal() && !var->isStatic())
+    if (var && !var->isGlobal() && !var->isStatic() && !(var->isArgument() && var->isConst()))
         val = std::make_shared<ExprEngine::UninitValue>();
     else if (var && var->valueType()) {
         ::ValueType vt(*var->valueType());

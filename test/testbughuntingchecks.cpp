@@ -31,6 +31,7 @@ private:
     void run() OVERRIDE {
 #ifdef USE_Z3
         TEST_CASE(uninit);
+        TEST_CASE(uninit_function_par);
         TEST_CASE(ctu);
 #endif
     }
@@ -54,6 +55,25 @@ private:
 
         check("void foo() { int x; x++; }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Cannot determine that 'x' is initialized\n", errout.str());
+    }
+
+    void uninit_function_par() {
+        // non constant parameters may point at uninitialized data
+        // constant parameters should point at initialized data
+
+        check("char foo(char id[]) { return id[0]; }");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Cannot determine that 'id[0]' is initialized\n", errout.str());
+
+        check("char foo(const char id[]) { return id[0]; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("char foo(const char id[]);\n"
+              "void bar() { char data[10]; foo(data); }");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
+
+        check("char foo(char id[]);\n"
+              "void bar() { char data[10]; foo(data); }");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void ctu() {
