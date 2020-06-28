@@ -25,21 +25,24 @@
 class TestBughuntingChecks : public TestFixture {
 public:
     TestBughuntingChecks() : TestFixture("TestBughuntingChecks") {
+        settings.platform(cppcheck::Platform::Unix64);
     }
 
 private:
+    Settings settings;
+
     void run() OVERRIDE {
 #ifdef USE_Z3
+        LOAD_LIB_2(settings.library, "std.cfg");
         TEST_CASE(uninit);
         TEST_CASE(uninit_array);
         TEST_CASE(uninit_function_par);
+        TEST_CASE(uninit_malloc);
         TEST_CASE(ctu);
 #endif
     }
 
     void check(const char code[]) {
-        Settings settings;
-        settings.platform(cppcheck::Platform::Unix64);
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
@@ -87,6 +90,11 @@ private:
 
         check("void foo(int *p) { if (p) *p=0; }");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninit_malloc() {
+        check("void foo() { char *p = malloc(10); return *p; }");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Cannot determine that '*p' is initialized\n", errout.str());
     }
 
     void ctu() {

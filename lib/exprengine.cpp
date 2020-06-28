@@ -1887,6 +1887,18 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
         }
     }
 
+    else if (const auto *f = data.settings->library.getAllocFuncInfo(tok->astOperand1())) {
+        if (!f->initData) {
+            const std::string name = data.getNewSymbolName();
+            auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 1, ~0U);
+            auto val = std::make_shared<ExprEngine::UninitValue>();
+            auto result = std::make_shared<ExprEngine::ArrayValue>(name, size, val, false, false, false);
+            call(data.callbacks, tok, result, &data);
+            data.functionCall();
+            return result;
+        }
+    }
+
     auto val = getValueRangeFromValueType(tok->valueType(), data);
     call(data.callbacks, tok, val, &data);
     data.functionCall();
