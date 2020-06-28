@@ -72,6 +72,6 @@ def check(tc:str, warning_id:str):
 
 
 check('C/testcases/CWE369_Divide_by_Zero/s*/*.c', 'bughuntingDivByZero')
-#check('C/testcases/CWE457_Use_of_Uninitialized_Variable/s*/*.c', 'verificationUninit')
+#check('C/testcases/CWE457_Use_of_Uninitialized_Variable/s*/*.c', 'bughuntingUninit')
 
 
