@@ -47,6 +47,7 @@ enum class ChildrenToVisit {
  * Visit AST nodes recursively. The order is not "well defined"
  */
 void visitAstNodes(const Token *ast, std::function<ChildrenToVisit(const Token *)> visitor);
+void visitAstNodes(Token *ast, std::function<ChildrenToVisit(Token *)> visitor);
 
 std::vector<const Token*> astFlatten(const Token* tok, const char* op);
 

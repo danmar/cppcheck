@@ -1401,6 +1401,8 @@ void CheckCondition::alwaysTrueFalse()
                     condition = parent->astOperand1();
                 else if (Token::Match(parent->previous(), "if|while ("))
                     condition = parent->astOperand2();
+                else if (Token::simpleMatch(parent, "return"))
+                    condition = parent->astOperand1();
                 else if (parent->str() == ";" && parent->astParent() && parent->astParent()->astParent() && Token::simpleMatch(parent->astParent()->astParent()->previous(), "for ("))
                     condition = parent->astOperand1();
                 else
@@ -1427,8 +1429,9 @@ void CheckCondition::alwaysTrueFalse()
             const bool constValExpr = tok->isNumber() && Token::Match(tok->astParent(),"%oror%|&&|?"); // just one number in boolean expression
             const bool compExpr = Token::Match(tok, "%comp%|!"); // a compare expression
             const bool ternaryExpression = Token::simpleMatch(tok->astParent(), "?");
+            const bool returnExpression = Token::simpleMatch(tok->astTop(), "return") && (tok->isComparisonOp() || Token::Match(tok, "&&|%oror%"));
 
-            if (!(constIfWhileExpression || constValExpr || compExpr || ternaryExpression))
+            if (!(constIfWhileExpression || constValExpr || compExpr || ternaryExpression || returnExpression))
                 continue;
 
             // Don't warn when there are expanded macros..
