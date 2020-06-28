@@ -490,9 +490,8 @@ private:
                             "  for (int i = 0; i < 10; i++) x[i] = 0;\n"
                             "  x[4] == 67;\n"
                             "}";
-        ASSERT_EQUALS("(and (>= $3 (- 2147483648)) (<= $3 2147483647))\n"
-                      "(= $3 67)\n"
-                      "z3::sat\n",
+        ASSERT_EQUALS("(= 0 67)\n"
+                      "z3::unsat\n",
                       expr(code, "=="));
     }
 

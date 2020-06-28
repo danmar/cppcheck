@@ -143,7 +143,8 @@ namespace ExprEngine {
         IntRange(const std::string &name, int128_t minValue, int128_t maxValue)
             : Value(name, ValueType::IntRange)
             , minValue(minValue)
-            , maxValue(maxValue) {
+            , maxValue(maxValue)
+            , loopScope(nullptr) {
         }
         std::string getRange() const OVERRIDE {
             if (minValue == maxValue)
@@ -156,6 +157,7 @@ namespace ExprEngine {
 
         int128_t minValue;
         int128_t maxValue;
+        const Scope *loopScope;
     };
 
     class FloatRange : public Value {

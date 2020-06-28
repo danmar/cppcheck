@@ -1629,7 +1629,16 @@ static void assignExprValue(const Token *expr, ExprEngine::ValuePtr value, Data 
                     arrayValue->assign(ExprEngine::ValuePtr(), value);
             } else {
                 auto indexValue = calculateArrayIndex(expr, data, *arrayValue);
-                arrayValue->assign(indexValue, value);
+                bool loopAssign = false;
+                if (auto loopValue = std::dynamic_pointer_cast<ExprEngine::IntRange>(indexValue)) {
+                    if (loopValue->loopScope == expr->scope()) {
+                        loopAssign = true;
+                        for (auto i = loopValue->minValue; i <= loopValue->maxValue; ++i)
+                            arrayValue->assign(std::make_shared<ExprEngine::IntRange>(ExprEngine::str(i), i, i), value);
+                    }
+                }
+                if (!loopAssign)
+                    arrayValue->assign(indexValue, value);
             }
         }
     } else if (expr->isUnaryOp("*")) {
@@ -2355,6 +2364,7 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                 auto loopValues = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), initValue, lastValue);
                 data.assignValue(tok, varid, loopValues);
                 tok = tok->linkAt(1);
+                loopValues->loopScope = tok->next()->scope();
                 continue;
             }
         }
