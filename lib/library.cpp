@@ -194,7 +194,9 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                     temp.groupId = allocationId;
 
                     if (memorynode->Attribute("init", "false"))
-                        returnuninitdata.insert(memorynode->GetText());
+                        temp.initData = false;
+                    else
+                        temp.initData = true;
 
                     const char *arg = memorynode->Attribute("arg");
                     if (arg)
