@@ -149,8 +149,8 @@
 #endif
 
 namespace {
-    struct BugHuntingException {
-        BugHuntingException(const Token *tok, const std::string &what) : tok(tok), what(what) {}
+    struct ExprEngineException {
+        ExprEngineException(const Token *tok, const std::string &what) : tok(tok), what(what) {}
         const Token *tok;
         const std::string what;
     };
@@ -1088,12 +1088,12 @@ struct ExprData {
             return op1 * z3::pw(context.int_val(2), op2);
         if (b->binop == ">>")
             return op1 / z3::pw(context.int_val(2), op2);
-        throw BugHuntingException(nullptr, "Internal error: Unhandled operator " + b->binop);
+        throw ExprEngineException(nullptr, "Internal error: Unhandled operator " + b->binop);
     }
 
     z3::expr getExpr(ExprEngine::ValuePtr v) {
         if (!v)
-            throw BugHuntingException(nullptr, "Can not solve expressions, operand value is null");
+            throw ExprEngineException(nullptr, "Can not solve expressions, operand value is null");
         if (auto intRange = std::dynamic_pointer_cast<ExprEngine::IntRange>(v)) {
             if (intRange->name[0] != '$')
 #if Z3_VERSION_INT >= GET_VERSION_INT(4,7,1)
@@ -1120,7 +1120,7 @@ struct ExprData {
 
         if (auto c = std::dynamic_pointer_cast<ExprEngine::ConditionalValue>(v)) {
             if (c->values.empty())
-                throw BugHuntingException(nullptr, "ConditionalValue is empty");
+                throw ExprEngineException(nullptr, "ConditionalValue is empty");
 
             if (c->values.size() == 1)
                 return getExpr(c->values[0].second);
@@ -1138,7 +1138,7 @@ struct ExprData {
         if (v->type == ExprEngine::ValueType::UninitValue)
             return context.int_val(0);
 
-        throw BugHuntingException(nullptr, "Internal error: Unhandled value type");
+        throw ExprEngineException(nullptr, "Internal error: Unhandled value type");
     }
 
     z3::expr getConstraintExpr(ExprEngine::ValuePtr v) {
@@ -1515,8 +1515,8 @@ static void call(const std::vector<ExprEngine::Callback> &callbacks, const Token
         for (ExprEngine::Callback f : callbacks) {
             try {
                 f(tok, *value, dataBase);
-            } catch (const BugHuntingException &e) {
-                throw BugHuntingException(tok, e.what);
+            } catch (const ExprEngineException &e) {
+                throw ExprEngineException(tok, e.what);
             }
         }
     }
@@ -1689,7 +1689,7 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
     }
 
     if (!rhsValue)
-        throw BugHuntingException(tok, "Expression '" + tok->expressionString() + "'; Failed to evaluate RHS");
+        throw ExprEngineException(tok, "Expression '" + tok->expressionString() + "'; Failed to evaluate RHS");
 
     ExprEngine::ValuePtr assignValue;
     if (tok->str() == "=")
@@ -1775,7 +1775,7 @@ static void checkContract(Data &data, const Token *tok, const Function *function
         }
     } catch (const z3::exception &exception) {
         std::cerr << "z3: " << exception << std::endl;
-    } catch (const BugHuntingException &e) {
+    } catch (const ExprEngineException &e) {
         const char id[] = "internalErrorInExprEngine";
         const auto contractIt = data.settings->functionContracts.find(function->fullName());
         const std::string functionName = contractIt->first;
@@ -1878,7 +1878,7 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
                     auto v = data.getValue(ref.second, nullptr, nullptr);
                     assignExprValue(ref.first, v, data);
                 }
-            } catch (BugHuntingException &e) {
+            } catch (ExprEngineException &e) {
                 data.errorPath.pop_back();
                 e.tok = tok;
                 throw e;
@@ -2239,7 +2239,7 @@ static std::string execute(const Token *start, const Token *end, Data &data)
 
         if (Token::simpleMatch(tok, "try"))
             // TODO this is a bailout
-            throw BugHuntingException(tok, "Unhandled:" + tok->str());
+            throw ExprEngineException(tok, "Unhandled:" + tok->str());
 
         // Variable declaration..
         if (tok->variable() && tok->variable()->nameToken() == tok) {
@@ -2286,7 +2286,7 @@ static std::string execute(const Token *start, const Token *end, Data &data)
             auto exec = [&](const Token *tok1, const Token *tok2, Data& data) {
                 try {
                     execute(tok1, tok2, data);
-                } catch (BugHuntingException &e) {
+                } catch (ExprEngineException &e) {
                     if (!exceptionToken || (e.tok && precedes(e.tok, exceptionToken))) {
                         exceptionToken = e.tok;
                         exceptionMessage = e.what;
@@ -2304,7 +2304,7 @@ static std::string execute(const Token *start, const Token *end, Data &data)
             }
 
             if (exceptionToken)
-                throw BugHuntingException(exceptionToken, exceptionMessage);
+                throw ExprEngineException(exceptionToken, exceptionMessage);
 
             return thenData.str() + elseData.str();
         }
@@ -2322,7 +2322,7 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                 try {
                     execute(tok1, tok2, data);
                     ret << data.str();
-                } catch (BugHuntingException &e) {
+                } catch (ExprEngineException &e) {
                     if (!exceptionToken || (e.tok && precedes(e.tok, exceptionToken))) {
                         exceptionToken = e.tok;
                         exceptionMessage = e.what;
@@ -2353,7 +2353,7 @@ static std::string execute(const Token *start, const Token *end, Data &data)
             }
             exec(defaultStart ? defaultStart : bodyEnd, end, defaultData);
             if (exceptionToken)
-                throw BugHuntingException(exceptionToken, exceptionMessage);
+                throw ExprEngineException(exceptionToken, exceptionMessage);
             return ret.str();
         }
 
@@ -2381,14 +2381,14 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                     while (Token::simpleMatch(lhs, "["))
                         lhs = lhs->astOperand1();
                     if (!lhs)
-                        throw BugHuntingException(tok2, "Unhandled assignment in loop");
+                        throw ExprEngineException(tok2, "Unhandled assignment in loop");
                     if (Token::Match(lhs, ". %name% =|[") && lhs->astOperand1() && lhs->astOperand1()->valueType()) {
                         const Token *structToken = lhs->astOperand1();
                         if (!structToken->valueType() || !structToken->varId())
-                            throw BugHuntingException(tok2, "Unhandled assignment in loop");
+                            throw ExprEngineException(tok2, "Unhandled assignment in loop");
                         const Scope *structScope = structToken->valueType()->typeScope;
                         if (!structScope)
-                            throw BugHuntingException(tok2, "Unhandled assignment in loop");
+                            throw ExprEngineException(tok2, "Unhandled assignment in loop");
                         const std::string &memberName = tok2->previous()->str();
                         ExprEngine::ValuePtr memberValue;
                         for (const Variable &member : structScope->varlist) {
@@ -2398,14 +2398,14 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                             }
                         }
                         if (!memberValue)
-                            throw BugHuntingException(tok2, "Unhandled assignment in loop");
+                            throw ExprEngineException(tok2, "Unhandled assignment in loop");
 
                         ExprEngine::ValuePtr structVal1 = data.getValue(structToken->varId(), structToken->valueType(), structToken);
                         if (!structVal1)
                             structVal1 = createVariableValue(*structToken->variable(), data);
                         auto structVal = std::dynamic_pointer_cast<ExprEngine::StructValue>(structVal1);
                         if (!structVal)
-                            throw BugHuntingException(tok2, "Unhandled assignment in loop");
+                            throw ExprEngineException(tok2, "Unhandled assignment in loop");
 
                         data.assignStructMember(tok2, &*structVal, memberName, memberValue);
                         continue;
@@ -2421,7 +2421,7 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                         }
                     }
                     if (!lhs->variable())
-                        throw BugHuntingException(tok2, "Unhandled assignment in loop");
+                        throw ExprEngineException(tok2, "Unhandled assignment in loop");
                     // give variable "any" value
                     int varid = lhs->varId();
                     if (changedVariables.find(varid) != changedVariables.end())
@@ -2466,7 +2466,7 @@ void ExprEngine::executeAllFunctions(ErrorLogger *errorLogger, const Tokenizer *
     for (const Scope *functionScope : symbolDatabase->functionScopes) {
         try {
             executeFunction(functionScope, errorLogger, tokenizer, settings, callbacks, report);
-        } catch (const BugHuntingException &e) {
+        } catch (const ExprEngineException &e) {
             // FIXME.. there should not be exceptions
             std::string functionName = functionScope->function->name();
             std::cout << "Verify: Aborted analysis of function '" << functionName << "':" << e.tok->linenr() << ": " << e.what << std::endl;
@@ -2580,9 +2580,9 @@ void ExprEngine::executeFunction(const Scope *functionScope, ErrorLogger *errorL
 
     try {
         execute(functionScope->bodyStart, functionScope->bodyEnd, data);
-    } catch (BugHuntingException &e) {
+    } catch (ExprEngineException &e) {
         if (settings->debugBugHunting)
-            report << "BugHuntingException tok.line:" << e.tok->linenr() << " what:" << e.what << "\n";
+            report << "ExprEngineException tok.line:" << e.tok->linenr() << " what:" << e.what << "\n";
         trackExecution.setAbortLine(e.tok->linenr());
         auto bailoutValue = std::make_shared<BailoutValue>();
         for (const Token *tok = e.tok; tok != functionScope->bodyEnd; tok = tok->next()) {
