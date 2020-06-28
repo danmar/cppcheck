@@ -1899,10 +1899,10 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
         }
     }
 
-    auto val = getValueRangeFromValueType(tok->valueType(), data);
-    call(data.callbacks, tok, val, &data);
+    auto result = getValueRangeFromValueType(tok->valueType(), data);
+    call(data.callbacks, tok, result, &data);
     data.functionCall();
-    return val;
+    return result;
 }
 
 static ExprEngine::ValuePtr executeArrayIndex(const Token *tok, Data &data)
