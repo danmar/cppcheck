@@ -108,6 +108,15 @@ const Token* getCondTok(const Token* tok);
 Token* getCondTokFromEnd(Token* endBlock);
 const Token* getCondTokFromEnd(const Token* endBlock);
 
+/**
+ * Extract for loop values: loopvar varid, init value, step value, last value (inclusive)
+ */
+bool extractForLoopValues(const Token *forToken,
+                          nonneg int * const varid,
+                          long long * const initValue,
+                          long long * const stepValue,
+                          long long * const lastValue);
+
 bool precedes(const Token * tok1, const Token * tok2);
 
 bool exprDependsOnThis(const Token* expr, nonneg int depth = 0);

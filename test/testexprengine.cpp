@@ -66,6 +66,8 @@ private:
         TEST_CASE(switch1);
         TEST_CASE(switch2);
 
+        TEST_CASE(for1);
+
         TEST_CASE(while1);
         TEST_CASE(while2);
         TEST_CASE(while3);
@@ -328,13 +330,13 @@ private:
 
         ASSERT_EQUALS("1:26: $3=0:ffffffff\n"
                       "1:26: $2=-128:127\n"
-                      "1:27: { s=($4,[$3],[:]=$2)}\n",
+                      "1:27: 0:{ s=($4,[$3],[:]=$2)}\n",
                       trackExecution("void foo() { std::string s; }", &settings));
 
 
         ASSERT_EQUALS("1:52: $3=0:ffffffff\n"
                       "1:52: $2=-128:127\n"
-                      "1:66: { s=($4,[$3],[:]=$2)}\n",
+                      "1:66: 0:{ s=($4,[$3],[:]=$2)}\n",
                       trackExecution("std::string getName(int); void foo() { std::string s = getName(1); }", &settings));
     }
 
@@ -481,6 +483,20 @@ private:
                       expr(code, "=="));
     }
 
+
+    void for1() {
+        const char code[] = "void f() {\n"
+                            "  int x[10];\n"
+                            "  for (int i = 0; i < 10; i++) x[i] = 0;\n"
+                            "  x[4] == 67;\n"
+                            "}";
+        ASSERT_EQUALS("(and (>= $3 (- 2147483648)) (<= $3 2147483647))\n"
+                      "(= $3 67)\n"
+                      "z3::sat\n",
+                      expr(code, "=="));
+    }
+
+
     void while1() {
         const char code[] = "void f(int y) {\n"
                             "  int x = 0;\n"
@@ -566,7 +582,7 @@ private:
                             "void f() { int x = buf[0]; }";
         ASSERT_EQUALS("2:16: $2:0=-2147483648:2147483647\n"
                       "2:20: $2=-2147483648:2147483647\n"
-                      "2:26: { buf=($1,[10],[:]=$2) x=$2:0}\n",
+                      "2:26: 0:{ buf=($1,[10],[:]=$2) x=$2:0}\n",
                       trackExecution(code));
     }
 
@@ -577,9 +593,9 @@ private:
                             "  return buf[0][1][2];\n"
                             "}";
         ASSERT_EQUALS("1:14: $1=-2147483648:2147483647\n"
-                      "1:14: { x=$1}\n"
-                      "2:19: { x=$1 buf=($2,[3][4][5],[:]=?)}\n"
-                      "3:20: { x=$1 buf=($2,[3][4][5],[:]=?,[((20)*($1))+(7)]=10)}\n",
+                      "1:14: 0:{ x=$1}\n"
+                      "2:19: 0:{ x=$1 buf=($2,[3][4][5],[:]=?)}\n"
+                      "3:20: 0:{ x=$1 buf=($2,[3][4][5],[:]=?,[((20)*($1))+(7)]=10)}\n",
                       trackExecution(code));
     }
 

@@ -371,8 +371,12 @@ namespace {
         int recursion;
         std::time_t startTime;
 
-        bool isC() const OVERRIDE { return tokenizer->isC(); }
-        bool isCPP() const OVERRIDE { return tokenizer->isCPP(); }
+        bool isC() const OVERRIDE {
+            return tokenizer->isC();
+        }
+        bool isCPP() const OVERRIDE {
+            return tokenizer->isCPP();
+        }
 
         ExprEngine::ValuePtr executeContract(const Function *function, ExprEngine::ValuePtr(*executeExpression)(const Token*, Data&)) {
             const auto it = settings->functionContracts.find(function->fullName());
@@ -2342,6 +2346,17 @@ static std::string execute(const Token *start, const Token *end, Data &data)
             if (exceptionToken)
                 throw BugHuntingException(exceptionToken, exceptionMessage);
             return ret.str();
+        }
+
+        if (Token::simpleMatch(tok, "for (")) {
+            nonneg int varid;
+            MathLib::bigint initValue, stepValue, lastValue;
+            if (extractForLoopValues(tok, &varid, &initValue, &stepValue, &lastValue)) {
+                auto loopValues = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), initValue, lastValue);
+                data.assignValue(tok, varid, loopValues);
+                tok = tok->linkAt(1);
+                continue;
+            }
         }
 
         if (Token::Match(tok, "for|while (") && Token::simpleMatch(tok->linkAt(1), ") {")) {

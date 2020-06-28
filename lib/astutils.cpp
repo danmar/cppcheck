@@ -436,6 +436,34 @@ const Token* getCondTokFromEnd(const Token* endBlock)
     return getCondTokFromEndImpl(endBlock);
 }
 
+bool extractForLoopValues(const Token *forToken,
+                          nonneg int * const varid,
+                          MathLib::bigint * const initValue,
+                          MathLib::bigint * const stepValue,
+                          MathLib::bigint * const lastValue)
+{
+    if (!Token::simpleMatch(forToken, "for (") || !Token::simpleMatch(forToken->next()->astOperand2(), ";"))
+        return false;
+    const Token *initExpr = forToken->next()->astOperand2()->astOperand1();
+    const Token *condExpr = forToken->next()->astOperand2()->astOperand2()->astOperand1();
+    const Token *incExpr  = forToken->next()->astOperand2()->astOperand2()->astOperand2();
+    if (!initExpr || !initExpr->isBinaryOp() || initExpr->str() != "=" || !Token::Match(initExpr->astOperand1(), "%var%") || !initExpr->astOperand2()->hasKnownIntValue())
+        return false;
+    *varid = initExpr->astOperand1()->varId();
+    *initValue = initExpr->astOperand2()->getKnownIntValue();
+    if (!Token::Match(condExpr, "<|<=") || !condExpr->isBinaryOp() || condExpr->astOperand1()->varId() != *varid || !condExpr->astOperand2()->hasKnownIntValue())
+        return false;
+    if (!incExpr || !incExpr->isUnaryOp("++") || incExpr->astOperand1()->varId() != *varid)
+        return false;
+    *stepValue = 1;
+    if (condExpr->str() == "<")
+        *lastValue = condExpr->astOperand2()->getKnownIntValue() - 1;
+    else
+        *lastValue = condExpr->astOperand2()->getKnownIntValue();
+    return true;
+}
+
+
 static const Token * getVariableInitExpression(const Variable * var)
 {
     if (!var || !var->declEndToken())
