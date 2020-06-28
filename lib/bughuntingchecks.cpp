@@ -185,6 +185,29 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
             return;
     }
 
+    // container is not uninitialized
+    if (tok->valueType() && tok->valueType()->pointer==0 && tok->valueType()->container)
+        return;
+
+    // container element is not uninitialized
+    if (tok->str() == "[" &&
+        tok->astOperand1() &&
+        tok->astOperand1()->valueType() &&
+        tok->astOperand1()->valueType()->pointer==0 &&
+        tok->astOperand1()->valueType()->container) {
+        if (tok->astOperand1()->valueType()->container->stdStringLike)
+            return;
+        bool pointerType = false;
+        for (const Token *typeTok = tok->astOperand1()->valueType()->containerTypeToken; Token::Match(typeTok, "%name%|*|::|<"); typeTok = typeTok->next()) {
+            if (typeTok->str() == "<" && typeTok->link())
+                typeTok = typeTok->link();
+            if (typeTok->str() == "*")
+                pointerType = true;
+        }
+        if (!pointerType)
+            return;
+    }
+
     // lhs in assignment
     if (tok->astParent()->str() == "=" && tok == tok->astParent()->astOperand1())
         return;
