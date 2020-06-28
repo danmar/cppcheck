@@ -229,10 +229,10 @@ static ExprEngine::ValuePtr getValueRangeFromValueType(const std::string &name, 
 namespace {
     class TrackExecution {
     public:
-        TrackExecution() : mDataIndex(0), mAbortLine(-1) {}
+        TrackExecution() : mDataIndexCounter(0), mAbortLine(-1) {}
 
         int getNewDataIndex() {
-            return mDataIndex++;
+            return mDataIndexCounter++;
         }
 
         void symbolRange(const Token *tok, ExprEngine::ValuePtr value) {
@@ -321,7 +321,7 @@ namespace {
 
         std::map<const Token *, std::vector<std::string>> mMap;
 
-        int mDataIndex;
+        int mDataIndexCounter;
         int mAbortLine;
         std::set<std::string> mSymbols;
         std::set<int> mErrors;
@@ -487,7 +487,7 @@ namespace {
                 return;
             const SymbolDatabase * const symbolDatabase = tokenizer->getSymbolDatabase();
             std::ostringstream s;
-            s << "{"; // << mDataIndex << ":";
+            s << mDataIndex << ":" << "{";
             for (auto mem : memory) {
                 ExprEngine::ValuePtr value = mem.second;
                 const Variable *var = symbolDatabase->getVariableFromVarId(mem.first);
