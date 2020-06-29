@@ -3560,7 +3560,6 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
             typeTok = typeTok->next();
         if (Token::Match(typeTok, ",|)")) { // #8333
             symbolDatabase->mTokenizer->syntaxError(typeTok);
-            return;
         }
         // skip over qualification
         while (Token::Match(typeTok, "%type% ::"))
