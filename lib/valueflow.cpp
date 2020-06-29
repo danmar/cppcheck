@@ -4626,10 +4626,10 @@ static void valueFlowForLoop(TokenList *tokenlist, SymbolDatabase* symboldatabas
             continue;
 
         nonneg int varid;
-        bool knownInitValue;
+        bool knownInitValue, partialCond;
         MathLib::bigint initValue, stepValue, lastValue;
 
-        if (extractForLoopValues(tok, &varid, &knownInitValue, &initValue, &stepValue, &lastValue)) {
+        if (extractForLoopValues(tok, &varid, &knownInitValue, &initValue, &partialCond, &stepValue, &lastValue)) {
             const bool executeBody = !knownInitValue || initValue <= lastValue;
             if (executeBody) {
                 valueFlowForLoopSimplify(bodyStart, varid, false, initValue, tokenlist, errorLogger, settings);

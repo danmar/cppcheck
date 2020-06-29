@@ -2371,9 +2371,9 @@ static std::string execute(const Token *start, const Token *end, Data &data)
 
         if (Token::simpleMatch(tok, "for (")) {
             nonneg int varid;
-            bool hasKnownInitValue;
+            bool hasKnownInitValue, partialCond;
             MathLib::bigint initValue, stepValue, lastValue;
-            if (extractForLoopValues(tok, &varid, &hasKnownInitValue, &initValue, &stepValue, &lastValue) && hasKnownInitValue) {
+            if (extractForLoopValues(tok, &varid, &hasKnownInitValue, &initValue, &partialCond, &stepValue, &lastValue) && hasKnownInitValue && !partialCond) {
                 auto loopValues = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), initValue, lastValue);
                 data.assignValue(tok, varid, loopValues);
                 tok = tok->linkAt(1);

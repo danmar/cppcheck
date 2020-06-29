@@ -440,6 +440,7 @@ bool extractForLoopValues(const Token *forToken,
                           nonneg int * const varid,
                           bool * const knownInitValue,
                           MathLib::bigint * const initValue,
+                          bool * const partialCond,
                           MathLib::bigint * const stepValue,
                           MathLib::bigint * const lastValue)
 {
@@ -453,6 +454,16 @@ bool extractForLoopValues(const Token *forToken,
     *varid = initExpr->astOperand1()->varId();
     *knownInitValue = initExpr->astOperand2()->hasKnownIntValue();
     *initValue = (*knownInitValue) ? initExpr->astOperand2()->getKnownIntValue() : 0;
+    *partialCond = Token::Match(condExpr, "%oror%|&&");
+    visitAstNodes(condExpr, [varid, &condExpr](const Token *tok) {
+        if (Token::Match(tok, "%oror%|&&"))
+            return ChildrenToVisit::op1_and_op2;
+        if (Token::Match(tok, "<|<=") && tok->isBinaryOp() && tok->astOperand1()->varId() == *varid && tok->astOperand2()->hasKnownIntValue()) {
+            if (Token::Match(condExpr, "%oror%|&&") || tok->astOperand2()->getKnownIntValue() < condExpr->astOperand2()->getKnownIntValue())
+                condExpr = tok;
+        }
+        return ChildrenToVisit::none;
+    });
     if (!Token::Match(condExpr, "<|<=") || !condExpr->isBinaryOp() || condExpr->astOperand1()->varId() != *varid || !condExpr->astOperand2()->hasKnownIntValue())
         return false;
     if (!incExpr || !incExpr->isUnaryOp("++") || incExpr->astOperand1()->varId() != *varid)
