@@ -3773,7 +3773,7 @@ private:
         check("bool f(const std::string &s) {\n"
               "        return s.size()>2U && s[0]=='4' && s[0]=='2';\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'x' is always true\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 's[0]=='2'' is always false\n", errout.str());
     }
 
     void pointerAdditionResultNotNull() {
