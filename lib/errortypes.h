@@ -33,24 +33,24 @@ class Token;
 
 /** @brief Simple container to be thrown when internal error is detected. */
 struct InternalError {
-    enum Type {AST, SYNTAX, UNKNOWN_MACRO, INTERNAL, LIMIT, INSTANTIATION};
+    enum Type : uint8_t {AST, SYNTAX, UNKNOWN_MACRO, INTERNAL, LIMIT, INSTANTIATION};
     InternalError(const Token *tok, const std::string &errorMsg, Type type = INTERNAL);
     const Token *token;
     std::string errorMessage;
-    Type type;
     std::string id;
+    Type type;
 };
 
 class CPPCHECKLIB Certainty {
 public:
-    enum CertaintyLevel {
+    enum CertaintyLevel : uint8_t {
         normal, inconclusive, safe, experimental
     };
 };
 
 class CPPCHECKLIB Checks {
 public:
-    enum CheckList {
+    enum CheckList : uint8_t {
         unusedFunction, missingInclude, internalCheck
     };
 };
@@ -61,7 +61,7 @@ public:
     /**
      * Message severities.
      */
-    enum SeverityType {
+    enum SeverityType : uint8_t {
         /**
          * No severity (default value).
          */

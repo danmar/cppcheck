@@ -166,7 +166,7 @@ public:
     bool dump;
     std::string dumpFile;
 
-    enum Language {
+    enum Language : uint8_t {
         None, C, CPP
     };
 

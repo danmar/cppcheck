@@ -653,15 +653,14 @@ void CheckCondition::multiCondition2()
         });
 
         // parse until second condition is reached..
-        enum MULTICONDITIONTYPE { INNER, AFTER };
         const Token *tok;
 
         // Parse inner condition first and then early return condition
-        std::vector<MULTICONDITIONTYPE> types = {MULTICONDITIONTYPE::INNER};
+        std::vector<bool> conditionIsInner = {true};
         if (Token::Match(scope.bodyStart, "{ return|throw|continue|break"))
-            types.push_back(MULTICONDITIONTYPE::AFTER);
-        for (MULTICONDITIONTYPE type:types) {
-            if (type == MULTICONDITIONTYPE::AFTER) {
+            conditionIsInner.push_back(false);
+        for (bool inner : conditionIsInner) {
+            if (!inner) {
                 tok = scope.bodyEnd->next();
             } else {
                 tok = scope.bodyStart;
@@ -684,7 +683,7 @@ void CheckCondition::multiCondition2()
 
                     ErrorPath errorPath;
 
-                    if (type == MULTICONDITIONTYPE::INNER) {
+                    if (inner) {
                         visitAstNodes(cond1, [&](const Token* firstCondition) {
                             if (!firstCondition)
                                 return ChildrenToVisit::none;

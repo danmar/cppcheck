@@ -35,10 +35,10 @@
  */
 struct Standards {
     /** C code standard */
-    enum cstd_t { C89, C99, C11, CLatest=C11 } c;
+    enum cstd_t : uint8_t { C89, C99, C11, CLatest=C11 } c;
 
     /** C++ code standard */
-    enum cppstd_t { CPP03, CPP11, CPP14, CPP17, CPP20, CPP23, CPPLatest=CPP23 } cpp;
+    enum cppstd_t : uint8_t { CPP03, CPP11, CPP14, CPP17, CPP20, CPP23, CPPLatest=CPP23 } cpp;
 
     /** --std value given on command line */
     std::string stdValue;

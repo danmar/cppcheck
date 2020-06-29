@@ -3000,7 +3000,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
     // TRUE => code in current #if block should be kept
     // ELSE_IS_TRUE => code in current #if block should be dropped. the code in the #else should be kept.
     // ALWAYS_FALSE => drop all code in #if and #else
-    enum IfState { TRUE, ELSE_IS_TRUE, ALWAYS_FALSE };
+    enum IfState : uint8_t { TRUE, ELSE_IS_TRUE, ALWAYS_FALSE };
     std::stack<int> ifstates;
     ifstates.push(TRUE);
 

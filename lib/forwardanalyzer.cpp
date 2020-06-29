@@ -341,13 +341,6 @@ struct ForwardTraversal {
         return r;
     }
 
-    enum class Status {
-        None,
-        Escaped,
-        Modified,
-        Inconclusive,
-    };
-
     Analyzer::Action analyzeScope(const Token* endBlock) {
         return analyzeRange(endBlock->link(), endBlock);
     }

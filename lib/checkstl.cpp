@@ -442,11 +442,6 @@ static std::string getContainerName(const Token *containerToken)
     return ret;
 }
 
-enum OperandPosition {
-    Left,
-    Right
-};
-
 static bool isVector(const Token* tok)
 {
     if (!tok)
