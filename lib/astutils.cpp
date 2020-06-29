@@ -438,6 +438,7 @@ const Token* getCondTokFromEnd(const Token* endBlock)
 
 bool extractForLoopValues(const Token *forToken,
                           nonneg int * const varid,
+                          bool * const knownInitValue,
                           MathLib::bigint * const initValue,
                           MathLib::bigint * const stepValue,
                           MathLib::bigint * const lastValue)
@@ -447,10 +448,11 @@ bool extractForLoopValues(const Token *forToken,
     const Token *initExpr = forToken->next()->astOperand2()->astOperand1();
     const Token *condExpr = forToken->next()->astOperand2()->astOperand2()->astOperand1();
     const Token *incExpr  = forToken->next()->astOperand2()->astOperand2()->astOperand2();
-    if (!initExpr || !initExpr->isBinaryOp() || initExpr->str() != "=" || !Token::Match(initExpr->astOperand1(), "%var%") || !initExpr->astOperand2()->hasKnownIntValue())
+    if (!initExpr || !initExpr->isBinaryOp() || initExpr->str() != "=" || !Token::Match(initExpr->astOperand1(), "%var%"))
         return false;
     *varid = initExpr->astOperand1()->varId();
-    *initValue = initExpr->astOperand2()->getKnownIntValue();
+    *knownInitValue = initExpr->astOperand2()->hasKnownIntValue();
+    *initValue = (*knownInitValue) ? initExpr->astOperand2()->getKnownIntValue() : 0;
     if (!Token::Match(condExpr, "<|<=") || !condExpr->isBinaryOp() || condExpr->astOperand1()->varId() != *varid || !condExpr->astOperand2()->hasKnownIntValue())
         return false;
     if (!incExpr || !incExpr->isUnaryOp("++") || incExpr->astOperand1()->varId() != *varid)
