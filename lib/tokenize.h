@@ -568,6 +568,8 @@ public:
         return mPreprocessor;
     }
 
+    bool hasIfdef(const Token *start, const Token *end) const;
+
 private:
 
     /**

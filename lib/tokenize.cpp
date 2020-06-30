@@ -24,6 +24,7 @@
 #include "library.h"
 #include "mathlib.h"
 #include "platform.h"
+#include "preprocessor.h"
 #include "settings.h"
 #include "standards.h"
 #include "symboldatabase.h"
@@ -11773,3 +11774,19 @@ bool Tokenizer::VariableMap::hasVariable(const std::string &varname) const
 {
     return mVariableId.find(varname) != mVariableId.end();
 }
+
+bool Tokenizer::hasIfdef(const Token *start, const Token *end) const
+{
+    if (!mPreprocessor)
+        return false;
+    for (const Directive &d: mPreprocessor->getDirectives()) {
+        if (d.str.compare(0,3,"#if") == 0 &&
+            d.linenr >= start->linenr() &&
+            d.linenr <= end->linenr() &&
+            start->fileIndex() < list.getFiles().size() &&
+            d.file == list.getFiles()[start->fileIndex()])
+            return true;
+    }
+    return false;
+}
+
