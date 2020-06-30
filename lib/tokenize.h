@@ -37,6 +37,7 @@ class TimerResults;
 class Token;
 class TemplateSimplifier;
 class ErrorLogger;
+class Preprocessor;
 
 namespace simplecpp {
     class TokenList;
@@ -560,6 +561,13 @@ public:
      */
     static const Token * isFunctionHead(const Token *tok, const std::string &endsWith, bool cpp);
 
+    void setPreprocessor(const Preprocessor *preprocessor) {
+        mPreprocessor = preprocessor;
+    }
+    const Preprocessor *getPreprocessor() const {
+        return mPreprocessor;
+    }
+
 private:
 
     /**
@@ -956,6 +964,8 @@ private:
     /** Tokenizer maxtime */
     const std::time_t mMaxTime;
 #endif
+
+    const Preprocessor *mPreprocessor;
 };
 
 /// @}

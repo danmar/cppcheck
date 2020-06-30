@@ -17,6 +17,7 @@
  */
 
 #include "checkunusedvar.h"
+#include "preprocessor.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
@@ -55,6 +56,7 @@ private:
         TEST_CASE(structmember12); // #7179 - FP unused structmember
         TEST_CASE(structmember13); // #3088 - __attribute__((packed))
         TEST_CASE(structmember14); // #6508 - (struct x){1,2,..}
+        TEST_CASE(structmember15); // #3088 - #pragma pack(1)
         TEST_CASE(structmember_sizeof);
 
         TEST_CASE(localvar1);
@@ -211,12 +213,17 @@ private:
         TEST_CASE(volatileData); // #9280
     }
 
-    void checkStructMemberUsage(const char code[]) {
+    void checkStructMemberUsage(const char code[], const std::list<Directive> *directives=nullptr) {
         // Clear the error buffer..
         errout.str("");
 
+        Preprocessor preprocessor(settings, nullptr);
+        if (directives)
+            preprocessor.setDirectives(*directives);
+
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
+        tokenizer.setPreprocessor(&preprocessor);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
@@ -470,6 +477,13 @@ private:
                                "struct bstr bstr0(void) {\n"
                                "  return (struct bstr){\"hello\",6};\n"
                                "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void structmember15() { // #3088
+        std::list<Directive> directives;
+        directives.emplace_back("test.cpp", 1, "#pragma pack(1)");
+        checkStructMemberUsage("\nstruct Foo { int x; int y; };", &directives);
         ASSERT_EQUALS("", errout.str());
     }
 
