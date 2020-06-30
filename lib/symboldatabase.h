@@ -684,7 +684,7 @@ private:
     /** @brief pointer to scope this variable is in */
     const Scope *mScope;
 
-    ValueType *mValueType;
+    const ValueType *mValueType;
 
     /** @brief array dimensions */
     std::vector<Dimension> mDimensions;
@@ -907,7 +907,7 @@ public:
     const ::Type *retType;            ///< function return type
     const Scope *functionScope;       ///< scope of function body
     const Scope* nestedIn;            ///< Scope the function is declared in
-    std::list<Variable> argumentList; ///< argument list
+    std::vector<Variable> argumentList; ///< argument list
     nonneg int initArgCount;        ///< number of args with default values
     Type type;                        ///< constructor, destructor, ...
     AccessControl access;             ///< public/protected/private
