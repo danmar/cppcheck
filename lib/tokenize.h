@@ -607,16 +607,16 @@ private:
 public:
 
     /** Syntax error */
-    void syntaxError(const Token *tok, const std::string &code = "") const;
+    NORETURN void syntaxError(const Token *tok, const std::string &code = "") const;
 
     /** Syntax error. Unmatched character. */
-    void unmatchedToken(const Token *tok) const;
+    NORETURN void unmatchedToken(const Token *tok) const;
 
     /** Syntax error. C++ code in C file. */
-    void syntaxErrorC(const Token *tok, const std::string &what) const;
+    NORETURN void syntaxErrorC(const Token *tok, const std::string &what) const;
 
     /** Warn about unknown macro(s), configuration is recommended */
-    void unknownMacroError(const Token *tok1) const;
+    NORETURN void unknownMacroError(const Token *tok1) const;
 
 private:
 

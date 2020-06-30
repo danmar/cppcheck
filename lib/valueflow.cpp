@@ -4232,7 +4232,7 @@ struct ValueFlowConditionHandler {
                             // TODO: constValue could be true if there are no assignments in the conditional blocks and
                             //       perhaps if there are no && and no || in the condition
                             bool constValue = false;
-                            forward(after, top->scope()->bodyEnd, cond.vartok, values, constValue);
+                            forward(after, scope->bodyEnd, cond.vartok, values, constValue);
                         }
                     }
                 }

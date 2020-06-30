@@ -1352,7 +1352,7 @@ bool TemplateSimplifier::getTemplateNamePositionTemplateFunction(const Token *to
         // skip decltype(...)
         else if (Token::simpleMatch(tok->next(), "decltype (")) {
             const Token * end = tok->linkAt(2)->previous();
-            while (tok && tok->next() && tok != end) {
+            while (tok->next() && tok != end) {
                 tok = tok->next();
                 namepos++;
             }
@@ -1361,7 +1361,7 @@ bool TemplateSimplifier::getTemplateNamePositionTemplateFunction(const Token *to
             if (closing) {
                 if (closing->strAt(1) == "(" && Tokenizer::isFunctionHead(closing->next(), ";|{|:", true))
                     return true;
-                while (tok && tok->next() && tok->next() != closing) {
+                while (tok->next() && tok->next() != closing) {
                     tok = tok->next();
                     namepos++;
                 }
@@ -1384,7 +1384,7 @@ bool TemplateSimplifier::getTemplateNamePositionTemplateVariable(const Token *to
         // skip decltype(...)
         else if (Token::simpleMatch(tok->next(), "decltype (")) {
             const Token * end = tok->linkAt(2);
-            while (tok && tok->next() && tok != end) {
+            while (tok->next() && tok != end) {
                 tok = tok->next();
                 namepos++;
             }
@@ -1393,7 +1393,7 @@ bool TemplateSimplifier::getTemplateNamePositionTemplateVariable(const Token *to
             if (closing) {
                 if (Token::Match(closing->next(), "=|;"))
                     return true;
-                while (tok && tok->next() && tok->next() != closing) {
+                while (tok->next() && tok->next() != closing) {
                     tok = tok->next();
                     namepos++;
                 }
