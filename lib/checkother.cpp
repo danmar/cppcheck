@@ -882,6 +882,9 @@ void CheckOther::checkVariableScope()
         if (var->isConst())
             continue;
 
+        if (mTokenizer->hasIfdef(var->nameToken(), var->scope()->bodyEnd))
+            continue;
+
         // reference of range for loop variable..
         if (Token::Match(var->nameToken()->previous(), "& %var% = %var% .")) {
             const Token *otherVarToken = var->nameToken()->tokAt(2);

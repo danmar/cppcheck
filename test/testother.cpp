@@ -19,6 +19,7 @@
 #include "checkother.h"
 #include "library.h"
 #include "platform.h"
+#include "preprocessor.h"
 #include "settings.h"
 #include "standards.h"
 #include "testsuite.h"
@@ -86,6 +87,7 @@ private:
         TEST_CASE(varScope24);      // pointer / reference
         TEST_CASE(varScope25);      // time_t
         TEST_CASE(varScope26);      // range for loop, map
+        TEST_CASE(varScope27);      // #7733 - #if
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -300,10 +302,14 @@ private:
         std::map<std::string, simplecpp::TokenList*> filedata;
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
+        Preprocessor preprocessor(*settings, nullptr);
+        preprocessor.setDirectives(tokens1);
+
         // Tokenizer..
         Tokenizer tokenizer(settings, this);
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
+        tokenizer.setPreprocessor(&preprocessor);
 
         // Check..
         CheckOther checkOther(&tokenizer, settings, this);
@@ -1227,6 +1233,24 @@ private:
               "  }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void varScope27() {
+        checkP("void f() {\n"
+               "  int x = 0;\n"
+               "#ifdef X\n"
+               "#endif\n"
+               "  if (id == ABC) { return x; }\n"
+               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkP("void f() {\n"
+               "#ifdef X\n"
+               "#endif\n"
+               "  int x = 0;\n"
+               "  if (id == ABC) { return x; }\n"
+               "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The scope of the variable 'x' can be reduced.\n", errout.str());
     }
 
     void checkOldStylePointerCast(const char code[]) {
