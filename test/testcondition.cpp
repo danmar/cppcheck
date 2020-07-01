@@ -18,6 +18,7 @@
 
 #include "checkcondition.h"
 #include "library.h"
+#include "preprocessor.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
@@ -136,10 +137,14 @@ private:
         std::map<std::string, simplecpp::TokenList*> filedata;
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
+        Preprocessor preprocessor(settings0, nullptr);
+        preprocessor.setDirectives(tokens1);
+
         // Tokenizer..
         Tokenizer tokenizer(&settings0, this);
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
+        tokenizer.setPreprocessor(&preprocessor);
 
         // Run checks..
         CheckCondition checkCondition;
@@ -2569,6 +2574,18 @@ private:
               "    }\n"
               "    int FileIndex;  \n"
               "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #8858 - #if
+        check("short Do() {\n"
+              "    short ret = bar1();\n"
+              "    if ( ret )\n"
+              "        return ret;\n"
+              "#ifdef FEATURE\n"
+              "    ret = bar2();\n"
+              "#endif\n"
+              "    return ret;\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -702,22 +702,19 @@ void CheckCondition::multiCondition2()
                             }
                         }
                     } else {
-                        std::stack<const Token *> tokens2;
-                        tokens2.push(cond2);
-                        while (!tokens2.empty()) {
-                            const Token *secondCondition = tokens2.top();
-                            tokens2.pop();
-                            if (!secondCondition)
-                                continue;
-                            if (secondCondition->str() == "||" || secondCondition->str() == "&&") {
-                                tokens2.push(secondCondition->astOperand1());
-                                tokens2.push(secondCondition->astOperand2());
-                            } else if ((!cond1->hasKnownIntValue() || !secondCondition->hasKnownIntValue()) &&
-                                       isSameExpression(mTokenizer->isCPP(), true, cond1, secondCondition, mSettings->library, true, true, &errorPath)) {
-                                if (!isAliased(vars))
+                        visitAstNodes(cond2, [&](const Token *secondCondition) {
+                            if (secondCondition->str() == "||" || secondCondition->str() == "&&")
+                                return ChildrenToVisit::op1_and_op2;
+
+                            if ((!cond1->hasKnownIntValue() || !secondCondition->hasKnownIntValue()) &&
+                                isSameExpression(mTokenizer->isCPP(), true, cond1, secondCondition, mSettings->library, true, true, &errorPath)) {
+                                if (!isAliased(vars) && !mTokenizer->hasIfdef(cond1, secondCondition)) {
                                     identicalConditionAfterEarlyExitError(cond1, secondCondition, errorPath);
+                                    return ChildrenToVisit::done;
+                                }
                             }
-                        }
+                            return ChildrenToVisit::none;
+                        });
                     }
                 }
                 if (Token::Match(tok, "%name% (") && isVariablesChanged(tok, tok->linkAt(1), true, varsInCond, mSettings, mTokenizer->isCPP())) {
