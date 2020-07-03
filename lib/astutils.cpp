@@ -1306,7 +1306,7 @@ const Token * getTokenArgumentFunction(const Token * tok, int& argn)
     return tok;
 }
 
-const Variable* getArgumentVar(const Token* tok, int argnr)
+static const Variable* getArgumentVar(const Token* tok, int argnr)
 {
     if (!tok)
         return nullptr;
