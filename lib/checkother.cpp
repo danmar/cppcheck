@@ -1777,7 +1777,7 @@ static bool isVarDeclOp(const Token* tok)
     if (vartok && vartok->variable() && vartok->variable()->nameToken() == vartok)
         return true;
     const Token * typetok = tok->astOperand1();
-    return isType(typetok, Token::Match(vartok, "%var%"));
+    return isType(typetok, vartok && vartok->varId() != 0);
 }
 
 static bool isBracketAccess(const Token* tok)
@@ -1800,9 +1800,9 @@ static bool isConstStatement(const Token *tok, bool cpp)
         return false;
     if (tok->isExpandedMacro())
         return false;
-    if (Token::Match(tok, "%bool%|%num%|%str%|%char%|nullptr|NULL"))
+    if (tok->varId() != 0)
         return true;
-    if (Token::Match(tok, "%var%"))
+    if (Token::Match(tok, "%bool%|%num%|%str%|%char%|nullptr|NULL"))
         return true;
     if (Token::Match(tok, "*|&|&&") &&
         (Token::Match(tok->previous(), "::|.|const|volatile|restrict") || isVarDeclOp(tok)))
@@ -1939,7 +1939,7 @@ void CheckOther::checkIncompleteStatement()
         if (mTokenizer->isCPP() && tok->str() == "&" && !(tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->isIntegral()))
             // Possible archive
             continue;
-        bool inconclusive = Token::Match(tok, "%cop%");
+        bool inconclusive = tok->isConstOp();
         if (mSettings->certainty.isEnabled(Certainty::inconclusive) || !inconclusive)
             constStatementError(tok, tok->isNumber() ? "numeric" : "string", inconclusive);
     }
@@ -3470,7 +3470,7 @@ void CheckOther::shadowError(const Token *var, const Token *shadowed, std::strin
 
 static bool isVariableExpression(const Token* tok)
 {
-    if (Token::Match(tok, "%var%"))
+    if (tok->varId() != 0)
         return true;
     if (Token::simpleMatch(tok, "."))
         return isVariableExpression(tok->astOperand1()) &&

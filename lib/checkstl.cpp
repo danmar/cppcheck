@@ -1583,10 +1583,8 @@ static const Token *skipLocalVars(const Token *tok)
             return tok;
         return skipLocalVars(semi->next());
     }
-    if (Token::Match(top, "%assign%")) {
+    if (tok->isAssignmentOp()) {
         const Token *varTok = top->astOperand1();
-        if (!Token::Match(varTok, "%var%"))
-            return tok;
         const Variable *var = varTok->variable();
         if (!var)
             return tok;
@@ -2613,7 +2611,7 @@ void CheckStl::useStlAlgorithm()
             if (!Token::simpleMatch(splitTok, ":"))
                 continue;
             const Token *loopVar = splitTok->previous();
-            if (!Token::Match(loopVar, "%var%"))
+            if (loopVar->varId() == 0)
                 continue;
 
             // Check for single assignment

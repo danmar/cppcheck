@@ -1419,11 +1419,9 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
             continue;
         if (!scope->isExecutable())
             continue;
-        if (!Token::Match(tok, "%name%"))
+        if (tok->varId() != 0)
             continue;
         if (!tok->isNameOnly())
-            continue;
-        if (Token::Match(tok, "%var%"))
             continue;
         if (tok->type())
             continue;
@@ -1765,7 +1763,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
         // skip over qualification
         while (Token::simpleMatch(tok1, "::")) {
             tok1 = tok1->previous();
-            if (Token::Match(tok1, "%name%"))
+            if (tok1 && tok1->isName())
                 tok1 = tok1->previous();
             else if (tok1 && tok1->str() == ">" && tok1->link() && Token::Match(tok1->link()->previous(), "%name%"))
                 tok1 = tok1->link()->tokAt(-2);
@@ -1812,7 +1810,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
                 return false;
 
             // skip over return type
-            if (Token::Match(tok1, "%name%")) {
+            if (tok1 && tok1->isName()) {
                 if (tok1->str() == "return")
                     return false;
                 if (tok1->str() != "friend")
@@ -1822,7 +1820,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
             // skip over qualification
             while (Token::simpleMatch(tok1, "::")) {
                 tok1 = tok1->previous();
-                if (Token::Match(tok1, "%name%"))
+                if (tok1 && tok1->isName())
                     tok1 = tok1->previous();
                 else if (tok1 && tok1->str() == ">" && tok1->link() && Token::Match(tok1->link()->previous(), "%name%"))
                     tok1 = tok1->link()->tokAt(-2);
