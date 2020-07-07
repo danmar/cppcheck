@@ -1443,14 +1443,13 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
     // non-empty constructors -> possible side effects
     if (type->classScope->numConstructors != 0)
     {
-        for (std::list<Function>::const_iterator i = type->classScope->functionList.begin();
-            i != type->classScope->functionList.end(); ++i)
+        for (const Function& f : type->classScope->functionList)
         {
-            if (!i->isConstructor())
+            if (!f.isConstructor())
             {
                 continue;
             }
-            if (!i->isBodyEmpty())
+            if (!f.isBodyEmpty())
             {
                 withoutSideEffects = false;
                 return withoutSideEffects;    
@@ -1459,12 +1458,11 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
     }
 
     // check each variable type for side effects
-    if (!(type->classScope->varlist.empty() || type->needInitialization == Type::NeedInitialization::True))
+    if (type->needInitialization != Type::NeedInitialization::True)
     {
-        for (std::list<Variable>::const_iterator i = type->classScope->varlist.begin(); 
-            i != type->classScope->varlist.end(); ++i)
+        for (const Variable& v : type->classScope->varlist)
         {
-            const Type* variableType = i->type();
+            const Type* variableType = v.type();
             if (variableType)
             {
                 if (!isRecordTypeWithoutSideEffects(variableType))
@@ -1475,7 +1473,7 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
             }
             else
             {
-                ValueType::Type valueType = i->valueType()->type;
+                ValueType::Type valueType = v.valueType()->type;
                 if ( (valueType == ValueType::Type::UNKNOWN_TYPE) || (valueType == ValueType::Type::NONSTD) )
                 {
                     withoutSideEffects = false;
