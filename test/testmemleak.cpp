@@ -1677,6 +1677,8 @@ private:
         TEST_CASE(varid_2); // #5315: Analysis confused by ((variable).attribute) notation
 
         TEST_CASE(customAllocation);
+
+        TEST_CASE(lambdaInForLoop); // #9793
     }
 
     void err() {
@@ -2061,6 +2063,22 @@ private:
               "    abc.a = myalloc();\n"
               "}", false);
         ASSERT_EQUALS("[test.c:7]: (error) Memory leak: abc.a\n", errout.str());
+    }
+
+    void lambdaInForLoop() { // #9793
+        check(
+            "struct S { int * p{nullptr}; };\n"
+            "int main()\n"
+            "{\n"
+            "    S s;\n"
+            "    s.p = new int[10];\n"
+            "    for (int i = 0; i < 10; ++i) {\n"
+            "        s.p[i] = []() { return 1; }();\n"
+            "    }\n"
+            "    delete[] s.p;\n"
+            "    return 0;\n"
+            "}", true);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
