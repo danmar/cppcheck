@@ -184,6 +184,8 @@ private:
         TEST_CASE(smartPtrInContainer); // #8262
 
         TEST_CASE(recursiveCountLimit); // #5872 #6157 #9097
+
+        TEST_CASE(functionCallCastConfig); // #9652
     }
 
     void check(const char code[], bool cpp = false) {
@@ -194,6 +196,22 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, cpp?"test.cpp":"test.c");
+
+        // Check for leaks..
+        CheckLeakAutoVar c;
+        settings.checkLibrary = true;
+        settings.addEnabled("information");
+        c.runChecks(&tokenizer, &settings, this);
+    }
+
+    void check(const char code[], Settings & settings) {
+        // Clear the error buffer..
+        errout.str("");
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
 
         // Check for leaks..
         CheckLeakAutoVar c;
@@ -2023,6 +2041,31 @@ private:
                                "}"));
     }
 
+    void functionCallCastConfig() { // #9652
+        Settings settingsFunctionCall = settings;
+
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<def format=\"2\">\n"
+                               "  <function name=\"free_func\">\n"
+                               "    <noreturn>false</noreturn>\n"
+                               "    <arg nr=\"1\">\n"
+                               "      <not-uninit/>\n"
+                               "    </arg>\n"
+                               "    <arg nr=\"2\">\n"
+                               "      <not-uninit/>\n"
+                               "    </arg>\n"
+                               "  </function>\n"
+                               "</def>";
+        tinyxml2::XMLDocument doc;
+        doc.Parse(xmldata, sizeof(xmldata));
+        settingsFunctionCall.library.load(doc);
+        check("void test_func()\n"
+              "{\n"
+              "    char * buf = malloc(4);\n"
+              "    free_func((void *)(1), buf);\n"
+              "}", settingsFunctionCall);
+        ASSERT_EQUALS("[test.cpp:5]: (information) --check-library: Function free_func() should have <use>/<leak-ignore> configuration\n", errout.str());
+    }
 };
 
 REGISTER_TEST(TestLeakAutoVar)
