@@ -465,7 +465,11 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
                 // Recursively scan variable comparisons in condition
                 std::stack<const Token *> tokens;
-                tokens.push(tok->next()->astOperand2());
+                // Skip expressions before commas
+                const Token * astOperand2AfterCommas = tok->next()->astOperand2();
+                while (Token::simpleMatch(astOperand2AfterCommas, ","))
+                    astOperand2AfterCommas = astOperand2AfterCommas->astOperand2();
+                tokens.push(astOperand2AfterCommas);
                 while (!tokens.empty()) {
                     const Token *tok3 = tokens.top();
                     tokens.pop();
