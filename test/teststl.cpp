@@ -4445,28 +4445,6 @@ private:
               true);
         ASSERT_EQUALS("", errout.str());
 
-        check("void f() {\n"
-              "    std::mutex m;\n"
-              "    std::lock_guard<std::mutex> g(m);\n"
-              "}\n",
-              true);
-        ASSERT_EQUALS("[test.cpp:3]: (warning) The lock is ineffective because the mutex is locked at the same scope as the mutex itself.\n", errout.str());
-
-        check("void f() {\n"
-              "    std::mutex m;\n"
-              "    std::unique_lock<std::mutex> g(m);\n"
-              "}\n",
-              true);
-        ASSERT_EQUALS("[test.cpp:3]: (warning) The lock is ineffective because the mutex is locked at the same scope as the mutex itself.\n", errout.str());
-
-        check("void f() {\n"
-              "    std::mutex m;\n"
-              "    std::unique_lock<std::mutex> g(m, std::defer_lock);\n"
-              "    std::lock(g);\n"
-              "}\n",
-              true);
-        ASSERT_EQUALS("[test.cpp:3]: (warning) The lock is ineffective because the mutex is locked at the same scope as the mutex itself.\n", errout.str());
-
         check("void g();\n"
               "void f() {\n"
               "    static std::mutex m;\n"
@@ -4476,16 +4454,6 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
-
-        check("void g();\n"
-              "void f() {\n"
-              "    std::mutex m;\n"
-              "    m.lock();\n"
-              "    g();\n"
-              "    m.unlock();\n"
-              "}\n",
-              true);
-        ASSERT_EQUALS("[test.cpp:4]: (warning) The lock is ineffective because the mutex is locked at the same scope as the mutex itself.\n", errout.str());
 
         check("class A {\n"
               "    std::mutex m;\n"
@@ -4535,25 +4503,6 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
-
-        check("std::mutex& h();\n"
-              "void f() {\n"
-              "    auto m = h();\n"
-              "    std::lock_guard<std::mutex> g(m);\n"
-              "}\n",
-              true);
-        ASSERT_EQUALS("[test.cpp:4]: (warning) The lock is ineffective because the mutex is locked at the same scope as the mutex itself.\n", errout.str());
-
-        check("void g();\n"
-              "std::mutex& h();\n"
-              "void f() {\n"
-              "    auto m = h();\n"
-              "    m.lock();\n"
-              "    g();\n"
-              "    m.unlock();\n"
-              "}\n",
-              true);
-        ASSERT_EQUALS("[test.cpp:5]: (warning) The lock is ineffective because the mutex is locked at the same scope as the mutex itself.\n", errout.str());
     }
 };
 

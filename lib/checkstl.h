@@ -233,7 +233,6 @@ private:
     void useStlAlgorithmError(const Token *tok, const std::string &algoName);
 
     void globalLockGuardError(const Token *tok);
-    void localMutexError(const Token *tok);
 
     void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE {
         ErrorPath errorPath;
@@ -272,7 +271,6 @@ private:
         c.readingEmptyStlContainerError(nullptr);
         c.useStlAlgorithmError(nullptr, "");
         c.globalLockGuardError(nullptr);
-        c.localMutexError(nullptr);
     }
 
     static std::string myName() {
