@@ -2987,14 +2987,17 @@ private:
         // Avoid FP for sizeof condition
         check("void f() {\n"
               "  if (sizeof(char) != 123) {}\n"
+              "  if (123 != sizeof(char)) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "  int x = 123;\n"
               "  if (sizeof(char) != x) {}\n"
+              "  if (x != sizeof(char)) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'sizeof(char)!=x' is always true\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'sizeof(char)!=x' is always true\n"
+                      "[test.cpp:4]: (style) Condition 'x!=sizeof(char)' is always true\n", errout.str());
 
         // Don't warn in assertions. Condition is often 'always true' by intention.
         // If platform,defines,etc cause an 'always false' assertion then that is not very dangerous neither
