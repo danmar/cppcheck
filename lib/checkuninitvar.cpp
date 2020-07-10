@@ -881,22 +881,17 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
                 usetok = tok;
             else if (tok->strAt(1) == "=") {
                 bool varIsUsedInRhs = false;
-                std::stack<const Token *> tokens;
-                tokens.push(tok->next()->astOperand2());
-                while (!tokens.empty()) {
-                    const Token *t = tokens.top();
-                    tokens.pop();
+                visitAstNodes(tok->next()->astOperand2(), [&](const Token * t) {
                     if (!t)
-                        continue;
+                        return ChildrenToVisit::none;
                     if (t->varId() == var.declarationId()) {
                         varIsUsedInRhs = true;
-                        break;
+                        return ChildrenToVisit::done;
                     }
                     if (Token::simpleMatch(t->previous(),"sizeof ("))
-                        continue;
-                    tokens.push(t->astOperand1());
-                    tokens.push(t->astOperand2());
-                }
+                        return ChildrenToVisit::none;
+                    return ChildrenToVisit::op1_and_op2;
+                });
                 if (!varIsUsedInRhs)
                     return true;
             } else {
