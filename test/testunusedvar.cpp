@@ -4839,6 +4839,23 @@ private:
             "   H h;\n"
             "}");
         ASSERT_EQUALS("", errout.str());
+
+        // 2 translation units
+        functionVariableUsage(
+            "#file \"file.h\"\n"
+            "class D {\n"
+            "public:\n"
+            "   D() {};\n"
+            "};\n"
+            "#endfile\n"
+            "#file \"file.c\"\n"
+            "#include \"file.h\"\n"
+            "void f() {\n"
+            "   D d;\n"
+            "}\n"
+            "#endfile"
+        );
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
