@@ -539,10 +539,10 @@ bool exprDependsOnThis(const Token* expr, nonneg int depth)
     // calling nonstatic method?
     if (Token::Match(expr->previous(), "!!:: %name% (") && expr->function() && expr->function()->nestedIn && expr->function()->nestedIn->isClassOrStruct()) {
         // is it a method of this?
-        const Scope *fScope = expr->scope();
+        const Scope* fScope = expr->scope();
         while (!fScope->functionOf && fScope->nestedIn)
             fScope = fScope->nestedIn;
-        const Scope *nestedIn = fScope->functionOf;
+        const Scope* nestedIn = fScope->functionOf;
         if (nestedIn && nestedIn->function)
             nestedIn = nestedIn->function->token->scope();
         while (nestedIn && nestedIn != expr->function()->nestedIn) {
@@ -1565,11 +1565,7 @@ bool isVariablesChanged(const Token* start,
     return false;
 }
 
-bool isThisChanged(const Token* start,
-                        const Token* end,
-                        int indirect,
-                        const Settings* settings,
-                        bool cpp)
+bool isThisChanged(const Token* start, const Token* end, int indirect, const Settings* settings, bool cpp)
 {
     for (const Token* tok = start; tok != end; tok = tok->next()) {
         if (!exprDependsOnThis(tok))
@@ -1580,10 +1576,9 @@ bool isThisChanged(const Token* start,
                     return true;
                 else
                     continue;
-            } else if (!tok->previous()->isKeyword()){
+            } else if (!tok->previous()->isKeyword()) {
                 return true;
             }
-
         }
         if (isVariableChanged(tok, indirect, settings, cpp))
             return true;

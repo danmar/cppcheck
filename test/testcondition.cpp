@@ -3715,7 +3715,8 @@ private:
               "        }\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:9]: (style) The if condition is the same as the previous if condition\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:9]: (style) The if condition is the same as the previous if condition\n",
+                      errout.str());
     }
 
     void checkInvalidTestForOverflow() {
