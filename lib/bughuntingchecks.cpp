@@ -87,7 +87,7 @@ static void divByZero(const Token *tok, const ExprEngine::Value &value, ExprEngi
         return;
     if (tok->isImpossibleIntValue(0))
         return;
-    if (value.isUninit())
+    if (value.isUninit() && value.type != ExprEngine::ValueType::BailoutValue)
         return;
     float f = getKnownFloatValue(tok, 0.0f);
     if (f > 0.0f || f < 0.0f)
@@ -216,20 +216,14 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
     if (value.type == ExprEngine::ValueType::BailoutValue) {
         if (tok->hasKnownValue())
             return;
-        if (tok->function())
+        if (!tok->variable())
+            // FIXME
             return;
-        if (Token::Match(tok, "<<|>>|,"))
-            // Only warn about the operands
-            return;
+
         // lhs for scope operator
         if (Token::Match(tok, "%name% ::"))
             return;
         if (tok->astParent()->str() == "::" && tok == tok->astParent()->astOperand1())
-            return;
-
-        if (tok->str() == "(")
-            // cast: result is not uninitialized if expression is initialized
-            // function: does not return a uninitialized value
             return;
 
         // Containers are not uninitialized
@@ -242,15 +236,30 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
         }
 
         const Variable *var = tok->variable();
+        if (var && var->nameToken() == tok)
+            return;
+        if (var && !var->isLocal())
+            return; // FIXME
         if (var && !var->isPointer()) {
             if (!var->isLocal() || var->isStatic())
                 return;
         }
-        if (var && (Token::Match(var->nameToken(), "%name% =") || Token::Match(var->nameToken(), "%varid% ; %varid% =", var->declarationId())))
+        if (var && (Token::Match(var->nameToken(), "%name% [=:]") || Token::Match(var->nameToken(), "%varid% ; %varid% =", var->declarationId())))
             return;
         if (var && var->nameToken() == tok)
             return;
 
+        // Are there unconditional assignment?
+        if (var && Token::Match(var->nameToken(), "%varid% ;| %varid%| =", tok->varId()))
+            return;
+        for (const Token *prev = tok->previous(); prev; prev = prev->previous()) {
+            if (!precedes(var->nameToken(), prev))
+                break;
+            if (prev->str() == "}")
+                prev = prev->link();
+            if (Token::Match(prev, "%varid% =", tok->varId()))
+                return;
+        }
     }
 
     // Uninitialized function argument
