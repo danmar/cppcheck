@@ -171,13 +171,6 @@ void ResultsView::updateFromOldReport(const QString &filename) const
 
 void ResultsView::save(const QString &filename, Report::Type type) const
 {
-    if (!hasResults()) {
-        QMessageBox msgBox;
-        msgBox.setText(tr("No errors found, nothing to save."));
-        msgBox.setIcon(QMessageBox::Critical);
-        msgBox.exec();
-    }
-
     Report *report = nullptr;
 
     switch (type) {
