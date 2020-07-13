@@ -2014,7 +2014,9 @@ void CheckOther::checkDuplicateExpression()
             if (tok->isOp() && tok->astOperand1() && !Token::Match(tok, "+|*|<<|>>|+=|*=|<<=|>>=")) {
                 if (Token::Match(tok, "==|!=|-") && astIsFloat(tok->astOperand1(), true))
                     continue;
-                const bool followVar = !isConstVarExpression(tok) || Token::Match(tok, "%comp%|%oror%|&&");
+                const bool pointerDereference = (tok->astOperand1() && tok->astOperand1()->isUnaryOp("*")) ||
+                                                (tok->astOperand2() && tok->astOperand2()->isUnaryOp("*"));
+                const bool followVar = (!isConstVarExpression(tok) || Token::Match(tok, "%comp%|%oror%|&&")) && !pointerDereference;
                 if (isSameExpression(mTokenizer->isCPP(),
                                      true,
                                      tok->astOperand1(),
