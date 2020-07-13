@@ -3668,6 +3668,54 @@ private:
               "    if (a.b) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    int a;\n"
+              "    void b() const {\n"
+              "        return a == 1;\n"
+              "    }\n"
+              "    void c();\n"
+              "    void d() {\n"
+              "        if(b()) {\n"
+              "            c();\n"
+              "        }\n"
+              "        if (b()) {\n"
+              "            a = 3;\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    int a;\n"
+              "    void b() const {\n"
+              "        return a == 1;\n"
+              "    }\n"
+              "    void d() {\n"
+              "        if(b()) {\n"
+              "            a = 2;\n"
+              "        }\n"
+              "        if (b()) {\n"
+              "            a = 3;\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    int a;\n"
+              "    void b() const {\n"
+              "        return a == 1;\n"
+              "    }\n"
+              "    void d() {\n"
+              "        if(b()) {\n"
+              "        }\n"
+              "        if (b()) {\n"
+              "            a = 3;\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:9]: (style) The if condition is the same as the previous if condition\n", errout.str());
     }
 
     void checkInvalidTestForOverflow() {

@@ -192,6 +192,12 @@ bool isVariablesChanged(const Token* start,
                         const Settings* settings,
                         bool cpp);
 
+bool isThisChanged(const Token* start,
+                        const Token* end,
+                        int indirect,
+                        const Settings* settings,
+                        bool cpp);
+
 const Token* findVariableChanged(const Token *start, const Token *end, int indirect, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
 Token* findVariableChanged(Token *start, const Token *end, int indirect, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
 

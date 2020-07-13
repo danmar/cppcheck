@@ -453,6 +453,12 @@ void CheckCondition::duplicateCondition()
 
         bool modified = false;
         visitAstNodes(cond1, [&](const Token *tok3) {
+            if (exprDependsOnThis(tok3)) {
+                if (isThisChanged(scope.classDef->next(), cond2, false, mSettings, mTokenizer->isCPP())) {
+                    modified = true;
+                    return ChildrenToVisit::done;
+                }
+            }
             if (tok3->varId() > 0 &&
                 isVariableChanged(scope.classDef->next(), cond2, tok3->varId(), false, mSettings, mTokenizer->isCPP())) {
                 modified = true;
