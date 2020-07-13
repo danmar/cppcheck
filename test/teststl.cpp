@@ -4554,6 +4554,36 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("[test.cpp:5]: (warning) The lock is ineffective because the mutex is locked at the same scope as the mutex itself.\n", errout.str());
+
+        check("void foo();\n"
+              "void bar();\n"
+              "void f() {\n"
+              "    std::mutex m;\n"
+              "    std::thread t([&m](){\n"
+              "        m.lock();\n"
+              "        foo();\n"
+              "        m.unlock();\n"
+              "    });\n"
+              "    m.lock();\n"
+              "    bar();\n"
+              "    m.unlock();\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo();\n"
+              "void bar();\n"
+              "void f() {\n"
+              "    std::mutex m;\n"
+              "    std::thread t([&m](){\n"
+              "        std::unique_lock<std::mutex> g{m};\n"
+              "        foo();\n"
+              "    });\n"
+              "    std::unique_lock<std::mutex> g{m};\n"
+              "    bar();\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
