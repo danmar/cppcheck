@@ -1457,6 +1457,7 @@ void CheckCondition::alwaysTrueFalse()
 
             // don't warn when condition checks sizeof result
             bool hasSizeof = false;
+            bool hasNonNumber = false;
             tokens.push(tok);
             while (!tokens.empty()) {
                 const Token *tok2 = tokens.top();
@@ -1473,9 +1474,9 @@ void CheckCondition::alwaysTrueFalse()
                     tokens.push(tok2->astOperand1());
                     tokens.push(tok2->astOperand2());
                 } else
-                    break;
+                    hasNonNumber = true;
             }
-            if (tokens.empty() && hasSizeof)
+            if (!hasNonNumber && hasSizeof)
                 continue;
 
             alwaysTrueFalseError(tok, &tok->values().front());
