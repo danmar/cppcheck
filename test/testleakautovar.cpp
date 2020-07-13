@@ -134,6 +134,7 @@ private:
         TEST_CASE(ifelse13); // #8392
         TEST_CASE(ifelse14); // #9130 - if (x == (char*)NULL)
         TEST_CASE(ifelse15); // #9206 - if (global_ptr = malloc(1))
+        TEST_CASE(ifelse16); // #9635 - if (p = malloc(4), p == NULL)
 
         // switch
         TEST_CASE(switch1);
@@ -1480,6 +1481,26 @@ private:
               "int openFile( void ) {\n"
               "   if ((hFile = fopen(\"1.txt\", \"wb\" )) == NULL) return 0;\n"
               "   return 1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void ifelse16() { // #9635
+        check("void f(void) {\n"
+              "    char *p;\n"
+              "    if(p = malloc(4), p == NULL)\n"
+              "        return;\n"
+              "    free(p);\n"
+              "    return;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(void) {\n"
+              "    char *p, q;\n"
+              "    if(p = malloc(4), q = 1, p == NULL)\n"
+              "        return;\n"
+              "    free(p);\n"
+              "    return;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
