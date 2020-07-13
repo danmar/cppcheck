@@ -254,6 +254,7 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
     }
 
     // Uninitialized function argument
+    bool inconclusive = false;
     if (Token::Match(tok->astParent(), "[,(]")) {
         const Token *parent = tok->astParent();
         int count = 0;
@@ -271,10 +272,16 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
                 const Variable *argvar = parent->astOperand1()->function()->getArgumentVar(count);
                 if (argvar && argvar->isReference() && !argvar->isConst())
                     return;
-                if (uninitData && argvar && !argvar->isConst())
-                    return;
-                if (!uninitStructMember.empty() && dataBase->isC() && argvar && !argvar->isConst())
-                    return;
+                if (uninitData && argvar && !argvar->isConst()) {
+                    if (parent->astOperand1()->function()->hasBody())
+                        return;
+                    inconclusive = true;
+                }
+                if (!uninitStructMember.empty() && dataBase->isC() && argvar && !argvar->isConst()) {
+                    if (parent->astOperand1()->function()->hasBody())
+                        return;
+                    inconclusive = true;
+                }
             } else if (uninitData) {
                 if (dataBase->settings->library.getFunction(parent->astOperand1()))
                     return;
@@ -285,6 +292,9 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
             return;
     }
 
+    if (inconclusive && !dataBase->settings->inconclusive)
+        return;
+
     // Avoid FP for array declaration
     const Token *parent = tok->astParent();
     while (parent && parent->str() == "[")
@@ -292,13 +302,15 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
     if (!parent)
         return;
 
+    const std::string inconclusiveMessage(inconclusive ? ". It is inconclusive if there would be a problem in the function call." : "");
+
     if (!uninitStructMember.empty()) {
         dataBase->reportError(tok,
                               Severity::SeverityType::error,
                               "bughuntingUninitStructMember",
-                              "Cannot determine that '" + tok->expressionString() + "." + uninitStructMember + "' is initialized",
+                              "Cannot determine that '" + tok->expressionString() + "." + uninitStructMember + "' is initialized" + inconclusiveMessage,
                               CWE_USE_OF_UNINITIALIZED_VARIABLE,
-                              false,
+                              inconclusive,
                               value.type == ExprEngine::ValueType::BailoutValue);
         return;
     }
@@ -310,9 +322,9 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
     dataBase->reportError(tok,
                           Severity::SeverityType::error,
                           "bughuntingUninit",
-                          "Cannot determine that '" + uninitexpr + "' is initialized",
+                          "Cannot determine that '" + uninitexpr + "' is initialized" + inconclusiveMessage,
                           CWE_USE_OF_UNINITIALIZED_VARIABLE,
-                          false,
+                          inconclusive,
                           value.type == ExprEngine::ValueType::BailoutValue);
 }
 

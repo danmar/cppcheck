@@ -33,6 +33,7 @@ private:
 
     void run() OVERRIDE {
 #ifdef USE_Z3
+        settings.inconclusive = true;
         LOAD_LIB_2(settings.library, "std.cfg");
         TEST_CASE(uninit);
         TEST_CASE(uninit_array);
@@ -86,7 +87,7 @@ private:
 
         check("char foo(char id[]);\n"
               "void bar() { char data[10]; foo(data); }");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error, inconclusive) Cannot determine that 'data[0]' is initialized. It is inconclusive if there would be a problem in the function call.\n", errout.str());
 
         check("void foo(int *p) { if (p) *p=0; }");
         ASSERT_EQUALS("", errout.str());
