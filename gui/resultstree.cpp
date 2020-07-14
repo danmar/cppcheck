@@ -1133,7 +1133,7 @@ void ResultsTree::saveResults(Report *report) const
     report->writeFooter();
 }
 
-void ResultsTree::saveErrors(Report *report, QStandardItem *fileItem) const
+void ResultsTree::saveErrors(Report *report, const QStandardItem *fileItem) const
 {
     if (!fileItem) {
         return;
