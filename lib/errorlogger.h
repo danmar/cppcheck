@@ -196,6 +196,9 @@ public:
     CWE cwe;
     bool inconclusive;
 
+    /** Warning ID */
+    std::size_t cppcheckId;
+
     /** set short and verbose messages */
     void setmsg(const std::string &msg);
 

@@ -32,6 +32,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iomanip>
+#include <functional> // std::hash
 
 InternalError::InternalError(const Token *tok, const std::string &errorMsg, Type type) :
     token(tok), errorMessage(errorMsg), type(type)
@@ -58,8 +59,15 @@ InternalError::InternalError(const Token *tok, const std::string &errorMsg, Type
     }
 }
 
+static std::size_t calculateCppcheckId(const TokenList *tokenList, const std::string &msg)
+{
+    if (!tokenList)
+        return 0;
+    return std::hash<std::string> {}(msg + "\n" + tokenList->front()->stringifyList(false, true, false, false, false));
+}
+
 ErrorMessage::ErrorMessage()
-    : incomplete(false), severity(Severity::none), cwe(0U), inconclusive(false)
+    : incomplete(false), severity(Severity::none), cwe(0U), inconclusive(false), cppcheckId(0)
 {
 }
 
@@ -70,7 +78,8 @@ ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::
     incomplete(false),
     severity(severity),   // severity for this error message
     cwe(0U),
-    inconclusive(inconclusive)
+    inconclusive(inconclusive),
+    cppcheckId(0)
 {
     // set the summary and verbose messages
     setmsg(msg);
@@ -85,14 +94,15 @@ ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::
     incomplete(false),
     severity(severity),   // severity for this error message
     cwe(cwe.id),
-    inconclusive(inconclusive)
+    inconclusive(inconclusive),
+    cppcheckId(0)
 {
     // set the summary and verbose messages
     setmsg(msg);
 }
 
 ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive)
-    : id(id), incomplete(false), severity(severity), cwe(0U), inconclusive(inconclusive)
+    : id(id), incomplete(false), severity(severity), cwe(0U), inconclusive(inconclusive), cppcheckId(0)
 {
     // Format callstack
     for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it) {
@@ -126,6 +136,8 @@ ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const Token
         file0 = list->getFiles()[0];
 
     setmsg(msg);
+
+    cppcheckId = calculateCppcheckId(list, toString(false));
 }
 
 ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenList, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, bool inconclusive)
@@ -145,6 +157,8 @@ ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenLis
         file0 = tokenList->getFiles()[0];
 
     setmsg(msg);
+
+    cppcheckId = calculateCppcheckId(tokenList, toString(false));
 }
 
 ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
@@ -172,6 +186,9 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
 
     attr = errmsg->Attribute("verbose");
     mVerboseMessage = attr ? attr : "";
+
+    attr = errmsg->Attribute("cppcheck-id");
+    std::istringstream(attr ? attr : "0") >> cppcheckId;
 
     for (const tinyxml2::XMLElement *e = errmsg->FirstChildElement(); e; e = e->NextSiblingElement()) {
         if (std::strcmp(e->Name(),"location")==0) {
@@ -236,6 +253,7 @@ std::string ErrorMessage::serialize() const
     oss << id.length() << " " << id;
     oss << Severity::toString(severity).length() << " " << Severity::toString(severity);
     oss << MathLib::toString(cwe.id).length() << " " << MathLib::toString(cwe.id);
+    oss << MathLib::toString(cppcheckId).length() << " " << MathLib::toString(cppcheckId);
     if (inconclusive) {
         const std::string text("inconclusive");
         oss << text.length() << " " << text;
@@ -262,9 +280,9 @@ bool ErrorMessage::deserialize(const std::string &data)
     inconclusive = false;
     callStack.clear();
     std::istringstream iss(data);
-    std::array<std::string, 5> results;
+    std::array<std::string, 6> results;
     std::size_t elem = 0;
-    while (iss.good()) {
+    while (iss.good() && elem < 6) {
         unsigned int len = 0;
         if (!(iss >> len))
             return false;
@@ -282,19 +300,17 @@ bool ErrorMessage::deserialize(const std::string &data)
         }
 
         results[elem++] = temp;
-        if (elem == 5)
-            break;
     }
 
-    if (elem != 5)
+    if (elem != 6)
         throw InternalError(nullptr, "Internal Error: Deserialization of error message failed");
 
     id = results[0];
     severity = Severity::fromString(results[1]);
-    std::istringstream scwe(results[2]);
-    scwe >> cwe.id;
-    mShortMessage = results[3];
-    mVerboseMessage = results[4];
+    std::istringstream(results[2]) >> cwe.id;
+    std::istringstream(results[3]) >> cppcheckId;
+    mShortMessage = results[4];
+    mVerboseMessage = results[5];
 
     unsigned int stackSize = 0;
     if (!(iss >> stackSize))
@@ -347,8 +363,6 @@ bool ErrorMessage::deserialize(const std::string &data)
 
 std::string ErrorMessage::getXMLHeader()
 {
-    // xml_version 1 is the default xml format
-
     tinyxml2::XMLPrinter printer;
 
     // standard xml header
@@ -403,6 +417,8 @@ std::string ErrorMessage::toXML() const
     printer.PushAttribute("verbose", fixInvalidChars(mVerboseMessage).c_str());
     if (cwe.id)
         printer.PushAttribute("cwe", cwe.id);
+    if (cppcheckId)
+        printer.PushAttribute("cppcheck-id", MathLib::toString(cppcheckId).c_str());
     if (inconclusive)
         printer.PushAttribute("inconclusive", "true");
 
