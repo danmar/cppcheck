@@ -716,6 +716,8 @@ namespace {
                         const std::string c = line.substr(pos, end-pos);
                         pos = end;
                         d.constraints.push_back(c);
+                    } else {
+                        throw ExprEngineException(nullptr, "Internal Error: Data::parsestr(), line:" + line);
                     }
                 }
                 importData->push_back(d);
