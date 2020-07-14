@@ -59,12 +59,6 @@ void AnalyzerInformation::writeFilesTxt(const std::string &buildDir, const std::
         const std::string afile = getFilename(fs.filename);
         fout << afile << ".a" << (++fileCount[afile]) << ":" << fs.cfg << ":" << Path::simplifyPath(Path::fromNativeSeparators(fs.filename)) << std::endl;
     }
-
-    std::ofstream fc(buildDir + "/__temp__.c");
-    fc << "int x;\n";
-
-    std::ofstream fcpp(buildDir + "/__temp__.cpp");
-    fcpp << "int x;\n";
 }
 
 void AnalyzerInformation::close()
