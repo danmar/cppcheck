@@ -227,7 +227,7 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
             return;
 
         // Object allocated on the stack
-        if (tok->valueType() && tok->valueType()->pointer == 0 && Token::Match(tok, "%var% ."))
+        if (Token::Match(tok, "%var% .") && tok->next()->originalName() != "->")
             return;
 
         // Containers are not uninitialized
