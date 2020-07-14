@@ -2394,10 +2394,23 @@ void CheckStl::useStlAlgorithm()
     }
 }
 
+static bool isMutex(const Variable* var)
+{
+    const Token* tok = Token::typeDecl(var->nameToken()).first;
+    return Token::Match(tok, "std :: mutex|recursive_mutex|timed_mutex|recursive_timed_mutex|shared_mutex");
+}
+
 static bool isLockGuard(const Variable* var)
 {
     const Token* tok = Token::typeDecl(var->nameToken()).first;
     return Token::Match(tok, "std :: lock_guard|unique_lock|scoped_lock");
+}
+
+static bool isLocalMutex(const Variable* var, const Scope* scope)
+{
+    if (!var)
+        return false;
+    return !var->isReference() && !var->isRValueReference() && !var->isStatic() && var->scope() == scope;
 }
 
 void CheckStl::globalLockGuardError(const Token* tok)
@@ -2407,6 +2420,13 @@ void CheckStl::globalLockGuardError(const Token* tok)
                 "Lock guard is defined globally. Lock guards are intended to be local. A global lock guard could lead to a deadlock since it won't unlock until the end of the program.", CWE833, false);
 }
 
+void CheckStl::localMutexError(const Token* tok)
+{
+    reportError(tok, Severity::warning,
+                "localMutex",
+                "The lock is ineffective because the mutex is locked at the same scope as the mutex itself.", CWE667, false);
+}
+
 void CheckStl::checkMutexes()
 {
     for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
@@ -2414,12 +2434,19 @@ void CheckStl::checkMutexes()
             const Variable* var = tok->variable();
             if (!var)
                 continue;
-            if (Token::Match(tok, "%var% (|{ %var% )|}|,")) {
+            if (Token::Match(tok, "%var% . lock ( )")) {
+                if (!isMutex(var))
+                    continue;
+                if (isLocalMutex(var, tok->scope()))
+                    localMutexError(tok);
+            } else if (Token::Match(tok, "%var% (|{ %var% )|}|,")) {
                 if (!isLockGuard(var))
                     continue;
                 const Variable* mvar = tok->tokAt(2)->variable();
                 if (var->isStatic() || var->isGlobal())
                     globalLockGuardError(tok);
+                else if (isLocalMutex(mvar, tok->scope()))
+                    localMutexError(tok);
             }
         }
     }
