@@ -154,6 +154,7 @@ namespace {
         const Token *tok;
         const std::string what;
     };
+    struct TerminateExpression {};
 }
 
 static std::string str(ExprEngine::ValuePtr val)
@@ -716,6 +717,8 @@ namespace {
                         const std::string c = line.substr(pos, end-pos);
                         pos = end;
                         d.constraints.push_back(c);
+                    } else {
+                        throw ExprEngineException(nullptr, "Internal Error: Data::parsestr(), line:" + line);
                     }
                 }
                 importData->push_back(d);
@@ -2151,6 +2154,9 @@ static ExprEngine::ValuePtr executeStringLiteral(const Token *tok, Data &data)
 
 static ExprEngine::ValuePtr executeExpression1(const Token *tok, Data &data)
 {
+    if (data.settings->terminated())
+        throw TerminateExpression();
+
     if (tok->str() == "return")
         return executeReturn(tok, data);
 
@@ -2371,8 +2377,9 @@ static std::string execute(const Token *start, const Token *end, Data &data)
 
         if (Token::simpleMatch(tok, "for (")) {
             nonneg int varid;
+            bool hasKnownInitValue, partialCond;
             MathLib::bigint initValue, stepValue, lastValue;
-            if (extractForLoopValues(tok, &varid, &initValue, &stepValue, &lastValue)) {
+            if (extractForLoopValues(tok, &varid, &hasKnownInitValue, &initValue, &partialCond, &stepValue, &lastValue) && hasKnownInitValue && !partialCond) {
                 auto loopValues = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), initValue, lastValue);
                 data.assignValue(tok, varid, loopValues);
                 tok = tok->linkAt(1);
@@ -2486,6 +2493,8 @@ void ExprEngine::executeAllFunctions(ErrorLogger *errorLogger, const Tokenizer *
             // FIXME.. there should not be exceptions
             std::string functionName = functionScope->function->name();
             std::cout << "Verify: Aborted analysis of function '" << functionName << "': " << e.what() << std::endl;
+        } catch (const TerminateExpression &) {
+            break;
         }
     }
 }

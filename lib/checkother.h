@@ -266,7 +266,7 @@ private:
     void commaSeparatedReturnError(const Token *tok);
     void redundantPointerOpError(const Token* tok, const std::string& varname, bool inconclusive);
     void raceAfterInterlockedDecrementError(const Token* tok);
-    void unusedLabelError(const Token* tok, bool inSwitch);
+    void unusedLabelError(const Token* tok, bool inSwitch, bool hasIfdef);
     void unknownEvaluationOrder(const Token* tok);
     static bool isMovedParameterAllowedForInconclusiveFunction(const Token * tok);
     void accessMovedError(const Token *tok, const std::string &varname, const ValueFlow::Value *value, bool inconclusive);
@@ -331,8 +331,10 @@ private:
         c.nanInArithmeticExpressionError(nullptr);
         c.commaSeparatedReturnError(nullptr);
         c.redundantPointerOpError(nullptr,  "varname", false);
-        c.unusedLabelError(nullptr,  true);
-        c.unusedLabelError(nullptr,  false);
+        c.unusedLabelError(nullptr, false, false);
+        c.unusedLabelError(nullptr, false, true);
+        c.unusedLabelError(nullptr, true, false);
+        c.unusedLabelError(nullptr, true, true);
         c.unknownEvaluationOrder(nullptr);
         c.accessMovedError(nullptr, "v", nullptr, false);
         c.funcArgNamesDifferent("function", 1, nullptr, nullptr);

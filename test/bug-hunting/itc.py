@@ -38,8 +38,6 @@ def get_error_lines(filename):
                     linenr = 176
                 elif linenr == 241:
                     linenr = 242 # warn about usage
-                elif linenr == 266:
-                    continue # no warning should be written
             ret.append(linenr)
     return ret
 

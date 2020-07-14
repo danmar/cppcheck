@@ -21,6 +21,7 @@
 #include "checkunusedvar.h"
 
 #include "astutils.h"
+#include "preprocessor.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
@@ -1340,6 +1341,17 @@ void CheckUnusedVar::checkStructMemberUsage()
         // Packed struct => possibly used by lowlevel code. Struct members might be required by hardware.
         if (scope.bodyEnd->isAttributePacked())
             continue;
+        if (const Preprocessor *preprocessor = mTokenizer->getPreprocessor()) {
+            bool isPacked = false;
+            for (const Directive &d: preprocessor->getDirectives()) {
+                if (d.str == "#pragma pack(1)" && d.file == mTokenizer->list.getFiles().front() && d.linenr < scope.bodyStart->linenr()) {
+                    isPacked=true;
+                    break;
+                }
+            }
+            if (isPacked)
+                continue;
+        }
 
         // Bail out if struct/union contains any functions
         if (!scope.functionList.empty())

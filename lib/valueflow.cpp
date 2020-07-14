@@ -4232,7 +4232,7 @@ struct ValueFlowConditionHandler {
                             // TODO: constValue could be true if there are no assignments in the conditional blocks and
                             //       perhaps if there are no && and no || in the condition
                             bool constValue = false;
-                            forward(after, top->scope()->bodyEnd, cond.vartok, values, constValue);
+                            forward(after, scope->bodyEnd, cond.vartok, values, constValue);
                         }
                     }
                 }
@@ -4444,44 +4444,6 @@ static void valueFlowInferCondition(TokenList* tokenlist,
     }
 }
 
-static bool valueFlowForLoop1(const Token *tok, int * const varid, MathLib::bigint * const num1, MathLib::bigint * const num2, MathLib::bigint * const numAfter)
-{
-    tok = tok->tokAt(2);
-    if (!Token::Match(tok, "%type%| %var% ="))
-        return false;
-    const Token * const vartok = Token::Match(tok, "%var% =") ? tok : tok->next();
-    *varid = vartok->varId();
-    tok = vartok->tokAt(2);
-    const Token * const num1tok = Token::Match(tok, "%num% ;") ? tok : nullptr;
-    if (num1tok)
-        *num1 = MathLib::toLongNumber(num1tok->str());
-    while (Token::Match(tok, "%name%|%num%|%or%|+|-|*|/|&|[|]|("))
-        tok = (tok->str() == "(") ? tok->link()->next() : tok->next();
-    if (!tok || tok->str() != ";")
-        return false;
-    tok = tok->next();
-    const Token *num2tok = nullptr;
-    if (Token::Match(tok, "%varid% <|<=|!=", vartok->varId())) {
-        tok = tok->next();
-        num2tok = tok->astOperand2();
-        if (num2tok && num2tok->str() == "(" && !num2tok->astOperand2())
-            num2tok = num2tok->astOperand1();
-        if (!Token::Match(num2tok, "%num% ;|%oror%")) // TODO: || enlarges the scope of the condition, so it should not cause FP, but it should no lnger be part of this pattern as soon as valueFlowForLoop2 can handle an unknown RHS of || better
-            num2tok = nullptr;
-    }
-    if (!num2tok)
-        return false;
-    *num2 = MathLib::toLongNumber(num2tok->str()) - ((tok->str()=="<=") ? 0 : 1);
-    *numAfter = *num2 + 1;
-    if (!num1tok)
-        *num1 = *num2;
-    while (tok && tok->str() != ";")
-        tok = tok->next();
-    if (!Token::Match(tok, "; %varid% ++ ) {", vartok->varId()) && !Token::Match(tok, "; ++ %varid% ) {", vartok->varId()))
-        return false;
-    return true;
-}
-
 static bool valueFlowForLoop2(const Token *tok,
                               ProgramMemory *memory1,
                               ProgramMemory *memory2,
@@ -4663,16 +4625,19 @@ static void valueFlowForLoop(TokenList *tokenlist, SymbolDatabase* symboldatabas
             !Token::simpleMatch(tok->next()->astOperand2()->astOperand2(), ";"))
             continue;
 
-        int varid(0);
-        MathLib::bigint num1(0), num2(0), numAfter(0);
+        nonneg int varid;
+        bool knownInitValue, partialCond;
+        MathLib::bigint initValue, stepValue, lastValue;
 
-        if (valueFlowForLoop1(tok, &varid, &num1, &num2, &numAfter)) {
-            if (num1 <= num2) {
-                valueFlowForLoopSimplify(bodyStart, varid, false, num1, tokenlist, errorLogger, settings);
-                valueFlowForLoopSimplify(bodyStart, varid, false, num2, tokenlist, errorLogger, settings);
-                valueFlowForLoopSimplifyAfter(tok, varid, numAfter, tokenlist, errorLogger, settings);
-            } else
-                valueFlowForLoopSimplifyAfter(tok, varid, num1, tokenlist, errorLogger, settings);
+        if (extractForLoopValues(tok, &varid, &knownInitValue, &initValue, &partialCond, &stepValue, &lastValue)) {
+            const bool executeBody = !knownInitValue || initValue <= lastValue;
+            if (executeBody) {
+                valueFlowForLoopSimplify(bodyStart, varid, false, initValue, tokenlist, errorLogger, settings);
+                if (stepValue == 1)
+                    valueFlowForLoopSimplify(bodyStart, varid, false, lastValue, tokenlist, errorLogger, settings);
+            }
+            const MathLib::bigint afterValue = executeBody ? lastValue + stepValue : initValue;
+            valueFlowForLoopSimplifyAfter(tok, varid, afterValue, tokenlist, errorLogger, settings);
         } else {
             ProgramMemory mem1, mem2, memAfter;
             if (valueFlowForLoop2(tok, &mem1, &mem2, &memAfter)) {

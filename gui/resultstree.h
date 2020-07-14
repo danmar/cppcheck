@@ -333,7 +333,7 @@ protected:
     * @param report Report that errors are saved to
     * @param fileItem Item whose errors to save
     */
-    void saveErrors(Report *report, QStandardItem *fileItem) const;
+    void saveErrors(Report *report, const QStandardItem *fileItem) const;
 
     /**
     * @brief Convert a severity string to a icon filename

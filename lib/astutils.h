@@ -113,7 +113,9 @@ const Token* getCondTokFromEnd(const Token* endBlock);
  */
 bool extractForLoopValues(const Token *forToken,
                           nonneg int * const varid,
+                          bool * const knownInitValue,
                           long long * const initValue,
+                          bool * const partialCond,
                           long long * const stepValue,
                           long long * const lastValue);
 
@@ -191,6 +193,8 @@ bool isVariablesChanged(const Token* start,
                         std::vector<const Variable*> vars,
                         const Settings* settings,
                         bool cpp);
+
+bool isThisChanged(const Token* start, const Token* end, int indirect, const Settings* settings, bool cpp);
 
 const Token* findVariableChanged(const Token *start, const Token *end, int indirect, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
 Token* findVariableChanged(Token *start, const Token *end, int indirect, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);

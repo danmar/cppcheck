@@ -18,6 +18,7 @@
 
 #include "checkcondition.h"
 #include "library.h"
+#include "preprocessor.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
@@ -136,10 +137,14 @@ private:
         std::map<std::string, simplecpp::TokenList*> filedata;
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
+        Preprocessor preprocessor(settings0, nullptr);
+        preprocessor.setDirectives(tokens1);
+
         // Tokenizer..
         Tokenizer tokenizer(&settings0, this);
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
+        tokenizer.setPreprocessor(&preprocessor);
 
         // Run checks..
         CheckCondition checkCondition;
@@ -2570,6 +2575,18 @@ private:
               "    int FileIndex;  \n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #8858 - #if
+        check("short Do() {\n"
+              "    short ret = bar1();\n"
+              "    if ( ret )\n"
+              "        return ret;\n"
+              "#ifdef FEATURE\n"
+              "    ret = bar2();\n"
+              "#endif\n"
+              "    return ret;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void innerConditionModified() {
@@ -2970,14 +2987,17 @@ private:
         // Avoid FP for sizeof condition
         check("void f() {\n"
               "  if (sizeof(char) != 123) {}\n"
+              "  if (123 != sizeof(char)) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "  int x = 123;\n"
               "  if (sizeof(char) != x) {}\n"
+              "  if (x != sizeof(char)) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'sizeof(char)!=x' is always true\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'sizeof(char)!=x' is always true\n"
+                      "[test.cpp:4]: (style) Condition 'x!=sizeof(char)' is always true\n", errout.str());
 
         // Don't warn in assertions. Condition is often 'always true' by intention.
         // If platform,defines,etc cause an 'always false' assertion then that is not very dangerous neither
@@ -3668,6 +3688,55 @@ private:
               "    if (a.b) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    int a;\n"
+              "    void b() const {\n"
+              "        return a == 1;\n"
+              "    }\n"
+              "    void c();\n"
+              "    void d() {\n"
+              "        if(b()) {\n"
+              "            c();\n"
+              "        }\n"
+              "        if (b()) {\n"
+              "            a = 3;\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    int a;\n"
+              "    void b() const {\n"
+              "        return a == 1;\n"
+              "    }\n"
+              "    void d() {\n"
+              "        if(b()) {\n"
+              "            a = 2;\n"
+              "        }\n"
+              "        if (b()) {\n"
+              "            a = 3;\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    int a;\n"
+              "    void b() const {\n"
+              "        return a == 1;\n"
+              "    }\n"
+              "    void d() {\n"
+              "        if(b()) {\n"
+              "        }\n"
+              "        if (b()) {\n"
+              "            a = 3;\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:9]: (style) The if condition is the same as the previous if condition\n",
+                      errout.str());
     }
 
     void checkInvalidTestForOverflow() {

@@ -1,6 +1,7 @@
 # Test if --bug-hunting works using cve tests
 
 import glob
+import logging
 import os
 import re
 import shutil
@@ -14,25 +15,31 @@ else:
     CPPCHECK_PATH = '../../cppcheck'
     TEST_SUITE = 'cve'
 
+slow = '--slow' in sys.argv
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s', datefmt='%H:%M:%S')
+
 def test(test_folder):
-    print(test_folder)
+    logging.info(test_folder)
 
     cmd_file = os.path.join(test_folder, 'cmd.txt')
     expected_file = os.path.join(test_folder, 'expected.txt')
 
-    cmd = [CPPCHECK_PATH,
+    cmd = ['nice',
+           CPPCHECK_PATH,
            '-D__GNUC__',
            '--bug-hunting',
            '--inconclusive',
            '--platform=unix64',
            '--template={file}:{line}:{id}',
-           '-rp=' + test_folder,
-           test_folder]
+           '-rp=' + test_folder]
 
     if os.path.isfile(cmd_file):
         for line in open(cmd_file, 'rt'):
             if len(line) > 1:
                 cmd.append(line.strip())
+
+    cmd.append(test_folder)
 
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     comm = p.communicate()
@@ -49,10 +56,20 @@ def test(test_folder):
                 print(stderr)
                 sys.exit(1)
 
-if len(sys.argv) > 1:
+if (slow is False) and len(sys.argv) > 1:
     test(sys.argv[1])
     sys.exit(0)
 
+SLOW = []
+
 for test_folder in sorted(glob.glob(TEST_SUITE + '/CVE*')):
+    if slow is False:
+        check = False
+        for s in SLOW:
+             if s in test_folder:
+                 check = True
+        if check is True:
+            logging.info('skipping %s', test_folder)
+            continue
     test(test_folder)
 

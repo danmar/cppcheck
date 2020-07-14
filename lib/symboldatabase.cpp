@@ -3560,7 +3560,6 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
             typeTok = typeTok->next();
         if (Token::Match(typeTok, ",|)")) { // #8333
             symbolDatabase->mTokenizer->syntaxError(typeTok);
-            return;
         }
         // skip over qualification
         while (Token::Match(typeTok, "%type% ::"))
@@ -4447,6 +4446,8 @@ bool Scope::hasInlineOrLambdaFunction() const
             return true;
         // Lambda function
         if (s->type == Scope::eLambda)
+            return true;
+        if (s->hasInlineOrLambdaFunction())
             return true;
     }
     return false;

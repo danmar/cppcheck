@@ -87,7 +87,7 @@ static void divByZero(const Token *tok, const ExprEngine::Value &value, ExprEngi
         return;
     if (tok->isImpossibleIntValue(0))
         return;
-    if (value.isUninit())
+    if (value.isUninit() && value.type != ExprEngine::ValueType::BailoutValue)
         return;
     float f = getKnownFloatValue(tok, 0.0f);
     if (f > 0.0f || f < 0.0f)
@@ -216,20 +216,18 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
     if (value.type == ExprEngine::ValueType::BailoutValue) {
         if (tok->hasKnownValue())
             return;
-        if (tok->function())
+        if (!tok->variable())
+            // FIXME
             return;
-        if (Token::Match(tok, "<<|>>|,"))
-            // Only warn about the operands
-            return;
+
         // lhs for scope operator
         if (Token::Match(tok, "%name% ::"))
             return;
         if (tok->astParent()->str() == "::" && tok == tok->astParent()->astOperand1())
             return;
 
-        if (tok->str() == "(")
-            // cast: result is not uninitialized if expression is initialized
-            // function: does not return a uninitialized value
+        // Object allocated on the stack
+        if (Token::Match(tok, "%var% .") && tok->next()->originalName() != "->")
             return;
 
         // Containers are not uninitialized
@@ -242,18 +240,34 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
         }
 
         const Variable *var = tok->variable();
+        if (var && var->nameToken() == tok)
+            return;
+        if (var && !var->isLocal())
+            return; // FIXME
         if (var && !var->isPointer()) {
             if (!var->isLocal() || var->isStatic())
                 return;
         }
-        if (var && (Token::Match(var->nameToken(), "%name% =") || Token::Match(var->nameToken(), "%varid% ; %varid% =", var->declarationId())))
+        if (var && (Token::Match(var->nameToken(), "%name% [=:]") || Token::Match(var->nameToken(), "%varid% ; %varid% =", var->declarationId())))
             return;
         if (var && var->nameToken() == tok)
             return;
 
+        // Are there unconditional assignment?
+        if (var && Token::Match(var->nameToken(), "%varid% ;| %varid%| =", tok->varId()))
+            return;
+        for (const Token *prev = tok->previous(); prev; prev = prev->previous()) {
+            if (!precedes(var->nameToken(), prev))
+                break;
+            if (prev->str() == "}")
+                prev = prev->link();
+            if (Token::Match(prev, "%varid% =", tok->varId()))
+                return;
+        }
     }
 
     // Uninitialized function argument
+    bool inconclusive = false;
     if (Token::Match(tok->astParent(), "[,(]")) {
         const Token *parent = tok->astParent();
         int count = 0;
@@ -271,10 +285,16 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
                 const Variable *argvar = parent->astOperand1()->function()->getArgumentVar(count);
                 if (argvar && argvar->isReference() && !argvar->isConst())
                     return;
-                if (uninitData && argvar && !argvar->isConst())
-                    return;
-                if (!uninitStructMember.empty() && dataBase->isC() && argvar && !argvar->isConst())
-                    return;
+                if (uninitData && argvar && !argvar->isConst()) {
+                    if (parent->astOperand1()->function()->hasBody())
+                        return;
+                    inconclusive = true;
+                }
+                if (!uninitStructMember.empty() && dataBase->isC() && argvar && !argvar->isConst()) {
+                    if (parent->astOperand1()->function()->hasBody())
+                        return;
+                    inconclusive = true;
+                }
             } else if (uninitData) {
                 if (dataBase->settings->library.getFunction(parent->astOperand1()))
                     return;
@@ -285,6 +305,9 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
             return;
     }
 
+    if (inconclusive && !dataBase->settings->inconclusive)
+        return;
+
     // Avoid FP for array declaration
     const Token *parent = tok->astParent();
     while (parent && parent->str() == "[")
@@ -292,13 +315,15 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
     if (!parent)
         return;
 
+    const std::string inconclusiveMessage(inconclusive ? ". It is inconclusive if there would be a problem in the function call." : "");
+
     if (!uninitStructMember.empty()) {
         dataBase->reportError(tok,
                               Severity::SeverityType::error,
                               "bughuntingUninitStructMember",
-                              "Cannot determine that '" + tok->expressionString() + "." + uninitStructMember + "' is initialized",
+                              "Cannot determine that '" + tok->expressionString() + "." + uninitStructMember + "' is initialized" + inconclusiveMessage,
                               CWE_USE_OF_UNINITIALIZED_VARIABLE,
-                              false,
+                              inconclusive,
                               value.type == ExprEngine::ValueType::BailoutValue);
         return;
     }
@@ -310,9 +335,9 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
     dataBase->reportError(tok,
                           Severity::SeverityType::error,
                           "bughuntingUninit",
-                          "Cannot determine that '" + uninitexpr + "' is initialized",
+                          "Cannot determine that '" + uninitexpr + "' is initialized" + inconclusiveMessage,
                           CWE_USE_OF_UNINITIALIZED_VARIABLE,
-                          false,
+                          inconclusive,
                           value.type == ExprEngine::ValueType::BailoutValue);
 }
 

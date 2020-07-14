@@ -465,7 +465,11 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
                 // Recursively scan variable comparisons in condition
                 std::stack<const Token *> tokens;
-                tokens.push(tok->next()->astOperand2());
+                // Skip expressions before commas
+                const Token * astOperand2AfterCommas = tok->next()->astOperand2();
+                while (Token::simpleMatch(astOperand2AfterCommas, ","))
+                    astOperand2AfterCommas = astOperand2AfterCommas->astOperand2();
+                tokens.push(astOperand2AfterCommas);
                 while (!tokens.empty()) {
                     const Token *tok3 = tokens.top();
                     tokens.pop();
@@ -856,7 +860,8 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
     }
 
     int argNr = 1;
-    for (const Token *arg = tokFirstArg; arg; arg = arg->nextArgument()) {
+    for (const Token *funcArg = tokFirstArg; funcArg; funcArg = funcArg->nextArgument()) {
+        const Token* arg = funcArg;
         if (mTokenizer->isCPP() && arg->str() == "new") {
             arg = arg->next();
             if (Token::simpleMatch(arg, "( std :: nothrow )"))
