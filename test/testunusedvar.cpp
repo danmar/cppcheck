@@ -4842,14 +4842,20 @@ private:
 
         // 2 translation units
         functionVariableUsage(
-            "#file \"file.h\"\n"
+            "#file \"file1.h\"\n"
             "class D {\n"
             "public:\n"
-            "   D() {};\n"
+            "   D();\n"
             "};\n"
             "#endfile\n"
-            "#file \"file.c\"\n"
-            "#include \"file.h\"\n"
+
+            "#file \"file1.c\"\n"
+            "#include \"file1.h\"\n"
+            "D::D() {}\n"
+            "#endfile"
+            
+            "#file \"file2.c\"\n"
+            "#include \"file1.h\"\n"
             "void f() {\n"
             "   D d;\n"
             "}\n"
