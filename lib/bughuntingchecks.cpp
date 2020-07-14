@@ -226,6 +226,10 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
         if (tok->astParent()->str() == "::" && tok == tok->astParent()->astOperand1())
             return;
 
+        // Object allocated on the stack
+        if (tok->valueType() && tok->valueType()->pointer == 0 && Token::Match(tok, "%var% ."))
+            return;
+
         // Containers are not uninitialized
         std::vector<const Token *> tokens{tok, tok->astOperand1(), tok->astOperand2()};
         if (Token::Match(tok->previous(), ". %name%"))
