@@ -448,7 +448,7 @@ void ResultsView::log(const QString &str)
 
 void ResultsView::debugError(const ErrorItem &item)
 {
-    mUI.mListLog->addItem(item.ToString());
+    mUI.mListLog->addItem(item.toString());
 }
 
 void ResultsView::bughuntingReportLine(const QString& line)

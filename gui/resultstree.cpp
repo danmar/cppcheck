@@ -168,6 +168,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
     line.errorId = item.errorId;
     line.incomplete = item.incomplete;
     line.cwe = item.cwe;
+    line.cppcheckId = item.cppcheckId;
     line.inconclusive = item.inconclusive;
     line.summary = item.summary;
     line.message = item.message;
@@ -197,6 +198,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
     data["id"]  = item.errorId;
     data["incomplete"] = item.incomplete;
     data["cwe"] = item.cwe;
+    data["cppcheckId"] = item.cppcheckId;
     data["inconclusive"] = item.inconclusive;
     data["file0"] = stripPath(item.file0, true);
     data["function"] = item.function;
@@ -232,6 +234,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
             child_data["id"]  = line.errorId;
             child_data["incomplete"] = line.incomplete;
             child_data["cwe"] = line.cwe;
+            child_data["cppcheckId"] = line.cppcheckId;
             child_data["inconclusive"] = line.inconclusive;
             child_item->setData(QVariant(child_data));
         }
@@ -1221,6 +1224,7 @@ void ResultsTree::readErrorItem(const QStandardItem *error, ErrorItem *item) con
     item->errorId = data["id"].toString();
     item->incomplete = data["incomplete"].toBool();
     item->cwe = data["cwe"].toInt();
+    item->cppcheckId = data["cppcheckId"].toULongLong();
     item->inconclusive = data["inconclusive"].toBool();
     item->file0 = data["file0"].toString();
     item->sinceDate = data["sinceDate"].toString();

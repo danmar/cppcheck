@@ -76,7 +76,7 @@ public:
     * @brief Convert error item to string.
     * @return Error item as string.
     */
-    QString ToString() const;
+    QString toString() const;
     QString tool() const;
 
     QString file0;
@@ -88,6 +88,7 @@ public:
     QString summary;
     QString message;
     int cwe;
+    unsigned long long cppcheckId;
     QList<QErrorPathItem> errorPath;
     QString symbolNames;
 
@@ -114,6 +115,7 @@ public:
     QString errorId;
     bool incomplete;
     int cwe;
+    unsigned long long cppcheckId;
     bool inconclusive;
     Severity::SeverityType severity;
     QString summary;

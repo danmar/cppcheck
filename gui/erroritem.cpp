@@ -37,6 +37,7 @@ ErrorItem::ErrorItem()
     , incomplete(false)
     , inconclusive(false)
     , cwe(-1)
+    , cppcheckId(0)
 {
 }
 
@@ -50,6 +51,7 @@ ErrorItem::ErrorItem(const ErrorMessage &errmsg)
     , summary(QString::fromStdString(errmsg.shortMessage()))
     , message(QString::fromStdString(errmsg.verboseMessage()))
     , cwe(errmsg.cwe.id)
+    , cppcheckId(errmsg.cppcheckId)
     , symbolNames(QString::fromStdString(errmsg.symbolNames()))
 {
     for (std::list<ErrorMessage::FileLocation>::const_iterator loc = errmsg.callStack.begin();
@@ -70,7 +72,7 @@ QString ErrorItem::tool() const
     return "cppcheck";
 }
 
-QString ErrorItem::ToString() const
+QString ErrorItem::toString() const
 {
     QString str = errorPath.back().file + " - " + errorId + " - ";
     if (inconclusive)
@@ -86,7 +88,10 @@ QString ErrorItem::ToString() const
 
 bool ErrorItem::sameCID(const ErrorItem &errorItem1, const ErrorItem &errorItem2)
 {
-    // TODO: Implement some better CID calculation
+    if (errorItem1.cppcheckId || errorItem2.cppcheckId)
+        return errorItem1.cppcheckId == errorItem2.cppcheckId;
+
+    // fallback
     return errorItem1.errorId == errorItem2.errorId &&
            errorItem1.errorPath == errorItem2.errorPath &&
            errorItem1.file0 == errorItem2.file0 &&
