@@ -1047,17 +1047,24 @@ void ResultsTree::suppressCppcheckID()
 {
     if (!mSelectionModel)
         return;
-    ProjectFile *projectFile = ProjectFile::getActiveProject();
+
+    // Extract selected warnings
+    QSet<QStandardItem *> selectedWarnings;
     foreach (QModelIndex index, mSelectionModel->selectedRows()) {
         QStandardItem *item = mModel.itemFromIndex(index);
         if (!item->parent())
             continue;
         while (item->parent()->parent())
             item = item->parent();
+        selectedWarnings.insert(item);
+    }
+
+    ProjectFile *projectFile = ProjectFile::getActiveProject();
+    for (QStandardItem *item: selectedWarnings) {
+        QStandardItem *fileItem = item->parent();
         const QVariantMap data = item->data().toMap();
         if (projectFile && data.contains("cppcheckId"))
             projectFile->suppressCppcheckId(data["cppcheckId"].toULongLong());
-        QStandardItem *fileItem = item->parent();
         fileItem->removeRow(item->row());
         if (fileItem->rowCount() == 0)
             mModel.removeRow(fileItem->row());
