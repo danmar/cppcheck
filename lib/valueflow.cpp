@@ -3623,11 +3623,17 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             if (!Token::Match(parent, ". %name% ("))
                 continue;
 
+            bool isContainerOfPointers = true;
+            const Token* containerTypeToken = tok->valueType()->containerTypeToken;
+            if (containerTypeToken && Token::simpleMatch(containerTypeToken->previous(), "<") && containerTypeToken->previous()->link()) {
+                isContainerOfPointers = Token::simpleMatch(containerTypeToken->previous()->link()->previous(), "*");
+            }
+
             LifetimeStore ls;
 
             if (astIsIterator(parent->tokAt(2)))
                 ls = LifetimeStore{tok, "Iterator to container is created here.", ValueFlow::Value::LifetimeKind::Iterator};
-            else if (astIsPointer(parent->tokAt(2)) || Token::Match(parent->next(), "data|c_str"))
+            else if ((astIsPointer(parent->tokAt(2)) && !isContainerOfPointers) || Token::Match(parent->next(), "data|c_str"))
                 ls = LifetimeStore{tok, "Pointer to container is created here.", ValueFlow::Value::LifetimeKind::Object};
             else
                 continue;
