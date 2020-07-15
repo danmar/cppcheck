@@ -28,6 +28,8 @@
 
 #include "settings.h"
 
+ProjectFile *ProjectFile::mActiveProject;
+
 ProjectFile::ProjectFile(QObject *parent) :
     QObject(parent)
 {
@@ -603,6 +605,8 @@ void ProjectFile::readSuppressions(QXmlStreamReader &reader)
                     suppression.lineNumber = reader.attributes().value(QString(),"lineNumber").toInt();
                 if (reader.attributes().hasAttribute(QString(),"symbolName"))
                     suppression.symbolName = reader.attributes().value(QString(),"symbolName").toString().toStdString();
+                if (reader.attributes().hasAttribute(QString(),"cppcheck-id"))
+                    suppression.cppcheckId = reader.attributes().value(QString(),"cppcheck-id").toULongLong();
                 type = reader.readNext();
                 if (type == QXmlStreamReader::Characters) {
                     suppression.errorId = reader.text().toString().toStdString();
@@ -873,6 +877,8 @@ bool ProjectFile::write(const QString &filename)
                 xmlWriter.writeAttribute("lineNumber", QString::number(suppression.lineNumber));
             if (!suppression.symbolName.empty())
                 xmlWriter.writeAttribute("symbolName", QString::fromStdString(suppression.symbolName));
+            if (suppression.cppcheckId > 0)
+                xmlWriter.writeAttribute("cppcheck-id", QString::number(suppression.cppcheckId));
             if (!suppression.errorId.empty())
                 xmlWriter.writeCharacters(QString::fromStdString(suppression.errorId));
             xmlWriter.writeEndElement();
@@ -1022,3 +1028,12 @@ QString ProjectFile::getAddonFilePath(QString filesDir, const QString &addon)
     return QString();
 }
 
+void ProjectFile::suppressCppcheckId(std::size_t cppcheckId)
+{
+    if (cppcheckId > 0) {
+        Suppressions::Suppression s;
+        s.cppcheckId = cppcheckId;
+        mSuppressions.append(s);
+        write();
+    }
+}

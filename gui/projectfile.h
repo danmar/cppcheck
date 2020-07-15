@@ -44,6 +44,19 @@ class ProjectFile : public QObject {
 public:
     explicit ProjectFile(QObject *parent = nullptr);
     explicit ProjectFile(const QString &filename, QObject *parent = nullptr);
+    ~ProjectFile() {
+        if (this == mActiveProject) mActiveProject = nullptr;
+    }
+
+    static ProjectFile* getActiveProject() {
+        return mActiveProject;
+    }
+    void setActiveProject() {
+        mActiveProject = this;
+    }
+
+    /** Suppress warning with Cppcheck-ID */
+    void suppressCppcheckId(std::size_t cppcheckId);
 
     /**
      * @brief Read the project file.
@@ -551,6 +564,7 @@ private:
 
     QStringList mCheckUnknownFunctionReturn;
 
+    static ProjectFile *mActiveProject;
 };
 /// @}
 #endif  // PROJECT_FILE_H

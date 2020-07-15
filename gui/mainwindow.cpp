@@ -341,6 +341,7 @@ void MainWindow::loadSettings()
         if (inf.exists() && inf.isReadable()) {
             setPath(SETTINGS_LAST_PROJECT_PATH, projectFile);
             mProjectFile = new ProjectFile(this);
+            mProjectFile->setActiveProject();
             mProjectFile->read(projectFile);
             loadLastResults();
             QDir::setCurrent(inf.absolutePath());
@@ -1508,6 +1509,7 @@ void MainWindow::loadProjectFile(const QString &filePath)
     mUI.mActionEditProjectFile->setEnabled(true);
     delete mProjectFile;
     mProjectFile = new ProjectFile(filePath, this);
+    mProjectFile->setActiveProject();
     updateContractsTab();
     if (!loadLastResults())
         analyzeProject(mProjectFile);
@@ -1630,6 +1632,7 @@ void MainWindow::newProjectFile()
 
     delete mProjectFile;
     mProjectFile = new ProjectFile(this);
+    mProjectFile->setActiveProject();
     mProjectFile->setFilename(filepath);
     mProjectFile->setBuildDir(filename.left(filename.indexOf(".")) + "-cppcheck-build-dir");
 

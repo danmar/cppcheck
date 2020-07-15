@@ -219,7 +219,7 @@ ErrorItem XmlReportV2::readError(QXmlStreamReader *reader)
         if (attribs.hasAttribute(QString(), CWEAttribute))
             item.cwe = attribs.value(QString(), CWEAttribute).toInt();
         if (attribs.hasAttribute(QString(), CppcheckIdAttribute))
-            item.cppcheckId = attribs.value(QString(), CWEAttribute).toULongLong();
+            item.cppcheckId = attribs.value(QString(), CppcheckIdAttribute).toULongLong();
         if (attribs.hasAttribute(QString(), SinceDateAttribute))
             item.sinceDate = attribs.value(QString(), SinceDateAttribute).toString();
         if (attribs.hasAttribute(QString(), TagsAttribute))

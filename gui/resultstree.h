@@ -285,6 +285,9 @@ protected slots:
     /** Slot for context menu item to suppress all messages with the current message id */
     void suppressSelectedIds();
 
+    /** Slot for context menu item to suppress message with cppcheck ID */
+    void suppressCppcheckID();
+
     /**
     * @brief Slot for context menu item to open the folder containing the current file.
     */

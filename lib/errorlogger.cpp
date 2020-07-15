@@ -235,6 +235,7 @@ void ErrorMessage::setmsg(const std::string &msg)
 Suppressions::ErrorMessage ErrorMessage::toSuppressionsErrorMessage() const
 {
     Suppressions::ErrorMessage ret;
+    ret.cppcheckId = cppcheckId;
     ret.errorId = id;
     if (!callStack.empty()) {
         ret.setFileName(callStack.back().getfile(false));

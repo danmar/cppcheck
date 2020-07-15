@@ -43,6 +43,7 @@
 #include "resultstree.h"
 #include "report.h"
 #include "application.h"
+#include "projectfile.h"
 #include "showtypes.h"
 #include "threadhandler.h"
 #include "path.h"
@@ -638,6 +639,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             QAction *copy                   = new QAction(tr("Copy"), &menu);
             QAction *hide                   = new QAction(tr("Hide"), &menu);
             QAction *hideallid              = new QAction(tr("Hide all with id"), &menu);
+            QAction *suppressCppcheckID     = new QAction(tr("Suppress cppcheck-id"), &menu);
             QAction *opencontainingfolder   = new QAction(tr("Open containing folder"), &menu);
 
             if (multipleSelection) {
@@ -655,6 +657,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             menu.addSeparator();
             menu.addAction(hide);
             menu.addAction(hideallid);
+            menu.addAction(suppressCppcheckID);
             if (!bughunting) {
                 QAction *suppress = new QAction(tr("Suppress selected id(s)"), &menu);
                 menu.addAction(suppress);
@@ -667,6 +670,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             connect(copy, SIGNAL(triggered()), this, SLOT(copy()));
             connect(hide, SIGNAL(triggered()), this, SLOT(hideResult()));
             connect(hideallid, SIGNAL(triggered()), this, SLOT(hideAllIdResult()));
+            connect(suppressCppcheckID, &QAction::triggered, this, &ResultsTree::suppressCppcheckID);
             connect(opencontainingfolder, SIGNAL(triggered()), this, SLOT(openContainingFolder()));
 
             if (!mTags.isEmpty()) {
@@ -1031,10 +1035,33 @@ void ResultsTree::suppressSelectedIds()
                 j++;
             }
         }
+        if (file->rowCount() == 0)
+            mModel.removeRow(file->row());
     }
 
 
     emit suppressIds(selectedIds.toList());
+}
+
+void ResultsTree::suppressCppcheckID()
+{
+    if (!mSelectionModel)
+        return;
+    ProjectFile *projectFile = ProjectFile::getActiveProject();
+    foreach (QModelIndex index, mSelectionModel->selectedRows()) {
+        QStandardItem *item = mModel.itemFromIndex(index);
+        if (!item->parent())
+            continue;
+        while (item->parent()->parent())
+            item = item->parent();
+        const QVariantMap data = item->data().toMap();
+        if (projectFile && data.contains("cppcheckId"))
+            projectFile->suppressCppcheckId(data["cppcheckId"].toULongLong());
+        QStandardItem *fileItem = item->parent();
+        fileItem->removeRow(item->row());
+        if (fileItem->rowCount() == 0)
+            mModel.removeRow(fileItem->row());
+    }
 }
 
 void ResultsTree::openContainingFolder()

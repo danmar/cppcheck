@@ -204,9 +204,9 @@ std::string Suppressions::addSuppressionLine(const std::string &line)
 std::string Suppressions::addSuppression(const Suppressions::Suppression &suppression)
 {
     // Check that errorId is valid..
-    if (suppression.errorId.empty()) {
+    if (suppression.errorId.empty() && suppression.cppcheckId == 0)
         return "Failed to add suppression. No id.";
-    }
+
     if (suppression.errorId != "*") {
         for (std::string::size_type pos = 0; pos < suppression.errorId.length(); ++pos) {
             if (suppression.errorId[pos] < 0 || !isAcceptedErrorIdChar(suppression.errorId[pos])) {
@@ -271,6 +271,8 @@ bool Suppressions::Suppression::parseComment(std::string comment, std::string *e
 
 bool Suppressions::Suppression::isSuppressed(const Suppressions::ErrorMessage &errmsg) const
 {
+    if (cppcheckId > 0 && cppcheckId != errmsg.cppcheckId)
+        return false;
     if (!errorId.empty() && !matchglob(errorId, errmsg.errorId))
         return false;
     if (!fileName.empty() && !matchglob(fileName, errmsg.getFileName()))
@@ -371,6 +373,8 @@ std::list<Suppressions::Suppression> Suppressions::getUnmatchedLocalSuppressions
     for (const Suppression &s : mSuppressions) {
         if (s.matched)
             continue;
+        if (s.cppcheckId > 0)
+            continue;
         if (!unusedFunctionChecking && s.errorId == "unusedFunction")
             continue;
         if (file.empty() || !s.isLocal() || s.fileName != file)
@@ -385,6 +389,8 @@ std::list<Suppressions::Suppression> Suppressions::getUnmatchedGlobalSuppression
     std::list<Suppression> result;
     for (const Suppression &s : mSuppressions) {
         if (s.matched)
+            continue;
+        if (s.cppcheckId > 0)
             continue;
         if (!unusedFunctionChecking && s.errorId == "unusedFunction")
             continue;
