@@ -98,8 +98,10 @@ std::string Suppressions::parseXmlFile(const char *filename)
                 s.lineNumber = std::atoi(text);
             else if (std::strcmp(e2->Name(), "symbolName") == 0)
                 s.symbolName = text;
+            else if (*text && std::strcmp(e2->Name(), "cppcheckId") == 0)
+                std::istringstream(text) >> s.cppcheckId;
             else
-                return "Unknown suppression element <" + std::string(e2->Name()) + ">, expected <id>/<fileName>/<lineNumber>/<symbolName>";
+                return "Unknown suppression element <" + std::string(e2->Name()) + ">, expected <id>/<fileName>/<lineNumber>/<symbolName>/<cppcheckId>";
         }
 
         const std::string err = addSuppression(s);
@@ -317,6 +319,8 @@ std::string Suppressions::Suppression::getText() const
         ret += " lineNumber=" + MathLib::toString(lineNumber);
     if (!symbolName.empty())
         ret += " symbolName=" + symbolName;
+    if (cppcheckId > 0)
+        ret += " cppcheckId=" + MathLib::toString(cppcheckId);
     if (ret.compare(0,1," ")==0)
         return ret.substr(1);
     return ret;
@@ -360,12 +364,12 @@ void Suppressions::dump(std::ostream & out) const
             out << " lineNumber=\"" << suppression.lineNumber << '"';
         if (!suppression.symbolName.empty())
             out << " symbolName=\"" << ErrorLogger::toxml(suppression.symbolName) << '\"';
+        if (suppression.cppcheckId > 0)
+            out << " cppcheckId=\"" << suppression.cppcheckId << '\"';
         out << " />" << std::endl;
     }
     out << "  </suppressions>" << std::endl;
 }
-
-#include <iostream>
 
 std::list<Suppressions::Suppression> Suppressions::getUnmatchedLocalSuppressions(const std::string &file, const bool unusedFunctionChecking) const
 {
