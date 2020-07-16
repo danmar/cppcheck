@@ -1076,7 +1076,9 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
             for (const tinyxml2::XMLElement *child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
                 if (strcmp(child->Name(), CppcheckXml::SuppressionsElementName) != 0)
                     continue;
-                auto read = [](const char *s, const char *def) { return s ? s : def; };
+                auto read = [](const char *s, const char *def) {
+                    return s ? s : def;
+                };
                 Suppressions::Suppression s;
                 s.errorId = read(child->GetText(), "");
                 s.fileName = read(child->Attribute("fileName"), "");
@@ -1085,8 +1087,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
                 std::istringstream(read(child->Attribute("cppcheck-id"), "0")) >> s.cppcheckId;
                 suppressions.push_back(s);
             }
-        }
-        else if (strcmp(node->Name(), CppcheckXml::VSConfigurationElementName) == 0)
+        } else if (strcmp(node->Name(), CppcheckXml::VSConfigurationElementName) == 0)
             guiProject.checkVsConfigs = readXmlStringList(node, "", CppcheckXml::VSConfigurationName, nullptr);
         else if (strcmp(node->Name(), CppcheckXml::PlatformElementName) == 0)
             guiProject.platform = node->GetText();
