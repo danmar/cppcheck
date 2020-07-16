@@ -141,7 +141,6 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI.mResults, &ResultsView::gotResults, this, &MainWindow::resultsAdded);
     connect(mUI.mResults, &ResultsView::resultsHidden, mUI.mActionShowHidden, &QAction::setEnabled);
     connect(mUI.mResults, &ResultsView::checkSelected, this, &MainWindow::performSelectedFilesCheck);
-    connect(mUI.mResults, &ResultsView::tagged, this, &MainWindow::tagged);
     connect(mUI.mResults, &ResultsView::suppressIds, this, &MainWindow::suppressIds);
     connect(mUI.mResults, &ResultsView::editFunctionContract, this, &MainWindow::editFunctionContract);
     connect(mUI.mMenuView, &QMenu::aboutToShow, this, &MainWindow::aboutToShowViewMenu);
@@ -1808,13 +1807,6 @@ void MainWindow::selectPlatform()
         const Settings::PlatformType platform = (Settings::PlatformType) action->data().toInt();
         mSettings->setValue(SETTINGS_CHECKED_PLATFORM, platform);
     }
-}
-
-void MainWindow::tagged()
-{
-    const QString &lastResults = getLastResults();
-    if (!lastResults.isEmpty())
-        mUI.mResults->save(lastResults, Report::XMLV2);
 }
 
 void MainWindow::suppressIds(QStringList ids)

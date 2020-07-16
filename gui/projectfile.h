@@ -331,6 +331,12 @@ public:
         mTags = tags;
     }
 
+    /** Set tags for a warning */
+    void setWarningTags(std::size_t cppcheckId, QString tags);
+
+    /** Get tags for a warning */
+    QString getWarningTags(std::size_t cppcheckId) const;
+
     /**
      * @brief Write project file (to disk).
      * @param filename Filename to use.
@@ -436,6 +442,12 @@ protected:
      * @param reader XML stream reader.
      */
     void readSuppressions(QXmlStreamReader &reader);
+
+    /**
+     * @brief Read tag warnings, what warnings are tagged with a specific tag
+     * @param reader XML stream reader.
+     */
+    void readTagWarnings(QXmlStreamReader &reader, QString tag);
 
     /**
       * @brief Read string list
@@ -552,9 +564,14 @@ private:
     bool mClangTidy;
 
     /**
-     * @brief Warning tags
+     * @brief Tags
      */
     QStringList mTags;
+
+    /**
+     * @brief Warning tags
+     */
+    std::map<std::size_t, QString> mWarningTags;
 
     /** Max CTU depth */
     int mMaxCtuDepth;

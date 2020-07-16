@@ -53,7 +53,6 @@ ResultsView::ResultsView(QWidget * parent) :
     connect(mUI.mTree, &ResultsTree::resultsHidden, this, &ResultsView::resultsHidden);
     connect(mUI.mTree, &ResultsTree::checkSelected, this, &ResultsView::checkSelected);
     connect(mUI.mTree, &ResultsTree::treeSelectionChanged, this, &ResultsView::updateDetails);
-    connect(mUI.mTree, &ResultsTree::tagged, this, &ResultsView::tagged);
     connect(mUI.mTree, &ResultsTree::suppressIds, this, &ResultsView::suppressIds);
     connect(mUI.mTree, &ResultsTree::editFunctionContract, this, &ResultsView::editFunctionContract);
     connect(this, &ResultsView::showResults, mUI.mTree, &ResultsTree::showResults);

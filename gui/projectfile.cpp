@@ -72,6 +72,8 @@ void ProjectFile::clear()
     mCheckUnknownFunctionReturn.clear();
     safeChecks.clear();
     mVsConfigurations.clear();
+    mTags.clear();
+    mWarningTags.clear();
 }
 
 bool ProjectFile::read(const QString &filename)
@@ -187,6 +189,9 @@ bool ProjectFile::read(const QString &filename)
 
             if (xmlReader.name() == CppcheckXml::TagsElementName)
                 readStringList(mTags, xmlReader, CppcheckXml::TagElementName);
+
+            if (xmlReader.name() == CppcheckXml::TagWarningsElementName)
+                readTagWarnings(xmlReader, xmlReader.attributes().value(QString(), CppcheckXml::TagAttributeName).toString());
 
             if (xmlReader.name() == CppcheckXml::MaxCtuDepthElementName)
                 mMaxCtuDepth = readInt(xmlReader, mMaxCtuDepth);
@@ -636,6 +641,41 @@ void ProjectFile::readSuppressions(QXmlStreamReader &reader)
 }
 
 
+void ProjectFile::readTagWarnings(QXmlStreamReader &reader, QString tag)
+{
+    QXmlStreamReader::TokenType type;
+    do {
+        type = reader.readNext();
+        switch (type) {
+        case QXmlStreamReader::StartElement:
+            // Read library-elements
+            if (reader.name().toString() == CppcheckXml::WarningElementName) {
+                std::size_t cppcheckId = reader.attributes().value(QString(), CppcheckXml::CppcheckIdAttributeName).toULongLong();
+                mWarningTags[cppcheckId] = tag;
+            }
+            break;
+
+        case QXmlStreamReader::EndElement:
+            if (reader.name().toString() != CppcheckXml::WarningElementName)
+                return;
+            break;
+
+        // Not handled
+        case QXmlStreamReader::NoToken:
+        case QXmlStreamReader::Invalid:
+        case QXmlStreamReader::StartDocument:
+        case QXmlStreamReader::EndDocument:
+        case QXmlStreamReader::Characters:
+        case QXmlStreamReader::Comment:
+        case QXmlStreamReader::DTD:
+        case QXmlStreamReader::EntityReference:
+        case QXmlStreamReader::ProcessingInstruction:
+            break;
+        }
+    } while (true);
+}
+
+
 void ProjectFile::readStringList(QStringList &stringlist, QXmlStreamReader &reader, const char elementname[])
 {
     QXmlStreamReader::TokenType type;
@@ -732,6 +772,20 @@ void ProjectFile::setAddons(const QStringList &addons)
 void ProjectFile::setVSConfigurations(const QStringList &vsConfigs)
 {
     mVsConfigurations = vsConfigs;
+}
+
+void ProjectFile::setWarningTags(std::size_t cppcheckId, QString tag)
+{
+    if (tag.isEmpty())
+        mWarningTags.erase(cppcheckId);
+    else if (cppcheckId > 0)
+        mWarningTags[cppcheckId] = tag;
+}
+
+QString ProjectFile::getWarningTags(std::size_t cppcheckId) const
+{
+    auto it = mWarningTags.find(cppcheckId);
+    return (it != mWarningTags.end()) ? it->second : QString();
 }
 
 bool ProjectFile::write(const QString &filename)
@@ -883,7 +937,7 @@ bool ProjectFile::write(const QString &filename)
             if (!suppression.symbolName.empty())
                 xmlWriter.writeAttribute("symbolName", QString::fromStdString(suppression.symbolName));
             if (suppression.cppcheckId > 0)
-                xmlWriter.writeAttribute("cppcheck-id", QString::number(suppression.cppcheckId));
+                xmlWriter.writeAttribute(CppcheckXml::CppcheckIdAttributeName, QString::number(suppression.cppcheckId));
             if (!suppression.errorId.empty())
                 xmlWriter.writeCharacters(QString::fromStdString(suppression.errorId));
             xmlWriter.writeEndElement();
@@ -914,6 +968,26 @@ bool ProjectFile::write(const QString &filename)
                     CppcheckXml::ToolElementName);
 
     writeStringList(xmlWriter, mTags, CppcheckXml::TagsElementName, CppcheckXml::TagElementName);
+    if (!mWarningTags.empty()) {
+        QStringList tags;
+        for (const auto wt: mWarningTags) {
+            if (!tags.contains(wt.second))
+                tags.append(wt.second);
+        }
+        for (const QString &tag: tags) {
+            xmlWriter.writeStartElement(CppcheckXml::TagWarningsElementName);
+            xmlWriter.writeAttribute(CppcheckXml::TagAttributeName, tag);
+            QStringList warnings;
+            for (const auto wt: mWarningTags) {
+                if (wt.second == tag) {
+                    xmlWriter.writeStartElement(CppcheckXml::WarningElementName);
+                    xmlWriter.writeAttribute(CppcheckXml::CppcheckIdAttributeName, QString::number(wt.first));
+                    xmlWriter.writeEndElement();
+                }
+            }
+            xmlWriter.writeEndElement();
+        }
+    }
 
     xmlWriter.writeEndDocument();
     file.close();
