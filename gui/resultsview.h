@@ -50,10 +50,6 @@ public:
     virtual ~ResultsView();
     ResultsView &operator=(const ResultsView &) = delete;
 
-    void setTags(const QStringList &tags) {
-        mUI.mTree->setTags(tags);
-    }
-
     void setAddedContracts(const QStringList &addedContracts);
 
     /**

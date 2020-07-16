@@ -52,10 +52,6 @@ public:
     virtual ~ResultsTree();
     void initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler);
 
-    void setTags(const QStringList &tags) {
-        mTags = tags;
-    }
-
     /**
     * @brief Add a new item to the tree
     *
@@ -531,8 +527,6 @@ private:
 
     /** @brief Convert GUI error item into data error item */
     void readErrorItem(const QStandardItem *error, ErrorItem *item) const;
-
-    QStringList mTags;
 
     QStringList mHiddenMessageId;
 
