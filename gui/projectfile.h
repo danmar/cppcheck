@@ -55,9 +55,6 @@ public:
         mActiveProject = this;
     }
 
-    /** Suppress warning with Cppcheck-ID */
-    void suppressCppcheckId(std::size_t cppcheckId);
-
     /**
      * @brief Read the project file.
      * @param filename Filename (can be also given to constructor).
@@ -311,6 +308,9 @@ public:
      * @param suppressions List of suppressions.
      */
     void setSuppressions(const QList<Suppressions::Suppression> &suppressions);
+
+    /** Add suppression */
+    void addSuppression(const Suppressions::Suppression &suppression);
 
     /**
      * @brief Set list of addons.

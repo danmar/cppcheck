@@ -719,6 +719,11 @@ void ProjectFile::setSuppressions(const QList<Suppressions::Suppression> &suppre
     mSuppressions = suppressions;
 }
 
+void ProjectFile::addSuppression(const Suppressions::Suppression &suppression)
+{
+    mSuppressions.append(suppression);
+}
+
 void ProjectFile::setAddons(const QStringList &addons)
 {
     mAddons = addons;
@@ -1026,14 +1031,4 @@ QString ProjectFile::getAddonFilePath(QString filesDir, const QString &addon)
     }
 
     return QString();
-}
-
-void ProjectFile::suppressCppcheckId(std::size_t cppcheckId)
-{
-    if (cppcheckId > 0) {
-        Suppressions::Suppression s;
-        s.cppcheckId = cppcheckId;
-        mSuppressions.append(s);
-        write();
-    }
 }
