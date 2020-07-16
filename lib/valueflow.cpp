@@ -3625,8 +3625,9 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
 
             bool isContainerOfPointers = true;
             const Token* containerTypeToken = tok->valueType()->containerTypeToken;
-            if (containerTypeToken && Token::simpleMatch(containerTypeToken->previous(), "<") && containerTypeToken->previous()->link()) {
-                isContainerOfPointers = Token::simpleMatch(containerTypeToken->previous()->link()->previous(), "*");
+            if (containerTypeToken) {
+                ValueType vt = ValueType::parseDecl(containerTypeToken, settings);
+                isContainerOfPointers = vt.pointer > 0;
             }
 
             LifetimeStore ls;
