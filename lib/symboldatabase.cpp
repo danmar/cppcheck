@@ -5661,7 +5661,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
     } else
         valuetype->type = ValueType::Type::RECORD;
     bool par = false;
-    while (Token::Match(type, "%name%|*|&|::|(") && !Token::Match(type, "typename|template") &&
+    while (Token::Match(type, "%name%|*|&|::|(") && !Token::Match(type, "typename|template") && type->varId() == 0 &&
            !type->variable() && !type->function()) {
         if (type->str() == "(") {
             if (Token::Match(type->link(), ") const| {"))
@@ -6012,7 +6012,11 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                 const std::string& typestr(mSettings->library.returnValueType(tok->previous()));
                 if (!typestr.empty()) {
                     ValueType valuetype;
-                    if (valuetype.fromLibraryType(typestr, mSettings)) {
+                    TokenList tokenList(mSettings);
+                    std::istringstream istr(typestr+";");
+                    tokenList.createTokens(istr);
+                    if (parsedecl(tokenList.front(), &valuetype, mDefaultSignedness, mSettings)) {
+                        valuetype.originalTypeName = typestr;
                         setValueType(tok, valuetype);
                     }
                 }
@@ -6045,6 +6049,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                     tokenList.simplifyPlatformTypes();
                     tokenList.simplifyStdType();
                     if (parsedecl(tokenList.front(), &vt, mDefaultSignedness, mSettings)) {
+                        vt.originalTypeName = typestr;
                         setValueType(tok, vt);
                     }
                 }

@@ -4164,6 +4164,15 @@ private:
               "  v.push_back(\"y\");\n"
               "}\n",true);
         ASSERT_EQUALS("", errout.str());
+
+        // #9783
+        check("std::string GetTaskIDPerUUID(int);\n"
+              "void InitializeJumpList(CString s);\n"
+              "void foo() {\n"
+              "    CString sAppID = GetTaskIDPerUUID(123).c_str();\n"
+              "    InitializeJumpList(sAppID);\n"
+              "}\n",true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void invalidContainerLoop() {
