@@ -180,12 +180,18 @@ static bool isVariableAssigned(const Variable *var, const Token *tok, const Toke
         }
         if (scopeStart && Token::Match(prev, "return|throw|continue|break"))
             return true;
-        if (Token::Match(prev, "%varid% =", var->declarationId()))
-            return true;
-
-        // bailout; if variable is used previously that is checked first
-        if (!scopeStart && prev->varId() == var->declarationId())
-            return true;
+        if (Token::Match(prev, "%varid% =", var->declarationId())) {
+            bool usedInRhs = false;
+            visitAstNodes(prev->next()->astOperand2(), [&usedInRhs, var](const Token *tok) {
+                if (tok->varId() == var->declarationId()) {
+                    usedInRhs = true;
+                    return ChildrenToVisit::done;
+                }
+                return ChildrenToVisit::op1_and_op2;
+            });
+            if (!usedInRhs)
+                return true;
+        }
     }
     return false;
 }
