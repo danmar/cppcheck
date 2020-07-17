@@ -447,7 +447,7 @@ protected:
      * @brief Read tag warnings, what warnings are tagged with a specific tag
      * @param reader XML stream reader.
      */
-    void readTagWarnings(QXmlStreamReader &reader, QString tag);
+    void readTagWarnings(QXmlStreamReader &reader, const QString &tag);
 
     /**
       * @brief Read string list

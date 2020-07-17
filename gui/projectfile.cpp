@@ -641,7 +641,7 @@ void ProjectFile::readSuppressions(QXmlStreamReader &reader)
 }
 
 
-void ProjectFile::readTagWarnings(QXmlStreamReader &reader, QString tag)
+void ProjectFile::readTagWarnings(QXmlStreamReader &reader, const QString &tag)
 {
     QXmlStreamReader::TokenType type;
     do {
