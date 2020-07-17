@@ -157,6 +157,39 @@ static void integerOverflow(const Token *tok, const ExprEngine::Value &value, Ex
 }
 #endif
 
+/** check if variable is unconditionally assigned */
+static bool isVariableAssigned(const Variable *var, const Token *tok, const Token *scopeStart=nullptr)
+{
+    const Token * const start = scopeStart && precedes(var->nameToken(), scopeStart) ? scopeStart : var->nameToken();
+
+    for (const Token *prev = tok->previous(); prev; prev = prev->previous()) {
+        if (!precedes(start, prev))
+            break;
+
+        if (prev->str() == "}") {
+            if (Token::simpleMatch(prev->link()->tokAt(-2), "} else {")) {
+                const Token *elseEnd = prev;
+                const Token *elseStart = prev->link();
+                const Token *ifEnd = elseStart->tokAt(-2);
+                const Token *ifStart = ifEnd->link();
+                if (isVariableAssigned(var, ifEnd, ifStart) && isVariableAssigned(var, elseEnd, elseStart)) {
+                    return true;
+                }
+            }
+            prev = prev->link();
+        }
+        if (scopeStart && Token::Match(prev, "return|throw|continue|break"))
+            return true;
+        if (Token::Match(prev, "%varid% =", var->declarationId()))
+            return true;
+
+        // bailout; if variable is used previously that is checked first
+        if (!scopeStart && prev->varId() == var->declarationId())
+            return true;
+    }
+    return false;
+}
+
 static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase)
 {
     if (!tok->astParent())
@@ -256,15 +289,10 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
         // Are there unconditional assignment?
         if (var && Token::Match(var->nameToken(), "%varid% ;| %varid%| =", tok->varId()))
             return;
-        for (const Token *prev = tok->previous(); prev; prev = prev->previous()) {
-            if (!precedes(var->nameToken(), prev))
-                break;
-            if (prev->str() == "}")
-                prev = prev->link();
-            if (Token::Match(prev, "%varid% =", tok->varId()))
-                return;
-        }
     }
+
+    if (tok->variable() && isVariableAssigned(tok->variable(), tok))
+        return;
 
     // Uninitialized function argument
     bool inconclusive = false;
