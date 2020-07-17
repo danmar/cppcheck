@@ -295,10 +295,10 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
         // Are there unconditional assignment?
         if (var && Token::Match(var->nameToken(), "%varid% ;| %varid%| =", tok->varId()))
             return;
-    }
 
-    if (tok->variable() && isVariableAssigned(tok->variable(), tok))
-        return;
+        if (tok->variable() && isVariableAssigned(tok->variable(), tok))
+            return;
+    }
 
     // Uninitialized function argument
     bool inconclusive = false;
