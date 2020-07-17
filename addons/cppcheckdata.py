@@ -1101,4 +1101,8 @@ def reportError(location, severity, message, addon, errorId, extra=''):
         loc = '[%s:%i]' % (location.file, location.linenr)
         if len(extra) > 0:
             message += ' (' + extra + ')'
-        sys.stderr.write('%s (%s) %s [%s-%s]\n' % (loc, severity, message, addon, errorId))
+
+        errorkey = '[{}-{}]'.format(addon, errorId)
+        severity  = '({})'.format(severity)
+        output = '{} {} {} {}\n'.format(loc, errorkey, severity, message)
+        sys.stderr.write(output)
