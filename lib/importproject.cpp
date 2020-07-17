@@ -1074,7 +1074,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
             guiProject.libraries = readXmlStringList(node, "", CppcheckXml::LibraryElementName, nullptr);
         else if (strcmp(node->Name(), CppcheckXml::SuppressionsElementName) == 0) {
             for (const tinyxml2::XMLElement *child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
-                if (strcmp(child->Name(), CppcheckXml::SuppressionsElementName) != 0)
+                if (strcmp(child->Name(), CppcheckXml::SuppressionElementName) != 0)
                     continue;
                 auto read = [](const char *s, const char *def) {
                     return s ? s : def;
@@ -1082,6 +1082,8 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
                 Suppressions::Suppression s;
                 s.errorId = read(child->GetText(), "");
                 s.fileName = read(child->Attribute("fileName"), "");
+                if (!s.fileName.empty())
+                    s.fileName = joinRelativePath(path, s.fileName);
                 s.lineNumber = child->IntAttribute("lineNumber", Suppressions::Suppression::NO_LINE);
                 s.symbolName = read(child->Attribute("symbolName"), "");
                 std::istringstream(read(child->Attribute("cppcheck-id"), "0")) >> s.cppcheckId;
