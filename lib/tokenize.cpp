@@ -9631,9 +9631,7 @@ void Tokenizer::findGarbageCode() const
             if (Token::simpleMatch(tok->next(), "( )"))
                 code = tok->str() + "()";
             if (!code.empty()) {
-                if (isC())
-                    syntaxError(tok, code);
-                if (tok->str() != ">" && !Token::simpleMatch(tok->previous(), "operator"))
+                if (isC() || (tok->str() != ">" && !Token::simpleMatch(tok->previous(), "operator")))
                     syntaxError(tok, code);
             }
         }
