@@ -661,7 +661,14 @@
             <item>
              <widget class="QPushButton" name="mBtnAddIgnorePath">
               <property name="text">
-               <string>Add...</string>
+               <string>Add folder...</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="mBtnAddIgnoreFile">
+              <property name="text">
+               <string>Add file...</string>
               </property>
              </widget>
             </item>
