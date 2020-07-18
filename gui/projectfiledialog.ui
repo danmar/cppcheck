@@ -420,7 +420,11 @@
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
-           <widget class="QLineEdit" name="mEditBuildDir"/>
+           <widget class="QLineEdit" name="mEditBuildDir">
+            <property name="toolTip">
+             <string>This is a workfolder that Cppcheck will use for various purposes.</string>
+            </property>
+           </widget>
           </item>
           <item>
            <widget class="QPushButton" name="mBtnBrowseBuildDir">
@@ -461,18 +465,31 @@
        <item>
         <widget class="QGroupBox" name="groupBox_11">
          <property name="title">
-          <string>Check that code is safe</string>
+          <string>Analysis</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_19">
           <item>
-           <widget class="QCheckBox" name="mBugHunting">
+           <widget class="QRadioButton" name="mBtnNormalAnalysis">
             <property name="text">
-             <string>Bug hunting -- Detect all bugs. Generates mostly noise.</string>
+             <string>Normal analysis -- Avoid false positives.</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="mBtnBugHunting">
+            <property name="text">
+             <string>Bug hunting -- Generates mostly noise. The goal is to be &quot;soundy&quot; and detect most bugs.</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QCheckBox" name="mBtnSafeClasses">
+            <property name="toolTip">
+             <string>If you want to design your classes to be as flexible and robust as possible then the public interface must be very robust. Cppcheck will asumme that arguments can take *any* value.</string>
+            </property>
             <property name="text">
              <string>Check that each class has a safe public interface</string>
             </property>
@@ -605,7 +622,11 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_13">
           <item>
-           <widget class="QLineEdit" name="mEditProjectRoot"/>
+           <widget class="QLineEdit" name="mEditProjectRoot">
+            <property name="toolTip">
+             <string>Filepaths in warnings will be relative to this path</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -617,7 +638,11 @@
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <item>
-           <widget class="QLineEdit" name="mEditTags"/>
+           <widget class="QLineEdit" name="mEditTags">
+            <property name="toolTip">
+             <string>If tags are added, you will be able to right click on warnings and set one of these tags. You can manually categorize warnings.</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -625,7 +650,7 @@
        <item>
         <widget class="QGroupBox" name="groupBox_7">
          <property name="title">
-          <string>Exclude source files in paths</string>
+          <string>Exclude source files</string>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_4">
           <item>
