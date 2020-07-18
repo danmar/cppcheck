@@ -2567,8 +2567,15 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
         data.addConstraints(value, var.nameToken());
         return value;
     }
-    if (valueType->type == ValueType::Type::RECORD)
-        return createStructVal(valueType->typeScope, var.isLocal() && !var.isStatic(), data);
+    if (valueType->type == ValueType::Type::RECORD) {
+        bool init = true;
+        if (var.isLocal() && !var.isStatic()) {
+            init = valueType->typeScope &&
+                   valueType->typeScope->definedType &&
+                   valueType->typeScope->definedType->needInitialization != Type::NeedInitialization::False;
+        }
+        return createStructVal(valueType->typeScope, init, data);
+    }
     if (valueType->smartPointerType) {
         auto structValue = createStructVal(valueType->smartPointerType->classScope, var.isLocal() && !var.isStatic(), data);
         auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 1, ~0UL);
