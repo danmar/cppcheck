@@ -77,6 +77,29 @@ public:
      */
     void setError(const QString &code, int errorLine, const QStringList &symbols);
 
+    /**
+     * Goto another error in existing source file
+     * \param errorLine    line number
+     * \param symbols      the related symbols, these are marked
+     */
+    void setError(int errorLine, const QStringList &symbols);
+
+    void setFileName(const QString &fileName)
+    {
+        mFileName = fileName;
+    }
+
+    QString getFileName() const
+    {
+        return mFileName;
+    }
+
+    void clear()
+    {
+        mFileName.clear();
+        setPlainText(QString());
+    }
+
 protected:
     void resizeEvent(QResizeEvent *event) override;
 
@@ -93,6 +116,7 @@ private:
     Highlighter *mHighlighter;
     CodeEditorStyle *mWidgetStyle;
     int mErrorPosition;
+    QString mFileName;
 };
 
 

@@ -352,10 +352,11 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
     const std::string inconclusiveMessage(inconclusive ? ". It is inconclusive if there would be a problem in the function call." : "");
 
     if (!uninitStructMember.empty()) {
+        const std::string symbol = tok->expressionString() + "." + uninitStructMember;
         dataBase->reportError(tok,
                               Severity::SeverityType::error,
                               "bughuntingUninitStructMember",
-                              "Cannot determine that '" + tok->expressionString() + "." + uninitStructMember + "' is initialized" + inconclusiveMessage,
+                              "$symbol:" + symbol + "\nCannot determine that '$symbol' is initialized" + inconclusiveMessage,
                               CWE_USE_OF_UNINITIALIZED_VARIABLE,
                               inconclusive,
                               value.type == ExprEngine::ValueType::BailoutValue);
@@ -366,10 +367,12 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
     if (uninitData)
         uninitexpr += "[0]";
 
+    const std::string symbol = (tok->varId() > 0) ? ("$symbol:" + tok->str() + "\n") : std::string();
+
     dataBase->reportError(tok,
                           Severity::SeverityType::error,
                           "bughuntingUninit",
-                          "Cannot determine that '" + uninitexpr + "' is initialized" + inconclusiveMessage,
+                          symbol + "Cannot determine that '" + uninitexpr + "' is initialized" + inconclusiveMessage,
                           CWE_USE_OF_UNINITIALIZED_VARIABLE,
                           inconclusive,
                           value.type == ExprEngine::ValueType::BailoutValue);

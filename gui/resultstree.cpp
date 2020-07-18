@@ -63,6 +63,7 @@ static const char LINE[] = "line";
 static const char MESSAGE[] = "message";
 static const char SEVERITY[] = "severity";
 static const char SINCEDATE[] = "sinceDate";
+static const char SYMBOLNAMES[] = "symbolNames";
 static const char SUMMARY[] = "summary";
 static const char TAGS[] = "tags";
 
@@ -223,6 +224,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
     data[FILE0] = stripPath(item.file0, true);
     data[FUNCTION] = item.function;
     data[SINCEDATE] = item.sinceDate;
+    data[SYMBOLNAMES] = item.symbolNames;
     data[TAGS] = line.tags;
     data[HIDE] = hide;
     stditem->setData(QVariant(data));
@@ -256,6 +258,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
             child_data[CWE] = line.cwe;
             child_data[CPPCHECKID] = line.cppcheckId;
             child_data[INCONCLUSIVE] = line.inconclusive;
+            child_data[SYMBOLNAMES] = item.symbolNames;
             child_item->setData(QVariant(child_data));
         }
     }

@@ -257,6 +257,19 @@ void CodeEditor::setError(const QString &code, int errorLine, const QStringList 
     highlightErrorLine();
 }
 
+void CodeEditor::setError(int errorLine, const QStringList &symbols)
+{
+    mHighlighter->setSymbols(symbols);
+
+    mErrorPosition = getPos(toPlainText(), errorLine);
+    QTextCursor tc = textCursor();
+    tc.setPosition(mErrorPosition);
+    setTextCursor(tc);
+    centerCursor();
+
+    highlightErrorLine();
+}
+
 int CodeEditor::lineNumberAreaWidth()
 {
     int digits = 1;
