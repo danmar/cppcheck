@@ -202,11 +202,6 @@ signals:
     */
     void treeSelectionChanged(const QModelIndex &current);
 
-    /**
-     * Selected item(s) has been tagged
-     */
-    void tagged();
-
     /** Suppress Ids */
     void suppressIds(QStringList ids);
 
