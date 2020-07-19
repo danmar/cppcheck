@@ -1130,7 +1130,9 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
                 else
                     return false;
             }
-        } else
+        } else if (strcmp(node->Name(), CppcheckXml::TagWarningsElementName) == 0)
+            ; // TODO
+        else
             return false;
     }
     settings->basePaths = temp.basePaths;
