@@ -84,18 +84,15 @@ public:
      */
     void setError(int errorLine, const QStringList &symbols);
 
-    void setFileName(const QString &fileName)
-    {
+    void setFileName(const QString &fileName) {
         mFileName = fileName;
     }
 
-    QString getFileName() const
-    {
+    QString getFileName() const {
         return mFileName;
     }
 
-    void clear()
-    {
+    void clear() {
         mFileName.clear();
         setPlainText(QString());
     }

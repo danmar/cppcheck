@@ -429,8 +429,7 @@ void ResultsView::updateDetails(const QModelIndex &index)
     if (data.contains("symbolNames"))
         symbols = data["symbolNames"].toString().split("\n");
 
-    if (filepath == mUI.mCode->getFileName())
-    {
+    if (filepath == mUI.mCode->getFileName()) {
         mUI.mCode->setError(lineNumber, symbols);
         return;
     }
