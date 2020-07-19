@@ -269,6 +269,10 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
         if (Token::Match(tok, "%var% .") && tok->next()->originalName() != "->")
             return;
 
+        // Assume that stream object is initialized
+        if (Token::Match(tok->previous(), "[;{}] %var% <<|>>") && !tok->next()->astParent())
+            return;
+
         // Containers are not uninitialized
         std::vector<const Token *> tokens{tok, tok->astOperand1(), tok->astOperand2()};
         if (Token::Match(tok->previous(), ". %name%"))

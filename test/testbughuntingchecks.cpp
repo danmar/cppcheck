@@ -40,6 +40,7 @@ private:
         TEST_CASE(uninit_function_par);
         TEST_CASE(uninit_malloc);
         TEST_CASE(uninit_struct);
+        TEST_CASE(uninit_bailout);
         TEST_CASE(ctu);
 #endif
     }
@@ -106,6 +107,22 @@ private:
               "void foo() {\n"
               "  Data data;\n"
               "  x = data.x;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninit_bailout() {
+        check("void foo() {\n"
+              "    __CPPCHECK_BAILOUT__;\n"
+              "    int values[5];\n"
+              "    values[i] = 123;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    __CPPCHECK_BAILOUT__;\n"
+              "    std::ostringstream comm;\n"
+              "    comm << 123;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

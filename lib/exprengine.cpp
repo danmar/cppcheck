@@ -2241,6 +2241,10 @@ static std::string execute(const Token *start, const Token *end, Data &data)
         if (Token::Match(tok, "[;{}]"))
             data.trackProgramState(tok);
 
+        if (Token::simpleMatch(tok, "__CPPCHECK_BAILOUT__ ;"))
+            // This is intended for testing
+            throw ExprEngineException(tok, "__CPPCHECK_BAILOUT__");
+
         if (Token::simpleMatch(tok, "while (") && (tok->linkAt(1), ") ;") && tok->next()->astOperand1()->hasKnownIntValue() && tok->next()->astOperand1()->getKnownIntValue() == 0) {
             tok = tok->tokAt(4);
             continue;
