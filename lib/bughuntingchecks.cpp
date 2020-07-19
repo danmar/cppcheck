@@ -296,6 +296,10 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
         if (var && Token::Match(var->nameToken(), "%varid% ;| %varid%| =", tok->varId()))
             return;
 
+        // Arrays are allocated on the stack
+        if (var && Token::Match(tok, "%var% [") && var->isArray())
+            return;
+
         if (tok->variable() && isVariableAssigned(tok->variable(), tok))
             return;
     }
