@@ -34,20 +34,21 @@
 #include "applicationlist.h"
 #include "aboutdialog.h"
 #include "common.h"
-#include "threadhandler.h"
+#include "filelist.h"
 #include "fileviewdialog.h"
 #include "functioncontractdialog.h"
+#include "helpdialog.h"
+#include "librarydialog.h"
 #include "projectfile.h"
 #include "projectfiledialog.h"
 #include "report.h"
 #include "scratchpad.h"
+#include "showtypes.h"
 #include "statsdialog.h"
 #include "settingsdialog.h"
+#include "threadhandler.h"
 #include "threadresult.h"
 #include "translationhandler.h"
-#include "filelist.h"
-#include "showtypes.h"
-#include "librarydialog.h"
 
 static const QString OnlineHelpURL("http://cppcheck.net/manual.html");
 static const QString compile_commands_json("compile_commands.json");
@@ -1465,7 +1466,8 @@ void MainWindow::openHelpContents()
 
 void MainWindow::openOnlineHelp()
 {
-    QDesktopServices::openUrl(QUrl(OnlineHelpURL));
+    HelpDialog *helpDialog = new HelpDialog;
+    helpDialog->showMaximized();
 }
 
 void MainWindow::openProjectFile()
