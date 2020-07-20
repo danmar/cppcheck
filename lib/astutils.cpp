@@ -1429,9 +1429,16 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     if (!tok)
         return false;
     const Token *tok2 = tok;
-    while (Token::simpleMatch(tok2->astParent(), "*") || (Token::simpleMatch(tok2->astParent(), ".") && !Token::simpleMatch(tok2->astParent()->astParent(), "(")) ||
-           (Token::simpleMatch(tok2->astParent(), "[") && tok2 == tok2->astParent()->astOperand1()))
+    int derefs = 0;
+    while (Token::simpleMatch(tok2->astParent(), "*") || 
+           (Token::simpleMatch(tok2->astParent(), ".") && !Token::simpleMatch(tok2->astParent()->astParent(), "(")) ||
+           (Token::simpleMatch(tok2->astParent(), "[") && tok2 == tok2->astParent()->astOperand1())) {
+        if (Token::simpleMatch(tok2->astParent(), "*") || tok2->astParent()->originalName() == "->")
+            derefs++;
+        if (derefs > indirect)
+            break;
         tok2 = tok2->astParent();
+    }
 
     while (Token::simpleMatch(tok2->astParent(), "?") || (Token::simpleMatch(tok2->astParent(), ":") && Token::simpleMatch(tok2->astParent()->astParent(), "?")))
         tok2 = tok2->astParent();
@@ -1511,6 +1518,11 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
 bool isVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth)
 {
     return findVariableChanged(start, end, 0, varid, globalvar, settings, cpp, depth) != nullptr;
+}
+
+bool isVariableChanged(const Token *start, const Token *end, int indirect, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth)
+{
+    return findVariableChanged(start, end, indirect, varid, globalvar, settings, cpp, depth) != nullptr;
 }
 
 Token* findVariableChanged(Token *start, const Token *end, int indirect, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth)
