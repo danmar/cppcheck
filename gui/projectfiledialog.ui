@@ -130,17 +130,7 @@
              </layout>
             </item>
             <item>
-             <widget class="QListWidget" name="mListVsConfigs">
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>100</height>
-               </size>
-              </property>
-              <property name="selectionMode">
-               <enum>QAbstractItemView::MultiSelection</enum>
-              </property>
-             </widget>
+             <widget class="QListWidget" name="mListVsConfigs"/>
             </item>
            </layout>
           </item>

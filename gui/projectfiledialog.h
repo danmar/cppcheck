@@ -58,8 +58,8 @@ private:
     */
     QString getRootPath() const;
 
-    QStringList getVsConfigurations() const;
-    void    setVsConfigurations(const QStringList &configs);
+    QStringList getProjectConfigurations() const;
+    void setProjectConfigurations(const QStringList &configs);
 
     QString getImportProject() const;
 
