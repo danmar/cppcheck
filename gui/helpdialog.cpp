@@ -10,7 +10,8 @@ void HelpBrowser::setHelpEngine(QHelpEngine *helpEngine)
     mHelpEngine = helpEngine;
 }
 
-QVariant HelpBrowser::loadResource(int type, const QUrl &name){
+QVariant HelpBrowser::loadResource(int type, const QUrl &name)
+{
     if (name.scheme() == "qthelp") {
         QString url(name.toString());
         while (url.indexOf("/./") > 0)
