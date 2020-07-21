@@ -2490,8 +2490,8 @@ struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
     virtual bool isAlias(const Token* tok) const OVERRIDE {
         if (value.isLifetimeValue())
             return false;
-        for(const auto& m:{getVars(), getAliasedVars()}) {
-            for (const auto& p:m) {
+        for(const auto& m:{std::ref(getVars()), std::ref(getAliasedVars())}) {
+            for (const auto& p:m.get()) {
                 nonneg int varid = p.first;
                 const Variable* var = p.second;
                 if (tok->varId() == varid)
