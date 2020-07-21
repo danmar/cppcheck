@@ -661,7 +661,6 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             QAction *copy                   = new QAction(tr("Copy"), &menu);
             QAction *hide                   = new QAction(tr("Hide"), &menu);
             QAction *hideallid              = new QAction(tr("Hide all with id"), &menu);
-            QAction *suppresshash           = new QAction(tr("Suppress hash"), &menu);
             QAction *opencontainingfolder   = new QAction(tr("Open containing folder"), &menu);
 
             if (multipleSelection) {
@@ -679,11 +678,15 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             menu.addSeparator();
             menu.addAction(hide);
             menu.addAction(hideallid);
-            menu.addAction(suppresshash);
+
             if (!bughunting) {
                 QAction *suppress = new QAction(tr("Suppress selected id(s)"), &menu);
                 menu.addAction(suppress);
-                connect(suppress, SIGNAL(triggered()), this, SLOT(suppressSelectedIds()));
+                connect(suppress, &QAction::triggered, this, &ResultsTree::suppressSelectedIds);
+            } else {
+                QAction *suppress = new QAction(tr("Suppress"), &menu);
+                menu.addAction(suppress);
+                connect(suppress, &QAction::triggered, this, &ResultsTree::suppressHash);
             }
             menu.addSeparator();
             menu.addAction(opencontainingfolder);
@@ -692,7 +695,6 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             connect(copy, SIGNAL(triggered()), this, SLOT(copy()));
             connect(hide, SIGNAL(triggered()), this, SLOT(hideResult()));
             connect(hideallid, SIGNAL(triggered()), this, SLOT(hideAllIdResult()));
-            connect(suppresshash, &QAction::triggered, this, &ResultsTree::suppressHash);
             connect(opencontainingfolder, SIGNAL(triggered()), this, SLOT(openContainingFolder()));
 
             const ProjectFile *currentProject = ProjectFile::getActiveProject();
