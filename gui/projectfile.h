@@ -332,10 +332,10 @@ public:
     }
 
     /** Set tags for a warning */
-    void setWarningTags(std::size_t cppcheckId, QString tags);
+    void setWarningTags(std::size_t hash, QString tags);
 
     /** Get tags for a warning */
-    QString getWarningTags(std::size_t cppcheckId) const;
+    QString getWarningTags(std::size_t hash) const;
 
     /**
      * @brief Write project file (to disk).

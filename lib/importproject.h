@@ -164,7 +164,7 @@ namespace CppcheckXml {
     const char TagWarningsElementName[] = "tag-warnings";
     const char TagAttributeName[] = "tag";
     const char WarningElementName[] = "warning";
-    const char CppcheckIdAttributeName[] = "cppcheck-id";
+    const char HashAttributeName[] = "hash";
     const char CheckHeadersElementName[] = "check-headers";
     const char CheckUnusedTemplatesElementName[] = "check-unused-templates";
     const char MaxCtuDepthElementName[] = "max-ctu-depth";

@@ -37,7 +37,7 @@ ErrorItem::ErrorItem()
     , incomplete(false)
     , inconclusive(false)
     , cwe(-1)
-    , cppcheckId(0)
+    , hash(0)
 {
 }
 
@@ -51,7 +51,7 @@ ErrorItem::ErrorItem(const ErrorMessage &errmsg)
     , summary(QString::fromStdString(errmsg.shortMessage()))
     , message(QString::fromStdString(errmsg.verboseMessage()))
     , cwe(errmsg.cwe.id)
-    , cppcheckId(errmsg.cppcheckId)
+    , hash(errmsg.hash)
     , symbolNames(QString::fromStdString(errmsg.symbolNames()))
 {
     for (std::list<ErrorMessage::FileLocation>::const_iterator loc = errmsg.callStack.begin();
@@ -88,8 +88,8 @@ QString ErrorItem::toString() const
 
 bool ErrorItem::sameCID(const ErrorItem &errorItem1, const ErrorItem &errorItem2)
 {
-    if (errorItem1.cppcheckId || errorItem2.cppcheckId)
-        return errorItem1.cppcheckId == errorItem2.cppcheckId;
+    if (errorItem1.hash || errorItem2.hash)
+        return errorItem1.hash == errorItem2.hash;
 
     // fallback
     return errorItem1.errorId == errorItem2.errorId &&

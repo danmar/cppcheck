@@ -50,12 +50,12 @@
 #include "xmlreportv2.h"
 
 static const char COLUMN[] = "column";
-static const char CPPCHECKID[] = "cppcheckId";
 static const char CWE[] = "cwe";
 static const char ERRORID[] = "id";
 static const char FILENAME[] = "file";
 static const char FILE0[] = "file0";
 static const char FUNCTION[] = "function";
+static const char HASH[] = "hash";
 static const char HIDE[] = "hide";
 static const char INCOMPLETE[] = "incomplete";
 static const char INCONCLUSIVE[] = "inconclusive";
@@ -187,14 +187,14 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
     line.errorId = item.errorId;
     line.incomplete = item.incomplete;
     line.cwe = item.cwe;
-    line.cppcheckId = item.cppcheckId;
+    line.hash = item.hash;
     line.inconclusive = item.inconclusive;
     line.summary = item.summary;
     line.message = item.message;
     line.severity = item.severity;
     line.sinceDate = item.sinceDate;
     if (const ProjectFile *activeProject = ProjectFile::getActiveProject()) {
-        line.tags = activeProject->getWarningTags(item.cppcheckId);
+        line.tags = activeProject->getWarningTags(item.hash);
     }
     //Create the base item for the error and ensure it has a proper
     //file item as a parent
@@ -219,7 +219,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
     data[ERRORID]  = item.errorId;
     data[INCOMPLETE] = item.incomplete;
     data[CWE] = item.cwe;
-    data[CPPCHECKID] = item.cppcheckId;
+    data[HASH] = item.hash;
     data[INCONCLUSIVE] = item.inconclusive;
     data[FILE0] = stripPath(item.file0, true);
     data[FUNCTION] = item.function;
@@ -256,7 +256,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
             child_data[ERRORID]  = line.errorId;
             child_data[INCOMPLETE] = line.incomplete;
             child_data[CWE] = line.cwe;
-            child_data[CPPCHECKID] = line.cppcheckId;
+            child_data[HASH] = line.hash;
             child_data[INCONCLUSIVE] = line.inconclusive;
             child_data[SYMBOLNAMES] = item.symbolNames;
             child_item->setData(QVariant(child_data));
@@ -661,7 +661,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             QAction *copy                   = new QAction(tr("Copy"), &menu);
             QAction *hide                   = new QAction(tr("Hide"), &menu);
             QAction *hideallid              = new QAction(tr("Hide all with id"), &menu);
-            QAction *suppressCppcheckID     = new QAction(tr("Suppress cppcheck-id"), &menu);
+            QAction *suppresshash           = new QAction(tr("Suppress hash"), &menu);
             QAction *opencontainingfolder   = new QAction(tr("Open containing folder"), &menu);
 
             if (multipleSelection) {
@@ -679,7 +679,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             menu.addSeparator();
             menu.addAction(hide);
             menu.addAction(hideallid);
-            menu.addAction(suppressCppcheckID);
+            menu.addAction(suppresshash);
             if (!bughunting) {
                 QAction *suppress = new QAction(tr("Suppress selected id(s)"), &menu);
                 menu.addAction(suppress);
@@ -692,7 +692,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             connect(copy, SIGNAL(triggered()), this, SLOT(copy()));
             connect(hide, SIGNAL(triggered()), this, SLOT(hideResult()));
             connect(hideallid, SIGNAL(triggered()), this, SLOT(hideAllIdResult()));
-            connect(suppressCppcheckID, &QAction::triggered, this, &ResultsTree::suppressCppcheckID);
+            connect(suppresshash, &QAction::triggered, this, &ResultsTree::suppressHash);
             connect(opencontainingfolder, SIGNAL(triggered()), this, SLOT(openContainingFolder()));
 
             const ProjectFile *currentProject = ProjectFile::getActiveProject();
@@ -1066,7 +1066,7 @@ void ResultsTree::suppressSelectedIds()
     emit suppressIds(selectedIds.toList());
 }
 
-void ResultsTree::suppressCppcheckID()
+void ResultsTree::suppressHash()
 {
     if (!mSelectionModel)
         return;
@@ -1087,9 +1087,9 @@ void ResultsTree::suppressCppcheckID()
     for (QStandardItem *item: selectedWarnings) {
         QStandardItem *fileItem = item->parent();
         const QVariantMap data = item->data().toMap();
-        if (projectFile && data.contains("cppcheckId")) {
+        if (projectFile && data.contains(HASH)) {
             Suppressions::Suppression suppression;
-            suppression.cppcheckId = data[CPPCHECKID].toULongLong();
+            suppression.hash = data[HASH].toULongLong();
             suppression.errorId = data[ERRORID].toString().toStdString();
             suppression.fileName = data[FILENAME].toString().toStdString();
             suppression.lineNumber = data[LINE].toInt();
@@ -1132,9 +1132,9 @@ void ResultsTree::tagSelectedItems(const QString &tag)
             data[TAGS] = tag;
             item->setData(QVariant(data));
             item->parent()->child(index.row(), COLUMN_TAGS)->setText(tag);
-            if (currentProject && data.contains(CPPCHECKID)) {
+            if (currentProject && data.contains(HASH)) {
                 isTagged = true;
-                currentProject->setWarningTags(data[CPPCHECKID].toULongLong(), tag);
+                currentProject->setWarningTags(data[HASH].toULongLong(), tag);
             }
         }
     }
@@ -1296,7 +1296,7 @@ void ResultsTree::readErrorItem(const QStandardItem *error, ErrorItem *item) con
     item->errorId = data[ERRORID].toString();
     item->incomplete = data[INCOMPLETE].toBool();
     item->cwe = data[CWE].toInt();
-    item->cppcheckId = data[CPPCHECKID].toULongLong();
+    item->hash = data[HASH].toULongLong();
     item->inconclusive = data[INCONCLUSIVE].toBool();
     item->file0 = data[FILE0].toString();
     item->sinceDate = data[SINCEDATE].toString();

@@ -610,8 +610,8 @@ void ProjectFile::readSuppressions(QXmlStreamReader &reader)
                     suppression.lineNumber = reader.attributes().value(QString(),"lineNumber").toInt();
                 if (reader.attributes().hasAttribute(QString(),"symbolName"))
                     suppression.symbolName = reader.attributes().value(QString(),"symbolName").toString().toStdString();
-                if (reader.attributes().hasAttribute(QString(),"cppcheck-id"))
-                    suppression.cppcheckId = reader.attributes().value(QString(),"cppcheck-id").toULongLong();
+                if (reader.attributes().hasAttribute(QString(),"hash"))
+                    suppression.hash = reader.attributes().value(QString(),"hash").toULongLong();
                 type = reader.readNext();
                 if (type == QXmlStreamReader::Characters) {
                     suppression.errorId = reader.text().toString().toStdString();
@@ -650,8 +650,8 @@ void ProjectFile::readTagWarnings(QXmlStreamReader &reader, const QString &tag)
         case QXmlStreamReader::StartElement:
             // Read library-elements
             if (reader.name().toString() == CppcheckXml::WarningElementName) {
-                std::size_t cppcheckId = reader.attributes().value(QString(), CppcheckXml::CppcheckIdAttributeName).toULongLong();
-                mWarningTags[cppcheckId] = tag;
+                std::size_t hash = reader.attributes().value(QString(), CppcheckXml::HashAttributeName).toULongLong();
+                mWarningTags[hash] = tag;
             }
             break;
 
@@ -774,17 +774,17 @@ void ProjectFile::setVSConfigurations(const QStringList &vsConfigs)
     mVsConfigurations = vsConfigs;
 }
 
-void ProjectFile::setWarningTags(std::size_t cppcheckId, QString tag)
+void ProjectFile::setWarningTags(std::size_t hash, QString tag)
 {
     if (tag.isEmpty())
-        mWarningTags.erase(cppcheckId);
-    else if (cppcheckId > 0)
-        mWarningTags[cppcheckId] = tag;
+        mWarningTags.erase(hash);
+    else if (hash > 0)
+        mWarningTags[hash] = tag;
 }
 
-QString ProjectFile::getWarningTags(std::size_t cppcheckId) const
+QString ProjectFile::getWarningTags(std::size_t hash) const
 {
-    auto it = mWarningTags.find(cppcheckId);
+    auto it = mWarningTags.find(hash);
     return (it != mWarningTags.end()) ? it->second : QString();
 }
 
@@ -936,8 +936,8 @@ bool ProjectFile::write(const QString &filename)
                 xmlWriter.writeAttribute("lineNumber", QString::number(suppression.lineNumber));
             if (!suppression.symbolName.empty())
                 xmlWriter.writeAttribute("symbolName", QString::fromStdString(suppression.symbolName));
-            if (suppression.cppcheckId > 0)
-                xmlWriter.writeAttribute(CppcheckXml::CppcheckIdAttributeName, QString::number(suppression.cppcheckId));
+            if (suppression.hash > 0)
+                xmlWriter.writeAttribute(CppcheckXml::HashAttributeName, QString::number(suppression.hash));
             if (!suppression.errorId.empty())
                 xmlWriter.writeCharacters(QString::fromStdString(suppression.errorId));
             xmlWriter.writeEndElement();
@@ -981,7 +981,7 @@ bool ProjectFile::write(const QString &filename)
             for (const auto wt: mWarningTags) {
                 if (wt.second == tag) {
                     xmlWriter.writeStartElement(CppcheckXml::WarningElementName);
-                    xmlWriter.writeAttribute(CppcheckXml::CppcheckIdAttributeName, QString::number(wt.first));
+                    xmlWriter.writeAttribute(CppcheckXml::HashAttributeName, QString::number(wt.first));
                     xmlWriter.writeEndElement();
                 }
             }

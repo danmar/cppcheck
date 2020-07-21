@@ -88,7 +88,7 @@ public:
     QString summary;
     QString message;
     int cwe;
-    unsigned long long cppcheckId;
+    unsigned long long hash;
     QList<QErrorPathItem> errorPath;
     QString symbolNames;
 
@@ -115,7 +115,7 @@ public:
     QString errorId;
     bool incomplete;
     int cwe;
-    unsigned long long cppcheckId;
+    unsigned long long hash;
     bool inconclusive;
     Severity::SeverityType severity;
     QString summary;

@@ -35,7 +35,7 @@ class CPPCHECKLIB Suppressions {
 public:
 
     struct CPPCHECKLIB ErrorMessage {
-        std::size_t cppcheckId;
+        std::size_t hash;
         std::string errorId;
         void setFileName(const std::string &s);
         const std::string &getFileName() const {
@@ -49,18 +49,18 @@ public:
     };
 
     struct CPPCHECKLIB Suppression {
-        Suppression() : lineNumber(NO_LINE), cppcheckId(0), matched(false) {}
+        Suppression() : lineNumber(NO_LINE), hash(0), matched(false) {}
         Suppression(const Suppression &other) {
             *this = other;
         }
-        Suppression(const std::string &id, const std::string &file, int line=NO_LINE) : errorId(id), fileName(file), lineNumber(line), cppcheckId(0), matched(false) {}
+        Suppression(const std::string &id, const std::string &file, int line=NO_LINE) : errorId(id), fileName(file), lineNumber(line), hash(0), matched(false) {}
 
         Suppression & operator=(const Suppression &other) {
             errorId = other.errorId;
             fileName = other.fileName;
             lineNumber = other.lineNumber;
             symbolName = other.symbolName;
-            cppcheckId = other.cppcheckId;
+            hash = other.hash;
             matched = other.matched;
             return *this;
         }
@@ -74,8 +74,8 @@ public:
                 return fileName < other.fileName;
             if (symbolName != other.symbolName)
                 return symbolName < other.symbolName;
-            if (cppcheckId != other.cppcheckId)
-                return cppcheckId < other.cppcheckId;
+            if (hash != other.hash)
+                return hash < other.hash;
             return false;
         }
 
@@ -100,7 +100,7 @@ public:
         std::string fileName;
         int lineNumber;
         std::string symbolName;
-        std::size_t cppcheckId;
+        std::size_t hash;
         bool matched;
 
         enum { NO_LINE = -1 };

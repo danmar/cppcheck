@@ -1086,7 +1086,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
                     s.fileName = joinRelativePath(path, s.fileName);
                 s.lineNumber = child->IntAttribute("lineNumber", Suppressions::Suppression::NO_LINE);
                 s.symbolName = read(child->Attribute("symbolName"), "");
-                std::istringstream(read(child->Attribute("cppcheck-id"), "0")) >> s.cppcheckId;
+                std::istringstream(read(child->Attribute("hash"), "0")) >> s.hash;
                 suppressions.push_back(s);
             }
         } else if (strcmp(node->Name(), CppcheckXml::VSConfigurationElementName) == 0)
