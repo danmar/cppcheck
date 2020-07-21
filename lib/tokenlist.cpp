@@ -1387,6 +1387,18 @@ static Token * createAstAtToken(Token *tok, bool cpp)
             init1 = tok2;
             AST_state state1(cpp);
             compileExpression(tok2, state1);
+            if (init1->str() == "(") {
+                for (Token *tok3 = init1; tok3 != tok3->link(); tok3 = tok3->next()) {
+                    if (tok3->astParent()) {
+                        while (tok3->astParent())
+                            tok3 = tok3->astParent();
+                        init1 = tok3;
+                        break;
+                    }
+                    if (!Token::Match(tok3, "%op%|(|["))
+                        init1 = tok3;
+                }
+            }
         } else {
             while (tok2 && tok2 != endPar && tok2->str() != ";") {
                 if (tok2->str() == "<" && tok2->link()) {

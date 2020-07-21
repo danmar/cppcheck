@@ -55,6 +55,12 @@
               <File Id='qwindowsvistastyledll' Name='qwindowsvistastyle.dll' Source='$(var.QtDllDir)\styles\qwindowsvistastyle.dll' />
             </Component>
           </Directory>
+          <Directory Id='GuiHelpFolder' Name='help'>
+            <Component Id='GuiHelp' DiskId='1' Guid='$(var.guihelpGUID)'>
+              <File Id='onlinehelpqhc' Name='online-help.qhc' Source='$(var.GuiHelpDir)\online-help.qhc' />
+              <File Id='onlinehelpqch' Name='online-help.qch' Source='$(var.GuiHelpDir)\online-help.qch' />
+            </Component>
+          </Directory>
           <Directory Id='TranslationsFolder' Name='lang'>
             <Component Id='GuiTranslations' Guid='$(var.guiTranslationsGUID)'>
               <File Id='cppcheck_de.qm' Name='cppcheck_de.qm' Source='$(var.TranslationsDir)\cppcheck_de.qm' />

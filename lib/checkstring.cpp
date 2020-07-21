@@ -355,37 +355,32 @@ void CheckString::overlappingStrcmp()
                 continue;
             std::list<const Token *> equals0;
             std::list<const Token *> notEquals0;
-            std::stack<const Token *> tokens;
-            tokens.push(tok);
-            while (!tokens.empty()) {
-                const Token * const t = tokens.top();
-                tokens.pop();
+            visitAstNodes(tok, [&](const Token * t) {
                 if (!t)
-                    continue;
+                    return ChildrenToVisit::none;
                 if (t->str() == "||") {
-                    tokens.push(t->astOperand1());
-                    tokens.push(t->astOperand2());
-                    continue;
+                    return ChildrenToVisit::op1_and_op2;
                 }
                 if (t->str() == "==") {
                     if (Token::simpleMatch(t->astOperand1(), "(") && Token::simpleMatch(t->astOperand2(), "0"))
                         equals0.push_back(t->astOperand1());
                     else if (Token::simpleMatch(t->astOperand2(), "(") && Token::simpleMatch(t->astOperand1(), "0"))
                         equals0.push_back(t->astOperand2());
-                    continue;
+                    return ChildrenToVisit::none;
                 }
                 if (t->str() == "!=") {
                     if (Token::simpleMatch(t->astOperand1(), "(") && Token::simpleMatch(t->astOperand2(), "0"))
                         notEquals0.push_back(t->astOperand1());
                     else if (Token::simpleMatch(t->astOperand2(), "(") && Token::simpleMatch(t->astOperand1(), "0"))
                         notEquals0.push_back(t->astOperand2());
-                    continue;
+                    return ChildrenToVisit::none;
                 }
                 if (t->str() == "!" && Token::simpleMatch(t->astOperand1(), "("))
                     equals0.push_back(t->astOperand1());
                 else if (t->str() == "(")
                     notEquals0.push_back(t);
-            }
+                return ChildrenToVisit::none;
+            });
 
             for (const Token *eq0 : equals0) {
                 for (const Token * ne0 : notEquals0) {

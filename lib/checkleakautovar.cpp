@@ -463,27 +463,21 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 VarInfo varInfo1(*varInfo);  // VarInfo for if code
                 VarInfo varInfo2(*varInfo);  // VarInfo for else code
 
-                // Recursively scan variable comparisons in condition
-                std::stack<const Token *> tokens;
                 // Skip expressions before commas
                 const Token * astOperand2AfterCommas = tok->next()->astOperand2();
                 while (Token::simpleMatch(astOperand2AfterCommas, ","))
                     astOperand2AfterCommas = astOperand2AfterCommas->astOperand2();
-                tokens.push(astOperand2AfterCommas);
-                while (!tokens.empty()) {
-                    const Token *tok3 = tokens.top();
-                    tokens.pop();
+
+                // Recursively scan variable comparisons in condition
+                visitAstNodes(astOperand2AfterCommas, [&](const Token *tok3) {
                     if (!tok3)
-                        continue;
+                        return ChildrenToVisit::none;
                     if (tok3->str() == "&&" || tok3->str() == "||") {
                         // FIXME: handle && ! || better
-                        tokens.push(tok3->astOperand1());
-                        tokens.push(tok3->astOperand2());
-                        continue;
+                        return ChildrenToVisit::op1_and_op2;
                     }
                     if (tok3->str() == "(" && Token::Match(tok3->astOperand1(), "UNLIKELY|LIKELY")) {
-                        tokens.push(tok3->astOperand2());
-                        continue;
+                        return ChildrenToVisit::op2;
                     } else if (tok3->str() == "(" && Token::Match(tok3->previous(), "%name%")) {
                         const std::vector<const Token *> params = getArguments(tok3->previous());
                         for (const Token *par : params) {
@@ -500,7 +494,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                                 varInfo2.erase(vartok->varId());
                             }
                         }
-                        continue;
+                        return ChildrenToVisit::none;
                     }
 
                     const Token *vartok = nullptr;
@@ -517,7 +511,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     } else if (astIsVariableComparison(tok3, "==", "-1", &vartok)) {
                         varInfo1.erase(vartok->varId());
                     }
-                }
+                    return ChildrenToVisit::none;
+                });
 
                 checkScope(closingParenthesis->next(), &varInfo1, notzero, recursiveCount);
                 closingParenthesis = closingParenthesis->linkAt(1);

@@ -1059,6 +1059,8 @@ class MisraChecker:
 
         self.severity = None
 
+        self.existing_violations = set()
+
     def __repr__(self):
         attrs = ["settings", "verify_expected", "verify_actual", "violations",
                  "ruleTexts", "suppressedRules", "dumpfileSuppressions",
@@ -2726,11 +2728,17 @@ class MisraChecker:
             if self.severity:
                 cppcheck_severity = self.severity
 
-            cppcheckdata.reportError(location, cppcheck_severity, errmsg, 'misra', errorId, misra_severity)
+            this_violation = '{}-{}-{}-{}'.format(location.file, location.linenr, location.column, ruleNum)
 
-            if misra_severity not in self.violations:
-                self.violations[misra_severity] = []
-            self.violations[misra_severity].append('misra-' + errorId)
+            # If this is new violation then record it and show it. If not then
+            # skip it since it has already been displayed.
+            if not this_violation in self.existing_violations:
+                self.existing_violations.add(this_violation)
+                cppcheckdata.reportError(location, cppcheck_severity, errmsg, 'misra', errorId, misra_severity)
+
+                if misra_severity not in self.violations:
+                    self.violations[misra_severity] = []
+                self.violations[misra_severity].append('misra-' + errorId)
 
     def loadRuleTexts(self, filename):
         num1 = 0

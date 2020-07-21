@@ -39,6 +39,8 @@ private:
         TEST_CASE(uninit_array);
         TEST_CASE(uninit_function_par);
         TEST_CASE(uninit_malloc);
+        TEST_CASE(uninit_struct);
+        TEST_CASE(uninit_bailout);
         TEST_CASE(ctu);
 #endif
     }
@@ -96,6 +98,33 @@ private:
     void uninit_malloc() {
         check("void foo() { char *p = malloc(10); return *p; }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Cannot determine that '*p' is initialized\n", errout.str());
+    }
+
+    void uninit_struct() {
+        // Assume that constructors initialize all members
+        // TODO whole program analysis
+        check("struct Data { Data(); int x; }\n"
+              "void foo() {\n"
+              "  Data data;\n"
+              "  x = data.x;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninit_bailout() {
+        check("void foo() {\n"
+              "    __CPPCHECK_BAILOUT__;\n"
+              "    int values[5];\n"
+              "    values[i] = 123;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    __CPPCHECK_BAILOUT__;\n"
+              "    std::ostringstream comm;\n"
+              "    comm << 123;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void ctu() {

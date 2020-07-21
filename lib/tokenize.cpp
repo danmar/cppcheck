@@ -9624,11 +9624,16 @@ void Tokenizer::findGarbageCode() const
             if (match1 && match2)
                 syntaxError(tok);
         }
-        if (Token::Match(tok, "%or%|%oror%|~|^|!|%comp%|+|-|/|% )|]|}")) {
-            if (isC())
-                syntaxError(tok, tok->str() + tok->next()->str());
-            if (tok->str() != ">" && !Token::simpleMatch(tok->previous(), "operator"))
-                syntaxError(tok, tok->str() + " " + tok->next()->str());
+        if (Token::Match(tok, "%or%|%oror%|~|^|!|%comp%|+|-|/|%")) {
+            std::string code = "";
+            if (Token::Match(tok->next(), ")|]|}"))
+                code = tok->str() + tok->next()->str();
+            if (Token::simpleMatch(tok->next(), "( )"))
+                code = tok->str() + "()";
+            if (!code.empty()) {
+                if (isC() || (tok->str() != ">" && !Token::simpleMatch(tok->previous(), "operator")))
+                    syntaxError(tok, code);
+            }
         }
         if (Token::Match(tok, "%num%|%bool%|%char%|%str% %num%|%bool%|%char%|%str%") && !Token::Match(tok, "%str% %str%"))
             syntaxError(tok);
