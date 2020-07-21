@@ -165,7 +165,7 @@ ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenLis
 
     std::ostringstream hashWarning;
     for (const ErrorPathItem &e: errorPath)
-        hashWarning << std::hex << (tok ? tok->index() : 0) << " ";
+        hashWarning << std::hex << (e.first ? e.first->index() : 0) << " ";
     hashWarning << mShortMessage;
 
     hash = calculateWarningHash(tokenList, hashWarning.str());
