@@ -137,16 +137,21 @@ ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const Token
 
     setmsg(msg);
 
-    hash = calculateWarningHash(list, toString(false));
+    std::ostringstream hashWarning;
+    for (const Token *tok: callstack)
+        hashWarning << std::hex << (tok ? tok->index() : 0) << " ";
+    hashWarning << mShortMessage;
+
+    hash = calculateWarningHash(list, hashWarning.str());
 }
 
 ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenList, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, bool inconclusive)
     : id(id), incomplete(false), severity(severity), cwe(cwe.id), inconclusive(inconclusive)
 {
     // Format callstack
-    for (ErrorPath::const_iterator it = errorPath.begin(); it != errorPath.end(); ++it) {
-        const Token *tok = it->first;
-        const std::string &info = it->second;
+    for (const ErrorPathItem& e: errorPath) {
+        const Token *tok = e.first;
+        const std::string &info = e.second;
 
         // --errorlist can provide null values here
         if (tok)
@@ -158,7 +163,12 @@ ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenLis
 
     setmsg(msg);
 
-    hash = calculateWarningHash(tokenList, toString(false));
+    std::ostringstream hashWarning;
+    for (const ErrorPathItem &e: errorPath)
+        hashWarning << std::hex << (tok ? tok->index() : 0) << " ";
+    hashWarning << mShortMessage;
+
+    hash = calculateWarningHash(tokenList, hashWarning.str());
 }
 
 ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
