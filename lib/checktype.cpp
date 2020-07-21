@@ -239,12 +239,8 @@ void CheckType::checkSignConversion()
             continue;
 
         // Check if an operand can be negative..
-        std::stack<const Token *> tokens;
-        tokens.push(tok->astOperand1());
-        tokens.push(tok->astOperand2());
-        while (!tokens.empty()) {
-            const Token *tok1 = tokens.top();
-            tokens.pop();
+        const Token * astOperands[] = { tok->astOperand1(), tok->astOperand2() };
+        for (const Token * tok1 : astOperands) {
             if (!tok1)
                 continue;
             const ValueFlow::Value *negativeValue = tok1->getValueLE(-1,mSettings);

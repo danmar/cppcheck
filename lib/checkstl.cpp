@@ -2430,12 +2430,17 @@ void CheckStl::localMutexError(const Token* tok)
 void CheckStl::checkMutexes()
 {
     for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
+        std::set<nonneg int> checkedVars;
         for (const Token *tok = function->bodyStart; tok != function->bodyEnd; tok = tok->next()) {
+            if (!Token::Match(tok, "%var%"))
+                continue;
             const Variable* var = tok->variable();
             if (!var)
                 continue;
             if (Token::Match(tok, "%var% . lock ( )")) {
                 if (!isMutex(var))
+                    continue;
+                if (!checkedVars.insert(var->declarationId()).second)
                     continue;
                 if (isLocalMutex(var, tok->scope()))
                     localMutexError(tok);
@@ -2443,6 +2448,10 @@ void CheckStl::checkMutexes()
                 if (!isLockGuard(var))
                     continue;
                 const Variable* mvar = tok->tokAt(2)->variable();
+                if (!mvar)
+                    continue;
+                if (!checkedVars.insert(mvar->declarationId()).second)
+                    continue;
                 if (var->isStatic() || var->isGlobal())
                     globalLockGuardError(tok);
                 else if (isLocalMutex(mvar, tok->scope()))

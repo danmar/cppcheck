@@ -1402,7 +1402,7 @@ private:
 
     void garbageCode164() {
         //7234
-        checkCode("class d{k p;}(){d::d():B<()}");
+        ASSERT_THROW(checkCode("class d{k p;}(){d::d():B<()}"), InternalError);
     }
 
     void garbageCode165() {

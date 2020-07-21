@@ -170,6 +170,7 @@ private:
         TEST_CASE(const65); // ticket #8693
         TEST_CASE(const66); // ticket #7714
         TEST_CASE(const67); // ticket #9193
+        TEST_CASE(const68); // ticket #6471
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -5512,6 +5513,17 @@ private:
                    "    TestList<std::shared_ptr<int>> m_test;\n"
                    "};\n");
         ASSERT_EQUALS("[test.cpp:8]: (style, inconclusive) Technically the member function 'Test::get' can be const.\n", errout.str());
+    }
+
+    void const68() { // #6471
+        checkConst("class MyClass {\n"
+                   "    void clear() {\n"
+                   "        SVecPtr v = (SVecPtr) m_data;\n"
+                   "        v->clear();\n"
+                   "    }\n"
+                   "    void* m_data;\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void const_handleDefaultParameters() {

@@ -91,6 +91,9 @@ public:
     void inlineSuppressions(const simplecpp::TokenList &tokens);
 
     void setDirectives(const simplecpp::TokenList &tokens);
+    void setDirectives(const std::list<Directive> &directives) {
+        mDirectives = directives;
+    }
 
     /** list of all directives met while preprocessing file */
     const std::list<Directive> &getDirectives() const {

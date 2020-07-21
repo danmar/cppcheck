@@ -85,7 +85,7 @@ std::string Suppressions::parseXmlFile(const char *filename)
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
     for (const tinyxml2::XMLElement * e = rootnode->FirstChildElement(); e; e = e->NextSiblingElement()) {
         if (std::strcmp(e->Name(), "suppress") != 0)
-            return "Invalid suppression xml file format, expected <suppress> element but got a <" + std::string(e->Name()) + '>';
+            return "Invalid suppression xml file format, expected <suppress> element but got a \"" + std::string(e->Name()) + '\"';
 
         Suppression s;
         for (const tinyxml2::XMLElement * e2 = e->FirstChildElement(); e2; e2 = e2->NextSiblingElement()) {
@@ -98,8 +98,10 @@ std::string Suppressions::parseXmlFile(const char *filename)
                 s.lineNumber = std::atoi(text);
             else if (std::strcmp(e2->Name(), "symbolName") == 0)
                 s.symbolName = text;
+            else if (*text && std::strcmp(e2->Name(), "hash") == 0)
+                std::istringstream(text) >> s.hash;
             else
-                return "Unknown suppression element <" + std::string(e2->Name()) + ">, expected <id>/<fileName>/<lineNumber>/<symbolName>";
+                return "Unknown suppression element \"" + std::string(e2->Name()) + "\", expected id/fileName/lineNumber/symbolName/hash";
         }
 
         const std::string err = addSuppression(s);
@@ -204,9 +206,9 @@ std::string Suppressions::addSuppressionLine(const std::string &line)
 std::string Suppressions::addSuppression(const Suppressions::Suppression &suppression)
 {
     // Check that errorId is valid..
-    if (suppression.errorId.empty()) {
+    if (suppression.errorId.empty() && suppression.hash == 0)
         return "Failed to add suppression. No id.";
-    }
+
     if (suppression.errorId != "*") {
         for (std::string::size_type pos = 0; pos < suppression.errorId.length(); ++pos) {
             if (suppression.errorId[pos] < 0 || !isAcceptedErrorIdChar(suppression.errorId[pos])) {
@@ -271,6 +273,8 @@ bool Suppressions::Suppression::parseComment(std::string comment, std::string *e
 
 bool Suppressions::Suppression::isSuppressed(const Suppressions::ErrorMessage &errmsg) const
 {
+    if (hash > 0 && hash != errmsg.hash)
+        return false;
     if (!errorId.empty() && !matchglob(errorId, errmsg.errorId))
         return false;
     if (!fileName.empty() && !matchglob(fileName, errmsg.getFileName()))
@@ -315,6 +319,8 @@ std::string Suppressions::Suppression::getText() const
         ret += " lineNumber=" + MathLib::toString(lineNumber);
     if (!symbolName.empty())
         ret += " symbolName=" + symbolName;
+    if (hash > 0)
+        ret += " hash=" + MathLib::toString(hash);
     if (ret.compare(0,1," ")==0)
         return ret.substr(1);
     return ret;
@@ -358,18 +364,20 @@ void Suppressions::dump(std::ostream & out) const
             out << " lineNumber=\"" << suppression.lineNumber << '"';
         if (!suppression.symbolName.empty())
             out << " symbolName=\"" << ErrorLogger::toxml(suppression.symbolName) << '\"';
+        if (suppression.hash > 0)
+            out << " hash=\"" << suppression.hash << '\"';
         out << " />" << std::endl;
     }
     out << "  </suppressions>" << std::endl;
 }
-
-#include <iostream>
 
 std::list<Suppressions::Suppression> Suppressions::getUnmatchedLocalSuppressions(const std::string &file, const bool unusedFunctionChecking) const
 {
     std::list<Suppression> result;
     for (const Suppression &s : mSuppressions) {
         if (s.matched)
+            continue;
+        if (s.hash > 0)
             continue;
         if (!unusedFunctionChecking && s.errorId == "unusedFunction")
             continue;
@@ -385,6 +393,8 @@ std::list<Suppressions::Suppression> Suppressions::getUnmatchedGlobalSuppression
     std::list<Suppression> result;
     for (const Suppression &s : mSuppressions) {
         if (s.matched)
+            continue;
+        if (s.hash > 0)
             continue;
         if (!unusedFunctionChecking && s.errorId == "unusedFunction")
             continue;

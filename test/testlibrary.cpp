@@ -686,11 +686,9 @@ private:
         ASSERT(library.functions.empty());
 
         const Library::AllocFunc* af = library.getAllocFuncInfo("CreateX");
-        ASSERT(af && af->arg == 5);
+        ASSERT(af && af->arg == 5 && !af->initData);
         const Library::AllocFunc* df = library.getDeallocFuncInfo("DeleteX");
         ASSERT(df && df->arg == 2);
-
-        ASSERT(library.returnuninitdata.find("CreateX") != library.returnuninitdata.cend());
     }
 
     void resource() const {

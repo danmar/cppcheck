@@ -53,7 +53,6 @@ ResultsView::ResultsView(QWidget * parent) :
     connect(mUI.mTree, &ResultsTree::resultsHidden, this, &ResultsView::resultsHidden);
     connect(mUI.mTree, &ResultsTree::checkSelected, this, &ResultsView::checkSelected);
     connect(mUI.mTree, &ResultsTree::treeSelectionChanged, this, &ResultsView::updateDetails);
-    connect(mUI.mTree, &ResultsTree::tagged, this, &ResultsView::tagged);
     connect(mUI.mTree, &ResultsTree::suppressIds, this, &ResultsView::suppressIds);
     connect(mUI.mTree, &ResultsTree::editFunctionContract, this, &ResultsView::editFunctionContract);
     connect(this, &ResultsView::showResults, mUI.mTree, &ResultsTree::showResults);
@@ -171,13 +170,6 @@ void ResultsView::updateFromOldReport(const QString &filename) const
 
 void ResultsView::save(const QString &filename, Report::Type type) const
 {
-    if (!hasResults()) {
-        QMessageBox msgBox;
-        msgBox.setText(tr("No errors found, nothing to save."));
-        msgBox.setIcon(QMessageBox::Critical);
-        msgBox.exec();
-    }
-
     Report *report = nullptr;
 
     switch (type) {
@@ -393,9 +385,8 @@ void ResultsView::updateDetails(const QModelIndex &index)
     QStandardItemModel *model = qobject_cast<QStandardItemModel*>(mUI.mTree->model());
     QStandardItem *item = model->itemFromIndex(index);
 
-    mUI.mCode->setPlainText(QString());
-
     if (!item) {
+        mUI.mCode->clear();
         mUI.mDetails->setText(QString());
         return;
     }
@@ -408,6 +399,7 @@ void ResultsView::updateDetails(const QModelIndex &index)
 
     // If there is no severity data then it is a parent item without summary and message
     if (!data.contains("severity")) {
+        mUI.mCode->clear();
         mUI.mDetails->setText(QString());
         return;
     }
@@ -433,19 +425,24 @@ void ResultsView::updateDetails(const QModelIndex &index)
     if (!QFileInfo(filepath).exists() && QFileInfo(mUI.mTree->getCheckDirectory() + '/' + filepath).exists())
         filepath = mUI.mTree->getCheckDirectory() + '/' + filepath;
 
-    QFile file(filepath);
-    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QStringList symbols;
-        QRegularExpression re(".*: ([A-Za-z_][A-Za-z0-9_]*)$");
-        const QString errorMessage = data["message"].toString();
-        QRegularExpressionMatch match = re.match(errorMessage);
-        if (match.hasMatch()) {
-            symbols << match.captured(1);
-        }
+    QStringList symbols;
+    if (data.contains("symbolNames"))
+        symbols = data["symbolNames"].toString().split("\n");
 
-        QTextStream in(&file);
-        mUI.mCode->setError(in.readAll(), lineNumber, symbols);
+    if (filepath == mUI.mCode->getFileName()) {
+        mUI.mCode->setError(lineNumber, symbols);
+        return;
     }
+
+    QFile file(filepath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        mUI.mCode->clear();
+        return;
+    }
+
+    QTextStream in(&file);
+    mUI.mCode->setError(in.readAll(), lineNumber, symbols);
+    mUI.mCode->setFileName(filepath);
 }
 
 void ResultsView::log(const QString &str)
@@ -455,7 +452,7 @@ void ResultsView::log(const QString &str)
 
 void ResultsView::debugError(const ErrorItem &item)
 {
-    mUI.mListLog->addItem(item.ToString());
+    mUI.mListLog->addItem(item.toString());
 }
 
 void ResultsView::bughuntingReportLine(const QString& line)

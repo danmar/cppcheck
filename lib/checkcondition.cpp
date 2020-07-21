@@ -452,7 +452,13 @@ void CheckCondition::duplicateCondition()
             continue;
 
         bool modified = false;
-        visitAstNodes(cond1, [&](const Token *tok3) {
+        visitAstNodes(cond1, [&](const Token* tok3) {
+            if (exprDependsOnThis(tok3)) {
+                if (isThisChanged(scope.classDef->next(), cond2, false, mSettings, mTokenizer->isCPP())) {
+                    modified = true;
+                    return ChildrenToVisit::done;
+                }
+            }
             if (tok3->varId() > 0 &&
                 isVariableChanged(scope.classDef->next(), cond2, tok3->varId(), false, mSettings, mTokenizer->isCPP())) {
                 modified = true;
@@ -682,16 +688,11 @@ void CheckCondition::multiCondition2()
                     ErrorPath errorPath;
 
                     if (type == MULTICONDITIONTYPE::INNER) {
-                        std::stack<const Token *> tokens1;
-                        tokens1.push(cond1);
-                        while (!tokens1.empty()) {
-                            const Token *firstCondition = tokens1.top();
-                            tokens1.pop();
+                        visitAstNodes(cond1, [&](const Token* firstCondition) {
                             if (!firstCondition)
-                                continue;
+                                return ChildrenToVisit::none;
                             if (firstCondition->str() == "&&") {
-                                tokens1.push(firstCondition->astOperand1());
-                                tokens1.push(firstCondition->astOperand2());
+                                return ChildrenToVisit::op1_and_op2;
                             } else if (!firstCondition->hasKnownIntValue()) {
                                 if (!isReturnVar && isOppositeCond(false, mTokenizer->isCPP(), firstCondition, cond2, mSettings->library, true, true, &errorPath)) {
                                     if (!isAliased(vars))
@@ -700,24 +701,22 @@ void CheckCondition::multiCondition2()
                                     identicalInnerConditionError(firstCondition, cond2, errorPath);
                                 }
                             }
-                        }
+                            return ChildrenToVisit::none;
+                        });
                     } else {
-                        std::stack<const Token *> tokens2;
-                        tokens2.push(cond2);
-                        while (!tokens2.empty()) {
-                            const Token *secondCondition = tokens2.top();
-                            tokens2.pop();
-                            if (!secondCondition)
-                                continue;
-                            if (secondCondition->str() == "||" || secondCondition->str() == "&&") {
-                                tokens2.push(secondCondition->astOperand1());
-                                tokens2.push(secondCondition->astOperand2());
-                            } else if ((!cond1->hasKnownIntValue() || !secondCondition->hasKnownIntValue()) &&
-                                       isSameExpression(mTokenizer->isCPP(), true, cond1, secondCondition, mSettings->library, true, true, &errorPath)) {
-                                if (!isAliased(vars))
+                        visitAstNodes(cond2, [&](const Token *secondCondition) {
+                            if (secondCondition->str() == "||" || secondCondition->str() == "&&")
+                                return ChildrenToVisit::op1_and_op2;
+
+                            if ((!cond1->hasKnownIntValue() || !secondCondition->hasKnownIntValue()) &&
+                                isSameExpression(mTokenizer->isCPP(), true, cond1, secondCondition, mSettings->library, true, true, &errorPath)) {
+                                if (!isAliased(vars) && !mTokenizer->hasIfdef(cond1, secondCondition)) {
                                     identicalConditionAfterEarlyExitError(cond1, secondCondition, errorPath);
+                                    return ChildrenToVisit::done;
+                                }
                             }
-                        }
+                            return ChildrenToVisit::none;
+                        });
                     }
                 }
                 if (Token::Match(tok, "%name% (") && isVariablesChanged(tok, tok->linkAt(1), true, varsInCond, mSettings, mTokenizer->isCPP())) {
@@ -1436,20 +1435,15 @@ void CheckCondition::alwaysTrueFalse()
 
             // Don't warn when there are expanded macros..
             bool isExpandedMacro = false;
-            std::stack<const Token*> tokens;
-            tokens.push(tok);
-            while (!tokens.empty()) {
-                const Token *tok2 = tokens.top();
-                tokens.pop();
+            visitAstNodes(tok, [&](const Token * tok2) {
                 if (!tok2)
-                    continue;
-                tokens.push(tok2->astOperand1());
-                tokens.push(tok2->astOperand2());
+                    return ChildrenToVisit::none;
                 if (tok2->isExpandedMacro()) {
                     isExpandedMacro = true;
-                    break;
+                    return ChildrenToVisit::done;
                 }
-            }
+                return ChildrenToVisit::op1_and_op2;
+            });
             if (isExpandedMacro)
                 continue;
             for (const Token *parent = tok; parent; parent = parent->astParent()) {
@@ -1463,25 +1457,23 @@ void CheckCondition::alwaysTrueFalse()
 
             // don't warn when condition checks sizeof result
             bool hasSizeof = false;
-            tokens.push(tok);
-            while (!tokens.empty()) {
-                const Token *tok2 = tokens.top();
-                tokens.pop();
+            bool hasNonNumber = false;
+            visitAstNodes(tok, [&](const Token * tok2) {
                 if (!tok2)
-                    continue;
+                    return ChildrenToVisit::none;
                 if (tok2->isNumber())
-                    continue;
+                    return ChildrenToVisit::none;
                 if (Token::simpleMatch(tok2->previous(), "sizeof (")) {
                     hasSizeof = true;
-                    continue;
+                    return ChildrenToVisit::none;
                 }
                 if (tok2->isComparisonOp() || tok2->isArithmeticalOp()) {
-                    tokens.push(tok2->astOperand1());
-                    tokens.push(tok2->astOperand2());
+                    return ChildrenToVisit::op1_and_op2;
                 } else
-                    break;
-            }
-            if (tokens.empty() && hasSizeof)
+                    hasNonNumber = true;
+                return ChildrenToVisit::none;
+            });
+            if (!hasNonNumber && hasSizeof)
                 continue;
 
             alwaysTrueFalseError(tok, &tok->values().front());

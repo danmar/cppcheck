@@ -4,11 +4,33 @@
     <virtualFolder>doc</virtualFolder>
     <filterSection>
         <toc>
-            <section title="Manual" ref="manual.html"/>
+            <section title="Cppcheck GUI help" ref="index.html">
+                <section title="Investigating warnings" ref="./investigating-warnings.html"/>
+                <section title="Preferences" ref="./preferences.html"/>
+                <section title="Project file dialog" ref="./projectfiledialog.html"/>
+                <section title="Standalone analysis" ref="./standalone-analysis.html"/>
+                <section title="Tagging" ref="./tagging.html"/>
+                <section title="Quick walk through" ref="./walkthrough.html"/>
+            </section>
         </toc>
-        <keywords/>
+        <keywords>
+            <keyword name="Project" ref="./projectfiledialog.html"/>
+            <keyword name="Tag" ref="./tagging.html"/>
+        </keywords>
         <files>
-          <file>manual.html</file>
+          <file>index.html</file>
+          <file>investigating-warnings.html</file>
+          <file>preferences.html</file>
+          <file>projectfiledialog.html</file>
+          <file>standalone-analysis.html</file>
+          <file>tagging.html</file>
+          <file>walkthrough.html</file>
+          <file>images/walkthrough-analysis.png</file>
+          <file>images/walkthrough-library.png</file>
+          <file>images/walkthrough-toolbar-severities.png</file>
+          <file>images/walkthrough-import-project.png</file>
+          <file>images/walkthrough-new-project.png</file> 
+          <file>images/walkthrough-warning-menu.png</file>
         </files>
     </filterSection>
 </QtHelpProject>

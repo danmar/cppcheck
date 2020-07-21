@@ -25,21 +25,27 @@
 class TestBughuntingChecks : public TestFixture {
 public:
     TestBughuntingChecks() : TestFixture("TestBughuntingChecks") {
+        settings.platform(cppcheck::Platform::Unix64);
     }
 
 private:
+    Settings settings;
+
     void run() OVERRIDE {
 #ifdef USE_Z3
+        settings.inconclusive = true;
+        LOAD_LIB_2(settings.library, "std.cfg");
         TEST_CASE(uninit);
         TEST_CASE(uninit_array);
         TEST_CASE(uninit_function_par);
+        TEST_CASE(uninit_malloc);
+        TEST_CASE(uninit_struct);
+        TEST_CASE(uninit_bailout);
         TEST_CASE(ctu);
 #endif
     }
 
     void check(const char code[]) {
-        Settings settings;
-        settings.platform(cppcheck::Platform::Unix64);
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
@@ -83,9 +89,41 @@ private:
 
         check("char foo(char id[]);\n"
               "void bar() { char data[10]; foo(data); }");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error, inconclusive) Cannot determine that 'data[0]' is initialized. It is inconclusive if there would be a problem in the function call.\n", errout.str());
 
         check("void foo(int *p) { if (p) *p=0; }");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninit_malloc() {
+        check("void foo() { char *p = malloc(10); return *p; }");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Cannot determine that '*p' is initialized\n", errout.str());
+    }
+
+    void uninit_struct() {
+        // Assume that constructors initialize all members
+        // TODO whole program analysis
+        check("struct Data { Data(); int x; }\n"
+              "void foo() {\n"
+              "  Data data;\n"
+              "  x = data.x;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninit_bailout() {
+        check("void foo() {\n"
+              "    __CPPCHECK_BAILOUT__;\n"
+              "    int values[5];\n"
+              "    values[i] = 123;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    __CPPCHECK_BAILOUT__;\n"
+              "    std::ostringstream comm;\n"
+              "    comm << 123;\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 

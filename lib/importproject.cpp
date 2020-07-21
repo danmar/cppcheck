@@ -1033,7 +1033,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     const std::string &path = mPath;
 
     std::list<std::string> paths;
-    std::list<std::string> suppressions;
+    std::list<Suppressions::Suppression> suppressions;
     Settings temp;
 
     guiProject.analyzeAllVsConfigs.clear();
@@ -1072,9 +1072,24 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
             guiProject.excludedPaths = readXmlStringList(node, "", CppcheckXml::IgnorePathName, CppcheckXml::IgnorePathNameAttrib);
         else if (strcmp(node->Name(), CppcheckXml::LibrariesElementName) == 0)
             guiProject.libraries = readXmlStringList(node, "", CppcheckXml::LibraryElementName, nullptr);
-        else if (strcmp(node->Name(), CppcheckXml::SuppressionsElementName) == 0)
-            suppressions = readXmlStringList(node, "", CppcheckXml::SuppressionElementName, nullptr);
-        else if (strcmp(node->Name(), CppcheckXml::VSConfigurationElementName) == 0)
+        else if (strcmp(node->Name(), CppcheckXml::SuppressionsElementName) == 0) {
+            for (const tinyxml2::XMLElement *child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
+                if (strcmp(child->Name(), CppcheckXml::SuppressionElementName) != 0)
+                    continue;
+                auto read = [](const char *s, const char *def) {
+                    return s ? s : def;
+                };
+                Suppressions::Suppression s;
+                s.errorId = read(child->GetText(), "");
+                s.fileName = read(child->Attribute("fileName"), "");
+                if (!s.fileName.empty())
+                    s.fileName = joinRelativePath(path, s.fileName);
+                s.lineNumber = child->IntAttribute("lineNumber", Suppressions::Suppression::NO_LINE);
+                s.symbolName = read(child->Attribute("symbolName"), "");
+                std::istringstream(read(child->Attribute("hash"), "0")) >> s.hash;
+                suppressions.push_back(s);
+            }
+        } else if (strcmp(node->Name(), CppcheckXml::VSConfigurationElementName) == 0)
             guiProject.checkVsConfigs = readXmlStringList(node, "", CppcheckXml::VSConfigurationName, nullptr);
         else if (strcmp(node->Name(), CppcheckXml::PlatformElementName) == 0)
             guiProject.platform = node->GetText();
@@ -1115,7 +1130,9 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
                 else
                     return false;
             }
-        } else
+        } else if (strcmp(node->Name(), CppcheckXml::TagWarningsElementName) == 0)
+            ; // TODO
+        else
             return false;
     }
     settings->basePaths = temp.basePaths;
@@ -1130,8 +1147,8 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
 
     for (const std::string &p : paths)
         guiProject.pathNames.push_back(p);
-    for (const std::string &supp : suppressions)
-        settings->nomsg.addSuppressionLine(supp);
+    for (const Suppressions::Suppression &supp : suppressions)
+        settings->nomsg.addSuppression(supp);
     settings->checkHeaders = temp.checkHeaders;
     settings->checkUnusedTemplates = temp.checkUnusedTemplates;
     settings->maxCtuDepth = temp.maxCtuDepth;

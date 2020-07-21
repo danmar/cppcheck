@@ -37,6 +37,15 @@
 #  define NOEXCEPT
 #endif
 
+// C++11 noreturn
+#if (defined(__GNUC__) && (__GNUC__ >= 5)) \
+  || (defined(__clang__) && (defined (__cplusplus)) && (__cplusplus >= 201103L)) \
+  || defined(__CPPCHECK__)
+#  define NORETURN [[noreturn]]
+#else
+#  define NORETURN
+#endif
+
 #define REQUIRES(msg, ...) class=typename std::enable_if<__VA_ARGS__::value>::type
 
 #include <string>

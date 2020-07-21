@@ -2,6 +2,7 @@
 <Include>
   <?define CliBuildDir = "..\bin" ?>
   <?define GuiBuildDir = "..\bin" ?>
+  <?define GuiHelpDir = "..\gui\help" ?>
   <?define TranslationsDir = "..\gui" ?>
   <?define CfgsDir = "..\cfg" ?>
   <?define PtfsDir = "..\platforms" ?>

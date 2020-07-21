@@ -2040,6 +2040,19 @@ void uninivar_bsearch(void)
     (void)std::bsearch(key,base,num,size,(int(*)(const void*,const void*)) strcmp);
 }
 
+void minsize_bsearch(const void* key, const void* base,
+                     size_t num, size_t size,
+                     int (*compar)(const void*,const void*))
+{
+    int Base [3] = {42, 43, 44};
+
+    (void)std::bsearch(key,Base,2,size,(int(*)(const void*,const void*)) strcmp);
+    (void)std::bsearch(key,Base,3,size,(int(*)(const void*,const void*)) strcmp);
+    (void)std::bsearch(key,Base,4,size,(int(*)(const void*,const void*)) strcmp);
+
+    (void)std::bsearch(key,base,2,size,(int(*)(const void*,const void*)) strcmp);
+}
+
 void uninitvar_qsort(void)
 {
     void *base;

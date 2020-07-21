@@ -449,7 +449,9 @@ const Token* getCondTokFromEnd(const Token* endBlock)
 
 bool extractForLoopValues(const Token *forToken,
                           nonneg int * const varid,
+                          bool * const knownInitValue,
                           MathLib::bigint * const initValue,
+                          bool * const partialCond,
                           MathLib::bigint * const stepValue,
                           MathLib::bigint * const lastValue)
 {
@@ -458,10 +460,21 @@ bool extractForLoopValues(const Token *forToken,
     const Token *initExpr = forToken->next()->astOperand2()->astOperand1();
     const Token *condExpr = forToken->next()->astOperand2()->astOperand2()->astOperand1();
     const Token *incExpr  = forToken->next()->astOperand2()->astOperand2()->astOperand2();
-    if (!initExpr || !initExpr->isBinaryOp() || initExpr->str() != "=" || !Token::Match(initExpr->astOperand1(), "%var%") || !initExpr->astOperand2()->hasKnownIntValue())
+    if (!initExpr || !initExpr->isBinaryOp() || initExpr->str() != "=" || !Token::Match(initExpr->astOperand1(), "%var%"))
         return false;
     *varid = initExpr->astOperand1()->varId();
-    *initValue = initExpr->astOperand2()->getKnownIntValue();
+    *knownInitValue = initExpr->astOperand2()->hasKnownIntValue();
+    *initValue = (*knownInitValue) ? initExpr->astOperand2()->getKnownIntValue() : 0;
+    *partialCond = Token::Match(condExpr, "%oror%|&&");
+    visitAstNodes(condExpr, [varid, &condExpr](const Token *tok) {
+        if (Token::Match(tok, "%oror%|&&"))
+            return ChildrenToVisit::op1_and_op2;
+        if (Token::Match(tok, "<|<=") && tok->isBinaryOp() && tok->astOperand1()->varId() == *varid && tok->astOperand2()->hasKnownIntValue()) {
+            if (Token::Match(condExpr, "%oror%|&&") || tok->astOperand2()->getKnownIntValue() < condExpr->astOperand2()->getKnownIntValue())
+                condExpr = tok;
+        }
+        return ChildrenToVisit::none;
+    });
     if (!Token::Match(condExpr, "<|<=") || !condExpr->isBinaryOp() || condExpr->astOperand1()->varId() != *varid || !condExpr->astOperand2()->hasKnownIntValue())
         return false;
     if (!incExpr || !incExpr->isUnaryOp("++") || incExpr->astOperand1()->varId() != *varid)
@@ -550,7 +563,10 @@ bool exprDependsOnThis(const Token* expr, nonneg int depth)
     // calling nonstatic method?
     if (Token::Match(expr->previous(), "!!:: %name% (") && expr->function() && expr->function()->nestedIn && expr->function()->nestedIn->isClassOrStruct()) {
         // is it a method of this?
-        const Scope *nestedIn = expr->scope()->functionOf;
+        const Scope* fScope = expr->scope();
+        while (!fScope->functionOf && fScope->nestedIn)
+            fScope = fScope->nestedIn;
+        const Scope* nestedIn = fScope->functionOf;
         if (nestedIn && nestedIn->function)
             nestedIn = nestedIn->function->token->scope();
         while (nestedIn && nestedIn != expr->function()->nestedIn) {
@@ -1304,7 +1320,7 @@ const Token * getTokenArgumentFunction(const Token * tok, int& argn)
     return tok;
 }
 
-const Variable* getArgumentVar(const Token* tok, int argnr)
+static const Variable* getArgumentVar(const Token* tok, int argnr)
 {
     if (!tok)
         return nullptr;
@@ -1566,6 +1582,27 @@ bool isVariablesChanged(const Token* start,
                 // TODO: Is global variable really changed by function call?
                 return true;
             continue;
+        }
+        if (isVariableChanged(tok, indirect, settings, cpp))
+            return true;
+    }
+    return false;
+}
+
+bool isThisChanged(const Token* start, const Token* end, int indirect, const Settings* settings, bool cpp)
+{
+    for (const Token* tok = start; tok != end; tok = tok->next()) {
+        if (!exprDependsOnThis(tok))
+            continue;
+        if (Token::Match(tok->previous(), "%name% (")) {
+            if (tok->previous()->function()) {
+                if (!tok->previous()->function()->isConst())
+                    return true;
+                else
+                    continue;
+            } else if (!tok->previous()->isKeyword()) {
+                return true;
+            }
         }
         if (isVariableChanged(tok, indirect, settings, cpp))
             return true;

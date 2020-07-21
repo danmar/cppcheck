@@ -173,15 +173,18 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
             if (arg.declarationId() && Token::Match(arg.typeStartToken(), "%type% * %name% [,)]")) {
                 // Treat the pointer as initialized until it is assigned by malloc
                 for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
-                    if (Token::Match(tok, "[;{}] %varid% = %name% (", arg.declarationId()) &&
-                        mSettings->library.returnuninitdata.count(tok->strAt(3)) == 1U) {
-                        if (arg.typeStartToken()->strAt(-1) == "struct" || (arg.type() && arg.type()->isStructType()))
-                            checkStruct(tok, arg);
-                        else if (arg.typeStartToken()->isStandardType() || arg.typeStartToken()->isEnumType()) {
-                            Alloc alloc = NO_ALLOC;
-                            const std::map<int, VariableValue> variableValue;
-                            checkScopeForVariable(tok->next(), arg, nullptr, nullptr, &alloc, emptyString, variableValue);
-                        }
+                    if (!Token::Match(tok, "[;{}] %varid% = %name% (", arg.declarationId()))
+                        continue;
+                    const Library::AllocFunc *allocFunc = mSettings->library.getAllocFuncInfo(tok->tokAt(3));
+                    if (!allocFunc || allocFunc->initData)
+                        continue;
+
+                    if (arg.typeStartToken()->strAt(-1) == "struct" || (arg.type() && arg.type()->isStructType()))
+                        checkStruct(tok, arg);
+                    else if (arg.typeStartToken()->isStandardType() || arg.typeStartToken()->isEnumType()) {
+                        Alloc alloc = NO_ALLOC;
+                        const std::map<int, VariableValue> variableValue;
+                        checkScopeForVariable(tok->next(), arg, nullptr, nullptr, &alloc, emptyString, variableValue);
                     }
                 }
             }
@@ -716,10 +719,12 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 const Token *rhs = tok->next()->astOperand2();
                 while (rhs && rhs->isCast())
                     rhs = rhs->astOperand2() ? rhs->astOperand2() : rhs->astOperand1();
-                if (rhs && Token::Match(rhs->previous(), "%name% (") &&
-                    mSettings->library.returnuninitdata.count(rhs->previous()->str()) > 0U) {
-                    *alloc = NO_CTOR_CALL;
-                    continue;
+                if (rhs && Token::Match(rhs->previous(), "%name% (")) {
+                    const Library::AllocFunc *allocFunc = mSettings->library.getAllocFuncInfo(rhs->astOperand1());
+                    if (allocFunc && !allocFunc->initData) {
+                        *alloc = NO_CTOR_CALL;
+                        continue;
+                    }
                 }
             }
             if (mTokenizer->isCPP() && var.isPointer() && (var.typeStartToken()->isStandardType() || var.typeStartToken()->isEnumType() || (var.type() && var.type()->needInitialization == Type::NeedInitialization::True)) && Token::simpleMatch(tok->next(), "= new")) {
@@ -876,22 +881,17 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
                 usetok = tok;
             else if (tok->strAt(1) == "=") {
                 bool varIsUsedInRhs = false;
-                std::stack<const Token *> tokens;
-                tokens.push(tok->next()->astOperand2());
-                while (!tokens.empty()) {
-                    const Token *t = tokens.top();
-                    tokens.pop();
+                visitAstNodes(tok->next()->astOperand2(), [&](const Token * t) {
                     if (!t)
-                        continue;
+                        return ChildrenToVisit::none;
                     if (t->varId() == var.declarationId()) {
                         varIsUsedInRhs = true;
-                        break;
+                        return ChildrenToVisit::done;
                     }
                     if (Token::simpleMatch(t->previous(),"sizeof ("))
-                        continue;
-                    tokens.push(t->astOperand1());
-                    tokens.push(t->astOperand2());
-                }
+                        return ChildrenToVisit::none;
+                    return ChildrenToVisit::op1_and_op2;
+                });
                 if (!varIsUsedInRhs)
                     return true;
             } else {

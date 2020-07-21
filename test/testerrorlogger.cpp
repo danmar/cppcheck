@@ -252,6 +252,7 @@ private:
         ASSERT_EQUALS("7 errorId"
                       "5 error"
                       "1 0"
+                      "1 0"
                       "12 inconclusive"
                       "17 Programming error"
                       "17 Programming error"
@@ -277,6 +278,7 @@ private:
 
         ASSERT_EQUALS("7 errorId"
                       "5 error"
+                      "1 0"
                       "1 0"
                       "33 Illegal character in \"foo\\001bar\""
                       "33 Illegal character in \"foo\\001bar\""

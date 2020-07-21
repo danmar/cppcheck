@@ -154,6 +154,7 @@ namespace {
         const Token *tok;
         const std::string what;
     };
+    struct TerminateExpression {};
 }
 
 static std::string str(ExprEngine::ValuePtr val)
@@ -716,6 +717,8 @@ namespace {
                         const std::string c = line.substr(pos, end-pos);
                         pos = end;
                         d.constraints.push_back(c);
+                    } else {
+                        throw ExprEngineException(nullptr, "Internal Error: Data::parsestr(), line:" + line);
                     }
                 }
                 importData->push_back(d);
@@ -1887,10 +1890,22 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
         }
     }
 
-    auto val = getValueRangeFromValueType(tok->valueType(), data);
-    call(data.callbacks, tok, val, &data);
+    else if (const auto *f = data.settings->library.getAllocFuncInfo(tok->astOperand1())) {
+        if (!f->initData) {
+            const std::string name = data.getNewSymbolName();
+            auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 1, ~0U);
+            auto val = std::make_shared<ExprEngine::UninitValue>();
+            auto result = std::make_shared<ExprEngine::ArrayValue>(name, size, val, false, false, false);
+            call(data.callbacks, tok, result, &data);
+            data.functionCall();
+            return result;
+        }
+    }
+
+    auto result = getValueRangeFromValueType(tok->valueType(), data);
+    call(data.callbacks, tok, result, &data);
     data.functionCall();
-    return val;
+    return result;
 }
 
 static ExprEngine::ValuePtr executeArrayIndex(const Token *tok, Data &data)
@@ -2139,6 +2154,9 @@ static ExprEngine::ValuePtr executeStringLiteral(const Token *tok, Data &data)
 
 static ExprEngine::ValuePtr executeExpression1(const Token *tok, Data &data)
 {
+    if (data.settings->terminated())
+        throw TerminateExpression();
+
     if (tok->str() == "return")
         return executeReturn(tok, data);
 
@@ -2222,6 +2240,10 @@ static std::string execute(const Token *start, const Token *end, Data &data)
     for (const Token *tok = start; tok != end; tok = tok->next()) {
         if (Token::Match(tok, "[;{}]"))
             data.trackProgramState(tok);
+
+        if (Token::simpleMatch(tok, "__CPPCHECK_BAILOUT__ ;"))
+            // This is intended for testing
+            throw ExprEngineException(tok, "__CPPCHECK_BAILOUT__");
 
         if (Token::simpleMatch(tok, "while (") && (tok->linkAt(1), ") ;") && tok->next()->astOperand1()->hasKnownIntValue() && tok->next()->astOperand1()->getKnownIntValue() == 0) {
             tok = tok->tokAt(4);
@@ -2359,8 +2381,9 @@ static std::string execute(const Token *start, const Token *end, Data &data)
 
         if (Token::simpleMatch(tok, "for (")) {
             nonneg int varid;
+            bool hasKnownInitValue, partialCond;
             MathLib::bigint initValue, stepValue, lastValue;
-            if (extractForLoopValues(tok, &varid, &initValue, &stepValue, &lastValue)) {
+            if (extractForLoopValues(tok, &varid, &hasKnownInitValue, &initValue, &partialCond, &stepValue, &lastValue) && hasKnownInitValue && !partialCond) {
                 auto loopValues = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), initValue, lastValue);
                 data.assignValue(tok, varid, loopValues);
                 tok = tok->linkAt(1);
@@ -2474,6 +2497,8 @@ void ExprEngine::executeAllFunctions(ErrorLogger *errorLogger, const Tokenizer *
             // FIXME.. there should not be exceptions
             std::string functionName = functionScope->function->name();
             std::cout << "Verify: Aborted analysis of function '" << functionName << "': " << e.what() << std::endl;
+        } catch (const TerminateExpression &) {
+            break;
         }
     }
 }
@@ -2546,8 +2571,15 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
         data.addConstraints(value, var.nameToken());
         return value;
     }
-    if (valueType->type == ValueType::Type::RECORD)
-        return createStructVal(valueType->typeScope, var.isLocal() && !var.isStatic(), data);
+    if (valueType->type == ValueType::Type::RECORD) {
+        bool init = true;
+        if (var.isLocal() && !var.isStatic()) {
+            init = valueType->typeScope &&
+                   valueType->typeScope->definedType &&
+                   valueType->typeScope->definedType->needInitialization != Type::NeedInitialization::False;
+        }
+        return createStructVal(valueType->typeScope, init, data);
+    }
     if (valueType->smartPointerType) {
         auto structValue = createStructVal(valueType->smartPointerType->classScope, var.isLocal() && !var.isStatic(), data);
         auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 1, ~0UL);

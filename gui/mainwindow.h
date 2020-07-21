@@ -221,9 +221,6 @@ protected slots:
     /** @brief Selects the platform as analyzed platform. */
     void selectPlatform();
 
-    /** Some results were tagged */
-    void tagged();
-
     /** Suppress error ids */
     void suppressIds(QStringList ids);
 

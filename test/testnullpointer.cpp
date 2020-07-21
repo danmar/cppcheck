@@ -262,7 +262,7 @@ private:
               "    }\n"
               "    tok->str();\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (warning, inconclusive) Possible null pointer dereference: tok - otherwise it is redundant to check it against null.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Either the condition 'tok' is redundant or there is possible null pointer dereference: tok.\n", errout.str());
 
         check("int foo(const Token *tok)\n"
               "{\n"

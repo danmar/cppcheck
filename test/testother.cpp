@@ -19,6 +19,7 @@
 #include "checkother.h"
 #include "library.h"
 #include "platform.h"
+#include "preprocessor.h"
 #include "settings.h"
 #include "standards.h"
 #include "testsuite.h"
@@ -86,6 +87,7 @@ private:
         TEST_CASE(varScope24);      // pointer / reference
         TEST_CASE(varScope25);      // time_t
         TEST_CASE(varScope26);      // range for loop, map
+        TEST_CASE(varScope27);      // #7733 - #if
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -241,6 +243,8 @@ private:
         TEST_CASE(unusedVariableValueTemplate); // #8994
 
         TEST_CASE(moduloOfOne);
+
+        TEST_CASE(sameExpressionPointers);
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, bool verbose=false, Settings* settings = nullptr) {
@@ -300,10 +304,14 @@ private:
         std::map<std::string, simplecpp::TokenList*> filedata;
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
+        Preprocessor preprocessor(*settings, nullptr);
+        preprocessor.setDirectives(tokens1);
+
         // Tokenizer..
         Tokenizer tokenizer(settings, this);
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
+        tokenizer.setPreprocessor(&preprocessor);
 
         // Check..
         CheckOther checkOther(&tokenizer, settings, this);
@@ -1227,6 +1235,24 @@ private:
               "  }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void varScope27() {
+        checkP("void f() {\n"
+               "  int x = 0;\n"
+               "#ifdef X\n"
+               "#endif\n"
+               "  if (id == ABC) { return x; }\n"
+               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkP("void f() {\n"
+               "#ifdef X\n"
+               "#endif\n"
+               "  int x = 0;\n"
+               "  if (id == ABC) { return x; }\n"
+               "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The scope of the variable 'x' can be reduced.\n", errout.str());
     }
 
     void checkOldStylePointerCast(const char code[]) {
@@ -5462,6 +5488,24 @@ private:
 
         check("void f() {\n"
               "  int val = 0;\n"
+              "  int *p = &val;n"
+              "  val = 1;\n"
+              "  if (*p < 0) continue;\n"
+              "  if ((*p > 0)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  int val = 0;\n"
+              "  int *p = &val;n"
+              "  if (*p < 0) continue;\n"
+              "  if ((*p > 0)) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The comparison '*p < 0' is always false.\n"
+                           "[test.cpp:2] -> [test.cpp:4]: (style) The comparison '*p > 0' is always false.\n", "", errout.str());
+
+        check("void f() {\n"
+              "  int val = 0;\n"
               "  if (val < 0) {\n"
               "    if ((val > 0)) {}\n"
               "  }\n"
@@ -8677,6 +8721,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void sameExpressionPointers() {
+        check("int f(int *i);\n"
+              "void g(int *a, int *b) {\n"
+              "    int c = *a;\n"
+              "    f(a);\n"
+              "    if (b && c != *a) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 };
 
 REGISTER_TEST(TestOther)

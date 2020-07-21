@@ -58,8 +58,8 @@ private:
     */
     QString getRootPath() const;
 
-    QStringList getVsConfigurations() const;
-    void    setVsConfigurations(const QStringList &configs);
+    QStringList getProjectConfigurations() const;
+    void setProjectConfigurations(const QStringList &configs);
 
     QString getImportProject() const;
 
@@ -215,9 +215,14 @@ protected slots:
     void editIncludeDir();
 
     /**
-    * @brief Add new path to exclude.
+    * @brief Add new path to exclude list.
     */
     void addExcludePath();
+
+    /**
+    * @brief Add new file to exclude list.
+    */
+    void addExcludeFile();
 
     /**
     * @brief Edit excluded path in the list.

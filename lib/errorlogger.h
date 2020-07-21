@@ -196,6 +196,9 @@ public:
     CWE cwe;
     bool inconclusive;
 
+    /** Warning hash */
+    std::size_t hash;
+
     /** set short and verbose messages */
     void setmsg(const std::string &msg);
 
