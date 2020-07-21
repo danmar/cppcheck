@@ -50,13 +50,18 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
         with:
-          modules: 'qtcharts'
+          modules: 'qtcharts qthelp'
 
       - name: Create .qm
         run: |
           cd gui
           lupdate gui.pro
           lrelease gui.pro -removeidentical
+
+      - name: Create online-help
+        run: |
+          cd gui\help
+          qhelpgenerator online-help.qhcp -o online-help.qhc
 
       - name: Matchcompiler
         run: python tools\matchcompiler.py --write-dir lib

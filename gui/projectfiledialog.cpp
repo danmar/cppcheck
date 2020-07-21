@@ -62,6 +62,8 @@ static const int numberOfBuiltinPlatforms = sizeof(builtinPlatforms) / sizeof(bu
 
 QStringList ProjectFileDialog::getProjectConfigs(const QString &fileName)
 {
+    if (!fileName.endsWith(".sln") && !fileName.endsWith(".vcxproj"))
+        return QStringList();
     QStringList ret;
     ImportProject importer;
     Settings projSettings;
@@ -199,6 +201,7 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
     connect(mUI.mBtnEditInclude, &QPushButton::clicked, this, &ProjectFileDialog::editIncludeDir);
     connect(mUI.mBtnRemoveInclude, &QPushButton::clicked, this, &ProjectFileDialog::removeIncludeDir);
     connect(mUI.mBtnAddIgnorePath, SIGNAL(clicked()), this, SLOT(addExcludePath()));
+    connect(mUI.mBtnAddIgnoreFile, SIGNAL(clicked()), this, SLOT(addExcludeFile()));
     connect(mUI.mBtnEditIgnorePath, &QPushButton::clicked, this, &ProjectFileDialog::editExcludePath);
     connect(mUI.mBtnRemoveIgnorePath, &QPushButton::clicked, this, &ProjectFileDialog::removeExcludePath);
     connect(mUI.mBtnIncludeUp, &QPushButton::clicked, this, &ProjectFileDialog::moveIncludePathUp);
@@ -208,6 +211,7 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
     connect(mUI.mListSuppressions, &QListWidget::doubleClicked, this, &ProjectFileDialog::editSuppression);
     connect(mUI.mBtnBrowseMisraFile, &QPushButton::clicked, this, &ProjectFileDialog::browseMisraFile);
     connect(mUI.mChkAllVsConfigs, &QCheckBox::clicked, this, &ProjectFileDialog::checkAllVSConfigs);
+    connect(mUI.mBtnNormalAnalysis, &QCheckBox::toggled, mUI.mBtnSafeClasses, &QCheckBox::setEnabled);
     loadFromProjectFile(projectFile);
 }
 
@@ -242,8 +246,12 @@ static void updateAddonCheckBox(QCheckBox *cb, const ProjectFile *projectFile, c
 
 void ProjectFileDialog::checkAllVSConfigs()
 {
-    if (mUI.mChkAllVsConfigs->isChecked())
-        mUI.mListVsConfigs->selectAll();
+    if (mUI.mChkAllVsConfigs->isChecked()) {
+        for (int row = 0; row < mUI.mListVsConfigs->count(); ++row) {
+            QListWidgetItem *item = mUI.mListVsConfigs->item(row);
+            item->setCheckState(Qt::Checked);
+        }
+    }
     mUI.mListVsConfigs->setEnabled(!mUI.mChkAllVsConfigs->isChecked());
 }
 
@@ -257,6 +265,14 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     setCheckPaths(projectFile->getCheckPaths());
     setImportProject(projectFile->getImportProject());
     mUI.mChkAllVsConfigs->setChecked(projectFile->getAnalyzeAllVsConfigs());
+    setProjectConfigurations(getProjectConfigs(mUI.mEditImportProject->text()));
+    for (int row = 0; row < mUI.mListVsConfigs->count(); ++row) {
+        QListWidgetItem *item = mUI.mListVsConfigs->item(row);
+        if (projectFile->getAnalyzeAllVsConfigs() || projectFile->getVsConfigurations().contains(item->text()))
+            item->setCheckState(Qt::Checked);
+        else
+            item->setCheckState(Qt::Unchecked);
+    }
     mUI.mCheckHeaders->setChecked(projectFile->getCheckHeaders());
     mUI.mCheckUnusedTemplates->setChecked(projectFile->getCheckUnusedTemplates());
     mUI.mMaxCtuDepth->setValue(projectFile->getMaxCtuDepth());
@@ -266,7 +282,7 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     else
         mUI.mBtnCppcheckParser->setChecked(true);
     mUI.mBtnSafeClasses->setChecked(projectFile->safeChecks.classes);
-    mUI.mBugHunting->setChecked(projectFile->bugHunting);
+    mUI.mBtnBugHunting->setChecked(projectFile->bugHunting);
     setExcludedPaths(projectFile->getExcludedPaths());
     setLibraries(projectFile->getLibraries());
     const QString platform = projectFile->getPlatform();
@@ -340,17 +356,6 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     }
     mUI.mEditTags->setText(projectFile->getTags().join(';'));
     updatePathsAndDefines();
-    if (mUI.mEditImportProject->text().endsWith(".sln") || mUI.mEditImportProject->text().endsWith(".vcxproj")) {
-        setVsConfigurations(getProjectConfigs(mUI.mEditImportProject->text()));
-        foreach (const QString &cfg, projectFile->getVsConfigurations()) {
-            QList<QListWidgetItem*> items = mUI.mListVsConfigs->findItems(cfg, Qt::MatchFlag::MatchExactly);
-            items[0]->setSelected(true);
-        }
-    } else {
-        mUI.mListVsConfigs->clear();
-        mUI.mListVsConfigs->setEnabled(false);
-    }
-
 }
 
 void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
@@ -359,6 +364,7 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setBuildDir(getBuildDir());
     projectFile->setImportProject(getImportProject());
     projectFile->setAnalyzeAllVsConfigs(mUI.mChkAllVsConfigs->isChecked());
+    projectFile->setVSConfigurations(getProjectConfigurations());
     projectFile->setCheckHeaders(mUI.mCheckHeaders->isChecked());
     projectFile->setCheckUnusedTemplates(mUI.mCheckUnusedTemplates->isChecked());
     projectFile->setMaxCtuDepth(mUI.mMaxCtuDepth->value());
@@ -371,7 +377,7 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setLibraries(getLibraries());
     projectFile->clangParser = mUI.mBtnClangParser->isChecked();
     projectFile->safeChecks.classes = mUI.mBtnSafeClasses->isChecked();
-    projectFile->bugHunting = mUI.mBugHunting->isChecked();
+    projectFile->bugHunting = mUI.mBtnBugHunting->isChecked();
     if (mUI.mComboBoxPlatform->currentText().endsWith(".xml"))
         projectFile->setPlatform(mUI.mComboBoxPlatform->currentText());
     else {
@@ -412,7 +418,6 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setClangAnalyzer(mUI.mToolClangAnalyzer->isChecked());
     projectFile->setClangTidy(mUI.mToolClangTidy->isChecked());
     projectFile->setTags(mUI.mEditTags->text().split(";", QString::SkipEmptyParts));
-    projectFile->setVSConfigurations(getVsConfigurations());
 }
 
 void ProjectFileDialog::ok()
@@ -458,6 +463,7 @@ void ProjectFileDialog::updatePathsAndDefines()
 {
     const QString &fileName = mUI.mEditImportProject->text();
     bool importProject = !fileName.isEmpty();
+    bool hasConfigs = fileName.endsWith(".sln") || fileName.endsWith(".vcxproj");
     mUI.mBtnClearImportProject->setEnabled(importProject);
     mUI.mListCheckPaths->setEnabled(!importProject);
     mUI.mListIncludeDirs->setEnabled(!importProject);
@@ -471,9 +477,9 @@ void ProjectFileDialog::updatePathsAndDefines()
     mUI.mBtnRemoveInclude->setEnabled(!importProject);
     mUI.mBtnIncludeUp->setEnabled(!importProject);
     mUI.mBtnIncludeDown->setEnabled(!importProject);
-    mUI.mChkAllVsConfigs->setEnabled(fileName.endsWith(".sln") || fileName.endsWith(".vcxproj"));
-    mUI.mListVsConfigs->setEnabled(fileName.endsWith(".sln") || fileName.endsWith(".vcxproj"));
-    if (!mUI.mListVsConfigs->isEnabled())
+    mUI.mChkAllVsConfigs->setEnabled(hasConfigs);
+    mUI.mListVsConfigs->setEnabled(hasConfigs && !mUI.mChkAllVsConfigs->isChecked());
+    if (!hasConfigs)
         mUI.mListVsConfigs->clear();
 }
 
@@ -497,24 +503,34 @@ void ProjectFileDialog::browseImportProject()
     if (!fileName.isEmpty()) {
         mUI.mEditImportProject->setText(dir.relativeFilePath(fileName));
         updatePathsAndDefines();
-        setVsConfigurations(getProjectConfigs(fileName));
-        mUI.mListVsConfigs->selectAll();
+        setProjectConfigurations(getProjectConfigs(fileName));
+        for (int row = 0; row < mUI.mListVsConfigs->count(); ++row) {
+            QListWidgetItem *item = mUI.mListVsConfigs->item(row);
+            item->setCheckState(Qt::Checked);
+        }
     }
 }
 
-QStringList ProjectFileDialog::getVsConfigurations() const
+QStringList ProjectFileDialog::getProjectConfigurations() const
 {
     QStringList configs;
-    foreach (QListWidgetItem *item, mUI.mListVsConfigs->selectedItems())
-        configs << item->text();
-
+    for (int row = 0; row < mUI.mListVsConfigs->count(); ++row) {
+        QListWidgetItem *item = mUI.mListVsConfigs->item(row);
+        if (item->checkState() == Qt::Checked)
+            configs << item->text();
+    }
     return configs;
 }
 
-void ProjectFileDialog::setVsConfigurations(const QStringList &configs)
+void ProjectFileDialog::setProjectConfigurations(const QStringList &configs)
 {
     mUI.mListVsConfigs->clear();
-    mUI.mListVsConfigs->addItems(configs);
+    mUI.mListVsConfigs->setEnabled(!configs.isEmpty() && !mUI.mChkAllVsConfigs->isChecked());
+    foreach (const QString &cfg, configs) {
+        QListWidgetItem* item = new QListWidgetItem(cfg, mUI.mListVsConfigs);
+        item->setFlags(item->flags() | Qt::ItemIsUserCheckable); // set checkable flag
+        item->setCheckState(Qt::Unchecked);
+    }
 }
 
 QString ProjectFileDialog::getImportProject() const
@@ -717,9 +733,17 @@ void ProjectFileDialog::editIncludeDir()
 
 void ProjectFileDialog::addExcludePath()
 {
-    QString dir = getExistingDirectory(tr("Select directory to ignore"), true);
-    if (!dir.isEmpty())
-        addExcludePath(dir);
+    addExcludePath(getExistingDirectory(tr("Select directory to ignore"), true));
+}
+
+void ProjectFileDialog::addExcludeFile()
+{
+    const QFileInfo inf(mProjectFile->getFilename());
+    const QDir &dir = inf.absoluteDir();
+    QMap<QString,QString> filters;
+    filters[tr("Source files")] = "*.c *.cpp";
+    filters[tr("All files")] = "*.*";
+    addExcludePath(QFileDialog::getOpenFileName(this, tr("Exclude file"), dir.canonicalPath(), toFilterString(filters)));
 }
 
 void ProjectFileDialog::editExcludePath()
@@ -802,7 +826,10 @@ int ProjectFileDialog::getSuppressionIndex(const QString &shortText) const
 
 void ProjectFileDialog::browseMisraFile()
 {
-    const QString fileName = QFileDialog::getOpenFileName(this, tr("Select MISRA rule texts file"), QDir::homePath(), tr("Misra rule texts file (%1)").arg("*.txt"));
+    const QString fileName = QFileDialog::getOpenFileName(this,
+                             tr("Select MISRA rule texts file"),
+                             QDir::homePath(),
+                             tr("Misra rule texts file (%1)").arg("*.txt"));
     if (!fileName.isEmpty()) {
         QSettings settings;
         mUI.mEditMisraFile->setText(fileName);

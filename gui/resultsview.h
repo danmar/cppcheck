@@ -50,10 +50,6 @@ public:
     virtual ~ResultsView();
     ResultsView &operator=(const ResultsView &) = delete;
 
-    void setTags(const QStringList &tags) {
-        mUI.mTree->setTags(tags);
-    }
-
     void setAddedContracts(const QStringList &addedContracts);
 
     /**
@@ -222,11 +218,6 @@ signals:
     */
     void checkSelected(QStringList selectedFilesList);
 
-    /**
-     * Some results have been tagged
-     */
-    void tagged();
-
     /** Suppress Ids */
     void suppressIds(QStringList ids);
 
@@ -368,6 +359,9 @@ private slots:
     void on_mListLog_customContextMenuRequested(const QPoint &pos);
 private:
     QSet<QString> mContracts;
+
+    /** Current file shown in the code editor */
+    QString mCurrentFileName;
 };
 /// @}
 #endif // RESULTSVIEW_H

@@ -175,8 +175,9 @@ As you can see Cppcheck has instantiated `a<i+1>` until `a<101>` was reached
 and then it bails out.
 
 To limit template recursion you can;
- * add template specialisation
- * configure cppcheck (in the GUI project file dialog)
+
+- add template specialisation
+- configure cppcheck (in the GUI project file dialog)
 
 Example code with template specialisation:
 
@@ -348,14 +349,15 @@ Use `--std` on the command line to specify a C/C++ standard.
 Cppcheck assumes that the code is compatible with the latest C/C++ standard but you can override this.
 
 The available options are:
-  * c89: C code is C89 compatible
-  * c99: C code is C99 compatible
-  * c11: C code is C11 compatible (default)
-  * c++03: C++ code is C++03 compatible
-  * c++11: C++ code is C++11 compatible
-  * c++14: C++ code is C++14 compatible
-  * c++17: C++ code is C++17 compatible
-  * c++20: C++ code is C++20 compatible (default)
+
+- c89: C code is C89 compatible
+- c99: C code is C99 compatible
+- c11: C code is C11 compatible (default)
+- c++03: C++ code is C++03 compatible
+- c++11: C++ code is C++11 compatible
+- c++14: C++ code is C++14 compatible
+- c++17: C++ code is C++17 compatible
+- c++20: C++ code is C++20 compatible (default)
 
 # Suppressions
 
@@ -873,10 +875,11 @@ This analysis is "soundy"; it should diagnose most bugs reported in CVEs and fro
 You have to expect false alarms. However Cppcheck tries to limit false alarms. The purpose of the data flow analysis is to limit false alarms.
 
 Some possible use cases;
- * you are writing new code and want to ensure it is safe.
- * you are reviewing code and want to get hints about possible UB.
- * you need extra help troubleshooting a weird bug.
- * you want to check if a release candidate is safe.
+
+- you are writing new code and want to ensure it is safe.
+- you are reviewing code and want to get hints about possible UB.
+- you need extra help troubleshooting a weird bug.
+- you want to check if a release candidate is safe.
 
 The intention is that this will be used primarily in the GUI.
 
@@ -923,8 +926,9 @@ Cppcheck will warn:
 ## Adding a contract in the GUI
 
 There are two ways:
- * Open the "Contracts" tab at the bottom of the screen. Find the function in the listbox and double click on it.
- * Right click on a warning and click on "Edit contract.." in the popup menu. This popup menu item is only available if the warning is not inconclusive.
+
+- Open the "Contracts" tab at the bottom of the screen. Find the function in the listbox and double click on it.
+- Right click on a warning and click on "Edit contract.." in the popup menu. This popup menu item is only available if the warning is not inconclusive.
 
 ## Incomplete analysis
 

@@ -55,9 +55,6 @@ public:
         mActiveProject = this;
     }
 
-    /** Suppress warning with Cppcheck-ID */
-    void suppressCppcheckId(std::size_t cppcheckId);
-
     /**
      * @brief Read the project file.
      * @param filename Filename (can be also given to constructor).
@@ -312,6 +309,9 @@ public:
      */
     void setSuppressions(const QList<Suppressions::Suppression> &suppressions);
 
+    /** Add suppression */
+    void addSuppression(const Suppressions::Suppression &suppression);
+
     /**
      * @brief Set list of addons.
      * @param addons List of addons.
@@ -330,6 +330,12 @@ public:
     void setTags(const QStringList &tags) {
         mTags = tags;
     }
+
+    /** Set tags for a warning */
+    void setWarningTags(std::size_t hash, QString tags);
+
+    /** Get tags for a warning */
+    QString getWarningTags(std::size_t hash) const;
 
     /**
      * @brief Write project file (to disk).
@@ -436,6 +442,12 @@ protected:
      * @param reader XML stream reader.
      */
     void readSuppressions(QXmlStreamReader &reader);
+
+    /**
+     * @brief Read tag warnings, what warnings are tagged with a specific tag
+     * @param reader XML stream reader.
+     */
+    void readTagWarnings(QXmlStreamReader &reader, const QString &tag);
 
     /**
       * @brief Read string list
@@ -552,9 +564,14 @@ private:
     bool mClangTidy;
 
     /**
-     * @brief Warning tags
+     * @brief Tags
      */
     QStringList mTags;
+
+    /**
+     * @brief Warning tags
+     */
+    std::map<std::size_t, QString> mWarningTags;
 
     /** Max CTU depth */
     int mMaxCtuDepth;

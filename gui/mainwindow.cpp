@@ -34,20 +34,21 @@
 #include "applicationlist.h"
 #include "aboutdialog.h"
 #include "common.h"
-#include "threadhandler.h"
+#include "filelist.h"
 #include "fileviewdialog.h"
 #include "functioncontractdialog.h"
+#include "helpdialog.h"
+#include "librarydialog.h"
 #include "projectfile.h"
 #include "projectfiledialog.h"
 #include "report.h"
 #include "scratchpad.h"
+#include "showtypes.h"
 #include "statsdialog.h"
 #include "settingsdialog.h"
+#include "threadhandler.h"
 #include "threadresult.h"
 #include "translationhandler.h"
-#include "filelist.h"
-#include "showtypes.h"
-#include "librarydialog.h"
 
 static const QString OnlineHelpURL("http://cppcheck.net/manual.html");
 static const QString compile_commands_json("compile_commands.json");
@@ -141,7 +142,6 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI.mResults, &ResultsView::gotResults, this, &MainWindow::resultsAdded);
     connect(mUI.mResults, &ResultsView::resultsHidden, mUI.mActionShowHidden, &QAction::setEnabled);
     connect(mUI.mResults, &ResultsView::checkSelected, this, &MainWindow::performSelectedFilesCheck);
-    connect(mUI.mResults, &ResultsView::tagged, this, &MainWindow::tagged);
     connect(mUI.mResults, &ResultsView::suppressIds, this, &MainWindow::suppressIds);
     connect(mUI.mResults, &ResultsView::editFunctionContract, this, &MainWindow::editFunctionContract);
     connect(mUI.mMenuView, &QMenu::aboutToShow, this, &MainWindow::aboutToShowViewMenu);
@@ -1466,7 +1466,8 @@ void MainWindow::openHelpContents()
 
 void MainWindow::openOnlineHelp()
 {
-    QDesktopServices::openUrl(QUrl(OnlineHelpURL));
+    HelpDialog *helpDialog = new HelpDialog;
+    helpDialog->showMaximized();
 }
 
 void MainWindow::openProjectFile()
@@ -1524,8 +1525,6 @@ QString MainWindow::getLastResults() const
 
 bool MainWindow::loadLastResults()
 {
-    if (mProjectFile)
-        mUI.mResults->setTags(mProjectFile->getTags());
     const QString &lastResults = getLastResults();
     if (lastResults.isEmpty())
         return false;
@@ -1548,7 +1547,6 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool check
     QDir::setCurrent(inf.absolutePath());
 
     mThread->setAddonsAndTools(projectFile->getAddonsAndTools());
-    mUI.mResults->setTags(projectFile->getTags());
 
     // If the root path is not given or is not "current dir", use project
     // file's location directory as root path
@@ -1652,7 +1650,6 @@ void MainWindow::closeProjectFile()
     delete mProjectFile;
     mProjectFile = nullptr;
     mUI.mResults->clear(true);
-    mUI.mResults->setTags(QStringList());
     enableProjectActions(false);
     enableProjectOpenActions(true);
     formatAndSetTitle();
@@ -1812,13 +1809,6 @@ void MainWindow::selectPlatform()
         const Settings::PlatformType platform = (Settings::PlatformType) action->data().toInt();
         mSettings->setValue(SETTINGS_CHECKED_PLATFORM, platform);
     }
-}
-
-void MainWindow::tagged()
-{
-    const QString &lastResults = getLastResults();
-    if (!lastResults.isEmpty())
-        mUI.mResults->save(lastResults, Report::XMLV2);
 }
 
 void MainWindow::suppressIds(QStringList ids)

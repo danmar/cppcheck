@@ -34,7 +34,7 @@ static const QString ErrorElementName = "error";
 static const QString ErrorsElementName = "errors";
 static const QString LocationElementName = "location";
 static const QString CWEAttribute = "cwe";
-static const QString CppcheckIdAttribute = "cppcheck-id";
+static const QString HashAttribute = "hash";
 static const QString SinceDateAttribute = "sinceDate";
 static const QString TagsAttribute = "tag";
 static const QString FilenameAttribute = "file";
@@ -123,8 +123,8 @@ void XmlReportV2::writeError(const ErrorItem &error)
         mXmlWriter->writeAttribute(InconclusiveAttribute, "true");
     if (error.cwe > 0)
         mXmlWriter->writeAttribute(CWEAttribute, QString::number(error.cwe));
-    if (error.cppcheckId > 0)
-        mXmlWriter->writeAttribute(CppcheckIdAttribute, QString::number(error.cppcheckId));
+    if (error.hash > 0)
+        mXmlWriter->writeAttribute(HashAttribute, QString::number(error.hash));
     if (!error.sinceDate.isEmpty())
         mXmlWriter->writeAttribute(SinceDateAttribute, error.sinceDate);
     if (!error.tags.isEmpty())
@@ -218,8 +218,8 @@ ErrorItem XmlReportV2::readError(QXmlStreamReader *reader)
             item.inconclusive = true;
         if (attribs.hasAttribute(QString(), CWEAttribute))
             item.cwe = attribs.value(QString(), CWEAttribute).toInt();
-        if (attribs.hasAttribute(QString(), CppcheckIdAttribute))
-            item.cppcheckId = attribs.value(QString(), CppcheckIdAttribute).toULongLong();
+        if (attribs.hasAttribute(QString(), HashAttribute))
+            item.hash = attribs.value(QString(), HashAttribute).toULongLong();
         if (attribs.hasAttribute(QString(), SinceDateAttribute))
             item.sinceDate = attribs.value(QString(), SinceDateAttribute).toString();
         if (attribs.hasAttribute(QString(), TagsAttribute))

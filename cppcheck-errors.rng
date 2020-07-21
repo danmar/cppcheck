@@ -25,7 +25,7 @@
               </attribute>
             </optional>
             <optional>
-              <attribute name="cppcheck-id">
+              <attribute name="hash">
                 <data type="integer">
                   <param name="minExclusive">1</param>
                 </data>

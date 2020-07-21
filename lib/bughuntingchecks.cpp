@@ -157,6 +157,45 @@ static void integerOverflow(const Token *tok, const ExprEngine::Value &value, Ex
 }
 #endif
 
+/** check if variable is unconditionally assigned */
+static bool isVariableAssigned(const Variable *var, const Token *tok, const Token *scopeStart=nullptr)
+{
+    const Token * const start = scopeStart && precedes(var->nameToken(), scopeStart) ? scopeStart : var->nameToken();
+
+    for (const Token *prev = tok->previous(); prev; prev = prev->previous()) {
+        if (!precedes(start, prev))
+            break;
+
+        if (prev->str() == "}") {
+            if (Token::simpleMatch(prev->link()->tokAt(-2), "} else {")) {
+                const Token *elseEnd = prev;
+                const Token *elseStart = prev->link();
+                const Token *ifEnd = elseStart->tokAt(-2);
+                const Token *ifStart = ifEnd->link();
+                if (isVariableAssigned(var, ifEnd, ifStart) && isVariableAssigned(var, elseEnd, elseStart)) {
+                    return true;
+                }
+            }
+            prev = prev->link();
+        }
+        if (scopeStart && Token::Match(prev, "return|throw|continue|break"))
+            return true;
+        if (Token::Match(prev, "%varid% =", var->declarationId())) {
+            bool usedInRhs = false;
+            visitAstNodes(prev->next()->astOperand2(), [&usedInRhs, var](const Token *tok) {
+                if (tok->varId() == var->declarationId()) {
+                    usedInRhs = true;
+                    return ChildrenToVisit::done;
+                }
+                return ChildrenToVisit::op1_and_op2;
+            });
+            if (!usedInRhs)
+                return true;
+        }
+    }
+    return false;
+}
+
 static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase)
 {
     if (!tok->astParent())
@@ -230,6 +269,10 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
         if (Token::Match(tok, "%var% .") && tok->next()->originalName() != "->")
             return;
 
+        // Assume that stream object is initialized
+        if (Token::Match(tok->previous(), "[;{}] %var% <<|>>") && !tok->next()->astParent())
+            return;
+
         // Containers are not uninitialized
         std::vector<const Token *> tokens{tok, tok->astOperand1(), tok->astOperand2()};
         if (Token::Match(tok->previous(), ". %name%"))
@@ -248,7 +291,7 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
             if (!var->isLocal() || var->isStatic())
                 return;
         }
-        if (var && (Token::Match(var->nameToken(), "%name% [=:]") || Token::Match(var->nameToken(), "%varid% ; %varid% =", var->declarationId())))
+        if (var && (Token::Match(var->nameToken(), "%name% [=:({)]") || Token::Match(var->nameToken(), "%varid% ; %varid% =", var->declarationId())))
             return;
         if (var && var->nameToken() == tok)
             return;
@@ -256,14 +299,13 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
         // Are there unconditional assignment?
         if (var && Token::Match(var->nameToken(), "%varid% ;| %varid%| =", tok->varId()))
             return;
-        for (const Token *prev = tok->previous(); prev; prev = prev->previous()) {
-            if (!precedes(var->nameToken(), prev))
-                break;
-            if (prev->str() == "}")
-                prev = prev->link();
-            if (Token::Match(prev, "%varid% =", tok->varId()))
-                return;
-        }
+
+        // Arrays are allocated on the stack
+        if (var && Token::Match(tok, "%var% [") && var->isArray())
+            return;
+
+        if (tok->variable() && isVariableAssigned(tok->variable(), tok))
+            return;
     }
 
     // Uninitialized function argument
@@ -318,10 +360,11 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
     const std::string inconclusiveMessage(inconclusive ? ". It is inconclusive if there would be a problem in the function call." : "");
 
     if (!uninitStructMember.empty()) {
+        const std::string symbol = tok->expressionString() + "." + uninitStructMember;
         dataBase->reportError(tok,
                               Severity::SeverityType::error,
                               "bughuntingUninitStructMember",
-                              "Cannot determine that '" + tok->expressionString() + "." + uninitStructMember + "' is initialized" + inconclusiveMessage,
+                              "$symbol:" + symbol + "\nCannot determine that '$symbol' is initialized" + inconclusiveMessage,
                               CWE_USE_OF_UNINITIALIZED_VARIABLE,
                               inconclusive,
                               value.type == ExprEngine::ValueType::BailoutValue);
@@ -332,10 +375,12 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
     if (uninitData)
         uninitexpr += "[0]";
 
+    const std::string symbol = (tok->varId() > 0) ? ("$symbol:" + tok->str() + "\n") : std::string();
+
     dataBase->reportError(tok,
                           Severity::SeverityType::error,
                           "bughuntingUninit",
-                          "Cannot determine that '" + uninitexpr + "' is initialized" + inconclusiveMessage,
+                          symbol + "Cannot determine that '" + uninitexpr + "' is initialized" + inconclusiveMessage,
                           CWE_USE_OF_UNINITIALIZED_VARIABLE,
                           inconclusive,
                           value.type == ExprEngine::ValueType::BailoutValue);
