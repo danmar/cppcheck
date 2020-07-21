@@ -19,6 +19,7 @@
         </keywords>
         <files>
           <file>index.html</file>
+          <file>images/index-mainwindow.png</file>
           <file>investigating-warnings.html</file>
           <file>preferences.html</file>
           <file>projectfiledialog.html</file>
