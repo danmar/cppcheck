@@ -10,6 +10,7 @@
                 <section title="Project file dialog" ref="./projectfiledialog.html"/>
                 <section title="Standalone analysis" ref="./standalone-analysis.html"/>
                 <section title="Tagging" ref="./tagging.html"/>
+                <section title="Quick walk through" ref="./walkthrough.html"/>
             </section>
         </toc>
         <keywords>
@@ -23,6 +24,13 @@
           <file>projectfiledialog.html</file>
           <file>standalone-analysis.html</file>
           <file>tagging.html</file>
+          <file>walkthrough.html</file>
+          <file>images/walkthrough-analysis.png</file>
+          <file>images/walkthrough-library.png</file>
+          <file>images/walkthrough-toolbar-severities.png</file>
+          <file>images/walkthrough-import-project.png</file>
+          <file>images/walkthrough-new-project.png</file> 
+          <file>images/walkthrough-warning-menu.png</file>
         </files>
     </filterSection>
 </QtHelpProject>
