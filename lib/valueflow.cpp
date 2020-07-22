@@ -4078,12 +4078,12 @@ struct ValueFlowConditionHandler {
                     }
                     if (parent) {
                         const std::string &op(parent->str());
-                        bool assign = false;
                         std::list<ValueFlow::Value> values = cond.true_values;
                         if (Token::Match(tok, "==|!="))
                             changePossibleToKnown(values);
                         if ((op == "&&" && Token::Match(tok, "==|>=|<=|!")) ||
                             (op == "||" && Token::Match(tok, "%name%|!="))) {
+                            bool assign = false;
                             visitAstNodes(parent->astOperand2(), [&](Token* tok2) {
                                 if (isSameExpression(tokenlist->isCPP(), false, cond.vartok, tok2, settings->library, true, false))
                                     setTokenValue(tok2, values.front(), settings);
