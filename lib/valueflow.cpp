@@ -4071,39 +4071,36 @@ struct ValueFlowConditionHandler {
 
                 if (Token::Match(tok->astParent(), "%oror%|&&")) {
                     Token *parent = tok->astParent();
-                    const std::string &op(parent->str());
-
-                    if (parent->astOperand1() == tok && ((op == "&&" && Token::Match(tok, "==|>=|<=|!")) ||
-                                                         (op == "||" && Token::Match(tok, "%name%|!=")))) {
-                        for (; parent && parent->str() == op; parent = parent->astParent()) {
-                            std::stack<Token *> tokens;
-                            tokens.push(parent->astOperand2());
+                    if (astIsRHS(tok) && parent->astParent() && parent->str() == parent->astParent()->str())
+                        parent = parent->astParent();
+                    else if (!astIsLHS(tok)) {
+                        parent = nullptr;
+                    }
+                    if (parent) {
+                        const std::string &op(parent->str());
+                        std::list<ValueFlow::Value> values = cond.true_values;
+                        if (Token::Match(tok, "==|!="))
+                            changePossibleToKnown(values);
+                        if ((op == "&&" && Token::Match(tok, "==|>=|<=|!")) ||
+                            (op == "||" && Token::Match(tok, "%name%|!="))) {
                             bool assign = false;
-                            while (!tokens.empty()) {
-                                Token *rhstok = tokens.top();
-                                tokens.pop();
-                                if (!rhstok)
-                                    continue;
-                                tokens.push(rhstok->astOperand1());
-                                tokens.push(rhstok->astOperand2());
-                                if (isSameExpression(
-                                        tokenlist->isCPP(), false, cond.vartok, rhstok, settings->library, true, false))
-                                    setTokenValue(rhstok, cond.true_values.front(), settings);
-                                else if (Token::Match(rhstok, "++|--|=") && isSameExpression(tokenlist->isCPP(),
+                            visitAstNodes(parent->astOperand2(), [&](Token* tok2) {
+                                if (isSameExpression(tokenlist->isCPP(), false, cond.vartok, tok2, settings->library, true, false))
+                                    setTokenValue(tok2, values.front(), settings);
+                                else if (Token::Match(tok2, "++|--|=") && isSameExpression(tokenlist->isCPP(),
                                          false,
                                          cond.vartok,
-                                         rhstok->astOperand1(),
+                                         tok2->astOperand1(),
                                          settings->library,
                                          true,
                                          false)) {
                                     assign = true;
-                                    break;
+                                    return ChildrenToVisit::done;
                                 }
-                            }
+                                return ChildrenToVisit::op1_and_op2;
+                            });
                             if (assign)
                                 break;
-                            while (parent->astParent() && parent == parent->astParent()->astOperand2())
-                                parent = parent->astParent();
                         }
                     }
                 }
