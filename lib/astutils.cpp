@@ -20,6 +20,7 @@
 //---------------------------------------------------------------------------
 #include "astutils.h"
 
+#include "config.h"
 #include "library.h"
 #include "mathlib.h"
 #include "settings.h"
@@ -32,13 +33,13 @@
 #include <list>
 #include <stack>
 
-
-void visitAstNodes(const Token *ast, std::function<ChildrenToVisit(const Token *)> visitor)
+template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
+void visitAstNodesGeneric(T *ast, std::function<ChildrenToVisit(T *)> visitor)
 {
-    std::stack<const Token *> tokens;
+    std::stack<T *> tokens;
     tokens.push(ast);
     while (!tokens.empty()) {
-        const Token *tok = tokens.top();
+        T *tok = tokens.top();
         tokens.pop();
         if (!tok)
             continue;
@@ -52,6 +53,16 @@ void visitAstNodes(const Token *ast, std::function<ChildrenToVisit(const Token *
         if (c == ChildrenToVisit::op2 || c == ChildrenToVisit::op1_and_op2)
             tokens.push(tok->astOperand2());
     }
+}
+
+void visitAstNodes(const Token *ast, std::function<ChildrenToVisit(const Token *)> visitor)
+{
+    visitAstNodesGeneric(ast, std::move(visitor));
+}
+
+void visitAstNodes(Token *ast, std::function<ChildrenToVisit(Token *)> visitor)
+{
+    visitAstNodesGeneric(ast, std::move(visitor));
 }
 
 static void astFlattenRecursive(const Token *tok, std::vector<const Token *> *result, const char* op, nonneg int depth = 0)

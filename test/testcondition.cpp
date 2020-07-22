@@ -840,14 +840,16 @@ private:
               "        a++;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x != 1 || x != 3.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x != 1 || x != 3.\n"
+                      "[test.cpp:2] -> [test.cpp:2]: (style) Condition 'x!=3' is always true\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (1 != x || 3 != x)\n"
               "        a++;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x != 1 || x != 3.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x != 1 || x != 3.\n"
+                      "[test.cpp:2] -> [test.cpp:2]: (style) Condition '3!=x' is always true\n", errout.str());
 
         check("void f(int x) {\n"
               "  if (x<0 && !x) {}\n"
@@ -857,12 +859,14 @@ private:
         check("void f(int x) {\n"
               "  if (x==0 && x) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x == 0 && x.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x == 0 && x.\n"
+                      "[test.cpp:2] -> [test.cpp:2]: (style) Condition 'x' is always false\n", errout.str());
 
         check("void f(int x) {\n" // ast..
               "    if (y == 1 && x == 1 && x == 7) { }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x == 1 && x == 7.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x == 1 && x == 7.\n"
+                      "[test.cpp:2] -> [test.cpp:2]: (style) Condition 'x==7' is always false\n", errout.str());
 
         check("void f(int x, int y) {\n"
               "    if (x != 1 || y != 1)\n"
@@ -883,7 +887,7 @@ private:
               "        a++;\n"
               "}\n"
              );
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 'x!=3' is always true\n", errout.str());
 
         check("void f(int x) {\n"
               "    if ((x != 1) && (x != 3))\n"
@@ -926,7 +930,8 @@ private:
               "        a++;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x != 5 || x != 6.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x != 5 || x != 6.\n"
+                      "[test.cpp:2] -> [test.cpp:2]: (style) Condition 'x!=6' is always true\n", errout.str());
 
         check("void f(unsigned int a, unsigned int b, unsigned int c) {\n"
               "    if((a != b) || (c != b) || (c != a))\n"
@@ -950,13 +955,14 @@ private:
               "    if ((x == 1) && (x == 0x00000001))\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 'x==0x00000001' is always true\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x == 1 && x == 3)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x == 1 && x == 3.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x == 1 && x == 3.\n"
+                      "[test.cpp:2] -> [test.cpp:2]: (style) Condition 'x==3' is always false\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x == 1.0 && x == 3.0)\n"
@@ -1079,7 +1085,8 @@ private:
               "        a++;\n"
               "}");
 
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If 'x == 3', the comparison 'x != 4' is always true.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If 'x == 3', the comparison 'x != 4' is always true.\n"
+                      "[test.cpp:2] -> [test.cpp:2]: (style) Condition 'x!=4' is always true\n", errout.str());
 
         check("void f(int x) {\n"
               "    if ((x!=4) && (x==3))\n"
@@ -1097,13 +1104,15 @@ private:
               "    if ((x!=4) || (x==3))\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If 'x == 3', the comparison 'x != 4' is always true.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If 'x == 3', the comparison 'x != 4' is always true.\n"
+                      "[test.cpp:2] -> [test.cpp:2]: (style) Condition 'x==3' is always false\n", errout.str());
 
         check("void f(int x) {\n"
               "    if ((x==3) && (x!=3))\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x == 3 && x != 3.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x == 3 && x != 3.\n"
+                      "[test.cpp:2] -> [test.cpp:2]: (style) Condition 'x!=3' is always false\n", errout.str());
 
         check("void f(int x) {\n"
               "    if ((x==6) || (x!=6))\n"
@@ -1195,7 +1204,8 @@ private:
         check("void f(char x) {\n"
               "  if (x == '1' && x == '2') {}\n"
               "}", "test.cpp", true);
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x == '1' && x == '2'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x == '1' && x == '2'.\n"
+                      "[test.cpp:2] -> [test.cpp:2]: (style) Condition 'x=='2'' is always false\n", errout.str());
 
         check("int f(char c) {\n"
               "  return (c >= 'a' && c <= 'z');\n"
@@ -1269,7 +1279,8 @@ private:
               "    if ((t == A) && (t == B))\n"
               "    {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Logical conjunction always evaluates to false: t == 0 && t == 1.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Logical conjunction always evaluates to false: t == 0 && t == 1.\n"
+                      "[test.cpp:3] -> [test.cpp:3]: (style) Condition 't==B' is always false\n", errout.str());
     }
 
     void incorrectLogicOperator11() {
@@ -2881,7 +2892,7 @@ private:
               "  if(x == 0) { x++; return x == 0; } \n"
               "  return false;\n"
               "}");
-        TODO_ASSERT_EQUALS("return value is always true?", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 'x==0' is always false\n", errout.str());
 
         check("void f() {\n" // #6898 (Token::expressionString)
               "  int x = 0;\n"
@@ -3826,6 +3837,12 @@ private:
         check("bool f();\n"
               "void foo() { bool x = true; if(x&&f()) {}}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'x' is always true\n", errout.str());
+
+        // #9578
+        check("bool f(const std::string &s) {\n"
+              "        return s.size()>2U && s[0]=='4' && s[0]=='2';\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 's[0]=='2'' is always false\n", errout.str());
     }
 
     void pointerAdditionResultNotNull() {

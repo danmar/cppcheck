@@ -4173,6 +4173,39 @@ private:
               "    InitializeJumpList(sAppID);\n"
               "}\n",true);
         ASSERT_EQUALS("", errout.str());
+        // #9796
+        check("struct A {};\n"
+              "void f() {\n"
+              "    std::vector<A *> v;\n"
+              "    A *a = new A();\n"
+              "    v.push_back(a);\n"
+              "    A *b = v.back();\n"
+              "    v.pop_back();\n"
+              "    delete b;\n"
+              "}\n" ,true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {};\n"
+              "void f() {\n"
+              "    std::vector<A *, std::allocator<A*>> v;\n"
+              "    A *a = new A();\n"
+              "    v.push_back(a);\n"
+              "    A *b = v.back();\n"
+              "    v.pop_back();\n"
+              "    delete b;\n"
+              "}\n" ,true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {};\n"
+              "void f() {\n"
+              "    std::vector<std::shared_ptr<A>> v;\n"
+              "    std::shared_ptr<A> a = std::make_shared<A>();\n"
+              "    v.push_back(a);\n"
+              "    std::shared_ptr<A> b = v.back();\n"
+              "    v.pop_back();\n"
+              "    delete b;\n"
+              "}\n" ,true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void invalidContainerLoop() {
