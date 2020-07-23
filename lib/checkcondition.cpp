@@ -1119,7 +1119,7 @@ void CheckCondition::checkIncorrectLogicOperator()
 
             // Comparison #1 (LHS)
             const Token *comp1 = tok->astOperand1();
-            if (comp1 && comp1->str() == tok->str())
+            if (comp1->str() == tok->str())
                 comp1 = comp1->astOperand2();
 
             // Comparison #2 (RHS)

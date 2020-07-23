@@ -1256,7 +1256,9 @@ static void valueFlowPointerAliasDeref(TokenList *tokenlist)
         if (!var->isConst() && isVariableChanged(lifeTok->next(), tok, lifeTok->varId(), !var->isLocal(), tokenlist->getSettings(), tokenlist->isCPP()))
             continue;
         for (const ValueFlow::Value& v:lifeTok->values()) {
-            if (v.isLifetimeValue())
+            // TODO: Move container size values to generic forward
+            // Forward uninit values since not all values can be forwarded directly
+            if (!(v.isContainerSizeValue() || v.isUninitValue()))
                 continue;
             ValueFlow::Value value = v;
             value.errorPath.insert(value.errorPath.begin(), errorPath.begin(), errorPath.end());
@@ -2267,6 +2269,9 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
 
     virtual ProgramState getProgramState() const = 0;
 
+    virtual const ValueType* getValueType(const Token*) const {
+        return nullptr;
+    }
     virtual int getIndirect(const Token* tok) const {
         const ValueFlow::Value* value = getValue(tok);
         if (value)
@@ -2314,8 +2319,12 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
 
     virtual Action isAliasModified(const Token* tok) const {
         int indirect = 0;
+        int baseIndirect = 0;
+        const ValueType* vt = getValueType(tok);
+        if (vt)
+            baseIndirect = vt->pointer;
         if (tok->valueType())
-            indirect = tok->valueType()->pointer;
+            indirect = std::max<int>(0, tok->valueType()->pointer - baseIndirect);
         if (isVariableChanged(tok, indirect, getSettings(), isCPP()))
             return Action::Invalid;
         return Action::None;
@@ -2350,6 +2359,25 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
             }
             // Check for modifications by function calls
             return isModified(tok);
+        } else if (tok->isUnaryOp("*")) {
+            const Token* lifeTok = nullptr;
+            for (const ValueFlow::Value& v:tok->astOperand1()->values()) {
+                if (!v.isLocalLifetimeValue())
+                    continue;
+                if (lifeTok)
+                    return Action::None;
+                lifeTok = v.tokvalue;
+            }
+            if (lifeTok && match(lifeTok)) {
+                Action a = Action::Read;
+                if (isModified(tok).isModified())
+                    a = Action::Invalid;
+                if (Token::Match(tok->astParent(), "%assign%") && astIsLHS(tok))
+                    a |= Action::Read;
+                return a;
+            }
+            return Action::None;
+
         } else if (isAlias(tok)) {
             return isAliasModified(tok);
         } else if (Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
@@ -2425,6 +2453,7 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
 
 struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
     std::unordered_map<nonneg int, const Variable*> varids;
+    std::unordered_map<nonneg int, const Variable*> aliases;
     ValueFlow::Value value;
 
     SingleValueFlowForwardAnalyzer()
@@ -2437,6 +2466,10 @@ struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
 
     const std::unordered_map<nonneg int, const Variable*>& getVars() const {
         return varids;
+    }
+
+    const std::unordered_map<nonneg int, const Variable*>& getAliasedVars() const {
+        return aliases;
     }
 
     virtual const ValueFlow::Value* getValue(const Token*) const OVERRIDE {
@@ -2457,13 +2490,15 @@ struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
     virtual bool isAlias(const Token* tok) const OVERRIDE {
         if (value.isLifetimeValue())
             return false;
-        for (const auto& p:getVars()) {
-            nonneg int varid = p.first;
-            const Variable* var = p.second;
-            if (tok->varId() == varid)
-                return true;
-            if (isAliasOf(var, tok, varid, value))
-                return true;
+        for(const auto& m:{std::ref(getVars()), std::ref(getAliasedVars())}) {
+            for (const auto& p:m.get()) {
+                nonneg int varid = p.first;
+                const Variable* var = p.second;
+                if (tok->varId() == varid)
+                    return true;
+                if (isAliasOf(var, tok, varid, value))
+                    return true;
+            }
         }
         return false;
     }
@@ -2529,9 +2564,18 @@ struct VariableForwardAnalyzer : SingleValueFlowForwardAnalyzer {
         : SingleValueFlowForwardAnalyzer(), var(nullptr)
     {}
 
-    VariableForwardAnalyzer(const Variable* v, const ValueFlow::Value& val, const TokenList* t)
+    VariableForwardAnalyzer(const Variable* v, const ValueFlow::Value& val, std::vector<const Variable*> paliases, const TokenList* t)
         : SingleValueFlowForwardAnalyzer(val, t), var(v) {
         varids[var->declarationId()] = var;
+        for(const Variable* av:paliases) {
+            if (!av)
+                continue;
+            aliases[av->declarationId()] = av;
+        }
+    }
+
+    virtual const ValueType* getValueType(const Token*) const OVERRIDE {
+        return var->valueType();
     }
 
     virtual bool match(const Token* tok) const OVERRIDE {
@@ -2545,6 +2589,20 @@ struct VariableForwardAnalyzer : SingleValueFlowForwardAnalyzer {
     }
 };
 
+static void valueFlowForwardVariable(Token* const startToken,
+                                     const Token* const endToken,
+                                     const Variable* const var,
+                                     std::list<ValueFlow::Value> values,
+                                     std::vector<const Variable*> aliases,
+                                     TokenList* const tokenlist,
+                                     const Settings* const settings)
+{
+    for (ValueFlow::Value& v : values) {
+        VariableForwardAnalyzer a(var, v, aliases, tokenlist);
+        valueFlowGenericForward(startToken, endToken, a, settings);
+    }
+}
+
 static bool valueFlowForwardVariable(Token* const startToken,
                                      const Token* const endToken,
                                      const Variable* const var,
@@ -2556,10 +2614,25 @@ static bool valueFlowForwardVariable(Token* const startToken,
                                      ErrorLogger* const,
                                      const Settings* const settings)
 {
-    for (ValueFlow::Value& v : values) {
-        VariableForwardAnalyzer a(var, v, tokenlist);
-        valueFlowGenericForward(startToken, endToken, a, settings);
+    std::vector<const Variable*> aliases;
+    for (const ValueFlow::Value& v : values) {
+        if (!v.tokvalue) 
+            continue;
+        const Token* lifeTok = nullptr;
+        for(const ValueFlow::Value& lv:v.tokvalue->values()) {
+            if (!lv.isLocalLifetimeValue())
+                continue;
+            if (lifeTok) {
+                lifeTok = nullptr;
+                break;
+            }
+            lifeTok = lv.tokvalue;
+        }
+        if (lifeTok && lifeTok->variable()) {
+            aliases.push_back(lifeTok->variable());
+        }
     }
+    valueFlowForwardVariable(startToken, endToken, var, std::move(values), aliases, tokenlist, settings);
     return true;
 }
 
@@ -2576,6 +2649,10 @@ struct ExpressionForwardAnalyzer : SingleValueFlowForwardAnalyzer {
         : SingleValueFlowForwardAnalyzer(val, t), expr(e), local(true), unknown(false) {
 
         setupExprVarIds();
+    }
+
+    virtual const ValueType* getValueType(const Token*) const OVERRIDE {
+        return expr->valueType();
     }
 
     static bool nonLocal(const Variable* var, bool deref) {
