@@ -4174,7 +4174,7 @@ private:
               "    A *b = v.back();\n"
               "    v.pop_back();\n"
               "    delete b;\n"
-              "}\n" ,true);
+              "}\n",true);
         ASSERT_EQUALS("", errout.str());
 
         check("struct A {};\n"
@@ -4185,7 +4185,7 @@ private:
               "    A *b = v.back();\n"
               "    v.pop_back();\n"
               "    delete b;\n"
-              "}\n" ,true);
+              "}\n",true);
         ASSERT_EQUALS("", errout.str());
 
         check("struct A {};\n"
@@ -4196,7 +4196,7 @@ private:
               "    std::shared_ptr<A> b = v.back();\n"
               "    v.pop_back();\n"
               "    delete b;\n"
-              "}\n" ,true);
+              "}\n",true);
         ASSERT_EQUALS("", errout.str());
     }
 

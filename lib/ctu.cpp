@@ -425,7 +425,7 @@ static std::list<std::pair<const Token *, MathLib::bigint>> getUnsafeFunction(co
             if (Token::findmatch(tok2->link(), "return|throw", tok2))
                 return ret;
             int indirect = 0;
-            if(argvar->valueType())
+            if (argvar->valueType())
                 indirect = argvar->valueType()->pointer;
             if (isVariableChanged(tok2->link(), tok2, indirect, argvar->declarationId(), false, settings, tokenizer->isCPP()))
                 return ret;

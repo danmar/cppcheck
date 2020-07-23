@@ -2490,7 +2490,9 @@ struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
     virtual bool isAlias(const Token* tok) const OVERRIDE {
         if (value.isLifetimeValue())
             return false;
-        for(const auto& m:{std::ref(getVars()), std::ref(getAliasedVars())}) {
+        for (const auto& m: {
+        std::ref(getVars()), std::ref(getAliasedVars())
+        }) {
             for (const auto& p:m.get()) {
                 nonneg int varid = p.first;
                 const Variable* var = p.second;
@@ -2567,7 +2569,7 @@ struct VariableForwardAnalyzer : SingleValueFlowForwardAnalyzer {
     VariableForwardAnalyzer(const Variable* v, const ValueFlow::Value& val, std::vector<const Variable*> paliases, const TokenList* t)
         : SingleValueFlowForwardAnalyzer(val, t), var(v) {
         varids[var->declarationId()] = var;
-        for(const Variable* av:paliases) {
+        for (const Variable* av:paliases) {
             if (!av)
                 continue;
             aliases[av->declarationId()] = av;
@@ -2616,10 +2618,10 @@ static bool valueFlowForwardVariable(Token* const startToken,
 {
     std::vector<const Variable*> aliases;
     for (const ValueFlow::Value& v : values) {
-        if (!v.tokvalue) 
+        if (!v.tokvalue)
             continue;
         const Token* lifeTok = nullptr;
-        for(const ValueFlow::Value& lv:v.tokvalue->values()) {
+        for (const ValueFlow::Value& lv:v.tokvalue->values()) {
             if (!lv.isLocalLifetimeValue())
                 continue;
             if (lifeTok) {
