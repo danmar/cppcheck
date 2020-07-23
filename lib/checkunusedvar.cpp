@@ -1454,7 +1454,7 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
     for (const Function& f : type->classScope->functionList) {
         if (!f.isConstructor())
             continue;
-        if (f.argDef && Token::Match(f.argDef->link(), ") ="))
+        if (f.argDef && Token::simpleMatch(f.argDef->link(), ") ="))
             continue; // ignore default/deleted constructors
         const bool emptyBody = (f.functionScope && Token::simpleMatch(f.functionScope->bodyStart, "{ }"));
         const bool hasInitList = f.argDef && Token::simpleMatch(f.argDef->link(), ") :");
