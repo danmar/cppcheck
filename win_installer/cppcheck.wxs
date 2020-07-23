@@ -41,6 +41,7 @@
             <File Id='onlinehelpqch' Name='online-help.qch' Source='$(var.GuiHelpDir)\online-help.qch' />
             <File Id='Qt5Coredll' Name='Qt5Core.dll' Source='$(var.QtDllDir)\Qt5Core.dll' />
             <File Id='Qt5Guidll' Name='Qt5Gui.dll' Source='$(var.QtDllDir)\Qt5Gui.dll' />
+            <File Id='Qt5Helpdll' Name='Qt5Help.dll' Source='$(var.QtDllDir)\Qt5Help.dll' />
             <File Id='Qt5Widgetsdll' Name='Qt5Widgets.dll' Source='$(var.QtDllDir)\Qt5Widgets.dll' />
             <File Id='Qt5PrintSupportdll' Name='Qt5PrintSupport.dll' Source='$(var.QtDllDir)\Qt5PrintSupport.dll' />
             <?if $(var.Platform) = x64 ?>
