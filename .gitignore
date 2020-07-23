@@ -108,3 +108,5 @@ man/manual.tex
 .idea
 /.metadata/
 cmake-*
+man/manual.pdf
+man/manual.html
