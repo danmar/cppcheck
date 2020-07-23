@@ -122,15 +122,15 @@ The possible severities for messages are:
 
 **error**
 
-used when bugs are found
+when code is executed there is some bad behavior (undefined behavior, leak)
 
 **warning**
 
-suggestions about defensive programming to prevent bugs
+when code is executed there might be undefined behavior
 
 **style**
 
-stylistic issues related to code cleanup (unused functions, redundant code, constness, and such)
+stylistic issues (unused functions, redundant code, constness, operator precedence, possible mistakes, and such)
 
 **performance**
 
@@ -138,11 +138,11 @@ Suggestions for making the code faster. These suggestions are only based on comm
 
 **portability**
 
-portability warnings. 64-bit portability. code might work different on different compilers. etc.
+portability warnings. Implementation defined behavior. 64-bit portability. Some undefined behavior that probably works "as you want". etc.
 
 **information**
 
-Configuration problems. The recommendation is to only enable these during configuration.
+Configuration problems. If you get such output then your code is ok but your cppcheck configuration could be improved.
 
 ## Possible speedup analysis of template code
 
