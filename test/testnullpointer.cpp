@@ -98,6 +98,7 @@ private:
         TEST_CASE(nullpointer55); // #8144
         TEST_CASE(nullpointer56); // #9701
         TEST_CASE(nullpointer57); // #9751
+        TEST_CASE(nullpointer58); // #9807
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1836,6 +1837,16 @@ private:
               "        fgetc(fptr);\n"
               "        fn();\n"
               "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer58() {
+        check("struct myStruct { char entry[0]; };\n"
+              "void f() {\n"
+              "    struct myStruct* sPtr = NULL;\n"
+              "    int sz = (!*(&sPtr) || ((*(&sPtr))->entry[0] > 15)) ?\n"
+              "        sizeof((*(&sPtr))->entry[0]) : 123456789;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

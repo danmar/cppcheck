@@ -274,7 +274,9 @@ void CheckAutoVariables::autoVariables()
                     errorInvalidDeallocation(tok, nullptr);
                 else if (tok && tok->variable() && tok->variable()->isPointer()) {
                     for (const ValueFlow::Value &v : tok->values()) {
-                        if (v.isTokValue() && isArrayVar(v.tokvalue)) {
+                        if (!(v.isTokValue()))
+                            continue;
+                        if (isArrayVar(v.tokvalue)) {
                             errorInvalidDeallocation(tok, &v);
                             break;
                         }

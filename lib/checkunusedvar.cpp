@@ -1442,24 +1442,50 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
 
     const std::pair<std::map<const Type *,bool>::iterator,bool> found=mIsRecordTypeWithoutSideEffectsMap.insert(
                 std::pair<const Type *,bool>(type,false)); //Initialize with side effects for possible recursions
-    bool & withoutSideEffects=found.first->second;
+    bool & withoutSideEffects = found.first->second;
     if (!found.second)
         return withoutSideEffects;
 
-    if (type && type->classScope && type->classScope->numConstructors == 0 &&
-        (type->classScope->varlist.empty() || type->needInitialization == Type::NeedInitialization::True)) {
-        for (std::vector<Type::BaseInfo>::const_iterator i = type->derivedFrom.begin(); i != type->derivedFrom.end(); ++i) {
-            if (!isRecordTypeWithoutSideEffects(i->type)) {
-                withoutSideEffects=false;
-                return withoutSideEffects;
-            }
-        }
-        withoutSideEffects=true;
-        return withoutSideEffects;
+    // unknown types are assumed to have side effects
+    if (!type || !type->classScope)
+        return (withoutSideEffects = false);
+
+    // Non-empty constructors => possible side effects
+    for (const Function& f : type->classScope->functionList) {
+        if (!f.isConstructor())
+            continue;
+        if (f.argDef && Token::simpleMatch(f.argDef->link(), ") ="))
+            continue; // ignore default/deleted constructors
+        const bool emptyBody = (f.functionScope && Token::simpleMatch(f.functionScope->bodyStart, "{ }"));
+        const bool hasInitList = f.argDef && Token::simpleMatch(f.argDef->link(), ") :");
+        if (!emptyBody || hasInitList)
+            return (withoutSideEffects = false);
     }
 
-    withoutSideEffects=false;   // unknown types are assumed to have side effects
-    return withoutSideEffects;
+    // Derived from type that has side effects?
+    for (const Type::BaseInfo& derivedFrom : type->derivedFrom) {
+        if (!isRecordTypeWithoutSideEffects(derivedFrom.type))
+            return (withoutSideEffects = false);
+    }
+
+    // Is there a member variable with possible side effects
+    for (const Variable& var : type->classScope->varlist) {
+        if (var.isPointer())
+            continue;
+
+        const Type* variableType = var.type();
+        if (variableType) {
+            if (!isRecordTypeWithoutSideEffects(variableType))
+                return (withoutSideEffects = false);
+        } else {
+            ValueType::Type valueType = var.valueType()->type;
+            if ((valueType == ValueType::Type::UNKNOWN_TYPE) || (valueType == ValueType::Type::NONSTD))
+                return (withoutSideEffects = false);
+        }
+    }
+
+
+    return (withoutSideEffects = true);
 }
 
 bool CheckUnusedVar::isEmptyType(const Type* type)
