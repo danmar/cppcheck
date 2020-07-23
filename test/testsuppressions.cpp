@@ -510,8 +510,6 @@ private:
     }
 
     void inlinesuppress_symbolname() {
-        Suppressions suppressions;
-
         checkSuppression("void f() {\n"
                          "    int a;\n"
                          "    /* cppcheck-suppress uninitvar symbolName=a */\n"
