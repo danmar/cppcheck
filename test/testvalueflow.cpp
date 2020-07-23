@@ -2530,6 +2530,20 @@ private:
                "    return x;\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 123.45F + 67, 0.01F));
+
+        code = "void f() {\n"
+               "    int x = 123;\n"
+               "    x >>= 1;\n"
+               "    return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 61));
+
+        code = "void f() {\n"
+               "    int x = 123;\n"
+               "    x <<= 1;\n"
+               "    return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 246));
     }
 
     void valueFlowForwardCorrelatedVariables() {
