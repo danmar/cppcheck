@@ -38,6 +38,8 @@ private:
         settings.checkLibrary = true;
         LOAD_LIB_2(settings.library, "std.cfg");
 
+        TEST_CASE(isRecordTypeWithoutSideEffects);
+
         TEST_CASE(emptyclass);  // #5355 - False positive: Variable is not assigned a value.
         TEST_CASE(emptystruct);  // #5355 - False positive: Variable is not assigned a value.
 
@@ -230,6 +232,101 @@ private:
         // Check for unused variables..
         CheckUnusedVar checkUnusedVar(&tokenizer, &settings, this);
         checkUnusedVar.checkStructMemberUsage();
+    }
+
+    void isRecordTypeWithoutSideEffects() {
+        functionVariableUsage(
+            "class A {};\n"
+            "void f() {\n"
+            "   A a;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: a\n", errout.str());
+
+        functionVariableUsage(
+            "class A {};\n"
+            "class B {\n"
+            "public:\n"
+            "   A a;\n"
+            "};\n"
+            "void f() {\n"
+            "   B b;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Unused variable: b\n", errout.str());
+
+        functionVariableUsage(
+            "class C {\n"
+            "public:\n"
+            "   C() = default;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Unused variable: c\n", errout.str());
+
+        functionVariableUsage(
+            "class D {\n"
+            "public:\n"
+            "   D() {}\n"
+            "};\n"
+            "void f() {\n"
+            "   D d;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Unused variable: d\n", errout.str());
+
+        functionVariableUsage(
+            "class E {\n"
+            "public:\n"
+            "   uint32_t u{1};\n"
+            "};\n"
+            "void f() {\n"
+            "   E e;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Unused variable: e\n", errout.str());
+
+        // non-empty constructor
+        functionVariableUsage(
+            "class F {\n"
+            "public:\n"
+            "   F() {\n"
+            "       int i =0;\n"
+            "       (void) i;"
+            "   }\n"
+            "};\n"
+            "void f() {\n"
+            "   F f;\n"
+            "}");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
+
+        // side-effect variable
+        functionVariableUsage(
+            "class F {\n"
+            "public:\n"
+            "   F() {\n"
+            "       int i =0;\n"
+            "       (void) i;"
+            "   }\n"
+            "};\n"
+            "class G {\n"
+            "public:\n"
+            "   F f;\n"
+            "};\n"
+            "void f() {\n"
+            "   G g;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // unknown variable type
+        functionVariableUsage(
+            "class H {\n"
+            "public:\n"
+            "   unknown_type u{1};\n"
+            "};\n"
+            "void f() {\n"
+            "   H h;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+
     }
 
     // #5355 - False positive: Variable is not assigned a value.
