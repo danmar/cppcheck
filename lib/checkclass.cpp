@@ -1789,17 +1789,14 @@ void CheckClass::checkConst()
             if (func.isFriend() || func.isStatic() || func.hasVirtualSpecifier())
                 continue;
 
-            // is non-const pointer/reference returned?
+            // don't warn when returning non-const pointer/reference
             {
-                bool isConst = false;
                 bool isPointerOrReference = false;
                 for (const Token *typeToken = func.retDef; typeToken; typeToken = typeToken->next()) {
                     if (Token::Match(typeToken, "(|{|;"))
                         break;
-                    if (!isPointerOrReference && typeToken->str() == "const") {
-                        isConst = true;
+                    if (!isPointerOrReference && typeToken->str() == "const")
                         break;
-                    }
                     if (Token::Match(typeToken, "*|&")) {
                         isPointerOrReference = true;
                         break;
