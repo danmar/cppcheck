@@ -1788,28 +1788,29 @@ void CheckClass::checkConst()
             // don't warn for friend/static/virtual functions
             if (func.isFriend() || func.isStatic() || func.hasVirtualSpecifier())
                 continue;
-            // get last token of return type
-            const Token *previous = func.tokenDef->previous();
 
-            // does the function return a pointer or reference?
-            if (Token::Match(previous, "*|&")) {
-                if (func.retDef->str() != "const")
-                    continue;
-            } else if (Token::Match(previous->previous(), "*|& >")) {
-                const Token *temp = previous->previous();
-
-                bool foundConst = false;
-                while (!Token::Match(temp->previous(), ";|}|{|public:|protected:|private:")) {
-                    temp = temp->previous();
-                    if (temp->str() == "const") {
-                        foundConst = true;
+            // is non-const pointer/reference returned?
+            {
+                bool isConst = false;
+                bool isPointerOrReference = false;
+                for (const Token *typeToken = func.retDef; typeToken; typeToken = typeToken->next()) {
+                    if (Token::Match(typeToken, "(|{|;"))
+                        break;
+                    if (!isPointerOrReference && typeToken->str() == "const") {
+                        isConst = true;
+                        break;
+                    }
+                    if (Token::Match(typeToken, "*|&")) {
+                        isPointerOrReference = true;
                         break;
                     }
                 }
-
-                if (!foundConst)
+                if (isPointerOrReference)
                     continue;
-            } else if (func.isOperator() && Token::Match(previous, ";|{|}|public:|private:|protected:")) { // Operator without return type: conversion operator
+            }
+
+
+            if (func.isOperator()) { // Operator without return type: conversion operator
                 const std::string& opName = func.tokenDef->str();
                 if (opName.compare(8, 5, "const") != 0 && (endsWith(opName,'&') || endsWith(opName,'*')))
                     continue;
@@ -1819,7 +1820,7 @@ void CheckClass::checkConst()
             } else {
                 // don't warn for unknown types..
                 // LPVOID, HDC, etc
-                if (previous->str().size() > 2 && !previous->type() && previous->isUpperCaseName())
+                if (func.retDef->str().size() > 2 && !func.retDef->type() && func.retDef->isUpperCaseName())
                     continue;
             }
 

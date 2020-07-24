@@ -198,6 +198,7 @@ private:
         TEST_CASE(constRangeBasedFor); // #5514
         TEST_CASE(const_shared_ptr);
         TEST_CASE(constPtrToConstPtr);
+        TEST_CASE(constTrailingReturnType);
 
         TEST_CASE(initializerListOrder);
         TEST_CASE(initializerListUsage);
@@ -6312,6 +6313,14 @@ private:
                    "    const char *const *data;\n"
                    "    const char *const *getData() { return data; }\n}");
         ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::getData' can be const.\n", errout.str());
+    }
+
+    void constTrailingReturnType() { // #9814
+        checkConst("struct A {\n"
+                   "    int x = 1;\n"
+                   "    auto get() -> int & { return x; }\n"
+                   "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkInitializerListOrder(const char code[]) {
