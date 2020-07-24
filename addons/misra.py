@@ -2302,10 +2302,50 @@ class MisraChecker:
                 self.reportError(directive, 20, 5)
 
     def misra_20_7(self, data):
+        def find_string_concat(exp, arg, directive_args):
+            # Handle concatenation of string literals, e.g.:
+            # #define MACRO(A, B) (A " " B)
+            # Addon should not report errors for both macro arguments.
+            arg_pos = exp.find(arg, 0)
+            need_check = False
+            skip_next = False
+            state_in_string = False
+            pos_search = arg_pos + 1
+            directive_args = [a.strip() for a in directive_args if a != arg]
+            arg = arg.strip()
+            while pos_search < len(exp):
+                if exp[pos_search] == '"':
+                    if state_in_string:
+                        state_in_string = False
+                    else:
+                        state_in_string = True
+                    pos_search += 1
+                elif exp[pos_search] in directive_args:
+                    skip_next = True  # Skip check for the next argument
+                    break
+                elif exp[pos_search] == arg:
+                    pos_search += 1
+                elif exp[pos_search] == ' ':
+                    pos_search += 1
+                elif state_in_string:
+                    pos_search += 1
+                else:
+                    need_check = True
+                    break
+            return need_check, skip_next
+
         for directive in data.directives:
             d = Define(directive)
             exp = '(' + d.expansionList + ')'
+            skip_next = False
             for arg in d.args:
+                if skip_next:
+                    _, skip_next = find_string_concat(exp, arg, d.args)
+                    continue
+                need_check, skip_next = find_string_concat(exp, arg, d.args)
+                if not need_check:
+                    continue
+
                 pos = 0
                 while pos < len(exp):
                     pos = exp.find(arg, pos)
