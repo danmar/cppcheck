@@ -103,10 +103,10 @@ snap/.snapcraft
 # Manual folder
 man/manual.log
 man/manual.tex
+man/*.pdf
+man/*.html
 
 # CLion
 .idea
 /.metadata/
 cmake-*
-man/manual.pdf
-man/manual.html
