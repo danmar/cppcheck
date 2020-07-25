@@ -2093,24 +2093,26 @@ static bool evalAssignment(ValueFlow::Value &lhsValue, const std::string &assign
         else if (assign == "/=") {
             if (rhsValue.intvalue == 0)
                 return false;
-            else
-                lhsValue.intvalue /= rhsValue.intvalue;
+            lhsValue.intvalue /= rhsValue.intvalue;
         } else if (assign == "%=") {
             if (rhsValue.intvalue == 0)
                 return false;
-            else
-                lhsValue.intvalue %= rhsValue.intvalue;
+            lhsValue.intvalue %= rhsValue.intvalue;
         } else if (assign == "&=")
             lhsValue.intvalue &= rhsValue.intvalue;
         else if (assign == "|=")
             lhsValue.intvalue |= rhsValue.intvalue;
         else if (assign == "^=")
             lhsValue.intvalue ^= rhsValue.intvalue;
-        else if (assign == "<<=")
+        else if (assign == "<<=") {
+            if (rhsValue.intvalue < 0)
+                return false;
             lhsValue.intvalue <<= rhsValue.intvalue;
-        else if (assign == ">>=")
+        } else if (assign == ">>=") {
+            if (rhsValue.intvalue < 0)
+                return false;
             lhsValue.intvalue >>= rhsValue.intvalue;
-        else
+        } else
             return false;
     } else if (lhsValue.isFloatValue()) {
         if (assign == "=")
