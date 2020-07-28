@@ -381,7 +381,7 @@ std::list<Suppressions::Suppression> Suppressions::getUnmatchedLocalSuppressions
             continue;
         if (!unusedFunctionChecking && s.errorId == "unusedFunction")
             continue;
-        if (file.empty() || !s.isLocal() || s.fileName != file)
+        if (file.empty() || !s.isLocal() || (s.fileName != Path::simplifyPath(file)))
             continue;
         result.push_back(s);
     }
