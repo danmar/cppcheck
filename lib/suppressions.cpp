@@ -373,6 +373,7 @@ void Suppressions::dump(std::ostream & out) const
 
 std::list<Suppressions::Suppression> Suppressions::getUnmatchedLocalSuppressions(const std::string &file, const bool unusedFunctionChecking) const
 {
+    std::string tmp_file = Path::simplifyPath(file);
     std::list<Suppression> result;
     for (const Suppression &s : mSuppressions) {
         if (s.matched)
@@ -381,7 +382,7 @@ std::list<Suppressions::Suppression> Suppressions::getUnmatchedLocalSuppressions
             continue;
         if (!unusedFunctionChecking && s.errorId == "unusedFunction")
             continue;
-        if (file.empty() || !s.isLocal() || s.fileName != file)
+        if (tmp_file.empty() || !s.isLocal() || s.fileName != tmp_file)
             continue;
         result.push_back(s);
     }
