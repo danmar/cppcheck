@@ -60,3 +60,18 @@ jobs:
           pushd gui
           qmake HAVE_QCHART=yes
           make -j2
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: cppcheck_cli
+          path: ./bin/cppcheck
+    
+      - uses: actions/upload-artifact@v2
+        with:
+          name: cppcheck_cli
+          path: ./**/cfg/*.cfg
+        
+      - uses: actions/upload-artifact@v2
+        with:
+          name: cppcheck_cli
+          path: ./**/platforms/*.xml
