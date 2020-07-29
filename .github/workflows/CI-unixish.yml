@@ -63,7 +63,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: cppcheck_cli
-          path: ./bin/cppcheck
+          path: ./cppcheck
     
       - uses: actions/upload-artifact@v2
         with:
