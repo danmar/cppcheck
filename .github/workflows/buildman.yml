@@ -15,7 +15,7 @@ jobs:
         with:
           args: --output=output/manual.pdf man/manual.md
 
-      - uses: actions/upload-artifact@master
+      - uses: actions/upload-artifact@v2
         with:
           name: output
           path: output
