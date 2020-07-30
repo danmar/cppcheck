@@ -1,0 +1,40 @@
+# Syntax reference https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions
+# Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
+name: scriptcheck
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+      fail-fast: false # not worthwhile...
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install missing software on ubuntu
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install shellcheck
+          sudo apt-get install python3-setuptools
+          sudo pip3 install natsort
+          sudo pip3 install pexpect
+          sudo pip3 install pylint
+          sudo pip3 install unittest2
+          
+      - name: run Shellcheck
+        run: |
+          find . -name "*.sh" | xargs shellcheck || true
+
+      - name: run pylint
+        run: |
+          pylint --rcfile=pylintrc_travis htmlreport/cppcheck-htmlreport
+          pylint --rcfile=pylintrc_travis htmlreport/*.py
+          pylint --rcfile=pylintrc_travis tools/*.py
+          
