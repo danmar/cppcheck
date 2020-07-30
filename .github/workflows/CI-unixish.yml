@@ -39,24 +39,38 @@ jobs:
       - name: Build cppcheck
         run: |
           cp externals/z3_version_old.h externals/z3_version.h
-          make -j2 USE_Z3=yes HAVE_RULES=yes
+          make -j$(nproc) USE_Z3=yes HAVE_RULES=yes
 
       - name: Build test
         run: |
-          make -j2 testrunner USE_Z3=yes HAVE_RULES=yes
+          make -j$(nproc) testrunner USE_Z3=yes HAVE_RULES=yes
 
       - name: Run test
         run: |
-          make -j2 check USE_Z3=yes HAVE_RULES=yes
+          make -j$(nproc) check USE_Z3=yes HAVE_RULES=yes
 
       - name: Validate
         run: |
-          make validateCFG
-          make validatePlatforms
+          make -j$(nproc) validateCFG validatePlatforms
           
       - name: Build GUI on ubuntu
         if: matrix.os == 'ubuntu-latest'
         run: |
           pushd gui
           qmake HAVE_QCHART=yes
-          make -j2
+          make -j$(nproc)
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: cppcheck_cli
+          path: ./cppcheck
+    
+      - uses: actions/upload-artifact@v2
+        with:
+          name: cppcheck_cli
+          path: ./**/cfg/*.cfg
+        
+      - uses: actions/upload-artifact@v2
+        with:
+          name: cppcheck_cli
+          path: ./**/platforms/*.xml
