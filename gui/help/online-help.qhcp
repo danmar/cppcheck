@@ -1,21 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <QHelpCollectionProject version="1.0">
-    <assistant>
-        <title>Cppcheck GUI</title>
-        <applicationIcon>../cppcheck.ico</applicationIcon>
-        <cacheDirectory>QtProject/Cppcheck</cacheDirectory>
-        <startPage>qthelp://cppcheck.sourceforge.net/doc/index.html</startPage>
-        <aboutMenuText>
-            <text>About Cppcheck</text>
-        </aboutMenuText>
-        <aboutDialog>
-            <file>about.txt</file>
-            <icon>images/icon.png</icon>
-        </aboutDialog>
-        <enableDocumentationManager>false</enableDocumentationManager>
-        <enableAddressBar>false</enableAddressBar>
-        <enableFilterFunctionality>false</enableFilterFunctionality>
-    </assistant>
     <docFiles>
         <generate>
             <file>
