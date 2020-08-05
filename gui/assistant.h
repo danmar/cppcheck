@@ -6,8 +6,7 @@
 
 class QProcess;
 
-class Assistant
-{
+class Assistant {
     Q_DECLARE_TR_FUNCTIONS(Assistant)
 
 public:

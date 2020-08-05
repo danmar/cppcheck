@@ -7,7 +7,7 @@
 #include <QProcess>
 
 Assistant::Assistant()
-  : mProc(nullptr)
+    : mProc(nullptr)
 {
 }
 
@@ -46,8 +46,8 @@ bool Assistant::startAssistant()
 
         QStringList args;
         args << QLatin1String("-collectionFile")
-            << QLatin1String("online-help.qhc")
-            << QLatin1String("-enableRemoteControl");
+             << QLatin1String("online-help.qhc")
+             << QLatin1String("-enableRemoteControl");
 
         mProc->start(app, args);
 
