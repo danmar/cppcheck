@@ -6776,6 +6776,14 @@ private:
         ASSERT_EQUALS("test.cpp:4:style:Variable '*var' is reassigned a value before the old one has been used.\n"
                       "test.cpp:3:note:*var is assigned\n"
                       "test.cpp:4:note:*var is overwritten\n", errout.str());
+
+        // Volatile variables
+        check("void f() {\n"
+              "  volatile char *reg = (volatile char *)0x12345;\n"
+              "  *reg = 12;\n"
+              "  *reg = 34;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void redundantVarAssignment_trivial() {

@@ -2223,12 +2223,14 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
     return Result(Result::Type::NONE);
 }
 
-static bool hasVolatileCast(const Token *expr)
+static bool hasVolatileCastOrVar(const Token *expr)
 {
     bool ret = false;
     visitAstNodes(expr,
     [&ret](const Token *tok) {
         if (Token::simpleMatch(tok, "( volatile"))
+            ret = true;
+        else if (tok->variable() && tok->variable()->isVolatile())
             ret = true;
         return ret ? ChildrenToVisit::none : ChildrenToVisit::op1_and_op2;
     });
@@ -2316,7 +2318,7 @@ bool FwdAnalysis::hasOperand(const Token *tok, const Token *lhs) const
 
 const Token *FwdAnalysis::reassign(const Token *expr, const Token *startToken, const Token *endToken)
 {
-    if (hasVolatileCast(expr))
+    if (hasVolatileCastOrVar(expr))
         return nullptr;
     mWhat = What::Reassign;
     Result result = check(expr, startToken, endToken);
@@ -2327,7 +2329,7 @@ bool FwdAnalysis::unusedValue(const Token *expr, const Token *startToken, const 
 {
     if (isEscapedAlias(expr))
         return false;
-    if (hasVolatileCast(expr))
+    if (hasVolatileCastOrVar(expr))
         return false;
     mWhat = What::UnusedValue;
     Result result = check(expr, startToken, endToken);
