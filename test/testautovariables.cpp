@@ -2328,6 +2328,16 @@ private:
               "    return value;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9770
+        check("class C {\n"
+              "  std::string f(const char*);\n"
+              "};\n"
+              "std::string C::f(const char*) {\n"
+              "  const char data[] = \"x\";\n"
+              "  return data;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeFunction() {
