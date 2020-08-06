@@ -1,0 +1,21 @@
+name: Build manual
+
+on: [push, pull_request]
+
+jobs:
+  convert_via_pandoc:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - run: |
+          mkdir output
+
+      - uses: docker://pandoc/latex:2.9
+        with:
+          args: --output=output/manual.pdf man/manual.md
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: output
+          path: output

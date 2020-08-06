@@ -1,0 +1,32 @@
+\usepackage{titlesec}
+\usepackage{fancyvrb,newverbs,xcolor}
+\usepackage{xcolor}
+
+\titleformat{\chapter}[display]   
+{\normalfont\huge\bfseries}{\chaptertitlename\ \thechapter}{20pt}{\Huge}   
+\titlespacing*{\chapter}{0pt}{-20pt}{20pt}
+
+
+\definecolor{Light}{HTML}{EEEEEE}
+\let\oldtexttt\texttt
+\renewcommand{\texttt}[1]{
+  \colorbox{Light}{\oldtexttt{#1}}
+}
+
+\lstset{
+    basicstyle=\ttfamily,
+    backgroundcolor=\color{Light},
+    xleftmargin=10pt,
+    frame=lrtb,
+    framesep=10pt,
+    framerule=0pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    captionpos=b,
+    breaklines=true,
+    breakatwhitespace=true,
+    breakautoindent=true,
+    linewidth=\textwidth
+}

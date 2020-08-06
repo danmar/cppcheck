@@ -239,9 +239,9 @@ void CheckClass::constructors()
                             func.functionScope->bodyStart->link() == func.functionScope->bodyStart->next()) {
                             // don't warn about user defined default constructor when there are other constructors
                             if (printInconclusive)
-                                uninitVarError(func.token, func.access == AccessControl::Private, scope->className, var.name(), true);
+                                uninitVarError(func.token, func.access == AccessControl::Private, func.type, scope->className, var.name(), true);
                         } else
-                            uninitVarError(func.token, func.access == AccessControl::Private, scope->className, var.name(), inconclusive);
+                            uninitVarError(func.token, func.access == AccessControl::Private, func.type, scope->className, var.name(), inconclusive);
                     }
                 }
             }
@@ -921,9 +921,14 @@ void CheckClass::noExplicitConstructorError(const Token *tok, const std::string 
     reportError(tok, Severity::style, "noExplicitConstructor", "$symbol:" + classname + '\n' + message + '\n' + verbose, CWE398, false);
 }
 
-void CheckClass::uninitVarError(const Token *tok, bool isprivate, const std::string &classname, const std::string &varname, bool inconclusive)
+void CheckClass::uninitVarError(const Token *tok, bool isprivate, Function::Type functionType, const std::string &classname, const std::string &varname, bool inconclusive)
 {
-    reportError(tok, Severity::warning, isprivate ? "uninitMemberVarPrivate" : "uninitMemberVar", "$symbol:" + classname + "::" + varname + "\nMember variable '$symbol' is not initialized in the constructor.", CWE398, inconclusive);
+    std::string message;
+    if ((functionType == Function::eCopyConstructor || functionType == Function::eMoveConstructor) && inconclusive)
+        message = "Member variable '$symbol' is not assigned in the copy constructor. Should it be copied?";
+    else
+        message = "Member variable '$symbol' is not initialized in the constructor.";
+    reportError(tok, Severity::warning, isprivate ? "uninitMemberVarPrivate" : "uninitMemberVar", "$symbol:" + classname + "::" + varname + "\n" + message, CWE398, inconclusive);
 }
 
 void CheckClass::operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive)
@@ -1788,28 +1793,26 @@ void CheckClass::checkConst()
             // don't warn for friend/static/virtual functions
             if (func.isFriend() || func.isStatic() || func.hasVirtualSpecifier())
                 continue;
-            // get last token of return type
-            const Token *previous = func.tokenDef->previous();
 
-            // does the function return a pointer or reference?
-            if (Token::Match(previous, "*|&")) {
-                if (func.retDef->str() != "const")
-                    continue;
-            } else if (Token::Match(previous->previous(), "*|& >")) {
-                const Token *temp = previous->previous();
-
-                bool foundConst = false;
-                while (!Token::Match(temp->previous(), ";|}|{|public:|protected:|private:")) {
-                    temp = temp->previous();
-                    if (temp->str() == "const") {
-                        foundConst = true;
+            // don't warn when returning non-const pointer/reference
+            {
+                bool isPointerOrReference = false;
+                for (const Token *typeToken = func.retDef; typeToken; typeToken = typeToken->next()) {
+                    if (Token::Match(typeToken, "(|{|;"))
+                        break;
+                    if (!isPointerOrReference && typeToken->str() == "const")
+                        break;
+                    if (Token::Match(typeToken, "*|&")) {
+                        isPointerOrReference = true;
                         break;
                     }
                 }
-
-                if (!foundConst)
+                if (isPointerOrReference)
                     continue;
-            } else if (func.isOperator() && Token::Match(previous, ";|{|}|public:|private:|protected:")) { // Operator without return type: conversion operator
+            }
+
+
+            if (func.isOperator()) { // Operator without return type: conversion operator
                 const std::string& opName = func.tokenDef->str();
                 if (opName.compare(8, 5, "const") != 0 && (endsWith(opName,'&') || endsWith(opName,'*')))
                     continue;
@@ -1819,7 +1822,7 @@ void CheckClass::checkConst()
             } else {
                 // don't warn for unknown types..
                 // LPVOID, HDC, etc
-                if (previous->str().size() > 2 && !previous->type() && previous->isUpperCaseName())
+                if (func.retDef->str().size() > 2 && !func.retDef->type() && func.retDef->isUpperCaseName())
                     continue;
             }
 

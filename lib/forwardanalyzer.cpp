@@ -313,6 +313,10 @@ struct ForwardTraversal {
                         return Progress::Break;
                 } else if (scope->type == Scope::eLambda) {
                     return Progress::Break;
+                } else if (scope->type == Scope::eDo && Token::simpleMatch(tok, "} while (")) {
+                    if (updateLoop(tok, tok->tokAt(2)->astOperand2()) == Progress::Break)
+                        return Progress::Break;
+                    tok = tok->linkAt(2);
                 } else if (Token::simpleMatch(tok->next(), "else {")) {
                     tok = tok->linkAt(2);
                 }

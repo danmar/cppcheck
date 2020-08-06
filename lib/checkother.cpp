@@ -160,6 +160,10 @@ void CheckOther::clarifyCalculation()
             if (!tok->astOperand1()->isArithmeticalOp() && tok->astOperand1()->tokType() != Token::eBitOp)
                 continue;
 
+            // bit operation in lhs and pointer in rhs => no clarification is needed
+            if (tok->astOperand1()->tokType() == Token::eBitOp && tok->astOperand2()->valueType() && tok->astOperand2()->valueType()->pointer > 0)
+                continue;
+
             // Is code clarified by parentheses already?
             const Token *tok2 = tok->astOperand1();
             for (; tok2; tok2 = tok2->next()) {

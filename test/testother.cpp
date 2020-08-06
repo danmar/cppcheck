@@ -4022,6 +4022,9 @@ private:
 
         check("void f() { a = *p ? 1 : 2; }");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) { const char *p = x & 1 ? \"1\" : \"0\"; }");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void clarifyStatement() {

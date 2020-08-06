@@ -1031,6 +1031,10 @@ union misra_19_2 { }; // 19.2
 #define M_20_7_7(x) a  = # x // 20.10
 #define M_20_7_8(x, fn) a = fn ( # x ) // 20.7 20.10
 #define M_20_7_9(x, fn) a = (fn) ( # x ) // 20.10
+#define M_20_7_10(A, B) (A " " B)
+#define M_20_7_11(A, B, C) (A " " B " " C)
+#define M_20_7_12(A, B, C) (A " " B + C) // 20.7
+#define M_20_7_13(A, B, C) (A + B " " C) // 20.7
 
 // Compliant: M is a structure member name, not an expression
 struct { int a; } struct_20_7_s;

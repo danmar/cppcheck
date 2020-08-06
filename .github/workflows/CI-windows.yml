@@ -80,47 +80,47 @@ jobs:
       - name: Run Release test
         run: .\bin\testrunner.exe
  
-      - uses: actions/upload-artifact@v2-preview
+      - uses: actions/upload-artifact@v2
         with:
           name: cppcheck_gui
           path: Build\gui
           
-      - uses: actions/upload-artifact@v2-preview
+      - uses: actions/upload-artifact@v2
         with:
           name: cppcheck_gui
           path: ./**/cfg/*.cfg
         
-      - uses: actions/upload-artifact@v2-preview
+      - uses: actions/upload-artifact@v2
         with:
           name: cppcheck_gui
           path: ./**/platforms/*.xml  
           
-      - uses: actions/upload-artifact@v2-preview
+      - uses: actions/upload-artifact@v2
         with:
           name: cppcheck_gui
           path: externals\z3\bin\*.dll
         
-      - uses: actions/upload-artifact@v2-preview
+      - uses: actions/upload-artifact@v2
         with:
           name: cppcheck_cli
           path: ./bin/cppcheck.exe
         
-      - uses: actions/upload-artifact@v2-preview
+      - uses: actions/upload-artifact@v2
         with:
           name: cppcheck_cli
           path: ./bin/cppcheck-core.dll
           
-      - uses: actions/upload-artifact@v2-preview
+      - uses: actions/upload-artifact@v2
         with:
           name: cppcheck_cli
           path: externals\z3\bin\*.dll
           
-      - uses: actions/upload-artifact@v2-preview
+      - uses: actions/upload-artifact@v2
         with:
           name: cppcheck_cli
           path: ./**/cfg/*.cfg
         
-      - uses: actions/upload-artifact@v2-preview
+      - uses: actions/upload-artifact@v2
         with:
           name: cppcheck_cli
           path: ./**/platforms/*.xml

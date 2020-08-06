@@ -3409,6 +3409,20 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // #9816
+        check("bool g();\n"
+              "void f() {\n"
+              "    bool b = false;\n"
+              "    do {\n"
+              "        do {\n"
+              "            if (g())\n"
+              "                break;\n"
+              "            b = true;\n"
+              "        } while(false);\n"
+              "    } while(!b);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void alwaysTrueInfer() {
