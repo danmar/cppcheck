@@ -252,7 +252,7 @@ namespace ValueFlow {
         /** Path id */
         MathLib::bigint path;
 
-        enum class LifetimeKind {Object, Lambda, Iterator, Address} lifetimeKind;
+        enum class LifetimeKind {Object, SubObject, Lambda, Iterator, Address} lifetimeKind;
 
         enum class LifetimeScope { Local, Argument } lifetimeScope;
 
