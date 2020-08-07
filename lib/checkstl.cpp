@@ -854,6 +854,8 @@ void CheckStl::invalidContainer()
                     return false;
                 if (skipVarIds.count(info.tok->varId()) > 0)
                     return false;
+                // if (Token::simpleMatch(info.tok->next(), "."))
+                    // return false;
                 if (Token::Match(info.tok->astParent(), "%assign%") && astIsLHS(info.tok))
                     skipVarIds.insert(info.tok->varId());
                 if (info.tok->variable()->isReference() &&
@@ -877,6 +879,8 @@ void CheckStl::invalidContainer()
                     if (!val.isLocalLifetimeValue())
                         continue;
                     if (val.lifetimeKind == ValueFlow::Value::LifetimeKind::Address)
+                        continue;
+                    if (val.lifetimeKind == ValueFlow::Value::LifetimeKind::SubObject)
                         continue;
                     if (!val.tokvalue->variable())
                         continue;

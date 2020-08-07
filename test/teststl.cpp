@@ -4198,6 +4198,16 @@ private:
               "    delete b;\n"
               "}\n",true);
         ASSERT_EQUALS("", errout.str());
+
+        // #9780
+        check("int f() {\n"
+              "    std::vector<int> vect;\n"
+              "    MyStruct info{};\n"
+              "    info.vect = &vect;\n"
+              "    vect.push_back(1);\n"
+              "    return info.ret;\n"
+              "}\n",true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void invalidContainerLoop() {
