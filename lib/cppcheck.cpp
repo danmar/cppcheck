@@ -329,9 +329,9 @@ unsigned int CppCheck::check(const std::string &path)
         const std::string clangcmd = analyzerInfo + ".clang-cmd";
         const std::string clangStderr = analyzerInfo + ".clang-stderr";
 #ifdef _WIN32
-        const std::string exe = "clang.exe";
+        const std::string exe = mSettings.clangExecutable + ".exe";
 #else
-        const std::string exe = "clang";
+        const std::string exe = mSettings.clangExecutable;
 #endif
 
         std::string flags(lang + " ");

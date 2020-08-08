@@ -227,8 +227,12 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--check-library") == 0)
                 mSettings->checkLibrary = true;
 
-            else if (std::strcmp(argv[i], "--clang") == 0)
+            else if (std::strncmp(argv[i], "--clang", 7) == 0) {
                 mSettings->clang = true;
+                if (std::strncmp(argv[i], "--clang=", 8) == 0) {
+                    mSettings->clangExecutable = argv[i] + 8;
+                }
+            }
 
             else if (std::strncmp(argv[i], "--config-exclude=",17) ==0) {
                 mSettings->configExcludePaths.insert(Path::fromNativeSeparators(argv[i] + 17));
