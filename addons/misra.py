@@ -2320,11 +2320,16 @@ class MisraChecker:
                     else:
                         state_in_string = True
                     pos_search += 1
-                elif exp[pos_search] in directive_args:
-                    skip_next = True  # Skip check for the next argument
-                    break
-                elif exp[pos_search] == arg:
-                    pos_search += 1
+                elif exp[pos_search].isalnum():
+                    word = ""
+                    while pos_search < len(exp) and exp[pos_search].isalnum():
+                        word += exp[pos_search]
+                        pos_search += 1
+                    if word == arg:
+                        pos_search += 1
+                    elif word in directive_args:
+                        skip_next = True
+                        break
                 elif exp[pos_search] == ' ':
                     pos_search += 1
                 elif state_in_string:
