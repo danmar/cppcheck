@@ -33,7 +33,8 @@ wxString containerOutOfBounds_wxArrayString(void)
     wxArrayString a;
     a.Add("42");
     a.Clear();
-    // cppcheck-suppress containerOutOfBounds
+    // TODO: wxArrayString is defined to be a vector
+    // TODO: cppcheck-suppress containerOutOfBounds
     return a[0];
 }
 
@@ -42,7 +43,8 @@ int containerOutOfBounds_wxArrayInt(void)
     wxArrayInt a;
     a.Add(42);
     a.Clear();
-    // cppcheck-suppress containerOutOfBounds
+    // TODO: wxArrayString is defined to be a vector
+    // TODO: cppcheck-suppress containerOutOfBounds
     return a[0];
 }
 

@@ -5640,6 +5640,11 @@ struct ContainerVariableForwardAnalyzer : VariableForwardAnalyzer {
                 if (std::any_of(rhs->values().begin(), rhs->values().end(), [&](const ValueFlow::Value &rhsval) { return rhsval.isKnown() && rhsval.isContainerSizeValue(); }))
                     return Action::Read | Action::Write;
             }
+        } else if (Token::Match(tok, "%name% . %name% (")) {
+            Library::Container::Action action = tok->valueType()->container->getAction(tok->strAt(2));
+            if (action == Library::Container::Action::PUSH || action == Library::Container::Action::POP)
+                return Action::Read | Action::Write;
+            const Token* arg = tok->tokAt(4);
         }
         return Action::None;
     }
@@ -5664,6 +5669,12 @@ struct ContainerVariableForwardAnalyzer : VariableForwardAnalyzer {
                     }
                 }
             }
+        } else if (Token::Match(tok, "%name% . %name% (")) {
+            Library::Container::Action action = tok->valueType()->container->getAction(tok->strAt(2));
+            if (action == Library::Container::Action::PUSH)
+                value->intvalue++;
+            if (action == Library::Container::Action::POP)
+                value->intvalue--;
         }
     }
 
@@ -5884,6 +5895,19 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
                     value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
                     value.setKnown();
                     valueFlowContainerForward(containerTok->next(), containerTok->variable(), value, tokenlist);
+                }
+            } else if (Token::Match(tok, "%var% . %name% (") && tok->valueType() && tok->valueType()->container) {
+                Library::Container::Action action = tok->valueType()->container->getAction(tok->strAt(2));
+                if (action == Library::Container::Action::CLEAR) {
+                    ValueFlow::Value value(0);
+                    value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
+                    value.setKnown();
+                    valueFlowContainerForward(tok->next(), tok->variable(), value, tokenlist);
+                } else if (action == Library::Container::Action::RESIZE && tok->tokAt(4)->hasKnownIntValue()) {
+                    ValueFlow::Value value(tok->tokAt(4)->values().front());
+                    value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
+                    value.setKnown();
+                    valueFlowContainerForward(tok->next(), tok->variable(), value, tokenlist);
                 }
             }
         }

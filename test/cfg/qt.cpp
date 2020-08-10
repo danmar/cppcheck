@@ -88,7 +88,7 @@ void QList1(QList<int> intListArg)
     QList<QString> qstringList2 = {"one", "two"};
     (void)qstringList2[1];
     qstringList2.clear();
-    // TODO: cppcheck-suppress containerOutOfBounds #9243
+    // cppcheck-suppress containerOutOfBounds
     (void)qstringList2[1];
 
     QList<QString> qstringList3;
@@ -117,7 +117,7 @@ void QList1(QList<int> intListArg)
     qstringList4.append("a");
     (void)qstringList4[0];
     qstringList4.clear();
-    // TODO: cppcheck-suppress containerOutOfBounds #9243
+    // cppcheck-suppress containerOutOfBounds
     (void)qstringList4[0];
 }
 
