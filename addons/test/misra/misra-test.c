@@ -1035,6 +1035,10 @@ union misra_19_2 { }; // 19.2
 #define M_20_7_11(A, B, C) (A " " B " " C)
 #define M_20_7_12(A, B, C) (A " " B + C) // 20.7
 #define M_20_7_13(A, B, C) (A + B " " C) // 20.7
+#define M_20_7_14(STRING1, STRING2) (STRING1 " " STRING2)
+#define M_20_7_15(STRING1, STRING2, STRING3) (STRING1 " " STRING2 " " STRING3)
+#define M_20_7_16(STRING1, STRING2, STRING3) (STRING1 " " STRING2 + STRING3) // 20.7
+#define M_20_7_17(STRING1, STRING2, STRING3) (STRING1 + STRING2 " " STRING3) // 20.7
 
 // Compliant: M is a structure member name, not an expression
 struct { int a; } struct_20_7_s;
