@@ -5622,7 +5622,7 @@ struct ContainerVariableForwardAnalyzer : VariableForwardAnalyzer {
     {}
 
     ContainerVariableForwardAnalyzer(const Variable* v, const ValueFlow::Value& val, std::vector<const Variable*> paliases, const TokenList* t)
-        : VariableForwardAnalyzer(v, val, paliases, t) {}
+        : VariableForwardAnalyzer(v, val, std::move(paliases), t) {}
 
     virtual Action isWritable(const Token* tok) const OVERRIDE {
         const ValueFlow::Value* value = getValue(tok);
@@ -5702,7 +5702,7 @@ static void valueFlowContainerForward(Token *tok, const Variable* var, ValueFlow
         endOfVarScope = var->scope()->bodyEnd;
     if (!endOfVarScope)
         endOfVarScope = tok->scope()->bodyEnd;
-    valueFlowContainerForward(tok, endOfVarScope, var, value, tokenlist);
+    valueFlowContainerForward(tok, endOfVarScope, var, std::move(value), tokenlist);
 }
 
 static bool isContainerSizeChanged(const Token *tok, int depth)
