@@ -335,6 +335,16 @@ private:
                     "    x[0] = 0;\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void f(bool b) {\n"
+                    "    std::vector<int> x;\n"
+                    "    if (b)\n"
+                    "        x.push_back(1);\n"
+                    "    if (x.size() < 2)\n"
+                    "        return;\n"
+                    "    x[0] = 2;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void outOfBoundsIndexExpression() {

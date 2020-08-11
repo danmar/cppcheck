@@ -5773,6 +5773,8 @@ static bool isContainerSizeChanged(const Token *tok, int depth)
         return true;
     if (Token::Match(tok, "%name% %assign%|<<"))
         return true;
+    if (Token::Match(tok, "%var% [") && tok->valueType()->container->stdAssociativeLike)
+        return true;
     if (Token::Match(tok, "%name% . %name% (")) {
         Library::Container::Action action = tok->valueType()->container->getAction(tok->strAt(2));
         Library::Container::Yield yield = tok->valueType()->container->getYield(tok->strAt(2));

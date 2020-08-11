@@ -34,6 +34,15 @@ bool ProgramMemory::getTokValue(nonneg int varid, const Token** result) const
     return found;
 }
 
+bool ProgramMemory::getContainerSizeValue(nonneg int varid, MathLib::bigint* result) const
+{
+    const ProgramMemory::Map::const_iterator it = values.find(varid);
+    const bool found = it != values.end() && it->second.isContainerSizeValue();
+    if (found)
+        *result = it->second.intvalue;
+    return found;
+}
+
 void ProgramMemory::setUnknown(nonneg int varid)
 {
     values[varid].valueType = ValueFlow::Value::ValueType::UNINIT;
@@ -533,6 +542,25 @@ void execute(const Token *expr,
             *result = 0;
         else
             *error = true;
+    }
+    else if (Token::Match(expr->tokAt(-3), "%var% . %name% (")) {
+        const Token* containerTok = expr->tokAt(-3);
+        if (astIsContainer(containerTok) && containerTok->varId() > 0) {
+            Library::Container::Yield yield = containerTok->valueType()->container->getYield(expr->strAt(-1));
+            if (yield == Library::Container::Yield::SIZE) {
+                if (!programMemory->getContainerSizeValue(containerTok->varId(), result))
+                    *error = true;
+            } else if (yield == Library::Container::Yield::EMPTY) {
+                MathLib::bigint size = 0;
+                if (!programMemory->getContainerSizeValue(containerTok->varId(), &size))
+                    *error = true;
+                *result = (size == 0);
+            } else {
+                *error = true;
+            }
+        } else {
+            *error = true;
+        }
     }
 
     else
