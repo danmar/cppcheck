@@ -5705,66 +5705,6 @@ static void valueFlowContainerForward(Token *tok, const Variable* var, ValueFlow
     valueFlowContainerForward(tok, endOfVarScope, var, value, tokenlist);
 }
 
-static void valueFlowContainerForward(Token *tok, nonneg int containerId, ValueFlow::Value value, const Settings *settings, bool cpp)
-{
-    while (nullptr != (tok = tok->next())) {
-        if (Token::Match(tok, "[{}]"))
-            break;
-        if (Token::Match(tok, "while|for (")) {
-            const Token *start = tok->linkAt(1)->next();
-            if (!Token::simpleMatch(start->link(), "{"))
-                break;
-            if (isContainerSizeChanged(containerId, start, start->link()))
-                break;
-        }
-        if (Token::simpleMatch(tok, ") {") && Token::Match(tok->link()->previous(), "while|for|if (")) {
-            const Token *start = tok->next();
-            if (isContainerSizeChanged(containerId, start, start->link()) || isEscapeScope(start, nullptr))
-                break;
-            tok = start->link();
-            if (Token::simpleMatch(tok, "} else {")) {
-                start = tok->tokAt(2);
-                if (isContainerSizeChanged(containerId, start, start->link()))
-                    break;
-                tok = start->link();
-            }
-        }
-        if (tok->varId() != containerId)
-            continue;
-        if (Token::Match(tok, "%name% ="))
-            break;
-        if (Token::Match(tok, "%name% +=")) {
-            if (!tok->valueType() || !tok->valueType()->container || !tok->valueType()->container->stdStringLike)
-                break;
-            const Token *rhs = tok->next()->astOperand2();
-            if (rhs->tokType() == Token::eString)
-                value.intvalue += Token::getStrLength(rhs);
-            else if (rhs->valueType() && rhs->valueType()->container && rhs->valueType()->container->stdStringLike) {
-                bool found = false;
-                for (const ValueFlow::Value &rhsval : rhs->values()) {
-                    if (rhsval.isKnown() && rhsval.isContainerSizeValue()) {
-                        value.intvalue += rhsval.intvalue;
-                        found = true;
-                    }
-                }
-                if (!found)
-                    break;
-            } else
-                break;
-        }
-        if (isLikelyStreamRead(cpp, tok->astParent()))
-            break;
-        if (isContainerSizeChangedByFunction(tok))
-            break;
-        if (!tok->valueType() || !tok->valueType()->container)
-            break;
-        if (Token::Match(tok, "%name% . %name% (") && tok->valueType()->container->getAction(tok->strAt(2)) != Library::Container::Action::NO_ACTION)
-            break;
-        if (!hasContainerSizeGuard(tok, containerId))
-            setTokenValue(tok, value, settings);
-    }
-}
-
 static bool isContainerSizeChanged(const Token *tok, int depth)
 {
     if (!tok)
