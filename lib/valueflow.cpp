@@ -2391,7 +2391,7 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
             return Action::Invalid;
         if (match(tok)) {
             const Token* parent = tok->astParent();
-            if ((Token::Match(parent, "*|[") || (parent && parent->originalName() == "->")) && getIndirect(tok) <= 0)
+            if (astIsPointer(tok) && (Token::Match(parent, "*|[") || (parent && parent->originalName() == "->")) && getIndirect(tok) <= 0)
                 return Action::Read;
 
             // Action read = Action::Read;
