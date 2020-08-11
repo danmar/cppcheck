@@ -1053,8 +1053,6 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
                             scope = tok1->strAt(-3) + " :: " + scope;
                             tok1 = tok1->tokAt(-2);
                         }
-
-                        if (!nextScopeNameAddition.empty() && !scope.empty()) nextScopeNameAddition += " :: ";
                         nextScopeNameAddition += scope;
                     }
                 }
