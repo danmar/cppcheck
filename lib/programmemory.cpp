@@ -545,7 +545,7 @@ void execute(const Token *expr,
     }
     else if (Token::Match(expr->tokAt(-3), "%var% . %name% (")) {
         const Token* containerTok = expr->tokAt(-3);
-        if (astIsContainer(containerTok) && containerTok->varId() > 0) {
+        if (astIsContainer(containerTok)) {
             Library::Container::Yield yield = containerTok->valueType()->container->getYield(expr->strAt(-1));
             if (yield == Library::Container::Yield::SIZE) {
                 if (!programMemory->getContainerSizeValue(containerTok->varId(), result))
