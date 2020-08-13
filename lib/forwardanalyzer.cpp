@@ -70,7 +70,7 @@ struct ForwardTraversal {
         Progress p = traverseTok(tok, f, traverseUnknown);
         if (p == Progress::Break)
             return Progress::Break;
-        if (p == Progress::Continue && traverseRecursive(tok->astOperand2(), f, traverseUnknown, recursion+1) == Progress::Break)
+        if (p == Progress::Continue && tok->astOperand2() && traverseRecursive(tok->astOperand2(), f, traverseUnknown, recursion+1) == Progress::Break)
             return Progress::Break;
         return Progress::Continue;
     }

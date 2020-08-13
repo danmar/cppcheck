@@ -139,8 +139,6 @@ void CheckThread::run()
 
 void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSettings, const QString &fileName)
 {
-    QString dumpFile;
-
     foreach (const QString addon, mAddonsAndTools) {
         if (addon == CLANG_ANALYZER || addon == CLANG_TIDY) {
             if (!fileSettings)
@@ -297,10 +295,6 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
 
             parseClangErrors(addon, fileName, errout);
         }
-    }
-
-    if (!dumpFile.isEmpty()) {
-        QFile::remove(dumpFile);
     }
 }
 

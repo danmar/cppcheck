@@ -324,6 +324,12 @@ private:
         return tok ? tok->values() : std::list<ValueFlow::Value>();
     }
 
+    std::list<ValueFlow::Value> tokenValues(const char code[], const char tokstr[], ValueFlow::Value::ValueType vt, const Settings *s = nullptr) {
+        std::list<ValueFlow::Value> values = tokenValues(code, tokstr, s);
+        values.remove_if([&](const ValueFlow::Value& v) { return v.valueType != vt; });
+        return values;
+    }
+
     ValueFlow::Value valueOfTok(const char code[], const char tokstr[]) {
         std::list<ValueFlow::Value> values = tokenValues(code, tokstr);
         return values.size() == 1U && !values.front().isTokValue() ? values.front() : ValueFlow::Value();
@@ -4253,7 +4259,7 @@ private:
                "    while (!links.empty() || indentlevel)\n"
                "        links.push(tok);\n"
                "}";
-        ASSERT(tokenValues(code, "links . empty").empty());
+        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "links . empty"), 0));
 
         // valueFlowContainerForward, function call
         code = "void f() {\n"
@@ -4439,6 +4445,40 @@ private:
                "  x = s + s;\n"
                "}";
         ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "+"), 8));
+
+        code = "void f(const std::vector<int> &ints) {\n"
+               "  ints.clear();\n"
+               "  ints.front();\n"
+               "}";
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::CONTAINER_SIZE), 0));
+
+        code = "void f(const std::vector<int> &ints) {\n"
+               "  ints.resize(3);\n"
+               "  ints.front();\n"
+               "}";
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::CONTAINER_SIZE), 3));
+
+        code = "void f(const std::vector<int> &ints) {\n"
+               "  ints.resize(3);\n"
+               "  ints.push_back(3);\n"
+               "  ints.front();\n"
+               "}";
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::CONTAINER_SIZE), 4));
+
+        code = "void f(const std::vector<int> &ints) {\n"
+               "  ints.resize(3);\n"
+               "  ints.pop_back();\n"
+               "  ints.front();\n"
+               "}";
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::CONTAINER_SIZE), 2));
+
+        code = "int f(bool b) {\n"
+               "    std::map<int, int> m;\n"
+               "    if (b)\n"
+               "        m[0] = 1;\n"
+               "    return m.at(0);\n"
+               "}\n";
+        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "m . at", ValueFlow::Value::CONTAINER_SIZE), 0));
     }
 
     void valueFlowDynamicBufferSize() {

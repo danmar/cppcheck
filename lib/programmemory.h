@@ -19,6 +19,8 @@ struct ProgramMemory {
     bool getIntValue(nonneg int varid, MathLib::bigint* result) const;
     void setIntValue(nonneg int varid, MathLib::bigint value);
 
+    bool getContainerSizeValue(nonneg int varid, MathLib::bigint* result) const;
+
     void setUnknown(nonneg int varid);
 
     bool getTokValue(nonneg int varid, const Token** result) const;

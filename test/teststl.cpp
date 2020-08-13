@@ -335,6 +335,16 @@ private:
                     "    x[0] = 0;\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void f(bool b) {\n"
+                    "    std::vector<int> x;\n"
+                    "    if (b)\n"
+                    "        x.push_back(1);\n"
+                    "    if (x.size() < 2)\n"
+                    "        return;\n"
+                    "    x[0] = 2;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void outOfBoundsIndexExpression() {
@@ -1403,7 +1413,8 @@ private:
               "       foo[ii] = 0;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (error) When ii==foo.size(), foo[ii] is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Out of bounds access in expression 'foo[ii]' because 'foo' is empty.\n"
+                      "[test.cpp:6]: (error) When ii==foo.size(), foo[ii] is out of bounds.\n", errout.str());
 
         check("void foo(std::vector<int> foo) {\n"
               "    for (unsigned int ii = 0; ii <= foo.size(); ++ii) {\n"
@@ -1506,7 +1517,7 @@ private:
                   "        }\n"
                   "    }\n"
                   "}");
-            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS("[test.cpp:11]: (error) Out of bounds access in expression 'foo[ii]' because 'foo' is empty.\n", errout.str());
         }
 
         {
