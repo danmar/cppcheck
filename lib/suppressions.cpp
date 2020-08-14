@@ -173,10 +173,9 @@ std::string Suppressions::addSuppressionLine(const std::string &line)
     Suppressions::Suppression suppression;
     if (std::getline(lineStream, suppression.errorId, ':')) {
         if (std::getline(lineStream, suppression.fileName)) {
-            size_t hashpos, cppcommentpos, endpos;
-            hashpos = suppression.fileName.find("#");
-            cppcommentpos = suppression.fileName.find("//");
-            endpos = std::min(hashpos, cppcommentpos);
+            const std::string::size_type hashpos = suppression.fileName.find("#");
+            const std::string::size_type cppcommentpos = suppression.fileName.find("//");
+            std::string::size_type endpos = std::min(hashpos, cppcommentpos);
             if (endpos != std::string::npos) {
                 while (endpos > 0 && std::isspace(suppression.fileName[endpos-1])) {
                     endpos--;
