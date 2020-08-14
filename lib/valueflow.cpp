@@ -778,6 +778,38 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
         }
     }
 
+    // increment
+    else if (parent->str() == "++") {
+        for (const ValueFlow::Value &val : tok->values()) {
+            if (!val.isIntValue() && !val.isFloatValue())
+                continue;
+            ValueFlow::Value v(val);
+            if (parent == tok->previous()) {
+                if (v.isIntValue())
+                    v.intvalue = v.intvalue + 1;
+                else
+                    v.floatValue = v.floatValue + 1.0;
+            }
+            setTokenValue(parent, v, settings);
+        }
+    }
+
+    // decrement
+    else if (parent->str() == "--") {
+        for (const ValueFlow::Value &val : tok->values()) {
+            if (!val.isIntValue() && !val.isFloatValue())
+                continue;
+            ValueFlow::Value v(val);
+            if (parent == tok->previous()) {
+                if (v.isIntValue())
+                    v.intvalue = v.intvalue - 1;
+                else
+                    v.floatValue = v.floatValue - 1.0;
+            }
+            setTokenValue(parent, v, settings);
+        }
+    }
+
     // Array element
     else if (parent->str() == "[" && parent->isBinaryOp()) {
         for (const ValueFlow::Value &value1 : parent->astOperand1()->values()) {

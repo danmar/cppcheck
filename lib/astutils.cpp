@@ -1369,6 +1369,10 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
         parenTok = parenTok->link()->next();
     const bool possiblyPassedByReference = (parenTok->next() == tok1 || Token::Match(tok1->previous(), ", %name% [,)}]"));
 
+    if (tok->isKeyword() && !Token::Match(tok, "reinterpret_cast|static_cast|dynamic_cast|const_cast")) {
+        return false;
+    }
+
     // Constructor call
     if (tok->variable() && tok->variable()->nameToken() == tok) {
         // Find constructor..
