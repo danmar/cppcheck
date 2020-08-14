@@ -173,6 +173,16 @@ std::string Suppressions::addSuppressionLine(const std::string &line)
     Suppressions::Suppression suppression;
     if (std::getline(lineStream, suppression.errorId, ':')) {
         if (std::getline(lineStream, suppression.fileName)) {
+            size_t hashpos, cppcommentpos, endpos;
+            hashpos = suppression.fileName.find("#");
+            cppcommentpos = suppression.fileName.find("//");
+            endpos = std::min(hashpos, cppcommentpos);
+            if (endpos != std::string::npos) {
+                while (endpos > 0 && std::isspace(suppression.fileName[endpos-1])) {
+                    endpos--;
+                }
+                suppression.fileName = suppression.fileName.substr(0, endpos);
+            }
             // If there is not a dot after the last colon in "file" then
             // the colon is a separator and the contents after the colon
             // is a line number..
