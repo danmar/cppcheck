@@ -485,6 +485,9 @@ static Token * skipDecl(Token *tok)
         } else if (Token::Match(vartok, "%var% [:=(]")) {
             return vartok;
         }
+        else if (Token::simpleMatch(vartok, "decltype (")) {
+            return vartok->linkAt(1)->next();
+        }
         vartok = vartok->next();
     }
     return tok;
