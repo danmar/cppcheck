@@ -6291,6 +6291,10 @@ private:
                    "        for (const auto & e : array)\n"
                    "            foo(e);\n"
                    "    }\n"
+                   "    void f3() {\n"
+                   "        for (decltype(auto) e : array)\n"
+                   "            foo(e);\n"
+                   "    }\n"
                    "};");
         ASSERT_EQUALS("[test.cpp:8]: (style, inconclusive) Technically the member function 'Fred::f2' can be const.\n", errout.str());
     }
