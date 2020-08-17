@@ -169,19 +169,22 @@ std::vector<Suppressions::Suppression> Suppressions::parseMultiSuppressComment(c
 
 std::string Suppressions::addSuppressionLine(const std::string &line)
 {
-    std::istringstream lineStream(line);
+    std::istringstream lineStream;
     Suppressions::Suppression suppression;
+
+    // Strip any end of line comments
+    std::string::size_type endpos = std::min(line.find("#"), line.find("//"));
+    if (endpos != std::string::npos) {
+        while (endpos > 0 && std::isspace(line[endpos-1])) {
+            endpos--;
+        }
+        lineStream.str(line.substr(0, endpos));
+    } else {
+        lineStream.str(line);
+    }
+
     if (std::getline(lineStream, suppression.errorId, ':')) {
         if (std::getline(lineStream, suppression.fileName)) {
-            const std::string::size_type hashpos = suppression.fileName.find("#");
-            const std::string::size_type cppcommentpos = suppression.fileName.find("//");
-            std::string::size_type endpos = std::min(hashpos, cppcommentpos);
-            if (endpos != std::string::npos) {
-                while (endpos > 0 && std::isspace(suppression.fileName[endpos-1])) {
-                    endpos--;
-                }
-                suppression.fileName = suppression.fileName.substr(0, endpos);
-            }
             // If there is not a dot after the last colon in "file" then
             // the colon is a separator and the contents after the colon
             // is a line number..
