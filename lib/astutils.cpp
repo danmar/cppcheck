@@ -1364,6 +1364,8 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
     tok = getTokenArgumentFunction(tok, argnr);
     if (!tok)
         return false; // not a function => variable not changed
+    if (tok->isKeyword() && tok->str().find("_cast") == std::string::npos)
+        return false;
     const Token * parenTok = tok->next();
     if (Token::simpleMatch(parenTok, "<") && parenTok->link())
         parenTok = parenTok->link()->next();
