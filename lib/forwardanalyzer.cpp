@@ -418,7 +418,7 @@ struct ForwardTraversal {
                 if (updateLoop(endBlock, condTok) == Progress::Break)
                     return Progress::Break;
                 if (condTok)
-                    tok = endBlock->tokAt(2)->link()->next();
+                    tok = endBlock->linkAt(2)->next();
                 else
                     tok = endBlock;
             } else if (Token::Match(tok, "assert|ASSERT (")) {
