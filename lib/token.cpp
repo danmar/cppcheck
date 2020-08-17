@@ -1631,6 +1631,12 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                 case ValueFlow::Value::CONTAINER_SIZE:
                     out << "container-size=\"" << value.intvalue << '\"';
                     break;
+                case ValueFlow::Value::ITERATOR_START:
+                    out << "iterator-start=\"" << value.intvalue << '\"';
+                    break;
+                case ValueFlow::Value::ITERATOR_END:
+                    out << "iterator-end=\"" << value.intvalue << '\"';
+                    break;
                 case ValueFlow::Value::LIFETIME:
                     out << "lifetime=\"" << value.tokvalue << '\"';
                     break;
@@ -1679,6 +1685,12 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                 case ValueFlow::Value::BUFFER_SIZE:
                 case ValueFlow::Value::CONTAINER_SIZE:
                     out << "size=" << value.intvalue;
+                    break;
+                case ValueFlow::Value::ITERATOR_START:
+                    out << "start=" << value.intvalue;
+                    break;
+                case ValueFlow::Value::ITERATOR_END:
+                    out << "end=" << value.intvalue;
                     break;
                 case ValueFlow::Value::LIFETIME:
                     out << "lifetime=" << value.tokvalue->str();
@@ -1958,6 +1970,8 @@ bool Token::addValue(const ValueFlow::Value &value)
             case ValueFlow::Value::ValueType::INT:
             case ValueFlow::Value::ValueType::CONTAINER_SIZE:
             case ValueFlow::Value::ValueType::BUFFER_SIZE:
+            case ValueFlow::Value::ValueType::ITERATOR_START:
+            case ValueFlow::Value::ValueType::ITERATOR_END:
                 differentValue = (it->intvalue != value.intvalue);
                 break;
             case ValueFlow::Value::ValueType::TOK:

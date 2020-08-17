@@ -84,6 +84,7 @@ public:
 
         checkStl.stlBoundaries();
         checkStl.checkDereferenceInvalidIterator();
+        checkStl.checkDereferenceInvalidIterator2();
         checkStl.checkMutexes();
 
         // Style check
@@ -171,6 +172,7 @@ public:
 
     /** @brief %Check for dereferencing an iterator that is invalid */
     void checkDereferenceInvalidIterator();
+    void checkDereferenceInvalidIterator2();
 
     /**
      * Dereferencing an erased iterator
@@ -227,6 +229,7 @@ private:
     void uselessCallsRemoveError(const Token* tok, const std::string& function);
 
     void dereferenceInvalidIteratorError(const Token* deref, const std::string& iterName);
+    void dereferenceInvalidIteratorError(const Token* tok, const ValueFlow::Value *value, bool inconclusive);
 
     void readingEmptyStlContainerError(const Token* tok, const ValueFlow::Value *value=nullptr);
 

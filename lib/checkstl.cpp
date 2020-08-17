@@ -18,6 +18,8 @@
 
 #include "checkstl.h"
 
+#include "check.h"
+#include "checknullpointer.h"
 #include "library.h"
 #include "mathlib.h"
 #include "settings.h"
@@ -2008,6 +2010,67 @@ void CheckStl::checkDereferenceInvalidIterator()
             Token::findmatch(startOfCondition, "* %varid%", validityCheckTok, iteratorVarId);
         if (dereferenceTok)
             dereferenceInvalidIteratorError(dereferenceTok, dereferenceTok->strAt(1));
+    }
+}
+
+void CheckStl::checkDereferenceInvalidIterator2()
+{
+    const bool printInconclusive = (mSettings->inconclusive);
+
+    for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "sizeof|decltype|typeid|typeof (")) {
+            tok = tok->next()->link();
+            continue;
+        }
+
+        // Can iterator point to END or before START?
+        for(const ValueFlow::Value& value:tok->values()) {
+            if (!printInconclusive && value.isInconclusive())
+                continue;
+            if (!value.isIteratorValue())
+                continue;
+            if (value.isIteratorEndValue() && value.intvalue < 0)
+                continue;
+            if (value.isIteratorStartValue() && value.intvalue >= 0)
+                continue;
+            bool unknown = false;
+            if (!CheckNullPointer::isPointerDeRef(tok, unknown, mSettings)) {
+                if (unknown)
+                    dereferenceInvalidIteratorError(tok, &value, true);
+                continue;
+            }
+            dereferenceInvalidIteratorError(tok, &value, false);
+        }
+    }
+}
+
+void CheckStl::dereferenceInvalidIteratorError(const Token* tok, const ValueFlow::Value *value, bool inconclusive)
+{
+    const std::string& varname = tok ? tok->expressionString() : "var";
+    const std::string errmsgcond("$symbol:" + varname + '\n' + ValueFlow::eitherTheConditionIsRedundant(value ? value->condition : nullptr) + " or there is possible dereference of an invalid iterator: $symbol.");
+    if (!tok || !value) {
+        reportError(tok, Severity::error, "derefInvalidIterator", "Dereference of an invalid iterator", CWE825, false);
+        reportError(tok, Severity::warning, "derefInvalidIteratorRedundantCheck", errmsgcond, CWE825, false);
+        return;
+    }
+    if (!mSettings->isEnabled(value, inconclusive))
+        return;
+
+    const ErrorPath errorPath = getErrorPath(tok, value, "Dereference of an invalid iterator");
+
+    if (value->condition) {
+        reportError(errorPath, Severity::warning, "derefInvalidIteratorRedundantCheck", errmsgcond, CWE825, inconclusive || value->isInconclusive());
+    } else {
+        std::string errmsg;
+        errmsg = std::string(value->isKnown() ? "Dereference" : "Possible dereference") + " of an invalid iterator";
+        if (!varname.empty())
+            errmsg = "$symbol:" + varname + '\n' + errmsg + ": $symbol";
+
+        reportError(errorPath,
+                    value->isKnown() ? Severity::error : Severity::warning,
+                    "derefInvalidIterator",
+                    errmsg,
+                    CWE825, inconclusive || value->isInconclusive());
     }
 }
 
