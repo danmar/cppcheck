@@ -2792,7 +2792,7 @@ void transformIntValues(std::list<ValueFlow::Value>& values, F f)
 
 static const Token* solveExprValues(const Token* expr, std::list<ValueFlow::Value>& values)
 {
-    MathLib::bigint intval;
+    MathLib::bigint intval = 0;
     const Token* binaryTok = parseBinaryIntOp(expr, intval);
     if (binaryTok && expr->str().size() == 1) {
         switch (expr->str()[0]) {
