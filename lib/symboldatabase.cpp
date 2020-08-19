@@ -1437,8 +1437,8 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
             continue;
         base = std::max<MathLib::bigint>(base, var->declarationId());
     }
+    MathLib::bigint id = base+1;
     for (const Scope * scope : functionScopes) {
-        MathLib::bigint id = base+1;
         std::unordered_map<std::string, std::vector<Token*>> exprs;
 
         // Assign IDs
@@ -1452,8 +1452,8 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
         }
 
         // Apply CSE
-        for(auto&& p:exprs) {
-            std::vector<Token*> tokens = p.second;
+        for(const auto& p:exprs) {
+            const std::vector<Token*>& tokens = p.second;
             for(Token* tok1:tokens) {
                 for(Token* tok2:tokens) {
                     if (tok1 == tok2)
