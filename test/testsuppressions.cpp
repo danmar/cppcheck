@@ -493,6 +493,26 @@ private:
         Suppressions suppressions2;
         suppressions2.parseFile(file2);
         ASSERT_EQUALS(true, suppressions2.isSuppressed(errorMessage("abc", "test.cpp", 123)));
+
+        std::istringstream file3("abc // comment");
+        Suppressions suppressions3;
+        suppressions3.parseFile(file3);
+        ASSERT_EQUALS(true, suppressions3.isSuppressed(errorMessage("abc", "test.cpp", 123)));
+
+        std::istringstream file4("abc\t\t # comment");
+        Suppressions suppressions4;
+        suppressions4.parseFile(file4);
+        ASSERT_EQUALS(true, suppressions4.isSuppressed(errorMessage("abc", "test.cpp", 123)));
+
+        std::istringstream file5("abc:test.cpp\t\t # comment");
+        Suppressions suppressions5;
+        suppressions5.parseFile(file5);
+        ASSERT_EQUALS(true, suppressions5.isSuppressed(errorMessage("abc", "test.cpp", 123)));
+
+        std::istringstream file6("abc:test.cpp:123\t\t # comment with . inside");
+        Suppressions suppressions6;
+        suppressions6.parseFile(file6);
+        ASSERT_EQUALS(true, suppressions6.isSuppressed(errorMessage("abc", "test.cpp", 123)));
     }
 
     void inlinesuppress() {
