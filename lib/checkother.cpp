@@ -3151,6 +3151,9 @@ void CheckOther::comparePointersError(const Token *tok, const ValueFlow::Value *
 
 void CheckOther::checkModuloOfOne()
 {
+    if (!mSettings->isEnabled(Settings::STYLE))
+        return;
+
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (!tok->astOperand2() || !tok->astOperand1())
             continue;
