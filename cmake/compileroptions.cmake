@@ -28,6 +28,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     add_compile_options(-Wno-missing-braces)
     add_compile_options(-Wno-sign-compare)
     add_compile_options(-Wno-multichar)
+    add_compile_options(-Wno-maybe-uninitialized)   # there are some false positives
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
    add_compile_options(-Wno-deprecated-declarations)
