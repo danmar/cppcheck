@@ -5656,7 +5656,6 @@ struct ContainerVariableForwardAnalyzer : VariableForwardAnalyzer {
             Library::Container::Action action = tok->valueType()->container->getAction(tok->strAt(2));
             if (action == Library::Container::Action::PUSH || action == Library::Container::Action::POP)
                 return Action::Read | Action::Write;
-            const Token* arg = tok->tokAt(4);
         }
         return Action::None;
     }
@@ -5815,7 +5814,7 @@ static void valueFlowSmartPointer(TokenList *tokenlist, ErrorLogger * errorLogge
     }
 }
 
-static void valueFlowIterators(TokenList *tokenlist, ErrorLogger * errorLogger, const Settings *settings)
+static void valueFlowIterators(TokenList *tokenlist, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
         if (!tok->scope())
@@ -6431,7 +6430,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
         valueFlowUninit(tokenlist, symboldatabase, errorLogger, settings);
         if (tokenlist->isCPP()) {
             valueFlowSmartPointer(tokenlist, errorLogger, settings);
-            valueFlowIterators(tokenlist, errorLogger, settings);
+            valueFlowIterators(tokenlist, settings);
             valueFlowContainerSize(tokenlist, symboldatabase, errorLogger, settings);
             valueFlowContainerAfterCondition(tokenlist, symboldatabase, errorLogger, settings);
         }
