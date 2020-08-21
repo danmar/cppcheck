@@ -795,6 +795,8 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
                 const Token *lhs = tok1->previous();
                 while (Token::Match(lhs, "(|.|["))
                     lhs = lhs->astOperand1();
+                if (!lhs)
+                    return false;
                 const bool lhsIsConst = (lhs->variable() && lhs->variable()->isConst()) ||
                                         (lhs->valueType() && lhs->valueType()->constness > 0) ||
                                         (Token::Match(lhs, "%var% . %name% (") && library.isFunctionConst(lhs->tokAt(2)));
