@@ -150,6 +150,11 @@ namespace CppcheckXml {
     const char FunctionContract[] = "contract";
     const char ContractFunction[] = "function";
     const char ContractExpects[] = "expects";
+    const char VariableContractsElementName[] = "variable-contracts";
+    const char VariableContractItemElementName[] = "var";
+    const char VariableContractVarName[] = "name";
+    const char VariableContractMin[] = "min";
+    const char VariableContractMax[] = "max";
     const char LibrariesElementName[] = "libraries";
     const char LibraryElementName[] = "library";
     const char PlatformElementName[] = "platform";

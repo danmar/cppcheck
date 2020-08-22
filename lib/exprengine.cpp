@@ -2641,6 +2641,28 @@ void ExprEngine::executeFunction(const Scope *functionScope, ErrorLogger *errorL
 
     // Write a report
     if (bugHuntingReport) {
+        std::set<std::string> intvars;
+        for (const Scope &scope: tokenizer->getSymbolDatabase()->scopeList) {
+            if (scope.isExecutable())
+                continue;
+            std::string path;
+            bool valid = true;
+            for (const Scope *s = &scope; s->type != Scope::ScopeType::eGlobal; s = s->nestedIn) {
+                if (s->isExecutable()) {
+                    valid = false;
+                    break;
+                }
+                path = s->className + "::" + path;
+            }
+            if (!valid)
+                continue;
+            for (const Variable &var: scope.varlist) {
+                if (var.nameToken() && !var.nameToken()->hasCppcheckAttributes() && var.valueType() && var.valueType()->pointer == 0 && var.valueType()->constness == 0 && var.valueType()->isIntegral())
+                    intvars.insert(path + var.name());
+            }
+        }
+        for (const std::string &v: intvars)
+            report << "[intvar] " << v << std::endl;
         for (const std::string &f: trackExecution.getMissingContracts())
             report << "[missing contract] " << f << std::endl;
     }

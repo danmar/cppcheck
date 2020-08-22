@@ -927,7 +927,7 @@ Cppcheck will warn:
 
 There are two ways:
 
-- Open the "Contracts" tab at the bottom of the screen. Find the function in the listbox and double click on it.
+- Open the "Functions" or "Variables" tab at the bottom of the screen. Find the function or variable in the listbox and double click on it.
 - Right click on a warning and click on "Edit contract.." in the popup menu. This popup menu item is only available if the warning is not inconclusive.
 
 ## Incomplete analysis
