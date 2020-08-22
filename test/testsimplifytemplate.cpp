@@ -4121,16 +4121,21 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         //both of these should work but in cppcheck 2.1 only the first option will work (ticket #9843)
-        tok("template <typename T>\n"
-            "constexpr bool is_ratio_v = false;\n"
-            "template <std::intmax_t Num, std::intmax_t Den>\n"
-            "constexpr bool is_ratio_v<std::ratio<Num, Den> > = true;\n");
-        ASSERT_EQUALS("", errout.str());
-        tok("template <typename T>\n"
-            "constexpr bool is_ratio_v = false;\n"
-            "template <std::intmax_t Num, std::intmax_t Den>\n"
-            "constexpr bool is_ratio_v<std::ratio<Num, Den>> = true;\n");
-        ASSERT_EQUALS("", errout.str());
+        {
+            const std::string expected = "template < typename T > const bool is_ratio_v = false ; template < long Num , long Den > const bool is_ratio_v < std :: ratio < Num , Den > > = true ;";
+            ASSERT_EQUALS(expected,
+                tok("template <typename T>\n"
+                    "constexpr bool is_ratio_v = false;\n"
+                    "template <std::intmax_t Num, std::intmax_t Den>\n"
+                    "constexpr bool is_ratio_v<std::ratio<Num, Den> > = true;\n"));
+            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS(expected,
+                tok("template <typename T>\n"
+                    "constexpr bool is_ratio_v = false;\n"
+                    "template <std::intmax_t Num, std::intmax_t Den>\n"
+                    "constexpr bool is_ratio_v<std::ratio<Num, Den>> = true;\n"));
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void template_member_ptr() { // Ticket #5786
