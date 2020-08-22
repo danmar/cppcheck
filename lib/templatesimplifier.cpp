@@ -243,6 +243,10 @@ void TemplateSimplifier::fixAngleBrackets()
             if (endTok && endTok->str() == ">>") {
                 endTok->str(">");
                 endTok->insertToken(">");
+            } else if (endTok && endTok->str() == ">>=") {
+                endTok->str(">");
+                endTok->insertToken("=");
+                endTok->insertToken(">");
             }
         } else if (Token::Match(tok, "class|struct|union|=|:|public|protected|private %name% <")) {
             Token *endTok = tok->tokAt(2)->findClosingBracket();
@@ -432,7 +436,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
                 if (closing->str() == ">>")
                     return numberOfParameters;
                 tok = closing->next();
-                if (tok->str() == ">" || tok->str() == ">>")
+                if (Token::Match(tok, ">|>>|>>="))
                     return numberOfParameters;
                 else if (tok->str() == ",") {
                     ++numberOfParameters;
@@ -467,7 +471,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
                 if (level == 0)
                     return numberOfParameters;
                 --level;
-            } else if (tok->str() == ">>") {
+            } else if (tok->str() == ">>" || tok->str() == ">>=") {
                 if (level == 1)
                     return numberOfParameters;
                 level -= 2;
@@ -493,7 +497,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
                 return 0;
             if (tok->str() == ">" && level == 0)
                 return numberOfParameters;
-            else if (tok->str() == ">>" && level == 1)
+            else if ((tok->str() == ">>" || tok->str() == ">>=") && level == 1)
                 return numberOfParameters;
             else if (tok->str() == ",") {
                 if (level == 0)
@@ -550,11 +554,11 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
             return 0;
 
         // ,/>
-        while (Token::Match(tok, ">|>>")) {
+        while (Token::Match(tok, ">|>>|>>=")) {
             if (level == 0)
                 return tok->str() == ">" && !Token::Match(tok->next(), "%num%") ? numberOfParameters : 0;
             --level;
-            if (tok->str() == ">>") {
+            if (tok->str() == ">>" || tok->str() == ">>=") {
                 if (level == 0)
                     return !Token::Match(tok->next(), "%num%") ? numberOfParameters : 0;
                 --level;

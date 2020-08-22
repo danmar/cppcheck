@@ -885,7 +885,7 @@ const Token * Token::findClosingBracket() const
         else if (closing->str() == ">") {
             if (--depth == 0)
                 return closing;
-        } else if (closing->str() == ">>") {
+        } else if (closing->str() == ">>" || closing->str() == ">>=") {
             if (depth <= 2)
                 return closing;
             depth -= 2;
