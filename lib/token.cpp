@@ -1140,14 +1140,14 @@ void Token::printOut(const char *title) const
 {
     if (title && title[0])
         std::cout << "\n### " << title << " ###\n";
-    std::cout << stringifyList(true, true, true, true, true, nullptr, nullptr) << std::endl;
+    std::cout << stringifyList(stringifyOptions::forDebugExprId(), nullptr, nullptr) << std::endl;
 }
 
 void Token::printOut(const char *title, const std::vector<std::string> &fileNames) const
 {
     if (title && title[0])
         std::cout << "\n### " << title << " ###\n";
-    std::cout << stringifyList(true, true, true, true, true, &fileNames, nullptr) << std::endl;
+    std::cout << stringifyList(stringifyOptions::forDebugExprId(), &fileNames, nullptr) << std::endl;
 }
 
 void Token::printLines(int lines) const
@@ -1155,12 +1155,12 @@ void Token::printLines(int lines) const
     const Token *end = this;
     while (end && end->linenr() < lines + linenr())
         end = end->next();
-    std::cout << stringifyList(true, true, true, true, true, nullptr, end) << std::endl;
+    std::cout << stringifyList(stringifyOptions::forDebugExprId(), nullptr, end) << std::endl;
 }
 
-void Token::stringify(std::ostream& os, bool varid, bool attributes, bool macro) const
+void Token::stringify(std::ostream& os, const stringifyOptions& options) const
 {
-    if (attributes) {
+    if (options.attributes) {
         if (isUnsigned())
             os << "unsigned ";
         else if (isSigned())
@@ -1172,7 +1172,7 @@ void Token::stringify(std::ostream& os, bool varid, bool attributes, bool macro)
                 os << "long ";
         }
     }
-    if (macro && isExpandedMacro())
+    if (options.macro && isExpandedMacro())
         os << "$";
     if (isName() && mStr.find(' ') != std::string::npos) {
         for (char i : mStr) {
@@ -1189,19 +1189,30 @@ void Token::stringify(std::ostream& os, bool varid, bool attributes, bool macro)
                 os << i;
         }
     }
-    if (varid && mImpl->mVarId != 0)
+    if (options.varid && mImpl->mVarId != 0)
         os << '@' << mImpl->mVarId;
+    if (options.exprid && mImpl->mExprId != 0)
+        os << '@' << mImpl->mExprId;
 }
 
-std::string Token::stringifyList(bool varid, bool attributes, bool linenumbers, bool linebreaks, bool files, const std::vector<std::string>* fileNames, const Token* end) const
+void Token::stringify(std::ostream& os, bool varid, bool attributes, bool macro) const
+{
+    stringifyOptions options;
+    options.varid = varid;
+    options.attributes = attributes;
+    options.macro = macro;
+    stringify(os, options);
+}
+
+std::string Token::stringifyList(const stringifyOptions& options, const std::vector<std::string>* fileNames, const Token* end) const
 {
     if (this == end)
         return "";
 
     std::ostringstream ret;
 
-    unsigned int lineNumber = mImpl->mLineNumber - (linenumbers ? 1U : 0U);
-    unsigned int fileIndex = files ? ~0U : mImpl->mFileIndex;
+    unsigned int lineNumber = mImpl->mLineNumber - (options.linenumbers ? 1U : 0U);
+    unsigned int fileIndex = options.files ? ~0U : mImpl->mFileIndex;
     std::map<int, unsigned int> lineNumbers;
     for (const Token *tok = this; tok != end; tok = tok->next()) {
         bool fileChange = false;
@@ -1211,7 +1222,7 @@ std::string Token::stringifyList(bool varid, bool attributes, bool linenumbers, 
             }
 
             fileIndex = tok->mImpl->mFileIndex;
-            if (files) {
+            if (options.files) {
                 ret << "\n\n##file ";
                 if (fileNames && fileNames->size() > tok->mImpl->mFileIndex)
                     ret << fileNames->at(tok->mImpl->mFileIndex);
@@ -1224,18 +1235,18 @@ std::string Token::stringifyList(bool varid, bool attributes, bool linenumbers, 
             fileChange = true;
         }
 
-        if (linebreaks && (lineNumber != tok->linenr() || fileChange)) {
+        if (options.linebreaks && (lineNumber != tok->linenr() || fileChange)) {
             if (lineNumber+4 < tok->linenr() && fileIndex == tok->mImpl->mFileIndex) {
                 ret << '\n' << lineNumber+1 << ":\n|\n";
                 ret << tok->linenr()-1 << ":\n";
                 ret << tok->linenr() << ": ";
-            } else if (this == tok && linenumbers) {
+            } else if (this == tok && options.linenumbers) {
                 ret << tok->linenr() << ": ";
             } else {
                 while (lineNumber < tok->linenr()) {
                     ++lineNumber;
                     ret << '\n';
-                    if (linenumbers) {
+                    if (options.linenumbers) {
                         ret << lineNumber << ':';
                         if (lineNumber == tok->linenr())
                             ret << ' ';
@@ -1245,13 +1256,24 @@ std::string Token::stringifyList(bool varid, bool attributes, bool linenumbers, 
             lineNumber = tok->linenr();
         }
 
-        tok->stringify(ret, varid, attributes, attributes); // print token
-        if (tok->next() != end && (!linebreaks || (tok->next()->linenr() <= tok->linenr() && tok->next()->fileIndex() == tok->fileIndex())))
+        tok->stringify(ret, options); // print token
+        if (tok->next() != end && (!options.linebreaks || (tok->next()->linenr() <= tok->linenr() && tok->next()->fileIndex() == tok->fileIndex())))
             ret << ' ';
     }
-    if (linebreaks && (files || linenumbers))
+    if (options.linebreaks && (options.files || options.linenumbers))
         ret << '\n';
     return ret.str();
+}
+std::string Token::stringifyList(bool varid, bool attributes, bool linenumbers, bool linebreaks, bool files, const std::vector<std::string>* fileNames, const Token* end) const
+{
+    stringifyOptions options;
+    options.varid = varid;
+    options.attributes = attributes;
+    options.macro = attributes;
+    options.linenumbers = linenumbers;
+    options.linebreaks = linebreaks;
+    options.files = files;
+    return stringifyList(options, fileNames, end);
 }
 
 std::string Token::stringifyList(const Token* end, bool attributes) const
@@ -1631,6 +1653,12 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                 case ValueFlow::Value::CONTAINER_SIZE:
                     out << "container-size=\"" << value.intvalue << '\"';
                     break;
+                case ValueFlow::Value::ITERATOR_START:
+                    out << "iterator-start=\"" << value.intvalue << '\"';
+                    break;
+                case ValueFlow::Value::ITERATOR_END:
+                    out << "iterator-end=\"" << value.intvalue << '\"';
+                    break;
                 case ValueFlow::Value::LIFETIME:
                     out << "lifetime=\"" << value.tokvalue << '\"';
                     break;
@@ -1679,6 +1707,12 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                 case ValueFlow::Value::BUFFER_SIZE:
                 case ValueFlow::Value::CONTAINER_SIZE:
                     out << "size=" << value.intvalue;
+                    break;
+                case ValueFlow::Value::ITERATOR_START:
+                    out << "start=" << value.intvalue;
+                    break;
+                case ValueFlow::Value::ITERATOR_END:
+                    out << "end=" << value.intvalue;
                     break;
                 case ValueFlow::Value::LIFETIME:
                     out << "lifetime=" << value.tokvalue->str();
@@ -1958,6 +1992,8 @@ bool Token::addValue(const ValueFlow::Value &value)
             case ValueFlow::Value::ValueType::INT:
             case ValueFlow::Value::ValueType::CONTAINER_SIZE:
             case ValueFlow::Value::ValueType::BUFFER_SIZE:
+            case ValueFlow::Value::ValueType::ITERATOR_START:
+            case ValueFlow::Value::ValueType::ITERATOR_END:
                 differentValue = (it->intvalue != value.intvalue);
                 break;
             case ValueFlow::Value::ValueType::TOK:

@@ -391,10 +391,10 @@ You can create a suppressions file. Example:
     memleak:src/file1.cpp
     exceptNew:src/file1.cpp
 
-    // suppress all uninitvar errors in all files
-    uninitvar
+    uninitvar // suppress all uninitvar errors in all files
 
 Note that you may add empty lines and comments in the suppressions file.
+Comments must start with `#` or `//` and be at the start of the line, or after the suppression line.
 
 You can use the suppressions file like this:
 

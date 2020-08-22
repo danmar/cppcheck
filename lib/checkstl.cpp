@@ -18,6 +18,8 @@
 
 #include "checkstl.h"
 
+#include "check.h"
+#include "checknullpointer.h"
 #include "library.h"
 #include "mathlib.h"
 #include "settings.h"
@@ -2011,6 +2013,67 @@ void CheckStl::checkDereferenceInvalidIterator()
     }
 }
 
+void CheckStl::checkDereferenceInvalidIterator2()
+{
+    const bool printInconclusive = (mSettings->inconclusive);
+
+    for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "sizeof|decltype|typeid|typeof (")) {
+            tok = tok->next()->link();
+            continue;
+        }
+
+        // Can iterator point to END or before START?
+        for(const ValueFlow::Value& value:tok->values()) {
+            if (!printInconclusive && value.isInconclusive())
+                continue;
+            if (!value.isIteratorValue())
+                continue;
+            if (value.isIteratorEndValue() && value.intvalue < 0)
+                continue;
+            if (value.isIteratorStartValue() && value.intvalue >= 0)
+                continue;
+            bool unknown = false;
+            if (!CheckNullPointer::isPointerDeRef(tok, unknown, mSettings)) {
+                if (unknown)
+                    dereferenceInvalidIteratorError(tok, &value, true);
+                continue;
+            }
+            dereferenceInvalidIteratorError(tok, &value, false);
+        }
+    }
+}
+
+void CheckStl::dereferenceInvalidIteratorError(const Token* tok, const ValueFlow::Value *value, bool inconclusive)
+{
+    const std::string& varname = tok ? tok->expressionString() : "var";
+    const std::string errmsgcond("$symbol:" + varname + '\n' + ValueFlow::eitherTheConditionIsRedundant(value ? value->condition : nullptr) + " or there is possible dereference of an invalid iterator: $symbol.");
+    if (!tok || !value) {
+        reportError(tok, Severity::error, "derefInvalidIterator", "Dereference of an invalid iterator", CWE825, false);
+        reportError(tok, Severity::warning, "derefInvalidIteratorRedundantCheck", errmsgcond, CWE825, false);
+        return;
+    }
+    if (!mSettings->isEnabled(value, inconclusive))
+        return;
+
+    const ErrorPath errorPath = getErrorPath(tok, value, "Dereference of an invalid iterator");
+
+    if (value->condition) {
+        reportError(errorPath, Severity::warning, "derefInvalidIteratorRedundantCheck", errmsgcond, CWE825, inconclusive || value->isInconclusive());
+    } else {
+        std::string errmsg;
+        errmsg = std::string(value->isKnown() ? "Dereference" : "Possible dereference") + " of an invalid iterator";
+        if (!varname.empty())
+            errmsg = "$symbol:" + varname + '\n' + errmsg + ": $symbol";
+
+        reportError(errorPath,
+                    value->isKnown() ? Severity::error : Severity::warning,
+                    "derefInvalidIterator",
+                    errmsg,
+                    CWE825, inconclusive || value->isInconclusive());
+    }
+}
+
 void CheckStl::dereferenceInvalidIteratorError(const Token* deref, const std::string &iterName)
 {
     reportError(deref, Severity::warning,
@@ -2394,6 +2457,48 @@ void CheckStl::useStlAlgorithm()
                     continue;
                 }
             }
+        }
+    }
+}
+
+void CheckStl::knownEmptyContainerLoopError(const Token *tok)
+{
+    const std::string cont = tok ? tok->expressionString() : std::string("var");
+
+    reportError(tok, Severity::style,
+                "knownEmptyContainerLoop",
+                "Iterating over container '" + cont + "' that is always empty.", CWE398, false);
+}
+
+void CheckStl::knownEmptyContainerLoop()
+{
+    if (!mSettings->isEnabled(Settings::STYLE))
+        return;
+    for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
+        for (const Token *tok = function->bodyStart; tok != function->bodyEnd; tok = tok->next()) {
+            // Parse range-based for loop
+            if (!Token::simpleMatch(tok, "for ("))
+                continue;
+            if (!Token::simpleMatch(tok->next()->link(), ") {"))
+                continue;
+            const Token *bodyTok = tok->next()->link()->next();
+            const Token *splitTok = tok->next()->astOperand2();
+            if (!Token::simpleMatch(splitTok, ":"))
+                continue;
+            const Token* contTok = splitTok->astOperand2();
+            if (!contTok)
+                continue;
+            for(const ValueFlow::Value& v:contTok->values()) {
+                if (!v.isKnown())
+                    continue;
+                if (!v.isContainerSizeValue())
+                    continue;
+                if (v.intvalue != 0)
+                    continue;
+                knownEmptyContainerLoopError(contTok);
+            }
+
+
         }
     }
 }
