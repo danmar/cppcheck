@@ -245,8 +245,6 @@ private:
         TEST_CASE(moduloOfOne);
 
         TEST_CASE(sameExpressionPointers);
-
-        TEST_CASE(incorrectTokenization1);
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, bool verbose=false, Settings* settings = nullptr) {
@@ -8742,20 +8740,6 @@ private:
               "    if (b && c != *a) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void  incorrectTokenization1() {
-        //Fine
-        check("template <typename T>\n"
-              "constexpr bool is_ratio_v = false;\n"
-              "template <std::intmax_t Num, std::intmax_t Den>\n"
-              "constexpr bool is_ratio_v<std::ratio<Num, Den> > = true;\n");
-
-        //Syntax Error
-        check("template <typename T>\n"
-              "constexpr bool is_ratio_v = false;\n"
-              "template <std::intmax_t Num, std::intmax_t Den>\n"
-              "constexpr bool is_ratio_v<std::ratio<Num, Den>> = true;\n");
     }
 };
 
