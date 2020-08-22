@@ -81,6 +81,7 @@ public:
         checkStl.invalidContainerLoop();
         checkStl.mismatchingContainers();
         checkStl.mismatchingContainerIterator();
+        checkStl.knownEmptyContainerLoop();
 
         checkStl.stlBoundaries();
         checkStl.checkDereferenceInvalidIterator();
@@ -188,6 +189,8 @@ public:
 
     /** @brief Look for loops that can replaced with std algorithms */
     void useStlAlgorithm();
+    
+    void knownEmptyContainerLoop();
 
     void checkMutexes();
 
@@ -235,6 +238,8 @@ private:
 
     void useStlAlgorithmError(const Token *tok, const std::string &algoName);
 
+    void knownEmptyContainerLoopError(const Token *tok);
+
     void globalLockGuardError(const Token *tok);
     void localMutexError(const Token *tok);
 
@@ -274,6 +279,7 @@ private:
         c.dereferenceInvalidIteratorError(nullptr, "i");
         c.readingEmptyStlContainerError(nullptr);
         c.useStlAlgorithmError(nullptr, "");
+        c.knownEmptyContainerLoopError(nullptr);
         c.globalLockGuardError(nullptr);
         c.localMutexError(nullptr);
     }
@@ -298,6 +304,7 @@ private:
                "- useless calls of string and STL functions\n"
                "- dereferencing an invalid iterator\n"
                "- reading from empty STL container\n"
+               "- iterating over an empty STL container\n"
                "- consider using an STL algorithm instead of raw loop\n"
                "- incorrect locking with mutex\n";
     }

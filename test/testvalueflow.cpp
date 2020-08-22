@@ -4068,7 +4068,7 @@ private:
                "  if (!static_cast<bool>(ints.empty()))\n"
                "    ints.front();\n"
                "}";
-        ASSERT(tokenValues(code, "ints . front").empty());
+        ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "ints . front"), 0));
 
         // valueFlowContainerReverse
         code = "void f(const std::list<int> &ints) {\n"

@@ -166,6 +166,7 @@ private:
         TEST_CASE(invalidContainerLoop);
         TEST_CASE(findInsert);
 
+        TEST_CASE(checkKnownEmptyContainerLoop);
         TEST_CASE(checkMutexes);
     }
 
@@ -4519,6 +4520,36 @@ private:
               "    } else {\n"
               "        m[x] = 1;\n"
               "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkKnownEmptyContainerLoop() {
+        check("void f() {\n"
+              "    std::vector<int> v;\n"
+              "    for(auto x:v) {}\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Iterating over container 'v' that is always empty.\n", errout.str());
+
+        check("void f(std::vector<int> v) {\n"
+              "    v.clear();\n"
+              "    for(auto x:v) {}\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Iterating over container 'v' that is always empty.\n", errout.str());
+
+        check("void f(std::vector<int> v) {\n"
+              "    if (!v.empty()) { return; }\n"
+              "    for(auto x:v) {}\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Iterating over container 'v' that is always empty.\n", errout.str());
+
+        check("void f(std::vector<int> v) {\n"
+              "    if (v.empty()) { return; }\n"
+              "    for(auto x:v) {}\n"
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());

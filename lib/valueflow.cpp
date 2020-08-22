@@ -1961,7 +1961,7 @@ static bool isConditionKnown(const Token* tok, bool then)
     if (then)
         op = "&&";
     const Token* parent = tok->astParent();
-    while (parent && parent->str() == op)
+    while (parent && (parent->str() == op || parent->str() == "!"))
         parent = parent->astParent();
     return (parent && parent->str() == "(");
 }
@@ -5977,7 +5977,7 @@ static void valueFlowContainerAfterCondition(TokenList *tokenlist,
                 return cond;
             const Token *parent = tok->astParent();
             while (parent) {
-                if (Token::Match(parent, "%comp%|!"))
+                if (Token::Match(parent, "%comp%"))
                     return cond;
                 parent = parent->astParent();
             }
