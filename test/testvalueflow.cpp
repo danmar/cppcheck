@@ -326,7 +326,9 @@ private:
 
     std::list<ValueFlow::Value> tokenValues(const char code[], const char tokstr[], ValueFlow::Value::ValueType vt, const Settings *s = nullptr) {
         std::list<ValueFlow::Value> values = tokenValues(code, tokstr, s);
-        values.remove_if([&](const ValueFlow::Value& v) { return v.valueType != vt; });
+        values.remove_if([&](const ValueFlow::Value& v) {
+            return v.valueType != vt;
+        });
         return values;
     }
 
@@ -4068,7 +4070,7 @@ private:
                "  if (!static_cast<bool>(ints.empty()))\n"
                "    ints.front();\n"
                "}";
-        ASSERT(tokenValues(code, "ints . front").empty());
+        ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "ints . front"), 0));
 
         // valueFlowContainerReverse
         code = "void f(const std::list<int> &ints) {\n"

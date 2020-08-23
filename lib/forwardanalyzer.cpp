@@ -332,9 +332,19 @@ struct ForwardTraversal {
                 if (initTok && updateRecursive(initTok) == Progress::Break)
                     return Progress::Break;
                 if (Token::Match(tok, "for|while (")) {
-                    Token* stepTok = getStepTok(tok);
-                    if (updateLoop(endBlock, condTok, initTok, stepTok) == Progress::Break)
-                        return Progress::Break;
+                    // For-range loop
+                    if (Token::simpleMatch(condTok, ":")) {
+                        Token* conTok = condTok->astOperand2();
+                        if (conTok && updateRecursive(conTok) == Progress::Break)
+                            return Progress::Break;
+                        if (updateLoop(endBlock, condTok) == Progress::Break)
+                            return Progress::Break;
+                    } else {
+                        Token* stepTok = getStepTok(tok);
+                        if (updateLoop(endBlock, condTok, initTok, stepTok) == Progress::Break)
+                            return Progress::Break;
+
+                    }
                     tok = endBlock;
                 } else {
                     // Traverse condition
