@@ -3561,6 +3561,24 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Condition '-128>x' is always false\n", errout.str());
+
+        //We expect this to trigger for an int but not a float
+        check("void f() {\n"
+            "    int xint = getx();\n"
+            "    if (xint <= 0)\n"
+            "        A();\n"
+            "    else if (xint < 1)\n"
+            "        B();\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style) Condition 'xint<1' is always false\n", errout.str());
+        check("void f() {\n"
+              "    float xfloat = getx();\n"
+              "    if (xfloat <= 0)\n"
+              "        A();\n"
+              "    else if (xfloat < 1)\n"
+              "        B();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueContainer() {
