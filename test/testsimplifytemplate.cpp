@@ -4126,13 +4126,13 @@ private:
             ASSERT_EQUALS(expected,
                 tok("template <typename T>\n"
                     "constexpr bool is_ratio_v = false;\n"
-                    "template <std::intmax_t Num, std::intmax_t Den>\n"
+                    "template <long Num, long Den>\n"
                     "constexpr bool is_ratio_v<std::ratio<Num, Den> > = true;\n"));
             ASSERT_EQUALS("", errout.str());
             ASSERT_EQUALS(expected,
                 tok("template <typename T>\n"
                     "constexpr bool is_ratio_v = false;\n"
-                    "template <std::intmax_t Num, std::intmax_t Den>\n"
+                    "template <long Num, long Den>\n"
                     "constexpr bool is_ratio_v<std::ratio<Num, Den>> = true;\n"));
             ASSERT_EQUALS("", errout.str());
         }
