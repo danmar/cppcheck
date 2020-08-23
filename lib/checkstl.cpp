@@ -857,7 +857,7 @@ void CheckStl::invalidContainer()
                 if (skipVarIds.count(info.tok->varId()) > 0)
                     return false;
                 // if (Token::simpleMatch(info.tok->next(), "."))
-                    // return false;
+                // return false;
                 if (Token::Match(info.tok->astParent(), "%assign%") && astIsLHS(info.tok))
                     skipVarIds.insert(info.tok->varId());
                 if (info.tok->variable()->isReference() &&
@@ -2024,7 +2024,7 @@ void CheckStl::checkDereferenceInvalidIterator2()
         }
 
         // Can iterator point to END or before START?
-        for(const ValueFlow::Value& value:tok->values()) {
+        for (const ValueFlow::Value& value:tok->values()) {
             if (!printInconclusive && value.isInconclusive())
                 continue;
             if (!value.isIteratorValue())
@@ -2488,7 +2488,7 @@ void CheckStl::knownEmptyContainerLoop()
             const Token* contTok = splitTok->astOperand2();
             if (!contTok)
                 continue;
-            for(const ValueFlow::Value& v:contTok->values()) {
+            for (const ValueFlow::Value& v:contTok->values()) {
                 if (!v.isKnown())
                     continue;
                 if (!v.isContainerSizeValue())

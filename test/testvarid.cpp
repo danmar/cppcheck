@@ -202,7 +202,7 @@ private:
         TEST_CASE(setVarIdStructMembers1);
 
         TEST_CASE(decltype1);
-        
+
         TEST_CASE(exprid1);
     }
 
