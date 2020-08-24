@@ -4299,7 +4299,7 @@ struct ValueFlowConditionHandler {
                         elseValues.insert(elseValues.end(), cond.false_values.begin(), cond.false_values.end());
                         if (isConditionKnown(tok, true)) {
                             insertImpossible(thenValues, cond.true_values);
-                            if (Token::Match(tok, "(|.|%var%"))
+                            if (Token::Match(tok, "(|.|%var%") && astIsBool(tok))
                                 insertNegateKnown(thenValues, cond.true_values);
                         }
                     }
