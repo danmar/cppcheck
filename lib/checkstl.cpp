@@ -31,7 +31,9 @@
 #include "pathanalysis.h"
 #include "valueflow.h"
 
+#include <algorithm>
 #include <cstddef>
+#include <iterator>
 #include <list>
 #include <map>
 #include <set>
@@ -118,6 +120,15 @@ void CheckStl::outOfBounds()
     }
 }
 
+static std::string indexValueString(const ValueFlow::Value& indexValue)
+{
+    if (indexValue.isIteratorStartValue())
+        return "at position " + MathLib::toString(indexValue.intvalue) + " from the begining";
+    if (indexValue.isIteratorEndValue())
+        return "at position " + MathLib::toString(-indexValue.intvalue) + " from the end";
+    return MathLib::toString(indexValue.intvalue);
+}
+
 void CheckStl::outOfBoundsError(const Token *tok, const std::string &containerName, const ValueFlow::Value *containerSize, const std::string &index, const ValueFlow::Value *indexValue)
 {
     // Do not warn if both the container size and index value are possible
@@ -140,9 +151,9 @@ void CheckStl::outOfBoundsError(const Token *tok, const std::string &containerNa
         if (containerSize->condition)
             errmsg = ValueFlow::eitherTheConditionIsRedundant(containerSize->condition) + " or $symbol size can be " + MathLib::toString(containerSize->intvalue) + ". Expression '" + expression + "' cause access out of bounds.";
         else if (indexValue->condition)
-            errmsg = ValueFlow::eitherTheConditionIsRedundant(indexValue->condition) + " or '" + index + "' can have the value " + MathLib::toString(indexValue->intvalue) + ". Expression '" + expression + "' cause access out of bounds.";
+            errmsg = ValueFlow::eitherTheConditionIsRedundant(indexValue->condition) + " or '" + index + "' can have the value " + indexValueString(*indexValue) + ". Expression '" + expression + "' cause access out of bounds.";
         else
-            errmsg = "Out of bounds access in '" + expression + "', if '$symbol' size is " + MathLib::toString(containerSize->intvalue) + " and '" + index + "' is " + MathLib::toString(indexValue->intvalue);
+            errmsg = "Out of bounds access in '" + expression + "', if '$symbol' size is " + MathLib::toString(containerSize->intvalue) + " and '" + index + "' is " + indexValueString(*indexValue);
     } else {
         // should not happen
         return;
@@ -2013,6 +2024,7 @@ void CheckStl::checkDereferenceInvalidIterator()
     }
 }
 
+
 void CheckStl::checkDereferenceInvalidIterator2()
 {
     const bool printInconclusive = (mSettings->inconclusive);
@@ -2023,23 +2035,48 @@ void CheckStl::checkDereferenceInvalidIterator2()
             continue;
         }
 
+        std::vector<ValueFlow::Value> contValues;
+        std::copy_if(tok->values().begin(), tok->values().end(), std::back_inserter(contValues), [&](const ValueFlow::Value& value) {
+            if (!printInconclusive && value.isInconclusive())
+                return false;
+            return value.isContainerSizeValue();
+        });
+
+
         // Can iterator point to END or before START?
         for (const ValueFlow::Value& value:tok->values()) {
             if (!printInconclusive && value.isInconclusive())
                 continue;
             if (!value.isIteratorValue())
                 continue;
-            if (value.isIteratorEndValue() && value.intvalue < 0)
-                continue;
-            if (value.isIteratorStartValue() && value.intvalue >= 0)
-                continue;
+            const bool isInvalidIterator = (value.isIteratorEndValue() && value.intvalue >= 0) || (value.isIteratorStartValue() && value.intvalue < 0);
+            const ValueFlow::Value* cValue = nullptr;
+            if (!isInvalidIterator) {
+                auto it = std::find_if(contValues.begin(), contValues.end(), [&](const ValueFlow::Value& c) {
+                    if (value.isIteratorStartValue() && value.intvalue >= c.intvalue)
+                        return true;
+                    if (value.isIteratorEndValue() && -value.intvalue > c.intvalue)
+                        return true;
+                    return false;
+                });
+                if (it == contValues.end())
+                    continue;
+                cValue = &*it;
+            }
+            bool inconclusive = false;
             bool unknown = false;
             if (!CheckNullPointer::isPointerDeRef(tok, unknown, mSettings)) {
-                if (unknown)
-                    dereferenceInvalidIteratorError(tok, &value, true);
-                continue;
+                if (!unknown)
+                    continue;
+                inconclusive = true;
             }
-            dereferenceInvalidIteratorError(tok, &value, false);
+            // void CheckStl::outOfBoundsError(const Token *tok, const std::string &containerName, const ValueFlow::Value *containerSize, const std::string &index, const ValueFlow::Value *indexValue)
+            if (cValue) {
+                const ValueFlow::Value& lValue = getLifetimeObjValue(tok, true);
+                outOfBoundsError(tok, lValue.tokvalue->expressionString(), cValue, tok->expressionString(), &value);
+            } else {
+                dereferenceInvalidIteratorError(tok, &value, inconclusive);
+            }
         }
     }
 }
