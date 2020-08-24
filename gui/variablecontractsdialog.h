@@ -19,7 +19,7 @@ public:
     QString getMax() const;
 
 private:
-    Ui::VariableContractsDialog *ui;
+    Ui::VariableContractsDialog *mUI;
     QString mVarName;
 };
 

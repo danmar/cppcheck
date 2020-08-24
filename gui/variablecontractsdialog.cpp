@@ -5,9 +5,9 @@
 
 VariableContractsDialog::VariableContractsDialog(QWidget *parent, QString var) :
     QDialog(parent),
-    ui(new Ui::VariableContractsDialog)
+    mUI(new Ui::VariableContractsDialog)
 {
-    ui->setupUi(this);
+    mUI->setupUi(this);
 
     mVarName = var.indexOf(" ") < 0 ? var : var.mid(0, var.indexOf(" "));
 
@@ -23,16 +23,16 @@ VariableContractsDialog::VariableContractsDialog(QWidget *parent, QString var) :
         return var.mid(pos1, pos2-pos1);
     };
 
-    ui->mMinValue->setText(getMinMax(var, "min"));
-    ui->mMaxValue->setText(getMinMax(var, "max"));
+    mUI->mMinValue->setText(getMinMax(var, "min"));
+    mUI->mMaxValue->setText(getMinMax(var, "max"));
 
-    ui->mMinValue->setValidator(new QRegExpValidator(QRegExp("-?[0-9]*")));
-    ui->mMaxValue->setValidator(new QRegExpValidator(QRegExp("-?[0-9]*")));
+    mUI->mMinValue->setValidator(new QRegExpValidator(QRegExp("-?[0-9]*")));
+    mUI->mMaxValue->setValidator(new QRegExpValidator(QRegExp("-?[0-9]*")));
 }
 
 VariableContractsDialog::~VariableContractsDialog()
 {
-    delete ui;
+    delete mUI;
 }
 
 QString VariableContractsDialog::getVarname() const
@@ -41,10 +41,9 @@ QString VariableContractsDialog::getVarname() const
 }
 QString VariableContractsDialog::getMin() const
 {
-    return ui->mMinValue->text();
+    return mUI->mMinValue->text();
 }
 QString VariableContractsDialog::getMax() const
 {
-    return ui->mMaxValue->text();
+    return mUI->mMaxValue->text();
 }
-
