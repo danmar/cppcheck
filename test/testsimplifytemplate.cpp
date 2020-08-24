@@ -4122,18 +4122,14 @@ private:
 
         //both of these should work but in cppcheck 2.1 only the first option will work (ticket #9843)
         {
-            const std::string expected = "template < typename T > const bool is_ratio_v = false ; template < long Num , long Den > const bool is_ratio_v < std :: ratio < Num , Den > > = true ;";
+            const std::string expected = "template < long Num > const bool foo < bar < Num > > = true ;";
             ASSERT_EQUALS(expected,
-                tok("template <typename T>\n"
-                    "constexpr bool is_ratio_v = false;\n"
-                    "template <long Num, long Den>\n"
-                    "constexpr bool is_ratio_v<std::ratio<Num, Den> > = true;\n"));
+                tok("template <long Num>\n"
+                    "constexpr bool foo<bar<Num> > = true;\n"));
             ASSERT_EQUALS("", errout.str());
             ASSERT_EQUALS(expected,
-                tok("template <typename T>\n"
-                    "constexpr bool is_ratio_v = false;\n"
-                    "template <long Num, long Den>\n"
-                    "constexpr bool is_ratio_v<std::ratio<Num, Den>> = true;\n"));
+                tok("template <long Num>\n"
+                    "constexpr bool foo<bar<Num>> = true;\n"));
             ASSERT_EQUALS("", errout.str());
         }
     }
