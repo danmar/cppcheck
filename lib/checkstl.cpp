@@ -2070,7 +2070,6 @@ void CheckStl::checkDereferenceInvalidIterator2()
                     continue;
                 inconclusive = true;
             }
-            // void CheckStl::outOfBoundsError(const Token *tok, const std::string &containerName, const ValueFlow::Value *containerSize, const std::string &index, const ValueFlow::Value *indexValue)
             if (cValue) {
                 const ValueFlow::Value& lValue = getLifetimeObjValue(tok, true);
                 outOfBoundsError(tok, lValue.tokvalue->expressionString(), cValue, tok->expressionString(), &value);
