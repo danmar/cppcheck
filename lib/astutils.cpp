@@ -793,6 +793,8 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
                 const Token *lhs = tok1->previous();
                 while (Token::Match(lhs, "(|.|["))
                     lhs = lhs->astOperand1();
+                if (!lhs)
+                    return false;
                 const bool lhsIsConst = (lhs->variable() && lhs->variable()->isConst()) ||
                                         (lhs->valueType() && lhs->valueType()->constness > 0) ||
                                         (Token::Match(lhs, "%var% . %name% (") && library.isFunctionConst(lhs->tokAt(2)));
@@ -1345,6 +1347,13 @@ static const Variable* getArgumentVar(const Token* tok, int argnr)
     return nullptr;
 }
 
+static bool isCPPCastKeyword(const Token* tok)
+{
+    if (!tok)
+        return false;
+    return endsWith(tok->str(), "_cast", 5);
+}
+
 bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Settings *settings, bool *inconclusive)
 {
     if (!tok)
@@ -1362,6 +1371,8 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
     tok = getTokenArgumentFunction(tok, argnr);
     if (!tok)
         return false; // not a function => variable not changed
+    if (tok->isKeyword() && !isCPPCastKeyword(tok))
+        return false;
     const Token * parenTok = tok->next();
     if (Token::simpleMatch(parenTok, "<") && parenTok->link())
         parenTok = parenTok->link()->next();
@@ -1730,7 +1741,7 @@ bool isLikelyStreamRead(bool cpp, const Token *op)
 
 bool isCPPCast(const Token* tok)
 {
-    return tok && Token::simpleMatch(tok->previous(), "> (") && tok->astOperand2() && tok->astOperand1() && tok->astOperand1()->str().find("_cast") != std::string::npos;
+    return tok && Token::simpleMatch(tok->previous(), "> (") && tok->astOperand2() && tok->astOperand1() && isCPPCastKeyword(tok->astOperand1());
 }
 
 bool isConstVarExpression(const Token *tok, const char* skipMatch)
@@ -2221,12 +2232,14 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
     return Result(Result::Type::NONE);
 }
 
-static bool hasVolatileCast(const Token *expr)
+static bool hasVolatileCastOrVar(const Token *expr)
 {
     bool ret = false;
     visitAstNodes(expr,
     [&ret](const Token *tok) {
         if (Token::simpleMatch(tok, "( volatile"))
+            ret = true;
+        else if (tok->variable() && tok->variable()->isVolatile())
             ret = true;
         return ret ? ChildrenToVisit::none : ChildrenToVisit::op1_and_op2;
     });
@@ -2314,7 +2327,7 @@ bool FwdAnalysis::hasOperand(const Token *tok, const Token *lhs) const
 
 const Token *FwdAnalysis::reassign(const Token *expr, const Token *startToken, const Token *endToken)
 {
-    if (hasVolatileCast(expr))
+    if (hasVolatileCastOrVar(expr))
         return nullptr;
     mWhat = What::Reassign;
     Result result = check(expr, startToken, endToken);
@@ -2325,7 +2338,7 @@ bool FwdAnalysis::unusedValue(const Token *expr, const Token *startToken, const 
 {
     if (isEscapedAlias(expr))
         return false;
-    if (hasVolatileCast(expr))
+    if (hasVolatileCastOrVar(expr))
         return false;
     mWhat = What::UnusedValue;
     Result result = check(expr, startToken, endToken);

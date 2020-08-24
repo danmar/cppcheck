@@ -166,6 +166,7 @@ private:
         TEST_CASE(invalidContainerLoop);
         TEST_CASE(findInsert);
 
+        TEST_CASE(checkKnownEmptyContainerLoop);
         TEST_CASE(checkMutexes);
     }
 
@@ -333,6 +334,16 @@ private:
                     "    static const int N = 4;\n"
                     "    std::array<int, N> x;\n"
                     "    x[0] = 0;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void f(bool b) {\n"
+                    "    std::vector<int> x;\n"
+                    "    if (b)\n"
+                    "        x.push_back(1);\n"
+                    "    if (x.size() < 2)\n"
+                    "        return;\n"
+                    "    x[0] = 2;\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -1403,7 +1414,8 @@ private:
               "       foo[ii] = 0;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (error) When ii==foo.size(), foo[ii] is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Out of bounds access in expression 'foo[ii]' because 'foo' is empty.\n"
+                      "[test.cpp:6]: (error) When ii==foo.size(), foo[ii] is out of bounds.\n", errout.str());
 
         check("void foo(std::vector<int> foo) {\n"
               "    for (unsigned int ii = 0; ii <= foo.size(); ++ii) {\n"
@@ -1506,7 +1518,7 @@ private:
                   "        }\n"
                   "    }\n"
                   "}");
-            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS("[test.cpp:11]: (error) Out of bounds access in expression 'foo[ii]' because 'foo' is empty.\n", errout.str());
         }
 
         {
@@ -3504,6 +3516,61 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    std::vector <int> v;\n"
+              "    std::vector <int>::iterator i = v.end();\n"
+              "    *i=0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Dereference of an invalid iterator: i\n", errout.str());
+
+        check("void f(std::vector <int> v) {\n"
+              "    std::vector <int>::iterator i = v.end();\n"
+              "    *i=0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dereference of an invalid iterator: i\n", errout.str());
+
+        check("void f(std::vector <int> v) {\n"
+              "    std::vector <int>::iterator i = v.end();\n"
+              "    *(i+1)=0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dereference of an invalid iterator: i+1\n", errout.str());
+
+        check("void f(std::vector <int> v) {\n"
+              "    std::vector <int>::iterator i = v.end();\n"
+              "    *(i-1)=0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::vector <int> v) {\n"
+              "    std::vector <int>::iterator i = v.begin();\n"
+              "    *(i-1)=0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dereference of an invalid iterator: i-1\n", errout.str());
+
+        check("void f(std::vector <int> v, bool b) {\n"
+              "    std::vector <int>::iterator i = v.begin();\n"
+              "    if (b)\n"
+              "        i = v.end();\n"
+              "    *i=0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Possible dereference of an invalid iterator: i\n", errout.str());
+
+        check("void f(std::vector <int> v, bool b) {\n"
+              "    std::vector <int>::iterator i = v.begin();\n"
+              "    if (b)\n"
+              "        i = v.end();\n"
+              "    *(i+1)=0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Possible dereference of an invalid iterator: i+1\n", errout.str());
+
+        check("void f(std::vector <int> v, bool b) {\n"
+              "    std::vector <int>::iterator i = v.begin();\n"
+              "    if (b)\n"
+              "        i = v.end();\n"
+              "    *(i-1)=0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Possible dereference of an invalid iterator: i-1\n", errout.str());
     }
 
     void dereferenceInvalidIterator2() {
@@ -4206,6 +4273,16 @@ private:
               "    delete b;\n"
               "}\n",true);
         ASSERT_EQUALS("", errout.str());
+
+        // #9780
+        check("int f() {\n"
+              "    std::vector<int> vect;\n"
+              "    MyStruct info{};\n"
+              "    info.vect = &vect;\n"
+              "    vect.push_back(1);\n"
+              "    return info.ret;\n"
+              "}\n",true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void invalidContainerLoop() {
@@ -4451,6 +4528,36 @@ private:
               "    } else {\n"
               "        m[x] = 1;\n"
               "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkKnownEmptyContainerLoop() {
+        check("void f() {\n"
+              "    std::vector<int> v;\n"
+              "    for(auto x:v) {}\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Iterating over container 'v' that is always empty.\n", errout.str());
+
+        check("void f(std::vector<int> v) {\n"
+              "    v.clear();\n"
+              "    for(auto x:v) {}\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Iterating over container 'v' that is always empty.\n", errout.str());
+
+        check("void f(std::vector<int> v) {\n"
+              "    if (!v.empty()) { return; }\n"
+              "    for(auto x:v) {}\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Iterating over container 'v' that is always empty.\n", errout.str());
+
+        check("void f(std::vector<int> v) {\n"
+              "    if (v.empty()) { return; }\n"
+              "    for(auto x:v) {}\n"
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());

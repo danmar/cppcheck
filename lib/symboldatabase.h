@@ -1350,6 +1350,7 @@ private:
     void createSymbolDatabaseEnums();
     void createSymbolDatabaseEscapeFunctions();
     void createSymbolDatabaseIncompleteVars();
+    void createSymbolDatabaseExprIds();
 
     void addClassFunction(Scope **scope, const Token **tok, const Token *argStart);
     Function *addGlobalFunctionDecl(Scope*& scope, const Token* tok, const Token *argStart, const Token* funcStart);

@@ -70,7 +70,7 @@ struct ForwardTraversal {
         Progress p = traverseTok(tok, f, traverseUnknown);
         if (p == Progress::Break)
             return Progress::Break;
-        if (p == Progress::Continue && traverseRecursive(tok->astOperand2(), f, traverseUnknown, recursion+1) == Progress::Break)
+        if (p == Progress::Continue && tok->astOperand2() && traverseRecursive(tok->astOperand2(), f, traverseUnknown, recursion+1) == Progress::Break)
             return Progress::Break;
         return Progress::Continue;
     }
@@ -211,6 +211,8 @@ struct ForwardTraversal {
     Progress updateLoop(Token* endBlock, Token* condTok, Token* initTok = nullptr, Token* stepTok = nullptr) {
         ForwardAnalyzer::Action bodyAnalysis = analyzeScope(endBlock);
         ForwardAnalyzer::Action allAnalysis = bodyAnalysis;
+        if (condTok)
+            allAnalysis |= analyzeRecursive(condTok);
         if (initTok)
             allAnalysis |= analyzeRecursive(initTok);
         if (stepTok)
@@ -330,9 +332,19 @@ struct ForwardTraversal {
                 if (initTok && updateRecursive(initTok) == Progress::Break)
                     return Progress::Break;
                 if (Token::Match(tok, "for|while (")) {
-                    Token* stepTok = getStepTok(tok);
-                    if (updateLoop(endBlock, condTok, initTok, stepTok) == Progress::Break)
-                        return Progress::Break;
+                    // For-range loop
+                    if (Token::simpleMatch(condTok, ":")) {
+                        Token* conTok = condTok->astOperand2();
+                        if (conTok && updateRecursive(conTok) == Progress::Break)
+                            return Progress::Break;
+                        if (updateLoop(endBlock, condTok) == Progress::Break)
+                            return Progress::Break;
+                    } else {
+                        Token* stepTok = getStepTok(tok);
+                        if (updateLoop(endBlock, condTok, initTok, stepTok) == Progress::Break)
+                            return Progress::Break;
+
+                    }
                     tok = endBlock;
                 } else {
                     // Traverse condition
@@ -412,9 +424,13 @@ struct ForwardTraversal {
                 tok = endBlock;
             } else if (Token::simpleMatch(tok, "do {")) {
                 Token* endBlock = tok->next()->link();
-                if (updateLoop(endBlock, nullptr) == Progress::Break)
+                Token* condTok = Token::simpleMatch(endBlock, "} while (") ? endBlock->tokAt(2)->astOperand2() : nullptr;
+                if (updateLoop(endBlock, condTok) == Progress::Break)
                     return Progress::Break;
-                tok = endBlock;
+                if (condTok)
+                    tok = endBlock->linkAt(2)->next();
+                else
+                    tok = endBlock;
             } else if (Token::Match(tok, "assert|ASSERT (")) {
                 const Token* condTok = tok->next()->astOperand2();
                 bool checkThen, checkElse;

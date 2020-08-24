@@ -88,15 +88,14 @@ void QList1(QList<int> intListArg)
     QList<QString> qstringList2 = {"one", "two"};
     (void)qstringList2[1];
     qstringList2.clear();
-    // TODO: cppcheck-suppress containerOutOfBounds #9243
+    // cppcheck-suppress containerOutOfBounds
     (void)qstringList2[1];
 
     QList<QString> qstringList3;
     qstringList3 << "one" << "two";
-    // FIXME: The following containerOutOfBounds suppression is wrong #9242
-    // Please remove the suppression as soon as this is fixed
-    // cppcheck-suppress containerOutOfBounds
     (void)qstringList3[1];
+    // FIXME: The following should have a containerOutOfBounds suppression #9242
+    (void)qstringList3[3];
     // cppcheck-suppress ignoredReturnValue
     qstringList3.startsWith("one");
     // cppcheck-suppress ignoredReturnValue
@@ -118,7 +117,7 @@ void QList1(QList<int> intListArg)
     qstringList4.append("a");
     (void)qstringList4[0];
     qstringList4.clear();
-    // TODO: cppcheck-suppress containerOutOfBounds #9243
+    // cppcheck-suppress containerOutOfBounds
     (void)qstringList4[0];
 }
 
@@ -195,10 +194,9 @@ void QStringList1(QStringList stringlistArg)
 
     QStringList qstringlist3;
     qstringlist3 << "one" << "two";
-    // FIXME: The following containerOutOfBounds suppression is wrong #9242
-    // Please remove the suppression as soon as this is fixed
-    // cppcheck-suppress containerOutOfBounds
     (void)qstringlist3[1];
+    // FIXME: The following should have a containerOutOfBounds suppression #9242
+    (void)qstringlist3[3];
     // cppcheck-suppress ignoredReturnValue
     qstringlist3.startsWith("one");
     // cppcheck-suppress ignoredReturnValue
@@ -249,10 +247,9 @@ void QVector1(QVector<int> intVectorArg)
 
     QVector<QString> qstringVector3;
     qstringVector3 << "one" << "two";
-    // FIXME: The following containerOutOfBounds suppression is wrong #9242
-    // Please remove the suppression as soon as this is fixed
-    // cppcheck-suppress containerOutOfBounds
     (void)qstringVector3[1];
+    // FIXME: The following should have a containerOutOfBounds suppression #9242
+    (void)qstringVector3[3];
     // cppcheck-suppress ignoredReturnValue
     qstringVector3.startsWith("one");
     // cppcheck-suppress ignoredReturnValue
@@ -302,10 +299,9 @@ void QStack1(QStack<int> intStackArg)
 
     QStack<QString> qstringStack2;
     qstringStack2 << "one" << "two";
-    // FIXME: The following containerOutOfBounds suppression is wrong #9242
-    // Please remove the suppression as soon as this is fixed
-    // cppcheck-suppress containerOutOfBounds
     (void)qstringStack2[1];
+    // FIXME: The following should have a containerOutOfBounds suppression #9242
+    (void)qstringStack2[3];
     // cppcheck-suppress ignoredReturnValue
     qstringStack2.startsWith("one");
     // cppcheck-suppress ignoredReturnValue

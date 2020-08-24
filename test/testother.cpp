@@ -57,6 +57,7 @@ private:
         TEST_CASE(zeroDiv10);
         TEST_CASE(zeroDiv11);
         TEST_CASE(zeroDiv12);
+        TEST_CASE(zeroDiv13);
 
         TEST_CASE(zeroDivCond); // division by zero / useless condition
 
@@ -559,6 +560,16 @@ private:
               "  return 1 / imaxabs(0);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (error) Division by zero.\n", errout.str());
+    }
+    void zeroDiv13() {
+        // #7324
+        check("int f () {\n"
+              "    int dividend = 10;\n"
+              "        int divisor = 1;\n"
+              "    dividend = dividend / (--divisor);\n"
+              "    return dividend;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Division by zero.\n", errout.str());
     }
 
     void zeroDivCond() {
@@ -6776,6 +6787,14 @@ private:
         ASSERT_EQUALS("test.cpp:4:style:Variable '*var' is reassigned a value before the old one has been used.\n"
                       "test.cpp:3:note:*var is assigned\n"
                       "test.cpp:4:note:*var is overwritten\n", errout.str());
+
+        // Volatile variables
+        check("void f() {\n"
+              "  volatile char *reg = (volatile char *)0x12345;\n"
+              "  *reg = 12;\n"
+              "  *reg = 34;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void redundantVarAssignment_trivial() {
