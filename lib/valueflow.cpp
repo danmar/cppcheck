@@ -4158,6 +4158,17 @@ static void insertImpossible(std::list<ValueFlow::Value>& values, const std::lis
     std::transform(input.begin(), input.end(), std::back_inserter(values), &asImpossible);
 }
 
+static void insertNegateKnown(std::list<ValueFlow::Value>& values, const std::list<ValueFlow::Value>& input)
+{
+    for(ValueFlow::Value value:input) {
+        if (!value.isIntValue() && !value.isContainerSizeValue())
+            continue;
+        value.intvalue = !value.intvalue;
+        value.setKnown();
+        values.push_back(value);
+    }
+}
+
 static std::vector<const Variable*> getExprVariables(const Token* expr,
         const TokenList* tokenlist,
         const SymbolDatabase* symboldatabase,
@@ -4177,8 +4188,9 @@ struct ValueFlowConditionHandler {
         const Token *vartok;
         std::list<ValueFlow::Value> true_values;
         std::list<ValueFlow::Value> false_values;
+        bool inverted = false;
 
-        Condition() : vartok(nullptr), true_values(), false_values() {}
+        Condition() : vartok(nullptr), true_values(), false_values(), inverted(false) {}
     };
     std::function<bool(Token* start, const Token* stop, const Token* exprTok, const std::list<ValueFlow::Value>& values, bool constValue)>
     forward;
@@ -4278,16 +4290,22 @@ struct ValueFlowConditionHandler {
                     std::list<ValueFlow::Value> thenValues;
                     std::list<ValueFlow::Value> elseValues;
 
-                    if (!Token::Match(tok, "!=|=") && tok != cond.vartok) {
+                    if (!Token::Match(tok, "!=|=|(|.") && tok != cond.vartok) {
                         thenValues.insert(thenValues.end(), cond.true_values.begin(), cond.true_values.end());
                         if (isConditionKnown(tok, false))
                             insertImpossible(elseValues, cond.false_values);
                     }
                     if (!Token::Match(tok, "==|!")) {
                         elseValues.insert(elseValues.end(), cond.false_values.begin(), cond.false_values.end());
-                        if (isConditionKnown(tok, true))
+                        if (isConditionKnown(tok, true)) {
                             insertImpossible(thenValues, cond.true_values);
+                            if (Token::Match(tok, "(|.|%var%") && astIsBool(tok))
+                                insertNegateKnown(thenValues, cond.true_values);
+                        }
                     }
+
+                    if (cond.inverted)
+                        std::swap(thenValues, elseValues);
 
                     // start token of conditional code
                     Token* startTokens[] = {nullptr, nullptr};
@@ -6020,6 +6038,7 @@ static void valueFlowContainerAfterCondition(TokenList *tokenlist,
             cond.true_values.emplace_back(value);
             cond.false_values.emplace_back(std::move(value));
             cond.vartok = vartok;
+            cond.inverted = true;
             return cond;
         }
         // String compare
