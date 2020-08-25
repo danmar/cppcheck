@@ -4119,6 +4119,19 @@ private:
             "    A a;\n"
             "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        //both of these should work but in cppcheck 2.1 only the first option will work (ticket #9843)
+        {
+            const std::string expected = "template < long Num > const bool foo < bar < Num > > = true ;";
+            ASSERT_EQUALS(expected,
+                tok("template <long Num>\n"
+                    "constexpr bool foo<bar<Num> > = true;\n"));
+            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS(expected,
+                tok("template <long Num>\n"
+                    "constexpr bool foo<bar<Num>> = true;\n"));
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void template_member_ptr() { // Ticket #5786
