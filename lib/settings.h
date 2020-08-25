@@ -176,6 +176,12 @@ public:
 
     std::map<std::string, std::string> functionContracts;
 
+    struct VariableContracts {
+        std::string minValue;
+        std::string maxValue;
+    };
+    std::map<std::string, VariableContracts> variableContracts;
+
     /** @brief List of include paths, e.g. "my/includes/" which should be used
         for finding include files inside source files. (-I) */
     std::list<std::string> includePaths;

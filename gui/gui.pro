@@ -77,7 +77,8 @@ FORMS = about.ui \
         librarydialog.ui \
         libraryaddfunctiondialog.ui \
         libraryeditargdialog.ui \
-        newsuppressiondialog.ui
+        newsuppressiondialog.ui \
+        variablecontractsdialog.ui
 
 TRANSLATIONS =  cppcheck_de.ts \
                 cppcheck_es.ts \
@@ -134,6 +135,7 @@ HEADERS += aboutdialog.h \
            threadresult.h \
            translationhandler.h \
            txtreport.h \
+           variablecontractsdialog.h \
            xmlreport.h \
            xmlreportv2.h \
            librarydialog.h \
@@ -176,6 +178,7 @@ SOURCES += aboutdialog.cpp \
            threadresult.cpp \
            translationhandler.cpp \
            txtreport.cpp \
+           variablecontractsdialog.cpp \
            xmlreport.cpp \
            xmlreportv2.cpp \
            librarydialog.cpp \
