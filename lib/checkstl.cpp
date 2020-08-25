@@ -2037,6 +2037,8 @@ void CheckStl::checkDereferenceInvalidIterator2()
 
         std::vector<ValueFlow::Value> contValues;
         std::copy_if(tok->values().begin(), tok->values().end(), std::back_inserter(contValues), [&](const ValueFlow::Value& value) {
+            if (value.isImpossible())
+                return false;
             if (!printInconclusive && value.isInconclusive())
                 return false;
             return value.isContainerSizeValue();

@@ -406,6 +406,15 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Out of bounds access in 'it', if 'v' size is 1 and 'it' is at position 2 from the end\n",
                       errout.str());
+
+        check("void g(int);\n"
+              "void f(std::vector<int> x) {\n"
+              "    std::map<int, int> m;\n"
+              "    if (!m.empty()) {\n"
+              "        g(m.begin()->second);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void iterator1() {
