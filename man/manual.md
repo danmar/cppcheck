@@ -966,8 +966,8 @@ If you run bug hunting analysis on this code then because Cppcheck can't prove
 that x can't be 0 you will get a warning about division by zero.
 
 Either:
- * Right click on that warning and select "Edit contract..".
- * Open the "Functions" tab at the bottom and lookup the "foo(x)" function. Then
+- Right click on that warning and select "Edit contract..".
+- Open the "Functions" tab at the bottom and lookup the "foo(x)" function. Then
    double click on that.
 
 A dialog box is shown where you can configure the contract for function "foo(x)".
