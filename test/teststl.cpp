@@ -3571,6 +3571,12 @@ private:
               "    *(i-1)=0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Possible dereference of an invalid iterator: i-1\n", errout.str());
+
+        check("int f(std::vector<int> v, int pos) {\n"
+              "    if (pos >= 0)\n"
+              "        return *(v.begin() + pos);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void dereferenceInvalidIterator2() {
