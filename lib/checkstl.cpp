@@ -123,7 +123,7 @@ void CheckStl::outOfBounds()
 static std::string indexValueString(const ValueFlow::Value& indexValue)
 {
     if (indexValue.isIteratorStartValue())
-        return "at position " + MathLib::toString(indexValue.intvalue) + " from the begining";
+        return "at position " + MathLib::toString(indexValue.intvalue) + " from the beginning";
     if (indexValue.isIteratorEndValue())
         return "at position " + MathLib::toString(-indexValue.intvalue) + " from the end";
     return MathLib::toString(indexValue.intvalue);
