@@ -885,15 +885,75 @@ The intention is that this will be used primarily in the GUI.
 
 ## Activate this analysis
 
-On the command line you can use `--bug-hunting` however then you can't configure contracts (see below).
+On the command line you can use `--bug-hunting`. In the GUI goto the project
+dialog. In the `Analysis` tab there is a check box for `Bug hunting`.
 
-In the GUI goto the project dialog. In the `Analysis` tab there is a check box for `Bug hunting`.
+## Contracts
 
-## Cppcheck contracts
+To handle false alarms and improve the analysis you are encouraged to use
+contracts.
 
-To handle false alarms and improve the analysis you are encouraged to use contracts.
+To provide contracts, you can either annotate your code or configure the
+contracts in the GUI.
 
-You can use Cppcheck contracts both for C and C++ code.
+There exists various annotations for C and C++ code. gcc has attributes, there
+are SAL annotations, and then there are standard C++ annotations. It is our
+goal to handle various types of annotations, if you can reuse those annotations
+in Cppcheck analysis that will be an extra benefit.
+
+### Function contracts
+
+Here is an example code:
+
+    int foo(int x)
+    {
+        return 100 / x;
+    }
+
+The bug hunting analysis will warn about a division by zero. Right now, it
+can't be proven that x can't be 0 here. A function contract can be used to
+tell Cppcheck what input "foo(x)" expects.
+
+#### Annotation
+
+You can use "C++ function contracts" syntax both in C and C++.
+
+For C++ code you can write:
+
+    int foo(int x)
+    [[expects: x > 0]]
+    {
+        return 100 / x;  // No division by zero
+    }
+
+    void bar()
+    {
+        foo(-10);  // Warning: Contract is violated!
+    }
+
+For C code you can write (works in C++ too):
+
+    #ifdef __cppcheck__
+    #define Expects(EXPR) [[expects: EXPR]]
+    #else
+    #define Expects(EXPR)
+    #endif
+
+    int foo(int x)
+    Expects(x > 0)
+    {
+        return 100 / x;
+    }
+
+    void bar()
+    {
+        foo(-10);  // Warning: Contract is violated!
+    }
+
+
+#### Configuration in gui
+
+You can configure contracts in the GUI.
 
 Example code:
 
@@ -902,33 +962,72 @@ Example code:
         return 100 / x;
     }
 
-A division by zero would not be impossible so Cppcheck will diagnose it:
+If you run bug hunting analysis on this code then because Cppcheck can't prove
+that x can't be 0 you will get a warning about division by zero.
 
-    [test1.cpp:3] (error) There is division, cannot determine that there can't be a division by zero. [bughuntingDivByZero]
+Either:
+ * Right click on that warning and select "Edit contract..".
+ * Open the "Functions" tab at the bottom and lookup the "foo(x)" function. Then
+   double click on that.
 
-This Cppcheck contract will silence that warning:
+A dialog box is shown where you can configure the contract for function "foo(x)".
+A textbox allows you to edit the "Expects" expression.
 
-    function: foo(x)
-    expects: x > 0
+Enter the expression "x > 0" in the dialog box and click OK.
 
-That contract will improve the intra procedural analysis. Every time `foo` is called it will be checked that the contract is satisfied:
+Now if you run analysis the division by zero warning will be gone. As for
+annotations, if the contract is violated somewhere then you will get a warning.
 
-    void bar(int x)
+
+
+### Variable contracts
+
+Here is an example code:
+
+    int x;
+
+    int foo()
     {
-        foo(x);
+        return 100 / x;
     }
 
-Cppcheck will warn:
+The bug hunting analysis will warn about a division by zero. It can't be proven
+that x can't be 0.
 
-    [test1.cpp:10] (error) Function 'foo' is called, can not determine that its contract 'x>0' is always met. [bughuntingFunctionCall]
+
+#### Annotation
+
+You can use Cppcheck attributes `__cppcheck_low__(value)` and
+`__cppcheck_high__(value)` to configure min and max values for variables
+and types.
+
+Example code:
+
+    __cppcheck_low__(1) int x;
+
+    int foo()
+    {
+        return 100 / x;  // No division by zero
+    }
+
+Tip: You can create an integer type with a limited value range. For instance
+here is an unsigned integer type that can only have the values 0-100:
+
+    typedef __cppcheck_high__(100) unsigned int percent_t;
+    percent_t x;
+    x = 110; // <- Cppcheck will warn about this assignment
 
 
-## Adding a contract in the GUI
+#### GUI
 
-There are two ways:
+To configure variable contracts in the GUI, open the "Variables" tab at the
+bottom.
 
-- Open the "Functions" or "Variables" tab at the bottom of the screen. Find the function or variable in the listbox and double click on it.
-- Right click on a warning and click on "Edit contract.." in the popup menu. This popup menu item is only available if the warning is not inconclusive.
+Lookup the variable you want to configure and double click on that.
+
+A dialog box is shown for the variable, where you can configure the min and
+max values.
+
 
 ## Incomplete analysis
 
