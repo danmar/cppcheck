@@ -92,5 +92,10 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: Build
+          name: installer
           path: win_installer/Build/
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: deploy
+          path: Build\gui

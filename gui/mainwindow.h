@@ -35,7 +35,6 @@ class TranslationHandler;
 class ScratchPad;
 class ProjectFile;
 class QAction;
-class Assistant;
 
 /// @addtogroup GUI
 /// @{
@@ -472,8 +471,6 @@ private:
      * List of MRU menu actions. Needs also to store the separator.
      */
     QAction *mRecentProjectActs[MaxRecentProjects + 1];
-
-    Assistant *mAssistant;
 };
 /// @}
 #endif // MAINWINDOW_H

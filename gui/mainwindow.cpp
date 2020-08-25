@@ -33,11 +33,11 @@
 
 #include "applicationlist.h"
 #include "aboutdialog.h"
-#include "assistant.h"
 #include "common.h"
 #include "filelist.h"
 #include "fileviewdialog.h"
 #include "functioncontractdialog.h"
+#include "helpdialog.h"
 #include "librarydialog.h"
 #include "projectfile.h"
 #include "projectfiledialog.h"
@@ -223,8 +223,6 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mUI.mActionEnforceCpp->setActionGroup(mSelectLanguageActions);
     mUI.mActionAutoDetectLanguage->setActionGroup(mSelectLanguageActions);
 
-    mAssistant = new Assistant;
-
     // For Windows platforms default to Win32 checked platform.
     // For other platforms default to unspecified/default which means the
     // platform Cppcheck GUI was compiled on.
@@ -241,7 +239,6 @@ MainWindow::~MainWindow()
 {
     delete mProjectFile;
     delete mScratchPad;
-    delete mAssistant;
 }
 
 void MainWindow::handleCLIParams(const QStringList &params)
@@ -1493,7 +1490,8 @@ void MainWindow::openHelpContents()
 
 void MainWindow::openOnlineHelp()
 {
-    mAssistant->showDocumentation("index.html");
+    HelpDialog *helpDialog = new HelpDialog;
+    helpDialog->showMaximized();
 }
 
 void MainWindow::openProjectFile()
