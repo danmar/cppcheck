@@ -387,7 +387,7 @@ private:
               "    auto it = v.begin() + 1;\n"
               "    return *it;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Out of bounds access in 'it', if 'v' size is 1 and 'it' is at position 1 from the begining\n",
+        ASSERT_EQUALS("[test.cpp:5]: (error) Out of bounds access in 'it', if 'v' size is 1 and 'it' is at position 1 from the beginning\n",
                       errout.str());
 
         check("int f() {\n"
