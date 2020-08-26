@@ -1391,6 +1391,16 @@ void CheckOther::checkConstVariable()
         // Skip if address is taken
         if (Token::findmatch(var->nameToken(), "& %varid%", scope->bodyEnd, var->declarationId()))
             continue;
+        // Skip if another non-const variable is initialized with this variable
+        {
+            auto match = Token::findmatch(var->nameToken(), "%type% & %name% = %varid%", scope->bodyEnd, var->declarationId());
+            if (match)
+                if (!Token::simpleMatch(match->previous(), "const"))
+                    continue;
+        }
+        // Skip if we ever dynamic_cast/static_cast this variable to a non-const type
+        if (Token::findmatch(var->nameToken(), "dynamic_cast|static_cast < %type% & > ( %varid% )", scope->bodyEnd, var->declarationId()))
+            continue;
         constVariableError(var);
     }
 }
