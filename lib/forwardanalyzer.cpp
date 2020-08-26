@@ -209,6 +209,7 @@ struct ForwardTraversal {
     }
 
     Progress updateLoop(Token* endBlock, Token* condTok, Token* initTok = nullptr, Token* stepTok = nullptr) {
+        const bool isDoWhile = precedes(endBlock, condTok);
         ForwardAnalyzer::Action bodyAnalysis = analyzeScope(endBlock);
         ForwardAnalyzer::Action allAnalysis = bodyAnalysis;
         if (condTok)
@@ -225,7 +226,7 @@ struct ForwardTraversal {
                 return Progress::Break;
         }
         // Traverse condition after lowering
-        if (condTok) {
+        if (condTok && (!isDoWhile || !bodyAnalysis.isModified())) {
             if (updateRecursive(condTok) == Progress::Break)
                 return Progress::Break;
 
