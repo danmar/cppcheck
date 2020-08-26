@@ -3588,6 +3588,17 @@ private:
               "        return;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    std::vector<int> v;\n"
+              "    void g();\n"
+              "    void f(bool b) {\n"
+              "        v.clear();\n"
+              "        g();\n"
+              "        return !v.empty();\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void multiConditionAlwaysTrue() {
