@@ -76,6 +76,7 @@ private:
         TEST_CASE(tokenize36);  // #8436
         TEST_CASE(tokenize37);  // #8550
         TEST_CASE(tokenize38);  // #9569
+        TEST_CASE(tokenize39);  // #9771
 
         TEST_CASE(validate);
 
@@ -896,6 +897,16 @@ private:
     void tokenize38() { // #9569
         const char code[] = "using Binary = std::vector<char>; enum Type { Binary };";
         const char exp[]  = "enum Type { Binary } ;";
+        ASSERT_EQUALS(exp, tokenizeAndStringify(code));
+    }
+
+    void tokenize39() { // #9771
+        const char code[] = "template <typename T> class Foo;"
+                            "template <typename T> bool operator!=(const Foo<T> &, const Foo<T> &);"
+                            "template <typename T> class Foo { friend bool operator!= <> (const Foo<T> &, const Foo<T> &); };";
+        const char exp[]  = "template < typename T > class Foo ; "
+                            "template < typename T > bool operator!= ( const Foo < T > & , const Foo < T > & ) ; "
+                            "template < typename T > class Foo { friend bool operator!= < > ( const Foo < T > & , const Foo < T > & ) ; } ;";
         ASSERT_EQUALS(exp, tokenizeAndStringify(code));
     }
 
