@@ -2025,6 +2025,8 @@ void CheckStl::checkDereferenceInvalidIterator2()
 
         // Can iterator point to END or before START?
         for (const ValueFlow::Value& value:tok->values()) {
+            if (value.isImpossible())
+                continue;
             if (!printInconclusive && value.isInconclusive())
                 continue;
             if (!value.isIteratorValue())
