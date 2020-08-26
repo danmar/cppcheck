@@ -2947,13 +2947,13 @@ std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, Error
     return msg;
 }
 
-ValueFlow::Value getLifetimeObjValue(const Token *tok)
+ValueFlow::Value getLifetimeObjValue(const Token *tok, bool inconclusive)
 {
     ValueFlow::Value result;
-    auto pred = [](const ValueFlow::Value &v) {
+    auto pred = [&](const ValueFlow::Value &v) {
         if (!v.isLocalLifetimeValue())
             return false;
-        if (v.isInconclusive())
+        if (!inconclusive && v.isInconclusive())
             return false;
         if (!v.tokvalue->variable())
             return false;
@@ -4104,7 +4104,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
                 continue;
 
             // Lhs should be a variable
-            if (!tok->astOperand1() || !tok->astOperand1()->varId() || tok->astOperand1()->hasKnownValue())
+            if (!tok->astOperand1() || !tok->astOperand1()->varId())
                 continue;
             const int varid = tok->astOperand1()->varId();
             if (aliased.find(varid) != aliased.end())
@@ -4118,6 +4118,20 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
                 continue;
 
             std::list<ValueFlow::Value> values = truncateValues(tok->astOperand2()->values(), tok->astOperand1()->valueType(), settings);
+            // Remove known values
+            std::set<ValueFlow::Value::ValueType> types;
+            if (tok->astOperand1()->hasKnownValue()) {
+                for(const ValueFlow::Value& value:tok->astOperand1()->values()) {
+                    if (value.isKnown())
+                        types.insert(value.valueType);
+                }
+            }
+            values.remove_if([&](const ValueFlow::Value& value) { return types.count(value.valueType) > 0;});
+            // Remove container size if its not a container
+            if (!astIsContainer(tok->astOperand2()))
+                values.remove_if([&](const ValueFlow::Value& value) { return value.valueType == ValueFlow::Value::CONTAINER_SIZE;});
+            if (values.empty())
+                continue;
             const bool constValue = isLiteralNumber(tok->astOperand2(), tokenlist->isCPP());
             const bool init = var->nameToken() == tok->astOperand1();
             valueFlowForwardAssign(tok->astOperand2(), var, values, constValue, init, tokenlist, errorLogger, settings);
@@ -5686,7 +5700,13 @@ struct ContainerVariableForwardAnalyzer : VariableForwardAnalyzer {
     ContainerVariableForwardAnalyzer(const Variable* v, const ValueFlow::Value& val, std::vector<const Variable*> paliases, const TokenList* t)
         : VariableForwardAnalyzer(v, val, std::move(paliases), t) {}
 
+    virtual bool match(const Token* tok) const OVERRIDE {
+        return tok->varId() == var->declarationId() || (astIsIterator(tok) && isAliasOf(tok, var->declarationId()));
+    }
+
     virtual Action isWritable(const Token* tok) const OVERRIDE {
+        if (astIsIterator(tok))
+            return Action::None;
         const ValueFlow::Value* value = getValue(tok);
         if (!value)
             return Action::None;
@@ -5743,6 +5763,9 @@ struct ContainerVariableForwardAnalyzer : VariableForwardAnalyzer {
 
     virtual Action isModified(const Token* tok) const OVERRIDE {
         Action read = Action::Read;
+        // An iterator wont change the container size
+        if (astIsIterator(tok))
+            return read;
         if (Token::Match(tok->astParent(), "%assign%") && astIsLHS(tok))
             return Action::Invalid;
         if (isLikelyStreamRead(isCPP(), tok->astParent()))
@@ -5899,6 +5922,8 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
         if (!var->valueType() || !var->valueType()->container)
             continue;
         if (!Token::Match(var->nameToken(), "%name% ;"))
+            continue;
+        if (!astIsContainer(var->nameToken()))
             continue;
         if (var->nameToken()->hasKnownValue())
             continue;

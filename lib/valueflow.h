@@ -374,6 +374,6 @@ std::string lifetimeType(const Token *tok, const ValueFlow::Value *val);
 
 std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, ValueFlow::Value::ErrorPath &errorPath);
 
-ValueFlow::Value getLifetimeObjValue(const Token *tok);
+ValueFlow::Value getLifetimeObjValue(const Token *tok, bool inconclusive = false);
 
 #endif // valueflowH

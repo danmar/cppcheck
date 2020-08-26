@@ -42,6 +42,7 @@ private:
 
         TEST_CASE(outOfBounds);
         TEST_CASE(outOfBoundsIndexExpression);
+        TEST_CASE(outOfBoundsIterator);
 
         TEST_CASE(iterator1);
         TEST_CASE(iterator2);
@@ -370,6 +371,50 @@ private:
                     "  s[x*s.size()] = 1;\n"
                     "}");
         ASSERT_EQUALS("test.cpp:2:error:Out of bounds access of s, index 'x*s.size()' is out of bounds.\n", errout.str());
+    }
+    void outOfBoundsIterator() {
+        check("int f() {\n"
+              "    std::vector<int> v;\n"
+              "    auto it = v.begin();\n"
+              "    return *it;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Out of bounds access in expression 'it' because 'v' is empty.\n",
+                      errout.str());
+
+        check("int f() {\n"
+              "    std::vector<int> v;\n"
+              "    v.push_back(0);\n"
+              "    auto it = v.begin() + 1;\n"
+              "    return *it;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Out of bounds access in 'it', if 'v' size is 1 and 'it' is at position 1 from the beginning\n",
+                      errout.str());
+
+        check("int f() {\n"
+              "    std::vector<int> v;\n"
+              "    v.push_back(0);\n"
+              "    auto it = v.end() - 1;\n"
+              "    return *it;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              "    std::vector<int> v;\n"
+              "    v.push_back(0);\n"
+              "    auto it = v.end() - 2;\n"
+              "    return *it;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Out of bounds access in 'it', if 'v' size is 1 and 'it' is at position 2 from the end\n",
+                      errout.str());
+
+        check("void g(int);\n"
+              "void f(std::vector<int> x) {\n"
+              "    std::map<int, int> m;\n"
+              "    if (!m.empty()) {\n"
+              "        g(m.begin()->second);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void iterator1() {
@@ -1243,9 +1288,7 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f() {\n"
-              "  std::list<int*> a;\n"
-              "  std::list<int*> b;\n"
+        check("void f(std::list<int*> a, std::list<int*> b) {\n"
               "  if (*a.begin() == *b.begin()) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
@@ -1932,9 +1975,8 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (error) Iterator 'it' used after element has been erased.\n", errout.str());
 
-        check("void f()\n"
+        check("void f(std::set<int> foo)\n"
               "{\n"
-              "    std::set<int> foo;\n"
               "    std::set<int>::iterator it = foo.begin();\n"
               "    foo.erase(*it);\n"
               "}");
