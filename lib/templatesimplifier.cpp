@@ -372,7 +372,7 @@ void TemplateSimplifier::checkComplicatedSyntaxErrorsInTemplates()
                         // @todo add better expression detection
                         if (!Token::Match(tok2->next(), "*| %type%|%num% ;"))
                             inclevel = true;
-                    } else if (tok2->next() && tok2->next()->isStandardType())
+                    } else if (tok2->next() && tok2->next()->isStandardType() && !Token::Match(tok2->tokAt(2), "(|{"))
                         inclevel = true;
                     else if (Token::simpleMatch(tok2, "< typename"))
                         inclevel = true;
@@ -1121,7 +1121,7 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
                         (from->strAt(1) == ">" || (from->previous()->isName() &&
                                                    typeParameterNames.find(from->strAt(-1)) == typeParameterNames.end())))
                         ++indentlevel;
-                    else if (from->str() == ">")
+                    else if (from->str() == ">" && (links.empty() || links.top()->str() == "<"))
                         --indentlevel;
                     auto entry = typeParameterNames.find(from->str());
                     if (entry != typeParameterNames.end() && entry->second < instantiationArgs.size()) {
@@ -2609,7 +2609,8 @@ bool TemplateSimplifier::simplifyCalculations(Token* frontToken, Token *backToke
         }
 
         if (validTokenEnd(bounded, tok, backToken, 2) &&
-            Token::Match(tok, "char|short|int|long { }")) {
+            (Token::Match(tok, "char|short|int|long { }") ||
+             Token::Match(tok, "char|short|int|long ( )"))) {
             tok->str("0"); // FIXME add type suffix
             tok->isSigned(false);
             tok->isUnsigned(false);
