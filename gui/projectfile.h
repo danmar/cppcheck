@@ -238,13 +238,11 @@ public:
         mVariableContracts[var] = Settings::VariableContracts{min.toStdString(), max.toStdString()};
     }
 
-    void deleteFunctionContract(QString function)
-    {
+    void deleteFunctionContract(QString function) {
         mFunctionContracts.erase(function.toStdString());
     }
 
-    void deleteVariableContract(QString var)
-    {
+    void deleteVariableContract(QString var) {
         mVariableContracts.erase(var);
     }
 

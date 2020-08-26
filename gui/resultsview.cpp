@@ -554,7 +554,7 @@ void ResultsView::editVariablesFilter(const QString &text)
         item->setHidden(!varname.contains(text));
     }
     for (auto item: mUI.mListMissingVariables->findItems(".*", Qt::MatchRegExp))
-         item->setHidden(!item->text().contains(text));
+        item->setHidden(!item->text().contains(text));
 }
 
 void ResultsView::on_mListLog_customContextMenuRequested(const QPoint &pos)

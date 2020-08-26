@@ -4160,7 +4160,7 @@ static void insertImpossible(std::list<ValueFlow::Value>& values, const std::lis
 
 static void insertNegateKnown(std::list<ValueFlow::Value>& values, const std::list<ValueFlow::Value>& input)
 {
-    for(ValueFlow::Value value:input) {
+    for (ValueFlow::Value value:input) {
         if (!value.isIntValue() && !value.isContainerSizeValue())
             continue;
         value.intvalue = !value.intvalue;

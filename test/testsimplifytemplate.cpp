@@ -4159,12 +4159,12 @@ private:
         {
             const std::string expected = "template < long Num > const bool foo < bar < Num > > = true ;";
             ASSERT_EQUALS(expected,
-                tok("template <long Num>\n"
-                    "constexpr bool foo<bar<Num> > = true;\n"));
+                          tok("template <long Num>\n"
+                              "constexpr bool foo<bar<Num> > = true;\n"));
             ASSERT_EQUALS("", errout.str());
             ASSERT_EQUALS(expected,
-                tok("template <long Num>\n"
-                    "constexpr bool foo<bar<Num>> = true;\n"));
+                          tok("template <long Num>\n"
+                              "constexpr bool foo<bar<Num>> = true;\n"));
             ASSERT_EQUALS("", errout.str());
         }
     }
