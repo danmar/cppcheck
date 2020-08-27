@@ -170,6 +170,8 @@ namespace ValueFlow {
             decreaseRange();
         }
 
+        void assumeCondition(const Token* tok);
+
         std::string infoString() const;
 
         enum ValueType { INT, TOK, FLOAT, MOVED, UNINIT, CONTAINER_SIZE, LIFETIME, BUFFER_SIZE, ITERATOR_START, ITERATOR_END } valueType;

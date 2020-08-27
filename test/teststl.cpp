@@ -3619,6 +3619,27 @@ private:
               "        return *(v.begin() + pos);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f(std::vector<int> v, int i) {\n"
+              "    auto it = std::find(v.begin(), v.end(), i);\n"
+              "    if (it != v.end()) {}\n"
+              "    return *it;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Either the condition 'it!=v.end()' is redundant or there is possible dereference of an invalid iterator: it.\n", errout.str());
+
+        check("void f(std::vector<int> & v) {\n"
+              "    std::vector<int>::iterator i= v.begin();\n"
+              "    if(i == v.end() && *(i+1) == *i) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (warning) Either the condition 'i==v.end()' is redundant or there is possible dereference of an invalid iterator: i+1.\n"
+                      "[test.cpp:3] -> [test.cpp:3]: (warning) Either the condition 'i==v.end()' is redundant or there is possible dereference of an invalid iterator: i.\n", errout.str());
+
+        check("void f(std::vector<int> & v) {\n"
+              "    std::vector<int>::iterator i= v.begin();\n"
+              "    if(i == v.end() && *i == *(i+1)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (warning) Either the condition 'i==v.end()' is redundant or there is possible dereference of an invalid iterator: i.\n"
+                      "[test.cpp:3] -> [test.cpp:3]: (warning) Either the condition 'i==v.end()' is redundant or there is possible dereference of an invalid iterator: i+1.\n", errout.str());
     }
 
     void dereferenceInvalidIterator2() {
