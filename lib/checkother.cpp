@@ -1399,7 +1399,7 @@ void CheckOther::checkConstVariable()
                     continue;
         }
         // Skip if we ever dynamic_cast/static_cast this variable to a non-const type
-        if (Token::findmatch(var->nameToken(), "dynamic_cast|static_cast < %type% & > ( %varid% )", scope->bodyEnd, var->declarationId()))
+        if (Token::findmatch(var->nameToken(), "dynamic_cast|static_cast < typename| %type% & > ( %varid% )", scope->bodyEnd, var->declarationId()))
             continue;
         constVariableError(var);
     }
