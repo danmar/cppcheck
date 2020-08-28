@@ -4147,15 +4147,19 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             // Remove known values
             std::set<ValueFlow::Value::ValueType> types;
             if (tok->astOperand1()->hasKnownValue()) {
-                for(const ValueFlow::Value& value:tok->astOperand1()->values()) {
+                for (const ValueFlow::Value& value:tok->astOperand1()->values()) {
                     if (value.isKnown())
                         types.insert(value.valueType);
                 }
             }
-            values.remove_if([&](const ValueFlow::Value& value) { return types.count(value.valueType) > 0;});
+            values.remove_if([&](const ValueFlow::Value& value) {
+                return types.count(value.valueType) > 0;
+            });
             // Remove container size if its not a container
             if (!astIsContainer(tok->astOperand2()))
-                values.remove_if([&](const ValueFlow::Value& value) { return value.valueType == ValueFlow::Value::CONTAINER_SIZE;});
+                values.remove_if([&](const ValueFlow::Value& value) {
+                return value.valueType == ValueFlow::Value::CONTAINER_SIZE;
+            });
             if (values.empty())
                 continue;
             const bool constValue = isLiteralNumber(tok->astOperand2(), tokenlist->isCPP());
@@ -5948,9 +5952,9 @@ static std::list<ValueFlow::Value> getIteratorValues(std::list<ValueFlow::Value>
 }
 
 static void valueFlowIteratorAfterCondition(TokenList *tokenlist,
-                                    SymbolDatabase *symboldatabase,
-                                    ErrorLogger *errorLogger,
-                                    const Settings *settings)
+        SymbolDatabase *symboldatabase,
+        ErrorLogger *errorLogger,
+        const Settings *settings)
 {
     ValueFlowConditionHandler handler;
     handler.forward = [&](Token* start,
@@ -5980,7 +5984,7 @@ static void valueFlowIteratorAfterCondition(TokenList *tokenlist,
                 if (!values.empty())
                     cond.vartok = tok->astOperand1();
             }
-            for(ValueFlow::Value& v:values) {
+            for (ValueFlow::Value& v:values) {
                 v.setPossible();
                 v.assumeCondition(tok);
             }
