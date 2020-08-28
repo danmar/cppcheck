@@ -2574,7 +2574,7 @@ struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
     virtual bool isGlobal() const OVERRIDE {
         for (const auto&p:getVars()) {
             const Variable* var = p.second;
-            if (var->isGlobal() && !var->isConst())
+            if (!var->isLocal() && !var->isArgument() && !var->isConst())
                 return true;
         }
         return false;
