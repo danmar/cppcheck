@@ -1703,6 +1703,14 @@ static void valueFlowGlobalStaticVar(TokenList *tokenList, const Settings *setti
     }
 }
 
+static void valueFlowForwardVariable(Token* const startToken,
+                                     const Token* const endToken,
+                                     const Variable* const var,
+                                     std::list<ValueFlow::Value> values,
+                                     TokenList* const tokenlist,
+                                     const Settings* const settings);
+
+// Old deprecated version
 static void valueFlowForward(Token* startToken,
                              const Token* endToken,
                              const Token* exprTok,
@@ -2696,6 +2704,17 @@ static void valueFlowForwardVariable(Token* const startToken,
     }
 }
 
+static void valueFlowForwardVariable(Token* const startToken,
+                                     const Token* const endToken,
+                                     const Variable* const var,
+                                     std::list<ValueFlow::Value> values,
+                                     TokenList* const tokenlist,
+                                     const Settings* const settings)
+{
+    valueFlowForwardVariable(startToken, endToken, var, std::move(values), getAliasesFromValues(values), tokenlist, settings);
+}
+
+// Old deprecated version
 static bool valueFlowForwardVariable(Token* const startToken,
                                      const Token* const endToken,
                                      const Variable* const var,
@@ -2707,7 +2726,7 @@ static bool valueFlowForwardVariable(Token* const startToken,
                                      ErrorLogger* const,
                                      const Settings* const settings)
 {
-    valueFlowForwardVariable(startToken, endToken, var, std::move(values), getAliasesFromValues(values), tokenlist, settings);
+    valueFlowForwardVariable(startToken, endToken, var, std::move(values), tokenlist, settings);
     return true;
 }
 
@@ -2857,10 +2876,7 @@ static void valueFlowForward(Token* startToken,
                              const Token* endToken,
                              const Token* exprTok,
                              std::list<ValueFlow::Value> values,
-                             const bool constValue,
-                             const bool subFunction,
                              TokenList* const tokenlist,
-                             ErrorLogger* const errorLogger,
                              const Settings* settings)
 {
     const Token* expr = solveExprValues(exprTok, values);
@@ -2868,16 +2884,26 @@ static void valueFlowForward(Token* startToken,
         valueFlowForwardVariable(startToken,
                                  endToken,
                                  expr->variable(),
-                                 expr->varId(),
                                  values,
-                                 constValue,
-                                 subFunction,
                                  tokenlist,
-                                 errorLogger,
                                  settings);
     } else {
         valueFlowForwardExpression(startToken, endToken, expr, values, tokenlist, settings);
     }
+}
+
+// Old deprecated version
+static void valueFlowForward(Token* startToken,
+                             const Token* endToken,
+                             const Token* exprTok,
+                             std::list<ValueFlow::Value> values,
+                             const bool,
+                             const bool,
+                             TokenList* const tokenlist,
+                             ErrorLogger* const,
+                             const Settings* settings)
+{
+    valueFlowForward(startToken, endToken, exprTok, std::move(values), tokenlist, settings);
 }
 
 static int getArgumentPos(const Variable *var, const Function *f)
@@ -4441,8 +4467,8 @@ static void valueFlowAfterCondition(TokenList *tokenlist,
                           const Token* stop,
                           const Token* vartok,
                           const std::list<ValueFlow::Value>& values,
-    bool constValue) {
-        valueFlowForward(start->next(), stop, vartok, values, constValue, false, tokenlist, errorLogger, settings);
+    bool) {
+        valueFlowForward(start->next(), stop, vartok, values, tokenlist, settings);
         std::vector<const Variable*> vars = getExprVariables(vartok, tokenlist, symboldatabase, settings);
         return isVariablesChanged(start, stop, 0, vars, settings, tokenlist->isCPP());
     };
@@ -5913,6 +5939,60 @@ static void valueFlowIterators(TokenList *tokenlist, const Settings *settings)
     }
 }
 
+static std::list<ValueFlow::Value> getIteratorValues(std::list<ValueFlow::Value> values)
+{
+    values.remove_if([&](const ValueFlow::Value& v) {
+        return !v.isIteratorEndValue() && !v.isIteratorStartValue();
+    });
+    return values;
+}
+
+static void valueFlowIteratorAfterCondition(TokenList *tokenlist,
+                                    SymbolDatabase *symboldatabase,
+                                    ErrorLogger *errorLogger,
+                                    const Settings *settings)
+{
+    ValueFlowConditionHandler handler;
+    handler.forward = [&](Token* start,
+                          const Token* stop,
+                          const Token* vartok,
+                          const std::list<ValueFlow::Value>& values,
+    bool) {
+        valueFlowForward(start->next(), stop, vartok, values, tokenlist, settings);
+        std::vector<const Variable*> vars = getExprVariables(vartok, tokenlist, symboldatabase, settings);
+        return isVariablesChanged(start, stop, 0, vars, settings, tokenlist->isCPP());
+    };
+    handler.parse = [&](const Token *tok) {
+        ValueFlowConditionHandler::Condition cond;
+
+        ValueFlow::Value true_value;
+        ValueFlow::Value false_value;
+
+        if (Token::Match(tok, "==|!=")) {
+            if (!tok->astOperand1() || !tok->astOperand2())
+                return cond;
+
+            std::list<ValueFlow::Value> values = getIteratorValues(tok->astOperand1()->values());
+            if (!values.empty()) {
+                cond.vartok = tok->astOperand2();
+            } else {
+                values = getIteratorValues(tok->astOperand2()->values());
+                if (!values.empty())
+                    cond.vartok = tok->astOperand1();
+            }
+            for(ValueFlow::Value& v:values) {
+                v.setPossible();
+                v.assumeCondition(tok);
+            }
+            cond.true_values = values;
+            cond.false_values = values;
+        }
+
+        return cond;
+    };
+    handler.afterCondition(tokenlist, symboldatabase, errorLogger, settings);
+}
+
 static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger * /*errorLogger*/, const Settings *settings)
 {
     // declaration
@@ -6411,6 +6491,12 @@ ValueFlow::Value::Value(const Token* c, long long val)
     errorPath.emplace_back(c, "Assuming that condition '" + c->expressionString() + "' is not redundant");
 }
 
+void ValueFlow::Value::assumeCondition(const Token* tok)
+{
+    condition = tok;
+    errorPath.emplace_back(tok, "Assuming that condition '" + tok->expressionString() + "' is not redundant");
+}
+
 std::string ValueFlow::Value::infoString() const
 {
     switch (valueType) {
@@ -6509,6 +6595,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
         if (tokenlist->isCPP()) {
             valueFlowSmartPointer(tokenlist, errorLogger, settings);
             valueFlowIterators(tokenlist, settings);
+            valueFlowIteratorAfterCondition(tokenlist, symboldatabase, errorLogger, settings);
             valueFlowContainerSize(tokenlist, symboldatabase, errorLogger, settings);
             valueFlowContainerAfterCondition(tokenlist, symboldatabase, errorLogger, settings);
         }

@@ -84,7 +84,7 @@ public:
         checkStl.knownEmptyContainerLoop();
 
         checkStl.stlBoundaries();
-        checkStl.checkDereferenceInvalidIterator();
+        checkStl.checkDereferenceInvalidIterator(); 
         checkStl.checkDereferenceInvalidIterator2();
         checkStl.checkMutexes();
 
