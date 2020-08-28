@@ -995,6 +995,13 @@ Here is an example code:
 The bug hunting analysis will warn about a division by zero. It can't be proven
 that x can't be 0.
 
+A variable contract specify the allowed values for a variable. Cppcheck use variable
+contracts both when a variable is read and written:
+- When a variable is read, Cppcheck will assume that the contract is met. This
+means you can avoid false positives for impossible variable values.
+- When a variable is written, Cppcheck will ensure that its contract is not
+violated. If it can't be determined that the contract is met you will get a
+warning.
 
 #### Annotation
 
