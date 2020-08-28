@@ -542,8 +542,7 @@ void execute(const Token *expr,
             *result = 0;
         else
             *error = true;
-    }
-    else if (Token::Match(expr->tokAt(-3), "%var% . %name% (")) {
+    } else if (Token::Match(expr->tokAt(-3), "%var% . %name% (")) {
         const Token* containerTok = expr->tokAt(-3);
         if (astIsContainer(containerTok)) {
             Library::Container::Yield yield = containerTok->valueType()->container->getYield(expr->strAt(-1));

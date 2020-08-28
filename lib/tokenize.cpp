@@ -9667,7 +9667,7 @@ void Tokenizer::findGarbageCode() const
         }
         if (Token::Match(tok, "[!|+-/%^~] )|]"))
             syntaxError(tok);
-        if (Token::Match(tok, "==|!=|<=|>= %comp%"))
+        if (Token::Match(tok, "==|!=|<=|>= %comp%") && tok->strAt(-1) != "operator")
             syntaxError(tok, tok->str() + " " + tok->strAt(1));
     }
 

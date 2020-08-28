@@ -326,7 +326,9 @@ private:
 
     std::list<ValueFlow::Value> tokenValues(const char code[], const char tokstr[], ValueFlow::Value::ValueType vt, const Settings *s = nullptr) {
         std::list<ValueFlow::Value> values = tokenValues(code, tokstr, s);
-        values.remove_if([&](const ValueFlow::Value& v) { return v.valueType != vt; });
+        values.remove_if([&](const ValueFlow::Value& v) {
+            return v.valueType != vt;
+        });
         return values;
     }
 
@@ -2477,6 +2479,39 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 123));
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 124));
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 125));
+
+        code = "struct A {\n"
+               "    bool g() const;\n"
+               "};\n"
+               "void f(A a) {\n"
+               "    if (a.g()) {\n"
+               "        bool x = a.g();\n"
+               "        bool a = x;\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 7U, 0));
+
+        code = "struct A {\n"
+               "    bool g() const;\n"
+               "};\n"
+               "void f(A a) {\n"
+               "    if (a.g()) {\n"
+               "        bool x = !a.g();\n"
+               "        bool a = x;\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 7U, 0));
+
+        code = "struct A {\n"
+               "    bool g() const;\n"
+               "};\n"
+               "void f(A a) {\n"
+               "    if (!a.g()) {\n"
+               "        bool x = a.g();\n"
+               "        bool a = x;\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 7U, 0));
     }
 
     void valueFlowAfterConditionSeveralNot() {
@@ -4108,6 +4143,28 @@ private:
                "  }\n"
                "}";
         ASSERT(tokenValues(code, "params [ 2 ]").empty());
+
+        // valueFlowAfterCondition
+        code = "void f(const std::vector<std::string>& v) {\n"
+               "    if(v.empty()) {\n"
+               "        v.front();\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "v . front"), 0));
+
+        code = "void f(const std::vector<std::string>& v) {\n"
+               "    if(!v.empty()) {\n"
+               "        v.front();\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "v . front"), 0));
+
+        code = "void f(const std::vector<std::string>& v) {\n"
+               "    if(!v.empty() && v[0] != \"\") {\n"
+               "        v.front();\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "v . front"), 0));
 
         // valueFlowContainerForward
         code = "void f(const std::list<int> &ints) {\n"

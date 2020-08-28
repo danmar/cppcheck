@@ -209,8 +209,11 @@ struct ForwardTraversal {
     }
 
     Progress updateLoop(Token* endBlock, Token* condTok, Token* initTok = nullptr, Token* stepTok = nullptr) {
+        const bool isDoWhile = precedes(endBlock, condTok);
         ForwardAnalyzer::Action bodyAnalysis = analyzeScope(endBlock);
         ForwardAnalyzer::Action allAnalysis = bodyAnalysis;
+        if (condTok)
+            allAnalysis |= analyzeRecursive(condTok);
         if (initTok)
             allAnalysis |= analyzeRecursive(initTok);
         if (stepTok)
@@ -223,7 +226,7 @@ struct ForwardTraversal {
                 return Progress::Break;
         }
         // Traverse condition after lowering
-        if (condTok) {
+        if (condTok && (!isDoWhile || !bodyAnalysis.isModified())) {
             if (updateRecursive(condTok) == Progress::Break)
                 return Progress::Break;
 
@@ -422,9 +425,13 @@ struct ForwardTraversal {
                 tok = endBlock;
             } else if (Token::simpleMatch(tok, "do {")) {
                 Token* endBlock = tok->next()->link();
-                if (updateLoop(endBlock, nullptr) == Progress::Break)
+                Token* condTok = Token::simpleMatch(endBlock, "} while (") ? endBlock->tokAt(2)->astOperand2() : nullptr;
+                if (updateLoop(endBlock, condTok) == Progress::Break)
                     return Progress::Break;
-                tok = endBlock;
+                if (condTok)
+                    tok = endBlock->linkAt(2)->next();
+                else
+                    tok = endBlock;
             } else if (Token::Match(tok, "assert|ASSERT (")) {
                 const Token* condTok = tok->next()->astOperand2();
                 bool checkThen, checkElse;

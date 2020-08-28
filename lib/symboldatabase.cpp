@@ -1452,10 +1452,10 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
         }
 
         // Apply CSE
-        for(const auto& p:exprs) {
+        for (const auto& p:exprs) {
             const std::vector<Token*>& tokens = p.second;
-            for(Token* tok1:tokens) {
-                for(Token* tok2:tokens) {
+            for (Token* tok1:tokens) {
+                for (Token* tok2:tokens) {
                     if (tok1 == tok2)
                         continue;
                     if (tok1->exprId() == tok2->exprId())

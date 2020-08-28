@@ -170,6 +170,8 @@ namespace ValueFlow {
             decreaseRange();
         }
 
+        void assumeCondition(const Token* tok);
+
         std::string infoString() const;
 
         enum ValueType { INT, TOK, FLOAT, MOVED, UNINIT, CONTAINER_SIZE, LIFETIME, BUFFER_SIZE, ITERATOR_START, ITERATOR_END } valueType;
@@ -374,6 +376,6 @@ std::string lifetimeType(const Token *tok, const ValueFlow::Value *val);
 
 std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, ValueFlow::Value::ErrorPath &errorPath);
 
-ValueFlow::Value getLifetimeObjValue(const Token *tok);
+ValueFlow::Value getLifetimeObjValue(const Token *tok, bool inconclusive = false);
 
 #endif // valueflowH

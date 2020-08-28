@@ -61,8 +61,17 @@ ResultsView::ResultsView(QWidget * parent) :
     connect(this, &ResultsView::collapseAllResults, mUI.mTree, &ResultsTree::collapseAll);
     connect(this, &ResultsView::expandAllResults, mUI.mTree, &ResultsTree::expandAll);
     connect(this, &ResultsView::showHiddenResults, mUI.mTree, &ResultsTree::showHiddenResults);
+
+    // Function contracts
     connect(mUI.mListAddedContracts, &QListWidget::itemDoubleClicked, this, &ResultsView::contractDoubleClicked);
     connect(mUI.mListMissingContracts, &QListWidget::itemDoubleClicked, this, &ResultsView::contractDoubleClicked);
+    mUI.mListAddedContracts->installEventFilter(this);
+
+    // Variable contracts
+    connect(mUI.mListAddedVariables, &QListWidget::itemDoubleClicked, this, &ResultsView::variableDoubleClicked);
+    connect(mUI.mListMissingVariables, &QListWidget::itemDoubleClicked, this, &ResultsView::variableDoubleClicked);
+    connect(mUI.mEditVariablesFilter, &QLineEdit::textChanged, this, &ResultsView::editVariablesFilter);
+    mUI.mListAddedVariables->installEventFilter(this);
 
     mUI.mListLog->setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -90,7 +99,7 @@ ResultsView::~ResultsView()
     //dtor
 }
 
-void ResultsView::setAddedContracts(const QStringList &addedContracts)
+void ResultsView::setAddedFunctionContracts(const QStringList &addedContracts)
 {
     mUI.mListAddedContracts->clear();
     mUI.mListAddedContracts->addItems(addedContracts);
@@ -98,6 +107,17 @@ void ResultsView::setAddedContracts(const QStringList &addedContracts)
         auto res = mUI.mListMissingContracts->findItems(f, Qt::MatchExactly);
         if (!res.empty())
             delete res.front();
+    }
+}
+
+void ResultsView::setAddedVariableContracts(const QStringList &added)
+{
+    mUI.mListAddedVariables->clear();
+    mUI.mListAddedVariables->addItems(added);
+    for (const QString var: added) {
+        for (auto item: mUI.mListMissingVariables->findItems(var, Qt::MatchExactly))
+            delete item;
+        mVariableContracts.insert(var);
     }
 }
 
@@ -125,6 +145,22 @@ void ResultsView::clear(const QString &filename)
 void ResultsView::clearRecheckFile(const QString &filename)
 {
     mUI.mTree->clearRecheckFile(filename);
+}
+
+void ResultsView::clearContracts()
+{
+    mUI.mListAddedContracts->clear();
+    mUI.mListAddedVariables->clear();
+    mUI.mListMissingContracts->clear();
+    mUI.mListMissingVariables->clear();
+    mFunctionContracts.clear();
+    mVariableContracts.clear();
+}
+
+void ResultsView::showContracts(bool visible)
+{
+    mUI.mTabFunctionContracts->setVisible(visible);
+    mUI.mTabVariableContracts->setVisible(visible);
 }
 
 void ResultsView::progress(int value, const QString& description)
@@ -458,12 +494,16 @@ void ResultsView::debugError(const ErrorItem &item)
 void ResultsView::bughuntingReportLine(const QString& line)
 {
     for (const QString& s: line.split("\n")) {
-        if (s.isEmpty())
-            continue;
-        if (s.startsWith("[missing contract] ")) {
+        if (s.startsWith("[intvar] ")) {
+            const QString varname = s.mid(9);
+            if (!mVariableContracts.contains(varname)) {
+                mVariableContracts.insert(varname);
+                mUI.mListMissingVariables->addItem(varname);
+            }
+        } else if (s.startsWith("[missing contract] ")) {
             const QString functionName = s.mid(19);
-            if (!mContracts.contains(functionName)) {
-                mContracts.insert(functionName);
+            if (!mFunctionContracts.contains(functionName)) {
+                mFunctionContracts.insert(functionName);
                 mUI.mListMissingContracts->addItem(functionName);
             }
         }
@@ -502,6 +542,21 @@ void ResultsView::contractDoubleClicked(QListWidgetItem* item)
     emit editFunctionContract(item->text());
 }
 
+void ResultsView::variableDoubleClicked(QListWidgetItem* item)
+{
+    emit editVariableContract(item->text());
+}
+
+void ResultsView::editVariablesFilter(const QString &text)
+{
+    for (auto item: mUI.mListAddedVariables->findItems(".*", Qt::MatchRegExp)) {
+        QString varname = item->text().mid(0, item->text().indexOf(" "));
+        item->setHidden(!varname.contains(text));
+    }
+    for (auto item: mUI.mListMissingVariables->findItems(".*", Qt::MatchRegExp))
+        item->setHidden(!item->text().contains(text));
+}
+
 void ResultsView::on_mListLog_customContextMenuRequested(const QPoint &pos)
 {
     if (mUI.mListLog->count() <= 0)
@@ -515,4 +570,33 @@ void ResultsView::on_mListLog_customContextMenuRequested(const QPoint &pos)
     contextMenu.addAction(tr("Copy complete Log"), this, SLOT(logCopyComplete()));
 
     contextMenu.exec(globalPos);
+}
+
+bool ResultsView::eventFilter(QObject *target, QEvent *event)
+{
+    if (event->type() == QEvent::KeyPress) {
+        if (target == mUI.mListAddedVariables) {
+            QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+            if (keyEvent->key() == Qt::Key_Delete) {
+                for (auto i: mUI.mListAddedVariables->selectedItems()) {
+                    emit deleteVariableContract(i->text().mid(0, i->text().indexOf(" ")));
+                    delete i;
+                }
+                return true;
+            }
+        }
+
+        if (target == mUI.mListAddedContracts) {
+            QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+            if (keyEvent->key() == Qt::Key_Delete) {
+                for (auto i: mUI.mListAddedContracts->selectedItems()) {
+                    emit deleteFunctionContract(i->text());
+                    delete i;
+                }
+
+                return true;
+            }
+        }
+    }
+    return QObject::eventFilter(target, event);
 }

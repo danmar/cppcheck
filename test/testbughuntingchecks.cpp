@@ -35,6 +35,7 @@ private:
 #ifdef USE_Z3
         settings.inconclusive = true;
         LOAD_LIB_2(settings.library, "std.cfg");
+        TEST_CASE(checkAssignment);
         TEST_CASE(uninit);
         TEST_CASE(uninit_array);
         TEST_CASE(uninit_function_par);
@@ -51,6 +52,15 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
         errout.str("");
         ExprEngine::runChecks(this, &tokenizer, &settings);
+    }
+
+    void checkAssignment() {
+        check("void foo(int any) { __cppcheck_low__(0) int x; x = any; }");
+        ASSERT_EQUALS("[test.cpp:1]: (error) There is assignment, cannot determine that value is greater or equal with 0\n", errout.str());
+
+        check("struct S { __cppcheck_low__(0) int x; };\n"
+              "void foo(S *s, int any) { s->x = any; }");
+        ASSERT_EQUALS("[test.cpp:2]: (error) There is assignment, cannot determine that value is greater or equal with 0\n", errout.str());
     }
 
     void uninit() {

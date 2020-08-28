@@ -196,6 +196,7 @@ private:
         TEST_CASE(template154); // #9495
         TEST_CASE(template155); // #9539
         TEST_CASE(template156);
+        TEST_CASE(template157); // #9854
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -3732,6 +3733,40 @@ private:
         tok(code); // don't crash
     }
 
+    void template157() { // #9854
+        const char code[] = "template <int a, bool c = a == int()> struct b1 { bool d = c; };\n"
+                            "template <int a, bool c = a != int()> struct b2 { bool d = c; };\n"
+                            "template <int a, bool c = a < int()> struct b3 { bool d = c; };\n"
+                            "template <int a, bool c = a <= int()> struct b4 { bool d = c; };\n"
+                            "template <int a, bool c = (a > int())> struct b5 { bool d = c; };\n"
+                            "template <int a, bool c = a >= int()> struct b6 { bool d = c; };\n"
+                            "b1<0> var1;\n"
+                            "b2<0> var2;\n"
+                            "b3<0> var3;\n"
+                            "b4<0> var4;\n"
+                            "b5<0> var5;\n"
+                            "b6<0> var6;";
+        const char exp[] = "struct b1<0,true> ; "
+                           "struct b2<0,false> ; "
+                           "struct b3<0,false> ; "
+                           "struct b4<0,true> ; "
+                           "struct b5<0,false> ; "
+                           "struct b6<0,true> ; "
+                           "b1<0,true> var1 ; "
+                           "b2<0,false> var2 ; "
+                           "b3<0,false> var3 ; "
+                           "b4<0,true> var4 ; "
+                           "b5<0,false> var5 ; "
+                           "b6<0,true> var6 ; "
+                           "struct b6<0,true> { bool d ; d = true ; } ; "
+                           "struct b5<0,false> { bool d ; d = false ; } ; "
+                           "struct b4<0,true> { bool d ; d = true ; } ; "
+                           "struct b3<0,false> { bool d ; d = false ; } ; "
+                           "struct b2<0,false> { bool d ; d = false ; } ; "
+                           "struct b1<0,true> { bool d ; d = true ; } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         const char code[] = "template <typename T> struct C {};\n"
                             "template <typename T> struct S {a};\n"
@@ -4119,6 +4154,19 @@ private:
             "    A a;\n"
             "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        //both of these should work but in cppcheck 2.1 only the first option will work (ticket #9843)
+        {
+            const std::string expected = "template < long Num > const bool foo < bar < Num > > = true ;";
+            ASSERT_EQUALS(expected,
+                          tok("template <long Num>\n"
+                              "constexpr bool foo<bar<Num> > = true;\n"));
+            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS(expected,
+                          tok("template <long Num>\n"
+                              "constexpr bool foo<bar<Num>> = true;\n"));
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void template_member_ptr() { // Ticket #5786

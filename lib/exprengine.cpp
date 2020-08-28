@@ -588,7 +588,7 @@ namespace {
         std::string str() const {
             std::ostringstream ret;
             std::map<std::string, ExprEngine::ValuePtr> vars;
-            for (const auto mem: memory) {
+            for (const auto &mem: memory) {
                 if (!mem.second)
                     continue;
                 const Variable *var = tokenizer->getSymbolDatabase()->getVariableFromVarId(mem.first);
@@ -597,11 +597,11 @@ namespace {
                 ret << " @" << mem.first << ":" << mem.second->name;
                 getSymbols(vars, mem.second);
             }
-            for (const auto var: vars) {
+            for (const auto &var: vars) {
                 if (var.second->name[0] == '$')
                     ret << " " << ::str(var.second);
             }
-            for (const auto c: constraints)
+            for (const auto &c: constraints)
                 ret << " (" << c->getSymbolicExpression() << ")";
             ret << std::endl;
             return ret.str();
@@ -1851,7 +1851,7 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
 #endif
         } else if (!argValues.empty()) {
             bool bailout = false;
-            for (const auto v: argValues)
+            for (const auto &v: argValues)
                 bailout |= (v && v->type == ExprEngine::ValueType::BailoutValue);
             if (!bailout)
                 data.addMissingContract(functionName);
@@ -2641,6 +2641,28 @@ void ExprEngine::executeFunction(const Scope *functionScope, ErrorLogger *errorL
 
     // Write a report
     if (bugHuntingReport) {
+        std::set<std::string> intvars;
+        for (const Scope &scope: tokenizer->getSymbolDatabase()->scopeList) {
+            if (scope.isExecutable())
+                continue;
+            std::string path;
+            bool valid = true;
+            for (const Scope *s = &scope; s->type != Scope::ScopeType::eGlobal; s = s->nestedIn) {
+                if (s->isExecutable()) {
+                    valid = false;
+                    break;
+                }
+                path = s->className + "::" + path;
+            }
+            if (!valid)
+                continue;
+            for (const Variable &var: scope.varlist) {
+                if (var.nameToken() && !var.nameToken()->hasCppcheckAttributes() && var.valueType() && var.valueType()->pointer == 0 && var.valueType()->constness == 0 && var.valueType()->isIntegral())
+                    intvars.insert(path + var.name());
+            }
+        }
+        for (const std::string &v: intvars)
+            report << "[intvar] " << v << std::endl;
         for (const std::string &f: trackExecution.getMissingContracts())
             report << "[missing contract] " << f << std::endl;
     }
