@@ -1412,7 +1412,7 @@ void CheckOther::checkConstVariable()
         {
             bool castToNonConst = [&]
                 {
-                    for (const Token* tok = var->nameToken(); tok != scope->bodyEnd; tok = tok->next())
+                    for (const Token* tok = var->nameToken(); tok != scope->bodyEnd && tok != nullptr; tok = tok->next())
                     {
                         if (tok->isCast())
                         {
