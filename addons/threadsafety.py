@@ -34,3 +34,5 @@ for arg in sys.argv[1:]:
     for cfg in data.iterconfigurations():
         print('Checking %s, config %s...' % (arg, cfg.name))
         checkstatic(cfg)
+
+    sys.exit(cppcheckdata.EXIT_CODE)

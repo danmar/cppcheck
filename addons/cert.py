@@ -439,3 +439,5 @@ if __name__ == '__main__':
                 if actual not in VERIFY_EXPECTED:
                     print('Not expected: ' + actual)
                     sys.exit(1)
+
+    sys.exit(cppcheckdata.EXIT_CODE)
