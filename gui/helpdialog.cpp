@@ -1,12 +1,12 @@
 #include "helpdialog.h"
 #include "ui_helpdialog.h"
+#include "common.h"
 
 #include <QFileInfo>
 #include <QHelpEngine>
 #include <QHelpContentWidget>
 #include <QHelpIndexWidget>
 #include <QMessageBox>
-#include <QSettings>
 
 void HelpBrowser::setHelpEngine(QHelpEngine *helpEngine)
 {
@@ -26,8 +26,7 @@ QVariant HelpBrowser::loadResource(int type, const QUrl &name)
 
 static QString getHelpFile()
 {
-    QSettings settings;
-    const QString datadir = settings.value("DATADIR", QString()).toString();
+    const QString datadir = getDataDir();
 
     QStringList paths;
     paths << (datadir + "/help")

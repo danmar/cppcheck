@@ -90,8 +90,7 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
     // Checkboxes for the libraries..
     const QString applicationFilePath = QCoreApplication::applicationFilePath();
     const QString appPath = QFileInfo(applicationFilePath).canonicalPath();
-    QSettings settings;
-    const QString datadir = settings.value("DATADIR",QString()).toString();
+    const QString datadir = getDataDir();
     QStringList searchPaths;
     searchPaths << appPath << appPath + "/cfg" << inf.canonicalPath();
 #ifdef FILESDIR
@@ -332,7 +331,7 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
 
     // Addons..
     QSettings settings;
-    const QString dataDir = settings.value("DATADIR", QString()).toString();
+    const QString dataDir = getDataDir();
     updateAddonCheckBox(mUI.mAddonThreadSafety, projectFile, dataDir, "threadsafety");
     updateAddonCheckBox(mUI.mAddonY2038, projectFile, dataDir, "y2038");
     updateAddonCheckBox(mUI.mAddonCert, projectFile, dataDir, "cert");
@@ -837,6 +836,6 @@ void ProjectFileDialog::browseMisraFile()
 
         mUI.mAddonMisra->setText("MISRA C 2012");
         mUI.mAddonMisra->setEnabled(true);
-        updateAddonCheckBox(mUI.mAddonMisra, nullptr, settings.value("DATADIR", QString()).toString(), "misra");
+        updateAddonCheckBox(mUI.mAddonMisra, nullptr, getDataDir(), "misra");
     }
 }
