@@ -1394,7 +1394,7 @@ void CheckOther::checkConstVariable()
         // Skip if another non-const variable is initialized with this variable
         {
             //Is it the right side of an initialization of a non-const reference
-            bool usedInAssignment = std::invoke([&]
+            bool usedInAssignment = [&]
                 {
                     auto findAssignment = [&](const Token* t) { return Token::findmatch(t, "%type% & %name% = %varid%", scope->bodyEnd, var->declarationId()); };
                     for (const Token* match = findAssignment(var->nameToken()); match != nullptr; match = findAssignment(match->next()))
@@ -1404,13 +1404,13 @@ void CheckOther::checkConstVariable()
                             return true;
                     }
                     return false;
-                });
+                }();
             if (usedInAssignment)
                 continue;
         }
         // Skip if we ever cast this variable to a non-const type
         {
-            bool castToNonConst = std::invoke([&]
+            bool castToNonConst = [&]
                 {
                     for (const Token* tok = var->nameToken(); tok != scope->bodyEnd; tok = tok->next())
                     {
@@ -1439,7 +1439,7 @@ void CheckOther::checkConstVariable()
                         }
                     }
                     return false;
-                });
+                }();
             if (castToNonConst)
                 continue;
         }
