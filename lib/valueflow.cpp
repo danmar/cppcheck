@@ -6008,7 +6008,7 @@ static void valueFlowIteratorInfer(TokenList *tokenlist, const Settings *setting
         if (!tok->scope()->isExecutable())
             continue;
         std::list<ValueFlow::Value> values = getIteratorValues(tok->values());
-        values.remove_if([&](ValueFlow::Value& v) {
+        values.remove_if([&](const ValueFlow::Value& v) {
             if (!v.isImpossible())
                 return true;
             if (v.isIteratorEndValue() && v.intvalue <= 0)
