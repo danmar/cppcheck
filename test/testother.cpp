@@ -2051,7 +2051,7 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Parameter 'i' can be declared with const\n", errout.str());
 
-        //dynamic_cast/static_cast or just assignment to a non-const reference should prevent the warning
+        //cast or assignment to a non-const reference should prevent the warning
         check("struct T { void dostuff() const {}};\n"
               "void a(T& x) {\n"
               "    x.dostuff();\n"
@@ -2060,6 +2060,7 @@ private:
         check("struct T : public U  { void dostuff() const {}};\n"
             "void a(T& x) {\n"
             "    x.dostuff();\n"
+            "    const T& z = x;\n" //Make sure we find all assignments
             "    T& y = x\n"
             "    y.mutate();\n" //to avoid warnings that y can be const
             "}");
@@ -2131,6 +2132,42 @@ private:
             "    y->mutate();\n" //to avoid warnings that y can be const
             "}");
         ASSERT_EQUALS("", errout.str());
+
+
+        check("struct T : public U { void dostuff() const {}};\n"
+            "void a(T& x) {\n"
+            "    x.dostuff();\n"
+            "    const U& y = (const U&)(x)\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared with const\n", errout.str());
+        check("struct T : public U { void dostuff() const {}};\n"
+            "void a(T& x) {\n"
+            "    x.dostuff();\n"
+            "    U& y = (U&)(x)\n"
+            "    y.mutate();\n" //to avoid warnings that y can be const
+            "}");
+        ASSERT_EQUALS("", errout.str());
+        check("struct T : public U { void dostuff() const {}};\n"
+            "void a(T& x) {\n"
+            "    x.dostuff();\n"
+            "    const U& y = (typename const U&)(x)\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared with const\n", errout.str());
+        check("struct T : public U { void dostuff() const {}};\n"
+            "void a(T& x) {\n"
+            "    x.dostuff();\n"
+            "    U& y = (typename U&)(x)\n"
+            "    y.mutate();\n" //to avoid warnings that y can be const
+            "}");
+        ASSERT_EQUALS("", errout.str());
+        check("struct T : public U { void dostuff() const {}};\n"
+            "void a(T& x) {\n"
+            "    x.dostuff();\n"
+            "    U* y = (U*)(&x)\n"
+            "    y->mutate();\n" //to avoid warnings that y can be const
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
 
         check("class a {\n"
               "    void foo(const int& i) const;\n"

@@ -1393,14 +1393,57 @@ void CheckOther::checkConstVariable()
             continue;
         // Skip if another non-const variable is initialized with this variable
         {
-            auto match = Token::findmatch(var->nameToken(), "%type% & %name% = %varid%", scope->bodyEnd, var->declarationId());
-            if (match)
-                if (!Token::simpleMatch(match->previous(), "const"))
-                    continue;
+            //Is it the right side of an initialization of a non-const reference
+            bool usedInAssignment = std::invoke([&]
+                {
+                    auto findAssignment = [&](const Token* t) { return Token::findmatch(t, "%type% & %name% = %varid%", scope->bodyEnd, var->declarationId()); };
+                    for (const Token* match = findAssignment(var->nameToken()); match != nullptr; match = findAssignment(match->next()))
+                    {
+                        const Variable* matchvar = match ? match->tokAt(2)->variable() : nullptr;
+                        if (matchvar && !matchvar->isConst())
+                            return true;
+                    }
+                    return false;
+                });
+            if (usedInAssignment)
+                continue;
         }
-        // Skip if we ever dynamic_cast/static_cast this variable to a non-const type
-        if (Token::findmatch(var->nameToken(), "dynamic_cast|static_cast < typename| %type% & > ( %varid% )", scope->bodyEnd, var->declarationId()))
-            continue;
+        // Skip if we ever cast this variable to a non-const type
+        {
+            bool castToNonConst = std::invoke([&]
+                {
+                    for (const Token* tok = var->nameToken(); tok != scope->bodyEnd; tok = tok->next())
+                    {
+                        if (tok->isCast())
+                        {
+                            if (Token::simpleMatch(tok->previous(), ">"))
+                            {
+                                // dynamic_cast<X&>(y)
+                                //                 ^    we're at this operator
+                                bool castToConst = Token::simpleMatch(tok->previous()->link()->next(), "const");
+                                if (!castToConst)
+                                {
+                                    return true;
+                                }
+                            }
+                            else
+                            {
+                                // (X&)(y)
+                                // ^        we're at this operator
+                                bool castToConst = Token::simpleMatch(tok->next(), "const");
+                                if (!castToConst)
+                                {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                    return false;
+                });
+            if (castToNonConst)
+                continue;
+        }
+
         constVariableError(var);
     }
 }
