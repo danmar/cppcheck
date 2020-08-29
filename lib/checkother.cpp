@@ -1394,17 +1394,17 @@ void CheckOther::checkConstVariable()
         // Skip if another non-const variable is initialized with this variable
         {
             //Is it the right side of an initialization of a non-const reference
-            bool usedInAssignment = [&]
-                {
-                    auto findAssignment = [&](const Token* t) { return Token::findmatch(t, "%type% & %name% = %varid%", scope->bodyEnd, var->declarationId()); };
-                    for (const Token* match = findAssignment(var->nameToken()); match != nullptr; match = findAssignment(match->next()))
-                    {
-                        const Variable* matchvar = match ? match->tokAt(2)->variable() : nullptr;
-                        if (matchvar && !matchvar->isConst())
-                            return true;
-                    }
-                    return false;
-                }();
+            bool usedInAssignment = false;
+            for (const Token* tok = var->nameToken(); tok != scope->bodyEnd && tok != nullptr; tok = tok->next())
+            {
+                if (!Token::Match(tok, "& %var% = %varid%", var->declarationId()))
+                    continue;
+                const Variable* refvar = tok->next()->variable();
+                if (refvar && !refvar->isConst() && refvar->nameToken() == tok->next()) {
+                    usedInAssignment = true;
+                    break;
+                }
+            }
             if (usedInAssignment)
                 continue;
         }
