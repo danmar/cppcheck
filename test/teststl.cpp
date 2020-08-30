@@ -3668,6 +3668,32 @@ private:
               "    if(i != v.end() && (i+1) != v.end() && *(i+1) == *i) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::string s) {\n"
+              "    for (std::string::const_iterator i = s.begin(); i != s.end(); ++i) {\n"
+              "        if (i != s.end() && (i + 1) != s.end() && *(i + 1) == *i) {\n"
+              "            if (!isalpha(*(i + 2))) {\n"
+              "                std::string modifier;\n"
+              "                modifier += *i;\n"
+              "                modifier += *(i + 1);\n"
+              "            }\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Either the condition '(i+1)!=s.end()' is redundant or there is possible dereference of an invalid iterator: i+2.\n", errout.str());
+
+        check("void f(std::string s) {\n"
+              "    for (std::string::const_iterator i = s.begin(); i != s.end(); ++i) {\n"
+              "        if (i != s.end() && (i + 1) != s.end() && *(i + 1) == *i) {\n"
+              "            if ((i + 2) != s.end() && !isalpha(*(i + 2))) {\n"
+              "                std::string modifier;\n"
+              "                modifier += *i;\n"
+              "                modifier += *(i + 1);\n"
+              "            }\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void dereferenceInvalidIterator2() {

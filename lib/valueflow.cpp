@@ -2835,7 +2835,7 @@ template <class F>
 void transformIntValues(std::list<ValueFlow::Value>& values, F f)
 {
     std::transform(values.begin(), values.end(), values.begin(), [&](ValueFlow::Value x) {
-        if (x.isIntValue())
+        if (x.isIntValue() || x.isIteratorValue())
             x.intvalue = f(x.intvalue);
         return x;
     });
@@ -5946,10 +5946,12 @@ static void valueFlowIterators(TokenList *tokenlist, const Settings *settings)
     }
 }
 
-static std::list<ValueFlow::Value> getIteratorValues(std::list<ValueFlow::Value> values)
+static std::list<ValueFlow::Value> getIteratorValues(std::list<ValueFlow::Value> values, ValueFlow::Value::ValueKind* kind = nullptr)
 {
     values.remove_if([&](const ValueFlow::Value& v) {
-        return !v.isIteratorEndValue() && !v.isIteratorStartValue();
+        if (kind && v.valueKind != *kind)
+            return true;
+        return !v.isIteratorValue();
     });
     return values;
 }
@@ -5979,7 +5981,8 @@ static void valueFlowIteratorAfterCondition(TokenList *tokenlist,
             if (!tok->astOperand1() || !tok->astOperand2())
                 return cond;
 
-            std::list<ValueFlow::Value> values = getIteratorValues(tok->astOperand1()->values());
+            ValueFlow::Value::ValueKind kind = ValueFlow::Value::ValueKind::Known;
+            std::list<ValueFlow::Value> values = getIteratorValues(tok->astOperand1()->values(), &kind);
             if (!values.empty()) {
                 cond.vartok = tok->astOperand2();
             } else {
