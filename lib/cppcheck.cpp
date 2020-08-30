@@ -168,21 +168,22 @@ static std::vector<std::string> split(const std::string &str, const std::string 
 {
     std::vector<std::string> ret;
     for (std::string::size_type startPos = 0U; startPos < str.size();) {
-        std::string::size_type endPos;
-        if (str[startPos] == '\"') {
-            endPos = str.find("\"", startPos + 1);
-            if (endPos < str.size())
-                endPos++;
-        } else {
-            endPos = str.find(sep, startPos + 1);
-        }
-        if (endPos == std::string::npos) {
-            ret.push_back(str.substr(startPos));
+        startPos = str.find_first_not_of(sep, startPos);
+        if (startPos == std::string::npos)
             break;
+
+        if (str[startPos] == '\"') {
+            const std::string::size_type endPos = str.find("\"", startPos + 1);
+            ret.push_back(str.substr(startPos + 1, endPos - startPos - 1));
+            startPos = (endPos < str.size()) ? (endPos + 1) : endPos;
+            continue;
         }
+
+        const std::string::size_type endPos = str.find(sep, startPos + 1);
         ret.push_back(str.substr(startPos, endPos - startPos));
-        startPos = str.find_first_not_of(sep, endPos);
+        startPos = endPos;
     }
+
     return ret;
 }
 
