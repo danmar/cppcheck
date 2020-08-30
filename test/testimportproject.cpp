@@ -47,6 +47,8 @@ private:
         TEST_CASE(importCompileCommands2); // #8563
         TEST_CASE(importCompileCommands3); // check with existing trailing / in directory
         TEST_CASE(importCompileCommands4); // only accept certain file types
+        TEST_CASE(importCompileCommands5); // Windows/CMake/Ninja generated comile_commands.json
+        TEST_CASE(importCompileCommands6); // Windows/CMake/Ninja generated comile_commands.json with spaces
         TEST_CASE(importCompileCommandsArgumentsSection); // Handle arguments section
         TEST_CASE(importCompileCommandsNoCommandSection); // gracefully handles malformed json
         TEST_CASE(importCppcheckGuiProject);
@@ -158,6 +160,25 @@ private:
         importer.importCompileCommands(istr);
         ASSERT_EQUALS(2, importer.fileSettings.size());
         ASSERT_EQUALS("C:/Users/dan/git/test-cppcheck/mylib/src/", importer.fileSettings.begin()->includePaths.front());
+    }
+
+    void importCompileCommands6() const {
+        const char json[] =
+            "[{"
+            "\"directory\": \"C:/Users/dan/git/build-test-cppcheck-Desktop_Qt_5_15_0_MSVC2019_64bit-Debug\","
+            "\"command\": \"C:\\\\PROGRA~2\\\\MICROS~1\\\\2019\\\\COMMUN~1\\\\VC\\\\Tools\\\\MSVC\\\\1427~1.291\\\\bin\\\\HostX64\\\\x64\\\\cl.exe  /nologo /TP -IC:\\\\Users\\\\dan\\\\git\\\\test-cppcheck\\\\mylib\\\\src -I\\\"C:\\\\Users\\\\dan\\\\git\\\\test-cppcheck\\\\mylib\\\\second src\\\" /DWIN32 /D_WINDOWS /GR /EHsc /Zi /Ob0 /Od /RTC1 -MDd -std:c++17 /Fomylib\\\\CMakeFiles\\\\mylib.dir\\\\src\\\\foobar\\\\mylib.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\\\Users\\\\dan\\\\git\\\\test-cppcheck\\\\mylib\\\\src\\\\foobar\\\\mylib.cpp\","
+            "\"file\": \"C:\\\\Users\\\\dan\\\\git\\\\test-cppcheck\\\\mylib\\\\src\\\\foobar\\\\mylib.cpp\""
+            "},"
+            "{"
+            "\"directory\": \"C:/Users/dan/git/build-test-cppcheck-Desktop_Qt_5_15_0_MSVC2019_64bit-Debug\","
+            "\"command\": \"C:\\\\PROGRA~2\\\\MICROS~1\\\\2019\\\\COMMUN~1\\\\VC\\\\Tools\\\\MSVC\\\\1427~1.291\\\\bin\\\\HostX64\\\\x64\\\\cl.exe  /nologo /TP -IC:\\\\Users\\\\dan\\\\git\\\\test-cppcheck\\\\myapp\\\\src -Imyapp -IC:\\\\Users\\\\dan\\\\git\\\\test-cppcheck\\\\mylib\\\\src /DWIN32 /D_WINDOWS /GR /EHsc /Zi /Ob0 /Od /RTC1 -MDd -std:c++17 /Fomyapp\\\\CMakeFiles\\\\myapp.dir\\\\src\\\\main.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\\\Users\\\\dan\\\\git\\\\test-cppcheck\\\\myapp\\\\src\\\\main.cpp\","
+            "\"file\": \"C:\\\\Users\\\\dan\\\\git\\\\test-cppcheck\\\\myapp\\\\src\\\\main.cpp\""
+            "}]";
+        std::istringstream istr(json);
+        TestImporter importer;
+        importer.importCompileCommands(istr);
+        ASSERT_EQUALS(2, importer.fileSettings.size());
+        ASSERT_EQUALS("C:/Users/dan/git/test-cppcheck/mylib/second src/", importer.fileSettings.begin()->includePaths.front());
     }
 
     void importCompileCommandsArgumentsSection() const {
