@@ -787,11 +787,11 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         if (Token::Match(tok1, "==|!=")) {
             condTok = tok1;
             exprTok = tok2;
-        } else if (Token::Match(tok1, "==|!=")) {
+        } else if (Token::Match(tok2, "==|!=")) {
             condTok = tok2;
             exprTok = tok1;
         }
-        if (condTok && condTok->astOperand1() && condTok->astOperand2() && Token::Match(exprTok, "%var%|!")) {
+        if (condTok && condTok->astOperand1() && condTok->astOperand2() && !Token::Match(exprTok, "%comp%")) {
             const Token* varTok1 = nullptr;
             const Token* varTok2 = exprTok;
             const ValueFlow::Value* value = nullptr;
@@ -808,11 +808,11 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
             if (value) {
                 if (value->intvalue == 0 && Token::simpleMatch(exprTok, "!") && Token::simpleMatch(condTok, "==")) {
                     compare = true;
-                } else if (value->intvalue == 0 && Token::simpleMatch(exprTok, "%var%") && Token::simpleMatch(condTok, "!=")) {
+                } else if (value->intvalue == 0 && !Token::simpleMatch(exprTok, "!") && Token::simpleMatch(condTok, "!=")) {
                     compare = true;
                 } else if (value->intvalue != 0 && Token::simpleMatch(exprTok, "!") && Token::simpleMatch(condTok, "!=")) {
                     compare = true;
-                } else if (value->intvalue != 0 && Token::simpleMatch(exprTok, "%var%") && Token::simpleMatch(condTok, "==")) {
+                } else if (value->intvalue != 0 && !Token::simpleMatch(exprTok, "!") && Token::simpleMatch(condTok, "==")) {
                     compare = true;
                 }
 
