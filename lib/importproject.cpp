@@ -222,8 +222,6 @@ static std::string readUntil(const std::string &command, std::string::size_type 
     std::string ret;
     bool str = false;
     while (*pos < command.size() && (str || !std::strchr(until, command[*pos]))) {
-        if (command[*pos] == '\\')
-            ++*pos;
         if (*pos < command.size())
             ret += command[(*pos)++];
         if (endsWith(ret, '\"'))
