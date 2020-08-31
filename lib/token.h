@@ -1256,6 +1256,26 @@ public:
     const Token * astParent() const {
         return mImpl->mAstParent;
     }
+    Token * astSibling() {
+        if (!astParent())
+            return nullptr;
+        if (this == astParent()->astOperand1())
+            return astParent()->astOperand2();
+        else if (this == astParent()->astOperand2())
+            return astParent()->astOperand1();
+        return nullptr;
+        
+    }
+    const Token * astSibling() const {
+        if (!astParent())
+            return nullptr;
+        if (this == astParent()->astOperand1())
+            return astParent()->astOperand2();
+        else if (this == astParent()->astOperand2())
+            return astParent()->astOperand1();
+        return nullptr;
+        
+    }
     Token *astTop() {
         Token *ret = this;
         while (ret->mImpl->mAstParent)
