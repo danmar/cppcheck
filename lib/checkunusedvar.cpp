@@ -630,7 +630,7 @@ static void useFunctionArgs(const Token *tok, Variables& variables)
     if (tok->str() == ",") {
         useFunctionArgs(tok->astOperand1(), variables);
         useFunctionArgs(tok->astOperand2(), variables);
-    } else if (Token::Match(tok, "[+:]") && (!tok->valueType() || tok->valueType()->pointer)) {
+    } else if (Token::Match(tok, "[+:]") && (!tok->valueType() || tok->valueType()->isPointer())) {
         useFunctionArgs(tok->astOperand1(), variables);
         useFunctionArgs(tok->astOperand2(), variables);
     } else if (tok->variable() && tok->variable()->isArray()) {
@@ -966,7 +966,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             while (eq && !eq->isAssignmentOp())
                 eq = eq->astParent();
 
-            const bool deref = eq && eq->astOperand1() && eq->astOperand1()->valueType() && eq->astOperand1()->valueType()->pointer == 0U;
+            const bool deref = eq && eq->astOperand1() && eq->astOperand1()->valueType() && !eq->astOperand1()->valueType()->isPointer();
 
             if (tok->str() == "*") {
                 tok = tok->tokAt(2);
@@ -1045,7 +1045,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             variables.use(tok->varId(), tok);   // use = read + write
         }
 
-        else if (tok->str() == ":" && (!tok->valueType() || tok->valueType()->pointer)) {
+        else if (tok->str() == ":" && (!tok->valueType() || tok->valueType()->isPointer())) {
             if (tok->astOperand1())
                 variables.use(tok->astOperand1()->varId(), tok->astOperand1());
             if (tok->astOperand2())

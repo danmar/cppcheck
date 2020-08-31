@@ -174,7 +174,7 @@ void CheckClass::constructors()
                 if (usage[count].assign || usage[count].init || var.isStatic())
                     continue;
 
-                if (var.valueType()->pointer == 0 && var.type() && var.type()->needInitialization == Type::NeedInitialization::False && var.type()->derivedFrom.empty())
+                if (var.valueType()->isIndirect() && var.type() && var.type()->needInitialization == Type::NeedInitialization::False && var.type()->derivedFrom.empty())
                     continue;
 
                 if (var.isConst() && func.isOperator()) // We can't set const members in assignment operator
@@ -1995,7 +1995,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 return false;
 
             // non const pointer cast
-            if (tok1->valueType() && tok1->valueType()->pointer > 0 && tok1->astParent() && tok1->astParent()->isCast() && !Token::simpleMatch(tok1->astParent(), "( const"))
+            if (tok1->valueType() && tok1->valueType()->isPointer() && tok1->astParent() && tok1->astParent()->isCast() && !Token::simpleMatch(tok1->astParent(), "( const"))
                 return false;
 
             const Token* lhs = tok1->previous();

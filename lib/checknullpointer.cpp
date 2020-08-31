@@ -463,10 +463,10 @@ void CheckNullPointer::arithmetic()
                 continue;
             const Token *pointerOperand;
             const Token *numericOperand;
-            if (tok->astOperand1() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->pointer != 0) {
+            if (tok->astOperand1() && tok->astOperand1()->valueType() && !tok->astOperand1()->valueType()->isPointer()) {
                 pointerOperand = tok->astOperand1();
                 numericOperand = tok->astOperand2();
-            } else if (tok->astOperand2() && tok->astOperand2()->valueType() && tok->astOperand2()->valueType()->pointer != 0) {
+            } else if (tok->astOperand2() && tok->astOperand2()->valueType() && !tok->astOperand2()->valueType()->isPointer()) {
                 pointerOperand = tok->astOperand2();
                 numericOperand = tok->astOperand1();
             } else

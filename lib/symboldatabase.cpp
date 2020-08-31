@@ -1538,7 +1538,7 @@ void SymbolDatabase::setArrayDimensionsUsingValueFlow()
                 continue;
             }
 
-            else if (dimension.tok->valueType() && dimension.tok->valueType()->pointer == 0) {
+            else if (dimension.tok->valueType() && !dimension.tok->valueType()->isPointer()) {
                 int bits = 0;
                 switch (dimension.tok->valueType()->type) {
                 case ValueType::Type::CHAR:
@@ -2003,9 +2003,9 @@ void Variable::setValueType(const ValueType &valueType)
 {
     delete mValueType;
     mValueType = new ValueType(valueType);
-    if ((mValueType->pointer > 0) && (!isArray() || Token::Match(mNameToken->previous(), "( * %name% )")))
+    if ((mValueType->isPointer()) && (!isArray() || Token::Match(mNameToken->previous(), "( * %name% )")))
         setFlag(fIsPointer, true);
-    setFlag(fIsConst, mValueType->constness & (1U << mValueType->pointer));
+    setFlag(fIsConst, mValueType->constness & (1U << mValueType->pointerDepth));
     if (mValueType->smartPointerType)
         setFlag(fIsSmartPointer, true);
 }
@@ -4690,9 +4690,9 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                         while (Token::Match(typeToken, "%name%|*|&|::|<"))
                         {
                             if (typeToken->str() == "const")
-                                ret.constness |= (1 << ret.pointer);
+                                ret.constness |= (1 << ret.pointerDepth);
                             else if (typeToken->str() == "*")
-                                ret.pointer++;
+                                ret.pointerDepth++;
                             else if (typeToken->str() == "<") {
                                 if (!typeToken->link())
                                     break;
@@ -4707,7 +4707,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                     const std::string type2 = getTypeString(funcArgTypeToken);
                     if (!type1.empty() && type1 == type2) {
                         ValueType callArgType = parseDecl(callArgTypeToken);
-                        callArgType.pointer += pointer;
+                        callArgType.pointerDepth += pointer;
                         ValueType funcArgType = parseDecl(funcArgTypeToken);
 
                         callArgType.sign = funcArgType.sign = ValueType::Sign::SIGNED;
@@ -4731,7 +4731,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                 checkVariableCallMatch(callarg, funcarg, same, fallback1, fallback2);
             }
 
-            else if (funcarg->isStlStringType() && arguments[j]->valueType() && arguments[j]->valueType()->pointer == 1 && arguments[j]->valueType()->type == ValueType::Type::CHAR)
+            else if (funcarg->isStlStringType() && arguments[j]->valueType() && arguments[j]->valueType()->pointerDepth == 1 && arguments[j]->valueType()->type == ValueType::Type::CHAR)
                 fallback2++;
 
             // check for a match with nullptr
@@ -5291,7 +5291,7 @@ void SymbolDatabase::setValueType(Token *tok, const Variable &var)
     ValueType valuetype;
     if (var.nameToken())
         valuetype.bits = var.nameToken()->bits();
-    valuetype.pointer = var.dimensions().size();
+    valuetype.pointerDepth = var.dimensions().size();
     valuetype.typeScope = var.typeScope();
     if (var.valueType()) {
         valuetype.container = var.valueType()->container;
@@ -5396,32 +5396,32 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
                 autoTok = var1Tok->tokAt(-2);
             if (autoTok) {
                 ValueType vt(*vt2);
-                if (vt.constness & (1 << vt.pointer))
-                    vt.constness &= ~(1 << vt.pointer);
-                if (autoTok->strAt(1) == "*" && vt.pointer)
-                    vt.pointer--;
+                if (vt.constness & (1 << vt.pointerDepth))
+                    vt.constness &= ~(1 << vt.pointerDepth);
+                if (autoTok->strAt(1) == "*" && vt.pointerDepth)
+                    vt.pointerDepth--;
                 if (autoTok->strAt(-1) == "const")
                     vt.constness |= 1;
                 setValueType(autoTok, vt);
                 setAutoTokenProperties(autoTok);
-                if (vt2->pointer > vt.pointer)
-                    vt.pointer++;
+                if (vt2->pointerDepth > vt.pointerDepth)
+                    vt.pointerDepth++;
                 setValueType(var1Tok, vt);
                 if (var1Tok != parent->previous())
                     setValueType(parent->previous(), vt);
                 Variable *var = const_cast<Variable *>(parent->previous()->variable());
                 if (var) {
                     ValueType vt2_(*vt2);
-                    if (vt2_.pointer == 0 && autoTok->strAt(1) == "*")
-                        vt2_.pointer = 1;
-                    if ((vt.constness & (1 << vt2->pointer)) != 0)
-                        vt2_.constness |= (1 << vt2->pointer);
+                    if (vt2_.pointerDepth == 0 && autoTok->strAt(1) == "*")
+                        vt2_.pointerDepth = 1;
+                    if ((vt.constness & (1 << vt2->pointerDepth)) != 0)
+                        vt2_.constness |= (1 << vt2->pointerDepth);
                     if (!Token::Match(autoTok->tokAt(1), "*|&"))
                         vt2_.constness = vt.constness;
                     var->setValueType(vt2_);
                     if (vt2->typeScope && vt2->typeScope->definedType) {
                         var->type(vt2->typeScope->definedType);
-                        if (autoTok->valueType()->pointer == 0)
+                        if (!autoTok->valueType()->isPointer())
                             autoTok->type(vt2->typeScope->definedType);
                     }
                 }
@@ -5430,7 +5430,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         return;
     }
 
-    if (parent->str() == "[" && (!mIsCpp || parent->astOperand1() == tok) && valuetype.pointer > 0U && !Token::Match(parent->previous(), "[{,]")) {
+    if (parent->str() == "[" && (!mIsCpp || parent->astOperand1() == tok) && valuetype.pointerDepth > 0U && !Token::Match(parent->previous(), "[{,]")) {
         const Token *op1 = parent->astOperand1();
         while (op1 && op1->str() == "[")
             op1 = op1->astOperand1();
@@ -5438,13 +5438,13 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         ValueType vt(valuetype);
         // the "[" is a dereference unless this is a variable declaration
         if (!(op1 && op1->variable() && op1->variable()->nameToken() == op1))
-            vt.pointer -= 1U;
+            vt.pointerDepth -= 1U;
         setValueType(parent, vt);
         return;
     }
-    if (Token::Match(parent->previous(), "%name% (") && parent->astOperand1() == tok && valuetype.pointer > 0U) {
+    if (Token::Match(parent->previous(), "%name% (") && parent->astOperand1() == tok && valuetype.pointerDepth > 0U) {
         ValueType vt(valuetype);
-        vt.pointer -= 1U;
+        vt.pointerDepth -= 1U;
         setValueType(parent, vt);
         return;
     }
@@ -5453,13 +5453,13 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         setValueType(parent, valuetype);
         return;
     }
-    if (parent->str() == "*" && !parent->astOperand2() && valuetype.pointer > 0U) {
+    if (parent->str() == "*" && !parent->astOperand2() && valuetype.pointerDepth > 0U) {
         ValueType vt(valuetype);
-        vt.pointer -= 1U;
+        vt.pointerDepth -= 1U;
         setValueType(parent, vt);
         return;
     }
-    if (parent->str() == "*" && Token::simpleMatch(parent->astOperand2(), "[") && valuetype.pointer > 0U) {
+    if (parent->str() == "*" && Token::simpleMatch(parent->astOperand2(), "[") && valuetype.isPointer()) {
         const Token *op1 = parent->astOperand2()->astOperand1();
         while (op1 && op1->str() == "[")
             op1 = op1->astOperand1();
@@ -5471,7 +5471,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
     }
     if (parent->str() == "&" && !parent->astOperand2()) {
         ValueType vt(valuetype);
-        vt.pointer += 1U;
+        vt.pointerDepth += 1U;
         setValueType(parent, vt);
         return;
     }
@@ -5504,14 +5504,14 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         Token::simpleMatch(parent->astParent()->astOperand1(), "for")) {
         const bool isconst = Token::simpleMatch(parent->astParent()->next(), "const");
         Token * const autoToken = parent->astParent()->tokAt(isconst ? 2 : 1);
-        if (vt2->pointer) {
+        if (vt2->pointerDepth) {
             ValueType autovt(*vt2);
-            autovt.pointer--;
+            autovt.pointerDepth--;
             autovt.constness = 0;
             setValueType(autoToken, autovt);
             setAutoTokenProperties(autoToken);
             ValueType varvt(*vt2);
-            varvt.pointer--;
+            varvt.pointerDepth--;
             if (isconst)
                 varvt.constness |= 1;
             setValueType(parent->previous(), varvt);
@@ -5593,23 +5593,23 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
 
     const bool ternary = parent->str() == ":" && parent->astParent() && parent->astParent()->str() == "?";
     if (ternary) {
-        if (vt2 && vt1->pointer == vt2->pointer && vt1->type == vt2->type && vt1->sign == vt2->sign)
+        if (vt2 && vt1->pointerDepth == vt2->pointerDepth && vt1->type == vt2->type && vt1->sign == vt2->sign)
             setValueType(parent, *vt2);
         parent = parent->astParent();
     }
 
     if (ternary || parent->isArithmeticalOp() || parent->tokType() == Token::eIncDecOp) {
-        if (vt1->pointer != 0U && vt2 && vt2->pointer == 0U) {
+        if (vt1->isPointer() && vt2 && !vt2->isPointer()) {
             setValueType(parent, *vt1);
             return;
         }
 
-        if (vt1->pointer == 0U && vt2 && vt2->pointer != 0U) {
+        if (!vt1->isPointer() && vt2 && vt2->isPointer()) {
             setValueType(parent, *vt2);
             return;
         }
 
-        if (vt1->pointer != 0U) {
+        if (vt1->isPointer()) {
             if (ternary || parent->tokType() == Token::eIncDecOp) // result is pointer
                 setValueType(parent, *vt1);
             else // result is pointer diff
@@ -5643,8 +5643,8 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         }
     }
 
-    if (vt1->isIntegral() && vt1->pointer == 0U &&
-        (!vt2 || (vt2->isIntegral() && vt2->pointer == 0U)) &&
+    if (vt1->isIntegral() && !vt1->isPointer() &&
+        (!vt2 || (vt2->isIntegral() && !vt2->isPointer())) &&
         (ternary || parent->isArithmeticalOp() || parent->tokType() == Token::eBitOp || parent->tokType() == Token::eIncDecOp || parent->isAssignmentOp())) {
 
         ValueType vt;
@@ -5680,7 +5680,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
 static const Token * parsedecl(const Token *type, ValueType * const valuetype, ValueType::Sign defaultSignedness, const Settings* settings)
 {
     const Token * const previousType = type;
-    const unsigned int pointer0 = valuetype->pointer;
+    const unsigned int pointer0 = valuetype->pointerDepth;
     while (Token::Match(type->previous(), "%name%") && !endsWith(type->previous()->str(), ':'))
         type = type->previous();
     valuetype->sign = ValueType::Sign::UNKNOWN_SIGN;
@@ -5725,7 +5725,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             type->type()->typeStart->str() != type->str() && type->type()->typeStart != previousType)
             parsedecl(type->type()->typeStart, valuetype, defaultSignedness, settings);
         else if (type->str() == "const")
-            valuetype->constness |= (1 << (valuetype->pointer - pointer0));
+            valuetype->constness |= (1 << (valuetype->pointerDepth - pointer0));
         else if (settings->clang && type->str().size() > 2 && type->str().find("::") < type->str().find("<")) {
             TokenList typeTokens(settings);
             std::string::size_type pos1 = 0;
@@ -5793,16 +5793,21 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             if (!vt)
                 return nullptr;
             valuetype->type = vt->type;
-            valuetype->pointer = vt->pointer;
+            valuetype->pointerDepth = vt->pointerDepth;
+            valuetype->reference = vt->reference;
             if (vt->sign != ValueType::Sign::UNKNOWN_SIGN)
                 valuetype->sign = vt->sign;
             valuetype->constness = vt->constness;
             valuetype->originalTypeName = vt->originalTypeName;
             while (Token::Match(type, "%name%|*|&|::") && !type->variable()) {
                 if (type->str() == "*")
-                    valuetype->pointer++;
+                    valuetype->pointerDepth++;
+                else if (type->str() == "&") {
+                    valuetype->pointerDepth++;
+                    valuetype->reference = true;
+                }
                 if (type->str() == "const")
-                    valuetype->constness |= (1 << valuetype->pointer);
+                    valuetype->constness |= (1 << valuetype->pointerDepth);
                 type = type->next();
             }
             break;
@@ -5816,10 +5821,14 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
                 valuetype->type = ValueType::Type::RECORD;
             }
             valuetype->typeScope = type->type()->classScope;
-        } else if (type->isName() && valuetype->sign != ValueType::Sign::UNKNOWN_SIGN && valuetype->pointer == 0U)
+        } else if (type->isName() && valuetype->sign != ValueType::Sign::UNKNOWN_SIGN && !valuetype->isPointer())
             return nullptr;
         else if (type->str() == "*")
-            valuetype->pointer++;
+            valuetype->pointerDepth++;
+        else if (type->str() == "&") {
+            valuetype->pointerDepth++;
+            valuetype->reference = true;
+        }
         else if (type->isStandardType())
             valuetype->fromLibraryType(type->str(), settings);
         else if (Token::Match(type->previous(), "!!:: %name% !!::"))
@@ -5837,7 +5846,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             valuetype->sign = ValueType::Sign::SIGNED;
     }
 
-    return (type && (valuetype->type != ValueType::Type::UNKNOWN_TYPE || valuetype->pointer > 0)) ? type : nullptr;
+    return (type && (valuetype->type != ValueType::Type::UNKNOWN_TYPE || valuetype->isPointer())) ? type : nullptr;
 }
 
 static const Scope *getClassScope(const Token *tok)
@@ -6028,7 +6037,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                         typeStartToken = typeStartToken->astOperand1();
                     if (const Library::Container *c = mSettings->library.detectContainer(typeStartToken)) {
                         ValueType vt;
-                        vt.pointer = 0;
+                        vt.pointerDepth = 0;
                         vt.container = c;
                         vt.type = ValueType::Type::CONTAINER;
                         setValueType(tok, vt);
@@ -6111,7 +6120,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                 typeTok = typeTok->link()->next();
             if (const Library::Container *c = mSettings->library.detectContainer(typeTok)) {
                 ValueType vt;
-                vt.pointer = 1;
+                vt.pointerDepth = 1;
                 vt.container = c;
                 vt.type = ValueType::Type::CONTAINER;
                 setValueType(tok, vt);
@@ -6126,7 +6135,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                 continue;
             typestr += typeTok->str();
             ValueType vt;
-            vt.pointer = 1;
+            vt.pointerDepth = 1;
             if (typeTok->type() && typeTok->type()->classScope) {
                 vt.type = ValueType::Type::RECORD;
                 vt.typeScope = typeTok->type()->classScope;
@@ -6249,9 +6258,9 @@ bool ValueType::fromLibraryType(const std::string &typestr, const Settings *sett
         else if (platformType->mUnsigned)
             sign = ValueType::UNSIGNED;
         if (platformType->mPointer)
-            pointer = 1;
+            pointerDepth = 1;
         if (platformType->mPtrPtr)
-            pointer = 2;
+            pointerDepth = 2;
         if (platformType->mConstPtr)
             constness = 1;
         return true;
@@ -6342,8 +6351,11 @@ std::string ValueType::dump() const
     if (bits > 0)
         ret << " valueType-bits=\"" << bits << '\"';
 
-    if (pointer > 0)
-        ret << " valueType-pointer=\"" << pointer << '\"';
+    if (pointerDepth > 0)
+        ret << " valueType-pointer=\"" << pointerDepth << '\"';
+
+    if (reference)
+        ret << " reference=\"" << reference << '\"';
 
     if (constness > 0)
         ret << " valueType-constness=\"" << constness << '\"';
@@ -6359,7 +6371,7 @@ std::string ValueType::dump() const
 
 MathLib::bigint ValueType::typeSize(const cppcheck::Platform &platform, bool p) const
 {
-    if (p && pointer)
+    if (p && isPointer())
         return platform.sizeof_pointer;
 
     if (typeScope && typeScope->definedType && typeScope->definedType->sizeOf)
@@ -6444,7 +6456,7 @@ std::string ValueType::str() const
     } else if (smartPointerType) {
         ret += " smart-pointer<" + smartPointerType->name() + ">";
     }
-    for (unsigned int p = 0; p < pointer; p++) {
+    for (unsigned int p = 0; p < pointerDepth; p++) {
         ret += " *";
         if (constness & (2 << p))
             ret += " const";
@@ -6456,21 +6468,21 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
 {
     if (!call || !func)
         return ValueType::MatchResult::UNKNOWN;
-    if (call->pointer != func->pointer) {
-        if (call->pointer > 1 && func->pointer == 1 && func->type == ValueType::Type::VOID)
+    if (call->pointerDepth != func->pointerDepth) {
+        if (call->pointerDepth > 1 && func->pointerDepth == 1 && func->type == ValueType::Type::VOID)
             return ValueType::MatchResult::FALLBACK1;
-        if (call->pointer == 1 && func->pointer == 0 && func->isIntegral() && func->sign != ValueType::Sign::SIGNED)
+        if (call->pointerDepth == 1 && func->pointerDepth == 0 && func->isIntegral() && func->sign != ValueType::Sign::SIGNED)
             return ValueType::MatchResult::FALLBACK1;
-        if (call->pointer == 1 && call->type == ValueType::Type::CHAR && func->pointer == 0 && func->container && func->container->stdStringLike)
+        if (call->pointerDepth == 1 && call->type == ValueType::Type::CHAR && func->pointerDepth == 0 && func->container && func->container->stdStringLike)
             return ValueType::MatchResult::FALLBACK2;
         return ValueType::MatchResult::NOMATCH; // TODO
     }
-    if (call->pointer > 0 && ((call->constness | func->constness) != func->constness))
+    if (call->isIndirect() && ((call->constness | func->constness) != func->constness))
         return ValueType::MatchResult::NOMATCH;
     if (call->type != func->type) {
         if (call->type == ValueType::Type::VOID || func->type == ValueType::Type::VOID)
             return ValueType::MatchResult::FALLBACK1;
-        if (call->pointer > 0 && func->pointer > 0)
+        if (call->isIndirect() && func->isIndirect())
             return func->type == ValueType::UNKNOWN_TYPE ? ValueType::MatchResult::UNKNOWN : ValueType::MatchResult::NOMATCH;
         if (call->isIntegral() && func->isIntegral())
             return call->type < func->type ?

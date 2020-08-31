@@ -438,7 +438,7 @@ static int getPointerDepth(const Token *tok)
 {
     if (!tok)
         return 0;
-    return tok->valueType() ? tok->valueType()->pointer : 0;
+    return tok->valueType() ? tok->valueType()->pointerDepth : 0;
 }
 
 static bool isDeadTemporary(bool cpp, const Token* tok, const Token* expr, const Library* library)

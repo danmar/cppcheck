@@ -834,7 +834,7 @@ ExprEngine::ArrayValue::ArrayValue(DataBase *data, const Variable *var)
         val = std::make_shared<ExprEngine::UninitValue>();
     else if (var && var->valueType()) {
         ::ValueType vt(*var->valueType());
-        vt.pointer = 0;
+        vt.pointerDepth = 0;
         val = getValueRangeFromValueType(data->getNewSymbolName(), &vt, *data->settings);
     }
     assign(ExprEngine::ValuePtr(), val);
@@ -1473,7 +1473,7 @@ static int getIntBitsFromValueType(const ValueType *vt, const cppcheck::Platform
 
 static ExprEngine::ValuePtr getValueRangeFromValueType(const std::string &name, const ValueType *vt, const cppcheck::Platform &platform)
 {
-    if (!vt || !(vt->isIntegral() || vt->isFloat()) || vt->pointer)
+    if (!vt || !(vt->isIntegral() || vt->isFloat()) || vt->isPointer())
         return ExprEngine::ValuePtr();
 
     int bits = getIntBitsFromValueType(vt, platform);
@@ -1495,7 +1495,7 @@ static ExprEngine::ValuePtr getValueRangeFromValueType(const std::string &name, 
 
 static ExprEngine::ValuePtr getValueRangeFromValueType(const ValueType *valueType, Data &data)
 {
-    if (!valueType || valueType->pointer)
+    if (!valueType || valueType->isPointer())
         return ExprEngine::ValuePtr();
     if (valueType->container) {
         ExprEngine::ValuePtr value;
@@ -1581,7 +1581,7 @@ static ExprEngine::ValuePtr truncateValue(ExprEngine::ValuePtr val, const ValueT
 {
     if (!valueType)
         return val;
-    if (valueType->pointer != 0)
+    if (valueType->isPointer())
         return val;
     if (!valueType->isIntegral())
         return val; // TODO
@@ -1684,7 +1684,7 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
         const ValueType * const vt2 = tok->astOperand2() ? tok->astOperand2()->valueType() : nullptr;
 
         rhsValue = getValueRangeFromValueType(vt1, data);
-        if (!rhsValue && vt2 && vt2->pointer == 0) {
+        if (!rhsValue && vt2 && !vt2->isPointer()) {
             rhsValue = getValueRangeFromValueType(vt2, data);
             if (rhsValue)
                 call(data.callbacks, tok->astOperand2(), rhsValue, &data);
@@ -1830,13 +1830,13 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
             continue;
         if (auto arrayValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(val)) {
             ValueType vt(*argtok->valueType());
-            vt.pointer = 0;
+            vt.pointerDepth = 0;
             auto anyVal = getValueRangeFromValueType(&vt, data);
             arrayValue->assign(ExprEngine::ValuePtr(), anyVal);
         } else if (auto addressOf = std::dynamic_pointer_cast<ExprEngine::AddressOfValue>(val)) {
             ValueType vt(*argtok->valueType());
-            vt.pointer = 0;
-            if (vt.isIntegral() && argtok->valueType()->pointer == 1)
+            vt.pointerDepth = 0;
+            if (vt.isIntegral() && argtok->valueType()->pointerDepth == 1)
                 data.assignValue(argtok, addressOf->varId, getValueRangeFromValueType(&vt, data));
         }
     }
@@ -1937,15 +1937,15 @@ static ExprEngine::ValuePtr executeCast(const Token *tok, Data &data)
 
     auto val = executeExpression(expr, data);
 
-    if (expr->valueType() && expr->valueType()->type == ::ValueType::Type::VOID && expr->valueType()->pointer > 0) {
-        if (!tok->valueType() || expr->valueType()->pointer < tok->valueType()->pointer)
+    if (expr->valueType() && expr->valueType()->type == ::ValueType::Type::VOID && expr->valueType()->pointerDepth > 0) {
+        if (!tok->valueType() || expr->valueType()->pointerDepth < tok->valueType()->pointerDepth)
             return std::make_shared<ExprEngine::UninitValue>();
 
         ::ValueType vt(*tok->valueType());
-        vt.pointer = 0;
+        vt.pointerDepth = 0;
         auto range = getValueRangeFromValueType(&vt, data);
 
-        if (tok->valueType()->pointer == 0)
+        if (tok->valueType()->pointerDepth == 0)
             return range;
 
         bool uninitPointer = false, nullPointer = false;
@@ -2543,7 +2543,7 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
         return ExprEngine::ValuePtr();
     }
 
-    if (valueType->pointer > 0) {
+    if (valueType->isPointer()) {
         if (var.isLocal())
             return std::make_shared<ExprEngine::UninitValue>();
         auto bufferSize = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 1, ~0UL);
@@ -2552,7 +2552,7 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
             pointerValue = createStructVal(valueType->typeScope, var.isLocal() && !var.isStatic(), data);
         else {
             ValueType vt(*valueType);
-            vt.pointer = 0;
+            vt.pointerDepth = 0;
             if (vt.constness & 1)
                 pointerValue = getValueRangeFromValueType(&vt, data);
             else
@@ -2657,7 +2657,7 @@ void ExprEngine::executeFunction(const Scope *functionScope, ErrorLogger *errorL
             if (!valid)
                 continue;
             for (const Variable &var: scope.varlist) {
-                if (var.nameToken() && !var.nameToken()->hasCppcheckAttributes() && var.valueType() && var.valueType()->pointer == 0 && var.valueType()->constness == 0 && var.valueType()->isIntegral())
+                if (var.nameToken() && !var.nameToken()->hasCppcheckAttributes() && var.valueType() && !var.valueType()->isPointer() && var.valueType()->constness == 0 && var.valueType()->isIntegral())
                     intvars.insert(path + var.name());
             }
         }

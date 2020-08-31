@@ -1151,7 +1151,8 @@ public:
     enum Sign { UNKNOWN_SIGN, SIGNED, UNSIGNED } sign;
     enum Type { UNKNOWN_TYPE, NONSTD, RECORD, CONTAINER, ITERATOR, VOID, BOOL, CHAR, SHORT, WCHAR_T, INT, LONG, LONGLONG, UNKNOWN_INT, FLOAT, DOUBLE, LONGDOUBLE } type;
     nonneg int bits;                    ///< bitfield bitcount
-    nonneg int pointer;                 ///< 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
+    nonneg int pointerDepth;            ///< 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
+    bool reference;                     ///< Is the outermost pointer actually a reference. i.e. if pointer==2 then are we dealing with an X** or an X*&
     nonneg int constness;               ///< bit 0=data, bit 1=*, bit 2=**
     const Scope *typeScope;               ///< if the type definition is seen this point out the type scope
     const ::Type *smartPointerType;       ///< Smart pointer type
@@ -1160,11 +1161,24 @@ public:
     const Token *containerTypeToken;      ///< The container type token. the template argument token that defines the container element type.
     std::string originalTypeName;         ///< original type name as written in the source code. eg. this might be "uint8_t" when type is CHAR.
 
+    bool isPointer() const {
+        return pointerDepth > 0 && !reference;
+    }
+
+    bool isReference() const {
+        return reference;
+    }
+
+    bool isIndirect() const {
+        return pointerDepth > 0;
+    }
+
     ValueType()
         : sign(UNKNOWN_SIGN),
           type(UNKNOWN_TYPE),
           bits(0),
-          pointer(0U),
+          pointerDepth(0U),
+          reference(false),
           constness(0U),
           typeScope(nullptr),
           smartPointerType(nullptr),
@@ -1176,7 +1190,8 @@ public:
         : sign(s),
           type(t),
           bits(0),
-          pointer(p),
+          pointerDepth(p),
+          reference(false),
           constness(0U),
           typeScope(nullptr),
           smartPointerType(nullptr),
@@ -1188,7 +1203,8 @@ public:
         : sign(s),
           type(t),
           bits(0),
-          pointer(p),
+          pointerDepth(p),
+          reference(false),
           constness(c),
           typeScope(nullptr),
           smartPointerType(nullptr),
@@ -1200,7 +1216,8 @@ public:
         : sign(s),
           type(t),
           bits(0),
-          pointer(p),
+          pointerDepth(p),
+          reference(false),
           constness(c),
           typeScope(nullptr),
           smartPointerType(nullptr),
