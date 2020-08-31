@@ -149,6 +149,7 @@ private:
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateExpressionTernary); // #6391
         TEST_CASE(duplicateExpressionTemplate); // #6930
+        TEST_CASE(duplicateExpressionCompareWithZero);
         TEST_CASE(oppositeExpression);
         TEST_CASE(duplicateVarExpression);
         TEST_CASE(duplicateVarExpressionUnique);
@@ -5070,6 +5071,57 @@ private:
               "}\n"
               "\n"
               "static auto a = f<0>();");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateExpressionCompareWithZero() {
+        check("void f(int* x, bool b) {\n"
+              "    if ((x && b) || (x != 0 && b)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||' because 'x&&b' and 'x!=0&&b' represent the same value.\n", errout.str());
+
+        check("void f(int* x, bool b) {\n"
+              "    if ((x != 0 && b) || (x && b)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||' because 'x!=0&&b' and 'x&&b' represent the same value.\n", errout.str());
+
+        check("void f(int* x, bool b) {\n"
+              "    if ((x && b) || (b && x != 0)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||' because 'x&&b' and 'b&&x!=0' represent the same value.\n", errout.str());
+
+        check("void f(int* x, bool b) {\n"
+              "    if ((!x && b) || (x == 0 && b)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||' because '!x&&b' and 'x==0&&b' represent the same value.\n", errout.str());
+
+        check("void f(int* x, bool b) {\n"
+              "    if ((x == 0 && b) || (!x && b)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||' because 'x==0&&b' and '!x&&b' represent the same value.\n", errout.str());
+
+        check("void f(int* x, bool b) {\n"
+              "    if ((!x && b) || (b && x == 0)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||' because '!x&&b' and 'b&&x==0' represent the same value.\n", errout.str());
+
+        check("struct A {\n"
+              "    int* getX() const;\n"
+              "    bool getB() const;\n"
+              "    void f() {\n"
+              "        if ((getX() && getB()) || (getX() != 0 && getB())) {}\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Same expression on both sides of '||' because 'getX()&&getB()' and 'getX()!=0&&getB()' represent the same value.\n", errout.str());
+
+        check("void f(int* x, bool b) {\n"
+              "    if ((x && b) || (x == 0 && b)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int* x, bool b) {\n"
+              "    if ((!x && b) || (x != 0 && b)) {}\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
