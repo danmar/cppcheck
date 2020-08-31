@@ -2835,7 +2835,7 @@ template <class F>
 void transformIntValues(std::list<ValueFlow::Value>& values, F f)
 {
     std::transform(values.begin(), values.end(), values.begin(), [&](ValueFlow::Value x) {
-        if (x.isIntValue())
+        if (x.isIntValue() || x.isIteratorValue())
             x.intvalue = f(x.intvalue);
         return x;
     });
@@ -4286,6 +4286,26 @@ struct ValueFlowConditionHandler {
                     continue;
                 }
 
+                std::list<ValueFlow::Value> thenValues;
+                std::list<ValueFlow::Value> elseValues;
+
+                if (!Token::Match(tok, "!=|=|(|.") && tok != cond.vartok) {
+                    thenValues.insert(thenValues.end(), cond.true_values.begin(), cond.true_values.end());
+                    if (isConditionKnown(tok, false))
+                        insertImpossible(elseValues, cond.false_values);
+                }
+                if (!Token::Match(tok, "==|!")) {
+                    elseValues.insert(elseValues.end(), cond.false_values.begin(), cond.false_values.end());
+                    if (isConditionKnown(tok, true)) {
+                        insertImpossible(thenValues, cond.true_values);
+                        if (Token::Match(tok, "(|.|%var%") && astIsBool(tok))
+                            insertNegateKnown(thenValues, cond.true_values);
+                    }
+                }
+
+                if (cond.inverted)
+                    std::swap(thenValues, elseValues);
+
                 if (Token::Match(tok->astParent(), "%oror%|&&")) {
                     Token *parent = tok->astParent();
                     if (astIsRHS(tok) && parent->astParent() && parent->str() == parent->astParent()->str())
@@ -4295,11 +4315,14 @@ struct ValueFlowConditionHandler {
                     }
                     if (parent) {
                         const std::string &op(parent->str());
-                        std::list<ValueFlow::Value> values = cond.true_values;
+                        std::list<ValueFlow::Value> values;
+                        if (op == "&&")
+                            values = thenValues;
+                        else if (op == "||")
+                            values = elseValues;
                         if (Token::Match(tok, "==|!="))
                             changePossibleToKnown(values);
-                        if ((op == "&&" && Token::Match(tok, "==|>=|<=|!")) ||
-                            (op == "||" && Token::Match(tok, "%name%|!="))) {
+                        if (!values.empty()) {
                             bool assign = false;
                             visitAstNodes(parent->astOperand2(), [&](Token* tok2) {
                                 if (isSameExpression(tokenlist->isCPP(), false, cond.vartok, tok2, settings->library, true, false))
@@ -4330,26 +4353,6 @@ struct ValueFlowConditionHandler {
                             bailout(tokenlist, errorLogger, tok, "assignment in condition");
                         continue;
                     }
-
-                    std::list<ValueFlow::Value> thenValues;
-                    std::list<ValueFlow::Value> elseValues;
-
-                    if (!Token::Match(tok, "!=|=|(|.") && tok != cond.vartok) {
-                        thenValues.insert(thenValues.end(), cond.true_values.begin(), cond.true_values.end());
-                        if (isConditionKnown(tok, false))
-                            insertImpossible(elseValues, cond.false_values);
-                    }
-                    if (!Token::Match(tok, "==|!")) {
-                        elseValues.insert(elseValues.end(), cond.false_values.begin(), cond.false_values.end());
-                        if (isConditionKnown(tok, true)) {
-                            insertImpossible(thenValues, cond.true_values);
-                            if (Token::Match(tok, "(|.|%var%") && astIsBool(tok))
-                                insertNegateKnown(thenValues, cond.true_values);
-                        }
-                    }
-
-                    if (cond.inverted)
-                        std::swap(thenValues, elseValues);
 
                     // start token of conditional code
                     Token* startTokens[] = {nullptr, nullptr};
@@ -5943,10 +5946,12 @@ static void valueFlowIterators(TokenList *tokenlist, const Settings *settings)
     }
 }
 
-static std::list<ValueFlow::Value> getIteratorValues(std::list<ValueFlow::Value> values)
+static std::list<ValueFlow::Value> getIteratorValues(std::list<ValueFlow::Value> values, ValueFlow::Value::ValueKind* kind = nullptr)
 {
     values.remove_if([&](const ValueFlow::Value& v) {
-        return !v.isIteratorEndValue() && !v.isIteratorStartValue();
+        if (kind && v.valueKind != *kind)
+            return true;
+        return !v.isIteratorValue();
     });
     return values;
 }
@@ -5976,7 +5981,8 @@ static void valueFlowIteratorAfterCondition(TokenList *tokenlist,
             if (!tok->astOperand1() || !tok->astOperand2())
                 return cond;
 
-            std::list<ValueFlow::Value> values = getIteratorValues(tok->astOperand1()->values());
+            ValueFlow::Value::ValueKind kind = ValueFlow::Value::ValueKind::Known;
+            std::list<ValueFlow::Value> values = getIteratorValues(tok->astOperand1()->values(), &kind);
             if (!values.empty()) {
                 cond.vartok = tok->astOperand2();
             } else {
@@ -5995,6 +6001,34 @@ static void valueFlowIteratorAfterCondition(TokenList *tokenlist,
         return cond;
     };
     handler.afterCondition(tokenlist, symboldatabase, errorLogger, settings);
+}
+
+static void valueFlowIteratorInfer(TokenList *tokenlist, const Settings *settings)
+{
+    for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+        if (!tok->scope())
+            continue;
+        if (!tok->scope()->isExecutable())
+            continue;
+        std::list<ValueFlow::Value> values = getIteratorValues(tok->values());
+        values.remove_if([&](const ValueFlow::Value& v) {
+            if (!v.isImpossible())
+                return true;
+            if (v.isIteratorEndValue() && v.intvalue <= 0)
+                return true;
+            if (v.isIteratorStartValue() && v.intvalue >= 0)
+                return true;
+            return false;
+        });
+        for(ValueFlow::Value& v:values) {
+            v.setPossible();
+            if (v.isIteratorStartValue())
+                v.intvalue++;
+            if (v.isIteratorEndValue())
+                v.intvalue--;
+            setTokenValue(tok, v, settings);
+        }
+    }
 }
 
 static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger * /*errorLogger*/, const Settings *settings)
@@ -6600,6 +6634,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
             valueFlowSmartPointer(tokenlist, errorLogger, settings);
             valueFlowIterators(tokenlist, settings);
             valueFlowIteratorAfterCondition(tokenlist, symboldatabase, errorLogger, settings);
+            valueFlowIteratorInfer(tokenlist, settings);
             valueFlowContainerSize(tokenlist, symboldatabase, errorLogger, settings);
             valueFlowContainerAfterCondition(tokenlist, symboldatabase, errorLogger, settings);
         }
