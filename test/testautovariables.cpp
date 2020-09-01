@@ -2149,6 +2149,13 @@ private:
               "    return p->front();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("std::vector<std::vector<int>> g();\n"
+              "void f() {\n"
+              "    for(auto& x:g())\n"
+              "        std::sort(x.begin(), x.end());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetime() {

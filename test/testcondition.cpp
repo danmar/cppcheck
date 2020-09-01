@@ -3412,6 +3412,18 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // #9865
+        check("void f(const std::string &s) {\n"
+              "    for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {\n"
+              "        const unsigned char c = static_cast<unsigned char>(*it);\n"
+              "        if (c == '0') {}\n"
+              "        else if ((c == 'a' || c == 'A')\n"
+              "                 || (c == 'b' || c == 'B')) {}\n"
+              "        else {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void alwaysTrueInfer() {
