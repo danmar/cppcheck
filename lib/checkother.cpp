@@ -1416,37 +1416,9 @@ void CheckOther::checkConstVariable()
                     {
                         if (tok->isCast())
                         {
-                            const Token* typeStart = nullptr; //first token of the type we're casting to
-                            const Token* typeEnd = nullptr; //one past the end of the token of the type we're casting to
-                            if (Token::simpleMatch(tok->previous(), ">"))
-                            {
-                                // dynamic_cast<X>(y)
-                                //                ^    we're at this operator
-                                typeStart = tok->previous()->link()->next();
-                                typeEnd = tok->previous();
-                            }
-                            else
-                            {
-                                // (X)(y)
-                                // ^        we're at this operator
-                                typeStart = tok->next();
-                                typeEnd = tok->link();
-                            }
-
-                            //Casting to a reference
-                            if (Token::simpleMatch(typeEnd->previous(), "&"))
-                            {
-                                //These are all const references
-                                //  const Type &
-                                //  const Type const &
-                                //  Type const &
-                                //This is not valid c++
-                                //  Type & const
-                                if (!Token::simpleMatch(typeStart, "const") && !Token::simpleMatch(typeEnd->previous()->previous(), "const"))
-                                    return true;
-                            }
-                            //Casting to a pointer will have been detected by isAliased above (possibly generating false negatives)
-                            //Casting to anything else means creating a new object which may require the object to be const but we're not bothering to check that here
+                            bool isConst = 0 != (tok->valueType()->constness & (1 << tok->valueType()->pointer));
+                            if (!isConst)
+                                return true;
                         }
                     }
                     return false;

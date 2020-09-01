@@ -1153,6 +1153,7 @@ public:
     nonneg int bits;                    ///< bitfield bitcount
     nonneg int pointer;                 ///< 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
     nonneg int constness;               ///< bit 0=data, bit 1=*, bit 2=**
+    bool reference = false; ///< Is the outermost indirection of this type a reference (i.e. the type ends with '&' for MutableReference or with '& const' for ConstReference)
     const Scope *typeScope;               ///< if the type definition is seen this point out the type scope
     const ::Type *smartPointerType;       ///< Smart pointer type
     const Token* smartPointerTypeToken;   ///< Smart pointer type token
