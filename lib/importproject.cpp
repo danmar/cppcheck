@@ -1068,6 +1068,16 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
                         temp.functionContracts[function] = expects;
                 }
             }
+        } else if (strcmp(node->Name(), CppcheckXml::VariableContractsElementName) == 0) {
+            for (const tinyxml2::XMLElement *child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
+                if (strcmp(child->Name(), CppcheckXml::VariableContractItemElementName) == 0) {
+                    const char *name = child->Attribute(CppcheckXml::VariableContractVarName);
+                    const char *min = child->Attribute(CppcheckXml::VariableContractMin);
+                    const char *max = child->Attribute(CppcheckXml::VariableContractMax);
+                    if (name)
+                        temp.variableContracts[name] = Settings::VariableContracts{min?min:"", max?max:""};
+                }
+            }
         } else if (strcmp(node->Name(), CppcheckXml::IgnoreElementName) == 0)
             guiProject.excludedPaths = readXmlStringList(node, "", CppcheckXml::IgnorePathName, CppcheckXml::IgnorePathNameAttrib);
         else if (strcmp(node->Name(), CppcheckXml::LibrariesElementName) == 0)

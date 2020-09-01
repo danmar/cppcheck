@@ -35,7 +35,6 @@ class TranslationHandler;
 class ScratchPad;
 class ProjectFile;
 class QAction;
-class Assistant;
 
 /// @addtogroup GUI
 /// @{
@@ -73,8 +72,11 @@ public:
 
 public slots:
 
-    /** Update "Contracts" tab */
-    void updateContractsTab();
+    /** Update "Functions" tab */
+    void updateFunctionContractsTab();
+
+    /** Update "Variables" tab */
+    void updateVariableContractsTab();
 
     /** @brief Slot for analyze files menu item */
     void analyzeFiles();
@@ -227,6 +229,16 @@ protected slots:
 
     /** Edit contract for function */
     void editFunctionContract(QString function);
+
+    /** Edit constraints for variable */
+    void editVariableContract(QString var);
+
+    /** Delete contract for function */
+    void deleteFunctionContract(QString function);
+
+    /** Edit constraints for variable */
+    void deleteVariableContract(QString var);
+
 private:
 
     /** Get filename for last results */
@@ -459,8 +471,6 @@ private:
      * List of MRU menu actions. Needs also to store the separator.
      */
     QAction *mRecentProjectActs[MaxRecentProjects + 1];
-
-    Assistant *mAssistant;
 };
 /// @}
 #endif // MAINWINDOW_H

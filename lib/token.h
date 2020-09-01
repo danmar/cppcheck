@@ -561,6 +561,9 @@ public:
     bool getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint *value) const {
         return mImpl->getCppcheckAttribute(type, value);
     }
+    bool hasCppcheckAttributes() const {
+        return nullptr != mImpl->mCppcheckAttributes;
+    }
     bool isControlFlowKeyword() const {
         return getFlag(fIsControlFlowKeyword);
     }

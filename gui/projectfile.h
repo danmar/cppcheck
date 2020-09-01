@@ -230,6 +230,22 @@ public:
         return mFunctionContracts;
     }
 
+    const std::map<QString, Settings::VariableContracts>& getVariableContracts() const {
+        return mVariableContracts;
+    }
+
+    void setVariableContracts(QString var, QString min, QString max) {
+        mVariableContracts[var] = Settings::VariableContracts{min.toStdString(), max.toStdString()};
+    }
+
+    void deleteFunctionContract(QString function) {
+        mFunctionContracts.erase(function.toStdString());
+    }
+
+    void deleteVariableContract(QString var) {
+        mVariableContracts.erase(var);
+    }
+
     /**
     * @brief Get filename for the project file.
     * @return file name.
@@ -426,6 +442,12 @@ protected:
     void readFunctionContracts(QXmlStreamReader &reader);
 
     /**
+     * @brief Read variable constraints.
+     * @param reader XML stream reader.
+     */
+    void readVariableContracts(QXmlStreamReader &reader);
+
+    /**
      * @brief Read lists of Visual Studio configurations
      * @param reader XML stream reader.
      */
@@ -541,6 +563,8 @@ private:
     QStringList mLibraries;
 
     std::map<std::string, std::string> mFunctionContracts;
+
+    std::map<QString, Settings::VariableContracts> mVariableContracts;
 
     /**
      * @brief Platform

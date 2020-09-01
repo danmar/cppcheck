@@ -4430,6 +4430,16 @@ private:
                         "        f += 1;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("unsigned char get();\n"
+                        "char f() {\n"
+                        "    unsigned char c;\n"
+                        "    do {\n"
+                        "        c = get();\n"
+                        "    } while (isalpha(c) == 0);\n"
+                        "    return static_cast<char>(c);\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_ipa() {

@@ -249,4 +249,5 @@ if __name__ == "__main__":
     if len(errors):
         print('Found errors: {}'.format(len(errors)))
         sys.exit(1)
+
     sys.exit(0)

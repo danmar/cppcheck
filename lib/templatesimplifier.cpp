@@ -243,6 +243,10 @@ void TemplateSimplifier::fixAngleBrackets()
             if (endTok && endTok->str() == ">>") {
                 endTok->str(">");
                 endTok->insertToken(">");
+            } else if (endTok && endTok->str() == ">>=") {
+                endTok->str(">");
+                endTok->insertToken("=");
+                endTok->insertToken(">");
             }
         } else if (Token::Match(tok, "class|struct|union|=|:|public|protected|private %name% <")) {
             Token *endTok = tok->tokAt(2)->findClosingBracket();
@@ -368,7 +372,7 @@ void TemplateSimplifier::checkComplicatedSyntaxErrorsInTemplates()
                         // @todo add better expression detection
                         if (!Token::Match(tok2->next(), "*| %type%|%num% ;"))
                             inclevel = true;
-                    } else if (tok2->next() && tok2->next()->isStandardType())
+                    } else if (tok2->next() && tok2->next()->isStandardType() && !Token::Match(tok2->tokAt(2), "(|{"))
                         inclevel = true;
                     else if (Token::simpleMatch(tok2, "< typename"))
                         inclevel = true;
@@ -432,7 +436,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
                 if (closing->str() == ">>")
                     return numberOfParameters;
                 tok = closing->next();
-                if (tok->str() == ">" || tok->str() == ">>")
+                if (Token::Match(tok, ">|>>|>>="))
                     return numberOfParameters;
                 else if (tok->str() == ",") {
                     ++numberOfParameters;
@@ -467,7 +471,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
                 if (level == 0)
                     return numberOfParameters;
                 --level;
-            } else if (tok->str() == ">>") {
+            } else if (tok->str() == ">>" || tok->str() == ">>=") {
                 if (level == 1)
                     return numberOfParameters;
                 level -= 2;
@@ -493,7 +497,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
                 return 0;
             if (tok->str() == ">" && level == 0)
                 return numberOfParameters;
-            else if (tok->str() == ">>" && level == 1)
+            else if ((tok->str() == ">>" || tok->str() == ">>=") && level == 1)
                 return numberOfParameters;
             else if (tok->str() == ",") {
                 if (level == 0)
@@ -550,11 +554,11 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
             return 0;
 
         // ,/>
-        while (Token::Match(tok, ">|>>")) {
+        while (Token::Match(tok, ">|>>|>>=")) {
             if (level == 0)
                 return tok->str() == ">" && !Token::Match(tok->next(), "%num%") ? numberOfParameters : 0;
             --level;
-            if (tok->str() == ">>") {
+            if (tok->str() == ">>" || tok->str() == ">>=") {
                 if (level == 0)
                     return !Token::Match(tok->next(), "%num%") ? numberOfParameters : 0;
                 --level;
@@ -1117,7 +1121,7 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
                         (from->strAt(1) == ">" || (from->previous()->isName() &&
                                                    typeParameterNames.find(from->strAt(-1)) == typeParameterNames.end())))
                         ++indentlevel;
-                    else if (from->str() == ">")
+                    else if (from->str() == ">" && (links.empty() || links.top()->str() == "<"))
                         --indentlevel;
                     auto entry = typeParameterNames.find(from->str());
                     if (entry != typeParameterNames.end() && entry->second < instantiationArgs.size()) {
@@ -2605,7 +2609,8 @@ bool TemplateSimplifier::simplifyCalculations(Token* frontToken, Token *backToke
         }
 
         if (validTokenEnd(bounded, tok, backToken, 2) &&
-            Token::Match(tok, "char|short|int|long { }")) {
+            (Token::Match(tok, "char|short|int|long { }") ||
+             Token::Match(tok, "char|short|int|long ( )"))) {
             tok->str("0"); // FIXME add type suffix
             tok->isSigned(false);
             tok->isUnsigned(false);

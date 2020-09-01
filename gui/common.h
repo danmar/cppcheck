@@ -147,5 +147,10 @@ void setPath(const QString &type, const QString &value);
  */
 QString toFilterString(const QMap<QString,QString>& filters, bool addAllSupported=true, bool addAll=true);
 
+/**
+ * Get configured data dir. If not configured then it will try to determine that from exe path.
+ */
+QString getDataDir();
+
 /// @}
 #endif
