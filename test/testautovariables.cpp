@@ -2142,6 +2142,13 @@ private:
               "    return std::vector<char*>{&a};\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning object that points to local variable 'a' that will be invalid when returning.\n", errout.str());
+
+        check("std::vector<std::vector<int>> g();\n"
+              "void f() {\n"
+              "    for(auto& x:g())\n"
+              "        std::sort(x.begin(), x.end());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetime() {
