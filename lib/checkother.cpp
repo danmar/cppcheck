@@ -1408,7 +1408,7 @@ void CheckOther::checkConstVariable()
             if (usedInAssignment)
                 continue;
         }
-        // Skip if we ever cast this variable to a non-const type
+        // Skip if we ever cast this variable to a pointer/reference to a non-const type
         {
             bool castToNonConst = [&]
                 {
@@ -1416,26 +1416,37 @@ void CheckOther::checkConstVariable()
                     {
                         if (tok->isCast())
                         {
+                            const Token* typeStart = nullptr; //first token of the type we're casting to
+                            const Token* typeEnd = nullptr; //one past the end of the token of the type we're casting to
                             if (Token::simpleMatch(tok->previous(), ">"))
                             {
-                                // dynamic_cast<X&>(y)
-                                //                 ^    we're at this operator
-                                bool castToConst = Token::simpleMatch(tok->previous()->link()->next(), "const");
-                                if (!castToConst)
-                                {
-                                    return true;
-                                }
+                                // dynamic_cast<X>(y)
+                                //                ^    we're at this operator
+                                typeStart = tok->previous()->link()->next();
+                                typeEnd = tok->previous();
                             }
                             else
                             {
-                                // (X&)(y)
+                                // (X)(y)
                                 // ^        we're at this operator
-                                bool castToConst = Token::simpleMatch(tok->next(), "const");
-                                if (!castToConst)
-                                {
-                                    return true;
-                                }
+                                typeStart = tok->next();
+                                typeEnd = tok->link();
                             }
+
+                            //Casting to a reference
+                            if (Token::simpleMatch(typeEnd->previous(), "&"))
+                            {
+                                //These are all const references
+                                //  const Type &
+                                //  const Type const &
+                                //  Type const &
+                                //This is not valid c++
+                                //  Type & const
+                                if (!Token::simpleMatch(typeStart, "const") && !Token::simpleMatch(typeEnd->previous()->previous(), "const"))
+                                    return true;
+                            }
+                            //Casting to a pointer will have been detected by isAliased above (possibly generating false negatives)
+                            //Casting to anything else means creating a new object which may require the object to be const but we're not bothering to check that here
                         }
                     }
                     return false;
@@ -2099,7 +2110,7 @@ void CheckOther::checkDuplicateExpression()
                             }
                             duplicateExpressionError(tok->astOperand1(), tok->astOperand2(), tok, errorPath);
                         }
-                    }
+                     }
                 } else if (tok->str() == "=" && Token::simpleMatch(tok->astOperand2(), "=") &&
                            isSameExpression(mTokenizer->isCPP(),
                                             false,
