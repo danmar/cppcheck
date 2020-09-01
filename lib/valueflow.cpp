@@ -4325,6 +4325,8 @@ struct ValueFlowConditionHandler {
                         if (!values.empty()) {
                             bool assign = false;
                             visitAstNodes(parent->astOperand2(), [&](Token* tok2) {
+                                if (tok2 == tok)
+                                    return ChildrenToVisit::done;
                                 if (isSameExpression(tokenlist->isCPP(), false, cond.vartok, tok2, settings->library, true, false))
                                     setTokenValue(tok2, values.front(), settings);
                                 else if (Token::Match(tok2, "++|--|=") && isSameExpression(tokenlist->isCPP(),
