@@ -6022,7 +6022,7 @@ static void valueFlowIteratorInfer(TokenList *tokenlist, const Settings *setting
                 return true;
             return false;
         });
-        for(ValueFlow::Value& v:values) {
+        for (ValueFlow::Value& v:values) {
             v.setPossible();
             if (v.isIteratorStartValue())
                 v.intvalue++;

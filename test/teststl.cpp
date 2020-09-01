@@ -3662,7 +3662,7 @@ private:
               "    if (*(i+1) == *i) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Either the condition 'i==v.end()' is redundant or there is possible dereference of an invalid iterator: i+1.\n", errout.str());
-        
+
         check("void f(std::vector<int> & v) {\n"
               "    std::vector<int>::iterator i= v.begin();\n"
               "    if(i != v.end() && (i+1) != v.end() && *(i+1) == *i) {}\n"
