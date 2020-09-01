@@ -376,7 +376,7 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
                 if (!argtok->isUnaryOp("&"))
                     continue;
                 argtok = argtok->astOperand1();
-                if (!argtok || !argtok->valueType() || argtok->valueType()->isPointer())
+                if (!argtok || !argtok->valueType() || argtok->valueType()->pointer != 0)
                     continue;
                 if (argtok->values().size() != 1U)
                     continue;
@@ -426,7 +426,7 @@ static std::list<std::pair<const Token *, MathLib::bigint>> getUnsafeFunction(co
                 return ret;
             int indirect = 0;
             if (argvar->valueType())
-                indirect = argvar->valueType()->pointerDepth;
+                indirect = argvar->valueType()->pointer;
             if (isVariableChanged(tok2->link(), tok2, indirect, argvar->declarationId(), false, settings, tokenizer->isCPP()))
                 return ret;
         }

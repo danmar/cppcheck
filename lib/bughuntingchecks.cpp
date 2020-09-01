@@ -40,7 +40,7 @@ static void bufferOverflow(const Token *tok, const ExprEngine::Value &value, Exp
     if (!Token::simpleMatch(tok->astParent(), ","))
         return;
 
-    if (!tok->valueType() || tok->valueType()->pointerDepth != 1 || tok->valueType()->type != ::ValueType::Type::CHAR)
+    if (!tok->valueType() || tok->valueType()->pointer != 1 || tok->valueType()->type != ::ValueType::Type::CHAR)
         return;
 
     int argnr = (tok == tok->astParent()->astOperand1()) ? 0 : 1;
@@ -225,14 +225,14 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
     }
 
     // container is not uninitialized
-    if (tok->valueType() && !tok->valueType()->isIndirect() && tok->valueType()->container)
+    if (tok->valueType() && tok->valueType()->pointer==0 && tok->valueType()->container)
         return;
 
     // container element is not uninitialized
     if (tok->str() == "[" &&
         tok->astOperand1() &&
         tok->astOperand1()->valueType() &&
-        !tok->astOperand1()->valueType()->isIndirect() &&
+        tok->astOperand1()->valueType()->pointer==0 &&
         tok->astOperand1()->valueType()->container) {
         if (tok->astOperand1()->valueType()->container->stdStringLike)
             return;
@@ -278,7 +278,7 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
         if (Token::Match(tok->previous(), ". %name%"))
             tokens.push_back(tok->previous()->astOperand1());
         for (const Token *t: tokens) {
-            if (t && t->valueType() && !t->valueType()->isPointer() && t->valueType()->container)
+            if (t && t->valueType() && t->valueType()->pointer == 0 && t->valueType()->container)
                 return;
         }
 

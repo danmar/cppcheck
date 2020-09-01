@@ -436,7 +436,7 @@ void CheckString::sprintfOverlappingData()
                 while (dest->isCast())
                     dest = dest->astOperand2() ? dest->astOperand2() : dest->astOperand1();
                 const Token *arg = args[argnr];
-                if (!arg->valueType() || arg->valueType()->pointerDepth != 1)
+                if (!arg->valueType() || arg->valueType()->pointer != 1)
                     continue;
                 while (arg->isCast())
                     arg = arg->astOperand2() ? arg->astOperand2() : arg->astOperand1();

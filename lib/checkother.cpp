@@ -161,7 +161,7 @@ void CheckOther::clarifyCalculation()
                 continue;
 
             // bit operation in lhs and pointer in rhs => no clarification is needed
-            if (tok->astOperand1()->tokType() == Token::eBitOp && tok->astOperand2()->valueType() && tok->astOperand2()->valueType()->isPointer())
+            if (tok->astOperand1()->tokType() == Token::eBitOp && tok->astOperand2()->valueType() && tok->astOperand2()->valueType()->pointer > 0)
                 continue;
 
             // Is code clarified by parentheses already?
@@ -342,7 +342,7 @@ void CheckOther::invalidPointerCast()
 
             const ValueType* fromType = fromTok->valueType();
             const ValueType* toType = toTok->valueType();
-            if (!fromType || !toType || !fromType->isPointer() || !toType->isPointer())
+            if (!fromType || !toType || !fromType->pointer || !toType->pointer)
                 continue;
 
             if (fromType->type != toType->type && fromType->type >= ValueType::Type::BOOL && toType->type >= ValueType::Type::BOOL && (toType->type != ValueType::Type::CHAR || printInconclusive)) {
@@ -2048,8 +2048,7 @@ void CheckOther::checkDuplicateExpression()
                         Token::Match(var2->previous(), ";|{|} %var%") &&
                         var2->valueType() && var1->valueType() &&
                         var2->valueType()->originalTypeName == var1->valueType()->originalTypeName &&
-                        var2->valueType()->reference == var1->valueType()->reference &&
-                        var2->valueType()->pointerDepth == var1->valueType()->pointerDepth &&
+                        var2->valueType()->pointer == var1->valueType()->pointer &&
                         var2->valueType()->constness == var1->valueType()->constness &&
                         var2->varId() != var1->varId() && (
                             tok->astOperand2()->isArithmeticalOp() ||
@@ -2313,25 +2312,25 @@ void CheckOther::checkSignOfUnsignedVariable()
 
             if (Token::Match(tok, "<|<=") && v2 && v2->isKnown()) {
                 const ValueType* vt = tok->astOperand1()->valueType();
-                if (vt && vt->isPointer())
+                if (vt && vt->pointer)
                     pointerLessThanZeroError(tok, v2);
                 if (vt && vt->sign == ValueType::UNSIGNED)
                     unsignedLessThanZeroError(tok, v2, tok->astOperand1()->expressionString());
             } else if (Token::Match(tok, ">|>=") && v1 && v1->isKnown()) {
                 const ValueType* vt = tok->astOperand2()->valueType();
-                if (vt && vt->isPointer())
+                if (vt && vt->pointer)
                     pointerLessThanZeroError(tok, v1);
                 if (vt && vt->sign == ValueType::UNSIGNED)
                     unsignedLessThanZeroError(tok, v1, tok->astOperand2()->expressionString());
             } else if (Token::simpleMatch(tok, ">=") && v2 && v2->isKnown()) {
                 const ValueType* vt = tok->astOperand1()->valueType();
-                if (vt && vt->isPointer())
+                if (vt && vt->pointer)
                     pointerPositiveError(tok, v2);
                 if (vt && vt->sign == ValueType::UNSIGNED)
                     unsignedPositiveError(tok, v2, tok->astOperand1()->expressionString());
             } else if (Token::simpleMatch(tok, "<=") && v1 && v1->isKnown()) {
                 const ValueType* vt = tok->astOperand2()->valueType();
-                if (vt && vt->isPointer())
+                if (vt && vt->pointer)
                     pointerPositiveError(tok, v1);
                 if (vt && vt->sign == ValueType::UNSIGNED)
                     unsignedPositiveError(tok, v1, tok->astOperand2()->expressionString());
@@ -2515,7 +2514,7 @@ void CheckOther::checkIncompleteArrayFill()
 
                 if (MathLib::toLongNumber(tok->linkAt(1)->strAt(-1)) == var->dimension(0)) {
                     int size = mTokenizer->sizeOfType(var->typeStartToken());
-                    if (size == 0 && var->valueType()->isPointer())
+                    if (size == 0 && var->valueType()->pointer)
                         size = mSettings->sizeof_pointer;
                     if ((size != 1 && size != 100 && size != 0) || var->isPointer()) {
                         if (printWarning)

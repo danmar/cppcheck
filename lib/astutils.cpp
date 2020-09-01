@@ -111,7 +111,7 @@ static bool astIsCharWithSign(const Token *tok, ValueType::Sign sign)
     const ValueType *valueType = tok->valueType();
     if (!valueType)
         return false;
-    return valueType->type == ValueType::Type::CHAR && !valueType->isIndirect() && valueType->sign == sign;
+    return valueType->type == ValueType::Type::CHAR && valueType->pointer == 0U && valueType->sign == sign;
 }
 
 bool astIsSignedChar(const Token *tok)
@@ -129,7 +129,7 @@ bool astIsIntegral(const Token *tok, bool unknown)
     const ValueType *vt = tok ? tok->valueType() : nullptr;
     if (!vt)
         return unknown;
-    return vt->isIntegral() && !vt->isIndirect();
+    return vt->isIntegral() && vt->pointer == 0U;
 }
 
 bool astIsFloat(const Token *tok, bool unknown)
@@ -137,17 +137,17 @@ bool astIsFloat(const Token *tok, bool unknown)
     const ValueType *vt = tok ? tok->valueType() : nullptr;
     if (!vt)
         return unknown;
-    return vt->type >= ValueType::Type::FLOAT && !vt->isIndirect();
+    return vt->type >= ValueType::Type::FLOAT && vt->pointer == 0U;
 }
 
 bool astIsBool(const Token *tok)
 {
-    return tok && (tok->isBoolean() || (tok->valueType() && tok->valueType()->type == ValueType::Type::BOOL && !tok->valueType()->isIndirect()));
+    return tok && (tok->isBoolean() || (tok->valueType() && tok->valueType()->type == ValueType::Type::BOOL && !tok->valueType()->pointer));
 }
 
 bool astIsPointer(const Token *tok)
 {
-    return tok && tok->valueType() && tok->valueType()->isPointer();
+    return tok && tok->valueType() && tok->valueType()->pointer;
 }
 
 bool astIsSmartPointer(const Token* tok)
@@ -723,7 +723,7 @@ static bool isSameConstantValue(bool macro, const Token * const tok1, const Toke
     const ValueType * v1 = tok1->valueType();
     const ValueType * v2 = tok2->valueType();
 
-    if (!v1 || !v2 || v1->sign != v2->sign || v1->type != v2->type || v1->pointerDepth != v2->pointerDepth || v1->isPointer() != v2->isPointer())
+    if (!v1 || !v2 || v1->sign != v2->sign || v1->type != v2->type || v1->pointer != v2->pointer)
         return false;
 
     return isEqualKnownValue(tok1, tok2);
@@ -873,7 +873,7 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     if (cpp && tok1->str() == "+" && tok1->isBinaryOp()) {
         const ValueType* vt1 = tok1->astOperand1()->valueType();
         const ValueType* vt2 = tok1->astOperand2()->valueType();
-        if (!(vt1 && (vt1->type >= ValueType::VOID || vt1->isPointer()) && vt2 && (vt2->type >= ValueType::VOID || vt2->isPointer())))
+        if (!(vt1 && (vt1->type >= ValueType::VOID || vt1->pointer) && vt2 && (vt2->type >= ValueType::VOID || vt2->pointer)))
             return false;
     }
 
@@ -1410,7 +1410,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
                      argDirection == Library::ArgumentChecks::Direction::DIR_INOUT) {
                 // With out or inout the direction of the content is specified, not a pointer itself, so ignore pointers for now
                 const ValueType * const valueType = tok1->valueType();
-                if (valueType && valueType->pointerDepth == indirect) {
+                if (valueType && valueType->pointer == indirect) {
                     return true;
                 }
             }
@@ -1493,7 +1493,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
         bool isConst = var && var->isConst();
         if (!isConst) {
             const ValueType * valueType = var->valueType();
-            isConst = (valueType && valueType->pointerDepth == 1 && valueType->constness == 1);
+            isConst = (valueType && valueType->pointer == 1 && valueType->constness == 1);
         }
 
         const Token *ftok = tok->tokAt(2);
@@ -1900,7 +1900,7 @@ bool isNullOperand(const Token *expr)
         expr = expr->astParent();
     else if (!expr->isCast())
         return Token::Match(expr, "NULL|nullptr");
-    if (expr->valueType() && !expr->valueType()->isPointer())
+    if (expr->valueType() && expr->valueType()->pointer == 0)
         return false;
     const Token *castOp = expr->astOperand2() ? expr->astOperand2() : expr->astOperand1();
     return Token::Match(castOp, "NULL|nullptr") || (MathLib::isInt(castOp->str()) && MathLib::isNullValue(castOp->str()));
@@ -2194,7 +2194,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 if (reassign)
                     return Result(Result::Type::WRITE, parent->astParent());
                 return Result(Result::Type::READ);
-            } else if (mWhat == What::Reassign && parent->valueType() && parent->valueType()->pointerDepth && Token::Match(parent->astParent(), "%assign%") && parent == parent->astParent()->astOperand1()) {
+            } else if (mWhat == What::Reassign && parent->valueType() && parent->valueType()->pointer && Token::Match(parent->astParent(), "%assign%") && parent == parent->astParent()->astOperand1()) {
                 return Result(Result::Type::READ);
             } else if (Token::Match(parent->astParent(), "%assign%") && !parent->astParent()->astParent() && parent == parent->astParent()->astOperand1()) {
                 if (mWhat == What::Reassign)

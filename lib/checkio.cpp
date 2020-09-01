@@ -1330,7 +1330,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
         const ValueType *valuetype = top->argumentType();
         if (valuetype && valuetype->type >= ValueType::Type::BOOL) {
             typeToken = tempToken = new Token();
-            if (valuetype->isIndirect() && valuetype->constness & 1) {
+            if (valuetype->pointer && valuetype->constness & 1) {
                 tempToken->str("const");
                 tempToken->insertToken("a");
                 tempToken = tempToken->next();
@@ -1366,7 +1366,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
             }
             if (!valuetype->originalTypeName.empty())
                 tempToken->originalName(valuetype->originalTypeName);
-            for (int p = 0; p < valuetype->pointerDepth; p++)
+            for (int p = 0; p < valuetype->pointer; p++)
                 tempToken->insertToken("*");
             tempToken = const_cast<Token*>(typeToken);
             return;

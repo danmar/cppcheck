@@ -204,7 +204,7 @@ static bool getDimensionsEtc(const Token * const arrayToken, const Settings *set
         dim.num = Token::getStrArraySize(stringLiteral);
         dim.known = array->hasKnownValue();
         dimensions->emplace_back(dim);
-    } else if (array->valueType() && array->valueType()->isPointer() && array->valueType()->isIntegral()) {
+    } else if (array->valueType() && array->valueType()->pointer >= 1 && array->valueType()->isIntegral()) {
         const ValueFlow::Value *value = getBufferSizeValue(array);
         if (!value)
             return false;
@@ -433,7 +433,7 @@ void CheckBufferOverrun::pointerArithmetic()
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "+|-"))
             continue;
-        if (!tok->valueType() || !tok->valueType()->isPointer())
+        if (!tok->valueType() || tok->valueType()->pointer == 0)
             continue;
         if (!tok->astOperand1() || !tok->astOperand2())
             continue;
@@ -441,7 +441,7 @@ void CheckBufferOverrun::pointerArithmetic()
             continue;
 
         const Token *arrayToken, *indexToken;
-        if (tok->astOperand1()->valueType()->isPointer()) {
+        if (tok->astOperand1()->valueType()->pointer > 0) {
             arrayToken = tok->astOperand1();
             indexToken = tok->astOperand2();
         } else {
@@ -449,7 +449,7 @@ void CheckBufferOverrun::pointerArithmetic()
             indexToken = tok->astOperand1();
         }
 
-        if (!indexToken || !indexToken->valueType() || indexToken->valueType()->isPointer() || !indexToken->valueType()->isIntegral())
+        if (!indexToken || !indexToken->valueType() || indexToken->valueType()->pointer > 0 || !indexToken->valueType()->isIntegral())
             continue;
 
         std::vector<Dimension> dimensions;
@@ -582,7 +582,7 @@ void CheckBufferOverrun::bufferOverflow()
                 continue;
             const std::vector<const Token *> args = getArguments(tok);
             for (int argnr = 0; argnr < args.size(); ++argnr) {
-                if (!args[argnr]->valueType() || ~args[argnr]->valueType()->isPointer())
+                if (!args[argnr]->valueType() || args[argnr]->valueType()->pointer == 0)
                     continue;
                 const std::vector<Library::ArgumentChecks::MinSize> *minsizes = mSettings->library.argminsizes(tok, argnr + 1);
                 if (!minsizes || minsizes->empty())
@@ -595,7 +595,7 @@ void CheckBufferOverrun::bufferOverflow()
                     argtok = argtok->astOperand2();
                 if (!argtok || !argtok->variable())
                     continue;
-                if (argtok->valueType() && !argtok->valueType()->isPointer())
+                if (argtok->valueType() && argtok->valueType()->pointer == 0)
                     continue;
                 // TODO: strcpy(buf+10, "hello");
                 const ValueFlow::Value bufferSize = getBufferSize(argtok);

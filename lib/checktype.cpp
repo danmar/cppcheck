@@ -69,7 +69,7 @@ void CheckType::checkTooBigBitwiseShift()
 
         // get number of bits of lhs
         const ValueType * const lhstype = tok->astOperand1()->valueType();
-        if (!lhstype || !lhstype->isIntegral() || lhstype->isPointer())
+        if (!lhstype || !lhstype->isIntegral() || lhstype->pointer >= 1)
             continue;
         // C11 Standard, section 6.5.7 Bitwise shift operators, states:
         //   The integer promotions are performed on each of the operands.
@@ -306,10 +306,10 @@ void CheckType::checkLongCast()
 
         // assign int result to long/longlong const nonpointer?
         if (rhstype->type == ValueType::Type::INT &&
-            !rhstype->isPointer() &&
+            rhstype->pointer == 0U &&
             rhstype->originalTypeName.empty() &&
             (lhstype->type == ValueType::Type::LONG || lhstype->type == ValueType::Type::LONGLONG) &&
-            !lhstype->isPointer() == 0U &&
+            lhstype->pointer == 0U &&
             lhstype->constness == 1U &&
             lhstype->originalTypeName.empty())
             longCastAssignError(tok);
@@ -338,7 +338,7 @@ void CheckType::checkLongCast()
             if (tok->str() == "return") {
                 if (Token::Match(tok->astOperand1(), "<<|*")) {
                     const ValueType *type = tok->astOperand1()->valueType();
-                    if (type && type->type == ValueType::Type::INT && !type->isPointer() && type->originalTypeName.empty())
+                    if (type && type->type == ValueType::Type::INT && type->pointer == 0U && type->originalTypeName.empty())
                         ret = tok;
                 }
                 // All return statements must have problem otherwise no warning

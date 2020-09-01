@@ -752,7 +752,7 @@ nonneg int Token::getStrSize(const Token *tok, const Settings *settings)
     nonneg int sizeofType = 1;
     if (tok->valueType()) {
         ValueType vt(*tok->valueType());
-        vt.pointerDepth = 0;
+        vt.pointer = 0;
         sizeofType = ValueFlow::getSizeOf(vt, settings);
     }
     return getStrArraySize(tok) * sizeofType;

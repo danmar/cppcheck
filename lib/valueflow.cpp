@@ -763,7 +763,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
             if (settings &&
                 tok->valueType() &&
                 tok->valueType()->sign == ValueType::Sign::UNSIGNED &&
-                !tok->valueType()->isPointer()) {
+                tok->valueType()->pointer == 0) {
                 if (tok->valueType()->type == ValueType::Type::INT)
                     bits = settings->int_bit;
                 else if (tok->valueType()->type == ValueType::Type::LONG)
@@ -876,7 +876,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
 
 static void setTokenValueCast(Token *parent, const ValueType &valueType, const ValueFlow::Value &value, const Settings *settings)
 {
-    if (valueType.isPointer())
+    if (valueType.pointer)
         setTokenValue(parent,value,settings);
     else if (valueType.type == ValueType::Type::CHAR)
         setTokenValue(parent, castValue(value, valueType.sign, settings->char_bit), settings);
@@ -901,7 +901,7 @@ static void setTokenValueCast(Token *parent, const ValueType &valueType, const V
 static nonneg int getSizeOfType(const Token *typeTok, const Settings *settings)
 {
     const ValueType &valueType = ValueType::parseDecl(typeTok, settings);
-    if (valueType.isPointer())
+    if (valueType.pointer > 0)
         return settings->sizeof_pointer;
     if (valueType.type == ValueType::Type::BOOL || valueType.type == ValueType::Type::CHAR)
         return 1;
@@ -921,7 +921,7 @@ static nonneg int getSizeOfType(const Token *typeTok, const Settings *settings)
 
 size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings *settings)
 {
-    if (vt.isPointer())
+    if (vt.pointer)
         return settings->sizeof_pointer;
     if (vt.type == ValueType::Type::CHAR)
         return 1;
@@ -1635,7 +1635,7 @@ static void valueFlowGlobalConstVar(TokenList* tokenList, const Settings *settin
             tok->variable()->isConst() &&
             tok->valueType() &&
             tok->valueType()->isIntegral() &&
-            tok->valueType()->pointerDepth == 0 &&
+            tok->valueType()->pointer == 0 &&
             tok->valueType()->constness == 1 &&
             Token::Match(tok, "%name% =") &&
             tok->next()->astOperand2() &&
@@ -1668,7 +1668,7 @@ static void valueFlowGlobalStaticVar(TokenList *tokenList, const Settings *setti
             !tok->variable()->isConst() &&
             tok->valueType() &&
             tok->valueType()->isIntegral() &&
-            tok->valueType()->pointerDepth == 0 &&
+            tok->valueType()->pointer == 0 &&
             tok->valueType()->constness == 0 &&
             Token::Match(tok, "%name% =") &&
             tok->next()->astOperand2() &&
@@ -2365,9 +2365,9 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
         int baseIndirect = 0;
         const ValueType* vt = getValueType(tok);
         if (vt)
-            baseIndirect = vt->pointerDepth;
+            baseIndirect = vt->pointer;
         if (tok->valueType())
-            indirect = std::max<int>(0, tok->valueType()->pointerDepth - baseIndirect);
+            indirect = std::max<int>(0, tok->valueType()->pointer - baseIndirect);
         if (isVariableChanged(tok, indirect, getSettings(), isCPP()))
             return Action::Invalid;
         return Action::None;
@@ -3118,7 +3118,7 @@ static bool isLifetimeOwned(const ValueType *vt, const ValueType *vtParent)
         return false;
     }
     if (vt->type != ValueType::UNKNOWN_TYPE && vtParent->type != ValueType::UNKNOWN_TYPE) {
-        if (vt->pointerDepth != vtParent->pointerDepth)
+        if (vt->pointer != vtParent->pointer)
             return true;
         if (vt->type != vtParent->type) {
             if (vtParent->type == ValueType::RECORD)
@@ -3138,13 +3138,13 @@ static bool isLifetimeBorrowed(const ValueType *vt, const ValueType *vtParent)
     if (!vt)
         return false;
     if (vt->type != ValueType::UNKNOWN_TYPE && vtParent->type != ValueType::UNKNOWN_TYPE && vtParent->container == vt->container) {
-        if (vtParent->pointerDepth > vt->pointerDepth)
+        if (vtParent->pointer > vt->pointer)
             return true;
-        if (vtParent->pointerDepth < vt->pointerDepth && vtParent->isIntegral())
+        if (vtParent->pointer < vt->pointer && vtParent->isIntegral())
             return true;
         if (vtParent->str() == vt->str())
             return true;
-        if (vtParent->pointerDepth == vt->pointerDepth && vtParent->type == vt->type && vtParent->isIntegral())
+        if (vtParent->pointer == vt->pointer && vtParent->type == vt->type && vtParent->isIntegral())
             // sign conversion
             return true;
     }
@@ -3781,7 +3781,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             const Token* containerTypeToken = tok->valueType()->containerTypeToken;
             if (containerTypeToken) {
                 ValueType vt = ValueType::parseDecl(containerTypeToken, settings);
-                isContainerOfPointers = vt.isPointer();
+                isContainerOfPointers = vt.pointer > 0;
             }
 
             LifetimeStore ls;
@@ -5622,7 +5622,7 @@ static bool isContainerSizeChangedByFunction(const Token *tok, int depth = 20)
         return false;
 
     // address of variable
-    const bool addressOf = tok->valueType()->isPointer() || (tok->astParent() && tok->astParent()->isUnaryOp("&"));
+    const bool addressOf = tok->valueType()->pointer || (tok->astParent() && tok->astParent()->isUnaryOp("&"));
 
     int narg;
     const Token * ftok = getTokenArgumentFunction(tok, narg);
@@ -6166,7 +6166,7 @@ static void valueFlowDynamicBufferSize(TokenList *tokenlist, SymbolDatabase *sym
 
 static bool getMinMaxValues(const ValueType *vt, const cppcheck::Platform &platform, MathLib::bigint *minValue, MathLib::bigint *maxValue)
 {
-    if (!vt || !vt->isIntegral() || vt->isPointer())
+    if (!vt || !vt->isIntegral() || vt->pointer)
         return false;
 
     int bits;

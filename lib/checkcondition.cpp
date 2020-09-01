@@ -1520,9 +1520,9 @@ void CheckCondition::checkInvalidTestForOverflow()
                 continue;
 
             // Only warn for signed integer overflows and pointer overflows.
-            if (!(calcToken->valueType() && (calcToken->valueType()->isPointer() || calcToken->valueType()->sign == ValueType::Sign::SIGNED)))
+            if (!(calcToken->valueType() && (calcToken->valueType()->pointer || calcToken->valueType()->sign == ValueType::Sign::SIGNED)))
                 continue;
-            if (!(exprToken->valueType() && (exprToken->valueType()->isPointer() || exprToken->valueType()->sign == ValueType::Sign::SIGNED)))
+            if (!(exprToken->valueType() && (exprToken->valueType()->pointer || exprToken->valueType()->sign == ValueType::Sign::SIGNED)))
                 continue;
 
             const Token *termToken;
@@ -1585,7 +1585,7 @@ void CheckCondition::checkPointerAdditionResultNotNull()
             // pointer comparison against NULL (ptr+12==0)
             if (calcToken->hasKnownIntValue())
                 continue;
-            if (!calcToken->valueType() || !calcToken->valueType()->isPointer())
+            if (!calcToken->valueType() || calcToken->valueType()->pointer==0)
                 continue;
             if (!exprToken->hasKnownIntValue() || !exprToken->getValue(0))
                 continue;

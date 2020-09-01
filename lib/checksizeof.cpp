@@ -159,7 +159,7 @@ void CheckSizeof::checkSizeofForPointerSize()
                         if (Token::simpleMatch(tok2->next(), "sizeof (")) {
                             const Token *sztok = tok2->tokAt(2)->astOperand2();
                             const ValueType *vt = ((sztok != nullptr) ? sztok->valueType() : nullptr);
-                            if (vt && vt->type == ValueType::CHAR && !vt->isPointer())
+                            if (vt && vt->type == ValueType::CHAR && vt->pointer == 0)
                                 continue;
                         }
 
@@ -207,9 +207,9 @@ void CheckSizeof::checkSizeofForPointerSize()
 
             // Now check for the sizeof usage: Does the level of pointer indirection match?
             if (tokSize->linkAt(1)->strAt(-1) == "*") {
-                if (variable && variable->valueType() && variable->valueType()->pointerDepth == 1 && variable->valueType()->isPointer() && variable->valueType()->type != ValueType::VOID)
+                if (variable && variable->valueType() && variable->valueType()->pointer == 1 && variable->valueType()->type != ValueType::VOID)
                     sizeofForPointerError(variable, variable->str());
-                else if (variable2 && variable2->valueType() && variable2->valueType()->pointerDepth == 1 && variable2->valueType()->isPointer() && variable2->valueType()->type != ValueType::VOID)
+                else if (variable2 && variable2->valueType() && variable2->valueType()->pointer == 1 && variable2->valueType()->type != ValueType::VOID)
                     sizeofForPointerError(variable2, variable2->str());
             }
 
@@ -405,22 +405,22 @@ void CheckSizeof::sizeofVoid()
             sizeofVoidError(tok);
         } else if (Token::simpleMatch(tok, "sizeof (") && tok->next()->astOperand2()) {
             const ValueType *vt = tok->next()->astOperand2()->valueType();
-            if (vt && vt->type == ValueType::Type::VOID && !vt->isPointer())
+            if (vt && vt->type == ValueType::Type::VOID && vt->pointer == 0U)
                 sizeofDereferencedVoidPointerError(tok, tok->strAt(3));
         } else if (tok->str() == "-") {
             // only warn for: 'void *' - 'integral'
             const ValueType *vt1  = tok->astOperand1() ? tok->astOperand1()->valueType() : nullptr;
             const ValueType *vt2  = tok->astOperand2() ? tok->astOperand2()->valueType() : nullptr;
-            const bool op1IsvoidPointer = (vt1 && vt1->type == ValueType::Type::VOID && vt1->isPointer() && vt1->pointerDepth == 1U);
-            const bool op2IsIntegral    = (vt2 && vt2->isIntegral() && !vt2->isIndirect());
+            const bool op1IsvoidPointer = (vt1 && vt1->type == ValueType::Type::VOID && vt1->pointer == 1U);
+            const bool op2IsIntegral    = (vt2 && vt2->isIntegral() && vt2->pointer == 0U);
             if (op1IsvoidPointer && op2IsIntegral)
                 arithOperationsOnVoidPointerError(tok, tok->astOperand1()->expressionString(), vt1->str());
         } else if (Token::Match(tok, "+|++|--|+=|-=")) { // Arithmetic operations on variable of type "void*"
             const ValueType *vt1 = tok->astOperand1() ? tok->astOperand1()->valueType() : nullptr;
             const ValueType *vt2 = tok->astOperand2() ? tok->astOperand2()->valueType() : nullptr;
 
-            const bool voidpointer1 = (vt1 && vt1->type == ValueType::Type::VOID && vt1->isPointer() && vt1->pointerDepth == 1U);
-            const bool voidpointer2 = (vt2 && vt2->type == ValueType::Type::VOID && vt2->isPointer() && vt2->pointerDepth == 1U);
+            const bool voidpointer1 = (vt1 && vt1->type == ValueType::Type::VOID && vt1->pointer == 1U);
+            const bool voidpointer2 = (vt2 && vt2->type == ValueType::Type::VOID && vt2->pointer == 1U);
 
             if (voidpointer1)
                 arithOperationsOnVoidPointerError(tok, tok->astOperand1()->expressionString(), vt1->str());
