@@ -2081,7 +2081,7 @@ void CheckOther::checkDuplicateExpression()
                             }
                             duplicateExpressionError(tok->astOperand1(), tok->astOperand2(), tok, errorPath);
                         }
-                     }
+                    }
                 } else if (tok->str() == "=" && Token::simpleMatch(tok->astOperand2(), "=") &&
                            isSameExpression(mTokenizer->isCPP(),
                                             false,
