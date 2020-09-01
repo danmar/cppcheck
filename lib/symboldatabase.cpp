@@ -6357,7 +6357,7 @@ std::string ValueType::dump() const
         ret << " valueType-typeScope=\"" << typeScope << '\"';
 
     if (!originalTypeName.empty())
-        ret << " valueType-originalTypeName=\"" << encodeXml(originalTypeName) << '\"';
+        ret << " valueType-originalTypeName=\"" << ErrorLogger::toxml(originalTypeName) << '\"';
 
     return ret.str();
 }
