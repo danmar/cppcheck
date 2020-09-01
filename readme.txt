@@ -20,7 +20,7 @@ Compiling
 
     To build the GUI, you need Qt.
 
-    When building the command line tool, PCRE is optional. It is used if you build with rules.
+    While building the command line tool, PCRE is optional. It is used if you build with rules.
 
     For "bug hunting" you need Z3. Installing Z3:
      * debian: "sudo apt-get install libz3-dev
