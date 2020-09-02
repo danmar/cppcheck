@@ -5707,7 +5707,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
     } else
         valuetype->type = ValueType::Type::RECORD;
     bool par = false;
-    while (Token::Match(type, "%name%|*|&|::|(") && !Token::Match(type, "typename|template") &&
+    while (Token::Match(type, "%name%|*|&|&&|::|(") && !Token::Match(type, "typename|template") &&
            !type->variable() && !type->function()) {
         if (type->str() == "(") {
             if (Token::Match(type->link(), ") const| {"))
@@ -6352,6 +6352,13 @@ std::string ValueType::dump() const
     if (constness > 0)
         ret << " valueType-constness=\"" << constness << '\"';
 
+    if (reference == Reference::None)
+        ret << " valueType-reference=None";
+    else if (reference == Reference::LValue)
+        ret << " valueType-reference=LValue";
+    else if (reference == Reference::RValue)
+        ret << " valueType-reference=RValue";
+
     if (typeScope)
         ret << " valueType-typeScope=\"" << typeScope << '\"';
 
@@ -6453,6 +6460,10 @@ std::string ValueType::str() const
         if (constness & (2 << p))
             ret += " const";
     }
+    if (reference == Reference::LValue)
+        ret += " &";
+    else if (reference == Reference::RValue)
+        ret += " &&";
     return ret.empty() ? ret : ret.substr(1);
 }
 
