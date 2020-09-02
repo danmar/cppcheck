@@ -3211,6 +3211,21 @@ static bool isNotEqual(std::pair<const Token*, const Token*> x, std::pair<const 
     start2 = skipCVRefs(start2, y.second);
     return !(start1 == x.second && start2 == y.second);
 }
+static bool isNotEqual(std::pair<const Token*, const Token*> x, const std::string& y)
+{
+    TokenList tokenList(nullptr);
+    std::istringstream istr(y);
+    tokenList.createTokens(istr);
+    return isNotEqual(x, std::make_pair(tokenList.front(), tokenList.back()));
+}
+static bool isNotEqual(std::pair<const Token*, const Token*> x, const ValueType* y)
+{
+    if (y == nullptr)
+        return false;
+    if (y->originalTypeName.empty())
+        return false;
+    return isNotEqual(x, y->originalTypeName);
+}
 
 bool isLifetimeBorrowed(const Token *tok, const Settings *settings)
 {
@@ -3239,6 +3254,10 @@ bool isLifetimeBorrowed(const Token *tok, const Settings *settings)
                 std::pair<const Token*, const Token*> decl = Token::typeDecl(tok);
                 std::pair<const Token*, const Token*> parentdecl = Token::typeDecl(tok->astParent());
                 if (isNotEqual(decl, parentdecl))
+                    return false;
+                if (isNotEqual(decl, tok->astParent()->valueType()))
+                    return false;
+                if (isNotEqual(parentdecl, tok->valueType()))
                     return false;
             }
         }

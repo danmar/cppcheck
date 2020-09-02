@@ -975,7 +975,7 @@ private:
               "std::string &f() {\n"
               "    return hello().substr(1);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Reference to temporary returned.\n", errout.str());
 
         check("class Foo;\n"
               "Foo hello() {\n"
