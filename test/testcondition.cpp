@@ -2337,7 +2337,7 @@ private:
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
         check("template<class T> void f1(const T &s) { if(s.size() > 42) if(s.empty()) {}} ");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS("", errout.str()); //We don't know the type of T so we don't know the relationship between size() and empty(). e.g. s might be a 50 tonne truck with nothing in it.
 
         check("void f2(const std::wstring &s) { if(s.empty()) if(s.size() > 42) {}} ");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
