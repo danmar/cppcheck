@@ -76,6 +76,7 @@ private:
         TEST_CASE(tokenize36);  // #8436
         TEST_CASE(tokenize37);  // #8550
         TEST_CASE(tokenize38);  // #9569
+        TEST_CASE(tokenize39);  // #9771
 
         TEST_CASE(validate);
 
@@ -899,6 +900,16 @@ private:
         ASSERT_EQUALS(exp, tokenizeAndStringify(code));
     }
 
+    void tokenize39() { // #9771
+        const char code[] = "template <typename T> class Foo;"
+                            "template <typename T> bool operator!=(const Foo<T> &, const Foo<T> &);"
+                            "template <typename T> class Foo { friend bool operator!= <> (const Foo<T> &, const Foo<T> &); };";
+        const char exp[]  = "template < typename T > class Foo ; "
+                            "template < typename T > bool operator!= ( const Foo < T > & , const Foo < T > & ) ; "
+                            "template < typename T > class Foo { friend bool operator!= < > ( const Foo < T > & , const Foo < T > & ) ; } ;";
+        ASSERT_EQUALS(exp, tokenizeAndStringify(code));
+    }
+
     void validate() {
         // C++ code in C file
         ASSERT_THROW(tokenizeAndStringify(";using namespace std;",false,false,Settings::Native,"test.c"), InternalError);
@@ -1110,6 +1121,7 @@ private:
         ASSERT_EQUALS("int x ;", tokenizeAndStringify("int x@123;"));
         ASSERT_EQUALS("bool x ;", tokenizeAndStringify("bool x@123:1;"));
         ASSERT_EQUALS("char PORTB ; bool PB3 ;", tokenizeAndStringify("char PORTB @ 0x10; bool PB3 @ PORTB:3;\n"));
+        ASSERT_EQUALS("int x ;", tokenizeAndStringify("int x @ (0x1000 + 18);"));
 
         ASSERT_EQUALS("int x [ 10 ] ;", tokenizeAndStringify("int x[10]@0x100;"));
 

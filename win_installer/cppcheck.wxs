@@ -39,12 +39,10 @@
             </File>
             <File Id='onlinehelpqhc' Name='online-help.qhc' Source='$(var.GuiHelpDir)\online-help.qhc' />
             <File Id='onlinehelpqch' Name='online-help.qch' Source='$(var.GuiHelpDir)\online-help.qch' />
-            <File Id='assistantexe' Name='assistant.exe' Source='$(var.QtDllDir)\assistant.exe' />
             <File Id='Qt5Coredll' Name='Qt5Core.dll' Source='$(var.QtDllDir)\Qt5Core.dll' />
             <File Id='Qt5Guidll' Name='Qt5Gui.dll' Source='$(var.QtDllDir)\Qt5Gui.dll' />
             <File Id='Qt5Helpdll' Name='Qt5Help.dll' Source='$(var.QtDllDir)\Qt5Help.dll' />
             <File Id='Qt5Sqldll' Name='Qt5Sql.dll' Source='$(var.QtDllDir)\Qt5Sql.dll' />
-            <File Id='qsqlitedll' Name='qsqlite.dll' Source='$(var.QtDllDir)\..\plugins\sqldrivers\qsqlite.dll' />
             <File Id='Qt5Widgetsdll' Name='Qt5Widgets.dll' Source='$(var.QtDllDir)\Qt5Widgets.dll' />
             <File Id='Qt5PrintSupportdll' Name='Qt5PrintSupport.dll' Source='$(var.QtDllDir)\Qt5PrintSupport.dll' />
             <?if $(var.Platform) = x64 ?>
@@ -59,6 +57,13 @@
           <Directory Id='QtStylesFolder' Name='styles'>
             <Component Id='QtStyles' DiskId='1' Guid='$(var.qtstylesGUID)'>
               <File Id='qwindowsvistastyledll' Name='qwindowsvistastyle.dll' Source='$(var.QtDllDir)\styles\qwindowsvistastyle.dll' />
+            </Component>
+          </Directory>
+          <Directory Id='QtSqlDriversFolder' Name='sqldrivers'>
+            <Component Id='QtSqlDrivers' DiskId='1' Guid='$(var.qtsqldriversGUID)'>
+              <File Id='qsqlitedll' Name='qsqlite.dll' Source='$(var.QtDllDir)\sqldrivers\qsqlite.dll' />
+              <File Id='qsqlodbcdll' Name='qsqlodbc.dll' Source='$(var.QtDllDir)\sqldrivers\qsqlodbc.dll' />
+              <File Id='qsqlpsqldll' Name='qsqlpsql.dll' Source='$(var.QtDllDir)\sqldrivers\qsqlpsql.dll' />
             </Component>
           </Directory>
           <Directory Id='TranslationsFolder' Name='lang'>
@@ -183,6 +188,7 @@
         <ComponentRef Id='GuiExecutable' />
         <ComponentRef Id='QtPlatforms' />
         <ComponentRef Id='QtStyles' />
+        <ComponentRef Id='QtSqlDrivers' />
         <Feature Id='Translations' Title='GUI Translations' AllowAdvertise='no' Description='Translations for graphical user interface' Level='1'>
           <ComponentRef Id='GuiTranslations' />
         </Feature>

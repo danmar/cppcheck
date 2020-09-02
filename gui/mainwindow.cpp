@@ -33,11 +33,11 @@
 
 #include "applicationlist.h"
 #include "aboutdialog.h"
-#include "assistant.h"
 #include "common.h"
 #include "filelist.h"
 #include "fileviewdialog.h"
 #include "functioncontractdialog.h"
+#include "helpdialog.h"
 #include "librarydialog.h"
 #include "projectfile.h"
 #include "projectfiledialog.h"
@@ -54,13 +54,6 @@
 static const QString OnlineHelpURL("http://cppcheck.net/manual.html");
 static const QString compile_commands_json("compile_commands.json");
 
-static QString getDataDir(const QSettings *settings)
-{
-    const QString dataDir = settings->value("DATADIR", QString()).toString();
-    const QString appPath = QFileInfo(QCoreApplication::applicationFilePath()).canonicalPath();
-    return dataDir.isEmpty() ? appPath : dataDir;
-}
-
 MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mSettings(settings),
     mApplications(new ApplicationList(this)),
@@ -76,7 +69,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
 {
     mUI.setupUi(this);
     mThread = new ThreadHandler(this);
-    mThread->setDataDir(getDataDir(settings));
+    mThread->setDataDir(getDataDir());
     mUI.mResults->initialize(mSettings, mApplications, mThread);
 
     // Filter timer to delay filtering results slightly while typing
@@ -223,8 +216,6 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mUI.mActionEnforceCpp->setActionGroup(mSelectLanguageActions);
     mUI.mActionAutoDetectLanguage->setActionGroup(mSelectLanguageActions);
 
-    mAssistant = new Assistant;
-
     // For Windows platforms default to Win32 checked platform.
     // For other platforms default to unspecified/default which means the
     // platform Cppcheck GUI was compiled on.
@@ -241,7 +232,6 @@ MainWindow::~MainWindow()
 {
     delete mProjectFile;
     delete mScratchPad;
-    delete mAssistant;
 }
 
 void MainWindow::handleCLIParams(const QStringList &params)
@@ -789,7 +779,7 @@ Library::Error MainWindow::loadLibrary(Library *library, const QString &filename
 #endif
 
     // Try to load the library from the cfg subfolder..
-    const QString datadir = mSettings->value("DATADIR", QString()).toString();
+    const QString datadir = getDataDir();
     if (!datadir.isEmpty()) {
         ret = library->load(nullptr, (datadir+"/"+filename).toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
@@ -946,7 +936,7 @@ Settings MainWindow::getCppcheckSettings()
         foreach (QString s, mProjectFile->getCheckUnknownFunctionReturn())
             result.checkUnknownFunctionReturn.insert(s.toStdString());
 
-        QString filesDir(getDataDir(mSettings));
+        QString filesDir(getDataDir());
         const QString pythonCmd = mSettings->value(SETTINGS_PYTHON_PATH).toString();
         foreach (QString addon, mProjectFile->getAddons()) {
             QString addonFilePath = ProjectFile::getAddonFilePath(filesDir, addon);
@@ -1493,7 +1483,8 @@ void MainWindow::openHelpContents()
 
 void MainWindow::openOnlineHelp()
 {
-    mAssistant->showDocumentation("index.html");
+    HelpDialog *helpDialog = new HelpDialog;
+    helpDialog->showMaximized();
 }
 
 void MainWindow::openProjectFile()

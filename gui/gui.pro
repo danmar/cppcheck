@@ -68,6 +68,7 @@ FORMS = about.ui \
         application.ui \
         file.ui \
         functioncontractdialog.ui \
+        helpdialog.ui \
         mainwindow.ui \
         projectfiledialog.ui \
         resultsview.ui \
@@ -106,7 +107,6 @@ HEADERS += aboutdialog.h \
            application.h \
            applicationdialog.h \
            applicationlist.h \
-           assistant.h \
            checkstatistics.h \
            checkthread.h \
            codeeditstylecontrols.h \
@@ -119,6 +119,7 @@ HEADERS += aboutdialog.h \
            filelist.h \
            fileviewdialog.h \
            functioncontractdialog.h \
+           helpdialog.h \
            mainwindow.h \
            platforms.h \
            printablereport.h \
@@ -148,7 +149,6 @@ SOURCES += aboutdialog.cpp \
            application.cpp \
            applicationdialog.cpp \
            applicationlist.cpp \
-           assistant.cpp \
            checkstatistics.cpp \
            checkthread.cpp \
            codeeditorstyle.cpp \
@@ -161,6 +161,7 @@ SOURCES += aboutdialog.cpp \
            filelist.cpp \
            fileviewdialog.cpp \
            functioncontractdialog.cpp \
+           helpdialog.cpp \
            main.cpp \
            mainwindow.cpp\
            platforms.cpp \

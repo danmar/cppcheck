@@ -13,6 +13,8 @@ import sys
 from xml.etree import ElementTree
 from fnmatch import fnmatch
 
+EXIT_CODE = 0
+
 class Directive:
     """
     Directive class. Contains information about each preprocessor directive in the source code.
@@ -1102,3 +1104,5 @@ def reportError(location, severity, message, addon, errorId, extra=''):
         if len(extra) > 0:
             message += ' (' + extra + ')'
         sys.stderr.write('%s (%s) %s [%s-%s]\n' % (loc, severity, message, addon, errorId))
+        global EXIT_CODE
+        EXIT_CODE = 1

@@ -87,3 +87,5 @@ for arg in sys.argv[1:]:
                     if not res:
                         reportError(
                             scope.bodyStart, 'style', 'Function ' + scope.className + ' violates naming convention', 'functionName')
+
+sys.exit(cppcheckdata.EXIT_CODE)

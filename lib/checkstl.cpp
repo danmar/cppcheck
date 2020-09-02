@@ -31,7 +31,9 @@
 #include "pathanalysis.h"
 #include "valueflow.h"
 
+#include <algorithm>
 #include <cstddef>
+#include <iterator>
 #include <list>
 #include <map>
 #include <set>
@@ -118,6 +120,15 @@ void CheckStl::outOfBounds()
     }
 }
 
+static std::string indexValueString(const ValueFlow::Value& indexValue)
+{
+    if (indexValue.isIteratorStartValue())
+        return "at position " + MathLib::toString(indexValue.intvalue) + " from the beginning";
+    if (indexValue.isIteratorEndValue())
+        return "at position " + MathLib::toString(-indexValue.intvalue) + " from the end";
+    return MathLib::toString(indexValue.intvalue);
+}
+
 void CheckStl::outOfBoundsError(const Token *tok, const std::string &containerName, const ValueFlow::Value *containerSize, const std::string &index, const ValueFlow::Value *indexValue)
 {
     // Do not warn if both the container size and index value are possible
@@ -140,9 +151,9 @@ void CheckStl::outOfBoundsError(const Token *tok, const std::string &containerNa
         if (containerSize->condition)
             errmsg = ValueFlow::eitherTheConditionIsRedundant(containerSize->condition) + " or $symbol size can be " + MathLib::toString(containerSize->intvalue) + ". Expression '" + expression + "' cause access out of bounds.";
         else if (indexValue->condition)
-            errmsg = ValueFlow::eitherTheConditionIsRedundant(indexValue->condition) + " or '" + index + "' can have the value " + MathLib::toString(indexValue->intvalue) + ". Expression '" + expression + "' cause access out of bounds.";
+            errmsg = ValueFlow::eitherTheConditionIsRedundant(indexValue->condition) + " or '" + index + "' can have the value " + indexValueString(*indexValue) + ". Expression '" + expression + "' cause access out of bounds.";
         else
-            errmsg = "Out of bounds access in '" + expression + "', if '$symbol' size is " + MathLib::toString(containerSize->intvalue) + " and '" + index + "' is " + MathLib::toString(indexValue->intvalue);
+            errmsg = "Out of bounds access in '" + expression + "', if '$symbol' size is " + MathLib::toString(containerSize->intvalue) + " and '" + index + "' is " + indexValueString(*indexValue);
     } else {
         // should not happen
         return;
@@ -2013,6 +2024,7 @@ void CheckStl::checkDereferenceInvalidIterator()
     }
 }
 
+
 void CheckStl::checkDereferenceInvalidIterator2()
 {
     const bool printInconclusive = (mSettings->inconclusive);
@@ -2023,6 +2035,16 @@ void CheckStl::checkDereferenceInvalidIterator2()
             continue;
         }
 
+        std::vector<ValueFlow::Value> contValues;
+        std::copy_if(tok->values().begin(), tok->values().end(), std::back_inserter(contValues), [&](const ValueFlow::Value& value) {
+            if (value.isImpossible())
+                return false;
+            if (!printInconclusive && value.isInconclusive())
+                return false;
+            return value.isContainerSizeValue();
+        });
+
+
         // Can iterator point to END or before START?
         for (const ValueFlow::Value& value:tok->values()) {
             if (value.isImpossible())
@@ -2031,17 +2053,33 @@ void CheckStl::checkDereferenceInvalidIterator2()
                 continue;
             if (!value.isIteratorValue())
                 continue;
-            if (value.isIteratorEndValue() && value.intvalue < 0)
-                continue;
-            if (value.isIteratorStartValue() && value.intvalue >= 0)
-                continue;
+            const bool isInvalidIterator = (value.isIteratorEndValue() && value.intvalue >= 0) || (value.isIteratorStartValue() && value.intvalue < 0);
+            const ValueFlow::Value* cValue = nullptr;
+            if (!isInvalidIterator) {
+                auto it = std::find_if(contValues.begin(), contValues.end(), [&](const ValueFlow::Value& c) {
+                    if (value.isIteratorStartValue() && value.intvalue >= c.intvalue)
+                        return true;
+                    if (value.isIteratorEndValue() && -value.intvalue > c.intvalue)
+                        return true;
+                    return false;
+                });
+                if (it == contValues.end())
+                    continue;
+                cValue = &*it;
+            }
+            bool inconclusive = false;
             bool unknown = false;
             if (!CheckNullPointer::isPointerDeRef(tok, unknown, mSettings)) {
-                if (unknown)
-                    dereferenceInvalidIteratorError(tok, &value, true);
-                continue;
+                if (!unknown)
+                    continue;
+                inconclusive = true;
             }
-            dereferenceInvalidIteratorError(tok, &value, false);
+            if (cValue) {
+                const ValueFlow::Value& lValue = getLifetimeObjValue(tok, true);
+                outOfBoundsError(tok, lValue.tokvalue->expressionString(), cValue, tok->expressionString(), &value);
+            } else {
+                dereferenceInvalidIteratorError(tok, &value, inconclusive);
+            }
         }
     }
 }
@@ -2463,44 +2501,77 @@ void CheckStl::useStlAlgorithm()
     }
 }
 
-void CheckStl::knownEmptyContainerLoopError(const Token *tok)
+void CheckStl::knownEmptyContainerError(const Token *tok, const std::string& algo)
 {
-    const std::string cont = tok ? tok->expressionString() : std::string("var");
+    const std::string var = tok ? tok->expressionString() : std::string("var");
+
+    std::string msg;
+    if (astIsIterator(tok)) {
+        msg = "Using " + algo + " with iterator '" + var + "' that is always empty.";
+    } else {
+        msg = "Iterating over container '" + var + "' that is always empty.";
+    }
 
     reportError(tok, Severity::style,
-                "knownEmptyContainerLoop",
-                "Iterating over container '" + cont + "' that is always empty.", CWE398, false);
+                "knownEmptyContainer",
+                msg, CWE398, false);
 }
 
-void CheckStl::knownEmptyContainerLoop()
+static bool isKnownEmptyContainer(const Token* tok)
+{
+    if (!tok)
+        return false;
+    for (const ValueFlow::Value& v:tok->values()) {
+        if (!v.isKnown())
+            continue;
+        if (!v.isContainerSizeValue())
+            continue;
+        if (v.intvalue != 0)
+            continue;
+        return true;
+    }
+    return false;
+}
+
+void CheckStl::knownEmptyContainer()
 {
     if (!mSettings->isEnabled(Settings::STYLE))
         return;
     for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
         for (const Token *tok = function->bodyStart; tok != function->bodyEnd; tok = tok->next()) {
+
+            if (!Token::Match(tok, "%name% ( !!)"))
+                continue;
+
             // Parse range-based for loop
-            if (!Token::simpleMatch(tok, "for ("))
-                continue;
-            if (!Token::simpleMatch(tok->next()->link(), ") {"))
-                continue;
-            const Token *bodyTok = tok->next()->link()->next();
-            const Token *splitTok = tok->next()->astOperand2();
-            if (!Token::simpleMatch(splitTok, ":"))
-                continue;
-            const Token* contTok = splitTok->astOperand2();
-            if (!contTok)
-                continue;
-            for (const ValueFlow::Value& v:contTok->values()) {
-                if (!v.isKnown())
+            if (tok->str() == "for") {
+                if (!Token::simpleMatch(tok->next()->link(), ") {"))
                     continue;
-                if (!v.isContainerSizeValue())
+                const Token *bodyTok = tok->next()->link()->next();
+                const Token *splitTok = tok->next()->astOperand2();
+                if (!Token::simpleMatch(splitTok, ":"))
                     continue;
-                if (v.intvalue != 0)
+                const Token* contTok = splitTok->astOperand2();
+                if (!isKnownEmptyContainer(contTok))
                     continue;
-                knownEmptyContainerLoopError(contTok);
+                knownEmptyContainerError(contTok, "");
+            } else {
+                const std::vector<const Token *> args = getArguments(tok);
+                if (args.empty())
+                    continue;
+
+                for (int argnr = 1; argnr <= args.size(); ++argnr) {
+                    const Library::ArgumentChecks::IteratorInfo *i = mSettings->library.getArgIteratorInfo(tok, argnr);
+                    if (!i)
+                        continue;
+                    const Token * const argTok = args[argnr - 1];
+                    if (!isKnownEmptyContainer(argTok))
+                        continue;
+                    knownEmptyContainerError(argTok, tok->str());
+                    break;
+
+                }
             }
-
-
         }
     }
 }

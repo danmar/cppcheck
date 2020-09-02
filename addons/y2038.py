@@ -243,17 +243,9 @@ if __name__ == '__main__':
         sys.exit(0)
 
     for dumpfile in args.dumpfile:
-        if not os.path.isfile(dumpfile):
-            print("Error: File not found: %s" % dumpfile)
-            sys.exit(127)
-        if not os.access(dumpfile, os.R_OK):
-            print("Error: Permission denied: %s" % dumpfile)
-            sys.exit(13)
         if not args.quiet:
             print('Checking ' + dumpfile + '...')
 
-        y2038safe = check_y2038_safe(dumpfile, quiet)
-        if not y2038safe and exit_code == 0:
-            exit_code = 1
+        check_y2038_safe(dumpfile, quiet)
 
-    sys.exit(exit_code)
+    sys.exit(cppcheckdata.EXIT_CODE)

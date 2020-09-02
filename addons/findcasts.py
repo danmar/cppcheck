@@ -38,3 +38,5 @@ for arg in sys.argv[1:]:
                 continue
 
             cppcheckdata.reportError(token, 'information', 'found a cast', 'findcasts', 'cast')
+
+sys.exit(cppcheckdata.EXIT_CODE)
