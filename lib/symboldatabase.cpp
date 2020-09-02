@@ -5471,6 +5471,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
     }
     if (parent->str() == "&" && !parent->astOperand2()) {
         ValueType vt(valuetype);
+        vt.reference = Reference::None; //Given int& x; the type of &x is int* not int&*
         vt.pointer += 1U;
         setValueType(parent, vt);
         return;
