@@ -6359,11 +6359,11 @@ std::string ValueType::dump() const
         ret << " valueType-constness=\"" << constness << '\"';
 
     if (reference == Reference::None)
-        ret << " valueType-reference=None";
+        ret << " valueType-reference=\"None\"";
     else if (reference == Reference::LValue)
-        ret << " valueType-reference=LValue";
+        ret << " valueType-reference=\"LValue\"";
     else if (reference == Reference::RValue)
-        ret << " valueType-reference=RValue";
+        ret << " valueType-reference=\"RValue\"";
 
     if (typeScope)
         ret << " valueType-typeScope=\"" << typeScope << '\"';
