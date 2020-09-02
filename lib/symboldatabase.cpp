@@ -5821,7 +5821,9 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
         else if (type->str() == "*")
             valuetype->pointer++;
         else if (type->str() == "&")
-            valuetype->reference = true;
+            valuetype->reference = Reference::LValue;
+        else if (type->str() == "&&")
+            valuetype->reference = Reference::RValue;
         else if (type->isStandardType())
             valuetype->fromLibraryType(type->str(), settings);
         else if (Token::Match(type->previous(), "!!:: %name% !!::"))
@@ -5839,7 +5841,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             valuetype->sign = ValueType::Sign::SIGNED;
     }
 
-    return (type && (valuetype->type != ValueType::Type::UNKNOWN_TYPE || valuetype->pointer > 0 || valuetype->reference)) ? type : nullptr;
+    return (type && (valuetype->type != ValueType::Type::UNKNOWN_TYPE || valuetype->pointer > 0 || valuetype->reference != Reference::None)) ? type : nullptr;
 }
 
 static const Scope *getClassScope(const Token *tok)
