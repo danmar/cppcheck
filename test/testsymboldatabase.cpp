@@ -160,6 +160,7 @@ private:
         TEST_CASE(VariableValueType3);
         TEST_CASE(VariableValueType4); // smart pointer type
         TEST_CASE(VariableValueType5); // smart pointer type
+        TEST_CASE(VariableValueTypeReferences);
 
         TEST_CASE(findVariableType1);
         TEST_CASE(findVariableType2);
@@ -963,6 +964,122 @@ private:
         ASSERT(p->valueType());
         ASSERT(p->valueType()->smartPointerTypeToken);
         ASSERT(p->valueType()->pointer == 1);
+    }
+
+    void VariableValueTypeReferences()
+    {
+        {
+            GET_SYMBOL_DB("void foo(int x) {}\n");
+            const Variable* const p = db->getVariableFromVarId(1);
+            ASSERT(p->valueType());
+            ASSERT(p->valueType()->pointer == 0);
+            ASSERT(p->valueType()->constness == 0);
+            ASSERT(p->valueType()->reference == Reference::None);
+        }
+        {
+            GET_SYMBOL_DB("void foo(int* x) {}\n");
+            const Variable* const p = db->getVariableFromVarId(1);
+            ASSERT(p->valueType());
+            ASSERT(p->valueType()->pointer == 1);
+            ASSERT(p->valueType()->constness == 0);
+            ASSERT(p->valueType()->reference == Reference::None);
+        }
+        {
+            GET_SYMBOL_DB("void foo(int& x) {}\n");
+            const Variable* const p = db->getVariableFromVarId(1);
+            ASSERT(p->valueType());
+            ASSERT(p->valueType()->pointer == 0);
+            ASSERT(p->valueType()->constness == 0);
+            ASSERT(p->valueType()->reference == Reference::LValue);
+        }
+        {
+            GET_SYMBOL_DB("void foo(int&& x) {}\n");
+            const Variable* const p = db->getVariableFromVarId(1);
+            ASSERT(p->valueType());
+            ASSERT(p->valueType()->pointer == 0);
+            ASSERT(p->valueType()->constness == 0);
+            ASSERT(p->valueType()->reference == Reference::RValue);
+        }
+        {
+            GET_SYMBOL_DB("void foo(int*& x) {}\n");
+            const Variable* const p = db->getVariableFromVarId(1);
+            ASSERT(p->valueType());
+            ASSERT(p->valueType()->pointer == 1);
+            ASSERT(p->valueType()->constness == 0);
+            ASSERT(p->valueType()->reference == Reference::LValue);
+        }
+        {
+            GET_SYMBOL_DB("void foo(int*&& x) {}\n");
+            const Variable* const p = db->getVariableFromVarId(1);
+            ASSERT(p->valueType());
+            ASSERT(p->valueType()->pointer == 1);
+            ASSERT(p->valueType()->constness == 0);
+            ASSERT(p->valueType()->reference == Reference::RValue);
+        }
+        {
+            GET_SYMBOL_DB("void foo(int**& x) {}\n");
+            const Variable* const p = db->getVariableFromVarId(1);
+            ASSERT(p->valueType());
+            ASSERT(p->valueType()->pointer == 2);
+            ASSERT(p->valueType()->constness == 0);
+            ASSERT(p->valueType()->reference == Reference::LValue);
+        }
+        {
+            GET_SYMBOL_DB("void foo(int**&& x) {}\n");
+            const Variable* const p = db->getVariableFromVarId(1);
+            ASSERT(p->valueType());
+            ASSERT(p->valueType()->pointer == 2);
+            ASSERT(p->valueType()->constness == 0);
+            ASSERT(p->valueType()->reference == Reference::RValue);
+        }
+        {
+            GET_SYMBOL_DB("void foo(const int& x) {}\n");
+            const Variable* const p = db->getVariableFromVarId(1);
+            ASSERT(p->valueType());
+            ASSERT(p->valueType()->pointer == 0);
+            ASSERT(p->valueType()->constness == 1);
+            ASSERT(p->valueType()->reference == Reference::LValue);
+        }
+        {
+            GET_SYMBOL_DB("void foo(const int&& x) {}\n");
+            const Variable* const p = db->getVariableFromVarId(1);
+            ASSERT(p->valueType());
+            ASSERT(p->valueType()->pointer == 0);
+            ASSERT(p->valueType()->constness == 1);
+            ASSERT(p->valueType()->reference == Reference::RValue);
+        }
+        {
+            GET_SYMBOL_DB("void foo(const int*& x) {}\n");
+            const Variable* const p = db->getVariableFromVarId(1);
+            ASSERT(p->valueType());
+            ASSERT(p->valueType()->pointer == 1);
+            ASSERT(p->valueType()->constness == 1);
+            ASSERT(p->valueType()->reference == Reference::LValue);
+        }
+        {
+            GET_SYMBOL_DB("void foo(const int*&& x) {}\n");
+            const Variable* const p = db->getVariableFromVarId(1);
+            ASSERT(p->valueType());
+            ASSERT(p->valueType()->pointer == 1);
+            ASSERT(p->valueType()->constness == 1);
+            ASSERT(p->valueType()->reference == Reference::RValue);
+        }
+        {
+            GET_SYMBOL_DB("void foo(int* const & x) {}\n");
+            const Variable* const p = db->getVariableFromVarId(1);
+            ASSERT(p->valueType());
+            ASSERT(p->valueType()->pointer == 1);
+            ASSERT(p->valueType()->constness == 2);
+            ASSERT(p->valueType()->reference == Reference::LValue);
+        }
+        {
+            GET_SYMBOL_DB("void foo(int* const && x) {}\n");
+            const Variable* const p = db->getVariableFromVarId(1);
+            ASSERT(p->valueType());
+            ASSERT(p->valueType()->pointer == 1);
+            ASSERT(p->valueType()->constness == 2);
+            ASSERT(p->valueType()->reference == Reference::RValue);
+        }
     }
 
     void findVariableType1() {
