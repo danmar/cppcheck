@@ -3317,6 +3317,17 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("int foo() {\n"
+            "    auto x = getX();\n"
+            "    if (x == nullptr)\n"
+            "        return 1;\n"
+            "    auto y = dynamic_cast<Y*>(x)\n"
+            "    if (y == nullptr)\n"
+            "        return 2;\n"
+            "    return 3;\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // handleKnownValuesInLoop
         check("bool g();\n"
               "void f(bool x) {\n"
