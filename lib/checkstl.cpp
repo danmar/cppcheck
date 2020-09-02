@@ -2569,7 +2569,7 @@ void CheckStl::knownEmptyContainer()
                         continue;
                     knownEmptyContainerError(argTok, tok->str());
                     break;
-                    
+
                 }
             }
         }
