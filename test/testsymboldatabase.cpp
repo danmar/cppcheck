@@ -322,6 +322,7 @@ private:
         TEST_CASE(symboldatabase83); // #9431
         TEST_CASE(symboldatabase84);
         TEST_CASE(symboldatabase85);
+        TEST_CASE(symboldatabase86);
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
 
@@ -4608,6 +4609,15 @@ private:
 
         const Token *vartok2 = Token::findsimplematch(tokenizer.tokens(), "( _mode ) ;")->next();
         ASSERT_EQUALS(std::intptr_t(vartok1->variable()), std::intptr_t(vartok2->variable()));
+    }
+
+    void symboldatabase86() {
+        GET_SYMBOL_DB("class C { auto operator=(const C&) -> C&; };\n"
+            "auto C::operator=(const C&) -> C& = default;");
+        ASSERT(db->scopeList.size() == 2);
+        ASSERT(db->scopeList.back().functionList.size() == 1);
+        ASSERT(db->scopeList.back().functionList.front().isDefault() == true);
+        ASSERT(db->scopeList.back().functionList.front().hasBody() == false);
     }
 
     void createSymbolDatabaseFindAllScopes1() {
