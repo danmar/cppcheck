@@ -289,6 +289,17 @@ private:
               "  if (!d) throw;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct b {\n"
+              "    b * c;\n"
+              "    int i;\n"
+              "};\n"
+              "void f(b* e1, b* e2) {\n"
+              "    for (const b* d = e1; d != e2; d = d->c) {\n"
+              "        if (d && d->i != 0) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6]: (warning) Either the condition 'd' is redundant or there is possible null pointer dereference: d.\n", errout.str());
     }
 
     void nullpointer1() {
