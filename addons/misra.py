@@ -2700,7 +2700,8 @@ class MisraChecker:
         print("Suppressed Rules List:")
         outlist = list()
 
-        for ruleNum in self.suppressedRules:
+        for ruleNum in sorted(self.suppressedRules, reverse=True):
+            printrule = "(%d locations suppressed)" % self.suppressionStats.get(ruleNum, 0)
             fileDict = self.suppressedRules[ruleNum]
 
             for fname in fileDict:
@@ -2712,10 +2713,11 @@ class MisraChecker:
                     else:
                         item_str = str(item[0])
 
-                    outlist.append("%s: %s: %s (%d locations suppressed)" % (
-                    float(ruleNum) / 100, fname, item_str, self.suppressionStats.get(ruleNum, 0)))
+                    outlist.append("%s.%s: %s: %s %s" % (
+                        int(ruleNum / 100), int(ruleNum) % 100, fname, item_str, printrule))
+                    printrule = ""
 
-        for line in sorted(outlist, reverse=True):
+        for line in outlist:
             print("  %s" % line)
 
     def setFilePrefix(self, prefix):
