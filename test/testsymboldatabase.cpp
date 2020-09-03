@@ -4613,7 +4613,7 @@ private:
 
     void symboldatabase86() {
         GET_SYMBOL_DB("class C { auto operator=(const C&) -> C&; };\n"
-            "auto C::operator=(const C&) -> C& = default;");
+                      "auto C::operator=(const C&) -> C& = default;");
         ASSERT(db->scopeList.size() == 2);
         ASSERT(db->scopeList.back().functionList.size() == 1);
         ASSERT(db->scopeList.back().functionList.front().isDefault() == true);
