@@ -1,5 +1,5 @@
 
-# python3 -m pytest test-clang-import.py
+# python -m pytest test-clang-import.py
 
 import os
 import re
@@ -24,7 +24,7 @@ def get_debug_section(title, stdout):
     return s[pos1:pos2-1]
 
 
-def check_symbol_database(code:str):
+def check_symbol_database(code):
     testfile = 'test.cpp'
     with open(testfile, 'w+t') as f:
         f.write(code)
