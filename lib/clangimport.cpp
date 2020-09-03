@@ -1095,16 +1095,21 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
         symbolDatabase->scopeList.push_back(Scope(nullptr, nullptr, nestedIn));
         scope = &symbolDatabase->scopeList.back();
         scope->function = function;
+        scope->classDef = nameToken;
         scope->type = Scope::ScopeType::eFunction;
         scope->className = nameToken->str();
         nestedIn->nestedList.push_back(scope);
         function->hasBody(true);
+        function->functionScope = scope;
     }
 
     Token *par1 = addtoken(tokenList, "(");
     if (!function->arg)
         function->arg = par1;
     function->token = nameToken;
+    if (!function->nestedIn)
+        function->nestedIn = nestedIn;
+    function->argDef = par1;
     // Function arguments
     for (int i = 0; i < children.size(); ++i) {
         AstNodePtr child = children[i];
