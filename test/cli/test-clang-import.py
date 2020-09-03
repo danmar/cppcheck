@@ -26,6 +26,12 @@ def get_debug_section(title, stdout):
 
 
 def check_symbol_database(code):
+    # Only compare symboldatabases if clang is found in PATH
+    try:
+        subprocess.call(['clang', '--version'])
+    except OSError:
+        return
+
     testfile = 'test.cpp'
     with open(testfile, 'w+t') as f:
         f.write(code)
