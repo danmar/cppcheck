@@ -2628,10 +2628,9 @@ class MisraChecker:
         # Remove any prefix listed in command arguments from the filename.
         filename = None
         if file_path is not None:
-            if self.filePrefix is not None:
-                filename = remove_file_prefix(file_path, self.filePrefix)
-            else:
-                filename = os.path.basename(file_path)
+            # file path should be the same as in addSuppressedRule
+            filename = os.path.expanduser(file_path)
+            filename = os.path.normpath(filename)
 
         if ruleNum in self.suppressedRules:
             fileDict = self.suppressedRules[ruleNum]
