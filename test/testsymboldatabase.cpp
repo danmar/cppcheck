@@ -967,8 +967,7 @@ private:
         ASSERT(p->valueType()->pointer == 1);
     }
 
-    void VariableValueTypeReferences()
-    {
+    void VariableValueTypeReferences() {
         {
             GET_SYMBOL_DB("void foo(int x) {}\n");
             const Variable* const p = db->getVariableFromVarId(1);

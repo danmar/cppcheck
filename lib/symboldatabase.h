@@ -1144,8 +1144,7 @@ private:
     void findFunctionInBase(const std::string & name, nonneg int args, std::vector<const Function *> & matches) const;
 };
 
-enum class Reference
-{
+enum class Reference {
     None,
     LValue,
     RValue
