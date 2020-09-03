@@ -5438,7 +5438,10 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         ValueType vt(valuetype);
         // the "[" is a dereference unless this is a variable declaration
         if (!(op1 && op1->variable() && op1->variable()->nameToken() == op1))
+        {
+            vt.reference = Reference::LValue;
             vt.pointer -= 1U;
+        }
         setValueType(parent, vt);
         return;
     }
@@ -5449,12 +5452,15 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         return;
     }
     // std::move
-    if (vt2 && parent->str() == "(" && Token::simpleMatch(parent->tokAt(-3), "std :: move (")) {
-        setValueType(parent, valuetype);
+    if (parent->str() == "(" && Token::simpleMatch(parent->tokAt(-3), "std :: move (")) {
+        ValueType vt(vt2 ? *vt2 : ValueType());
+        vt.reference = Reference::RValue;
+        setValueType(parent, vt);
         return;
     }
     if (parent->str() == "*" && !parent->astOperand2() && valuetype.pointer > 0U) {
         ValueType vt(valuetype);
+        vt.reference = Reference::LValue;
         vt.pointer -= 1U;
         setValueType(parent, vt);
         return;
@@ -6163,7 +6169,8 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                 parsedecl(fscope->function->retDef, &vt, mDefaultSignedness, mSettings);
                 setValueType(tok, vt);
             }
-        }
+        } else if (Token::simpleMatch(tok->tokAt(-1), "std :: move"))
+            setValueType(tok, ValueType());
     }
 
     if (reportDebugWarnings && mSettings->debugwarnings) {
