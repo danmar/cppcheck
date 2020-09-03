@@ -1409,17 +1409,14 @@ void CheckOther::checkConstVariable()
         }
         // Skip if we ever cast this variable to a pointer/reference to a non-const type
         {
-            bool castToNonConst = [&] {
-                for (const Token* tok = var->nameToken(); tok != scope->bodyEnd && tok != nullptr; tok = tok->next())
-                {
-                    if (tok->isCast()) {
-                        bool isConst = 0 != (tok->valueType()->constness & (1 << tok->valueType()->pointer));
-                        if (!isConst)
-                            return true;
-                    }
+            bool castToNonConst = false;
+            for (const Token* tok = var->nameToken(); tok != scope->bodyEnd && tok != nullptr; tok = tok->next()) {
+                if (tok->isCast()) {
+                    bool isConst = 0 != (tok->valueType()->constness & (1 << tok->valueType()->pointer));
+                    if (!isConst)
+                        castToNonConst = true;
                 }
-                return false;
-            }();
+            }
             if (castToNonConst)
                 continue;
         }
