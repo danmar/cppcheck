@@ -6775,14 +6775,13 @@ private:
 
         // char *
         ASSERT_EQUALS("const char *", typeOf("\"hello\" + 1;", "+"));
-        ASSERT_EQUALS("const char &",  typeOf("\"hello\"[1];", "["));
-        ASSERT_EQUALS("const char &",  typeOf(";*\"hello\";", "*"));
+        ASSERT_EQUALS("const char",  typeOf("\"hello\"[1];", "["));
+        ASSERT_EQUALS("const char",  typeOf(";*\"hello\";", "*"));
         ASSERT_EQUALS("const wchar_t *", typeOf("L\"hello\" + 1;", "+"));
 
         // Variable calculations
         ASSERT_EQUALS("void *", typeOf("void *p; a = p + 1;", "+"));
         ASSERT_EQUALS("signed int", typeOf("int x; a = x + 1;", "+"));
-        ASSERT_EQUALS("signed int", typeOf("int x; a = 1 + x;", "+"));
         ASSERT_EQUALS("signed int", typeOf("int x; a = x | 1;", "|"));
         ASSERT_EQUALS("float", typeOf("float x; a = x + 1;", "+"));
         ASSERT_EQUALS("signed int", typeOf("signed x; a = x + 1;", "x +"));
@@ -6806,11 +6805,8 @@ private:
         ASSERT_EQUALS("A::BC *", typeOf("namespace A { struct BC { int b; int c; }; }; struct A::BC abc; x=&abc;", "&"));
         ASSERT_EQUALS("A::BC *", typeOf("namespace A { struct BC { int b; int c; }; }; struct A::BC *abc; x=abc+1;", "+"));
         ASSERT_EQUALS("signed int", typeOf("auto a(int& x, int& y) { return x + y; }", "+"));
-        ASSERT_EQUALS("&", typeOf("void a(X& x, X& y) { x = y; }", "="));
-        ASSERT_EQUALS("&", typeOf("auto a(X* y) { return *y; }", "*"));
-        ASSERT_EQUALS("&", typeOf("auto a(X* y) { return y[4]; }", "["));
-        ASSERT_EQUALS("&&", typeOf("{X x; return std::move(x);}", "(")); //unknown type
-        TODO_ASSERT_EQUALS("signed int &&", typeOf("{int x; return std::move(x);}", "("), "&&"); //known type
+        ASSERT_EQUALS("signed int &", typeOf("void a(int& x, int& y) { x = y; }", "="));
+        ASSERT_EQUALS("signed int &", typeOf("auto a(int* y) { return *y; }", "*"));
 
         // Unary arithmetic/bit operators
         ASSERT_EQUALS("signed int", typeOf("int x; a = -x;", "-"));
@@ -6849,7 +6845,7 @@ private:
         ASSERT_EQUALS("signed int *", typeOf("int x[10]; a = x + 1;", "+"));
         ASSERT_EQUALS("signed int",  typeOf("int x[10]; a = x[0] + 1;", "+"));
         ASSERT_EQUALS("",            typeOf("a = x[\"hello\"];", "[", "test.cpp"));
-        ASSERT_EQUALS("const char &",  typeOf("a = x[\"hello\"];", "[", "test.c"));
+        ASSERT_EQUALS("const char",  typeOf("a = x[\"hello\"];", "[", "test.c"));
 
         // cast..
         ASSERT_EQUALS("void *", typeOf("a = (void *)0;", "("));
@@ -6871,8 +6867,8 @@ private:
         ASSERT_EQUALS("signed int * const", typeOf("int * const a; x = a + 1;", "+"));
         ASSERT_EQUALS("const signed int *", typeOf("const int a[20]; x = a + 1;", "+"));
         ASSERT_EQUALS("const signed int *", typeOf("const int x; a = &x;", "&"));
-        ASSERT_EQUALS("signed int &", typeOf("int * const a; x = *a;", "*"));
-        ASSERT_EQUALS("const signed int &", typeOf("const int * const a; x = *a;", "*"));
+        ASSERT_EQUALS("signed int", typeOf("int * const a; x = *a;", "*"));
+        ASSERT_EQUALS("const signed int", typeOf("const int * const a; x = *a;", "*"));
 
         // function call..
         ASSERT_EQUALS("signed int", typeOf("int a(int); a(5);", "( 5"));
@@ -6881,7 +6877,7 @@ private:
         ASSERT_EQUALS("signed int", typeOf("int (*a)(int); a(5);", "( 5"));
         ASSERT_EQUALS("s", typeOf("struct s { s foo(); s(int, int); }; s s::foo() { return s(1, 2); } ", "( 1 , 2 )"));
         // Some standard template functions.. TODO library configuration
-        TODO_ASSERT_EQUALS("signed int &&", typeOf("std::move(5);", "( 5 )"), "&&");
+        ASSERT_EQUALS("signed int", typeOf("std::move(5);", "( 5 )"));
 
         // struct member..
         ASSERT_EQUALS("signed int", typeOf("struct AB { int a; int b; } ab; x = ab.a;", "."));
@@ -6897,17 +6893,17 @@ private:
         ASSERT_EQUALS("*", typeOf("Bar* b;", "b"));
 
         // Enum
-        ASSERT_EQUALS("char &", typeOf("enum E : char { }; void foo() { E e[3]; bar(e[0]); }", "[ 0"));
-        ASSERT_EQUALS("signed char &", typeOf("enum E : signed char { }; void foo() { E e[3]; bar(e[0]); }", "[ 0"));
-        ASSERT_EQUALS("unsigned char &", typeOf("enum E : unsigned char { }; void foo() { E e[3]; bar(e[0]); }", "[ 0"));
-        ASSERT_EQUALS("signed short &", typeOf("enum E : short { }; void foo() { E e[3]; bar(e[0]); }", "[ 0"));
-        ASSERT_EQUALS("unsigned short &", typeOf("enum E : unsigned short { }; void foo() { E e[3]; bar(e[0]); }", "[ 0"));
-        ASSERT_EQUALS("signed int &", typeOf("enum E : int { }; void foo() { E e[3]; bar(e[0]); }", "[ 0"));
-        ASSERT_EQUALS("unsigned int &", typeOf("enum E : unsigned int { }; void foo() { E e[3]; bar(e[0]); }", "[ 0"));
-        ASSERT_EQUALS("signed long &", typeOf("enum E : long { }; void foo() { E e[3]; bar(e[0]); }", "[ 0"));
-        ASSERT_EQUALS("unsigned long &", typeOf("enum E : unsigned long { }; void foo() { E e[3]; bar(e[0]); }", "[ 0"));
-        ASSERT_EQUALS("signed long long &", typeOf("enum E : long long { }; void foo() { E e[3]; bar(e[0]); }", "[ 0"));
-        ASSERT_EQUALS("unsigned long long &", typeOf("enum E : unsigned long long { }; void foo() { E e[3]; bar(e[0]); }", "[ 0"));
+        ASSERT_EQUALS("char", typeOf("enum E : char { }; void foo() { E e[3]; bar(e[0]); }", "[ 0"));
+        ASSERT_EQUALS("signed char", typeOf("enum E : signed char { }; void foo() { E e[3]; bar(e[0]); }", "[ 0"));
+        ASSERT_EQUALS("unsigned char", typeOf("enum E : unsigned char { }; void foo() { E e[3]; bar(e[0]); }", "[ 0"));
+        ASSERT_EQUALS("signed short", typeOf("enum E : short { }; void foo() { E e[3]; bar(e[0]); }", "[ 0"));
+        ASSERT_EQUALS("unsigned short", typeOf("enum E : unsigned short { }; void foo() { E e[3]; bar(e[0]); }", "[ 0"));
+        ASSERT_EQUALS("signed int", typeOf("enum E : int { }; void foo() { E e[3]; bar(e[0]); }", "[ 0"));
+        ASSERT_EQUALS("unsigned int", typeOf("enum E : unsigned int { }; void foo() { E e[3]; bar(e[0]); }", "[ 0"));
+        ASSERT_EQUALS("signed long", typeOf("enum E : long { }; void foo() { E e[3]; bar(e[0]); }", "[ 0"));
+        ASSERT_EQUALS("unsigned long", typeOf("enum E : unsigned long { }; void foo() { E e[3]; bar(e[0]); }", "[ 0"));
+        ASSERT_EQUALS("signed long long", typeOf("enum E : long long { }; void foo() { E e[3]; bar(e[0]); }", "[ 0"));
+        ASSERT_EQUALS("unsigned long long", typeOf("enum E : unsigned long long { }; void foo() { E e[3]; bar(e[0]); }", "[ 0"));
 
         // Library types
         {
