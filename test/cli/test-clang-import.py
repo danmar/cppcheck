@@ -36,8 +36,8 @@ def check_symbol_database(code):
     testfile = 'test.cpp'
     with open(testfile, 'w+t') as f:
         f.write(code)
-    ret1, stdout1, stderr1 = cppcheck(['--clang', '--debug', '-v', testfile])
-    ret2, stdout2, stderr2 = cppcheck(['--debug', '-v', testfile])
+    ret1, stdout1, stderr1 = cppcheck(['--clang', '--std=c++11', '--debug', '-v', testfile])
+    ret2, stdout2, stderr2 = cppcheck(['--std=c++11', '--debug', '-v', testfile])
     os.remove(testfile)
     assert get_debug_section('### Symbol database', stdout1) == get_debug_section('### Symbol database', stdout2)
 
