@@ -1116,6 +1116,9 @@ private:
 
         givenACodeSampleToTokenize data5("void f() { return U\"a\"; }");
         ASSERT_EQUALS("returnU\"a\"", data5.tokens()->tokAt(5)->expressionString());
+
+        givenACodeSampleToTokenize data6("x = \"\\0\\x1\\x2\\x3\\x4\\x5\\x6\\x7\";");
+        ASSERT_EQUALS("x=\"\\x00\\x01\\x02\\x03\\x04\\x05\\x06\\x07\"", data6.tokens()->next()->expressionString());
     }
 
     void hasKnownIntValue() {
