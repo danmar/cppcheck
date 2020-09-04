@@ -530,12 +530,14 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                     } else if (tokvalue->variable() && isDeadScope(tokvalue->variable()->nameToken(), tok->scope())) {
                         errorInvalidLifetime(tok, &val);
                         break;
-                    } else if (!tokvalue->variable() && isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok, &mSettings->library)) {
+                    } else if (!tokvalue->variable() &&
+                               isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok, &mSettings->library)) {
                         errorDanglingTemporaryLifetime(tok, &val);
                         break;
                     }
                 }
-                if (tokvalue->variable() && (isInScope(tokvalue->variable()->nameToken(), tok->scope()) || (val.isSubFunctionLifetimeValue() && tokvalue->variable()->isLocal()))) {
+                if (tokvalue->variable() && (isInScope(tokvalue->variable()->nameToken(), tok->scope()) ||
+                                             (val.isSubFunctionLifetimeValue() && tokvalue->variable()->isLocal()))) {
                     const Variable * var = nullptr;
                     const Token * tok2 = tok;
                     if (Token::simpleMatch(tok->astParent(), "=")) {
