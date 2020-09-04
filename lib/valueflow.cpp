@@ -3706,8 +3706,12 @@ static void valueFlowLifetimeConstructor(Token* tok, TokenList* tokenlist, Error
 }
 
 struct Lambda {
+    enum class Capture {
+        ByValue,
+        ByReference
+    };
     explicit Lambda(const Token * tok)
-        : capture(nullptr), arguments(nullptr), returnTok(nullptr), bodyTok(nullptr) {
+        : capture(nullptr), arguments(nullptr), returnTok(nullptr), bodyTok(nullptr), explicitCaptures() {
         if (!Token::simpleMatch(tok, "[") || !tok->link())
             return;
         capture = tok;
@@ -3722,12 +3726,31 @@ struct Lambda {
         } else if (Token::simpleMatch(afterArguments, "{")) {
             bodyTok = afterArguments;
         }
+        for(const Token* c:getCaptures()) {
+            if (c->variable()) {
+                explicitCaptures[c->variable()] = std::make_pair(c, Capture::ByValue);
+            } else if (c->isUnaryOp("&") && Token::Match(c->astOperand1(), "%var%")) {
+                explicitCaptures[c->astOperand1()->variable()] = std::make_pair(c->astOperand1(), Capture::ByReference);
+            } else {
+                const std::string& s = c->expressionString();
+                if (s == "=")
+                    implicitCapture = Capture::ByValue;
+                else if (s == "&")
+                    implicitCapture = Capture::ByReference;
+            }
+        }
     }
 
     const Token * capture;
     const Token * arguments;
     const Token * returnTok;
     const Token * bodyTok;
+    std::unordered_map<const Variable*, std::pair<const Token*, Capture>> explicitCaptures;
+    Capture implicitCapture;
+
+    std::vector<const Token*> getCaptures() {
+        return getArguments(capture);
+    }
 
     bool isLambda() const {
         return capture && bodyTok;
@@ -3762,10 +3785,14 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             const Scope * bodyScope = lam.bodyTok->scope();
 
             std::set<const Scope *> scopes;
+            // Avoid capturing a variable twice
+            std::set<nonneg int> varids;
 
-            auto isCapturingVariable = [&](const Token *varTok) {
+            auto isImplicitCapturingVariable = [&](const Token *varTok) {
                 const Variable *var = varTok->variable();
                 if (!var)
+                    return false;
+                if (varids.count(var->declarationId()) > 0)
                     return false;
                 if (!var->isLocal() && !var->isArgument())
                     return false;
@@ -3777,23 +3804,39 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
                 if (scope->isNestedIn(bodyScope))
                     return false;
                 scopes.insert(scope);
+                varids.insert(var->declarationId());
                 return true;
             };
 
-            // TODO: Handle explicit capture
-            bool captureByRef = Token::Match(lam.capture, "[ & ]");
-            bool captureByValue = Token::Match(lam.capture, "[ = ]");
+            auto captureVariable = [&](const Token* tok2, Lambda::Capture c, std::function<bool(const Token*)> pred) {
+                if (varids.count(tok->varId()) > 0)
+                    return;
+                ErrorPath errorPath;
+                if (c == Lambda::Capture::ByReference) {
+                    LifetimeStore{tok2, "Lambda captures variable by reference here.", ValueFlow::Value::LifetimeKind::Lambda} .byRef(
+                        tok, tokenlist, errorLogger, settings, pred);
+                } else if (c == Lambda::Capture::ByValue) {
+                    LifetimeStore{tok2, "Lambda captures variable by value here.", ValueFlow::Value::LifetimeKind::Lambda} .byVal(
+                        tok, tokenlist, errorLogger, settings, pred);
+                }
+            };
+
+            // Handle explicit capture
+            for(const auto& p:lam.explicitCaptures) {
+                const Variable* var = p.first;
+                if (!var)
+                    continue;
+                const Token* tok2 = p.second.first;
+                Lambda::Capture c = p.second.second;
+                captureVariable(tok2, c, [](const Token*) { return true; });
+                varids.insert(var->declarationId());
+            }
 
             for (const Token * tok2 = lam.bodyTok; tok2 != lam.bodyTok->link(); tok2 = tok2->next()) {
-                ErrorPath errorPath;
-                if (captureByRef) {
-                    LifetimeStore{tok2, "Lambda captures variable by reference here.", ValueFlow::Value::LifetimeKind::Lambda} .byRef(
-                        tok, tokenlist, errorLogger, settings, isCapturingVariable);
-                } else if (captureByValue) {
-                    LifetimeStore{tok2, "Lambda captures variable by value here.", ValueFlow::Value::LifetimeKind::Lambda} .byVal(
-                        tok, tokenlist, errorLogger, settings, isCapturingVariable);
-                }
+                captureVariable(tok2, lam.implicitCapture, isImplicitCapturingVariable);
             }
+
+            valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
         }
         // address of
         else if (tok->isUnaryOp("&")) {

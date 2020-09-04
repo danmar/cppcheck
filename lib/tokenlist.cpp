@@ -911,6 +911,16 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 // - Compile the content of the lambda function as separate tree (this is done later)
                 // this must be consistent with isLambdaCaptureList
                 Token* const squareBracket = tok;
+                // Parse arguments in the capture list
+                if (tok->strAt(1) != "]") {
+                    Token* tok2 = tok->next();
+                    AST_state state2(state.cpp);
+                    compileExpression(tok2, state2);
+                    if (!state2.op.empty()) {
+                        squareBracket->astOperand2(state2.op.top());
+                    }
+                }
+
                 if (Token::simpleMatch(squareBracket->link(), "] (")) {
                     Token* const roundBracket = squareBracket->link()->next();
                     Token* curlyBracket = roundBracket->link()->next();
