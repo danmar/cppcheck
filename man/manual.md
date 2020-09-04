@@ -108,9 +108,9 @@ This option is only valid when supplying an input directory. To ignore multiple 
 
     cppcheck -isrc/b -isrc/c
 
-### Clang parser
+### Clang parser (experimental)
 
-By default Cppcheck uses an internal C/C++ parser. However it is possible to use the Clang parser instead.
+By default Cppcheck uses an internal C/C++ parser. However there is an experimental option to use the Clang parser instead.
 
 Install `clang`. Then use Cppcheck option `--clang`.
 
