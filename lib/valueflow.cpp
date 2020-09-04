@@ -3874,6 +3874,10 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
                 valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
             }
         }
+        // Forward any lifetimes
+        else if (std::any_of(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isLifetimeValue))) {
+            valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
+        }
     }
 }
 
@@ -5437,8 +5441,6 @@ static void valueFlowSubFunction(TokenList* tokenlist, SymbolDatabase* symboldat
                 // passing value(s) to function
                 std::list<ValueFlow::Value> argvalues(getFunctionArgumentValues(argtok));
 
-                // Don't forward lifetime values
-                argvalues.remove_if(std::mem_fn(&ValueFlow::Value::isLifetimeValue));
                 // Don't forward container sizes for now since programmemory can't evaluate conditions
                 argvalues.remove_if(std::mem_fn(&ValueFlow::Value::isContainerSizeValue));
 
@@ -5459,6 +5461,9 @@ static void valueFlowSubFunction(TokenList* tokenlist, SymbolDatabase* symboldat
                                              "' value is " +
                                              v.infoString());
                     v.path = 256 * v.path + id;
+                    // Change scope of lifetime values
+                    if (v.isLifetimeValue())
+                        v.lifetimeScope = ValueFlow::Value::LifetimeScope::SubFunction;
                 }
 
                 // passed values are not "known"..
@@ -6649,6 +6654,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
         valueFlowSwitchVariable(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowForLoop(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowSubFunction(tokenlist, symboldatabase, errorLogger, settings);
+        valueFlowLifetime(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowFunctionDefaultParameter(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowUninit(tokenlist, symboldatabase, errorLogger, settings);
         if (tokenlist->isCPP()) {

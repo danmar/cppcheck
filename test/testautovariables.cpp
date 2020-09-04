@@ -2156,6 +2156,18 @@ private:
               "        std::sort(x.begin(), x.end());\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    std::vector<int*> v;\n"
+              "    void add(int* i) {\n"
+              "        v.push_back(i);\n"
+              "    }\n"
+              "    void f() {\n"
+              "        int i = 0;\n"
+              "        add(&i);\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:8] -> [test.cpp:4] -> [test.cpp:7] -> [test.cpp:4]: (error) Non-local variable 'v' will use object that points to local variable 'i'.\n", errout.str());
     }
 
     void danglingLifetime() {

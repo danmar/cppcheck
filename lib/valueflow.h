@@ -217,6 +217,10 @@ namespace ValueFlow {
             return valueType == ValueType::LIFETIME && lifetimeScope == LifetimeScope::Argument;
         }
 
+        bool isSubFunctionLifetimeValue() const {
+            return valueType == ValueType::LIFETIME && lifetimeScope == LifetimeScope::SubFunction;
+        }
+
         bool isNonValue() const {
             return isMovedValue() || isUninitValue() || isLifetimeValue();
         }
@@ -263,7 +267,7 @@ namespace ValueFlow {
 
         enum class LifetimeKind {Object, SubObject, Lambda, Iterator, Address} lifetimeKind;
 
-        enum class LifetimeScope { Local, Argument } lifetimeScope;
+        enum class LifetimeScope { Local, Argument, SubFunction } lifetimeScope;
 
         static const char* toString(MoveKind moveKind);
 

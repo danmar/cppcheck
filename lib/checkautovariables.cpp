@@ -511,28 +511,31 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
             }
         }
         for (const ValueFlow::Value& val:tok->values()) {
-            if (!val.isLocalLifetimeValue())
+            if (!val.isLocalLifetimeValue() && !val.isSubFunctionLifetimeValue())
                 continue;
             for (const LifetimeToken& lt :getLifetimeTokens(getParentLifetime(val.tokvalue))) {
                 const Token * tokvalue = lt.token;
-                if (Token::Match(tok->astParent(), "return|throw")) {
-                    if (getPointerDepth(tok) < getPointerDepth(tokvalue))
-                        continue;
-                    if (!isLifetimeBorrowed(tok, mSettings))
-                        continue;
-                    if ((tokvalue->variable() && !isEscapedReference(tokvalue->variable()) &&
-                         isInScope(tokvalue->variable()->nameToken(), scope)) ||
-                        isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok, &mSettings->library)) {
-                        errorReturnDanglingLifetime(tok, &val);
+                if (val.isLocalLifetimeValue()) {
+                    if (Token::Match(tok->astParent(), "return|throw")) {
+                        if (getPointerDepth(tok) < getPointerDepth(tokvalue))
+                            continue;
+                        if (!isLifetimeBorrowed(tok, mSettings))
+                            continue;
+                        if ((tokvalue->variable() && !isEscapedReference(tokvalue->variable()) &&
+                             isInScope(tokvalue->variable()->nameToken(), scope)) ||
+                            isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok, &mSettings->library)) {
+                            errorReturnDanglingLifetime(tok, &val);
+                            break;
+                        }
+                    } else if (tokvalue->variable() && isDeadScope(tokvalue->variable()->nameToken(), tok->scope())) {
+                        errorInvalidLifetime(tok, &val);
+                        break;
+                    } else if (!tokvalue->variable() && isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok, &mSettings->library)) {
+                        errorDanglingTemporaryLifetime(tok, &val);
                         break;
                     }
-                } else if (tokvalue->variable() && isDeadScope(tokvalue->variable()->nameToken(), tok->scope())) {
-                    errorInvalidLifetime(tok, &val);
-                    break;
-                } else if (!tokvalue->variable() && isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok, &mSettings->library)) {
-                    errorDanglingTemporaryLifetime(tok, &val);
-                    break;
-                } else if (tokvalue->variable() && isInScope(tokvalue->variable()->nameToken(), tok->scope())) {
+                }
+                if (tokvalue->variable() && (isInScope(tokvalue->variable()->nameToken(), tok->scope()) || (val.isSubFunctionLifetimeValue() && tokvalue->variable()->isLocal()))) {
                     const Variable * var = nullptr;
                     const Token * tok2 = tok;
                     if (Token::simpleMatch(tok->astParent(), "=")) {
