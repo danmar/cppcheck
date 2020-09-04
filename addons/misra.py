@@ -1690,8 +1690,9 @@ class MisraChecker:
                 continue
             nt = v.nameToken
             if nt and nt.scope and nt.scope.type not in ('Enum', 'Class', 'Struct'):
-                name_tokens_map.setdefault(nt.linenr, set())
-                name_tokens_map[nt.linenr].add(nt.column)
+                if nt.file == filename:
+                    name_tokens_map.setdefault(nt.linenr, set())
+                    name_tokens_map[nt.linenr].add(nt.column)
         if not name_tokens_map:
             return
 
