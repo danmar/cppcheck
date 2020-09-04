@@ -2232,6 +2232,13 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("struct C { void f() const; };\n" // #9875 - crash
+              "\n"
+              "void foo(C& x) {\n"
+              "   x.f();\n"
+              "   foo( static_cast<U2>(0) );\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
         check("class a {\n"
               "    void foo(const int& i) const;\n"

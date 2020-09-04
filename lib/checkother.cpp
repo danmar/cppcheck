@@ -1412,9 +1412,15 @@ void CheckOther::checkConstVariable()
             bool castToNonConst = false;
             for (const Token* tok = var->nameToken(); tok != scope->bodyEnd && tok != nullptr; tok = tok->next()) {
                 if (tok->isCast()) {
+                    if (!tok->valueType()) {
+                        castToNonConst = true; // safe guess
+                        break;
+                    }
                     bool isConst = 0 != (tok->valueType()->constness & (1 << tok->valueType()->pointer));
-                    if (!isConst)
+                    if (!isConst) {
                         castToNonConst = true;
+                        break;
+                    }
                 }
             }
             if (castToNonConst)
