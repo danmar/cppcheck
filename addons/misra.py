@@ -1674,6 +1674,9 @@ class MisraChecker:
                 if token.astParent.str in ('(', '{'):
                     end_token = token.astParent.link
                     if end_token:
+                        # Don't add function called inside function arguments
+                        if token.astParent.previous and token.astParent.previous.isName:
+                            continue
                         end_tokens_map[end_token.linenr].add(end_token.column)
                     continue
                 elif token.astParent.str == ',':
