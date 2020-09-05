@@ -328,10 +328,12 @@ unsigned int CppCheck::check(const std::string &path)
         const std::string analyzerInfo = mSettings.buildDir.empty() ? std::string() : AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "");
         const std::string clangcmd = analyzerInfo + ".clang-cmd";
         const std::string clangStderr = analyzerInfo + ".clang-stderr";
+		std::string exe = mSettings.clangExecutable;
 #ifdef _WIN32
-        const std::string exe = mSettings.clangExecutable + ".exe";
-#else
-        const std::string exe = mSettings.clangExecutable;
+		// append .exe if it is not a path
+        if (Path::fromNativeSeparators(mSettings.clangExecutable).find('/') == std::string::npos) {
+            exe += ".exe";
+        }
 #endif
 
         std::string flags(lang + " ");
