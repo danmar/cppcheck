@@ -843,9 +843,7 @@ void TemplateSimplifier::getTemplateInstantiations()
             std::string qualification;
             Token * qualificationTok = tok;
             while (Token::Match(tok, "%name% :: %name%")) {
-                // ignore redundant namespaces
-                if (scopeName.find(tok->str()) == std::string::npos)
-                    qualification += (qualification.empty() ? "" : " :: ") + tok->str();
+                qualification += (qualification.empty() ? "" : " :: ") + tok->str();
                 tok = tok->tokAt(2);
             }
 
