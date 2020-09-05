@@ -3726,7 +3726,7 @@ struct Lambda {
         } else if (Token::simpleMatch(afterArguments, "{")) {
             bodyTok = afterArguments;
         }
-        for(const Token* c:getCaptures()) {
+        for (const Token* c:getCaptures()) {
             if (c->variable()) {
                 explicitCaptures[c->variable()] = std::make_pair(c, Capture::ByValue);
             } else if (c->isUnaryOp("&") && Token::Match(c->astOperand1(), "%var%")) {
@@ -3822,13 +3822,15 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             };
 
             // Handle explicit capture
-            for(const auto& p:lam.explicitCaptures) {
+            for (const auto& p:lam.explicitCaptures) {
                 const Variable* var = p.first;
                 if (!var)
                     continue;
                 const Token* tok2 = p.second.first;
                 Lambda::Capture c = p.second.second;
-                captureVariable(tok2, c, [](const Token*) { return true; });
+                captureVariable(tok2, c, [](const Token*) {
+                    return true;
+                });
                 varids.insert(var->declarationId());
             }
 
