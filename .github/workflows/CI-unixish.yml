@@ -108,7 +108,7 @@ jobs:
 
       - name: Fuzzer
         run: |
-          g++ -fsyntax-only -Ilib oss-fuzz/*.cpp
+          g++ -fsyntax-only -std=c++11 -Ilib oss-fuzz/*.cpp
 
       - uses: actions/upload-artifact@v2
         with:
