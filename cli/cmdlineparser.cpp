@@ -230,6 +230,11 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--clang") == 0)
                 mSettings->clang = true;
 
+            else if (std::strlen(argv[i]) >= 9 && std::strncmp(argv[i], "--clang=", 8) == 0) {
+                mSettings->clang = true;
+                mSettings->clangPath = argv[i] + 8;
+            }
+
             else if (std::strncmp(argv[i], "--config-exclude=",17) ==0) {
                 mSettings->configExcludePaths.insert(Path::fromNativeSeparators(argv[i] + 17));
             }
@@ -977,6 +982,11 @@ void CmdLineParser::printHelp()
               "                         AST is imported and converted into Cppcheck data.\n"
               "                         After that the normal Cppcheck analysis is used. You\n"
               "                         must have `clang` in PATH.\n"
+              "    --clang=<path>       Experimental: Use Clang parser instead of the builtin\n"
+              "                         Cppcheck parser. Cppcheck executes `clang`. The Clang\n"
+              "                         AST is imported and converted into Cppcheck data.\n"
+              "                         After that the normal Cppcheck analysis is used. You\n"
+              "                         must have `clang` in <path>.\n"
               "    --config-exclude=<dir>\n"
               "                         Path (prefix) to be excluded from configuration\n"
               "                         checking. Preprocessor configurations defined in\n"

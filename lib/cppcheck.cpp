@@ -328,11 +328,7 @@ unsigned int CppCheck::check(const std::string &path)
         const std::string analyzerInfo = mSettings.buildDir.empty() ? std::string() : AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "");
         const std::string clangcmd = analyzerInfo + ".clang-cmd";
         const std::string clangStderr = analyzerInfo + ".clang-stderr";
-#ifdef _WIN32
-        const std::string exe = "clang.exe";
-#else
-        const std::string exe = "clang";
-#endif
+        const std::string exe = mSettings.clangPath;
 
         std::string flags(lang + " ");
         if (Path::isCPP(path) && !mSettings.standards.stdValue.empty())

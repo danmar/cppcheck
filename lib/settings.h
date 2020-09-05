@@ -115,6 +115,12 @@ public:
     /** Use Clang */
     bool clang;
 
+#ifdef _WIN32
+    std::string clangPath = "clang.exe";
+#else
+    std::string clangPath = "clang";
+#endif
+
     /** Use clang-tidy */
     bool clangTidy;
 
