@@ -299,6 +299,10 @@ static T* nextAfterAstRightmostLeafGeneric(T* tok)
     if (!rightmostLeaf || !rightmostLeaf->astOperand1())
         return nullptr;
     do {
+        if (const Token* lam = findLambdaEndToken(rightmostLeaf)) {
+            rightmostLeaf = lam;
+            break;
+        }
         if (rightmostLeaf->astOperand2())
             rightmostLeaf = rightmostLeaf->astOperand2();
         else

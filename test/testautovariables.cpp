@@ -1825,6 +1825,50 @@ private:
               "    return g([&]() { return x; });\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("auto f() {\n"
+              "    int i = 0;\n"
+              "    return [&i] {};\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning lambda that captures local variable 'i' that will be invalid when returning.\n", errout.str());
+
+        check("auto f() {\n"
+              "    int i = 0;\n"
+              "    return [i] {};\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("auto f() {\n"
+              "    int i = 0;\n"
+              "    return [=, &i] {};\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning lambda that captures local variable 'i' that will be invalid when returning.\n", errout.str());
+
+        check("auto f() {\n"
+              "    int i = 0;\n"
+              "    int j = 0;\n"
+              "    return [=, &i] { return j; };\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning lambda that captures local variable 'i' that will be invalid when returning.\n", errout.str());
+
+        check("auto f() {\n"
+              "    int i = 0;\n"
+              "    return [&, i] {};\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("auto f() {\n"
+              "    int i = 0;\n"
+              "    int j = 0;\n"
+              "    return [&, i] { return j; };\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3] -> [test.cpp:4]: (error) Returning lambda that captures local variable 'j' that will be invalid when returning.\n", errout.str());
+
+        check("auto f(int& i) {\n"
+              "    int j = 0;\n"
+              "    return [=, &i] { return j; };\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeContainer() {
