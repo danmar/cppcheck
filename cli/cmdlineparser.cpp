@@ -976,7 +976,7 @@ void CmdLineParser::printHelp()
               "                         analysis is disabled by this flag.\n"
               "    --check-library      Show information messages when library files have\n"
               "                         incomplete info.\n"
-              "    --clang              Experimental: Use Clang parser instead of the builtin Cppcheck\n"
+              "    --clang=<path>       Experimental: Use Clang parser instead of the builtin Cppcheck\n"
               "                         parser. Takes the executable as optional parameter and\n"
 			  "                         defaults to `clang`. Cppcheck will run the given Clang\n"
 			  "                         executable, import the Clang AST and convert it into\n"
