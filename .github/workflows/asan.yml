@@ -33,7 +33,7 @@ jobs:
         run: |
           ./testrunner
 
-      - name: checkcfg
+      - name: Bughunting lib
         run: |
-          make checkcfg
+          ./cppcheck -D__CPPCHECK__ --bug-hunting -j$(nproc) lib
 

@@ -1910,6 +1910,8 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
 
 static ExprEngine::ValuePtr executeArrayIndex(const Token *tok, Data &data)
 {
+    if (tok->tokType() == Token::eLambda)
+        throw ExprEngineException(tok, "FIXME: lambda");
     const Token *tok2 = tok;
     while (Token::simpleMatch(tok2->astOperand1(), "["))
         tok2 = tok2->astOperand1();

@@ -617,6 +617,10 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                             result.valueType = ValueFlow::Value::FLOAT;
                             result.floatValue = floatValue1 - floatValue2;
                         } else {
+                            // Avoid overflow
+                            if (value1.intvalue < 0 && value2.intvalue > value1.intvalue - LLONG_MIN)
+                                break;
+
                             result.intvalue = value1.intvalue - value2.intvalue;
                         }
                         // If the bound comes from the second value then invert the bound
@@ -781,8 +785,12 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
             if (!val.isIntValue() && !val.isFloatValue())
                 continue;
             ValueFlow::Value v(val);
-            if (v.isIntValue())
+            if (v.isIntValue()) {
+                if (v.intvalue == LLONG_MIN)
+                    // Value can't be inverted
+                    continue;
                 v.intvalue = -v.intvalue;
+            }
             else
                 v.floatValue = -v.floatValue;
             v.invertBound();
