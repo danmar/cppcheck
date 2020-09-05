@@ -459,6 +459,8 @@ void misra_12_3(int a, int b, int c) { // no warning
   misra_12_3_fn4(misra_12_3_fn7(&a1, 32), &a1);
   misra_12_3_fn6(misra_12_3_fn5(&a1, 32), &a1);
   misra_12_3_fn6(misra_12_3_fn7(&a1, 32), &a1);
+  misra_12_3_fn7(maxlen, fn(va, unsigned long), false);
+  misra_12_3_fn8(maxlen, (unsigned long)((uintptr_t)fn(va, void*)), false);
 
   const struct fun_t
   {
