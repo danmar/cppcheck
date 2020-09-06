@@ -49,6 +49,7 @@ private:
         TEST_CASE(importCompileCommands4); // only accept certain file types
         TEST_CASE(importCompileCommands5); // Windows/CMake/Ninja generated comile_commands.json
         TEST_CASE(importCompileCommands6); // Windows/CMake/Ninja generated comile_commands.json with spaces
+        TEST_CASE(importCompileCommands7);
         TEST_CASE(importCompileCommandsArgumentsSection); // Handle arguments section
         TEST_CASE(importCompileCommandsNoCommandSection); // gracefully handles malformed json
         TEST_CASE(importCppcheckGuiProject);
@@ -103,16 +104,14 @@ private:
     void importCompileCommands1() const {
         const char json[] = R"([{
                                    "directory": "/tmp",
-                                   "command": "gcc -DFILESDIR=\"\\\"/home/danielm/cppcheck 2\\\"\" -I\"/home/danielm/cppcheck 2/build/externals/tinyxml\" -DTEST1 -DTEST2=2 -o /tmp/src.o -c /tmp/src.c",
+                                   "command": "gcc -DFILESDIR=\"/usr/local/share/Cppcheck\" -DTEST1 -DTEST2=2 -o /tmp/src.o -c /tmp/src.c",
                                    "file": "/tmp/src.c"
                                }])";
         std::istringstream istr(json);
         TestImporter importer;
         importer.importCompileCommands(istr);
         ASSERT_EQUALS(1, importer.fileSettings.size());
-        // FIXME ASSERT_EQUALS("FILESDIR=\"/home/danielm/cppcheck 2\";TEST1=1;TEST2=2", importer.fileSettings.begin()->defines);
-        ASSERT_EQUALS(1, importer.fileSettings.begin()->includePaths.size());
-        ASSERT_EQUALS("/home/danielm/cppcheck 2/build/externals/tinyxml/", importer.fileSettings.begin()->includePaths.front());
+        ASSERT_EQUALS("FILESDIR=\"/usr/local/share/Cppcheck\";TEST1=1;TEST2=2", importer.fileSettings.begin()->defines);
     }
 
     void importCompileCommands2() const {
@@ -189,6 +188,22 @@ private:
         importer.importCompileCommands(istr);
         ASSERT_EQUALS(2, importer.fileSettings.size());
         ASSERT_EQUALS("C:/Users/dan/git/test-cppcheck/mylib/second src/", importer.fileSettings.begin()->includePaths.front());
+    }
+
+
+    void importCompileCommands7() const {
+        const char json[] = R"([{
+                                   "directory": "/tmp",
+                                   "command": "gcc -DFILESDIR=\"\\\"/home/danielm/cppcheck 2\\\"\" -I\"/home/danielm/cppcheck 2/build/externals/tinyxml\" -DTEST1 -DTEST2=2 -o /tmp/src.o -c /tmp/src.c",
+                                   "file": "/tmp/src.c"
+                               }])";
+        std::istringstream istr(json);
+        TestImporter importer;
+        importer.importCompileCommands(istr);
+        ASSERT_EQUALS(1, importer.fileSettings.size());
+        //FIXME ASSERT_EQUALS("FILESDIR=\"/home/danielm/cppcheck 2\";TEST1=1;TEST2=2", importer.fileSettings.begin()->defines);
+        ASSERT_EQUALS(1, importer.fileSettings.begin()->includePaths.size());
+        ASSERT_EQUALS("/home/danielm/cppcheck 2/build/externals/tinyxml/", importer.fileSettings.begin()->includePaths.front());
     }
 
     void importCompileCommandsArgumentsSection() const {
