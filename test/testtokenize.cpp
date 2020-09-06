@@ -416,6 +416,8 @@ private:
         TEST_CASE(simplifyOperatorName26);
         TEST_CASE(simplifyOperatorName27);
 
+        TEST_CASE(simplifyOverloadedOperators1);
+
         TEST_CASE(simplifyNullArray);
 
         // Some simple cleanups of unhandled macros in the global scope
@@ -6633,6 +6635,20 @@ private:
                             "x = \"abc\"i;";
         ASSERT_EQUALS("int operator\"\"i ( const char * , int ) ;\n"
                       "x = operator\"\"i ( \"abc\" , 3 ) ;",
+                      tokenizeAndStringify(code));
+    }
+
+    void simplifyOverloadedOperators1() {
+        const char code[] = "struct S { void operator()(int); };\n"
+                            "\n"
+                            "void foo(S x) {\n"
+                            "    x(123);\n"
+                            "}";
+        ASSERT_EQUALS("struct S { void operator() ( int ) ; } ;\n"
+                      "\n"
+                      "void foo ( S x ) {\n"
+                      "x . operator() ( 123 ) ;\n"
+                      "}",
                       tokenizeAndStringify(code));
     }
 

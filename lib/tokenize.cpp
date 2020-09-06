@@ -4723,6 +4723,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     elseif();
 
+    simplifyOverloadedOperators();
+
     validate();
 
     list.front()->assignIndexes();
@@ -11206,6 +11208,69 @@ void Tokenizer::simplifyOperatorName()
             reportError(tok, Severity::debug, "debug",
                         "simplifyOperatorName: found unsimplified operator name");
             tok = tok->next();
+        }
+    }
+}
+
+void Tokenizer::simplifyOverloadedOperators()
+{
+    if (isC())
+        return;
+    std::set<std::string> classNames;
+    std::set<nonneg int> classVars;
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (!tok->isName())
+            continue;
+
+        // Get classes that have operator() member
+        if (Token::Match(tok, "class|struct %name% [:{]")) {
+            int indent = 0;
+            for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
+                if (tok2->str() == "}")
+                    break;
+                else if (indent == 0 && tok2->str() == ";")
+                    break;
+                else if (tok2->str() == "{") {
+                    if (indent == 0)
+                        ++indent;
+                    else
+                        tok2 = tok2->link();
+                } else if (indent == 1 && Token::simpleMatch(tok2, "operator() (") && isFunctionHead(tok2->next(), ";{")) {
+                    classNames.insert(tok->strAt(1));
+                }
+            }
+        }
+
+        // Get variables that have operator() member
+        if (Token::Match(tok, "%type% &| %var%") && classNames.find(tok->str()) != classNames.end()) {
+            tok = tok->next();
+            while (!tok->isName())
+                tok = tok->next();
+            classVars.insert(tok->varId());
+        }
+
+        // Simplify operator() calls
+        if (Token::Match(tok, "%var% (") && classVars.find(tok->varId()) != classVars.end()) {
+            // constructor init list..
+            if (Token::Match(tok->previous(), "[:,]")) {
+                const Token *start = tok->previous();
+                while (Token::simpleMatch(start, ",")) {
+                    if (Token::simpleMatch(start->previous(), ")"))
+                        start = start->linkAt(-1);
+                    if (Token::Match(start->previous(), "%name%"))
+                        start = start->tokAt(-2);
+                }
+                const Token *after = tok->linkAt(1);
+                while (Token::Match(after, ")|} , %name% (|{"))
+                    after = after->linkAt(3);
+
+                // Do not simplify initlist
+                if (Token::simpleMatch(start, ":") && Token::simpleMatch(after, ") {"))
+                    continue;
+            }
+
+            tok->insertToken("operator()");
+            tok->insertToken(".");
         }
     }
 }
