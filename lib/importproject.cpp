@@ -162,7 +162,7 @@ void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, c
             continue;
         if (it.compare(0,2,"%(")==0)
             continue;
-        std::string s(Path::fromNativeSeparators(it));
+        std::string s(Path::removeQuotationMarks(Path::fromNativeSeparators(it)));
         if (s[0] == '/' || (s.size() > 1U && s.compare(1,2,":/") == 0)) {
             if (!endsWith(s,'/'))
                 s += '/';
@@ -217,13 +217,13 @@ ImportProject::Type ImportProject::import(const std::string &filename, Settings 
     return ImportProject::Type::UNKNOWN;
 }
 
-static std::string readUntil(const std::string &command, std::string::size_type *pos, const char until[])
+static std::string readUntil(const std::string& command, std::string::size_type* pos, const char until[], bool skipBackSlash = true)
 {
     std::string ret;
     bool str = false;
     while (*pos < command.size() && (str || !std::strchr(until, command[*pos]))) {
-        if (command[*pos] == '\\')
-            ++*pos;
+        if (skipBackSlash && command[*pos] == '\\')
+            ++* pos;
         if (*pos < command.size())
             ret += command[(*pos)++];
         if (endsWith(ret, '\"'))
@@ -232,112 +232,126 @@ static std::string readUntil(const std::string &command, std::string::size_type 
     return ret;
 }
 
+static void skip_whitespaces(const std::string& command, std::string::size_type *pos)
+{
+    while (*pos < command.size() && command[*pos] == ' ')
+        (*pos)++;
+}
+
+
+static std::string parseTillNextCommandOpt(const std::string& singleCharOpts, const std::string& command, std::string::size_type *pos)
+{
+    std::string ret;
+    *pos = command.find_first_not_of("/-", *pos);
+
+    if (*pos >= command.size())
+        return ret;
+
+    const char F = command[*pos];
+    if (std::strchr(singleCharOpts.c_str(), F)) {
+        (*pos)++;
+        return std::string{F};
+    }
+
+    ret = readUntil(command, pos, " =");
+    return ret;
+}
+
+void ImportProject::FileSettings::parseCommandStd(const std::string& command, std::string::size_type *pos, std::string& defs)
+{
+    std::string def{};
+    const std::string stdval = readUntil(command, pos, " ");
+    standard = stdval;
+    if (standard.compare(0, 3, "c++") || standard.compare(0, 5, "gnu++")) {
+        std::string stddef;
+        if (standard == "c++98" || standard == "gnu++98" || standard == "c++03" || standard == "gnu++03") {
+            stddef = "199711L";
+        } else if (standard == "c++11" || standard == "gnu++11"|| standard == "c++0x" || standard == "gnu++0x") {
+            stddef = "201103L";
+        } else if (standard == "c++14" || standard == "gnu++14" || standard == "c++1y" || standard == "gnu++1y") {
+            stddef = "201402L";
+        } else if (standard == "c++17" || standard == "gnu++17" || standard == "c++1z" || standard == "gnu++1z") {
+            stddef = "201703L";
+        }
+
+        if (stddef.empty()) {
+            // TODO: log error
+        } else {
+            def += "__cplusplus=";
+            def += stddef;
+            def += ";";
+        }
+    }
+    defs += def;
+}
+
+void ImportProject::FileSettings::parseCommandDefine(const std::string& command, std::string::size_type *pos, std::string& defs)
+{   
+    const bool skipBackSlash = false;
+    defs += readUntil(command, pos, " =");
+    const std::string defval = readUntil(command, pos, " ", skipBackSlash);
+    if (!defval.empty())
+        defs += defval;
+    defs += ';';
+}
+
+void ImportProject::FileSettings::parseCommandUndefine(const std::string& command,  std::string::size_type *pos)
+{
+    const std::string fval = readUntil(command, pos, " ");
+    undefs.insert(fval);
+}
+
+void ImportProject::FileSettings::parseCommandInclude(const std::string& command,  std::string::size_type *pos)
+{
+    const bool skipBackSlash = false;
+    const std::string fval = readUntil(command, pos, " ", skipBackSlash);
+    if (std::find(includePaths.begin(), includePaths.end(), fval) == includePaths.end())
+        includePaths.push_back(fval);
+}
+
+void ImportProject::FileSettings::parseCommandSystemInclude(const std::string& command,  std::string::size_type *pos)
+{
+    const bool skipBackSlash = false;
+    const std::string isystem = Path::removeQuotationMarks(readUntil(command, pos, " ", skipBackSlash));
+    systemIncludePaths.push_back(isystem);
+}
+
 void ImportProject::FileSettings::parseCommand(const std::string &command)
 {
+    const std::string singleCharCommandOpts = "DUI";
     std::string defs;
 
-    // Parse command..
     std::string::size_type pos = 0;
     while (std::string::npos != (pos = command.find(' ',pos))) {
-        while (pos < command.size() && command[pos] == ' ')
-            pos++;
+        skip_whitespaces(command, &pos);
         if (pos >= command.size())
             break;
-        if (command[pos] != '/' && command[pos] != '-')
-            continue;
-        pos++;
+
+        const auto opt = parseTillNextCommandOpt(singleCharCommandOpts, command, &pos);
+
         if (pos >= command.size())
             break;
-        const char F = command[pos++];
-        if (std::strchr("DUI", F)) {
-            while (pos < command.size() && command[pos] == ' ')
-                ++pos;
-        }
-        const std::string fval = readUntil(command, &pos, " =");
-        if (F=='D') {
-            const std::string defval = readUntil(command, &pos, " ");
-            defs += fval;
-            if (!defval.empty())
-                defs += defval;
-            defs += ';';
-        } else if (F=='U')
-            undefs.insert(fval);
-        else if (F=='I') {
-            if (std::find(includePaths.begin(), includePaths.end(), fval) == includePaths.end())
-                includePaths.push_back(fval);
-        } else if (F=='s' && fval.compare(0,2,"td") == 0) {
-            ++pos;
-            const std::string stdval = readUntil(command, &pos, " ");
-            standard = stdval;
-            if (standard.compare(0, 3, "c++") || standard.compare(0, 5, "gnu++")) {
-                std::string stddef;
-                if (standard == "c++98" || standard == "gnu++98" || standard == "c++03" || standard == "gnu++03") {
-                    stddef = "199711L";
-                } else if (standard == "c++11" || standard == "gnu++11"|| standard == "c++0x" || standard == "gnu++0x") {
-                    stddef = "201103L";
-                } else if (standard == "c++14" || standard == "gnu++14" || standard == "c++1y" || standard == "gnu++1y") {
-                    stddef = "201402L";
-                } else if (standard == "c++17" || standard == "gnu++17" || standard == "c++1z" || standard == "gnu++1z") {
-                    stddef = "201703L";
-                }
 
-                if (stddef.empty()) {
-                    // TODO: log error
-                    continue;
-                }
-
-                defs += "__cplusplus=";
-                defs += stddef;
-                defs += ";";
-            } else if (standard.compare(0, 1, "c") || standard.compare(0, 3, "gnu")) {
-                if (standard == "c90" || standard == "iso9899:1990" || standard == "gnu90" || standard == "iso9899:199409") {
-                    // __STDC_VERSION__ is not set for C90 although the macro was added in the 1994 amendments
-                    continue;
-                }
-
-                std::string stddef;
-
-                if (standard == "c99" || standard == "iso9899:1999" || standard == "gnu99") {
-                    stddef = "199901L";
-                } else if (standard == "c11" || standard == "iso9899:2011" || standard == "gnu11" || standard == "c1x" || standard == "gnu1x") {
-                    stddef = "201112L";
-                } else if (standard == "c17") {
-                    stddef = "201710L";
-                }
-
-                if (stddef.empty()) {
-                    // TODO: log error
-                    continue;
-                }
-
-                defs += "__STDC_VERSION__=";
-                defs += stddef;
-                defs += ";";
-            }
-        } else if (F == 'i' && fval == "system") {
-            ++pos;
-            const std::string isystem = readUntil(command, &pos, " ");
-            systemIncludePaths.push_back(isystem);
-        } else if (F=='m') {
-            if (fval == "unicode") {
-                defs += "UNICODE";
-                defs += ";";
-            }
-        } else if (F=='f') {
-            if (fval == "pic") {
-                defs += "__pic__";
-                defs += ";";
-            } else if (fval == "PIC") {
-                defs += "__PIC__";
-                defs += ";";
-            } else if (fval == "pie") {
-                defs += "__pie__";
-                defs += ";";
-            } else if (fval == "PIE") {
-                defs += "__PIE__";
-                defs += ";";
-            }
-        }
+        if (opt=="D")
+            parseCommandDefine(command, &pos, defs);
+        else if (opt=="U")
+            parseCommandUndefine(command, &pos);
+        else if (opt=="I")
+            parseCommandInclude(command, &pos);
+        else if (opt=="isystem")
+            parseCommandSystemInclude(command, &pos);
+        else if (opt=="std")
+            parseCommandStd(command, &pos, defs);
+        else if (opt=="municode")
+            defs += "UNICODE;";
+        else if (opt=="fpic")
+            defs += "__pic__;";
+        else if (opt=="fPIC")
+            defs += "__PIC__;";
+        else if (opt=="fpie")
+            defs += "__pie__;";
+        else if (opt=="fPIE")
+            defs += "__PIE__;";
     }
     setDefines(defs);
 }
