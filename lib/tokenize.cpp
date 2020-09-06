@@ -10590,26 +10590,35 @@ void Tokenizer::simplifyAt()
     std::set<std::string> var;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "%name% @ %num% ;")) {
-            var.insert(tok->str());
-            tok->isAtAddress(true);
-            Token::eraseTokens(tok,tok->tokAt(3));
-        }
-        if (Token::Match(tok, "%name% @ %num% : %num% ;")) {
-            var.insert(tok->str());
-            tok->isAtAddress(true);
-            Token::eraseTokens(tok,tok->tokAt(5));
-        }
-        if (Token::Match(tok, "%name% @ %name% : %num% ;") && var.find(tok->strAt(2)) != var.end()) {
-            var.insert(tok->str());
-            tok->isAtAddress(true);
-            Token::eraseTokens(tok,tok->tokAt(5));
-        }
+        if (Token::Match(tok, "%name%|] @ %num%|%name%|(")) {
+            const Token *end = tok->tokAt(2);
+            if (end->isNumber())
+                end = end->next();
+            else if (end->str() == "(") {
+                int par = 0;
+                while ((end = end->next()) != nullptr) {
+                    if (end->str() == "(")
+                        par++;
+                    else if (end->str() == ")") {
+                        if (--par < 0)
+                            break;
+                    }
+                }
+                end = end ? end->next() : nullptr;
+            } else if (var.find(end->str()) != var.end())
+                end = end->next();
+            else
+                continue;
 
-        // array declaration
-        if (Token::Match(tok, "] @ %num% ;")) {
-            tok->isAtAddress(true);
-            Token::eraseTokens(tok,tok->tokAt(3));
+            if (Token::Match(end, ": %num% ;"))
+                end = end->tokAt(2);
+
+            if (end && end->str() == ";") {
+                if (tok->isName())
+                    var.insert(tok->str());
+                tok->isAtAddress(true);
+                Token::eraseTokens(tok, end);
+            }
         }
 
         // keywords in compiler from cosmic software for STM8

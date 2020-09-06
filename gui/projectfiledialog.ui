@@ -445,7 +445,7 @@
           <item>
            <widget class="QRadioButton" name="mBtnClangParser">
             <property name="text">
-             <string>Clang</string>
+             <string>Clang (experimental)</string>
             </property>
            </widget>
           </item>

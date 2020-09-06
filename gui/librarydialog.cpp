@@ -20,10 +20,10 @@
 #include "ui_librarydialog.h"
 #include "libraryaddfunctiondialog.h"
 #include "libraryeditargdialog.h"
+#include "common.h"
 #include "path.h"
 
 #include <QFile>
-#include <QSettings>
 #include <QFileDialog>
 #include <QTextStream>
 #include <QInputDialog>
@@ -75,8 +75,7 @@ CppcheckLibraryData::Function *LibraryDialog::currentFunction()
 
 void LibraryDialog::openCfg()
 {
-    const QSettings settings;
-    const QString datadir = settings.value("DATADIR",QString()).toString();
+    const QString datadir = getDataDir();
 
     QString selectedFilter;
     const QString filter(tr("Library files (*.cfg)"));

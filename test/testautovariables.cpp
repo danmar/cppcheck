@@ -975,7 +975,7 @@ private:
               "std::string &f() {\n"
               "    return hello().substr(1);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Reference to temporary returned.\n", errout.str());
 
         check("class Foo;\n"
               "Foo hello() {\n"
@@ -1825,6 +1825,50 @@ private:
               "    return g([&]() { return x; });\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("auto f() {\n"
+              "    int i = 0;\n"
+              "    return [&i] {};\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning lambda that captures local variable 'i' that will be invalid when returning.\n", errout.str());
+
+        check("auto f() {\n"
+              "    int i = 0;\n"
+              "    return [i] {};\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("auto f() {\n"
+              "    int i = 0;\n"
+              "    return [=, &i] {};\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning lambda that captures local variable 'i' that will be invalid when returning.\n", errout.str());
+
+        check("auto f() {\n"
+              "    int i = 0;\n"
+              "    int j = 0;\n"
+              "    return [=, &i] { return j; };\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning lambda that captures local variable 'i' that will be invalid when returning.\n", errout.str());
+
+        check("auto f() {\n"
+              "    int i = 0;\n"
+              "    return [&, i] {};\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("auto f() {\n"
+              "    int i = 0;\n"
+              "    int j = 0;\n"
+              "    return [&, i] { return j; };\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3] -> [test.cpp:4]: (error) Returning lambda that captures local variable 'j' that will be invalid when returning.\n", errout.str());
+
+        check("auto f(int& i) {\n"
+              "    int j = 0;\n"
+              "    return [=, &i] { return j; };\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeContainer() {
@@ -2142,6 +2186,20 @@ private:
               "    return std::vector<char*>{&a};\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning object that points to local variable 'a' that will be invalid when returning.\n", errout.str());
+
+        check("std::vector<int>* g();\n"
+              "int& f() {\n"
+              "    auto* p = g();\n"
+              "    return p->front();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::vector<std::vector<int>> g();\n"
+              "void f() {\n"
+              "    for(auto& x:g())\n"
+              "        std::sort(x.begin(), x.end());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetime() {

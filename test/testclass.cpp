@@ -2531,6 +2531,13 @@ private:
                                "    ~Base(){}\n"
                                "};\n", true);
         ASSERT_EQUALS("", errout.str());
+
+        checkVirtualDestructor("class C {\n"
+                               "private:\n"
+                               "    C();\n"
+                               "    virtual ~C();\n"
+                               "};\n", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkNoMemset(const char code[]) {

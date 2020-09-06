@@ -1674,6 +1674,9 @@ class MisraChecker:
                 if token.astParent.str in ('(', '{'):
                     end_token = token.astParent.link
                     if end_token:
+                        # Don't add function called inside function arguments
+                        if token.astParent.previous and token.astParent.previous.isName:
+                            continue
                         end_tokens_map[end_token.linenr].add(end_token.column)
                     continue
                 elif token.astParent.str == ',':
@@ -1690,8 +1693,9 @@ class MisraChecker:
                 continue
             nt = v.nameToken
             if nt and nt.scope and nt.scope.type not in ('Enum', 'Class', 'Struct'):
-                name_tokens_map.setdefault(nt.linenr, set())
-                name_tokens_map[nt.linenr].add(nt.column)
+                if nt.file == filename:
+                    name_tokens_map.setdefault(nt.linenr, set())
+                    name_tokens_map[nt.linenr].add(nt.column)
         if not name_tokens_map:
             return
 
@@ -3126,7 +3130,6 @@ def main():
     if args.severity:
         checker.setSeverity(args.severity)
 
-    exitCode = 0
     for item in args.dumpfile:
         checker.parseDump(item)
 
@@ -3134,6 +3137,7 @@ def main():
             verify_expected = checker.get_verify_expected()
             verify_actual = checker.get_verify_actual()
 
+            exitCode = 0
             for expected in verify_expected:
                 if expected not in verify_actual:
                     print('Expected but not seen: ' + expected)
@@ -3150,41 +3154,38 @@ def main():
             if exitCode != 0:
                 sys.exit(exitCode)
 
-    # Under normal operation exit with a non-zero exit code
-    # if there were any violations.
-    if not settings.verify:
-        number_of_violations = len(checker.get_violations())
-        if number_of_violations > 0:
-            exitCode = 1
+    if settings.verify:
+        sys.exit(exitCode)
 
-            if settings.show_summary:
-                print("\nMISRA rules violations found:\n\t%s\n" % (
-                    "\n\t".join(["%s: %d" % (viol, len(checker.get_violations(viol))) for viol in
-                                 checker.get_violation_types()])))
+    number_of_violations = len(checker.get_violations())
+    if number_of_violations > 0:
+        if settings.show_summary:
+            print("\nMISRA rules violations found:\n\t%s\n" % (
+                "\n\t".join(["%s: %d" % (viol, len(checker.get_violations(viol))) for viol in
+                             checker.get_violation_types()])))
 
-                rules_violated = {}
-                for severity, ids in checker.get_violations():
-                    for misra_id in ids:
-                        rules_violated[misra_id] = rules_violated.get(misra_id, 0) + 1
-                print("MISRA rules violated:")
-                convert = lambda text: int(text) if text.isdigit() else text
-                misra_sort = lambda key: [convert(c) for c in re.split(r'[\.-]([0-9]*)', key)]
-                for misra_id in sorted(rules_violated.keys(), key=misra_sort):
-                    res = re.match(r'misra-c2012-([0-9]+)\\.([0-9]+)', misra_id)
-                    if res is None:
-                        num = 0
-                    else:
-                        num = int(res.group(1)) * 100 + int(res.group(2))
-                    severity = '-'
-                    if num in checker.ruleTexts:
-                        severity = checker.ruleTexts[num].cppcheck_severity
-                    print("\t%15s (%s): %d" % (misra_id, severity, rules_violated[misra_id]))
+            rules_violated = {}
+            for severity, ids in checker.get_violations():
+                for misra_id in ids:
+                    rules_violated[misra_id] = rules_violated.get(misra_id, 0) + 1
+            print("MISRA rules violated:")
+            convert = lambda text: int(text) if text.isdigit() else text
+            misra_sort = lambda key: [convert(c) for c in re.split(r'[\.-]([0-9]*)', key)]
+            for misra_id in sorted(rules_violated.keys(), key=misra_sort):
+                res = re.match(r'misra-c2012-([0-9]+)\\.([0-9]+)', misra_id)
+                if res is None:
+                    num = 0
+                else:
+                    num = int(res.group(1)) * 100 + int(res.group(2))
+                severity = '-'
+                if num in checker.ruleTexts:
+                    severity = checker.ruleTexts[num].cppcheck_severity
+                print("\t%15s (%s): %d" % (misra_id, severity, rules_violated[misra_id]))
 
     if args.show_suppressed_rules:
         checker.showSuppressedRules()
 
-    sys.exit(exitCode)
-
 
 if __name__ == '__main__':
     main()
+    sys.exit(cppcheckdata.EXIT_CODE)

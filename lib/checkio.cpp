@@ -1223,7 +1223,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                             case 'l': { // Can be 'll' (long long int or unsigned long long int) or 'l' (long int or unsigned long int)
                                 // If the next character is the same (which makes 'hh' or 'll') then expect another alphabetical character
                                 if (i != formatString.end() && (i + 1) != formatString.end() && *(i + 1) == *i) {
-                                    if (!isalpha(*(i + 2))) {
+                                    if ((i + 2) != formatString.end() && !isalpha(*(i + 2))) {
                                         std::string modifier;
                                         modifier += *i;
                                         modifier += *(i + 1);

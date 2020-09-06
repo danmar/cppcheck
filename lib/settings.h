@@ -115,6 +115,9 @@ public:
     /** Use Clang */
     bool clang;
 
+    /** Custom Clang executable */
+    std::string clangExecutable;
+
     /** Use clang-tidy */
     bool clangTidy;
 

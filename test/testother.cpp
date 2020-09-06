@@ -149,6 +149,7 @@ private:
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateExpressionTernary); // #6391
         TEST_CASE(duplicateExpressionTemplate); // #6930
+        TEST_CASE(duplicateExpressionCompareWithZero);
         TEST_CASE(oppositeExpression);
         TEST_CASE(duplicateVarExpression);
         TEST_CASE(duplicateVarExpressionUnique);
@@ -2050,6 +2051,194 @@ private:
               "    x(i);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Parameter 'i' can be declared with const\n", errout.str());
+
+        //cast or assignment to a non-const reference should prevent the warning
+        check("struct T { void dostuff() const {}};\n"
+              "void a(T& x) {\n"
+              "    x.dostuff();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared with const\n", errout.str());
+        check("struct T : public U  { void dostuff() const {}};\n"
+              "void a(T& x) {\n"
+              "    x.dostuff();\n"
+              "    const T& z = x;\n" //Make sure we find all assignments
+              "    T& y = x\n"
+              "    y.mutate();\n" //to avoid warnings that y can be const
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("struct T : public U  { void dostuff() const {}};\n"
+              "void a(T& x) {\n"
+              "    x.dostuff();\n"
+              "    const U& y = x\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared with const\n", errout.str());
+        check("struct T : public U  { void dostuff() const {}};\n"
+              "void a(T& x) {\n"
+              "    x.dostuff();\n"
+              "    U& y = x\n"
+              "    y.mutate();\n" //to avoid warnings that y can be const
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("struct T : public U  { void dostuff() const {}};\n"
+              "void a(T& x) {\n"
+              "    x.dostuff();\n"
+              "    my<fancy>::type& y = x\n" //we don't know if y is const or not
+              "    y.mutate();\n" //to avoid warnings that y can be const
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("struct T : public U  { void dostuff() const {}};\n"
+              "void a(T& x) {\n"
+              "    x.dostuff();\n"
+              "    const U& y = static_cast<const U&>(x)\n"
+              "    y.mutate();\n" //to avoid warnings that y can be const
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared with const\n", errout.str());
+        check("struct T : public U  { void dostuff() const {}};\n"
+              "void a(T& x) {\n"
+              "    x.dostuff();\n"
+              "    U& y = static_cast<U&>(x)\n"
+              "    y.mutate();\n" //to avoid warnings that y can be const
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("struct T : public U { void dostuff() const {}};\n"
+              "void a(T& x) {\n"
+              "    x.dostuff();\n"
+              "    const U& y = dynamic_cast<const U&>(x)\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared with const\n", errout.str());
+        check(
+            "struct T : public U { void dostuff() const {}};\n"
+            "void a(T& x) {\n"
+            "    x.dostuff();\n"
+            "    const U& y = dynamic_cast<U const &>(x)\n"
+            "}"
+        );
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared with const\n", errout.str());
+        check("struct T : public U { void dostuff() const {}};\n"
+              "void a(T& x) {\n"
+              "    x.dostuff();\n"
+              "    const U& y = dynamic_cast<U & const>(x)\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared with const\n", errout.str());
+        check("struct T : public U { void dostuff() const {}};\n"
+              "void a(T& x) {\n"
+              "    x.dostuff();\n"
+              "    U& y = dynamic_cast<U&>(x)\n"
+              "    y.mutate();\n" //to avoid warnings that y can be const
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("struct T : public U { void dostuff() const {}};\n"
+              "void a(T& x) {\n"
+              "    x.dostuff();\n"
+              "    const U& y = dynamic_cast<typename const U&>(x)\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared with const\n", errout.str());
+        check("struct T : public U { void dostuff() const {}};\n"
+              "void a(T& x) {\n"
+              "    x.dostuff();\n"
+              "    U& y = dynamic_cast<typename U&>(x)\n"
+              "    y.mutate();\n" //to avoid warnings that y can be const
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("struct T : public U { void dostuff() const {}};\n"
+              "void a(T& x) {\n"
+              "    x.dostuff();\n"
+              "    U* y = dynamic_cast<U*>(&x)\n"
+              "    y->mutate();\n" //to avoid warnings that y can be const
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct T : public U { void dostuff() const {}};\n"
+              "void a(T& x) {\n"
+              "    x.dostuff();\n"
+              "    const U * y = dynamic_cast<const U *>(&x)\n"
+              "    y->mutate();\n" //to avoid warnings that y can be const
+              "}");
+        TODO_ASSERT_EQUALS("can be const", errout.str(), ""); //Currently taking the address is treated as a non-const operation when it should depend on what we do with it
+        check("struct T : public U { void dostuff() const {}};\n"
+              "void a(T& x) {\n"
+              "    x.dostuff();\n"
+              "    U const * y = dynamic_cast<U const *>(&x)\n"
+              "    y->mutate();\n" //to avoid warnings that y can be const
+              "}");
+        TODO_ASSERT_EQUALS("can be const", errout.str(), ""); //Currently taking the address is treated as a non-const operation when it should depend on what we do with it
+        check("struct T : public U { void dostuff() const {}};\n"
+              "void a(T& x) {\n"
+              "    x.dostuff();\n"
+              "    U * const y = dynamic_cast<U * const>(&x)\n"
+              "    y->mutate();\n" //to avoid warnings that y can be const
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("struct T : public U { void dostuff() const {}};\n"
+              "void a(T& x) {\n"
+              "    x.dostuff();\n"
+              "    const U const * const * const * const y = dynamic_cast<const U const * const * const * const>(&x)\n"
+              "    y->mutate();\n" //to avoid warnings that y can be const
+              "}");
+        TODO_ASSERT_EQUALS("can be const", errout.str(), ""); //Currently taking the address is treated as a non-const operation when it should depend on what we do with it
+        check("struct T : public U { void dostuff() const {}};\n"
+              "void a(T& x) {\n"
+              "    x.dostuff();\n"
+              "    const U const * const *  * const y = dynamic_cast<const U const * const *  * const>(&x)\n"
+              "    y->mutate();\n" //to avoid warnings that y can be const
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("struct T : public U { void dostuff() const {}};\n"
+              "void a(T& x) {\n"
+              "    x.dostuff();\n"
+              "    my::fancy<typename type const *> const * * const y = dynamic_cast<my::fancy<typename type const *> const * * const>(&x)\n"
+              "    y->mutate();\n" //to avoid warnings that y can be const
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("struct T : public U { void dostuff() const {}};\n"
+              "void a(T& x) {\n"
+              "    x.dostuff();\n"
+              "    my::fancy<typename type const *> const * const  * const y = dynamic_cast<my::fancy<typename type const *> const * const  * const>(&x)\n"
+              "    y->mutate();\n" //to avoid warnings that y can be const
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct T : public U { void dostuff() const {}};\n"
+              "void a(T& x) {\n"
+              "    x.dostuff();\n"
+              "    const U& y = (const U&)(x)\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared with const\n", errout.str());
+        check("struct T : public U { void dostuff() const {}};\n"
+              "void a(T& x) {\n"
+              "    x.dostuff();\n"
+              "    U& y = (U&)(x)\n"
+              "    y.mutate();\n" //to avoid warnings that y can be const
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("struct T : public U { void dostuff() const {}};\n"
+              "void a(T& x) {\n"
+              "    x.dostuff();\n"
+              "    const U& y = (typename const U&)(x)\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared with const\n", errout.str());
+        check("struct T : public U { void dostuff() const {}};\n"
+              "void a(T& x) {\n"
+              "    x.dostuff();\n"
+              "    U& y = (typename U&)(x)\n"
+              "    y.mutate();\n" //to avoid warnings that y can be const
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("struct T : public U { void dostuff() const {}};\n"
+              "void a(T& x) {\n"
+              "    x.dostuff();\n"
+              "    U* y = (U*)(&x)\n"
+              "    y->mutate();\n" //to avoid warnings that y can be const
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct C { void f() const; };\n" // #9875 - crash
+              "\n"
+              "void foo(C& x) {\n"
+              "   x.f();\n"
+              "   foo( static_cast<U2>(0) );\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
         check("class a {\n"
               "    void foo(const int& i) const;\n"
@@ -5070,6 +5259,57 @@ private:
               "}\n"
               "\n"
               "static auto a = f<0>();");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateExpressionCompareWithZero() {
+        check("void f(int* x, bool b) {\n"
+              "    if ((x && b) || (x != 0 && b)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||' because 'x&&b' and 'x!=0&&b' represent the same value.\n", errout.str());
+
+        check("void f(int* x, bool b) {\n"
+              "    if ((x != 0 && b) || (x && b)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||' because 'x!=0&&b' and 'x&&b' represent the same value.\n", errout.str());
+
+        check("void f(int* x, bool b) {\n"
+              "    if ((x && b) || (b && x != 0)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||' because 'x&&b' and 'b&&x!=0' represent the same value.\n", errout.str());
+
+        check("void f(int* x, bool b) {\n"
+              "    if ((!x && b) || (x == 0 && b)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||' because '!x&&b' and 'x==0&&b' represent the same value.\n", errout.str());
+
+        check("void f(int* x, bool b) {\n"
+              "    if ((x == 0 && b) || (!x && b)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||' because 'x==0&&b' and '!x&&b' represent the same value.\n", errout.str());
+
+        check("void f(int* x, bool b) {\n"
+              "    if ((!x && b) || (b && x == 0)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||' because '!x&&b' and 'b&&x==0' represent the same value.\n", errout.str());
+
+        check("struct A {\n"
+              "    int* getX() const;\n"
+              "    bool getB() const;\n"
+              "    void f() {\n"
+              "        if ((getX() && getB()) || (getX() != 0 && getB())) {}\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Same expression on both sides of '||' because 'getX()&&getB()' and 'getX()!=0&&getB()' represent the same value.\n", errout.str());
+
+        check("void f(int* x, bool b) {\n"
+              "    if ((x && b) || (x == 0 && b)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int* x, bool b) {\n"
+              "    if ((!x && b) || (x != 0 && b)) {}\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

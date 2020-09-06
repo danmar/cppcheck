@@ -163,3 +163,5 @@ for arg in sys.argv[1:]:
             if actual not in VERIFY_EXPECTED:
                 print('Not expected: ' + actual)
                 sys.exit(1)
+
+sys.exit(cppcheckdata.EXIT_CODE)

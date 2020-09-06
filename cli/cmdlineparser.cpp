@@ -227,8 +227,12 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--check-library") == 0)
                 mSettings->checkLibrary = true;
 
-            else if (std::strcmp(argv[i], "--clang") == 0)
+            else if (std::strncmp(argv[i], "--clang", 7) == 0) {
                 mSettings->clang = true;
+                if (std::strncmp(argv[i], "--clang=", 8) == 0) {
+                    mSettings->clangExecutable = argv[i] + 8;
+                }
+            }
 
             else if (std::strncmp(argv[i], "--config-exclude=",17) ==0) {
                 mSettings->configExcludePaths.insert(Path::fromNativeSeparators(argv[i] + 17));
@@ -972,11 +976,13 @@ void CmdLineParser::printHelp()
               "                         analysis is disabled by this flag.\n"
               "    --check-library      Show information messages when library files have\n"
               "                         incomplete info.\n"
-              "    --clang              Use Clang parser instead of the builtin Cppcheck\n"
-              "                         parser. Cppcheck executes `clang`. The Clang AST is\n"
-              "                         imported and converted into Cppcheck data. After that\n"
-              "                         the normal Cppcheck analysis is used. You must have\n"
-              "                         `clang` in PATH.\n"
+              "    --clang=<path>       Experimental: Use Clang parser instead of the builtin Cppcheck\n"
+              "                         parser. Takes the executable as optional parameter and\n"
+              "                         defaults to `clang`. Cppcheck will run the given Clang\n"
+              "                         executable, import the Clang AST and convert it into\n"
+              "                         Cppcheck data. After that the normal Cppcheck analysis is\n"
+              "                         used. You must have the executable in PATH if no path is\n"
+              "                         given.\n"
               "    --config-exclude=<dir>\n"
               "                         Path (prefix) to be excluded from configuration\n"
               "                         checking. Preprocessor configurations defined in\n"

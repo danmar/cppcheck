@@ -445,8 +445,17 @@ static bool isDeadTemporary(bool cpp, const Token* tok, const Token* expr, const
 {
     if (!isTemporary(cpp, tok, library))
         return false;
-    if (expr && !precedes(nextAfterAstRightmostLeaf(tok->astTop()), nextAfterAstRightmostLeaf(expr->astTop())))
-        return false;
+    if (expr) {
+        if (!precedes(nextAfterAstRightmostLeaf(tok->astTop()), nextAfterAstRightmostLeaf(expr->astTop())))
+            return false;
+        const Token* parent = tok->astParent();
+        // Is in a for loop
+        if (astIsRHS(tok) && Token::simpleMatch(parent, ":") && Token::simpleMatch(parent->astParent(), "(") && Token::simpleMatch(parent->astParent()->previous(), "for (")) {
+            const Token* braces = parent->astParent()->link()->next();
+            if (precedes(braces, expr) && precedes(expr, braces->link()))
+                return false;
+        }
+    }
     return true;
 }
 

@@ -168,21 +168,22 @@ static std::vector<std::string> split(const std::string &str, const std::string 
 {
     std::vector<std::string> ret;
     for (std::string::size_type startPos = 0U; startPos < str.size();) {
-        std::string::size_type endPos;
-        if (str[startPos] == '\"') {
-            endPos = str.find("\"", startPos + 1);
-            if (endPos < str.size())
-                endPos++;
-        } else {
-            endPos = str.find(sep, startPos + 1);
-        }
-        if (endPos == std::string::npos) {
-            ret.push_back(str.substr(startPos));
+        startPos = str.find_first_not_of(sep, startPos);
+        if (startPos == std::string::npos)
             break;
+
+        if (str[startPos] == '\"') {
+            const std::string::size_type endPos = str.find("\"", startPos + 1);
+            ret.push_back(str.substr(startPos + 1, endPos - startPos - 1));
+            startPos = (endPos < str.size()) ? (endPos + 1) : endPos;
+            continue;
         }
+
+        const std::string::size_type endPos = str.find(sep, startPos + 1);
         ret.push_back(str.substr(startPos, endPos - startPos));
-        startPos = str.find_first_not_of(sep, endPos);
+        startPos = endPos;
     }
+
     return ret;
 }
 
@@ -327,21 +328,17 @@ unsigned int CppCheck::check(const std::string &path)
         const std::string analyzerInfo = mSettings.buildDir.empty() ? std::string() : AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "");
         const std::string clangcmd = analyzerInfo + ".clang-cmd";
         const std::string clangStderr = analyzerInfo + ".clang-stderr";
+        std::string exe = mSettings.clangExecutable;
 #ifdef _WIN32
-        const std::string exe = "clang.exe";
-#else
-        const std::string exe = "clang";
+        // append .exe if it is not a path
+        if (Path::fromNativeSeparators(mSettings.clangExecutable).find('/') == std::string::npos) {
+            exe += ".exe";
+        }
 #endif
 
         std::string flags(lang + " ");
-        if (Path::isCPP(path)) {
-            if (mSettings.standards.cpp == Standards::CPP14)
-                flags += "-std=c++14 ";
-            else if (mSettings.standards.cpp == Standards::CPP17)
-                flags += "-std=c++17 ";
-            else if (mSettings.standards.cpp == Standards::CPP20)
-                flags += "-std=c++20 ";
-        }
+        if (Path::isCPP(path) && !mSettings.standards.stdValue.empty())
+            flags += "-std=" + mSettings.standards.stdValue + " ";
 
         for (const std::string &i: mSettings.includePaths)
             flags += "-I" + i + " ";
@@ -412,12 +409,10 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
         temp.mSettings.userDefines += fs.cppcheckDefines();
     temp.mSettings.includePaths = fs.includePaths;
     temp.mSettings.userUndefs = fs.undefs;
-    if (fs.standard == "c++14")
-        temp.mSettings.standards.cpp = Standards::CPP14;
-    else if (fs.standard == "c++17")
-        temp.mSettings.standards.cpp = Standards::CPP17;
-    else if (fs.standard == "c++20")
-        temp.mSettings.standards.cpp = Standards::CPP20;
+    if (fs.standard.find("++") != std::string::npos)
+        temp.mSettings.standards.setCPP(fs.standard);
+    else if (!fs.standard.empty())
+        temp.mSettings.standards.setC(fs.standard);
     if (fs.platformType != Settings::Unspecified)
         temp.mSettings.platform(fs.platformType);
     if (mSettings.clang) {

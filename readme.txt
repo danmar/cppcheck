@@ -20,7 +20,7 @@ Compiling
 
     To build the GUI, you need Qt.
 
-    When building the command line tool, PCRE is optional. It is used if you build with rules.
+    While building the command line tool, PCRE is optional. It is used if you build with rules.
 
     For "bug hunting" you need Z3. Installing Z3:
      * debian: "sudo apt-get install libz3-dev
@@ -113,11 +113,18 @@ Compiling
         3. Add all cpp files in the externals folders to the project file / makefile.
         4. Compile.
 
-Cross compiling Win32 (CLI) version of Cppcheck in Linux
+    Cross compiling Win32 (CLI) version of Cppcheck in Linux
 
-    sudo apt-get install mingw32
-    make CXX=i586-mingw32msvc-g++ LDFLAGS="-lshlwapi"
-    mv cppcheck cppcheck.exe
+        sudo apt-get install mingw32
+        make CXX=i586-mingw32msvc-g++ LDFLAGS="-lshlwapi"
+        mv cppcheck cppcheck.exe
+
+Packages
+
+    You can install Cppcheck with yum/apt/brew/etc.
+
+    The official rpms are built with these files:
+    https://src.fedoraproject.org/rpms/cppcheck/tree/master
 
 Webpage
 

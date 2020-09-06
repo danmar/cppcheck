@@ -148,6 +148,13 @@ make CXX=i586-mingw32msvc-g++ LDFLAGS="-lshlwapi" RDYNAMIC=""
 mv cppcheck cppcheck.exe
 ```
 
+## Packages
+
+You can install Cppcheck with yum/apt/brew/etc.
+
+The official rpms are built with these files:
+https://src.fedoraproject.org/rpms/cppcheck/tree/master
+
 ## Webpage
 
 http://cppcheck.sourceforge.net/
