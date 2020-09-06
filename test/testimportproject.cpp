@@ -102,7 +102,7 @@ private:
 
     void importCompileCommands1() const {
         const char json[] = "[ { \"directory\": \"/tmp\","
-                            "\"command\": \"gcc -I/tmp -DFILESDIR=\\\\\\\"/usr/local/share/Cppcheck\\\\\\\" -DTEST1 -DTEST2=2 -o /tmp/src.o -c /tmp/src.c\","
+                            "\"command\": \"gcc -I/tmp -DFILESDIR=\\\"/usr/local/share/Cppcheck\\\" -DTEST1 -DTEST2=2 -o /tmp/src.o -c /tmp/src.c\","
                             "\"file\": \"/tmp/src.c\" } ]";
         std::istringstream istr(json);
         TestImporter importer;
