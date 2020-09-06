@@ -6885,6 +6885,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
                     // "= x, "   =>   "= x; type "
                     if (tok2->str() == ",") {
                         tok2->str(";");
+                        tok2->isSplittedVarDecl(true);
                         TokenList::insertTokens(tok2, type0, typelen);
                     }
                     break;

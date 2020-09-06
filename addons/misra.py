@@ -1638,96 +1638,25 @@ class MisraChecker:
             if maxval >= sz:
                 self.reportError(token, 12, 2)
 
-    def misra_12_3(self, data, rawTokens, filename):
-        # We need an additional check for closing braces using in
-        # initialization lists and function calls, e.g.:
-        # struct S a = {1, 2, 3}, b, c = foo(1, 2), d;
-        #                       ^                 ^
-        end_tokens_map = defaultdict(set)
-
-        skip_to = None
+    def misra_12_3(self, data):
         for token in data.tokenlist:
-            if skip_to:
-                if token == skip_to:
-                    skip_to = None
-                else:
-                    continue
-            # Skip tokens in function call body
-            if token.function and token.next and token.next.str == "(":
-                skip_to = token.next.link
-            # Skip tokens in initializer lists
-            if simpleMatch(token, '= {'):
-                skip_to = token.next.link
-
-            if token.scope.type in ('Enum', 'Class', 'Struct', 'Global'):
+            if token.scope.type in ('Class', 'Struct'):
                 continue
-            # Save last tokens from function calls and initializer lists in
-            # initialization sequence
-            if simpleMatch(token, ') ;') or simpleMatch(token, '} ;'):
-                if (token.isExpandedMacro):
-                    end_tokens_map[token.next.linenr].add(token.next.column)
-                else:
-                    end_tokens_map[token.linenr].add(token.column)
-            if token.str != ',':
-                continue
-            if token.astParent:
-                if token.astParent.str in ('(', '{'):
-                    end_token = token.astParent.link
-                    if end_token:
-                        # Don't add function called inside function arguments
-                        if token.astParent.previous and token.astParent.previous.isName:
-                            continue
-                        end_tokens_map[end_token.linenr].add(end_token.column)
-                    continue
-                elif token.astParent.str == ',':
-                    continue
-            self.reportError(token, 12, 3)
-
-        # Cppcheck performs some simplifications in variables declaration code:
-        # int a, b, c;
-        # Will be reresented in dump file as:
-        # int a; int b; int c;
-        name_tokens_map = {}
-        for v in data.variables:
-            if v.isArgument:
-                continue
-            nt = v.nameToken
-            if nt and nt.scope and nt.scope.type not in ('Enum', 'Class', 'Struct'):
-                if nt.file == filename:
-                    name_tokens_map.setdefault(nt.linenr, set())
-                    name_tokens_map[nt.linenr].add(nt.column)
-        if not name_tokens_map:
-            return
-
-        # Select tokens to check
-        maybe_map = {}
-        for linenr in set(name_tokens_map.keys()) | set(end_tokens_map.keys()):
-            maybe_map[linenr] = name_tokens_map.get(linenr, set())
-            maybe_map[linenr] |= end_tokens_map.get(linenr, set())
-
-        # Check variables declaration code in raw tokens to distinguish ';' and
-        # ',' symbols.
-        STATE_SKIP = 0
-        STATE_CHECK = 1
-        state = STATE_SKIP
-        cur_line = min(maybe_map)
-        for tok in rawTokens:
-            if tok.linenr in maybe_map and tok.column in maybe_map[tok.linenr]:
-                if tok.linenr in end_tokens_map and tok.column in end_tokens_map[tok.linenr]:
-                    if tok.str == ',' or (tok.next and tok.next.str == ','):
-                        self.reportError(tok, 12, 3)
-                        end_tokens_map[tok.linenr].remove(tok.column)
-                state = STATE_CHECK
-                cur_line = tok.linenr
-            if tok.str in ('(', ';', '{'):
-                state = STATE_SKIP
-                if tok.linenr > cur_line:
-                    maybe_map.pop(cur_line)
-                    if not maybe_map:
+            if token.str == ';' and (token.isSplittedVarDecl is True):
+                self.reportError(token, 12, 3)
+            if token.str == ',' and token.astParent and token.astParent.str == ';':
+                self.reportError(token, 12, 3)
+            if token.str == ',' and token.astParent is None:
+                prev = token.previous
+                while prev:
+                    if prev.str == ';':
+                        self.reportError(token, 12, 3)
                         break
-                    cur_line = min(maybe_map)
-            if state == STATE_CHECK and tok.str == ',':
-                self.reportError(tok, 12, 3)
+                    elif prev.str in ')}]':
+                        prev = prev.link
+                    elif prev.str in '({[':
+                        break
+                    prev = prev.previous
 
     def misra_12_4(self, data):
         if typeBits['INT'] == 16:
@@ -2983,7 +2912,7 @@ class MisraChecker:
                 self.executeCheck(1201, self.misra_12_1_sizeof, data.rawTokens)
             self.executeCheck(1201, self.misra_12_1, cfg)
             self.executeCheck(1202, self.misra_12_2, cfg)
-            self.executeCheck(1203, self.misra_12_3, cfg, data.rawTokens, filename)
+            self.executeCheck(1203, self.misra_12_3, cfg)
             self.executeCheck(1204, self.misra_12_4, cfg)
             self.executeCheck(1301, self.misra_13_1, cfg)
             self.executeCheck(1303, self.misra_13_3, cfg)

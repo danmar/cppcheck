@@ -248,7 +248,7 @@ class Token:
         if element.get('isExpandedMacro'):
             self.isExpandedMacro = True
         if element.get('isSplittedVarDecl'):
-            self.isExpandedMacro = True
+            self.isSplittedVarDecl = True
         self.linkId = element.get('link')
         self.link = None
         if element.get('varId'):
