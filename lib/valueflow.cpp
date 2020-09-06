@@ -790,8 +790,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                     // Value can't be inverted
                     continue;
                 v.intvalue = -v.intvalue;
-            }
-            else
+            } else
                 v.floatValue = -v.floatValue;
             v.invertBound();
             setTokenValue(parent, v, settings);
