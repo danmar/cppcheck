@@ -116,6 +116,8 @@ Install `clang`. Then use Cppcheck option `--clang`.
 
 Technically, Cppcheck will execute `clang` with its `-ast-dump` option. The Clang output is then imported and converted into our normal Cppcheck format. And then normal Cppcheck analysis is performed on that.
 
+You can also pass a custom Clang executable to the option by using e.g. `--clang=clang-10`. You can also pass it with a path. On Windows it will append the `.exe` extension unless you use a path.
+
 ## Severities
 
 The possible severities for messages are:
