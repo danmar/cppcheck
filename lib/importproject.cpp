@@ -286,7 +286,7 @@ void ImportProject::FileSettings::parseCommandStd(const std::string& command, st
 }
 
 void ImportProject::FileSettings::parseCommandDefine(const std::string& command, std::string::size_type *pos, std::string& defs)
-{   
+{
     const bool skipBackSlash = false;
     defs += readUntil(command, pos, " =");
     const std::string defval = readUntil(command, pos, " ", skipBackSlash);
