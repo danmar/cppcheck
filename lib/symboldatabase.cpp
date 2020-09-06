@@ -1939,7 +1939,7 @@ void Variable::evaluate(const Settings* settings)
             setFlag(fIsReference, true); // Set also fIsReference
         }
 
-        if (tok->isMaybeUnused()) {
+        if (tok->isAttributeMaybeUnused()) {
             setFlag(fIsMaybeUnused, true);
         }
 

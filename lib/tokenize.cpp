@@ -4950,9 +4950,9 @@ void Tokenizer::dump(std::ostream &out) const
         } else if (tok->isNumber()) {
             out << " type=\"number\"";
             if (MathLib::isInt(tok->str()))
-                out << " isInt=\"True\"";
+                out << " isInt=\"true\"";
             if (MathLib::isFloat(tok->str()))
-                out << " isFloat=\"True\"";
+                out << " isFloat=\"true\"";
         } else if (tok->tokType() == Token::eString)
             out << " type=\"string\" strlen=\"" << Token::getStrLength(tok) << '\"';
         else if (tok->tokType() == Token::eChar)
@@ -4962,16 +4962,18 @@ void Tokenizer::dump(std::ostream &out) const
         else if (tok->isOp()) {
             out << " type=\"op\"";
             if (tok->isArithmeticalOp())
-                out << " isArithmeticalOp=\"True\"";
+                out << " isArithmeticalOp=\"true\"";
             else if (tok->isAssignmentOp())
-                out << " isAssignmentOp=\"True\"";
+                out << " isAssignmentOp=\"true\"";
             else if (tok->isComparisonOp())
-                out << " isComparisonOp=\"True\"";
+                out << " isComparisonOp=\"true\"";
             else if (tok->tokType() == Token::eLogicalOp)
-                out << " isLogicalOp=\"True\"";
+                out << " isLogicalOp=\"true\"";
         }
         if (tok->isExpandedMacro())
-            out << " isExpandedMacro=\"True\"";
+            out << " isExpandedMacro=\"true\"";
+        if (tok->isSplittedVarDecl())
+            out << " isSplittedVarDecl=\"true\"";
         if (tok->link())
             out << " link=\"" << tok->link() << '\"';
         if (tok->varId() > 0)
@@ -6855,6 +6857,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
 
         if (tok2->str() == ",") {
             tok2->str(";");
+            tok2->isSplittedVarDecl(true);
             //TODO: should we have to add also template '<>' links?
             TokenList::insertTokens(tok2, type0, typelen);
         }
@@ -10268,7 +10271,7 @@ void Tokenizer::simplifyCPPAttribute()
             Token* head = tok->tokAt(5);
             while (isCPPAttribute(head))
                 head = head->tokAt(5);
-            head->isMaybeUnused(true);
+            head->isAttributeMaybeUnused(true);
         } else if (Token::Match(tok->previous(), ") [ [ expects|ensures|assert default|audit|axiom| : %name% <|<=|>|>= %num% ] ]")) {
             const Token *vartok = tok->tokAt(4);
             if (vartok->str() == ":")
