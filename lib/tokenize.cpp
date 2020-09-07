@@ -11265,8 +11265,12 @@ void Tokenizer::simplifyOverloadedOperators()
                 while (Token::simpleMatch(start, ",")) {
                     if (Token::simpleMatch(start->previous(), ")"))
                         start = start->linkAt(-1);
+                    else
+                        break;
                     if (Token::Match(start->previous(), "%name%"))
                         start = start->tokAt(-2);
+                    else
+                        break;
                 }
                 const Token *after = tok->linkAt(1);
                 while (Token::Match(after, ")|} , %name% (|{"))
