@@ -89,19 +89,20 @@ void CheckStl::outOfBounds()
                     const Token* indexTok = parent->tokAt(2)->astOperand2();
                     if (!indexTok)
                         continue;
-                    const ValueFlow::Value *indexValue = indexTok ? indexTok->getMaxValue(false) : nullptr;
+                    const ValueFlow::Value* indexValue = indexTok ? indexTok->getMaxValue(false) : nullptr;
                     if (indexValue && indexValue->intvalue >= value.intvalue) {
-                        outOfBoundsError(parent, tok->expressionString(), &value, indexTok->expressionString(), indexValue);
+                        outOfBoundsError(
+                            parent, tok->expressionString(), &value, indexTok->expressionString(), indexValue);
                         continue;
                     }
                     if (mSettings->isEnabled(Settings::WARNING)) {
                         indexValue = indexTok ? indexTok->getMaxValue(true) : nullptr;
                         if (indexValue && indexValue->intvalue >= value.intvalue) {
-                            outOfBoundsError(parent, tok->expressionString(), &value, indexTok->expressionString(), indexValue);
+                            outOfBoundsError(
+                                parent, tok->expressionString(), &value, indexTok->expressionString(), indexValue);
                             continue;
                         }
                     }
-
                 }
                 if (Token::Match(tok, "%name% . %name% (") && container->getYield(tok->strAt(2)) == Library::Container::Yield::START_ITERATOR) {
                     const Token *fparent = tok->tokAt(3)->astParent();
