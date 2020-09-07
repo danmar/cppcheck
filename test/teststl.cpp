@@ -347,6 +347,20 @@ private:
                     "    x[0] = 2;\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void f(bool b) {\n"
+                    "    std::vector<int> v;\n"
+                    "    if(v.at(b?42:0)) {}\n"
+                    "}\n");
+        ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in expression 'v.at(b?42:0)' because 'v' is empty and 'at' may be non-zero.\n", errout.str());
+
+        checkNormal("void f(std::vector<int> v, bool b){\n"
+                    "    if (v.size() == 1)\n"
+                    "        if(v.at(b?42:0)) {}\n"
+                    "}\n");
+        ASSERT_EQUALS("test.cpp:3:warning:Either the condition 'v.size()==1' is redundant or v size can be 1. Expression 'v.at' cause access out of bounds.\n"
+                      "test.cpp:2:note:condition 'v.size()==1'\n"
+                      "test.cpp:3:note:Access out of bounds\n", errout.str());
     }
 
     void outOfBoundsIndexExpression() {
