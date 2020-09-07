@@ -1457,7 +1457,23 @@ static std::string stringFromTokenRange(const Token* start, const Token* end)
             ret << "unsigned ";
         if (tok->isLong() && !tok->isLiteral())
             ret << "long ";
-        if (tok->originalName().empty() || tok->isUnsigned() || tok->isLong()) {
+        if (tok->tokType() == Token::eString) {
+            for (unsigned char c: tok->str()) {
+                if (c == '\n')
+                    ret << "\\n";
+                else if (c == '\r')
+                    ret << "\\r";
+                else if (c == '\t')
+                    ret << "\\t";
+                else if (c >= ' ' && c <= 126)
+                    ret << c;
+                else {
+                    char str[10];
+                    sprintf(str, "\\x%02x", c);
+                    ret << str;
+                }
+            }
+        } else if (tok->originalName().empty() || tok->isUnsigned() || tok->isLong()) {
             ret << tok->str();
         } else
             ret << tok->originalName();

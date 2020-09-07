@@ -1,0 +1,39 @@
+# Syntax reference https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions
+# Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
+name: undefined behaviour sanitizers
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+      fail-fast: false # not worthwhile...
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install missing software on ubuntu
+        run: |
+          sudo apt-get update
+          sudo apt-get install libxml2-utils
+          sudo apt-get install z3 libz3-dev
+          cp externals/z3_version_old.h externals/z3_version.h
+
+      - name: Build
+        run: |
+          cp externals/z3_version_old.h externals/z3_version.h
+          CXXFLAGS="-fsanitize=undefined -Og -g3" make cppcheck testrunner -j$(nproc) USE_Z3=yes
+
+      - name: Run tests
+        run: |
+          ./testrunner
+
+      - name: checkcfg
+        run: |
+          make checkcfg
+

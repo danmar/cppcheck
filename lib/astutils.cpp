@@ -169,17 +169,15 @@ std::string astCanonicalType(const Token *expr)
 {
     if (!expr)
         return "";
-    if (expr->variable()) {
-        const Variable *var = expr->variable();
+    std::pair<const Token*, const Token*> decl = Token::typeDecl(expr);
+    if (decl.first && decl.second) {
         std::string ret;
-        for (const Token *type = var->typeStartToken(); Token::Match(type,"%name%|::") && type != var->nameToken(); type = type->next()) {
+        for (const Token *type = decl.first; Token::Match(type,"%name%|::") && type != decl.second; type = type->next()) {
             if (!Token::Match(type, "const|static"))
                 ret += type->str();
         }
         return ret;
-
     }
-    // TODO: handle expressions
     return "";
 }
 
@@ -301,6 +299,10 @@ static T* nextAfterAstRightmostLeafGeneric(T* tok)
     if (!rightmostLeaf || !rightmostLeaf->astOperand1())
         return nullptr;
     do {
+        if (const Token* lam = findLambdaEndToken(rightmostLeaf)) {
+            rightmostLeaf = lam;
+            break;
+        }
         if (rightmostLeaf->astOperand2())
             rightmostLeaf = rightmostLeaf->astOperand2();
         else

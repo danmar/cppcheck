@@ -50,6 +50,7 @@ private:
         TEST_CASE(cxxDestructorDecl);
         TEST_CASE(cxxForRangeStmt1);
         TEST_CASE(cxxForRangeStmt2);
+        TEST_CASE(cxxFunctionalCastExpr);
         TEST_CASE(cxxMemberCall);
         TEST_CASE(cxxMethodDecl1);
         TEST_CASE(cxxMethodDecl2);
@@ -430,6 +431,24 @@ private:
                              "      |         `-DeclRefExpr 0xc16590 <col:24> 'const int *':'const int *' lvalue Var 0xc16228 '__begin1' 'const int *':'const int *'\n"
                              "      `-CompoundStmt 0xc16658 <col:33, col:34>";
         ASSERT_EQUALS("void foo ( ) { for ( int v@1 : values ) { } }",
+                      parse(clang));
+    }
+
+    void cxxFunctionalCastExpr() {
+        const char clang[] = "`-FunctionDecl 0x156fe98 <line:1:1, line:3:1> line:1:5 main 'int (int, char **)'\n"
+                             "  |-ParmVarDecl 0x156fd00 <col:10, col:14> col:14 argc 'int'\n"
+                             "  |-ParmVarDecl 0x156fdb8 <col:20, col:27> col:27 argv 'char **'\n"
+                             "  `-CompoundStmt 0x1596410 <line:2:1, line:2:1>\n"
+                             "    |-DeclStmt 0x15946a8 <line:2:15, line:2:29>\n"
+                             "    | `-VarDecl 0x1570118 <line:2:15, line:2:28> col:11 used setCode 'MyVar<int>':'MyVar<int>' cinit\n"
+                             "    |   `-ExprWithCleanups 0x1594690 <line:2:15, line:3:28> 'MyVar<int>':'MyVar<int>'\n"
+                             "    |     `-CXXConstructExpr 0x1594660 <line:2:15, line:3:28> 'MyVar<int>':'MyVar<int>' 'void (MyVar<int> &&) noexcept' elidable\n"
+                             "    |       `-MaterializeTemporaryExpr 0x1592b68 <line:2:15, line:3:28> 'MyVar<int>':'MyVar<int>' xvalue\n"
+                             "    |         `-CXXFunctionalCastExpr 0x1592b40 <line:2:15, line:3:28> 'MyVar<int>':'MyVar<int>' functional cast to MyVar<int> <ConstructorConversion>\n"
+                             "    |           `-CXXConstructExpr 0x15929f0 <line:2:15, line:3:28> 'MyVar<int>':'MyVar<int>' 'void (int)'\n"
+                             "    |             `-IntegerLiteral 0x1570248 <col:27> 'int' 5\n";
+        ASSERT_EQUALS("int main ( int argc@1 , char ** argv@2 ) {\n"
+                      "MyVar<int> setCode@3 = MyVar<int> ( 5 ) ; }",
                       parse(clang));
     }
 

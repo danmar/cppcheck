@@ -37,6 +37,7 @@ Settings::Settings()
       checkLibrary(false),
       checkUnusedTemplates(false),
       clang(false),
+      clangExecutable("clang"),
       clangTidy(false),
       daca(false),
       debugBugHunting(false),

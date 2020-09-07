@@ -1144,6 +1144,11 @@ private:
     void findFunctionInBase(const std::string & name, nonneg int args, std::vector<const Function *> & matches) const;
 };
 
+enum class Reference {
+    None,
+    LValue,
+    RValue
+};
 
 /** Value type */
 class CPPCHECKLIB ValueType {
@@ -1153,6 +1158,7 @@ public:
     nonneg int bits;                    ///< bitfield bitcount
     nonneg int pointer;                 ///< 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
     nonneg int constness;               ///< bit 0=data, bit 1=*, bit 2=**
+    Reference reference = Reference::None;///< Is the outermost indirection of this type a reference or rvalue reference or not? pointer=2, Reference=LValue would be a T**&
     const Scope *typeScope;               ///< if the type definition is seen this point out the type scope
     const ::Type *smartPointerType;       ///< Smart pointer type
     const Token* smartPointerTypeToken;   ///< Smart pointer type token

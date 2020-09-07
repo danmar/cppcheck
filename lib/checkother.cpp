@@ -1391,6 +1391,42 @@ void CheckOther::checkConstVariable()
         // Skip if address is taken
         if (Token::findmatch(var->nameToken(), "& %varid%", scope->bodyEnd, var->declarationId()))
             continue;
+        // Skip if another non-const variable is initialized with this variable
+        {
+            //Is it the right side of an initialization of a non-const reference
+            bool usedInAssignment = false;
+            for (const Token* tok = var->nameToken(); tok != scope->bodyEnd && tok != nullptr; tok = tok->next()) {
+                if (!Token::Match(tok, "& %var% = %varid%", var->declarationId()))
+                    continue;
+                const Variable* refvar = tok->next()->variable();
+                if (refvar && !refvar->isConst() && refvar->nameToken() == tok->next()) {
+                    usedInAssignment = true;
+                    break;
+                }
+            }
+            if (usedInAssignment)
+                continue;
+        }
+        // Skip if we ever cast this variable to a pointer/reference to a non-const type
+        {
+            bool castToNonConst = false;
+            for (const Token* tok = var->nameToken(); tok != scope->bodyEnd && tok != nullptr; tok = tok->next()) {
+                if (tok->isCast()) {
+                    if (!tok->valueType()) {
+                        castToNonConst = true; // safe guess
+                        break;
+                    }
+                    bool isConst = 0 != (tok->valueType()->constness & (1 << tok->valueType()->pointer));
+                    if (!isConst) {
+                        castToNonConst = true;
+                        break;
+                    }
+                }
+            }
+            if (castToNonConst)
+                continue;
+        }
+
         constVariableError(var);
     }
 }

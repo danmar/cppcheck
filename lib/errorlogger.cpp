@@ -682,6 +682,9 @@ std::string ErrorLogger::toxml(const std::string &str)
         case '\"':
             xml << "&quot;";
             break;
+        case '\'':
+            xml << "&apos;";
+            break;
         case '\0':
             xml << "\\0";
             break;

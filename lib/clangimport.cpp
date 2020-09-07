@@ -48,6 +48,7 @@ static const std::string CXXDefaultArgExpr = "CXXDefaultArgExpr";
 static const std::string CXXDeleteExpr = "CXXDeleteExpr";
 static const std::string CXXDestructorDecl = "CXXDestructorDecl";
 static const std::string CXXForRangeStmt = "CXXForRangeStmt";
+static const std::string CXXFunctionalCastExpr = "CXXFunctionalCastExpr";
 static const std::string CXXMemberCallExpr = "CXXMemberCallExpr";
 static const std::string CXXMethodDecl = "CXXMethodDecl";
 static const std::string CXXNewExpr = "CXXNewExpr";
@@ -712,7 +713,7 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
             createTokensForCXXRecord(tokenList);
         return nullptr;
     }
-    if (nodeType == CXXStaticCastExpr) {
+    if (nodeType == CXXStaticCastExpr || nodeType == CXXFunctionalCastExpr) {
         Token *cast = addtoken(tokenList, getSpelling());
         Token *par1 = addtoken(tokenList, "(");
         Token *expr = children[0]->createTokens(tokenList);
@@ -1061,9 +1062,14 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
     const bool prev = (std::find(mExtTokens.begin(), mExtTokens.end(), "prev") != mExtTokens.end());
     const bool hasBody = mFile == 0 && !children.empty() && children.back()->nodeType == CompoundStmt;
 
+    const Token *startToken = nullptr;
+
     SymbolDatabase *symbolDatabase = mData->mSymbolDatabase;
-    if (nodeType != CXXConstructorDecl && nodeType != CXXDestructorDecl)
+    if (nodeType != CXXConstructorDecl && nodeType != CXXDestructorDecl) {
+        const Token * const before = tokenList->back();
         addTypeTokens(tokenList, '\'' + getType() + '\'');
+        startToken = before ? before->next() : tokenList->front();
+    }
     Token *nameToken = addtoken(tokenList, getSpelling() + getTemplateParameters());
     Scope *nestedIn = const_cast<Scope *>(nameToken->scope());
 
@@ -1078,6 +1084,8 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
             nestedIn->functionList.back().type = Function::Type::eConstructor;
         else if (nodeType == CXXDestructorDecl)
             nestedIn->functionList.back().type = Function::Type::eDestructor;
+        else
+            nestedIn->functionList.back().retDef = startToken;
     }
 
     Function * const function = const_cast<Function*>(nameToken->function());
@@ -1087,16 +1095,21 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
         symbolDatabase->scopeList.push_back(Scope(nullptr, nullptr, nestedIn));
         scope = &symbolDatabase->scopeList.back();
         scope->function = function;
+        scope->classDef = nameToken;
         scope->type = Scope::ScopeType::eFunction;
         scope->className = nameToken->str();
         nestedIn->nestedList.push_back(scope);
         function->hasBody(true);
+        function->functionScope = scope;
     }
 
     Token *par1 = addtoken(tokenList, "(");
     if (!function->arg)
         function->arg = par1;
     function->token = nameToken;
+    if (!function->nestedIn)
+        function->nestedIn = nestedIn;
+    function->argDef = par1;
     // Function arguments
     for (int i = 0; i < children.size(); ++i) {
         AstNodePtr child = children[i];

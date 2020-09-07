@@ -36,8 +36,23 @@ jobs:
         with:
           modules: 'qtcharts'
 
+      - name: Test CMake build
+        run: |
+          mkdir cmake.output
+          cd cmake.output
+          cmake -G "Unix Makefiles" -DBUILD_TESTS=On ..
+          make -j$(nproc) check
+          cd ..
+
+      - name: Unsigned char
+        run: |
+          make clean
+          make -j$(nproc) CXXFLAGS=-funsigned-char testrunner
+          ./testrunner TestSymbolDatabase
+
       - name: Build cppcheck
         run: |
+          make clean
           cp externals/z3_version_old.h externals/z3_version.h
           make -j$(nproc) USE_Z3=yes HAVE_RULES=yes
 
@@ -52,13 +67,48 @@ jobs:
       - name: Validate
         run: |
           make -j$(nproc) validateCFG validatePlatforms
-          
+
       - name: Build GUI on ubuntu
         if: matrix.os == 'ubuntu-latest'
         run: |
           pushd gui
           qmake HAVE_QCHART=yes
           make -j$(nproc)
+
+      - name: Run GUI tests on ubuntu
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          pushd gui/test/projectfile
+          qmake
+          make -j$(nproc)
+          ./test-projectfile
+
+      # Run self check after "Build GUI" to include generated headers in analysis
+      - name: Self check
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          # compile with verification and ast matchers
+          make clean
+          make -j$(nproc) -s CPPFLAGS="-DCHECK_INTERNAL" CXXFLAGS="-g -O2" MATCHCOMPILER=yes VERIFY=1
+          # self check lib/cli
+          mkdir b1
+          ./cppcheck -q -j$(nproc) --template=gcc --cppcheck-build-dir=b1 -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --inconclusive --enable=style,performance,portability,warning,internal --exception-handling cli lib
+          # check gui with qt settings
+          mkdir b2
+          ./cppcheck -q -j$(nproc) --template=gcc --cppcheck-build-dir=b2 -D__CPPCHECK__ -DQT_VERSION=0x050000 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=qt --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ --enable=style,performance,portability,warning,internal --exception-handling gui/*.cpp
+          # self check test and tools
+          ./cppcheck -q -j$(nproc) --template=gcc -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli -Igui --inconclusive --enable=style,performance,portability,warning,internal --exception-handling test/*.cpp tools
+
+      - name: Build triage on ubuntu
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          pushd tools/triage
+          qmake
+          make -j$(nproc)
+
+      - name: Fuzzer
+        run: |
+          g++ -fsyntax-only -std=c++11 -Ilib oss-fuzz/*.cpp
 
       - uses: actions/upload-artifact@v2
         with:

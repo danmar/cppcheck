@@ -328,21 +328,17 @@ unsigned int CppCheck::check(const std::string &path)
         const std::string analyzerInfo = mSettings.buildDir.empty() ? std::string() : AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "");
         const std::string clangcmd = analyzerInfo + ".clang-cmd";
         const std::string clangStderr = analyzerInfo + ".clang-stderr";
+        std::string exe = mSettings.clangExecutable;
 #ifdef _WIN32
-        const std::string exe = "clang.exe";
-#else
-        const std::string exe = "clang";
+        // append .exe if it is not a path
+        if (Path::fromNativeSeparators(mSettings.clangExecutable).find('/') == std::string::npos) {
+            exe += ".exe";
+        }
 #endif
 
         std::string flags(lang + " ");
-        if (Path::isCPP(path)) {
-            if (mSettings.standards.cpp == Standards::CPP14)
-                flags += "-std=c++14 ";
-            else if (mSettings.standards.cpp == Standards::CPP17)
-                flags += "-std=c++17 ";
-            else if (mSettings.standards.cpp == Standards::CPP20)
-                flags += "-std=c++20 ";
-        }
+        if (Path::isCPP(path) && !mSettings.standards.stdValue.empty())
+            flags += "-std=" + mSettings.standards.stdValue + " ";
 
         for (const std::string &i: mSettings.includePaths)
             flags += "-I" + i + " ";
@@ -413,12 +409,10 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
         temp.mSettings.userDefines += fs.cppcheckDefines();
     temp.mSettings.includePaths = fs.includePaths;
     temp.mSettings.userUndefs = fs.undefs;
-    if (fs.standard == "c++14")
-        temp.mSettings.standards.cpp = Standards::CPP14;
-    else if (fs.standard == "c++17")
-        temp.mSettings.standards.cpp = Standards::CPP17;
-    else if (fs.standard == "c++20")
-        temp.mSettings.standards.cpp = Standards::CPP20;
+    if (fs.standard.find("++") != std::string::npos)
+        temp.mSettings.standards.setCPP(fs.standard);
+    else if (!fs.standard.empty())
+        temp.mSettings.standards.setC(fs.standard);
     if (fs.platformType != Settings::Unspecified)
         temp.mSettings.platform(fs.platformType);
     if (mSettings.clang) {
