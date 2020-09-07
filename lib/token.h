@@ -1271,7 +1271,7 @@ public:
         else if (this == astParent()->astOperand2())
             return astParent()->astOperand1();
         return nullptr;
-        
+
     }
     const Token * astSibling() const {
         if (!astParent())
@@ -1281,7 +1281,7 @@ public:
         else if (this == astParent()->astOperand2())
             return astParent()->astOperand1();
         return nullptr;
-        
+
     }
     Token *astTop() {
         Token *ret = this;

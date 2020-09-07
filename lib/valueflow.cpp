@@ -3064,7 +3064,7 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, bool escape, Valu
                         lt.errorPath.emplace_back(returnTok, "Return reference.");
                         lt.errorPath.emplace_back(tok->previous(), "Called function passing '" + argTok->str() + "'.");
                         std::vector<LifetimeToken> arglts = LifetimeToken::setInconclusive(
-                            getLifetimeTokens(argTok, escape, std::move(lt.errorPath), depth - 1), returns.size() > 1);
+                                                                getLifetimeTokens(argTok, escape, std::move(lt.errorPath), depth - 1), returns.size() > 1);
                         result.insert(result.end(), arglts.begin(), arglts.end());
                     }
                 }
@@ -3076,7 +3076,7 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, bool escape, Valu
             if (y == Library::Container::Yield::AT_INDEX || y == Library::Container::Yield::ITEM) {
                 errorPath.emplace_back(tok->previous(), "Accessing container.");
                 return LifetimeToken::setAddressOf(
-                    getLifetimeTokens(tok->tokAt(-2)->astOperand1(), escape, std::move(errorPath), depth - 1), false);
+                           getLifetimeTokens(tok->tokAt(-2)->astOperand1(), escape, std::move(errorPath), depth - 1), false);
             }
         }
     } else if (Token::Match(tok, ".|::|[")) {
