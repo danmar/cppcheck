@@ -8292,6 +8292,19 @@ private:
                             "  }\n"
                             "};\n"));
 
+        // #9858
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "struct a {\n"
+                            "  struct b {};\n"
+                            "};\n"
+                            "void c(a::b, a::b);\n"
+                            "void g(a::b f) { c(f, {a::b{}}); }\n"
+                            "template <class> void h() {\n"
+                            "  int e;\n"
+                            "  for (int d = 0; d < e; d++)\n"
+                            "    ;\n"
+                            "}\n"));
+
         ASSERT_NO_THROW(tokenizeAndStringify("a<b?0:1>()==3;"));
     }
 
