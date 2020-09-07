@@ -473,6 +473,25 @@ static bool isEscapedReference(const Variable* var)
     return !isTemporary(true, vartok, nullptr, false);
 }
 
+static bool isDanglingSubFunction(const Token* tokvalue, const Token* tok)
+{
+    if (!tokvalue)
+        return false;
+    const Variable* var = tokvalue->variable();
+    if (!var->isLocal())
+        return false;
+    Function* f = Scope::nestedInFunction(tok->scope());
+    if (!f)
+        return false;
+    const Token* parent = tokvalue->astParent();
+    while(parent && !Token::Match(parent->previous(), "%name% (")) {
+        parent = parent->astParent();
+    }
+    if (!Token::simpleMatch(parent, "("))
+        return false;
+    return exprDependsOnThis(parent);
+}
+
 void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token * end)
 {
     if (!start)
@@ -537,7 +556,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                     }
                 }
                 if (tokvalue->variable() && (isInScope(tokvalue->variable()->nameToken(), tok->scope()) ||
-                                             (val.isSubFunctionLifetimeValue() && tokvalue->variable()->isLocal()))) {
+                                             (val.isSubFunctionLifetimeValue() && isDanglingSubFunction(tokvalue, tok)))) {
                     const Variable * var = nullptr;
                     const Token * tok2 = tok;
                     if (Token::simpleMatch(tok->astParent(), "=")) {

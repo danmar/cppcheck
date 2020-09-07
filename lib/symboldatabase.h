@@ -1040,6 +1040,17 @@ public:
         return false;
     }
 
+    static Function* nestedInFunction(const Scope* scope) {
+        while(scope) {
+            if (scope->type == Scope::eFunction)
+                break;
+            scope = scope->nestedIn;
+        }
+        if (!scope)
+            return nullptr;
+        return scope->function;
+    }
+
     bool isClassOrStruct() const {
         return (type == eClass || type == eStruct);
     }
