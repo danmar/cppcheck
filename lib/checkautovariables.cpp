@@ -514,7 +514,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
             if (!val.isLocalLifetimeValue())
                 continue;
             const bool escape = Token::Match(tok->astParent(), "return|throw");
-            for (const LifetimeToken& lt :getLifetimeTokens(getParentLifetime(val.tokvalue), escape)) {
+            for (const LifetimeToken& lt : getLifetimeTokens(getParentLifetime(val.tokvalue), escape)) {
                 const Token * tokvalue = lt.token;
                 if (escape) {
                     if (getPointerDepth(tok) < getPointerDepth(tokvalue))
@@ -530,7 +530,8 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                 } else if (tokvalue->variable() && isDeadScope(tokvalue->variable()->nameToken(), tok->scope())) {
                     errorInvalidLifetime(tok, &val);
                     break;
-                } else if (!tokvalue->variable() && isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok, &mSettings->library)) {
+                } else if (!tokvalue->variable() &&
+                           isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok, &mSettings->library)) {
                     errorDanglingTemporaryLifetime(tok, &val);
                     break;
                 } else if (tokvalue->variable() && isInScope(tokvalue->variable()->nameToken(), tok->scope())) {

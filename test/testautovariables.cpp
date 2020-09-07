@@ -2674,7 +2674,8 @@ private:
               "  const int &x2 = x1;\n"
               "  return x2;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3] -> [test.cpp:5]: (error) Reference to temporary returned.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3] -> [test.cpp:5]: (error) Reference to temporary returned.\n",
+                      errout.str());
     }
 
     void invalidLifetime() {
