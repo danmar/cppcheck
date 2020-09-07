@@ -2310,6 +2310,12 @@ private:
               "  }"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+
+        check("void f(bool x, const int a, const int b) {\n"
+              "        if(x && a < b)\n"
+              "            if( x && a > b){}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
     }
 
     void oppositeInnerConditionEmpty() {

@@ -5310,7 +5310,7 @@ private:
         check("void f(int* x, bool b) {\n"
               "    if ((!x && b) || (x != 0 && b)) {}\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Opposite expression on both sides of '||'.\n", errout.str());
     }
 
     void oppositeExpression() {
