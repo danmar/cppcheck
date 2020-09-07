@@ -247,6 +247,10 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
             return;
     }
 
+    // smart pointer is not uninitialized
+    if (tok->variable() && !tok->variable()->isPointer() && tok->variable()->isSmartPointer())
+        return;
+
     // lhs in assignment
     if (tok->astParent()->str() == "=" && tok == tok->astParent()->astOperand1())
         return;
