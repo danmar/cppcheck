@@ -417,6 +417,7 @@ private:
         TEST_CASE(simplifyOperatorName27);
 
         TEST_CASE(simplifyOverloadedOperators1);
+        TEST_CASE(simplifyOverloadedOperators2); // (*this)(123)
 
         TEST_CASE(simplifyNullArray);
 
@@ -6649,6 +6650,18 @@ private:
                       "void foo ( S x ) {\n"
                       "x . operator() ( 123 ) ;\n"
                       "}",
+                      tokenizeAndStringify(code));
+    }
+
+    void simplifyOverloadedOperators2() { // #9879 - (*this)(123);
+        const char code[] = "struct S {\n"
+                            "  void operator()(int);\n"
+                            "  void foo() { (*this)(123); }\n"
+                            "};\n";
+        ASSERT_EQUALS("struct S {\n"
+                      "void operator() ( int ) ;\n"
+                      "void foo ( ) { ( * this ) . operator() ( 123 ) ; }\n"
+                      "} ;",
                       tokenizeAndStringify(code));
     }
 
