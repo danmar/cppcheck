@@ -484,7 +484,7 @@ static bool isDanglingSubFunction(const Token* tokvalue, const Token* tok)
     if (!f)
         return false;
     const Token* parent = tokvalue->astParent();
-    while(parent && !Token::Match(parent->previous(), "%name% (")) {
+    while (parent && !Token::Match(parent->previous(), "%name% (")) {
         parent = parent->astParent();
     }
     if (!Token::simpleMatch(parent, "("))
