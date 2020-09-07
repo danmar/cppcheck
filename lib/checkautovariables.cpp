@@ -487,7 +487,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
         // Return reference from function
         if (returnRef && Token::simpleMatch(tok->astParent(), "return")) {
-            for (const LifetimeToken& lt : getLifetimeTokens(tok)) {
+            for (const LifetimeToken& lt : getLifetimeTokens(tok, true)) {
                 const Variable* var = lt.token->variable();
                 if (var && !var->isGlobal() && !var->isStatic() && !var->isReference() && !var->isRValueReference() &&
                     isInScope(var->nameToken(), tok->scope())) {
@@ -513,9 +513,10 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
         for (const ValueFlow::Value& val:tok->values()) {
             if (!val.isLocalLifetimeValue())
                 continue;
-            for (const LifetimeToken& lt :getLifetimeTokens(getParentLifetime(val.tokvalue))) {
+            const bool escape = Token::Match(tok->astParent(), "return|throw");
+            for (const LifetimeToken& lt :getLifetimeTokens(getParentLifetime(val.tokvalue), escape)) {
                 const Token * tokvalue = lt.token;
-                if (Token::Match(tok->astParent(), "return|throw")) {
+                if (escape) {
                     if (getPointerDepth(tok) < getPointerDepth(tokvalue))
                         continue;
                     if (!isLifetimeBorrowed(tok, mSettings))

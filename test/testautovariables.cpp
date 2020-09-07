@@ -2660,6 +2660,21 @@ private:
               "    return std::string(str.c_str(), 1);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int get_value();\n"
+              "const int &get_reference1() {\n"
+              "  const int &x = get_value();\n"
+              "  return x;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Reference to temporary returned.\n", errout.str());
+
+        check("int get_value();\n"
+              "const int &get_reference2() {\n"
+              "  const int &x1 = get_value();\n"
+              "  const int &x2 = x1;\n"
+              "  return x2;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3] -> [test.cpp:5]: (error) Reference to temporary returned.\n", errout.str());
     }
 
     void invalidLifetime() {

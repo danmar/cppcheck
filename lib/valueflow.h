@@ -364,7 +364,7 @@ struct LifetimeToken {
 
 const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value);
 
-std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, ValueFlow::Value::ErrorPath errorPath = ValueFlow::Value::ErrorPath{}, int depth = 20);
+std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, bool escape=false, ValueFlow::Value::ErrorPath errorPath = ValueFlow::Value::ErrorPath{}, int depth = 20);
 
 const Variable* getLifetimeVariable(const Token* tok, ValueFlow::Value::ErrorPath& errorPath, bool* addressOf = nullptr);
 
