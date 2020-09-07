@@ -42,7 +42,8 @@ private:
         TEST_CASE(uninit_malloc);
         TEST_CASE(uninit_struct);
         TEST_CASE(uninit_bailout);
-        TEST_CASE(uninit_fp_try_smartptr);
+        TEST_CASE(uninit_fp_smartptr);
+        TEST_CASE(uninit_fp_struct);
         TEST_CASE(uninit_fp_template_var);
         TEST_CASE(ctu);
 #endif
@@ -178,11 +179,25 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void uninit_fp_try_smartptr() {
+    void uninit_fp_smartptr() {
         check("void foo() {\n"
               "    std::unique_ptr<std::string> buffer;\n"
               "    try { } catch (std::exception& e) { }\n"
               "    doneCallback(std::move(buffer));\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninit_fp_struct() {
+        check("struct Pos {\n"
+              "    int x {0};\n"
+              "    int y {0};\n"
+              "};\n"
+              "\n"
+              "void dostuff() {\n"
+              "    auto obj = C {};\n"
+              "    Pos xy;\n"
+              "    foo(xy);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
