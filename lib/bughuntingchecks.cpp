@@ -251,6 +251,10 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
     if (tok->variable() && !tok->variable()->isPointer() && tok->variable()->isSmartPointer())
         return;
 
+    // template variable is not uninitialized
+    if (tok->variable() && !tok->variable()->isPointer() && Token::findmatch(tok->variable()->typeStartToken(), "%name% <", tok->variable()->typeEndToken()))
+        return;
+
     // lhs in assignment
     if (tok->astParent()->str() == "=" && tok == tok->astParent()->astOperand1())
         return;
