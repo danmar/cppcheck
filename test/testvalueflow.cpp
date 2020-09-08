@@ -4715,6 +4715,15 @@ private:
                "    return x;\n"
                "}\n";
         valueOfTok(code, "x");
+
+        code = "void f() {\n"
+               "    std::string a = b[c->d()];\n"
+               "    if(a.empty()) {\n"
+               "        INFO(std::string{\"a\"} + c->d());\n"
+               "        INFO(std::string{\"b\"} + a);\n"
+               "    }\n"
+               "}\n";
+        valueOfTok(code, "a");
     }
 
     void valueFlowHang() {
