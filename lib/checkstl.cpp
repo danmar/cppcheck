@@ -89,14 +89,14 @@ void CheckStl::outOfBounds()
                     const Token* indexTok = parent->tokAt(2)->astOperand2();
                     if (!indexTok)
                         continue;
-                    const ValueFlow::Value* indexValue = indexTok ? indexTok->getMaxValue(false) : nullptr;
+                    const ValueFlow::Value* indexValue = indexTok->getMaxValue(false);
                     if (indexValue && indexValue->intvalue >= value.intvalue) {
                         outOfBoundsError(
                             parent, tok->expressionString(), &value, indexTok->expressionString(), indexValue);
                         continue;
                     }
                     if (mSettings->isEnabled(Settings::WARNING)) {
-                        indexValue = indexTok ? indexTok->getMaxValue(true) : nullptr;
+                        indexValue = indexTok->getMaxValue(true);
                         if (indexValue && indexValue->intvalue >= value.intvalue) {
                             outOfBoundsError(
                                 parent, tok->expressionString(), &value, indexTok->expressionString(), indexValue);
