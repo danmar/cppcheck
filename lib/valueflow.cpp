@@ -488,7 +488,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
 
     // cast..
     if (const Token *castType = getCastTypeStartToken(parent)) {
-        if (astIsPointer(tok) && value.valueType == ValueFlow::Value::INT &&
+        if (((tok->valueType() == nullptr && value.isImpossible()) || astIsPointer(tok)) && value.valueType == ValueFlow::Value::INT &&
             Token::simpleMatch(parent->astOperand1(), "dynamic_cast"))
             return;
         const ValueType &valueType = ValueType::parseDecl(castType, settings);
@@ -617,6 +617,10 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                             result.valueType = ValueFlow::Value::FLOAT;
                             result.floatValue = floatValue1 - floatValue2;
                         } else {
+                            // Avoid overflow
+                            if (value1.intvalue < 0 && value2.intvalue > value1.intvalue - LLONG_MIN)
+                                break;
+
                             result.intvalue = value1.intvalue - value2.intvalue;
                         }
                         // If the bound comes from the second value then invert the bound
@@ -781,9 +785,12 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
             if (!val.isIntValue() && !val.isFloatValue())
                 continue;
             ValueFlow::Value v(val);
-            if (v.isIntValue())
+            if (v.isIntValue()) {
+                if (v.intvalue == LLONG_MIN)
+                    // Value can't be inverted
+                    continue;
                 v.intvalue = -v.intvalue;
-            else
+            } else
                 v.floatValue = -v.floatValue;
             v.invertBound();
             setTokenValue(parent, v, settings);
@@ -2995,7 +3002,7 @@ ValueFlow::Value getLifetimeObjValue(const Token *tok, bool inconclusive)
     return result;
 }
 
-std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, ValueFlow::Value::ErrorPath errorPath, int depth)
+std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, bool escape, ValueFlow::Value::ErrorPath errorPath, int depth)
 {
     if (!tok)
         return std::vector<LifetimeToken> {};
@@ -3012,10 +3019,10 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, ValueFlow::Value:
             } else if (Token::simpleMatch(var->declEndToken(), "=")) {
                 errorPath.emplace_back(var->declEndToken(), "Assigned to reference.");
                 const Token *vartok = var->declEndToken()->astOperand2();
-                if (vartok == tok || (var->isConst() && isTemporary(true, vartok, nullptr, true)))
+                if (vartok == tok || (!escape && var->isConst() && isTemporary(true, vartok, nullptr, true)))
                     return {{tok, true, std::move(errorPath)}};
                 if (vartok)
-                    return getLifetimeTokens(vartok, std::move(errorPath), depth - 1);
+                    return getLifetimeTokens(vartok, escape, std::move(errorPath), depth - 1);
             } else if (Token::simpleMatch(var->nameToken()->astParent(), ":") &&
                        var->nameToken()->astParent()->astParent() &&
                        Token::simpleMatch(var->nameToken()->astParent()->astParent()->previous(), "for (")) {
@@ -3025,7 +3032,7 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, ValueFlow::Value:
                     return {{tok, true, std::move(errorPath)}};
                 const Token* contok = var->nameToken()->astParent()->astOperand2();
                 if (contok)
-                    return getLifetimeTokens(contok, std::move(errorPath), depth - 1);
+                    return getLifetimeTokens(contok, escape, std::move(errorPath), depth - 1);
             } else {
                 return std::vector<LifetimeToken> {};
             }
@@ -3040,7 +3047,7 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, ValueFlow::Value:
             for (const Token* returnTok : returns) {
                 if (returnTok == tok)
                     continue;
-                for (LifetimeToken& lt : getLifetimeTokens(returnTok, std::move(errorPath), depth - 1)) {
+                for (LifetimeToken& lt : getLifetimeTokens(returnTok, escape, std::move(errorPath), depth - 1)) {
                     const Token* argvarTok = lt.token;
                     const Variable* argvar = argvarTok->variable();
                     if (!argvar)
@@ -3057,7 +3064,7 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, ValueFlow::Value:
                         lt.errorPath.emplace_back(returnTok, "Return reference.");
                         lt.errorPath.emplace_back(tok->previous(), "Called function passing '" + argTok->str() + "'.");
                         std::vector<LifetimeToken> arglts = LifetimeToken::setInconclusive(
-                                                                getLifetimeTokens(argTok, std::move(lt.errorPath), depth - 1), returns.size() > 1);
+                                                                getLifetimeTokens(argTok, escape, std::move(lt.errorPath), depth - 1), returns.size() > 1);
                         result.insert(result.end(), arglts.begin(), arglts.end());
                     }
                 }
@@ -3069,7 +3076,7 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, ValueFlow::Value:
             if (y == Library::Container::Yield::AT_INDEX || y == Library::Container::Yield::ITEM) {
                 errorPath.emplace_back(tok->previous(), "Accessing container.");
                 return LifetimeToken::setAddressOf(
-                           getLifetimeTokens(tok->tokAt(-2)->astOperand1(), std::move(errorPath), depth - 1), false);
+                           getLifetimeTokens(tok->tokAt(-2)->astOperand1(), escape, std::move(errorPath), depth - 1), false);
             }
         }
     } else if (Token::Match(tok, ".|::|[")) {
@@ -3092,10 +3099,10 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, ValueFlow::Value:
                 if (!v.isLocalLifetimeValue())
                     continue;
                 errorPath.insert(errorPath.end(), v.errorPath.begin(), v.errorPath.end());
-                return getLifetimeTokens(v.tokvalue, std::move(errorPath));
+                return getLifetimeTokens(v.tokvalue, escape, std::move(errorPath));
             }
         } else {
-            return LifetimeToken::setAddressOf(getLifetimeTokens(vartok, std::move(errorPath)),
+            return LifetimeToken::setAddressOf(getLifetimeTokens(vartok, escape, std::move(errorPath)),
                                                !(astIsContainer(vartok) && Token::simpleMatch(vartok->astParent(), "[")));
         }
     }
@@ -3706,8 +3713,12 @@ static void valueFlowLifetimeConstructor(Token* tok, TokenList* tokenlist, Error
 }
 
 struct Lambda {
+    enum class Capture {
+        ByValue,
+        ByReference
+    };
     explicit Lambda(const Token * tok)
-        : capture(nullptr), arguments(nullptr), returnTok(nullptr), bodyTok(nullptr) {
+        : capture(nullptr), arguments(nullptr), returnTok(nullptr), bodyTok(nullptr), explicitCaptures() {
         if (!Token::simpleMatch(tok, "[") || !tok->link())
             return;
         capture = tok;
@@ -3722,12 +3733,31 @@ struct Lambda {
         } else if (Token::simpleMatch(afterArguments, "{")) {
             bodyTok = afterArguments;
         }
+        for (const Token* c:getCaptures()) {
+            if (c->variable()) {
+                explicitCaptures[c->variable()] = std::make_pair(c, Capture::ByValue);
+            } else if (c->isUnaryOp("&") && Token::Match(c->astOperand1(), "%var%")) {
+                explicitCaptures[c->astOperand1()->variable()] = std::make_pair(c->astOperand1(), Capture::ByReference);
+            } else {
+                const std::string& s = c->expressionString();
+                if (s == "=")
+                    implicitCapture = Capture::ByValue;
+                else if (s == "&")
+                    implicitCapture = Capture::ByReference;
+            }
+        }
     }
 
     const Token * capture;
     const Token * arguments;
     const Token * returnTok;
     const Token * bodyTok;
+    std::unordered_map<const Variable*, std::pair<const Token*, Capture>> explicitCaptures;
+    Capture implicitCapture;
+
+    std::vector<const Token*> getCaptures() {
+        return getArguments(capture);
+    }
 
     bool isLambda() const {
         return capture && bodyTok;
@@ -3762,10 +3792,14 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             const Scope * bodyScope = lam.bodyTok->scope();
 
             std::set<const Scope *> scopes;
+            // Avoid capturing a variable twice
+            std::set<nonneg int> varids;
 
-            auto isCapturingVariable = [&](const Token *varTok) {
+            auto isImplicitCapturingVariable = [&](const Token *varTok) {
                 const Variable *var = varTok->variable();
                 if (!var)
+                    return false;
+                if (varids.count(var->declarationId()) > 0)
                     return false;
                 if (!var->isLocal() && !var->isArgument())
                     return false;
@@ -3777,23 +3811,41 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
                 if (scope->isNestedIn(bodyScope))
                     return false;
                 scopes.insert(scope);
+                varids.insert(var->declarationId());
                 return true;
             };
 
-            // TODO: Handle explicit capture
-            bool captureByRef = Token::Match(lam.capture, "[ & ]");
-            bool captureByValue = Token::Match(lam.capture, "[ = ]");
+            auto captureVariable = [&](const Token* tok2, Lambda::Capture c, std::function<bool(const Token*)> pred) {
+                if (varids.count(tok->varId()) > 0)
+                    return;
+                ErrorPath errorPath;
+                if (c == Lambda::Capture::ByReference) {
+                    LifetimeStore{tok2, "Lambda captures variable by reference here.", ValueFlow::Value::LifetimeKind::Lambda} .byRef(
+                        tok, tokenlist, errorLogger, settings, pred);
+                } else if (c == Lambda::Capture::ByValue) {
+                    LifetimeStore{tok2, "Lambda captures variable by value here.", ValueFlow::Value::LifetimeKind::Lambda} .byVal(
+                        tok, tokenlist, errorLogger, settings, pred);
+                }
+            };
+
+            // Handle explicit capture
+            for (const auto& p:lam.explicitCaptures) {
+                const Variable* var = p.first;
+                if (!var)
+                    continue;
+                const Token* tok2 = p.second.first;
+                Lambda::Capture c = p.second.second;
+                captureVariable(tok2, c, [](const Token*) {
+                    return true;
+                });
+                varids.insert(var->declarationId());
+            }
 
             for (const Token * tok2 = lam.bodyTok; tok2 != lam.bodyTok->link(); tok2 = tok2->next()) {
-                ErrorPath errorPath;
-                if (captureByRef) {
-                    LifetimeStore{tok2, "Lambda captures variable by reference here.", ValueFlow::Value::LifetimeKind::Lambda} .byRef(
-                        tok, tokenlist, errorLogger, settings, isCapturingVariable);
-                } else if (captureByValue) {
-                    LifetimeStore{tok2, "Lambda captures variable by value here.", ValueFlow::Value::LifetimeKind::Lambda} .byVal(
-                        tok, tokenlist, errorLogger, settings, isCapturingVariable);
-                }
+                captureVariable(tok2, lam.implicitCapture, isImplicitCapturingVariable);
             }
+
+            valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
         }
         // address of
         else if (tok->isUnaryOp("&")) {

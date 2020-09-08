@@ -247,6 +247,21 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
             return;
     }
 
+    // variable that is not uninitialized..
+    if (tok->variable() && !tok->variable()->isPointer() && !tok->variable()->isReference()) {
+        // smart pointer is not uninitialized
+        if (tok->variable()->isSmartPointer())
+            return;
+
+        // struct
+        if (tok->variable()->type() && tok->variable()->type()->needInitialization == Type::NeedInitialization::False)
+            return;
+
+        // template variable is not uninitialized
+        if (Token::findmatch(tok->variable()->typeStartToken(), "%name% <", tok->variable()->typeEndToken()))
+            return;
+    }
+
     // lhs in assignment
     if (tok->astParent()->str() == "=" && tok == tok->astParent()->astOperand1())
         return;

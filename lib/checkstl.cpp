@@ -2547,7 +2547,6 @@ void CheckStl::knownEmptyContainer()
             if (tok->str() == "for") {
                 if (!Token::simpleMatch(tok->next()->link(), ") {"))
                     continue;
-                const Token *bodyTok = tok->next()->link()->next();
                 const Token *splitTok = tok->next()->astOperand2();
                 if (!Token::simpleMatch(splitTok, ":"))
                     continue;

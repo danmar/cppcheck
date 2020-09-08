@@ -743,6 +743,9 @@ private:
      */
     void simplifyOperatorName();
 
+    /** simplify overloaded operators: 'obj(123)' => 'obj . operator() ( 123 )' */
+    void simplifyOverloadedOperators();
+
     /**
     * Remove [[attribute]] (C++11 and later) from TokenList
     */

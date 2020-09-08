@@ -108,13 +108,15 @@ This option is only valid when supplying an input directory. To ignore multiple 
 
     cppcheck -isrc/b -isrc/c
 
-### Clang parser
+### Clang parser (experimental)
 
-By default Cppcheck uses an internal C/C++ parser. However it is possible to use the Clang parser instead.
+By default Cppcheck uses an internal C/C++ parser. However there is an experimental option to use the Clang parser instead.
 
 Install `clang`. Then use Cppcheck option `--clang`.
 
 Technically, Cppcheck will execute `clang` with its `-ast-dump` option. The Clang output is then imported and converted into our normal Cppcheck format. And then normal Cppcheck analysis is performed on that.
+
+You can also pass a custom Clang executable to the option by using e.g. `--clang=clang-10`. You can also pass it with a path. On Windows it will append the `.exe` extension unless you use a path.
 
 ## Severities
 

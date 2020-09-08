@@ -299,6 +299,10 @@ static T* nextAfterAstRightmostLeafGeneric(T* tok)
     if (!rightmostLeaf || !rightmostLeaf->astOperand1())
         return nullptr;
     do {
+        if (const Token* lam = findLambdaEndToken(rightmostLeaf)) {
+            rightmostLeaf = lam;
+            break;
+        }
         if (rightmostLeaf->astOperand2())
             rightmostLeaf = rightmostLeaf->astOperand2();
         else
@@ -951,6 +955,21 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
 {
     if (!cond1 || !cond2)
         return false;
+
+    if (cond1->str() == "&&" && cond2->str() == "&&") {
+        for (const Token* tok1: {
+        cond1->astOperand1(), cond1->astOperand2()
+        }) {
+            for (const Token* tok2: {
+            cond2->astOperand1(), cond2->astOperand2()
+            }) {
+                if (isSameExpression(cpp, true, tok1, tok2, library, pure, followVar, errors)) {
+                    if (isOppositeCond(isNot, cpp, tok1->astSibling(), tok2->astSibling(), library, pure, followVar, errors))
+                        return true;
+                }
+            }
+        }
+    }
 
     if (cond1->str() == "!") {
         if (cond2->str() == "!=") {

@@ -2310,6 +2310,12 @@ private:
               "  }"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+
+        check("void f(bool x, const int a, const int b) {\n"
+              "        if(x && a < b)\n"
+              "            if( x && a > b){}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
     }
 
     void oppositeInnerConditionEmpty() {
@@ -3303,6 +3309,17 @@ private:
               "    return;\n"
               "  auto b = dynamic_cast<B*>(x);\n"
               "  if (b) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int foo() {\n"
+              "    auto x = getX();\n"
+              "    if (x == nullptr)\n"
+              "        return 1;\n"
+              "    auto y = dynamic_cast<Y*>(x)\n"
+              "    if (y == nullptr)\n"
+              "        return 2;\n"
+              "    return 3;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 

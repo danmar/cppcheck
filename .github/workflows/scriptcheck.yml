@@ -38,3 +38,11 @@ jobs:
           pylint --rcfile=pylintrc_travis htmlreport/*.py
           pylint --rcfile=pylintrc_travis tools/*.py
           
+      - name: compile addons
+        run: |
+          python -m compileall ./addons
+          python3 -m compileall ./addons
+
+      - name: check .json files
+        run: |
+          find . -name '*.json' | xargs -n 1 python3 -m json.tool > /dev/null

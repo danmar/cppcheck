@@ -416,6 +416,10 @@ private:
         TEST_CASE(simplifyOperatorName26);
         TEST_CASE(simplifyOperatorName27);
 
+        TEST_CASE(simplifyOverloadedOperators1);
+        TEST_CASE(simplifyOverloadedOperators2); // (*this)(123)
+        TEST_CASE(simplifyOverloadedOperators3); // #9881 - hang
+
         TEST_CASE(simplifyNullArray);
 
         // Some simple cleanups of unhandled macros in the global scope
@@ -6636,6 +6640,50 @@ private:
                       tokenizeAndStringify(code));
     }
 
+    void simplifyOverloadedOperators1() {
+        const char code[] = "struct S { void operator()(int); };\n"
+                            "\n"
+                            "void foo(S x) {\n"
+                            "    x(123);\n"
+                            "}";
+        ASSERT_EQUALS("struct S { void operator() ( int ) ; } ;\n"
+                      "\n"
+                      "void foo ( S x ) {\n"
+                      "x . operator() ( 123 ) ;\n"
+                      "}",
+                      tokenizeAndStringify(code));
+    }
+
+    void simplifyOverloadedOperators2() { // #9879 - (*this)(123);
+        const char code[] = "struct S {\n"
+                            "  void operator()(int);\n"
+                            "  void foo() { (*this)(123); }\n"
+                            "};\n";
+        ASSERT_EQUALS("struct S {\n"
+                      "void operator() ( int ) ;\n"
+                      "void foo ( ) { ( * this ) . operator() ( 123 ) ; }\n"
+                      "} ;",
+                      tokenizeAndStringify(code));
+    }
+
+    void simplifyOverloadedOperators3() { // #9881
+        const char code[] = "struct Func { double operator()(double x) const; };\n"
+                            "void foo(double, double);\n"
+                            "void test() {\n"
+                            "    Func max;\n"
+                            "    double y = 0;\n"
+                            "    foo(0, max(y));\n"
+                            "}";
+        ASSERT_EQUALS("struct Func { double operator() ( double x ) const ; } ;\n"
+                      "void foo ( double , double ) ;\n"
+                      "void test ( ) {\n"
+                      "Func max ;\n"
+                      "double y ; y = 0 ;\n"
+                      "foo ( 0 , max . operator() ( y ) ) ;\n"
+                      "}",
+                      tokenizeAndStringify(code));
+    }
+
     void simplifyNullArray() {
         ASSERT_EQUALS("* ( foo . bar [ 5 ] ) = x ;", tokenizeAndStringify("0[foo.bar[5]] = x;"));
     }
@@ -7895,7 +7943,7 @@ private:
         // `-(
         //   `-{
 
-        ASSERT_EQUALS("x{([( ai=", testAst("x([&a](int i){a=i;});"));
+        ASSERT_EQUALS("x{(a&[( ai=", testAst("x([&a](int i){a=i;});"));
         ASSERT_EQUALS("{([(return 0return", testAst("return [](){ return 0; }();"));
 
         // noexcept
@@ -7903,40 +7951,40 @@ private:
 
         // ->
         ASSERT_EQUALS("{([(return 0return", testAst("return []() -> int { return 0; }();"));
-        ASSERT_EQUALS("{([(return 0return", testAst("return [something]() -> int { return 0; }();"));
+        ASSERT_EQUALS("{(something[(return 0return", testAst("return [something]() -> int { return 0; }();"));
         ASSERT_EQUALS("{([cd,(return 0return", testAst("return [](int a, int b) -> int { return 0; }(c, d);"));
         ASSERT_EQUALS("{([return", testAst("return []() -> decltype(0) {};"));
-        ASSERT_EQUALS("x{([=", testAst("x = [&]()->std::string const & {};"));
+        ASSERT_EQUALS("x{(&[=", testAst("x = [&]()->std::string const & {};"));
         ASSERT_EQUALS("f{([=", testAst("f = []() -> foo* {};"));
         ASSERT_EQUALS("f{([=", testAst("f = [](void) mutable -> foo* {};"));
         ASSERT_EQUALS("f{([=", testAst("f = []() mutable {};"));
 
         ASSERT_EQUALS("x{([= 0return", testAst("x = [](){return 0; };"));
 
-        ASSERT_EQUALS("ab{[(= cd=", testAst("a = b([&]{c=d;});"));
+        ASSERT_EQUALS("ab{&[(= cd=", testAst("a = b([&]{c=d;});"));
 
         // 8628
         ASSERT_EQUALS("f{([( switchx( 1case y++", testAst("f([](){switch(x){case 1:{++y;}}});"));
 
-        ASSERT_EQUALS("{([{return ab=",
+        ASSERT_EQUALS("{(=[{return ab=",
                       testAst("return {\n"
                               "  [=]() {\n"
                               "    a = b;\n"
                               "  }\n"
                               "};\n"));
-        ASSERT_EQUALS("{[{return ab=",
+        ASSERT_EQUALS("{=[{return ab=",
                       testAst("return {\n"
                               "  [=] {\n"
                               "    a = b;\n"
                               "  }\n"
                               "};\n"));
-        ASSERT_EQUALS("{([{return ab=",
+        ASSERT_EQUALS("{(=[{return ab=",
                       testAst("return {\n"
                               "  [=]() -> int {\n"
                               "    a=b;\n"
                               "  }\n"
                               "}"));
-        ASSERT_EQUALS("{([{return ab=",
+        ASSERT_EQUALS("{(=[{return ab=",
                       testAst("return {\n"
                               "  [=]() mutable -> int {\n"
                               "    a=b;\n"
@@ -7944,12 +7992,13 @@ private:
                               "}"));
 
         // daca@home hang
-        ASSERT_EQUALS("a{([= 0return b{([= fori0=i10!=i++;;(",
+        ASSERT_EQUALS("a{(&[= 0return b{(=[= fori0=i10!=i++;;(",
                       testAst("a = [&]() -> std::pair<int, int> { return 0; };\n"
                               "b = [=]() { for (i = 0; i != 10; ++i); };"));
 
         // #9662
         ASSERT_EQUALS("b{[{ stdunique_ptr::0nullptrnullptr:?{", testAst("auto b{[] { std::unique_ptr<void *>{0 ? nullptr : nullptr}; }};"));
+        ASSERT_EQUALS("a( b{[=", testAst("void a() { [b = [] { ; }] {}; }"));
 
     }
 
@@ -8126,6 +8175,9 @@ private:
 
         ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { assert(a==()); }"), InternalError, "syntax error: ==()");
         ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { assert(a+()); }"), InternalError, "syntax error: +()");
+
+        // #9445 - typeof is not a keyword in C
+        ASSERT_NO_THROW(tokenizeAndStringify("void foo() { char *typeof, *value; }", false, false, Settings::Native, "test.c"));
     }
 
 
@@ -8274,6 +8326,19 @@ private:
                             "    d e = {(p1)...};\n"
                             "  }\n"
                             "};\n"));
+
+        // #9858
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "struct a {\n"
+                            "  struct b {};\n"
+                            "};\n"
+                            "void c(a::b, a::b);\n"
+                            "void g(a::b f) { c(f, {a::b{}}); }\n"
+                            "template <class> void h() {\n"
+                            "  int e;\n"
+                            "  for (int d = 0; d < e; d++)\n"
+                            "    ;\n"
+                            "}\n"));
 
         ASSERT_NO_THROW(tokenizeAndStringify("a<b?0:1>()==3;"));
     }

@@ -1939,7 +1939,7 @@ void Variable::evaluate(const Settings* settings)
             setFlag(fIsReference, true); // Set also fIsReference
         }
 
-        if (tok->isMaybeUnused()) {
+        if (tok->isAttributeMaybeUnused()) {
             setFlag(fIsMaybeUnused, true);
         }
 
@@ -5355,12 +5355,15 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
 
     if (vt1 && Token::Match(parent, "<<|>>")) {
         if (!mIsCpp || (vt2 && vt2->isIntegral())) {
-            if (vt1->type < ValueType::Type::BOOL || vt1->type >= ValueType::Type::INT)
-                setValueType(parent, *vt1);
-            else {
+            if (vt1->type < ValueType::Type::BOOL || vt1->type >= ValueType::Type::INT) {
+                ValueType vt(*vt1);
+                vt.reference = Reference::None;
+                setValueType(parent, vt);
+            } else {
                 ValueType vt(*vt1);
                 vt.type = ValueType::Type::INT; // Integer promotion
                 vt.sign = ValueType::Sign::SIGNED;
+                vt.reference = Reference::None;
                 setValueType(parent, vt);
             }
 

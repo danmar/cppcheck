@@ -769,7 +769,15 @@ void TemplateSimplifier::addInstantiation(Token *token, const std::string &scope
 {
     simplifyTemplateArgs(token->tokAt(2), token->next()->findClosingBracket());
 
-    mTemplateInstantiations.emplace_back(token, scope);
+    TokenAndName instantiation(token, scope);
+
+    // check if instantiation already exists before adding it
+    std::list<TokenAndName>::iterator it = std::find(mTemplateInstantiations.begin(),
+                                           mTemplateInstantiations.end(),
+                                           instantiation);
+
+    if (it == mTemplateInstantiations.end())
+        mTemplateInstantiations.emplace_back(instantiation);
 }
 
 void TemplateSimplifier::getTemplateInstantiations()
@@ -835,9 +843,7 @@ void TemplateSimplifier::getTemplateInstantiations()
             std::string qualification;
             Token * qualificationTok = tok;
             while (Token::Match(tok, "%name% :: %name%")) {
-                // ignore redundant namespaces
-                if (scopeName.find(tok->str()) == std::string::npos)
-                    qualification += (qualification.empty() ? "" : " :: ") + tok->str();
+                qualification += (qualification.empty() ? "" : " :: ") + tok->str();
                 tok = tok->tokAt(2);
             }
 

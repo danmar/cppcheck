@@ -1825,6 +1825,50 @@ private:
               "    return g([&]() { return x; });\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("auto f() {\n"
+              "    int i = 0;\n"
+              "    return [&i] {};\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning lambda that captures local variable 'i' that will be invalid when returning.\n", errout.str());
+
+        check("auto f() {\n"
+              "    int i = 0;\n"
+              "    return [i] {};\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("auto f() {\n"
+              "    int i = 0;\n"
+              "    return [=, &i] {};\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning lambda that captures local variable 'i' that will be invalid when returning.\n", errout.str());
+
+        check("auto f() {\n"
+              "    int i = 0;\n"
+              "    int j = 0;\n"
+              "    return [=, &i] { return j; };\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning lambda that captures local variable 'i' that will be invalid when returning.\n", errout.str());
+
+        check("auto f() {\n"
+              "    int i = 0;\n"
+              "    return [&, i] {};\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("auto f() {\n"
+              "    int i = 0;\n"
+              "    int j = 0;\n"
+              "    return [&, i] { return j; };\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3] -> [test.cpp:4]: (error) Returning lambda that captures local variable 'j' that will be invalid when returning.\n", errout.str());
+
+        check("auto f(int& i) {\n"
+              "    int j = 0;\n"
+              "    return [=, &i] { return j; };\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeContainer() {
@@ -2656,6 +2700,22 @@ private:
               "    return std::string(str.c_str(), 1);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int get_value();\n"
+              "const int &get_reference1() {\n"
+              "  const int &x = get_value();\n"
+              "  return x;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Reference to temporary returned.\n", errout.str());
+
+        check("int get_value();\n"
+              "const int &get_reference2() {\n"
+              "  const int &x1 = get_value();\n"
+              "  const int &x2 = x1;\n"
+              "  return x2;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3] -> [test.cpp:5]: (error) Reference to temporary returned.\n",
+                      errout.str());
     }
 
     void invalidLifetime() {
