@@ -493,6 +493,7 @@ private:
         // #9052
         TEST_CASE(noCrash1);
         TEST_CASE(noCrash2);
+        TEST_CASE(noCrash3);
 
         // --check-config
         TEST_CASE(checkConfiguration);
@@ -8517,6 +8518,18 @@ private:
                             "template <> d<int>::d(const int &, a::b, double, double);\n"
                             "template <> d<int>::d(const d &) {}\n"
                             "template <> d<c>::d(const d &) {}\n"));
+    }
+
+    // #9882
+    void noCrash3() {
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "void f() {\n"
+                            "    std::string a = b[c->d()];\n"
+                            "    if(a.empty()) {\n"
+                            "        INFO(std::string{\"a\"} + c->d());\n"
+                            "        INFO(std::string{\"b\"} + a);\n"
+                            "    }\n"
+                            "}\n"));
     }
 
     void checkConfig(const char code[]) {
