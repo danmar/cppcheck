@@ -4706,6 +4706,15 @@ private:
                "}\n";
         valueOfTok(code, "x");
 
+        code = "void f(){\n"
+               "      struct dwarf_data **pp;\n"
+               "      for (pp = (struct dwarf_data **) (void *) &state->fileline_data;\n"
+               "       *pp != NULL;\n"
+               "       pp = &(*pp)->next)\n"
+               "    ;\n"
+               "}\n";
+        valueOfTok(code, "x");
+
         code = "void *foo(void *x);\n"
                "void *foo(void *x)\n"
                "{\n"
@@ -4715,6 +4724,15 @@ private:
                "    return x;\n"
                "}\n";
         valueOfTok(code, "x");
+
+        code = "void f() {\n"
+               "    std::string a = b[c->d()];\n"
+               "    if(a.empty()) {\n"
+               "        INFO(std::string{\"a\"} + c->d());\n"
+               "        INFO(std::string{\"b\"} + a);\n"
+               "    }\n"
+               "}\n";
+        valueOfTok(code, "a");
     }
 
     void valueFlowHang() {

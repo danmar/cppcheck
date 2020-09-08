@@ -412,7 +412,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
 
     if (value.isContainerSizeValue()) {
         // .empty, .size, +"abc", +'a'
-        if (parent->str() == "+") {
+        if (parent->str() == "+" && parent->astOperand1() && parent->astOperand2()) {
             for (const ValueFlow::Value &value1 : parent->astOperand1()->values()) {
                 for (const ValueFlow::Value &value2 : parent->astOperand2()->values()) {
                     if (value1.path != value2.path)
@@ -3098,11 +3098,13 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, bool escape, Valu
             for (const ValueFlow::Value &v : vartok->values()) {
                 if (!v.isLocalLifetimeValue())
                     continue;
+                if (v.tokvalue == tok)
+                    continue;
                 errorPath.insert(errorPath.end(), v.errorPath.begin(), v.errorPath.end());
-                return getLifetimeTokens(v.tokvalue, escape, std::move(errorPath));
+                return getLifetimeTokens(v.tokvalue, escape, std::move(errorPath), depth - 1);
             }
         } else {
-            return LifetimeToken::setAddressOf(getLifetimeTokens(vartok, escape, std::move(errorPath)),
+            return LifetimeToken::setAddressOf(getLifetimeTokens(vartok, escape, std::move(errorPath), depth - 1),
                                                !(astIsContainer(vartok) && Token::simpleMatch(vartok->astParent(), "[")));
         }
     }
