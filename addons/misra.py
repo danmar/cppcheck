@@ -1640,13 +1640,21 @@ class MisraChecker:
 
     def misra_12_3(self, data):
         for token in data.tokenlist:
-            if token.scope.type in ('Class', 'Struct'):
-                continue
             if token.str == ';' and (token.isSplittedVarDecl is True):
                 self.reportError(token, 12, 3)
             if token.str == ',' and token.astParent and token.astParent.str == ';':
                 self.reportError(token, 12, 3)
             if token.str == ',' and token.astParent is None:
+                if token.scope.type in ('Class', 'Struct'):
+                    # Is this initlist..
+                    tok = token
+                    while tok and tok.str == ',':
+                        tok = tok.next
+                        if tok and tok.next and tok.isName and tok.next.str == '(':
+                            tok = tok.next.link.next
+                    if tok.str == '{':
+                        # This comma is used in initlist, do not warn
+                        continue
                 prev = token.previous
                 while prev:
                     if prev.str == ';':
