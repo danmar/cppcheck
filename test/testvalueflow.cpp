@@ -4706,6 +4706,15 @@ private:
                "}\n";
         valueOfTok(code, "x");
 
+        code = "void f(){\n"
+               "      struct dwarf_data **pp;\n"
+               "      for (pp = (struct dwarf_data **) (void *) &state->fileline_data;\n"
+               "       *pp != NULL;\n"
+               "       pp = &(*pp)->next)\n"
+               "    ;\n"
+               "}\n";
+        valueOfTok(code, "x");
+
         code = "void *foo(void *x);\n"
                "void *foo(void *x)\n"
                "{\n"
