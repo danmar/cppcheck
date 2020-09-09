@@ -959,7 +959,7 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
     if (!cond1 || !cond2)
         return false;
 
-    if (cond1->str() == "&&" && cond2->str() == "&&") {
+    if (!isNot && cond1->str() == "&&" && cond2->str() == "&&") {
         for (const Token* tok1: {
         cond1->astOperand1(), cond1->astOperand2()
         }) {
