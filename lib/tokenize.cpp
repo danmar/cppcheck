@@ -4974,8 +4974,10 @@ void Tokenizer::dump(std::ostream &out) const
         }
         if (tok->isExpandedMacro())
             out << " isExpandedMacro=\"true\"";
-        if (tok->isSplittedVarDecl())
-            out << " isSplittedVarDecl=\"true\"";
+        if (tok->isSplittedVarDeclComma())
+            out << " isSplittedVarDeclComma=\"true\"";
+        if (tok->isSplittedVarDeclEq())
+            out << " isSplittedVarDeclEq=\"true\"";
         if (tok->link())
             out << " link=\"" << tok->link() << '\"';
         if (tok->varId() > 0)
@@ -6859,7 +6861,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
 
         if (tok2->str() == ",") {
             tok2->str(";");
-            tok2->isSplittedVarDecl(true);
+            tok2->isSplittedVarDeclComma(true);
             //TODO: should we have to add also template '<>' links?
             TokenList::insertTokens(tok2, type0, typelen);
         }
@@ -6883,11 +6885,12 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
                         syntaxError(tok2); // invalid code
                     TokenList::insertTokens(eq, varTok, 2);
                     eq->str(";");
+                    eq->isSplittedVarDeclEq(true);
 
                     // "= x, "   =>   "= x; type "
                     if (tok2->str() == ",") {
                         tok2->str(";");
-                        tok2->isSplittedVarDecl(true);
+                        tok2->isSplittedVarDeclComma(true);
                         TokenList::insertTokens(tok2, type0, typelen);
                     }
                     break;

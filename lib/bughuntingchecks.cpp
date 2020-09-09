@@ -306,7 +306,7 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
             if (!var->isLocal() || var->isStatic())
                 return;
         }
-        if (var && (Token::Match(var->nameToken(), "%name% [=:({)]") || Token::Match(var->nameToken(), "%varid% ; %varid% =", var->declarationId())))
+        if (var && (Token::Match(var->nameToken(), "%name% [=:({)]") || var->isInit()))
             return;
         if (var && var->nameToken() == tok)
             return;

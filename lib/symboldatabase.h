@@ -199,6 +199,7 @@ class CPPCHECKLIB Variable {
         fIsVolatile   = (1 << 13),  /** @brief volatile */
         fIsSmartPointer = (1 << 14),/** @brief std::shared_ptr|unique_ptr */
         fIsMaybeUnused = (1 << 15), /** @brief marked [[maybe_unused]] */
+        fIsInit       = (1 << 16), /** @brief Is variable initialized in declaration */
     };
 
     /**
@@ -499,6 +500,14 @@ public:
      */
     bool hasDefault() const {
         return getFlag(fHasDefault);
+    }
+
+    /**
+     * Is variable initialized in its declaration
+     * @return true if variable declaration contains initialization
+     */
+    bool isInit() const {
+        return getFlag(fIsInit);
     }
 
     /**

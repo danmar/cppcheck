@@ -612,11 +612,18 @@ public:
         setFlag(fExternC, b);
     }
 
-    bool isSplittedVarDecl() const {
-        return getFlag(fIsSplitVarDecl);
+    bool isSplittedVarDeclComma() const {
+        return getFlag(fIsSplitVarDeclComma);
     }
-    void isSplittedVarDecl(bool b) {
-        setFlag(fIsSplitVarDecl, b);
+    void isSplittedVarDeclComma(bool b) {
+        setFlag(fIsSplitVarDeclComma, b);
+    }
+
+    bool isSplittedVarDeclEq() const {
+        return getFlag(fIsSplitVarDeclEq);
+    }
+    void isSplittedVarDeclEq(bool b) {
+        setFlag(fIsSplitVarDeclEq, b);
     }
 
     bool isBitfield() const {
@@ -1201,7 +1208,8 @@ private:
         fIncompleteVar          = (1 << 26),
         fConstexpr              = (1 << 27),
         fExternC                = (1 << 28),
-        fIsSplitVarDecl         = (1 << 29), // int a,b; <-- vardecl is split up
+        fIsSplitVarDeclComma    = (1 << 29), // set to true when variable declarations are split up ('int a,b;' => 'int a; int b;')
+        fIsSplitVarDeclEq       = (1 << 30)  // set to true when variable declaration with initialization is split up ('int a=5;' => 'int a; a=5;')
     };
 
     Token::Type mTokType;

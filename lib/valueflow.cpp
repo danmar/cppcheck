@@ -5645,10 +5645,8 @@ static void valueFlowUninit(TokenList *tokenlist, SymbolDatabase * /*symbolDatab
         // continue;
         if (!Token::Match(vardecl, "%var% ;"))
             continue;
-        if (Token::Match(vardecl, "%varid% ; %varid% =", vardecl->varId()))
-            continue;
         const Variable *var = vardecl->variable();
-        if (!var || var->nameToken() != vardecl)
+        if (!var || var->nameToken() != vardecl || var->isInit())
             continue;
         if ((!var->isPointer() && var->type() && var->type()->needInitialization != Type::NeedInitialization::True) ||
             !var->isLocal() || var->isStatic() || var->isExtern() || var->isReference() || var->isThrow())

@@ -111,11 +111,7 @@ void CheckClass::constructors()
         if (scope->numConstructors == 0 && printStyle && !usedInUnion) {
             // If there is a private variable, there should be a constructor..
             for (const Variable &var : scope->varlist) {
-                const Token *initTok = var.nameToken();
-                while (Token::simpleMatch(initTok->next(), "["))
-                    initTok = initTok->linkAt(1);
-                if (var.isPrivate() && !var.isStatic() && !Token::Match(var.nameToken(), "%varid% ; %varid% =", var.declarationId()) &&
-                    !Token::Match(initTok, "%var%|] {|=") &&
+                if (var.isPrivate() && !var.isStatic() && !var.isInit() &&
                     (!var.isClass() || (var.type() && var.type()->needInitialization == Type::NeedInitialization::True))) {
                     noConstructorError(scope->classDef, scope->className, scope->classDef->str() == "struct");
                     break;

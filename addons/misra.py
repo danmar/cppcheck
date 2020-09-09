@@ -1640,7 +1640,7 @@ class MisraChecker:
 
     def misra_12_3(self, data):
         for token in data.tokenlist:
-            if token.str == ';' and (token.isSplittedVarDecl is True):
+            if token.str == ';' and (token.isSplittedVarDeclComma is True):
                 self.reportError(token, 12, 3)
             if token.str == ',' and token.astParent and token.astParent.str == ';':
                 self.reportError(token, 12, 3)
