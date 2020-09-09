@@ -21,6 +21,7 @@
 
 #include "astutils.h"
 #include "errorlogger.h"
+#include "library.h"
 #include "mathlib.h"
 #include "platform.h"
 #include "settings.h"
@@ -1869,6 +1870,13 @@ Variable::Variable(const Token *name_, const std::string &clangType, const Token
             ++pos;
         } while (pos < clangType.size() && clangType[pos] == '[');
     }
+
+    // Is there initialization in variable declaration
+    const Token *initTok = mNameToken ? mNameToken->next() : nullptr;
+    while (initTok && initTok->str() == "[")
+        initTok = initTok->link()->next();
+    if (Token::Match(initTok, "=|{") || (initTok && initTok->isSplittedVarDeclEq()))
+        setFlag(fIsInit, true);
 }
 
 Variable::~Variable()
@@ -1899,6 +1907,13 @@ const Token * Variable::declEndToken() const
 
 void Variable::evaluate(const Settings* settings)
 {
+    // Is there initialization in variable declaration
+    const Token *initTok = mNameToken ? mNameToken->next() : nullptr;
+    while (initTok && initTok->str() == "[")
+        initTok = initTok->link()->next();
+    if (Token::Match(initTok, "=|{") || (initTok && initTok->isSplittedVarDeclEq()))
+        setFlag(fIsInit, true);
+
     if (!settings)
         return;
 
@@ -5968,7 +5983,8 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                 valuetype.sign = ValueType::Sign::SIGNED;
             }
             setValueType(tok, valuetype);
-        } else if (tok->link() && tok->str() == "(") {
+        } else if (tok->link() && Token::Match(tok, "(|{")) {
+            const Token* start = tok->astOperand1() ? tok->astOperand1()->findExpressionStartEndTokens().first : nullptr;
             // cast
             if (tok->isCast() && !tok->astOperand2() && Token::Match(tok, "( %name%")) {
                 ValueType valuetype;
@@ -5981,6 +5997,16 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                 ValueType valuetype;
                 if (Token::simpleMatch(parsedecl(tok->astOperand1()->tokAt(2), &valuetype, mDefaultSignedness, mSettings), ">"))
                     setValueType(tok, valuetype);
+            }
+
+            // Construct smart pointer
+            else if (mSettings->library.isSmartPointer(start)) {
+                ValueType valuetype;
+                if (parsedecl(start, &valuetype, mDefaultSignedness, mSettings)) {
+                    setValueType(tok, valuetype);
+                    setValueType(tok->astOperand1(), valuetype);
+                }
+
             }
 
             // function

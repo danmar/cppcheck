@@ -432,7 +432,7 @@ void CheckOther::checkRedundantAssignment()
                 // Do not warn about redundant initialization when rhs is trivial
                 // TODO : do not simplify the variable declarations
                 bool isInitialization = false;
-                if (Token::Match(tok->tokAt(-3), "%var% ; %var% =") && tok->previous()->variable() && tok->previous()->variable()->nameToken() == tok->tokAt(-3) && tok->tokAt(-3)->linenr() == tok->previous()->linenr()) {
+                if (Token::Match(tok->tokAt(-2), "; %var% =") && tok->tokAt(-2)->isSplittedVarDeclEq()) {
                     isInitialization = true;
                     bool trivial = true;
                     visitAstNodes(tok->astOperand2(),

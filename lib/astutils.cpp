@@ -248,6 +248,9 @@ bool isTemporary(bool cpp, const Token* tok, const Library* library, bool unknow
     if (Token::Match(tok, "&|<<|>>") && isLikelyStream(cpp, tok->astOperand1()))
         return false;
     if (Token::Match(tok->previous(), ">|%name% (")) {
+        if (tok->valueType()) {
+            return tok->valueType()->reference == Reference::None;
+        }
         const Token* ftok = nullptr;
         if (tok->previous()->link())
             ftok = tok->previous()->link()->previous();
@@ -956,7 +959,7 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
     if (!cond1 || !cond2)
         return false;
 
-    if (cond1->str() == "&&" && cond2->str() == "&&") {
+    if (!isNot && cond1->str() == "&&" && cond2->str() == "&&") {
         for (const Token* tok1: {
         cond1->astOperand1(), cond1->astOperand2()
         }) {

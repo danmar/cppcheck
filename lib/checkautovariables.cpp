@@ -528,6 +528,16 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                 errorDanglingReference(tok, var, errorPath);
                 continue;
             }
+            // Reference to temporary
+        } else if (tok->variable() && (tok->variable()->isReference() || tok->variable()->isRValueReference())) {
+            for (const LifetimeToken& lt : getLifetimeTokens(getParentLifetime(tok))) {
+                const Token * tokvalue = lt.token;
+                if (isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok, &mSettings->library)) {
+                    errorDanglingTempReference(tok, lt.errorPath, lt.inconclusive);
+                    break;
+                }
+            }
+
         }
         for (const ValueFlow::Value& val:tok->values()) {
             if (!val.isLocalLifetimeValue() && !val.isSubFunctionLifetimeValue())
@@ -642,6 +652,13 @@ void CheckAutoVariables::errorDanglngLifetime(const Token *tok, const ValueFlow:
     std::string msg = "Non-local variable '" + tokName + "' will use " + lifetimeMessage(tok, val, errorPath);
     errorPath.emplace_back(tok, "");
     reportError(errorPath, Severity::error, "danglingLifetime", msg + ".", CWE562, inconclusive);
+}
+
+void CheckAutoVariables::errorDanglingTempReference(const Token* tok, ErrorPath errorPath, bool inconclusive)
+{
+    errorPath.emplace_back(tok, "");
+    reportError(
+        errorPath, Severity::error, "danglingTempReference", "Using reference to dangling temporary.", CWE562, inconclusive);
 }
 
 void CheckAutoVariables::errorReturnReference(const Token* tok, ErrorPath errorPath, bool inconclusive)

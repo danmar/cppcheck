@@ -137,7 +137,8 @@ class Token:
         isUnsigned         Is this token a unsigned type
         isSigned           Is this token a signed type
         isExpandedMacro    Is this token a expanded macro token
-        isSplittedVarDecl  Is this token a splitted variable declaration. "int a,b; => int a; int b;"
+        isSplittedVarDeclComma  Is this a comma changed to semicolon in a splitted variable declaration ('int a,b;' => 'int a; int b;')
+        isSplittedVarDeclEq     Is this a '=' changed to semicolon in a splitted variable declaration ('int a=5;' => 'int a; a=5;')
         varId              varId for token, each variable has a unique non-zero id
         variable           Variable information for this token. See the Variable class.
         function           If this token points at a function call, this attribute has the Function
@@ -186,7 +187,8 @@ class Token:
     isUnsigned = False
     isSigned = False
     isExpandedMacro = False
-    isSplittedVarDecl = False
+    isSplittedVarDeclComma = False
+    isSplittedVarDeclEq = False
     varId = None
     variableId = None
     variable = None
@@ -247,8 +249,10 @@ class Token:
                 self.isLogicalOp = True
         if element.get('isExpandedMacro'):
             self.isExpandedMacro = True
-        if element.get('isSplittedVarDecl'):
-            self.isSplittedVarDecl = True
+        if element.get('isSplittedVarDeclComma'):
+            self.isSplittedVarDeclComma = True
+        if element.get('isSplittedVarDeclEq'):
+            self.isSplittedVarDeclEq = True
         self.linkId = element.get('link')
         self.link = None
         if element.get('varId'):
@@ -279,10 +283,10 @@ class Token:
         attrs = ["Id", "str", "scopeId", "isName", "isUnsigned", "isSigned",
                 "isNumber", "isInt", "isFloat", "isString", "strlen",
                 "isChar", "isOp", "isArithmeticalOp", "isComparisonOp",
-                "isLogicalOp", "isExpandedMacro", "isSplittedVarDecl",
-                "linkId", "varId", "variableId", "functionId", "valuesId",
-                "valueType", "typeScopeId", "astParentId", "astOperand1Id",
-                "file", "linenr", "column"]
+                "isLogicalOp", "isExpandedMacro", "isSplittedVarDeclComma",
+                "isSplittedVarDeclEq","linkId", "varId", "variableId",
+                "functionId", "valuesId", "valueType", "typeScopeId",
+                "astParentId", "astOperand1Id", "file", "linenr", "column"]
         return "{}({})".format(
             "Token",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))

@@ -3658,6 +3658,15 @@ private:
               "  if(b[1] == 2) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'b[1]==2' is always false\n", errout.str());
+
+        // #9878
+        check("void f(bool a, bool b) {\n"
+              "    if (a && b){;}\n"
+              "    else if (!a && b){;}\n"
+              "    else if (!a && !b){;}\n"
+              "    else {;}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateCondition() {

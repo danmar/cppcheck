@@ -44,6 +44,7 @@ private:
         TEST_CASE(uninit_bailout);
         TEST_CASE(uninit_fp_smartptr);
         TEST_CASE(uninit_fp_struct);
+        TEST_CASE(uninit_fp_struct_member_init_2);
         TEST_CASE(uninit_fp_template_var);
         TEST_CASE(ctu);
 #endif
@@ -198,6 +199,16 @@ private:
               "    auto obj = C {};\n"
               "    Pos xy;\n"
               "    foo(xy);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninit_fp_struct_member_init_2() {
+        check("struct A {\n"
+              "    int x {0}; int y {0};\n"
+              "};\n"
+              "void foo(const A& a) {\n"
+              "    bar(a);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

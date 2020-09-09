@@ -1442,7 +1442,7 @@ private:
         check("auto& f() {\n"
               "    return std::vector<int>{1}.front();\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (error) Reference to temporary returned.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (error) Reference to temporary returned.\n", errout.str());
 
         check("struct A { int foo; };\n"
               "int& f(std::vector<A> v) {\n"
@@ -1638,7 +1638,8 @@ private:
               "    int& x = h();\n"
               "    g(&x);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5] -> [test.cpp:5]: (error) Using pointer to temporary.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5] -> [test.cpp:5]: (error) Using pointer to temporary.\n"
+                      "[test.cpp:4] -> [test.cpp:5]: (error) Using reference to dangling temporary.\n", errout.str());
 
         check("void g(int*);\n"
               "int h();\n"
@@ -1671,6 +1672,27 @@ private:
               "{\n"
               "    static int &r = k;\n"
               "    return r;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void danglingTempReference() {
+        check("const std::string& g(const std::string& str_cref) {\n"
+              "    return str_cref;\n"
+              "}\n"
+              "void f() {\n"
+              "    const auto& str_cref2 = g(std::string(\"hello\"));\n"
+              "    std::cout << str_cref2 << std::endl;\n"
+              "}\n");
+        ASSERT_EQUALS("error", errout.str());
+
+        // Lifetime extended
+        check("std::string g(const std::string& str_cref) {\n"
+              "    return str_cref;\n"
+              "}\n"
+              "void f() {\n"
+              "    const auto& str_cref2 = g(std::string(\"hello\"));\n"
+              "    std::cout << str_cref2 << std::endl;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

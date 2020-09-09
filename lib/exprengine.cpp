@@ -2512,7 +2512,7 @@ static ExprEngine::ValuePtr createStructVal(const Scope *structScope, bool unini
     std::shared_ptr<ExprEngine::StructValue> structValue = std::make_shared<ExprEngine::StructValue>(data.getNewSymbolName());
     auto uninitValue = std::make_shared<ExprEngine::UninitValue>();
     for (const Variable &member : structScope->varlist) {
-        if (uninitData) {
+        if (uninitData && !member.isInit()) {
             if (member.isPointer()) {
                 structValue->member[member.name()] = uninitValue;
                 continue;
