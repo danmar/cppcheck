@@ -5952,47 +5952,53 @@ static void valueFlowSmartPointer(TokenList *tokenlist, ErrorLogger * errorLogge
             continue;
         if (!tok->scope()->isExecutable())
             continue;
-        if (!tok->variable())
-            continue;
-        const Variable * var = tok->variable();
-        if (!var->isSmartPointer())
-            continue;
-        if (var->nameToken() == tok) {
-            if (Token::Match(tok, "%var% (|{") && tok->next()->astOperand2() && tok->next()->astOperand2()->str() != ",") {
-                Token * inTok = tok->next()->astOperand2();
-                std::list<ValueFlow::Value> values = inTok->values();
-                const bool constValue = inTok->isNumber();
-                valueFlowForwardAssign(inTok, var, values, constValue, true, tokenlist, errorLogger, settings);
+        if (tok->variable()) {
+            const Variable * var = tok->variable();
+            if (!var->isSmartPointer())
+                continue;
+            if (var->nameToken() == tok) {
+                if (Token::Match(tok, "%var% (|{") && tok->next()->astOperand2() && tok->next()->astOperand2()->str() != ",") {
+                    Token * inTok = tok->next()->astOperand2();
+                    std::list<ValueFlow::Value> values = inTok->values();
+                    const bool constValue = inTok->isNumber();
+                    valueFlowForwardAssign(inTok, var, values, constValue, true, tokenlist, errorLogger, settings);
 
-            } else if (Token::Match(tok, "%var% ;")) {
-                std::list<ValueFlow::Value> values;
-                ValueFlow::Value v(0);
-                v.setKnown();
-                values.push_back(v);
-                valueFlowForwardAssign(tok, var, values, false, true, tokenlist, errorLogger, settings);
-            }
-        } else if (Token::Match(tok, "%var% . reset (") && tok->next()->originalName() != "->") {
-            if (Token::simpleMatch(tok->tokAt(3), "( )")) {
+                } else if (Token::Match(tok, "%var% ;")) {
+                    std::list<ValueFlow::Value> values;
+                    ValueFlow::Value v(0);
+                    v.setKnown();
+                    values.push_back(v);
+                    valueFlowForwardAssign(tok, var, values, false, true, tokenlist, errorLogger, settings);
+                }
+            } else if (Token::Match(tok, "%var% . reset (") && tok->next()->originalName() != "->") {
+                if (Token::simpleMatch(tok->tokAt(3), "( )")) {
+                    std::list<ValueFlow::Value> values;
+                    ValueFlow::Value v(0);
+                    v.setKnown();
+                    values.push_back(v);
+                    valueFlowForwardAssign(tok->tokAt(4), var, values, false, false, tokenlist, errorLogger, settings);
+                } else {
+                    tok->removeValues(std::mem_fn(&ValueFlow::Value::isIntValue));
+                    Token * inTok = tok->tokAt(3)->astOperand2();
+                    if (!inTok)
+                        continue;
+                    std::list<ValueFlow::Value> values = inTok->values();
+                    const bool constValue = inTok->isNumber();
+                    valueFlowForwardAssign(inTok, var, values, constValue, false, tokenlist, errorLogger, settings);
+                }
+            } else if (Token::Match(tok, "%var% . release ( )") && tok->next()->originalName() != "->") {
                 std::list<ValueFlow::Value> values;
                 ValueFlow::Value v(0);
                 v.setKnown();
                 values.push_back(v);
                 valueFlowForwardAssign(tok->tokAt(4), var, values, false, false, tokenlist, errorLogger, settings);
-            } else {
-                tok->removeValues(std::mem_fn(&ValueFlow::Value::isIntValue));
-                Token * inTok = tok->tokAt(3)->astOperand2();
-                if (!inTok)
-                    continue;
-                std::list<ValueFlow::Value> values = inTok->values();
-                const bool constValue = inTok->isNumber();
-                valueFlowForwardAssign(inTok, var, values, constValue, false, tokenlist, errorLogger, settings);
             }
-        } else if (Token::Match(tok, "%var% . release ( )") && tok->next()->originalName() != "->") {
-            std::list<ValueFlow::Value> values;
-            ValueFlow::Value v(0);
-            v.setKnown();
-            values.push_back(v);
-            valueFlowForwardAssign(tok->tokAt(4), var, values, false, false, tokenlist, errorLogger, settings);
+        } else if (Token::Match(tok->previous(), "%name%|> (|{") && astIsSmartPointer(tok) && astIsSmartPointer(tok->astOperand1())) {
+            std::vector<const Token*> args = getArguments(tok);
+            if (args.empty())
+                continue;
+            for(const ValueFlow::Value& v:args.front()->values())
+                setTokenValue(tok, v, settings);
         }
     }
 }
@@ -6681,7 +6687,6 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowGlobalStaticVar(tokenlist, settings);
     valueFlowPointerAlias(tokenlist);
     valueFlowLifetime(tokenlist, symboldatabase, errorLogger, settings);
-    valueFlowFunctionReturn(tokenlist, errorLogger);
     valueFlowBitAnd(tokenlist);
     valueFlowSameExpressions(tokenlist);
     valueFlowFwdAnalysis(tokenlist, settings);
@@ -6703,6 +6708,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
         valueFlowSwitchVariable(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowForLoop(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowSubFunction(tokenlist, symboldatabase, errorLogger, settings);
+        valueFlowFunctionReturn(tokenlist, errorLogger);
         valueFlowFunctionDefaultParameter(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowUninit(tokenlist, symboldatabase, errorLogger, settings);
         if (tokenlist->isCPP()) {
