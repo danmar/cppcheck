@@ -943,8 +943,14 @@ void CheckClass::initializationListUsage()
 
     for (const Scope *scope : mSymbolDatabase->functionScopes) {
         // Check every constructor
-        if (!scope->function || (!scope->function->isConstructor()))
+        if (!scope->function || !scope->function->isConstructor())
             continue;
+
+        // Do not warn when a delegate constructor is called
+        if (const Token *initList = scope->function->constructorMemberInitialization()) {
+            if (Token::Match(initList, ": %name% {|(") && initList->strAt(1) == scope->className)
+                continue;
+        }
 
         const Scope* owner = scope->functionOf;
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
