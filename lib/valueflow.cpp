@@ -3062,7 +3062,7 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, bool escape, Valu
                             return std::vector<LifetimeToken> {};
                         const Token* argTok = args[n];
                         lt.errorPath.emplace_back(returnTok, "Return reference.");
-                        lt.errorPath.emplace_back(tok->previous(), "Called function passing '" + argTok->str() + "'.");
+                        lt.errorPath.emplace_back(tok->previous(), "Called function passing '" + argTok->expressionString() + "'.");
                         std::vector<LifetimeToken> arglts = LifetimeToken::setInconclusive(
                                                                 getLifetimeTokens(argTok, escape, std::move(lt.errorPath), depth - 1), returns.size() > 1);
                         result.insert(result.end(), arglts.begin(), arglts.end());
@@ -3422,7 +3422,7 @@ struct LifetimeStore {
             return LifetimeStore{};
         }
         const Token *argtok2 = args[n];
-        return LifetimeStore{argtok2, "Passed to '" + tok->str() + "'.", ValueFlow::Value::LifetimeKind::Object};
+        return LifetimeStore{argtok2, "Passed to '" + tok->expressionString() + "'.", ValueFlow::Value::LifetimeKind::Object};
     }
 
     template <class Predicate>

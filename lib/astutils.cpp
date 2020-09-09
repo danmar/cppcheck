@@ -248,6 +248,9 @@ bool isTemporary(bool cpp, const Token* tok, const Library* library, bool unknow
     if (Token::Match(tok, "&|<<|>>") && isLikelyStream(cpp, tok->astOperand1()))
         return false;
     if (Token::Match(tok->previous(), ">|%name% (")) {
+        if (tok->valueType()) {
+            return tok->valueType()->reference == Reference::None;
+        }
         const Token* ftok = nullptr;
         if (tok->previous()->link())
             ftok = tok->previous()->link()->previous();
