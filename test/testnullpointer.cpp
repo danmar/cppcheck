@@ -2866,7 +2866,8 @@ private:
               "}\n"
               "void g() {\n"
               "    int a = *f();\n"
-              "}\n", true);
+              "}\n",
+              true);
         ASSERT_EQUALS("[test.cpp:5]: (error) Null pointer dereference: f()\n", errout.str());
     }
 
