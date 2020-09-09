@@ -473,6 +473,25 @@ static bool isEscapedReference(const Variable* var)
     return !isTemporary(true, vartok, nullptr, false);
 }
 
+static bool isDanglingSubFunction(const Token* tokvalue, const Token* tok)
+{
+    if (!tokvalue)
+        return false;
+    const Variable* var = tokvalue->variable();
+    if (!var->isLocal())
+        return false;
+    Function* f = Scope::nestedInFunction(tok->scope());
+    if (!f)
+        return false;
+    const Token* parent = tokvalue->astParent();
+    while (parent && !Token::Match(parent->previous(), "%name% (")) {
+        parent = parent->astParent();
+    }
+    if (!Token::simpleMatch(parent, "("))
+        return false;
+    return exprDependsOnThis(parent);
+}
+
 void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token * end)
 {
     if (!start)
@@ -521,30 +540,34 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
 
         }
         for (const ValueFlow::Value& val:tok->values()) {
-            if (!val.isLocalLifetimeValue())
+            if (!val.isLocalLifetimeValue() && !val.isSubFunctionLifetimeValue())
                 continue;
             const bool escape = Token::Match(tok->astParent(), "return|throw");
             for (const LifetimeToken& lt : getLifetimeTokens(getParentLifetime(val.tokvalue), escape)) {
                 const Token * tokvalue = lt.token;
-                if (escape) {
-                    if (getPointerDepth(tok) < getPointerDepth(tokvalue))
-                        continue;
-                    if (!isLifetimeBorrowed(tok, mSettings))
-                        continue;
-                    if ((tokvalue->variable() && !isEscapedReference(tokvalue->variable()) &&
-                         isInScope(tokvalue->variable()->nameToken(), scope)) ||
-                        isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok, &mSettings->library)) {
-                        errorReturnDanglingLifetime(tok, &val);
+                if (val.isLocalLifetimeValue()) {
+                    if (escape) {
+                        if (getPointerDepth(tok) < getPointerDepth(tokvalue))
+                            continue;
+                        if (!isLifetimeBorrowed(tok, mSettings))
+                            continue;
+                        if ((tokvalue->variable() && !isEscapedReference(tokvalue->variable()) &&
+                             isInScope(tokvalue->variable()->nameToken(), scope)) ||
+                            isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok, &mSettings->library)) {
+                            errorReturnDanglingLifetime(tok, &val);
+                            break;
+                        }
+                    } else if (tokvalue->variable() && isDeadScope(tokvalue->variable()->nameToken(), tok->scope())) {
+                        errorInvalidLifetime(tok, &val);
+                        break;
+                    } else if (!tokvalue->variable() &&
+                               isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok, &mSettings->library)) {
+                        errorDanglingTemporaryLifetime(tok, &val);
                         break;
                     }
-                } else if (tokvalue->variable() && isDeadScope(tokvalue->variable()->nameToken(), tok->scope())) {
-                    errorInvalidLifetime(tok, &val);
-                    break;
-                } else if (!tokvalue->variable() &&
-                           isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok, &mSettings->library)) {
-                    errorDanglingTemporaryLifetime(tok, &val);
-                    break;
-                } else if (tokvalue->variable() && isInScope(tokvalue->variable()->nameToken(), tok->scope())) {
+                }
+                if (tokvalue->variable() && (isInScope(tokvalue->variable()->nameToken(), tok->scope()) ||
+                                             (val.isSubFunctionLifetimeValue() && isDanglingSubFunction(tokvalue, tok)))) {
                     const Variable * var = nullptr;
                     const Token * tok2 = tok;
                     if (Token::simpleMatch(tok->astParent(), "=")) {
