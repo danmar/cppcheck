@@ -1478,7 +1478,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
 
     std::vector<const Variable*> args = getArgumentVars(tok, argnr);
     bool conclusive = false;
-    for(const Variable *arg:args) {
+    for (const Variable *arg:args) {
         if (!arg)
             continue;
         conclusive = true;

@@ -1049,8 +1049,7 @@ public:
         return false;
     }
 
-    static Function* nestedInFunction(const Scope* scope)
-    {
+    static Function* nestedInFunction(const Scope* scope) {
         while (scope) {
             if (scope->type == Scope::eFunction)
                 break;

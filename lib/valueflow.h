@@ -217,8 +217,7 @@ namespace ValueFlow {
             return valueType == ValueType::LIFETIME && lifetimeScope == LifetimeScope::Argument;
         }
 
-        bool isSubFunctionLifetimeValue() const
-        {
+        bool isSubFunctionLifetimeValue() const {
             return valueType == ValueType::LIFETIME && lifetimeScope == LifetimeScope::SubFunction;
         }
 
