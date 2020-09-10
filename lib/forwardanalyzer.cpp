@@ -555,7 +555,10 @@ struct ForwardTraversal {
 
 };
 
-ForwardAnalyzer::Action valueFlowGenericForward(Token* start, const Token* end, const ValuePtr<ForwardAnalyzer>& fa, const Settings* settings)
+ForwardAnalyzer::Action valueFlowGenericForward(Token* start,
+                                                const Token* end,
+                                                const ValuePtr<ForwardAnalyzer>& fa,
+                                                const Settings* settings)
 {
     ForwardTraversal ft{fa, settings};
     ft.updateRange(start, end);

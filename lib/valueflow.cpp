@@ -1711,11 +1711,11 @@ static void valueFlowGlobalStaticVar(TokenList *tokenList, const Settings *setti
 }
 
 static ForwardAnalyzer::Action valueFlowForwardVariable(Token* const startToken,
-                                     const Token* const endToken,
-                                     const Variable* const var,
-                                     std::list<ValueFlow::Value> values,
-                                     TokenList* const tokenlist,
-                                     const Settings* const settings);
+                                                        const Token* const endToken,
+                                                        const Variable* const var,
+                                                        std::list<ValueFlow::Value> values,
+                                                        TokenList* const tokenlist,
+                                                        const Settings* const settings);
 
 // Old deprecated version
 static void valueFlowForward(Token* startToken,
@@ -2698,12 +2698,12 @@ static std::vector<const Variable*> getAliasesFromValues(std::list<ValueFlow::Va
 }
 
 static ForwardAnalyzer::Action valueFlowForwardVariable(Token* const startToken,
-                                     const Token* const endToken,
-                                     const Variable* const var,
-                                     std::list<ValueFlow::Value> values,
-                                     std::vector<const Variable*> aliases,
-                                     TokenList* const tokenlist,
-                                     const Settings* const settings)
+                                                        const Token* const endToken,
+                                                        const Variable* const var,
+                                                        std::list<ValueFlow::Value> values,
+                                                        std::vector<const Variable*> aliases,
+                                                        TokenList* const tokenlist,
+                                                        const Settings* const settings)
 {
     ForwardAnalyzer::Action actions;
     for (ValueFlow::Value& v : values) {
@@ -2714,13 +2714,14 @@ static ForwardAnalyzer::Action valueFlowForwardVariable(Token* const startToken,
 }
 
 static ForwardAnalyzer::Action valueFlowForwardVariable(Token* const startToken,
-                                     const Token* const endToken,
-                                     const Variable* const var,
-                                     std::list<ValueFlow::Value> values,
-                                     TokenList* const tokenlist,
-                                     const Settings* const settings)
+                                                        const Token* const endToken,
+                                                        const Variable* const var,
+                                                        std::list<ValueFlow::Value> values,
+                                                        TokenList* const tokenlist,
+                                                        const Settings* const settings)
 {
-    return valueFlowForwardVariable(startToken, endToken, var, std::move(values), getAliasesFromValues(values), tokenlist, settings);
+    return valueFlowForwardVariable(
+        startToken, endToken, var, std::move(values), getAliasesFromValues(values), tokenlist, settings);
 }
 
 // Old deprecated version
@@ -2808,11 +2809,11 @@ struct ExpressionForwardAnalyzer : SingleValueFlowForwardAnalyzer {
 };
 
 static ForwardAnalyzer::Action valueFlowForwardExpression(Token* startToken,
-                                       const Token* endToken,
-                                       const Token* exprTok,
-                                       const std::list<ValueFlow::Value>& values,
-                                       const TokenList* const tokenlist,
-                                       const Settings* settings)
+                                                          const Token* endToken,
+                                                          const Token* exprTok,
+                                                          const std::list<ValueFlow::Value>& values,
+                                                          const TokenList* const tokenlist,
+                                                          const Settings* settings)
 {
     ForwardAnalyzer::Action actions;
     for (const ValueFlow::Value& v : values) {
@@ -2884,20 +2885,15 @@ static const Token* solveExprValues(const Token* expr, std::list<ValueFlow::Valu
 }
 
 static ForwardAnalyzer::Action valueFlowForward(Token* startToken,
-                             const Token* endToken,
-                             const Token* exprTok,
-                             std::list<ValueFlow::Value> values,
-                             TokenList* const tokenlist,
-                             const Settings* settings)
+                                                const Token* endToken,
+                                                const Token* exprTok,
+                                                std::list<ValueFlow::Value> values,
+                                                TokenList* const tokenlist,
+                                                const Settings* settings)
 {
     const Token* expr = solveExprValues(exprTok, values);
     if (expr->variable()) {
-        return valueFlowForwardVariable(startToken,
-                                 endToken,
-                                 expr->variable(),
-                                 values,
-                                 tokenlist,
-                                 settings);
+        return valueFlowForwardVariable(startToken, endToken, expr->variable(), values, tokenlist, settings);
     } else {
         return valueFlowForwardExpression(startToken, endToken, expr, values, tokenlist, settings);
     }
@@ -4553,13 +4549,10 @@ static void valueFlowAfterCondition(TokenList *tokenlist,
                                     const Settings *settings)
 {
     ValueFlowConditionHandler handler;
-    handler.forward = [&](Token* start,
-                          const Token* stop,
-                          const Token* vartok,
-                          const std::list<ValueFlow::Value>& values,
-    bool) {
-        return valueFlowForward(start->next(), stop, vartok, values, tokenlist, settings).isModified();
-    };
+    handler.forward =
+        [&](Token* start, const Token* stop, const Token* vartok, const std::list<ValueFlow::Value>& values, bool) {
+            return valueFlowForward(start->next(), stop, vartok, values, tokenlist, settings).isModified();
+        };
     handler.parse = [&](const Token *tok) {
         ValueFlowConditionHandler::Condition cond;
         ValueFlow::Value true_value;
@@ -5889,12 +5882,19 @@ struct ContainerVariableForwardAnalyzer : VariableForwardAnalyzer {
     }
 };
 
-static ForwardAnalyzer::Action valueFlowContainerForward(Token *tok, const Token* endToken, const Variable* var, ValueFlow::Value value, TokenList *tokenlist)
+static ForwardAnalyzer::Action valueFlowContainerForward(Token* tok,
+                                                         const Token* endToken,
+                                                         const Variable* var,
+                                                         ValueFlow::Value value,
+                                                         TokenList* tokenlist)
 {
     ContainerVariableForwardAnalyzer a(var, value, getAliasesFromValues({value}), tokenlist);
     return valueFlowGenericForward(tok, endToken, a, tokenlist->getSettings());
 }
-static ForwardAnalyzer::Action valueFlowContainerForward(Token *tok, const Variable* var, ValueFlow::Value value, TokenList *tokenlist)
+static ForwardAnalyzer::Action valueFlowContainerForward(Token* tok,
+                                                         const Variable* var,
+                                                         ValueFlow::Value value,
+                                                         TokenList* tokenlist)
 {
     const Token * endOfVarScope = nullptr;
     if (var->isLocal() || var->isArgument())
@@ -6050,13 +6050,10 @@ static void valueFlowIteratorAfterCondition(TokenList *tokenlist,
         const Settings *settings)
 {
     ValueFlowConditionHandler handler;
-    handler.forward = [&](Token* start,
-                          const Token* stop,
-                          const Token* vartok,
-                          const std::list<ValueFlow::Value>& values,
-    bool) {
-        return valueFlowForward(start->next(), stop, vartok, values, tokenlist, settings).isModified();
-    };
+    handler.forward =
+        [&](Token* start, const Token* stop, const Token* vartok, const std::list<ValueFlow::Value>& values, bool) {
+            return valueFlowForward(start->next(), stop, vartok, values, tokenlist, settings).isModified();
+        };
     handler.parse = [&](const Token *tok) {
         ValueFlowConditionHandler::Condition cond;
 
