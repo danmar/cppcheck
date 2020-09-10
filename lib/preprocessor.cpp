@@ -83,15 +83,17 @@ namespace {
 
 static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std::list<Suppressions::Suppression> &inlineSuppressions, std::list<BadInlineSuppression> *bad)
 {
+    const std::string cppchecksuppress("cppcheck-suppress");
+
     const std::string &comment = tok->str();
-    if (comment.size() < 19)
+    if (comment.size() < cppchecksuppress.size())
         return false;
     const std::string::size_type pos1 = comment.find_first_not_of("/* \t");
     if (pos1 == std::string::npos)
         return false;
-    if (pos1 + 17 >= comment.size())
+    if (pos1 + cppchecksuppress.size() >= comment.size())
         return false;
-    if (comment.compare(pos1, 17, "cppcheck-suppress") != 0)
+    if (comment.substr(pos1, cppchecksuppress.size()) != cppchecksuppress)
         return false;
 
     // skip spaces after "cppcheck-suppress"
