@@ -198,6 +198,7 @@ private:
         TEST_CASE(template156);
         TEST_CASE(template157); // #9854
         TEST_CASE(template158); // daca crash
+        TEST_CASE(template159); // #9886
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -4016,6 +4017,24 @@ private:
                             "b<a100<int>> d100;";
         // don't bother checking the output because this is not instantiated properly
         tok(code); // don't crash
+    }
+
+    void template159() {  // #9886
+        const char code[] = "struct impl { template <class T> static T create(); };\n"
+                            "template<class T, class U, class = decltype(impl::create<T>()->impl::create<U>())>\n"
+                            "struct tester{};\n"
+                            "tester<impl*, int> ti;\n"
+                            "template<class T, class U, class = decltype(impl::create<T>()->impl::create<U>())>\n"
+                            "int test() { return 0; }\n"
+                            "int i = test<impl*, int>();";
+        const char exp[]  = "struct impl { template < class T > static T create ( ) ; } ; "
+                            "struct tester<impl*,int,decltype(impl::create<impl*>().impl::create<int>())> ; "
+                            "tester<impl*,int,decltype(impl::create<impl*>().impl::create<int>())> ti ; "
+                            "int test<impl*,int,decltype(impl::create<impl*>().impl::create<int>())> ( ) ; "
+                            "int i ; i = test<impl*,int,decltype(impl::create<impl*>().impl::create<int>())> ( ) ; "
+                            "int test<impl*,int,decltype(impl::create<impl*>().impl::create<int>())> ( ) { return 0 ; } "
+                            "struct tester<impl*,int,decltype(impl::create<impl*>().impl::create<int>())> { } ;";
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
