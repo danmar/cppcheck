@@ -138,6 +138,8 @@ private:
         TEST_CASE(valueFlowCrash);
         TEST_CASE(valueFlowHang);
         TEST_CASE(valueFlowCrashConstructorInitialization);
+
+        TEST_CASE(valueFlowUnknownMixedOperators);
     }
 
     static bool isNotTokValue(const ValueFlow::Value &val) {
@@ -4803,6 +4805,20 @@ private:
                "    }\n"
                "}";
         valueOfTok(code, "path");
+    }
+
+    void valueFlowUnknownMixedOperators() {
+        const char *code= "int f(int a, int b, bool x) {\n"
+                          "  if (a == 1 && (!(b == 2 && x))) {\n"
+                          "  } else {\n"
+                          "    if (x) {\n"
+                          "    }\n"
+                          "  }\n"
+                          "\n"
+                          "  return 0;\n"
+                          "}" ;
+
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 1));
     }
 };
 
