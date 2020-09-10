@@ -18,8 +18,7 @@ struct ForwardTraversal {
     ForwardAnalyzer::Action actions;
     bool analyzeOnly;
 
-    bool stopUpdates()
-    {
+    bool stopUpdates() {
         analyzeOnly = true;
         return actions.isModified();
     }
