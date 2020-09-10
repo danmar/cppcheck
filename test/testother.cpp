@@ -697,6 +697,16 @@ private:
               "    a = b / -x;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    int x;\n"
+              "};\n"
+              "int f(A* a) {\n"
+              "    if (a->x == 0) \n"
+              "        a->x = 1;\n"
+              "    return 1/a->x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nanInArithmeticExpression() {

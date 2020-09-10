@@ -12,6 +12,7 @@ struct ForwardTraversal {
     enum class Progress { Continue, Break, Skip };
     ValuePtr<ForwardAnalyzer> analyzer;
     const Settings* settings;
+    ForwardAnalyzer::Action actions;
 
     std::pair<bool, bool> evalCond(const Token* tok) {
         std::vector<int> result = analyzer->evaluate(tok);
@@ -115,6 +116,7 @@ struct ForwardTraversal {
 
     Progress update(Token* tok) {
         ForwardAnalyzer::Action action = analyzer->analyze(tok);
+        actions |= action;
         if (!action.isNone())
             analyzer->update(tok, action);
         if (action.isInconclusive() && !analyzer->lowerToInconclusive())
@@ -225,6 +227,7 @@ struct ForwardTraversal {
             allAnalysis |= analyzeRecursive(initTok);
         if (stepTok)
             allAnalysis |= analyzeRecursive(stepTok);
+        actions |= allAnalysis;
         if (allAnalysis.isInconclusive()) {
             if (!analyzer->lowerToInconclusive())
                 return Progress::Break;
@@ -552,8 +555,9 @@ struct ForwardTraversal {
 
 };
 
-void valueFlowGenericForward(Token* start, const Token* end, const ValuePtr<ForwardAnalyzer>& fa, const Settings* settings)
+ForwardAnalyzer::Action valueFlowGenericForward(Token* start, const Token* end, const ValuePtr<ForwardAnalyzer>& fa, const Settings* settings)
 {
     ForwardTraversal ft{fa, settings};
     ft.updateRange(start, end);
+    return ft.actions;
 }
