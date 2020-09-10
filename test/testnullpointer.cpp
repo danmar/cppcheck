@@ -2859,6 +2859,16 @@ private:
               "    return x.release();\n"
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
+
+        // #9496
+        check("std::shared_ptr<int> f() {\n"
+              "    return std::shared_ptr<int>(nullptr);\n"
+              "}\n"
+              "void g() {\n"
+              "    int a = *f();\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:5]: (error) Null pointer dereference: f()\n", errout.str());
     }
 
     void functioncall() {    // #3443 - function calls

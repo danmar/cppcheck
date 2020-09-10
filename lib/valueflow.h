@@ -217,6 +217,10 @@ namespace ValueFlow {
             return valueType == ValueType::LIFETIME && lifetimeScope == LifetimeScope::Argument;
         }
 
+        bool isSubFunctionLifetimeValue() const {
+            return valueType == ValueType::LIFETIME && lifetimeScope == LifetimeScope::SubFunction;
+        }
+
         bool isNonValue() const {
             return isMovedValue() || isUninitValue() || isLifetimeValue();
         }
@@ -263,7 +267,7 @@ namespace ValueFlow {
 
         enum class LifetimeKind {Object, SubObject, Lambda, Iterator, Address} lifetimeKind;
 
-        enum class LifetimeScope { Local, Argument } lifetimeScope;
+        enum class LifetimeScope { Local, Argument, SubFunction } lifetimeScope;
 
         static const char* toString(MoveKind moveKind);
 
@@ -364,7 +368,10 @@ struct LifetimeToken {
 
 const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value);
 
-std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, ValueFlow::Value::ErrorPath errorPath = ValueFlow::Value::ErrorPath{}, int depth = 20);
+std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
+        bool escape = false,
+        ValueFlow::Value::ErrorPath errorPath = ValueFlow::Value::ErrorPath{},
+        int depth = 20);
 
 const Variable* getLifetimeVariable(const Token* tok, ValueFlow::Value::ErrorPath& errorPath, bool* addressOf = nullptr);
 

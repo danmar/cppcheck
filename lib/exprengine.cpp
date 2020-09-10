@@ -2000,13 +2000,12 @@ static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
                 call(data.callbacks, tok->astOperand1(), data.getValue(tok->astOperand1()->varId(), nullptr, nullptr), &data);
             }
         }
-        if (!structValue) {
-            auto v = getValueRangeFromValueType(tok->valueType(), data);
-            if (!v)
-                v = std::make_shared<ExprEngine::BailoutValue>();
-            call(data.callbacks, tok, v, &data);
-            return v;
-        }
+
+        auto v = getValueRangeFromValueType(tok->valueType(), data);
+        if (!v)
+            v = std::make_shared<ExprEngine::BailoutValue>();
+        call(data.callbacks, tok, v, &data);
+        return v;
     }
     call(data.callbacks, tok->astOperand1(), structValue, &data);
     ExprEngine::ValuePtr memberValue = structValue->getValueOfMember(tok->astOperand2()->str());
@@ -2512,7 +2511,7 @@ static ExprEngine::ValuePtr createStructVal(const Scope *structScope, bool unini
     std::shared_ptr<ExprEngine::StructValue> structValue = std::make_shared<ExprEngine::StructValue>(data.getNewSymbolName());
     auto uninitValue = std::make_shared<ExprEngine::UninitValue>();
     for (const Variable &member : structScope->varlist) {
-        if (uninitData) {
+        if (uninitData && !member.isInit()) {
             if (member.isPointer()) {
                 structValue->member[member.name()] = uninitValue;
                 continue;

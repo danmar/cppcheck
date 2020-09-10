@@ -549,11 +549,11 @@ public:
     void isAttributeNodiscard(const bool value) {
         setFlag(fIsAttributeNodiscard, value);
     }
-    bool isMaybeUnused() const {
-        return getFlag(fIsMaybeUnused);
+    bool isAttributeMaybeUnused() const {
+        return getFlag(fIsAttributeMaybeUnused);
     }
-    void isMaybeUnused(const bool value) {
-        setFlag(fIsMaybeUnused, value);
+    void isAttributeMaybeUnused(const bool value) {
+        setFlag(fIsAttributeMaybeUnused, value);
     }
     void setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint value) {
         mImpl->setCppcheckAttribute(type, value);
@@ -612,6 +612,19 @@ public:
         setFlag(fExternC, b);
     }
 
+    bool isSplittedVarDeclComma() const {
+        return getFlag(fIsSplitVarDeclComma);
+    }
+    void isSplittedVarDeclComma(bool b) {
+        setFlag(fIsSplitVarDeclComma, b);
+    }
+
+    bool isSplittedVarDeclEq() const {
+        return getFlag(fIsSplitVarDeclEq);
+    }
+    void isSplittedVarDeclEq(bool b) {
+        setFlag(fIsSplitVarDeclEq, b);
+    }
 
     bool isBitfield() const {
         return mImpl->mBits > 0;
@@ -1182,19 +1195,21 @@ private:
         fIsAttributeNothrow     = (1 << 13), // __attribute__((nothrow)), __declspec(nothrow)
         fIsAttributeUsed        = (1 << 14), // __attribute__((used))
         fIsAttributePacked      = (1 << 15), // __attribute__((packed))
-        fIsControlFlowKeyword   = (1 << 16), // if/switch/while/...
-        fIsOperatorKeyword      = (1 << 17), // operator=, etc
-        fIsComplex              = (1 << 18), // complex/_Complex type
-        fIsEnumType             = (1 << 19), // enumeration type
-        fIsName                 = (1 << 20),
-        fIsLiteral              = (1 << 21),
-        fIsTemplateArg          = (1 << 22),
-        fIsAttributeNodiscard   = (1 << 23), // __attribute__ ((warn_unused_result)), [[nodiscard]]
-        fAtAddress              = (1 << 24), // @ 0x4000
-        fIncompleteVar          = (1 << 25),
-        fConstexpr              = (1 << 26),
-        fExternC                = (1 << 27),
-        fIsMaybeUnused          = (1 << 28), // [[maybe_unsed]]
+        fIsAttributeMaybeUnused = (1 << 16), // [[maybe_unsed]]
+        fIsControlFlowKeyword   = (1 << 17), // if/switch/while/...
+        fIsOperatorKeyword      = (1 << 18), // operator=, etc
+        fIsComplex              = (1 << 19), // complex/_Complex type
+        fIsEnumType             = (1 << 20), // enumeration type
+        fIsName                 = (1 << 21),
+        fIsLiteral              = (1 << 22),
+        fIsTemplateArg          = (1 << 23),
+        fIsAttributeNodiscard   = (1 << 24), // __attribute__ ((warn_unused_result)), [[nodiscard]]
+        fAtAddress              = (1 << 25), // @ 0x4000
+        fIncompleteVar          = (1 << 26),
+        fConstexpr              = (1 << 27),
+        fExternC                = (1 << 28),
+        fIsSplitVarDeclComma    = (1 << 29), // set to true when variable declarations are split up ('int a,b;' => 'int a; int b;')
+        fIsSplitVarDeclEq       = (1 << 30)  // set to true when variable declaration with initialization is split up ('int a=5;' => 'int a; a=5;')
     };
 
     Token::Type mTokType;
@@ -1255,6 +1270,26 @@ public:
     }
     const Token * astParent() const {
         return mImpl->mAstParent;
+    }
+    Token * astSibling() {
+        if (!astParent())
+            return nullptr;
+        if (this == astParent()->astOperand1())
+            return astParent()->astOperand2();
+        else if (this == astParent()->astOperand2())
+            return astParent()->astOperand1();
+        return nullptr;
+
+    }
+    const Token * astSibling() const {
+        if (!astParent())
+            return nullptr;
+        if (this == astParent()->astOperand1())
+            return astParent()->astOperand2();
+        else if (this == astParent()->astOperand2())
+            return astParent()->astOperand1();
+        return nullptr;
+
     }
     Token *astTop() {
         Token *ret = this;

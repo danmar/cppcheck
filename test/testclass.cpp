@@ -6567,6 +6567,19 @@ private:
                                      "    Foo m_i;\n"
                                      "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkInitializationListUsage("class A {\n" // #9821 - delegate constructor
+                                     "public:\n"
+                                     "    A() : st{} {}\n"
+                                     "\n"
+                                     "    explicit A(const std::string &input): A() {\n"
+                                     "        st = input;\n"
+                                     "    }\n"
+                                     "\n"
+                                     "private:\n"
+                                     "    std::string st;\n"
+                                     "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

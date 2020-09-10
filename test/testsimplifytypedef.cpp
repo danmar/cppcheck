@@ -1152,8 +1152,9 @@ private:
 
         ASSERT_EQUALS(expected, tok(code, false));
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:28]: (debug) valueflow.cpp:3109:valueFlowFunctionReturn bailout: function return; nontrivial function body\n"
-            , errout.str());
+            "[test.cpp:31]: (debug) valueflow.cpp:3109:valueFlowFunctionReturn bailout: function return; nontrivial function body\n"
+            "[test.cpp:28]: (debug) valueflow.cpp:3109:valueFlowFunctionReturn bailout: function return; nontrivial function body\n",
+            errout.str());
     }
 
     void simplifyTypedef36() {

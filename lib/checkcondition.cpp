@@ -701,8 +701,10 @@ void CheckCondition::multiCondition2()
                             if (!firstCondition)
                                 return ChildrenToVisit::none;
                             if (firstCondition->str() == "&&") {
-                                return ChildrenToVisit::op1_and_op2;
-                            } else if (!firstCondition->hasKnownIntValue()) {
+                                if (!isOppositeCond(false, mTokenizer->isCPP(), firstCondition, cond2, mSettings->library, true, true))
+                                    return ChildrenToVisit::op1_and_op2;
+                            }
+                            if (!firstCondition->hasKnownIntValue()) {
                                 if (!isReturnVar && isOppositeCond(false, mTokenizer->isCPP(), firstCondition, cond2, mSettings->library, true, true, &errorPath)) {
                                     if (!isAliased(vars))
                                         oppositeInnerConditionError(firstCondition, cond2, errorPath);

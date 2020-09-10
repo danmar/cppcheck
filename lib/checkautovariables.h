@@ -79,6 +79,7 @@ private:
     void errorDanglingTemporaryLifetime(const Token* tok, const ValueFlow::Value* val);
     void errorReturnReference(const Token* tok, ErrorPath errorPath, bool inconclusive);
     void errorDanglingReference(const Token *tok, const Variable *var, ErrorPath errorPath);
+    void errorDanglingTempReference(const Token* tok, ErrorPath errorPath, bool inconclusive);
     void errorReturnTempReference(const Token* tok, ErrorPath errorPath, bool inconclusive);
     void errorInvalidDeallocation(const Token *tok, const ValueFlow::Value *val);
     void errorReturnAddressOfFunctionParameter(const Token *tok, const std::string &varname);
@@ -94,6 +95,7 @@ private:
         c.errorReturnReference(nullptr, errorPath, false);
         c.errorDanglingReference(nullptr, nullptr, errorPath);
         c.errorReturnTempReference(nullptr, errorPath, false);
+        c.errorDanglingTempReference(nullptr, errorPath, false);
         c.errorInvalidDeallocation(nullptr, nullptr);
         c.errorReturnAddressOfFunctionParameter(nullptr, "parameter");
         c.errorUselessAssignmentArg(nullptr);

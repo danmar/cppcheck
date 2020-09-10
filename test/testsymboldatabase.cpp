@@ -378,6 +378,8 @@ private:
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
 
+        TEST_CASE(overloadedFunction1);
+
         TEST_CASE(valueTypeMatchParameter); // ValueType::matchParameter
 
         TEST_CASE(noexceptFunction1);
@@ -6178,6 +6180,19 @@ private:
         ASSERT(bar->function());
     }
 
+    void overloadedFunction1() {
+        GET_SYMBOL_DB("struct S {\n"
+                      "    int operator()(int);\n"
+                      "};\n"
+                      "\n"
+                      "void foo(S x) {\n"
+                      "    x(123);\n"
+                      "}");
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), "x . operator() ( 123 )");
+        ASSERT(tok);
+        ASSERT(tok->tokAt(2)->function());
+    }
+
     void valueTypeMatchParameter() {
         ValueType vt_int(ValueType::Sign::SIGNED, ValueType::Type::INT, 0);
         ValueType vt_const_int(ValueType::Sign::SIGNED, ValueType::Type::INT, 0, 1);
@@ -6291,15 +6306,10 @@ private:
                       "   :a(std::move(b.a)) { }\n"
                       "};\n");
         ASSERT_EQUALS("", errout.str());
-        ASSERT_EQUALS(true,  db != nullptr); // not null
-
-        if (db) {
-            const Scope *b = db->findScopeByName("B");
-            ASSERT_EQUALS(true, b != nullptr);
-            if (b) {
-                CLASS_FUNC(B, b, true);
-            }
-        }
+        ASSERT(db != nullptr); // not null
+        const Scope *b = db->findScopeByName("B");
+        ASSERT(b != nullptr);
+        CLASS_FUNC(B, b, true);
     }
 
 #define FUNC_THROW(x) do { \
@@ -6314,14 +6324,12 @@ private:
                       "void func3() throw(int);\n"
                       "void func4() throw(int) { }\n");
         ASSERT_EQUALS("", errout.str());
-        ASSERT_EQUALS(true,  db != nullptr); // not null
+        ASSERT(db != nullptr); // not null
 
-        if (db) {
-            FUNC_THROW(func1);
-            FUNC_THROW(func2);
-            FUNC_THROW(func3);
-            FUNC_THROW(func4);
-        }
+        FUNC_THROW(func1);
+        FUNC_THROW(func2);
+        FUNC_THROW(func3);
+        FUNC_THROW(func4);
     }
 
 #define CLASS_FUNC_THROW(x, y) do { \
