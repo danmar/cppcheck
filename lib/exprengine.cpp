@@ -2000,13 +2000,12 @@ static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
                 call(data.callbacks, tok->astOperand1(), data.getValue(tok->astOperand1()->varId(), nullptr, nullptr), &data);
             }
         }
-        if (!structValue) {
-            auto v = getValueRangeFromValueType(tok->valueType(), data);
-            if (!v)
-                v = std::make_shared<ExprEngine::BailoutValue>();
-            call(data.callbacks, tok, v, &data);
-            return v;
-        }
+
+        auto v = getValueRangeFromValueType(tok->valueType(), data);
+        if (!v)
+            v = std::make_shared<ExprEngine::BailoutValue>();
+        call(data.callbacks, tok, v, &data);
+        return v;
     }
     call(data.callbacks, tok->astOperand1(), structValue, &data);
     ExprEngine::ValuePtr memberValue = structValue->getValueOfMember(tok->astOperand2()->str());
