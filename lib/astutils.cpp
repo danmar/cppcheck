@@ -1386,31 +1386,33 @@ const Token * getTokenArgumentFunction(const Token * tok, int& argn)
     return tok;
 }
 
-static const Variable* getArgumentVar(const Token* tok, int argnr)
+static std::vector<const Variable*> getArgumentVars(const Token* tok, int argnr)
 {
+    std::vector<const Variable*> result;
     if (!tok)
-        return nullptr;
+        return result;
     if (tok->function())
-        return tok->function()->getArgumentVar(argnr);
+        return {tok->function()->getArgumentVar(argnr)};
     if (Token::Match(tok->previous(), "%type% (|{") || tok->variable()) {
+        const bool constructor = tok->variable() && tok->variable()->nameToken() == tok;
         const Type* type = Token::typeOf(tok);
         if (!type)
-            return nullptr;
+            return result;
         const Scope* typeScope = type->classScope;
         if (!typeScope)
-            return nullptr;
+            return result;
         const int argCount = numberOfArguments(tok);
         for (const Function &function : typeScope->functionList) {
-            if (function.isConstructor())
-                continue;
             if (function.argCount() < argCount)
                 continue;
-            if (!Token::simpleMatch(function.token, "operator()"))
+            if (constructor && !function.isConstructor())
                 continue;
-            return function.getArgumentVar(argnr);
+            if (!constructor && !Token::simpleMatch(function.token, "operator()"))
+                continue;
+            result.push_back(function.getArgumentVar(argnr));
         }
     }
-    return nullptr;
+    return result;
 }
 
 static bool isCPPCastKeyword(const Token* tok)
@@ -1444,26 +1446,6 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
         parenTok = parenTok->link()->next();
     const bool possiblyPassedByReference = (parenTok->next() == tok1 || Token::Match(tok1->previous(), ", %name% [,)}]"));
 
-    // Constructor call
-    if (tok->variable() && tok->variable()->nameToken() == tok) {
-        // Find constructor..
-        const int argCount = numberOfArguments(tok);
-        const Scope *typeScope = tok->variable()->typeScope();
-        if (typeScope) {
-            for (const Function &function : typeScope->functionList) {
-                if (!function.isConstructor() || function.argCount() < argCount)
-                    continue;
-                const Variable *arg = function.getArgumentVar(argnr);
-                if (arg && arg->isReference() && !arg->isConst())
-                    return true;
-            }
-            return false;
-        }
-        if (inconclusive)
-            *inconclusive = true;
-        return false;
-    }
-
     if (!tok->function() && !tok->variable() && Token::Match(tok, "%name%")) {
         // Check if direction (in, out, inout) is specified in the library configuration and use that
         if (!addressOf && settings) {
@@ -1494,22 +1476,26 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
         return true;
     }
 
-    const Variable *arg = getArgumentVar(tok, argnr);
-    if (!arg) {
-        if (inconclusive)
-            *inconclusive = true;
-        return false;
-    }
-
-    if (addressOf || (indirect > 0 && arg->isPointer())) {
-        if (!arg->isConst())
+    std::vector<const Variable*> args = getArgumentVars(tok, argnr);
+    bool conclusive = false;
+    for(const Variable *arg:args) {
+        if (!arg)
+            continue;
+        conclusive = true;
+        if (addressOf || (indirect > 0 && arg->isPointer())) {
+            if (!arg->isConst())
+                return true;
+            // If const is applied to the pointer, then the value can still be modified
+            if (Token::simpleMatch(arg->typeEndToken(), "* const"))
+                return true;
+        }
+        if (!arg->isConst() && arg->isReference())
             return true;
-        // If const is applied to the pointer, then the value can still be modified
-        if (Token::simpleMatch(arg->typeEndToken(), "* const"))
-            return true;
     }
-
-    return !arg->isConst() && arg->isReference();
+    if (!conclusive && inconclusive) {
+        *inconclusive = true;
+    }
+    return false;
 }
 
 bool isVariableChanged(const Token *tok, int indirect, const Settings *settings, bool cpp, int depth)

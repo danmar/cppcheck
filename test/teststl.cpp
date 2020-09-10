@@ -4701,6 +4701,18 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    explicit A(std::vector<int>*);\n"
+              "};\n"
+              "A f() {\n"
+              "    std::vector<int> v;\n"
+              "    A a(&v);\n"
+              "    for(auto&& x:v) {}\n"
+              "    return a;\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkMutexes() {
