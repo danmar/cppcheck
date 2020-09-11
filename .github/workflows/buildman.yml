@@ -13,10 +13,12 @@ jobs:
 
       - uses: docker://pandoc/latex:2.9
         with:
-          args: |
-            --output=output/manual.html man/manual.md
-            --output=output/manual.pdf man/manual.md  
-
+          args: --output=output/manual.html man/manual.md
+             
+      - uses: docker://pandoc/latex:2.9
+        with:
+          args: --output=output/manual.pdf man/manual.md  
+  
       - uses: actions/upload-artifact@v2
         with:
           name: output
