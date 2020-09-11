@@ -430,6 +430,7 @@ private:
         TEST_CASE(auto11); // #8964 - const auto startX = x;
         TEST_CASE(auto12); // #8993 - const std::string &x; auto y = x; if (y.empty()) ..
         TEST_CASE(auto13);
+        TEST_CASE(auto14);
 
         TEST_CASE(unionWithConstructor);
 
@@ -7787,6 +7788,18 @@ private:
         ASSERT(tok->valueType()->pointer);
         ASSERT(tok->variable()->valueType());
         ASSERT(tok->variable()->valueType()->pointer);
+    }
+
+    void auto14() { // #9892 - crash in Token::declType
+        GET_SYMBOL_DB("static void foo() {\n"
+                      "    auto combo = widget->combo = new Combo{};\n"
+                      "    combo->addItem();\n"
+                      "}");
+
+        const Token *tok;
+
+        tok = Token::findsimplematch(tokenizer.tokens(), "combo =");
+        ASSERT(tok && !tok->valueType());
     }
 
     void unionWithConstructor() {
