@@ -1343,6 +1343,13 @@ private:
               "    return a()();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9889
+        check("int f(std::vector<std::function<int&()>>& v, int i) {\n"
+              "    auto& j = v[i]();\n"
+              "    return j;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void returnReferenceFunction() {
