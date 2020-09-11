@@ -114,8 +114,8 @@ struct ForwardAnalyzer {
 };
 
 ForwardAnalyzer::Action valueFlowGenericForward(Token* start,
-                                                const Token* end,
-                                                const ValuePtr<ForwardAnalyzer>& fa,
-                                                const Settings* settings);
+        const Token* end,
+        const ValuePtr<ForwardAnalyzer>& fa,
+        const Settings* settings);
 
 #endif

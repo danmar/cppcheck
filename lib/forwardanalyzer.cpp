@@ -11,7 +11,7 @@
 struct ForwardTraversal {
     enum class Progress { Continue, Break, Skip };
     ForwardTraversal(const ValuePtr<ForwardAnalyzer>& analyzer, const Settings* settings)
-    : analyzer(analyzer), settings(settings), actions(ForwardAnalyzer::Action::None), analyzeOnly(false)
+        : analyzer(analyzer), settings(settings), actions(ForwardAnalyzer::Action::None), analyzeOnly(false)
     {}
     ValuePtr<ForwardAnalyzer> analyzer;
     const Settings* settings;
@@ -435,7 +435,7 @@ struct ForwardTraversal {
                             return Progress::Break;
                     } else if (thenAction.isModified() || elseAction.isModified()) {
                         if (!hasElse && analyzer->isConditional() && stopUpdates())
-                                return Progress::Break;
+                            return Progress::Break;
                         if (!analyzer->lowerToPossible())
                             return Progress::Break;
                         analyzer->assume(condTok, elseAction.isModified());
@@ -566,9 +566,9 @@ struct ForwardTraversal {
 };
 
 ForwardAnalyzer::Action valueFlowGenericForward(Token* start,
-                                                const Token* end,
-                                                const ValuePtr<ForwardAnalyzer>& fa,
-                                                const Settings* settings)
+        const Token* end,
+        const ValuePtr<ForwardAnalyzer>& fa,
+        const Settings* settings)
 {
     ForwardTraversal ft{fa, settings};
     ft.updateRange(start, end);
