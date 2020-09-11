@@ -6,12 +6,12 @@ import re
 from testutils import cppcheck
 
 def test1():
-    ret, stdout, stderr = cppcheck(['-Iproj-inline-suppress', '--inline-suppr', 'proj-inline-suppress'])
+    ret, stdout, stderr = cppcheck(['--inline-suppr', 'proj-inline-suppress'])
     assert ret == 0
     assert stderr == ''
 
 def test2():
-    ret, stdout, stderr = cppcheck(['-Iproj-inline-suppress', 'proj-inline-suppress'])
+    ret, stdout, stderr = cppcheck(['proj-inline-suppress'])
     assert ret == 0
     assert len(stderr) > 0
 
