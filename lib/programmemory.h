@@ -15,6 +15,7 @@ struct ProgramMemory {
     Map values;
 
     void setValue(nonneg int varid, const ValueFlow::Value &value);
+    const ValueFlow::Value* getValue(nonneg int varid) const;
 
     bool getIntValue(nonneg int varid, MathLib::bigint* result) const;
     void setIntValue(nonneg int varid, MathLib::bigint value);
