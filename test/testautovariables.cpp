@@ -115,6 +115,7 @@ private:
         TEST_CASE(returnReference18); // #9482
         TEST_CASE(returnReference19); // #9597
         TEST_CASE(returnReference20); // #9536
+        TEST_CASE(returnReference21); // #9530
         TEST_CASE(returnReferenceFunction);
         TEST_CASE(returnReferenceContainer);
         TEST_CASE(returnReferenceLiteral);
@@ -1341,6 +1342,14 @@ private:
         check("std::function<int&()> a();\n"
               "int& b() {\n"
               "    return a()();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // #9530
+    void returnReference21() {
+        check("int& f(int& x) {\n"
+              "    return {x};\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
