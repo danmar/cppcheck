@@ -15,7 +15,7 @@ jobs:
         with:
           args: |
             --output=output/manual.html man/manual.md
-            --output=output/manual.pdf man/manual.md:  
+            --output=output/manual.pdf man/manual.md  
 
       - uses: actions/upload-artifact@v2
         with:
