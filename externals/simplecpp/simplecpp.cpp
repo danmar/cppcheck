@@ -2363,25 +2363,23 @@ static std::string _openHeader(std::ifstream &f, const std::string &path)
 #endif
 }
 
-static std::string openHeader(std::ifstream &f, const simplecpp::DUI &dui, const std::string &sourcefile, const std::string &header, bool systemheader)
+static std::string openHeaderRelative(std::ifstream &f, const std::string &sourcefile, const std::string &header)
 {
-    if (isAbsolutePath(header)) {
-        return _openHeader(f, header);
+    if (sourcefile.find_first_of("\\/") != std::string::npos) {
+        const std::string s = sourcefile.substr(0, sourcefile.find_last_of("\\/") + 1U) + header;
+        std::string simplePath = _openHeader(f, s);
+        if (!simplePath.empty())
+            return simplePath;
+    } else {
+        std::string simplePath = _openHeader(f, header);
+        if (!simplePath.empty())
+            return simplePath;
     }
+    return "";
+}
 
-    if (!systemheader) {
-        if (sourcefile.find_first_of("\\/") != std::string::npos) {
-            const std::string s = sourcefile.substr(0, sourcefile.find_last_of("\\/") + 1U) + header;
-            std::string simplePath = _openHeader(f, s);
-            if (!simplePath.empty())
-                return simplePath;
-        } else {
-            std::string simplePath = _openHeader(f, header);
-            if (!simplePath.empty())
-                return simplePath;
-        }
-    }
-
+static std::string openHeaderIncludePath(std::ifstream &f, const simplecpp::DUI &dui, const std::string &header)
+{
     for (std::list<std::string>::const_iterator it = dui.includePaths.begin(); it != dui.includePaths.end(); ++it) {
         std::string s = *it;
         if (!s.empty() && s[s.size()-1U]!='/' && s[s.size()-1U]!='\\')
@@ -2392,8 +2390,23 @@ static std::string openHeader(std::ifstream &f, const simplecpp::DUI &dui, const
         if (!simplePath.empty())
             return simplePath;
     }
-
     return "";
+}
+
+static std::string openHeader(std::ifstream &f, const simplecpp::DUI &dui, const std::string &sourcefile, const std::string &header, bool systemheader)
+{
+    if (isAbsolutePath(header))
+        return _openHeader(f, header);
+
+    std::string ret;
+
+    if (systemheader) {
+        ret = openHeaderIncludePath(f, dui, header);
+        return ret.empty() ? openHeaderRelative(f, sourcefile, header) : ret;
+    }
+
+    ret = openHeaderRelative(f, sourcefile, header);
+    return ret.empty() ? openHeaderIncludePath(f, dui, header) : ret;
 }
 
 static std::string getFileName(const std::map<std::string, simplecpp::TokenList *> &filedata, const std::string &sourcefile, const std::string &header, const simplecpp::DUI &dui, bool systemheader)
