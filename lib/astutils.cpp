@@ -272,7 +272,8 @@ bool isTemporary(bool cpp, const Token* tok, const Library* library, bool unknow
     // Currying a function is unknown in cppcheck
     if (Token::simpleMatch(tok, "(") && Token::simpleMatch(tok->astOperand1(), "("))
         return unknown;
-    if (Token::simpleMatch(tok, "{") && Token::simpleMatch(tok->astParent(), "return") && tok->astOperand1() && !tok->astOperand2())
+    if (Token::simpleMatch(tok, "{") && Token::simpleMatch(tok->astParent(), "return") && tok->astOperand1() &&
+        !tok->astOperand2())
         return isTemporary(cpp, tok->astOperand1(), library);
     return true;
 }
