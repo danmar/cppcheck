@@ -1695,6 +1695,13 @@ private:
               "    std::cout << str_cref2 << std::endl;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("char f() {\n"
+              "    char c = 0;\n"
+              "    char&& cr = std::move(c);\n"
+              "    return cr;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testglobalnamespace() {
