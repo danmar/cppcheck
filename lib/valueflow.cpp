@@ -1710,12 +1710,12 @@ static void valueFlowGlobalStaticVar(TokenList *tokenList, const Settings *setti
     }
 }
 
-static void valueFlowForwardVariable(Token* const startToken,
-                                     const Token* const endToken,
-                                     const Variable* const var,
-                                     std::list<ValueFlow::Value> values,
-                                     TokenList* const tokenlist,
-                                     const Settings* const settings);
+static ForwardAnalyzer::Action valueFlowForwardVariable(Token* const startToken,
+                                                        const Token* const endToken,
+                                                        const Variable* const var,
+                                                        std::list<ValueFlow::Value> values,
+                                                        TokenList* const tokenlist,
+                                                        const Settings* const settings);
 
 // Old deprecated version
 static void valueFlowForward(Token* startToken,
@@ -2697,28 +2697,31 @@ static std::vector<const Variable*> getAliasesFromValues(std::list<ValueFlow::Va
     return aliases;
 }
 
-static void valueFlowForwardVariable(Token* const startToken,
-                                     const Token* const endToken,
-                                     const Variable* const var,
-                                     std::list<ValueFlow::Value> values,
-                                     std::vector<const Variable*> aliases,
-                                     TokenList* const tokenlist,
-                                     const Settings* const settings)
+static ForwardAnalyzer::Action valueFlowForwardVariable(Token* const startToken,
+                                                        const Token* const endToken,
+                                                        const Variable* const var,
+                                                        std::list<ValueFlow::Value> values,
+                                                        std::vector<const Variable*> aliases,
+                                                        TokenList* const tokenlist,
+                                                        const Settings* const settings)
 {
+    ForwardAnalyzer::Action actions;
     for (ValueFlow::Value& v : values) {
         VariableForwardAnalyzer a(var, v, aliases, tokenlist);
-        valueFlowGenericForward(startToken, endToken, a, settings);
+        actions |= valueFlowGenericForward(startToken, endToken, a, settings);
     }
+    return actions;
 }
 
-static void valueFlowForwardVariable(Token* const startToken,
-                                     const Token* const endToken,
-                                     const Variable* const var,
-                                     std::list<ValueFlow::Value> values,
-                                     TokenList* const tokenlist,
-                                     const Settings* const settings)
+static ForwardAnalyzer::Action valueFlowForwardVariable(Token* const startToken,
+                                                        const Token* const endToken,
+                                                        const Variable* const var,
+                                                        std::list<ValueFlow::Value> values,
+                                                        TokenList* const tokenlist,
+                                                        const Settings* const settings)
 {
-    valueFlowForwardVariable(startToken, endToken, var, std::move(values), getAliasesFromValues(values), tokenlist, settings);
+    return valueFlowForwardVariable(
+        startToken, endToken, var, std::move(values), getAliasesFromValues(values), tokenlist, settings);
 }
 
 // Old deprecated version
@@ -2805,17 +2808,19 @@ struct ExpressionForwardAnalyzer : SingleValueFlowForwardAnalyzer {
     }
 };
 
-static void valueFlowForwardExpression(Token* startToken,
-                                       const Token* endToken,
-                                       const Token* exprTok,
-                                       const std::list<ValueFlow::Value>& values,
-                                       const TokenList* const tokenlist,
-                                       const Settings* settings)
+static ForwardAnalyzer::Action valueFlowForwardExpression(Token* startToken,
+                                                          const Token* endToken,
+                                                          const Token* exprTok,
+                                                          const std::list<ValueFlow::Value>& values,
+                                                          const TokenList* const tokenlist,
+                                                          const Settings* settings)
 {
+    ForwardAnalyzer::Action actions;
     for (const ValueFlow::Value& v : values) {
         ExpressionForwardAnalyzer a(exprTok, v, tokenlist);
-        valueFlowGenericForward(startToken, endToken, a, settings);
+        actions |= valueFlowGenericForward(startToken, endToken, a, settings);
     }
+    return actions;
 }
 
 static const Token* parseBinaryIntOp(const Token* expr, MathLib::bigint& known)
@@ -2879,23 +2884,18 @@ static const Token* solveExprValues(const Token* expr, std::list<ValueFlow::Valu
     return expr;
 }
 
-static void valueFlowForward(Token* startToken,
-                             const Token* endToken,
-                             const Token* exprTok,
-                             std::list<ValueFlow::Value> values,
-                             TokenList* const tokenlist,
-                             const Settings* settings)
+static ForwardAnalyzer::Action valueFlowForward(Token* startToken,
+                                                const Token* endToken,
+                                                const Token* exprTok,
+                                                std::list<ValueFlow::Value> values,
+                                                TokenList* const tokenlist,
+                                                const Settings* settings)
 {
     const Token* expr = solveExprValues(exprTok, values);
     if (expr->variable()) {
-        valueFlowForwardVariable(startToken,
-                                 endToken,
-                                 expr->variable(),
-                                 values,
-                                 tokenlist,
-                                 settings);
+        return valueFlowForwardVariable(startToken, endToken, expr->variable(), values, tokenlist, settings);
     } else {
-        valueFlowForwardExpression(startToken, endToken, expr, values, tokenlist, settings);
+        return valueFlowForwardExpression(startToken, endToken, expr, values, tokenlist, settings);
     }
 }
 
@@ -4549,15 +4549,10 @@ static void valueFlowAfterCondition(TokenList *tokenlist,
                                     const Settings *settings)
 {
     ValueFlowConditionHandler handler;
-    handler.forward = [&](Token* start,
-                          const Token* stop,
-                          const Token* vartok,
-                          const std::list<ValueFlow::Value>& values,
-    bool) {
-        valueFlowForward(start->next(), stop, vartok, values, tokenlist, settings);
-        std::vector<const Variable*> vars = getExprVariables(vartok, tokenlist, symboldatabase, settings);
-        return isVariablesChanged(start, stop, 0, vars, settings, tokenlist->isCPP());
-    };
+    handler.forward =
+        [&](Token* start, const Token* stop, const Token* vartok, const std::list<ValueFlow::Value>& values, bool) {
+            return valueFlowForward(start->next(), stop, vartok, values, tokenlist, settings).isModified();
+        };
     handler.parse = [&](const Token *tok) {
         ValueFlowConditionHandler::Condition cond;
         ValueFlow::Value true_value;
@@ -5887,19 +5882,26 @@ struct ContainerVariableForwardAnalyzer : VariableForwardAnalyzer {
     }
 };
 
-static void valueFlowContainerForward(Token *tok, const Token* endToken, const Variable* var, ValueFlow::Value value, TokenList *tokenlist)
+static ForwardAnalyzer::Action valueFlowContainerForward(Token* tok,
+                                                         const Token* endToken,
+                                                         const Variable* var,
+                                                         ValueFlow::Value value,
+                                                         TokenList* tokenlist)
 {
     ContainerVariableForwardAnalyzer a(var, value, getAliasesFromValues({value}), tokenlist);
-    valueFlowGenericForward(tok, endToken, a, tokenlist->getSettings());
+    return valueFlowGenericForward(tok, endToken, a, tokenlist->getSettings());
 }
-static void valueFlowContainerForward(Token *tok, const Variable* var, ValueFlow::Value value, TokenList *tokenlist)
+static ForwardAnalyzer::Action valueFlowContainerForward(Token* tok,
+                                                         const Variable* var,
+                                                         ValueFlow::Value value,
+                                                         TokenList* tokenlist)
 {
     const Token * endOfVarScope = nullptr;
     if (var->isLocal() || var->isArgument())
         endOfVarScope = var->scope()->bodyEnd;
     if (!endOfVarScope)
         endOfVarScope = tok->scope()->bodyEnd;
-    valueFlowContainerForward(tok, endOfVarScope, var, std::move(value), tokenlist);
+    return valueFlowContainerForward(tok, endOfVarScope, var, std::move(value), tokenlist);
 }
 
 static bool isContainerSizeChanged(const Token *tok, int depth)
@@ -6048,15 +6050,10 @@ static void valueFlowIteratorAfterCondition(TokenList *tokenlist,
         const Settings *settings)
 {
     ValueFlowConditionHandler handler;
-    handler.forward = [&](Token* start,
-                          const Token* stop,
-                          const Token* vartok,
-                          const std::list<ValueFlow::Value>& values,
-    bool) {
-        valueFlowForward(start->next(), stop, vartok, values, tokenlist, settings);
-        std::vector<const Variable*> vars = getExprVariables(vartok, tokenlist, symboldatabase, settings);
-        return isVariablesChanged(start, stop, 0, vars, settings, tokenlist->isCPP());
-    };
+    handler.forward =
+        [&](Token* start, const Token* stop, const Token* vartok, const std::list<ValueFlow::Value>& values, bool) {
+            return valueFlowForward(start->next(), stop, vartok, values, tokenlist, settings).isModified();
+        };
     handler.parse = [&](const Token *tok) {
         ValueFlowConditionHandler::Condition cond;
 
@@ -6230,8 +6227,7 @@ static void valueFlowContainerAfterCondition(TokenList *tokenlist,
         const Variable* var = vartok->variable();
         if (!var)
             return false;
-        valueFlowContainerForward(start->next(), stop, var, values.front(), tokenlist);
-        return isContainerSizeChanged(var->declarationId(), start, stop);
+        return valueFlowContainerForward(start->next(), stop, var, values.front(), tokenlist).isModified();
     };
     handler.parse = [&](const Token *tok) {
         ValueFlowConditionHandler::Condition cond;
