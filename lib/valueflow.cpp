@@ -4424,6 +4424,31 @@ struct ValueFlowConditionHandler {
                     }
                 }
 
+                {
+                    const Token *tok2 = tok;
+                    std::string op;
+                    bool mixedOperators = false;
+                    while (tok2->astParent()) {
+                        const Token *parent = tok2->astParent();
+                        if (Token::Match(parent, "%oror%|&&")) {
+                            if (op.empty()) {
+                                op = parent->str() == "&&" ? "&&" : "||";
+                            } else if (op != parent->str()) {
+                                mixedOperators = true;
+                                break;
+                            }
+                        }
+                        if (parent->str()=="!") {
+                            op = (op == "&&" ? "||" : "&&");
+                        }
+                        tok2 = parent;
+                    }
+
+                    if (mixedOperators) {
+                        continue;
+                    }
+                }
+
                 if (top && Token::Match(top->previous(), "if|while (") && !top->previous()->isExpandedMacro()) {
                     // does condition reassign variable?
                     if (tok != top->astOperand2() && Token::Match(top->astOperand2(), "%oror%|&&") &&
