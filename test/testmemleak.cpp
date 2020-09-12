@@ -201,7 +201,7 @@ private:
               "    free(a);\n"
               "}");
 
-        TODO_ASSERT_EQUALS("", "[test.cpp:4]: (error) Common realloc mistake: 'a' nulled but not freed upon failure\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void realloc4() {
@@ -296,7 +296,7 @@ private:
               "        return;\n"
               "    free(a);\n"
               "}");
-        TODO_ASSERT_EQUALS("", "[test.cpp:4]: (error) Common realloc mistake: 'a' nulled but not freed upon failure\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void realloc13() {

@@ -550,6 +550,11 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
                     Token::findmatch(scope->bodyStart, "[{};] %varid% = *| %name% .| %name%| [;=]", tok, tok->varId()))
                     continue;
 
+                // Check if the argument is known to be null, which means it is not a memory leak
+                if (arg->hasKnownIntValue() && arg->getKnownIntValue() == 0) {
+                    continue;
+                }
+
                 const Token* tokEndRealloc = reallocTok->linkAt(1);
                 // Check that the allocation isn't followed immediately by an 'if (!var) { error(); }' that might handle failure
                 if (Token::simpleMatch(tokEndRealloc->next(), "; if (") &&
