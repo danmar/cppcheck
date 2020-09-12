@@ -292,17 +292,28 @@
          <property name="title">
           <string>Python binary (leave this empty to use python in the PATH)</string>
          </property>
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <item>
-           <widget class="QLineEdit" name="mEditPythonPath"/>
-          </item>
-          <item>
-           <widget class="QPushButton" name="mBtnBrowsePythonPath">
-            <property name="text">
-             <string>...</string>
-            </property>
-           </widget>
-          </item>
+         <layout class="QVBoxLayout" name="verticalLayout_13">
+           <item>
+             <layout class="QHBoxLayout" name="horizontalLayout">
+              <item>
+               <widget class="QLineEdit" name="mEditPythonPath"/>
+              </item>
+              <item>
+               <widget class="QPushButton" name="mBtnBrowsePythonPath">
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+           </item>
+           <item>
+             <widget class="QLabel" name="mPythonPathWarning">
+              <property name="text">
+               <string></string>
+              </property>
+             </widget>
+           </item>
          </layout>
         </widget>
        </item>
