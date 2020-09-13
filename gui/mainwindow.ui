@@ -332,6 +332,9 @@
    <property name="text">
     <string>&amp;Quit</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
   </action>
   <action name="mActionClearResults">
    <property name="icon">
@@ -458,6 +461,9 @@
    <property name="text">
     <string>Open P&amp;roject File...</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+O</string>
+   </property>
   </action>
   <action name="mActionShowScratchpad">
    <property name="icon">
@@ -471,6 +477,9 @@
   <action name="mActionNewProjectFile">
    <property name="text">
     <string>&amp;New Project File...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+N</string>
    </property>
   </action>
   <action name="mActionViewLog">
