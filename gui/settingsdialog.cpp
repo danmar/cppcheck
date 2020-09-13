@@ -23,6 +23,7 @@
 #include <QListWidgetItem>
 #include <QSettings>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QThread>
 #include "settingsdialog.h"
 #include "applicationdialog.h"
@@ -41,6 +42,7 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
     mTranslator(translator)
 {
     mUI.setupUi(this);
+    mUI.mPythonPathWarning->setStyleSheet("color: red");
     QSettings settings;
     mTempApplications->copy(list);
 
@@ -56,6 +58,7 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
     mUI.mShowStatistics->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_STATISTICS, false).toBool()));
     mUI.mShowErrorId->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_ERROR_ID, false).toBool()));
     mUI.mEditPythonPath->setText(settings.value(SETTINGS_PYTHON_PATH, QString()).toString());
+    validateEditPythonPath();
     mUI.mEditMisraFile->setText(settings.value(SETTINGS_MISRA_FILE, QString()).toString());
 
 #ifdef Q_OS_WIN
@@ -68,6 +71,9 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
 #endif
     mCurrentStyle = new CodeEditorStyle(CodeEditorStyle::loadSettings(&settings));
     manageStyleControls();
+
+    connect(mUI.mEditPythonPath, SIGNAL(textEdited(const QString &)),
+            this, SLOT(validateEditPythonPath()));
 
     connect(mUI.mButtons, &QDialogButtonBox::accepted, this, &SettingsDialog::ok);
     connect(mUI.mButtons, &QDialogButtonBox::rejected, this, &SettingsDialog::reject);
@@ -192,6 +198,28 @@ void SettingsDialog::saveCheckboxValue(QSettings *settings, QCheckBox *box,
                                        const QString &name)
 {
     settings->setValue(name, checkStateToBool(box->checkState()));
+}
+
+void SettingsDialog::validateEditPythonPath()
+{
+    const auto pythonPath = mUI.mEditPythonPath->text();
+    if (pythonPath.isEmpty()) {
+        mUI.mEditPythonPath->setStyleSheet("");
+        mUI.mPythonPathWarning->hide();
+        return;
+    }
+
+    QFileInfo pythonPathInfo(pythonPath);
+    if (!pythonPathInfo.exists() ||
+        !pythonPathInfo.isFile() ||
+        !pythonPathInfo.isExecutable()) {
+        mUI.mEditPythonPath->setStyleSheet("QLineEdit {border: 1px solid red}");
+        mUI.mPythonPathWarning->setText(tr("The executable file \"%1\" is not available").arg(pythonPath));
+        mUI.mPythonPathWarning->show();
+    } else {
+        mUI.mEditPythonPath->setStyleSheet("");
+        mUI.mPythonPathWarning->hide();
+    }
 }
 
 void SettingsDialog::addApplication()

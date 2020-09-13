@@ -103,6 +103,9 @@ protected slots:
     */
     void ok();
 
+    /** @brief Slot for validating input value in @c editPythonPath */
+    void validateEditPythonPath();
+
     /**
     * @brief Slot for adding a new application to the list
     *
