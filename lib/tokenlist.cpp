@@ -801,7 +801,7 @@ static void compileTerm(Token *&tok, AST_state& state)
                         tok = tok->next();
                         return true;
                     }
-                    if (tok->next() && Token::Match(tok->next(), "<") && tok->next()->link() && tok->next()->link()->next() && tok->next()->link()->next()->isName()) {
+                    if (Token::simpleMatch(tok->next(), "<") && tok->next()->link() && tok->next()->link()->next() && tok->next()->link()->next()->isName()) {
                         tok = tok->next()->link()->next();
                         return true;
                     }
