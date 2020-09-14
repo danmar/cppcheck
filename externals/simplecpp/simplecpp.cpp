@@ -2363,30 +2363,30 @@ static std::string _openHeader(std::ifstream &f, const std::string &path)
 #endif
 }
 
+static std::string getRelativeFileName(const std::string &sourcefile, const std::string &header)
+{
+    if (sourcefile.find_first_of("\\/") != std::string::npos)
+        return simplecpp::simplifyPath(sourcefile.substr(0, sourcefile.find_last_of("\\/") + 1U) + header);
+    return simplecpp::simplifyPath(header);
+}
+
 static std::string openHeaderRelative(std::ifstream &f, const std::string &sourcefile, const std::string &header)
 {
-    if (sourcefile.find_first_of("\\/") != std::string::npos) {
-        const std::string s = sourcefile.substr(0, sourcefile.find_last_of("\\/") + 1U) + header;
-        std::string simplePath = _openHeader(f, s);
-        if (!simplePath.empty())
-            return simplePath;
-    } else {
-        std::string simplePath = _openHeader(f, header);
-        if (!simplePath.empty())
-            return simplePath;
-    }
-    return "";
+    return _openHeader(f, getRelativeFileName(sourcefile, header));
+}
+
+static std::string getIncludePathFileName(const std::string &includePath, const std::string &header)
+{
+    std::string path = includePath;
+    if (!path.empty() && path[path.size()-1U]!='/' && path[path.size()-1U]!='\\')
+        path += '/';
+    return path + header;
 }
 
 static std::string openHeaderIncludePath(std::ifstream &f, const simplecpp::DUI &dui, const std::string &header)
 {
     for (std::list<std::string>::const_iterator it = dui.includePaths.begin(); it != dui.includePaths.end(); ++it) {
-        std::string s = *it;
-        if (!s.empty() && s[s.size()-1U]!='/' && s[s.size()-1U]!='\\')
-            s += '/';
-        s += header;
-
-        std::string simplePath = _openHeader(f, s);
+        std::string simplePath = _openHeader(f, getIncludePathFileName(*it, header));
         if (!simplePath.empty())
             return simplePath;
     }
@@ -2418,27 +2418,18 @@ static std::string getFileName(const std::map<std::string, simplecpp::TokenList 
         return (filedata.find(header) != filedata.end()) ? simplecpp::simplifyPath(header) : "";
     }
 
-    if (!systemheader) {
-        if (sourcefile.find_first_of("\\/") != std::string::npos) {
-            const std::string s(simplecpp::simplifyPath(sourcefile.substr(0, sourcefile.find_last_of("\\/") + 1U) + header));
-            if (filedata.find(s) != filedata.end())
-                return s;
-        } else {
-            std::string s = simplecpp::simplifyPath(header);
-            if (filedata.find(s) != filedata.end())
-                return s;
-        }
-    }
+    const std::string relativeFilename = getRelativeFileName(sourcefile, header);
+    if (!systemheader && filedata.find(relativeFilename) != filedata.end())
+        return relativeFilename;
 
     for (std::list<std::string>::const_iterator it = dui.includePaths.begin(); it != dui.includePaths.end(); ++it) {
-        std::string s = *it;
-        if (!s.empty() && s[s.size()-1U]!='/' && s[s.size()-1U]!='\\')
-            s += '/';
-        s += header;
-        s = simplecpp::simplifyPath(s);
+        std::string s = simplecpp::simplifyPath(getIncludePathFileName(*it, header));
         if (filedata.find(s) != filedata.end())
             return s;
     }
+
+    if (filedata.find(relativeFilename) != filedata.end())
+        return relativeFilename;
 
     return "";
 }
