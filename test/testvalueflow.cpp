@@ -2491,6 +2491,20 @@ private:
                "    }\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfXKnown(code, 9U, 0));
+
+        code = "bool c();\n"
+               "long f() {\n"
+               "    bool stop = false;\n"
+               "    while (!stop) {\n"
+               "        if (c())\n"
+               "            stop = true;\n"
+               "        break;\n"
+               "    }\n"
+               "    int x = !stop;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 10U, 1));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 10U, 0));
     }
 
     void valueFlowAfterConditionExpr() {
