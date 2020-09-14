@@ -796,17 +796,19 @@ static void compileTerm(Token *&tok, AST_state& state)
             }
         } else if (!state.cpp || !Token::Match(tok, "new|delete %name%|*|&|::|(|[")) {
             tok = skipDecl(tok);
-            while ([&] {
-                    if (tok->next() && tok->next()->isName()) {
-                        tok = tok->next();
-                        return true;
-                    }
-                    if (Token::simpleMatch(tok->next(), "<") && tok->next()->link() && tok->next()->link()->next() && tok->next()->link()->next()->isName()) {
-                        tok = tok->next()->link()->next();
-                        return true;
-                    }
-                    return false;
-                }());
+            bool repeat = true;
+            while (repeat)
+            {
+                repeat = false;
+                if (tok->next() && tok->next()->isName()) {
+                    tok = tok->next();
+                    repeat = true;
+                }
+                if (Token::simpleMatch(tok->next(), "<") && tok->next()->link() && tok->next()->link()->next() && tok->next()->link()->next()->isName()) {
+                    tok = tok->next()->link()->next();
+                    repeat = true;
+                }
+            }
             state.op.push(tok);
             if (Token::Match(tok, "%name% <") && tok->linkAt(1))
                 tok = tok->linkAt(1);
