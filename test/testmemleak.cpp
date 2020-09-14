@@ -169,6 +169,7 @@ private:
         TEST_CASE(realloc21);
         TEST_CASE(realloc22);
         TEST_CASE(realloc23);
+        TEST_CASE(realloc24); // #9228
         TEST_CASE(reallocarray1);
     }
 
@@ -201,7 +202,7 @@ private:
               "    free(a);\n"
               "}");
 
-        TODO_ASSERT_EQUALS("", "[test.cpp:4]: (error) Common realloc mistake: 'a' nulled but not freed upon failure\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void realloc4() {
@@ -296,7 +297,7 @@ private:
               "        return;\n"
               "    free(a);\n"
               "}");
-        TODO_ASSERT_EQUALS("", "[test.cpp:4]: (error) Common realloc mistake: 'a' nulled but not freed upon failure\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void realloc13() {
@@ -406,6 +407,35 @@ private:
               "    if (!(cigar = realloc(cigar, 100 * sizeof(*cigar))))\n"
               "        return;\n"
               "    s->cigar = cigar;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void realloc24() { // #9228
+        check("void f() {\n"
+              "void *a = NULL;\n"
+              "a = realloc(a, 20);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "void *a = NULL;\n"
+              "a = malloc(10);\n"
+              "a = realloc(a, 20);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n", errout.str());
+
+        check("void f() {\n"
+              "void *a = std::nullptr;\n"
+              "a = malloc(10);\n"
+              "a = realloc(a, 20);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n", errout.str());
+
+        check("void f(char *b) {\n"
+              "void *a = NULL;\n"
+              "a = b;\n"
+              "a = realloc(a, 20);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
