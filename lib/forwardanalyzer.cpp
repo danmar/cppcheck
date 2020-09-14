@@ -313,11 +313,13 @@ struct ForwardTraversal {
                 if (!scope)
                     return Progress::Break;
                 if (Token::Match(tok->link()->previous(), ")|else {")) {
-                    const bool inElse = Token::simpleMatch(tok->link()->previous(), "else {");
+                    const Token* tok2 = tok->link()->previous();
+                    const bool inElse = Token::simpleMatch(tok2, "else {");
+                    const bool inLoop = inElse ? false : Token::Match(tok2->link()->previous(), "while|for (");
                     Token* condTok = getCondTokFromEnd(tok);
                     if (!condTok)
                         return Progress::Break;
-                    if (!condTok->hasKnownIntValue()) {
+                    if (!condTok->hasKnownIntValue() || inLoop) {
                         if (!analyzer->lowerToPossible())
                             return Progress::Break;
                     } else if (condTok->values().front().intvalue == inElse) {
