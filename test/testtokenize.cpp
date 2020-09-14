@@ -494,6 +494,8 @@ private:
         TEST_CASE(noCrash1);
         TEST_CASE(noCrash2);
 
+        TEST_CASE(noCrash3);
+
         // --check-config
         TEST_CASE(checkConfiguration);
 
@@ -8517,6 +8519,10 @@ private:
                             "template <> d<int>::d(const int &, a::b, double, double);\n"
                             "template <> d<int>::d(const d &) {}\n"
                             "template <> d<c>::d(const d &) {}\n"));
+    }
+
+    void noCrash3() {
+        ASSERT_NO_THROW(tokenizeAndStringify("void a(X<int> x, typename Y1::Y2<int, A::B::C, 2> y, Z z = []{});"));
     }
 
     void checkConfig(const char code[]) {
