@@ -800,11 +800,11 @@ static void compileTerm(Token *&tok, AST_state& state)
             while (repeat)
             {
                 repeat = false;
-                if (tok->next() && tok->next()->isName()) {
+                if (Token::Match(tok->next(), "%name%")) {
                     tok = tok->next();
                     repeat = true;
                 }
-                if (Token::simpleMatch(tok->next(), "<") && tok->next()->link() && tok->next()->link()->next() && tok->next()->link()->next()->isName()) {
+                if (Token::simpleMatch(tok->next(), "<") && Token::Match(tok->linkAt(1), "> %name%")) {
                     tok = tok->next()->link()->next();
                     repeat = true;
                 }
