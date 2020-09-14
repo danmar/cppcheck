@@ -168,6 +168,7 @@ private:
         TEST_CASE(simplifyTypedef130); // ticket #9446
         TEST_CASE(simplifyTypedef131); // ticket #9446
         TEST_CASE(simplifyTypedef132); // ticket #9739 - using
+        TEST_CASE(simplifyTypedef133); // ticket #9812 - using
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -2651,6 +2652,13 @@ private:
                             "void A :: DoSomething ( int wrongName ) { }";
 
         ASSERT_EQUALS(exp, tok(code, false));
+    }
+
+    void simplifyTypedef133() { // #9812
+        const char code[] = "typedef unsigned char array_t[16];\n"
+                            "using array_p = const array_t *;\n"
+                            "array_p x;\n";
+        ASSERT_EQUALS("using array_p = const unsigned char ( * ) [ 16 ] ; array_p x ;", tok(code, false));
     }
 
     void simplifyTypedefFunction1() {
