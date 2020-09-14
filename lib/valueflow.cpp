@@ -4510,8 +4510,10 @@ struct ValueFlowConditionHandler {
                     if (Token::simpleMatch(top->link(), ") {")) {
                         Token *after = top->link()->linkAt(1);
                         const Token* unknownFunction = nullptr;
-                        const bool isWhile = tok->astParent() && Token::simpleMatch(tok->astParent()->previous(), "while (");
-                        bool dead_if = (!isBreakScope(after) && isWhile) || (isReturnScope(after, &settings->library, &unknownFunction) && !isWhile);
+                        const bool isWhile =
+                            tok->astParent() && Token::simpleMatch(tok->astParent()->previous(), "while (");
+                        bool dead_if = (!isBreakScope(after) && isWhile) ||
+                                       (isReturnScope(after, &settings->library, &unknownFunction) && !isWhile);
                         bool dead_else = false;
 
                         if (!dead_if && unknownFunction) {
