@@ -77,6 +77,7 @@ private:
         TEST_CASE(incorrectLogicOperator12);
         TEST_CASE(incorrectLogicOperator13);
         TEST_CASE(incorrectLogicOperator14);
+        TEST_CASE(incorrectLogicOperator15);
         TEST_CASE(secondAlwaysTrueFalseWhenFirstTrueError);
         TEST_CASE(incorrectLogicOp_condSwapping);
         TEST_CASE(testBug5895);
@@ -1548,6 +1549,23 @@ private:
               "      if (f && g)\n"
               "        ;\n"
               "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void incorrectLogicOperator15() {
+        // False positive due to pointer reassignment
+        check("int f(unsigned *p) {\n"
+              "    if (*p != 0) {\n"
+              "        unsigned tmp = *p;\n"
+              "\n"
+              "        *p = g();\n"
+              "\n"
+              "        if ((tmp == 1) && (*p == 0)) {\n"
+              "            *p = 1;\n"
+              "        }\n"
+              "    }\n"
+              "    return 0;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
