@@ -5516,6 +5516,12 @@ static void valueFlowSubFunction(TokenList* tokenlist, SymbolDatabase* symboldat
                 // passing value(s) to function
                 std::list<ValueFlow::Value> argvalues(getFunctionArgumentValues(argtok));
 
+                // Remove non-local lifetimes
+                argvalues.remove_if([](const ValueFlow::Value& v) {
+                    if (v.isLifetimeValue())
+                        return !v.isLocalLifetimeValue() && !v.isSubFunctionLifetimeValue();
+                    return false;
+                });
                 // Don't forward container sizes for now since programmemory can't evaluate conditions
                 argvalues.remove_if(std::mem_fn(&ValueFlow::Value::isContainerSizeValue));
 
