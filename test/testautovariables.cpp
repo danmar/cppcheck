@@ -2472,6 +2472,18 @@ private:
               "  return data;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9899
+        check("struct A {\n"
+              "    std::vector<int> v;\n"
+              "    void f(std::vector<int> w) {\n"
+              "        v = std::move(w);\n"
+              "    }\n"
+              "    void g(std::vector<int> w) {\n"
+              "        f(std::move(w));\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeFunction() {
