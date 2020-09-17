@@ -3800,6 +3800,23 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:9]: (style) The if condition is the same as the previous if condition\n",
                       errout.str());
+
+        check("void f(bool a, bool b) {\n"
+              "    auto g = [&] { b = !a; };\n"
+              "    if (b)\n"
+              "        g();\n"
+              "    if (b) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g(bool& a);\n"
+              "void f(bool b) {\n"
+              "    auto h = std::bind(&g, std::ref(b));\n"
+              "    if (b)\n"
+              "        h();\n"
+              "    if (b) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkInvalidTestForOverflow() {
