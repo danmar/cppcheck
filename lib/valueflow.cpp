@@ -3507,6 +3507,7 @@ struct LifetimeStore {
                 ValueFlow::Value value;
                 value.valueType = ValueFlow::Value::LIFETIME;
                 value.lifetimeScope = v.lifetimeScope;
+                value.path = v.path;
                 value.tokvalue = lt.token;
                 value.errorPath = std::move(er);
                 value.lifetimeKind = type;
@@ -3612,7 +3613,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
         for (const Token* returnTok : returns) {
             if (returnTok == tok)
                 continue;
-            const Variable *returnVar = returnTok->variable();
+            const Variable *returnVar = getLifetimeVariable(returnTok);
             if (returnVar && returnVar->isArgument() && (returnVar->isConst() || !isVariableChanged(returnVar, settings, tokenlist->isCPP()))) {
                 LifetimeStore ls = LifetimeStore::fromFunctionArg(f, tok, returnVar, tokenlist, errorLogger);
                 ls.inconclusive = inconclusive;
@@ -3630,7 +3631,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
                 ls.inconclusive = inconclusive;
                 ls.errorPath = v.errorPath;
                 ls.errorPath.emplace_front(returnTok, "Return " + lifetimeType(returnTok, &v) + ".");
-                if (var->isReference() || var->isRValueReference()) {
+                if (!v.isArgumentLifetimeValue() && (var->isReference() || var->isRValueReference())) {
                     ls.byRef(tok->next(), tokenlist, errorLogger, settings);
                 } else if (v.isArgumentLifetimeValue()) {
                     ls.byVal(tok->next(), tokenlist, errorLogger, settings);

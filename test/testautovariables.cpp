@@ -2515,6 +2515,18 @@ private:
             "[test.cpp:7] -> [test.cpp:7] -> [test.cpp:3] -> [test.cpp:3] -> [test.cpp:6] -> [test.cpp:7]: (error) Returning object that points to local variable 'v' that will be invalid when returning.\n",
             errout.str());
 
+        check("template<class T>\n"
+              "auto by_value(const T& x) {\n"
+              "    return [=] { return x; };\n"
+              "}\n"
+              "auto g() {\n"
+              "    std::vector<int> v;\n"
+              "    return by_value(v.begin());\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:7] -> [test.cpp:7] -> [test.cpp:3] -> [test.cpp:3] -> [test.cpp:2] -> [test.cpp:6] -> [test.cpp:7]: (error) Returning object that points to local variable 'v' that will be invalid when returning.\n",
+            errout.str());
+
         check("auto by_ref(int& x) {\n"
               "    return [&] { return x; };\n"
               "}\n"
@@ -2526,10 +2538,32 @@ private:
             "[test.cpp:2] -> [test.cpp:1] -> [test.cpp:2] -> [test.cpp:6] -> [test.cpp:5] -> [test.cpp:6]: (error) Returning object that points to local variable 'i' that will be invalid when returning.\n",
             errout.str());
 
+        check("auto by_ref(const int& x) {\n"
+              "    return [=] { return x; };\n"
+              "}\n"
+              "auto f() {\n"
+              "    int i = 0;\n"
+              "    return by_ref(i);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("auto f(int x) {\n"
               "    int a;\n"
               "    std::tie(a) = x;\n"
               "    return a;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::pair<std::string, std::string>\n"
+              "str_pair(std::string const & a, std::string const & b) {\n"
+              "    return std::make_pair(a, b);\n"
+              "}\n"
+              "std::vector<std::pair<std::string, std::string> > create_parameters() {\n"
+              "    std::vector<std::pair<std::string, std::string> > par;\n"
+              "    par.push_back(str_pair(\"param1\", \"prop_a\"));\n"
+              "    par.push_back(str_pair(\"param2\", \"prop_b\"));\n"
+              "    par.push_back(str_pair(\"param3\", \"prop_c\"));\n"
+              "    return par;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
