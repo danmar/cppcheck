@@ -3845,6 +3845,8 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             }
 
             for (const Token * tok2 = lam.bodyTok; tok2 != lam.bodyTok->link(); tok2 = tok2->next()) {
+                if (!tok2->variable())
+                    continue;
                 captureVariable(tok2, lam.implicitCapture, isImplicitCapturingVariable);
             }
 

@@ -1914,6 +1914,15 @@ private:
               "    return [=, &i] { return j; };\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int*);\n"
+              "auto g(int y) {\n"
+              "    int x = y;\n"
+              "    return [=] {\n"
+              "        g(&x);\n"
+              "    };\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeContainer() {
