@@ -3585,7 +3585,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
             LifetimeStore{argtok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::LifetimeKind::Object} .byRef(
                 tok->next(), tokenlist, errorLogger, settings);
         }
-    } else if (Token::Match(tok->tokAt(-2), "std :: make_tuple|tuple_cat|make_pair|make_reverse_iterator|next|prev|move")) {
+    } else if (Token::Match(tok->tokAt(-2), "std :: make_tuple|tuple_cat|make_pair|make_reverse_iterator|next|prev|move|bind")) {
         for (const Token *argtok : getArguments(tok)) {
             LifetimeStore{argtok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::LifetimeKind::Object} .byVal(
                 tok->next(), tokenlist, errorLogger, settings);

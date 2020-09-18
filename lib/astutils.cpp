@@ -29,9 +29,11 @@
 #include "valueflow.h"
 
 #include <algorithm>
+#include <functional>
 #include <iterator>
 #include <list>
 #include <stack>
+#include <utility>
 
 template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
 void visitAstNodesGeneric(T *ast, std::function<ChildrenToVisit(T *)> visitor)
@@ -1605,17 +1607,66 @@ bool isVariableChanged(const Token *start, const Token *end, int indirect, const
     return findVariableChanged(start, end, indirect, exprid, globalvar, settings, cpp, depth) != nullptr;
 }
 
+static const Token* findExpression(const Token* start, const nonneg int exprid)
+{
+    Function * f = Scope::nestedInFunction(start->scope());
+    if (!f)
+        return nullptr;
+    const Scope* scope = f->functionScope;
+    if (!scope)
+        return nullptr;
+    for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+        if (tok->exprId() != exprid)
+            continue;
+        return tok;
+    }
+    return nullptr;
+}
+
+// Thread-unsafe memoization
+template<class F, class R=decltype(std::declval<F>()())>
+static std::function<R()> memoize(F f)
+{
+    bool init = false;
+    R result{};
+    return [=]() mutable -> R {
+        if (init)
+            return result;
+        result = f();
+        init = true;
+        return result;
+    };
+}
+
 Token* findVariableChanged(Token *start, const Token *end, int indirect, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth)
 {
     if (!precedes(start, end))
         return nullptr;
     if (depth < 0)
         return start;
+    auto getExprTok = memoize([&]{ return findExpression(start, exprid); });
     for (Token *tok = start; tok != end; tok = tok->next()) {
         if (tok->exprId() != exprid) {
             if (globalvar && Token::Match(tok, "%name% ("))
                 // TODO: Is global variable really changed by function call?
                 return tok;
+            // Is aliased function call
+            if (Token::Match(tok, "%var% (") && std::any_of(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isLifetimeValue))) {
+                bool aliased = false;
+                // If we cant find the expression then assume it was modified
+                if (!getExprTok())
+                    return tok;
+                visitAstNodes(getExprTok(), [&](const Token* childTok) {
+                    if (childTok->varId() > 0 && isAliasOf(tok, childTok->varId())) {
+                        aliased = true;
+                        return ChildrenToVisit::done;
+                    }
+                    return ChildrenToVisit::op1_and_op2;
+                });
+                // TODO: Try to traverse the lambda function
+                if (aliased)
+                    return tok;
+            }
             continue;
         }
         if (isVariableChanged(tok, indirect, settings, cpp, depth))
