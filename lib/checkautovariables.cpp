@@ -494,6 +494,7 @@ static bool isDanglingSubFunction(const Token* tokvalue, const Token* tok)
 
 void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token * end)
 {
+    const bool printInconclusive = (mSettings->inconclusive);
     if (!start)
         return;
     const Scope * scope = start->scope();
@@ -507,6 +508,8 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
         // Return reference from function
         if (returnRef && Token::simpleMatch(tok->astParent(), "return")) {
             for (const LifetimeToken& lt : getLifetimeTokens(tok, true)) {
+                if (!printInconclusive && lt.inconclusive)
+                    continue;
                 const Variable* var = lt.token->variable();
                 if (var && !var->isGlobal() && !var->isStatic() && !var->isReference() && !var->isRValueReference() &&
                     isInScope(var->nameToken(), tok->scope())) {
@@ -531,6 +534,8 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
             // Reference to temporary
         } else if (tok->variable() && (tok->variable()->isReference() || tok->variable()->isRValueReference())) {
             for (const LifetimeToken& lt : getLifetimeTokens(getParentLifetime(tok))) {
+                if (!printInconclusive && lt.inconclusive)
+                    continue;
                 const Token * tokvalue = lt.token;
                 if (isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok, &mSettings->library)) {
                     errorDanglingTempReference(tok, lt.errorPath, lt.inconclusive);
@@ -541,6 +546,8 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
         }
         for (const ValueFlow::Value& val:tok->values()) {
             if (!val.isLocalLifetimeValue() && !val.isSubFunctionLifetimeValue())
+                continue;
+            if (!printInconclusive && val.isInconclusive())
                 continue;
             const bool escape = Token::Match(tok->astParent(), "return|throw");
             for (const LifetimeToken& lt : getLifetimeTokens(getParentLifetime(val.tokvalue), escape)) {

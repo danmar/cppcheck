@@ -182,6 +182,24 @@ private:
         return false;
     }
 
+    bool testValueOfXInconclusive(const char code[], unsigned int linenr, int value) {
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+            if (tok->str() == "x" && tok->linenr() == linenr) {
+                for (const ValueFlow::Value& val:tok->values()) {
+                    if (val.isInconclusive() && val.intvalue == value)
+                        return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     bool testValueOfX(const char code[], unsigned int linenr, int value) {
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -2106,6 +2124,28 @@ private:
                "Fred::Fred(std::unique_ptr<Wilma> wilma)\n"
                "    : mWilma(std::move(wilma)) {}\n";
         ASSERT_EQUALS(0, tokenValues(code, "mWilma (").size());
+
+        code = "void g(unknown*);\n"
+               "int f() {\n"
+               "    int a = 1;\n"
+               "    unknown c[] = {{&a}};\n"
+               "    g(c);\n"
+               "    int x = a;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 7U, 1));
+        ASSERT_EQUALS(true, testValueOfXInconclusive(code, 7U, 1));
+
+        code = "void g(unknown&);\n"
+               "int f() {\n"
+               "    int a = 1;\n"
+               "    unknown c{&a};\n"
+               "    g(c);\n"
+               "    int x = a;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 7U, 1));
+        ASSERT_EQUALS(true, testValueOfXInconclusive(code, 7U, 1));
     }
 
     void valueFlowAfterCondition() {
