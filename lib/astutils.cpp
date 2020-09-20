@@ -1649,7 +1649,7 @@ Token* findVariableChanged(Token *start, const Token *end, int indirect, const n
         return nullptr;
     if (depth < 0)
         return start;
-    auto getExprTok = memoize([&]{ return findExpression(start, exprid); });
+    auto getExprTok = memoize([&] { return findExpression(start, exprid); });
     for (Token *tok = start; tok != end; tok = tok->next()) {
         if (tok->exprId() != exprid) {
             if (globalvar && Token::Match(tok, "%name% ("))

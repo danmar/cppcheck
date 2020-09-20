@@ -797,8 +797,7 @@ static void compileTerm(Token *&tok, AST_state& state)
         } else if (!state.cpp || !Token::Match(tok, "new|delete %name%|*|&|::|(|[")) {
             tok = skipDecl(tok);
             bool repeat = true;
-            while (repeat)
-            {
+            while (repeat) {
                 repeat = false;
                 if (Token::Match(tok->next(), "%name%")) {
                     tok = tok->next();
