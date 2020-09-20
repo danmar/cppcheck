@@ -8835,6 +8835,13 @@ private:
               "   ASSERT((int)((x & 0x01) >> 7));\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9905 - expression that does not use integer calculation at all
+        check("void foo() {\n"
+              "    const std::string heading = \"Interval\";\n"
+              "    std::cout << std::setw(heading.length());\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkComparePointers() {

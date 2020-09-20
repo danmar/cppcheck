@@ -3113,6 +3113,15 @@ void CheckOther::checkKnownArgument()
                 tok2 = tok2->astOperand2();
             if (isVariableExpression(tok2))
                 continue;
+            // ensure that there is a integer variable in expression with unknown value
+            bool intvar = false;
+            visitAstNodes(tok, [&intvar](const Token *child) {
+                if (child->varId() && child->valueType() && child->valueType()->isIntegral() && child->values().empty())
+                    intvar = true;
+                return ChildrenToVisit::op1_and_op2;
+            });
+            if (!intvar)
+                continue;
             // ensure that function name does not contain "assert"
             std::string funcname = tok->astParent()->previous()->str();
             std::transform(funcname.begin(), funcname.end(), funcname.begin(), [](int c) {
