@@ -4713,6 +4713,20 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
+
+        check("static void f1(std::list<std::string>& parameters) {\n"
+              "    parameters.push_back(a);\n"
+              "}\n"
+              "int f2(std::list<std::string>& parameters) {\n"
+              "    f1(parameters);\n"
+              "}\n"
+              "void f3() {\n"
+              "    std::list<std::string> parameters;\n"
+              "    int res = ::f2(parameters);\n"
+              "    for (auto param : parameters) {}\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkMutexes() {

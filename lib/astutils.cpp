@@ -1388,6 +1388,11 @@ const Token * getTokenArgumentFunction(const Token * tok, int& argn)
     while (Token::simpleMatch(tok, "."))
         tok = tok->astOperand2();
     while (Token::simpleMatch(tok, "::")) {
+        // If there is only a op1 and not op2, then this is a global scope
+        if (!tok->astOperand2() && tok->astOperand1()) {
+            tok = tok->astOperand1();
+            break;
+        }
         tok = tok->astOperand2();
         if (Token::simpleMatch(tok, "<") && tok->link())
             tok = tok->astOperand1();
