@@ -523,17 +523,22 @@ bool precedes(const Token * tok1, const Token * tok2)
     return tok1->index() < tok2->index();
 }
 
-bool isAliasOf(const Token *tok, nonneg int varid)
+bool isAliasOf(const Token *tok, nonneg int varid, bool* inconclusive)
 {
     if (tok->varId() == varid)
         return false;
     for (const ValueFlow::Value &val : tok->values()) {
         if (!val.isLocalLifetimeValue())
             continue;
-        if (val.isInconclusive())
-            continue;
-        if (val.tokvalue->varId() == varid)
+        if (val.tokvalue->varId() == varid) {
+            if (val.isInconclusive()) {
+                if (inconclusive)
+                    *inconclusive = true;
+                else
+                    continue;
+            }
             return true;
+        }
     }
     return false;
 }

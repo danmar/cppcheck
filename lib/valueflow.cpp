@@ -2193,42 +2193,13 @@ static bool evalAssignment(ValueFlow::Value &lhsValue, const std::string &assign
 }
 
 // Check if its an alias of the variable or is being aliased to this variable
-static bool isAliasOf(const Variable* var, const Token* tok, nonneg int varid, const ValueFlow::Value& val)
+static bool isAliasOf(const Variable * var, const Token *tok, nonneg int varid, const std::list<ValueFlow::Value>& values, bool* inconclusive = nullptr)
 {
     if (tok->varId() == varid)
         return false;
     if (tok->varId() == 0)
         return false;
-    if (isAliasOf(tok, varid))
-        return true;
-    if (var && !var->isPointer())
-        return false;
-    // Search through non value aliases
-
-    if (!val.isNonValue())
-        return false;
-    if (val.isInconclusive())
-        return false;
-    if (val.isLifetimeValue() && !val.isLocalLifetimeValue())
-        return false;
-    if (val.isLifetimeValue() && val.lifetimeKind != ValueFlow::Value::LifetimeKind::Address)
-        return false;
-    if (!Token::Match(val.tokvalue, ".|&|*|%var%"))
-        return false;
-    if (astHasVar(val.tokvalue, tok->varId()))
-        return true;
-
-    return false;
-}
-
-// Check if its an alias of the variable or is being aliased to this variable
-static bool isAliasOf(const Variable * var, const Token *tok, nonneg int varid, const std::list<ValueFlow::Value>& values)
-{
-    if (tok->varId() == varid)
-        return false;
-    if (tok->varId() == 0)
-        return false;
-    if (isAliasOf(tok, varid))
+    if (isAliasOf(tok, varid, inconclusive))
         return true;
     if (var && !var->isPointer())
         return false;
@@ -2328,7 +2299,7 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
 
     virtual bool match(const Token* tok) const = 0;
 
-    virtual bool isAlias(const Token* tok) const = 0;
+    virtual bool isAlias(const Token* tok, bool& inconclusive) const = 0;
 
     using ProgramState = std::unordered_map<nonneg int, ValueFlow::Value>;
 
@@ -2448,6 +2419,7 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
     virtual Action analyze(const Token* tok) const OVERRIDE {
         if (invalid())
             return Action::Invalid;
+        bool inconclusive = false;
         if (match(tok)) {
             const Token* parent = tok->astParent();
             if (astIsPointer(tok) && (Token::Match(parent, "*|[") || (parent && parent->originalName() == "->")) && getIndirect(tok) <= 0)
@@ -2479,8 +2451,12 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
             }
             return Action::None;
 
-        } else if (isAlias(tok)) {
-            return isAliasModified(tok);
+        } else if (isAlias(tok, inconclusive)) {
+            Action a = isAliasModified(tok);
+            if (inconclusive && a.isModified())
+                return Action::Inconclusive;
+            else
+                return a;
         } else if (Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
             // bailout: global non-const variables
             if (isGlobal()) {
@@ -2568,7 +2544,7 @@ struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
         value.errorPath.emplace_back(tok, s);
     }
 
-    virtual bool isAlias(const Token* tok) const OVERRIDE {
+    virtual bool isAlias(const Token* tok, bool& inconclusive) const OVERRIDE {
         if (value.isLifetimeValue())
             return false;
         for (const auto& m: {
@@ -2579,7 +2555,7 @@ struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
                 const Variable* var = p.second;
                 if (tok->varId() == varid)
                     return true;
-                if (isAliasOf(var, tok, varid, value))
+                if (isAliasOf(var, tok, varid, {value}, &inconclusive))
                     return true;
             }
         }
@@ -3293,8 +3269,32 @@ static void valueFlowLifetimeConstructor(Token *tok,
         ErrorLogger *errorLogger,
         const Settings *settings);
 
+static const Token* getEndOfVarScope(const Token* tok, const std::vector<const Variable*>& vars)
+{
+    const Token* endOfVarScope = nullptr;
+    for (const Variable* var : vars) {
+        if (var && var->isLocal())
+            endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
+        else if (!endOfVarScope)
+            endOfVarScope = tok->scope()->bodyEnd;
+    }
+    return endOfVarScope;
+}
+
 static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
+    // Forward lifetimes to constructed variable
+    if (Token::Match(tok->previous(), "%var% {")) {
+        std::list<ValueFlow::Value> values = tok->values();
+        values.remove_if(&isNotLifetimeValue);
+        valueFlowForward(nextAfterAstRightmostLeaf(tok),
+                         getEndOfVarScope(tok, {tok->variable()}),
+                         tok->previous(),
+                         values,
+                         tokenlist,
+                         settings);
+        return;
+    }
     Token *parent = tok->astParent();
     while (parent && (parent->isArithmeticalOp() || parent->str() == ","))
         parent = parent->astParent();
@@ -3311,13 +3311,7 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
 
         std::vector<const Variable*> vars = getLHSVariables(parent);
 
-        const Token* endOfVarScope = nullptr;
-        for (const Variable* var : vars) {
-            if (var && var->isLocal())
-                endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
-            else if (!endOfVarScope)
-                endOfVarScope = tok->scope()->bodyEnd;
-        }
+        const Token* endOfVarScope = getEndOfVarScope(tok, vars);
 
         // Only forward lifetime values
         std::list<ValueFlow::Value> values = parent->astOperand2()->values();
@@ -3427,8 +3421,6 @@ struct LifetimeStore {
 
     template <class Predicate>
     void byRef(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings, Predicate pred) const {
-        if (!settings->inconclusive && inconclusive)
-            return;
         if (!argtok)
             return;
         for (const LifetimeToken& lt : getLifetimeTokens(argtok)) {
@@ -3465,8 +3457,6 @@ struct LifetimeStore {
 
     template <class Predicate>
     void byVal(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings, Predicate pred) const {
-        if (!settings->inconclusive && inconclusive)
-            return;
         if (!argtok)
             return;
         if (argtok->values().empty()) {
@@ -3647,10 +3637,21 @@ static void valueFlowLifetimeConstructor(Token* tok,
         ErrorLogger* errorLogger,
         const Settings* settings)
 {
-    if (!t)
-        return;
     if (!Token::Match(tok, "(|{"))
         return;
+    if (!t) {
+        if (tok->valueType() && tok->valueType()->type != ValueType::RECORD)
+            return;
+        // If the type is unknown then assume it captures by value in the
+        // constructor, but make each lifetime inconclusive
+        std::vector<const Token*> args = getArguments(tok);
+        for (const Token *argtok : args) {
+            LifetimeStore ls{argtok, "Passed to initializer list.", ValueFlow::Value::LifetimeKind::Object};
+            ls.inconclusive = true;
+            ls.byVal(tok, tokenlist, errorLogger, settings);
+        }
+        return;
+    }
     const Scope* scope = t->classScope;
     if (!scope)
         return;
@@ -3710,8 +3711,8 @@ static void valueFlowLifetimeConstructor(Token* tok, TokenList* tokenlist, Error
                 ls.byVal(tok, tokenlist, errorLogger, settings);
             }
         }
-    } else if (const Type* t = Token::typeOf(tok->previous())) {
-        valueFlowLifetimeConstructor(tok, t, tokenlist, errorLogger, settings);
+    } else {
+        valueFlowLifetimeConstructor(tok, Token::typeOf(tok->previous()), tokenlist, errorLogger, settings);
     }
 }
 
@@ -5037,7 +5038,7 @@ struct MultiValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
         }
     }
 
-    virtual bool isAlias(const Token* tok) const OVERRIDE {
+    virtual bool isAlias(const Token* tok, bool& inconclusive) const OVERRIDE {
         std::list<ValueFlow::Value> vals;
         std::transform(values.begin(), values.end(), std::back_inserter(vals), SelectMapValues{});
 
@@ -5046,7 +5047,7 @@ struct MultiValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
             const Variable* var = p.second;
             if (tok->varId() == varid)
                 return true;
-            if (isAliasOf(var, tok, varid, vals))
+            if (isAliasOf(var, tok, varid, vals, &inconclusive))
                 return true;
         }
         return false;
