@@ -559,7 +559,6 @@ private:
     }
 
     void multi_inlinesuppress() {
-        Suppressions ss;
         std::vector<Suppressions::Suppression> suppressions;
         std::string errMsg;
 
@@ -625,7 +624,6 @@ private:
     }
 
     void multi_inlinesuppress_comment() {
-        Suppressions ss;
         std::vector<Suppressions::Suppression> suppressions;
         std::string errMsg;
 
