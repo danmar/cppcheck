@@ -245,8 +245,8 @@ void Variables::readAliases(unsigned int varid, const Token* tok)
     VariableUsage *usage = find(varid);
 
     if (usage) {
-        for (std::set<unsigned int>::iterator aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases) {
-            VariableUsage *aliased = find(*aliases);
+        for (unsigned int aliases : usage->_aliases) {
+            VariableUsage *aliased = find(aliases);
 
             if (aliased) {
                 aliased->_read = true;

@@ -69,8 +69,8 @@ Preprocessor::Preprocessor(Settings& settings, ErrorLogger *errorLogger) : mSett
 
 Preprocessor::~Preprocessor()
 {
-    for (std::map<std::string, simplecpp::TokenList *>::iterator it = mTokenLists.begin(); it != mTokenLists.end(); ++it)
-        delete it->second;
+    for (std::pair<const std::string, simplecpp::TokenList *>& tokenList : mTokenLists)
+        delete tokenList.second;
 }
 
 namespace {
@@ -657,9 +657,9 @@ bool Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<
 
 void Preprocessor::removeComments()
 {
-    for (std::map<std::string, simplecpp::TokenList*>::iterator it = mTokenLists.begin(); it != mTokenLists.end(); ++it) {
-        if (it->second)
-            it->second->removeComments();
+    for (std::pair<const std::string, simplecpp::TokenList*>& tokenList : mTokenLists) {
+        if (tokenList.second)
+			tokenList.second->removeComments();
     }
 }
 
@@ -982,8 +982,8 @@ unsigned int Preprocessor::calculateChecksum(const simplecpp::TokenList &tokens1
 void Preprocessor::simplifyPragmaAsm(simplecpp::TokenList *tokenList)
 {
     Preprocessor::simplifyPragmaAsmPrivate(tokenList);
-    for (std::map<std::string, simplecpp::TokenList *>::iterator it = mTokenLists.begin(); it != mTokenLists.end(); ++it) {
-        Preprocessor::simplifyPragmaAsmPrivate(it->second);
+    for (std::pair<const std::string, simplecpp::TokenList *>& list : mTokenLists) {
+        Preprocessor::simplifyPragmaAsmPrivate(list.second);
     }
 }
 

@@ -726,9 +726,8 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             mContextItem = mModel.itemFromIndex(index);
             if (mContextItem && mApplications->getApplicationCount() > 0 && mContextItem->parent()) {
                 //Disconnect all signals
-                for (int i = 0; i < actions.size(); i++) {
-
-                    disconnect(actions[i], SIGNAL(triggered()), signalMapper, SLOT(map()));
+                for (QAction* action : actions) {
+                    disconnect(action, SIGNAL(triggered()), signalMapper, SLOT(map()));
                 }
 
                 disconnect(signalMapper, SIGNAL(mapped(int)),
