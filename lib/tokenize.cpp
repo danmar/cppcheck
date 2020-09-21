@@ -9856,7 +9856,7 @@ void Tokenizer::findGarbageCode() const
                 syntaxError(tok);
         }
         if (Token::Match(tok, "%or%|%oror%|~|^|!|%comp%|+|-|/|%")) {
-            std::string code = "";
+            std::string code;
             if (Token::Match(tok->next(), ")|]|}"))
                 code = tok->str() + tok->next()->str();
             if (Token::simpleMatch(tok->next(), "( )"))
