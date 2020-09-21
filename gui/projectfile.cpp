@@ -958,7 +958,7 @@ bool ProjectFile::write(const QString &filename)
 
     if (!mFunctionContracts.empty()) {
         xmlWriter.writeStartElement(CppcheckXml::FunctionContracts);
-        for (const auto contract: mFunctionContracts) {
+        for (const auto& contract: mFunctionContracts) {
             xmlWriter.writeStartElement(CppcheckXml::FunctionContract);
             xmlWriter.writeAttribute(CppcheckXml::ContractFunction, QString::fromStdString(contract.first));
             xmlWriter.writeAttribute(CppcheckXml::ContractExpects, QString::fromStdString(contract.second));
@@ -1025,7 +1025,7 @@ bool ProjectFile::write(const QString &filename)
     writeStringList(xmlWriter, mTags, CppcheckXml::TagsElementName, CppcheckXml::TagElementName);
     if (!mWarningTags.empty()) {
         QStringList tags;
-        for (const auto wt: mWarningTags) {
+        for (const auto& wt: mWarningTags) {
             if (!tags.contains(wt.second))
                 tags.append(wt.second);
         }
@@ -1033,7 +1033,7 @@ bool ProjectFile::write(const QString &filename)
             xmlWriter.writeStartElement(CppcheckXml::TagWarningsElementName);
             xmlWriter.writeAttribute(CppcheckXml::TagAttributeName, tag);
             QStringList warnings;
-            for (const auto wt: mWarningTags) {
+            for (const auto& wt: mWarningTags) {
                 if (wt.second == tag) {
                     xmlWriter.writeStartElement(CppcheckXml::WarningElementName);
                     xmlWriter.writeAttribute(CppcheckXml::HashAttributeName, QString::number(wt.first));

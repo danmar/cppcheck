@@ -1,3 +1,12 @@
+include(CheckCXXCompilerFlag)
+
+function(add_compile_options_safe FLAG)
+    check_cxx_compiler_flag(${FLAG} _has_flag)
+    if (_has_flag)
+        add_compile_options(${FLAG})
+    endif()
+endfunction()
+
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     if(CMAKE_BUILD_TYPE MATCHES "Release")
         # "Release" uses -O3 by default
@@ -6,20 +15,15 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"
     if (WARNINGS_ARE_ERRORS)
         add_compile_options(-Werror)
     endif()
-endif()
-
-if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.6)
-        message(FATAL_ERROR "${PROJECT_NAME} c++11 support requires g++ 4.6 or greater, but it is ${CMAKE_CXX_COMPILER_VERSION}")
-    endif ()
-
+    add_compile_options(-pedantic)
+    add_compile_options(-Wall)
+    add_compile_options(-Wextra)
     add_compile_options(-Wcast-qual)                # Cast for removing type qualifiers
     add_compile_options(-Wno-deprecated-declarations)
     add_compile_options(-Wfloat-equal)              # Floating values used in equality comparisons
     add_compile_options(-Wmissing-declarations)     # If a global function is defined without a previous declaration
     add_compile_options(-Wmissing-format-attribute) #
     add_compile_options(-Wno-long-long)
-    add_compile_options(-Woverloaded-virtual)       # when a function declaration hides virtual functions from a base class
     add_compile_options(-Wpacked)                   #
     add_compile_options(-Wredundant-decls)          # if anything is declared more than once in the same scope
     add_compile_options(-Wundef)
@@ -28,22 +32,24 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     add_compile_options(-Wno-missing-braces)
     add_compile_options(-Wno-sign-compare)
     add_compile_options(-Wno-multichar)
+endif()
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.6)
+        message(FATAL_ERROR "${PROJECT_NAME} c++11 support requires g++ 4.6 or greater, but it is ${CMAKE_CXX_COMPILER_VERSION}")
+    endif ()
+
+    add_compile_options(-Woverloaded-virtual)       # when a function declaration hides virtual functions from a base class
     add_compile_options(-Wno-maybe-uninitialized)   # there are some false positives
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
-   add_compile_options(-Wno-deprecated-declarations)
    add_compile_options(-Wno-four-char-constants)
    add_compile_options(-Wno-missing-braces)
-   add_compile_options(-Wno-missing-field-initializers)
-   add_compile_options(-Wno-multichar)
-   add_compile_options(-Wno-sign-compare)
    add_compile_options(-Wno-unused-function)
-   if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
-      add_compile_options(-Wextra-semi-stmt)
-   endif()
+   add_compile_options_safe(-Wextra-semi-stmt)
 
    if(ENABLE_COVERAGE OR ENABLE_COVERAGE_XML)
-      message(FATAL_ERROR "Not use clang for generate code coverage. Use gcc.")
+      message(FATAL_ERROR "Do not use clang for generate code coverage. Use gcc.")
    endif()
 endif()
 
