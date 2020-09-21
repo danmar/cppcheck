@@ -720,7 +720,7 @@ void SymbolDatabase::createSymbolDatabaseClassInfo()
                 const Scope * const found = findScope(usingInfo.start->tokAt(2), &scope);
                 if (found) {
                     // set found scope
-					usingInfo.scope = found;
+                    usingInfo.scope = found;
                     break;
                 }
             }
@@ -755,7 +755,7 @@ void SymbolDatabase::createSymbolDatabaseVariableInfo()
     // fill in variable info
     for (Scope& scope : scopeList) {
         // find variables
-		scope.getVariableList(mSettings);
+        scope.getVariableList(mSettings);
     }
 
     // fill in function arguments

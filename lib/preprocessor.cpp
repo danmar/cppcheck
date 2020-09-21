@@ -659,7 +659,7 @@ void Preprocessor::removeComments()
 {
     for (std::pair<const std::string, simplecpp::TokenList*>& tokenList : mTokenLists) {
         if (tokenList.second)
-			tokenList.second->removeComments();
+            tokenList.second->removeComments();
     }
 }
 

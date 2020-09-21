@@ -1044,7 +1044,7 @@ void MainWindow::analysisDone()
 
     for (QAction* recentProjectAct : mRecentProjectActs) {
         if (recentProjectAct != nullptr)
-			recentProjectAct->setEnabled(true);
+            recentProjectAct->setEnabled(true);
     }
 
     // Notify user - if the window is not active - that check is ready
@@ -1070,7 +1070,7 @@ void MainWindow::checkLockDownUI()
 
     for (QAction* recentProjectAct : mRecentProjectActs) {
         if (recentProjectAct != nullptr)
-			recentProjectAct->setEnabled(false);
+            recentProjectAct->setEnabled(false);
     }
 }
 
