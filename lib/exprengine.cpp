@@ -2388,7 +2388,7 @@ static ExprEngine::ValuePtr executeNumber(const Token *tok, Data &data)
 
 static ExprEngine::ValuePtr executeStringLiteral(const Token *tok, Data &data)
 {
-    std::string s = tok->str();
+    const std::string& s = tok->str();
     return std::make_shared<ExprEngine::StringLiteralValue>(data.getNewSymbolName(), s.substr(1, s.size()-2));
 }
 

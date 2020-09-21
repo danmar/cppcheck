@@ -1104,7 +1104,7 @@ void CheckCondition::checkIncorrectLogicOperator()
                     const std::string cond2 = expr1;
 
                     const std::string cond1VerboseMsg = expr1VerboseMsg + " " + tok->str() + " " + expr2VerboseMsg + " " + tok->astOperand2()->str() + " " + expr3VerboseMsg;
-                    const std::string cond2VerboseMsg = expr1VerboseMsg;
+                    const std::string& cond2VerboseMsg = expr1VerboseMsg;
                     // for the --verbose message, transform the actual condition and print it
                     const std::string msg = tok2->expressionString() + ". '" + cond1 + "' is equivalent to '" + cond2 + "'\n"
                                             "The condition '" + cond1VerboseMsg + "' is equivalent to '" + cond2VerboseMsg + "'.";
