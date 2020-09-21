@@ -355,7 +355,7 @@ void ThreadExecutor::reportInfo(const ErrorMessage &msg)
 
 void ThreadExecutor::bughuntingReport(const std::string &str)
 {
-    writeToPipe(REPORT_VERIFICATION, str.c_str());
+    writeToPipe(REPORT_VERIFICATION, str);
 }
 
 void ThreadExecutor::reportInternalChildErr(const std::string &childname, const std::string &msg)
