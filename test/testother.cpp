@@ -8745,13 +8745,13 @@ private:
               "void f(int x) {\n"
               "   g((x & 0x01) >> 7);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Argument '(x&0x01)>>7' to function g is always 0\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Argument '(x&0x01)>>7' to function g is always 0. It does not matter what value 'x' has.\n", errout.str());
 
         check("void g(int);\n"
               "void f(int x) {\n"
               "   g((int)((x & 0x01) >> 7));\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Argument '(int)((x&0x01)>>7)' to function g is always 0\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Argument '(int)((x&0x01)>>7)' to function g is always 0. It does not matter what value 'x' has.\n", errout.str());
 
         check("void g(int);\n"
               "void f(int x) {\n"
@@ -8840,6 +8840,17 @@ private:
         check("void foo() {\n"
               "    const std::string heading = \"Interval\";\n"
               "    std::cout << std::setw(heading.length());\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #9909 - struct member with known value
+        check("struct LongStack {\n"
+              "    int maxsize;\n"
+              "};\n"
+              "\n"
+              "void growLongStack(LongStack* self) {\n"
+              "    self->maxsize = 32;\n"
+              "    dostuff(self->maxsize * sizeof(intptr_t));\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
