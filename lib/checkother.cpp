@@ -1979,12 +1979,11 @@ namespace {
             for (const Function &func : scope.functionList) {
                 functionsByName[func.tokenDef->str()].push_back(&func);
             }
-            for (StringFunctionMap::iterator it = functionsByName.begin();
-                 it != functionsByName.end(); ++it) {
-                const std::list<const Function*>::const_iterator nc = std::find_if(it->second.begin(), it->second.end(), notconst);
-                if (nc == it->second.end()) {
+            for (std::pair<const std::string, std::list<const Function*>>& it : functionsByName) {
+                const std::list<const Function*>::const_iterator nc = std::find_if(it.second.begin(), it.second.end(), notconst);
+                if (nc == it.second.end()) {
                     // ok to add all of them
-                    constFunctions.splice(constFunctions.end(), it->second);
+                    constFunctions.splice(constFunctions.end(), it.second);
                 }
             }
         }

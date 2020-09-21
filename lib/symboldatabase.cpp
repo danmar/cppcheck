@@ -712,15 +712,15 @@ void SymbolDatabase::createSymbolDatabaseClassInfo()
         return;
 
     // fill in using info
-    for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
-        for (std::list<Scope::UsingInfo>::iterator i = it->usingList.begin(); i != it->usingList.end(); ++i) {
+    for (Scope& scope : scopeList) {
+        for (Scope::UsingInfo& usingInfo : scope.usingList) {
             // only find if not already found
-            if (i->scope == nullptr) {
+            if (usingInfo.scope == nullptr) {
                 // check scope for match
-                const Scope * const scope = findScope(i->start->tokAt(2), &(*it));
-                if (scope) {
+                const Scope * const found = findScope(usingInfo.start->tokAt(2), &scope);
+                if (found) {
                     // set found scope
-                    i->scope = scope;
+					usingInfo.scope = found;
                     break;
                 }
             }
@@ -728,11 +728,11 @@ void SymbolDatabase::createSymbolDatabaseClassInfo()
     }
 
     // fill in base class info
-    for (std::list<Type>::iterator it = typeList.begin(); it != typeList.end(); ++it) {
+    for (Type& type : typeList) {
         // finish filling in base class info
-        for (Type::BaseInfo & i : it->derivedFrom) {
-            const Type* found = findType(i.nameTok, it->enclosingScope);
-            if (found && found->findDependency(&(*it))) {
+        for (Type::BaseInfo & i : type.derivedFrom) {
+            const Type* found = findType(i.nameTok, type.enclosingScope);
+            if (found && found->findDependency(&type)) {
                 // circular dependency
                 //mTokenizer->syntaxError(nullptr);
             } else {
@@ -742,9 +742,9 @@ void SymbolDatabase::createSymbolDatabaseClassInfo()
     }
 
     // fill in friend info
-    for (std::list<Type>::iterator it = typeList.begin(); it != typeList.end(); ++it) {
-        for (Type::FriendInfo &friendInfo : it->friendList) {
-            friendInfo.type = findType(friendInfo.nameStart, it->enclosingScope);
+    for (Type & type : typeList) {
+        for (Type::FriendInfo &friendInfo : type.friendList) {
+            friendInfo.type = findType(friendInfo.nameStart, type.enclosingScope);
         }
     }
 }
@@ -753,18 +753,18 @@ void SymbolDatabase::createSymbolDatabaseClassInfo()
 void SymbolDatabase::createSymbolDatabaseVariableInfo()
 {
     // fill in variable info
-    for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
+    for (Scope& scope : scopeList) {
         // find variables
-        it->getVariableList(mSettings);
+		scope.getVariableList(mSettings);
     }
 
     // fill in function arguments
-    for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
+    for (Scope& scope : scopeList) {
         std::list<Function>::iterator func;
 
-        for (func = it->functionList.begin(); func != it->functionList.end(); ++func) {
+        for (func = scope.functionList.begin(); func != scope.functionList.end(); ++func) {
             // add arguments
-            func->addArguments(this, &*it);
+            func->addArguments(this, &scope);
         }
     }
 }
@@ -772,17 +772,17 @@ void SymbolDatabase::createSymbolDatabaseVariableInfo()
 void SymbolDatabase::createSymbolDatabaseCopyAndMoveConstructors()
 {
     // fill in class and struct copy/move constructors
-    for (std::list<Scope>::iterator scope = scopeList.begin(); scope != scopeList.end(); ++scope) {
-        if (!scope->isClassOrStruct())
+    for (Scope& scope : scopeList) {
+        if (!scope.isClassOrStruct())
             continue;
 
         std::list<Function>::iterator func;
-        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+        for (func = scope.functionList.begin(); func != scope.functionList.end(); ++func) {
             if (!func->isConstructor() || func->minArgCount() != 1)
                 continue;
 
             const Variable* firstArg = func->getArgumentVar(0);
-            if (firstArg->type() == scope->definedType) {
+            if (firstArg->type() == scope.definedType) {
                 if (firstArg->isRValueReference())
                     func->type = Function::eMoveConstructor;
                 else if (firstArg->isReference() && !firstArg->isPointer())
@@ -791,7 +791,7 @@ void SymbolDatabase::createSymbolDatabaseCopyAndMoveConstructors()
 
             if (func->type == Function::eCopyConstructor ||
                 func->type == Function::eMoveConstructor)
-                scope->numCopyOrMoveConstructors++;
+                scope.numCopyOrMoveConstructors++;
         }
     }
 }
@@ -799,35 +799,35 @@ void SymbolDatabase::createSymbolDatabaseCopyAndMoveConstructors()
 void SymbolDatabase::createSymbolDatabaseFunctionScopes()
 {
     // fill in function scopes
-    for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
-        if (it->type == Scope::eFunction)
-            functionScopes.push_back(&*it);
+    for (Scope & scope : scopeList) {
+        if (scope.type == Scope::eFunction)
+            functionScopes.push_back(&scope);
     }
 }
 
 void SymbolDatabase::createSymbolDatabaseClassAndStructScopes()
 {
     // fill in class and struct scopes
-    for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
-        if (it->isClassOrStruct())
-            classAndStructScopes.push_back(&*it);
+    for (Scope& scope : scopeList) {
+        if (scope.isClassOrStruct())
+            classAndStructScopes.push_back(&scope);
     }
 }
 
 void SymbolDatabase::createSymbolDatabaseFunctionReturnTypes()
 {
     // fill in function return types
-    for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
+    for (Scope& scope : scopeList) {
         std::list<Function>::iterator func;
 
-        for (func = it->functionList.begin(); func != it->functionList.end(); ++func) {
+        for (func = scope.functionList.begin(); func != scope.functionList.end(); ++func) {
             // add return types
             if (func->retDef) {
                 const Token *type = func->retDef;
                 while (Token::Match(type, "static|const|struct|union|enum"))
                     type = type->next();
                 if (type) {
-                    func->retType = findVariableTypeInBase(&*it, type);
+                    func->retType = findVariableTypeInBase(&scope, type);
                     if (!func->retType)
                         func->retType = findTypeInNested(type, func->nestedIn);
                 }
@@ -840,10 +840,9 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
 {
     if (mTokenizer->isC()) {
         // For C code it is easy, as there are no constructors and no default values
-        for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
-            Scope *scope = &(*it);
-            if (scope->definedType)
-                scope->definedType->needInitialization = Type::NeedInitialization::True;
+        for (Scope& scope : scopeList) {
+            if (scope.definedType)
+                scope.definedType->needInitialization = Type::NeedInitialization::True;
         }
     } else {
         // For C++, it is more difficult: Determine if user defined type needs initialization...
@@ -853,21 +852,19 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
         do {
             unknowns = 0;
 
-            for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
-                Scope *scope = &(*it);
-
-                if (!scope->definedType) {
+            for (Scope& scope : scopeList) {
+                if (!scope.definedType) {
                     mBlankTypes.emplace_back();
-                    scope->definedType = &mBlankTypes.back();
+                    scope.definedType = &mBlankTypes.back();
                 }
 
-                if (scope->isClassOrStruct() && scope->definedType->needInitialization == Type::NeedInitialization::Unknown) {
+                if (scope.isClassOrStruct() && scope.definedType->needInitialization == Type::NeedInitialization::Unknown) {
                     // check for default constructor
                     bool hasDefaultConstructor = false;
 
                     std::list<Function>::const_iterator func;
 
-                    for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+                    for (func = scope.functionList.begin(); func != scope.functionList.end(); ++func) {
                         if (func->type == Function::eConstructor) {
                             // check for no arguments: func ( )
                             if (func->argCount() == 0) {
@@ -887,7 +884,7 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                     // We assume the default constructor initializes everything.
                     // Another check will figure out if the constructor actually initializes everything.
                     if (hasDefaultConstructor)
-                        scope->definedType->needInitialization = Type::NeedInitialization::False;
+                        scope.definedType->needInitialization = Type::NeedInitialization::False;
 
                     // check each member variable to see if it needs initialization
                     else {
@@ -895,7 +892,7 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                         bool unknown = false;
 
                         std::list<Variable>::const_iterator var;
-                        for (var = scope->varlist.begin(); var != scope->varlist.end() && !needInitialization; ++var) {
+                        for (var = scope.varlist.begin(); var != scope.varlist.end() && !needInitialization; ++var) {
                             if (var->isClass()) {
                                 if (var->type()) {
                                     // does this type need initialization?
@@ -911,16 +908,16 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                         }
 
                         if (needInitialization)
-                            scope->definedType->needInitialization = Type::NeedInitialization::True;
+                            scope.definedType->needInitialization = Type::NeedInitialization::True;
                         else if (!unknown)
-                            scope->definedType->needInitialization = Type::NeedInitialization::False;
+                            scope.definedType->needInitialization = Type::NeedInitialization::False;
                         else {
-                            if (scope->definedType->needInitialization == Type::NeedInitialization::Unknown)
+                            if (scope.definedType->needInitialization == Type::NeedInitialization::Unknown)
                                 unknowns++;
                         }
                     }
-                } else if (scope->type == Scope::eUnion && scope->definedType->needInitialization == Type::NeedInitialization::Unknown)
-                    scope->definedType->needInitialization = Type::NeedInitialization::True;
+                } else if (scope.type == Scope::eUnion && scope.definedType->needInitialization == Type::NeedInitialization::Unknown)
+                    scope.definedType->needInitialization = Type::NeedInitialization::True;
             }
 
             retry++;
@@ -928,11 +925,9 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
 
         // this shouldn't happen so output a debug warning
         if (retry == 100 && mSettings->debugwarnings) {
-            for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
-                const Scope *scope = &(*it);
-
-                if (scope->isClassOrStruct() && scope->definedType->needInitialization == Type::NeedInitialization::Unknown)
-                    debugMessage(scope->classDef, "SymbolDatabase::SymbolDatabase couldn't resolve all user defined types.");
+            for (const Scope& scope : scopeList) {
+                if (scope.isClassOrStruct() && scope.definedType->needInitialization == Type::NeedInitialization::Unknown)
+                    debugMessage(scope.classDef, "SymbolDatabase::SymbolDatabase couldn't resolve all user defined types.");
             }
         }
     }
@@ -945,25 +940,23 @@ void SymbolDatabase::createSymbolDatabaseVariableSymbolTable()
     std::fill_n(mVariableList.begin(), mVariableList.size(), (const Variable*)nullptr);
 
     // check all scopes for variables
-    for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
-        Scope *scope = &(*it);
-
+    for (Scope& scope : scopeList) {
         // add all variables
-        for (std::list<Variable>::iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
+        for (std::list<Variable>::iterator var = scope.varlist.begin(); var != scope.varlist.end(); ++var) {
             const unsigned int varId = var->declarationId();
             if (varId)
                 mVariableList[varId] = &(*var);
             // fix up variables without type
             if (!var->type() && !var->typeStartToken()->isStandardType()) {
-                const Type *type = findType(var->typeStartToken(), scope);
+                const Type *type = findType(var->typeStartToken(), &scope);
                 if (type)
                     var->type(type);
             }
         }
 
         // add all function parameters
-        for (std::list<Function>::iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-            for (std::list<Variable>::iterator arg = func->argumentList.begin(); arg != func->argumentList.end(); ++arg) {
+        for (Function& func : scope.functionList) {
+            for (std::list<Variable>::iterator arg = func.argumentList.begin(); arg != func.argumentList.end(); ++arg) {
                 // check for named parameters
                 if (arg->nameToken() && arg->declarationId()) {
                     const unsigned int declarationId = arg->declarationId();
@@ -971,7 +964,7 @@ void SymbolDatabase::createSymbolDatabaseVariableSymbolTable()
                         mVariableList[declarationId] = &(*arg);
                     // fix up parameters without type
                     if (!arg->type() && !arg->typeStartToken()->isStandardType()) {
-                        const Type *type = findTypeInNested(arg->typeStartToken(), scope);
+                        const Type *type = findTypeInNested(arg->typeStartToken(), &scope);
                         if (type)
                             arg->type(type);
                     }

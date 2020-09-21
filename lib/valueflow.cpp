@@ -4100,9 +4100,9 @@ static void valueFlowForwardAssign(Token * const               tok,
     if (!var->isPointer() && !var->isSmartPointer())
         values.remove_if(std::mem_fn(&ValueFlow::Value::isTokValue));
     if (tok->astParent()) {
-        for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it) {
-            const std::string info = "Assignment '" + tok->astParent()->expressionString() + "', assigned value is " + it->infoString();
-            it->errorPath.emplace_back(tok, info);
+        for (ValueFlow::Value& value : values) {
+            const std::string info = "Assignment '" + tok->astParent()->expressionString() + "', assigned value is " + value.infoString();
+            value.errorPath.emplace_back(tok, info);
         }
     }
 

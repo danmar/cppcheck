@@ -160,8 +160,8 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
 
     // Platforms..
     Platforms platforms;
-    for (int i = 0; i < numberOfBuiltinPlatforms; i++)
-        mUI.mComboBoxPlatform->addItem(platforms.get(builtinPlatforms[i]).mTitle);
+    for (cppcheck::Platform::PlatformType builtinPlatform : builtinPlatforms)
+        mUI.mComboBoxPlatform->addItem(platforms.get(builtinPlatform).mTitle);
     QStringList platformFiles;
     foreach (QString sp, searchPaths) {
         if (sp.endsWith("/cfg"))

@@ -6392,13 +6392,13 @@ void Tokenizer::simplifyFunctionParameters()
             if (argumentNames.size() != argumentNames2.size()) {
                 //move back 'tok1' to the last ';'
                 tok1 = tok1->previous();
-                for (std::map<std::string, Token *>::iterator it = argumentNames.begin(); it != argumentNames.end(); ++it) {
-                    if (argumentNames2.find(it->first) == argumentNames2.end()) {
+                for (std::pair<const std::string, Token *>& argumentName : argumentNames) {
+                    if (argumentNames2.find(argumentName.first) == argumentNames2.end()) {
                         //add the missing parameter argument declaration
                         tok1->insertToken(";");
-                        tok1->insertToken(it->first);
+                        tok1->insertToken(argumentName.first);
                         //register the change inside argumentNames2
-                        argumentNames2[it->first] = tok1->next();
+                        argumentNames2[argumentName.first] = tok1->next();
                         tok1->insertToken("int");
                     }
                 }

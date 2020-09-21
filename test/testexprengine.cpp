@@ -138,10 +138,10 @@ private:
             replace(line, "(fp.gt ", "(> ");
             replace(line, "(fp.lt ", "(< ");
             int par = 0;
-            for (int pos = 0; pos < line.size(); ++pos) {
-                if (line[pos] == '(')
+            for (char pos : line) {
+                if (pos == '(')
                     par++;
-                else if (line[pos] == ')')
+                else if (pos == ')')
                     --par;
             }
             if (par < 0)
