@@ -412,7 +412,7 @@ private:
                "- shadow variable.\n"
                "- variable can be declared const.\n"
                "- calculating modulo of one.\n"
-               "- known function argument, suspicious calculation.";
+               "- known function argument, suspicious calculation.\n";
     }
 };
 /// @}
