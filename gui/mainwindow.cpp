@@ -610,7 +610,7 @@ void MainWindow::updateFunctionContractsTab()
 {
     QStringList addedContracts;
     if (mProjectFile) {
-        for (const auto it: mProjectFile->getFunctionContracts()) {
+        for (const auto& it: mProjectFile->getFunctionContracts()) {
             addedContracts << QString::fromStdString(it.first);
         }
     }
@@ -876,7 +876,7 @@ Settings MainWindow::getCppcheckSettings()
 
         result.functionContracts = mProjectFile->getFunctionContracts();
 
-        for (const auto vc: mProjectFile->getVariableContracts())
+        for (const auto& vc: mProjectFile->getVariableContracts())
             result.variableContracts[vc.first.toStdString()] = vc.second;
 
         const QStringList undefines = mProjectFile->getUndefines();
