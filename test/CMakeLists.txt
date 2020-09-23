@@ -27,7 +27,7 @@ if (BUILD_TESTS)
         target_link_libraries(testrunner ${Z3_LIBRARIES})
     endif()
 
-    if (CMAKE_VERSION VERSION_EQUAL "3.16" OR CMAKE_VERSION VERSION_GREATER "3.16")
+    if (NOT CMAKE_DISABLE_PRECOMPILE_HEADERS)
         target_precompile_headers(testrunner PRIVATE precompiled.h)
     endif()
 
