@@ -2033,8 +2033,11 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symbo
                        Token::Match(tok, "%oror%|&& %name% %oror%|&&|)")) {
                 vartok = tok->next();
                 num = 0;
-            } else if (Token::Match(tok, "[!?]") && Token::Match(tok->astOperand1(), "%name%")) {
+            } else if (Token::simpleMatch(tok, "!") && Token::Match(tok->astOperand1(), "%name%")) {
                 vartok = tok->astOperand1();
+                num = 0;
+            } else if (Token::simpleMatch(tok->astParent(), "?") && Token::Match(tok, "%name%")) {
+                vartok = tok;
                 num = 0;
             } else {
                 continue;
@@ -2046,7 +2049,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symbo
             if (varid == 0U || !var)
                 continue;
 
-            if (tok->str() == "?" && tok->isExpandedMacro()) {
+            if (Token::simpleMatch(tok->astParent(), "?") && tok->astParent()->isExpandedMacro()) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok, "variable " + var->name() + ", condition is defined in macro");
                 continue;

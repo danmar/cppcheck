@@ -100,6 +100,7 @@ private:
         TEST_CASE(nullpointer57); // #9751
         TEST_CASE(nullpointer58); // #9807
         TEST_CASE(nullpointer59); // #9897
+        TEST_CASE(nullpointer60); // #9842
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1874,6 +1875,19 @@ private:
               "    if( *pfreeboxes )\n"
               "        (*pfreeboxes)->prev = nullptr;\n"
               "    b->next = nullptr;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer60() {
+        check("void f(){\n"
+              "    char uuid[128];\n"
+              "    char *s1;\n"
+              "    memset(uuid, 0, sizeof(uuid));\n"
+              "    s1 = strchr(uuid, '=');\n"
+              "    s1 = s1 ? s1 + 1 : &uuid[5];\n"
+              "    if (!strcmp(\"00000000000000000000000000000000\", s1) )\n"
+              "        return;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
