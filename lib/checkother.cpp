@@ -1349,7 +1349,7 @@ void CheckOther::checkConstVariable()
         const Scope *scope = var->scope();
         if (!scope->function)
             continue;
-        Function *function = scope->function;
+        const Function *function = scope->function;
         if (var->isArgument()) {
             if (function->isImplicitlyVirtual() || function->templateDef)
                 continue;
@@ -1427,22 +1427,26 @@ void CheckOther::checkConstVariable()
                 continue;
         }
 
-        constVariableError(var);
+        constVariableError(var, function);
     }
 }
 
-void CheckOther::constVariableError(const Variable *var)
+void CheckOther::constVariableError(const Variable *var, const Function *function)
 {
-    const Token *tok = nullptr;
-    std::string name = "x";
-    std::string id = "Variable";
-    if (var) {
-        tok = var->nameToken();
-        name = var->name();
-        if (var->isArgument())
-            id = "Parameter";
+    const std::string vartype((var && var->isArgument()) ? "Parameter" : "Variable");
+    const std::string varname(var ? var->name() : std::string("x"));
+
+    ErrorPath errorPath;
+    std::string id = "const" + vartype;
+    std::string message = "$symbol:" + varname + "\n" + vartype + " '$symbol' can be declared with const";
+    errorPath.push_back(ErrorPathItem(var ? var->nameToken() : nullptr, message));
+    if (var && var->isArgument() && function && function->functionPointerUsage) {
+        errorPath.push_back(ErrorPathItem(function->functionPointerUsage, "You might need to cast the function pointer here"));
+        id += "Callback";
+        message += ". However it seems that '" + function->name() + "' is a callback function, if '$symbol' is declared with const you might also need to cast function pointer(s).";
     }
-    reportError(tok, Severity::style, "const" + id, id + " '" + name + "' can be declared with const", CWE398, false);
+
+    reportError(errorPath, Severity::style, id.c_str(), message, CWE398, false);
 }
 
 //---------------------------------------------------------------------------

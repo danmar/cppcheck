@@ -98,6 +98,7 @@ private:
         TEST_CASE(passedByValue_externC);
 
         TEST_CASE(constVariable);
+        TEST_CASE(constParameterCallback);
 
         TEST_CASE(switchRedundantAssignmentTest);
         TEST_CASE(switchRedundantOperationTest);
@@ -2520,6 +2521,30 @@ private:
               "{\n"
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:16]: (style) Parameter 'i' can be declared with const\n", "", errout.str());
+    }
+
+    void constParameterCallback() {
+        check("int callback(std::vector<int>& x) { return x[0]; }\n"
+              "void f() { dostuff(callback); }");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2]: (style) Parameter 'x' can be declared with const. However it seems that 'callback' is a callback function, if 'x' is declared with const you might also need to cast function pointer(s).\n", errout.str());
+
+        // #9906
+        check("class EventEngine : public IEventEngine {\n"
+              "public:\n"
+              "    EventEngine();\n"
+              "\n"
+              "private:\n"
+              "    void signalEvent(ev::sig& signal, int revents);\n"
+              "};\n"
+              "\n"
+              "EventEngine::EventEngine() {\n"
+              "    mSigWatcher.set<EventEngine, &EventEngine::signalEvent>(this);\n"
+              "}\n"
+              "\n"
+              "void EventEngine::signalEvent(ev::sig& signal, int revents) {\n"
+              "    switch (signal.signum) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:13] -> [test.cpp:10]: (style) Parameter 'signal' can be declared with const. However it seems that 'signalEvent' is a callback function, if 'signal' is declared with const you might also need to cast function pointer(s).\n", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
