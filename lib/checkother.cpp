@@ -3126,6 +3126,8 @@ void CheckOther::checkKnownArgument()
                     }
                     return ChildrenToVisit::none;
                 }
+                if (Token::simpleMatch(child->previous(), "sizeof ("))
+                    return ChildrenToVisit::none;
                 return ChildrenToVisit::op1_and_op2;
             });
             if (varexpr.empty())

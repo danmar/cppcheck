@@ -8830,6 +8830,13 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("char *yytext;\n"
+              "void re_init_scanner() {\n"
+              "  int size = 256;\n"
+              "  yytext = xmalloc(size * sizeof *yytext);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // #8986
         check("void f(int);\n"
               "void g() {\n"
