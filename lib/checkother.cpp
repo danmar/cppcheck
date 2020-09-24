@@ -3120,7 +3120,7 @@ void CheckOther::checkKnownArgument()
             std::string varexpr;
             visitAstNodes(tok, [&varexpr](const Token *child) {
                 if (Token::Match(child, "%var%|.|[")) {
-                    if (child->valueType() && child->valueType()->isIntegral() && child->values().empty()) {
+                    if (child->valueType() && child->valueType()->pointer == 0 && child->valueType()->isIntegral() && child->values().empty()) {
                         varexpr = child->expressionString();
                         return ChildrenToVisit::done;
                     }

@@ -8837,6 +8837,11 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void foo(char *c) {\n"
+              "    if (*c == '+' && (operand || !isalnum(*c))) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // #8986
         check("void f(int);\n"
               "void g() {\n"
