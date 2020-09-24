@@ -424,7 +424,7 @@ if __name__ == '__main__':
     if options.source_dir:
         source_dir = options.source_dir
 
-    # Parse the xml from all files defined in file argument 
+    # Parse the xml from all files defined in file argument
     # or from stdin. If no input is provided, stdin is used
     # Produce a simple list of errors.
     print('Parsing xml report.')
