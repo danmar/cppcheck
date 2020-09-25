@@ -396,7 +396,8 @@ if __name__ == '__main__':
                       default='[project name]')
     parser.add_option('--file', dest='file', action="append",
                       help='The cppcheck xml output file to read defects '
-                           'from. Multiple times could be defined. '
+                           'from. You can combine results from several '
+                           'xml reports i.e. "--file file1.xml --file file2.xml ..". '
                            'Default is reading from stdin.')
     parser.add_option('--report-dir', dest='report_dir',
                       help='The directory where the HTML report content is '
@@ -432,7 +433,7 @@ if __name__ == '__main__':
         contentHandler = CppCheckHandler()
         for fname in options.file or [sys.stdin]:
             xml_parse(fname, contentHandler)
-    except XmlParseException as msg:
+    except (XmlParseException, ValueError) as msg:
         print('Failed to parse cppcheck xml file: %s' % msg)
         sys.exit(1)
 
