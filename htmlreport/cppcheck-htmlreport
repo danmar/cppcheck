@@ -394,9 +394,11 @@ if __name__ == '__main__':
     parser.add_option('--title', dest='title',
                       help='The title of the project.',
                       default='[project name]')
-    parser.add_option('--file', dest='file',
+    parser.add_option('--file', dest='file', action="append",
                       help='The cppcheck xml output file to read defects '
-                           'from. Default is reading from stdin.')
+                           'from. You can combine results from several '
+                           'xml reports i.e. "--file file1.xml --file file2.xml ..". '
+                           'Default is reading from stdin.')
     parser.add_option('--report-dir', dest='report_dir',
                       help='The directory where the HTML report content is '
                            'written.')
@@ -423,21 +425,15 @@ if __name__ == '__main__':
     if options.source_dir:
         source_dir = options.source_dir
 
-    # Get the stream that we read cppcheck errors from.
-    input_file = sys.stdin
-    if options.file:
-        if not os.path.exists(options.file):
-            parser.error('cppcheck xml file: %s not found.' % options.file)
-        input_file = io.open(options.file, 'r')
-    else:
-        parser.error('No cppcheck xml file specified. (--file=)')
-
-    # Parse the xml file and produce a simple list of errors.
+    # Parse the xml from all files defined in file argument
+    # or from stdin. If no input is provided, stdin is used
+    # Produce a simple list of errors.
     print('Parsing xml report.')
     try:
         contentHandler = CppCheckHandler()
-        xml_parse(input_file, contentHandler)
-    except XmlParseException as msg:
+        for fname in options.file or [sys.stdin]:
+            xml_parse(fname, contentHandler)
+    except (XmlParseException, ValueError) as msg:
         print('Failed to parse cppcheck xml file: %s' % msg)
         sys.exit(1)
 
