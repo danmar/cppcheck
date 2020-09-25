@@ -1245,6 +1245,16 @@ private:
               "        if (currtime > t) {}\n"
               "    }\n"
               "}", "test.c");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    time_t currtime;\n"
+              "    if (a) {\n"
+              "        int x = 123;\n"
+              "        currtime = time(&dummy);\n"
+              "        if (currtime > t) {}\n"
+              "    }\n"
+              "}", "test.c");
         ASSERT_EQUALS("[test.c:2]: (style) The scope of the variable 'currtime' can be reduced.\n", errout.str());
     }
 
