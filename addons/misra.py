@@ -625,10 +625,17 @@ def isBoolExpression(expr):
     return expr.str in ['!', '==', '!=', '<', '<=', '>', '>=', '&&', '||', '0', '1', 'true', 'false']
 
 
+def isEnumConstant(expr):
+    if not expr or not expr.values:
+        return False
+    values = expr.values
+    return len(values) == 1 and values[0].valueKind == 'known'
+
+
 def isConstantExpression(expr):
     if expr.isNumber:
         return True
-    if expr.isName:
+    if expr.isName and not isEnumConstant(expr):
         return False
     if simpleMatch(expr.previous, 'sizeof ('):
         return True

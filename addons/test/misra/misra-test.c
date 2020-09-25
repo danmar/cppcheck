@@ -1009,11 +1009,17 @@ struct {
   uint8_t data_2[   ]; // 18.7
 } r18_7_struct;
 
+typedef enum {
+    R18_8_ENUM_CONSTANT_0,
+    R18_8_ENUM_CONSTANT_1,
+} r18_8_enum;
+
 void misra_18_8(int x) {
   int buf1[10];
   int buf2[sizeof(int)];
   int vla[x]; // 18.8
   static const unsigned char arr18_8_1[] = UNDEFINED_ID;
+  static uint32_t enum_test_0[R18_8_ENUM_CONSTANT_0] = {0};
 }
 
 union misra_19_2 { }; // 19.2
