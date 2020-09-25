@@ -3144,6 +3144,12 @@ void CheckOther::checkKnownArgument()
                 }
                 if (Token::simpleMatch(child->previous(), "sizeof ("))
                     return ChildrenToVisit::none;
+                if (Token::simpleMatch(child, "*") && (Token::simpleMatch(child->astOperand1(), "0") || Token::simpleMatch(child->astOperand2(), "0")))
+                    return ChildrenToVisit::none;
+                if (Token::simpleMatch(child, "&&") && (Token::simpleMatch(child->astOperand1(), "false") || Token::simpleMatch(child->astOperand2(), "false")))
+                    return ChildrenToVisit::none;
+                if (Token::simpleMatch(child, "||") && (Token::simpleMatch(child->astOperand1(), "true") || Token::simpleMatch(child->astOperand2(), "true")))
+                    return ChildrenToVisit::none;
                 return ChildrenToVisit::op1_and_op2;
             });
             if (varexpr.empty())

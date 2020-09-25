@@ -8900,6 +8900,17 @@ private:
               "    dostuff(self->maxsize * sizeof(intptr_t));\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #9914 - zeroed expression
+        check("void f(int x) {\n"
+              "    dostuff(x && false);\n"
+              "    dostuff(false && x);\n"
+              "    dostuff(x || true);\n"
+              "    dostuff(true || x);\n"
+              "    dostuff(x * 0);\n"
+              "    dostuff(0 * x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkComparePointers() {
