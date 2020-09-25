@@ -2536,7 +2536,7 @@ private:
     void constParameterCallback() {
         check("int callback(std::vector<int>& x) { return x[0]; }\n"
               "void f() { dostuff(callback); }");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2]: (style) Parameter 'x' can be declared with const. However it seems that 'callback' is a callback function, if 'x' is declared with const you might also need to cast function pointer(s).\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Parameter 'x' can be declared with const. However it seems that 'callback' is a callback function, if 'x' is declared with const you might also need to cast function pointer(s).\n", errout.str());
 
         // #9906
         check("class EventEngine : public IEventEngine {\n"
@@ -2554,7 +2554,7 @@ private:
               "void EventEngine::signalEvent(ev::sig& signal, int revents) {\n"
               "    switch (signal.signum) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:13] -> [test.cpp:10]: (style) Parameter 'signal' can be declared with const. However it seems that 'signalEvent' is a callback function, if 'signal' is declared with const you might also need to cast function pointer(s).\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10] -> [test.cpp:13]: (style) Parameter 'signal' can be declared with const. However it seems that 'signalEvent' is a callback function, if 'signal' is declared with const you might also need to cast function pointer(s).\n", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
