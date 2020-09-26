@@ -240,7 +240,8 @@ private:
         TEST_CASE(cpp11FunctionArgInit); // #7846 - "void foo(int declaration = {}) {"
 
         TEST_CASE(shadowVariables);
-        TEST_CASE(constArgument);
+        TEST_CASE(knownArgument);
+        TEST_CASE(knownArgumentHiddenVariableExpression);
         TEST_CASE(checkComparePointers);
 
         TEST_CASE(unusedVariableValueTemplate); // #8994
@@ -8811,7 +8812,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void constArgument() {
+    void knownArgument() {
         check("void g(int);\n"
               "void f(int x) {\n"
               "   g((x & 0x01) >> 7);\n"
@@ -8936,8 +8937,10 @@ private:
               "    dostuff(self->maxsize * sizeof(intptr_t));\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
 
-        // #9914 - zeroed expression
+    void knownArgumentHiddenVariableExpression() {
+        // #9914 - variable expression is explicitly hidden
         check("void f(int x) {\n"
               "    dostuff(x && false);\n"
               "    dostuff(false && x);\n"
@@ -8946,10 +8949,10 @@ private:
               "    dostuff(x * 0);\n"
               "    dostuff(0 * x);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Argument 'false&&x' to function dostuff is always 0. It does not matter what value 'x' has.\n"
-                      "[test.cpp:5]: (style, inconclusive) Argument 'true||x' to function dostuff is always 1. It does not matter what value 'x' has.\n"
-                      "[test.cpp:6]: (style, inconclusive) Argument 'x*0' to function dostuff is always 0. It does not matter what value 'x' has.\n"
-                      "[test.cpp:7]: (style, inconclusive) Argument '0*x' to function dostuff is always 0. It does not matter what value 'x' has.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Argument 'false&&x' to function dostuff is always 0. Constant literal calculation disable/hide variable expression 'x'.\n"
+                      "[test.cpp:5]: (style) Argument 'true||x' to function dostuff is always 1. Constant literal calculation disable/hide variable expression 'x'.\n"
+                      "[test.cpp:6]: (style) Argument 'x*0' to function dostuff is always 0. Constant literal calculation disable/hide variable expression 'x'.\n"
+                      "[test.cpp:7]: (style) Argument '0*x' to function dostuff is always 0. Constant literal calculation disable/hide variable expression 'x'.\n", errout.str());
     }
 
     void checkComparePointers() {

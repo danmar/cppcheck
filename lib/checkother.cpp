@@ -3155,8 +3155,8 @@ void CheckOther::checkKnownArgument()
                 continue;
             // ensure that there is a integer variable in expression with unknown value
             std::string varexpr;
-            bool inconclusive = false;
-            auto visitAstNode = [&varexpr, &inconclusive](const Token *child) {
+            bool isVariableExprHidden = false;  // Is variable expression explicitly hidden
+            auto setVarExpr = [&varexpr, &isVariableExprHidden](const Token *child) {
                 if (Token::Match(child, "%var%|.|[")) {
                     if (child->valueType() && child->valueType()->pointer == 0 && child->valueType()->isIntegral() && child->values().empty()) {
                         varexpr = child->expressionString();
@@ -3166,7 +3166,9 @@ void CheckOther::checkKnownArgument()
                 }
                 if (Token::simpleMatch(child->previous(), "sizeof ("))
                     return ChildrenToVisit::none;
-                if (!inconclusive) {
+
+                // hide variable explicitly with 'x * 0' etc
+                if (!isVariableExprHidden) {
                     if (Token::simpleMatch(child, "*") && (Token::simpleMatch(child->astOperand1(), "0") || Token::simpleMatch(child->astOperand2(), "0")))
                         return ChildrenToVisit::none;
                     if (Token::simpleMatch(child, "&&") && (Token::simpleMatch(child->astOperand1(), "false") || Token::simpleMatch(child->astOperand2(), "false")))
@@ -3174,12 +3176,13 @@ void CheckOther::checkKnownArgument()
                     if (Token::simpleMatch(child, "||") && (Token::simpleMatch(child->astOperand1(), "true") || Token::simpleMatch(child->astOperand2(), "true")))
                         return ChildrenToVisit::none;
                 }
+
                 return ChildrenToVisit::op1_and_op2;
             };
-            visitAstNodes(tok, visitAstNode);
-            if (varexpr.empty() && mSettings->inconclusive) {
-                inconclusive = true;
-                visitAstNodes(tok, visitAstNode);
+            visitAstNodes(tok, setVarExpr);
+            if (varexpr.empty()) {
+                isVariableExprHidden = true;
+                visitAstNodes(tok, setVarExpr);
             }
             if (varexpr.empty())
                 continue;
@@ -3190,20 +3193,35 @@ void CheckOther::checkKnownArgument()
             });
             if (funcname.find("assert") != std::string::npos)
                 continue;
-            knownArgumentError(tok, tok->astParent()->previous(), &tok->values().front(), varexpr, inconclusive);
+            knownArgumentError(tok, tok->astParent()->previous(), &tok->values().front(), varexpr, isVariableExprHidden);
         }
     }
 }
 
-void CheckOther::knownArgumentError(const Token *tok, const Token *ftok, const ValueFlow::Value *value, const std::string &varexpr, bool inconclusive)
+void CheckOther::knownArgumentError(const Token *tok, const Token *ftok, const ValueFlow::Value *value, const std::string &varexpr, bool isVariableExpressionHidden)
 {
-    MathLib::bigint intvalue = value ? value->intvalue : 0;
-    const std::string expr = tok ? tok->expressionString() : varexpr;
-    const std::string fun = ftok ? ftok->str() : std::string("f");
+    if (!tok) {
+        reportError(tok, Severity::style, "knownArgument", "Argument 'x-x' to function 'func' is always 0. It does not matter what value 'x' has.");
+        reportError(tok, Severity::style, "knownArgumentHiddenVariableExpression", "Argument 'x*0' to function 'func' is always 0. Constant literal calculation disable/hide variable expression 'x'.");
+        return;
+    }
 
-    const std::string errmsg = "Argument '" + expr + "' to function " + fun + " is always " + std::to_string(intvalue) + ". It does not matter what value '" + varexpr + "' has.";
+    const MathLib::bigint intvalue = value->intvalue;
+    const std::string expr = tok->expressionString();
+    const std::string fun = ftok->str();
+
+    const char *id;;
+    std::string errmsg = "Argument '" + expr + "' to function " + fun + " is always " + std::to_string(intvalue) + ". ";
+    if (!isVariableExpressionHidden) {
+        id = "knownArgument";
+        errmsg += "It does not matter what value '" + varexpr + "' has.";
+    } else {
+        id = "knownArgumentHiddenVariableExpression";
+        errmsg += "Constant literal calculation disable/hide variable expression '" + varexpr + "'.";
+    }
+
     const ErrorPath errorPath = getErrorPath(tok, value, errmsg);
-    reportError(errorPath, Severity::style, "knownArgument", errmsg, CWE570, inconclusive);
+    reportError(errorPath, Severity::style, id, errmsg, CWE570, false);
 }
 
 void CheckOther::checkComparePointers()
