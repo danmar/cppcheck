@@ -117,6 +117,7 @@ private:
         TEST_CASE(localvar55);
         TEST_CASE(localvar56);
         TEST_CASE(localvar57); // #8974 - increment
+        TEST_CASE(localvar58); // #9901 - increment false positive
         TEST_CASE(localvarloops); // loops
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
@@ -2268,6 +2269,20 @@ private:
                               "    x++;\n"
                               "}");
         ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
+    }
+
+    void localvar58() { // #9901 - increment false positive
+        functionVariableUsage("void f() {\n"
+                              "    int x = 0;\n"
+                              "    if (--x > 0) {}\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f() {\n"
+                              "    int x = 0;\n"
+                              "    if (x-- > 0) {}\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvarloops() {

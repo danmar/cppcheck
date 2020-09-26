@@ -1132,6 +1132,10 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             const bool isIncrementOrDecrement = (tok->tokType() == Token::Type::eIncDecOp);
             if (!isAssignment && !isInitialization && !isIncrementOrDecrement)
                 continue;
+
+            if (isIncrementOrDecrement && tok->astParent() && precedes(tok, tok->astOperand1()))
+                continue;
+
             if (tok->isName()) {
                 if (mTokenizer->isCPP()) {
                     // do not check RAII/scope_lock objects
