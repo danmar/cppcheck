@@ -3155,7 +3155,8 @@ void CheckOther::checkKnownArgument()
                 continue;
             // ensure that there is a integer variable in expression with unknown value
             std::string varexpr;
-            visitAstNodes(tok, [&varexpr](const Token *child) {
+            bool inconclusive = false;
+            auto visitAstNode = [&varexpr, &inconclusive](const Token *child) {
                 if (Token::Match(child, "%var%|.|[")) {
                     if (child->valueType() && child->valueType()->pointer == 0 && child->valueType()->isIntegral() && child->values().empty()) {
                         varexpr = child->expressionString();
@@ -3165,14 +3166,21 @@ void CheckOther::checkKnownArgument()
                 }
                 if (Token::simpleMatch(child->previous(), "sizeof ("))
                     return ChildrenToVisit::none;
-                if (Token::simpleMatch(child, "*") && (Token::simpleMatch(child->astOperand1(), "0") || Token::simpleMatch(child->astOperand2(), "0")))
-                    return ChildrenToVisit::none;
-                if (Token::simpleMatch(child, "&&") && (Token::simpleMatch(child->astOperand1(), "false") || Token::simpleMatch(child->astOperand2(), "false")))
-                    return ChildrenToVisit::none;
-                if (Token::simpleMatch(child, "||") && (Token::simpleMatch(child->astOperand1(), "true") || Token::simpleMatch(child->astOperand2(), "true")))
-                    return ChildrenToVisit::none;
+                if (!inconclusive) {
+                    if (Token::simpleMatch(child, "*") && (Token::simpleMatch(child->astOperand1(), "0") || Token::simpleMatch(child->astOperand2(), "0")))
+                        return ChildrenToVisit::none;
+                    if (Token::simpleMatch(child, "&&") && (Token::simpleMatch(child->astOperand1(), "false") || Token::simpleMatch(child->astOperand2(), "false")))
+                        return ChildrenToVisit::none;
+                    if (Token::simpleMatch(child, "||") && (Token::simpleMatch(child->astOperand1(), "true") || Token::simpleMatch(child->astOperand2(), "true")))
+                        return ChildrenToVisit::none;
+                }
                 return ChildrenToVisit::op1_and_op2;
-            });
+            };
+            visitAstNodes(tok, visitAstNode);
+            if (varexpr.empty() && mSettings->inconclusive) {
+                inconclusive = true;
+                visitAstNodes(tok, visitAstNode);
+            }
             if (varexpr.empty())
                 continue;
             // ensure that function name does not contain "assert"
@@ -3182,12 +3190,12 @@ void CheckOther::checkKnownArgument()
             });
             if (funcname.find("assert") != std::string::npos)
                 continue;
-            knownArgumentError(tok, tok->astParent()->previous(), &tok->values().front(), varexpr);
+            knownArgumentError(tok, tok->astParent()->previous(), &tok->values().front(), varexpr, inconclusive);
         }
     }
 }
 
-void CheckOther::knownArgumentError(const Token *tok, const Token *ftok, const ValueFlow::Value *value, const std::string &varexpr)
+void CheckOther::knownArgumentError(const Token *tok, const Token *ftok, const ValueFlow::Value *value, const std::string &varexpr, bool inconclusive)
 {
     MathLib::bigint intvalue = value ? value->intvalue : 0;
     const std::string expr = tok ? tok->expressionString() : varexpr;
@@ -3195,7 +3203,7 @@ void CheckOther::knownArgumentError(const Token *tok, const Token *ftok, const V
 
     const std::string errmsg = "Argument '" + expr + "' to function " + fun + " is always " + std::to_string(intvalue) + ". It does not matter what value '" + varexpr + "' has.";
     const ErrorPath errorPath = getErrorPath(tok, value, errmsg);
-    reportError(errorPath, Severity::style, "knownArgument", errmsg, CWE570, false);
+    reportError(errorPath, Severity::style, "knownArgument", errmsg, CWE570, inconclusive);
 }
 
 void CheckOther::checkComparePointers()

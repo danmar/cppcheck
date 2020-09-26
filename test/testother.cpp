@@ -8946,7 +8946,10 @@ private:
               "    dostuff(x * 0);\n"
               "    dostuff(0 * x);\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Argument 'false&&x' to function dostuff is always 0. It does not matter what value 'x' has.\n"
+                      "[test.cpp:5]: (style, inconclusive) Argument 'true||x' to function dostuff is always 1. It does not matter what value 'x' has.\n"
+                      "[test.cpp:6]: (style, inconclusive) Argument 'x*0' to function dostuff is always 0. It does not matter what value 'x' has.\n"
+                      "[test.cpp:7]: (style, inconclusive) Argument '0*x' to function dostuff is always 0. It does not matter what value 'x' has.\n", errout.str());
     }
 
     void checkComparePointers() {
