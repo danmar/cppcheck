@@ -2040,9 +2040,25 @@ void CheckOther::checkDuplicateExpression()
                             if (!assignTok->astOperand2())
                                 continue;
 
-                            if (assignTok->astOperand1()->varId() != var1->varId() && assignTok->astOperand1()->varId() != var2->varId() && !isSameExpression(mTokenizer->isCPP(), true, tok->astOperand2(), assignTok->astOperand1(), mSettings->library, true, true))
+                            if (assignTok->astOperand1()->varId() != var1->varId() &&
+                                assignTok->astOperand1()->varId() != var2->varId() &&
+                                !isSameExpression(mTokenizer->isCPP(),
+                                                  true,
+                                                  tok->astOperand2(),
+                                                  assignTok->astOperand1(),
+                                                  mSettings->library,
+                                                  true,
+                                                  true))
                                 continue;
-                            if (assignTok->astOperand2()->varId() != var1->varId() && assignTok->astOperand2()->varId() != var2->varId() && !isSameExpression(mTokenizer->isCPP(), true, tok->astOperand2(), assignTok->astOperand2(), mSettings->library, true, true))
+                            if (assignTok->astOperand2()->varId() != var1->varId() &&
+                                assignTok->astOperand2()->varId() != var2->varId() &&
+                                !isSameExpression(mTokenizer->isCPP(),
+                                                  true,
+                                                  tok->astOperand2(),
+                                                  assignTok->astOperand2(),
+                                                  mSettings->library,
+                                                  true,
+                                                  true))
                                 continue;
                             differentDomain = true;
                             break;
