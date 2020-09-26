@@ -3207,8 +3207,8 @@ void CheckOther::knownArgumentError(const Token *tok, const Token *ftok, const V
     }
 
     const MathLib::bigint intvalue = value->intvalue;
-    const std::string expr = tok->expressionString();
-    const std::string fun = ftok->str();
+    const std::string &expr = tok->expressionString();
+    const std::string &fun = ftok->str();
 
     const char *id;;
     std::string errmsg = "Argument '" + expr + "' to function " + fun + " is always " + std::to_string(intvalue) + ". ";
