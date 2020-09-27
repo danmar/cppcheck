@@ -7835,6 +7835,7 @@ private:
         ASSERT_EQUALS("a{{return", testAst("return{{a}};"));
         ASSERT_EQUALS("a{b{,{return", testAst("return{{a},{b}};"));
         ASSERT_EQUALS("stdvector::", testAst("std::vector<std::vector<int>>{{},{}}"));
+        ASSERT_EQUALS("abR{{,P(,((", testAst("a(b(R{},{},P()));"));
     }
 
     void astbrackets() { // []

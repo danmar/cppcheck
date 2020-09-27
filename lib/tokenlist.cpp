@@ -788,11 +788,17 @@ static void compileTerm(Token *&tok, AST_state& state)
             tok = tok->next();
             if (tok->str() == "<")
                 tok = tok->link()->next();
+
             if (Token::Match(tok, "{ . %name% =|{")) {
                 const int inArrayAssignment = state.inArrayAssignment;
                 state.inArrayAssignment = 1;
                 compileBinOp(tok, state, compileExpression);
                 state.inArrayAssignment = inArrayAssignment;
+            } else if (Token::simpleMatch(tok, "{ }")) {
+                tok->astOperand1(state.op.top());
+                state.op.pop();
+                state.op.push(tok);
+                tok = tok->tokAt(2);
             }
         } else if (!state.cpp || !Token::Match(tok, "new|delete %name%|*|&|::|(|[")) {
             tok = skipDecl(tok);
@@ -828,9 +834,14 @@ static void compileTerm(Token *&tok, AST_state& state)
         if (Token::simpleMatch(tok->link(),"} [")) {
             tok = tok->next();
         } else if (state.cpp && iscpp11init(tok)) {
-            if (state.op.empty() || Token::Match(tok->previous(), "[{,]") || Token::Match(tok->tokAt(-2), "%name% ("))
-                compileUnaryOp(tok, state, compileExpression);
-            else
+            if (state.op.empty() || Token::Match(tok->previous(), "[{,]") || Token::Match(tok->tokAt(-2), "%name% (")) {
+                if (Token::Match(tok, "{ !!}"))
+                    compileUnaryOp(tok, state, compileExpression);
+                else {
+                    state.op.push(tok);
+                    tok = tok->tokAt(2);
+                }
+            } else
                 compileBinOp(tok, state, compileExpression);
             if (Token::Match(tok, "} ,|:"))
                 tok = tok->next();
