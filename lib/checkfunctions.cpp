@@ -85,7 +85,8 @@ void CheckFunctions::checkProhibitedFunctions()
                 const Library::WarnInfo* wi = mSettings->library.getWarnInfo(tok);
                 if (wi) {
                     if (mSettings->isEnabled(wi->severity) && mSettings->standards.c >= wi->standards.c && mSettings->standards.cpp >= wi->standards.cpp) {
-                        reportError(tok, wi->severity, tok->str() + "Called", wi->message, CWE477, false);
+                        const std::string daca = mSettings->daca ? "prohibited" : "";
+                        reportError(tok, wi->severity, daca + tok->str() + "Called", wi->message, CWE477, false);
                     }
                 }
             }
