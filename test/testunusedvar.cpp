@@ -159,6 +159,7 @@ private:
 
         TEST_CASE(localVarStd);
         TEST_CASE(localVarClass);
+        TEST_CASE(localVarSmartPtr);
 
         // Don't give false positives for variables in structs/unions
         TEST_CASE(localvarStruct1);
@@ -4431,6 +4432,36 @@ private:
                               "    C c(12);\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void localVarSmartPtr() {
+        // handling of smart pointers (#9680)
+        functionVariableUsage("static int s_i = 0;\n"
+                              "\n"
+                              "class A {\n"
+                              "public:\n"
+                              "    ~A() {\n"
+                              "        ++s_i;\n"
+                              "    }\n"
+                              "};\n"
+                              "\n"
+                              "static void func() {\n"
+                              "    auto a = std::make_shared<A>();\n"
+                              "    auto a2 = std::unique_ptr<A>(new A());\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("class A {\n"
+                              "public:\n"
+                              "    std::string x;\n"
+                              "};\n"
+                              "\n"
+                              "static void func() {\n"
+                              "    auto a = std::make_shared<A>();\n"
+                              "    auto a2 = std::unique_ptr<A>(new A());\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Variable 'a' is assigned a value that is never used.\n"
+                      "[test.cpp:8]: (style) Variable 'a2' is assigned a value that is never used.\n", errout.str());
     }
 
     // ticket #3104 - false positive when variable is read with "if (NOT var)"

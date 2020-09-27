@@ -45,6 +45,53 @@ namespace {
 static const struct CWE CWE563(563U);   // Assignment to Variable without Use ('Unused Variable')
 static const struct CWE CWE665(665U);   // Improper Initialization
 
+/** Is scope a raii class scope */
+static bool isRaiiClassScope(const Scope *classScope)
+{
+    return classScope && classScope->getDestructor() != nullptr;
+}
+
+/** Is ValueType a raii class? */
+static bool isRaiiClass(const ValueType *valueType, bool cpp, bool defaultReturn = true)
+{
+    if (!cpp)
+        return false;
+
+    if (!valueType)
+        return defaultReturn;
+
+    if (valueType->smartPointerType && isRaiiClassScope(valueType->smartPointerType->classScope))
+        return true;
+
+    switch (valueType->type) {
+    case ValueType::Type::UNKNOWN_TYPE:
+    case ValueType::Type::NONSTD:
+        return defaultReturn;
+
+    case ValueType::Type::RECORD:
+        if (isRaiiClassScope(valueType->typeScope))
+            return true;
+        return defaultReturn;
+
+    case ValueType::Type::CONTAINER:
+    case ValueType::Type::ITERATOR:
+    case ValueType::Type::VOID:
+    case ValueType::Type::BOOL:
+    case ValueType::Type::CHAR:
+    case ValueType::Type::SHORT:
+    case ValueType::Type::WCHAR_T:
+    case ValueType::Type::INT:
+    case ValueType::Type::LONG:
+    case ValueType::Type::LONGLONG:
+    case ValueType::Type::UNKNOWN_INT:
+    case ValueType::Type::FLOAT:
+    case ValueType::Type::DOUBLE:
+    case ValueType::Type::LONGDOUBLE:
+        return false;
+    }
+
+    return defaultReturn;
+}
 
 /**
  * @brief This class is used create a list of variables within a function.
@@ -1136,38 +1183,12 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             if (isIncrementOrDecrement && tok->astParent() && precedes(tok, tok->astOperand1()))
                 continue;
 
+            if (tok->str() == "=" && isRaiiClass(tok->valueType(), mTokenizer->isCPP(), false))
+                continue;
+
             if (tok->isName()) {
-                if (mTokenizer->isCPP()) {
-                    // do not check RAII/scope_lock objects
-                    if (!tok->valueType())
-                        continue;
-                    bool check = false;
-                    switch (tok->valueType()->type) {
-                    case ValueType::Type::UNKNOWN_TYPE:
-                    case ValueType::Type::NONSTD:
-                    case ValueType::Type::RECORD:
-                        check = tok->valueType()->typeScope && !tok->valueType()->typeScope->getDestructor();
-                        break;
-                    case ValueType::Type::CONTAINER:
-                    case ValueType::Type::ITERATOR:
-                    case ValueType::Type::VOID:
-                    case ValueType::Type::BOOL:
-                    case ValueType::Type::CHAR:
-                    case ValueType::Type::SHORT:
-                    case ValueType::Type::WCHAR_T:
-                    case ValueType::Type::INT:
-                    case ValueType::Type::LONG:
-                    case ValueType::Type::LONGLONG:
-                    case ValueType::Type::UNKNOWN_INT:
-                    case ValueType::Type::FLOAT:
-                    case ValueType::Type::DOUBLE:
-                    case ValueType::Type::LONGDOUBLE:
-                        check = true;
-                        break;
-                    }
-                    if (!check)
-                        continue;
-                }
+                if (isRaiiClass(tok->valueType(), mTokenizer->isCPP(), true))
+                    continue;
                 tok = tok->next();
             }
             if (tok->astParent() && tok->str() != "(") {
