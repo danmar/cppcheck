@@ -243,23 +243,23 @@ void CheckAutoVariables::autoVariables()
             // Critical assignment
             if (Token::Match(tok, "[;{}] %var% = & %var%") && isRefPtrArg(tok->next()) && isAutoVar(tok->tokAt(4))) {
                 if (checkRvalueExpression(tok->tokAt(4)))
-                    errorAutoVariableAssignment(tok->next(), false);
+                    checkAutoVariableAssignment(tok->next(), false);
             } else if (Token::Match(tok, "[;{}] * %var% =") && isPtrArg(tok->tokAt(2)) && isAddressOfLocalVariable(tok->tokAt(3)->astOperand2())) {
-                errorAutoVariableAssignment(tok->next(), false);
+                checkAutoVariableAssignment(tok->next(), false);
             } else if (Token::Match(tok, "[;{}] %var% . %var% =") && isPtrArg(tok->next()) && isAddressOfLocalVariable(tok->tokAt(4)->astOperand2())) {
-                errorAutoVariableAssignment(tok->next(), false);
+                checkAutoVariableAssignment(tok->next(), false);
             } else if (Token::Match(tok, "[;{}] %var% . %var% = %var% ;")) {
                 // TODO: check if the parameter is only changed temporarily (#2969)
                 if (printInconclusive && isPtrArg(tok->next())) {
                     if (isAutoVarArray(tok->tokAt(5)))
-                        errorAutoVariableAssignment(tok->next(), true);
+                        checkAutoVariableAssignment(tok->next(), true);
                 }
                 tok = tok->tokAt(5);
             } else if (Token::Match(tok, "[;{}] * %var% = %var% ;")) {
                 const Variable * var1 = tok->tokAt(2)->variable();
                 if (var1 && var1->isArgument() && Token::Match(var1->nameToken()->tokAt(-3), "%type% * *")) {
                     if (isAutoVarArray(tok->tokAt(4)))
-                        errorAutoVariableAssignment(tok->next(), false);
+                        checkAutoVariableAssignment(tok->next(), false);
                 }
                 tok = tok->tokAt(4);
             } else if (Token::Match(tok, "[;{}] %var% [") && Token::simpleMatch(tok->linkAt(2), "] =") &&
@@ -290,6 +290,41 @@ void CheckAutoVariables::autoVariables()
             }
         }
     }
+}
+
+bool CheckAutoVariables::checkAutoVariableAssignment(const Token *expr, bool inconclusive, const Token *startToken)
+{
+    if (!startToken)
+        startToken = Token::findsimplematch(expr, "=")->next();
+    for (const Token *tok = startToken; tok; tok = tok->next()) {
+        if (tok->str() == "}" && tok->scope()->type == Scope::ScopeType::eFunction)
+            errorAutoVariableAssignment(expr, inconclusive);
+
+        if (Token::Match(tok, "return|throw|break|continue")) {
+            errorAutoVariableAssignment(expr, inconclusive);
+            return true;
+        }
+        if (Token::simpleMatch(tok, "=")) {
+            const Token *lhs = tok;
+            while (Token::Match(lhs->previous(), "%name%|.|*"))
+                lhs = lhs->previous();
+            const Token *e = expr;
+            while (e->str() != "=" && lhs->str() == e->str()) {
+                e = e->next();
+                lhs = lhs->next();
+            }
+            if (lhs->str() == "=")
+                return false;
+        }
+
+        if (Token::simpleMatch(tok, "if (")) {
+            const Token *ifStart = tok->linkAt(1)->next();
+            return checkAutoVariableAssignment(expr, inconclusive, ifStart) || checkAutoVariableAssignment(expr, inconclusive, ifStart->link()->next());
+        }
+        if (Token::simpleMatch(tok, "} else {"))
+            tok = tok->linkAt(2);
+    }
+    return false;
 }
 
 //---------------------------------------------------------------------------

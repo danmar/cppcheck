@@ -64,6 +64,11 @@ public:
     /** Check auto variables */
     void autoVariables();
 
+    /**
+     * Check variable assignment.. value must be changed later or there will be a error reported
+     * @return true if error is reported */
+    bool checkAutoVariableAssignment(const Token *expr, bool inconclusive, const Token *startToken = nullptr);
+
     void checkVarLifetime();
 
     void checkVarLifetimeScope(const Token * start, const Token * end);
