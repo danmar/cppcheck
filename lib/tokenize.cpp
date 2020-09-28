@@ -7142,7 +7142,9 @@ bool Tokenizer::simplifyCAlternativeTokens()
     /* executable scope level */
     int executableScopeLevel = 0;
 
-    bool ret = false;
+    std::vector<Token *> alt;
+    bool replaceAll = false;  // replace all or none
+
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->str() == ")") {
             if (const Token *end = isFunctionHead(tok, "{")) {
@@ -7169,6 +7171,7 @@ bool Tokenizer::simplifyCAlternativeTokens()
 
         const std::map<std::string, std::string>::const_iterator cOpIt = cAlternativeTokens.find(tok->str());
         if (cOpIt != cAlternativeTokens.end()) {
+            alt.push_back(tok);
             if (!Token::Match(tok->previous(), "%name%|%num%|%char%|)|]|> %name% %name%|%num%|%char%|%op%|("))
                 continue;
             if (Token::Match(tok->next(), "%assign%|%or%|%oror%|&&|*|/|%|^") && !Token::Match(tok->previous(), "%num%|%char%|) %name% *"))
@@ -7180,19 +7183,34 @@ bool Tokenizer::simplifyCAlternativeTokens()
                 if (!start || Token::Match(start, "[;}]"))
                     continue;
             }
-            tok->str(cOpIt->second);
-            ret = true;
+            replaceAll = true;
         } else if (Token::Match(tok, "not|compl")) {
+            alt.push_back(tok);
+
             // Don't simplify 'not p;' (in case 'not' is a type)
             if (!Token::Match(tok->next(), "%name%|(") ||
                 Token::Match(tok->previous(), "[;{}]") ||
                 (executableScopeLevel == 0U && tok->strAt(-1) == "("))
                 continue;
-            tok->str((tok->str() == "not") ? "!" : "~");
-            ret = true;
+
+            replaceAll = true;
         }
     }
-    return ret;
+
+    if (!replaceAll)
+        return false;
+
+    for (Token *tok: alt) {
+        const std::map<std::string, std::string>::const_iterator cOpIt = cAlternativeTokens.find(tok->str());
+        if (cOpIt != cAlternativeTokens.end())
+            tok->str(cOpIt->second);
+        else if (tok->str() == "not")
+            tok->str("!");
+        else
+            tok->str("~");
+    }
+
+    return !alt.empty();
 }
 
 // int i(0); => int i; i = 0;
