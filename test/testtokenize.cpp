@@ -6223,6 +6223,8 @@ private:
         // #9324
         ASSERT_EQUALS("void f ( const char * str ) { while ( * str == '!' || * str == '[' ) { } }",
                       tokenizeAndStringify("void f(const char *str) { while (*str=='!' or *str=='['){} }"));
+        // #9920
+        ASSERT_EQUALS("result = ch != s . end ( ) && * ch == ':' ;", tokenizeAndStringify("result = ch != s.end() and *ch == ':';", false, true, Settings::Native, "test.c"));
     }
 
     void simplifyCalculations() {

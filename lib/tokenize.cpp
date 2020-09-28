@@ -7171,7 +7171,7 @@ bool Tokenizer::simplifyCAlternativeTokens()
         if (cOpIt != cAlternativeTokens.end()) {
             if (!Token::Match(tok->previous(), "%name%|%num%|%char%|)|]|> %name% %name%|%num%|%char%|%op%|("))
                 continue;
-            if (Token::Match(tok->next(), "%assign%|%or%|%oror%|&&|*|/|%|^") && !Token::Match(tok->previous(), "%num%|%char% %name% *"))
+            if (Token::Match(tok->next(), "%assign%|%or%|%oror%|&&|*|/|%|^") && !Token::Match(tok->previous(), "%num%|%char%|) %name% *"))
                 continue;
             if (executableScopeLevel == 0 && Token::Match(tok, "%name% (")) {
                 const Token *start = tok;
