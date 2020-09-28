@@ -4271,6 +4271,15 @@ private:
 
         check("void f(int x) { const char *p = x & 1 ? \"1\" : \"0\"; }");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) { return x & 1 ? '1' : '0'; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) { return x & 16 ? 1 : 0; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("enum {X,Y}; void f(int x) { return x & Y ? 1 : 0; }");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void clarifyStatement() {

@@ -164,6 +164,19 @@ void CheckOther::clarifyCalculation()
             if (tok->astOperand1()->tokType() == Token::eBitOp && tok->astOperand2()->valueType() && tok->astOperand2()->valueType()->pointer > 0)
                 continue;
 
+            // bit operation in lhs and char literals in rhs => probably no mistake
+            if (tok->astOperand1()->tokType() == Token::eBitOp && Token::Match(tok->astOperand2()->astOperand1(), "%char%") && Token::Match(tok->astOperand2()->astOperand2(), "%char%"))
+                continue;
+
+            // bitand operation in lhs with known integer value => probably no mistake
+            if (tok->astOperand1()->str() == "&" && tok->astOperand1()->isBinaryOp()) {
+                const Token *op = tok->astOperand1()->astOperand2();
+                if (op->isNumber())
+                    continue;
+                if (op->valueType() && op->valueType()->isEnum())
+                    continue;
+            }
+
             // Is code clarified by parentheses already?
             const Token *tok2 = tok->astOperand1();
             for (; tok2; tok2 = tok2->next()) {
