@@ -2676,6 +2676,9 @@ void CheckOther::checkRedundantPointerOp()
         if (!tok->isUnaryOp("&") || !tok->astOperand1()->isUnaryOp("*"))
             continue;
 
+        if (tok->isExpandedMacro())
+            continue;
+
         // variable
         const Token *varTok = tok->astOperand1()->astOperand1();
         if (!varTok || varTok->isExpandedMacro())
