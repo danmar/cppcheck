@@ -253,6 +253,7 @@ private:
         TEST_CASE(removeParentheses22);
         TEST_CASE(removeParentheses23);      // Ticket #6103 - Infinite loop upon valid input
         TEST_CASE(removeParentheses24);      // Ticket #7040
+        TEST_CASE(removeParentheses25);      // daca@home - a=(b,c)
 
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
@@ -3460,6 +3461,12 @@ private:
     void removeParentheses24() { // Ticket #7040
         static char code[] = "std::hash<decltype(t._data)>()(t._data);";
         static char  exp[] = "std :: hash < decltype ( t . _data ) > ( ) ( t . _data ) ;";
+        ASSERT_EQUALS(exp, tokenizeAndStringify(code));
+    }
+
+    void removeParentheses25() { // daca@home - a=(b,c)
+        static char code[] = "a=(b,c);";
+        static char  exp[] = "a = ( b , c ) ;";
         ASSERT_EQUALS(exp, tokenizeAndStringify(code));
     }
 
