@@ -894,19 +894,8 @@ void CheckOther::checkVariableScope()
 
     // In C it is common practice to declare local variables at the
     // start of functions.
-    if (mTokenizer->isC()) {
-        // Try to autodetect what coding style is used. If a local variable is
-        // declared in an inner scope then we will warn about all variables.
-        bool limitScope = false;
-        for (const Variable* var : symbolDatabase->variableList()) {
-            if (var && var->isLocal() && var->nameToken()->scope()->type != Scope::ScopeType::eFunction) {
-                limitScope = true;
-                break;
-            }
-        }
-        if (!limitScope)
-            return;
-    }
+    if (mSettings->daca && mTokenizer->isC())
+        return;
 
     for (const Variable* var : symbolDatabase->variableList()) {
         if (!var || !var->isLocal() || (!var->isPointer() && !var->isReference() && !var->typeStartToken()->isStandardType()))
