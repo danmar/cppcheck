@@ -168,8 +168,8 @@ void CheckOther::clarifyCalculation()
             if (tok->astOperand1()->tokType() == Token::eBitOp && Token::Match(tok->astOperand2()->astOperand1(), "%char%") && Token::Match(tok->astOperand2()->astOperand2(), "%char%"))
                 continue;
 
-            // bitand operation in lhs with known integer value => probably no mistake
-            if (tok->astOperand1()->str() == "&" && tok->astOperand1()->isBinaryOp()) {
+            // 2nd operand in lhs has known integer value => probably no mistake
+            if (tok->astOperand1()->isBinaryOp() && tok->astOperand1()->astOperand2()->hasKnownIntValue()) {
                 const Token *op = tok->astOperand1()->astOperand2();
                 if (op->isNumber())
                     continue;

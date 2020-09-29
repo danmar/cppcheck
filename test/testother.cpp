@@ -4236,12 +4236,12 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f(char c) {\n"
-              "    printf(\"%i\", 1 + 1 ? 1 : 2);\n" // "1+1" is simplified away
+              "    printf(\"%i\", a + b ? 1 : 2);\n"
               "}",nullptr,false,false,false);
         ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for '+' and '?'.\n", errout.str());
 
         check("void f() {\n"
-              "    std::cout << x << 1 ? 2 : 3;\n"
+              "    std::cout << x << y ? 2 : 3;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for '<<' and '?'.\n", errout.str());
 
@@ -4279,6 +4279,9 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f(int x) { return x & 16 ? 1 : 0; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) { return x % 16 ? 1 : 0; }");
         ASSERT_EQUALS("", errout.str());
 
         check("enum {X,Y}; void f(int x) { return x & Y ? 1 : 0; }");
