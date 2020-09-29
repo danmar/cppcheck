@@ -1640,9 +1640,9 @@ static bool isConstTop(const Token *tok)
 {
     if (!tok)
         return false;
-    if (tok == tok->astTop())
+    if (!tok->astParent())
         return true;
-    if (Token::simpleMatch(tok->astParent(), ";") && tok->astTop() &&
+    if (Token::simpleMatch(tok->astParent(), ";") &&
         Token::Match(tok->astTop()->previous(), "for|if (") && Token::simpleMatch(tok->astTop()->astOperand2(), ";")) {
         if (Token::simpleMatch(tok->astParent()->astParent(), ";"))
             return tok->astParent()->astOperand2() == tok;
@@ -1662,6 +1662,8 @@ void CheckOther::checkIncompleteStatement()
         if (scope && !scope->isExecutable())
             continue;
         if (!isConstTop(tok))
+            continue;
+        if (tok->str() == "," && Token::simpleMatch(tok->astTop()->previous(), "for ("))
             continue;
         const Token *rtok = nextAfterAstRightmostLeaf(tok);
         if (!Token::simpleMatch(tok->astParent(), ";") && !Token::simpleMatch(rtok, ";") &&

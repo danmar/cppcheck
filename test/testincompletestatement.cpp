@@ -84,7 +84,8 @@ private:
         TEST_CASE(cpp11init3);          // #8995
         TEST_CASE(block);               // ({ do_something(); 0; })
         TEST_CASE(mapindex);
-        TEST_CASE(commaoperator);
+        TEST_CASE(commaoperator1);
+        TEST_CASE(commaoperator2);
         TEST_CASE(redundantstmts);
         TEST_CASE(vardecl);
         TEST_CASE(archive);             // ar & x
@@ -336,12 +337,19 @@ private:
     }
 
     // #8827
-    void commaoperator() {
+    void commaoperator1() {
         check("void foo(int,const char*,int);\n"
               "void f(int value) {\n"
               "    foo(42,\"test\",42),(value&42);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Found suspicious operator ','\n", errout.str());
+    }
+
+    void commaoperator2() {
+        check("void f() {\n"
+              "    for(unsigned int a=0, b; a<10; a++ ) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // #8451
