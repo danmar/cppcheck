@@ -4272,6 +4272,9 @@ private:
         check("void f(int x) { const char *p = x & 1 ? \"1\" : \"0\"; }");
         ASSERT_EQUALS("", errout.str());
 
+        check("void foo() { x = a % b ? \"1\" : \"0\"; }");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f(int x) { return x & 1 ? '1' : '0'; }");
         ASSERT_EQUALS("", errout.str());
 

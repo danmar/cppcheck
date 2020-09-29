@@ -160,8 +160,8 @@ void CheckOther::clarifyCalculation()
             if (!tok->astOperand1()->isArithmeticalOp() && tok->astOperand1()->tokType() != Token::eBitOp)
                 continue;
 
-            // bit operation in lhs and pointer in rhs => no clarification is needed
-            if (tok->astOperand1()->tokType() == Token::eBitOp && tok->astOperand2()->valueType() && tok->astOperand2()->valueType()->pointer > 0)
+            // non-pointer calculation in lhs and pointer in rhs => no clarification is needed
+            if (tok->astOperand1()->isBinaryOp() && Token::Match(tok->astOperand1(), "%or%|&|%|*|/") && tok->astOperand2()->valueType() && tok->astOperand2()->valueType()->pointer > 0)
                 continue;
 
             // bit operation in lhs and char literals in rhs => probably no mistake
