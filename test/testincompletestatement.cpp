@@ -90,6 +90,7 @@ private:
         TEST_CASE(vardecl);
         TEST_CASE(archive);             // ar & x
         TEST_CASE(ast);
+        TEST_CASE(oror);                // dostuff() || x=32;
     }
 
     void test1() {
@@ -421,6 +422,13 @@ private:
 
     void ast() {
         check("struct c { void a() const { for (int x=0; x;); } };", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void oror() {
+        check("void foo() {\n"
+              "    params_given (params, \"overrides\") || (overrides = \"1\");\n"
+              "}", true);
         ASSERT_EQUALS("", errout.str());
     }
 };
