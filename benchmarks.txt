@@ -8,15 +8,16 @@ In this file we can document some good code repos / code samples to use when wor
 Trac tickets
 ------------
 
-http://trac.cppcheck.net/ticket/2435 -- Tokenizer::simplifyTypedef
-http://trac.cppcheck.net/ticket/8355 -- TokenList::createAst
-http://trac.cppcheck.net/ticket/9007 -- Unused types
+-> http://trac.cppcheck.net/ticket/2435 -- Tokenizer::simplifyTypedef
+-> http://trac.cppcheck.net/ticket/8355 -- TokenList::createAst
+-> http://trac.cppcheck.net/ticket/9007 -- Unused types
 
 
 Repos
 -----
 
 Small C++ library with lots of templates:
-https://framagit.org/dtschump/CImg
+
+-> https://framagit.org/dtschump/CImg
 Just check the file examples/use_tinymatwriter.cpp
 
