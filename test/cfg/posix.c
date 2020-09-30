@@ -292,6 +292,8 @@ void ignoredReturnValue(void *addr, int fd)
     getuid();
     // cppcheck-suppress ignoredReturnValue
     access("filename", 1);
+    // no ignoredReturnValue shall be shown for
+    setuid(42);
 }
 
 
