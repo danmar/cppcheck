@@ -490,10 +490,8 @@ def isFunctionCall(expr, std='c99'):
         return False
     return True
 
-
 def hasExternalLinkage(var):
     return var.isGlobal and not var.isStatic
-
 
 def countSideEffects(expr):
     if not expr or expr.str in (',', ';'):
@@ -502,7 +500,6 @@ def countSideEffects(expr):
     if expr.str in ('++', '--', '='):
         ret = 1
     return ret + countSideEffects(expr.astOperand1) + countSideEffects(expr.astOperand2)
-
 
 def getForLoopExpressions(forToken):
     if not forToken or forToken.str != 'for':
@@ -517,7 +514,6 @@ def getForLoopExpressions(forToken):
     return [lpar.astOperand2.astOperand1,
             lpar.astOperand2.astOperand2.astOperand1,
             lpar.astOperand2.astOperand2.astOperand2]
-
 
 def getForLoopCounterVariables(forToken):
     """ Return a set of Variable objects defined in ``for`` statement and
@@ -550,7 +546,6 @@ def getForLoopCounterVariables(forToken):
         tn = tn.next
     return vars_defined & vars_exit & vars_modified
 
-
 def findCounterTokens(cond):
     if not cond:
         return []
@@ -570,7 +565,6 @@ def findCounterTokens(cond):
         if cond.astOperand2.isOp:
             ret.extend(findCounterTokens(cond.astOperand2))
     return ret
-
 
 def isFloatCounterInWhileLoop(whileToken):
     if not simpleMatch(whileToken, 'while ('):
@@ -597,7 +591,6 @@ def isFloatCounterInWhileLoop(whileToken):
                 return True
     return False
 
-
 def hasSideEffectsRecursive(expr):
     if not expr or expr.str == ';':
         return False
@@ -615,7 +608,6 @@ def hasSideEffectsRecursive(expr):
         return True
     # Todo: Check function calls
     return hasSideEffectsRecursive(expr.astOperand1) or hasSideEffectsRecursive(expr.astOperand2)
-
 
 def isBoolExpression(expr):
     if not expr:
