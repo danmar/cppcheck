@@ -16,16 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QApplication>
-#include <QString>
-#include <QDebug>
-#include <QDir>
-#include <QFile>
-#include <QFileInfo>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QProcess>
-#include <QSettings>
+
+#include<bits/stdc++.h>
 #include "checkthread.h"
 #include "erroritem.h"
 #include "threadresult.h"
