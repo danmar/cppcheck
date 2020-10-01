@@ -18,10 +18,8 @@
 
 #include "cppchecklibrarydata.h"
 
-#include <stdexcept>
 
-#include <QXmlStreamReader>
-#include <QXmlStreamWriter>
+#include<bits/stdc++.h>
 
 const unsigned int CppcheckLibraryData::Function::Arg::ANY = ~0U;
 const unsigned int CppcheckLibraryData::Function::Arg::VARIADIC = ~1U;
