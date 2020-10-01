@@ -17,15 +17,12 @@
  */
 
 #include <QFileInfo>
-#include <QObject>
-#include <QSettings>
-#include <QStringList>
+
+#include<bits/stdc++.h>
 
 #include "common.h"
 #include "applicationlist.h"
 #include "application.h"
-
-#include <cstdlib>
 
 ApplicationList::ApplicationList(QObject *parent) :
     QObject(parent),
