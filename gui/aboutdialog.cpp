@@ -16,9 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QDialog>
-#include <QWidget>
-#include <QString>
+
+#include<bits/stdc++.h>
 #include "aboutdialog.h"
 
 AboutDialog::AboutDialog(const QString &version, const QString &extraVersion, QWidget *parent)
