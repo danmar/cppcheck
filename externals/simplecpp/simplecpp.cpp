@@ -22,17 +22,7 @@
 #endif
 #include "simplecpp.h"
 
-#include <algorithm>
-#include <cstdlib>
-#include <cstring>
-#include <exception>
-#include <fstream>
-#include <iostream>
-#include <limits>
-#include <sstream>
-#include <stack>
-#include <stdexcept>
-#include <utility>
+#include<bits/stdc++.h>
 
 #ifdef SIMPLECPP_WINDOWS
 #include <windows.h>
