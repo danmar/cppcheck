@@ -1,8 +1,5 @@
-#include <ctime>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <iostream>
+
+#include<bits/stdc++.h>
 
 #include "cppcheck.h"
 #include "version.h"
