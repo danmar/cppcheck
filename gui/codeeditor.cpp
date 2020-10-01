@@ -1,5 +1,5 @@
-#include <QtWidgets>
-#include <QShortcut>
+
+#include<bits/stdc++.h>
 #include "codeeditor.h"
 #include "codeeditorstyle.h"
 
