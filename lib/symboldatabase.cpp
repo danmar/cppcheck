@@ -4113,6 +4113,12 @@ static const Token* skipPointers(const Token* tok)
             tok = tok->tokAt(2);
     }
 
+    if (Token::simpleMatch(tok, "( *") && Token::simpleMatch(tok->link()->previous(), "] ) ;")) {
+        const Token *tok2 = skipPointers(tok->next());
+        if (Token::Match(tok2, "%name% [") && Token::simpleMatch(tok2->linkAt(1), "] ) ;"))
+            return tok2;
+    }
+
     return tok;
 }
 
