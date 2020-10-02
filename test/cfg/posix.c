@@ -289,11 +289,11 @@ void ignoredReturnValue(void *addr, int fd)
     // cppcheck-suppress leakReturnValNotUsed
     mmap(addr, 255, PROT_NONE, MAP_PRIVATE, fd, 0);
     // cppcheck-suppress ignoredReturnValue
-    setuid(42);
-    // cppcheck-suppress ignoredReturnValue
     getuid();
     // cppcheck-suppress ignoredReturnValue
     access("filename", 1);
+    // no ignoredReturnValue shall be shown for
+    setuid(42);
 }
 
 

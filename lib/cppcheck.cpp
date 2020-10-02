@@ -202,14 +202,14 @@ static std::string executeAddon(const AddonInfo &addonInfo,
         pythonExe = cmdFileName(defaultPythonExe);
     else {
 #ifdef _WIN32
-        const char *p[] = { "python3.exe", "python.exe" };
+        const char *py_exes[] = { "python3.exe", "python.exe" };
 #else
-        const char *p[] = { "python3", "python" };
+        const char *py_exes[] = { "python3", "python" };
 #endif
-        for (int i = 0; i < 2; ++i) {
+        for (const char* py_exe : py_exes) {
             std::string out;
-            if (executeCommand(p[i], split("--version"), redirect, &out) && out.compare(0, 7, "Python ") == 0 && std::isdigit(out[7])) {
-                pythonExe = p[i];
+            if (executeCommand(py_exe, split("--version"), redirect, &out) && out.compare(0, 7, "Python ") == 0 && std::isdigit(out[7])) {
+                pythonExe = py_exe;
                 break;
             }
         }

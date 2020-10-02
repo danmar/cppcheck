@@ -29,8 +29,8 @@ PathMatch::PathMatch(const std::vector<std::string> &excludedPaths, bool caseSen
     : mExcludedPaths(excludedPaths), mCaseSensitive(caseSensitive)
 {
     if (!mCaseSensitive)
-        for (std::vector<std::string>::iterator i = mExcludedPaths.begin(); i != mExcludedPaths.end(); ++i)
-            std::transform(i->begin(), i->end(), i->begin(), ::tolower);
+        for (std::string& excludedPath : mExcludedPaths)
+            std::transform(excludedPath.begin(), excludedPath.end(), excludedPath.begin(), ::tolower);
     mWorkingDirectory.push_back(Path::getCurrentPath());
 }
 

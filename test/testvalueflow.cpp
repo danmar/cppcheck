@@ -138,6 +138,8 @@ private:
         TEST_CASE(valueFlowCrash);
         TEST_CASE(valueFlowHang);
         TEST_CASE(valueFlowCrashConstructorInitialization);
+
+        TEST_CASE(valueFlowUnknownMixedOperators);
     }
 
     static bool isNotTokValue(const ValueFlow::Value &val) {
@@ -154,6 +156,42 @@ private:
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 for (const ValueFlow::Value& val:tok->values()) {
                     if (val.isKnown() && val.intvalue == value)
+                        return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    bool testValueOfXImpossible(const char code[], unsigned int linenr, int value) {
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+            if (tok->str() == "x" && tok->linenr() == linenr) {
+                for (const ValueFlow::Value& val:tok->values()) {
+                    if (val.isImpossible() && val.intvalue == value)
+                        return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    bool testValueOfXInconclusive(const char code[], unsigned int linenr, int value) {
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+            if (tok->str() == "x" && tok->linenr() == linenr) {
+                for (const ValueFlow::Value& val:tok->values()) {
+                    if (val.isInconclusive() && val.intvalue == value)
                         return true;
                 }
             }
@@ -2086,6 +2124,28 @@ private:
                "Fred::Fred(std::unique_ptr<Wilma> wilma)\n"
                "    : mWilma(std::move(wilma)) {}\n";
         ASSERT_EQUALS(0, tokenValues(code, "mWilma (").size());
+
+        code = "void g(unknown*);\n"
+               "int f() {\n"
+               "    int a = 1;\n"
+               "    unknown c[] = {{&a}};\n"
+               "    g(c);\n"
+               "    int x = a;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 7U, 1));
+        ASSERT_EQUALS(true, testValueOfXInconclusive(code, 7U, 1));
+
+        code = "void g(unknown&);\n"
+               "int f() {\n"
+               "    int a = 1;\n"
+               "    unknown c{&a};\n"
+               "    g(c);\n"
+               "    int x = a;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 7U, 1));
+        ASSERT_EQUALS(true, testValueOfXInconclusive(code, 7U, 1));
     }
 
     void valueFlowAfterCondition() {
@@ -2424,6 +2484,67 @@ private:
                "    }"
                "}";
         ASSERT_EQUALS(false, testValueOfXKnown(code, 3U, 2));
+
+        code = "int f(int i, int j) {\n"
+               "    if (i == 0) {\n"
+               "        if (j < 0)\n"
+               "            return 0;\n"
+               "        i = j+1;\n"
+               "    }\n"
+               "    int x = i;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 8U, 0));
+
+        code = "int f(int i, int j) {\n"
+               "    if (i == 0) {\n"
+               "        if (j < 0)\n"
+               "            return 0;\n"
+               "        if (j < 0)\n"
+               "            i = j+1;\n"
+               "    }\n"
+               "    int x = i;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 9U, 0));
+
+        code = "void g(long& a);\n"
+               "void f(long a) {\n"
+               "    if (a == 0)\n"
+               "        return;\n"
+               "    if (a > 1)\n"
+               "         g(a);\n"
+               "    int x = a;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 8U, 0));
+
+        code = "int foo(int n) {\n"
+               "    if( n>= 8 ) {\n"
+               "        while(true) {\n"
+               "            n -= 8;\n"
+               "            if( n < 8 )\n"
+               "                break;\n"
+               "        }\n"
+               "        int x = n == 0;\n"
+               "        return x;\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 9U, 0));
+
+        code = "bool c();\n"
+               "long f() {\n"
+               "    bool stop = false;\n"
+               "    while (!stop) {\n"
+               "        if (c())\n"
+               "            stop = true;\n"
+               "        break;\n"
+               "    }\n"
+               "    int x = !stop;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 10U, 1));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 10U, 0));
     }
 
     void valueFlowAfterConditionExpr() {
@@ -4803,6 +4924,20 @@ private:
                "    }\n"
                "}";
         valueOfTok(code, "path");
+    }
+
+    void valueFlowUnknownMixedOperators() {
+        const char *code= "int f(int a, int b, bool x) {\n"
+                          "  if (a == 1 && (!(b == 2 && x))) {\n"
+                          "  } else {\n"
+                          "    if (x) {\n"
+                          "    }\n"
+                          "  }\n"
+                          "\n"
+                          "  return 0;\n"
+                          "}" ;
+
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 1));
     }
 };
 

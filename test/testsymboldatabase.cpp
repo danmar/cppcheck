@@ -324,6 +324,7 @@ private:
         TEST_CASE(symboldatabase84);
         TEST_CASE(symboldatabase85);
         TEST_CASE(symboldatabase86);
+        TEST_CASE(symboldatabase87); // #9922 'extern const char ( * x [ 256 ] ) ;'
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
 
@@ -430,6 +431,7 @@ private:
         TEST_CASE(auto11); // #8964 - const auto startX = x;
         TEST_CASE(auto12); // #8993 - const std::string &x; auto y = x; if (y.empty()) ..
         TEST_CASE(auto13);
+        TEST_CASE(auto14);
 
         TEST_CASE(unionWithConstructor);
 
@@ -4738,6 +4740,12 @@ private:
         ASSERT(db->scopeList.back().functionList.front().hasBody() == false);
     }
 
+    void symboldatabase87() { // #9922 'extern const char ( * x [ 256 ] ) ;'
+        GET_SYMBOL_DB("extern const char ( * x [ 256 ] ) ;");
+        const Token *xtok = Token::findsimplematch(tokenizer.tokens(), "x");
+        ASSERT(xtok->variable());
+    }
+
     void createSymbolDatabaseFindAllScopes1() {
         GET_SYMBOL_DB("void f() { union {int x; char *p;} a={0}; }");
         ASSERT(db->scopeList.size() == 3);
@@ -6895,7 +6903,7 @@ private:
         ASSERT_EQUALS("signed int", typeOf("int (*a)(int); a(5);", "( 5"));
         ASSERT_EQUALS("s", typeOf("struct s { s foo(); s(int, int); }; s s::foo() { return s(1, 2); } ", "( 1 , 2 )"));
         // Some standard template functions.. TODO library configuration
-        ASSERT_EQUALS("signed int", typeOf("std::move(5);", "( 5 )"));
+        ASSERT_EQUALS("signed int &&", typeOf("std::move(5);", "( 5 )"));
 
         // struct member..
         ASSERT_EQUALS("signed int", typeOf("struct AB { int a; int b; } ab; x = ab.a;", "."));
@@ -7787,6 +7795,18 @@ private:
         ASSERT(tok->valueType()->pointer);
         ASSERT(tok->variable()->valueType());
         ASSERT(tok->variable()->valueType()->pointer);
+    }
+
+    void auto14() { // #9892 - crash in Token::declType
+        GET_SYMBOL_DB("static void foo() {\n"
+                      "    auto combo = widget->combo = new Combo{};\n"
+                      "    combo->addItem();\n"
+                      "}");
+
+        const Token *tok;
+
+        tok = Token::findsimplematch(tokenizer.tokens(), "combo =");
+        ASSERT(tok && !tok->valueType());
     }
 
     void unionWithConstructor() {

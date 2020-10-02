@@ -49,6 +49,9 @@ void CheckAssert::assertWithSideEffects()
 
         const Token *endTok = tok->next()->link();
         for (const Token* tmp = tok->next(); tmp != endTok; tmp = tmp->next()) {
+            if (Token::simpleMatch(tmp, "sizeof ("))
+                tmp = tmp->linkAt(1);
+
             checkVariableAssignment(tmp, tok->scope());
 
             if (tmp->tokType() != Token::eFunction)

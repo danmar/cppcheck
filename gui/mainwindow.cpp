@@ -610,7 +610,7 @@ void MainWindow::updateFunctionContractsTab()
 {
     QStringList addedContracts;
     if (mProjectFile) {
-        for (const auto it: mProjectFile->getFunctionContracts()) {
+        for (const auto& it: mProjectFile->getFunctionContracts()) {
             addedContracts << QString::fromStdString(it.first);
         }
     }
@@ -876,7 +876,7 @@ Settings MainWindow::getCppcheckSettings()
 
         result.functionContracts = mProjectFile->getFunctionContracts();
 
-        for (const auto vc: mProjectFile->getVariableContracts())
+        for (const auto& vc: mProjectFile->getVariableContracts())
             result.variableContracts[vc.first.toStdString()] = vc.second;
 
         const QStringList undefines = mProjectFile->getUndefines();
@@ -1042,9 +1042,9 @@ void MainWindow::analysisDone()
 
     enableResultsButtons();
 
-    for (int i = 0; i < MaxRecentProjects + 1; i++) {
-        if (mRecentProjectActs[i] != nullptr)
-            mRecentProjectActs[i]->setEnabled(true);
+    for (QAction* recentProjectAct : mRecentProjectActs) {
+        if (recentProjectAct != nullptr)
+            recentProjectAct->setEnabled(true);
     }
 
     // Notify user - if the window is not active - that check is ready
@@ -1068,9 +1068,9 @@ void MainWindow::checkLockDownUI()
     if (mScratchPad)
         mScratchPad->setEnabled(false);
 
-    for (int i = 0; i < MaxRecentProjects + 1; i++) {
-        if (mRecentProjectActs[i] != nullptr)
-            mRecentProjectActs[i]->setEnabled(false);
+    for (QAction* recentProjectAct : mRecentProjectActs) {
+        if (recentProjectAct != nullptr)
+            recentProjectAct->setEnabled(false);
     }
 }
 
@@ -1772,9 +1772,9 @@ void MainWindow::openRecentProject()
 
 void MainWindow::updateMRUMenuItems()
 {
-    for (int i = 0; i < MaxRecentProjects + 1; i++) {
-        if (mRecentProjectActs[i] != nullptr)
-            mUI.mMenuFile->removeAction(mRecentProjectActs[i]);
+    for (QAction* recentProjectAct : mRecentProjectActs) {
+        if (recentProjectAct != nullptr)
+            mUI.mMenuFile->removeAction(recentProjectAct);
     }
 
     QStringList projects = mSettings->value(SETTINGS_MRU_PROJECTS).toStringList();

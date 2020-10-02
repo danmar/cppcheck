@@ -547,8 +547,13 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
 
                 // Check that another copy of the pointer wasn't saved earlier in the function
                 if (Token::findmatch(scope->bodyStart, "%name% = %varid% ;", tok, tok->varId()) ||
-                    Token::findmatch(scope->bodyStart, "[{};] %varid% = *| %name% .| %name%| [;=]", tok, tok->varId()))
+                    Token::findmatch(scope->bodyStart, "[{};] %varid% = *| %var% .| %var%| [;=]", tok, tok->varId()))
                     continue;
+
+                // Check if the argument is known to be null, which means it is not a memory leak
+                if (arg->hasKnownIntValue() && arg->getKnownIntValue() == 0) {
+                    continue;
+                }
 
                 const Token* tokEndRealloc = reallocTok->linkAt(1);
                 // Check that the allocation isn't followed immediately by an 'if (!var) { error(); }' that might handle failure

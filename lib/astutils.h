@@ -182,8 +182,8 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, nonneg int 
 bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Settings *settings, bool *inconclusive);
 
 /** Is variable changed in block of code? */
-bool isVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
-bool isVariableChanged(const Token *start, const Token *end, int indirect, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
+bool isVariableChanged(const Token *start, const Token *end, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
+bool isVariableChanged(const Token *start, const Token *end, int indirect, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
 
 bool isVariableChanged(const Token *tok, int indirect, const Settings *settings, bool cpp, int depth = 20);
 
@@ -198,11 +198,11 @@ bool isVariablesChanged(const Token* start,
 
 bool isThisChanged(const Token* start, const Token* end, int indirect, const Settings* settings, bool cpp);
 
-const Token* findVariableChanged(const Token *start, const Token *end, int indirect, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
-Token* findVariableChanged(Token *start, const Token *end, int indirect, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
+const Token* findVariableChanged(const Token *start, const Token *end, int indirect, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
+Token* findVariableChanged(Token *start, const Token *end, int indirect, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
 
 /// If token is an alias if another variable
-bool isAliasOf(const Token *tok, nonneg int varid);
+bool isAliasOf(const Token *tok, nonneg int varid, bool* inconclusive = nullptr);
 
 bool isAliased(const Variable *var);
 

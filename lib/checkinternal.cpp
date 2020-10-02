@@ -37,8 +37,7 @@ namespace {
 void CheckInternal::checkTokenMatchPatterns()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "Token :: Match (") && !Token::simpleMatch(tok, "Token :: findmatch ("))
                 continue;
@@ -130,8 +129,7 @@ void CheckInternal::checkRedundantTokCheckError(const Token* tok)
 void CheckInternal::checkTokenSimpleMatchPatterns()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "Token :: simpleMatch (") && !Token::simpleMatch(tok, "Token :: findsimplematch ("))
                 continue;
@@ -151,9 +149,7 @@ void CheckInternal::checkTokenSimpleMatchPatterns()
 
             // Check for [xyz] usage - but exclude standalone square brackets
             unsigned int char_count = 0;
-            for (std::string::size_type pos = 0; pos < pattern.size(); ++pos) {
-                char c = pattern[pos];
-
+            for (char c : pattern) {
                 if (c == ' ') {
                     char_count = 0;
                 } else if (c == ']') {
@@ -168,9 +164,7 @@ void CheckInternal::checkTokenSimpleMatchPatterns()
 
             // Check | usage: Count characters before the symbol
             char_count = 0;
-            for (std::string::size_type pos = 0; pos < pattern.size(); ++pos) {
-                const char c = pattern[pos];
-
+            for (char c : pattern) {
                 if (c == ' ') {
                     char_count = 0;
                 } else if (c == '|') {
@@ -219,8 +213,7 @@ namespace {
 void CheckInternal::checkMissingPercentCharacter()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "Token :: Match (") && !Token::simpleMatch(tok, "Token :: findmatch ("))
                 continue;
@@ -262,8 +255,7 @@ void CheckInternal::checkMissingPercentCharacter()
 void CheckInternal::checkUnknownPattern()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "Token :: Match (") && !Token::simpleMatch(tok, "Token :: findmatch ("))
                 continue;
@@ -297,8 +289,7 @@ void CheckInternal::checkUnknownPattern()
 void CheckInternal::checkRedundantNextPrevious()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->str() != ".")
                 continue;
@@ -329,8 +320,7 @@ void CheckInternal::checkRedundantNextPrevious()
 void CheckInternal::checkExtraWhitespace()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "Token :: simpleMatch|findsimplematch|Match|findmatch ("))
                 continue;

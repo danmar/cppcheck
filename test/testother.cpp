@@ -98,6 +98,7 @@ private:
         TEST_CASE(passedByValue_externC);
 
         TEST_CASE(constVariable);
+        TEST_CASE(constParameterCallback);
 
         TEST_CASE(switchRedundantAssignmentTest);
         TEST_CASE(switchRedundantOperationTest);
@@ -239,7 +240,8 @@ private:
         TEST_CASE(cpp11FunctionArgInit); // #7846 - "void foo(int declaration = {}) {"
 
         TEST_CASE(shadowVariables);
-        TEST_CASE(constArgument);
+        TEST_CASE(knownArgument);
+        TEST_CASE(knownArgumentHiddenVariableExpression);
         TEST_CASE(checkComparePointers);
 
         TEST_CASE(unusedVariableValueTemplate); // #8994
@@ -695,6 +697,16 @@ private:
               "  else if (x > 0) {}\n"
               "  else\n"
               "    a = b / -x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    int x;\n"
+              "};\n"
+              "int f(A* a) {\n"
+              "    if (a->x == 0) \n"
+              "        a->x = 1;\n"
+              "    return 1/a->x;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -2512,6 +2524,30 @@ private:
         TODO_ASSERT_EQUALS("[test.cpp:16]: (style) Parameter 'i' can be declared with const\n", "", errout.str());
     }
 
+    void constParameterCallback() {
+        check("int callback(std::vector<int>& x) { return x[0]; }\n"
+              "void f() { dostuff(callback); }");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Parameter 'x' can be declared with const. However it seems that 'callback' is a callback function, if 'x' is declared with const you might also need to cast function pointer(s).\n", errout.str());
+
+        // #9906
+        check("class EventEngine : public IEventEngine {\n"
+              "public:\n"
+              "    EventEngine();\n"
+              "\n"
+              "private:\n"
+              "    void signalEvent(ev::sig& signal, int revents);\n"
+              "};\n"
+              "\n"
+              "EventEngine::EventEngine() {\n"
+              "    mSigWatcher.set<EventEngine, &EventEngine::signalEvent>(this);\n"
+              "}\n"
+              "\n"
+              "void EventEngine::signalEvent(ev::sig& signal, int revents) {\n"
+              "    switch (signal.signum) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:10] -> [test.cpp:13]: (style) Parameter 'signal' can be declared with const. However it seems that 'signalEvent' is a callback function, if 'signal' is declared with const you might also need to cast function pointer(s).\n", errout.str());
+    }
+
     void switchRedundantAssignmentTest() {
         check("void foo()\n"
               "{\n"
@@ -4190,12 +4226,12 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f(char c) {\n"
-              "    printf(\"%i\", 1 + 1 ? 1 : 2);\n" // "1+1" is simplified away
+              "    printf(\"%i\", a + b ? 1 : 2);\n"
               "}",nullptr,false,false,false);
         ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for '+' and '?'.\n", errout.str());
 
         check("void f() {\n"
-              "    std::cout << x << 1 ? 2 : 3;\n"
+              "    std::cout << x << y ? 2 : 3;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for '<<' and '?'.\n", errout.str());
 
@@ -4224,6 +4260,21 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f(int x) { const char *p = x & 1 ? \"1\" : \"0\"; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() { x = a % b ? \"1\" : \"0\"; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) { return x & 1 ? '1' : '0'; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) { return x & 16 ? 1 : 0; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) { return x % 16 ? 1 : 0; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("enum {X,Y}; void f(int x) { return x & Y ? 1 : 0; }");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5648,6 +5699,42 @@ private:
               "    j = i;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
+
+        check("struct A { int x; int y; };"
+              "void use(int);\n"
+              "void test(A a) {\n"
+              "    int i = a.x;\n"
+              "    int j = a.x;\n"
+              "    use(j);\n"
+              "    if (i == j) {}\n"
+              "}");
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n",
+            errout.str());
+
+        check("struct A { int x; int y; };"
+              "void use(int);\n"
+              "void test(A a) {\n"
+              "    int i = a.x;\n"
+              "    int j = a.x;\n"
+              "    use(j);\n"
+              "    if (i == a.x) {}\n"
+              "}");
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n",
+            errout.str());
+
+        check("struct A { int x; int y; };"
+              "void use(int);\n"
+              "void test(A a) {\n"
+              "    int i = a.x;\n"
+              "    int j = a.x;\n"
+              "    use(i);\n"
+              "    if (j == a.x) {}\n"
+              "}");
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n",
+            errout.str());
 
         // Issue #8612
         check("struct P\n"
@@ -8730,18 +8817,18 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void constArgument() {
+    void knownArgument() {
         check("void g(int);\n"
               "void f(int x) {\n"
               "   g((x & 0x01) >> 7);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Argument '(x&0x01)>>7' to function g is always 0\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Argument '(x&0x01)>>7' to function g is always 0. It does not matter what value 'x' has.\n", errout.str());
 
         check("void g(int);\n"
               "void f(int x) {\n"
               "   g((int)((x & 0x01) >> 7));\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Argument '(int)((x&0x01)>>7)' to function g is always 0\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Argument '(int)((x&0x01)>>7)' to function g is always 0. It does not matter what value 'x' has.\n", errout.str());
 
         check("void g(int);\n"
               "void f(int x) {\n"
@@ -8795,6 +8882,18 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("char *yytext;\n"
+              "void re_init_scanner() {\n"
+              "  int size = 256;\n"
+              "  yytext = xmalloc(size * sizeof *yytext);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(char *c) {\n"
+              "    if (*c == '+' && (operand || !isalnum(*c))) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // #8986
         check("void f(int);\n"
               "void g() {\n"
@@ -8825,6 +8924,40 @@ private:
               "   ASSERT((int)((x & 0x01) >> 7));\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9905 - expression that does not use integer calculation at all
+        check("void foo() {\n"
+              "    const std::string heading = \"Interval\";\n"
+              "    std::cout << std::setw(heading.length());\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #9909 - struct member with known value
+        check("struct LongStack {\n"
+              "    int maxsize;\n"
+              "};\n"
+              "\n"
+              "void growLongStack(LongStack* self) {\n"
+              "    self->maxsize = 32;\n"
+              "    dostuff(self->maxsize * sizeof(intptr_t));\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void knownArgumentHiddenVariableExpression() {
+        // #9914 - variable expression is explicitly hidden
+        check("void f(int x) {\n"
+              "    dostuff(x && false);\n"
+              "    dostuff(false && x);\n"
+              "    dostuff(x || true);\n"
+              "    dostuff(true || x);\n"
+              "    dostuff(x * 0);\n"
+              "    dostuff(0 * x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Argument 'false&&x' to function dostuff is always 0. Constant literal calculation disable/hide variable expression 'x'.\n"
+                      "[test.cpp:5]: (style) Argument 'true||x' to function dostuff is always 1. Constant literal calculation disable/hide variable expression 'x'.\n"
+                      "[test.cpp:6]: (style) Argument 'x*0' to function dostuff is always 0. Constant literal calculation disable/hide variable expression 'x'.\n"
+                      "[test.cpp:7]: (style) Argument '0*x' to function dostuff is always 0. Constant literal calculation disable/hide variable expression 'x'.\n", errout.str());
     }
 
     void checkComparePointers() {

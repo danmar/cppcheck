@@ -99,6 +99,8 @@ private:
         TEST_CASE(nullpointer56); // #9701
         TEST_CASE(nullpointer57); // #9751
         TEST_CASE(nullpointer58); // #9807
+        TEST_CASE(nullpointer59); // #9897
+        TEST_CASE(nullpointer60); // #9842
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1858,6 +1860,34 @@ private:
               "    struct myStruct* sPtr = NULL;\n"
               "    int sz = (!*(&sPtr) || ((*(&sPtr))->entry[0] > 15)) ?\n"
               "        sizeof((*(&sPtr))->entry[0]) : 123456789;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer59() {
+        check("struct Box {\n"
+              "    struct Box* prev;\n"
+              "    struct Box* next;\n"
+              "};\n"
+              "void foo(Box** pfreeboxes) {\n"
+              "    Box *b = *pfreeboxes;\n"
+              "    *pfreeboxes = b->next;\n"
+              "    if( *pfreeboxes )\n"
+              "        (*pfreeboxes)->prev = nullptr;\n"
+              "    b->next = nullptr;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer60() {
+        check("void f(){\n"
+              "    char uuid[128];\n"
+              "    char *s1;\n"
+              "    memset(uuid, 0, sizeof(uuid));\n"
+              "    s1 = strchr(uuid, '=');\n"
+              "    s1 = s1 ? s1 + 1 : &uuid[5];\n"
+              "    if (!strcmp(\"00000000000000000000000000000000\", s1) )\n"
+              "        return;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

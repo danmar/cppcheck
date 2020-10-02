@@ -1710,12 +1710,12 @@ static void valueFlowGlobalStaticVar(TokenList *tokenList, const Settings *setti
     }
 }
 
-static void valueFlowForwardVariable(Token* const startToken,
-                                     const Token* const endToken,
-                                     const Variable* const var,
-                                     std::list<ValueFlow::Value> values,
-                                     TokenList* const tokenlist,
-                                     const Settings* const settings);
+static ForwardAnalyzer::Action valueFlowForwardVariable(Token* const startToken,
+        const Token* const endToken,
+        const Variable* const var,
+        std::list<ValueFlow::Value> values,
+        TokenList* const tokenlist,
+        const Settings* const settings);
 
 // Old deprecated version
 static void valueFlowForward(Token* startToken,
@@ -2033,8 +2033,11 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symbo
                        Token::Match(tok, "%oror%|&& %name% %oror%|&&|)")) {
                 vartok = tok->next();
                 num = 0;
-            } else if (Token::Match(tok, "[!?]") && Token::Match(tok->astOperand1(), "%name%")) {
+            } else if (Token::simpleMatch(tok, "!") && Token::Match(tok->astOperand1(), "%name%")) {
                 vartok = tok->astOperand1();
+                num = 0;
+            } else if (Token::simpleMatch(tok->astParent(), "?") && Token::Match(tok, "%name%")) {
+                vartok = tok;
                 num = 0;
             } else {
                 continue;
@@ -2046,7 +2049,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symbo
             if (varid == 0U || !var)
                 continue;
 
-            if (tok->str() == "?" && tok->isExpandedMacro()) {
+            if (Token::simpleMatch(tok->astParent(), "?") && tok->astParent()->isExpandedMacro()) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok, "variable " + var->name() + ", condition is defined in macro");
                 continue;
@@ -2193,42 +2196,13 @@ static bool evalAssignment(ValueFlow::Value &lhsValue, const std::string &assign
 }
 
 // Check if its an alias of the variable or is being aliased to this variable
-static bool isAliasOf(const Variable* var, const Token* tok, nonneg int varid, const ValueFlow::Value& val)
+static bool isAliasOf(const Variable * var, const Token *tok, nonneg int varid, const std::list<ValueFlow::Value>& values, bool* inconclusive = nullptr)
 {
     if (tok->varId() == varid)
         return false;
     if (tok->varId() == 0)
         return false;
-    if (isAliasOf(tok, varid))
-        return true;
-    if (var && !var->isPointer())
-        return false;
-    // Search through non value aliases
-
-    if (!val.isNonValue())
-        return false;
-    if (val.isInconclusive())
-        return false;
-    if (val.isLifetimeValue() && !val.isLocalLifetimeValue())
-        return false;
-    if (val.isLifetimeValue() && val.lifetimeKind != ValueFlow::Value::LifetimeKind::Address)
-        return false;
-    if (!Token::Match(val.tokvalue, ".|&|*|%var%"))
-        return false;
-    if (astHasVar(val.tokvalue, tok->varId()))
-        return true;
-
-    return false;
-}
-
-// Check if its an alias of the variable or is being aliased to this variable
-static bool isAliasOf(const Variable * var, const Token *tok, nonneg int varid, const std::list<ValueFlow::Value>& values)
-{
-    if (tok->varId() == varid)
-        return false;
-    if (tok->varId() == 0)
-        return false;
-    if (isAliasOf(tok, varid))
+    if (isAliasOf(tok, varid, inconclusive))
         return true;
     if (var && !var->isPointer())
         return false;
@@ -2328,7 +2302,7 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
 
     virtual bool match(const Token* tok) const = 0;
 
-    virtual bool isAlias(const Token* tok) const = 0;
+    virtual bool isAlias(const Token* tok, bool& inconclusive) const = 0;
 
     using ProgramState = std::unordered_map<nonneg int, ValueFlow::Value>;
 
@@ -2448,6 +2422,7 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
     virtual Action analyze(const Token* tok) const OVERRIDE {
         if (invalid())
             return Action::Invalid;
+        bool inconclusive = false;
         if (match(tok)) {
             const Token* parent = tok->astParent();
             if (astIsPointer(tok) && (Token::Match(parent, "*|[") || (parent && parent->originalName() == "->")) && getIndirect(tok) <= 0)
@@ -2479,8 +2454,12 @@ struct ValueFlowForwardAnalyzer : ForwardAnalyzer {
             }
             return Action::None;
 
-        } else if (isAlias(tok)) {
-            return isAliasModified(tok);
+        } else if (isAlias(tok, inconclusive)) {
+            Action a = isAliasModified(tok);
+            if (inconclusive && a.isModified())
+                return Action::Inconclusive;
+            else
+                return a;
         } else if (Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
             // bailout: global non-const variables
             if (isGlobal()) {
@@ -2568,7 +2547,7 @@ struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
         value.errorPath.emplace_back(tok, s);
     }
 
-    virtual bool isAlias(const Token* tok) const OVERRIDE {
+    virtual bool isAlias(const Token* tok, bool& inconclusive) const OVERRIDE {
         if (value.isLifetimeValue())
             return false;
         for (const auto& m: {
@@ -2579,7 +2558,7 @@ struct SingleValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
                 const Variable* var = p.second;
                 if (tok->varId() == varid)
                     return true;
-                if (isAliasOf(var, tok, varid, value))
+                if (isAliasOf(var, tok, varid, {value}, &inconclusive))
                     return true;
             }
         }
@@ -2697,28 +2676,31 @@ static std::vector<const Variable*> getAliasesFromValues(std::list<ValueFlow::Va
     return aliases;
 }
 
-static void valueFlowForwardVariable(Token* const startToken,
-                                     const Token* const endToken,
-                                     const Variable* const var,
-                                     std::list<ValueFlow::Value> values,
-                                     std::vector<const Variable*> aliases,
-                                     TokenList* const tokenlist,
-                                     const Settings* const settings)
+static ForwardAnalyzer::Action valueFlowForwardVariable(Token* const startToken,
+        const Token* const endToken,
+        const Variable* const var,
+        std::list<ValueFlow::Value> values,
+        std::vector<const Variable*> aliases,
+        TokenList* const tokenlist,
+        const Settings* const settings)
 {
+    ForwardAnalyzer::Action actions;
     for (ValueFlow::Value& v : values) {
         VariableForwardAnalyzer a(var, v, aliases, tokenlist);
-        valueFlowGenericForward(startToken, endToken, a, settings);
+        actions |= valueFlowGenericForward(startToken, endToken, a, settings);
     }
+    return actions;
 }
 
-static void valueFlowForwardVariable(Token* const startToken,
-                                     const Token* const endToken,
-                                     const Variable* const var,
-                                     std::list<ValueFlow::Value> values,
-                                     TokenList* const tokenlist,
-                                     const Settings* const settings)
+static ForwardAnalyzer::Action valueFlowForwardVariable(Token* const startToken,
+        const Token* const endToken,
+        const Variable* const var,
+        std::list<ValueFlow::Value> values,
+        TokenList* const tokenlist,
+        const Settings* const settings)
 {
-    valueFlowForwardVariable(startToken, endToken, var, std::move(values), getAliasesFromValues(values), tokenlist, settings);
+    return valueFlowForwardVariable(
+               startToken, endToken, var, std::move(values), getAliasesFromValues(values), tokenlist, settings);
 }
 
 // Old deprecated version
@@ -2805,17 +2787,19 @@ struct ExpressionForwardAnalyzer : SingleValueFlowForwardAnalyzer {
     }
 };
 
-static void valueFlowForwardExpression(Token* startToken,
-                                       const Token* endToken,
-                                       const Token* exprTok,
-                                       const std::list<ValueFlow::Value>& values,
-                                       const TokenList* const tokenlist,
-                                       const Settings* settings)
+static ForwardAnalyzer::Action valueFlowForwardExpression(Token* startToken,
+        const Token* endToken,
+        const Token* exprTok,
+        const std::list<ValueFlow::Value>& values,
+        const TokenList* const tokenlist,
+        const Settings* settings)
 {
+    ForwardAnalyzer::Action actions;
     for (const ValueFlow::Value& v : values) {
         ExpressionForwardAnalyzer a(exprTok, v, tokenlist);
-        valueFlowGenericForward(startToken, endToken, a, settings);
+        actions |= valueFlowGenericForward(startToken, endToken, a, settings);
     }
+    return actions;
 }
 
 static const Token* parseBinaryIntOp(const Token* expr, MathLib::bigint& known)
@@ -2879,23 +2863,18 @@ static const Token* solveExprValues(const Token* expr, std::list<ValueFlow::Valu
     return expr;
 }
 
-static void valueFlowForward(Token* startToken,
-                             const Token* endToken,
-                             const Token* exprTok,
-                             std::list<ValueFlow::Value> values,
-                             TokenList* const tokenlist,
-                             const Settings* settings)
+static ForwardAnalyzer::Action valueFlowForward(Token* startToken,
+        const Token* endToken,
+        const Token* exprTok,
+        std::list<ValueFlow::Value> values,
+        TokenList* const tokenlist,
+        const Settings* settings)
 {
     const Token* expr = solveExprValues(exprTok, values);
     if (expr->variable()) {
-        valueFlowForwardVariable(startToken,
-                                 endToken,
-                                 expr->variable(),
-                                 values,
-                                 tokenlist,
-                                 settings);
+        return valueFlowForwardVariable(startToken, endToken, expr->variable(), values, tokenlist, settings);
     } else {
-        valueFlowForwardExpression(startToken, endToken, expr, values, tokenlist, settings);
+        return valueFlowForwardExpression(startToken, endToken, expr, values, tokenlist, settings);
     }
 }
 
@@ -3293,8 +3272,32 @@ static void valueFlowLifetimeConstructor(Token *tok,
         ErrorLogger *errorLogger,
         const Settings *settings);
 
+static const Token* getEndOfVarScope(const Token* tok, const std::vector<const Variable*>& vars)
+{
+    const Token* endOfVarScope = nullptr;
+    for (const Variable* var : vars) {
+        if (var && var->isLocal())
+            endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
+        else if (!endOfVarScope)
+            endOfVarScope = tok->scope()->bodyEnd;
+    }
+    return endOfVarScope;
+}
+
 static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
+    // Forward lifetimes to constructed variable
+    if (Token::Match(tok->previous(), "%var% {")) {
+        std::list<ValueFlow::Value> values = tok->values();
+        values.remove_if(&isNotLifetimeValue);
+        valueFlowForward(nextAfterAstRightmostLeaf(tok),
+                         getEndOfVarScope(tok, {tok->variable()}),
+                         tok->previous(),
+                         values,
+                         tokenlist,
+                         settings);
+        return;
+    }
     Token *parent = tok->astParent();
     while (parent && (parent->isArithmeticalOp() || parent->str() == ","))
         parent = parent->astParent();
@@ -3311,13 +3314,7 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
 
         std::vector<const Variable*> vars = getLHSVariables(parent);
 
-        const Token* endOfVarScope = nullptr;
-        for (const Variable* var : vars) {
-            if (var && var->isLocal())
-                endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
-            else if (!endOfVarScope)
-                endOfVarScope = tok->scope()->bodyEnd;
-        }
+        const Token* endOfVarScope = getEndOfVarScope(tok, vars);
 
         // Only forward lifetime values
         std::list<ValueFlow::Value> values = parent->astOperand2()->values();
@@ -3427,8 +3424,6 @@ struct LifetimeStore {
 
     template <class Predicate>
     void byRef(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings, Predicate pred) const {
-        if (!settings->inconclusive && inconclusive)
-            return;
         if (!argtok)
             return;
         for (const LifetimeToken& lt : getLifetimeTokens(argtok)) {
@@ -3465,8 +3460,6 @@ struct LifetimeStore {
 
     template <class Predicate>
     void byVal(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings, Predicate pred) const {
-        if (!settings->inconclusive && inconclusive)
-            return;
         if (!argtok)
             return;
         if (argtok->values().empty()) {
@@ -3507,6 +3500,7 @@ struct LifetimeStore {
                 ValueFlow::Value value;
                 value.valueType = ValueFlow::Value::LIFETIME;
                 value.lifetimeScope = v.lifetimeScope;
+                value.path = v.path;
                 value.tokvalue = lt.token;
                 value.errorPath = std::move(er);
                 value.lifetimeKind = type;
@@ -3584,7 +3578,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
             LifetimeStore{argtok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::LifetimeKind::Object} .byRef(
                 tok->next(), tokenlist, errorLogger, settings);
         }
-    } else if (Token::Match(tok->tokAt(-2), "std :: make_tuple|tuple_cat|make_pair|make_reverse_iterator|next|prev|move")) {
+    } else if (Token::Match(tok->tokAt(-2), "std :: make_tuple|tuple_cat|make_pair|make_reverse_iterator|next|prev|move|bind")) {
         for (const Token *argtok : getArguments(tok)) {
             LifetimeStore{argtok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::LifetimeKind::Object} .byVal(
                 tok->next(), tokenlist, errorLogger, settings);
@@ -3612,7 +3606,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
         for (const Token* returnTok : returns) {
             if (returnTok == tok)
                 continue;
-            const Variable *returnVar = returnTok->variable();
+            const Variable *returnVar = getLifetimeVariable(returnTok);
             if (returnVar && returnVar->isArgument() && (returnVar->isConst() || !isVariableChanged(returnVar, settings, tokenlist->isCPP()))) {
                 LifetimeStore ls = LifetimeStore::fromFunctionArg(f, tok, returnVar, tokenlist, errorLogger);
                 ls.inconclusive = inconclusive;
@@ -3630,7 +3624,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
                 ls.inconclusive = inconclusive;
                 ls.errorPath = v.errorPath;
                 ls.errorPath.emplace_front(returnTok, "Return " + lifetimeType(returnTok, &v) + ".");
-                if (var->isReference() || var->isRValueReference()) {
+                if (!v.isArgumentLifetimeValue() && (var->isReference() || var->isRValueReference())) {
                     ls.byRef(tok->next(), tokenlist, errorLogger, settings);
                 } else if (v.isArgumentLifetimeValue()) {
                     ls.byVal(tok->next(), tokenlist, errorLogger, settings);
@@ -3646,10 +3640,21 @@ static void valueFlowLifetimeConstructor(Token* tok,
         ErrorLogger* errorLogger,
         const Settings* settings)
 {
-    if (!t)
-        return;
     if (!Token::Match(tok, "(|{"))
         return;
+    if (!t) {
+        if (tok->valueType() && tok->valueType()->type != ValueType::RECORD)
+            return;
+        // If the type is unknown then assume it captures by value in the
+        // constructor, but make each lifetime inconclusive
+        std::vector<const Token*> args = getArguments(tok);
+        for (const Token *argtok : args) {
+            LifetimeStore ls{argtok, "Passed to initializer list.", ValueFlow::Value::LifetimeKind::Object};
+            ls.inconclusive = true;
+            ls.byVal(tok, tokenlist, errorLogger, settings);
+        }
+        return;
+    }
     const Scope* scope = t->classScope;
     if (!scope)
         return;
@@ -3709,8 +3714,8 @@ static void valueFlowLifetimeConstructor(Token* tok, TokenList* tokenlist, Error
                 ls.byVal(tok, tokenlist, errorLogger, settings);
             }
         }
-    } else if (const Type* t = Token::typeOf(tok->previous())) {
-        valueFlowLifetimeConstructor(tok, t, tokenlist, errorLogger, settings);
+    } else {
+        valueFlowLifetimeConstructor(tok, Token::typeOf(tok->previous()), tokenlist, errorLogger, settings);
     }
 }
 
@@ -3844,6 +3849,8 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             }
 
             for (const Token * tok2 = lam.bodyTok; tok2 != lam.bodyTok->link(); tok2 = tok2->next()) {
+                if (!tok2->variable())
+                    continue;
                 captureVariable(tok2, lam.implicitCapture, isImplicitCapturingVariable);
             }
 
@@ -4096,9 +4103,9 @@ static void valueFlowForwardAssign(Token * const               tok,
     if (!var->isPointer() && !var->isSmartPointer())
         values.remove_if(std::mem_fn(&ValueFlow::Value::isTokValue));
     if (tok->astParent()) {
-        for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it) {
-            const std::string info = "Assignment '" + tok->astParent()->expressionString() + "', assigned value is " + it->infoString();
-            it->errorPath.emplace_back(tok, info);
+        for (ValueFlow::Value& value : values) {
+            const std::string info = "Assignment '" + tok->astParent()->expressionString() + "', assigned value is " + value.infoString();
+            value.errorPath.emplace_back(tok, info);
         }
     }
 
@@ -4424,6 +4431,31 @@ struct ValueFlowConditionHandler {
                     }
                 }
 
+                {
+                    const Token *tok2 = tok;
+                    std::string op;
+                    bool mixedOperators = false;
+                    while (tok2->astParent()) {
+                        const Token *parent = tok2->astParent();
+                        if (Token::Match(parent, "%oror%|&&")) {
+                            if (op.empty()) {
+                                op = parent->str() == "&&" ? "&&" : "||";
+                            } else if (op != parent->str()) {
+                                mixedOperators = true;
+                                break;
+                            }
+                        }
+                        if (parent->str()=="!") {
+                            op = (op == "&&" ? "||" : "&&");
+                        }
+                        tok2 = parent;
+                    }
+
+                    if (mixedOperators) {
+                        continue;
+                    }
+                }
+
                 if (top && Token::Match(top->previous(), "if|while (") && !top->previous()->isExpandedMacro()) {
                     // does condition reassign variable?
                     if (tok != top->astOperand2() && Token::Match(top->astOperand2(), "%oror%|&&") &&
@@ -4485,9 +4517,10 @@ struct ValueFlowConditionHandler {
                     if (Token::simpleMatch(top->link(), ") {")) {
                         Token *after = top->link()->linkAt(1);
                         const Token* unknownFunction = nullptr;
-                        bool dead_if = isReturnScope(after, &settings->library, &unknownFunction) ||
-                                       (tok->astParent() && Token::simpleMatch(tok->astParent()->previous(), "while (") &&
-                                        !isBreakScope(after));
+                        const bool isWhile =
+                            tok->astParent() && Token::simpleMatch(tok->astParent()->previous(), "while (");
+                        bool dead_if = (!isBreakScope(after) && isWhile) ||
+                                       (isReturnScope(after, &settings->library, &unknownFunction) && !isWhile);
                         bool dead_else = false;
 
                         if (!dead_if && unknownFunction) {
@@ -4549,14 +4582,9 @@ static void valueFlowAfterCondition(TokenList *tokenlist,
                                     const Settings *settings)
 {
     ValueFlowConditionHandler handler;
-    handler.forward = [&](Token* start,
-                          const Token* stop,
-                          const Token* vartok,
-                          const std::list<ValueFlow::Value>& values,
-    bool) {
-        valueFlowForward(start->next(), stop, vartok, values, tokenlist, settings);
-        std::vector<const Variable*> vars = getExprVariables(vartok, tokenlist, symboldatabase, settings);
-        return isVariablesChanged(start, stop, 0, vars, settings, tokenlist->isCPP());
+    handler.forward =
+    [&](Token* start, const Token* stop, const Token* vartok, const std::list<ValueFlow::Value>& values, bool) {
+        return valueFlowForward(start->next(), stop, vartok, values, tokenlist, settings).isModified();
     };
     handler.parse = [&](const Token *tok) {
         ValueFlowConditionHandler::Condition cond;
@@ -5013,7 +5041,7 @@ struct MultiValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
         }
     }
 
-    virtual bool isAlias(const Token* tok) const OVERRIDE {
+    virtual bool isAlias(const Token* tok, bool& inconclusive) const OVERRIDE {
         std::list<ValueFlow::Value> vals;
         std::transform(values.begin(), values.end(), std::back_inserter(vals), SelectMapValues{});
 
@@ -5022,7 +5050,7 @@ struct MultiValueFlowForwardAnalyzer : ValueFlowForwardAnalyzer {
             const Variable* var = p.second;
             if (tok->varId() == varid)
                 return true;
-            if (isAliasOf(var, tok, varid, vals))
+            if (isAliasOf(var, tok, varid, vals, &inconclusive))
                 return true;
         }
         return false;
@@ -5495,6 +5523,12 @@ static void valueFlowSubFunction(TokenList* tokenlist, SymbolDatabase* symboldat
                 // passing value(s) to function
                 std::list<ValueFlow::Value> argvalues(getFunctionArgumentValues(argtok));
 
+                // Remove non-local lifetimes
+                argvalues.remove_if([](const ValueFlow::Value& v) {
+                    if (v.isLifetimeValue())
+                        return !v.isLocalLifetimeValue() && !v.isSubFunctionLifetimeValue();
+                    return false;
+                });
                 // Don't forward container sizes for now since programmemory can't evaluate conditions
                 argvalues.remove_if(std::mem_fn(&ValueFlow::Value::isContainerSizeValue));
 
@@ -5887,19 +5921,26 @@ struct ContainerVariableForwardAnalyzer : VariableForwardAnalyzer {
     }
 };
 
-static void valueFlowContainerForward(Token *tok, const Token* endToken, const Variable* var, ValueFlow::Value value, TokenList *tokenlist)
+static ForwardAnalyzer::Action valueFlowContainerForward(Token* tok,
+        const Token* endToken,
+        const Variable* var,
+        ValueFlow::Value value,
+        TokenList* tokenlist)
 {
     ContainerVariableForwardAnalyzer a(var, value, getAliasesFromValues({value}), tokenlist);
-    valueFlowGenericForward(tok, endToken, a, tokenlist->getSettings());
+    return valueFlowGenericForward(tok, endToken, a, tokenlist->getSettings());
 }
-static void valueFlowContainerForward(Token *tok, const Variable* var, ValueFlow::Value value, TokenList *tokenlist)
+static ForwardAnalyzer::Action valueFlowContainerForward(Token* tok,
+        const Variable* var,
+        ValueFlow::Value value,
+        TokenList* tokenlist)
 {
     const Token * endOfVarScope = nullptr;
     if (var->isLocal() || var->isArgument())
         endOfVarScope = var->scope()->bodyEnd;
     if (!endOfVarScope)
         endOfVarScope = tok->scope()->bodyEnd;
-    valueFlowContainerForward(tok, endOfVarScope, var, std::move(value), tokenlist);
+    return valueFlowContainerForward(tok, endOfVarScope, var, std::move(value), tokenlist);
 }
 
 static bool isContainerSizeChanged(const Token *tok, int depth)
@@ -6048,14 +6089,9 @@ static void valueFlowIteratorAfterCondition(TokenList *tokenlist,
         const Settings *settings)
 {
     ValueFlowConditionHandler handler;
-    handler.forward = [&](Token* start,
-                          const Token* stop,
-                          const Token* vartok,
-                          const std::list<ValueFlow::Value>& values,
-    bool) {
-        valueFlowForward(start->next(), stop, vartok, values, tokenlist, settings);
-        std::vector<const Variable*> vars = getExprVariables(vartok, tokenlist, symboldatabase, settings);
-        return isVariablesChanged(start, stop, 0, vars, settings, tokenlist->isCPP());
+    handler.forward =
+    [&](Token* start, const Token* stop, const Token* vartok, const std::list<ValueFlow::Value>& values, bool) {
+        return valueFlowForward(start->next(), stop, vartok, values, tokenlist, settings).isModified();
     };
     handler.parse = [&](const Token *tok) {
         ValueFlowConditionHandler::Condition cond;
@@ -6230,8 +6266,7 @@ static void valueFlowContainerAfterCondition(TokenList *tokenlist,
         const Variable* var = vartok->variable();
         if (!var)
             return false;
-        valueFlowContainerForward(start->next(), stop, var, values.front(), tokenlist);
-        return isContainerSizeChanged(var->declarationId(), start, stop);
+        return valueFlowContainerForward(start->next(), stop, var, values.front(), tokenlist).isModified();
     };
     handler.parse = [&](const Token *tok) {
         ValueFlowConditionHandler::Condition cond;

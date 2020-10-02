@@ -69,8 +69,8 @@ Preprocessor::Preprocessor(Settings& settings, ErrorLogger *errorLogger) : mSett
 
 Preprocessor::~Preprocessor()
 {
-    for (std::map<std::string, simplecpp::TokenList *>::iterator it = mTokenLists.begin(); it != mTokenLists.end(); ++it)
-        delete it->second;
+    for (std::pair<const std::string, simplecpp::TokenList *>& tokenList : mTokenLists)
+        delete tokenList.second;
 }
 
 namespace {
@@ -83,15 +83,17 @@ namespace {
 
 static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std::list<Suppressions::Suppression> &inlineSuppressions, std::list<BadInlineSuppression> *bad)
 {
+    const std::string cppchecksuppress("cppcheck-suppress");
+
     const std::string &comment = tok->str();
-    if (comment.size() < 19)
+    if (comment.size() < cppchecksuppress.size())
         return false;
     const std::string::size_type pos1 = comment.find_first_not_of("/* \t");
     if (pos1 == std::string::npos)
         return false;
-    if (pos1 + 17 >= comment.size())
+    if (pos1 + cppchecksuppress.size() >= comment.size())
         return false;
-    if (comment.compare(pos1, 17, "cppcheck-suppress") != 0)
+    if (comment.substr(pos1, cppchecksuppress.size()) != cppchecksuppress)
         return false;
 
     // skip spaces after "cppcheck-suppress"
@@ -655,9 +657,9 @@ bool Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<
 
 void Preprocessor::removeComments()
 {
-    for (std::map<std::string, simplecpp::TokenList*>::iterator it = mTokenLists.begin(); it != mTokenLists.end(); ++it) {
-        if (it->second)
-            it->second->removeComments();
+    for (std::pair<const std::string, simplecpp::TokenList*>& tokenList : mTokenLists) {
+        if (tokenList.second)
+            tokenList.second->removeComments();
     }
 }
 
@@ -980,8 +982,8 @@ unsigned int Preprocessor::calculateChecksum(const simplecpp::TokenList &tokens1
 void Preprocessor::simplifyPragmaAsm(simplecpp::TokenList *tokenList)
 {
     Preprocessor::simplifyPragmaAsmPrivate(tokenList);
-    for (std::map<std::string, simplecpp::TokenList *>::iterator it = mTokenLists.begin(); it != mTokenLists.end(); ++it) {
-        Preprocessor::simplifyPragmaAsmPrivate(it->second);
+    for (std::pair<const std::string, simplecpp::TokenList *>& list : mTokenLists) {
+        Preprocessor::simplifyPragmaAsmPrivate(list.second);
     }
 }
 

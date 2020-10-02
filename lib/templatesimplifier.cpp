@@ -1127,7 +1127,7 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
                         (from->strAt(1) == ">" || (from->previous()->isName() &&
                                                    typeParameterNames.find(from->strAt(-1)) == typeParameterNames.end())))
                         ++indentlevel;
-                    else if (from->str() == ">" && (links.empty() || links.top()->str() == "<"))
+                    else if (from->str() == ">" && (links.empty() || links.top()->str() == "<" || indentlevel))
                         --indentlevel;
                     auto entry = typeParameterNames.find(from->str());
                     if (entry != typeParameterNames.end() && entry->second < instantiationArgs.size()) {
@@ -2937,6 +2937,9 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
     bool instantiated = false;
 
     for (const TokenAndName &instantiation : mTemplateInstantiations) {
+        // skip deleted instantiations
+        if (!instantiation.token())
+            continue;
         if (numberOfTemplateInstantiations != mTemplateInstantiations.size()) {
             numberOfTemplateInstantiations = mTemplateInstantiations.size();
             ++recursiveCount;

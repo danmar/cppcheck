@@ -146,22 +146,22 @@ void CheckIO::checkFileUsage()
                 indent++;
             else if (tok->str() == "}") {
                 indent--;
-                for (std::map<int, Filepointer>::iterator i = filepointers.begin(); i != filepointers.end(); ++i) {
-                    if (indent < i->second.mode_indent) {
-                        i->second.mode_indent = 0;
-                        i->second.mode = UNKNOWN_OM;
+                for (std::pair<const int, Filepointer>& filepointer : filepointers) {
+                    if (indent < filepointer.second.mode_indent) {
+                        filepointer.second.mode_indent = 0;
+                        filepointer.second.mode = UNKNOWN_OM;
                     }
-                    if (indent < i->second.op_indent) {
-                        i->second.op_indent = 0;
-                        i->second.lastOperation = Filepointer::UNKNOWN_OP;
+                    if (indent < filepointer.second.op_indent) {
+                        filepointer.second.op_indent = 0;
+                        filepointer.second.lastOperation = Filepointer::UNKNOWN_OP;
                     }
                 }
             } else if (tok->str() == "return" || tok->str() == "continue" || tok->str() == "break" || mSettings->library.isnoreturn(tok)) { // Reset upon return, continue or break
-                for (std::map<int, Filepointer>::iterator i = filepointers.begin(); i != filepointers.end(); ++i) {
-                    i->second.mode_indent = 0;
-                    i->second.mode = UNKNOWN_OM;
-                    i->second.op_indent = 0;
-                    i->second.lastOperation = Filepointer::UNKNOWN_OP;
+                for (std::pair<const int, Filepointer>& filepointer : filepointers) {
+                    filepointer.second.mode_indent = 0;
+                    filepointer.second.mode = UNKNOWN_OM;
+                    filepointer.second.op_indent = 0;
+                    filepointer.second.lastOperation = Filepointer::UNKNOWN_OP;
                 }
             } else if (Token::Match(tok, "%var% =") &&
                        (tok->strAt(2) != "fopen" && tok->strAt(2) != "freopen" && tok->strAt(2) != "tmpfile" &&
@@ -236,13 +236,13 @@ void CheckIO::checkFileUsage()
                     const Token* const end2 = tok->linkAt(1);
                     if (scope->functionOf && scope->functionOf->isClassOrStruct() && !scope->function->isStatic() && ((tok->strAt(-1) != "::" && tok->strAt(-1) != ".") || tok->strAt(-2) == "this")) {
                         if (!tok->function() || (tok->function()->nestedIn && tok->function()->nestedIn->isClassOrStruct())) {
-                            for (std::map<int, Filepointer>::iterator i = filepointers.begin(); i != filepointers.end(); ++i) {
-                                const Variable* var = symbolDatabase->getVariableFromVarId(i->first);
+                            for (std::pair<const int, Filepointer>& filepointer : filepointers) {
+                                const Variable* var = symbolDatabase->getVariableFromVarId(filepointer.first);
                                 if (!var || !(var->isLocal() || var->isGlobal() || var->isStatic())) {
-                                    i->second.mode = UNKNOWN_OM;
-                                    i->second.mode_indent = 0;
-                                    i->second.op_indent = indent;
-                                    i->second.lastOperation = Filepointer::UNKNOWN_OP;
+                                    filepointer.second.mode = UNKNOWN_OM;
+                                    filepointer.second.mode_indent = 0;
+                                    filepointer.second.op_indent = indent;
+                                    filepointer.second.lastOperation = Filepointer::UNKNOWN_OP;
                                 }
                             }
                             continue;
@@ -326,10 +326,10 @@ void CheckIO::checkFileUsage()
                 }
             }
         }
-        for (std::map<int, Filepointer>::iterator i = filepointers.begin(); i != filepointers.end(); ++i) {
-            i->second.op_indent = 0;
-            i->second.mode = UNKNOWN_OM;
-            i->second.lastOperation = Filepointer::UNKNOWN_OP;
+        for (std::pair<const int, Filepointer>& filepointer : filepointers) {
+            filepointer.second.op_indent = 0;
+            filepointer.second.mode = UNKNOWN_OM;
+            filepointer.second.lastOperation = Filepointer::UNKNOWN_OP;
         }
     }
 }

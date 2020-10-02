@@ -151,7 +151,13 @@ ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenLis
     // Format callstack
     for (const ErrorPathItem& e: errorPath) {
         const Token *tok = e.first;
-        const std::string &info = e.second;
+        std::string info = e.second;
+
+        if (info.compare(0,8,"$symbol:") == 0 && info.find("\n") < info.size()) {
+            const std::string::size_type pos = info.find("\n");
+            const std::string &symbolName = info.substr(8, pos - 8);
+            info = replaceStr(info.substr(pos+1), "$symbol", symbolName);
+        }
 
         // --errorlist can provide null values here
         if (tok)

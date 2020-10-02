@@ -2162,7 +2162,7 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token * tok)
             const Token * tok2 = var->declEndToken();
             if (Token::Match(tok2, "; %varid% =", var->declarationId()))
                 tok2 = tok2->tokAt(2);
-            if (Token::simpleMatch(tok2, "=") && tok2->astOperand2()) {
+            if (Token::simpleMatch(tok2, "=") && Token::Match(tok2->astOperand2(), "!!=")) {
                 std::pair<const Token*, const Token*> r = typeDecl(tok2->astOperand2());
                 if (r.first)
                     return r;

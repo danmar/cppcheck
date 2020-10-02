@@ -80,8 +80,8 @@ QString ErrorItem::toString() const
     str += GuiSeverity::toString(severity) +"\n";
     str += summary + "\n";
     str += message + "\n";
-    for (int i = 0; i < errorPath.size(); i++) {
-        str += "  " + errorPath[i].file + ": " + QString::number(errorPath[i].line) + "\n";
+    for (const QErrorPathItem& i : errorPath) {
+        str += "  " + i.file + ": " + QString::number(i.line) + "\n";
     }
     return str;
 }

@@ -103,7 +103,7 @@ void ResultsView::setAddedFunctionContracts(const QStringList &addedContracts)
 {
     mUI.mListAddedContracts->clear();
     mUI.mListAddedContracts->addItems(addedContracts);
-    for (const QString f: addedContracts) {
+    for (const QString& f: addedContracts) {
         auto res = mUI.mListMissingContracts->findItems(f, Qt::MatchExactly);
         if (!res.empty())
             delete res.front();
@@ -114,7 +114,7 @@ void ResultsView::setAddedVariableContracts(const QStringList &added)
 {
     mUI.mListAddedVariables->clear();
     mUI.mListAddedVariables->addItems(added);
-    for (const QString var: added) {
+    for (const QString& var: added) {
         for (auto item: mUI.mListMissingVariables->findItems(var, Qt::MatchExactly))
             delete item;
         mVariableContracts.insert(var);

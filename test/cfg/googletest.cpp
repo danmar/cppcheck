@@ -36,3 +36,11 @@ TEST(ASSERT, ASSERT)
 
     free(a);
 }
+
+// Avoid syntax error: https://sourceforge.net/p/cppcheck/discussion/general/thread/6ccc7283e2/
+TEST(test_cppcheck, cppcheck)
+{
+    TestStruct<int> it;
+    ASSERT_THROW(it.operator->(), std::out_of_range);
+}
+

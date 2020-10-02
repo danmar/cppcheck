@@ -136,13 +136,13 @@ void ThreadHandler::setThreadCount(const int count)
 
 void ThreadHandler::removeThreads()
 {
-    for (int i = 0; i < mThreads.size(); i++) {
-        mThreads[i]->terminate();
-        disconnect(mThreads[i], &CheckThread::done,
+    for (CheckThread* thread : mThreads) {
+        thread->terminate();
+        disconnect(thread, &CheckThread::done,
                    this, &ThreadHandler::threadDone);
-        disconnect(mThreads[i], &CheckThread::fileChecked,
+        disconnect(thread, &CheckThread::fileChecked,
                    &mResults, &ThreadResult::fileChecked);
-        delete mThreads[i];
+        delete thread;
     }
 
     mThreads.clear();
@@ -175,8 +175,8 @@ void ThreadHandler::stop()
 {
     mCheckStartTime = QDateTime();
     mAnalyseWholeProgram = false;
-    for (int i = 0; i < mThreads.size(); i++) {
-        mThreads[i]->stop();
+    for (CheckThread* thread : mThreads) {
+        thread->stop();
     }
 }
 

@@ -94,6 +94,7 @@ private:
         TEST_CASE(varid61); // #4988 inline function
         TEST_CASE(varid62);
         TEST_CASE(varid63);
+        TEST_CASE(varid64); // #9928 - extern const char (*x[256])
         TEST_CASE(varid_for_1);
         TEST_CASE(varid_for_2);
         TEST_CASE(varid_cpp_keywords_in_c_code);
@@ -1144,6 +1145,12 @@ private:
     void varid63() {
         const char code[] = "void f(boost::optional<int> const& x) {}";
         const char expected[] = "1: void f ( boost :: optional < int > const & x@1 ) { }\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varid64() {
+        const char code[] = "extern const char (*x[256]);";
+        const char expected[] = "1: extern const char ( * x@1 [ 256 ] ) ;\n";
         ASSERT_EQUALS(expected, tokenize(code));
     }
 
