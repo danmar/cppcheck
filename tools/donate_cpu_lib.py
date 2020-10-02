@@ -456,6 +456,7 @@ def get_libraries():
     library_includes = {'boost': ['<boost/'],
                        'cairo': ['<cairo.h>'],
                        'cppunit': ['<cppunit/'],
+                       'icu': ['<unicode/'], ['"unicode/'],
                        'googletest': ['<gtest/gtest.h>'],
                        'gtk': ['<gtk/gtk.h>', '<glib.h>', '<glib/', '<gnome.h>'],
                        'kde': ['<KGlobal>', '<KApplication>', '<KDE/'],
