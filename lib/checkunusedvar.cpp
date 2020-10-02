@@ -1231,6 +1231,10 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 if (op1Var->nameToken()->isAttributeUnused())
                     continue;
 
+                // Avoid FP for union..
+                if (op1Var->type() && op1Var->type()->isUnionType())
+                    continue;
+
                 // Bailout for unknown template classes, we have no idea what side effects such assignments have
                 if (mTokenizer->isCPP() &&
                     op1Var->isClass() &&

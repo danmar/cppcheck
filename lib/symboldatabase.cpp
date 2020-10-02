@@ -2818,6 +2818,26 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
     }
 }
 
+bool Type::isClassType() const
+{
+    return classScope && classScope->type == Scope::ScopeType::eClass;
+}
+
+bool Type::isEnumType() const
+{
+    return classScope && classScope->type == Scope::ScopeType::eEnum;
+}
+
+bool Type::isStructType() const
+{
+    return classScope && classScope->type == Scope::ScopeType::eStruct;
+}
+
+bool Type::isUnionType() const
+{
+    return classScope && classScope->type == Scope::ScopeType::eUnion;
+}
+
 const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
 {
     // goto initial '{'
