@@ -166,10 +166,20 @@ static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSe
         }
         relativeFilename = Path::simplifyPath(relativeFilename);
 
+        // special handling when suppressing { warnings for backwards compatibility
+        const bool thisAndNextLine = tok->previous &&
+                                     tok->previous->previous &&
+                                     tok->next &&
+                                     !sameline(tok->previous->previous, tok->previous) &&
+                                     tok->location.line + 1 == tok->next->location.line &&
+                                     tok->location.fileIndex == tok->next->location.fileIndex &&
+                                     tok->previous->str() == "{";
+
         // Add the suppressions.
         for (Suppressions::Suppression &suppr : inlineSuppressions) {
             suppr.fileName = relativeFilename;
             suppr.lineNumber = tok->location.line;
+            suppr.thisAndNextLine = thisAndNextLine;
             mSettings.nomsg.addSuppression(suppr);
         }
     }

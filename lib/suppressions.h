@@ -53,7 +53,7 @@ public:
         Suppression(const Suppression &other) {
             *this = other;
         }
-        Suppression(const std::string &id, const std::string &file, int line=NO_LINE) : errorId(id), fileName(file), lineNumber(line), hash(0), matched(false) {}
+        Suppression(const std::string &id, const std::string &file, int line=NO_LINE) : errorId(id), fileName(file), lineNumber(line), hash(0), thisAndNextLine(false), matched(false) {}
 
         Suppression & operator=(const Suppression &other) {
             errorId = other.errorId;
@@ -61,6 +61,7 @@ public:
             lineNumber = other.lineNumber;
             symbolName = other.symbolName;
             hash = other.hash;
+            thisAndNextLine = other.thisAndNextLine;
             matched = other.matched;
             return *this;
         }
@@ -76,6 +77,8 @@ public:
                 return symbolName < other.symbolName;
             if (hash != other.hash)
                 return hash < other.hash;
+            if (thisAndNextLine != other.thisAndNextLine)
+                return thisAndNextLine;
             return false;
         }
 
@@ -101,6 +104,7 @@ public:
         int lineNumber;
         std::string symbolName;
         std::size_t hash;
+        bool thisAndNextLine; // Special case for backwards compatibility: { // cppcheck-suppress something
         bool matched;
 
         enum { NO_LINE = -1 };
