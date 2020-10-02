@@ -49,7 +49,7 @@ public:
     };
 
     struct CPPCHECKLIB Suppression {
-        Suppression() : lineNumber(NO_LINE), hash(0), matched(false) {}
+        Suppression() : lineNumber(NO_LINE), hash(0), thisAndNextLine(false), matched(false) {}
         Suppression(const Suppression &other) {
             *this = other;
         }
