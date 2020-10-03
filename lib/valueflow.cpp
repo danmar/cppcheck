@@ -3417,8 +3417,7 @@ struct LifetimeStore {
     static void forEach(const std::vector<const Token*>& argtoks,
                         const std::string& message,
                         ValueFlow::Value::LifetimeKind type,
-                        F f)
-    {
+                        F f) {
         std::map<const Token*, Context> forwardToks;
         for (const Token* arg : argtoks) {
             LifetimeStore ls{arg, message, type};
@@ -3459,8 +3458,7 @@ struct LifetimeStore {
     }
 
     template <class Predicate>
-    bool byRef(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings, Predicate pred) const
-    {
+    bool byRef(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings, Predicate pred) const {
         if (!argtok)
             return false;
         bool update = false;
@@ -3493,14 +3491,14 @@ struct LifetimeStore {
         return update;
     }
 
-    bool byRef(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings) const
-    {
-        return byRef(tok, tokenlist, errorLogger, settings, [](const Token*) { return true; });
+    bool byRef(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings) const {
+        return byRef(tok, tokenlist, errorLogger, settings, [](const Token*) {
+            return true;
+        });
     }
 
     template <class Predicate>
-    bool byVal(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings, Predicate pred) const
-    {
+    bool byVal(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings, Predicate pred) const {
         if (!argtok)
             return false;
         bool update = false;
@@ -3559,9 +3557,10 @@ struct LifetimeStore {
         return update;
     }
 
-    bool byVal(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings) const
-    {
-        return byVal(tok, tokenlist, errorLogger, settings, [](const Token*) { return true; });
+    bool byVal(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings) const {
+        return byVal(tok, tokenlist, errorLogger, settings, [](const Token*) {
+            return true;
+        });
     }
 
     template <class Predicate>
@@ -3594,10 +3593,9 @@ struct LifetimeStore {
         });
     }
 
-  private:
+private:
     Context* mContext;
-    void forwardLifetime(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings) const
-    {
+    void forwardLifetime(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings) const {
         if (mContext) {
             mContext->tok = tok;
             mContext->tokenlist = tokenlist;
@@ -3711,10 +3709,10 @@ static void valueFlowLifetimeConstructor(Token* tok,
         // constructor, but make each lifetime inconclusive
         std::vector<const Token*> args = getArguments(tok);
         LifetimeStore::forEach(
-            args, "Passed to initializer list.", ValueFlow::Value::LifetimeKind::Object, [&](LifetimeStore& ls) {
-                ls.inconclusive = true;
-                ls.byVal(tok, tokenlist, errorLogger, settings);
-            });
+        args, "Passed to initializer list.", ValueFlow::Value::LifetimeKind::Object, [&](LifetimeStore& ls) {
+            ls.inconclusive = true;
+            ls.byVal(tok, tokenlist, errorLogger, settings);
+        });
         return;
     }
     const Scope* scope = t->classScope;
@@ -3727,17 +3725,17 @@ static void valueFlowLifetimeConstructor(Token* tok,
         LifetimeStore::forEach(args,
                                "Passed to constructor of '" + t->name() + "'.",
                                ValueFlow::Value::LifetimeKind::Object,
-                               [&](const LifetimeStore& ls) {
-                                   if (it == scope->varlist.end())
-                                       return;
-                                   const Variable& var = *it;
-                                   if (var.isReference() || var.isRValueReference()) {
-                                       ls.byRef(tok, tokenlist, errorLogger, settings);
-                                   } else {
-                                       ls.byVal(tok, tokenlist, errorLogger, settings);
-                                   }
-                                   it++;
-                               });
+        [&](const LifetimeStore& ls) {
+            if (it == scope->varlist.end())
+                return;
+            const Variable& var = *it;
+            if (var.isReference() || var.isRValueReference()) {
+                ls.byRef(tok, tokenlist, errorLogger, settings);
+            } else {
+                ls.byVal(tok, tokenlist, errorLogger, settings);
+            }
+            it++;
+        });
     }
 }
 
@@ -3768,14 +3766,16 @@ static void valueFlowLifetimeConstructor(Token* tok, TokenList* tokenlist, Error
         // Assume range constructor if passed a pair of iterators
         if (astIsContainer(parent) && args.size() == 2 && astIsIterator(args[0]) && astIsIterator(args[1])) {
             LifetimeStore::forEach(
-                args, "Passed to initializer list.", ValueFlow::Value::LifetimeKind::Object, [&](const LifetimeStore& ls) {
-                    ls.byDerefCopy(tok, tokenlist, errorLogger, settings);
-                });
+            args, "Passed to initializer list.", ValueFlow::Value::LifetimeKind::Object, [&](const LifetimeStore& ls) {
+                ls.byDerefCopy(tok, tokenlist, errorLogger, settings);
+            });
         } else {
             LifetimeStore::forEach(args,
                                    "Passed to initializer list.",
                                    ValueFlow::Value::LifetimeKind::Object,
-                                   [&](const LifetimeStore& ls) { ls.byVal(tok, tokenlist, errorLogger, settings); });
+            [&](const LifetimeStore& ls) {
+                ls.byVal(tok, tokenlist, errorLogger, settings);
+            });
         }
     } else {
         valueFlowLifetimeConstructor(tok, Token::typeOf(tok->previous()), tokenlist, errorLogger, settings);
