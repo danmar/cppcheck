@@ -7,7 +7,7 @@
 # - ensure cfg files etc are included (win_installer/cppcheck.wxs)
 #
 # self check:
-# ./cppcheck -D__CPPCHECK__ --library=cppcheck-lib --enable=style --inconclusive --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h cli gui/*.cpp lib
+# ./cppcheck -D__CPPCHECK__ --library=cppcheck-lib --enable=style --inconclusive --inline-suppr --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h cli gui/*.cpp lib
 #
 # Update translations
 #   lupdate gui.pro
