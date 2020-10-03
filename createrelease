@@ -6,7 +6,7 @@
 # - ensure latest build was successful
 # - ensure cfg files etc are included (win_installer/cppcheck.wxs)
 #
-# self check:
+# self check, fix critical issues:
 # ./cppcheck -D__CPPCHECK__ --library=cppcheck-lib --enable=style --inconclusive --inline-suppr --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h cli gui/*.cpp lib
 #
 # Update translations
@@ -68,6 +68,10 @@
 # run daca with new release
 # 1. edit tools/donate-cpu-server.py. Update OLD_VERSION and VERSION
 # 2. scp tools/donate-cpu-server.py danielmarjamaki@cppcheck1.osuosl.org:/var/daca@home/
+#
+# self check, fix stylistic issues:
+# ./cppcheck -D__CPPCHECK__ --library=cppcheck-lib --enable=style --inconclusive --inline-suppr --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h cli gui/*.cpp lib
+
 
 # Tag to use
 tag=$1
