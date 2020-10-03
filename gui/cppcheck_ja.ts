@@ -22,7 +22,7 @@
         <location filename="about.ui" line="81"/>
         <source>Copyright © 2007-%1 Cppcheck team.</source>
         <oldsource>Copyright © 2007-2019 Cppcheck team.</oldsource>
-        <translation type="unfinished">Copyright © 2007-2019 Cppcheck team.</translation>
+        <translation>Copyright © 2007-%1 Cppcheck team.</translation>
     </message>
     <message>
         <location filename="about.ui" line="91"/>
@@ -50,12 +50,13 @@ of the GNU General Public License version 3</source>
 &lt;li&gt;picojson&lt;/li&gt;
 &lt;li&gt;pcre&lt;/li&gt;
 &lt;li&gt;qt&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</oldsource>
-        <translation type="unfinished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;
 &lt;p&gt;私達は以下のライブラリを使用しています。ここで感謝の意を表明します。&lt;/p&gt;&lt;ul&gt;
-&lt;li&gt;tinyxml2&lt;/li&gt;
-&lt;li&gt;picojson&lt;/li&gt;
 &lt;li&gt;pcre&lt;/li&gt;
-&lt;li&gt;qt&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+&lt;li&gt;picojson&lt;/li&gt;
+&lt;li&gt;qt&lt;/li&gt;
+&lt;li&gt;tinyxml2&lt;/li&gt;
+&lt;li&gt;z3&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
 </context>
 <context>
@@ -174,27 +175,27 @@ Parameters: -l(line) (file)</translation>
     <message>
         <location filename="helpdialog.ui" line="14"/>
         <source>Cppcheck GUI help</source>
-        <translation type="unfinished"></translation>
+        <translation>Cppcheck GUI ヘルプ</translation>
     </message>
     <message>
         <location filename="helpdialog.ui" line="34"/>
         <source>Contents</source>
-        <translation type="unfinished"></translation>
+        <translation>目次</translation>
     </message>
     <message>
         <location filename="helpdialog.ui" line="44"/>
         <source>Index</source>
-        <translation type="unfinished"></translation>
+        <translation>インデックス</translation>
     </message>
     <message>
         <location filename="helpdialog.cpp" line="52"/>
         <source>Helpfile &apos;%1&apos; was not found</source>
-        <translation type="unfinished"></translation>
+        <translation>ヘルプファイル &apos;%1&apos; が見つかりません</translation>
     </message>
     <message>
         <location filename="helpdialog.cpp" line="54"/>
         <source>Cppcheck</source>
-        <translation type="unfinished">Cppcheck</translation>
+        <translation>Cppcheck</translation>
     </message>
 </context>
 <context>
@@ -893,7 +894,7 @@ Parameters: -l(line) (file)</translation>
     <message>
         <location filename="mainwindow.ui" line="336"/>
         <source>Ctrl+Q</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+Q</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="366"/>
@@ -973,7 +974,7 @@ Parameters: -l(line) (file)</translation>
     <message>
         <location filename="mainwindow.ui" line="465"/>
         <source>Ctrl+Shift+O</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+Shift+O</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="474"/>
@@ -988,7 +989,7 @@ Parameters: -l(line) (file)</translation>
     <message>
         <location filename="mainwindow.ui" line="482"/>
         <source>Ctrl+Shift+N</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+Shift+N</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="487"/>
@@ -1705,7 +1706,7 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="415"/>
         <source>This is a workfolder that Cppcheck will use for various purposes.</source>
-        <translation type="unfinished"></translation>
+        <translation>Cppcheckがさまざまな目的で使用するワークディレクトリ</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="432"/>
@@ -1720,22 +1721,22 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="633"/>
         <source>If tags are added, you will be able to right click on warnings and set one of these tags. You can manually categorize warnings.</source>
-        <translation type="unfinished"></translation>
+        <translation>タグが追加された場合、警告上で右クリックしてそれらのタグの中の一つを設定できます。警告を分類できます。</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="643"/>
         <source>Exclude source files</source>
-        <translation type="unfinished"></translation>
+        <translation>除外するソースファイル</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="654"/>
         <source>Exclude folder...</source>
-        <translation type="unfinished"></translation>
+        <translation>フォルダで除外...</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="661"/>
         <source>Exclude file...</source>
-        <translation type="unfinished"></translation>
+        <translation>ファイルで除外...</translation>
     </message>
     <message>
         <source>Clang</source>
@@ -1817,27 +1818,27 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="448"/>
         <source>Clang (experimental)</source>
-        <translation type="unfinished"></translation>
+        <translation>Clang (実験的)</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="464"/>
         <source>Normal analysis -- Avoid false positives.</source>
-        <translation type="unfinished"></translation>
+        <translation>通常解析--偽陽性を避ける</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="474"/>
         <source>Bug hunting -- Generates mostly noise. The goal is to be &quot;soundy&quot; and detect most bugs.</source>
-        <translation type="unfinished"></translation>
+        <translation>バグハンティング-- 不必要な指摘を含む。これはノイズが多くても全てのバグを検出する目的で使用します。</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="481"/>
         <source>If you want to design your classes to be as flexible and robust as possible then the public interface must be very robust. Cppcheck will asumme that arguments can take *any* value.</source>
-        <translation type="unfinished"></translation>
+        <translation>可能な限りクラスが柔軟であり堅牢であることを望む場合、公開されたインターフェースが非常に堅牢です。Cppcheckは引数があらゆる値をとりうると仮定します。</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="556"/>
         <source>Max recursion in template instantiation</source>
-        <translation type="unfinished"></translation>
+        <translation>テンプレートインスタンス化の最大再帰回数</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="605"/>
@@ -1852,7 +1853,7 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="617"/>
         <source>Filepaths in warnings will be relative to this path</source>
-        <translation type="unfinished"></translation>
+        <translation>警告中のファイルパスはこのパスからの相対パスになります</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="627"/>
@@ -2010,17 +2011,17 @@ Options:
     <message>
         <location filename="projectfiledialog.cpp" line="743"/>
         <source>Source files</source>
-        <translation type="unfinished"></translation>
+        <translation>ソースファイル</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="744"/>
         <source>All files</source>
-        <translation type="unfinished"></translation>
+        <translation>全ファイル</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="745"/>
         <source>Exclude file</source>
-        <translation type="unfinished"></translation>
+        <translation>除外ファイル</translation>
     </message>
     <message>
         <source>Add Suppression</source>
@@ -2366,7 +2367,7 @@ Options:
     <message>
         <location filename="resultstree.cpp" line="687"/>
         <source>Suppress</source>
-        <translation type="unfinished"></translation>
+        <translation>抑制</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="703"/>
@@ -2497,17 +2498,17 @@ Please select the directory where file is located.</source>
     <message>
         <location filename="resultsview.ui" line="158"/>
         <source>Functions</source>
-        <translation type="unfinished">関数</translation>
+        <translation>関数</translation>
     </message>
     <message>
         <location filename="resultsview.ui" line="196"/>
         <source>Variables</source>
-        <translation type="unfinished"></translation>
+        <translation>変数</translation>
     </message>
     <message>
         <location filename="resultsview.ui" line="217"/>
         <source>Only show variable names that contain text:</source>
-        <translation type="unfinished"></translation>
+        <translation>指定テキストを含む変数名のみ表示:</translation>
     </message>
     <message>
         <source>Contracts</source>
@@ -2867,7 +2868,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="settingsdialog.cpp" line="217"/>
         <source>The executable file &quot;%1&quot; is not available</source>
-        <translation type="unfinished"></translation>
+        <translation>実行ファイル &quot;%1&quot; が利用できません</translation>
     </message>
     <message>
         <location filename="settingsdialog.cpp" line="228"/>
@@ -3203,22 +3204,22 @@ The user interface language has been reset to English. Open the Preferences-dial
     <message>
         <location filename="variablecontractsdialog.ui" line="14"/>
         <source>Dialog</source>
-        <translation type="unfinished"></translation>
+        <translation>ダイアログ</translation>
     </message>
     <message>
         <location filename="variablecontractsdialog.ui" line="20"/>
         <source>You can specify min and max value for the variable here</source>
-        <translation type="unfinished"></translation>
+        <translation>ここで変数の最小値と最大値を指定します。</translation>
     </message>
     <message>
         <location filename="variablecontractsdialog.ui" line="29"/>
         <source>Min</source>
-        <translation type="unfinished"></translation>
+        <translation>最小値</translation>
     </message>
     <message>
         <location filename="variablecontractsdialog.ui" line="39"/>
         <source>Max</source>
-        <translation type="unfinished"></translation>
+        <translation>最大値</translation>
     </message>
 </context>
 <context>
