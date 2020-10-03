@@ -1,0 +1,48 @@
+#include <stdio.h>
+#include <string.h>
+
+int main() {
+   char s1[100];
+   char s2[20];// to store the word
+   printf("Enter the string:");
+   scanf("%[^\n]s",s1);// reading multiple words from scanf
+   printf("Enter the word:");
+   fflush(stdin);
+   scanf("%s",s2); // single word
+   printf("string is:  %s",s1);
+   printf("\nword is :  %s",s2);
+   int n = 0;
+   int m = 0;
+   int times = 0;// store the  frequency of the word
+   int len = strlen(s2);     // contains the length of search string
+   while(s1[n] != '\0') {
+
+      if(s1[n] == s2[m]) {     // if first character of search string matches keep on searching
+
+         while(s1[n] == s2[m]  && s1[n] !='\0') {
+            n++;
+            m++;
+         }
+         // if the sequence of characters matching with the length of searched string
+         if(m == len && (s1[n] == ' ' || s1[n] == '\0')) { //we find our search string.
+             times++;//count the frequency of word
+         }
+      } else {            // if first character of search string DOES NOT match
+         while(s1[n] != ' ') {        // Skip to next word
+            n++;
+            if(s1[n] == '\0')
+            break;
+         }
+      }
+
+      n++;
+      m=0;  // reset the counter to start from first character of the search string.
+   }
+
+   if(times > 0) {
+      printf("\n'%s' appears %d time(s)\n", s2, times);
+   } else {
+      printf("\n'%s' does not appear in the sentence.\n", s2);
+   }
+   return 0;
+}
