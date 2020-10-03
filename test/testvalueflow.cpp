@@ -4911,7 +4911,7 @@ private:
                "      {&b, &b, &b, &b, &b, &b, &b, &b, &b, &b, &b}}}};\n"
                "}\n";
         valueOfTok(code, "x");
-        
+
         code = "namespace {\n"
                "struct a {\n"
                "  a(...) {}\n"
