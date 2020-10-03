@@ -46,7 +46,7 @@ class ErrorMessage;
 class Tokenizer;
 
 /** Use WRONG_DATA in checkers to mark conditions that check that data is correct */
-#define WRONG_DATA(COND, TOK)  (wrongData((TOK), (COND), #COND))
+#define WRONG_DATA(COND, TOK)  ((COND) && wrongData((TOK), #COND))
 
 /// @addtogroup Core
 /// @{
@@ -158,7 +158,7 @@ protected:
      * Use WRONG_DATA in checkers when you check for wrong data. That
      * will call this method
      */
-    bool wrongData(const Token *tok, bool condition, const char *str);
+    bool wrongData(const Token *tok, const char *str);
 
     /** disabled assignment operator and copy constructor */
     void operator=(const Check &) = delete;
