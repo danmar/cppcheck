@@ -474,7 +474,7 @@ def get_libraries():
                        'openmp': ['<omp.h>'],
                        'openssl': ['<openssl/'],
                        'python': ['<Python.h>', '"Python.h"'],
-                       'qt': ['<QApplication>', '<QList>', '<QKeyEvent>', '<qlist.h>', '<QObject>', '<QFlags>','<QFileDialog>', '<QTest>', '<QMessageBox>', '<QMetaType>', '<QString>', '<qobjectdefs.h>', '<qstring.h>', '<QWidget>', '<QtWidgets>', '<QtGui'],
+                       'qt': ['<QApplication>', '<QList>', '<QKeyEvent>', '<qlist.h>', '<QObject>', '<QFlags>', '<QFileDialog>', '<QTest>', '<QMessageBox>', '<QMetaType>', '<QString>', '<qobjectdefs.h>', '<qstring.h>', '<QWidget>', '<QtWidgets>', '<QtGui'],
                        'ruby': ['<ruby.h>', '<ruby/', '"ruby.h"'],
                        'sdl': ['<SDL.h>', '<SDL/SDL.h>', '<SDL2/SDL.h>'],
                        'sqlite3': ['<sqlite3.h>', '"sqlite3.h"'],
