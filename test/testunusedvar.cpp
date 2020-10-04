@@ -286,6 +286,28 @@ private:
             "}");
         ASSERT_EQUALS("[test.cpp:6]: (style) Unused variable: e\n", errout.str());
 
+        functionVariableUsage(
+            "class F {\n"
+            "public:\n"
+            "   F() : x(0) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   F f;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Unused variable: f\n", errout.str());
+
+        functionVariableUsage(
+            "class F {\n"
+            "public:\n"
+            "   F() : x{0} {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   F f;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Unused variable: f\n", errout.str());
+
         // non-empty constructor
         functionVariableUsage(
             "class F {\n"
@@ -318,6 +340,25 @@ private:
             "}");
         ASSERT_EQUALS("", errout.str());
 
+        // side-effect variable in initialization list
+        functionVariableUsage(
+            "class F {\n"
+            "public:\n"
+            "   F() {\n"
+            "       int i =0;\n"
+            "       (void) i;"
+            "   }\n"
+            "};\n"
+            "class G {\n"
+            "public:\n"
+            "   G() : f(F()) {}\n"
+            "   F f;"
+            "};\n"
+            "void f() {\n"
+            "   G g;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
         // unknown variable type
         functionVariableUsage(
             "class H {\n"
@@ -329,7 +370,18 @@ private:
             "}");
         ASSERT_EQUALS("", errout.str());
 
-
+        // unknown variable type in initialization list
+        functionVariableUsage(
+            "class H {\n"
+            "public:\n"
+            "   H() : x{0}, u(1) {}\n"
+            "   int x;"
+            "   unknown_type u;\n"
+            "};\n"
+            "void f() {\n"
+            "   H h;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // #5355 - False positive: Variable is not assigned a value.
@@ -4033,7 +4085,7 @@ private:
                               "    std::cout << \"test\" << std::endl;\n"
                               "    delete fred;\n"
                               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'fred' is allocated memory that is never used.\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"

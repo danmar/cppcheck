@@ -23,6 +23,7 @@
 
 #include "check.h"
 #include "config.h"
+#include "symboldatabase.h"
 
 #include <map>
 #include <string>
@@ -70,6 +71,7 @@ public:
 
 private:
     bool isRecordTypeWithoutSideEffects(const Type* type);
+    bool isVariableWithoutSideEffects(const Variable& var);
     bool isEmptyType(const Type* type);
 
     // Error messages..
