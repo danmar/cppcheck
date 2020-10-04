@@ -1506,7 +1506,7 @@ static ExprEngine::ValuePtr getValueRangeFromValueType(const ValueType *valueTyp
             value = getValueRangeFromValueType(&vt, data);
         } else
             return ExprEngine::ValuePtr();
-        auto bufferSize = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 0, ~0U);
+        auto bufferSize = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 0, ExprEngine::ArrayValue::MAXSIZE);
         return std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), bufferSize, value, false, false, false);
     }
     return getValueRangeFromValueType(data.getNewSymbolName(), valueType, *data.settings);

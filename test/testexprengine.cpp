@@ -328,13 +328,13 @@ private:
         Settings settings;
         LOAD_LIB_2(settings.library, "std.cfg");
 
-        ASSERT_EQUALS("1:26: $3=0:ffffffff\n"
+        ASSERT_EQUALS("1:26: $3=0:2147483647\n"
                       "1:26: $2=-128:127\n"
                       "1:27: 0:{ s=($4,[$3],[:]=$2)}\n",
                       trackExecution("void foo() { std::string s; }", &settings));
 
 
-        ASSERT_EQUALS("1:52: $3=0:ffffffff\n"
+        ASSERT_EQUALS("1:52: $3=0:2147483647\n"
                       "1:52: $2=-128:127\n"
                       "1:66: 0:{ s=($4,[$3],[:]=$2)}\n",
                       trackExecution("std::string getName(int); void foo() { std::string s = getName(1); }", &settings));
