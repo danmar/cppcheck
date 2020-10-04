@@ -955,8 +955,10 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == ReturnStmt) {
         Token *tok1 = addtoken(tokenList, "return");
-        if (!children.empty())
+        if (!children.empty()) {
+            children[0]->setValueType(tok1);
             tok1->astOperand1(children[0]->createTokens(tokenList));
+        }
         return tok1;
     }
     if (nodeType == StringLiteral)

@@ -84,7 +84,7 @@ def test2():
 
 def test_ast_calculations():
     check_ast('int x = 5; int y = (x + 4) * 2;')
-    todo_check_ast('int dostuff(int x) { return x ? 3 : 5; }')
+    check_ast('long long dostuff(int x) { return x ? 3 : 5; }')
 
 def test_ast_control_flow():
     check_ast('void foo(int x) { if (x > 5){} }')
