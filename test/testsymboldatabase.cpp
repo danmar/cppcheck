@@ -6665,7 +6665,7 @@ private:
 
     void executableScopeWithUnknownFunction() {
         GET_SYMBOL_DB("class Fred {\n"
-                      "    void foo(const std::string & a = "");\n"
+                      "    void foo(const std::string & a = \"\");\n"
                       "};\n"
                       "Fred::foo(const std::string & b) { }\n");
 

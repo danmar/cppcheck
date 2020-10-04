@@ -42,12 +42,54 @@ def check_symbol_database(code):
     assert get_debug_section('### Symbol database', stdout1) == get_debug_section('### Symbol database', stdout2)
 
 
+def check_ast(code):
+    # Only compare syntax trees if clang is found in PATH
+    try:
+        subprocess.call(['clang', '--version'])
+    except OSError:
+        return
+
+    testfile = 'test.cpp'
+    with open(testfile, 'w+t') as f:
+        f.write(code)
+    ret1, stdout1, stderr1 = cppcheck(['--clang', '--debug', '-v', testfile])
+    ret2, stdout2, stderr2 = cppcheck(['--debug', '-v', testfile])
+    os.remove(testfile)
+    assert get_debug_section('##AST', stdout1) == get_debug_section('##AST', stdout2)
+
+
+def todo_check_ast(code):
+    # Only compare syntax trees if clang is found in PATH
+    try:
+        subprocess.call(['clang', '--version'])
+    except OSError:
+        return
+
+    testfile = 'test.cpp'
+    with open(testfile, 'w+t') as f:
+        f.write(code)
+    ret1, stdout1, stderr1 = cppcheck(['--clang', '--debug', '-v', testfile])
+    ret2, stdout2, stderr2 = cppcheck(['--debug', '-v', testfile])
+    os.remove(testfile)
+    assert get_debug_section('##AST', stdout1) != get_debug_section('##AST', stdout2)
+
+
+
 def test1():
     check_symbol_database('int main(){return 0;}')
 
 def test2():
     code = 'struct Foo { void f(); }; void Foo::f() {}'
     check_symbol_database(code)
+
+def test_ast_calculations():
+    check_ast('int x = 5; int y = (x + 4) * 2;')
+    todo_check_ast('int dostuff(int x) { return x ? 3 : 5; }')
+
+def test_ast_control_flow():
+    check_ast('void foo(int x) { if (x > 5){} }')
+    check_ast('int dostuff() { for (int x = 0; x < 10; x++); }')
+    todo_check_ast('void foo(int x) { switch (x) {case 1: break; } }')
 
 
 

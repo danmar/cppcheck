@@ -7579,7 +7579,7 @@ private:
 
         ASSERT_EQUALS("a0>bc/d:?", testAst("(a>0) ? (b/(c)) : d;"));
         ASSERT_EQUALS("abc/+d+", testAst("a + (b/(c)) + d;"));
-        ASSERT_EQUALS("f( x1024x/0:?", testAst("void f() { x ? 1024 / x : 0; }"));
+        ASSERT_EQUALS("x1024x/0:?", testAst("void f() { x ? 1024 / x : 0; }"));
 
         ASSERT_EQUALS("absizeofd(ef.+(=", testAst("a = b(sizeof(c d) + e.f)"));
 
@@ -7623,11 +7623,11 @@ private:
 
         ASSERT_EQUALS("catch...(", testAst("try {} catch (...) {}"));
 
-        ASSERT_EQUALS("FooBar(", testAst("void Foo(Bar&);"));
-        ASSERT_EQUALS("FooBar(", testAst("void Foo(Bar&&);"));
+        ASSERT_EQUALS("", testAst("void Foo(Bar&);"));
+        ASSERT_EQUALS("", testAst("void Foo(Bar&&);"));
 
-        ASSERT_EQUALS("FooBarb&(", testAst("void Foo(Bar& b);"));
-        ASSERT_EQUALS("FooBarb&&(", testAst("void Foo(Bar&& b);"));
+        ASSERT_EQUALS("Barb&", testAst("void Foo(Bar& b);"));
+        ASSERT_EQUALS("Barb&&", testAst("void Foo(Bar&& b);"));
 
         ASSERT_EQUALS("DerivedDerived::(", testAst("Derived::~Derived() {}"));
 
@@ -7720,7 +7720,7 @@ private:
         ASSERT_EQUALS("a::new=", testAst("a = new (b) ::X;"));
         ASSERT_EQUALS("aA1(new(bB2(new(,", testAst("a(new A(1)), b(new B(2))"));
         ASSERT_EQUALS("Fred10[new", testAst(";new Fred[10];"));
-        ASSERT_EQUALS("f( adelete", testAst("void f() { delete a; }"));
+        ASSERT_EQUALS("adelete", testAst("void f() { delete a; }"));
 
         // invalid code (libreoffice), don't hang
         // #define SlideSorterViewShell
@@ -7788,7 +7788,7 @@ private:
         // Type{data}()
         ASSERT_EQUALS("ab{(=", testAst("a=b{}();"));
         ASSERT_EQUALS("abc{((=", testAst("a=b(c{}());"));
-        ASSERT_EQUALS("f( xNULL!=0(x(:?", testAst("void f() { {} ((x != NULL) ? (void)0 : x()); }"));
+        ASSERT_EQUALS("xNULL!=0(x(:?", testAst("void f() { {} ((x != NULL) ? (void)0 : x()); }"));
 
         // ({..})
         ASSERT_EQUALS("a{+d+ bc+", testAst("a+({b+c;})+d"));
@@ -7824,7 +7824,7 @@ private:
         ASSERT_EQUALS("a0{,( \'\'abc12:?,", testAst("a(0, {{\'\', (abc) ? 1 : 2}});"));
 
         // struct initialization hang
-        ASSERT_EQUALS("sbar.1{,{(={= fcmd( forfieldfield++;;(",
+        ASSERT_EQUALS("sbar.1{,{(={= forfieldfield++;;(",
                       testAst("struct S s = {.bar = (struct foo) { 1, { } } };\n"
                               "void f(struct cmd *) { for (; field; field++) {} }"));
 
@@ -7864,8 +7864,8 @@ private:
         // #9127
         const char code1[] = "using uno::Ref;\n"
                              "Ref<X> r;\n"
-                             "int x(0);";
-        ASSERT_EQUALS("unoRef:: x0(", testAst(code1));
+                             "int var(0);";
+        ASSERT_EQUALS("unoRef:: var0(", testAst(code1));
 
         ASSERT_EQUALS("vary=", testAst("std::string var = y;"));
     }
@@ -7897,10 +7897,10 @@ private:
         ASSERT_EQUALS("1f2(+3+", testAst("1+f(2)+3"));
         ASSERT_EQUALS("1f23,(+4+", testAst("1+f(2,3)+4"));
         ASSERT_EQUALS("1f2a&,(+", testAst("1+f(2,&a)"));
-        ASSERT_EQUALS("fargv[(", testAst("int f(char argv[]);"));
-        ASSERT_EQUALS("fchar(", testAst("extern unsigned f(const char *);"));
-        ASSERT_EQUALS("fcharformat*...,(", testAst("extern void f(const char *format, ...);"));
-        ASSERT_EQUALS("for_each_commit_graftint((void,(", testAst("extern int for_each_commit_graft(int (*)(int*), void *);"));
+        ASSERT_EQUALS("argv[", testAst("int f(char argv[]);"));
+        ASSERT_EQUALS("", testAst("extern unsigned f(const char *);"));
+        ASSERT_EQUALS("charformat*...,", testAst("extern void f(const char *format, ...);"));
+        ASSERT_EQUALS("int((void,", testAst("extern int for_each_commit_graft(int (*)(int*), void *);"));
         ASSERT_EQUALS("for;;(", testAst("for (;;) {}"));
         ASSERT_EQUALS("xsizeofvoid(=", testAst("x=sizeof(void*)"));
         ASSERT_EQUALS("abc{d{,{(=", testAst("a = b({ c{}, d{} });"));
@@ -7918,7 +7918,7 @@ private:
 
         // This two unit tests were added to avoid a crash. The actual correct AST result for non-executable code has not been determined so far.
         ASSERT_EQUALS("Cpublica::b:::", testAst("class C : public ::a::b<bool> { };"));
-        ASSERT_EQUALS("AB: f( abc+=", testAst("struct A : public B<C*> { void f() { a=b+c; } };"));
+        ASSERT_EQUALS("AB: abc+=", testAst("struct A : public B<C*> { void f() { a=b+c; } };"));
 
         ASSERT_EQUALS("xfts(=", testAst("; auto x = f(ts...);"));
     }
@@ -8011,7 +8011,7 @@ private:
 
         // #9662
         ASSERT_EQUALS("b{[{ stdunique_ptr::0nullptrnullptr:?{", testAst("auto b{[] { std::unique_ptr<void *>{0 ? nullptr : nullptr}; }};"));
-        ASSERT_EQUALS("a( b{[=", testAst("void a() { [b = [] { ; }] {}; }"));
+        ASSERT_EQUALS("b{[=", testAst("void a() { [b = [] { ; }] {}; }"));
 
     }
 
