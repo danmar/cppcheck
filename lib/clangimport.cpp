@@ -558,8 +558,9 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     if (nodeType == CallExpr)
         return createTokensCall(tokenList);
     if (nodeType == CaseStmt) {
-        addtoken(tokenList, "case");
-        children[0]->createTokens(tokenList);
+        Token *caseToken = addtoken(tokenList, "case");
+        Token *exprToken = children[0]->createTokens(tokenList);
+        caseToken->astOperand1(exprToken);
         addtoken(tokenList, ":");
         children.back()->createTokens(tokenList);
         return nullptr;
@@ -604,7 +605,7 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         return nullptr;
     }
     if (nodeType == ConstantExpr)
-        return children[0]->createTokens(tokenList);
+        return children.back()->createTokens(tokenList);
     if (nodeType == ContinueStmt)
         return addtoken(tokenList, "continue");
     if (nodeType == CStyleCastExpr) {
