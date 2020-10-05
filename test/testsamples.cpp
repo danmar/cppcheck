@@ -84,6 +84,7 @@ private:
                 exec.check(7, argv);
                 std::string expected_filename = Path::getPathFromFilename(i->first) + "out.txt";
                 std::ifstream ifs(expected_filename);
+                // TODO: this contains stray \n at the start of each line when the out.txt files have CRLF
                 std::string expected((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
                 std::string actual = GET_REDIRECT_ERROUT;
                 // We need some uniformization to make this work on Unix and Windows
