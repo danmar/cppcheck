@@ -5788,7 +5788,7 @@ static bool isContainerSizeChangedByFunction(const Token *tok, int depth = 20)
     if (!ftok)
         return false; // not a function => variable not changed
     const Function * fun = ftok->function();
-    if (fun) {
+    if (fun && !fun->hasVirtualSpecifier()) {
         const Variable *arg = fun->getArgumentVar(narg);
         if (arg) {
             if (!arg->isReference() && !addressOf)
