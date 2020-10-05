@@ -127,6 +127,7 @@ private:
         TEST_CASE(extendedLifetime);
 
         TEST_CASE(danglingReference);
+        TEST_CASE(danglingTempReference);
 
         // global namespace
         TEST_CASE(testglobalnamespace);
@@ -1745,7 +1746,7 @@ private:
               "    const auto& str_cref2 = g(std::string(\"hello\"));\n"
               "    std::cout << str_cref2 << std::endl;\n"
               "}\n");
-        ASSERT_EQUALS("error", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1] -> [test.cpp:2] -> [test.cpp:5] -> [test.cpp:6]: (error) Using reference to dangling temporary.\n", errout.str());
 
         // Lifetime extended
         check("std::string g(const std::string& str_cref) {\n"
@@ -2859,6 +2860,12 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3] -> [test.cpp:5]: (error) Reference to temporary returned.\n",
                       errout.str());
+
+        check("const std::string& getState() {\n"
+              "    static const std::string& state = \"\";\n"
+              "    return state;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void invalidLifetime() {
