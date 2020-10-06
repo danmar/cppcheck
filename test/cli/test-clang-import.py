@@ -75,12 +75,15 @@ def todo_check_ast(code):
 
 
 
-def test1():
+def test_symbol_database_1():
     check_symbol_database('int main(){return 0;}')
 
-def test2():
+def test_symbol_database_2():
     code = 'struct Foo { void f(); }; void Foo::f() {}'
     check_symbol_database(code)
+
+def test_symbol_database_3():
+    check_symbol_database('struct Fred { int a; }; int b; void f(int c, int d) { int e; }')
 
 def test_ast_calculations():
     check_ast('int x = 5; int y = (x + 4) * 2;')

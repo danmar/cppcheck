@@ -22,6 +22,7 @@
 #include "tokenize.h"
 #include "utils.h"
 
+#include <algorithm>
 #include <memory>
 #include <vector>
 #include <iostream>
@@ -1158,7 +1159,8 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
 
 void clangimport::AstNode::createTokensForCXXRecord(TokenList *tokenList)
 {
-    Token *classToken = addtoken(tokenList, "class");
+    bool isStruct = (std::find(mExtTokens.begin(), mExtTokens.end(), "struct") != mExtTokens.end());
+    Token *classToken = addtoken(tokenList, isStruct ? "struct" : "class");
     const std::string className = mExtTokens[mExtTokens.size() - 2] + getTemplateParameters();
     /*Token *nameToken =*/ addtoken(tokenList, className);
     std::vector<AstNodePtr> children2;
@@ -1173,7 +1175,7 @@ void clangimport::AstNode::createTokensForCXXRecord(TokenList *tokenList)
         addtoken(tokenList, ";");
         return;
     }
-    Scope *scope = createScope(tokenList, Scope::ScopeType::eClass, children2, classToken);
+    Scope *scope = createScope(tokenList, isStruct ? Scope::ScopeType::eStruct : Scope::ScopeType::eClass, children2, classToken);
     scope->className = className;
     mData->mSymbolDatabase->typeList.push_back(Type(classToken, scope, classToken->scope()));
     scope->definedType = &mData->mSymbolDatabase->typeList.back();
@@ -1198,8 +1200,7 @@ Token * clangimport::AstNode::createTokensVarDecl(TokenList *tokenList)
     }
     Token *vartok1 = addtoken(tokenList, name);
     Scope *scope = const_cast<Scope *>(tokenList->back()->scope());
-    const AccessControl accessControl = (scope->type == Scope::ScopeType::eGlobal) ? (AccessControl::Global) : (AccessControl::Local);
-    scope->varlist.push_back(Variable(vartok1, type, startToken, 0, accessControl, nullptr, scope));
+    scope->varlist.push_back(Variable(vartok1, type, startToken, 0, scope->defaultAccess(), nullptr, scope));
     mData->varDecl(addr, vartok1, &scope->varlist.back());
     if (mExtTokens.back() == "cinit" && !children.empty()) {
         Token *eq = addtoken(tokenList, "=");

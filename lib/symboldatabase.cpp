@@ -1856,7 +1856,12 @@ Variable::Variable(const Token *name_, const std::string &clangType, const Token
       mScope(scope_),
       mValueType(nullptr)
 {
-    if (start && start->str() == "static")
+    if (!mTypeStartToken && mTypeEndToken) {
+        mTypeStartToken = mTypeEndToken;
+        while (Token::Match(mTypeStartToken->previous(), "%type%|*|&"))
+            mTypeStartToken = mTypeStartToken->previous();
+    }
+    if (Token::simpleMatch(mTypeStartToken, "static"))
         setFlag(fIsStatic, true);
 
     if (endsWith(clangType, " &", 2))
