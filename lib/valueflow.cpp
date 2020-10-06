@@ -2998,7 +2998,9 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, bool escape, Valu
             } else if (Token::simpleMatch(var->declEndToken(), "=")) {
                 errorPath.emplace_back(var->declEndToken(), "Assigned to reference.");
                 const Token *vartok = var->declEndToken()->astOperand2();
-                if (vartok == tok || (!escape && var->isConst() && isTemporary(true, vartok, nullptr, true)))
+                const bool temporary = isTemporary(true, vartok, nullptr, true);
+                const bool nonlocal = var->isStatic() || var->isGlobal();
+                if (vartok == tok || (nonlocal && temporary) || (!escape && var->isConst() && temporary))
                     return {{tok, true, std::move(errorPath)}};
                 if (vartok)
                     return getLifetimeTokens(vartok, escape, std::move(errorPath), depth - 1);
