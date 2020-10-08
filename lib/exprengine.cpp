@@ -464,6 +464,17 @@ namespace {
                 return it->second;
             if (!valueType)
                 return ExprEngine::ValuePtr();
+
+            // constant value..
+            const Variable *var = tokenizer->getSymbolDatabase()->getVariableFromVarId(varId);
+            if (var && valueType->constness == 1 && Token::Match(var->nameToken(), "%var% =")) {
+                const Token *initExpr = var->nameToken()->next()->astOperand2();
+                if (initExpr && initExpr->hasKnownIntValue()) {
+                    auto intval = initExpr->getKnownIntValue();
+                    return std::make_shared<ExprEngine::IntRange>(std::to_string(intval), intval, intval);
+                }
+            }
+
             ExprEngine::ValuePtr value = getValueRangeFromValueType(getNewSymbolName(), valueType, *settings);
             if (value) {
                 if (tok->variable() && tok->variable()->nameToken())
