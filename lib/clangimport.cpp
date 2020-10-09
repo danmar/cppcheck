@@ -1038,23 +1038,25 @@ Token * clangimport::AstNode::createTokensCall(TokenList *tokenList)
         firstParam = 1;
         f = children[0]->createTokens(tokenList);
     }
+    f->setValueType(nullptr);
     Token *par1 = addtoken(tokenList, "(");
     par1->astOperand1(f);
-    Token *parent = par1;
     int args = 0;
     while (args < children.size() && children[args]->nodeType != CXXDefaultArgExpr)
         args++;
+    Token *child = nullptr;
     for (int c = firstParam; c < args; ++c) {
-        if (c + 1 < args) {
-            Token *child = children[c]->createTokens(tokenList);
+        if (child) {
             Token *comma = addtoken(tokenList, ",");
+            comma->setValueType(nullptr);
             comma->astOperand1(child);
-            parent->astOperand2(comma);
-            parent = comma;
+            comma->astOperand2(children[c]->createTokens(tokenList));
+            child = comma;
         } else {
-            parent->astOperand2(children[c]->createTokens(tokenList));
+            child = children[c]->createTokens(tokenList);
         }
     }
+    par1->astOperand2(child);
     Token *par2 = addtoken(tokenList, ")");
     par1->link(par2);
     par2->link(par1);

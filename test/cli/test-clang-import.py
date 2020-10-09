@@ -93,6 +93,7 @@ def test_ast_control_flow():
     check_ast('void foo(int x) { if (x > 5){} }')
     check_ast('int dostuff() { for (int x = 0; x < 10; x++); }')
     check_ast('void foo(int x) { switch (x) {case 1: break; } }')
+    check_ast('void foo(int a, int b, int c) { foo(a,b,c); }')
 
 
 
