@@ -161,8 +161,9 @@ private:
         TEST_CASE(checkSignOfUnsignedVariable);
         TEST_CASE(checkSignOfPointer);
 
-        TEST_CASE(checkForSuspiciousSemicolon1);
-        TEST_CASE(checkForSuspiciousSemicolon2);
+        TEST_CASE(checkSuspiciousSemicolon1);
+        TEST_CASE(checkSuspiciousSemicolon2);
+        TEST_CASE(checkSuspiciousSemicolon3);
 
         TEST_CASE(checkInvalidFree);
 
@@ -6312,7 +6313,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkForSuspiciousSemicolon1() {
+    void checkSuspiciousSemicolon1() {
         check("void foo() {\n"
               "  for(int i = 0; i < 10; ++i);\n"
               "}");
@@ -6323,23 +6324,23 @@ private:
               "  for(int i = 0; i < 10; ++i); {\n"
               "  }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Suspicious use of ; at the end of 'for' statement.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious use of ; at the end of 'for' statement.\n", errout.str());
 
         check("void foo() {\n"
               "  while (!quit); {\n"
               "    do_something();\n"
               "  }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Suspicious use of ; at the end of 'while' statement.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious use of ; at the end of 'while' statement.\n", errout.str());
     }
 
-    void checkForSuspiciousSemicolon2() {
+    void checkSuspiciousSemicolon2() {
         check("void foo() {\n"
               "  if (i == 1); {\n"
               "    do_something();\n"
               "  }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Suspicious use of ; at the end of 'if' statement.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious use of ; at the end of 'if' statement.\n", errout.str());
 
         // Seen this in the wild
         check("void foo() {\n"
@@ -6374,6 +6375,14 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void checkSuspiciousSemicolon3() {
+        checkP("#define REQUIRE(code) {code}\n"
+               "void foo() {\n"
+               "  if (x == 123);\n"
+               "  REQUIRE(y=z);\n"
+               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void checkInvalidFree() {
         check("void foo(char *p) {\n"
