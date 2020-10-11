@@ -1135,6 +1135,12 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 }
             }
         }
+        else if (tok->variable() && tok->variable()->isClass() && tok->variable()->type() && 
+            (tok->variable()->type()->needInitialization == Type::NeedInitialization::False) && 
+            tok->next()->str() == ";")
+        {
+            variables.write(tok->varId(), tok);
+        }
     }
 }
 
