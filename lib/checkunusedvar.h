@@ -23,7 +23,6 @@
 
 #include "check.h"
 #include "config.h"
-#include "symboldatabase.h"
 
 #include <map>
 #include <string>
@@ -35,6 +34,7 @@ class Token;
 class Tokenizer;
 class Type;
 class Variables;
+class Variable;
 
 /// @addtogroup Checks
 /// @{

@@ -1496,28 +1496,31 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
         const bool emptyBody = (f.functionScope && Token::simpleMatch(f.functionScope->bodyStart, "{ }"));
 
         Token* nextToken = f.argDef->link();
-        bool initListFinished = false;
-        do
-        {
-            nextToken = nextToken->next();
-            const Variable* variable = nextToken->variable();
-            initListFinished = Token::simpleMatch(nextToken, "{");
-            if (nextToken->link() && f.functionScope)
+        if ( (nextToken->str() == ")") && (nextToken->next()->str() == ":") ) {
+            // validating initialization list
+            nextToken = nextToken->next(); // skip ":"
+            bool initListFinished = false;
+            while (!initListFinished)
             {
-                // distinguish list initialization from function body start
-                initListFinished &= (nextToken->link()->scope() == f.functionScope->bodyStart->scope());
-            }
-            if (!variable)
-            {
-                continue;
-            }
-            withoutSideEffects = isVariableWithoutSideEffects(*variable);
-            if (!withoutSideEffects)
-            {
-                return withoutSideEffects;
+                nextToken = nextToken->next();
+                const Variable* variable = nextToken->variable();
+                initListFinished = Token::simpleMatch(nextToken, "{");
+                if (nextToken->link() && f.functionScope)
+                {
+                    // distinguish list initialization from function body start
+                    initListFinished &= (nextToken->link()->scope() == f.functionScope->bodyStart->scope());
+                }
+                if (!variable)
+                {
+                    continue;
+                }
+                withoutSideEffects = isVariableWithoutSideEffects(*variable);
+                if (!withoutSideEffects)
+                {
+                    return withoutSideEffects;
+                }
             }
         }
-        while (!initListFinished);
 
         if (!emptyBody)
             return (withoutSideEffects = false);
