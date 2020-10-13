@@ -6148,6 +6148,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                     TokenList tokenList(mSettings);
                     std::istringstream istr(typestr+";");
                     tokenList.createTokens(istr);
+                    tokenList.simplifyStdType();
                     if (parsedecl(tokenList.front(), &valuetype, mDefaultSignedness, mSettings)) {
                         valuetype.originalTypeName = typestr;
                         setValueType(tok, valuetype);
