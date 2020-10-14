@@ -2633,6 +2633,16 @@ private:
                "    }\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 7U, 0));
+
+        code = "void f(std::vector<int> v) {\n"
+               "    if (v.size() == 3) {\n"
+               "        if (v.size() == 1) {\n"
+               "            int x = 1;\n"
+               "            int a = x;\n"
+               "        }\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 1));
     }
 
     void valueFlowAfterConditionSeveralNot() {
