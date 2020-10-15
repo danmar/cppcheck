@@ -8098,7 +8098,7 @@ bool Tokenizer::simplifyRedundantParentheses()
             continue;
         }
 
-        // Do not simplify if there is comma inside parantheses..
+        // Do not simplify if there is comma inside parentheses..
         if (Token::Match(tok->previous(), "%op% (") || Token::Match(tok->link(), ") %op%")) {
             bool innerComma = false;
             for (const Token *inner = tok->link()->previous(); inner != tok; inner = inner->previous()) {

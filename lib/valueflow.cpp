@@ -5978,7 +5978,7 @@ struct ContainerVariableForwardAnalyzer : VariableForwardAnalyzer {
 
     virtual Action isModified(const Token* tok) const OVERRIDE {
         Action read = Action::Read;
-        // An iterator wont change the container size
+        // An iterator won't change the container size
         if (astIsIterator(tok))
             return read;
         if (Token::Match(tok->astParent(), "%assign%") && astIsLHS(tok))
