@@ -25,6 +25,7 @@ Reporting issues in Trac:
 ### Inconclusive messages
 
 Inconclusive messages will be created if cppcheck cannot be sure there is an issue to warn but 50-50 probability. User shall enable inconclusive messages if they are willing to spend substantially more time on message verification in order to find more issues within a high false positive rate.
+Inconclusive messages shall not be used for new checks which are just being developed. There `settings.experimental` can be used.
 
 ## Bug hunting - Soundy analysis
 
