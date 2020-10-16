@@ -44,7 +44,7 @@ jobs:
           make -j$(nproc) check
           cd ..
 
-      - name: Unsigned char
+      - name: Build and test with Unsigned char
         run: |
           make clean
           make -j$(nproc) CXXFLAGS=-funsigned-char testrunner
@@ -70,8 +70,8 @@ jobs:
           
       - name: Test addons
         run: |
-          ./cppcheck --addons=threadsafety addons/test/threadsafety
-          ./cppcheck --addons=threadsafety -std=c++03 addons/test/threadsafety
+          ./cppcheck --addon=threadsafety addons/test/threadsafety
+          ./cppcheck --addon=threadsafety -std=c++03 addons/test/threadsafety
 
       - name: Build GUI on ubuntu
         if: matrix.os == 'ubuntu-latest'
