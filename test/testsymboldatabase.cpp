@@ -37,6 +37,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <tinyxml2.h>
 #include <vector>
 
 struct InternalError;
@@ -6930,6 +6931,35 @@ private:
         ASSERT_EQUALS("unsigned long", typeOf("enum E : unsigned long { }; void foo() { E e[3]; bar(e[0]); }", "[ 0"));
         ASSERT_EQUALS("signed long long", typeOf("enum E : long long { }; void foo() { E e[3]; bar(e[0]); }", "[ 0"));
         ASSERT_EQUALS("unsigned long long", typeOf("enum E : unsigned long long { }; void foo() { E e[3]; bar(e[0]); }", "[ 0"));
+
+#define CHECK_LIBRARY_FUNCTION_RETURN_TYPE(type) do { \
+        Settings sF; \
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n" \
+                               "<def>\n" \
+                               "<function name=\"g\">\n" \
+                               "<returnValue type=\"" #type "\"/>\n" \
+                               "</function>\n" \
+                               "</def>"; \
+        tinyxml2::XMLDocument doc; \
+        doc.Parse(xmldata, sizeof(xmldata)); \
+        sF.library.load(doc); \
+        ASSERT_EQUALS(#type, typeOf("void f() { auto x = g(); }", "x", "test.cpp", &sF)); \
+    } while (false)
+        CHECK_LIBRARY_FUNCTION_RETURN_TYPE(bool);
+        CHECK_LIBRARY_FUNCTION_RETURN_TYPE(signed char);
+        CHECK_LIBRARY_FUNCTION_RETURN_TYPE(unsigned char);
+        CHECK_LIBRARY_FUNCTION_RETURN_TYPE(signed short);
+        CHECK_LIBRARY_FUNCTION_RETURN_TYPE(unsigned short);
+        CHECK_LIBRARY_FUNCTION_RETURN_TYPE(signed int);
+        CHECK_LIBRARY_FUNCTION_RETURN_TYPE(unsigned int);
+        CHECK_LIBRARY_FUNCTION_RETURN_TYPE(signed long);
+        CHECK_LIBRARY_FUNCTION_RETURN_TYPE(unsigned long);
+        CHECK_LIBRARY_FUNCTION_RETURN_TYPE(signed long long);
+        CHECK_LIBRARY_FUNCTION_RETURN_TYPE(unsigned long long);
+        CHECK_LIBRARY_FUNCTION_RETURN_TYPE(void *);
+        CHECK_LIBRARY_FUNCTION_RETURN_TYPE(void * *);
+        CHECK_LIBRARY_FUNCTION_RETURN_TYPE(const void *);
+#undef CHECK_LIBRARY_FUNCTION_RETURN_TYPE
 
         // Library types
         {
