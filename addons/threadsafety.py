@@ -19,7 +19,11 @@ def checkstatic(data):
                 type = 'object'
             else:
                 type = 'variable'
-            reportError(var.typeStartToken, 'warning', 'Local static ' + type + ': ' + var.nameToken.str, 'threadsafety')
+            if var.isConst:
+                if data.standards.cpp == 'c++03':
+                    reportError(var.typeStartToken, 'warning', 'Local constant static ' + type + ' \'' + var.nameToken.str + '\', dangerous if it is initialized in parallel threads', 'threadsafety-const')
+            else:
+                reportError(var.typeStartToken, 'warning', 'Local static ' + type + ': ' + var.nameToken.str, 'threadsafety')
 
 for arg in sys.argv[1:]:
     if arg.startswith('-'):
