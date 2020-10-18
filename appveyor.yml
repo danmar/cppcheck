@@ -79,6 +79,7 @@ build_script:
   - ECHO MYQTDIR=%MYQTDIR%
   - 'IF defined MYQTDIR cd gui'
   - 'IF defined MYQTDIR set QTDIR=%MYQTDIR%'
+  - 'IF defined MYQTDIR set PATH=%PATH%;%QTDIR%\bin'
   - 'IF defined MYQTDIR %QTDIR%\bin\qmake'
   - 'IF defined MYQTDIR nmake'
   - 'IF defined MYQTDIR cd ..'
