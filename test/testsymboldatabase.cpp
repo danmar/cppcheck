@@ -336,6 +336,7 @@ private:
         TEST_CASE(enum5);
         TEST_CASE(enum6);
         TEST_CASE(enum7);
+        TEST_CASE(enum8);
 
         TEST_CASE(sizeOfType);
 
@@ -5006,6 +5007,31 @@ private:
         TEST(settings1.sizeof_long);
         TEST(settings1.sizeof_long_long);
         TEST(settings1.sizeof_long_long);
+    }
+
+    void enum8() {
+        GET_SYMBOL_DB("enum E { X0 = x, X1, X2 = 2, X3, X4 = y, X5 };\n");
+        ASSERT(db != nullptr);
+        const Enumerator *X0 = db->scopeList.back().findEnumerator("X0");
+        ASSERT(X0);
+        ASSERT(!X0->value_known);
+        const Enumerator *X1 = db->scopeList.back().findEnumerator("X1");
+        ASSERT(X1);
+        ASSERT(!X1->value_known);
+        const Enumerator *X2 = db->scopeList.back().findEnumerator("X2");
+        ASSERT(X2);
+        ASSERT(X2->value_known);
+        ASSERT_EQUALS(X2->value, 2);
+        const Enumerator *X3 = db->scopeList.back().findEnumerator("X3");
+        ASSERT(X3);
+        ASSERT(X3->value_known);
+        ASSERT_EQUALS(X3->value, 3);
+        const Enumerator *X4 = db->scopeList.back().findEnumerator("X4");
+        ASSERT(X4);
+        ASSERT(!X4->value_known);
+        const Enumerator *X5 = db->scopeList.back().findEnumerator("X5");
+        ASSERT(X5);
+        ASSERT(!X5->value_known);
     }
 
     void sizeOfType() {

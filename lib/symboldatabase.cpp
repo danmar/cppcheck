@@ -1278,6 +1278,7 @@ void SymbolDatabase::createSymbolDatabaseEnums()
             continue;
 
         MathLib::bigint value = 0;
+        bool prev_enum_is_known = true;
 
         for (Enumerator & enumerator : it->enumeratorList) {
             // look for initialization tokens that can be converted to enumerators and convert them
@@ -1304,11 +1305,13 @@ void SymbolDatabase::createSymbolDatabaseEnums()
                     enumerator.value = rhs->values().front().intvalue;
                     enumerator.value_known = true;
                     value = enumerator.value + 1;
-                }
+                    prev_enum_is_known = true;
+                } else
+                    prev_enum_is_known = false;
             }
 
             // not initialized so use default value
-            else {
+            else if (prev_enum_is_known) {
                 enumerator.value = value++;
                 enumerator.value_known = true;
             }
