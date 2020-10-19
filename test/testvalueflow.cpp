@@ -1413,7 +1413,7 @@ private:
         ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:2]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable b\n"
                                           "[test.cpp:2]: (debug) valueflow.cpp:1144:valueFlowReverse bailout: variable x stopping on }\n", errout.str());
 
-        code = "void f(int x) {\n"
+        code = "void f(int x, bool abc) {\n"
                "  a = x;\n"
                "  if (abc) { x = 1; }\n"  // <- condition must be false if x is 7 in next line
                "  if (x == 7) { }\n"

@@ -10,12 +10,12 @@
 
 struct ForwardTraversal {
     enum class Progress { Continue, Break, Skip };
-    ForwardTraversal(const ValuePtr<ForwardAnalyzer>& analyzer, const Settings* settings)
-        : analyzer(analyzer), settings(settings), actions(ForwardAnalyzer::Action::None), analyzeOnly(false)
+    ForwardTraversal(const ValuePtr<GenericAnalyzer>& analyzer, const Settings* settings)
+        : analyzer(analyzer), settings(settings), actions(GenericAnalyzer::Action::None), analyzeOnly(false)
     {}
-    ValuePtr<ForwardAnalyzer> analyzer;
+    ValuePtr<GenericAnalyzer> analyzer;
     const Settings* settings;
-    ForwardAnalyzer::Action actions;
+    GenericAnalyzer::Action actions;
     bool analyzeOnly;
 
     bool stopUpdates() {
@@ -124,7 +124,7 @@ struct ForwardTraversal {
     }
 
     Progress update(Token* tok) {
-        ForwardAnalyzer::Action action = analyzer->analyze(tok);
+        GenericAnalyzer::Action action = analyzer->analyze(tok);
         actions |= action;
         if (!action.isNone() && !analyzeOnly)
             analyzer->update(tok, action);
@@ -153,17 +153,17 @@ struct ForwardTraversal {
     }
 
     template <class T>
-    T* findRange(T* start, const Token* end, std::function<bool(ForwardAnalyzer::Action)> pred) {
+    T* findRange(T* start, const Token* end, std::function<bool(GenericAnalyzer::Action)> pred) {
         for (T* tok = start; tok && tok != end; tok = tok->next()) {
-            ForwardAnalyzer::Action action = analyzer->analyze(tok);
+            GenericAnalyzer::Action action = analyzer->analyze(tok);
             if (pred(action))
                 return tok;
         }
         return nullptr;
     }
 
-    ForwardAnalyzer::Action analyzeRecursive(const Token* start) {
-        ForwardAnalyzer::Action result = ForwardAnalyzer::Action::None;
+    GenericAnalyzer::Action analyzeRecursive(const Token* start) {
+        GenericAnalyzer::Action result = GenericAnalyzer::Action::None;
         std::function<Progress(const Token *)> f = [&](const Token* tok) {
             result = analyzer->analyze(tok);
             if (result.isModified() || result.isInconclusive())
@@ -174,10 +174,10 @@ struct ForwardTraversal {
         return result;
     }
 
-    ForwardAnalyzer::Action analyzeRange(const Token* start, const Token* end) {
-        ForwardAnalyzer::Action result = ForwardAnalyzer::Action::None;
+    GenericAnalyzer::Action analyzeRange(const Token* start, const Token* end) {
+        GenericAnalyzer::Action result = GenericAnalyzer::Action::None;
         for (const Token* tok = start; tok && tok != end; tok = tok->next()) {
-            ForwardAnalyzer::Action action = analyzer->analyze(tok);
+            GenericAnalyzer::Action action = analyzer->analyze(tok);
             if (action.isModified() || action.isInconclusive())
                 return action;
             result = action;
@@ -211,25 +211,25 @@ struct ForwardTraversal {
         Inconclusive,
     };
 
-    ForwardAnalyzer::Action analyzeScope(const Token* endBlock) {
+    GenericAnalyzer::Action analyzeScope(const Token* endBlock) {
         return analyzeRange(endBlock->link(), endBlock);
     }
 
-    ForwardAnalyzer::Action checkScope(Token* endBlock) {
-        ForwardAnalyzer::Action a = analyzeScope(endBlock);
+    GenericAnalyzer::Action checkScope(Token* endBlock) {
+        GenericAnalyzer::Action a = analyzeScope(endBlock);
         forkScope(endBlock, a.isModified());
         return a;
     }
 
-    ForwardAnalyzer::Action checkScope(const Token* endBlock) {
-        ForwardAnalyzer::Action a = analyzeScope(endBlock);
+    GenericAnalyzer::Action checkScope(const Token* endBlock) {
+        GenericAnalyzer::Action a = analyzeScope(endBlock);
         return a;
     }
 
     Progress updateLoop(Token* endBlock, Token* condTok, Token* initTok = nullptr, Token* stepTok = nullptr) {
         const bool isDoWhile = precedes(endBlock, condTok);
-        ForwardAnalyzer::Action bodyAnalysis = analyzeScope(endBlock);
-        ForwardAnalyzer::Action allAnalysis = bodyAnalysis;
+        GenericAnalyzer::Action bodyAnalysis = analyzeScope(endBlock);
+        GenericAnalyzer::Action allAnalysis = bodyAnalysis;
         if (condTok)
             allAnalysis |= analyzeRecursive(condTok);
         if (initTok)
@@ -258,7 +258,7 @@ struct ForwardTraversal {
 
         forkScope(endBlock, allAnalysis.isModified());
         if (bodyAnalysis.isModified()) {
-            Token* writeTok = findRange(endBlock->link(), endBlock, std::mem_fn(&ForwardAnalyzer::Action::isModified));
+            Token* writeTok = findRange(endBlock->link(), endBlock, std::mem_fn(&GenericAnalyzer::Action::isModified));
             const Token* nextStatement = Token::findmatch(writeTok, ";|}", endBlock);
             if (!Token::Match(nextStatement, ";|} break ;"))
                 return Progress::Break;
@@ -381,8 +381,8 @@ struct ForwardTraversal {
                     // Check if condition is true or false
                     bool checkThen, checkElse;
                     std::tie(checkThen, checkElse) = evalCond(condTok);
-                    ForwardAnalyzer::Action thenAction = ForwardAnalyzer::Action::None;
-                    ForwardAnalyzer::Action elseAction = ForwardAnalyzer::Action::None;
+                    GenericAnalyzer::Action thenAction = GenericAnalyzer::Action::None;
+                    GenericAnalyzer::Action elseAction = GenericAnalyzer::Action::None;
                     bool hasElse = Token::simpleMatch(endBlock, "} else {");
                     bool bail = false;
 
@@ -445,7 +445,7 @@ struct ForwardTraversal {
                 }
             } else if (Token::simpleMatch(tok, "try {")) {
                 Token* endBlock = tok->next()->link();
-                ForwardAnalyzer::Action a = analyzeScope(endBlock);
+                GenericAnalyzer::Action a = analyzeScope(endBlock);
                 if (updateRange(tok->next(), endBlock) == Progress::Break)
                     return Progress::Break;
                 if (a.isModified())
@@ -567,12 +567,21 @@ struct ForwardTraversal {
 
 };
 
-ForwardAnalyzer::Action valueFlowGenericForward(Token* start,
+GenericAnalyzer::Action valueFlowGenericForward(Token* start,
         const Token* end,
-        const ValuePtr<ForwardAnalyzer>& fa,
+        const ValuePtr<GenericAnalyzer>& fa,
         const Settings* settings)
 {
     ForwardTraversal ft{fa, settings};
     ft.updateRange(start, end);
+    return ft.actions;
+}
+
+GenericAnalyzer::Action valueFlowGenericForward(Token* start,
+        const ValuePtr<GenericAnalyzer>& fa,
+        const Settings* settings)
+{
+    ForwardTraversal ft{fa, settings};
+    ft.updateRecursive(start);
     return ft.actions;
 }
