@@ -337,6 +337,7 @@ private:
         TEST_CASE(enum6);
         TEST_CASE(enum7);
         TEST_CASE(enum8);
+        TEST_CASE(enum9);
 
         TEST_CASE(sizeOfType);
 
@@ -5032,6 +5033,19 @@ private:
         const Enumerator *X5 = db->scopeList.back().findEnumerator("X5");
         ASSERT(X5);
         ASSERT(!X5->value_known);
+    }
+
+    void enum9() {
+        GET_SYMBOL_DB("const int x = 7; enum E { X0 = x, X1 };\n");
+        ASSERT(db != nullptr);
+        const Enumerator *X0 = db->scopeList.back().findEnumerator("X0");
+        ASSERT(X0);
+        ASSERT(X0->value_known);
+        ASSERT_EQUALS(X0->value, 7);
+        const Enumerator *X1 = db->scopeList.back().findEnumerator("X1");
+        ASSERT(X1);
+        ASSERT(X1->value_known);
+        ASSERT_EQUALS(X1->value, 8);
     }
 
     void sizeOfType() {

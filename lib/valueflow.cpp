@@ -1628,6 +1628,34 @@ static void valueFlowOppositeCondition(SymbolDatabase *symboldatabase, const Set
     }
 }
 
+static void valueFlowEnumValue(SymbolDatabase * symboldatabase, const Settings * settings)
+{
+
+    for (Scope & scope : symboldatabase->scopeList) {
+        if (scope.type != Scope::eEnum)
+            continue;
+        MathLib::bigint value = 0;
+        bool prev_enum_is_known = true;
+
+        for (Enumerator & enumerator : scope.enumeratorList) {
+            if (enumerator.start) {
+                Token *rhs = enumerator.start->previous()->astOperand2();
+                ValueFlow::valueFlowConstantFoldAST(rhs, settings);
+                if (rhs && rhs->hasKnownIntValue()) {
+                    enumerator.value = rhs->values().front().intvalue;
+                    enumerator.value_known = true;
+                    value = enumerator.value + 1;
+                    prev_enum_is_known = true;
+                } else
+                    prev_enum_is_known = false;
+            } else if (prev_enum_is_known) {
+                enumerator.value = value++;
+                enumerator.value_known = true;
+            }
+        }
+    }
+}
+
 static void valueFlowGlobalConstVar(TokenList* tokenList, const Settings *settings)
 {
     // Get variable values...
@@ -6789,11 +6817,14 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     for (Token *tok = tokenlist->front(); tok; tok = tok->next())
         tok->clearValueFlow();
 
+    valueFlowEnumValue(symboldatabase, settings);
     valueFlowNumber(tokenlist);
     valueFlowString(tokenlist);
     valueFlowArray(tokenlist);
     valueFlowUnknownFunctionReturn(tokenlist, settings);
     valueFlowGlobalConstVar(tokenlist, settings);
+    valueFlowEnumValue(symboldatabase, settings);
+    valueFlowNumber(tokenlist);
     valueFlowGlobalStaticVar(tokenlist, settings);
     valueFlowPointerAlias(tokenlist);
     valueFlowLifetime(tokenlist, symboldatabase, errorLogger, settings);

@@ -1272,13 +1272,9 @@ void SymbolDatabase::createSymbolDatabaseEnums()
             const_cast<Token *>(i.name)->enumerator(&i);
     }
 
-    // fill in enumerator values
     for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
         if (it->type != Scope::eEnum)
             continue;
-
-        MathLib::bigint value = 0;
-        bool prev_enum_is_known = true;
 
         for (Enumerator & enumerator : it->enumeratorList) {
             // look for initialization tokens that can be converted to enumerators and convert them
@@ -1292,28 +1288,6 @@ void SymbolDatabase::createSymbolDatabaseEnums()
                             const_cast<Token *>(tok3)->enumerator(e);
                     }
                 }
-
-                // look for possible constant folding expressions
-                // rhs of operator:
-                Token *rhs = enumerator.start->previous()->astOperand2();
-
-                // constant folding of expression:
-                ValueFlow::valueFlowConstantFoldAST(rhs, mSettings);
-
-                // get constant folded value:
-                if (rhs && rhs->hasKnownIntValue()) {
-                    enumerator.value = rhs->values().front().intvalue;
-                    enumerator.value_known = true;
-                    value = enumerator.value + 1;
-                    prev_enum_is_known = true;
-                } else
-                    prev_enum_is_known = false;
-            }
-
-            // not initialized so use default value
-            else if (prev_enum_is_known) {
-                enumerator.value = value++;
-                enumerator.value_known = true;
             }
         }
     }
