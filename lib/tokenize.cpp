@@ -3605,7 +3605,7 @@ void Tokenizer::setVarIdPass1()
                     continue;
             }
 
-            if (!scopeStack.top().isEnum) {
+            if (!scopeStack.top().isEnum || !(Token::Match(tok->previous(), "{|,")  && Token::Match(tok->next(), ",|=|}"))) {
                 const std::map<std::string, int>::const_iterator it = variableMap.find(tok->str());
                 if (it != variableMap.end()) {
                     tok->varId(it->second);
