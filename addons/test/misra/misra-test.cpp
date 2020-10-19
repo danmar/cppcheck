@@ -23,3 +23,23 @@ static bool test_misra_21_1_crash()
     auto misra_21_1_C a, b; // 12.3
     a = b;
 }
+
+static void test_misra_12_3()
+{
+    // this is not a 12.3
+    new QMap<int, void*>();
+}
+
+static void test_misra_13_4()
+{
+    // this is not a 13.4
+    std::function<void(std::vector<uint8_t>)> CommTestReceived= [=] (std::vector<uint8_t> payload)
+    {
+        this->commTestReceived(payload);
+    };
+
+    // this is a 13.4 violation
+    a [ x ] = a[ x = y ];
+}
+
+

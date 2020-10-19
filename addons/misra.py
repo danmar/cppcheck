@@ -1663,6 +1663,8 @@ class MisraChecker:
                         # This comma is used in initlist, do not warn
                         continue
                 prev = token.previous
+                if prev.previous.str == "<": # QMap<prev,
+                    continue
                 while prev:
                     if prev.str == ';':
                         self.reportError(token, 12, 3)
@@ -1738,7 +1740,12 @@ class MisraChecker:
                 continue
             if not token.astParent:
                 continue
-            if token.astOperand1.str == '[' and token.astOperand1.previous.str in ('{', ','):
+            if token.astOperand1 is not None and token.astOperand1.str == '[':
+                if token.astOperand1 is None or token.astOperand1.previous is None:
+                    continue
+                if token.astOperand1.previous.str in ('{', ','):
+                    continue
+            if token.next.str == ']': # [=] CPP lamda
                 continue
             if not (token.astParent.str in [',', ';', '{']):
                 self.reportError(token, 13, 4)
