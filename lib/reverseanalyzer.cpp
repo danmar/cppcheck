@@ -154,18 +154,34 @@ struct ReverseTraversal {
                         break;
                     valueFlowGenericForward(condTok, analyzer, settings);
                 }
-                const bool inElse = Token::simpleMatch(tok->link()->previous(), "else {");
-                GenericAnalyzer::Action action = analyzeRange(tok->link(), tok);
-                if (action.isModified())
-                    analyzer->assume(condTok, !inElse, condTok);
-                else if (action.isRead())
-                    valueFlowGenericForward(tok->link(), tok, analyzer, settings);
-                bool checkThen, checkElse;
-                std::tie(checkThen, checkElse) = evalCond(condTok);
-                if (inElse && checkThen)
+                Token* thenEnd = nullptr;
+                Token* elseEnd = nullptr;
+                const bool hasElse = Token::simpleMatch(tok->link()->tokAt(-2), "} else {");
+                if (hasElse) {
+                    elseEnd = tok;
+                    thenEnd = tok->link()->tokAt(-2);
+                } else {
+                    thenEnd = tok;
+                }
+
+                GenericAnalyzer::Action thenAction = analyzeRange(thenEnd->link(), thenEnd);
+                GenericAnalyzer::Action elseAction = GenericAnalyzer::Action::None;
+                if (hasElse) {
+                    elseAction = analyzeRange(tok->link(), tok);
+                }
+                GenericAnalyzer::Action action = thenAction | elseAction;
+                if (thenAction.isModified() && !elseAction.isModified())
+                    analyzer->assume(condTok, hasElse, condTok);
+                else if (elseAction.isModified() && !thenAction.isModified())
+                    analyzer->assume(condTok, !hasElse, condTok);
+                // Bail if one of the branches are read to avoid FPs due to over constraints
+                else if (thenAction.isRead() || elseAction.isRead())
                     break;
-                if (!inElse && checkElse)
+                if (thenAction.isModified() && elseAction.isModified())
                     break;
+
+                if (!thenAction.isModified() && !elseAction.isModified())
+                    valueFlowGenericForward(condTok, analyzer, settings);
                 tok = condTok->astTop()->previous();
                 continue;
             }
@@ -197,7 +213,7 @@ struct ReverseTraversal {
     }
 
     static Token* assignExpr(Token* tok) {
-        while (tok->astParent() && astIsRHS(tok)) {
+        while (tok->astParent() && (astIsRHS(tok) || !tok->astParent()->isBinaryOp())) {
             if (tok->astParent()->isAssignmentOp())
                 return tok->astParent();
             tok = tok->astParent();

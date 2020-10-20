@@ -107,6 +107,8 @@
 #include <tuple>
 #include <vector>
 
+#define USE_GENERIC_REVERSE 1
+
 static void bailoutInternal(TokenList *tokenlist, ErrorLogger *errorLogger, const Token *tok, const std::string &what, const std::string &file, int line, const std::string &function)
 {
     std::list<ErrorMessage::FileLocation> callstack(1, ErrorMessage::FileLocation(tok, tokenlist));
@@ -1735,8 +1737,10 @@ static void valueFlowReverse(TokenList *tokenlist,
                              ValueFlow::Value val,
                              ValueFlow::Value val2,
                              ErrorLogger *errorLogger,
-                             const Settings *settings);
-#if 0
+                             const Settings *settings)
+#if USE_GENERIC_REVERSE
+;
+#else
 {
     const MathLib::bigint    num        = val.intvalue;
     const Variable * const   var        = varToken->variable();
@@ -2932,6 +2936,7 @@ static void valueFlowForward(Token* startToken,
     valueFlowForward(startToken, endToken, exprTok, std::move(values), tokenlist, settings);
 }
 
+#if USE_GENERIC_REVERSE
 static void valueFlowReverse(TokenList *tokenlist,
                              Token *tok,
                              const Token * const varToken,
@@ -2950,6 +2955,7 @@ static void valueFlowReverse(TokenList *tokenlist,
         valueFlowGenericReverse(tok, a, settings);
     }
 }
+#endif
 
 static int getArgumentPos(const Variable *var, const Function *f)
 {
