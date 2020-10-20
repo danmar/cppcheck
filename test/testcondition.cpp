@@ -3829,6 +3829,15 @@ private:
               "    if (b) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int *i) {\n"
+              "  if (*i == 0) {\n"
+              "    *i = 1;\n"
+              "  }\n"
+              "  if (*i == 0) {\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkInvalidTestForOverflow() {
