@@ -124,10 +124,10 @@ struct ForwardTraversal {
     }
 
     Progress update(Token* tok) {
-        GenericAnalyzer::Action action = analyzer->analyze(tok);
+        GenericAnalyzer::Action action = analyzer->analyze(tok, GenericAnalyzer::Direction::Forward);
         actions |= action;
         if (!action.isNone() && !analyzeOnly)
-            analyzer->update(tok, action);
+            analyzer->update(tok, action, GenericAnalyzer::Direction::Forward);
         if (action.isInconclusive() && !analyzer->lowerToInconclusive())
             return Progress::Break;
         if (action.isInvalid())
@@ -155,7 +155,7 @@ struct ForwardTraversal {
     template <class T>
     T* findRange(T* start, const Token* end, std::function<bool(GenericAnalyzer::Action)> pred) {
         for (T* tok = start; tok && tok != end; tok = tok->next()) {
-            GenericAnalyzer::Action action = analyzer->analyze(tok);
+            GenericAnalyzer::Action action = analyzer->analyze(tok, GenericAnalyzer::Direction::Forward);
             if (pred(action))
                 return tok;
         }
@@ -165,7 +165,7 @@ struct ForwardTraversal {
     GenericAnalyzer::Action analyzeRecursive(const Token* start) {
         GenericAnalyzer::Action result = GenericAnalyzer::Action::None;
         std::function<Progress(const Token *)> f = [&](const Token* tok) {
-            result = analyzer->analyze(tok);
+            result = analyzer->analyze(tok, GenericAnalyzer::Direction::Forward);
             if (result.isModified() || result.isInconclusive())
                 return Progress::Break;
             return Progress::Continue;
@@ -177,7 +177,7 @@ struct ForwardTraversal {
     GenericAnalyzer::Action analyzeRange(const Token* start, const Token* end) {
         GenericAnalyzer::Action result = GenericAnalyzer::Action::None;
         for (const Token* tok = start; tok && tok != end; tok = tok->next()) {
-            GenericAnalyzer::Action action = analyzer->analyze(tok);
+            GenericAnalyzer::Action action = analyzer->analyze(tok, GenericAnalyzer::Direction::Forward);
             if (action.isModified() || action.isInconclusive())
                 return action;
             result = action;

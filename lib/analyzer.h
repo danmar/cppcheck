@@ -92,10 +92,16 @@ struct GenericAnalyzer {
     private:
         unsigned int mFlag;
     };
+
+    enum class Direction {
+        Forward,
+        Reverse
+    };
+
     /// Analyze a token
-    virtual Action analyze(const Token* tok) const = 0;
+    virtual Action analyze(const Token* tok, Direction d) const = 0;
     /// Update the state of the value
-    virtual void update(Token* tok, Action a) = 0;
+    virtual void update(Token* tok, Action a, Direction d) = 0;
     /// Try to evaluate the value of a token(most likely a condition)
     virtual std::vector<int> evaluate(const Token* tok) const = 0;
     /// Lower any values to possible

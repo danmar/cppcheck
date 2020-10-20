@@ -2144,6 +2144,25 @@ static void valueFlowAST(Token *tok, nonneg int varid, const ValueFlow::Value &v
     valueFlowAST(tok->astOperand2(), varid, value, settings);
 }
 
+static const std::string& invertAssign(const std::string& assign)
+{
+    static std::unordered_map<std::string, std::string> lookup = {
+        {"+=", "-="},
+        {"-=", "+="},
+        {"*=", "/="},
+        {"/=", "*="},
+        {"<<=", ">>="},
+        {">>=", "<<="},
+        {"^=", "^="}
+    };
+    static std::string empty = "";
+    auto it = lookup.find(assign);
+    if (it == lookup.end())
+        return empty;
+    else
+        return it->second;
+}
+
 static bool evalAssignment(ValueFlow::Value &lhsValue, const std::string &assign, const ValueFlow::Value &rhsValue)
 {
     if (lhsValue.isIntValue()) {
@@ -2365,7 +2384,7 @@ struct ValueFlowGenericAnalyzer : GenericAnalyzer {
         return Action::None;
     }
 
-    virtual Action isWritable(const Token* tok) const {
+    virtual Action isWritable(const Token* tok, Direction d) const {
         const ValueFlow::Value* value = getValue(tok);
         if (!value)
             return Action::None;
@@ -2375,6 +2394,9 @@ struct ValueFlowGenericAnalyzer : GenericAnalyzer {
 
         if (parent && parent->isAssignmentOp() && astIsLHS(tok) &&
             parent->astOperand2()->hasKnownValue()) {
+            // If the operator is invertible
+            if (d == Direction::Reverse && (Token::simpleMatch(parent, "&=") || Token::simpleMatch(parent, "|=") || Token::simpleMatch(parent, "%=")))
+                return Action::None;
             const Token* rhs = parent->astOperand2();
             const ValueFlow::Value* rhsValue = getKnownValue(rhs, ValueFlow::Value::ValueType::INT);
             Action a;
@@ -2394,7 +2416,15 @@ struct ValueFlowGenericAnalyzer : GenericAnalyzer {
         return Action::None;
     }
 
-    virtual void writeValue(ValueFlow::Value* value, const Token* tok) const {
+    static const std::string& getAssign(const Token* tok, Direction d)
+    {
+        if (d == Direction::Forward)
+            return tok->str();
+        else
+            return invertAssign(tok->str());
+    }
+
+    virtual void writeValue(ValueFlow::Value* value, const Token* tok, Direction d) const {
         if (!value)
             return;
         if (!tok->astParent())
@@ -2402,7 +2432,7 @@ struct ValueFlowGenericAnalyzer : GenericAnalyzer {
         if (tok->astParent()->isAssignmentOp()) {
             // TODO: Check result
             if (evalAssignment(*value,
-                               tok->astParent()->str(),
+                               getAssign(tok->astParent(), d),
                                *getKnownValue(tok->astParent()->astOperand2(), ValueFlow::Value::ValueType::INT))) {
                 const std::string info("Compound assignment '" + tok->astParent()->str() + "', assigned value is " +
                                        value->infoString());
@@ -2414,15 +2444,18 @@ struct ValueFlowGenericAnalyzer : GenericAnalyzer {
                 value->intvalue = 0;
             }
         } else if (tok->astParent()->tokType() == Token::eIncDecOp) {
-            const bool inc = tok->astParent()->str() == "++";
+            bool inc = tok->astParent()->str() == "++";
+            std::string opName(inc ? "incremented" : "decremented");
+            if (d == Direction::Reverse)
+                inc = !inc;
             value->intvalue += (inc ? 1 : -1);
-            const std::string info(tok->str() + " is " + std::string(inc ? "incremented" : "decremented") +
+            const std::string info(tok->str() + " is " + opName +
                                    "', new value is " + value->infoString());
             value->errorPath.emplace_back(tok, info);
         }
     }
 
-    virtual Action analyze(const Token* tok) const OVERRIDE {
+    virtual Action analyze(const Token* tok, Direction d) const OVERRIDE {
         if (invalid())
             return Action::Invalid;
         bool inconclusive = false;
@@ -2432,7 +2465,7 @@ struct ValueFlowGenericAnalyzer : GenericAnalyzer {
                 return Action::Read;
 
             // Action read = Action::Read;
-            Action w = isWritable(tok);
+            Action w = isWritable(tok, d);
             if (w != Action::None)
                 return w;
 
@@ -2500,17 +2533,21 @@ struct ValueFlowGenericAnalyzer : GenericAnalyzer {
             makeConditional();
     }
 
-    virtual void update(Token* tok, Action a) OVERRIDE {
+    virtual void update(Token* tok, Action a, Direction d) OVERRIDE {
         ValueFlow::Value* value = getValue(tok);
         if (!value)
             return;
-        if (a.isRead())
+        // Read first when moving forward
+        if (d == Direction::Forward && a.isRead())
             setTokenValue(tok, *value, getSettings());
         if (a.isInconclusive())
             lowerToInconclusive();
         if (a.isWrite() && tok->astParent()) {
-            writeValue(value, tok);
+            writeValue(value, tok, d);
         }
+        // Read last when moving in reverse
+        if (d == Direction::Reverse && a.isRead())
+            setTokenValue(tok, *value, getSettings());
     }
 };
 
@@ -2903,7 +2940,9 @@ static void valueFlowReverse(TokenList *tokenlist,
                              ErrorLogger *errorLogger,
                              const Settings *settings)
 {
-    std::list<ValueFlow::Value> values = {val, val2};
+    std::list<ValueFlow::Value> values = {val};
+    if (val2.varId != 0)
+        values.push_back(val2);
     const Variable* var = varToken->variable();
     auto aliases = getAliasesFromValues(values);
     for (ValueFlow::Value& v : values) {
@@ -5939,8 +5978,10 @@ struct ContainerVariableGenericAnalyzer : VariableGenericAnalyzer {
         return tok->varId() == var->declarationId() || (astIsIterator(tok) && isAliasOf(tok, var->declarationId()));
     }
 
-    virtual Action isWritable(const Token* tok) const OVERRIDE {
+    virtual Action isWritable(const Token* tok, Direction d) const OVERRIDE {
         if (astIsIterator(tok))
+            return Action::None;
+        if (d == Direction::Reverse)
             return Action::None;
         const ValueFlow::Value* value = getValue(tok);
         if (!value)
@@ -5967,7 +6008,9 @@ struct ContainerVariableGenericAnalyzer : VariableGenericAnalyzer {
         return Action::None;
     }
 
-    virtual void writeValue(ValueFlow::Value* value, const Token* tok) const OVERRIDE {
+    virtual void writeValue(ValueFlow::Value* value, const Token* tok, Direction d) const OVERRIDE {
+        if (d == Direction::Reverse)
+            return;
         if (!value)
             return;
         if (!tok->astParent())

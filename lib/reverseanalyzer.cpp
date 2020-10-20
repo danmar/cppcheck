@@ -29,20 +29,32 @@ struct ReverseTraversal {
     }
 
     bool update(Token* tok) {
-        GenericAnalyzer::Action action = analyzer->analyze(tok);
-        if (action.isRead())
-            analyzer->update(tok, action);
+        GenericAnalyzer::Action action = analyzer->analyze(tok, GenericAnalyzer::Direction::Reverse);
+        if (!action.isNone())
+            analyzer->update(tok, action, GenericAnalyzer::Direction::Reverse);
         if (action.isInconclusive() && !analyzer->lowerToInconclusive())
             return false;
-        if (action.isModified())
+        if (action.isInvalid())
             return false;
         return true;
+    }
+
+    bool updateRecursive(Token* start) {
+        bool continueB = true;
+        visitAstNodes(start, [&](Token *tok) {
+            continueB &= update(tok);
+            if (continueB)
+                return ChildrenToVisit::op1_and_op2;
+            else
+                return ChildrenToVisit::done;
+        });
+        return continueB;
     }
 
     GenericAnalyzer::Action analyzeRecursive(const Token* start) {
         GenericAnalyzer::Action result = GenericAnalyzer::Action::None;
         visitAstNodes(start, [&](const Token *tok) {
-            result |= analyzer->analyze(tok);
+            result |= analyzer->analyze(tok, GenericAnalyzer::Direction::Reverse);
             if (result.isModified() || result.isInconclusive())
                 return ChildrenToVisit::done;
             return ChildrenToVisit::op1_and_op2;
@@ -53,7 +65,7 @@ struct ReverseTraversal {
     GenericAnalyzer::Action analyzeRange(const Token* start, const Token* end) {
         GenericAnalyzer::Action result = GenericAnalyzer::Action::None;
         for (const Token* tok = start; tok && tok != end; tok = tok->next()) {
-            GenericAnalyzer::Action action = analyzer->analyze(tok);
+            GenericAnalyzer::Action action = analyzer->analyze(tok, GenericAnalyzer::Direction::Reverse);
             if (action.isModified() || action.isInconclusive())
                 return action;
             result |= action;
@@ -72,7 +84,7 @@ struct ReverseTraversal {
                 if (astIsLHS(tok))
                     opSide = 1;
                 else if (astIsRHS(tok))
-                    opSide = 1;
+                    opSide = 2;
                 else
                     opSide = 0;
             }
@@ -114,20 +126,19 @@ struct ReverseTraversal {
                 break;
             // Evaluate LHS of assignment before RHS
             if (Token* assignTok = assignExpr(tok)) {
-                GenericAnalyzer::Action action = GenericAnalyzer::Action::None;
                 Token* assignTop = assignTok;
+                bool continueB = true;
                 while(assignTop->isAssignmentOp()) {
-                    action |= analyzeRecursive(assignTop->astOperand1());
+                    if (!Token::Match(assignTop->astOperand1(), "%assign%")) {
+                        continueB &= updateRecursive(assignTop->astOperand1());
+                    }
                     if (!assignTop->astParent())
                         break;
                     assignTop = assignTop->astParent();
                 }
                 // TODO: Forward and reverse RHS
-                if (action.isRead() || action.isModified()) {
-                    if (!action.isModified())
-                        valueFlowGenericForward(assignTop->astOperand1(), analyzer, settings);
+                if (!continueB)
                     break;
-                }
                 valueFlowGenericForward(assignTop->astOperand2(), analyzer, settings);
                 tok = assignTop->previous();
                 continue;

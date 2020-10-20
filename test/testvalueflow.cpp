@@ -1082,7 +1082,7 @@ private:
                "  if (y == 32) {}"
                "}\n";
         ASSERT_EQUALS("5,Assuming that condition 'y==32' is not redundant\n"
-                      "4,Compound assignment '+=', before assignment value is 20\n"
+                      "4,Compound assignment '+=', assigned value is 20\n"
                       "2,Assignment 'x=y', assigned value is 20\n",
                       getErrorPathForX(code, 3U));
 
@@ -1191,9 +1191,9 @@ private:
                "   if (x == 4);\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 3));
-        ASSERT_EQUALS("4,Assuming that condition 'x==4' is not redundant\n"
-                      "3,x is incremented, before this increment the value is 3\n",
-                      getErrorPathForX(code, 2U));
+        // ASSERT_EQUALS("4,Assuming that condition 'x==4' is not redundant\n"
+        //               "3,x is incremented, before this increment the value is 3\n",
+        //               getErrorPathForX(code, 2U));
 
         // compound assignment += , -= , ...
         code = "void f(int x) {\n"
@@ -1222,15 +1222,14 @@ private:
                "   x /= 5;\n"
                "   if (x == 42);\n"
                "}";
-        ASSERT(tokenValues(code, "x ;").empty());
+        ASSERT_EQUALS(true, testValueOfX(code, 2U, 210));
 
         // bailout: assignment
         bailout("void f(int x) {\n"
                 "    x = y;\n"
                 "    if (x == 123) {}\n"
                 "}");
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:2]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable y\n"
-                                          "[test.cpp:2]: (debug) valueflow.cpp::valueFlowReverse bailout: assignment of x\n", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:2]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable y\n", errout.str());
     }
 
     void valueFlowBeforeConditionAndAndOrOrGuard() { // guarding by &&
@@ -1345,14 +1344,12 @@ private:
         bailout("void f(int x) {\n"
                 "    y = ((x<0) ? x : ((x==2)?3:4));\n"
                 "}");
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:2]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable y\n"
-                                          "[test.cpp:2]: (debug) valueflow.cpp:1113:valueFlowReverse bailout: no simplification of x within ?: expression\n", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:2]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable y\n", errout.str());
 
         bailout("int f(int x) {\n"
                 "  int r = x ? 1 / x : 0;\n"
                 "  if (x == 0) {}\n"
                 "}");
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:2]: (debug) valueflow.cpp:1113:valueFlowReverse bailout: no simplification of x within ?: expression\n", errout.str());
 
         code = "void f(int x) {\n"
                "    int a =v x;\n"
@@ -1410,8 +1407,7 @@ private:
                 "    if (x != 123) { b = x; }\n"
                 "    if (x == 123) {}\n"
                 "}");
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:2]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable b\n"
-                                          "[test.cpp:2]: (debug) valueflow.cpp:1144:valueFlowReverse bailout: variable x stopping on }\n", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:2]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable b\n", errout.str());
 
         code = "void f(int x, bool abc) {\n"
                "  a = x;\n"
@@ -1451,8 +1447,7 @@ private:
                 "    case 2: if (x==5) {} break;\n"
                 "    };\n"
                 "}");
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
-                                          "[test.cpp:3]: (debug) valueflow.cpp:1180:valueFlowReverse bailout: variable x stopping on break\n", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n", errout.str());
 
         bailout("void f(int x, int y) {\n"
                 "    switch (y) {\n"
@@ -1460,8 +1455,7 @@ private:
                 "    case 2: if (x==5) {} break;\n"
                 "    };\n"
                 "}");
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
-                                          "[test.cpp:3]: (debug) valueflow.cpp:1180:valueFlowReverse bailout: variable x stopping on return\n", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n", errout.str());
     }
 
     void valueFlowBeforeConditionMacro() {
@@ -1492,8 +1486,7 @@ private:
                 "    if (x==123){}\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
-            "[test.cpp:4]: (debug) valueflow.cpp:1131:valueFlowReverse bailout: variable x stopping on goto label\n",
+            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n",
             errout.str());
 
         // #5721 - FP
@@ -1507,10 +1500,6 @@ private:
                 "out:\n"
                 "    if (abc) {}\n"
                 "}\n");
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:2]: (debug) valueflow.cpp:1035:valueFlowReverse bailout: assignment of abc\n"
-            "[test.cpp:8]: (debug) valueflow.cpp:1131:valueFlowReverse bailout: variable abc stopping on goto label\n",
-            errout.str());
     }
 
     void valueFlowBeforeConditionForward() {
