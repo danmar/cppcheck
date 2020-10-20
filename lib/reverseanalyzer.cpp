@@ -169,7 +169,6 @@ struct ReverseTraversal {
                 if (hasElse) {
                     elseAction = analyzeRange(tok->link(), tok);
                 }
-                GenericAnalyzer::Action action = thenAction | elseAction;
                 if (thenAction.isModified() && !elseAction.isModified())
                     analyzer->assume(condTok, hasElse, condTok);
                 else if (elseAction.isModified() && !thenAction.isModified())
