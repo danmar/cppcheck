@@ -90,6 +90,9 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
 
 bool isTemporary(bool cpp, const Token* tok, const Library* library, bool unknown = false);
 
+const Token* previousBeforeAstLeftmostLeaf(const Token* tok);
+Token* previousBeforeAstLeftmostLeaf(Token* tok);
+
 const Token * nextAfterAstRightmostLeaf(const Token * tok);
 Token* nextAfterAstRightmostLeaf(Token* tok);
 
