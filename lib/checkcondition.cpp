@@ -469,7 +469,7 @@ void CheckCondition::duplicateCondition()
                 }
             }
             if (tok3->varId() > 0 &&
-                isVariableChanged(scope.classDef->next(), cond2, tok3->valueType()->pointer, tok3->varId(), false, mSettings, mTokenizer->isCPP())) {
+                isVariableChanged(scope.classDef->next(), cond2, tok3->valueType() ? tok3->valueType()->pointer : 0, tok3->varId(), false, mSettings, mTokenizer->isCPP())) {
                 modified = true;
                 return ChildrenToVisit::done;
             }
