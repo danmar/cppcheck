@@ -124,25 +124,6 @@ struct ReverseTraversal {
             }
             if (Token::Match(tok, "return|break|continue"))
                 break;
-            // Evaluate LHS of assignment before RHS
-            if (Token* assignTok = assignExpr(tok)) {
-                Token* assignTop = assignTok;
-                bool continueB = true;
-                while(assignTop->isAssignmentOp()) {
-                    if (!Token::Match(assignTop->astOperand1(), "%assign%")) {
-                        continueB &= updateRecursive(assignTop->astOperand1());
-                    }
-                    if (!assignTop->astParent())
-                        break;
-                    assignTop = assignTop->astParent();
-                }
-                // TODO: Forward and reverse RHS
-                if (!continueB)
-                    break;
-                valueFlowGenericForward(assignTop->astOperand2(), analyzer, settings);
-                tok = assignTop->previous();
-                continue;
-            }
             if (tok->str() == "}") {
                 Token* condTok = getCondTokFromEnd(tok);
                 if (!condTok)
@@ -204,6 +185,25 @@ struct ReverseTraversal {
             }
             if (Token* parent = isDeadCode(tok)) {
                 tok = parent;
+                continue;
+            }
+            // Evaluate LHS of assignment before RHS
+            if (Token* assignTok = assignExpr(tok)) {
+                Token* assignTop = assignTok;
+                bool continueB = true;
+                while(assignTop->isAssignmentOp()) {
+                    if (!Token::Match(assignTop->astOperand1(), "%assign%")) {
+                        continueB &= updateRecursive(assignTop->astOperand1());
+                    }
+                    if (!assignTop->astParent())
+                        break;
+                    assignTop = assignTop->astParent();
+                }
+                // TODO: Forward and reverse RHS
+                if (!continueB)
+                    break;
+                valueFlowGenericForward(assignTop->astOperand2(), analyzer, settings);
+                tok = assignTop->previous();
                 continue;
             }
             if (!update(tok))
