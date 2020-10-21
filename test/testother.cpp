@@ -8963,8 +8963,7 @@ private:
               "    dostuff(x * 0);\n"
               "    dostuff(0 * x);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Argument 'false&&x' to function dostuff is always 0. Constant literal calculation disable/hide variable expression 'x'.\n"
-                      "[test.cpp:5]: (style) Argument 'true||x' to function dostuff is always 1. Constant literal calculation disable/hide variable expression 'x'.\n"
+        ASSERT_EQUALS("[test.cpp:5]: (style) Argument 'true||x' to function dostuff is always 1. Constant literal calculation disable/hide variable expression 'x'.\n"
                       "[test.cpp:6]: (style) Argument 'x*0' to function dostuff is always 0. Constant literal calculation disable/hide variable expression 'x'.\n"
                       "[test.cpp:7]: (style) Argument '0*x' to function dostuff is always 0. Constant literal calculation disable/hide variable expression 'x'.\n", errout.str());
     }
