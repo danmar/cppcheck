@@ -3838,6 +3838,14 @@ private:
               "  }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // do not crash
+        check("void assign(const MMA& other) {\n"
+              "    if (mPA.cols != other.mPA.cols || mPA.rows != other.mPA.rows)\n"
+              "        ;\n"
+              "    if (other.mPA.cols > 0 && other.mPA.rows > 0)\n"
+              "        ;\n"
+              "}");
     }
 
     void checkInvalidTestForOverflow() {
