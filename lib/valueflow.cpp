@@ -4662,6 +4662,8 @@ static void valueFlowAfterCondition(TokenList *tokenlist,
         ValueFlow::Value false_value;
         const Token *vartok = parseCompareInt(tok, true_value, false_value);
         if (vartok) {
+            if (vartok->hasKnownValue())
+                return cond;
             if (vartok->str() == "=" && vartok->astOperand1() && vartok->astOperand2())
                 vartok = vartok->astOperand1();
             cond.true_values.push_back(true_value);
