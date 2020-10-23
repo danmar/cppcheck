@@ -22,6 +22,7 @@
 #include "tokenize.h"
 #include "utils.h"
 
+#include <algorithm>
 #include <memory>
 #include <vector>
 #include <iostream>
@@ -558,8 +559,9 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     if (nodeType == CallExpr)
         return createTokensCall(tokenList);
     if (nodeType == CaseStmt) {
-        addtoken(tokenList, "case");
-        children[0]->createTokens(tokenList);
+        Token *caseToken = addtoken(tokenList, "case");
+        Token *exprToken = children[0]->createTokens(tokenList);
+        caseToken->astOperand1(exprToken);
         addtoken(tokenList, ":");
         children.back()->createTokens(tokenList);
         return nullptr;
@@ -604,7 +606,7 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         return nullptr;
     }
     if (nodeType == ConstantExpr)
-        return children[0]->createTokens(tokenList);
+        return children.back()->createTokens(tokenList);
     if (nodeType == ContinueStmt)
         return addtoken(tokenList, "continue");
     if (nodeType == CStyleCastExpr) {
@@ -954,8 +956,10 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == ReturnStmt) {
         Token *tok1 = addtoken(tokenList, "return");
-        if (!children.empty())
+        if (!children.empty()) {
+            children[0]->setValueType(tok1);
             tok1->astOperand1(children[0]->createTokens(tokenList));
+        }
         return tok1;
     }
     if (nodeType == StringLiteral)
@@ -1034,23 +1038,25 @@ Token * clangimport::AstNode::createTokensCall(TokenList *tokenList)
         firstParam = 1;
         f = children[0]->createTokens(tokenList);
     }
+    f->setValueType(nullptr);
     Token *par1 = addtoken(tokenList, "(");
     par1->astOperand1(f);
-    Token *parent = par1;
     int args = 0;
     while (args < children.size() && children[args]->nodeType != CXXDefaultArgExpr)
         args++;
+    Token *child = nullptr;
     for (int c = firstParam; c < args; ++c) {
-        if (c + 1 < args) {
-            Token *child = children[c]->createTokens(tokenList);
+        if (child) {
             Token *comma = addtoken(tokenList, ",");
+            comma->setValueType(nullptr);
             comma->astOperand1(child);
-            parent->astOperand2(comma);
-            parent = comma;
+            comma->astOperand2(children[c]->createTokens(tokenList));
+            child = comma;
         } else {
-            parent->astOperand2(children[c]->createTokens(tokenList));
+            child = children[c]->createTokens(tokenList);
         }
     }
+    par1->astOperand2(child);
     Token *par2 = addtoken(tokenList, ")");
     par1->link(par2);
     par2->link(par1);
@@ -1155,7 +1161,8 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
 
 void clangimport::AstNode::createTokensForCXXRecord(TokenList *tokenList)
 {
-    Token *classToken = addtoken(tokenList, "class");
+    bool isStruct = (std::find(mExtTokens.begin(), mExtTokens.end(), "struct") != mExtTokens.end());
+    Token *classToken = addtoken(tokenList, isStruct ? "struct" : "class");
     const std::string className = mExtTokens[mExtTokens.size() - 2] + getTemplateParameters();
     /*Token *nameToken =*/ addtoken(tokenList, className);
     std::vector<AstNodePtr> children2;
@@ -1170,7 +1177,7 @@ void clangimport::AstNode::createTokensForCXXRecord(TokenList *tokenList)
         addtoken(tokenList, ";");
         return;
     }
-    Scope *scope = createScope(tokenList, Scope::ScopeType::eClass, children2, classToken);
+    Scope *scope = createScope(tokenList, isStruct ? Scope::ScopeType::eStruct : Scope::ScopeType::eClass, children2, classToken);
     scope->className = className;
     mData->mSymbolDatabase->typeList.push_back(Type(classToken, scope, classToken->scope()));
     scope->definedType = &mData->mSymbolDatabase->typeList.back();
@@ -1195,8 +1202,7 @@ Token * clangimport::AstNode::createTokensVarDecl(TokenList *tokenList)
     }
     Token *vartok1 = addtoken(tokenList, name);
     Scope *scope = const_cast<Scope *>(tokenList->back()->scope());
-    const AccessControl accessControl = (scope->type == Scope::ScopeType::eGlobal) ? (AccessControl::Global) : (AccessControl::Local);
-    scope->varlist.push_back(Variable(vartok1, type, startToken, 0, accessControl, nullptr, scope));
+    scope->varlist.push_back(Variable(vartok1, type, startToken, 0, scope->defaultAccess(), nullptr, scope));
     mData->varDecl(addr, vartok1, &scope->varlist.back());
     if (mExtTokens.back() == "cinit" && !children.empty()) {
         Token *eq = addtoken(tokenList, "=");

@@ -194,7 +194,7 @@ namespace ExprEngine {
     // Array or pointer
     class ArrayValue: public Value {
     public:
-        const int MAXSIZE = 0x100000;
+        enum { MAXSIZE = 0x7fffffff };
 
         ArrayValue(const std::string &name, ValuePtr size, ValuePtr value, bool pointer, bool nullPointer, bool uninitPointer);
         ArrayValue(DataBase *data, const Variable *var);

@@ -51,6 +51,8 @@ private:
         TEST_CASE(exprAssign1);
         TEST_CASE(exprAssign2); // Truncation
 
+        TEST_CASE(getValueConst1);
+
         TEST_CASE(inc1);
         TEST_CASE(inc2);
 
@@ -328,13 +330,13 @@ private:
         Settings settings;
         LOAD_LIB_2(settings.library, "std.cfg");
 
-        ASSERT_EQUALS("1:26: $3=0:ffffffff\n"
+        ASSERT_EQUALS("1:26: $3=0:2147483647\n"
                       "1:26: $2=-128:127\n"
                       "1:27: 0:{ s=($4,[$3],[:]=$2)}\n",
                       trackExecution("void foo() { std::string s; }", &settings));
 
 
-        ASSERT_EQUALS("1:52: $3=0:ffffffff\n"
+        ASSERT_EQUALS("1:52: $3=0:2147483647\n"
                       "1:52: $2=-128:127\n"
                       "1:66: 0:{ s=($4,[$3],[:]=$2)}\n",
                       trackExecution("std::string getName(int); void foo() { std::string s = getName(1); }", &settings));
@@ -347,6 +349,12 @@ private:
     void exprAssign2() {
         ASSERT_EQUALS("2", getRange("void f(unsigned char x) { x = 258; int a = x }", "a=x"));
     }
+
+
+    void getValueConst1() { // Data::getValue
+        ASSERT_EQUALS("512", getRange("const int x=512; void func() { x=x }", "x=x"));
+    }
+
 
     void inc1() {
         ASSERT_EQUALS("(and (>= $1 (- 2147483648)) (<= $1 2147483647))\n"

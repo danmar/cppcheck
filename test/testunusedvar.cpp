@@ -171,6 +171,7 @@ private:
         TEST_CASE(localvarStruct8);
         TEST_CASE(localvarStruct9);
         TEST_CASE(localvarStructArray);
+        TEST_CASE(localvarUnion1);
 
         TEST_CASE(localvarOp);          // Usage with arithmetic operators
         TEST_CASE(localvarInvert);      // Usage with inverted variable
@@ -3623,6 +3624,18 @@ private:
                               "    x[0].a = 5;\n"
                               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'x[0].a' is assigned a value that is never used.\n", errout.str());
+    }
+
+    void localvarUnion1() {
+        // #9707
+        functionVariableUsage("static short read(FILE *fp) {\n"
+                              "    typedef union { short s; unsigned char c[2]; } u;\n"
+                              "    u x;\n"
+                              "    x.c[0] = fgetuc(fp);\n"
+                              "    x.c[1] = fgetuc(fp);\n"
+                              "    return x.s;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarOp() {

@@ -64,17 +64,11 @@ void Check::reportError(const ErrorPath &errorPath, Severity::SeverityType sever
         reportError(errmsg);
 }
 
-bool Check::wrongData(const Token *tok, bool condition, const char *str)
+bool Check::wrongData(const Token *tok, const char *str)
 {
-#if defined(DACA2) || defined(UNSTABLE)
-    if (condition) {
+    if (mSettings->daca)
         reportError(tok, Severity::debug, "DacaWrongData", "Wrong data detected by condition " + std::string(str));
-    }
-#else
-    (void)tok;
-    (void)str;
-#endif
-    return condition;
+    return true;
 }
 
 std::list<Check *> &Check::instances()

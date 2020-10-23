@@ -1,6 +1,6 @@
 ---
 title: Cppcheck manual
-subtitle: Version 2.1.99
+subtitle: Version 2.2.99
 author: Cppcheck team
 lang: en
 documentclass: report
@@ -471,6 +471,20 @@ Or at the same line as the code:
         char arr[5];
 
         arr[10] = 0;  // cppcheck-suppress arrayIndexOutOfBounds
+    }
+
+In this example there are 2 lines with code and 1 suppression comment. The suppression comment only applies to 1 line: `a = b + c;`.
+
+    void f() {
+        a = b + c; // cppcheck-suppress abc
+        d = e + f;
+    }
+
+As a special case for backwards compatibility, if you have a `{` on its own line and a suppression comment after that, then that will suppress warnings for both the current and next line. This example will suppress `abc` warnings both for `{` and for `a = b + c;`:
+
+    void f()
+    { // cppcheck-suppress abc
+        a = b + c;
     }
 
 ### Multiple suppressions

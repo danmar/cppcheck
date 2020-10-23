@@ -464,6 +464,17 @@ namespace {
                 return it->second;
             if (!valueType)
                 return ExprEngine::ValuePtr();
+
+            // constant value..
+            const Variable *var = tokenizer->getSymbolDatabase()->getVariableFromVarId(varId);
+            if (var && valueType->constness == 1 && Token::Match(var->nameToken(), "%var% =")) {
+                const Token *initExpr = var->nameToken()->next()->astOperand2();
+                if (initExpr && initExpr->hasKnownIntValue()) {
+                    auto intval = initExpr->getKnownIntValue();
+                    return std::make_shared<ExprEngine::IntRange>(std::to_string(intval), intval, intval);
+                }
+            }
+
             ExprEngine::ValuePtr value = getValueRangeFromValueType(getNewSymbolName(), valueType, *settings);
             if (value) {
                 if (tok->variable() && tok->variable()->nameToken())
@@ -1506,7 +1517,7 @@ static ExprEngine::ValuePtr getValueRangeFromValueType(const ValueType *valueTyp
             value = getValueRangeFromValueType(&vt, data);
         } else
             return ExprEngine::ValuePtr();
-        auto bufferSize = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 0, ~0U);
+        auto bufferSize = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 0, ExprEngine::ArrayValue::MAXSIZE);
         return std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), bufferSize, value, false, false, false);
     }
     return getValueRangeFromValueType(data.getNewSymbolName(), valueType, *data.settings);

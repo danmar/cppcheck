@@ -1272,12 +1272,9 @@ void SymbolDatabase::createSymbolDatabaseEnums()
             const_cast<Token *>(i.name)->enumerator(&i);
     }
 
-    // fill in enumerator values
     for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
         if (it->type != Scope::eEnum)
             continue;
-
-        MathLib::bigint value = 0;
 
         for (Enumerator & enumerator : it->enumeratorList) {
             // look for initialization tokens that can be converted to enumerators and convert them
@@ -1291,26 +1288,6 @@ void SymbolDatabase::createSymbolDatabaseEnums()
                             const_cast<Token *>(tok3)->enumerator(e);
                     }
                 }
-
-                // look for possible constant folding expressions
-                // rhs of operator:
-                Token *rhs = enumerator.start->previous()->astOperand2();
-
-                // constant folding of expression:
-                ValueFlow::valueFlowConstantFoldAST(rhs, mSettings);
-
-                // get constant folded value:
-                if (rhs && rhs->hasKnownIntValue()) {
-                    enumerator.value = rhs->values().front().intvalue;
-                    enumerator.value_known = true;
-                    value = enumerator.value + 1;
-                }
-            }
-
-            // not initialized so use default value
-            else {
-                enumerator.value = value++;
-                enumerator.value_known = true;
             }
         }
     }
@@ -1856,7 +1833,12 @@ Variable::Variable(const Token *name_, const std::string &clangType, const Token
       mScope(scope_),
       mValueType(nullptr)
 {
-    if (start && start->str() == "static")
+    if (!mTypeStartToken && mTypeEndToken) {
+        mTypeStartToken = mTypeEndToken;
+        while (Token::Match(mTypeStartToken->previous(), "%type%|*|&"))
+            mTypeStartToken = mTypeStartToken->previous();
+    }
+    if (Token::simpleMatch(mTypeStartToken, "static"))
         setFlag(fIsStatic, true);
 
     if (endsWith(clangType, " &", 2))
@@ -2816,6 +2798,26 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
         *scope = nullptr;
         *tok = nullptr;
     }
+}
+
+bool Type::isClassType() const
+{
+    return classScope && classScope->type == Scope::ScopeType::eClass;
+}
+
+bool Type::isEnumType() const
+{
+    return classScope && classScope->type == Scope::ScopeType::eEnum;
+}
+
+bool Type::isStructType() const
+{
+    return classScope && classScope->type == Scope::ScopeType::eStruct;
+}
+
+bool Type::isUnionType() const
+{
+    return classScope && classScope->type == Scope::ScopeType::eUnion;
 }
 
 const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
@@ -5826,9 +5828,16 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             typestr += end->str();
             if (valuetype->fromLibraryType(typestr, settings))
                 type = end;
-        } else if (ValueType::Type::UNKNOWN_TYPE != ValueType::typeFromString(type->str(), type->isLong()))
+        } else if (ValueType::Type::UNKNOWN_TYPE != ValueType::typeFromString(type->str(), type->isLong())) {
+            ValueType::Type t0 = valuetype->type;
             valuetype->type = ValueType::typeFromString(type->str(), type->isLong());
-        else if (type->str() == "auto") {
+            if (t0 == ValueType::Type::LONG) {
+                if (valuetype->type == ValueType::Type::LONG)
+                    valuetype->type = ValueType::Type::LONGLONG;
+                else if (valuetype->type == ValueType::Type::DOUBLE)
+                    valuetype->type = ValueType::Type::LONGDOUBLE;
+            }
+        } else if (type->str() == "auto") {
             const ValueType *vt = type->valueType();
             if (!vt)
                 return nullptr;
@@ -6116,6 +6125,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                     TokenList tokenList(mSettings);
                     std::istringstream istr(typestr+";");
                     tokenList.createTokens(istr);
+                    tokenList.simplifyStdType();
                     if (parsedecl(tokenList.front(), &valuetype, mDefaultSignedness, mSettings)) {
                         valuetype.originalTypeName = typestr;
                         setValueType(tok, valuetype);

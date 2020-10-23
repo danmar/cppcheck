@@ -131,20 +131,13 @@ public:
         return classDef ? classDef->str() : emptyString;
     }
 
-    bool isClassType() const {
-        return classDef && classDef->str() == "class";
-    }
-
-    bool isEnumType() const {
-        return classDef && classDef->str() == "enum";
-    }
+    bool isClassType() const;
+    bool isEnumType() const;
+    bool isStructType() const;
+    bool isUnionType() const;
 
     bool isTypeAlias() const {
         return classDef && classDef->str() == "using";
-    }
-
-    bool isStructType() const {
-        return classDef && classDef->str() == "struct";
     }
 
     const Token *initBaseInfo(const Token *tok, const Token *tok1);

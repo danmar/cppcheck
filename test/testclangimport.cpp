@@ -358,7 +358,7 @@ private:
         const char clang[] = "`-CXXRecordDecl 0x8ecd60 <1.cpp:1:1, line:4:1> line:1:8 struct S definition\n"
                              "  `-CXXDestructorDecl 0x8ed088 <line:3:3, col:9> col:3 ~S 'void () noexcept'\n"
                              "    `-CompoundStmt 0x8ed1a8 <col:8, col:9>";
-        ASSERT_EQUALS("class S\n\n{ ~S ( ) { } }", parse(clang));
+        ASSERT_EQUALS("struct S\n\n{ ~S ( ) { } }", parse(clang));
     }
 
     void cxxForRangeStmt1() {

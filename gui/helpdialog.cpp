@@ -33,6 +33,11 @@ static QString getHelpFile()
           << datadir
           << (QApplication::applicationDirPath() + "/help")
           << QApplication::applicationDirPath();
+#ifdef FILESDIR
+    const QString filesdir = FILESDIR;
+    paths << (filesdir + "/help")
+          << filesdir;
+#endif
     for (QString p: paths) {
         QString filename = p + "/online-help.qhc";
         if (QFileInfo(filename).exists())

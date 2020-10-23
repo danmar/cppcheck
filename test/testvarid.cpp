@@ -194,6 +194,12 @@ private:
         TEST_CASE(varidclass20);   // #7578: int (*p)[2]
         TEST_CASE(varid_classnameshaddowsvariablename); // #3990
 
+        TEST_CASE(varidenum1);
+        TEST_CASE(varidenum2);
+        TEST_CASE(varidenum3);
+        TEST_CASE(varidenum4);
+        TEST_CASE(varidenum5);
+
         TEST_CASE(varidnamespace1);
         TEST_CASE(varidnamespace2);
         TEST_CASE(usingNamespace1);
@@ -3082,6 +3088,70 @@ private:
                                 "4: } ;\n"
                                 "5: S :: S ( ) { p@1 [ 0 ] = 0 ; }\n";
         ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varidenum1() {
+        const char code[] = "const int eStart = 6;\n"
+                            "enum myEnum {\n"
+                            "  A = eStart;\n"
+                            "};\n";
+        const char expected[] = "1: const int eStart@1 = 6 ;\n"
+                                "2: enum myEnum {\n"
+                                "3: A = eStart@1 ;\n"
+                                "4: } ;\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varidenum2() {
+        const char code[] = "const int eStart = 6;\n"
+                            "enum myEnum {\n"
+                            "  A = f(eStart);\n"
+                            "};\n";
+        const char expected[] = "1: const int eStart@1 = 6 ;\n"
+                                "2: enum myEnum {\n"
+                                "3: A = f ( eStart@1 ) ;\n"
+                                "4: } ;\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varidenum3() {
+        const char code[] = "const int eStart = 6;\n"
+                            "enum myEnum {\n"
+                            "  A = f(eStart, x);\n"
+                            "};\n";
+        const char expected[] = "1: const int eStart@1 = 6 ;\n"
+                                "2: enum myEnum {\n"
+                                "3: A = f ( eStart@1 , x ) ;\n"
+                                "4: } ;\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varidenum4() {
+        const char code[] = "const int eStart = 6;\n"
+                            "enum myEnum {\n"
+                            "  A = f(x, eStart);\n"
+                            "};\n";
+        const char expected[] = "1: const int eStart@1 = 6 ;\n"
+                                "2: enum myEnum {\n"
+                                "3: A = f ( x , eStart@1 ) ;\n"
+                                "4: } ;\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varidenum5() {
+        const char code[] = "const int eStart = 6;\n"
+                            "enum myEnum {\n"
+                            "  A = f(x, eStart, y);\n"
+                            "};\n";
+        const char expected[] = "1: const int eStart@1 = 6 ;\n"
+                                "2: enum myEnum {\n"
+                                "3: A = f ( x , eStart@1 , y ) ;\n"
+                                "4: } ;\n";
+        const char current[] = "1: const int eStart@1 = 6 ;\n"
+                               "2: enum myEnum {\n"
+                               "3: A = f ( x , eStart , y ) ;\n"
+                               "4: } ;\n";
+        TODO_ASSERT_EQUALS(expected, current, tokenize(code));
     }
 
     void varid_classnameshaddowsvariablename() {

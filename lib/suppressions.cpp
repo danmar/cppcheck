@@ -291,8 +291,10 @@ bool Suppressions::Suppression::isSuppressed(const Suppressions::ErrorMessage &e
         return false;
     if (!fileName.empty() && !matchglob(fileName, errmsg.getFileName()))
         return false;
-    if (lineNumber != NO_LINE && lineNumber != errmsg.lineNumber)
-        return false;
+    if (lineNumber != NO_LINE && lineNumber != errmsg.lineNumber) {
+        if (!thisAndNextLine || lineNumber + 1 != errmsg.lineNumber)
+            return false;
+    }
     if (!symbolName.empty()) {
         for (std::string::size_type pos = 0; pos < errmsg.symbolNames.size();) {
             const std::string::size_type pos2 = errmsg.symbolNames.find('\n',pos);
