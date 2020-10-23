@@ -1496,9 +1496,10 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
         const bool emptyBody = (f.functionScope && Token::simpleMatch(f.functionScope->bodyStart, "{ }"));
 
         Token* nextToken = f.argDef->link();
-        if (Token::simpleMatch(nextToken, ")") && Token::simpleMatch(nextToken->next(), ":")) {
+        if (Token::simpleMatch(nextToken, ") :")) {
             // validating initialization list
-            nextToken = nextToken->next(); // skip ":"
+            nextToken = nextToken->next(); // goto ":"
+
             bool initListFinished = false;
             while (!initListFinished)
             {

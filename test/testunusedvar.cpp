@@ -308,6 +308,18 @@ private:
             "}");
         ASSERT_EQUALS("[test.cpp:7]: (style) Unused variable: f\n", errout.str());
 
+        functionVariableUsage(
+            "int y = 0;\n"
+            "class F {\n"
+            "public:\n"
+            "   F() : x(y) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   F f;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:8]: (style) Unused variable: f\n", errout.str());
+
         // non-empty constructor
         functionVariableUsage(
             "class F {\n"
@@ -380,6 +392,19 @@ private:
             "};\n"
             "void f() {\n"
             "   H h;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // unknown variable type used for initialization 
+        functionVariableUsage(
+            "unknown_type y = 0;\n"
+            "class F {\n"
+            "public:\n"
+            "   F() : x(y) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   F f;\n"
             "}");
         ASSERT_EQUALS("", errout.str());
     }
