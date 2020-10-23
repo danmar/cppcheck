@@ -1500,25 +1500,18 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
             // validating initialization list
             nextToken = nextToken->next(); // goto ":"
 
-            bool initListFinished = false;
-            while (!initListFinished)
+            for (const Token *initListToken = nextToken; Token::Match(initListToken, "[:,] %var% [({]"); initListToken = initListToken->linkAt(2)->next())
             {
-                nextToken = nextToken->next();
-                const Variable* variable = nextToken->variable();
-                initListFinished = Token::simpleMatch(nextToken, "{");
-                if (nextToken->link() && f.functionScope)
+                const Token* var_token = initListToken->next();
+                const Variable* variable = var_token->variable();
+                if (variable && !isVariableWithoutSideEffects(*variable))
                 {
-                    // distinguish list initialization from function body start
-                    initListFinished &= (nextToken->link()->scope() == f.functionScope->bodyStart->scope());
+                    return withoutSideEffects = false;
                 }
-                if (!variable)
+                const Variable* init_value_var = var_token->tokAt(2)->variable();
+                if (init_value_var && !isVariableWithoutSideEffects(*init_value_var))
                 {
-                    continue;
-                }
-                withoutSideEffects = isVariableWithoutSideEffects(*variable);
-                if (!withoutSideEffects)
-                {
-                    return withoutSideEffects;
+                    return withoutSideEffects = false;
                 }
             }
         }
