@@ -8146,6 +8146,9 @@ private:
 
         const char code6[] = "void foo() { dostuff(a, .x=0); }";
         ASSERT_THROW(tokenizeAndStringify(code6), InternalError);
+
+        const char code7[] = "void foo() { dostuff(ZEND_NUM_ARGS() TSRMLS_CC, x, y); }"; // #9476
+        ASSERT_THROW(tokenizeAndStringify(code7), InternalError);
     }
 
     void findGarbageCode() { // Test Tokenizer::findGarbageCode()
