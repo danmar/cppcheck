@@ -199,7 +199,24 @@ struct ReverseTraversal {
                         break;
                     assignTop = assignTop->astParent();
                 }
-                // TODO: Forward and reverse RHS
+                // Simple assign
+                if (assignTok->astParent() == assignTop || assignTok == assignTop) {
+                    // Assignment from
+                    GenericAnalyzer::Action rhsAction = analyzer->analyze(assignTok->astOperand2(), GenericAnalyzer::Direction::Reverse);
+                    if (rhsAction.isRead()) {
+                        ValuePtr<GenericAnalyzer> a = analyzer->reanalyze(assignTok->astOperand1());
+                        if (a) {
+                            valueFlowGenericForward(nextAfterAstRightmostLeaf(assignTok->astOperand2()), assignTok->astOperand2()->scope()->bodyEnd, a, settings);
+                        }
+                    // Assignment to
+                    } else {
+                        ValuePtr<GenericAnalyzer> a = analyzer->reanalyze(assignTok->astOperand2());
+                        if (a) {
+                            valueFlowGenericForward(nextAfterAstRightmostLeaf(assignTok->astOperand2()), assignTok->astOperand2()->scope()->bodyEnd, a, settings);
+                            valueFlowGenericReverse(assignTok->astOperand1()->previous(), a, settings);
+                        }
+                    }
+                }
                 if (!continueB)
                     break;
                 valueFlowGenericForward(assignTop->astOperand2(), analyzer, settings);

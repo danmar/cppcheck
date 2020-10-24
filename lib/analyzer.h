@@ -22,6 +22,8 @@
 #include <vector>
 
 class Token;
+template <class T>
+class ValuePtr;
 
 struct GenericAnalyzer {
     struct Action {
@@ -114,6 +116,8 @@ struct GenericAnalyzer {
     virtual bool isConditional() const = 0;
     /// The condition that will be assumed during analysis
     virtual void assume(const Token* tok, bool state, const Token* at = nullptr) = 0;
+    /// Return analyzer for expression at token
+    virtual ValuePtr<GenericAnalyzer> reanalyze(Token* tok) = 0;
     virtual ~GenericAnalyzer() {}
 };
 

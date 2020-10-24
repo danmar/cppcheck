@@ -77,6 +77,7 @@
 
 #include "valueflow.h"
 
+#include "analyzer.h"
 #include "astutils.h"
 #include "errorlogger.h"
 #include "forwardanalyzer.h"
@@ -2553,7 +2554,13 @@ struct ValueFlowGenericAnalyzer : GenericAnalyzer {
         if (d == Direction::Reverse && a.isRead())
             setTokenValue(tok, *value, getSettings());
     }
+
+    virtual ValuePtr<GenericAnalyzer> reanalyze(Token* tok) OVERRIDE {
+        return {};
+    }
 };
+
+ValuePtr<GenericAnalyzer> makeAnalyzer(Token* exprTok, const ValueFlow::Value& value, const TokenList* tokenlist);
 
 struct SingleValueFlowGenericAnalyzer : ValueFlowGenericAnalyzer {
     std::unordered_map<nonneg int, const Variable*> varids;
@@ -2660,6 +2667,10 @@ struct SingleValueFlowGenericAnalyzer : ValueFlowGenericAnalyzer {
         }
 
         return false;
+    }
+
+    virtual ValuePtr<GenericAnalyzer> reanalyze(Token* tok) OVERRIDE {
+        return makeAnalyzer(tok, value, tokenlist);
     }
 };
 
@@ -2905,6 +2916,16 @@ static const Token* solveExprValues(const Token* expr, std::list<ValueFlow::Valu
         }
     }
     return expr;
+}
+
+ValuePtr<GenericAnalyzer> makeAnalyzer(Token* exprTok, const ValueFlow::Value& value, const TokenList* tokenlist) {
+    std::list<ValueFlow::Value> values = {value};
+    const Token* expr = solveExprValues(exprTok, values);
+    if (expr->variable()) {
+        return VariableGenericAnalyzer(expr->variable(), value, getAliasesFromValues(values), tokenlist);
+    } else {
+        return ExpressionGenericAnalyzer(expr, value, tokenlist);;
+    }
 }
 
 static GenericAnalyzer::Action valueFlowForward(Token* startToken,
