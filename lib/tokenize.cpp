@@ -9493,6 +9493,8 @@ void Tokenizer::reportUnknownMacros()
                 continue;
             if (cAlternativeTokens.count(tok->linkAt(2)->next()->str()) > 0)
                 continue;
+            if (tok->next()->str().compare(0, 2, "__") == 0) // attribute/annotation
+                continue;
             unknownMacroError(tok->next());
         }
     }
