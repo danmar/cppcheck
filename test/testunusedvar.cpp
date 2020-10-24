@@ -407,6 +407,29 @@ private:
             "   F f;\n"
             "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage(
+            "int sideEffectFunc();\n"
+            "class F {\n"
+            "public:\n"
+            "   F() : x(sideEffectFunc()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   F f;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage(
+            "class F {\n"
+            "public:\n"
+            "   F() : x(unknownFunc()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   F f;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // #5355 - False positive: Variable is not assigned a value.

@@ -1502,16 +1502,27 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
 
             for (const Token *initListToken = nextToken; Token::Match(initListToken, "[:,] %var% [({]"); initListToken = initListToken->linkAt(2)->next())
             {
-                const Token* var_token = initListToken->next();
-                const Variable* variable = var_token->variable();
+                const Token* varToken = initListToken->next();
+                const Variable* variable = varToken->variable();
                 if (variable && !isVariableWithoutSideEffects(*variable))
                 {
                     return withoutSideEffects = false;
                 }
-                const Variable* init_value_var = var_token->tokAt(2)->variable();
-                if (init_value_var && !isVariableWithoutSideEffects(*init_value_var))
-                {
-                    return withoutSideEffects = false;
+
+                const Token* valueEnd = initListToken->linkAt(2);
+                for (const Token* valueToken = initListToken->tokAt(3); valueToken != valueEnd; valueToken = valueToken->next()) {
+                    const Variable* initValueVar = valueToken->variable();
+                    if (initValueVar && !isVariableWithoutSideEffects(*initValueVar))
+                    {
+                        return withoutSideEffects = false;
+                    }
+                    if ((valueToken->tokType() == Token::Type::eFunction) || 
+                        (valueToken->tokType() == Token::Type::eName) ||
+                        (valueToken->tokType() == Token::Type::eLambda) ||
+                        (valueToken->tokType() == Token::Type::eOther))
+                    {
+                        return withoutSideEffects = false;
+                    }
                 }
             }
         }
