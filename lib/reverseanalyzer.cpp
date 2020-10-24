@@ -205,13 +205,15 @@ struct ReverseTraversal {
                     GenericAnalyzer::Action lhsAction = analyzer->analyze(assignTok->astOperand1(), GenericAnalyzer::Direction::Reverse);
                     // Assignment from
                     if (rhsAction.isRead()) {
-                        ValuePtr<GenericAnalyzer> a = analyzer->reanalyze(assignTok->astOperand1());
+                        const std::string info = "Assignment from '" + assignTok->expressionString() + "'";
+                        ValuePtr<GenericAnalyzer> a = analyzer->reanalyze(assignTok->astOperand1(), info);
                         if (a) {
                             valueFlowGenericForward(nextAfterAstRightmostLeaf(assignTok->astOperand2()), assignTok->astOperand2()->scope()->bodyEnd, a, settings);
                         }
                     // Assignment to
                     } else if (!lhsAction.isNone()) {
-                        ValuePtr<GenericAnalyzer> a = analyzer->reanalyze(assignTok->astOperand2());
+                        const std::string info = "Assignment to '" + assignTok->expressionString() + "'";
+                        ValuePtr<GenericAnalyzer> a = analyzer->reanalyze(assignTok->astOperand2(), info);
                         if (a) {
                             valueFlowGenericForward(nextAfterAstRightmostLeaf(assignTok->astOperand2()), assignTok->astOperand2()->scope()->bodyEnd, a, settings);
                             valueFlowGenericReverse(assignTok->astOperand1()->previous(), a, settings);

@@ -19,6 +19,7 @@
 #ifndef analyzerH
 #define analyzerH
 
+#include <string>
 #include <vector>
 
 class Token;
@@ -117,7 +118,7 @@ struct GenericAnalyzer {
     /// The condition that will be assumed during analysis
     virtual void assume(const Token* tok, bool state, const Token* at = nullptr) = 0;
     /// Return analyzer for expression at token
-    virtual ValuePtr<GenericAnalyzer> reanalyze(Token* tok) = 0;
+    virtual ValuePtr<GenericAnalyzer> reanalyze(Token* tok, const std::string& msg = "") const = 0;
     virtual ~GenericAnalyzer() {}
 };
 

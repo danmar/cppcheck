@@ -2555,7 +2555,7 @@ struct ValueFlowGenericAnalyzer : GenericAnalyzer {
             setTokenValue(tok, *value, getSettings());
     }
 
-    virtual ValuePtr<GenericAnalyzer> reanalyze(Token* tok) OVERRIDE {
+    virtual ValuePtr<GenericAnalyzer> reanalyze(Token*, const std::string&) const OVERRIDE {
         return {};
     }
 };
@@ -2669,8 +2669,10 @@ struct SingleValueFlowGenericAnalyzer : ValueFlowGenericAnalyzer {
         return false;
     }
 
-    virtual ValuePtr<GenericAnalyzer> reanalyze(Token* tok) OVERRIDE {
-        return makeAnalyzer(tok, value, tokenlist);
+    virtual ValuePtr<GenericAnalyzer> reanalyze(Token* tok, const std::string& msg) const OVERRIDE {
+        ValueFlow::Value newValue = value;
+        newValue.errorPath.emplace_back(tok, msg);
+        return makeAnalyzer(tok, newValue, tokenlist);
     }
 };
 
