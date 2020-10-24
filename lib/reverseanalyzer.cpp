@@ -201,15 +201,16 @@ struct ReverseTraversal {
                 }
                 // Simple assign
                 if (assignTok->astParent() == assignTop || assignTok == assignTop) {
-                    // Assignment from
                     GenericAnalyzer::Action rhsAction = analyzer->analyze(assignTok->astOperand2(), GenericAnalyzer::Direction::Reverse);
+                    GenericAnalyzer::Action lhsAction = analyzer->analyze(assignTok->astOperand1(), GenericAnalyzer::Direction::Reverse);
+                    // Assignment from
                     if (rhsAction.isRead()) {
                         ValuePtr<GenericAnalyzer> a = analyzer->reanalyze(assignTok->astOperand1());
                         if (a) {
                             valueFlowGenericForward(nextAfterAstRightmostLeaf(assignTok->astOperand2()), assignTok->astOperand2()->scope()->bodyEnd, a, settings);
                         }
                     // Assignment to
-                    } else {
+                    } else if (!lhsAction.isNone()) {
                         ValuePtr<GenericAnalyzer> a = analyzer->reanalyze(assignTok->astOperand2());
                         if (a) {
                             valueFlowGenericForward(nextAfterAstRightmostLeaf(assignTok->astOperand2()), assignTok->astOperand2()->scope()->bodyEnd, a, settings);
