@@ -118,6 +118,7 @@ private:
         TEST_CASE(localvar56);
         TEST_CASE(localvar57); // #8974 - increment
         TEST_CASE(localvar58); // #9901 - increment false positive
+        TEST_CASE(localvar59); // #9737
         TEST_CASE(localvarloops); // loops
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
@@ -2477,6 +2478,14 @@ private:
                               "    if (x-- > 0) {}\n"
                               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
+    }
+
+    void localvar59() { // #9737
+        functionVariableUsage("Response foo() {\n"
+                              "    const std::vector<char> cmanifest = z;\n"
+                              "    return {.a = cmanifest, .b =0};\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarloops() {

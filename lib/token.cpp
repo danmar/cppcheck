@@ -1361,8 +1361,7 @@ std::pair<const Token *, const Token *> Token::findExpressionStartEndTokens() co
 
     // find start node in AST tree
     const Token *start = top;
-    while (start->astOperand1() &&
-           (start->astOperand2() || !start->isUnaryPreOp() || Token::simpleMatch(start, "( )") || start->str() == "{"))
+    while (start->astOperand1() && precedes(start->astOperand1(), start))
         start = start->astOperand1();
 
     // find end node in AST tree
