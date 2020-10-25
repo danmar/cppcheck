@@ -9488,6 +9488,15 @@ void Tokenizer::reportUnknownMacros()
                 continue;
             unknownMacroError(tok->next());
         }
+        if (Token::Match(tok, "[(,] %name% (") && Token::Match(tok->linkAt(2), ") %name% %name%|,|)")) {
+            if (tok->linkAt(2)->next()->isKeyword())
+                continue;
+            if (cAlternativeTokens.count(tok->linkAt(2)->next()->str()) > 0)
+                continue;
+            if (tok->next()->str().compare(0, 2, "__") == 0) // attribute/annotation
+                continue;
+            unknownMacroError(tok->next());
+        }
     }
 }
 

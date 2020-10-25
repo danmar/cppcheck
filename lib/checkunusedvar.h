@@ -34,6 +34,7 @@ class Token;
 class Tokenizer;
 class Type;
 class Variables;
+class Variable;
 
 /// @addtogroup Checks
 /// @{
@@ -70,6 +71,7 @@ public:
 
 private:
     bool isRecordTypeWithoutSideEffects(const Type* type);
+    bool isVariableWithoutSideEffects(const Variable& var);
     bool isEmptyType(const Type* type);
 
     // Error messages..
