@@ -443,7 +443,7 @@ private:
             "}");
         ASSERT_EQUALS("", errout.str());
 
-        // unknown variable type used for initialization 
+        // unknown variable type used for initialization
         functionVariableUsage(
             "unknown_type y = 0;\n"
             "class F {\n"
@@ -511,7 +511,7 @@ private:
             "   F f;\n"
             "}");
         ASSERT_EQUALS("", errout.str());
-        
+
         functionVariableUsage(
             "class F {\n"
             "public:\n"

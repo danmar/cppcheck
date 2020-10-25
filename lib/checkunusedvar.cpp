@@ -1134,11 +1134,9 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                         variables.read(tok2->varId(), tok);
                 }
             }
-        }
-        else if (tok->variable() && tok->variable()->isClass() && tok->variable()->type() && 
-            (tok->variable()->type()->needInitialization == Type::NeedInitialization::False) && 
-            tok->next()->str() == ";")
-        {
+        } else if (tok->variable() && tok->variable()->isClass() && tok->variable()->type() &&
+                   (tok->variable()->type()->needInitialization == Type::NeedInitialization::False) &&
+                   tok->next()->str() == ";") {
             variables.write(tok->varId(), tok);
         }
     }
@@ -1500,27 +1498,23 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
             // validating initialization list
             nextToken = nextToken->next(); // goto ":"
 
-            for (const Token *initListToken = nextToken; Token::Match(initListToken, "[:,] %var% [({]"); initListToken = initListToken->linkAt(2)->next())
-            {
+            for (const Token *initListToken = nextToken; Token::Match(initListToken, "[:,] %var% [({]"); initListToken = initListToken->linkAt(2)->next()) {
                 const Token* varToken = initListToken->next();
                 const Variable* variable = varToken->variable();
-                if (variable && !isVariableWithoutSideEffects(*variable))
-                {
+                if (variable && !isVariableWithoutSideEffects(*variable)) {
                     return withoutSideEffects = false;
                 }
 
                 const Token* valueEnd = initListToken->linkAt(2);
                 for (const Token* valueToken = initListToken->tokAt(3); valueToken != valueEnd; valueToken = valueToken->next()) {
                     const Variable* initValueVar = valueToken->variable();
-                    if (initValueVar && !isVariableWithoutSideEffects(*initValueVar))
-                    {
+                    if (initValueVar && !isVariableWithoutSideEffects(*initValueVar)) {
                         return withoutSideEffects = false;
                     }
-                    if ((valueToken->tokType() == Token::Type::eFunction) || 
+                    if ((valueToken->tokType() == Token::Type::eFunction) ||
                         (valueToken->tokType() == Token::Type::eName) ||
                         (valueToken->tokType() == Token::Type::eLambda) ||
-                        (valueToken->tokType() == Token::Type::eOther))
-                    {
+                        (valueToken->tokType() == Token::Type::eOther)) {
                         return withoutSideEffects = false;
                     }
                 }
@@ -1540,8 +1534,7 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
     // Is there a member variable with possible side effects
     for (const Variable& var : type->classScope->varlist) {
         withoutSideEffects = isVariableWithoutSideEffects(var);
-        if (!withoutSideEffects)
-        {
+        if (!withoutSideEffects) {
             return withoutSideEffects;
         }
     }
