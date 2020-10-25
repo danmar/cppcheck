@@ -2467,15 +2467,15 @@ struct ValueFlowGenericAnalyzer : GenericAnalyzer {
         if (match(tok)) {
             const Token* parent = tok->astParent();
             if (astIsPointer(tok) && (Token::Match(parent, "*|[") || (parent && parent->originalName() == "->")) && getIndirect(tok) <= 0)
-                return Action::Read;
+                return Action::Read | Action::Match;
 
             // Action read = Action::Read;
             Action w = isWritable(tok, d);
             if (w != Action::None)
-                return w;
+                return w | Action::Match;
 
             // Check for modifications by function calls
-            return isModified(tok);
+            return isModified(tok) | Action::Match;
         } else if (tok->isUnaryOp("*")) {
             const Token* lifeTok = nullptr;
             for (const ValueFlow::Value& v:tok->astOperand1()->values()) {

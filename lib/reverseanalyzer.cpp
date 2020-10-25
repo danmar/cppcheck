@@ -211,7 +211,7 @@ struct ReverseTraversal {
                             valueFlowGenericForward(nextAfterAstRightmostLeaf(assignTok->astOperand2()), assignTok->astOperand2()->scope()->bodyEnd, a, settings);
                         }
                     // Assignment to
-                    } else if (!lhsAction.isNone()) {
+                    } else if (lhsAction.matches()) {
                         const std::string info = "Assignment to '" + assignTok->expressionString() + "'";
                         ValuePtr<GenericAnalyzer> a = analyzer->reanalyze(assignTok->astOperand2(), info);
                         if (a) {

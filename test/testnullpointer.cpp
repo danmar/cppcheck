@@ -101,6 +101,7 @@ private:
         TEST_CASE(nullpointer58); // #9807
         TEST_CASE(nullpointer59); // #9897
         TEST_CASE(nullpointer60); // #9842
+        TEST_CASE(nullpointer61);
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1888,6 +1889,24 @@ private:
               "    s1 = s1 ? s1 + 1 : &uuid[5];\n"
               "    if (!strcmp(\"00000000000000000000000000000000\", s1) )\n"
               "        return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer61() {
+        check("struct a {\n"
+              "  int *e;\n"
+              "};\n"
+              "struct f {\n"
+              "  a *g() const;\n"
+              "};\n"
+              "void h() {\n"
+              "  for (f b;;) {\n"
+              "    a *c = b.g();\n"
+              "    int *d = c->e;\n"
+              "    if (d)\n"
+              "      ;\n"
+              "  }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

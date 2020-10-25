@@ -40,6 +40,7 @@ struct GenericAnalyzer {
             Write = (1 << 1),
             Invalid = (1 << 2),
             Inconclusive = (1 << 3),
+            Match = (1 << 4),
         };
 
         void set(unsigned int f, bool state = true) {
@@ -72,6 +73,10 @@ struct GenericAnalyzer {
 
         bool isModified() const {
             return isWrite() || isInvalid();
+        }
+
+        bool matches() const {
+            return get(Match);
         }
 
         Action& operator|=(Action a) {
