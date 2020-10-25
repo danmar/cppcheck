@@ -320,6 +320,54 @@ private:
             "}");
         ASSERT_EQUALS("[test.cpp:8]: (style) Unused variable: f\n", errout.str());
 
+        functionVariableUsage(
+            "int y = 0;"
+            "class F {\n"
+            "public:\n"
+            "   F() : x(++y) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   F f;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Unused variable: f\n", errout.str());
+
+        functionVariableUsage(
+            "int y = 0;"
+            "class F {\n"
+            "public:\n"
+            "   F() : x(--y) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   F f;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Unused variable: f\n", errout.str());
+
+        functionVariableUsage(
+            "int y = 0;"
+            "class F {\n"
+            "public:\n"
+            "   F() : x(y+=1) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   F f;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Unused variable: f\n", errout.str());
+
+        functionVariableUsage(
+            "int y = 0;"
+            "class F {\n"
+            "public:\n"
+            "   F() : x(y-=1) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   F f;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Unused variable: f\n", errout.str());
+
         // non-empty constructor
         functionVariableUsage(
             "class F {\n"
@@ -424,6 +472,50 @@ private:
             "class F {\n"
             "public:\n"
             "   F() : x(unknownFunc()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   F f;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage(
+            "class F {\n"
+            "public:\n"
+            "   F() : x(++unknownValue) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   F f;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage(
+            "class F {\n"
+            "public:\n"
+            "   F() : x(--unknownValue) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   F f;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage(
+            "class F {\n"
+            "public:\n"
+            "   F() : x(unknownValue+=1) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   F f;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+        
+        functionVariableUsage(
+            "class F {\n"
+            "public:\n"
+            "   F() : x(unknownValue-=1) {}\n"
             "   int x;\n"
             "};\n"
             "void f() {\n"
