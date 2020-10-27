@@ -403,7 +403,7 @@ static int multiComparePercent(const Token *tok, const char*& haystack, nonneg i
         // Type (%type%)
     {
         haystack += 5;
-        if (tok->isName() && tok->varId() == 0 && (tok->str() != "delete" || !tok->isKeyword())) // HACK: this is legacy behaviour, it should return false for all keywords, ecxcept types
+        if (tok->isName() && tok->varId() == 0 && (tok->str() != "delete" || !tok->isKeyword())) // HACK: this is legacy behaviour, it should return false for all keywords, except types
             return 1;
     }
     break;
