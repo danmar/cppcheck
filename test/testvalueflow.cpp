@@ -1415,6 +1415,13 @@ private:
                "  if (x == 7) { }\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 7));
+
+        code = "void f(int x, bool abc) {\n"
+               "  a = x;\n"
+               "  if (abc) { x = 7; }\n"  // <- condition is probably true
+               "  if (x == 7) { }\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 2U, 7));
     }
 
     void valueFlowBeforeConditionGlobalVariables() {

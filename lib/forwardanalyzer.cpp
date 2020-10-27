@@ -25,11 +25,12 @@ struct ForwardTraversal {
 
     std::pair<bool, bool> evalCond(const Token* tok) {
         std::vector<int> result = analyzer->evaluate(tok);
+        // TODO: We should convert to bool
         bool checkThen = std::any_of(result.begin(), result.end(), [](int x) {
-            return x;
+            return x == 1;
         });
         bool checkElse = std::any_of(result.begin(), result.end(), [](int x) {
-            return !x;
+            return x == 0;
         });
         return std::make_pair(checkThen, checkElse);
     }

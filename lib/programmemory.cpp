@@ -204,6 +204,8 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
                 if (p.first != tok2->next()->varId())
                     continue;
                 const Token *vartok = tok2->tokAt(3);
+                if (vartok == tok)
+                    continue;
                 pm.setValue(vartok->varId(), p.second);
                 setvar = true;
             }

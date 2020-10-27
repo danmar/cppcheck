@@ -19,11 +19,12 @@ struct ReverseTraversal {
 
     std::pair<bool, bool> evalCond(const Token* tok) {
         std::vector<int> result = analyzer->evaluate(tok);
+        // TODO: We should convert to bool
         bool checkThen = std::any_of(result.begin(), result.end(), [](int x) {
-            return x;
+            return x == 1;
         });
         bool checkElse = std::any_of(result.begin(), result.end(), [](int x) {
-            return !x;
+            return x == 0;
         });
         return std::make_pair(checkThen, checkElse);
     }
@@ -55,7 +56,7 @@ struct ReverseTraversal {
         GenericAnalyzer::Action result = GenericAnalyzer::Action::None;
         visitAstNodes(start, [&](const Token *tok) {
             result |= analyzer->analyze(tok, GenericAnalyzer::Direction::Reverse);
-            if (result.isModified() || result.isInconclusive())
+            if (result.isModified())
                 return ChildrenToVisit::done;
             return ChildrenToVisit::op1_and_op2;
         });
@@ -66,7 +67,7 @@ struct ReverseTraversal {
         GenericAnalyzer::Action result = GenericAnalyzer::Action::None;
         for (const Token* tok = start; tok && tok != end; tok = tok->next()) {
             GenericAnalyzer::Action action = analyzer->analyze(tok, GenericAnalyzer::Direction::Reverse);
-            if (action.isModified() || action.isInconclusive())
+            if (action.isModified())
                 return action;
             result |= action;
         }
@@ -158,7 +159,7 @@ struct ReverseTraversal {
                 else if (elseAction.isModified() && !thenAction.isModified())
                     analyzer->assume(condTok, !hasElse, condTok);
                 // Bail if one of the branches are read to avoid FPs due to over constraints
-                else if (thenAction.isRead() || elseAction.isRead())
+                else if (thenAction.isIdempotent() || elseAction.isIdempotent() || thenAction.isRead() || elseAction.isRead())
                     break;
                 if (thenAction.isModified() && elseAction.isModified())
                     break;

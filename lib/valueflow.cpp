@@ -2371,6 +2371,13 @@ struct ValueFlowGenericAnalyzer : GenericAnalyzer {
         if (isVariableChanged(tok, getIndirect(tok), getSettings(), isCPP())) {
             if (Token::Match(tok->astParent(), "*|[|.|++|--"))
                 return read | Action::Invalid;
+            const ValueFlow::Value* value = getValue(tok);
+            // Check if its assigned to the same value
+            if (value && Token::Match(tok->astParent(), "=") && astIsLHS(tok) && astIsIntegral(tok->astParent()->astOperand2(), false)) {
+                std::vector<int> result = evaluate(tok->astParent()->astOperand2());
+                if (!result.empty() && value->equalTo(result.front()))
+                    return Action::Idempotent;
+            }
             return Action::Invalid;
         }
         return read;
@@ -2409,8 +2416,12 @@ struct ValueFlowGenericAnalyzer : GenericAnalyzer {
                 a = Action::Invalid;
             else
                 a = Action::Write;
-            if (parent->str() != "=")
+            if (parent->str() != "=") {
                 a |= Action::Read;
+            } else {
+                if (rhsValue && value->equalValue(*rhsValue))
+                    a = Action::Idempotent;
+            }
             return a;
         }
 
@@ -2515,10 +2526,19 @@ struct ValueFlowGenericAnalyzer : GenericAnalyzer {
             return {static_cast<int>(tok->values().front().intvalue)};
         std::vector<int> result;
         ProgramMemory pm = pms.get(tok, getProgramState());
-        if (conditionIsTrue(tok, pm))
-            result.push_back(1);
-        if (conditionIsFalse(tok, pm))
-            result.push_back(0);
+        if (Token::Match(tok, "&&|%oror%")) {
+            if (conditionIsTrue(tok, pm))
+                result.push_back(1);
+            if (conditionIsFalse(tok, pm))
+                result.push_back(0);
+        } else {
+            MathLib::bigint out = 0;
+            bool error = false;
+            execute(tok, &pm, &out, &error);
+            if (!error)
+                result.push_back(out);
+        }
+
         return result;
     }
 
@@ -2926,7 +2946,7 @@ ValuePtr<GenericAnalyzer> makeAnalyzer(Token* exprTok, const ValueFlow::Value& v
     if (expr->variable()) {
         return VariableGenericAnalyzer(expr->variable(), value, getAliasesFromValues(values), tokenlist);
     } else {
-        return ExpressionGenericAnalyzer(expr, value, tokenlist);;
+        return ExpressionGenericAnalyzer(expr, value, tokenlist);
     }
 }
 
