@@ -1290,6 +1290,51 @@ class MisraChecker:
             if scope.className and scope.className[:num_sign_chars] in macroNames:
                 self.reportError(scope.bodyStart, 5, 5)
 
+
+    def misra_6_1(self, data):
+        # Bitfield type must be bool or explicity signed/unsigned int
+        for token in data.tokenlist:  
+            if token.valueType == None:
+                continue
+
+            if token.valueType.bits == 0:
+                continue
+
+            if token.valueType.type == 'bool':
+                continue
+
+            if token.valueType.type != 'int':
+                self.reportError(token, 6, 1)
+
+            if token.variable == None or token.variable.typeStartToken == None or token.variable.typeEndToken == None:
+                continue
+
+            isExplicitlySignedOrUnsigned = False
+            typeToken = token.variable.typeStartToken
+            while typeToken:
+                if typeToken.isUnsigned or typeToken.isSigned:
+                    isExplicitlySignedOrUnsigned = True
+                    break
+
+                if typeToken.Id == token.variable.typeEndToken.Id:
+                    break
+                
+                typeToken = typeToken.next
+
+            if not isExplicitlySignedOrUnsigned:
+                self.reportError(token, 6, 1)
+
+
+    def misra_6_2(self, data):
+        # Bitfields of size 1 can not be signed
+        for token in data.tokenlist:  
+            if token.valueType == None:
+                continue
+
+            if token.valueType.bits == 1 and token.valueType.sign == 'signed':
+                self.reportError(token, 6, 2)
+
+
     def misra_7_1(self, rawTokens):
         compiled = re.compile(r'^0[0-7]+$')
         for tok in rawTokens:
@@ -2902,8 +2947,8 @@ class MisraChecker:
             self.executeCheck(502, self.misra_5_2, cfg)
             self.executeCheck(504, self.misra_5_4, cfg)
             self.executeCheck(505, self.misra_5_5, cfg)
-            # 6.1 require updates in Cppcheck (type info for bitfields are lost)
-            # 6.2 require updates in Cppcheck (type info for bitfields are lost)
+            self.executeCheck(601, self.misra_6_1, cfg)
+            self.executeCheck(602, self.misra_6_2, cfg)
             if cfgNumber == 0:
                 self.executeCheck(701, self.misra_7_1, data.rawTokens)
                 self.executeCheck(703, self.misra_7_3, data.rawTokens)
