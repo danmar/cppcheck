@@ -23,6 +23,7 @@
 
 #include <cstdio>
 #include <iostream>
+#include <regex>
 #include <string>
 
 std::ostringstream errout;
@@ -88,7 +89,7 @@ bool TestFixture::prepareTest(const char testname[])
     mTemplateLocation.clear();
 
     // Check if tests should be executed
-    if (testToRun.empty() || testToRun == testname) {
+    if (testToRun.empty() || std::regex_match(testname, std::regex(testToRun))) {
         // Tests will be executed - prepare them
         mTestname = testname;
         ++countTests;
@@ -292,6 +293,8 @@ void TestFixture::printHelp()
               "        testrunner TestClass::TestCase\n"
               "    run all test cases in TestClass1 and TestClass2::TestCase:\n"
               "        testrunner TestClass1 TestClass2::TestCase\n"
+	      "\n"
+	      "    Regex may be used for TestClasses and TestCases.\n"
               "\n"
               "Options:\n"
               "    -q                   Do not print the test cases that have run.\n"
@@ -327,7 +330,7 @@ std::size_t TestFixture::runTests(const options& args)
         }
 
         for (TestFixture * test : TestRegistry::theInstance().tests()) {
-            if (classname.empty() || test->classname == classname) {
+            if (classname.empty() || std::regex_match(test->classname, std::regex(classname))) {
                 test->processOptions(args);
                 test->run(testname);
             }
