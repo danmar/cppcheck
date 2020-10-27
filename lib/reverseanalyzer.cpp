@@ -128,8 +128,9 @@ struct ReverseTraversal {
                 Token* condTok = getCondTokFromEnd(tok);
                 if (!condTok)
                     break;
+                const bool inLoop = condTok->astTop() && Token::Match(condTok->astTop()->previous(), "for|while (");
                 // Evaluate condition of for and while loops first
-                if (condTok && condTok->astTop() && Token::Match(condTok->astTop()->previous(), "for|while (")) {
+                if (inLoop) {
                     GenericAnalyzer::Action action = analyzeRecursive(condTok);
                     if (action.isModified())
                         break;
@@ -150,7 +151,9 @@ struct ReverseTraversal {
                 if (hasElse) {
                     elseAction = analyzeRange(tok->link(), tok);
                 }
-                if (thenAction.isModified() && !elseAction.isModified())
+                if (thenAction.isModified() && inLoop)
+                    break;
+                else if (thenAction.isModified() && !elseAction.isModified())
                     analyzer->assume(condTok, hasElse, condTok);
                 else if (elseAction.isModified() && !thenAction.isModified())
                     analyzer->assume(condTok, !hasElse, condTok);

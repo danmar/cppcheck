@@ -1909,6 +1909,21 @@ private:
               "  }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "  A* g() const;\n"
+              "  A* h() const;\n"
+              "};\n"
+              "void f(A* a) {\n"
+              "  if (!a->h())\n"
+              "    return;\n"
+              "  const A *b = a;\n"
+              "  while (b && !b->h())\n"
+              "      b = b->g();\n"
+              "  if (!b || b == b->g()->h())\n"
+              "      return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer_addressOf() { // address of
