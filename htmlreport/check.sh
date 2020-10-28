@@ -7,8 +7,12 @@
 tidy_cmd='tidy -o /dev/null -eq'
 
 function validate_html {
+    if [ ! -f "$1" ]; then
+        echo "File $1 does not exist!"
+	exit 1
+    fi
     set +e
-    ${tidy_cmd} $1
+    ${tidy_cmd} "$1"
     tidy_status=$?
     set -e
     if [ $tidy_status -eq 2 ]; then
