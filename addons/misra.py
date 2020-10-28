@@ -1296,20 +1296,21 @@ class MisraChecker:
         for token in data.tokenlist:
             if not token.valueType:
                 continue
-
             if token.valueType.bits == 0:
                 continue
-
-            if token.valueType.type == 'bool':
+            if not token.variable:
+                continue
+            if not token.scope:
+                continue
+            if token.scope.type not in 'Struct':
                 continue
 
-            if token.valueType.type != 'int':
-                self.reportError(token, 6, 1)
-
-            if (not token.variable
-                    or not token.variable.typeStartToken
-                    or not token.variable.typeEndToken):
-                continue
+            if data.standards.c == 'c89':
+                if token.valueType.type != 'int':
+                    self.reportError(token, 6, 1)
+            elif data.standards.c == 'c99':
+                if token.valueType.type == 'bool':
+                    continue
 
             isExplicitlySignedOrUnsigned = False
             typeToken = token.variable.typeStartToken
@@ -1332,7 +1333,10 @@ class MisraChecker:
         for token in data.tokenlist:
             if not token.valueType:
                 continue
-
+            if not token.scope:
+                continue
+            if token.scope.type not in 'Struct':
+                continue
             if token.valueType.bits == 1 and token.valueType.sign == 'signed':
                 self.reportError(token, 6, 2)
 

@@ -210,12 +210,16 @@ struct struct_with_bitfields
   signed int   b:2; // Compliant
   UINT_TYPEDEF c:2; // Compliant
   int          d:2; // 6.1 - plain int not compliant
-
-  bool         e:2; // Compliant
   signed long  f:2; // 6.1 - signed long not compliant
   unsigned int g:1; // Compliant
   signed int   h:1; // 6.2 - signed int with size 1 is not compliant
 };
+
+void misra6_1_fn() {
+    // "Use" occurrence should not generate warnings
+    struct_with_bitfields s;
+    s.h = 61;
+}
 
 void misra_7_1() {
   int x = 066; // 7.1
