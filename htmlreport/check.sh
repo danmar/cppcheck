@@ -21,6 +21,10 @@ function validate_html {
     fi
 }
 
+if [ -z "$PYTHON" ]; then
+    PYTHON=python
+fi
+
 REPORT_DIR=$(mktemp -d -t htmlreport-XXXXXXXXXX)
 INDEX_HTML="$REPORT_DIR/index.html"
 STATS_HTML="$REPORT_DIR/stats.html"
@@ -28,7 +32,7 @@ GUI_TEST_XML="$REPORT_DIR/gui_test.xml"
 ERRORLIST_XML="$REPORT_DIR/errorlist.xml"
 UNMATCHEDSUPPR_XML="$REPORT_DIR/unmatchedSuppr.xml"
 
-./cppcheck-htmlreport --file ../gui/test/data/xmlfiles/xmlreport_v2.xml --title "xml2 test" --report-dir "$REPORT_DIR" --source-dir ../test/
+$PYTHON cppcheck-htmlreport --file ../gui/test/data/xmlfiles/xmlreport_v2.xml --title "xml2 test" --report-dir "$REPORT_DIR" --source-dir ../test/
 echo -e "\n"
 # Check HTML syntax
 validate_html "$INDEX_HTML"
@@ -37,7 +41,7 @@ validate_html "$STATS_HTML"
 
 ../cppcheck ../gui/test --enable=all  --inconclusive --xml-version=2 2> "$GUI_TEST_XML"
 xmllint --noout "$GUI_TEST_XML"
-./cppcheck-htmlreport --file "$GUI_TEST_XML" --title "xml2 + inconclusive test" --report-dir "$REPORT_DIR"
+$PYTHON cppcheck-htmlreport --file "$GUI_TEST_XML" --title "xml2 + inconclusive test" --report-dir "$REPORT_DIR"
 echo ""
 # Check HTML syntax
 validate_html "$INDEX_HTML"
@@ -46,7 +50,7 @@ validate_html "$STATS_HTML"
 
 ../cppcheck ../gui/test --enable=all --inconclusive --verbose --xml-version=2 2> "$GUI_TEST_XML"
 xmllint --noout "$GUI_TEST_XML"
-./cppcheck-htmlreport --file "$GUI_TEST_XML" --title "xml2 + inconclusive + verbose test" --report-dir "$REPORT_DIR"
+$PYTHON cppcheck-htmlreport --file "$GUI_TEST_XML" --title "xml2 + inconclusive + verbose test" --report-dir "$REPORT_DIR"
 echo -e "\n"
 # Check HTML syntax
 validate_html "$INDEX_HTML"
@@ -55,7 +59,7 @@ validate_html "$STATS_HTML"
 
 ../cppcheck --errorlist --inconclusive --xml-version=2 > "$ERRORLIST_XML"
 xmllint --noout "$ERRORLIST_XML"
-./cppcheck-htmlreport --file "$ERRORLIST_XML" --title "errorlist" --report-dir "$REPORT_DIR"
+$PYTHON cppcheck-htmlreport --file "$ERRORLIST_XML" --title "errorlist" --report-dir "$REPORT_DIR"
 # Check HTML syntax
 validate_html "$INDEX_HTML"
 validate_html "$STATS_HTML"
@@ -63,7 +67,7 @@ validate_html "$STATS_HTML"
 
 ../cppcheck ../samples/memleak/good.c ../samples/resourceLeak/good.c  --xml-version=2 --enable=information --suppressions-list=test_suppressions.txt --xml 2> "$UNMATCHEDSUPPR_XML"
 xmllint --noout "$UNMATCHEDSUPPR_XML"
-./cppcheck-htmlreport --file "$UNMATCHEDSUPPR_XML" --title "unmatched Suppressions" --report-dir="$REPORT_DIR"
+$PYTHON cppcheck-htmlreport --file "$UNMATCHEDSUPPR_XML" --title "unmatched Suppressions" --report-dir="$REPORT_DIR"
 grep "unmatchedSuppression<.*>information<.*>Unmatched suppression: variableScope*<" "$INDEX_HTML"
 grep ">unmatchedSuppression</.*>information<.*>Unmatched suppression: uninitstring<" "$INDEX_HTML"
 grep "notexisting" "$INDEX_HTML"

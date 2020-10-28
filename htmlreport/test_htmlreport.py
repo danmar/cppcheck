@@ -98,7 +98,7 @@ def runCheck(source_filename=None, xml_version='1', xml_filename=None):
     assert os.path.exists(xml_filename)
 
     subprocess.check_call(
-        [HTML_REPORT_BIN,
+        [sys.executable, HTML_REPORT_BIN,
          '--file=' + os.path.realpath(xml_filename),
          '--report-dir=' + os.path.realpath(output_directory)],
         cwd=os.path.join(ROOT_DIR, 'htmlreport'))

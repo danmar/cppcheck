@@ -65,9 +65,11 @@ matrix:
 # Validate rule files
         - make validateRules
 # check htmlreport stuff
-        - ./htmlreport/test_htmlreport.py
+        - python2 htmlreport/test_htmlreport.py
+        - python3 htmlreport/test_htmlreport.py
         - cd htmlreport
-        - ./check.sh
+        - PYTHON=python2 ./check.sh
+        - PYTHON=python3 ./check.sh
         - cd ../
 # check if DESTDIR works  TODO: actually execute this
         - mkdir install_test
