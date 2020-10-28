@@ -1293,8 +1293,8 @@ class MisraChecker:
 
     def misra_6_1(self, data):
         # Bitfield type must be bool or explicity signed/unsigned int
-        for token in data.tokenlist:  
-            if token.valueType == None:
+        for token in data.tokenlist:
+            if not token.valueType:
                 continue
 
             if token.valueType.bits == 0:
@@ -1306,7 +1306,9 @@ class MisraChecker:
             if token.valueType.type != 'int':
                 self.reportError(token, 6, 1)
 
-            if token.variable == None or token.variable.typeStartToken == None or token.variable.typeEndToken == None:
+            if (not token.variable
+                    or not token.variable.typeStartToken
+                    or not token.variable.typeEndToken):
                 continue
 
             isExplicitlySignedOrUnsigned = False
@@ -1318,7 +1320,7 @@ class MisraChecker:
 
                 if typeToken.Id == token.variable.typeEndToken.Id:
                     break
-                
+
                 typeToken = typeToken.next
 
             if not isExplicitlySignedOrUnsigned:
@@ -1327,8 +1329,8 @@ class MisraChecker:
 
     def misra_6_2(self, data):
         # Bitfields of size 1 can not be signed
-        for token in data.tokenlist:  
-            if token.valueType == None:
+        for token in data.tokenlist:
+            if not token.valueType:
                 continue
 
             if token.valueType.bits == 1 and token.valueType.sign == 'signed':
