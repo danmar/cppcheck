@@ -1518,12 +1518,13 @@ static void astStringXml(const Token *tok, nonneg int indent, std::ostream &out)
 
 void Token::printAst(bool verbose, bool xml, std::ostream &out) const
 {
+    if (!xml)
+        out << "\n\n##AST" << std::endl;
+
     std::set<const Token *> printed;
     for (const Token *tok = this; tok; tok = tok->next()) {
         if (!tok->mImpl->mAstParent && tok->mImpl->mAstOperand1) {
-            if (printed.empty() && !xml)
-                out << "\n\n##AST" << std::endl;
-            else if (printed.find(tok) != printed.end())
+            if (printed.find(tok) != printed.end())
                 continue;
             printed.insert(tok);
 
@@ -1533,7 +1534,7 @@ void Token::printAst(bool verbose, bool xml, std::ostream &out) const
                 astStringXml(tok, 2U, out);
                 out << "</ast>" << std::endl;
             } else if (verbose)
-                out << tok->astStringVerbose() << std::endl;
+                out << "fileIndex " << tok->fileIndex() << " line " << tok->linenr() << std::endl << tok->astStringVerbose() << std::endl;
             else
                 out << tok->astString(" ") << std::endl;
             if (tok->str() == "(")
