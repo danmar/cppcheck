@@ -1023,7 +1023,7 @@ class MisraSettings(object):
 
 class MisraChecker:
 
-    def __init__(self, settings, stdversion="c90"):
+    def __init__(self, settings, stdversion="c89"):
         """
         :param settings: misra.py script settings.
         """
@@ -1293,21 +1293,24 @@ class MisraChecker:
 
     def misra_6_1(self, data):
         # Bitfield type must be bool or explicity signed/unsigned int
-        for token in data.tokenlist:  
-            if token.valueType == None:
+        for token in data.tokenlist:
+            if not token.valueType:
                 continue
-
             if token.valueType.bits == 0:
                 continue
-
-            if token.valueType.type == 'bool':
+            if not token.variable:
+                continue
+            if not token.scope:
+                continue
+            if token.scope.type not in 'Struct':
                 continue
 
-            if token.valueType.type != 'int':
-                self.reportError(token, 6, 1)
-
-            if token.variable == None or token.variable.typeStartToken == None or token.variable.typeEndToken == None:
-                continue
+            if data.standards.c == 'c89':
+                if token.valueType.type != 'int':
+                    self.reportError(token, 6, 1)
+            elif data.standards.c == 'c99':
+                if token.valueType.type == 'bool':
+                    continue
 
             isExplicitlySignedOrUnsigned = False
             typeToken = token.variable.typeStartToken
@@ -1318,7 +1321,7 @@ class MisraChecker:
 
                 if typeToken.Id == token.variable.typeEndToken.Id:
                     break
-                
+
                 typeToken = typeToken.next
 
             if not isExplicitlySignedOrUnsigned:
@@ -1327,10 +1330,13 @@ class MisraChecker:
 
     def misra_6_2(self, data):
         # Bitfields of size 1 can not be signed
-        for token in data.tokenlist:  
-            if token.valueType == None:
+        for token in data.tokenlist:
+            if not token.valueType:
                 continue
-
+            if not token.scope:
+                continue
+            if token.scope.type not in 'Struct':
+                continue
             if token.valueType.bits == 1 and token.valueType.sign == 'signed':
                 self.reportError(token, 6, 2)
 
