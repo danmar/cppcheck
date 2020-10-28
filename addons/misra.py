@@ -1023,7 +1023,7 @@ class MisraSettings(object):
 
 class MisraChecker:
 
-    def __init__(self, settings, stdversion="c90"):
+    def __init__(self, settings, stdversion="c89"):
         """
         :param settings: misra.py script settings.
         """
