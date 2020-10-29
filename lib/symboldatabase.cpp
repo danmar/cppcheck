@@ -3679,8 +3679,8 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
         argumentList.emplace_back(nameTok, startTok, endTok, count++, AccessControl::Argument, argType, functionScope, symbolDatabase->mSettings);
 
         if (tok->str() == ")") {
-            // check for a variadic function
-            if (Token::simpleMatch(startTok, "..."))
+            // check for a variadic function or a variadic template function
+            if (Token::simpleMatch(endTok, "..."))
                 isVariadic(true);
 
             break;
