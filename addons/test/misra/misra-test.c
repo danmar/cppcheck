@@ -233,6 +233,17 @@ void misra_7_3() {
   long double misra_7_3_e = 7.3l; //7.3
   }
 
+void misra_7_4_const_call(int a, const char* b) { }
+void misra_7_4_call(int a, char* b) { }
+
+void misra_7_4()
+{
+   const char *a = "string_a"; 
+   char *b = "string_b";  // 7.4
+   
+   misra_7_4_const_call(1, ("text")); 
+   misra_7_4_call(1, "text"); // 7.4
+}
 
 extern int a811[]; // 8.11
 
