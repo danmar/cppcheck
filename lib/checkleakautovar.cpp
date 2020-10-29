@@ -510,6 +510,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                         varInfo2.erase(vartok->varId());
                     } else if (astIsVariableComparison(tok3, "==", "-1", &vartok)) {
                         varInfo1.erase(vartok->varId());
+                    } else if (astIsVariableComparison(tok3, "!=", "-1", &vartok)) {
+                        varInfo2.erase(vartok->varId());
                     }
                     return ChildrenToVisit::none;
                 });
