@@ -63,6 +63,7 @@ private:
         TEST_CASE(cxxStaticCastExpr2);
         TEST_CASE(cxxStdInitializerListExpr);
         TEST_CASE(cxxThrowExpr);
+        TEST_CASE(defaultStmt);
         TEST_CASE(doStmt);
         TEST_CASE(enumDecl);
         TEST_CASE(forStmt);
@@ -575,6 +576,20 @@ private:
                              "    `-CXXThrowExpr 0x3701790 <col:14, col:20> 'void'\n"
                              "      `-IntegerLiteral 0x3701770 <col:20> 'int' 1";
         ASSERT_EQUALS("void foo ( ) { throw 1 ; }", parse(clang));
+    }
+
+    void defaultStmt() {
+        const char clang[] = "`-FunctionDecl 0x18476b8 <1.c:3:1, line:9:1> line:3:5 foo 'int (int)'\n"
+                             "  |-ParmVarDecl 0x18475e0 <col:9, col:13> col:13 used rc 'int'\n"
+                             "  `-CompoundStmt 0x1847868 <line:4:1, line:9:1>\n"
+                             "    `-SwitchStmt 0x18477e0 <line:5:3, line:8:3>\n"
+                             "      |-ImplicitCastExpr 0x18477c8 <line:5:10> 'int' <LValueToRValue>\n"
+                             "      | `-DeclRefExpr 0x18477a8 <col:10> 'int' lvalue ParmVar 0x18475e0 'rc' 'int'\n"
+                             "      `-CompoundStmt 0x1847850 <col:14, line:8:3>\n"
+                             "        `-DefaultStmt 0x1847830 <line:6:3, line:7:12>\n"
+                             "          `-ReturnStmt 0x1847820 <col:5, col:12>\n"
+                             "            `-IntegerLiteral 0x1847800 <col:12> 'int' 1";
+        ASSERT_EQUALS("int foo ( int rc@1 ) {\n\nswitch ( rc@1 ) {\ndefault : return 1 ; } }", parse(clang));
     }
 
     void doStmt() {

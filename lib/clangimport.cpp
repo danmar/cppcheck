@@ -63,6 +63,7 @@ static const std::string CXXThisExpr = "CXXThisExpr";
 static const std::string CXXThrowExpr = "CXXThrowExpr";
 static const std::string DeclRefExpr = "DeclRefExpr";
 static const std::string DeclStmt = "DeclStmt";
+static const std::string DefaultStmt = "DefaultStmt";
 static const std::string DoStmt = "DoStmt";
 static const std::string EnumConstantDecl = "EnumConstantDecl";
 static const std::string EnumDecl = "EnumDecl";
@@ -747,6 +748,12 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == DeclStmt)
         return children[0]->createTokens(tokenList);
+    if (nodeType == DefaultStmt) {
+        addtoken(tokenList, "default");
+        addtoken(tokenList, ":");
+        children.back()->createTokens(tokenList);
+        return nullptr;
+    }
     if (nodeType == DoStmt) {
         addtoken(tokenList, "do");
         createScope(tokenList, Scope::ScopeType::eDo, children[0], tokenList->back());
