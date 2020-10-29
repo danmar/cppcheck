@@ -55,7 +55,8 @@ private:
         TEST_CASE(cxxMethodDecl1);
         TEST_CASE(cxxMethodDecl2);
         TEST_CASE(cxxMethodDecl3);
-        TEST_CASE(cxxNewExpr);
+        TEST_CASE(cxxNewExpr1);
+        TEST_CASE(cxxNewExpr2);
         TEST_CASE(cxxNullPtrLiteralExpr);
         TEST_CASE(cxxOperatorCallExpr);
         TEST_CASE(cxxRecordDecl1);
@@ -504,7 +505,7 @@ private:
                       "void foo ( ) { }", parse(clang));
     }
 
-    void cxxNewExpr() {
+    void cxxNewExpr1() {
         const char clang[] = "|-VarDecl 0x3a97680 <1.cpp:2:1, col:14> col:6 i 'int *' cinit\n"
                              "| `-CXXNewExpr 0x3a97d18 <col:10, col:14> 'int *' Function 0x3a97778 'operator new' 'void *(unsigned long)'\n"
                              "`-VarDecl 0x3a97d80 <line:3:1, col:21> col:6 j 'int *' cinit\n"
@@ -513,6 +514,17 @@ private:
                              "      `-IntegerLiteral 0x3a97de0 <col:18> 'int' 100";
         ASSERT_EQUALS("int * i@1 = new int ;\n"
                       "int * j@2 = new int [ 100 ] ;",
+                      parse(clang));
+    }
+
+    void cxxNewExpr2() {
+        const char clang[] = "|-FunctionDecl 0x59a188 <line:7:1, line:9:1> line:7:11 f 'struct S *()'\n"
+                             "| `-CompoundStmt 0x5c4318 <col:15, line:9:1>\n"
+                             "|   `-ReturnStmt 0x5c4308 <line:8:3, col:14>\n"
+                             "|     `-CXXNewExpr 0x5c42c8 <col:10, col:14> 'S *' Function 0x59a378 'operator new' 'void *(unsigned long)'\n"
+                             "|       `-CXXConstructExpr 0x5c42a0 <col:14> 'S' 'void () noexcept'";
+        ASSERT_EQUALS("struct S * f ( ) {\n"
+                      "return new S ( ) ; }",
                       parse(clang));
     }
 

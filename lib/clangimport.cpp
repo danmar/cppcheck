@@ -694,6 +694,10 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         return createTokensCall(tokenList);
     if (nodeType == CXXNewExpr) {
         Token *newtok = addtoken(tokenList, "new");
+        if (children.size() == 1 && children[0]->nodeType == CXXConstructExpr) {
+            newtok->astOperand1(children[0]->createTokens(tokenList));
+            return newtok;
+        }
         std::string type = getType();
         if (type.find("*") != std::string::npos)
             type = type.erase(type.rfind("*"));
