@@ -1399,7 +1399,7 @@ private:
               "    int fd = socket(AF_INET, SOCK_PACKET, 0 );\n"
               "    if (fd == -1)\n"
               "        return -1;\n"
-	      "    return fd;\n"
+              "    return fd;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -1407,7 +1407,7 @@ private:
               "    int fd = socket(AF_INET, SOCK_PACKET, 0 );\n"
               "    if (fd != -1)\n"
               "        return fd;\n"
-	      "    return -1;\n"
+              "    return -1;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
