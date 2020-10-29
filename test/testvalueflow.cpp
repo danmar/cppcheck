@@ -872,15 +872,16 @@ private:
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(4, values.back().intvalue);
 
-#define CHECK(A, B)                              \
+#define CHECK3(A, B, C)                          \
         do {                                     \
         code = "void f() {\n"                    \
                "    x = sizeof(" A ");\n"        \
                "}";                              \
-        values = tokenValues(code,"( " A " )");  \
+        values = tokenValues(code,"( " C " )");  \
         ASSERT_EQUALS(1U, values.size());        \
         ASSERT_EQUALS(B, values.back().intvalue);\
         } while(false)
+#define CHECK(A, B) CHECK3(A, B, A)
 
         // standard types
         CHECK("void *", settings.sizeof_pointer);
@@ -888,7 +889,11 @@ private:
         CHECK("short", settings.sizeof_short);
         CHECK("int", settings.sizeof_int);
         CHECK("long", settings.sizeof_long);
+        CHECK3("long long", settings.sizeof_long_long, "long");
         CHECK("wchar_t", settings.sizeof_wchar_t);
+        CHECK("float", settings.sizeof_float);
+        CHECK("double", settings.sizeof_double);
+        CHECK3("long double", settings.sizeof_long_double, "double");
 
         // string/char literals
         CHECK("\"asdf\"", 5);
@@ -903,6 +908,7 @@ private:
         CHECK("u'a'", 2U); // char16_t
         CHECK("U'a'", 4U); // char32_t
 #undef CHECK
+#undef CHECK3
 
         // array size
         code  = "void f() {\n"
