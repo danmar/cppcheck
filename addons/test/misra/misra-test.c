@@ -233,8 +233,8 @@ void misra_7_3() {
   long double misra_7_3_e = 7.3l; //7.3
   }
 
-void misra_7_4_const_call(int a, const char* b) { }
-void misra_7_4_call(int a, char* b) { }
+void misra_7_4_const_call(int a, const char* b) { } // 2.7
+void misra_7_4_call(int a, char* b) { } // 2.7
 
 void misra_7_4()
 {
