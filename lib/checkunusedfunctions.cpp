@@ -65,13 +65,8 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             continue;
 
         // Don't care about templates
-        if (tokenizer.isCPP()) {
-            const Token *retDef = func->retDef;
-            while (retDef && retDef->isName())
-                retDef = retDef->previous();
-            if (retDef && retDef->str() == ">")
-                continue;
-        }
+        if (tokenizer.isCPP() && func->templateDef != nullptr)
+            continue;
 
         mFunctionDecl.emplace_back(func);
 
