@@ -2807,7 +2807,9 @@ bool Type::isClassType() const
 
 bool Type::isEnumType() const
 {
-    return classScope && classScope->type == Scope::ScopeType::eEnum;
+    //We explicitly check for "enum" because a forward declared enum doesn't get its own scope
+    return (classDef && classDef->str() == "enum") ||
+           (classScope && classScope->type == Scope::ScopeType::eEnum);
 }
 
 bool Type::isStructType() const
