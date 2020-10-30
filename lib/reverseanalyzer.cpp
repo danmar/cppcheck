@@ -124,6 +124,50 @@ struct ReverseTraversal {
             }
             if (Token::Match(tok, "return|break|continue"))
                 break;
+            // Evaluate LHS of assignment before RHS
+            if (Token* assignTok = assignExpr(tok)) {
+                Token* assignTop = assignTok;
+                bool continueB = true;
+                while(assignTop->isAssignmentOp()) {
+                    if (!Token::Match(assignTop->astOperand1(), "%assign%")) {
+                        continueB &= updateRecursive(assignTop->astOperand1());
+                    }
+                    if (!assignTop->astParent())
+                        break;
+                    assignTop = assignTop->astParent();
+                }
+                // Is assignment in dead code
+                if (Token* parent = isDeadCode(assignTok)) {
+                    tok = parent;
+                    continue;
+                }
+                // Simple assign
+                if (assignTok->astParent() == assignTop || assignTok == assignTop) {
+                    GenericAnalyzer::Action rhsAction = analyzer->analyze(assignTok->astOperand2(), GenericAnalyzer::Direction::Reverse);
+                    GenericAnalyzer::Action lhsAction = analyzer->analyze(assignTok->astOperand1(), GenericAnalyzer::Direction::Reverse);
+                    // Assignment from
+                    if (rhsAction.isRead()) {
+                        const std::string info = "Assignment from '" + assignTok->expressionString() + "'";
+                        ValuePtr<GenericAnalyzer> a = analyzer->reanalyze(assignTok->astOperand1(), info);
+                        if (a) {
+                            valueFlowGenericForward(nextAfterAstRightmostLeaf(assignTok->astOperand2()), assignTok->astOperand2()->scope()->bodyEnd, a, settings);
+                        }
+                    // Assignment to
+                    } else if (lhsAction.matches()) {
+                        const std::string info = "Assignment to '" + assignTok->expressionString() + "'";
+                        ValuePtr<GenericAnalyzer> a = analyzer->reanalyze(assignTok->astOperand2(), info);
+                        if (a) {
+                            valueFlowGenericForward(nextAfterAstRightmostLeaf(assignTok->astOperand2()), assignTok->astOperand2()->scope()->bodyEnd, a, settings);
+                            valueFlowGenericReverse(assignTok->astOperand1()->previous(), a, settings);
+                        }
+                    }
+                }
+                if (!continueB)
+                    break;
+                valueFlowGenericForward(assignTop->astOperand2(), analyzer, settings);
+                tok = previousBeforeAstLeftmostLeaf(assignTop);
+                continue;
+            }
             if (tok->str() == "}") {
                 Token* condTok = getCondTokFromEnd(tok);
                 if (!condTok)
@@ -188,45 +232,6 @@ struct ReverseTraversal {
             }
             if (Token* parent = isDeadCode(tok)) {
                 tok = parent;
-                continue;
-            }
-            // Evaluate LHS of assignment before RHS
-            if (Token* assignTok = assignExpr(tok)) {
-                Token* assignTop = assignTok;
-                bool continueB = true;
-                while(assignTop->isAssignmentOp()) {
-                    if (!Token::Match(assignTop->astOperand1(), "%assign%")) {
-                        continueB &= updateRecursive(assignTop->astOperand1());
-                    }
-                    if (!assignTop->astParent())
-                        break;
-                    assignTop = assignTop->astParent();
-                }
-                // Simple assign
-                if (assignTok->astParent() == assignTop || assignTok == assignTop) {
-                    GenericAnalyzer::Action rhsAction = analyzer->analyze(assignTok->astOperand2(), GenericAnalyzer::Direction::Reverse);
-                    GenericAnalyzer::Action lhsAction = analyzer->analyze(assignTok->astOperand1(), GenericAnalyzer::Direction::Reverse);
-                    // Assignment from
-                    if (rhsAction.isRead()) {
-                        const std::string info = "Assignment from '" + assignTok->expressionString() + "'";
-                        ValuePtr<GenericAnalyzer> a = analyzer->reanalyze(assignTok->astOperand1(), info);
-                        if (a) {
-                            valueFlowGenericForward(nextAfterAstRightmostLeaf(assignTok->astOperand2()), assignTok->astOperand2()->scope()->bodyEnd, a, settings);
-                        }
-                    // Assignment to
-                    } else if (lhsAction.matches()) {
-                        const std::string info = "Assignment to '" + assignTok->expressionString() + "'";
-                        ValuePtr<GenericAnalyzer> a = analyzer->reanalyze(assignTok->astOperand2(), info);
-                        if (a) {
-                            valueFlowGenericForward(nextAfterAstRightmostLeaf(assignTok->astOperand2()), assignTok->astOperand2()->scope()->bodyEnd, a, settings);
-                            valueFlowGenericReverse(assignTok->astOperand1()->previous(), a, settings);
-                        }
-                    }
-                }
-                if (!continueB)
-                    break;
-                valueFlowGenericForward(assignTop->astOperand2(), analyzer, settings);
-                tok = previousBeforeAstLeftmostLeaf(assignTop);
                 continue;
             }
             if (!update(tok))
