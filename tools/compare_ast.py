@@ -44,11 +44,11 @@ def compare_ast(cppcheck_parameters: str):
         print('saving cppcheck ast in file ast1 and clang ast in file ast2')
 
         f = open('ast1', 'wt')
-        f.write(ast1);
+        f.write(ast1)
         f.close()
 
         f = open('ast2', 'wt')
-        f.write(ast2);
+        f.write(ast2)
         f.close()
 
         sys.exit(1)
