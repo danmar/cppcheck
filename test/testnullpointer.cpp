@@ -1938,6 +1938,15 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("struct A {\n"
+              "  bool f()() const;\n"
+              "};\n"
+              "void a(A *x) {\n"
+              "  std::string b = (!x || x->f()) ? \"\" : \"\";\n"
+              "  if (x) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
               "  A * aa;\n"
               "};\n"
               "void b(A*);\n"
