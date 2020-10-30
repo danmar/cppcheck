@@ -102,6 +102,7 @@ private:
         TEST_CASE(nullpointer59); // #9897
         TEST_CASE(nullpointer60); // #9842
         TEST_CASE(nullpointer61);
+        TEST_CASE(nullpointer62);
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1922,6 +1923,17 @@ private:
               "      b = b->g();\n"
               "  if (!b || b == b->g()->h())\n"
               "      return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer62() {
+        check("struct A {\n"
+              "  bool f()() const;\n"
+              "};\n"
+              "void a(A *x) {\n"
+              "  std::string b = x && x->f() ? \"\" : \"\";\n"
+              "  if (x) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
