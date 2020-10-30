@@ -1614,6 +1614,24 @@ private:
               "    virtual void func(const std::string str) {}\n"
               "};");
         ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'str' should be passed by const reference.\n", errout.str());
+
+        check("enum X;\n"
+              "void foo(X x1){}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("enum X { a, b, c };\n"
+              "void foo(X x2){}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("enum X { a, b, c };\n"
+              "enum X;"
+              "void foo(X x3){}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("enum X;\n"
+              "enum X { a, b, c };"
+              "void foo(X x4){}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void passedByValue_nonConst() {
