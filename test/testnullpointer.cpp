@@ -1936,6 +1936,16 @@ private:
               "  if (x) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "  A * aa;\n"
+              "};\n"
+              "void b(A*);\n"
+              "void a(A *x) {\n"
+              "  b(x ? x->aa : nullptr);\n"
+              "  if (!x) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer_addressOf() { // address of

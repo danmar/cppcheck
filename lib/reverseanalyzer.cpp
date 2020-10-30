@@ -104,9 +104,9 @@ struct ReverseTraversal {
             }
 
             if (parent->str() == "?") {
-                if (!checkThen && opSide == 1)
+                if (!checkElse && opSide == 1)
                     return parent;
-                if (!checkElse && opSide == 2)
+                if (!checkThen && opSide == 2)
                     return parent;
             }
             if (!checkThen && parent->str() == "&&")
