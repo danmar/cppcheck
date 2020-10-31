@@ -4903,7 +4903,7 @@ void Tokenizer::printDebugOutput(int simplification) const
         }
 
         if (mSettings->verbose)
-            list.front()->printAst(mSettings->verbose, mSettings->xml, std::cout);
+            list.front()->printAst(mSettings->verbose, mSettings->xml, list.getFiles(), std::cout);
 
         list.front()->printValueFlow(mSettings->xml, std::cout);
 
