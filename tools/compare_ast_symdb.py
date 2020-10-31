@@ -59,38 +59,26 @@ def get_symdb(debug):
 def compare_ast_symdb(cppcheck_parameters: str):
     same = True
     debug1 = run_cppcheck(cppcheck_parameters, '')
-    debug2 = run_cppcheck(cppcheck_parameters, 'clang')
+    debug2 = run_cppcheck(cppcheck_parameters, '--clang')
 
     ast1 = get_ast(debug1)
     ast2 = get_ast(debug2)
     if ast1 != ast2:
         print(f"ast is not the same: {cppcheck_parameters}")
-        print('saving file cppcheck.ast and clang.ast')
-
-        f = open('cppcheck.ast', 'wt')
-        f.write(ast1)
-        f.close()
-
-        f = open('clang.ast', 'wt')
-        f.write(ast2)
-        f.close()
-
+        with open('cppcheck.ast', 'wt') as f:
+            f.write(ast1)
+        with open('clang.ast', 'wt') as f:
+            f.write(ast2)
         same = False
 
     symdb1 = get_symdb(debug1)
     symdb2 = get_symdb(debug2)
     if symdb1 != symdb2:
         print(f"symdb is not the same: {cppcheck_parameters}")
-        print('saving file cppcheck.symdb and clang.symdb')
-
-        f = open('cppcheck.symdb', 'wt')
-        f.write(symdb1)
-        f.close()
-
-        f = open('clang.symdb', 'wt')
-        f.write(symdb2)
-        f.close()
-
+        with open('cppcheck.symdb', 'wt') as f:
+            f.write(symdb1)
+        with open('clang.symdb', 'wt') as f:
+            f.write(symdb2)
         same = False
 
     if not same:
