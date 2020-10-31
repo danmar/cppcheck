@@ -218,7 +218,8 @@ std::string Suppressions::addSuppressionLine(const std::string &line)
 std::string Suppressions::addSuppression(const Suppressions::Suppression &suppression)
 {
     // Check if suppression is already in list
-    auto foundSuppression = std::find(mSuppressions.begin(), mSuppressions.end(), std::bind(&Suppression::isSameParameters, &suppression, std::placeholders::_1);
+    auto foundSuppression = std::find_if(mSuppressions.begin(), mSuppressions.end(), 
+        std::bind(&Suppression::isSameParameters, &suppression, std::placeholders::_1));
     if (foundSuppression != mSuppressions.end()) {
         // Update matched state of existing global suppression
         if (!suppression.isLocal() && suppression.matched)
