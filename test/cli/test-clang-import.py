@@ -91,6 +91,9 @@ def test_symbol_database_2():
 def test_symbol_database_3():
     check_symbol_database('struct Fred { int a; }; int b; void f(int c, int d) { int e; }')
 
+def test_symbol_database_4():
+    check_symbol_database('void f(const int x) {}')
+
 def test_ast_calculations():
     check_ast('int x = 5; int y = (x + 4) * 2;')
     check_ast('long long dostuff(int x) { return x ? 3 : 5; }')

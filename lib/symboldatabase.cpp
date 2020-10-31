@@ -1837,6 +1837,8 @@ Variable::Variable(const Token *name_, const std::string &clangType, const Token
         mTypeStartToken = mTypeEndToken;
         while (Token::Match(mTypeStartToken->previous(), "%type%|*|&"))
             mTypeStartToken = mTypeStartToken->previous();
+        if (mTypeStartToken->str() == "const")
+            mTypeStartToken = mTypeStartToken->next();
     }
     if (Token::simpleMatch(mTypeStartToken, "static"))
         setFlag(fIsStatic, true);
