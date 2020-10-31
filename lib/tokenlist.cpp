@@ -1553,8 +1553,22 @@ static Token * createAstAtToken(Token *tok, bool cpp)
                 typecount++;
             typetok = typetok->next();
         }
-        if (Token::Match(typetok, "%var% =") && typetok->varId())
-            tok = typetok;
+        if (Token::Match(typetok, "%var% =|[") && typetok->varId()) {
+            Token *tok2 = typetok->next();
+            while (Token::simpleMatch(tok2, "["))
+                tok2 = tok2->link()->next();
+            if (Token::simpleMatch(tok2, "=")) {
+                AST_state state(cpp);
+                state.op.push(typetok);
+                Token * const start = tok2;
+                compileBinOp(tok2, state, compileAssignTernary);
+                if (tok2 == start || !tok2)
+                    return start;
+                createAstAtTokenInner(start->next(), tok2, cpp);
+                return tok2;
+            } else if (Token::simpleMatch(tok2, ";"))
+                return tok;
+        }
 
         // Do not create AST for function declaration
         if (typetok &&
