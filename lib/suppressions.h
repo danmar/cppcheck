@@ -66,15 +66,6 @@ public:
             return *this;
         }
 
-        bool operator==(const Suppression& other) const {
-            return errorId == other.errorId &&
-                fileName == other.fileName &&
-                lineNumber == other.lineNumber &&
-                symbolName == other.symbolName &&
-                hash == other.hash &&
-                thisAndNextLine == other.thisAndNextLine;
-        }
-
         bool operator<(const Suppression &other) const {
             if (errorId != other.errorId)
                 return errorId < other.errorId;
@@ -102,10 +93,20 @@ public:
         bool isSuppressed(const ErrorMessage &errmsg) const;
 
         bool isMatch(const ErrorMessage &errmsg);
+
         std::string getText() const;
 
         bool isLocal() const {
             return !fileName.empty() && fileName.find_first_of("?*") == std::string::npos;
+        }
+
+        bool isSameParameters(const Suppression &other) const {
+            return errorId == other.errorId &&
+                fileName == other.fileName &&
+                lineNumber == other.lineNumber &&
+                symbolName == other.symbolName &&
+                hash == other.hash &&
+                thisAndNextLine == other.thisAndNextLine;
         }
 
         std::string errorId;

@@ -218,10 +218,10 @@ std::string Suppressions::addSuppressionLine(const std::string &line)
 std::string Suppressions::addSuppression(const Suppressions::Suppression &suppression)
 {
     // Check if suppression is already in list
-    auto foundSuppression = std::find(mSuppressions.begin(), mSuppressions.end(), suppression);
+    auto foundSuppression = std::find(mSuppressions.begin(), mSuppressions.end(), std::bind(&Suppression::isSameParameters, &suppression, std::placeholders::_1);
     if (foundSuppression != mSuppressions.end()) {
         // Update matched state of existing global suppression
-        if (!suppression.isLocal() && suppression.matched && !foundSuppression->matched)
+        if (!suppression.isLocal() && suppression.matched)
             foundSuppression->matched = suppression.matched;
         return "";
     }
@@ -251,9 +251,9 @@ std::string Suppressions::addSuppression(const Suppressions::Suppression &suppre
     return "";
 }
 
-std::string Suppressions::addSuppressions(const std::list<Suppression>& suppressions)
+std::string Suppressions::addSuppressions(const std::list<Suppression> &suppressions)
 {
-    for (auto newSuppression : suppressions) {
+    for (const auto &newSuppression : suppressions) {
         auto errmsg = addSuppression(newSuppression);
         if (errmsg != "")
             return errmsg;
