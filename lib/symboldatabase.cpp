@@ -34,6 +34,7 @@
 #include <algorithm>
 #include <cassert>
 #include <climits>
+#include <cstring>
 #include <iomanip>
 #include <iostream>
 #include <unordered_map>
@@ -2044,6 +2045,15 @@ std::string Variable::getTypeName() const
     return ret;
 }
 
+static bool isOperator(const Token *tokenDef) {
+    if (!tokenDef)
+        return false;
+    if (tokenDef->isOperatorKeyword())
+        return true;
+    const std::string name = tokenDef->str();
+    return name.size() > 8 && name.compare(0,8,"operator")==0 && std::strchr("+-*/%&|~^<>!=[(", name[8]);
+}
+
 Function::Function(const Tokenizer *mTokenizer,
                    const Token *tok,
                    const Scope *scope,
@@ -2067,7 +2077,7 @@ Function::Function(const Tokenizer *mTokenizer,
       mFlags(0)
 {
     // operator function
-    if (tokenDef->isOperatorKeyword()) {
+    if (::isOperator(tokenDef)) {
         isOperator(true);
 
         // 'operator =' is special
@@ -2215,6 +2225,14 @@ Function::Function(const Token *tokenDef)
       functionPointerUsage(nullptr),
       mFlags(0)
 {
+    // operator function
+    if (::isOperator(tokenDef)) {
+        isOperator(true);
+
+        // 'operator =' is special
+        if (tokenDef->str() == "operator=")
+            type = Function::eOperatorEqual;
+    }
 }
 
 std::string Function::fullName() const
