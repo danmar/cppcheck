@@ -1186,22 +1186,21 @@ void clangimport::AstNode::createTokensForCXXRecord(TokenList *tokenList)
         className = mExtTokens[mExtTokens.size() - 2];
     className += getTemplateParameters();
     /*Token *nameToken =*/ addtoken(tokenList, className);
-    if (!isDefinition()) {
-        addtoken(tokenList, ";");
-        return;
+    if (isDefinition()) {
+        std::vector<AstNodePtr> children2;
+        for (AstNodePtr child: children) {
+            if (child->nodeType == CXXConstructorDecl ||
+                child->nodeType == CXXDestructorDecl ||
+                child->nodeType == CXXMethodDecl ||
+                child->nodeType == FieldDecl)
+                children2.push_back(child);
+        }
+        Scope *scope = createScope(tokenList, isStruct ? Scope::ScopeType::eStruct : Scope::ScopeType::eClass, children2, classToken);
+        scope->className = className;
+        mData->mSymbolDatabase->typeList.push_back(Type(classToken, scope, classToken->scope()));
+        scope->definedType = &mData->mSymbolDatabase->typeList.back();
     }
-    std::vector<AstNodePtr> children2;
-    for (AstNodePtr child: children) {
-        if (child->nodeType == CXXConstructorDecl ||
-            child->nodeType == CXXDestructorDecl ||
-            child->nodeType == CXXMethodDecl ||
-            child->nodeType == FieldDecl)
-            children2.push_back(child);
-    }
-    Scope *scope = createScope(tokenList, isStruct ? Scope::ScopeType::eStruct : Scope::ScopeType::eClass, children2, classToken);
-    scope->className = className;
-    mData->mSymbolDatabase->typeList.push_back(Type(classToken, scope, classToken->scope()));
-    scope->definedType = &mData->mSymbolDatabase->typeList.back();
+    addtoken(tokenList, ";");
 }
 
 Token * clangimport::AstNode::createTokensVarDecl(TokenList *tokenList)
