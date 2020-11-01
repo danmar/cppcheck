@@ -40,7 +40,7 @@ public:
     private:
         long long mIntValue;
         double mDoubleValue;
-        enum { INT, LONG, LONGLONG, FLOAT } mType;
+        enum class Type { INT, LONG, LONGLONG, FLOAT } mType;
         bool mIsUnsigned;
 
         void promote(const value &v);
@@ -49,10 +49,10 @@ public:
         explicit value(const std::string &s);
         std::string str() const;
         bool isInt() const {
-            return mType != FLOAT;
+            return mType != Type::FLOAT;
         }
         bool isFloat() const {
-            return mType == FLOAT;
+            return mType == Type::FLOAT;
         }
 
         double getDoubleValue() const {
