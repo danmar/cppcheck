@@ -7857,7 +7857,7 @@ private:
 
     void astvardecl() {
         // Variable declaration
-        ASSERT_EQUALS("var\"\"=", testAst("char var[1]=\"\";"));
+        ASSERT_EQUALS("a1[\"\"=", testAst("char a[1]=\"\";"));
         ASSERT_EQUALS("charp*(3[char5[3[new=", testAst("char (*p)[3] = new char[5][3];"));
         ASSERT_EQUALS("varp=", testAst("const int *var = p;"));
 
