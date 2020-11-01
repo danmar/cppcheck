@@ -1178,7 +1178,7 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
 void clangimport::AstNode::createTokensForCXXRecord(TokenList *tokenList)
 {
     bool isStruct = (std::find(mExtTokens.begin(), mExtTokens.end(), "struct") != mExtTokens.end());
-    Token *classToken = addtoken(tokenList, isStruct ? "struct" : "class");
+    Token * const classToken = addtoken(tokenList, isStruct ? "struct" : "class");
     std::string className;
     if (mExtTokens[mExtTokens.size() - 2] == (isStruct?"struct":"class"))
         className = mExtTokens.back();
@@ -1186,13 +1186,25 @@ void clangimport::AstNode::createTokensForCXXRecord(TokenList *tokenList)
         className = mExtTokens[mExtTokens.size() - 2];
     className += getTemplateParameters();
     /*Token *nameToken =*/ addtoken(tokenList, className);
+    // base classes
+    bool firstBase = true;
+    for (AstNodePtr child: children) {
+        if (child->nodeType == "public" || child->nodeType == "protected" || child->nodeType == "private") {
+            addtoken(tokenList, firstBase ? ":" : ",");
+            addtoken(tokenList, child->nodeType);
+            addtoken(tokenList, unquote(child->mExtTokens.back()));
+            firstBase = false;
+        }
+    }
+    // definition
     if (isDefinition()) {
         std::vector<AstNodePtr> children2;
         for (AstNodePtr child: children) {
             if (child->nodeType == CXXConstructorDecl ||
                 child->nodeType == CXXDestructorDecl ||
                 child->nodeType == CXXMethodDecl ||
-                child->nodeType == FieldDecl)
+                child->nodeType == FieldDecl ||
+                child->nodeType == VarDecl)
                 children2.push_back(child);
         }
         Scope *scope = createScope(tokenList, isStruct ? Scope::ScopeType::eStruct : Scope::ScopeType::eClass, children2, classToken);
@@ -1201,6 +1213,7 @@ void clangimport::AstNode::createTokensForCXXRecord(TokenList *tokenList)
         scope->definedType = &mData->mSymbolDatabase->typeList.back();
     }
     addtoken(tokenList, ";");
+    const_cast<Token *>(tokenList->back())->scope(classToken->scope());
 }
 
 Token * clangimport::AstNode::createTokensVarDecl(TokenList *tokenList)

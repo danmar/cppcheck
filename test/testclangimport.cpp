@@ -61,6 +61,7 @@ private:
         TEST_CASE(cxxOperatorCallExpr);
         TEST_CASE(cxxRecordDecl1);
         TEST_CASE(cxxRecordDecl2);
+        TEST_CASE(cxxRecordDeclDerived);
         TEST_CASE(cxxStaticCastExpr1);
         TEST_CASE(cxxStaticCastExpr2);
         TEST_CASE(cxxStdInitializerListExpr);
@@ -543,6 +544,18 @@ private:
     void cxxRecordDecl2() {
         const char clang[] = "`-CXXRecordDecl 0x34cc5f8 <1.cpp:2:1, col:7> col:7 struct Foo definition";
         ASSERT_EQUALS("struct Foo { } ;", parse(clang));
+    }
+
+    void cxxRecordDeclDerived() {
+        const char clang[] = "|-CXXRecordDecl 0x19ccd38 <e.cpp:4:1, line:6:1> line:4:8 referenced struct base definition\n"
+                             "| `-VarDecl 0x19ccf00 <line:5:5, col:35> col:27 value 'const bool' static constexpr cinit\n"
+                             "|   |-value: Int 0\n"
+                             "|   `-CXXBoolLiteralExpr 0x19ccf68 <col:35> 'bool' false\n"
+                             "`-CXXRecordDecl 0x19ccfe8 <line:8:1, col:32> col:8 struct derived definition\n"
+                             "  |-public 'base'\n"
+                             "  `-CXXRecordDecl 0x19cd150 <col:1, col:8> col:8 implicit struct derived";
+
+        ASSERT_EQUALS("struct base { static const bool value@1 = false ; } ; struct derived : public base { } ;", parse(clang));
     }
 
     void cxxStaticCastExpr1() {

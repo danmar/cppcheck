@@ -2045,7 +2045,8 @@ std::string Variable::getTypeName() const
     return ret;
 }
 
-static bool isOperator(const Token *tokenDef) {
+static bool isOperator(const Token *tokenDef)
+{
     if (!tokenDef)
         return false;
     if (tokenDef->isOperatorKeyword())
