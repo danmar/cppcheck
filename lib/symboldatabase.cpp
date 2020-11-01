@@ -2050,7 +2050,7 @@ static bool isOperator(const Token *tokenDef) {
         return false;
     if (tokenDef->isOperatorKeyword())
         return true;
-    const std::string name = tokenDef->str();
+    const std::string &name = tokenDef->str();
     return name.size() > 8 && name.compare(0,8,"operator")==0 && std::strchr("+-*/%&|~^<>!=[(", name[8]);
 }
 
