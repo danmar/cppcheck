@@ -717,8 +717,7 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     if (nodeType == CXXOperatorCallExpr)
         return createTokensCall(tokenList);
     if (nodeType == CXXRecordDecl) {
-        if (!children.empty())
-            createTokensForCXXRecord(tokenList);
+        createTokensForCXXRecord(tokenList);
         return nullptr;
     }
     if (nodeType == CXXStaticCastExpr || nodeType == CXXFunctionalCastExpr) {
@@ -957,13 +956,13 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
             addtoken(tokenList, getSpelling());
         if (children.empty())
             addtoken(tokenList, ";");
-        else {
-            Scope *recordScope = createScope(tokenList, Scope::ScopeType::eStruct, children, classDef);
-            mData->mSymbolDatabase->typeList.push_back(Type(classDef, recordScope, classDef->scope()));
-            recordScope->definedType = &mData->mSymbolDatabase->typeList.back();
-            if (!recordName.empty())
-                const_cast<Scope *>(classDef->scope())->definedTypesMap[recordName] = recordScope->definedType;
-        }
+
+        Scope *recordScope = createScope(tokenList, Scope::ScopeType::eStruct, children, classDef);
+        mData->mSymbolDatabase->typeList.push_back(Type(classDef, recordScope, classDef->scope()));
+        recordScope->definedType = &mData->mSymbolDatabase->typeList.back();
+        if (!recordName.empty())
+            const_cast<Scope *>(classDef->scope())->definedTypesMap[recordName] = recordScope->definedType;
+
         return nullptr;
     }
     if (nodeType == ReturnStmt) {
@@ -1175,7 +1174,12 @@ void clangimport::AstNode::createTokensForCXXRecord(TokenList *tokenList)
 {
     bool isStruct = (std::find(mExtTokens.begin(), mExtTokens.end(), "struct") != mExtTokens.end());
     Token *classToken = addtoken(tokenList, isStruct ? "struct" : "class");
-    const std::string className = mExtTokens[mExtTokens.size() - 2] + getTemplateParameters();
+    std::string className;
+    if (mExtTokens[mExtTokens.size() - 2] == (isStruct?"struct":"class"))
+        className = mExtTokens.back();
+    else
+        className = mExtTokens[mExtTokens.size() - 2];
+    className += getTemplateParameters();
     /*Token *nameToken =*/ addtoken(tokenList, className);
     std::vector<AstNodePtr> children2;
     for (AstNodePtr child: children) {
