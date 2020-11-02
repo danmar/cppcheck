@@ -104,6 +104,7 @@ private:
         TEST_CASE(nullpointer61);
         TEST_CASE(nullpointer62);
         TEST_CASE(nullpointer63);
+        TEST_CASE(nullpointer64);
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1968,6 +1969,24 @@ private:
               "    A *d = x->a();\n"
               "    d = f(d->b()) ? d->a() : nullptr;\n"
               "    if (d && f(d->b())) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer64() {
+        check("struct A {\n"
+              "  A* f() const;\n"
+              "  int g() const;\n"
+              "};\n"
+              "bool a;\n"
+              "bool b(A* c) {\n"
+              "    if (c->g() == 0)\n"
+              "      ;\n"
+              "    A *aq = c;\n"
+              "    if (c->g() == 0)\n"
+              "      c = c->f();\n"
+              "    if (c)\n"
+              "      for (A *d = c; d != aq; d = d->f()) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
