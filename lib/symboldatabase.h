@@ -236,9 +236,9 @@ public:
         evaluate(settings);
     }
 
-    Variable(const Token *name_, const std::string &clangType, const Token *start,
-             nonneg int index_, AccessControl access_, const Type *type_,
-             const Scope *scope_);
+    Variable(const Token *name_, const std::string &clangType, const Token *typeStart,
+             const Token *typeEnd, nonneg int index_, AccessControl access_,
+             const Type *type_, const Scope *scope_);
 
     ~Variable();
 

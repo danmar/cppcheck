@@ -94,6 +94,9 @@ def test_symbol_database_3():
 def test_symbol_database_4():
     check_symbol_database('void f(const int x) {}')
 
+def test_symbol_database_5():
+    check_symbol_database('void f(int);')
+
 def test_symbol_database_operator():
     check_symbol_database('struct Fred { void operator=(int x); };')
 

@@ -1821,12 +1821,12 @@ void SymbolDatabase::clangSetVariables(const std::vector<const Variable *> &vari
     mVariableList = variableList;
 }
 
-Variable::Variable(const Token *name_, const std::string &clangType, const Token *start,
-                   nonneg int index_, AccessControl access_, const Type *type_,
-                   const Scope *scope_)
+Variable::Variable(const Token *name_, const std::string &clangType, const Token *typeStart,
+                   const Token *typeEnd, nonneg int index_, AccessControl access_,
+                   const Type *type_, const Scope *scope_)
     : mNameToken(name_),
-      mTypeStartToken(start),
-      mTypeEndToken(name_ ? name_->previous() : nullptr),
+      mTypeStartToken(typeStart),
+      mTypeEndToken(typeEnd),
       mIndex(index_),
       mAccess(access_),
       mFlags(0),

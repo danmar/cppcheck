@@ -1140,12 +1140,13 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
         if (tokenList->back() != par1)
             addtoken(tokenList, ",");
         addTypeTokens(tokenList, child->mExtTokens.back());
+        const Token *typeEndToken = tokenList->back();
         const std::string spelling = child->getSpelling();
         Token *vartok = nullptr;
         if (!spelling.empty())
             vartok = child->addtoken(tokenList, spelling);
         if (!prev) {
-            function->argumentList.push_back(Variable(vartok, child->getType(), nullptr, i, AccessControl::Argument, nullptr, scope));
+            function->argumentList.push_back(Variable(vartok, child->getType(), nullptr, typeEndToken, i, AccessControl::Argument, nullptr, scope));
             if (vartok) {
                 const std::string addr = child->mExtTokens[0];
                 mData->varDecl(addr, vartok, &function->argumentList.back());
@@ -1235,7 +1236,7 @@ Token * clangimport::AstNode::createTokensVarDecl(TokenList *tokenList)
     }
     Token *vartok1 = addtoken(tokenList, name);
     Scope *scope = const_cast<Scope *>(tokenList->back()->scope());
-    scope->varlist.push_back(Variable(vartok1, type, startToken, 0, scope->defaultAccess(), nullptr, scope));
+    scope->varlist.push_back(Variable(vartok1, type, startToken, vartok1->previous(), 0, scope->defaultAccess(), nullptr, scope));
     mData->varDecl(addr, vartok1, &scope->varlist.back());
     if (mExtTokens.back() == "cinit" && !children.empty()) {
         Token *eq = addtoken(tokenList, "=");
