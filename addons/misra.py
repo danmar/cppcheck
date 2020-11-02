@@ -761,6 +761,11 @@ def getArguments(ftok):
     getArgumentsRecursive(ftok.astOperand2, arguments)
     return arguments
 
+def getFunction(functions, functionName, numberOfArguments):
+    for f in functions:
+        if (f.name == functionName and 
+            len(f.argument) == numberOfArguments):
+            return f
 
 def isalnum(c):
     return c in string.digits or c in string.ascii_letters
@@ -857,9 +862,38 @@ def getAssignedVariableToken(valueToken):
     if not valueToken.astParent:
         return None
     operator = valueToken.astParent
-    if not operator.isAssignmentOp:
+    if operator.isAssignmentOp:
+        return operator.astOperand1
+    if operator.isArithmeticalOp:
+        return getAssignedVariableToken(operator)
+    return None
+
+# If the value is used as a return value, return the function definition
+def getFunctionUsingReturnValue(valueToken):
+    if not valueToken:
         return None
-    return operator.astOperand1
+    if not valueToken.astParent:
+        return None
+    operator = valueToken.astParent
+    if operator.str == 'return':
+        return operator.scope.function
+    if operator.isArithmeticalOp:
+        return getFunctionUsingReturnValue(operator)
+    return None
+
+# Return true if the token follows a specific sequence of token str values
+def tokenFollowsSequence(token, sequence):
+    if not token:
+        return False
+    for i in reversed(sequence):
+        prev = token.previous
+        if not prev:
+            return False
+        if prev.str != i:
+            return False
+        token = prev
+    return True
+
 
 class Define:
     def __init__(self, directive):
@@ -1369,24 +1403,28 @@ class MisraChecker:
         # is constant.
         def reportErrorIfVariableIsNotConst(variable, stringLiteral):
             if variable.valueType:
-                if variable.valueType.constness == 0:
+                if variable.valueType.constness != 1:
                     self.reportError(stringLiteral, 7, 4)
 
         for token in data.tokenlist:
-            # Check normal variable assignment
             if token.isString:
+                # Check normal variable assignment
                 variable = getAssignedVariableToken(token)
                 if variable:
                     reportErrorIfVariableIsNotConst(variable, token)
+                
+                # Check use as return value
+                function = getFunctionUsingReturnValue(token)
+                if function:
+                    # "Primitive" test since there is no info available on return value type
+                    if not tokenFollowsSequence(function.tokenDef, ['const', 'char', '*']):
+                        self.reportError(token, 7, 4)
 
             # Check use as function parameter
             if isFunctionCall(token):
                 parametersUsed = getArguments(token)
-
-                functionDeclaration = None
-                for f in data.functions:
-                    if (f.name == token.astOperand1.str) and len(f.argument) == len(parametersUsed):
-                        functionDeclaration = f
+                functionDeclaration = getFunction(data.functions,
+                    token.astOperand1.str, len(parametersUsed))
 
                 if functionDeclaration and functionDeclaration.tokenDef:
                     if functionDeclaration.tokenDef.Id == token.astOperand1.Id:
