@@ -420,7 +420,7 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
         temp.check(Path::simplifyPath(fs.filename));
     }
     std::ifstream fin(fs.filename);
-    auto returnValue = temp.checkFile(Path::simplifyPath(fs.filename), fs.cfg, fin);
+    unsigned int returnValue = temp.checkFile(Path::simplifyPath(fs.filename), fs.cfg, fin);
     mSettings.nomsg.addSuppressions(temp.mSettings.nomsg.getSuppressions());
     return returnValue;
 }
