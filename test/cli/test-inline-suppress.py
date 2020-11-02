@@ -3,7 +3,7 @@
 
 import os
 import re
-from testutils import cppcheck
+from testutils import cppcheck, cmake
 
 def test1():
     ret, stdout, stderr = cppcheck(['--inline-suppr', 'proj-inline-suppress'])
@@ -31,3 +31,11 @@ def test_backwards_compatibility():
 
     ret, stdout, stderr = cppcheck(['--inline-suppr', 'proj-inline-suppress/3.cpp'])
     assert stderr == ''
+
+def test_unused_function_suppression():
+    ret, stdout, stderr = cmake('./proj-inline-suppress-unusedFunction/CMakeLists.txt')
+    assert ret == 0
+    ret, stdout, stderr = cppcheck(['--inline-suppr', '--enable=information', '--error-exitcode=1', '--project=./proj-inline-suppress-unusedFunction/build/compile_commands.json'])
+    assert ret == 0
+    ret, stdout, stderr = cppcheck(['--enable=information', '--error-exitcode=1', '--project=./proj-inline-suppress-unusedFunction/build/compile_commands.json'])
+    assert ret == 1

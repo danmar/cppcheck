@@ -1,6 +1,7 @@
 
 import logging
 import os
+import shutil
 import subprocess
 
 # Create Cppcheck project file
@@ -59,3 +60,17 @@ def cppcheck(args):
     stderr = comm[1].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
     return p.returncode, stdout, stderr
 
+# Build cmake project at path
+def cmake(project_path):
+    if os.path.exists(project_path):
+        project_dir = os.path.dirname(project_path)
+        build_dir = project_dir + '/build'
+        if not os.path.exists(build_dir):
+            os.mkdir(build_dir)
+        p = subprocess.Popen("cmake ..", stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=build_dir)
+        comm = p.communicate()
+        stdout = comm[0].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
+        stderr = comm[1].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
+        shutil.rmtree(build_dir)
+        return p.returncode, stdout, stderr
+    return 1, "", "CMake Project file does not exit"
