@@ -250,8 +250,8 @@ void misra_7_4()
    char *e = "text e" + 1 + 2; // 7.4 18.4
    char *f = 1 + "text f" + 2; // 7.4 18.4
    
-   misra_7_4_const_call(1, ("text")); 
-   misra_7_4_call(1, "text"); // 7.4
+   misra_7_4_const_call(1, ("text_const_call")); 
+   misra_7_4_call(1, "text_call"); // 7.4
 }
 
 extern int a811[]; // 8.11
