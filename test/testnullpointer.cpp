@@ -1989,6 +1989,23 @@ private:
               "      for (A *d = c; d != aq; d = d->f()) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "  A* g() const;\n"
+              "  A* h() const;\n"
+              "};\n"
+              "bool i(A*);\n"
+              "void f(A* x) {\n"
+              "  if (i(x->g())) {\n"
+              "    A *y = x->g();\n"
+              "    x = x->g()->h();\n"
+              "    if (x && x->g()) {\n"
+              "        y = x->g()->h();\n"
+              "    }\n"
+              "    if (!y) {}\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer_addressOf() { // address of

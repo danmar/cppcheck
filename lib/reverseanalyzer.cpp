@@ -204,7 +204,7 @@ struct ReverseTraversal {
                 // Bail if one of the branches are read to avoid FPs due to over constraints
                 else if (thenAction.isIdempotent() || elseAction.isIdempotent() || thenAction.isRead() || elseAction.isRead())
                     break;
-                if (thenAction.isModified() && elseAction.isModified())
+                if (thenAction.isInvalid() || elseAction.isInvalid())
                     break;
 
                 if (!thenAction.isModified() && !elseAction.isModified())
