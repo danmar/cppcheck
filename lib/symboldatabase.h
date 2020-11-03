@@ -978,6 +978,7 @@ private:
     void hasTrailingReturnType(bool state) {
         return setFlag(fHasTrailingReturnType, state);
     }
+    const Token *setFlags(const Token *tok1, const Scope *scope);
 };
 
 class CPPCHECKLIB Scope {

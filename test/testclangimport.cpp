@@ -74,6 +74,7 @@ private:
         TEST_CASE(funcdecl2);
         TEST_CASE(funcdecl3);
         TEST_CASE(funcdecl4);
+        TEST_CASE(funcdecl5);
         TEST_CASE(functionTemplateDecl1);
         TEST_CASE(functionTemplateDecl2);
         TEST_CASE(initListExpr);
@@ -682,6 +683,11 @@ private:
                              "| |-ParmVarDecl 0x272cd00 <<invalid sloc>> <invalid sloc> 'unsigned long'\n"
                              "| `-ParmVarDecl 0x272cd60 <<invalid sloc>> <invalid sloc> 'FILE *'";
         ASSERT_EQUALS("unsigned long fwrite ( const void * , unsigned long , unsigned long , FILE * ) ;", parse(clang));
+    }
+
+    void funcdecl5() {
+        const char clang[] = "`-FunctionDecl 0x59d670 <1.c:1:1, col:28> col:20 foo 'void (void)' static inline";
+        ASSERT_EQUALS("static inline void foo ( ) ;", parse(clang));
     }
 
     void functionTemplateDecl1() {

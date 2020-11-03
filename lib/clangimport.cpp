@@ -1083,11 +1083,17 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
 {
     const bool prev = (std::find(mExtTokens.begin(), mExtTokens.end(), "prev") != mExtTokens.end());
     const bool hasBody = mFile == 0 && !children.empty() && children.back()->nodeType == CompoundStmt;
+    const bool isStatic = (std::find(mExtTokens.begin(), mExtTokens.end(), "static") != mExtTokens.end());
+    const bool isInline = (std::find(mExtTokens.begin(), mExtTokens.end(), "inline") != mExtTokens.end());
 
     const Token *startToken = nullptr;
 
     SymbolDatabase *symbolDatabase = mData->mSymbolDatabase;
     if (nodeType != CXXConstructorDecl && nodeType != CXXDestructorDecl) {
+        if (isStatic)
+            addtoken(tokenList, "static");
+        if (isInline)
+            addtoken(tokenList, "inline");
         const Token * const before = tokenList->back();
         addTypeTokens(tokenList, '\'' + getType() + '\'');
         startToken = before ? before->next() : tokenList->front();

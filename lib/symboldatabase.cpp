@@ -2102,40 +2102,7 @@ Function::Function(const Tokenizer *mTokenizer,
         isExplicit(tokenDef->previous()->str() == "explicit");
     }
 
-    const Token *tok1 = tok;
-
-    // look for end of previous statement
-    while (tok1->previous() && !Token::Match(tok1->previous(), ";|}|{|public:|protected:|private:")) {
-        tok1 = tok1->previous();
-
-        // extern function
-        if (tok1->str() == "extern") {
-            isExtern(true);
-        }
-
-        // virtual function
-        else if (tok1->str() == "virtual") {
-            hasVirtualSpecifier(true);
-        }
-
-        // static function
-        else if (tok1->str() == "static") {
-            isStatic(true);
-            if (scope->type == Scope::eNamespace || scope->type == Scope::eGlobal)
-                isStaticLocal(true);
-        }
-
-        // friend function
-        else if (tok1->str() == "friend") {
-            isFriend(true);
-        }
-
-        // Function template
-        else if (tok1->link() && tok1->str() == ">" && Token::simpleMatch(tok1->link()->previous(), "template <")) {
-            templateDef = tok1->link()->previous();
-            break;
-        }
-    }
+    const Token *tok1 = setFlags(tok, scope);
 
     // find the return type
     if (!isConstructor() && !isDestructor() && !isLambda()) {
@@ -2234,6 +2201,45 @@ Function::Function(const Token *tokenDef)
         if (tokenDef->str() == "operator=")
             type = Function::eOperatorEqual;
     }
+
+    setFlags(tokenDef, tokenDef->scope());
+}
+
+const Token *Function::setFlags(const Token *tok1, const Scope *scope)
+{
+    // look for end of previous statement
+    while (tok1->previous() && !Token::Match(tok1->previous(), ";|}|{|public:|protected:|private:")) {
+        tok1 = tok1->previous();
+
+        // extern function
+        if (tok1->str() == "extern") {
+            isExtern(true);
+        }
+
+        // virtual function
+        else if (tok1->str() == "virtual") {
+            hasVirtualSpecifier(true);
+        }
+
+        // static function
+        else if (tok1->str() == "static") {
+            isStatic(true);
+            if (scope->type == Scope::eNamespace || scope->type == Scope::eGlobal)
+                isStaticLocal(true);
+        }
+
+        // friend function
+        else if (tok1->str() == "friend") {
+            isFriend(true);
+        }
+
+        // Function template
+        else if (tok1->link() && tok1->str() == ">" && Token::simpleMatch(tok1->link()->previous(), "template <")) {
+            templateDef = tok1->link()->previous();
+            break;
+        }
+    }
+    return tok1;
 }
 
 std::string Function::fullName() const
