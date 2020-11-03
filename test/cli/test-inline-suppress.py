@@ -1,9 +1,10 @@
 
 # python -m pytest test-inline-suppress.py
 
+import json
 import os
 import re
-from testutils import cppcheck, cmake
+from testutils import cppcheck
 
 def test1():
     ret, stdout, stderr = cppcheck(['--inline-suppr', 'proj-inline-suppress'])
@@ -33,9 +34,17 @@ def test_backwards_compatibility():
     assert stderr == ''
 
 def test_unused_function_suppression():
-    ret, stdout, stderr = cmake('./proj-inline-suppress-unusedFunction/CMakeLists.txt')
+    # Create compile_commands.json
+    compile_commands = os.path.join('proj-inline-suppress-unusedFunction', 'compile_commands.json')
+    prjpath = os.path.join(os.getcwd(), 'proj-inline-suppress-unusedFunction')
+    j = [{'directory': prjpath,
+          'command': 'g++ -I"' + prjpath + '" -std=gnu++1z -o ' + os.path.join(prjpath, 'B.cpp.o') + ' -c ' + os.path.join(prjpath, 'B.cpp'),
+          'file': os.path.join(prjpath, 'B.cpp')},
+         {'directory': prjpath,
+          'command': 'g++ -I"' + prjpath + '" -std=gnu++1z -o ' + os.path.join(prjpath, 'A.cpp.o') + ' -c ' + os.path.join(prjpath, 'A.cpp'),
+          'file': os.path.join(prjpath, 'A.cpp')}]
+    with open(compile_commands, 'wt') as f:
+        f.write(json.dumps(j, indent=4))
+    # Run cppcheck
+    ret, stdout, stderr = cppcheck(['--inline-suppr', '--enable=information', '--error-exitcode=1', '--project=./proj-inline-suppress-unusedFunction/compile_commands.json'])
     assert ret == 0
-    ret, stdout, stderr = cppcheck(['--inline-suppr', '--enable=information', '--error-exitcode=1', '--project=./proj-inline-suppress-unusedFunction/build/compile_commands.json'])
-    assert ret == 0
-    ret, stdout, stderr = cppcheck(['--enable=information', '--error-exitcode=1', '--project=./proj-inline-suppress-unusedFunction/build/compile_commands.json'])
-    assert ret == 1
