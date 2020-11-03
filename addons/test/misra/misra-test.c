@@ -234,7 +234,7 @@ void misra_7_3() {
   }
 
 typedef const char* MISRA_7_4_CHAR_CONST;
-MISRA_7_4_CHAR_CONST misra_7_4_return_const_type_def (void) { return "return_typedef_const"; } // 18.4
+MISRA_7_4_CHAR_CONST misra_7_4_return_const_type_def (void) { return "return_typedef_const"; }
 char *misra_7_4_return_non_const (void) { return 1 + "return_non_const"; } // 7.4 18.4
 const char *misra_7_4_return_const (void) { return 1 + "return_const"; } // 18.4
 
