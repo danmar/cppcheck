@@ -234,12 +234,12 @@ void misra_7_3() {
   }
 
 typedef const char* MISRA_7_4_CHAR_CONST;
-MISRA_7_4_CHAR_CONST misra_7_4_return_const (void) { return "return_typedef_const"; } // 18.4
+MISRA_7_4_CHAR_CONST misra_7_4_return_const_type_def (void) { return "return_typedef_const"; } // 18.4
 char *misra_7_4_return_non_const (void) { return 1 + "return_non_const"; } // 7.4 18.4
 const char *misra_7_4_return_const (void) { return 1 + "return_const"; } // 18.4
 
-void misra_7_4_const_call(int a, const char* b) { }
-void misra_7_4_call(int a, char* b) { }
+void misra_7_4_const_call(int a, const char* b) { } // 2.7
+void misra_7_4_call(int a, char* b) { } // 2.7
 
 void misra_7_4()
 {
