@@ -19,10 +19,10 @@ void cppunit_assert_equal(int x, double y)
     CPPUNIT_ASSERT_MESSAGE("Test failed", 1 < 2);
 
     CPPUNIT_ASSERT_EQUAL(1, 2);
-    //CPPUNIT_ASSERT_EQUAL(true, 3 == x);
+    CPPUNIT_ASSERT_EQUAL(true, 3 == x);
 
     CPPUNIT_ASSERT_EQUAL_MESSAGE("Test failed", 1, 4);
-    //CPPUNIT_ASSERT_EQUAL_MESSAGE("Test failed", true, 4 == x);
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Test failed", true, 4 == x);
 
     CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, 2.0, 1e-7);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, y, 1e-7);
