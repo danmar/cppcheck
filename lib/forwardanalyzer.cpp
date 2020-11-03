@@ -568,9 +568,9 @@ struct ForwardTraversal {
 };
 
 Analyzer::Action valueFlowGenericForward(Token* start,
-                                                const Token* end,
-                                                const ValuePtr<Analyzer>& fa,
-                                                const Settings* settings)
+                                         const Token* end,
+                                         const ValuePtr<Analyzer>& fa,
+                                         const Settings* settings)
 {
     ForwardTraversal ft{fa, settings};
     ft.updateRange(start, end);

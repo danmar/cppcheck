@@ -27,12 +27,10 @@ class Token;
 template <class T> class ValuePtr;
 
 Analyzer::Action valueFlowGenericForward(Token* start,
-                                                const Token* end,
-                                                const ValuePtr<Analyzer>& fa,
-                                                const Settings* settings);
+                                         const Token* end,
+                                         const ValuePtr<Analyzer>& fa,
+                                         const Settings* settings);
 
-Analyzer::Action valueFlowGenericForward(Token* start,
-                                                const ValuePtr<Analyzer>& fa,
-                                                const Settings* settings);
+Analyzer::Action valueFlowGenericForward(Token* start, const ValuePtr<Analyzer>& fa, const Settings* settings);
 
 #endif
