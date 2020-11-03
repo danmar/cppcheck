@@ -26,13 +26,13 @@ class Settings;
 class Token;
 template <class T> class ValuePtr;
 
-GenericAnalyzer::Action valueFlowGenericForward(Token* start,
+Analyzer::Action valueFlowGenericForward(Token* start,
                                                 const Token* end,
-                                                const ValuePtr<GenericAnalyzer>& fa,
+                                                const ValuePtr<Analyzer>& fa,
                                                 const Settings* settings);
 
-GenericAnalyzer::Action valueFlowGenericForward(Token* start,
-                                                const ValuePtr<GenericAnalyzer>& fa,
+Analyzer::Action valueFlowGenericForward(Token* start,
+                                                const ValuePtr<Analyzer>& fa,
                                                 const Settings* settings);
 
 #endif

@@ -1712,7 +1712,7 @@ static void valueFlowGlobalStaticVar(TokenList *tokenList, const Settings *setti
     }
 }
 
-static GenericAnalyzer::Action valueFlowForwardVariable(Token* const startToken,
+static Analyzer::Action valueFlowForwardVariable(Token* const startToken,
                                                         const Token* const endToken,
                                                         const Variable* const var,
                                                         std::list<ValueFlow::Value> values,
@@ -2029,13 +2029,13 @@ struct SelectMapValues {
     }
 };
 
-struct ValueFlowGenericAnalyzer : GenericAnalyzer {
+struct ValueFlowAnalyzer : Analyzer {
     const TokenList* tokenlist;
     ProgramMemoryState pms;
 
-    ValueFlowGenericAnalyzer() : tokenlist(nullptr), pms() {}
+    ValueFlowAnalyzer() : tokenlist(nullptr), pms() {}
 
-    ValueFlowGenericAnalyzer(const TokenList* t) : tokenlist(t), pms() {}
+    ValueFlowAnalyzer(const TokenList* t) : tokenlist(t), pms() {}
 
     virtual const ValueFlow::Value* getValue(const Token* tok) const = 0;
     virtual ValueFlow::Value* getValue(const Token* tok) = 0;
@@ -2297,20 +2297,20 @@ struct ValueFlowGenericAnalyzer : GenericAnalyzer {
             setTokenValue(tok, *value, getSettings());
     }
 
-    virtual ValuePtr<GenericAnalyzer> reanalyze(Token*, const std::string&) const OVERRIDE { return {}; }
+    virtual ValuePtr<Analyzer> reanalyze(Token*, const std::string&) const OVERRIDE { return {}; }
 };
 
-ValuePtr<GenericAnalyzer> makeAnalyzer(Token* exprTok, const ValueFlow::Value& value, const TokenList* tokenlist);
+ValuePtr<Analyzer> makeAnalyzer(Token* exprTok, const ValueFlow::Value& value, const TokenList* tokenlist);
 
-struct SingleValueFlowGenericAnalyzer : ValueFlowGenericAnalyzer {
+struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
     std::unordered_map<nonneg int, const Variable*> varids;
     std::unordered_map<nonneg int, const Variable*> aliases;
     ValueFlow::Value value;
 
-    SingleValueFlowGenericAnalyzer() : ValueFlowGenericAnalyzer() {}
+    SingleValueFlowAnalyzer() : ValueFlowAnalyzer() {}
 
-    SingleValueFlowGenericAnalyzer(const ValueFlow::Value& v, const TokenList* t)
-        : ValueFlowGenericAnalyzer(t), value(v)
+    SingleValueFlowAnalyzer(const ValueFlow::Value& v, const TokenList* t)
+        : ValueFlowAnalyzer(t), value(v)
     {}
 
     const std::unordered_map<nonneg int, const Variable*>& getVars() const {
@@ -2407,7 +2407,7 @@ struct SingleValueFlowGenericAnalyzer : ValueFlowGenericAnalyzer {
         return false;
     }
 
-    virtual ValuePtr<GenericAnalyzer> reanalyze(Token* tok, const std::string& msg) const OVERRIDE
+    virtual ValuePtr<Analyzer> reanalyze(Token* tok, const std::string& msg) const OVERRIDE
     {
         ValueFlow::Value newValue = value;
         newValue.errorPath.emplace_back(tok, msg);
@@ -2415,16 +2415,16 @@ struct SingleValueFlowGenericAnalyzer : ValueFlowGenericAnalyzer {
     }
 };
 
-struct VariableGenericAnalyzer : SingleValueFlowGenericAnalyzer {
+struct VariableAnalyzer : SingleValueFlowAnalyzer {
     const Variable* var;
 
-    VariableGenericAnalyzer() : SingleValueFlowGenericAnalyzer(), var(nullptr) {}
+    VariableAnalyzer() : SingleValueFlowAnalyzer(), var(nullptr) {}
 
-    VariableGenericAnalyzer(const Variable* v,
+    VariableAnalyzer(const Variable* v,
                             const ValueFlow::Value& val,
                             std::vector<const Variable*> paliases,
                             const TokenList* t)
-        : SingleValueFlowGenericAnalyzer(val, t), var(v)
+        : SingleValueFlowAnalyzer(val, t), var(v)
     {
         varids[var->declarationId()] = var;
         for (const Variable* av:paliases) {
@@ -2474,7 +2474,7 @@ static std::vector<const Variable*> getAliasesFromValues(std::list<ValueFlow::Va
     return aliases;
 }
 
-static GenericAnalyzer::Action valueFlowForwardVariable(Token* const startToken,
+static Analyzer::Action valueFlowForwardVariable(Token* const startToken,
                                                         const Token* const endToken,
                                                         const Variable* const var,
                                                         std::list<ValueFlow::Value> values,
@@ -2482,15 +2482,15 @@ static GenericAnalyzer::Action valueFlowForwardVariable(Token* const startToken,
                                                         TokenList* const tokenlist,
                                                         const Settings* const settings)
 {
-    GenericAnalyzer::Action actions;
+    Analyzer::Action actions;
     for (ValueFlow::Value& v : values) {
-        VariableGenericAnalyzer a(var, v, aliases, tokenlist);
+        VariableAnalyzer a(var, v, aliases, tokenlist);
         actions |= valueFlowGenericForward(startToken, endToken, a, settings);
     }
     return actions;
 }
 
-static GenericAnalyzer::Action valueFlowForwardVariable(Token* const startToken,
+static Analyzer::Action valueFlowForwardVariable(Token* const startToken,
                                                         const Token* const endToken,
                                                         const Variable* const var,
                                                         std::list<ValueFlow::Value> values,
@@ -2517,15 +2517,15 @@ static bool valueFlowForwardVariable(Token* const startToken,
     return true;
 }
 
-struct ExpressionGenericAnalyzer : SingleValueFlowGenericAnalyzer {
+struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
     const Token* expr;
     bool local;
     bool unknown;
 
-    ExpressionGenericAnalyzer() : SingleValueFlowGenericAnalyzer(), expr(nullptr), local(true), unknown(false) {}
+    ExpressionAnalyzer() : SingleValueFlowAnalyzer(), expr(nullptr), local(true), unknown(false) {}
 
-    ExpressionGenericAnalyzer(const Token* e, const ValueFlow::Value& val, const TokenList* t)
-        : SingleValueFlowGenericAnalyzer(val, t), expr(e), local(true), unknown(false)
+    ExpressionAnalyzer(const Token* e, const ValueFlow::Value& val, const TokenList* t)
+        : SingleValueFlowAnalyzer(val, t), expr(e), local(true), unknown(false)
     {
 
         setupExprVarIds();
@@ -2584,16 +2584,16 @@ struct ExpressionGenericAnalyzer : SingleValueFlowGenericAnalyzer {
     }
 };
 
-static GenericAnalyzer::Action valueFlowForwardExpression(Token* startToken,
+static Analyzer::Action valueFlowForwardExpression(Token* startToken,
                                                           const Token* endToken,
                                                           const Token* exprTok,
                                                           const std::list<ValueFlow::Value>& values,
                                                           const TokenList* const tokenlist,
                                                           const Settings* settings)
 {
-    GenericAnalyzer::Action actions;
+    Analyzer::Action actions;
     for (const ValueFlow::Value& v : values) {
-        ExpressionGenericAnalyzer a(exprTok, v, tokenlist);
+        ExpressionAnalyzer a(exprTok, v, tokenlist);
         actions |= valueFlowGenericForward(startToken, endToken, a, settings);
     }
     return actions;
@@ -2660,18 +2660,18 @@ static const Token* solveExprValues(const Token* expr, std::list<ValueFlow::Valu
     return expr;
 }
 
-ValuePtr<GenericAnalyzer> makeAnalyzer(Token* exprTok, const ValueFlow::Value& value, const TokenList* tokenlist)
+ValuePtr<Analyzer> makeAnalyzer(Token* exprTok, const ValueFlow::Value& value, const TokenList* tokenlist)
 {
     std::list<ValueFlow::Value> values = {value};
     const Token* expr = solveExprValues(exprTok, values);
     if (expr->variable()) {
-        return VariableGenericAnalyzer(expr->variable(), value, getAliasesFromValues(values), tokenlist);
+        return VariableAnalyzer(expr->variable(), value, getAliasesFromValues(values), tokenlist);
     } else {
-        return ExpressionGenericAnalyzer(expr, value, tokenlist);
+        return ExpressionAnalyzer(expr, value, tokenlist);
     }
 }
 
-static GenericAnalyzer::Action valueFlowForward(Token* startToken,
+static Analyzer::Action valueFlowForward(Token* startToken,
                                                 const Token* endToken,
                                                 const Token* exprTok,
                                                 std::list<ValueFlow::Value> values,
@@ -2714,7 +2714,7 @@ static void valueFlowReverse(TokenList* tokenlist,
     const Variable* var = varToken->variable();
     auto aliases = getAliasesFromValues(values);
     for (ValueFlow::Value& v : values) {
-        VariableGenericAnalyzer a(var, v, aliases, tokenlist);
+        VariableAnalyzer a(var, v, aliases, tokenlist);
         valueFlowGenericReverse(tok, a, settings);
     }
 }
@@ -4889,14 +4889,14 @@ static void valueFlowForLoop(TokenList *tokenlist, SymbolDatabase* symboldatabas
     }
 }
 
-struct MultiValueFlowGenericAnalyzer : ValueFlowGenericAnalyzer {
+struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
     std::unordered_map<nonneg int, ValueFlow::Value> values;
     std::unordered_map<nonneg int, const Variable*> vars;
 
-    MultiValueFlowGenericAnalyzer() : ValueFlowGenericAnalyzer(), values(), vars() {}
+    MultiValueFlowAnalyzer() : ValueFlowAnalyzer(), values(), vars() {}
 
-    MultiValueFlowGenericAnalyzer(const std::unordered_map<const Variable*, ValueFlow::Value>& args, const TokenList* t)
-        : ValueFlowGenericAnalyzer(t), values(), vars()
+    MultiValueFlowAnalyzer(const std::unordered_map<const Variable*, ValueFlow::Value>& args, const TokenList* t)
+        : ValueFlowAnalyzer(t), values(), vars()
     {
         for (const auto& p:args) {
             values[p.first->declarationId()] = p.second;
@@ -5081,7 +5081,7 @@ static void valueFlowInjectParameter(TokenList* tokenlist, ErrorLogger* errorLog
         }
         if (skip)
             continue;
-        MultiValueFlowGenericAnalyzer a(arg, tokenlist);
+        MultiValueFlowAnalyzer a(arg, tokenlist);
         valueFlowGenericForward(const_cast<Token*>(functionScope->bodyStart), functionScope->bodyEnd, a, settings);
     }
 }
@@ -5733,14 +5733,14 @@ static void valueFlowContainerReverse(Token *tok, nonneg int containerId, const 
     }
 }
 
-struct ContainerVariableGenericAnalyzer : VariableGenericAnalyzer {
-    ContainerVariableGenericAnalyzer() : VariableGenericAnalyzer() {}
+struct ContainerVariableAnalyzer : VariableAnalyzer {
+    ContainerVariableAnalyzer() : VariableAnalyzer() {}
 
-    ContainerVariableGenericAnalyzer(const Variable* v,
+    ContainerVariableAnalyzer(const Variable* v,
                                      const ValueFlow::Value& val,
                                      std::vector<const Variable*> paliases,
                                      const TokenList* t)
-        : VariableGenericAnalyzer(v, val, std::move(paliases), t)
+        : VariableAnalyzer(v, val, std::move(paliases), t)
     {}
 
     virtual bool match(const Token* tok) const OVERRIDE {
@@ -5825,16 +5825,16 @@ struct ContainerVariableGenericAnalyzer : VariableGenericAnalyzer {
     }
 };
 
-static GenericAnalyzer::Action valueFlowContainerForward(Token* tok,
+static Analyzer::Action valueFlowContainerForward(Token* tok,
                                                          const Token* endToken,
                                                          const Variable* var,
                                                          ValueFlow::Value value,
                                                          TokenList* tokenlist)
 {
-    ContainerVariableGenericAnalyzer a(var, value, getAliasesFromValues({value}), tokenlist);
+    ContainerVariableAnalyzer a(var, value, getAliasesFromValues({value}), tokenlist);
     return valueFlowGenericForward(tok, endToken, a, tokenlist->getSettings());
 }
-static GenericAnalyzer::Action valueFlowContainerForward(Token* tok,
+static Analyzer::Action valueFlowContainerForward(Token* tok,
                                                          const Variable* var,
                                                          ValueFlow::Value value,
                                                          TokenList* tokenlist)

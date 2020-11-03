@@ -11,10 +11,10 @@
 #include <functional>
 
 struct ReverseTraversal {
-    ReverseTraversal(const ValuePtr<GenericAnalyzer>& analyzer, const Settings* settings)
+    ReverseTraversal(const ValuePtr<Analyzer>& analyzer, const Settings* settings)
         : analyzer(analyzer), settings(settings)
     {}
-    ValuePtr<GenericAnalyzer> analyzer;
+    ValuePtr<Analyzer> analyzer;
     const Settings* settings;
 
     std::pair<bool, bool> evalCond(const Token* tok)
@@ -28,9 +28,9 @@ struct ReverseTraversal {
 
     bool update(Token* tok)
     {
-        GenericAnalyzer::Action action = analyzer->analyze(tok, GenericAnalyzer::Direction::Reverse);
+        Analyzer::Action action = analyzer->analyze(tok, Analyzer::Direction::Reverse);
         if (!action.isNone())
-            analyzer->update(tok, action, GenericAnalyzer::Direction::Reverse);
+            analyzer->update(tok, action, Analyzer::Direction::Reverse);
         if (action.isInconclusive() && !analyzer->lowerToInconclusive())
             return false;
         if (action.isInvalid())
@@ -51,11 +51,11 @@ struct ReverseTraversal {
         return continueB;
     }
 
-    GenericAnalyzer::Action analyzeRecursive(const Token* start)
+    Analyzer::Action analyzeRecursive(const Token* start)
     {
-        GenericAnalyzer::Action result = GenericAnalyzer::Action::None;
+        Analyzer::Action result = Analyzer::Action::None;
         visitAstNodes(start, [&](const Token* tok) {
-            result |= analyzer->analyze(tok, GenericAnalyzer::Direction::Reverse);
+            result |= analyzer->analyze(tok, Analyzer::Direction::Reverse);
             if (result.isModified())
                 return ChildrenToVisit::done;
             return ChildrenToVisit::op1_and_op2;
@@ -63,11 +63,11 @@ struct ReverseTraversal {
         return result;
     }
 
-    GenericAnalyzer::Action analyzeRange(const Token* start, const Token* end)
+    Analyzer::Action analyzeRange(const Token* start, const Token* end)
     {
-        GenericAnalyzer::Action result = GenericAnalyzer::Action::None;
+        Analyzer::Action result = Analyzer::Action::None;
         for (const Token* tok = start; tok && tok != end; tok = tok->next()) {
-            GenericAnalyzer::Action action = analyzer->analyze(tok, GenericAnalyzer::Direction::Reverse);
+            Analyzer::Action action = analyzer->analyze(tok, Analyzer::Direction::Reverse);
             if (action.isModified())
                 return action;
             result |= action;
@@ -99,7 +99,7 @@ struct ReverseTraversal {
             std::tie(checkThen, checkElse) = evalCond(condTok);
 
             if (!checkThen && !checkElse) {
-                GenericAnalyzer::Action action = analyzeRecursive(condTok);
+                Analyzer::Action action = analyzeRecursive(condTok);
                 if (action.isRead() || action.isModified())
                     return parent;
             }
@@ -146,14 +146,14 @@ struct ReverseTraversal {
                 }
                 // Simple assign
                 if (assignTok->astParent() == assignTop || assignTok == assignTop) {
-                    GenericAnalyzer::Action rhsAction =
-                        analyzer->analyze(assignTok->astOperand2(), GenericAnalyzer::Direction::Reverse);
-                    GenericAnalyzer::Action lhsAction =
-                        analyzer->analyze(assignTok->astOperand1(), GenericAnalyzer::Direction::Reverse);
+                    Analyzer::Action rhsAction =
+                        analyzer->analyze(assignTok->astOperand2(), Analyzer::Direction::Reverse);
+                    Analyzer::Action lhsAction =
+                        analyzer->analyze(assignTok->astOperand1(), Analyzer::Direction::Reverse);
                     // Assignment from
                     if (rhsAction.isRead()) {
                         const std::string info = "Assignment from '" + assignTok->expressionString() + "'";
-                        ValuePtr<GenericAnalyzer> a = analyzer->reanalyze(assignTok->astOperand1(), info);
+                        ValuePtr<Analyzer> a = analyzer->reanalyze(assignTok->astOperand1(), info);
                         if (a) {
                             valueFlowGenericForward(nextAfterAstRightmostLeaf(assignTok->astOperand2()),
                                                     assignTok->astOperand2()->scope()->bodyEnd,
@@ -163,7 +163,7 @@ struct ReverseTraversal {
                         // Assignment to
                     } else if (lhsAction.matches()) {
                         const std::string info = "Assignment to '" + assignTok->expressionString() + "'";
-                        ValuePtr<GenericAnalyzer> a = analyzer->reanalyze(assignTok->astOperand2(), info);
+                        ValuePtr<Analyzer> a = analyzer->reanalyze(assignTok->astOperand2(), info);
                         if (a) {
                             valueFlowGenericForward(nextAfterAstRightmostLeaf(assignTok->astOperand2()),
                                                     assignTok->astOperand2()->scope()->bodyEnd,
@@ -183,7 +183,7 @@ struct ReverseTraversal {
                 Token* condTok = getCondTokFromEnd(tok);
                 if (!condTok)
                     break;
-                GenericAnalyzer::Action condAction = analyzeRecursive(condTok);
+                Analyzer::Action condAction = analyzeRecursive(condTok);
                 const bool inLoop = condTok->astTop() && Token::Match(condTok->astTop()->previous(), "for|while (");
                 // Evaluate condition of for and while loops first
                 if (inLoop) {
@@ -201,8 +201,8 @@ struct ReverseTraversal {
                     thenEnd = tok;
                 }
 
-                GenericAnalyzer::Action thenAction = analyzeRange(thenEnd->link(), thenEnd);
-                GenericAnalyzer::Action elseAction = GenericAnalyzer::Action::None;
+                Analyzer::Action thenAction = analyzeRange(thenEnd->link(), thenEnd);
+                Analyzer::Action elseAction = Analyzer::Action::None;
                 if (hasElse) {
                     elseAction = analyzeRange(tok->link(), tok);
                 }
@@ -233,7 +233,7 @@ struct ReverseTraversal {
                 if (tok->previous() &&
                     (Token::simpleMatch(tok->previous(), "do") ||
                      (tok->strAt(-1) == ")" && Token::Match(tok->linkAt(-1)->previous(), "for|while (")))) {
-                    GenericAnalyzer::Action action = analyzeRange(tok, tok->link());
+                    Analyzer::Action action = analyzeRange(tok, tok->link());
                     if (action.isModified())
                         break;
                 }
@@ -279,7 +279,7 @@ struct ReverseTraversal {
     }
 };
 
-void valueFlowGenericReverse(Token* start, const ValuePtr<GenericAnalyzer>& a, const Settings* settings)
+void valueFlowGenericReverse(Token* start, const ValuePtr<Analyzer>& a, const Settings* settings)
 {
     ReverseTraversal rt{a, settings};
     rt.traverse(start);

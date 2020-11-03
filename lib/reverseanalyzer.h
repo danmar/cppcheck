@@ -19,12 +19,12 @@
 #ifndef reverseanalyzerH
 #define reverseanalyzerH
 
-struct GenericAnalyzer;
+struct Analyzer;
 class Settings;
 class Token;
 template <class T>
 class ValuePtr;
 
-void valueFlowGenericReverse(Token* start, const ValuePtr<GenericAnalyzer>& a, const Settings* settings);
+void valueFlowGenericReverse(Token* start, const ValuePtr<Analyzer>& a, const Settings* settings);
 
 #endif
