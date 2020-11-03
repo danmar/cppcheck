@@ -47,6 +47,6 @@ TEST(test_cppcheck, cppcheck)
 // #9964 - avoid compareBoolExpressionWithInt false positive
 TEST(Test, assert_false_fp)
 {
-	// cppcheck-suppress checkLibraryNoReturn
-	ASSERT_FALSE(errno < 0);
+    // cppcheck-suppress checkLibraryNoReturn
+    ASSERT_FALSE(errno < 0);
 }
