@@ -249,6 +249,8 @@ void misra_7_4()
    char *d = 1 + "text d"; // 7.4 18.4
    char *e = "text e" + 1 + 2; // 7.4 18.4
    char *f = 1 + "text f" + 2; // 7.4 18.4
+   const wchar_t *g = "text_g";
+   wchar_t *h = "text_h"; // 7.4
    
    misra_7_4_const_call(1, ("text_const_call")); 
    misra_7_4_call(1, "text_call"); // 7.4
