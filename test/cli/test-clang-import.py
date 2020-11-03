@@ -99,6 +99,9 @@ def test_symbol_database_5():
 def test_symbol_database_6():
     check_symbol_database('inline static int foo(int x) { return x; }')
 
+def test_symbol_database_7():
+    check_symbol_database('struct S {int x;}; void f(struct S *s) {}')
+
 def test_symbol_database_operator():
     check_symbol_database('struct Fred { void operator=(int x); };')
 
