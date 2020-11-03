@@ -192,7 +192,7 @@ void CheckFunctions::invalidFunctionArgStrError(const Token *tok, const std::str
 //---------------------------------------------------------------------------
 void CheckFunctions::checkIgnoredReturnValue()
 {
-    if (!mSettings->isEnabled(Settings::WARNING))
+    if (!mSettings->isEnabled(Settings::WARNING) && !mSettings->isEnabled(Settings::STYLE))
         return;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -218,7 +218,11 @@ void CheckFunctions::checkIgnoredReturnValue()
             if ((!tok->function() || !Token::Match(tok->function()->retDef, "void %name%")) &&
                 (mSettings->library.isUseRetVal(tok) || (tok->function() && tok->function()->isAttributeNodiscard())) &&
                 !WRONG_DATA(!tok->next()->astOperand1(), tok)) {
-                ignoredReturnValueError(tok, tok->next()->astOperand1()->expressionString());
+                const auto retvalTy = mSettings->library.getUseRetvalErrorType(tok);
+                if (retvalTy == Library::RetvalErrorType::DEFAULT)
+                  ignoredReturnValueError(tok, tok->next()->astOperand1()->expressionString());
+                else if (retvalTy == Library::RetvalErrorType::ERROR_CODE)
+                  ignoredReturnErrorCode(tok, tok->next()->astOperand1()->expressionString());
             }
         }
     }
@@ -230,6 +234,11 @@ void CheckFunctions::ignoredReturnValueError(const Token* tok, const std::string
                 "$symbol:" + function + "\nReturn value of function $symbol() is not used.", CWE252, false);
 }
 
+void CheckFunctions::ignoredReturnErrorCode(const Token* tok, const std::string& function)
+{
+    reportError(tok, Severity::style, "ignoredReturnErrorCode",
+                "$symbol:" + function + "\nError code from the return value of function $symbol() is not used.", CWE252, false);
+}
 
 //---------------------------------------------------------------------------
 // Detect passing wrong values to <cmath> functions like atan(0, x);

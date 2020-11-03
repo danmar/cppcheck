@@ -655,9 +655,12 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
             func.isconst = true; // a constant function is pure
         } else if (functionnodename == "leak-ignore")
             func.leakignore = true;
-        else if (functionnodename == "use-retval")
+        else if (functionnodename == "use-retval") {
             func.useretval = true;
-        else if (functionnodename == "returnValue") {
+            if (const char *type = functionnode->Attribute("type"))
+                if (std::strcmp(type , "error-code") == 0)
+                    mUseRetvalTypes[name] = Library::RetvalErrorType::ERROR_CODE;
+        } else if (functionnodename == "returnValue") {
             if (const char *expr = functionnode->GetText())
                 mReturnValue[name] = expr;
             if (const char *type = functionnode->Attribute("type"))
@@ -1286,6 +1289,16 @@ bool Library::isUseRetVal(const Token* ftok) const
     if (it != functions.cend())
         return it->second.useretval;
     return false;
+}
+
+Library::RetvalErrorType Library::getUseRetvalErrorType(const Token *ftok) const
+{
+    const std::map<std::string, Library::RetvalErrorType>::const_iterator it =
+        mUseRetvalTypes.find(getFunctionName(ftok));
+    if (it == mUseRetvalTypes.end())
+        return Library::RetvalErrorType::DEFAULT;
+    else
+        return it->second;
 }
 
 const std::string& Library::returnValue(const Token *ftok) const

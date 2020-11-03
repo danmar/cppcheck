@@ -179,7 +179,9 @@ public:
     bool isNotLibraryFunction(const Token *ftok) const;
     bool matchArguments(const Token *ftok, const std::string &functionName) const;
 
+    enum RetvalErrorType { DEFAULT, ERROR_CODE };
     bool isUseRetVal(const Token* ftok) const;
+    RetvalErrorType getUseRetvalErrorType(const Token* ftok) const;
 
     const std::string& returnValue(const Token *ftok) const;
     const std::string& returnValueType(const Token *ftok) const;
@@ -559,6 +561,7 @@ private:
     std::map<std::string, AllocFunc> mDealloc; // deallocation functions
     std::map<std::string, AllocFunc> mRealloc; // reallocation functions
     std::map<std::string, bool> mNoReturn; // is function noreturn?
+    std::map<std::string, RetvalErrorType> mUseRetvalTypes; // type of the error for use-retval violations
     std::map<std::string, std::string> mReturnValue;
     std::map<std::string, std::string> mReturnValueType;
     std::map<std::string, int> mReturnValueContainer;
