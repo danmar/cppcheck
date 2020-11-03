@@ -206,7 +206,8 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
     }
 
     // If its a function pointer then check if its called
-    if (tok->variable() &&  tok->variable()->isPointer() && Token::Match(tok->variable()->nameToken(), "%name% ) (") && Token::Match(tok, "%name% ("))
+    if (tok->variable() && tok->variable()->isPointer() && Token::Match(tok->variable()->nameToken(), "%name% ) (") &&
+        Token::Match(tok, "%name% ("))
         return true;
 
     if (Token::Match(tok, "%var% = %var% .") &&

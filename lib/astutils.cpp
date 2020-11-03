@@ -305,19 +305,13 @@ template <class T, REQUIRES("T must be a Token class", std::is_convertible<T*, c
 static T* previousBeforeAstLeftmostLeafGeneric(T* tok)
 {
     T* leftmostLeaf = tok;
-    while(leftmostLeaf && leftmostLeaf->astOperand1())
+    while (leftmostLeaf && leftmostLeaf->astOperand1())
         leftmostLeaf = leftmostLeaf->astOperand1();
     return leftmostLeaf->previous();
 }
 
-const Token* previousBeforeAstLeftmostLeaf(const Token* tok)
-{
-    return previousBeforeAstLeftmostLeafGeneric(tok);
-}
-Token* previousBeforeAstLeftmostLeaf(Token* tok)
-{
-    return previousBeforeAstLeftmostLeafGeneric(tok);
-}
+const Token* previousBeforeAstLeftmostLeaf(const Token* tok) { return previousBeforeAstLeftmostLeafGeneric(tok); }
+Token* previousBeforeAstLeftmostLeaf(Token* tok) { return previousBeforeAstLeftmostLeafGeneric(tok); }
 
 template <class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
 static T* nextAfterAstRightmostLeafGeneric(T* tok)

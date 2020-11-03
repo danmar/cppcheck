@@ -55,8 +55,9 @@ namespace ValueFlow {
     };
 
     struct equalVisitor {
-        template<class T, class U>
-        void operator()(bool& result, T x, U y) const {
+        template <class T, class U>
+        void operator()(bool& result, T x, U y) const
+        {
             result = !(x > y || x < y);
         }
     };
@@ -121,7 +122,8 @@ namespace ValueFlow {
         }
 
         template <class T, class F>
-        static void visitValue(T& self, F f) {
+        static void visitValue(T& self, F f)
+        {
             switch (self.valueType) {
             case ValueType::INT:
             case ValueType::BUFFER_SIZE:
@@ -160,8 +162,9 @@ namespace ValueFlow {
             return !(*this == rhs);
         }
 
-        template<class T, REQUIRES("T must be an arithmetic type", std::is_arithmetic<T>)>
-        bool equalTo(const T& x) const {
+        template <class T, REQUIRES("T must be an arithmetic type", std::is_arithmetic<T>)>
+        bool equalTo(const T& x) const
+        {
             bool result = false;
             visitValue(*this, std::bind(equalVisitor{}, std::ref(result), x, std::placeholders::_1));
             return result;

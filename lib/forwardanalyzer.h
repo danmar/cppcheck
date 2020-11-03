@@ -19,20 +19,20 @@
 #ifndef forwardanalyzerH
 #define forwardanalyzerH
 
-#include <vector>
 #include "analyzer.h"
+#include <vector>
 
 class Settings;
 class Token;
 template <class T> class ValuePtr;
 
 GenericAnalyzer::Action valueFlowGenericForward(Token* start,
-        const Token* end,
-        const ValuePtr<GenericAnalyzer>& fa,
-        const Settings* settings);
+                                                const Token* end,
+                                                const ValuePtr<GenericAnalyzer>& fa,
+                                                const Settings* settings);
 
 GenericAnalyzer::Action valueFlowGenericForward(Token* start,
-        const ValuePtr<GenericAnalyzer>& fa,
-        const Settings* settings);
+                                                const ValuePtr<GenericAnalyzer>& fa,
+                                                const Settings* settings);
 
 #endif
