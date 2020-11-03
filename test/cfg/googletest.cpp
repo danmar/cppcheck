@@ -44,3 +44,9 @@ TEST(test_cppcheck, cppcheck)
     ASSERT_THROW(it.operator->(), std::out_of_range);
 }
 
+// #9964 - avoid compareBoolExpressionWithInt false positive
+TEST(Test, assert_false_fp)
+{
+	// cppcheck-suppress checkLibraryNoReturn
+	ASSERT_FALSE(errno < 0);
+}
