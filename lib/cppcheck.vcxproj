@@ -101,6 +101,7 @@
     <ClCompile Include="utils.cpp" />
     <ClCompile Include="valueflow.cpp" />
     <ClCompile Include="forwardanalyzer.cpp" />
+    <ClCompile Include="reverseanalyzer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\externals\simplecpp\simplecpp.h" />
