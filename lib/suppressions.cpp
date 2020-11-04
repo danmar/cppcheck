@@ -27,6 +27,7 @@
 
 #include <algorithm>
 #include <cctype>   // std::isdigit, std::isalnum, etc
+#include <functional> // std::bind, std::placeholders
 #include <sstream>
 #include <utility>
 
@@ -217,6 +218,16 @@ std::string Suppressions::addSuppressionLine(const std::string &line)
 
 std::string Suppressions::addSuppression(const Suppressions::Suppression &suppression)
 {
+    // Check if suppression is already in list
+    auto foundSuppression = std::find_if(mSuppressions.begin(), mSuppressions.end(), 
+        std::bind(&Suppression::isSameParameters, &suppression, std::placeholders::_1));
+    if (foundSuppression != mSuppressions.end()) {
+        // Update matched state of existing global suppression
+        if (!suppression.isLocal() && suppression.matched)
+            foundSuppression->matched = suppression.matched;
+        return "";
+    }
+
     // Check that errorId is valid..
     if (suppression.errorId.empty() && suppression.hash == 0)
         return "Failed to add suppression. No id.";
@@ -239,6 +250,16 @@ std::string Suppressions::addSuppression(const Suppressions::Suppression &suppre
 
     mSuppressions.push_back(suppression);
 
+    return "";
+}
+
+std::string Suppressions::addSuppressions(const std::list<Suppression> &suppressions)
+{
+    for (const auto &newSuppression : suppressions) {
+        auto errmsg = addSuppression(newSuppression);
+        if (errmsg != "")
+            return errmsg;
+    }
     return "";
 }
 
@@ -418,4 +439,9 @@ std::list<Suppressions::Suppression> Suppressions::getUnmatchedGlobalSuppression
         result.push_back(s);
     }
     return result;
+}
+
+std::list<Suppressions::Suppression> Suppressions::getSuppressions() const
+{
+    return mSuppressions;
 }
