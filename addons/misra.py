@@ -889,6 +889,22 @@ def tokenFollowsSequence(token, sequence):
         token = prev
     return True
 
+# Parse a C string as an unsigned number. Example '0xaU' (text) returns 10 (numeric)
+def parseUnsignedNumber(stringValue, defaultValue):
+    # Remove possible trailing U and L
+    while (stringValue.upper().endswith('U') or stringValue.upper().endswith('L')):
+        stringValue = stringValue[:-1]
+
+    try:
+        if stringValue.upper().startswith('0B'):
+            return int(stringValue, 2)
+        if stringValue.upper().startswith('0X'):
+            return int(stringValue, 16)
+        if stringValue.upper().startswith('0'):
+            return int(stringValue, 8)
+        return int(stringValue, 10)
+    except (TypeError, ValueError):
+        return defaultValue
 
 class Define:
     def __init__(self, directive):
@@ -1387,6 +1403,41 @@ class MisraChecker:
             if compiled.match(tok.str):
                 self.reportError(tok, 7, 1)
 
+    def misra_7_2(self, data):
+        # Large constant numbers that are assigned to a variable should have an
+        # u/U suffix if the variable type is unsigned.
+        def reportErrorIfMissingSuffix(variable, value):
+            if value and value.isNumber:
+                if variable and variable.valueType and variable.valueType.sign == 'unsigned':
+                    if variable.valueType.type in ['char', 'short', 'int', 'long', 'long long']:
+                        constantValue = parseUnsignedNumber(value.str, 0)
+                        limit = 1 << (bitsOfEssentialType(variable.valueType.type) -1)
+                        if constantValue >= limit:
+                            if not 'U' in value.str.upper():
+                                self.reportError(value, 7, 2)
+        
+        for token in data.tokenlist:
+            # Check normal variable assignment
+            if token.valueType and token.isNumber:
+                variable = getAssignedVariableToken(token)
+                reportErrorIfMissingSuffix(variable, token)
+
+            # Check use as function parameter
+            if isFunctionCall(token) and token.astOperand1 and token.astOperand1.function:
+                functionDeclaration = token.astOperand1.function
+                
+                if functionDeclaration.tokenDef:
+                    if functionDeclaration.tokenDef.Id == token.astOperand1.Id:
+                        # Token is not a function call, but it is the definition of the function
+                        continue
+
+                    parametersUsed = getArguments(token)
+                    for i in range(len(parametersUsed)):
+                        usedParameter = parametersUsed[i]
+                        if usedParameter.isNumber:
+                            parameterDefinition = functionDeclaration.argument.get(i+1)
+                            reportErrorIfMissingSuffix(parameterDefinition.nameToken, usedParameter)
+
     def misra_7_3(self, rawTokens):
         compiled = re.compile(r'^[0-9.uU]+l')
         for tok in rawTokens:
@@ -1418,13 +1469,13 @@ class MisraChecker:
             # Check use as function parameter
             if isFunctionCall(token) and token.astOperand1 and token.astOperand1.function:
                 functionDeclaration = token.astOperand1.function
-                parametersUsed = getArguments(token)
-
-                if functionDeclaration and functionDeclaration.tokenDef:
+                
+                if functionDeclaration.tokenDef:
                     if functionDeclaration.tokenDef.Id == token.astOperand1.Id:
                         # Token is not a function call, but it is the definition of the function
                         continue
 
+                    parametersUsed = getArguments(token)
                     for i in range(len(parametersUsed)):
                         usedParameter = parametersUsed[i]
                         parameterDefinition = functionDeclaration.argument.get(i+1)
@@ -3036,6 +3087,8 @@ class MisraChecker:
             self.executeCheck(602, self.misra_6_2, cfg)
             if cfgNumber == 0:
                 self.executeCheck(701, self.misra_7_1, data.rawTokens)
+            self.executeCheck(702, self.misra_7_2, cfg)
+            if cfgNumber == 0:
                 self.executeCheck(703, self.misra_7_3, data.rawTokens)
             self.executeCheck(704, self.misra_7_4, cfg)            
             self.executeCheck(811, self.misra_8_11, cfg)
