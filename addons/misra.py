@@ -761,11 +761,6 @@ def getArguments(ftok):
     getArgumentsRecursive(ftok.astOperand2, arguments)
     return arguments
 
-def getFunction(functions, functionName, numberOfArguments):
-    for f in functions:
-        if (f.name == functionName and 
-            len(f.argument) == numberOfArguments):
-            return f
 
 def isalnum(c):
     return c in string.digits or c in string.ascii_letters
@@ -1421,10 +1416,9 @@ class MisraChecker:
                         self.reportError(token, 7, 4)
 
             # Check use as function parameter
-            if isFunctionCall(token):
+            if isFunctionCall(token) and token.astOperand1 and token.astOperand1.function:
+                functionDeclaration = token.astOperand1.function
                 parametersUsed = getArguments(token)
-                functionDeclaration = getFunction(data.functions,
-                    token.astOperand1.str, len(parametersUsed))
 
                 if functionDeclaration and functionDeclaration.tokenDef:
                     if functionDeclaration.tokenDef.Id == token.astOperand1.Id:
