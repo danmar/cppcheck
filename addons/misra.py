@@ -850,6 +850,46 @@ def isNoReturnScope(tok):
     return False
 
 
+# Return the token which the value is assigned to
+def getAssignedVariableToken(valueToken):
+    if not valueToken:
+        return None
+    if not valueToken.astParent:
+        return None
+    operator = valueToken.astParent
+    if operator.isAssignmentOp:
+        return operator.astOperand1
+    if operator.isArithmeticalOp:
+        return getAssignedVariableToken(operator)
+    return None
+
+# If the value is used as a return value, return the function definition
+def getFunctionUsingReturnValue(valueToken):
+    if not valueToken:
+        return None
+    if not valueToken.astParent:
+        return None
+    operator = valueToken.astParent
+    if operator.str == 'return':
+        return operator.scope.function
+    if operator.isArithmeticalOp:
+        return getFunctionUsingReturnValue(operator)
+    return None
+
+# Return true if the token follows a specific sequence of token str values
+def tokenFollowsSequence(token, sequence):
+    if not token:
+        return False
+    for i in reversed(sequence):
+        prev = token.previous
+        if not prev:
+            return False
+        if prev.str != i:
+            return False
+        token = prev
+    return True
+
+
 class Define:
     def __init__(self, directive):
         self.args = []
@@ -1352,6 +1392,45 @@ class MisraChecker:
         for tok in rawTokens:
             if compiled.match(tok.str):
                 self.reportError(tok, 7, 3)
+
+    def misra_7_4(self, data):
+        # A string literal shall not be assigned to an object unless the object's type
+        # is constant.
+        def reportErrorIfVariableIsNotConst(variable, stringLiteral):
+            if variable.valueType:
+                if variable.valueType.constness != 1:
+                    self.reportError(stringLiteral, 7, 4)
+
+        for token in data.tokenlist:
+            if token.isString:
+                # Check normal variable assignment
+                variable = getAssignedVariableToken(token)
+                if variable:
+                    reportErrorIfVariableIsNotConst(variable, token)
+                
+                # Check use as return value
+                function = getFunctionUsingReturnValue(token)
+                if function:
+                    # "Primitive" test since there is no info available on return value type
+                    if not tokenFollowsSequence(function.tokenDef, ['const', 'char', '*']):
+                        self.reportError(token, 7, 4)
+
+            # Check use as function parameter
+            if isFunctionCall(token) and token.astOperand1 and token.astOperand1.function:
+                functionDeclaration = token.astOperand1.function
+                parametersUsed = getArguments(token)
+
+                if functionDeclaration and functionDeclaration.tokenDef:
+                    if functionDeclaration.tokenDef.Id == token.astOperand1.Id:
+                        # Token is not a function call, but it is the definition of the function
+                        continue
+
+                    for i in range(len(parametersUsed)):
+                        usedParameter = parametersUsed[i]
+                        parameterDefinition = functionDeclaration.argument.get(i+1)
+
+                        if usedParameter.isString and parameterDefinition.nameToken:
+                            reportErrorIfVariableIsNotConst(parameterDefinition.nameToken, usedParameter)
 
     def misra_8_11(self, data):
         for var in data.variables:
@@ -2958,6 +3037,7 @@ class MisraChecker:
             if cfgNumber == 0:
                 self.executeCheck(701, self.misra_7_1, data.rawTokens)
                 self.executeCheck(703, self.misra_7_3, data.rawTokens)
+            self.executeCheck(704, self.misra_7_4, cfg)            
             self.executeCheck(811, self.misra_8_11, cfg)
             self.executeCheck(812, self.misra_8_12, cfg)
             if cfgNumber == 0:

@@ -233,6 +233,28 @@ void misra_7_3() {
   long double misra_7_3_e = 7.3l; //7.3
   }
 
+typedef const char* MISRA_7_4_CHAR_CONST;
+MISRA_7_4_CHAR_CONST misra_7_4_return_const_type_def (void) { return "return_typedef_const"; }
+char *misra_7_4_return_non_const (void) { return 1 + "return_non_const"; } // 7.4 18.4
+const char *misra_7_4_return_const (void) { return 1 + "return_const"; } // 18.4
+
+void misra_7_4_const_call(int a, const char* b) { } // 2.7
+void misra_7_4_call(int a, char* b) { } // 2.7
+
+void misra_7_4()
+{
+   const char *a = "text a";
+   char* const b = "text_b"; // 7.4
+   char *c = "text c";  // 7.4
+   char *d = 1 + "text d"; // 7.4 18.4
+   char *e = "text e" + 1 + 2; // 7.4 18.4
+   char *f = 1 + "text f" + 2; // 7.4 18.4
+   const wchar_t *g = "text_g";
+   wchar_t *h = "text_h"; // 7.4
+   
+   misra_7_4_const_call(1, ("text_const_call")); 
+   misra_7_4_call(1, "text_call"); // 7.4 11.8
+}
 
 extern int a811[]; // 8.11
 
