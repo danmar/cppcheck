@@ -1235,7 +1235,7 @@ private:
 
     void checkIgnoredErrorCode() {
         Settings settings2;
-        settings2.addEnabled("warning");
+        settings2.addEnabled("style");
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def version=\"2\">\n"
                                "  <function name=\"mystrcmp\">\n"

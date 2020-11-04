@@ -658,7 +658,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
         else if (functionnodename == "use-retval") {
             func.useretval = Library::UseRetValType::DEFAULT;
             if (const char *type = functionnode->Attribute("type"))
-                if (std::strcmp(type , "error-code") == 0)
+                if (std::strcmp(type, "error-code") == 0)
                     func.useretval = Library::UseRetValType::ERROR_CODE;
         } else if (functionnodename == "returnValue") {
             if (const char *expr = functionnode->GetText())
