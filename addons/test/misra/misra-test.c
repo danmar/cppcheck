@@ -253,7 +253,7 @@ void misra_7_4()
    wchar_t *h = "text_h"; // 7.4
    
    misra_7_4_const_call(1, ("text_const_call")); 
-   misra_7_4_call(1, "text_call"); // 7.4
+   misra_7_4_call(1, "text_call"); // 7.4 11.8
 }
 
 extern int a811[]; // 8.11
