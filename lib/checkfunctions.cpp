@@ -220,9 +220,9 @@ void CheckFunctions::checkIgnoredReturnValue()
                 (tok->function() && tok->function()->isAttributeNodiscard())) &&
                 !WRONG_DATA(!tok->next()->astOperand1(), tok)) {
                 const Library::UseRetValType retvalTy = mSettings->library.getUseRetValType(tok);
-                if ((mSettings->isEnabled(Settings::WARNING) &&
-                     retvalTy == Library::UseRetValType::DEFAULT) ||
-                    (tok->function() && tok->function()->isAttributeNodiscard()))
+                if (mSettings->isEnabled(Settings::WARNING) &&
+                    ((retvalTy == Library::UseRetValType::DEFAULT) ||
+                    (tok->function() && tok->function()->isAttributeNodiscard())))
                   ignoredReturnValueError(tok, tok->next()->astOperand1()->expressionString());
                 else if (mSettings->isEnabled(Settings::STYLE) &&
                          retvalTy == Library::UseRetValType::ERROR_CODE)
