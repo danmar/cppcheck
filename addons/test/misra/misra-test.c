@@ -239,12 +239,10 @@ void misra_7_2() {
     unsigned short h = 0x8000U;
     unsigned int i = 0x80000000; // 7.2
     unsigned int j = 0x80000000U;
-    unsigned long k = 0x80000000; // 7.2
-    unsigned long l = 0x80000000UL;
-    unsigned long long m = 0x8000000000000000; // 7.2
-    unsigned long long n = 0x8000000000000000ULL;
+    unsigned long long k = 0x8000000000000000; // 7.2
+    unsigned long long l = 0x8000000000000000ULL;
 
-    unsigned int o = 1 + 0x80000000; // 7.2 10.4
+    unsigned int m = 1 + 0x80000000; // 7.2 10.4
 
     misra_7_2_call_test(1, 2, 2147483648U);
     misra_7_2_call_test(1, 2, 2147483648); // 7.2
