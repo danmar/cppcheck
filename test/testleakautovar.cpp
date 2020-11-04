@@ -138,6 +138,7 @@ private:
         TEST_CASE(ifelse14); // #9130 - if (x == (char*)NULL)
         TEST_CASE(ifelse15); // #9206 - if (global_ptr = malloc(1))
         TEST_CASE(ifelse16); // #9635 - if (p = malloc(4), p == NULL)
+        TEST_CASE(ifelse17); //  if (!!(!p))
 
         // switch
         TEST_CASE(switch1);
@@ -1513,6 +1514,24 @@ private:
               "        return;\n"
               "    free(p);\n"
               "    return;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void ifelse17() {
+        check("int *f() {\n"
+              "    int *p = realloc(nullptr, 10);\n"
+              "    if (!p)\n"
+              "        return NULL;\n"
+              "    return p;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int *f() {\n"
+              "    int *p = realloc(nullptr, 10);\n"
+              "    if (!!(!p))\n"
+              "        return NULL;\n"
+              "    return p;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
