@@ -216,12 +216,13 @@ void CheckFunctions::checkIgnoredReturnValue()
             }
 
             if ((!tok->function() || !Token::Match(tok->function()->retDef, "void %name%")) &&
-                (mSettings->library.isUseRetVal(tok) || (tok->function() && tok->function()->isAttributeNodiscard())) &&
+                (mSettings->library.getUseRetValType(tok) != Library::UseRetValType::NONE ||
+                (tok->function() && tok->function()->isAttributeNodiscard())) &&
                 !WRONG_DATA(!tok->next()->astOperand1(), tok)) {
-                const auto retvalTy = mSettings->library.getUseRetvalErrorType(tok);
-                if (retvalTy == Library::RetvalErrorType::DEFAULT)
+                const Library::UseRetValType retvalTy = mSettings->library.getUseRetValType(tok);
+                if (mSettings->isEnabled(Settings::WARNING) && retvalTy == Library::UseRetValType::DEFAULT)
                   ignoredReturnValueError(tok, tok->next()->astOperand1()->expressionString());
-                else if (retvalTy == Library::RetvalErrorType::ERROR_CODE)
+                else if (!mSettings->isEnabled(Settings::STYLE) && retvalTy == Library::UseRetValType::ERROR_CODE)
                   ignoredReturnErrorCode(tok, tok->next()->astOperand1()->expressionString());
             }
         }
