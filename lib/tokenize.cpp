@@ -410,9 +410,10 @@ Token * Tokenizer::deleteInvalidTypedef(Token *typeDef)
 
 namespace {
     struct Space {
-        Space() : bodyEnd(nullptr), isNamespace(false) { }
+        Space() : bodyEnd(nullptr), bodyEnd2(nullptr), isNamespace(false) { }
         std::string className;
-        const Token * bodyEnd;
+        const Token * bodyEnd;  // for body contains typedef define
+        const Token * bodyEnd2; // for body contains typedef using
         bool isNamespace;
     };
 }
@@ -609,6 +610,7 @@ void Tokenizer::simplifyTypedef()
                 info.isNamespace = isNamespace;
                 info.className = className;
                 info.bodyEnd = tok->link();
+                info.bodyEnd2 = tok->link();
                 spaceInfo.push_back(info);
 
                 hasClass = false;
@@ -1050,7 +1052,7 @@ void Tokenizer::simplifyTypedef()
                                 inMemberFunc = false;
                         }
 
-                        if (classLevel > 0 && tok2 == spaceInfo[classLevel - 1].bodyEnd) {
+                        if (classLevel > 0 && tok2 == spaceInfo[classLevel - 1].bodyEnd2) {
                             --classLevel;
                             pattern.clear();
 
@@ -1103,7 +1105,7 @@ void Tokenizer::simplifyTypedef()
                             if (classLevel < spaceInfo.size() &&
                                 spaceInfo[classLevel].isNamespace &&
                                 spaceInfo[classLevel].className == tok2->previous()->str()) {
-                                spaceInfo[classLevel].bodyEnd = tok2->link();
+                                spaceInfo[classLevel].bodyEnd2 = tok2->link();
                                 ++classLevel;
                                 pattern.clear();
                                 for (int i = classLevel; i < spaceInfo.size(); ++i)
