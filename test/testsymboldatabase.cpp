@@ -378,6 +378,7 @@ private:
         TEST_CASE(findFunction29);
         TEST_CASE(findFunction30);
         TEST_CASE(findFunction31);
+        TEST_CASE(findFunction32); // C: relax type matching
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
@@ -6172,6 +6173,17 @@ private:
         GET_SYMBOL_DB("void foo(bool);\n"
                       "void foo(std::string s);\n"
                       "void bar() { foo(\"123\"); }");
+        const Token *foo = Token::findsimplematch(tokenizer.tokens(), "foo ( \"123\" ) ;");
+        ASSERT(foo);
+        ASSERT(foo->function());
+        ASSERT(foo->function()->tokenDef);
+        ASSERT_EQUALS(1, foo->function()->tokenDef->linenr());
+    }
+
+    void findFunction32() {
+        GET_SYMBOL_DB_C("void foo(char *p);\n"
+                        "void bar() { foo(\"123\"); }");
+        (void)db;
         const Token *foo = Token::findsimplematch(tokenizer.tokens(), "foo ( \"123\" ) ;");
         ASSERT(foo);
         ASSERT(foo->function());
