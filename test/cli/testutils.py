@@ -55,7 +55,7 @@ def cppcheck(args):
     elif os.path.isfile('../../bin/cppcheck'):
         exe = '../../bin/cppcheck'
     elif os.path.isfile('../../../bin/cppcheck'):
-        exe = '../../../bincppcheck'
+        exe = '../../../bin/cppcheck'
     elif os.path.isfile('../../cppcheck'):
         exe = '../../cppcheck'
     else:
