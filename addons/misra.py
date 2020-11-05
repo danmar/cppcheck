@@ -889,23 +889,6 @@ def tokenFollowsSequence(token, sequence):
         token = prev
     return True
 
-# Parse a C string as an unsigned number. Example '0xaU' (text) returns 10 (numeric)
-def parseUnsignedNumber(stringValue, defaultValue):
-    # Remove possible trailing U and L
-    while (stringValue.upper().endswith('U') or stringValue.upper().endswith('L')):
-        stringValue = stringValue[:-1]
-
-    try:
-        if stringValue.upper().startswith('0B'):
-            return int(stringValue, 2)
-        if stringValue.upper().startswith('0X'):
-            return int(stringValue, 16)
-        if stringValue.upper().startswith('0'):
-            return int(stringValue, 8)
-        return int(stringValue, 10)
-    except (TypeError, ValueError):
-        return defaultValue
-
 class Define:
     def __init__(self, directive):
         self.args = []
@@ -1410,11 +1393,11 @@ class MisraChecker:
             if value and value.isNumber:
                 if variable and variable.valueType and variable.valueType.sign == 'unsigned':
                     if variable.valueType.type in ['char', 'short', 'int', 'long', 'long long']:
-                        constantValue = parseUnsignedNumber(value.str, 0)
                         limit = 1 << (bitsOfEssentialType(variable.valueType.type) -1)
-                        if constantValue >= limit:
-                            if not 'U' in value.str.upper():
-                                self.reportError(value, 7, 2)
+                        for v in value.values:
+                            if v.valueKind == 'known' and v.intvalue >= limit:
+                                if not 'U' in value.str.upper():    
+                                    self.reportError(value, 7, 2)
         
         for token in data.tokenlist:
             # Check normal variable assignment
