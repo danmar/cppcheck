@@ -1398,7 +1398,7 @@ class MisraChecker:
         # is constant.
         def reportErrorIfVariableIsNotConst(variable, stringLiteral):
             if variable.valueType:
-                if variable.valueType.constness != 1:
+                if (variable.valueType.constness % 2) != 1:
                     self.reportError(stringLiteral, 7, 4)
 
         for token in data.tokenlist:

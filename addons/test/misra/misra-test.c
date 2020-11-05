@@ -239,6 +239,7 @@ char *misra_7_4_return_non_const (void) { return 1 + "return_non_const"; } // 7.
 const char *misra_7_4_return_const (void) { return 1 + "return_const"; } // 18.4
 
 void misra_7_4_const_call(int a, const char* b) { } // 2.7
+void misra_7_4_const_ptr_call(int a, const char const* b) { } // 2.7
 void misra_7_4_call(int a, char* b) { } // 2.7
 
 void misra_7_4()
@@ -253,6 +254,7 @@ void misra_7_4()
    wchar_t *h = "text_h"; // 7.4
    
    misra_7_4_const_call(1, ("text_const_call")); 
+   misra_7_4_const_ptr_call(1, ("text_const_call"));
    misra_7_4_call(1, "text_call"); // 7.4 11.8
 }
 
