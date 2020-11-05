@@ -225,6 +225,30 @@ void misra_7_1() {
   int x = 066; // 7.1
 }
 
+void misra_7_2_call_test(int a, unsigned int b, unsigned int c) { } // 2.7
+
+void misra_7_2() {
+    unsigned int a = 2147483647;
+    const unsigned int b = 2147483648U;
+    const unsigned int c = 2147483648; // 7.2
+    unsigned int d = 2147483649; // 7.2
+
+    unsigned char e = 0x80; // 7.2
+    unsigned char f = 0x80U;
+    unsigned short g = 0x8000; // 7.2
+    unsigned short h = 0x8000U;
+    unsigned int i = 0x80000000; // 7.2
+    unsigned int j = 0x80000000U;
+    unsigned long long k = 0x8000000000000000; // 7.2
+    unsigned long long l = 0x8000000000000000ULL;
+
+    unsigned int m = 1 + 0x80000000; // 7.2 10.4
+
+    misra_7_2_call_test(1, 2, 2147483648U);
+    misra_7_2_call_test(1, 2, 2147483648); // 7.2
+    misra_7_2_call_test(1, 0x80000000, 3); // 7.2
+}
+
 void misra_7_3() {
   long misra_7_3_a = 0l; //7.3
   long misra_7_3_b = 0lU; //7.3
