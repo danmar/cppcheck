@@ -227,6 +227,8 @@ void misra_7_1() {
 
 void misra_7_2_call_test(int a, unsigned int b, unsigned int c) { } // 2.7
 
+void misra_7_2_call_va_test(int a, ...) { } // 2.7
+
 void misra_7_2() {
     unsigned int a = 2147483647;
     const unsigned int b = 2147483648U;
@@ -247,6 +249,7 @@ void misra_7_2() {
     misra_7_2_call_test(1, 2, 2147483648U);
     misra_7_2_call_test(1, 2, 2147483648); // 7.2
     misra_7_2_call_test(1, 0x80000000, 3); // 7.2
+    misra_7_2_call_va_test(1, 2, 3);
 }
 
 void misra_7_3() {

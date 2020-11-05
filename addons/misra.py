@@ -1419,7 +1419,8 @@ class MisraChecker:
                         usedParameter = parametersUsed[i]
                         if usedParameter.isNumber:
                             parameterDefinition = functionDeclaration.argument.get(i+1)
-                            reportErrorIfMissingSuffix(parameterDefinition.nameToken, usedParameter)
+                            if parameterDefinition and parameterDefinition.nameToken:
+                                reportErrorIfMissingSuffix(parameterDefinition.nameToken, usedParameter)
 
     def misra_7_3(self, rawTokens):
         compiled = re.compile(r'^[0-9.uU]+l')
