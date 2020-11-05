@@ -994,6 +994,25 @@ def remove_file_prefix(file_path, prefix):
         result = file_path
     return result
 
+class SuppressionFromFile(object):
+    """Class to keep suppression from file"""
+
+    def __init__(self, fileName, line, rule):
+        self.fileName = fileName
+        self.line = line
+        self.rule = rule
+
+    @property
+    def getFileName(self):
+        return self.fileName
+
+    @property
+    def getLineNumber(self):
+        return self.line
+
+    @property
+    def getRuleNumber(self):
+        return self.rule
 
 class Rule(object):
     """Class to keep rule text and metadata"""
@@ -1072,6 +1091,9 @@ class MisraChecker:
         # Test validation rules lists
         self.verify_expected = list()
         self.verify_actual = list()
+
+        # List of SuppressionFromFile objects
+        self.suppressionsFromFile = list()
 
         # List of formatted violation messages
         self.violations = dict()
@@ -2783,6 +2805,22 @@ class MisraChecker:
             return False
         return None in self.suppressedRules[rule_num]
 
+    def isRuleSuppressedInFile(self, filePath, lineNumber, ruleNumber):
+        """
+        Check to see if a rule is suppressed in file.
+        """
+
+        ruleIsSuppressed = False
+
+        for suppressionObj in self.suppressionsFromFile:
+            if (suppressionObj.getRuleNumber == ruleNumber 
+            and suppressionObj.getFileName == filePath 
+            and suppressionObj.getLineNumber == lineNumber):
+                ruleIsSuppressed = True
+                break
+
+        return ruleIsSuppressed
+
     def parseSuppressions(self):
         """
         Parse the suppression list provided by cppcheck looking for
@@ -2867,6 +2905,11 @@ class MisraChecker:
             self.verify_actual.append(str(location.linenr) + ':' + str(num1) + '.' + str(num2))
         elif self.isRuleSuppressed(location.file, location.linenr, ruleNum):
             # Error is suppressed. Ignore
+            self.suppressionStats.setdefault(ruleNum, 0)
+            self.suppressionStats[ruleNum] += 1
+            return
+        elif self.isRuleSuppressedInFile(location.file, location.linenr, ruleNum):
+            # Error is suppressed in the file. Ignore
             self.suppressionStats.setdefault(ruleNum, 0)
             self.suppressionStats[ruleNum] += 1
             return
@@ -3041,6 +3084,15 @@ class MisraChecker:
         typeBits['LONG_LONG'] = data.platform.long_long_bit
         typeBits['POINTER'] = data.platform.pointer_bit
 
+        for tok in data.rawTokens:
+            if tok.str.startswith('/* CPPCHECK S '):
+                compiled = re.compile(r'[0-9]{4}')
+                for word in tok.str.split(' '):
+                    if compiled.match(word):
+                        rule = int(word)
+                        suppressionObj = SuppressionFromFile(tok.file, tok.linenr, rule)
+                        self.suppressionsFromFile.append(suppressionObj)
+
         if self.settings.verify:
             for tok in data.rawTokens:
                 if tok.str.startswith('//') and 'TODO' not in tok.str:
@@ -3182,6 +3234,19 @@ For example, if you'd like to suppress rules 15.1, 11.3,
 and 20.13, run:
 
     python misra.py --suppress-rules 15.1,11.3,20.13 ...
+
+________________________________________________
+You can also suppress rules directly in the file
+
+For example, if you'd like to suppress rules 2.17, 11.3,
+and 20.13, write  in the line, where the violation occured:
+
+    for 2.17:
+        YOUR CODE /* CPPCHECK S 0217 */
+    for 11.3:
+        YOUR CODE /* CPPCHECK S 1103 */
+    for 20.13:
+        YOUR CODE /* CPPCHECK S 2013 */
 
 '''
 
