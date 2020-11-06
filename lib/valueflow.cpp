@@ -596,8 +596,8 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                      value2.isIntValue())) {
                     ValueFlow::Value result(0);
                     combineValueProperties(value1, value2, &result);
-                    const float floatValue1 = value1.isIntValue() ? value1.intvalue : value1.floatValue;
-                    const float floatValue2 = value2.isIntValue() ? value2.intvalue : value2.floatValue;
+                    const double floatValue1 = value1.isIntValue() ? value1.intvalue : value1.floatValue;
+                    const double floatValue2 = value2.isIntValue() ? value2.intvalue : value2.floatValue;
                     switch (parent->str()[0]) {
                     case '+':
                         if (value1.isTokValue() || value2.isTokValue())

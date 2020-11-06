@@ -102,11 +102,11 @@ public:
 
         bool isSameParameters(const Suppression &other) const {
             return errorId == other.errorId &&
-                fileName == other.fileName &&
-                lineNumber == other.lineNumber &&
-                symbolName == other.symbolName &&
-                hash == other.hash &&
-                thisAndNextLine == other.thisAndNextLine;
+                   fileName == other.fileName &&
+                   lineNumber == other.lineNumber &&
+                   symbolName == other.symbolName &&
+                   hash == other.hash &&
+                   thisAndNextLine == other.thisAndNextLine;
         }
 
         std::string errorId;
