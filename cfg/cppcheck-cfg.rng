@@ -116,7 +116,13 @@
             <element name="leak-ignore"><empty/></element>
           </optional>
           <optional>
-            <element name="use-retval"><empty/></element>
+            <element name="use-retval"><empty/>
+              <optional>
+                <attribute name="type">
+                    <value>error-code</value>
+                </attribute>
+              </optional>
+            </element>
           </optional>
           <optional>
             <element name="returnValue">
