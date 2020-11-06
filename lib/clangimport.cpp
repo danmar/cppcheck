@@ -1321,7 +1321,7 @@ static void setValues(Tokenizer *tokenizer, SymbolDatabase *symbolDatabase)
             int sz = vt.typeSize(*settings, true);
             if (sz <= 0)
                 continue;
-            int mul = 1;
+            long long mul = 1;
             for (Token *arrtok = tok->linkAt(1)->previous(); arrtok; arrtok = arrtok->previous()) {
                 const std::string &a = arrtok->str();
                 if (a.size() > 2 && a[0] == '[' && a.back() == ']')
